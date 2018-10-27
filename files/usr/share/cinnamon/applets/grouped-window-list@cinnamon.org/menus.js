@@ -326,7 +326,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 item = createMenuItem({label: _('Close others'), icon: 'window-close'});
                 this.signals.connect(item, 'activate', () => {
                     each(this.groupState.metaWindows, (metaWindow) => {
-                        if (!metaWindow === this.groupState.lastFocused && !metaWindow._needsAttention) {
+                        if (metaWindow !== this.groupState.lastFocused && !metaWindow._needsAttention) {
                             metaWindow.delete(global.get_current_time());
                         }
                     });
