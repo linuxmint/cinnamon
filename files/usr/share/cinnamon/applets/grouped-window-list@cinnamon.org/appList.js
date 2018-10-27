@@ -32,9 +32,7 @@ class AppList {
             },
             updateFocusState: (focusedAppId) => {
                 each(this.appList, (appGroup) => {
-                    if (focusedAppId === appGroup.groupState.appId) {
-                        return;
-                    }
+                    if (focusedAppId === appGroup.groupState.appId) return;
                     appGroup.onFocusChange(false);
                 });
             }
@@ -51,23 +49,14 @@ class AppList {
         this.lastFocusedApp = null;
 
         // Connect all the signals
-        this.signals.connect(
-            this.metaWorkspace,
-            'window-added',
-            (...args) => this.windowAdded(...args)
-        );
-        this.signals.connect(
-            this.metaWorkspace,
-            'window-removed',
-            (...args) => this.windowRemoved(...args)
-        );
+        this.signals.connect(this.metaWorkspace, 'window-added', (...args) => this.windowAdded(...args));
+        this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
         this.on_orientation_changed(null, true);
     }
 
     on_orientation_changed() {
-        if (this.manager === undefined) {
-            return;
-        }
+        if (!this.manager) return;
+
         if (!this.state.isHorizontal) {
             this.manager.set_orientation(Clutter.Orientation.VERTICAL);
             this.actor.set_x_align(Clutter.ActorAlign.CENTER);
@@ -83,9 +72,7 @@ class AppList {
                 this.appList[i].hoverMenu.close();
             }
         }
-        if (typeof cb === 'function') {
-            cb();
-        }
+        if (typeof cb === 'function') cb();
     }
 
     closeAllRightClickMenus(cb) {
@@ -94,22 +81,16 @@ class AppList {
                 this.appList[i].rightClickMenu.close();
             }
         }
-        if (typeof cb === 'function') {
-            cb();
-        }
+        if (typeof cb === 'function') cb();
     }
 
     onAppKeyPress(number) {
-        if (!this.appList[number - 1]) {
-            return;
-        }
+        if (!this.appList[number - 1]) return;
         this.appList[number - 1].onAppKeyPress(number);
     }
 
     onNewAppKeyPress(number) {
-        if (number > this.appList.length) {
-            return;
-        }
+        if (number > this.appList.length) return;
         this.appList[number - 1].launchNewInstance();
     }
 
@@ -202,9 +183,8 @@ class AppList {
             if (!app) {
                 app = appSystem.lookup_settings_app(favorites[i].id);
             }
-            if (!app) {
-                continue;
-            }
+            if (!app) continue;
+
             this.windowAdded(this.metaWorkspace, null, app, true);
         }
     }
@@ -258,8 +238,8 @@ class AppList {
         if (!app
             || (!isFavoriteApp
                 && metaWindow
-                && (this.state.settings.listMonitorWindows
-                    && this.state.monitorWatchList.indexOf(metaWindow.get_monitor()) === -1))) {
+                && this.state.settings.listMonitorWindows
+                && this.state.monitorWatchList.indexOf(metaWindow.get_monitor()) === -1)) {
             return;
         }
 
@@ -283,18 +263,14 @@ class AppList {
                     return false;
                 }
             });
-            if (shouldReturn) {
-                return false;
-            }
+            if (shouldReturn) return false;
         });
 
         if (!this.state.settings.groupApps && !isFavoriteApp) {
             let refFav = findIndex(this.state.trigger('getFavorites'), (favorite) => {
                 return favorite.app === app;
             });
-            if (refFav > -1) {
-                transientFavorite = true;
-            }
+            if (refFav > -1) transientFavorite = true;
         }
 
         let initApp = (metaWindows, window) => {

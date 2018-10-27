@@ -482,9 +482,7 @@ class AppGroup {
     }
 
     hideLabel(animate) {
-        if (!this.label) {
-            return false;
-        }
+        if (!this.label) return false;
 
         if (this.label.text == null) {
             this.label.set_text('');
@@ -510,9 +508,7 @@ class AppGroup {
     }
 
     onEnter() {
-        if (this.state.panelEditMode) {
-            return false;
-        }
+        if (this.state.panelEditMode) return false;
 
         if (this.actor.has_style_pseudo_class('closed')) {
             this.hadClosedPseudoClass = true;
@@ -525,9 +521,7 @@ class AppGroup {
     }
 
     onLeave() {
-        if (this.state.panelEditMode) {
-            return false;
-        }
+        if (this.state.panelEditMode) return false;
 
         this.resetHoverStatus();
 
@@ -896,16 +890,18 @@ class AppGroup {
             this.setText('');
         }
 
-        if (!refresh && (!metaWindow ||
-                !metaWindow.title ||
-                (this.groupState.metaWindows.length === 0 && this.groupState.isFavoriteApp) ||
-                !this.state.isHorizontal)) {
+        if (!refresh
+            && (!metaWindow
+                || !metaWindow.title
+                || (this.groupState.metaWindows.length === 0 && this.groupState.isFavoriteApp)
+                    || !this.state.isHorizontal)) {
             this.hideLabel();
             return;
         }
 
-        if ((metaWindow.lastTitle && metaWindow.lastTitle === metaWindow.title) &&
-            !refresh && shouldHideLabel) {
+        if ((metaWindow.lastTitle && metaWindow.lastTitle === metaWindow.title)
+            && !refresh
+            && shouldHideLabel) {
             return;
         }
         metaWindow.lastTitle = metaWindow.title;
@@ -1005,9 +1001,9 @@ class AppGroup {
 
     animate(step = 0) {
         let effect = this.state.settings.launcherAnimationEffect;
-        if (effect === 1) {
-            return;
-        } else if (effect === 2) {
+
+        if (effect === 1) return;
+        else if (effect === 2) {
             this.iconBox.set_z_rotation_from_gravity(0.0, Clutter.Gravity.CENTER);
             Tweener.addTween(this.iconBox, {
                 opacity: 70,
