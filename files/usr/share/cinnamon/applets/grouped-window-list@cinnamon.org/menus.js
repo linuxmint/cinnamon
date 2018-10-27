@@ -71,11 +71,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
     populateMenu() {
         this.signals.disconnectAllSignals();
-        this.signals.connect(
-            this,
-            'open-state-changed',
-            (...args) => this.onToggled(...args)
-        );
+        this.signals.connect(this, 'open-state-changed', (...args) => this.onToggled(...args));
 
         let item;
         let length;
@@ -688,11 +684,11 @@ class WindowThumbnail {
     }
 
     refreshThumbnail() {
-        if (this.willUnmount ||
-            !this.groupState ||
-            !this.groupState.app ||
-            !this.groupState.metaWindows ||
-            !this.metaWindow) {
+        if (this.willUnmount
+            || !this.groupState
+            || !this.groupState.app
+            || !this.groupState.metaWindows
+            || !this.metaWindow) {
             return;
         }
 
@@ -948,9 +944,8 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         } else if (symbol === closeArg) {
             this.appThumbnails[i].onLeave();
             this.close(true);
-        } else {
-            return;
-        }
+        } else return;
+
         if (this.appThumbnails[index] !== undefined) {
             this.appThumbnails[i].onLeave();
             this.appThumbnails[index].onEnter();
@@ -1070,12 +1065,10 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
 
     destroy() {
         this.willUnmount = true;
-        if (!this.box) {
-            return;
-        }
-        if (this.isOpen) {
-            this.close();
-        }
+        if (!this.box) return;
+
+        if (this.isOpen) this.close();
+
         for (let w = 0, len = this.appThumbnails.length; w < len; w++) {
             if (this.appThumbnails[w] !== undefined) {
                 if (this.appThumbnails[w].entered) {
@@ -1092,4 +1085,3 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         unref(this, RESERVE_KEYS);
     }
 }
-

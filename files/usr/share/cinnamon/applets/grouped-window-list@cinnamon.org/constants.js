@@ -5,8 +5,6 @@ const constants = {
     BUTTON_BOX_ANIMATION_TIME: 0.15,
     MAX_BUTTON_WIDTH: 150, // Pixels
     FLASH_INTERVAL: 500,
-    ICON_HEIGHT_FACTOR: 0.64,
-    VERTICAL_ICON_HEIGHT_FACTOR: 0.75,
     RESERVE_KEYS: ['willUnmount'],
     TitleDisplay: {
         None: 1,
