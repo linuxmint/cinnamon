@@ -660,11 +660,18 @@ class WindowThumbnail {
             let windowTexture = this.metaWindowActor.get_texture();
             let [width, height] = windowTexture.get_size();
             this.signals.connect(this.metaWindowActor, 'size-changed', () => this.refreshThumbnail());
-            this.signals.connect(this.metaWindowActor, 'destroy', () => {
-                if (this.willUnmount || !this.groupState.trigger) return;
-                this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
-                this.metaWindowActor = null;
-            });
+
+            if (this.groupState.isFavoriteApp) {
+                this.signals.connect(this.metaWindowActor, 'destroy', () => {
+                    if (this.willUnmount
+                        || !this.groupState.trigger) {
+                        return;
+                    }
+                    this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
+                    this.metaWindowActor = null;
+                });
+            }
+
             let scale = Math.min(1.0, this.thumbnailWidth / width, this.thumbnailHeight / height) * global.ui_scale;
             if (isUpdate) {
                 this.thumbnailActor.child.source = windowTexture;
@@ -678,7 +685,7 @@ class WindowThumbnail {
                     height: height * scale
                 });
             }
-        } else {
+        } else if (this.groupState.isFavoriteApp) {
             this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
         }
     }
@@ -695,6 +702,8 @@ class WindowThumbnail {
         let monitor = Main.layoutManager.primaryMonitor;
 
         let setThumbSize = (divider = 70, offset = 16) => {
+            if (!this.thumbnailActor || this.thumbnailActor.is_finalized()) return;
+
             this.thumbnailWidth = Math.floor((monitor.width / divider) * this.state.settings.thumbSize) + offset;
             this.thumbnailHeight = Math.floor((monitor.height / divider) * this.state.settings.thumbSize) + offset;
 
