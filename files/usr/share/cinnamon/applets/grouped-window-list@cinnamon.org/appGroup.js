@@ -8,7 +8,7 @@ const DND = imports.ui.dnd;
 const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
 const {SignalManager} = imports.misc.signalManager;
-const {each, find, findIndex, unref} = imports.misc.util;
+const {each, findIndex, unref} = imports.misc.util;
 const {createStore} = imports.misc.state;
 
 const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
@@ -16,8 +16,6 @@ const {
     FLASH_INTERVAL,
     MAX_BUTTON_WIDTH,
     BUTTON_BOX_ANIMATION_TIME,
-    ICON_HEIGHT_FACTOR,
-    VERTICAL_ICON_HEIGHT_FACTOR,
     RESERVE_KEYS,
     TitleDisplay
 } = require('./constants');
@@ -123,7 +121,8 @@ class AppGroup {
         this.title = '';
 
         this.actor = new St.Bin({
-            style_class: 'window-list-item-box',
+            style_class: 'grouped-window-list-item-box',
+            important: true,
             reactive: true,
             can_focus: true,
             x_fill: true,
@@ -153,11 +152,13 @@ class AppGroup {
         this.setActorAttributes();
         this.label = new St.Label({
             style_class: 'grouped-window-list-button-label',
+            important: true,
             text: '',
             show_on_set_parent: this.state.settings.titleDisplay !== 1 && this.state.settings.titleDisplay !== 4
         });
         this.numberLabel = new St.Label({
-            style_class: 'window-list-item-label grouped-window-list-number-label',
+            style_class: 'grouped-window-list-item-label grouped-window-list-number-label',
+            important: true,
             text: ''
         });
         this.numberLabel.clutter_text.ellipsize = false;
@@ -184,7 +185,8 @@ class AppGroup {
 
         this.hoverMenu.setVerticalSetting();
         this.hoverMenu.actor.set_style_class_name('');
-        this.hoverMenu.box.set_style_class_name('switcher-list');
+        this.hoverMenu.box.set_important(true);
+        this.hoverMenu.box.set_style_class_name('grouped-window-list-thumbnail-menu');
 
         this.hoverMenuManager.addMenu(this.hoverMenu);
         this.rightClickMenuManager.addMenu(this.rightClickMenu);
@@ -222,7 +224,7 @@ class AppGroup {
     }
 
     on_orientation_changed(fromInit) {
-        this.actor.set_style_class_name('window-list-item-box');
+        this.actor.set_style_class_name('grouped-window-list-item-box');
         if (this.state.orientation === St.Side.TOP) {
             this.actor.add_style_class_name('top');
         } else if (this.state.orientation === St.Side.BOTTOM) {
@@ -348,13 +350,13 @@ class AppGroup {
     flashButton(counter) {
         if (!this._needsAttention || !this.actor) return;
 
-        this.actor.remove_style_pseudo_class('running');
-        this.actor.add_style_class_name('window-list-item-demands-attention');
+        this.actor.remove_style_pseudo_class('active');
+        this.actor.add_style_class_name('grouped-window-list-item-demands-attention');
         if (counter < 4) {
             setTimeout(() => {
-                if (this.actor && this.actor.has_style_class_name('window-list-item-demands-attention')) {
-                    this.actor.remove_style_class_name('window-list-item-demands-attention');
-                    this.actor.add_style_pseudo_class('running');
+                if (this.actor && this.actor.has_style_class_name('grouped-window-list-item-demands-attention')) {
+                    this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
+                    this.actor.add_style_pseudo_class('active');
                 }
                 setTimeout(() => {
                     this.flashButton(++counter);
@@ -517,13 +519,7 @@ class AppGroup {
             this.actor.remove_style_pseudo_class('closed');
         }
 
-        if (this.actor.has_style_pseudo_class('focus')) {
-            this.hadFocusPseudoClass = true;
-        }
-
-        if (!this.actor.has_style_pseudo_class('hover')) {
-            this.actor.add_style_pseudo_class('hover');
-        }
+        this.actor.add_style_pseudo_class('hover');
 
         this.hoverMenu.onMenuEnter();
     }
@@ -538,11 +534,6 @@ class AppGroup {
         if (this.hadClosedPseudoClass && this.groupState.metaWindows.length === 0) {
             this.hadClosedPseudoClass = false;
             this.actor.add_style_pseudo_class('closed');
-        }
-
-        if (this.hadFocusPseudoClass) {
-            this.hadFocusPseudoClass = false;
-            this.actor.add_style_pseudo_class('focus');
         }
 
         this.setFavoriteAttributes();
@@ -566,10 +557,10 @@ class AppGroup {
     }
 
     setActiveStatus(state) {
-        if (state && !this.actor.has_style_pseudo_class('running')) {
-            this.actor.add_style_pseudo_class('running');
+        if (state && !this.actor.has_style_pseudo_class('active')) {
+            this.actor.add_style_pseudo_class('active');
         } else {
-            this.actor.remove_style_pseudo_class('running');
+            this.actor.remove_style_pseudo_class('active');
         }
     }
 
@@ -591,20 +582,15 @@ class AppGroup {
         if (hasFocus) {
             this.listState.trigger('updateFocusState', this.groupState.appId);
             this.actor.add_style_pseudo_class('focus');
-            this.actor.add_style_pseudo_class('groupFocus');
-            if (this.actor.has_style_class_name('window-list-item-demands-attention')) {
-                this.actor.remove_style_class_name('window-list-item-demands-attention');
-            }
-            if (this.actor.has_style_class_name('window-list-item-demands-attention-top')) {
-                this.actor.remove_style_class_name('window-list-item-demands-attention-top');
+            if (this.actor.has_style_class_name('grouped-window-list-item-demands-attention')) {
+                this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
             }
             this._needsAttention = false;
         } else {
             this.actor.remove_style_pseudo_class('focus');
-            this.actor.remove_style_pseudo_class('groupFocus');
         }
         if (this.groupState.metaWindows.length > 0) {
-            this.actor.add_style_pseudo_class('running');
+            this.actor.add_style_pseudo_class('active');
         }
         this.resetHoverStatus();
     }
