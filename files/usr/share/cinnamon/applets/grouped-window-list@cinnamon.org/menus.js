@@ -151,6 +151,25 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         }
 
+        // Preferences
+        let subMenu = new PopupMenu.PopupSubMenuMenuItem(_('Preferences'));
+        this.addMenuItem(subMenu);
+
+        item = createMenuItem({label: _('About...'), icon: 'dialog-question'});
+        this.signals.connect(item, 'activate', () => this.state.trigger('openAbout'));
+        subMenu.menu.addMenuItem(item);
+
+        item = createMenuItem({label: _('Configure...'), icon: 'system-run'});
+        this.signals.connect(item, 'activate', () => this.state.trigger('configureApplet'));
+        subMenu.menu.addMenuItem(item);
+
+        item = createMenuItem({label: _('Remove') + " 'Grouped window list'", icon: 'edit-delete'});
+        this.signals.connect(item, 'activate', () => {
+            AppletManager._removeAppletFromPanel(this.state.uuid, this.state.instance_id);
+        });
+        subMenu.menu.addMenuItem(item);
+        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
         if (this.state.settings.showRecent) {
             // Places
             if (this.groupState.appId === 'nemo.desktop' || this.groupState.appId === 'nemo-home.desktop') {
@@ -205,24 +224,6 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             }
         }
-
-        // Preferences
-        let subMenu = new PopupMenu.PopupSubMenuMenuItem(_('Preferences'));
-        this.addMenuItem(subMenu);
-
-        item = createMenuItem({label: _('About...'), icon: 'dialog-question'});
-        this.signals.connect(item, 'activate', () => this.state.trigger('openAbout'));
-        subMenu.menu.addMenuItem(item);
-
-        item = createMenuItem({label: _('Configure...'), icon: 'system-run'});
-        this.signals.connect(item, 'activate', () => this.state.trigger('configureApplet'));
-        subMenu.menu.addMenuItem(item);
-
-        item = createMenuItem({label: _('Remove') + " 'Grouped window list'", icon: 'edit-delete'});
-        this.signals.connect(item, 'activate', () => {
-            AppletManager._removeAppletFromPanel(this.state.uuid, this.state.instance_id);
-        });
-        subMenu.menu.addMenuItem(item);
 
         // Actions
         tryFn(() => {
