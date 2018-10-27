@@ -65,31 +65,78 @@ function clone(object, refs = [], cache = null) {
     return copy;
 }
 
-function storeError(method, key, message) {
-    global.log(new Error('[store -> ' + method + ' -> ' + key + '] ' + message));
-}
-
-function getByPath(key, state) {
-    const path = key.split('.');
-    let object = clone(state);
-    for (let i = 0; i < path.length; i++) {
-        object = object[path[i]];
-        if (!object) {
-            return object;
-        }
-    }
-    return object;
-}
+/**
+ * init:
+ * @state (object): The applet that contains the context menu.
+ * @listeners (array): The orientation of the applet.
+ *
+ * Constructor function
+ *
+ * Returns (object): The public API with state.
+ */
 
 /**
- * init
- * Initializes a store instance. It uses private scoping to prevent
- * its context from leaking.
+ * get:
+ * @key (string|null): The key to get from the state object.
  *
- * @param {object} [state={}]
- * @param {array} [listeners=[]] - Not intended to be set manually, but can be overriden.
- * See _connect.
- * @returns Initial state object with the public API.
+ * Passing null or an asterisk will retrieve the entire state object.
+ * Passing keys with dot notation will return the corresponding object path.
+ * E.g., "bar.foo".
+ *
+ * Returns (object): The cloned object.
+ */
+
+/**
+ * set:
+ * @object (object): The object to assign into state.
+ * @forceDispatch (boolean): Whether or not to force dispatching of callbacks from any
+ * connected listeners on @object's keys. By default, this only occurs if the state has
+ * actually changed as a result of setting.
+ *
+ * Copies a keyed object back into state, and calls dispatch to fire any connected callbacks.
+ *
+ * Returns (object): The public API for chaining.
+ */
+
+/**
+ * exclude:
+ * @excludeKeys (array): Array of string keys.
+ *
+ * Returns (object): The public API with filtered state.
+ */
+
+/**
+ * trigger:
+ *
+ * Fires a callback event for any matching keys in the listener queue.
+ * It supports passing through unlimited arguments to the callback.
+ * Useful for setting up actions.
+ *
+ * Returns (any): Return result of the callback.
+ */
+
+/**
+ * connect:
+ * @actions (string|array|object): Actions
+ * @callback (function): The function to be invoked on either state
+ * property change, or through the trigger method.
+ *
+ * Returns (number): The connection ID to use for later disconnection.
+ */
+
+/**
+ * disconnect:
+ * @key (string): The ID to disconnect.
+ *
+ * Removes a callback listener from the queue.
+ */
+
+/**
+ * destroy:
+ *
+ * Assigns undefined to all state properties and listeners. Intended
+ * to be used at the end of the application life cycle.
+ *
  */
 function createStore(state = {}, listeners = [], connections = 0) {
     const publicAPI = Object.freeze({
@@ -106,12 +153,6 @@ function createStore(state = {}, listeners = [], connections = 0) {
         return Object.assign(object, publicAPI);
     }
 
-    /**
-     * dispatch
-     * Responsible for triggering callbacks stored in the listeners queue from set.
-     *
-     * @param {object} object
-     */
     function dispatch(object) {
         let keys = Object.keys(object);
 
@@ -130,13 +171,22 @@ function createStore(state = {}, listeners = [], connections = 0) {
         }
     }
 
-    /**
-     * get
-     * Retrieves a cloned property from the state object.
-     *
-     * @param {string} [key=null]
-     * @returns {object}
-     */
+    function storeError(method, key, message) {
+        global.log(new Error('[store -> ' + method + ' -> ' + key + '] ' + message));
+    }
+
+    function getByPath(key, state) {
+        const path = key.split('.');
+        let object = clone(state);
+        for (let i = 0; i < path.length; i++) {
+            object = object[path[i]];
+            if (!object) {
+                return object;
+            }
+        }
+        return object;
+    }
+
     function get(key = null) {
         if (!key || key === '*') {
             return state;
@@ -147,14 +197,6 @@ function createStore(state = {}, listeners = [], connections = 0) {
         return clone(state[key]);
     }
 
-    /**
-     * set
-     * Copies a keyed object back into state, and
-     * calls dispatch to fire any connected callbacks.
-     *
-     * @param {object} object
-     * @param {boolean} forceDispatch
-     */
     function set(object, forceDispatch) {
         let keys = Object.keys(object);
         let changed = false;
@@ -172,14 +214,6 @@ function createStore(state = {}, listeners = [], connections = 0) {
         return publicAPI;
     }
 
-    /**
-     * exclude
-     * Excludes a string array of keys from the state object.
-     *
-     * @param {array} excludeKeys
-     * @returns Partial or full state object with keys in
-     * excludeKeys excluded, along with the public API for chaining.
-     */
     function exclude(excludeKeys) {
         let object = {};
         let keys = Object.keys(state);
@@ -192,16 +226,6 @@ function createStore(state = {}, listeners = [], connections = 0) {
         return getAPIWithObject(object);
     }
 
-    /**
-     * trigger
-     * Fires a callback event for any matching key in the listener queue.
-     * It supports passing through unlimited arguments to the callback.
-     * Useful for setting up actions.
-     *
-     * @param {string} key
-     * @param {any} args
-     * @returns {any} Return result of the callback.
-     */
     function trigger() {
         const [key, ...args] = Array.from(arguments);
         let matchedListeners = filter(listeners, function(listener) {
@@ -235,14 +259,6 @@ function createStore(state = {}, listeners = [], connections = 0) {
         }
     }
 
-    /**
-     * connect
-     *
-     * @param {any} actions - can be a string, array, or an object.
-     * @param {function} callback - callback to be fired on either state
-     * property change, or through the trigger method.
-     * @returns Public API for chaining.
-     */
     function connect(actions, callback) {
         const id = connections++;
         if (Array.isArray(actions)) {
@@ -271,12 +287,6 @@ function createStore(state = {}, listeners = [], connections = 0) {
         listeners.splice(listenerIndex, 1);
     }
 
-    /**
-     * disconnect
-     * Removes a callback listener from the queue.
-     *
-     * @param {string} key
-     */
     function disconnect(key) {
         if (typeof key === 'string') {
             disconnectByKey(key);
@@ -296,12 +306,6 @@ function createStore(state = {}, listeners = [], connections = 0) {
         }
     }
 
-    /**
-     * destroy
-     * Assigns undefined to all state properties and listeners. Intended
-     * to be used at the end of the application life cycle.
-     *
-     */
     function destroy() {
         let keys = Object.keys(state);
         for (let i = 0; i < keys.length; i++) {
