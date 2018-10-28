@@ -260,7 +260,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             }
             if (this.state.settings.launchNewInstance && (!actions || actions.length === 0) && !isWindowBacked) {
-                item = createMenuItem({label: _('New Window'), icon: 'document-new'});
+                item = createMenuItem({label: _('New Window'), icon: 'gwl-window'});
                 this.signals.connect(item, 'activate', () => this.groupState.trigger('launchNewInstance'));
                 this.addMenuItem(item);
                 if (!actions || actions.length === 0) {
