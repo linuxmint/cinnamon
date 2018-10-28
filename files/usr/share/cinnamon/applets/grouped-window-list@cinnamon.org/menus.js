@@ -14,6 +14,7 @@ const {
     CLOSE_BTN_SIZE,
     OPACITY_OPAQUE,
     RESERVE_KEYS,
+    ICON_NAMES,
     FavType,
     autoStartStrDir
 } = require('./constants');
@@ -228,9 +229,24 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             if (actions) {
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
                 let handleAction = (action) => {
+                    let icon = '';
+
+                    if (action.toUpperCase() === action) {
+                        icon = action.toLowerCase();
+                    } else {
+                        // icon name for desktop actions: first letter lowercase, replace uppercase with dash+lowercase
+                        icon = action.charAt(0).toLowerCase() + action.slice(1);
+                        icon = icon.replace(/([A-Z])/g, '-$1').toLowerCase();
+                    }
+
+                    if (!ICON_NAMES.includes(icon)) {
+                        icon = 'desktop-action';
+                    }
+
+                    icon = `gwl-${icon}`;
                     item = createMenuItem({
                         label: _(this.groupState.appInfo.get_action_name(action)),
-                        icon: 'document-new'
+                        icon
                     });
                     this.signals.connect(item, 'activate', () => {
                         this.groupState.appInfo.launch_action(action, global.create_app_launch_context());
@@ -663,10 +679,7 @@ class WindowThumbnail {
 
             if (this.groupState.isFavoriteApp) {
                 this.signals.connect(this.metaWindowActor, 'destroy', () => {
-                    if (this.willUnmount
-                        || !this.groupState.trigger) {
-                        return;
-                    }
+                    if (this.willUnmount || !this.groupState.trigger) return;
                     this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
                     this.metaWindowActor = null;
                 });
