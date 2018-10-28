@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="svg7384" width="16" height="16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata id="metadata90">
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>Gnome Symbolic Icon Theme</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <title id="title9167">Gnome Symbolic Icon Theme</title>
+ <g id="layer9" transform="translate(-341 -257)">
+  <path id="path19754" d="m346 260c-2.7496 0-5 2.2504-5 5s2.2504 5 5 5c1.5862 0 2.9034-0.84459 3.8125-2h4.8438 0.75l0.21875-0.75 1.0312-4 0.3125-1.25h-1.2812-5.875c-0.90914-1.1554-2.2263-2-3.8125-2zm0 2c1.1158 0 2.0379 0.59507 2.5625 1.5l0.3125 0.5h0.5625 4.9688l-0.53125 2h-4.4375-0.5625l-0.3125 0.5c-0.52462 0.90493-1.4466 1.5-2.5625 1.5-1.6687 0-3-1.3313-3-3s1.3313-3 3-3z" style="block-progression:tb;color:#000000;fill:#bebebe;text-indent:0;text-transform:none"/>
+  <path id="path19764" d="m355.5 265h-5.4979l-0.56256 1.9999 5.5626 6e-5z" style="color:#000000;fill:#bebebe;opacity:.35"/>
+  <path id="path19766" d="m346 265a1 1 0 1 1-2 0 1 1 0 1 1 2 0z" style="color:#000000;fill:#bebebe"/>
+ </g>
+</svg>
