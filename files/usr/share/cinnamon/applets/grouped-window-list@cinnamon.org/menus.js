@@ -276,8 +276,15 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         // Pin/unpin, shortcut handling
         if (!isWindowBacked) {
             if (this.state.settings.showPinned !== FavType.none) {
-                let label = this.groupState.isFavoriteApp ? _('Unpin from Panel') : _('Pin to Panel');
-                this.pinToggleItem = createMenuItem({label: label, icon: 'bookmark-new'});
+                let label, icon;
+                if (this.groupState.isFavoriteApp) {
+                    label = _('Unpin from Panel');
+                    icon = 'gwl-unpin';
+                } else {
+                    label = _('Pin to Panel');
+                    icon = 'gwl-pin';
+                }
+                this.pinToggleItem = createMenuItem({label, icon});
                 this.signals.connect(this.pinToggleItem, 'activate', (...args) => this.toggleFavorite(...args));
                 this.addMenuItem(this.pinToggleItem);
             }
