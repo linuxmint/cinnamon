@@ -193,6 +193,8 @@ var Applet = class Applet {
                 this.locationLabel = appletDefinition.location_label;
                 this.panel = panel;
                 this._uuid = appletDefinition.uuid;
+            } else {
+                global.logWarning(`[Applet] No panel found for ${instance_id}`);
             }
         } else {
             throw new Error(`[Applet] Unable to find definition for applet ${instance_id}`);
@@ -430,6 +432,7 @@ var Applet = class Applet {
      * This function should only be called by appletManager
      */
     setOrientation (orientation) {
+        this._orientation = orientation;
         this.setOrientationInternal(orientation);
         this.on_orientation_changed(orientation);
         this.emit("orientation-changed", orientation);
@@ -439,6 +442,10 @@ var Applet = class Applet {
             this.set_applet_label(this._applet_label.get_text());
         }
 
+        // FIXME: This function will be called from AppletManager before the panel is
+        // assigned. When the panel orientation changes, it becomes unavailable,
+        // so we need to check for this.panel here.
+        if (this.panel) this.on_panel_icon_size_changed_internal();
     }
 
     /**
