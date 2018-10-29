@@ -159,8 +159,8 @@
   "show-alerts": {
     "type": "checkbox",
     "default": true,
-    "description": "Show app alerts and notifications",
-    "tooltip": "If enabled, notifications and alerts will appear."
+    "description": "Show app alerts",
+    "tooltip": "Choose whether or not alerts will propagate to the app list and cause the button to blink."
   },
   "show-pinned": {
     "type": "checkbox",
