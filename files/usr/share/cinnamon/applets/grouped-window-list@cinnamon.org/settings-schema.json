@@ -207,7 +207,7 @@
     "type": "checkbox",
     "default": true,
     "description": "Only list windows from the monitor displaying this instance",
-    "tooltip": "This option will only come into effect for monitors displaying an ITM instance."
+    "tooltip": "This option will only come into effect for monitors displaying a grouped window list instance."
   },
   "cycleMenusHotkey": {
     "type": "keybinding",
