@@ -6,7 +6,7 @@ const constants = {
     MAX_BUTTON_WIDTH: 150, // Pixels
     FLASH_INTERVAL: 500,
     RESERVE_KEYS: ['willUnmount'],
-    IconNames: {
+    ICON_NAMES: {
         area_shot: 'gwl-area-shot',
         big_picture: 'view-fullscreen',
         calc: 'x-office-spreadsheet',
