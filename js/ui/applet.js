@@ -484,6 +484,10 @@ var Applet = class Applet {
     }
 
     getPanelIconSize(iconType = St.IconType.FULLCOLOR) {
+        // If no panel, then the panel probably was added with pre-existing applet
+        // definitions associated to it. This means there's no zone config, so return early.
+        if (!this.panel) return;
+
         this._lastIconType = iconType;
         this._iconSize = this.panel.getPanelZoneIconSize(this.locationLabel, iconType);
         return this._iconSize;
