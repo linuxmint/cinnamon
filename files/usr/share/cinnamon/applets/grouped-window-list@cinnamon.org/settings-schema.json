@@ -63,15 +63,15 @@
       "type" : "section",
       "title" : "Thumbnails",
       "keys": [
-        "thumbnail-size",
-        "thumbnail-timeout",
         "thumbnail-scroll-behavior",
         "show-thumbnails",
         "animate-thumbnails",
         "vertical-thumbnails",
         "sort-thumbnails",
         "highlight-last-focused-thumbnail",
-        "onclick-thumbnails"
+        "onclick-thumbnails",
+        "thumbnail-timeout",
+        "thumbnail-size"
       ]
     },
     "hoverPeekSection": {
