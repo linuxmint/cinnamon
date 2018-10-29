@@ -14,7 +14,7 @@ const {
     CLOSE_BTN_SIZE,
     OPACITY_OPAQUE,
     RESERVE_KEYS,
-    IconNames,
+    ICON_NAMES,
     FavType,
     autoStartStrDir
 } = require('./constants');
@@ -237,11 +237,14 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                         actionID = action.charAt(0).toLowerCase() + action.slice(1);
                         actionID = actionID.replace(/([A-Z])/g, '_$1').toLowerCase();
                     }
-                    actionID = actionID.replace(/-/g, "_");
+                    actionID = actionID.replace(/-/g, '_');
 
                     let icon = 'application-x-executable';
-                    if (actionID in IconNames)
-                        icon = IconNames[actionID];
+
+                    if (ICON_NAMES.hasOwnProperty(actionID)) {
+                        icon = ICON_NAMES[actionID];
+                    }
+
                     item = createMenuItem({
                         label: _(this.groupState.appInfo.get_action_name(action)),
                         icon
