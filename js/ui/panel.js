@@ -2921,14 +2921,11 @@ Panel.prototype = {
         if (iconSize === -1) { // Legacy: Scale to panel size
             iconSize = height;
         } else if (iconSize === 0) { // To best fit within the panel size
-            iconSize = toStandardIconSize(height);
+            let fitFactor = isSymbolic ? .5 : .8;
+            iconSize = toStandardIconSize(height * fitFactor);
         } else if (iconSize > height) {
             // Don't try to fit an icon that is larger than the panel
             iconSize = toStandardIconSize(height);
-        }
-
-        if (isSymbolic) {
-            iconSize = iconSize * 0.9;
         }
 
         return iconSize; // Always return a value above 0 or St will spam the log.
@@ -2936,14 +2933,14 @@ Panel.prototype = {
 
     getPanelZoneIconSize: function(locationLabel, iconType) {
         let zoneConfig = this._panelZoneIconSizes;
+        let symbolic = iconType === St.IconType.SYMBOLIC;
 
         if (!zoneConfig) {
-            let height = this.height / global.ui_scale;
             global.logError(`[Panel ${this.panelId}] Unable to find zone configuration`);
-            return toStandardIconSize(height);
+            return this._calculatePanelZoneIconSize(0, symbolic);
         }
 
-        if (iconType === St.IconType.SYMBOLIC) {
+        if (symbolic) {
             return zoneConfig.cache[locationLabel].symbolic;
         }
 
