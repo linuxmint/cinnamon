@@ -440,11 +440,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     on_panel_icon_size_changed(iconSize) {
-        each(this.appLists, (workspace) => {
-            each(workspace.appList, (appGroup) => {
-                appGroup.setActorAttributes(iconSize);
-            });
-        });
+        this.updateActorAttributes(iconSize);
     }
 
     // Override Applet._onButtonPressEvent due to the applet menu being replicated in AppMenuButtonRightClickMenu.
@@ -588,12 +584,12 @@ class GroupedWindowListApplet extends Applet.Applet {
         });
     }
 
-    updateActorAttributes() {
+    updateActorAttributes(iconSize) {
         each(this.appLists, (workspace) => {
             if (!workspace) return;
 
             each(workspace.appList, (appGroup) => {
-                appGroup.setActorAttributes();
+                appGroup.setActorAttributes(iconSize);
             });
         });
     }
