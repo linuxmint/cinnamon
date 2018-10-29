@@ -114,7 +114,6 @@ var AppletPopupMenu = class AppletPopupMenu extends PopupMenu.PopupMenu {
  * @_order (int): The order of the applet within a panel location This is set
  * by appletManager *after* the applet is loaded.
  * @_draggable (Dnd._Draggable): The draggable object of the applet
- * @_scaleMode (boolean): Whether the applet scales according to the panel size
  * @_applet_tooltip (Tooltips.PanelItemTooltip): The tooltip of the applet
  * @_menuManager (PopupMenu.PopupMenuManager): The menu manager of the applet
  * @_applet_context_menu (Applet.AppletContextMenu): The context menu of the applet
@@ -210,7 +209,6 @@ var Applet = class Applet {
             });
             if (panelIndex > -1) {
                 let panel = Main.panelManager.panels[panelIndex];
-                this._scaleMode = panel.scaleMode;
                 this.locationLabel = appletDefinition.location_label;
                 this.panel = panel;
                 this._uuid = appletDefinition.uuid;
@@ -630,6 +628,11 @@ var Applet = class Applet {
 
     get _panelHeight() {
         return this.panel.height;
+    }
+
+    get _scaleMode() {
+        global.logWarning(`[Applet/${this._uuid}] Use of scaleMode is deprecated.`);
+        return true;
     }
 };
 Signals.addSignalMethods(Applet.prototype);
