@@ -1881,7 +1881,6 @@ PanelZoneDNDHandler.prototype = {
  * @monitor (Meta.Rectangle): the geometry (bounding box) of the monitor
  * @panelPosition (integer): where the panel is on the screen
  * @actor (Cinnamon.GenericContainer): the actor of the panel
- * @scaleMode (boolean): whether the applets should scale with the panel
  *
  * @_leftBox (St.BoxLayout): the box containing all the applets in the left region
  * @_centerBox (St.BoxLayout): the box containing all the applets in the center region
@@ -1928,8 +1927,6 @@ Panel.prototype = {
         this._bottomPanelBarrier = 0;
         this._shadowBox = null;
         this._panelZoneIconSizes = null;
-
-        this.scaleMode = true; // Obsolete, should be removed after we make sure no spices are still using
 
         this.actor = new Cinnamon.GenericContainer({ name: 'panel', reactive: true });
         this.addPanelStyleClass(this.panelPosition);
