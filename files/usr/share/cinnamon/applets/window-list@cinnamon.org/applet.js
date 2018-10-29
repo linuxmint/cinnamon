@@ -62,9 +62,6 @@ const Settings = imports.ui.settings;
 const SignalManager = imports.misc.signalManager;
 const Tooltips = imports.ui.tooltips;
 
-const HORIZONTAL_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamon-app.create_icon_texture returns a clutter actor, not a themable object -
-                                 // probably something that could be addressed
-
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
 
@@ -727,10 +724,7 @@ class AppMenuButton {
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(this.metaWindow);
 
-        if (this.labelVisible && !this._applet._scaleMode)
-            this.icon_size = HORIZONTAL_ICON_SIZE;
-        else
-            this.icon_size = this._applet.icon_size;
+        this.icon_size = this._applet.icon_size;
 
         let icon = app ?
             app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
