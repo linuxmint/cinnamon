@@ -188,7 +188,7 @@
   },
   "pinOnDrag": {
     "type": "checkbox",
-    "default": true,
+    "default": false,
     "description": "Pin apps when dragged to a new position",
     "tooltip": "Pin apps when dragged to a new position"
   },
