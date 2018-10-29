@@ -434,6 +434,11 @@ var Applet = class Applet {
         this.on_orientation_changed(orientation);
         this.emit("orientation-changed", orientation);
         this.finalizeContextMenu();
+
+        if (typeof this.set_applet_label === 'function' && this._applet_label instanceof St.Label) {
+            this.set_applet_label(this._applet_label.get_text());
+        }
+
     }
 
     /**
@@ -915,17 +920,5 @@ var TextIconApplet = class TextIconApplet extends IconApplet {
 
     on_applet_added_to_panel() {
 
-    }
-
-    /**
-     * Override setOrientation, to recall set_applet_label
-     */
-    setOrientation (orientation) {
-        this.setOrientationInternal(orientation);
-        this.on_orientation_changed(orientation);
-        this.emit("orientation-changed", orientation);
-        this.finalizeContextMenu();
-        this._orientation = orientation;
-        this.set_applet_label(this._applet_label.get_text());
     }
 }
