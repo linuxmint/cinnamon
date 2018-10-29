@@ -898,7 +898,12 @@ class GroupedWindowListApplet extends Applet.Applet {
             // Move the button
             currentAppList.actor.set_child_at_index(source.actor, pos);
             // Refresh the group's thumbnails so hoverMenu is aware of the position change
-            source.groupState.trigger('refreshThumbnails');
+            // In the case of dragging a group that has a delay before Cinnamon can grab its
+            // thumbnail texture, e.g., LibreOffice, defer the refresh.
+            if (source.groupState.metaWindows.length > 0) {
+                setTimeout(() => source.groupState.trigger('refreshThumbnails'), 0);
+            }
+
 
             // Handle favoriting if pin on drag is enabled
             if (this.state.settings.pinOnDrag
