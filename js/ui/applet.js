@@ -181,7 +181,28 @@ var Applet = class Applet {
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
 
+        this._applet_tooltip_text = "";
 
+        this.context_menu_item_remove = null;
+        this.context_menu_separator = null;
+
+        this._setAppletReactivity();
+        this._panelEditModeChangedId = global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
+            this._setAppletReactivity();
+        }));
+
+        // FIXME: Cinnamon should be providing a sandbox environment for extensions, and not depend on data passed
+        // from the extension for basic state that we are already keeping track of in appletManager. Since applets
+        // need icon sizes available immediately in their constructor, this has to stay for now.
+        if (instance_id) {
+            this._getPanelInfo(instance_id);
+        } else {
+            setTimeout(() => this._getPanelInfo(), 0);
+        }
+    }
+
+    _getPanelInfo(instance_id) {
+        if (!instance_id) instance_id = this.instance_id;
         let appletDefinition = AppletManager.getAppletDefinition({applet_id: instance_id});
         if (appletDefinition) {
             let panelIndex = Util.findIndex(Main.panelManager.panels, function(panel) {
@@ -199,16 +220,6 @@ var Applet = class Applet {
         } else {
             throw new Error(`[Applet] Unable to find definition for applet ${instance_id}`);
         }
-
-        this._applet_tooltip_text = "";
-
-        this.context_menu_item_remove = null;
-        this.context_menu_separator = null;
-
-        this._setAppletReactivity();
-        this._panelEditModeChangedId = global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
-            this._setAppletReactivity();
-        }));
     }
 
     /* FIXME:  This makes no sense - inhibit flag should = panel edit mode, right?
