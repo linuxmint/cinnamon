@@ -103,8 +103,8 @@ class Module:
             widget = GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", _("Pixels"), 1, 100, size_group=size_group)
             settings.add_row(widget)
 
-            widget = GSettingsSwitch(_("Edge resistance with other windows"), "org.cinnamon.muffin", "edge-resistance-window")
-            widget.set_tooltip_text(_("Make window borders stick when moved or resized near other windows."))
+            widget = GSettingsSwitch(_("Edge resistance with other windows and monitor boundaries"), "org.cinnamon.muffin", "edge-resistance-window")
+            widget.set_tooltip_text(_("Make window borders stick when moved or resized near other windows or monitor edges."))
             settings.add_row(widget)
 
             # Alt Tab
