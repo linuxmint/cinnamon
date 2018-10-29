@@ -11,7 +11,7 @@ const Main = imports.ui.main;
 const DND = imports.ui.dnd;
 const {AppletSettings} = imports.ui.settings;
 const {SignalManager} = imports.misc.signalManager;
-const {each, findIndex, filter, throttle, unref, trySpawnCommandLine} = imports.misc.util;
+const {each, find, findIndex, filter, throttle, unref, trySpawnCommandLine} = imports.misc.util;
 const {createStore} = imports.misc.state;
 
 const AppList = require('./appList');
@@ -39,17 +39,9 @@ class PinnedFavs {
         }
         let cb = () => this.onFavoritesChange();
         if (state.settings.systemFavorites) {
-            signals.connect(
-                global.settings,
-                'changed::favorite-apps',
-                cb
-            );
+            signals.connect(global.settings, 'changed::favorite-apps',  cb);
         } else {
-            signals.connect(
-                settings,
-                'changed::pinned-apps',
-                cb
-            );
+            signals.connect(settings, 'changed::pinned-apps', cb);
         }
         this._favorites = [];
         let ids = [];
@@ -70,27 +62,23 @@ class PinnedFavs {
         }
     }
 
-    triggerUpdate(appId, pos, isFavoriteApp) {
+    triggerUpdate(appId, isFavoriteApp) {
         let currentAppList = this.params.state.trigger('getCurrentAppList');
         if (!currentAppList) return;
+
         let refApp = findIndex(currentAppList.appList, (appGroup) => appGroup.groupState.appId === appId);
-        if (refApp > -1) {
-            // Destroy pinned app
-            if (
-                !isFavoriteApp &&
-                currentAppList.appList[refApp] &&
-                currentAppList.appList[refApp].groupState.metaWindows.length === 0
-            ) {
-                currentAppList.appList[refApp].destroy(true);
-                currentAppList.appList[refApp] = undefined;
-                currentAppList.appList.splice(refApp, 1);
-            } else {
-                // Move actor to index, trigger favorite state change
-                currentAppList.appList[refApp].groupState.set({isFavoriteApp: isFavoriteApp});
-                // Some favorite apps may be present from a previous installation,
-                // but not rendered and added to the app list because they're uninstalled.
-                currentAppList.actor.set_child_at_index(currentAppList.appList[refApp].actor, pos);
-            }
+        if (refApp === -1) return;
+
+        // A pinned app with no windows open was unpinned - remove it
+        if (!isFavoriteApp
+            && currentAppList.appList[refApp]
+            && currentAppList.appList[refApp].groupState.metaWindows.length === 0) {
+            currentAppList.appList[refApp].destroy(true);
+            currentAppList.appList[refApp] = undefined;
+            currentAppList.appList.splice(refApp, 1);
+        } else {
+            // Otherwise, synchronize its pinned state
+            currentAppList.appList[refApp].groupState.set({isFavoriteApp});
         }
     }
 
@@ -103,6 +91,7 @@ class PinnedFavs {
                 uniqueSet.add(this._favorites[i].id);
             }
         }
+
         if (this.params.state.settings.systemFavorites) {
             global.settings.set_strv(this.favoriteSettingKey, ids);
         } else {
@@ -111,8 +100,8 @@ class PinnedFavs {
     }
 
     onFavoritesChange() {
+        let currentAppList = this.params.state.trigger('getCurrentAppList');
         if (!this.params.state.settings.groupApps) {
-            let currentAppList = this.params.state.trigger('getCurrentAppList');
             setTimeout(() => currentAppList.refreshList(), 0);
             return;
         }
@@ -127,11 +116,11 @@ class PinnedFavs {
         }
         for (let i = 0; i < oldFavoritesIds.length; i++) {
             if (newFavoritesIds.indexOf(oldFavoritesIds[i]) < 0) {
-                this.triggerUpdate(oldFavoritesIds[i], -1, false);
+                this.triggerUpdate(oldFavoritesIds[i], false);
             }
         }
         for (let i = 0; i < this._favorites.length; i++) {
-            this.triggerUpdate(newFavoritesIds[i], i, true);
+            this.triggerUpdate(newFavoritesIds[i], true);
         }
     }
 
@@ -153,15 +142,45 @@ class PinnedFavs {
         if (!opts.pos) {
             opts.pos = -1;
         }
-        let newFav = {
+        let newFavorite = {
             id: opts.appId,
             app: opts.app
         };
         let refFavorite = findIndex(this._favorites, function(favorite) {
             return favorite.id === opts.appId;
         });
+
         if (refFavorite === -1) {
-            this._favorites.push(newFav);
+            // Iterates the app groups in the order they are added as children, this
+            // ensures we always get the correct favorites order regardless of whether
+            // or not pin on drag is enabled.
+            let currentAppList = this.params.state.trigger('getCurrentAppList');
+            let children = currentAppList.actor.get_children();
+            let newFavorites = [];
+            let refActorFound = false;
+            each(children, (actor, i) => {
+                let appGroup = find(currentAppList.appList, function(appGroup) {
+                    return appGroup.actor === actor;
+                });
+                if (!appGroup) return;
+                let {app, appId, isFavoriteApp} = appGroup.groupState;
+                let isFavorite = isFavoriteApp;
+
+                if (appId === opts.appId) {
+                    refActorFound = true;
+                    isFavorite = true;
+                    oldIndex = i;
+                }
+
+                if (isFavorite) newFavorites.push({app, id: appId});
+            });
+            if (refActorFound) {
+                this._favorites = newFavorites;
+            } else {
+                // Actor doesn't exist, probably being dragged to GWL from the menu
+                this._favorites.push(newFavorite);
+            }
+
         } else {
             oldIndex = refFavorite;
         }
@@ -186,14 +205,14 @@ class PinnedFavs {
         }
         this._favorites.splice(newIndex, 0, this._favorites.splice(oldIndex, 1)[0]);
         this._favorites = filter(this._favorites, function(favorite) {
-            return favorite.app != null;
+            return favorite && favorite.app != null;
         });
         this.saveFavorites();
     }
 
     removeFavorite(appId) {
         let refFav = findIndex(this._favorites, (favorite) => favorite.id === appId);
-        this.triggerUpdate(appId, -1, false);
+        this.triggerUpdate(appId, false);
         this._favorites.splice(refFav, 1);
         this.saveFavorites();
         return true;
@@ -857,54 +876,49 @@ class GroupedWindowListApplet extends Applet.Applet {
             return false;
         }
 
-        let appList = this.appLists[this.state.currentWs];
+        let currentAppList = this.getCurrentAppList();
+        let pos = this.state.dragPlaceholderPos;
+        this.clearDragPlaceholder();
 
-        if (!source.groupState.isFavoriteApp) {
-            if (this.state.dragPlaceholderPos !== -1) {
-                appList.actor.set_child_at_index(
-                    source.actor,
-                    this.state.dragPlaceholderPos
-                );
-            }
-            this.clearDragPlaceholder();
-        }
-        appList.actor.set_child_at_index(source.actor, this.state.dragPlaceholderPos);
-
-        // Don't allow favoriting of transient apps
-        if (!source.groupState.app || source.groupState.app.is_window_backed()) {
-            return false;
-        }
-
-        let refFav = findIndex(this.pinnedFavorites._favorites, (favorite) => favorite.id === source.groupState.appId);
-        let favPos = this.state.dragPlaceholderPos;
-
-        if (favPos === -1) {
-            let children = appList.actor.get_children();
-            let pos = 0;
+        // For getting the fallback position, possibly dead code
+        if (pos === -1) {
+            let children = currentAppList.actor.get_children();
+            let _pos = 0;
             for (let i = 0, len = children.length; i < len; i++) {
                 if (x > children[i].get_allocation_box().x1 + children[i].width / 2) {
-                    pos = i;
+                    _pos = i;
                 }
             }
-            if (pos !== this.state.dragPlaceholderPos) {
-                favPos = pos;
+            if (_pos !== this.state.dragPlaceholderPos) {
+                pos = _pos;
             }
         }
 
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
-            let opts = {
-                appId: source.groupState.appId,
-                app: source.groupState.app,
-                pos: favPos
-            };
-            if (refFav !== -1) {
-                this.pinnedFavorites.moveFavoriteToPos(opts);
-            } else if (this.state.settings.pinOnDrag) {
-                this.pinnedFavorites.addFavorite(opts);
+            // Move the button
+            currentAppList.actor.set_child_at_index(source.actor, pos);
+            // Refresh the group's thumbnails so hoverMenu is aware of the position change
+            source.groupState.trigger('refreshThumbnails');
+
+            // Handle favoriting if pin on drag is enabled
+            if (this.state.settings.pinOnDrag
+                && !source.groupState.app.is_window_backed()) {
+                let opts = {
+                    appId: source.groupState.appId,
+                    app: source.groupState.app,
+                    pos
+                };
+                let refFav = findIndex(this.pinnedFavorites._favorites, (favorite) => favorite.id === source.groupState.appId);
+                if (refFav > -1) {
+                    this.pinnedFavorites.moveFavoriteToPos(opts);
+                } else if (this.state.settings.pinOnDrag) {
+                    this.pinnedFavorites.addFavorite(opts);
+                }
             }
+
             return false;
         });
-        this.clearDragPlaceholder();
+
         return true;
     }
 
