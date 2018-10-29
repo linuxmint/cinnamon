@@ -228,13 +228,12 @@ function getPanelLocFromName (pname) {
  */
 function toStandardIconSize(maxSize) {
     maxSize = Math.floor(maxSize);
-    if (maxSize <= 16) return 16;
-    else if (maxSize <= 22) return 22;
-    else if (maxSize <= 24) return 24;
-    else if (maxSize <= 32) return 32;
-    else if (maxSize <= 48) return 48;
+    if (maxSize < 22) return 16;
+    else if (maxSize < 24) return 22;
+    else if (maxSize < 32) return 24;
+    else if (maxSize < 48) return 32;
     // Panel icons reach 32 at most with the largest panel, also on hidpi
-    return 64;
+    return 48;
 }
 
 function setHeightForPanel(panel) {
@@ -2825,10 +2824,11 @@ Panel.prototype = {
         if (height === this.height) return;
 
         this.height = height;
-        this.emit('size-changed', height);
 
         // In case icon sizes are responding to panel height
         this._onPanelZoneIconSizesChanged();
+
+        this.emit('size-changed', height);
     },
 
     _onPanelZoneIconSizesChanged: function() {
@@ -2922,13 +2922,9 @@ Panel.prototype = {
             iconSize = height;
         } else if (iconSize === 0) { // To best fit within the panel size
             iconSize = toStandardIconSize(height);
-        }
-
-        // Don't try to fit an icon that is larger than the panel
-        let i = -1;
-        while (iconSize > height) {
-            i++;
-            iconSize = toStandardIconSize(height - i);
+        } else if (iconSize > height) {
+            // Don't try to fit an icon that is larger than the panel
+            iconSize = toStandardIconSize(height);
         }
 
         if (isSymbolic) {
