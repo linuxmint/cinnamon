@@ -244,34 +244,11 @@ class CinnamonSystrayApplet extends Applet.Applet {
             let parent = icon.get_parent();
             if (parent) parent.remove_child(icon);
 
-            if (role === 'pidgin') {
-                // Delay pidgin insertion by 10 seconds
-                // Pidgin is very weird.. it starts with a small icon
-                // Then replaces that icon with a bigger one when the connection is established
-                // Pidgin can be fixed by inserting or resizing after a delay
-                // The delay is big because resizing/inserting too early
-                // makes pidgin invisible (in absence of disk cache).. even if we resize/insert again later
-                this._insertStatusItemLater(role, icon, 10000);
-            } else {
-                // Delay all other apps by 1 second...
-                // For many of them, we don't need to do that,
-                // It's a small delay though and that fixes most buggy apps
-                // And we're far from having an exhaustive list of them..
-                this._insertStatusItemLater(role, icon, 1000);
-            }
+            this._insertStatusItem(role, icon);
 
         } catch (e) {
             global.logError(e);
         }
-    }
-
-    _insertStatusItemLater(role, icon, delay) {
-        // Inserts an icon in the systray after a delay (useful for buggy icons)
-        // Delaying the insertion of pidgin by 10 seconds for instance is known to fix it on empty disk cache
-        let timerId = Mainloop.timeout_add(delay, () => {
-            this._insertStatusItem(role, icon);
-            Mainloop.source_remove(timerId);
-        });
     }
 
     _onTrayIconRemoved(o, icon) {
