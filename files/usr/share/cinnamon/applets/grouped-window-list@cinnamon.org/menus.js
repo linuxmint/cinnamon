@@ -14,7 +14,7 @@ const {
     CLOSE_BTN_SIZE,
     OPACITY_OPAQUE,
     RESERVE_KEYS,
-    ICON_NAMES,
+    IconNames,
     FavType,
     autoStartStrDir
 } = require('./constants');
@@ -229,25 +229,24 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             if (actions) {
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
                 let handleAction = (action) => {
-                    let icon = '';
-
+                    let actionID = '';
                     if (action.toUpperCase() === action) {
-                        icon = action.toLowerCase();
+                        actionID = action.toLowerCase();
                     } else {
-                        // icon name for desktop actions: first letter lowercase, replace uppercase with dash+lowercase
-                        icon = action.charAt(0).toLowerCase() + action.slice(1);
-                        icon = icon.replace(/([A-Z])/g, '-$1').toLowerCase();
+                        // first letter lowercase, replace uppercase with _+lowercase
+                        actionID = action.charAt(0).toLowerCase() + action.slice(1);
+                        actionID = actionID.replace(/([A-Z])/g, '_$1').toLowerCase();
                     }
+                    actionID = actionID.replace(/-/g, "_");
 
-                    if (!ICON_NAMES.includes(icon)) {
-                        icon = 'desktop-action';
-                    }
-
-                    icon = `gwl-${icon}`;
+                    let icon = 'application-x-executable';
+                    if (actionID in IconNames)
+                        icon = IconNames[actionID];
                     item = createMenuItem({
                         label: _(this.groupState.appInfo.get_action_name(action)),
                         icon
                     });
+
                     this.signals.connect(item, 'activate', () => {
                         this.groupState.appInfo.launch_action(action, global.create_app_launch_context());
                     });
@@ -260,7 +259,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             }
             if (this.state.settings.launchNewInstance && (!actions || actions.length === 0) && !isWindowBacked) {
-                item = createMenuItem({label: _('New Window'), icon: 'gwl-window'});
+                item = createMenuItem({label: _('New Window'), icon: 'window-new'});
                 this.signals.connect(item, 'activate', () => this.groupState.trigger('launchNewInstance'));
                 this.addMenuItem(item);
                 if (!actions || actions.length === 0) {
