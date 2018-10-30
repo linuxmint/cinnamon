@@ -1519,13 +1519,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _onMenuKeyPress(actor, event) {
-        if (!this._activeContainer) return;
         let symbol = event.get_key_symbol();
         let item_actor;
         let index = 0;
         this.appBoxIter.reloadVisible();
         this.catBoxIter.reloadVisible();
         this.favBoxIter.reloadVisible();
+        this.sysBoxIter.reloadVisible();
 
         let keyCode = event.get_key_code();
         let modifierState = Cinnamon.get_event_state(event);
@@ -1780,7 +1780,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             break;
                         case "down":
                             this._previousSelectedActor = this.favoritesBox.get_child_at_index(index);
-                            item_actor = this.favBoxIter.getNextVisible(this._previousSelectedActor);
+                            if (this._previousSelectedActor === this.favBoxIter.getLastVisible()) {
+                                item_actor = this.sysBoxIter.getFirstVisible();
+                            } else {
+                                item_actor = this.favBoxIter.getNextVisible(this._previousSelectedActor);
+                            }
                             break;
                         case "right":
                             item_actor = (this._previousTreeSelectedActor != null) ?
@@ -1805,6 +1809,42 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             break;
                         case "bottom":
                             item_actor = this.favBoxIter.getLastVisible();
+                            break;
+                    }
+                    break;
+                case this.systemButtonsBox:
+                    switch (whichWay) {
+                        case "up":
+                            this._previousSelectedActor = this.systemButtonsBox.get_child_at_index(index);
+                            item_actor = this.favBoxIter.getPrevVisible(this._previousSelectedActor);
+                            break;
+                        case "down":
+                            this._previousSelectedActor = this.systemButtonsBox.get_child_at_index(index);
+                            item_actor = this.favBoxIter.getNextVisible(this._previousSelectedActor);
+                            break;
+                        case "right":
+                            item_actor = (this._previousTreeSelectedActor != null) ?
+                                this._previousTreeSelectedActor :
+                                this.catBoxIter.getFirstVisible();
+                            this._previousTreeSelectedActor = item_actor;
+                            break;
+                        case "left":
+                            item_actor = (this._previousTreeSelectedActor != null) ?
+                                this._previousTreeSelectedActor :
+                                this.catBoxIter.getFirstVisible();
+                            this._previousTreeSelectedActor = item_actor;
+                            index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
+
+                            item_actor._delegate.emit('enter-event');
+                            item_actor = (this._previousVisibleIndex != null) ?
+                                this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
+                                this.appBoxIter.getFirstVisible();
+                            break;
+                        case "top":
+                            item_actor = this.systemButtonsBox.getFirstVisible();
+                            break;
+                        case "bottom":
+                            item_actor = this.systemButtonsBox.getLastVisible();
                             break;
                     }
                     break;
@@ -2862,6 +2902,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.categoriesBox._vis_iter = this.catBoxIter;
         this.favBoxIter = new VisibleChildIterator(this.favoritesBox);
         this.favoritesBox._vis_iter = this.favBoxIter;
+        this.sysBoxIter = new VisibleChildIterator(this.systemButtonsBox);
+        this.systemButtonsBox._vis_iter = this.sysBoxIter;
 
         Mainloop.idle_add(Lang.bind(this, function() {
             this._clearAllSelections(true);
