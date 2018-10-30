@@ -1776,7 +1776,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     switch (whichWay) {
                         case "up":
                             this._previousSelectedActor = this.favoritesBox.get_child_at_index(index);
-                            item_actor = this.favBoxIter.getPrevVisible(this._previousSelectedActor);
+                            if (this._previousSelectedActor === this.favBoxIter.getFirstVisible()) {
+                                item_actor = this.sysBoxIter.getLastVisible();
+                            } else {
+                                item_actor = this.favBoxIter.getPrevVisible(this._previousSelectedActor);
+                            }
                             break;
                         case "down":
                             this._previousSelectedActor = this.favoritesBox.get_child_at_index(index);
@@ -1816,11 +1820,19 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     switch (whichWay) {
                         case "up":
                             this._previousSelectedActor = this.systemButtonsBox.get_child_at_index(index);
-                            item_actor = this.favBoxIter.getPrevVisible(this._previousSelectedActor);
+                            if (this._previousSelectedActor === this.sysBoxIter.getFirstVisible()) {
+                                item_actor = this.favBoxIter.getLastVisible();
+                            } else {
+                                item_actor = this.sysBoxIter.getPrevVisible(this._previousSelectedActor);
+                            }
                             break;
                         case "down":
                             this._previousSelectedActor = this.systemButtonsBox.get_child_at_index(index);
-                            item_actor = this.favBoxIter.getNextVisible(this._previousSelectedActor);
+                            if (this._previousSelectedActor === this.sysBoxIter.getLastVisible()) {
+                                item_actor = this.favBoxIter.getFirstVisible();
+                            } else {
+                                item_actor = this.sysBoxIter.getNextVisible(this._previousSelectedActor);
+                            }
                             break;
                         case "right":
                             item_actor = (this._previousTreeSelectedActor != null) ?
