@@ -25,8 +25,8 @@ const {
 
 const center = function(length, naturalLength) {
     let maxLength = Math.min(length, naturalLength);
-    let x1 = Math.max(0, Math.floor((length - maxLength) / 2));
-    let x2 = Math.min(length, x1 + maxLength);
+    let x1 = Math.floor((length - maxLength) / 2);
+    let x2 = x1 + maxLength;
     return [x1, x2];
 };
 
