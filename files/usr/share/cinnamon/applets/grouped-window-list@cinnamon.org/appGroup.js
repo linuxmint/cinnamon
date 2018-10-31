@@ -50,37 +50,6 @@ const getFocusState = function(metaWindow) {
     return transientHasFocus;
 };
 
-class _Draggable extends DND._Draggable {
-    constructor(actor, params) {
-        super(actor, params);
-    }
-    _grabActor() {
-        this._onEventId = this.actor.connect('event', (...args) => this._onEvent(...args));
-    }
-    _onButtonPress(actor, event) {
-        if (this.inhibit) {
-            return false;
-        }
-
-        if (event.get_button() !== 1) {
-            return false;
-        }
-
-        if (Tweener.getTweenCount(actor)) {
-            return false;
-        }
-
-        this._buttonDown = true;
-        this._grabActor();
-
-        let [stageX, stageY] = event.get_coords();
-        this._dragStartX = stageX;
-        this._dragStartY = stageY;
-
-        return false;
-    }
-}
-
 class AppGroup {
     constructor(params) {
         if (DND.LauncherDraggable) {
@@ -191,7 +160,7 @@ class AppGroup {
         this.hoverMenuManager.addMenu(this.hoverMenu);
         this.rightClickMenuManager.addMenu(this.rightClickMenu);
 
-        this._draggable = new _Draggable(this.actor);
+        this._draggable = new DND._Draggable(this.actor);
         this.signals.connect(this.hoverMenu.actor, 'enter-event',
             (...args) => this.hoverMenu.onMenuEnter.call(this.hoverMenu, ...args));
         this.signals.connect(this.hoverMenu.actor, 'leave-event',
