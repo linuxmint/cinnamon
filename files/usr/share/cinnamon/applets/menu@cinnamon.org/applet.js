@@ -1267,7 +1267,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.applicationsScrollBox.style = "height: "+scrollBoxHeight / global.ui_scale +"px;";
 
-        this.favoritesScrollBox.set_height(this.categoriesBox.height);
+        this.favoritesScrollBox.set_height(this.categoriesBox.height - this.systemButtonsBox.height);
     }
 
     on_orientation_changed (orientation) {
