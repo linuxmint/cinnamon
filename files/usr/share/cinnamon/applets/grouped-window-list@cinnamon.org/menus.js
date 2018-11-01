@@ -697,14 +697,14 @@ class WindowThumbnail {
             let scale = Math.min(1.0, this.thumbnailWidth / width, this.thumbnailHeight / height) * global.ui_scale;
             if (isUpdate) {
                 this.thumbnailActor.child.source = windowTexture;
-                this.thumbnailActor.child.width = width * scale;
-                this.thumbnailActor.child.height = height * scale;
+                this.thumbnailActor.child.width = Math.round(width * scale);
+                this.thumbnailActor.child.height = Math.round(height * scale);
             } else {
                 this.thumbnailActor.child = new Clutter.Clone({
                     source: windowTexture,
                     reactive: true,
-                    width: width * scale,
-                    height: height * scale
+                    width: Math.round(width * scale),
+                    height: Math.round(height * scale)
                 });
             }
         } else if (this.groupState.isFavoriteApp) {
