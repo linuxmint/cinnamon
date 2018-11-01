@@ -22,6 +22,7 @@ const DocInfo = imports.misc.docInfo;
 const GLib = imports.gi.GLib;
 const Settings = imports.ui.settings;
 const Pango = imports.gi.Pango;
+const AccountsService = imports.gi.AccountsService;
 const SearchProviderManager = imports.ui.searchProviderManager;
 
 const MAX_FAV_ICON_SIZE = 32;
@@ -890,7 +891,7 @@ class FavoritesButton extends GenericApplicationButton {
 }
 
 class SystemButton extends PopupMenu.PopupBaseMenuItem {
-    constructor(appsMenuButton, icon, nbFavorites, name, desc) {
+    constructor(icon, nbFavorites, name, desc) {
         super({hover: false});
 
         this.name = name;
@@ -904,15 +905,56 @@ class SystemButton extends PopupMenu.PopupBaseMenuItem {
         this.actor.style = "padding-top: "+(icon_size / 3)+"px;padding-bottom: "+(icon_size / 3)+"px;";
         this.actor.add_style_class_name('menu-favorites-button');
 
-        let iconObj = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});
-        this.addActor(iconObj);
-        iconObj.realize();
+        this.icon = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.SYMBOLIC});
+
+        if (icon === 'avatar-default') {
+            this.defaultAvatar = new Gio.ThemedIcon({name: icon});
+            this.icon.set_gicon(this.defaultAvatar);
+            this.user = AccountsService.UserManager.get_default().get_user(this.name);
+            this.userSignals = [
+                this.user.connect('notify::is_loaded', () => this.onUserChanged()),
+                this.user.connect('changed', () => this.onUserChanged())
+            ];
+            this.destroyId = this.connect('destroy', () => this.onDestroy());
+
+            setTimeout(() => this.onUserChanged(), 0);
+        }
+
+        this.addActor(this.icon);
+        this.icon.realize();
     }
 
     _onButtonReleaseEvent(actor, event) {
         if (event.get_button() == 1) {
             this.activate();
         }
+    }
+
+    onUserChanged() {
+        if (!this.user || !this.user.is_loaded) {
+            return;
+        }
+        this.name = this.user.get_real_name();
+        if (this.icon) {
+            let fileName = this.user.get_icon_file();
+            let file = Gio.file_new_for_path(fileName);
+            let icon;
+            if (file.query_exists(null)) {
+                icon = new Gio.FileIcon({file});
+            } else {
+                icon = this.defaultAvatar;
+            }
+            this.icon.set_gicon(icon);
+            this.icon.realize();
+        }
+    }
+
+    onDestroy() {
+        for (let i = 0; i < this.userSignals.length; i++) {
+            if (this.userSignals[i]) this.user.disconnect(this.userSignals[i]);
+        }
+        this.user = null;
+        this.disconnect(this.destroyId);
     }
 }
 
@@ -2656,15 +2698,30 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _refreshSystemButtons(launchers) {
         if (this.systemButtonsAdded) return;
 
+        // User
+        let button = new SystemButton("avatar-default", launchers.length + 3,
+                                      GLib.get_user_name(),
+                                      _("Account details"));
+
+        this._addEnterEvent(button, Lang.bind(this, this._favEnterEvent, button));
+        button.actor.connect('leave-event', Lang.bind(this, this._favLeaveEvent, button));
+
+        button.activate = () => {
+            this.menu.close();
+            Util.spawnCommandLine('cinnamon-settings user');
+        }
+
+        this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
+
         //Lock screen
-        let button = new SystemButton(this, "system-lock-screen", launchers.length + 3,
+        button = new SystemButton("system-lock-screen", launchers.length + 3,
                                       _("Lock screen"),
                                       _("Lock the screen"));
 
         this._addEnterEvent(button, Lang.bind(this, this._favEnterEvent, button));
         button.actor.connect('leave-event', Lang.bind(this, this._favLeaveEvent, button));
 
-        button.activate = Lang.bind(this, function() {
+        button.activate = () => {
             this.menu.close();
 
             let screensaver_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.screensaver" });
@@ -2680,37 +2737,37 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             else {
                 this._screenSaverProxy.LockRemote("");
             }
-        });
+        };
 
         this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
         //Logout button
-        button = new SystemButton(this, "system-log-out", launchers.length + 3,
+        button = new SystemButton("system-log-out", launchers.length + 3,
                                       _("Logout"),
                                       _("Leave the session"));
 
         this._addEnterEvent(button, Lang.bind(this, this._favEnterEvent, button));
         button.actor.connect('leave-event', Lang.bind(this, this._favLeaveEvent, button));
 
-        button.activate = Lang.bind(this, function() {
+        button.activate = () => {
             this.menu.close();
             this._session.LogoutRemote(0);
-        });
+        };
 
         this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
         //Shutdown button
-        button = new SystemButton(this, "system-shutdown", launchers.length + 3,
+        button = new SystemButton("system-shutdown", launchers.length + 3,
                                       _("Quit"),
                                       _("Shutdown the computer"));
 
         this._addEnterEvent(button, Lang.bind(this, this._favEnterEvent, button));
         button.actor.connect('leave-event', Lang.bind(this, this._favLeaveEvent, button));
 
-        button.activate = Lang.bind(this, function() {
+        button.activate = () => {
             this.menu.close();
             this._session.ShutdownRemote();
-        });
+        };
 
         this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
         this.systemButtonsAdded = true;
