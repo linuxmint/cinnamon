@@ -1301,15 +1301,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _recalc_height() {
-        let monitor = Main.layoutManager.monitors[this.panel.monitorIndex];
         let scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
                                (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
 
-        if (scrollBoxHeight > monitor.height) {
-            scrollBoxHeight = monitor.height;
-        }
+
         this.applicationsScrollBox.style = "height: "+scrollBoxHeight / global.ui_scale +"px;";
-        this.favoritesScrollBox.set_height(monitor.height * 0.55);
+
+        this.favoritesScrollBox.set_height(this.categoriesBox.height);
     }
 
     on_orientation_changed (orientation) {
