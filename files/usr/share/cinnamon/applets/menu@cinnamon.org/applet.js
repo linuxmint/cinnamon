@@ -907,19 +907,6 @@ class SystemButton extends PopupMenu.PopupBaseMenuItem {
 
         this.icon = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.SYMBOLIC});
 
-        if (icon === 'avatar-default') {
-            this.defaultAvatar = new Gio.ThemedIcon({name: icon});
-            this.icon.set_gicon(this.defaultAvatar);
-            this.user = AccountsService.UserManager.get_default().get_user(this.name);
-            this.userSignals = [
-                this.user.connect('notify::is_loaded', () => this.onUserChanged()),
-                this.user.connect('changed', () => this.onUserChanged())
-            ];
-            this.destroyId = this.connect('destroy', () => this.onDestroy());
-
-            setTimeout(() => this.onUserChanged(), 0);
-        }
-
         this.addActor(this.icon);
         this.icon.realize();
     }
@@ -928,33 +915,6 @@ class SystemButton extends PopupMenu.PopupBaseMenuItem {
         if (event.get_button() == 1) {
             this.activate();
         }
-    }
-
-    onUserChanged() {
-        if (!this.user || !this.user.is_loaded) {
-            return;
-        }
-        this.name = this.user.get_real_name();
-        if (this.icon) {
-            let fileName = this.user.get_icon_file();
-            let file = Gio.file_new_for_path(fileName);
-            let icon;
-            if (file.query_exists(null)) {
-                icon = new Gio.FileIcon({file});
-            } else {
-                icon = this.defaultAvatar;
-            }
-            this.icon.set_gicon(icon);
-            this.icon.realize();
-        }
-    }
-
-    onDestroy() {
-        for (let i = 0; i < this.userSignals.length; i++) {
-            if (this.userSignals[i]) this.user.disconnect(this.userSignals[i]);
-        }
-        this.user = null;
-        this.disconnect(this.destroyId);
     }
 }
 
@@ -2696,20 +2656,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _refreshSystemButtons(launchers) {
         if (this.systemButtonsAdded) return;
 
-        // User
-        let button = new SystemButton("avatar-default", launchers.length + 3,
-                                      GLib.get_user_name(),
-                                      _("Account details"));
-
-        this._addEnterEvent(button, Lang.bind(this, this._favEnterEvent, button));
-        button.actor.connect('leave-event', Lang.bind(this, this._favLeaveEvent, button));
-
-        button.activate = () => {
-            this.menu.close();
-            Util.spawnCommandLine('cinnamon-settings user');
-        };
-
-        this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
+        let button;
 
         // Switch user
         let lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
