@@ -2,11 +2,11 @@
 <!-- Generated with glade 3.16.1 -->
 <interface>
   <requires lib="gtk+" version="3.0"/>
+  <requires lib="xapp" version="0.0"/>
   <object class="GtkDialog" id="editor">
     <property name="can_focus">False</property>
     <property name="border_width">4</property>
     <property name="title" translatable="yes">Directory Properties</property>
-    <property name="modal">True</property>
     <property name="type_hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-box">
@@ -66,20 +66,14 @@
                 <property name="yalign">0</property>
                 <property name="yscale">0</property>
                 <child>
-                  <object class="GtkButton" id="icon-button">
-                    <property name="width_request">64</property>
-                    <property name="height_request">64</property>
+                  <object class="XAppIconChooserButton" id="icon-chooser">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <child>
-                      <object class="GtkImage" id="icon-image">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="pixel_size">64</property>
-                        <property name="icon_name">folder</property>
-                      </object>
-                    </child>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="icon_size">dialog</property>
+                    <property name="icon">cinnamon-panel-launcher</property>
                   </object>
                 </child>
               </object>
