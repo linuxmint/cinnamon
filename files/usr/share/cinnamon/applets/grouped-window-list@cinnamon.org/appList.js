@@ -387,10 +387,11 @@ class AppList {
         if (refApp > -1) {
             this.appList[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp) => {
                 if (isFavoriteApp || (isFavoriteApp && !this.state.settings.groupApps && windowCount === 0)) {
+                    this.appList[refApp].groupState.set({groupReady: false});
                     this.appList[refApp].actor.set_style_pseudo_class('closed');
+                    this.appList[refApp].actor.remove_style_class_name('grouped-window-list-item-demands-attention');
                     if (this.state.settings.titleDisplay > 1) {
                         this.appList[refApp].hideLabel(true);
-                        this.appList[refApp].groupState.set({groupReady: false});
                     }
                     return;
                 }
