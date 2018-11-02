@@ -319,6 +319,12 @@ class AppGroup {
     flashButton(counter) {
         if (!this._needsAttention || !this.actor) return;
 
+        // If the app was closed during a flash sequence, stop looping.
+        if (!this.groupState.groupReady && this.groupState.isFavoriteApp) {
+            this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
+            return;
+        }
+
         this.actor.remove_style_pseudo_class('active');
         this.actor.add_style_class_name('grouped-window-list-item-demands-attention');
         if (counter < 4) {
