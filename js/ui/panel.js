@@ -2920,12 +2920,13 @@ Panel.prototype = {
 
         if (iconSize === -1) { // Legacy: Scale to panel size
             iconSize = height;
-        } else if (iconSize === 0) { // To best fit within the panel size
-            let fitFactor = isSymbolic ? .5 : .8;
-            iconSize = toStandardIconSize(height * fitFactor);
-        } else if (iconSize > height) {
-            // Don't try to fit an icon that is larger than the panel
+        } else if (iconSize === 0 || iconSize > height) { // To best fit within the panel size
             iconSize = toStandardIconSize(height);
+        }
+
+        // Always re-adjust symbolics
+        if (isSymbolic) {
+            iconSize = iconSize * 0.9;
         }
 
         return iconSize; // Always return a value above 0 or St will spam the log.
