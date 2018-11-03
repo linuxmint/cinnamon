@@ -10,7 +10,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('CDesktopEnums', '3.0')
 gi.require_version('CinnamonDesktop', '3.0')
-from gi.repository import Gio, Gtk, GObject, Gdk, GLib, GdkPixbuf, CDesktopEnums, CinnamonDesktop
+from gi.repository import Gio, Gtk, GObject, Gdk, GLib, GdkPixbuf, CDesktopEnums, CinnamonDesktop, XApp
 
 from ChooserButtonWidgets import *
 from KeybindingWidgets import ButtonKeybinding
@@ -937,83 +937,24 @@ class SoundFileChooser(SettingsWidget):
         pass
 
 class IconChooser(SettingsWidget):
-    bind_prop = "text"
+    bind_prop = "icon"
     bind_dir = Gio.SettingsBindFlags.DEFAULT
 
     def __init__(self, label, expand_width=False, size_group=None, dep_key=None, tooltip=""):
         super(IconChooser, self).__init__(dep_key=dep_key)
 
-        valid, self.width, self.height = Gtk.icon_size_lookup(Gtk.IconSize.BUTTON)
-
         self.label = SettingsLabel(label)
 
-        self.content_widget = Gtk.Box()
-        self.bind_object = Gtk.Entry()
-        self.image_button = Gtk.Button()
-
-        self.preview = Gtk.Image.new()
-        self.image_button.set_image(self.preview)
-
-        self.content_widget.pack_start(self.bind_object, expand_width, expand_width, 2)
-        self.content_widget.pack_start(self.image_button, False, False, 5)
+        self.content_widget = XApp.IconChooserButton()
+        self.content_widget.set_icon_size(Gtk.IconSize.BUTTON)
 
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, expand_width, expand_width, 0)
-
-        self.image_button.connect("clicked", self.on_button_pressed)
-        self.handler = self.bind_object.connect("changed", self.set_icon)
 
         self.set_tooltip_text(tooltip)
 
         if size_group:
             self.add_to_size_group(size_group)
-
-    def set_icon(self, *args):
-        val = self.bind_object.get_text()
-        if os.path.exists(val) and not os.path.isdir(val):
-            img = GdkPixbuf.Pixbuf.new_from_file_at_size(val, self.width, self.height)
-            self.preview.set_from_pixbuf(img)
-        else:
-            self.preview.set_from_icon_name(val, Gtk.IconSize.BUTTON)
-
-    def on_button_pressed(self, widget):
-        dialog = Gtk.FileChooserDialog(title=_("Choose an Icon"),
-                                       action=Gtk.FileChooserAction.OPEN,
-                                       transient_for=self.get_toplevel(),
-                                       buttons=(_("_Cancel"), Gtk.ResponseType.CANCEL,
-                                                _("_Open"), Gtk.ResponseType.OK))
-
-        filter_text = Gtk.FileFilter()
-        filter_text.set_name(_("Image files"))
-        filter_text.add_mime_type("image/*")
-        dialog.add_filter(filter_text)
-
-        preview = Gtk.Image()
-        dialog.set_preview_widget(preview)
-        dialog.connect("update-preview", self.update_icon_preview_cb, preview)
-
-        response = dialog.run()
-
-        if response == Gtk.ResponseType.OK:
-            filename = dialog.get_filename()
-            self.bind_object.set_text(filename)
-            self.set_value(filename)
-
-        dialog.destroy()
-
-    def update_icon_preview_cb(self, dialog, preview):
-        filename = dialog.get_preview_filename()
-        dialog.set_preview_widget_active(False)
-        if filename is not None:
-            if os.path.isfile(filename):
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file(filename)
-                if pixbuf is not None:
-                    if pixbuf.get_width() > 128:
-                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, -1)
-                    elif pixbuf.get_height() > 128:
-                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, -1, 128)
-                    preview.set_from_pixbuf(pixbuf)
-                    dialog.set_preview_widget_active(True)
 
 class TweenChooser(SettingsWidget):
     bind_prop = "tween"
