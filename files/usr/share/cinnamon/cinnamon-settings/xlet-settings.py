@@ -3,13 +3,17 @@
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
-import sys
 
+import sys
 import config
 sys.path.append(config.currentPath + "/bin")
 import gettext
 import json
+import importlib.util
+import traceback
+
 from JsonSettingsWidgets import *
+from ExtensionCore import find_extension_subdir
 from gi.repository import Gtk, Gio, XApp
 
 # i18n
@@ -85,6 +89,7 @@ class MainWindow(object):
         self.uuid = uuid
         self.selected_instance = None
         self.gsettings = Gio.Settings.new("org.cinnamon")
+        self.custom_modules = {}
 
         self.load_xlet_data()
         self.build_window()
@@ -295,32 +300,47 @@ class MainWindow(object):
 
         for page_key in layout["pages"]:
             page_def = layout[page_key]
-            page = SettingsPage()
-            page_stack.add_titled(page, page_key, translate(self.uuid, page_def["title"]))
-            for section_key in page_def["sections"]:
-                section_def = layout[section_key]
-                if 'dependency' in section_def:
-                    revealer = JSONSettingsRevealer(info['settings'], section_def['dependency'])
-                    section = page.add_reveal_section(translate(self.uuid, section_def["title"]), revealer=revealer)
-                else:
-                    section = page.add_section(translate(self.uuid, section_def["title"]))
-                for key in section_def["keys"]:
-                    item = settings_map[key]
-                    settings_type = item["type"]
-                    if settings_type == "button":
-                        widget = XLETSettingsButton(item, self.uuid, info["id"])
-                    elif settings_type == "label":
-                        widget = Text(translate(self.uuid, item["description"]))
-                    elif settings_type in XLET_SETTINGS_WIDGETS:
-                        widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
+            if page_def['type'] == 'custom':
+                page = self.create_custom_widget(page_def, info['settings'])
+                if page is None:
+                    continue
+                elif not isinstance(widget, SettingsPage):
+                    print('widget is not of type SettingsPage')
+                    continue
+            else:
+                page = SettingsPage()
+                for section_key in page_def["sections"]:
+                    section_def = layout[section_key]
+                    if 'dependency' in section_def:
+                        revealer = JSONSettingsRevealer(info['settings'], section_def['dependency'])
+                        section = page.add_reveal_section(translate(self.uuid, section_def["title"]), revealer=revealer)
                     else:
-                        continue
+                        section = page.add_section(translate(self.uuid, section_def["title"]))
+                    for key in section_def["keys"]:
+                        item = settings_map[key]
+                        settings_type = item["type"]
+                        if settings_type == "button":
+                            widget = XLETSettingsButton(item, self.uuid, info["id"])
+                        elif settings_type == "label":
+                            widget = Text(translate(self.uuid, item["description"]))
+                        elif settings_type == 'custom':
+                            widget = self.create_custom_widget(item, key, info['settings'])
+                            if widget is None:
+                                continue
+                            elif not isinstance(widget, SettingsWidget):
+                                print('widget is not of type SettingsWidget')
+                                continue
+                        elif settings_type in XLET_SETTINGS_WIDGETS:
+                            widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
+                        else:
+                            continue
 
-                    if 'dependency' in item:
-                        revealer = JSONSettingsRevealer(info['settings'], item['dependency'])
-                        section.add_reveal_row(widget, revealer=revealer)
-                    else:
-                        section.add_row(widget)
+                        if 'dependency' in item:
+                            revealer = JSONSettingsRevealer(info['settings'], item['dependency'])
+                            section.add_reveal_row(widget, revealer=revealer)
+                        else:
+                            section.add_row(widget)
+            page_stack.add_titled(page, page_key, translate(self.uuid, page_def["title"]))
 
     def build_from_order(self, settings_map, info, box, first_key):
         page = SettingsPage()
@@ -347,6 +367,13 @@ class MainWindow(object):
                     widget = XLETSettingsButton(item, self.uuid, info["id"])
                 elif settings_type == "label":
                     widget = Text(translate(self.uuid, item["description"]))
+                elif settings_type == 'custom':
+                    widget = self.create_custom_widget(item, key, info['settings'])
+                    if widget is None:
+                        continue
+                    elif not isinstance(widget, SettingsWidget):
+                        print('widget is not of type SettingsWidget')
+                        continue
                 elif settings_type in XLET_SETTINGS_WIDGETS:
                     widget = globals()[XLET_SETTINGS_WIDGETS[settings_type]](key, info["settings"], item)
                 else:
@@ -358,7 +385,24 @@ class MainWindow(object):
                 else:
                     section.add_row(widget)
 
+    def create_custom_widget(self, info, *args):
+        file_name = info['file']
+        widget_name = info['widget']
+        file_path = os.path.join(find_extension_subdir(self.xlet_dir), file_name)
 
+        try:
+            if file_name not in self.custom_modules:
+                spec = importlib.util.spec_from_file_location(self.uuid.replace('@', '') + '.' + file_name.split('.')[0], file_path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                self.custom_modules[file_name] = module
+
+        except Exception as e:
+            traceback.print_exc()
+            print('problem loading custom widget')
+            return None
+
+        return getattr(self.custom_modules[file_name], widget_name)(info, *args)
 
     def notify_dbus(self, handler, key, value):
         proxy.updateSetting('(ssss)', self.uuid, handler.instance_id, key, json.dumps(value))
