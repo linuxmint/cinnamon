@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-04 15:42+0000\n"
+"POT-Creation-Date: 2018-11-04 19:40+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -405,7 +405,7 @@ msgid "Are you sure you want to clear all applets on this panel?"
 msgstr ""
 
 #: js/ui/panel.js:1629
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:135
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:139
 msgid "Panel edit mode"
 msgstr ""
 
@@ -1268,7 +1268,7 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/settings@cinnamon.org/applet.js:10
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_backgrounds.py:229
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:22
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:41
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:45
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:72
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:632
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:82
@@ -4467,12 +4467,12 @@ msgid "Size"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:47
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:74
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:78
 msgid "Smaller"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:47
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:74
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:78
 msgid "Larger"
 msgstr ""
 
@@ -4657,52 +4657,60 @@ msgid ""
 "Allow Cinnamon to scale panel text and icons according to the panel height"
 msgstr ""
 
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:32
+msgid "Left panel zone icon size"
+msgstr ""
+
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:33
+msgid "Right panel zone icon size"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:35
 msgid "Panel width:"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:34
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:36
 msgid ""
 "Allow Cinnamon to scale panel text and icons according to the panel width"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:46
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:37
+msgid "Top panel zone icon size"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:38
+msgid "Bottom panel zone icon size"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:50
 msgid "Auto hide panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:46
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:50
 msgid "Always show panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:46
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:50
 msgid "Intelligently hide panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:47
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:51
 msgid "Auto-hide panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:51
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:55
 msgid "Scale to panel size exactly"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:52
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:56
 msgid "Scale to panel size optimally"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:59
-msgid "Left panel zone icon size"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:62
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:66
 msgid "Center panel zone icon size"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:65
-msgid "Right panel zone icon size"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:68
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:72
 msgid "Show delay"
 msgstr ""
 
@@ -4710,49 +4718,49 @@ msgstr ""
 #. grouped-window-list@cinnamon.org->settings-schema.json->show-apps-order-
 #. timeout->units
 #. show-desktop@cinnamon.org->settings-schema.json->peek-delay->units
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:68
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:71
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:72
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:75
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:135
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_workspaces.py:37
 msgid "milliseconds"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:71
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:75
 msgid "Hide delay"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:83
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:87
 msgid "Manage Cinnamon panel settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:86
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:90
 msgid "panel, height, bottom, top, autohide, size, layout"
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->panel->title
 #. sound@cinnamon.org->settings-schema.json->section2->description
 #. grouped-window-list@cinnamon.org->settings-schema.json->panelPage->title
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:87
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:91
 msgid "Panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:105
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:109
 msgid "Previous panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:106
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:110
 msgid "Next panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:129
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:133
 msgid "General Panel Options"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:132
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:136
 msgid "Add new panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:141
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:145
 msgid "Allow the pointer to pass through the edges of panels"
 msgstr ""
 

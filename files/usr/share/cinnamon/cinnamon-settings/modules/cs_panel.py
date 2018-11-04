@@ -29,9 +29,13 @@ class PanelSettingsPage(SettingsPage):
         if position in ("top", "bottom"):
             dimension_text = _("Panel height:")
             scale_dimension_text = _("Allow Cinnamon to scale panel text and icons according to the panel height")
+            left_zone_icon_size_text = _("Left panel zone icon size")
+            right_zone_icon_size_text = _("Right panel zone icon size")
         else:
             dimension_text = _("Panel width:")
             scale_dimension_text = _("Allow Cinnamon to scale panel text and icons according to the panel width")
+            left_zone_icon_size_text = _("Top panel zone icon size")
+            right_zone_icon_size_text = _("Bottom panel zone icon size")
 
         def can_show(vlist, possible):
             for item in vlist:
@@ -56,13 +60,13 @@ class PanelSettingsPage(SettingsPage):
             [32, '32px'],
             [48, '48px']
         ]
-        widget = PanelJSONComboBox(_("Left panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'left', options, size_group=size_group)
+        widget = PanelJSONComboBox(left_zone_icon_size_text, "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'left', options, size_group=size_group)
         section.add_row(widget)
 
         widget = PanelJSONComboBox(_("Center panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'center', options, size_group=size_group)
         section.add_row(widget)
 
-        widget = PanelJSONComboBox(_("Right panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'right', options, size_group=size_group)
+        widget = PanelJSONComboBox(right_zone_icon_size_text, "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'right', options, size_group=size_group)
         section.add_row(widget)
 
         widget = PanelSpinButton(_("Show delay"), "org.cinnamon", "panels-show-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
