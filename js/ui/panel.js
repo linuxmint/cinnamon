@@ -15,6 +15,7 @@ const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;  // Cinnamon C libraries using GObject Introspection
 const St = imports.gi.St;
+const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const Signals = imports.signals;
 
@@ -39,7 +40,7 @@ const TIME_DELTA = 1500;
 const APPLETS_DROP_ANIMATION_TIME = 0.2;
 
 const EDIT_MODE_MIN_BOX_SIZE = 25;
-const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48, 64];
+const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48];
 
 const PANEL_AUTOHIDE_KEY = "panels-autohide";
 const PANEL_SHOW_DELAY_KEY = "panels-show-delay";
@@ -234,6 +235,25 @@ function toStandardIconSize(maxSize) {
     else if (maxSize < 48) return 32;
     // Panel icons reach 32 at most with the largest panel, also on hidpi
     return 48;
+}
+
+/**
+ * getSymbolicIconSize:
+ * @iconSize (integer): an icon size
+ * @settings (Gio.Settings): the settings
+ *
+ * Gets the symbolic icon size for a given fullcolor icon size.
+ *
+ * Returns: an integer, the icon size
+ */
+function getSymbolicIconSize(iconSize, settings) {
+    iconSize = Math.floor(iconSize);
+    if (iconSize < 22) return settings.get_int("symbolic-size-16");
+    else if (iconSize < 24) return settings.get_int("symbolic-size-22");
+    else if (iconSize < 32) return settings.get_int("symbolic-size-24");
+    else if (iconSize < 48) return settings.get_int("symbolic-size-32");
+    // Panel icons reach 32 at most with the largest panel, also on hidpi
+    return settings.get_int("symbolic-size-48");
 }
 
 function setHeightForPanel(panel) {
@@ -1928,6 +1948,8 @@ Panel.prototype = {
         this._shadowBox = null;
         this._panelZoneIconSizes = null;
 
+        this.themeSettings = new Gio.Settings({ schema_id: 'org.cinnamon.theme' });
+
         this.actor = new Cinnamon.GenericContainer({ name: 'panel', reactive: true });
         this.addPanelStyleClass(this.panelPosition);
 
@@ -1976,6 +1998,12 @@ Panel.prototype = {
         this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_ICON_SIZES, this._onPanelZoneIconSizesChanged, this);
         this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged, this);
         this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers, this);
+
+        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-16", this._onPanelZoneIconSizesChanged, this);
+        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-22", this._onPanelZoneIconSizesChanged, this);
+        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-24", this._onPanelZoneIconSizesChanged, this);
+        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-32", this._onPanelZoneIconSizesChanged, this);
+        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-48", this._onPanelZoneIconSizesChanged, this);
 
         this._onPanelZoneIconSizesChanged();
     },
@@ -2913,7 +2941,7 @@ Panel.prototype = {
             global.log(`[Panel ${this.panelId}] Creating a new zone configuration`);
         }
 
-        if (changed) this.emit('icon-size-changed');
+        this.emit('icon-size-changed');
     },
 
     _calculatePanelZoneIconSize: function(iconSize, isSymbolic = false) {
@@ -2927,7 +2955,7 @@ Panel.prototype = {
 
         // Always re-adjust symbolics
         if (isSymbolic) {
-            iconSize = iconSize * 0.9;
+            iconSize = getSymbolicIconSize(iconSize, this.themeSettings);
         }
 
         return iconSize; // Always return a value above 0 or St will spam the log.

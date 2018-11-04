@@ -54,8 +54,7 @@ class PanelSettingsPage(SettingsPage):
             [22, '22px'],
             [24, '24px'],
             [32, '32px'],
-            [48, '48px'],
-            [64, '64px']
+            [48, '48px']
         ]
         widget = PanelJSONComboBox(_("Left panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'left', options, size_group=size_group)
         section.add_row(widget)
