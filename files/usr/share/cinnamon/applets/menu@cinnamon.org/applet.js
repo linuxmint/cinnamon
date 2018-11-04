@@ -1155,6 +1155,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshBelowApps));
         this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecent));
         this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecent));
+        global.connect('scale-changed', () => this.onScaleChanged());
         this._fileFolderAccessActive = false;
         this._pathCompleter = new Gio.FilenameCompleter();
         this._pathCompleter.set_dirs_only(false);
@@ -1255,7 +1256,19 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
+    onScaleChanged() {
+        this.searchWidth = 0;
+    }
+
     _recalc_height() {
+        // Only allow search width to be set once.
+        if (!this.searchWidth) {
+            let searchWidth = this.mainBox.width - this.favoritesBox.width;
+            this.searchEntry.set_width(searchWidth);
+            this.searchWidth = searchWidth;
+        }
+
+
         let scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
                                (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
 
@@ -2856,7 +2869,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                                      track_hover: true,
                                      can_focus: true });
         this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
-        this.searchBox.add(this.searchEntry, {x_fill: true, x_align: St.Align.START, y_align: St.Align.MIDDLE, y_fill: false, expand: true});
+        this.searchBox.add(this.searchEntry, {x_fill: false, x_align: St.Align.START, y_align: St.Align.MIDDLE, y_fill: false, expand: false});
         this.searchActive = false;
         this.searchEntryText = this.searchEntry.clutter_text;
         this.searchEntryText.connect('text-changed', Lang.bind(this, this._onSearchTextChanged));
