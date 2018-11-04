@@ -1916,6 +1916,7 @@ Panel.prototype = {
         this._positionChanged = false;
         this._monitorsChanged = false;
         this._signalManager = new SignalManager.SignalManager(null);
+        this.height = 0;
         this.margin_top = 0;
         this.margin_bottom = 0;
         this.margin_left = 0;
