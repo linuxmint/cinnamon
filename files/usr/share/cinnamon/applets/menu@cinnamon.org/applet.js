@@ -2846,7 +2846,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         let rightPane = new St.BoxLayout({ vertical: true });
 
-        let topRow = new St.BoxLayout({style_class: 'menu-top-box'});
+        let topRow = new St.BoxLayout();
+        let bottomRow = new St.BoxLayout();
 
         this.searchBox = new St.BoxLayout({ style_class: 'menu-search-box' });
 
@@ -2918,7 +2919,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.systemButtonsBox = new St.BoxLayout({style_class: 'menu-systembuttons-box'});
         topRow.add(this.searchBox,  {x_fill: true, x_align: St.Align.START, y_align: St.Align.MIDDLE, y_fill: false, expand: true});
-        topRow.add(this.systemButtonsBox, { x_align: St.Align.START, x_fill: true, expand: false });
 
         this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-outer-box', vertical:false });
         this.mainBox.add_style_class_name('menu-applications-box'); //this is to support old themes
@@ -2940,7 +2940,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.selectedAppBox._delegate = null;
 
         section.actor.add(this.mainBox);
-        section.actor.add_actor(this.selectedAppBox);
+        section.actor.add(bottomRow);
+
+        bottomRow.add(this.systemButtonsBox, { x_align: St.Align.START, x_fill: true, expand: false });
+        bottomRow.add(this.selectedAppBox, {expand: true});
 
         this.appBoxIter = new VisibleChildIterator(this.applicationsBox);
         this.applicationsBox._vis_iter = this.appBoxIter;
