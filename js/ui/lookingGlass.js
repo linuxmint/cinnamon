@@ -40,6 +40,7 @@ const HISTORY_KEY = 'looking-glass-history';
 
 /* fake types for special cases:
  *  -"array": objects that pass Array.isArray() and should only show enumerable properties
+ *  -"boxedproto": boxed prototypes throw an error on property access
  *  -"importer": objects that load modules on property access
  */
 
@@ -67,13 +68,16 @@ function getObjInfo(o) {
             }
         }
 
-        if (value.startsWith("[GjsFileImporter")
-            || value.startsWith("[object GjsModule gi")) {
-            type = "importer";
-        } else if (Array.isArray(o)) {
-            type = "array";
-        } else {
-            type = typeof(o);
+        type = typeof(o);
+        if (type == "object") {
+            if (value.startsWith("[GjsFileImporter")
+                || value.startsWith("[object GjsModule gi")) {
+                type = "importer";
+            } else if (value.startsWith("[boxed prototype")) {
+                type = "boxedproto";
+            } else if (Array.isArray(o)) {
+                type = "array";
+            }
         }
 
         // make empty strings/arrays obvious
