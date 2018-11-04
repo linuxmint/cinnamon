@@ -102,21 +102,16 @@ Depends:
  ${python3:Depends},
  ${shlibs:Depends},
 Recommends:
- blueman,
  gnome-terminal | x-terminal-emulator,
  gnome-themes-extra | gnome-themes-standard,
 Suggests: cinnamon-doc
 Provides: notification-daemon, x-window-manager
-Replaces: cinnamon-common (<< ${cinnamon:Version})
-Breaks: cinnamon-common (<< ${cinnamon:Version})
 Description: Modern Linux desktop
  Cinnamon is a modern Linux desktop which provides advanced innovative
  features and a traditional user experience. It's easy to use, powerful
  and flexible.
 
 Package: cinnamon-common
-Replaces: cinnamon (<< ${cinnamon:Version})
-Breaks: cinnamon (<< ${cinnamon:Version})
 Architecture: all
 Depends:
  gettext,
