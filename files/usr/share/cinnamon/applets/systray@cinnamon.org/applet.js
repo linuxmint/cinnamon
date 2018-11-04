@@ -203,7 +203,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
     }
 
     on_panel_icon_size_changed(size) {
-        this.icon_size = size;
+        this.icon_size = size * global.ui_scale;
         Main.statusIconDispatcher.redisplay();
 
         for (let i = 0; i < this._shellIndicators.length; i++) {
