@@ -896,7 +896,7 @@ class SystemButton extends PopupMenu.PopupBaseMenuItem {
         this.name = name;
         this.desc = desc;
 
-        let icon_size = 16 / global.ui_scale;
+        let icon_size = 16;
         this.actor.add_style_class_name('menu-favorites-button');
 
         this.icon = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.SYMBOLIC});
