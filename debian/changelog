@@ -1,3 +1,378 @@
+cinnamon (4.0.0) tessa; urgency=medium
+
+  [ Michael Webster ]
+  * cs_sound.py: Gracefully handle input streams that don't have a name, ignore streams created by sound effects and a11y utilities, and don't add the same source id more than once.
+  * cs_themes.py: Add xdg user data dir to theme search paths, search all system data dirs.  This corresponds to the same behavior as code that actually loads these themes in Gtk, Cinnamon.
+  * menu applet: Make sure the menu is fully reset when the search entry is cleared (thru any means) and don't let the favorites Del key handler steal keystrokes from an active search.
+
+  [ NikoKrause ]
+  * Translation for "Users and Groups" policy (#7763)
+
+  [ Jason Hicks ]
+  * popupMenu: Fix undefined _delegate property warning (#7706)
+
+  [ Michael Webster ]
+  * power: Show primitive battery level for devices that don't support percentages.
+  * cs_power.py: Use symbolic icons for battery status.
+  * cs_power.py: Align the new peripheral battery status at the end of the row, and do the same for the charge status of battery devices for consistency.
+  * power applet/settings: Lock keyboard backlight changes to only valid increments.
+  * power applet: override scroll handler for the brightness sliders, to use the step value obtained from csd-power (if available.)
+  * power applet: Don't attempt to send csd-power a brightness over 100%.
+
+  [ Jason Hicks ]
+  * deskletManager: Fix launcher-list gsetting resetting on desklet snap grid width change
+  * Issue template: Start requesting logs
+
+  [ Clement Lefebvre ]
+  * Spices.py: Fix connection to server with certain connexions
+  * Keyboard applet: Hide when Fcitx is running
+
+  [ Jason Hicks ]
+  * Migrate to private Clutter and Cogl libraries (#7771)
+  * Fix incorrect _updatePanelVisibility documentation (#7829)
+
+  [ Germán Franco ]
+  * Fix typo (#7842)
+
+  [ Abdur-Rahmaan Janhangeer ]
+  * import change (#7867)
+
+  [ Jason Hicks ]
+  * ChooserButtonWidgets.py: Handle GLib.Error (#7820)
+  * signalManager: Migrate to ES2015 class, improve code readability
+  * Add a method to GObject.Object.prototype that checks if it is finalized
+  * tweener: Fix invalid object access errors (#7863)
+  * Fix various cases of invalid object access (#7870)
+  * systray: Fix invalid access errors, implement a reloading API for xlets (#7869)
+  * DND, tweener: Fix invalid object access errors (#7873)
+  * environment: Override Clutter.Actor.prototype.destroy and add is_finalized check (#7875)
+  * tweener: Check if instance of GObject.Object before calling is_finalized (#7874)
+  * window overview, menu applet: Fix invalid object access cases (#7880)
+
+  [ Germán Franco ]
+  * Update calculator search provider example (#7879)
+
+  [ Abdur-Rahmaan Janhangeer ]
+  * string formatting - line 112 (#7881)
+  * migrated print to py3 - line 19 (#7888)
+
+  [ Michael Webster ]
+  * cs_power.py: Add "Lock Screen" to the lid close action combobox.
+
+  [ Stephen Collins ]
+  * Spices.py: don't set permissions on the source files when installing from a local folder via cinnamon-install-spice (#7913)
+  * settings.js: fix updgrade so that settings don't get overwritten by the default (#7915)
+
+  [ Jason Hicks ]
+  * Move restart handling to Muffin, reload theme on video memory purged errors (#7908)
+  * applet, desklet, popupMenu: Migrate to class syntax (#7523)
+
+  [ Fabien LEFEBVRE ]
+  * Update applet.js (#7905)
+
+  [ Germán Franco ]
+  * Hot corners: don't block a click after another click (#7923)
+  * Hot corner: remove ripple tween before animating (#7936)
+
+  [ James Ross ]
+  * looking glass window tracker cleanup/fix (#7581)
+
+  [ Jason Hicks ]
+  * menu: Fix issues preventing the container children from rendering (#7900)
+
+  [ James Ross ]
+  * window-list: don't try to destroy clutter clone multiple times (#7883)
+
+  [ Jason Hicks ]
+  * window-list: Fix TypeError in _set_position (#7901)
+
+  [ Germán Franco ]
+  * Cinnamon Settings: Remove Gtk warnings (#7930)
+  * Xlet Settings: remove Gtk warnings (#7932)
+  * Don't lookup the monitor index (#7587)
+  * Overview: Remove META_KEYBINDING_ACTION_PANEL_MAIN_MENU (#7911)
+
+  [ Jason Hicks ]
+  * StScrollView: Clean up gsettings on dispose (#7929)
+
+  [ Germán Franco ]
+  * Allow margins in panel tooltips too (#7551)
+  * Sound applet: fix seeking not detected for not hardcoded players (#7589)
+
+  [ Abdur-Rahmaan Janhangeer ]
+  * migrated print to py3 - line 62 (#7889)
+
+  [ mrmajik45 ]
+  * [CodeFactor] Apply fixes (#7887)
+
+  [ Abdur-Rahmaan Janhangeer ]
+  * pep8ify - equals (#7877)
+
+  [ Germán Franco ]
+  * Remove unused bottomMonitor property (#7561)
+
+  [ Mikhail Bodrov ]
+  * Simplify getting timestamp in DebugTimers (#7570)
+
+  [ Kevin West ]
+  * inhibit applet: Display list of inhibiting programs (#7748)
+
+  [ Mikhail Bodrov ]
+  * Optimize parse params. Return defaults if params not passed (#7569)
+
+  [ Isaac Carter ]
+  * Fix 'Win' button issues in 'Alt + F2' dialog (#7619)
+
+  [ Levi Bard ]
+  * Menu applet: autoselect exact matches (#7395)
+
+  [ Germán Franco ]
+  * Menu applet: add support for theming opacity to greyed category icons (#7847)
+
+  [ Jason Hicks ]
+  * menu: Fix application items not rendering (#7938)
+
+  [ Germán ]
+  * Overview: Fix window close buttons offset
+  * Overview: Add windows hover indicator
+  * Overview: Better utilize the available space to maximize windows size
+  * Overview: Code fixups
+
+  [ Germán Franco ]
+  * Overview: Replace Lang.bind with native bind and arrow functions
+  * Overview: Use MetaButtonLayout to get side of close button
+  * Overview: Fix close button flashing in the corner when opening
+  * Overview: Keep keyboard focus on the last mouse-focused window
+  * Overview: Improve open animation performance
+
+  [ Germán ]
+  * Overview: Style window close button hover state
+
+  [ Germán Franco ]
+  * Overview: Remove zoom-on-scroll feature
+
+  [ Germán ]
+  * Overview: Hidden windows appear with a zoom-in animation
+  * Overview: Add left/right style class to the close button
+  * Overview: Close if the last window is closed
+  * Overview: Add empty placeholder
+  * Overview: Smooth background shade appear/disappear
+  * Overview: Respect animation effects settings
+  * Overview: Exit with a click when there are no windows
+  * Overview: Don't delay windows repositioning after closing a window
+  * Overview: Unify window close code
+  * Overview: Don't hijack workspace switching keybindings
+  * Overview: Improve workspace switch swipe responsiveness
+  * Overview: Windows added while in the overview do zoom-in animation
+
+  [ Clement Lefebvre ]
+  * CI: Fix apt segfault in LMDE3
+
+  [ Michael Webster ]
+  * window list applet: Don't display windows with skip-taskbar set.
+
+  [ NikoKrause ]
+  * notifications applet: new icons (#7947)
+
+  [ claudiux ]
+  * js/ui/panel.js - Delete annoying message in .xsession-errors (#7946)
+
+  [ Germán Franco ]
+  * params: don't return reference to defaults object, make a copy instead (#7942)
+
+  [ Tuomo Syvänperä ]
+  * Add setting to window-list applet for minimizing. (#7925)
+
+  [ Michael Webster ]
+  * windowManager.js: Update window dragging/tiling OSD message to reflect new capabilities in muffin.
+  * KeybindingWidgets.py: Disallow keypad shortcuts without modifiers.
+  * cs_desktop: use Nemo.DesktopPreferences widget
+  * cs_windows.py: Update edge resistance label and tooltip to reflect changed functionality.
+
+  [ Clement Lefebvre ]
+  * Add a couple of keywords for cs_default and cs_startup
+
+  [ Jackson Dearnley ]
+  * cs_default.py: Add a SettingsWidget() for a default calculator application (#7957)
+
+  [ Germán Franco ]
+  * Alt-TAB: Don't bypass workspace switching restrictions (#7956)
+  * Latest overview fixes (#7954)
+
+  [ Stephen Collins ]
+  * cinnamon-desktop-editor: use XApp.IconChooserDialog rather than the custom icon picker (#7969)
+
+  [ Michael Webster ]
+  * cs_screensaver.py: Remove screensaver selection page.
+
+  [ Jason Hicks ]
+  * Add grouped-window-list@cinnamon.org and related utilities
+  * Add a gulpfile for xlet reloading on code change
+  * Disable console.log lint restriction for gulpfile.js
+  * Add misc/state.js to js/Makefile.am
+
+  [ Clement Lefebvre ]
+  * Panel: Replace panel-launchers/window-list with grouped-window-list
+  * Panel: Re-order default applets (bluetooth - network - sound - clock)
+  * Grouped window list: Pin Firefox, terminal, nemo.
+  * modalDialog: Switch buttons
+
+  [ Jason Hicks ]
+  * Misc. clean-up
+  * Remove Firefox bookmarks, history, and most visited
+  * gulpfile: Clear the system xlet directory incase of file removal, add some sanity checks
+  * Fix some Codacy issues
+  * Add dedicated style classes, remove theme work-arounds
+  * Add a specific focus pseudo class for Mint-Y
+  * Always use symbolic icons in the context menu
+
+  [ Germán Franco ]
+  * window-list: Fix blurry icons in vertical mode
+
+  [ Jason Hicks ]
+  * Fix typo in each function
+  * [WIP] Implement per-panel-zone icon sizes
+  * Remove back slashes from gschema
+  * applets: Update icon size on change
+  * Don't allow float sizes
+  * minor: make signal names more consistent
+  * Implement IconApplet compatibility, let panels take care of handling icon size change on panel height change
+  * gwl: Fix off-center icons on icon size change
+  * gwl: Move icon spacing and transition duration options to panel page
+  * gwl: Fix padding issues when labels are present
+  * gwl: Set number display default to None
+  * gwl: Make per-monitor window lists default
+  * .pylintrc: Cut some slack on max branches, number of statements
+  * Fix incorrect per-monitor windows on init
+  * Don't remove focus styling on focused apps on window monitor change when only one instance is in use
+  * Make sure window lists reload when different instances are added or removed
+  * Refresh only windows on instances changed
+  * Fix untranslated strings
+  * Start checking the skip-taskbar hint, remove "Include all windows" option
+
+  [ Clement Lefebvre ]
+  * Panel: Disgregard panel height (and scaling) define in the theme
+  * Panel settings: Small fixes
+  * Panel: Fix icon scaling in systray/status
+  * Fix systray icon size in HiDPI
+  * Grouped-window-list: Close windows on middle-click
+  * Grouped-window-list: Remove thumbnails icons
+  * Grouped-window-list: Remove icon-padding pref
+  * Grouped-window-list: Remove close-button-size
+  * Grouped-window-list: Fix previous commit
+  * Default panel sizes: 40px + 0/0/24px
+
+  [ Jason Hicks ]
+  * Don't allow panel sizes below 20
+  * Fix invalid object error case
+  * Make sure we remove the corresponding zone config for a panel that is removed
+  * Also check panel height minimum in _getScaledPanelHeight
+  * gwl: Fix thumbnails not updating on size change
+  * gwl: Hide non-vital options under "advanced" toggles
+  * Fix incorrect window accounting in AppList.prototype.refreshWindows
+  * gwl: minor clean up
+  * Make sure thumbnails are cleared when the last window of a pinned app is closed
+  * panel: Cache icon size calculations, re-calculate on settings change
+  * gwl: Remove thumbnail padding option, default to 3 * global.ui_scale
+
+  [ Clement Lefebvre ]
+  * Panel: Don't scale text
+
+  [ Jason Hicks ]
+  * Switch thumbnail size to a combobox, use Medium (6) default
+  * Convert number display option to a toggle between off and on (smart)
+  * Let themes control transition-duration
+
+  [ Clement Lefebvre ]
+  * Menu: Use gsettings keys for default icon and label
+
+  [ Jason Hicks ]
+  * gwl: Switch thumbnail timeout to use the configured value on menu open except when transitioning between menus, and on close
+  * gwl: Make hover-peek option a combobox, add a fade-out delay
+  * gwl: Remove advanced toggles
+  * panel: Don't store all zone configurations in every panel
+  * gwl: Fix thumbnail scaling in high-DPI mode
+  * Fix invalid object access when deselecting the selection tool and toggling ctrl in Melange
+  * Fix thumbnail menu key navigation
+  * gwl: Make sure thumbnail window textures scale in high DPI
+  * gwl: Fix off-center icons in high-DPI mode
+  * gwl: padding logic clean up
+  * gwl: When left click action cycles windows, revert to normal behavior when windows < 2
+  * gwl: Default to auto-start option disabled
+  * gwl: Shrink the thumbnail label container a bit to fit the close button
+  * gwl: Give actors their own unique class names
+  * gwl: Make sure the Preferences sub-menu is above Recent
+  * Fix "Close others" option
+  * gwl: Minor formatting clean up
+  * state: Fix docs for gtk-doc
+  * gwl: Prevent missing listener store errors and invalid object access errors when using "Close all" on an unpinned app
+  * gwl: Add icons for desktop actions
+  * gwl: Use the provided icon for non-action "New Window" entries
+  * gwl: Add pin/unpin icons
+  * gwl: Make pin/unpin icons less blurry
+
+  [ NikoKrause ]
+  * gwl: use key/value array for desktop actions (#7964)
+
+  [ Jason Hicks ]
+  * gwl: Minor style clean up
+  * ui/applet: Remove duplicate setOrientation method
+  * ui/applet: Make sure icon sizes reset on orientation change
+  * panel: Fix applets loading in incorrect zones when re-adding a previously removed panel with applets
+  * ui/applet: Fix applets not loading when re-adding a previously removed panel with applets
+  * gwl: Fix the thumbnail menu not rendering after adding a new panel
+  * gwl: Support dragging of unpinned apps
+  * gwl: Check if a group has windows before refreshing thumbnails in acceptDrop
+  * systray: Don't defer loading of icons
+  * gwl: Move thumbnail timeout option next to on-click option
+  * gwl: Remove remaining ITM references
+  * ui/applet: Don't depend on data passed from applets
+  * panel: Remove scaleMode
+  * systray: Set icon size before re-display
+  * gwl: Clarify alerts option
+
+  [ Germán Franco ]
+  * Some fixes to the new panel layout (#7967)
+
+  [ Jason Hicks ]
+  * menu: Wrap favorites in a scroll box, separate system buttons
+  * menu: Fix key navigation
+  * menu: Fix key navigation transition between favorites and system buttons
+  * menu: Make sure the favorites scroll box scrolls with key navigation
+  * gwl: Keep the drag actor contained within the applet area
+  * gwl: Fix the drag actor sticking to the cursor
+  * menu: Add user settings button
+  * panel: Remove user@cinnamon.org from default enabled-applets
+  * menu: Add switch-user button
+  * gwl: Round thumbnail sizes
+  * menu: Use the categories container instead of the monitor for the favorites scroll box height calculation
+  * menu: Remove user button
+  * menu: Make the menu shorter
+  * gwl: Make sure the demands attention styling is removed when an app is closed
+  * panel: Always re-adjust symbolics
+
+  [ Stephen Collins ]
+  * SettingsWidgets.py: use the new XApp.IconChooserDialog for icon choosers (#7973)
+  * xlet-settings: add the ability for xlets to provide custom widgets for the settings window and add one to the settings example applet (#7977)
+
+  [ Germán Franco ]
+  * Menu applet: don't hardcode favorites button padding (#7582)
+
+  [ Clement Lefebvre ]
+  * Menu: Place system buttons beside the search field
+
+  [ Jason Hicks ]
+  * panel: Fix undefined height warning (#7979)
+
+  [ Clement Lefebvre ]
+  * Menu: Minor fixes
+  * Menu: Fix system button size in HiDPI
+  * Panel: Make symbolic icon size configurable
+  * Menu: Don't hide other results when one if found by name
+  * l10n: Update POT and additional files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 04 Nov 2018 15:56:15 +0000
+
 cinnamon (3.8.8) tara; urgency=medium
 
   [ Michael Webster ]
