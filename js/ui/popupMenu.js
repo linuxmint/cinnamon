@@ -2538,7 +2538,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
 
     _boxAllocate (actor, box, flags) {
         this.box.allocate(box, flags);
-        if (!this.animating && this.sourceActor.get_stage() != null) {
+        if (!this.animating && !this.sourceActor.is_finalized() && this.sourceActor.get_stage() != null) {
             let [xPos, yPos] = this._calculatePosition();
             this.actor.set_position(xPos, yPos);
         }
