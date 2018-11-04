@@ -75,7 +75,7 @@
  "favbox-show" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Show favorites and quit options",
+    "description" : "Show favorites",
     "tooltip" : "Choose whether or not to show the left pane of the menu."
  },
  "show-places" : {

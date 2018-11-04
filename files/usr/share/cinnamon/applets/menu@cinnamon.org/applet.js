@@ -1171,6 +1171,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
         // In that particular case we get no signal at all.
         this._refreshAll();
+        this._refreshSystemButtons();
 
         this.set_show_label_in_vertical_panels(false);
     }
@@ -1193,7 +1194,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         try {
             this._refreshApps();
             this._refreshFavs();
-            this._refreshSystemButtons();
             this._refreshPlaces();
             this._refreshRecent();
 
