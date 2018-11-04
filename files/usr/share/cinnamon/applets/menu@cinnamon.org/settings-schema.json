@@ -46,7 +46,7 @@
  },
  "menu-icon" : {
     "type" : "iconfilechooser",
-    "default" : "/usr/share/cinnamon/theme/menu-symbolic.svg",
+    "default" : "cinnamon-symbolic",
     "description" : "Icon",
     "tooltip" : "Select an icon to show in the panel.",
     "dependency" : "menu-custom",

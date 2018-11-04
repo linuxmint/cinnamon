@@ -637,7 +637,7 @@
     </key>
 
     <key name="app-menu-icon-name" type="s">
-      <default>"start-here"</default>
+      <default>"cinnamon-symbolic"</default>
       <_summary>The default icon name of the application menu</_summary>
       <_description>
        Controls the default icon name used by the application menu.

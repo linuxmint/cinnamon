@@ -1395,7 +1395,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         this.set_applet_icon_name(this.menuIcon);
                 }
             } else {
-                this.set_applet_icon_name(global.settings.get_string('app-menu-icon-name'));
+                let icon_name = global.settings.get_string('app-menu-icon-name');
+                if (icon_name.search("-symbolic") != -1) {
+                    this.set_applet_icon_symbolic_name(icon_name);
+                }
+                else {
+                    this.set_applet_icon_name(icon_name);
+                }
             }
         } catch(e) {
             global.logWarning("Could not load icon file \""+this.menuIcon+"\" for menu button");
