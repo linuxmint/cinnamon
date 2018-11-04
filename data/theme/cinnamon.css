@@ -1164,17 +1164,20 @@ StScrollBar StButton#vhandle:hover {
     text-align: right;
     height: 30px;
 }
-
 .menu-selected-app-box:rtl {
     padding-top: 10px;
     height: 30px;
 }
-
 .menu-selected-app-title {
     font-weight: bold;
 }
 .menu-selected-app-description {
     max-width: 150px;
+}
+.menu-top-box {
+    spacing: 10px;
+}
+.menu-systembuttons-box {
 }
 .menu-search-box:ltr {
     padding-left: 30px;

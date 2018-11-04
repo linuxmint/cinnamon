@@ -2074,7 +2074,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             return;
         }
 
-        this.vectorBox = new St.Polygon({ debug: false, width: vi.w, height: vi.h,
+        this.vectorBox = new St.Polygon({ debug: false, width: vi.w -1, height: vi.h,
                                           ulc_x: vi.mx, ulc_y: vi.my,
                                           llc_x: vi.mx, llc_y: vi.my,
                                           urc_x: vi.w, urc_y: 0,
@@ -2840,7 +2840,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         let rightPane = new St.BoxLayout({ vertical: true });
 
-        let topRow = new St.BoxLayout();
+        let topRow = new St.BoxLayout({style_class: 'menu-top-box'});
 
         this.searchBox = new St.BoxLayout({ style_class: 'menu-search-box' });
 
@@ -2910,7 +2910,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             y_fill: false
         });
 
-        this.systemButtonsBox = new St.BoxLayout();
+        this.systemButtonsBox = new St.BoxLayout({style_class: 'menu-systembuttons-box'});
         topRow.add(this.searchBox,  {x_fill: true, x_align: St.Align.START, y_align: St.Align.MIDDLE, y_fill: false, expand: true});
         topRow.add(this.systemButtonsBox, { x_align: St.Align.START, x_fill: true, expand: false });
 
