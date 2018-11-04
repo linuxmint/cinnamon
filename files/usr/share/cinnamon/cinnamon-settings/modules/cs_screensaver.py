@@ -48,7 +48,7 @@ class Module:
     comment = _("Manage screen lock settings")
 
     def __init__(self, content_box):
-        keywords = _("screensaver, lock, password, away, message")
+        keywords = _("screensaver, lock, away, message")
         sidePage = SidePage(_("Screensaver"), "cs-screensaver", keywords, content_box, module=self)
         self.sidePage = sidePage
 
