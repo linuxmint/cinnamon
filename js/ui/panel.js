@@ -1135,7 +1135,7 @@ PanelDummy.prototype = {
         this.panelPosition = panelPosition;
         this.callback = callback;
         this.monitor = global.screen.get_monitor_geometry(monitorIndex);
-        let defaultheight = 25 * global.ui_scale;
+        let defaultheight = 40 * global.ui_scale;
 
         this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
 
