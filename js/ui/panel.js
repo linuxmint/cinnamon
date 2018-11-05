@@ -2860,7 +2860,7 @@ Panel.prototype = {
         this.emit('size-changed', height);
     },
 
-    _onPanelZoneIconSizesChanged: function() {
+    _onPanelZoneIconSizesChanged: function(value, key) {
         if (this._destroyed) return;
 
         let panelZoneIconSizes = this._getJSONProperty(PANEL_ZONE_ICON_SIZES);
@@ -2941,7 +2941,9 @@ Panel.prototype = {
             global.log(`[Panel ${this.panelId}] Creating a new zone configuration`);
         }
 
-        this.emit('icon-size-changed');
+        if (typeof key === 'string' && key.includes('symbolic-size')) changed = true;
+
+        if (changed) this.emit('icon-size-changed');
     },
 
     _calculatePanelZoneIconSize: function(iconSize, isSymbolic = false) {
