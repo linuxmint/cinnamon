@@ -65,6 +65,7 @@ class ItemEditor(object):
         self.dialog.connect('response', self.on_response)
 
         self.icon_chooser = self.builder.get_object('icon-chooser')
+        self.icon_chooser.get_dialog().set_property("allow-paths", True)
 
         self.build_ui()
 
