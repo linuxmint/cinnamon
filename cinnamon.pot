@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-04 19:40+0000\n"
+"POT-Creation-Date: 2018-11-05 12:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -405,7 +405,7 @@ msgid "Are you sure you want to clear all applets on this panel?"
 msgstr ""
 
 #: js/ui/panel.js:1629
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:139
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:143
 msgid "Panel edit mode"
 msgstr ""
 
@@ -773,46 +773,46 @@ msgstr ""
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2352
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2358
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:149
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2650
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2656
 msgid "Switch user"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2651
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2657
 msgid "Switch to another user account"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2677
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2683
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:142
 msgid "Lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2678
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2684
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:11
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2705
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2711
 msgid "Logout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2706
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2712
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2720
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2726
 msgid "Quit"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2721
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2727
 msgid "Shutdown the computer"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2848
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2854
 msgid "Type to search..."
 msgstr ""
 
@@ -1268,7 +1268,6 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/settings@cinnamon.org/applet.js:10
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_backgrounds.py:229
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:22
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:45
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:72
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:632
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:82
@@ -1592,35 +1591,35 @@ msgstr ""
 msgid "Turn on-screen keyboard on or off"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:86
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:87
 msgid "Valid name"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:90
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:91
 msgid "The name cannot be empty."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:95
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:96
 msgid "Valid executable"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:99
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:100
 msgid ""
 "The executable is not valid. It cannot be empty and spaces in the path must "
 "be escaped with backslash (\\)."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:163
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:164
 msgid ""
 "Cannot create the launcher at this location.  Add to the desktop instead?"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:212
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:300
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:213
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:301
 msgid "Choose a command"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:387
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:388
 msgid ""
 "Would you like to add this launcher to the menu also?  It will be placed in "
 "the Other category initially."
@@ -3335,6 +3334,7 @@ msgid "Overlay scroll bars (logout required)"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_effects.py:148
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:60
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:98
 msgid "Customize"
 msgstr ""
@@ -4467,12 +4467,12 @@ msgid "Size"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:47
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:78
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:63
 msgid "Smaller"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:47
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:78
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:63
 msgid "Larger"
 msgstr ""
 
@@ -4682,6 +4682,10 @@ msgstr ""
 msgid "Bottom panel zone icon size"
 msgstr ""
 
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:45
+msgid "Panel Visibility"
+msgstr ""
+
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:50
 msgid "Auto hide panel"
 msgstr ""
@@ -4698,19 +4702,7 @@ msgstr ""
 msgid "Auto-hide panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:55
-msgid "Scale to panel size exactly"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:56
-msgid "Scale to panel size optimally"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:66
-msgid "Center panel zone icon size"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:72
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:54
 msgid "Show delay"
 msgstr ""
 
@@ -4718,49 +4710,61 @@ msgstr ""
 #. grouped-window-list@cinnamon.org->settings-schema.json->show-apps-order-
 #. timeout->units
 #. show-desktop@cinnamon.org->settings-schema.json->peek-delay->units
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:72
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:75
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:54
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:57
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:135
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_workspaces.py:37
 msgid "milliseconds"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:75
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:57
 msgid "Hide delay"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:87
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:68
+msgid "Scale to panel size exactly"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:69
+msgid "Scale to panel size optimally"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:80
+msgid "Center panel zone icon size"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:91
 msgid "Manage Cinnamon panel settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:90
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:94
 msgid "panel, height, bottom, top, autohide, size, layout"
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->panel->title
 #. sound@cinnamon.org->settings-schema.json->section2->description
 #. grouped-window-list@cinnamon.org->settings-schema.json->panelPage->title
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:91
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:95
 msgid "Panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:109
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:113
 msgid "Previous panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:110
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:114
 msgid "Next panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:133
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:137
 msgid "General Panel Options"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:136
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:140
 msgid "Add new panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:145
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:149
 msgid "Allow the pointer to pass through the edges of panels"
 msgstr ""
 
