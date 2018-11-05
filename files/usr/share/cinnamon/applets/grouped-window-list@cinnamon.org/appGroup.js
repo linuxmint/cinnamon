@@ -110,31 +110,48 @@ class AppGroup {
             important: true,
             show_on_set_parent: false
         });
-        this.container.add_actor(this.progressOverlay);
+        this.container.add_child(this.progressOverlay);
 
         // Create the app button icon, number label, and text label for titleDisplay
         this.iconBox = new St.Bin({name: 'appMenuIcon'});
         this.iconBox.connect('style-changed', (...args) => this.onIconBoxStyleChanged(...args));
         this.iconBottomClip = 0;
-        this.container.add_actor(this.iconBox);
+        this.container.add_child(this.iconBox);
         this.updateIconBoxClip();
         this.setActorAttributes();
+
+        this.badge = new St.BoxLayout({
+            style_class: 'grouped-window-list-badge',
+            width: 12 * global.ui_scale,
+            height: 12 * global.ui_scale,
+            important: true,
+            x_align: St.Align.START,
+            y_align: St.Align.MIDDLE,
+            show_on_set_parent: false,
+            anchor_y: -2,
+        });
+        this.numberLabel = new St.Label({
+            style: 'font-size: 10px;color:#fff; padding: 0px;',
+            style_class: 'grouped-window-list-number-label',
+            important: true,
+            text: '',
+            anchor_x: -3 * global.ui_scale
+        });
+        this.numberLabel.clutter_text.ellipsize = false;
+        this.badge.add(this.numberLabel, {
+            x_align: St.Align.START,
+            y_align: St.Align.START,
+        });
+        this.container.add_child(this.badge);
+
         this.label = new St.Label({
             style_class: 'grouped-window-list-button-label',
             important: true,
             text: '',
             show_on_set_parent: this.state.settings.titleDisplay !== 1 && this.state.settings.titleDisplay !== 4
         });
-        this.numberLabel = new St.Label({
-            style_class: 'grouped-window-list-item-label grouped-window-list-number-label',
-            important: true,
-            text: ''
-        });
-        this.numberLabel.clutter_text.ellipsize = false;
-
-        this.container.add_actor(this.numberLabel);
         this.label.x_align = St.Align.START;
-        this.container.add_actor(this.label);
+        this.container.add_child(this.label);
 
         this.groupState.set({tooltip: new Tooltips.PanelItemTooltip({actor: this.actor}, '', this.state.orientation)});
 
@@ -388,18 +405,13 @@ class AppGroup {
             childBox.x1 = Math.max(0, childBox.x2 - naturalWidth);
         }
         this.label.allocate(childBox, flags);
-        if (direction === Clutter.TextDirection.LTR) {
-            childBox.x1 = -3 * global.ui_scale;
-            childBox.x2 = childBox.x1 + this.numberLabel.width;
-            childBox.y1 = box.y1 - 2;
-            childBox.y2 = box.y2 - 1;
-        } else {
-            childBox.x1 = -this.numberLabel.width;
-            childBox.x2 = childBox.x1 + this.numberLabel.width;
-            childBox.y1 = box.y1;
-            childBox.y2 = box.y2 - 1;
-        }
-        this.numberLabel.allocate(childBox, flags);
+
+        childBox.x1 = 0;
+        childBox.x2 = childBox.x1 + this.badge.width;
+        childBox.y1 = box.y1 - 2;
+        childBox.y2 = box.y2 - 1;
+        this.numberLabel.anchor_y = Math.abs(this.state.trigger('getPanelHeight') - box.y2);
+        this.badge.allocate(childBox, flags);
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation
         if (this.groupState.metaWindows.length > 0 && this.container.realized) {
@@ -633,7 +645,7 @@ class AppGroup {
 
     showOrderLabel(number) {
         this.numberLabel.text = (number + 1).toString();
-        this.numberLabel.show();
+        this.badge.show();
     }
 
     launchNewInstance() {
@@ -964,12 +976,12 @@ class AppGroup {
         this.numberLabel.text = windowNum.toString();
         if (this.state.settings.numDisplay) {
             if (windowNum <= 1) {
-                this.numberLabel.hide();
+                this.badge.hide();
             } else {
-                this.numberLabel.show();
+                this.badge.show();
             }
         } else {
-            this.numberLabel.hide();
+            this.badge.hide();
         }
     }
 
