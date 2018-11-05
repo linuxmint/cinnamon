@@ -1,6 +1,6 @@
 # https://github.com/linuxmint/cinnamon
 project('cinnamon', 'c',
-  version: '3.8.8',
+  version: '4.0.0',
   meson_version: '>=0.42.0',
   default_options: [
     'sysconfdir=/etc',
@@ -35,8 +35,11 @@ math            = cc.find_library('m')
 atk_bridge      = dependency('atk-bridge-2.0')
 cinnamon_desktop= dependency('cinnamon-desktop',            version: '>=2.4.0')
 cjs             = dependency('cjs-1.0',                     version: '>=3.2.0')
-clutter         = dependency('clutter-1.0')
-clutter_x11     = dependency('clutter-x11-1.0',             version: '>=1.10.0')
+muffin_clutter  = dependency('muffin-clutter-0')
+muffin_coglpango= dependency('muffin-cogl-pango-0')
+muffin_coglpath = dependency('muffin-cogl-path-0')
+muffin_cogl     = dependency('muffin-cogl-0')
+# clutter_x11     = dependency('clutter-x11-1.0',             version: '>=1.10.0')
 dbus_glib       = dependency('dbus-glib-1')
 gdk_pixbuf      = dependency('gdk-pixbuf-2.0')
 gdk_x11         = dependency('gdk-x11-3.0')
@@ -152,7 +155,10 @@ configure_file(
 
 add_project_arguments([
     '-DHAVE_CONFIG_H',
+    '-DCLUTTER_DISABLE_DEPRECATION_WARNINGS',
     '-DCLUTTER_ENABLE_EXPERIMENTAL_API',
+    '-DCOGL_DISABLE_DEPRECATION_WARNINGS',
+    '-DCOGL_ENABLE_EXPERIMENTAL_2_0_API',
     '-DCOGL_ENABLE_EXPERIMENTAL_API',
     '-DG_DISABLE_DEPRECATED',
   ],

@@ -6,6 +6,7 @@ install_subdir('.',
     'meson.build',
     'misc/config.js.in',
     'misc/config.js',
+    'misc/state.js',
   ],
   install_dir: join_paths(pkgdatadir, 'js'),
 )
