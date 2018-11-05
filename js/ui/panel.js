@@ -51,7 +51,7 @@ const PANEL_ZONE_ICON_SIZES = "panel-zone-icon-sizes";
 const DEFAULT_VALUES = {"panels-autohide": "false",
                         "panels-show-delay": "0",
                         "panels-hide-delay": "0",
-                        "panels-height": "25"};
+                        "panels-height": "40"};
 
 const Direction = {
     LEFT  : 0,
@@ -2908,14 +2908,14 @@ Panel.prototype = {
         });
 
         if (!this._panelZoneIconSizes) {
-            let defaultSymbolicSize = this._calculatePanelZoneIconSize(32, true);
-            let defaultFullColorSize = this._calculatePanelZoneIconSize(32, false);
+            let defaultSymbolicSize = this._calculatePanelZoneIconSize(0, true);
+            let defaultFullColorSize = this._calculatePanelZoneIconSize(0, false);
 
             let defaultZoneConfig = {
                 panelId: this.panelId,
-                left: 32,
-                center: 32,
-                right: 32
+                left: 0,
+                center: 0,
+                right: 0
             };
 
             panelZoneIconSizes.push(defaultZoneConfig);
