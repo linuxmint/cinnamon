@@ -219,14 +219,16 @@ premultiply (ClutterColor *color)
 static void
 unpremultiply (ClutterColor *color)
 {
-  if (color->alpha != 0)
+  guint alpha = color->alpha;
+  guint round = alpha / 2;
+
+  if (alpha)
     {
-      color->red = (color->red * 255 + 127) / color->alpha;
-      color->green = (color->green * 255 + 127) / color->alpha;
-      color->blue = (color->blue * 255 + 127) / color->alpha;
+      color->red = (color->red * 255 + round) / alpha;
+      color->green = (color->green * 255 + round) / alpha;
+      color->blue = (color->blue * 255 + round) / alpha;
     }
 }
-
 static void
 over (const ClutterColor *source,
       const ClutterColor *destination,
@@ -240,9 +242,9 @@ over (const ClutterColor *source,
   premultiply (&dst);
 
   result->alpha = src.alpha + NORM ((255 - src.alpha) * dst.alpha);
-  result->red   = src.red +   NORM ((255 - src.alpha) * dst.red);
+  result->red   = src.red   + NORM ((255 - src.alpha) * dst.red);
   result->green = src.green + NORM ((255 - src.alpha) * dst.green);
-  result->blue  = src.blue +  NORM ((255 - src.alpha) * dst.blue);
+  result->blue  = src.blue  + NORM ((255 - src.alpha) * dst.blue);
 
   unpremultiply (result);
 }
