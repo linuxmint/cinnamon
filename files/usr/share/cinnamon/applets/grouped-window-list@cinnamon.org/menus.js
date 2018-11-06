@@ -494,7 +494,7 @@ class WindowThumbnail {
                 this.isFocused = this.groupState.lastFocused === this.metaWindow;
                 this.onFocusWindowChange();
             },
-            refreshThumbnails: () => this.refreshThumbnail()
+            windowCount: () => this.refreshThumbnail()
         });
 
         this.metaWindow = params.metaWindow;
@@ -671,7 +671,7 @@ class WindowThumbnail {
     }
 
     getThumbnail() {
-        if (!this.state.settings.showThumbs) {
+        if (this.groupState.verticalThumbs || !this.state.settings.showThumbs) {
             return null;
         }
         // Create our own thumbnail if it doesn't exist
@@ -721,49 +721,61 @@ class WindowThumbnail {
             return;
         }
 
-        let monitor = Main.layoutManager.primaryMonitor;
+        let monitor = this.state.trigger('getPanelMonitor');
 
-        let setThumbSize = (divider = 70, offset = 16) => {
-            if (!this.thumbnailActor || this.thumbnailActor.is_finalized()) return;
+        if (!this.thumbnailActor || this.thumbnailActor.is_finalized()) return;
 
-            this.thumbnailWidth = Math.floor((monitor.width / divider) * this.state.settings.thumbSize) + offset;
-            this.thumbnailHeight = Math.floor((monitor.height / divider) * this.state.settings.thumbSize) + offset;
+        let divider = 80;
+        let offset = 16;
 
-            let monitorSize, thumbnailSize, thumbMultiplier;
-            if (!this.state.isHorizontal) {
-                thumbMultiplier = global.ui_scale + (global.ui_scale * 0.5);
-                monitorSize = monitor.height;
-                thumbnailSize = this.thumbnailHeight;
-            } else {
-                thumbMultiplier = global.ui_scale;
-                monitorSize = monitor.width;
-                thumbnailSize = this.thumbnailWidth;
+        this.thumbnailWidth = Math.floor((monitor.width / divider) * this.state.settings.thumbSize) + offset;
+        this.thumbnailHeight = Math.floor((monitor.height / divider) * this.state.settings.thumbSize) + offset;
+
+        let monitorSize, thumbnailSize, thumbMultiplier;
+        if (!this.state.isHorizontal) {
+            thumbMultiplier = global.ui_scale + (global.ui_scale * 0.5);
+            monitorSize = monitor.height;
+            thumbnailSize = this.thumbnailHeight;
+        } else {
+            thumbMultiplier = global.ui_scale;
+            monitorSize = monitor.width;
+            thumbnailSize = this.thumbnailWidth;
+        }
+
+        let i = 0;
+        while (((thumbnailSize + this.thumbnailPadding) * this.groupState.windowCount > monitorSize)
+            && this.thumbnailWidth > 0
+            && this.thumbnailHeight > 0) {
+            this.thumbnailWidth -= 1;
+            this.thumbnailHeight -= 1;
+            thumbnailSize -= 1;
+            i++;
+            // Bail after 200 iterations
+            if (i > 200) {
+                break;
             }
+        }
 
-            if (((thumbnailSize * thumbMultiplier) * this.groupState.metaWindows.length) + thumbnailSize > monitorSize) {
-                let divideMultiplier = !this.state.isHorizontal ? 4.5 : 1.1;
-                setThumbSize(divider * divideMultiplier, 16);
-                return;
-            } else {
-                let scaledWidth = this.thumbnailWidth * global.ui_scale;
-                this.thumbnailActor.width = scaledWidth;
-                this.container.style = `width: ${Math.floor(this.thumbnailWidth - 16)}px;`;
-                if (this.state.settings.verticalThumbs && this.state.settings.showThumbs) {
-                    this.thumbnailActor.height = this.thumbnailHeight;
-                } else if (this.state.settings.verticalThumbs) {
-                    this.thumbnailActor.height = 0;
-                }
+        // If we can't fit all the thumbnails, revert to a vertical menu orientation
+        // with no thumbnails, which can hold more window selections.
+        if ((thumbnailSize * this.groupState.windowCount) > monitorSize) {
+            this.groupState.set({verticalThumbs: true});
+        }
+        let scaledWidth = this.thumbnailWidth * global.ui_scale;
+        this.thumbnailActor.width = scaledWidth;
+        this.container.style = `width: ${Math.floor(this.thumbnailWidth - 16)}px;`;
+        if (this.groupState.verticalThumbs || (this.state.settings.verticalThumbs && this.state.settings.showThumbs)) {
+            this.thumbnailActor.height = this.thumbnailHeight;
+        } else if (this.state.settings.verticalThumbs) {
+            this.thumbnailActor.height = 0;
+        }
 
-                // Replace the old thumbnail
-                if (this.labelContainer) {
-                    this.labelContainer.set_width(scaledWidth - ((scaledWidth * 0.05) * global.ui_scale));
-                }
-                this.label.text = this.metaWindow.title || '';
-                this.getThumbnail();
-            }
-        };
-
-        setThumbSize();
+        // Replace the old thumbnail
+        if (this.labelContainer) {
+            this.labelContainer.set_width(scaledWidth - ((scaledWidth * 0.05) * global.ui_scale));
+        }
+        this.label.text = this.metaWindow.title || '';
+        this.getThumbnail();
     }
 
     hoverPeek(opacity) {
@@ -840,7 +852,8 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                     this.appThumbnails[index] = undefined;
                     this.appThumbnails.splice(index, 1);
                 }
-            }
+            },
+            verticalThumbs: () => this.setVerticalSetting()
         });
 
         this.appThumbnails = [];
@@ -1079,7 +1092,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
 
     setVerticalSetting() {
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
-            this.box.vertical = this.state.settings.verticalThumbs;
+            this.box.vertical = this.groupState.verticalThumbs || this.state.settings.verticalThumbs;
         } else {
             this.box.vertical = true;
         }

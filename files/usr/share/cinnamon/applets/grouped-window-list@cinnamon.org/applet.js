@@ -262,6 +262,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             getPanel: () => (this.panel ? this.panel : null),
             getPanelHeight: () => this._panelHeight,
             getPanelIconSize: () => this.getPanelIconSize(),
+            getPanelMonitor: () => Main.layoutManager.monitors[this.panel.monitorIndex],
             getAppSystem: () => Cinnamon.AppSystem.get_default(),
             getAppFromWMClass: (specialApps, metaWindow) => this.getAppFromWMClass(specialApps, metaWindow),
             getTracker: () => this.tracker,
@@ -900,7 +901,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             // In the case of dragging a group that has a delay before Cinnamon can grab its
             // thumbnail texture, e.g., LibreOffice, defer the refresh.
             if (source.groupState.metaWindows.length > 0) {
-                setTimeout(() => source.groupState.trigger('refreshThumbnails'), 0);
+                setTimeout(() => source.groupState.trigger('windowCount'), 0);
             }
 
 

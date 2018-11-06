@@ -64,11 +64,13 @@ class AppGroup {
             appName: params.app.get_name(),
             appInfo: params.app.get_app_info(),
             metaWindows: params.metaWindows || [],
+            windowCount: params.metaWindows ? params.metaWindows.length : 0,
             lastFocused: params.metaWindow || null,
             isFavoriteApp: !params.metaWindow ? true : params.isFavoriteApp === true,
             autoStartIndex: findIndex(this.state.autoStartApps, (app) => app.id === params.appId),
             willUnmount: false,
             tooltip: null,
+            verticalThumbs: this.state.settings.verticalThumbs,
             groupReady: false
         });
 
@@ -84,7 +86,6 @@ class AppGroup {
         this.labelVisible = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
         this._progress = 0;
         this.padding = 0;
-        this.windowCount = 0;
         this.wasFavapp = false;
         this.time = params.time;
         this.focusedWindow = false;
@@ -123,6 +124,7 @@ class AppGroup {
         this.badge = new St.BoxLayout({
             style_class: 'grouped-window-list-badge',
             important: true,
+            width: 12 * global.ui_scale,
             height: 12 * global.ui_scale,
             x_align: St.Align.START,
             y_align: St.Align.MIDDLE,
@@ -411,7 +413,7 @@ class AppGroup {
         }
         this.label.allocate(childBox, flags);
 
-        let windowCountFactor = this.windowCount > 9 ? 1.5 : 2;
+        let windowCountFactor = this.groupState.windowCount > 9 ? 1.5 : 2;
         childBox.x1 = 0;
         childBox.x2 = childBox.x1 + (this.numberLabel.width * windowCountFactor);
         childBox.y1 = box.y1 - 2;
@@ -838,6 +840,7 @@ class AppGroup {
     }
 
     adjustBadgeSize() {
+        if (this.badge.is_finalized()) return;
         let node = this.badge.peek_theme_node();
         let borderSize = node ? node.get_length('border') : 0;
         if (borderSize) {
@@ -870,7 +873,6 @@ class AppGroup {
                 lastFocused: this.groupState.metaWindows[this.groupState.metaWindows.length - 1]
             }, true);
             this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
-            this.groupState.trigger('refreshThumbnails');
         } else {
             // This is the last window, so this group needs to be destroyed. We'll call back windowRemoved
             // in appList to put the final nail in the coffin.
@@ -990,10 +992,11 @@ class AppGroup {
     calcWindowNumber() {
         if (this.groupState.willUnmount) return;
 
-        this.windowCount = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
-        this.numberLabel.text = this.windowCount.toString();
+        let windowCount = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
+        this.numberLabel.text = windowCount.toString();
+        this.groupState.set({windowCount});
         if (this.state.settings.numDisplay) {
-            if (this.windowCount <= 1) {
+            if (windowCount <= 1) {
                 this.badge.hide();
             } else {
                 if (!this.badge.visible) this.adjustBadgeSize();
