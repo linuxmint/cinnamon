@@ -51,18 +51,14 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
     monitorMoveWindows(i) {
         if (this.state.settings.monitorMoveAllWindows) {
-            for (let z = 0, len = this.groupState.metaWindows.length; z < len; z++) {
-                if (!this.groupState.metaWindows[z]) {
-                    continue;
+            let metaWindows = this.groupState.metaWindows.slice();
+            while (metaWindows.length > 0) {
+                let metaWindow = metaWindows[0];
+                if (metaWindow === this.groupState.lastFocused) {
+                    Main.activateWindow(metaWindow, global.get_current_time());
                 }
-                let focused = 0;
-                if (this.groupState.metaWindows[z].has_focus()) {
-                    ++focused;
-                }
-                if (z === len - 1 && focused === 0) {
-                    Main.activateWindow(this.groupState.metaWindows[z], global.get_current_time());
-                }
-                this.groupState.metaWindows[z].move_to_monitor(i);
+                metaWindow.move_to_monitor(i);
+                metaWindows.splice(0, 1);
             }
         } else {
             this.groupState.lastFocused.move_to_monitor(i);
