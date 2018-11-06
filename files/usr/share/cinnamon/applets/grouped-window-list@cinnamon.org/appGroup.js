@@ -130,7 +130,7 @@ class AppGroup {
             anchor_y: -2,
         });
         this.numberLabel = new St.Label({
-            style: 'font-size: 10px;color:#fff; padding: 0px;',
+            style: 'font-size: 10px;padding: 0px;',
             style_class: 'grouped-window-list-number-label',
             important: true,
             text: '',
@@ -206,6 +206,7 @@ class AppGroup {
 
             this.groupState.set({groupReady: true});
             this.handleFavorite();
+            this.adjustBadgeSize();
         }, 0);
     }
 
@@ -836,6 +837,17 @@ class AppGroup {
         this.handleFavorite();
     }
 
+    adjustBadgeSize() {
+        let node = this.badge.peek_theme_node();
+        let borderSize = node ? node.get_length('border') : 0;
+        if (borderSize) {
+            this.numberLabel.anchor_y += borderSize;
+            this.numberLabel.anchor_x += borderSize;
+            this.badge.width += borderSize;
+            this.badge.height += borderSize;
+        }
+    }
+
     windowRemoved(metaWorkspace, metaWindow, refWindow, cb) {
         if (refWindow === -1) return;
 
@@ -984,7 +996,9 @@ class AppGroup {
             if (this.windowCount <= 1) {
                 this.badge.hide();
             } else {
+                if (!this.badge.visible) this.adjustBadgeSize();
                 this.badge.show();
+
             }
         } else {
             this.badge.hide();
