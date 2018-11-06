@@ -118,7 +118,6 @@ class AppGroup {
         this.iconBox.connect('style-changed', (...args) => this.onIconBoxStyleChanged(...args));
         this.iconBottomClip = 0;
         this.container.add_child(this.iconBox);
-        this.updateIconBoxClip();
         this.setActorAttributes();
 
         this.badge = new St.BoxLayout({
@@ -230,6 +229,7 @@ class AppGroup {
         if (!iconSize) {
             iconSize = this.state.trigger('getPanelIconSize');
         }
+        this.iconSize = iconSize;
 
         this.actor.style = null;
 
@@ -247,7 +247,7 @@ class AppGroup {
         if (this.state.isHorizontal) {
             this.actor.height = panelHeight;
         }
-        this.setIcon(iconSize);
+        this.setIcon();
         this.updateIconBoxClip();
         this.setIconPadding(panelHeight);
         this.setMargin();
@@ -297,12 +297,15 @@ class AppGroup {
         }
     }
 
-    setIcon(iconSize) {
-        this.iconSize = iconSize;
-
+    setIcon(metaWindow) {
         let icon;
+
         if (this.groupState.app) {
-            icon = this.groupState.app.create_icon_texture(this.iconSize);
+            if (metaWindow) {
+                icon = this.groupState.app.create_icon_texture_for_window(this.iconSize, metaWindow);
+            } else {
+                icon = this.groupState.app.create_icon_texture(this.iconSize);
+            }
         } else {
             icon = new St.Icon({
                 icon_name: 'application-default-icon',
@@ -810,6 +813,8 @@ class AppGroup {
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
             this.signals.connect(metaWindow, 'notify::gtk-application-id', (w) => this.onAppChange(w));
             this.signals.connect(metaWindow, 'notify::wm-class', (w) => this.onAppChange(w));
+            this.signals.connect(metaWindow, 'notify::icon', (w) => this.setIcon(w));
+
             if (metaWindow.progress !== undefined) {
                 this._progress = metaWindow.progress;
                 this.signals.connect(metaWindow, 'notify::progress', () => this.onProgressChange(metaWindow));
