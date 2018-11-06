@@ -157,21 +157,6 @@ class AppList {
         this.refreshApps();
     }
 
-    refreshWindows() {
-        each(this.appList, (appGroup) => {
-            if (!appGroup) return;
-            each(appGroup.groupState.metaWindows.slice(), (metaWindow) => {
-                this.windowRemoved(this.metaWorkspace, metaWindow);
-            });
-            if (!appGroup.actor.is_finalized()) {
-                appGroup.actor.set_style_pseudo_class('closed');
-            }
-            // Make sure listeners are triggered
-            appGroup.groupState.set({metaWindows: []});
-        });
-        this.refreshApps();
-    }
-
     loadFavorites() {
         if (!this.state.settings.showPinned) {
             return;

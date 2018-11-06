@@ -498,6 +498,7 @@ class WindowThumbnail {
             groupReady: () => {
                 if (!this.deferred) return;
                 this.refreshThumbnail();
+                this.deferred = false;
             }
         });
 
