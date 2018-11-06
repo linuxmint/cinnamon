@@ -84,6 +84,7 @@ class AppGroup {
         this.labelVisible = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
         this._progress = 0;
         this.padding = 0;
+        this.windowCount = 0;
         this.wasFavapp = false;
         this.time = params.time;
         this.focusedWindow = false;
@@ -122,9 +123,8 @@ class AppGroup {
 
         this.badge = new St.BoxLayout({
             style_class: 'grouped-window-list-badge',
-            width: 12 * global.ui_scale,
-            height: 12 * global.ui_scale,
             important: true,
+            height: 12 * global.ui_scale,
             x_align: St.Align.START,
             y_align: St.Align.MIDDLE,
             show_on_set_parent: false,
@@ -406,8 +406,9 @@ class AppGroup {
         }
         this.label.allocate(childBox, flags);
 
+        let badgeWidth = this.windowCount > 9 ? this.numberLabel.width * 1.5 : this.numberLabel.width * 2;
         childBox.x1 = 0;
-        childBox.x2 = childBox.x1 + this.badge.width;
+        childBox.x2 = childBox.x1 + badgeWidth;
         childBox.y1 = box.y1 - 2;
         childBox.y2 = box.y2 - 1;
         this.numberLabel.anchor_y = Math.abs(this.state.trigger('getPanelHeight') - box.y2);
@@ -972,10 +973,10 @@ class AppGroup {
     calcWindowNumber() {
         if (this.groupState.willUnmount) return;
 
-        let windowNum = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
-        this.numberLabel.text = windowNum.toString();
+        this.windowCount = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
+        this.numberLabel.text = this.windowCount.toString();
         if (this.state.settings.numDisplay) {
-            if (windowNum <= 1) {
+            if (this.windowCount <= 1) {
                 this.badge.hide();
             } else {
                 this.badge.show();
