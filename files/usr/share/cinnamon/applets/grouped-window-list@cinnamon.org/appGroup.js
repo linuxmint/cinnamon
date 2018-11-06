@@ -208,7 +208,6 @@ class AppGroup {
 
             this.groupState.set({groupReady: true});
             this.handleFavorite();
-            this.adjustBadgeSize();
         }, 0);
     }
 
@@ -839,18 +838,6 @@ class AppGroup {
         this.handleFavorite();
     }
 
-    adjustBadgeSize() {
-        if (this.badge.is_finalized()) return;
-        let node = this.badge.peek_theme_node();
-        let borderSize = node ? node.get_length('border') : 0;
-        if (borderSize) {
-            this.numberLabel.anchor_y += borderSize;
-            this.numberLabel.anchor_x += borderSize;
-            this.badge.width += borderSize;
-            this.badge.height += borderSize;
-        }
-    }
-
     windowRemoved(metaWorkspace, metaWindow, refWindow, cb) {
         if (refWindow === -1) return;
 
@@ -999,7 +986,6 @@ class AppGroup {
             if (windowCount <= 1) {
                 this.badge.hide();
             } else {
-                if (!this.badge.visible) this.adjustBadgeSize();
                 this.badge.show();
 
             }
