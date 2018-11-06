@@ -494,7 +494,11 @@ class WindowThumbnail {
                 this.isFocused = this.groupState.lastFocused === this.metaWindow;
                 this.onFocusWindowChange();
             },
-            windowCount: () => this.refreshThumbnail()
+            windowCount: () => this.refreshThumbnail(),
+            groupReady: () => {
+                if (!this.deferred) return;
+                this.refreshThumbnail();
+            }
         });
 
         this.metaWindow = params.metaWindow;
@@ -721,6 +725,11 @@ class WindowThumbnail {
             return;
         }
 
+        if (!this.groupState.groupReady) {
+            this.deferred = true;
+            return;
+        }
+
         let monitor = this.state.trigger('getPanelMonitor');
 
         if (!this.thumbnailActor || this.thumbnailActor.is_finalized()) return;
@@ -731,13 +740,11 @@ class WindowThumbnail {
         this.thumbnailWidth = Math.floor((monitor.width / divider) * this.state.settings.thumbSize) + offset;
         this.thumbnailHeight = Math.floor((monitor.height / divider) * this.state.settings.thumbSize) + offset;
 
-        let monitorSize, thumbnailSize, thumbMultiplier;
+        let monitorSize, thumbnailSize;
         if (!this.state.isHorizontal) {
-            thumbMultiplier = global.ui_scale + (global.ui_scale * 0.5);
             monitorSize = monitor.height;
             thumbnailSize = this.thumbnailHeight;
         } else {
-            thumbMultiplier = global.ui_scale;
             monitorSize = monitor.width;
             thumbnailSize = this.thumbnailWidth;
         }
