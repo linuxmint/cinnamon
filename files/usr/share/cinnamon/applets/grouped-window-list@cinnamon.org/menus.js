@@ -490,12 +490,7 @@ class WindowThumbnail {
                 this.isFocused = this.groupState.lastFocused === this.metaWindow;
                 this.onFocusWindowChange();
             },
-            windowCount: () => this.refreshThumbnail(),
-            groupReady: () => {
-                if (!this.deferred) return;
-                this.refreshThumbnail();
-                this.deferred = false;
-            }
+            windowCount: () => this.refreshThumbnail()
         });
 
         this.metaWindow = params.metaWindow;
@@ -563,13 +558,13 @@ class WindowThumbnail {
         this.actor.add_actor(this.bin);
         this.actor.add_actor(this.thumbnailActor);
 
-        setTimeout(() => this.handleFavorite(), 0);
-
         this.signals.connect(this.actor, 'enter-event', (...args) => this.onEnter(...args));
         this.signals.connect(this.actor, 'leave-event', (...args) => this.onLeave(...args));
         this.signals.connect(this.button, 'button-release-event', (...args) => this.onCloseButtonRelease(...args));
         this.signals.connect(this.actor, 'button-release-event', (...args) => this.connectToWindow(...args));
-        //update focused style
+
+        setTimeout(() => this.handleFavorite(), 0);
+        // Update focused style
         this.onFocusWindowChange();
     }
 
@@ -719,11 +714,6 @@ class WindowThumbnail {
             || !this.groupState.app
             || !this.groupState.metaWindows
             || !this.metaWindow) {
-            return;
-        }
-
-        if (!this.groupState.groupReady) {
-            this.deferred = true;
             return;
         }
 

@@ -828,7 +828,7 @@ class AppGroup {
                 this.groupState.metaWindows.push(metaWindow);
                 this.groupState.trigger('addThumbnailToMenu', metaWindow);
             }
-            this.calcWindowNumber(this.groupState.metaWindows);
+            this.calcWindowNumber();
             this.onFocusChange();
         }
         this.groupState.set({
@@ -847,7 +847,6 @@ class AppGroup {
         this.signals.disconnect('notify::wm-class', metaWindow);
 
         this.groupState.metaWindows.splice(refWindow, 1);
-        this.calcWindowNumber(this.groupState.metaWindows);
 
         if (this.groupState.metaWindows.length > 0 && !this.groupState.willUnmount) {
             if (this.progressOverlay.visible && metaWindow.progress > 0) {
@@ -860,6 +859,7 @@ class AppGroup {
                 lastFocused: this.groupState.metaWindows[this.groupState.metaWindows.length - 1]
             }, true);
             this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
+            this.calcWindowNumber();
         } else {
             // This is the last window, so this group needs to be destroyed. We'll call back windowRemoved
             // in appList to put the final nail in the coffin.
@@ -981,7 +981,12 @@ class AppGroup {
 
         let windowCount = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
         this.numberLabel.text = windowCount.toString();
-        this.groupState.set({windowCount});
+
+        setTimeout(() => {
+            if (!this.groupState.set) return;
+            this.groupState.set({windowCount});
+        }, 0);
+
         if (this.state.settings.numDisplay) {
             if (windowCount <= 1) {
                 this.badge.hide();
