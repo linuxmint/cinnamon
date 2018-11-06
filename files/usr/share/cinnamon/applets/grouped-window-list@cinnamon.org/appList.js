@@ -216,6 +216,15 @@ class AppList {
         });
     }
 
+    shouldWindowBeAdded(metaWindow) {
+        return (this.state.settings.showAllWorkspaces
+            || metaWindow.is_on_all_workspaces()
+            || metaWindow.get_workspace() === this.metaWorkspace)
+        && !metaWindow.is_skip_taskbar()
+        && (!this.state.settings.listMonitorWindows
+            || this.state.monitorWatchList.indexOf(metaWindow.get_monitor()) > -1);
+    }
+
     windowAdded(metaWorkspace, metaWindow, app, isFavoriteApp) {
         if (!this.state) return;
 
@@ -301,12 +310,7 @@ class AppList {
             let appWindows = [];
 
             for (let i = 0; i < _appWindows.length; i++) {
-                if ((this.state.settings.showAllWorkspaces
-                        || _appWindows[i].is_on_all_workspaces()
-                        || _appWindows[i].get_workspace() === this.metaWorkspace)
-                    && !_appWindows[i].is_skip_taskbar()
-                    && (!this.state.settings.listMonitorWindows
-                        || this.state.monitorWatchList.indexOf(_appWindows[i].get_monitor()) > -1)) {
+                if (this.shouldWindowBeAdded(_appWindows[i])) {
                     appWindows.push(_appWindows[i]);
                 }
             }
@@ -322,7 +326,7 @@ class AppList {
                     initApp([], null);
                 }
             }
-        } else if (metaWindow) {
+        } else if (metaWindow && this.shouldWindowBeAdded(metaWindow)) {
             if (this.state.settings.groupApps) {
                 this.appList[refApp].windowAdded(metaWindow, null);
             } else if (transientFavorite && this.appList[refApp].groupState.metaWindows.length === 0) {
