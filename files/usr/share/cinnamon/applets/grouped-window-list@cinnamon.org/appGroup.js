@@ -134,7 +134,8 @@ class AppGroup {
             style_class: 'grouped-window-list-number-label',
             important: true,
             text: '',
-            anchor_x: -3 * global.ui_scale
+            anchor_x: -3 * global.ui_scale,
+            anchor_y: 1 + (global.ui_scale > 1 ? 2 : 0)
         });
         this.numberLabel.clutter_text.ellipsize = false;
         this.badge.add(this.numberLabel, {
@@ -409,12 +410,11 @@ class AppGroup {
         }
         this.label.allocate(childBox, flags);
 
-        let badgeWidth = this.windowCount > 9 ? this.numberLabel.width * 1.5 : this.numberLabel.width * 2;
+        let windowCountFactor = this.windowCount > 9 ? 1.5 : 2;
         childBox.x1 = 0;
-        childBox.x2 = childBox.x1 + badgeWidth;
+        childBox.x2 = childBox.x1 + (this.numberLabel.width * windowCountFactor);
         childBox.y1 = box.y1 - 2;
         childBox.y2 = box.y2 - 1;
-        this.numberLabel.anchor_y = Math.abs(this.state.trigger('getPanelHeight') - box.y2);
         this.badge.allocate(childBox, flags);
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation
