@@ -752,9 +752,11 @@ class WindowThumbnail {
 
         // If we can't fit all the thumbnails, revert to a vertical menu orientation
         // with no thumbnails, which can hold more window selections.
-        if ((thumbnailSize * this.groupState.windowCount) > monitorSize) {
-            this.groupState.set({verticalThumbs: true});
-        }
+        let verticalThumbs = (thumbnailSize * this.groupState.windowCount) > monitorSize;
+        let currentVerticalThumbsState = this.groupState.verticalThumbs;
+        this.groupState.set({verticalThumbs});
+        if (verticalThumbs !== currentVerticalThumbsState) return;
+
         let scaledWidth = this.thumbnailWidth * global.ui_scale;
         this.thumbnailActor.width = scaledWidth;
         this.container.style = `width: ${Math.floor(this.thumbnailWidth - 16)}px;`;
@@ -847,7 +849,12 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                     this.appThumbnails.splice(index, 1);
                 }
             },
-            verticalThumbs: () => this.setVerticalSetting()
+            verticalThumbs: () => {
+                // Preserve the menu's open state after refreshing
+                let {isOpen} = this;
+                this.setVerticalSetting()
+                if (isOpen) this.open(true);
+            }
         });
 
         this.appThumbnails = [];
