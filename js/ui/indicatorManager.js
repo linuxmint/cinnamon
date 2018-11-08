@@ -1242,46 +1242,49 @@ IndicatorActor.prototype = {
         // we use the one that is smaller or equal the iconSize
 
         // maybe it's empty? that's bad.
-        if (iconPixmapArray && iconPixmapArray.length > 0) {
-            let sortedIconPixmapArray = iconPixmapArray.sort(function(pixmapA, pixmapB) {
-                // we sort biggest to smallest
-                let areaA = pixmapA[0] * pixmapA[1];
-                let areaB = pixmapB[0] * pixmapB[1];
+        if (!iconPixmapArray || iconPixmapArray.length < 1) return null;
 
-                return areaB - areaA;
+        let sortedIconPixmapArray = iconPixmapArray.sort(function(pixmapA, pixmapB) {
+            // we sort biggest to smallest
+            let areaA = pixmapA[0] * pixmapA[1];
+            let areaB = pixmapB[0] * pixmapB[1];
+
+            return areaB - areaA;
+        });
+
+        let qualifiedIconPixmapArray = sortedIconPixmapArray.filter(function(pixmap) {
+            // we disqualify any pixmap that is bigger than our requested size
+            return pixmap[0] <= iconSize && pixmap[1] <= iconSize;
+        });
+
+        // if no one got qualified, we use the smallest one available
+        let iconPixmap = qualifiedIconPixmapArray.length > 0 ? qualifiedIconPixmapArray[0] : sortedIconPixmapArray.pop();
+
+        let [ width, height, bytes ] = iconPixmap;
+        let rowstride = width * 4;
+
+        try {
+            let image = new Clutter.Image();
+            image.set_bytes(
+                bytes,
+                Cogl.PixelFormat.ARGB_8888,
+                width,
+                height,
+                rowstride
+            );
+
+            return new Clutter.Actor({
+                width: Math.min(width, iconSize),
+                height: Math.min(height, iconSize),
+                content: image,
+                scale_x: global.ui_scale,
+                scale_y: global.ui_scale,
+                pivot_point: new Clutter.Point({ x: .5, y: .5 })
             });
-            let iconPixmap = sortedIconPixmapArray.pop();
-            if (iconSize) {
-                let qualifiedIconPixmapArray = sortedIconPixmapArray.filter(function(pixmap) {
-                    // we disqualify any pixmap that is bigger than our requested size
-                    return pixmap[0] <= iconSize && pixmap[1] <= iconSize;
-                });
-
-                // if no one got qualified, we use the smallest one available
-                if (qualifiedIconPixmapArray.length > 0)
-                    iconPixmap = qualifiedIconPixmapArray[0];
-            }
-            let [ width, height, bytes ] = iconPixmap;
-            try {
-                let stream = Gio.MemoryInputStream.new_from_bytes(bytes);
-                let pixbuf = GdkPixbuf.Pixbuf.new_from_stream(stream, null);
-
-                let icon = new St.Icon({
-                    style_class: 'applet-icon',//FIXME: Use instead the status icon style class.
-                    gicon: pixbuf,
-                });
-                if (iconSize)
-                    icon.set_icon_size(iconSize);
-                //Connect this always, because the user can enable/disable the panel scale mode
-                //when he want, otherwise we need to control the scale mode internally.
-                icon.connect('notify::mapped', Lang.bind(this, this._onIconMapped));
-                return icon;
-            } catch (e) {
-                // the image data was probably bogus. We don't really know why, but it _does_ happen.
-                // we could log it here, but that doesn't really help in tracking it down.
-            }
+        } catch (e) {
+            global.logWarning(`[IndicatorManager] Failed to create indicator icon\n${e.message}`);
+            return null;
         }
-        return null;
     },
 
     _onIconMapped: function(actor, event) {
