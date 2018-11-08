@@ -1321,7 +1321,7 @@ StScrollBar StButton#vhandle:hover {
     text-shadow: black 1px 0px 2px;
     font-size: 10px;
     color:#fff;
-    padding: 0px;
+    padding: 0;
 }
 .grouped-window-list-badge {
     border-radius: 256px;
