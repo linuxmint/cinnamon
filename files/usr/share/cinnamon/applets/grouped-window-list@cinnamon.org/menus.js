@@ -634,7 +634,6 @@ class WindowThumbnail {
     handleCloseClick() {
         this.onLeave();
         this.stopClick = true;
-        this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
         this.hoverPeek(OPACITY_OPAQUE);
 
         this.metaWindow.delete(global.get_current_time());
