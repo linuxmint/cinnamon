@@ -34,7 +34,7 @@ const Main = imports.ui.main;
 const DBusMenu = imports.ui.dbusMenu;
 const SignalManager = imports.misc.signalManager;
 const CinnamonConfig = imports.misc.config;
-const {each, map, filter, find, findIndex} = imports.misc.util;
+const {each, map, filter, find, findIndex, tryFn} = imports.misc.util;
 
 const SNICategory = {
     APPLICATION: 'ApplicationStatus',
@@ -462,20 +462,24 @@ var AppIndicator = class AppIndicator {
             bus, path, "org.freedesktop.DBus.Properties", "Get",
             GLib.Variant.new("(ss)", ["com.canonical.dbusmenu", "Version"]),
             GLib.VariantType.new("(v)"), Gio.DBusCallFlags.NONE, -1, null, function(conn, result) {
-                try {
-                    var val = conn.call_finish(result);
-                } catch (e) {
-                    global.logWarning("Invalid menu: "+e);
-                    return callback(false);
-                }
-                var version = val.deep_unpack()[0].deep_unpack();
-                //FIXME: what do we implement?
-                if (version >= 2) {
-                    return callback(true, bus, path);
-                } else {
-                    global.logWarning("Incompatible dbusmenu version: "+version);
-                    return callback(false);
-                }
+                return tryFn(
+                    function() {
+                        let val = conn.call_finish(result);
+                        let version = val.deep_unpack()[0].deep_unpack();
+
+                        // FIXME: what do we implement?
+                        if (version >= 2) {
+                            return callback(true, bus, path);
+                        } else {
+                            global.logWarning(`Incompatible dbusmenu version: ${version}`);
+                            return callback(false);
+                        }
+                    },
+                    function(e) {
+                        global.dump_gjs_stack(`Invalid menu: ${e.message}`);
+                        return callback(false);
+                    }
+                );
             }
         );
     }
