@@ -912,7 +912,6 @@ Signals.addSignalMethods(XmlLessDBusProxy.prototype);
 var IndicatorActor = class IndicatorActor {
     constructor(indicator, size) {
         this.actor = new St.BoxLayout({
-            style_class: 'applet-box', //FIXME: Use instead the status actor style class.
             reactive: true,
             track_hover: true,
             // The systray use a layout manager, we need to fill the space of the actor
@@ -925,9 +924,9 @@ var IndicatorActor = class IndicatorActor {
 
         this.menu = null;
         this._menuSignal = 0;
-        // FIXME: This could be desided on settings:
+        // FIXME: This could be in settings:
         this._showInPassiveMode = false;
-        // FIXME: This could be desided on settings (also 3 state left, right, both):
+        // FIXME: This could be in settings (left, right, both):
         this.openMenuOnRightClick = false;
 
         this._indicator = indicator;
@@ -935,7 +934,7 @@ var IndicatorActor = class IndicatorActor {
         this._iconCache = new IconCache();
         this._mainIcon = new St.Bin();
         this._overlayIcon = new St.Bin();
-        this._label = new St.Label({'y-align': St.Align.END });//FIXME: We need an style class for the label.
+        this._label = new St.Label({'y-align': St.Align.END }); // FIXME: We need a style class for the label.
 
         this.actor.add_actor(this._mainIcon);
         this.actor.add_actor(this._overlayIcon);
@@ -964,14 +963,14 @@ var IndicatorActor = class IndicatorActor {
     }
 
     setMenu(menu) {
-       if (this._menuSignal > 0) {
-           this.actor.disconnect(this._menuSignal);
-           this._menuSignal = 0;
-       }
-       if (menu) {
-           this._menuSignal = this.actor.connect('button-press-event', Lang.bind(this, this._onIconButtonPressEvent));
-           this.menu = menu;
-       }
+        if (this._menuSignal > 0) {
+            this.actor.disconnect(this._menuSignal);
+            this._menuSignal = 0;
+        }
+        if (menu) {
+            this._menuSignal = this.actor.connect('button-press-event', Lang.bind(this, this._onIconButtonPressEvent));
+            this.menu = menu;
+        }
     }
 
     setSize(size) {
@@ -981,7 +980,7 @@ var IndicatorActor = class IndicatorActor {
         }
     }
 
-    // FIXME: The Tooltips are an object and is render in html format. To show the real tooltips
+    // FIXME: The Tooltips are an object and render in html format. To show the real tooltips
     // (this._indicator.toolTip), we will need a good html parser.
     // In the tooltips implementation, maybe imports.gi.WebKit and use Webkit.WebView and then loadData.
     // So instead we will used the title as a tooltip.
@@ -990,7 +989,7 @@ var IndicatorActor = class IndicatorActor {
     }
 
     _updatedLabel() {
-        if (this._indicator.label != undefined) {
+        if (this._indicator.label != null) {
             this._label.set_text(this._indicator.label);
         } else {
             this._label.set_text("");
@@ -999,14 +998,15 @@ var IndicatorActor = class IndicatorActor {
     }
 
     // FIXME: When an indicator is in passive state, the recommended behavior is hide his actor,
-    // but this involve for example, never display the update notifier on ubuntu.
+    // but this involve for example, to never display the update notifier on ubuntu.
     _updatedStatus() {
-        if (this._indicator.status == SNIStatus.PASSIVE)
+        if (this._indicator.status === SNIStatus.PASSIVE) {
             this.actor.visible = this._showInPassiveMode;
-        else if (this._indicator.status == SNIStatus.ACTIVE || this._indicator.status == SNIStatus.NEEDS_ATTENTION)
+        } else if (this._indicator.status === SNIStatus.ACTIVE || this._indicator.status === SNIStatus.NEEDS_ATTENTION) {
             this.actor.visible = true;
-        if ((this.menu)&&(!this.actor.visible))
-            this.menu.close(false);
+        }
+
+        if (this.menu && !this.actor.visible) this.menu.close(false);
     }
 
     // Will look the icon up in the cache, if it's found
@@ -1044,35 +1044,37 @@ var IndicatorActor = class IndicatorActor {
 
     _onIconButtonPressEvent(actor, event) {
         let draggableParent = this._getDragable();
-        if (draggableParent && (!draggableParent.inhibit))
-            return false;
+        if (draggableParent && !draggableParent.inhibit) return false;
+
+        let button = event.get_button();
 
         if (this.openMenuOnRightClick) {
             if ((event.get_button() == 3) && this.menu) {
                 this.menu.toggle();
                 return true;
-            } else if (event.get_button() == 1) {
+            } else if (button === 1) {
                 this.menu.close();
                 this._indicator.open();
-            }else if (event.get_button() == 2) {
+            } else if (button === 2) {
                 this._indicator.secondaryActivate();
             }
-        } else if ((event.get_button() == 1) && this.menu) {
+        } else if (button === 1 && this.menu) {
             this.menu.toggle();
-        } else if ((event.get_button() == 2) && this.menu) {
+        } else if (button=== 2 && this.menu) {
             this._indicator.secondaryActivate();
         }
         return false;
     }
 
-    // FIXME: We can move this outsite the applet, or otherwise, the user of the api
-    // need to provide an actor._delegate Object for the dragable parent actor.
+    // TODO: Why is this draggable?
+    // FIXME: We can move this outside the applet, or otherwise, the user of the api
+    // needs to provide an actor._delegate Object for the draggable parent actor.
     _getDragable() {
-        let actorDragable = this.actor.get_parent();
-        while (actorDragable) {
-            if ((actorDragable._delegate)&&(actorDragable._delegate._draggable))
-                return actorDragable._delegate._draggable;
-            actorDragable = actorDragable.get_parent();
+        let actorDraggable = this.actor.get_parent();
+        while (actorDraggable) {
+            if (actorDraggable._delegate && actorDraggable._delegate._draggable)
+                return actorDraggable._delegate._draggable;
+            actorDraggable = actorDraggable.get_parent();
         }
         return null;
     }
@@ -1090,8 +1092,7 @@ var IndicatorActor = class IndicatorActor {
 
     _getIconInfo(name, themePath, size) {
         // assume as a default size 16px if not set.
-        if (!size)
-           size = 16;
+        if (!size) size = 16;
         // realSize will contain the actual icon size in contrast to the requested icon size.
         let realSize = size;
         let path = null;
@@ -1134,14 +1135,14 @@ var IndicatorActor = class IndicatorActor {
                 iconInfo = icon_theme.lookup_icon(name, size,
                                                   Gtk.IconLookupFlags.GENERIC_FALLBACK);
                 // no icon? that's bad!
-                if (iconInfo === null) {
-                    global.logError("unable to lookup icon for "+name);
+                if (iconInfo == null) {
+                    global.logError(`[IndicatorActor] Unable to lookup icon for ${name}`);
                 } else { // we have an icon
                     // the icon size may not match the requested size, especially with custom themes
                     if (iconInfo.get_base_size() < size) {
                         // stretched icons look very ugly, we avoid that and just show the smaller icon
                         realSize = iconInfo.get_base_size();
-                     }
+                    }
                     // get the icon path
                     path = iconInfo.get_filename();
                 }
@@ -1155,13 +1156,13 @@ var IndicatorActor = class IndicatorActor {
             let pixbuf = GdkPixbuf.Pixbuf.new_from_file(path);
             let icon = new St.Icon({
                 name: 'CinnamonTrayIcon',
-                style_class: '',//FIXME: Use instead the status icon style class.
+                style_class: 'system-status-icon',
                 gicon: pixbuf,
             });
             if (iconSize)
                 icon.set_icon_size(iconSize);
-            //Connect this always, because the user can enable/disable the panel scale mode
-            //when he want, otherwise we need to control the scale mode internally.
+            // Connect this always, because the user can enable/disable the panel scale mode
+            // when he want, otherwise we need to control the scale mode internally.
             icon.connect('notify::mapped', Lang.bind(this, this._onIconMapped));
             return icon;
         } catch (e) {
@@ -1349,6 +1350,7 @@ var IndicatorActor = class IndicatorActor {
 
         this._iconCache.destroy();
         this.actor.destroy();
+        unref(this);
     }
 };
 
