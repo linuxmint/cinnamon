@@ -34,7 +34,7 @@ const Main = imports.ui.main;
 const DBusMenu = imports.ui.dbusMenu;
 const SignalManager = imports.misc.signalManager;
 const CinnamonConfig = imports.misc.config;
-const {each, map, filter, find, findIndex, tryFn} = imports.misc.util;
+const {each, map, filter, find, findIndex, tryFn, unref} = imports.misc.util;
 
 const SNICategory = {
     APPLICATION: 'ApplicationStatus',
@@ -796,21 +796,14 @@ var XmlLessDBusProxy = class XmlLessDBusProxy {
     }
 
     _getPropertyCallback(conn, result, propertyName, callback) {
-        try {
-            let newValue = conn.call_finish(result).deep_unpack()[0].deep_unpack();
+        if (this.propertyWhitelist.indexOf(propertyName) === -1) return;
 
-            if (this.propertyWhitelist.indexOf(propertyName) > -1) {
-                this.cachedProperties[propertyName] = newValue;
-                this.emit("-property-changed", propertyName, newValue);
-                this.emit("-property-changed::"+propertyName, newValue);
-            }
-        } catch (e) {
-            // this can mean two things:
-            //  - the interface is gone (or doesn't conform or whatever)
-            //  - the property doesn't exist
-            // we do not care and we don't even log it.
-            //global.logWarning("XmlLessDBusProxy: while getting property: "+e)
-        }
+        tryFn(() => {
+            let newValue = conn.call_finish(result).deep_unpack()[0].deep_unpack();
+            this.cachedProperties[propertyName] = newValue;
+            this.emit('-property-changed', propertyName, newValue);
+            this.emit('-property-changed::' + propertyName, newValue);
+        });
 
         if (callback) callback();
     }
@@ -818,10 +811,10 @@ var XmlLessDBusProxy = class XmlLessDBusProxy {
     invalidateAllProperties(callback) {
         let waitFor = 0;
 
-        this.propertyWhitelist.forEach(function(prop) {
+        each(this.propertyWhitelist, (prop) => {
             waitFor += 1;
             this.invalidateProperty(prop, maybeFinished);
-        }, this);
+        });
 
         function maybeFinished() {
             waitFor -= 1;
@@ -833,11 +826,11 @@ var XmlLessDBusProxy = class XmlLessDBusProxy {
     _onPropertyChanged(conn, sender, path, iface, signal, params) {
         let [ , changed, invalidated ] = params.deep_unpack();
 
-        for (let i in changed) {
-            if (this.propertyWhitelist.indexOf(i) > -1) {
-                this.cachedProperties[i] = changed[i].deep_unpack();
-                this.emit("-property-changed", i, this.cachedProperties[i]);
-                this.emit("-property-changed::"+i, this.cachedProperties[i]);
+        for (let key in changed) {
+            if (this.propertyWhitelist.indexOf(key) > -1) {
+                this.cachedProperties[key] = changed[key].deep_unpack();
+                this.emit('-property-changed', key, this.cachedProperties[key]);
+                this.emit('-property-changed::' + key, this.cachedProperties[key]);
             }
         }
 
@@ -905,6 +898,8 @@ var XmlLessDBusProxy = class XmlLessDBusProxy {
         this.connection.signal_unsubscribe(this._signalId);
         this.connection.signal_unsubscribe(this._propChangedId);
         this.emit('-destroy');
+        unref(this.cachedProperties);
+        unref(this);
     }
 };
 Signals.addSignalMethods(XmlLessDBusProxy.prototype);
