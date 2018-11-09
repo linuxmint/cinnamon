@@ -34,6 +34,7 @@ const Main = imports.ui.main;
 const DBusMenu = imports.ui.dbusMenu;
 const SignalManager = imports.misc.signalManager;
 const CinnamonConfig = imports.misc.config;
+const {each, map, filter, find, findIndex} = imports.misc.util;
 
 const SNICategory = {
     APPLICATION: 'ApplicationStatus',
@@ -63,7 +64,7 @@ const WATCHER_OBJECT = '/StatusNotifierWatcher';
 
 const ITEM_OBJECT = '/StatusNotifierItem';
 
-const StatusNotifierWatcherIface = 
+const StatusNotifierWatcherIface =
     '<node> \
         <interface name="org.kde.StatusNotifierWatcher"> \
             <method name="RegisterStatusNotifierItem"> \
@@ -102,14 +103,13 @@ function IndicatorManager() {
 }
 
 IndicatorManager.prototype = {
-    
+
     _init: function() {
         this._enable = false;
         this._signalStatus = 0;
         this._signalSystray = 0;
-        this._indicatorsSignals = null;
         this.statusNotifierWatcher = null;
-        this._indicators = {};
+        this._indicators = [];
         this._blackList = [];
         this.setEnabled(global.settings.get_boolean("enable-indicators"));
         this._signalSettings = global.settings.connect('changed::enable-indicators',
@@ -122,9 +122,9 @@ IndicatorManager.prototype = {
 
     _onSystrayManagerChanged: function(manager) {
         let rolesHandled = manager.getRoles();
-        for (let id in this._indicators) {
-            this._conditionalEnable(id, rolesHandled);
-        }
+        each(this._indicators, (indicator) => {
+            this._conditionalEnable(indicator.id, rolesHandled);
+        });
     },
 
     // handlers = { "signal": handler }
@@ -146,24 +146,19 @@ IndicatorManager.prototype = {
     _onIndicatorDispatch: function(notifierWatcher, id) {
         if (this.statusNotifierWatcher != null) {
             let appIndicator = notifierWatcher.getItemById(id);
-            let signalsIndicator = this._connectAndSaveId(appIndicator, {
-                'ready'        : Lang.bind(this, this._onIndicatorReady),
-                'destroy'      : Lang.bind(this, this._onIndicatorDestroy),
-                'status'       : Lang.bind(this, this._onIndicatorChanged),
-                'label'        : Lang.bind(this, this._onIndicatorChanged),
-                'reset'        : Lang.bind(this, this._onIndicatorChanged),
-                'overlay-icon' : Lang.bind(this, this._onIndicatorChanged),
-                'icon'         : Lang.bind(this, this._onIndicatorChanged),
-            });
-            /*let signalManager = new SignalManager.SignalManager(this);
-            signalManager.connect(appIndicator, 'ready', this._onIndicatorReady);
-            signalManager.connect(appIndicator, 'destroy', this._onIndicatorDestroy);
-            signalManager.connect(appIndicator, 'status', this._onIndicatorChanged);
-            signalManager.connect(appIndicator, 'label', this._onIndicatorChanged);
-            signalManager.connect(appIndicator, 'reset', this._onIndicatorChanged);
-            signalManager.connect(appIndicator, 'overlay-icon', this._onIndicatorChanged);
-            signalManager.connect(appIndicator, 'icon', this._onIndicatorChanged);*/
-            this._indicatorsSignals[id] = signalsIndicator;
+            let signalManager = new SignalManager.SignalManager();
+
+            signalManager.connect(appIndicator, 'ready', this._onIndicatorReady, this);
+            signalManager.connect(appIndicator, 'destroy', this._onIndicatorDestroy, this);
+            signalManager.connect(appIndicator, 'status', this._onIndicatorChanged, this);
+            signalManager.connect(appIndicator, 'label', this._onIndicatorChanged, this);
+            signalManager.connect(appIndicator, 'reset', this._onIndicatorChanged, this);
+            signalManager.connect(appIndicator, 'overlay-icon', this._onIndicatorChanged, this);
+            signalManager.connect(appIndicator, 'icon', this._onIndicatorChanged, this);
+
+            appIndicator.signalManager = signalManager;
+            appIndicator.notifierId = id;
+
             if (appIndicator.isReady) {
                 this._onIndicatorReady(appIndicator);
             }
@@ -171,23 +166,25 @@ IndicatorManager.prototype = {
     },
 
     _onIndicatorReady: function(appIndicator) {
-        this._indicators[appIndicator.id] = appIndicator;
+        this._indicators.push(appIndicator);
         let rolesHandled = Main.systrayManager.getRoles();
         if (this._conditionalEnable(appIndicator.id, rolesHandled, this._blackList)) {
+            appIndicator._id = appIndicator.id;
             global.log("Adding indicator: " + appIndicator.id);
             this.emit('indicator-added', appIndicator);
         }
     },
 
     _onIndicatorDestroy: function(appIndicator) {
-        let notId = appIndicator.getNotifierId();
-        if (notId in this._indicatorsSignals) {
-            this._disconnectSignals(appIndicator, this._indicatorsSignals[notId]);
-            delete this._indicators[notId];
-        }
-        if (appIndicator.id in this._indicators) {
-            delete this._indicators[appIndicator.id];
-            global.log("Removing indicator: " + appIndicator.id);
+        let index = findIndex(this._indicators, function(indicator) {
+            return indicator._id === appIndicator._id;
+        });
+
+        if (index > -1) {
+            global.log(`Removing indicator: ${this._indicators[index]._id}`);
+            this._indicators[index].signalManager.disconnectAllSignals();
+            this._indicators[index] = null;
+            this._indicators.splice(index, 1);
             this.emit('indicator-removed', appIndicator);
         }
     },
@@ -219,15 +216,15 @@ IndicatorManager.prototype = {
 
     isInBlackList: function(id) {
         let hiddenIcons = Main.systrayManager.getRoles();
-        if (hiddenIcons.indexOf(id) != -1 )
+        if (hiddenIcons.indexOf(id) > -1 )
             return true;
-        if (this._blackList.indexOf(id) != -1 )
+        if (this._blackList.indexOf(id) > -1 )
             return true;
         return false;
     },
 
     insertInBlackList: function(id) {
-        if (!(id in this._blackList)) {
+        if (this._blackList.indexOf(id) === -1) {
             this._blackList.push(id);
             this._enableIndicatorId(id, false);
         }
@@ -235,32 +232,29 @@ IndicatorManager.prototype = {
 
     removeFromBlackList: function(id) {
         let pos = this._blackList.indexOf(id);
-        if (pos != -1) {
+        if (pos > -1) {
             this._blackList.splice(pos, 1);
             this._disableIndicatorId(id, true);
         }
     },
-    
+
     getIndicatorIds: function() {
-        let list = [];
-        for (let id in this._indicators) {
-            list.push(id);
-        }
-        return list;
+        return map(this._indicators, function(indicator) {
+            return indicator.id;
+        });
     },
 
     getIndicatorById: function(id) {
-        if (id in this._indicators)
-            return this._indicators[id];
-        return null;
+        return find(this._indicators, function(indicator) {
+            return indicator.id === id;
+        });
     },
 
     setEnabled: function(enable) {
-        if (this._enable != enable) {
+        if (this._enable !== enable) {
             this._enable = enable;
-            this._indicators = {};
+            this._indicators = [];
             if (this._enable) {
-                this._indicatorsSignals = {};
                 this.statusNotifierWatcher = new StatusNotifierWatcher();
                 if (this._signalStatus == 0) {
                     this._signalStatus = this.statusNotifierWatcher.connect('indicator-dispatch',
@@ -280,7 +274,6 @@ IndicatorManager.prototype = {
                     this._signalSystray = 0;
                 }
                 this.statusNotifierWatcher.destroy();
-                this._indicatorsSignals = null;
                 this.statusNotifierWatcher = null;
             }
         }
@@ -377,7 +370,7 @@ AppIndicator.prototype = {
                 if (this._proxy.propertyWhitelist.indexOf(prop + 'Name') > -1)
                     this._proxy.invalidateProperty(prop + 'Name');
             // and the ayatana guys made sure to invent yet another way of composing these signals...
-            } else if (signal == 'XAyatanaNewLabel') { 
+            } else if (signal == 'XAyatanaNewLabel') {
                 this._proxy.invalidateProperty('XAyatanaLabel');
             } else if (signal == 'XAyatanaNewLabelGuide') {
                 this._proxy.invalidateProperty('XAyatanaNewLabelGuide');
@@ -567,7 +560,7 @@ AppIndicator.prototype = {
 
     open: function() {
         // FIXME: The original implementation don't use WindowID, because is not able to get
-        // the x11 window id from a MetaWindow nor can we call any X11 functions, but is 
+        // the x11 window id from a MetaWindow nor can we call any X11 functions, but is
         // possible on cinnamon. Luckily for Gnome Shell, the Activate method usually works fine.
         // parameters are "an hint to the item where to show eventual windows" [sic]
         // ... and don't seem to have any effect.
@@ -760,7 +753,7 @@ Signals.addSignalMethods(StatusNotifierWatcher.prototype);
 /**
  * #XmlLessDBusProxy:
  * @short_description: This is a proxy for org.freedesktop.DBus.Properties and org.kde.StatusNotifierItem.
- * 
+ *
  * This proxy works completely without an interface xml, making it both flexible
  * and mistake-prone. It will cache properties and emit events, and provides
  * shortcuts for calling methods.
@@ -985,36 +978,18 @@ IndicatorActor.prototype = {
         this._updatedLabel();
         this._updatedStatus();
 
-        this._signalManager = new SignalManager.SignalManager(null);
+        this._signalManager = new SignalManager.SignalManager();
         this._signalManager.connect(this.actor, 'scroll-event', this._handleScrollEvent, this);
         this._signalManager.connect(Gtk.IconTheme.get_default(), 'changed', this._invalidateIcon, this);
-        //this._signalManager.connect(this._indicator, 'icon', this._updateIcon);
-        //this._signalManager.connect(this._indicator, 'overlay-icon', this._updateOverlayIcon);
-        //this._signalManager.connect(this._indicator, 'ready', this._invalidateIcon);
-        //this._signalManager.connect(this._indicator, 'status', this._updatedStatus);
-        //this._signalManager.connect(this._indicator, 'finalized', this.destroy);
-        //this._signalManager.connect(this._indicator, 'destroy', this.destroy);
-        this._signalsIndicator = this._connectAndSaveId(this._indicator, {
-            'icon'        : Lang.bind(this, this._updateIcon),
-            'overlay-icon': Lang.bind(this, this._updateOverlayIcon),
-            'ready'       : Lang.bind(this, this._invalidateIcon),
-            'status'      : Lang.bind(this, this._updatedStatus),
-            'label'       : Lang.bind(this, this._updatedLabel),
-            'finalized'   : Lang.bind(this, this.destroy),
-            'destroy'     : Lang.bind(this, this.destroy),
-        });
+        this._signalManager.connect(this._indicator, 'icon', this._updateIcon, this);
+        this._signalManager.connect(this._indicator, 'overlay-icon', this._updateOverlayIcon, this);
+        this._signalManager.connect(this._indicator, 'ready', this._invalidateIcon, this);
+        this._signalManager.connect(this._indicator, 'status', this._updatedStatus, this);
+        this._signalManager.connect(this._indicator, 'finalized', this.destroy, this);
+        this._signalManager.connect(this._indicator, 'destroy', this.destroy, this);
 
         if (indicator.isReady)
             this._invalidateIcon();
-    },
-
-    // handlers = { "signal": handler }
-    _connectAndSaveId: function(target, handlers , idArray) {
-        idArray = typeof idArray != 'undefined' ? idArray : [];
-        for (let signal in handlers) {
-            idArray.push(target.connect(signal, handlers[signal]));
-        }
-        return idArray;
     },
 
     _disconnectSignals: function(obj, signalsHandlers) {
@@ -1132,7 +1107,7 @@ IndicatorActor.prototype = {
     },
 
     // FIXME: We can move this outsite the applet, or otherwise, the user of the api
-    // need to provide an actor._delegate Object for the dragable parent actor. 
+    // need to provide an actor._delegate Object for the dragable parent actor.
     _getDragable: function() {
         let actorDragable = this.actor.get_parent();
         while (actorDragable) {
@@ -1405,7 +1380,6 @@ IndicatorActor.prototype = {
 
     destroy: function() {
         this._signalManager.disconnectAllSignals();
-        this._disconnectSignals(this._indicator, this._signalsIndicator);
         if (this._menuSignal > 0)
             this.actor.disconnect(this._menuSignal);
         if (this.menu) {
@@ -1428,7 +1402,7 @@ IndicatorActor.prototype = {
  * Without caching, the garbage collection would never be able to handle the amount of new icon data.
  * If the lifetime of an icon is over, the cache will destroy the icon. (!)
  * The presence of an inUse property set to true on the icon will extend the lifetime.
- * 
+ *
  * how to use: see IconCache.add, IconCache.get
  */
 function IconCache() {
@@ -1442,7 +1416,7 @@ IconCache.prototype = {
         this._lifetime = {}; //we don't want to attach lifetime to the object
         this._gc();
     },
-    
+
     add: function(id, o) {
         // global.log("IconCache: adding "+id);
         if (!(o && id)) return null;
@@ -1452,7 +1426,7 @@ IconCache.prototype = {
         this._lifetime[id] = new Date().getTime() + LIFETIME_TIMESPAN;
         return o;
     },
-    
+
     remove: function(id) {
         if (id in this._cache) {
             // global.log('IconCache: removing '+id);
@@ -1467,7 +1441,7 @@ IconCache.prototype = {
         for (let id in this._cache)
             this.remove(id);
     },
-    
+
     // returns an object from the cache, or null if it can't be found.
     get: function(id) {
         if (id in this._cache) {
@@ -1477,7 +1451,7 @@ IconCache.prototype = {
         }
         else return null;
     },
-    
+
     _gc: function() {
         let time = new Date().getTime();
         for (let id in this._cache) {
@@ -1492,7 +1466,7 @@ IconCache.prototype = {
         if (!this._stopGc) Mainloop.timeout_add(GC_INTERVAL, Lang.bind(this, this._gc));
         return false; //we just added our timeout again.
     },
-    
+
     destroy: function() {
         this._stopGc = true;
         this.clear();
