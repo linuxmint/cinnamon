@@ -279,7 +279,8 @@ Signals.addSignalMethods(IndicatorManager.prototype);
 
 var AppIndicator = class AppIndicator {
 
-    constructor(busName, object) {
+    constructor(busName, object, id) {
+        this._id = id;
         this._busName = busName;
         this._object = object;
         this._proxy = null;
@@ -585,8 +586,8 @@ var StatusNotifierWatcher = class StatusNotifierWatcher {
                                   Gio.BusNameOwnerFlags.NONE,
                                   Lang.bind(this, this._acquiredName),
                                   Lang.bind(this, this._lostName));
-        this._items = { };
-        this._nameWatcher = { };
+        this._items = [];
+        this._nameWatchers = [];
     }
 
     _acquiredName() {
@@ -594,10 +595,11 @@ var StatusNotifierWatcher = class StatusNotifierWatcher {
     }
 
     _lostName() {
-        if (this._everAcquiredName)
+        if (this._everAcquiredName) {
             global.log('Lost name' + WATCHER_BUS_NAME);
-        else
+        } else {
             global.logWarning('Failed to acquire ' + WATCHER_BUS_NAME);
+        }
     }
 
     // create a unique index for the _items dictionary
@@ -606,9 +608,9 @@ var StatusNotifierWatcher = class StatusNotifierWatcher {
     }
 
     getItemById(id) {
-        if (id in this._items)
-            return this._items[id];
-        return null;
+        return find(this._items, function(item) {
+            return item._id === id;
+        });
     }
 
     RegisterStatusNotifierItemAsync(params, invocation) {
@@ -626,16 +628,25 @@ var StatusNotifierWatcher = class StatusNotifierWatcher {
         }
 
         let id = this._getItemId(busName, objPath);
+        let appIndicator = find(this._items, function(item) {
+            return item._id === id;
+        });
 
-        if (this._items[id]) {
-            //delete the old one and add the new indicator
-            // global.logWarning("Attempting to re-register "+id+"; resetting instead");
-            this._items[id].reset();
+        if (appIndicator) {
+            // Delete the old one and add the new indicator
+            appIndicator.reset();
         } else {
-            this._items[id] = new AppIndicator(busName, objPath);
+            let appIndicator = new AppIndicator(busName, objPath, id);
+            this._items.push(appIndicator);
             this._dbusImpl.emit_signal('ServiceRegistered', GLib.Variant.new('(s)', service));
-            this._nameWatcher[id] = Gio.DBus.session.watch_name(busName, Gio.BusNameWatcherFlags.NONE, null,
-                                        Lang.bind(this, this._itemVanished));
+            this._nameWatchers.push({
+                id: appIndicator._id,
+                obj: Gio.DBus.session.watch_name(
+                    busName, Gio.BusNameWatcherFlags.NONE,
+                    null,
+                    () => this._remove(appIndicator._id)
+                )
+            });
             this.emit('indicator-dispatch', id);
             this._dbusImpl.emit_property_changed('RegisteredStatusNotifierItems',
                 GLib.Variant.new('as', this.RegisteredStatusNotifierItems));
@@ -643,20 +654,26 @@ var StatusNotifierWatcher = class StatusNotifierWatcher {
         invocation.return_value(null);
     }
 
-    _itemVanished(proxy, busName) {
-        // FIXME: this is useless if the path name disappears while the bus stays alive (not unheard of)
-        for (let id in this._items) {
-            if (id.indexOf(busName) == 0) {
-                this._remove(id);
-            }
-        }
-    }
-
     _remove(id) {
-        this._items[id].destroy();
-        delete this._items[id];
-        Gio.DBus.session.unwatch_name(this._nameWatcher[id]);
-        delete this._nameWatcher[id];
+        let index = findIndex(this._items, function(item) {
+            return item._id === id;
+        });
+        if (index > -1) {
+            id = this._items[index].getNotifierId();
+            this._items[index].destroy();
+            this._items[index] = null;
+            this._items.splice(index, 1);
+        }
+
+        index = findIndex(this._nameWatchers, function(item) {
+            return item.id === id;
+        });
+        if (index > -1) {
+            Gio.DBus.session.unwatch_name(this._nameWatchers[index].obj);
+            this._nameWatchers[index] = null;
+            this._nameWatchers.splice(index, 1);
+        }
+
         this._dbusImpl.emit_signal('ServiceUnregistered', GLib.Variant.new('(s)', id));
         this._dbusImpl.emit_property_changed('RegisteredStatusNotifierItems',
                          GLib.Variant.new('as', this.RegisteredStatusNotifierItems));
@@ -679,7 +696,9 @@ var StatusNotifierWatcher = class StatusNotifierWatcher {
     }
 
     get RegisteredStatusNotifierItems() {
-        return Object.keys(this._items);
+        return map(this._items, function(item) {
+            return item._id;
+        });
     }
 
     get IsStatusNotifierHostRegistered() {
@@ -692,14 +711,15 @@ var StatusNotifierWatcher = class StatusNotifierWatcher {
             // which results in our unholy debounce hack (see extension.js)
             Gio.DBus.session.unown_name(this._ownName);
             this._dbusImpl.unexport();
-            for (let i in this._nameWatcher) {
-                Gio.DBus.session.unwatch_name(this._nameWatcher[i]);
-            }
-            delete this._nameWatcher;
-            for (let i in this._items) {
-                this._items[i].destroy();
-            }
-            delete this._items;
+
+            each(this._nameWatchers, function(item) {
+                Gio.DBus.session.unwatch_name(item.obj);
+            });
+
+            each(this._items, function(item) {
+                item.destroy();
+            });
+
             this._isDestroyed = true;
         }
     }
