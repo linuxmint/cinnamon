@@ -11,7 +11,7 @@ class CinnamonSlideshowApplet extends Applet.IconApplet {
         super(orientation, panel_height, instanceId);
 
         this._slideshowSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.background.slideshow' });
-
+        
         if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
             if (!this._slideshowSettings.get_boolean("slideshow-paused")) {
                 this.set_applet_icon_symbolic_name('slideshow-play');
@@ -34,6 +34,10 @@ class CinnamonSlideshowApplet extends Applet.IconApplet {
 
         this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
+        this._update_background_name();
+        
+        this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
         this.next_image_context_menu_item = new PopupMenu.PopupIconMenuItem(_("Next Background"),
                 "media-seek-forward",
                 St.IconType.SYMBOLIC);
@@ -49,6 +53,8 @@ class CinnamonSlideshowApplet extends Applet.IconApplet {
             Util.spawnCommandLine("cinnamon-settings backgrounds");
         }));
         this._applet_context_menu.addMenuItem(this.open_settings_context_menu_item);
+        
+        this._applet_context_menu.connect('open-state-changed', () => this._update_background_name());
     }
 
     on_applet_clicked(event) {
@@ -101,6 +107,18 @@ class CinnamonSlideshowApplet extends Applet.IconApplet {
 
     get_next_image() {
         Main.slideshowManager.getNextImage();
+    }
+    
+
+    _update_background_name() {
+        if (!this._current_background_menu) {
+            this._current_background_menu = new PopupMenu.PopupMenuItem("");
+            this._applet_context_menu.addMenuItem(this._current_background_menu);
+        }
+        const settings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.background' });
+        const file = decodeURIComponent(settings.get_string('picture-uri') || '');
+        const background = file.split('/').pop();
+        this._current_background_menu.label.set_text(_('Current background: ') + background);
     }
 }
 
