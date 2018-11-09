@@ -28,12 +28,9 @@ function _patchContainerClass(containerClass) {
     // This one is a straightforward mapping of the C method
     containerClass.prototype.child_set = function(actor, props) {
         let meta = this.get_child_meta(actor);
-        // Some properties cannot be modified in mozjs60.
-        // e.g. "Property StTableChild.y_align is not writable"
-        for (let key in props) {
-            try {
-                meta[key] = props[key];
-            } catch (e) {}
+        let keys = Object.keys(props);
+        for (let i = 0; i < keys.length; i++) {
+            meta[keys[i]] = props[keys[i]];
         }
     };
 

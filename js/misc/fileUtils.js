@@ -2,6 +2,7 @@
 
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const ByteArray = imports.byteArray;
 
 var importNames = [
     'mainloop',
@@ -89,8 +90,8 @@ function getUserDesktopDir() {
     if (userdirsFile.query_exists(null)){
         try{
             let data = userdirsFile.load_contents(null);
-            let dataDic = new Array();
-            let lines = data[1].toString().split("\n");
+            let dataDic = [];
+            let lines = ByteArray.toString(data[1]).split("\n");
             for (var i in lines){
                 if (!lines[i] || lines[i][0]=="#") continue;
                 let line = lines[i].split("=", 2);
@@ -171,7 +172,7 @@ function createExports({path, dir, meta, type, file, size, JS, returnIndex, reje
         moduleIndex = LoadedModules.length - 1;
     }
 
-    JS = `'use strict';${JS};`;
+    JS = `'use strict';${ByteArray.toString(JS)};`;
     // Regex matches the top level variable names, and appends them to the module.exports object,
     // mimicking the native CJS importer.
     const exportsRegex = /^module\.exports(\.[a-zA-Z0-9_$]+)?\s*=/m;

@@ -5,6 +5,7 @@ const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Signals = imports.signals;
 const St = imports.gi.St;
+const ByteArray = imports.byteArray;
 
 const AppletManager = imports.ui.appletManager;
 const Config = imports.misc.config;
@@ -612,7 +613,7 @@ function loadMetaData({state, path, uuid, userDir, folder}) {
                     reject();
                     return;
                 }
-                meta = JSON.parse(json);
+                meta = JSON.parse(ByteArray.toString(json));
             } catch (e) {
                 logError(`Failed to load/parse metadata.json`, uuid, e);
                 meta = createMetaDummy(uuid, oldPath, State.ERROR);
