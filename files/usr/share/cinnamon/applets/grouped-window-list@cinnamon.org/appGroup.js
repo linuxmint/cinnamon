@@ -508,10 +508,6 @@ class AppGroup {
             this.actor.remove_style_pseudo_class('closed');
         }
 
-        if (this.actor.has_style_pseudo_class('focus')) {
-            this.hadFocusPseudoClass = true;
-        }
-
         this.actor.add_style_pseudo_class('hover');
 
         this.hoverMenu.onMenuEnter();
@@ -520,19 +516,9 @@ class AppGroup {
     onLeave() {
         if (this.state.panelEditMode) return false;
 
-        this.resetHoverStatus();
-
-        if (this.hadClosedPseudoClass && this.groupState.metaWindows.length === 0) {
-            this.hadClosedPseudoClass = false;
-            this.actor.add_style_pseudo_class('closed');
-        }
-
-        if (this.hadFocusPseudoClass && this.groupState.appId === this.listState.lastFocusedApp) {
-            this.actor.add_style_pseudo_class('focus');
-        }
-
         this.setFavoriteAttributes();
         this.hoverMenu.onMenuLeave();
+        this.resetHoverStatus();
     }
 
     resetHoverStatus() {
@@ -546,8 +532,10 @@ class AppGroup {
             }
         });
 
-        if (!focused) {
-            this.actor.remove_style_pseudo_class('hover');
+        this.actor.remove_style_pseudo_class('hover');
+
+        if (focused) {
+            this.actor.add_style_pseudo_class('focus');
         }
     }
 
