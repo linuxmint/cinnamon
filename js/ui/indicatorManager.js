@@ -265,6 +265,7 @@ var IndicatorManager = class IndicatorManager {
             this._signalSettings = 0;
         }
         this.emit('indicator-destroy');
+        unref(this);
     }
 };
 Signals.addSignalMethods(IndicatorManager.prototype);
@@ -527,6 +528,7 @@ var AppIndicator = class AppIndicator {
             this.isReady = false;
         }
         this.emit('destroy');
+        unref(this);
     }
 
     open() {
@@ -710,22 +712,23 @@ var StatusNotifierWatcher = class StatusNotifierWatcher {
     }
 
     destroy() {
-        if (!this._isDestroyed) {
-            // this doesn't do any sync operation and doesn't allow us to hook up the event of being finished
-            // which results in our unholy debounce hack (see extension.js)
-            Gio.DBus.session.unown_name(this._ownName);
-            this._dbusImpl.unexport();
+        if (this._isDestroyed) return;
 
-            each(this._nameWatchers, function(item) {
-                Gio.DBus.session.unwatch_name(item.obj);
-            });
+        // this doesn't do any sync operation and doesn't allow us to hook up the event of being finished
+        // which results in our unholy debounce hack (see extension.js)
+        Gio.DBus.session.unown_name(this._ownName);
+        this._dbusImpl.unexport();
 
-            each(this._items, function(item) {
-                item.destroy();
-            });
+        each(this._nameWatchers, function(item) {
+            Gio.DBus.session.unwatch_name(item.obj);
+        });
 
-            this._isDestroyed = true;
-        }
+        each(this._items, function(item) {
+            item.destroy();
+        });
+
+        this._isDestroyed = true;
+        unref(this, ['_isDestroyed']);
     }
 };
 Signals.addSignalMethods(StatusNotifierWatcher.prototype);
@@ -1122,7 +1125,7 @@ var IndicatorActor = class IndicatorActor {
             let icon_theme = null;
             if (themePath) {
                 icon_theme = new Gtk.IconTheme();
-                Gtk.IconTheme.get_default().get_search_path().forEach(function(path) {
+                each(Gtk.IconTheme.get_default().get_search_path(), function(path) {
                     icon_theme.append_search_path(path);
                 });
                 icon_theme.append_search_path(themePath);
@@ -1187,7 +1190,7 @@ var IndicatorActor = class IndicatorActor {
             return areaB - areaA;
         });
 
-        let qualifiedIconPixmapArray = sortedIconPixmapArray.filter(function(pixmap) {
+        let qualifiedIconPixmapArray = filter(sortedIconPixmapArray, function(pixmap) {
             // we disqualify any pixmap that is bigger than our requested size
             return pixmap[0] <= iconSize && pixmap[1] <= iconSize;
         });
