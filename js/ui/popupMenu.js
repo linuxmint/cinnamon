@@ -2171,7 +2171,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
      * Opens the popup menu
      */
     open(animate) {
-        if (this.isOpen)
+        if (this.isOpen || this.actor.is_finalized())
             return;
 
         Main.popup_rendering_actor = this.actor;
