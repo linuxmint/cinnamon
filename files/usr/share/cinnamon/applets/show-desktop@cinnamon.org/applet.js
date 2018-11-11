@@ -34,7 +34,7 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
         let showDeskletsOption = new PopupMenu.PopupIconMenuItem(
             _('Show Desklets'),
             'cs-desklets',
-            St.IconType.FULLCOLOR
+            St.IconType.SYMBOLIC
         );
         showDeskletsOption.connect('activate', () => this.toggleShowDesklets());
         this._applet_context_menu.addMenuItem(showDeskletsOption);
