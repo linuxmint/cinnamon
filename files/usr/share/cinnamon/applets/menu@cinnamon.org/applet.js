@@ -3283,13 +3283,15 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         exactMatch = app.get_id();
                 }
             }
-            for (let i in this._applicationsButtons) {
-                let app = this._applicationsButtons[i].app;
-                if (Util.latinise(app.get_name().toLowerCase()).indexOf(pattern)!==-1 ||
-                    (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).indexOf(pattern)!==-1) ||
-                    (app.get_description() && Util.latinise(app.get_description().toLowerCase()).indexOf(pattern)!==-1) ||
-                    (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).indexOf(pattern)!==-1))
-                    res.push(app.get_id());
+            if (!exactMatch) {
+                for (let i in this._applicationsButtons) {
+                    let app = this._applicationsButtons[i].app;
+                    if (Util.latinise(app.get_name().toLowerCase()).indexOf(pattern)!==-1 ||
+                        (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).indexOf(pattern)!==-1) ||
+                        (app.get_description() && Util.latinise(app.get_description().toLowerCase()).indexOf(pattern)!==-1) ||
+                        (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).indexOf(pattern)!==-1))
+                        res.push(app.get_id());
+                }
             }
         } else res = applist;
         return [res, exactMatch];
