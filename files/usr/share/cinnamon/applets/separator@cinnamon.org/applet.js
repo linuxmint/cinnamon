@@ -24,18 +24,20 @@ class CinnamonSeparatorApplet extends Applet.Applet {
                 this._line.destroy();
             }
 
+            this.actor.remove_style_class_name('vertical');
+
             this._line = new St.BoxLayout({ style_class: 'applet-separator-line', reactive: false, track_hover: false});
             this.actor.add(this._line, { y_align: Clutter.ActorAlign.CENTER, x_align: Clutter.ActorAlign.CENTER, y_fill: true, y_expand: true});
         } else {
             if (this._line) {
                 this._line.destroy();
             }
+
+            this.actor.add_style_class_name('vertical');
+
             this._line = new St.BoxLayout({ style_class: 'applet-separator-line-vertical', reactive: false, track_hover: false });
             this._line.set_important(true);
             this.actor.add(this._line, { y_align: Clutter.ActorAlign.CENTER, x_align: Clutter.ActorAlign.CENTER});
-
-            this._line.set_height(2);
-            this._line.set_width((this._panelHeight - 8));
         }
     }
 }
