@@ -737,8 +737,11 @@ class WindowThumbnail {
             thumbnailSize = this.thumbnailWidth;
         }
 
+        let padding = this.thumbnailActor.style_length('padding');
+        let margin = this.thumbnailActor.style_length('margin');
+
         let i = 0;
-        while (((thumbnailSize + this.thumbnailPadding) * this.groupState.windowCount > monitorSize)
+        while (((thumbnailSize + this.thumbnailPadding + padding + margin) * this.groupState.windowCount > monitorSize)
             && this.thumbnailWidth > 64
             && this.thumbnailHeight > 64) {
             this.thumbnailWidth -= 1;
@@ -753,7 +756,7 @@ class WindowThumbnail {
 
         // If we can't fit all the thumbnails, revert to a vertical menu orientation
         // with no thumbnails, which can hold more window selections.
-        let verticalThumbs = ((thumbnailSize + this.thumbnailPadding) * this.groupState.windowCount) > monitorSize;
+        let verticalThumbs = ((thumbnailSize + this.thumbnailPadding + padding + margin) * this.groupState.windowCount) > monitorSize;
         let currentVerticalThumbsState = this.groupState.verticalThumbs;
         this.groupState.set({verticalThumbs});
         if (verticalThumbs !== currentVerticalThumbsState) return;

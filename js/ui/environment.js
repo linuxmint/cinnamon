@@ -122,6 +122,14 @@ function init() {
         return St.describe_actor(this);
     };
 
+    // Safe wrapper for theme inspection
+    St.Widget.prototype.style_length = function(property) {
+        if (this.is_finalized() || !this.realized) return 0;
+        let node = this.peek_theme_node();
+        if (!node) return 0;
+        return node.get_length(property);
+    };
+
     let origToString = Object.prototype.toString;
     Object.prototype.toString = function() {
         let base = origToString.call(this);
