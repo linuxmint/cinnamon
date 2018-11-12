@@ -1114,6 +1114,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("show-application-icons", "showApplicationIcons", this._refreshAll);
         this.settings.bind("favbox-show", "favBoxShow", this._favboxtoggle);
         this.settings.bind("enable-animation", "enableAnimation", null);
+        this.settings.bind("favbox-min-height", "favBoxMinHeight", this._recalc_height);
 
         this._updateKeybinding();
 
@@ -1262,10 +1263,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
                                (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
 
-
         this.applicationsScrollBox.style = "height: "+scrollBoxHeight / global.ui_scale +"px;";
-
-        this.favoritesScrollBox.set_height(this.categoriesBox.height - this.systemButtonsBox.height);
+        let monitor = Main.layoutManager.monitors[this.panel.monitorIndex];
+        let min_size = Math.max(this.favBoxMinHeight * global.ui_scale, this.categoriesBox.height - this.systemButtonsBox.height);
+        let max_size = monitor.height - (this.systemButtonsBox.height * 2);
+        let size = Math.min(min_size, max_size);
+        this.favoritesScrollBox.set_height(size);
     }
 
     on_orientation_changed (orientation) {
