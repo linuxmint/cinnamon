@@ -2906,6 +2906,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.categoriesOverlayBox.add_actor(this.categoriesBox);
 
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
+        this.favoritesScrollBox = new St.ScrollView({
+            x_fill: true,
+            y_fill: false,
+            y_align: St.Align.START,
+            style_class: 'vfade menu-applications-scrollbox'
+        });
 
         this.a11y_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.a11y.applications" });
         this.a11y_settings.connect("changed::screen-magnifier-enabled", Lang.bind(this, this._updateVFade));
@@ -2934,16 +2940,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.categoriesApplicationsBox.actor.add_actor(this.categoriesOverlayBox);
         this.categoriesApplicationsBox.actor.add_actor(this.applicationsScrollBox);
 
-        this.favoritesScrollBox = new St.ScrollView({
-            x_fill: true,
-            y_fill: false,
-            y_align: St.Align.START,
-            style_class: 'vfade menu-applications-scrollbox'
-        });
-        this.favoritesScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER);
-
         this.favoritesBox = new FavoritesBox().actor;
         this.favoritesScrollBox.add_actor(this.favoritesBox);
+        this.favoritesScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER);
+
         this.leftBox.add(this.favoritesScrollBox, {
             y_align: St.Align.END,
             y_fill: false
@@ -3002,6 +3002,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _update_autoscroll() {
         this.applicationsScrollBox.set_auto_scrolling(this.autoscroll_enabled);
+        this.favoritesScrollBox.set_auto_scrolling(this.autoscroll_enabled);
     }
 
     _on_allocation_changed(box, flags, data) {
