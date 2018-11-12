@@ -1411,13 +1411,6 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .grouped-window-list-thumbnail-menu {
-    background: rgba(80,80,80,0.8);
-    border: 1px solid #a5a5a5;
-    border-radius: 8px;
-    padding: 20px;
-    font-size: 9pt;
-    color: white;
-    text-shadow: black 0px 0px 2px;
 }
 .grouped-window-list-thumbnail-menu .item-box {
     padding: 10px;
