@@ -532,15 +532,16 @@ class WindowThumbnail {
             y_expand: false
         });
 
-        this.label = new St.Label({
+        let label = new St.Label({
             style_class: 'grouped-window-list-thumbnail-label',
             important: true
         });
 
         this.labelContainer = new St.Bin({
-            y_align: St.Align.MIDDLE
+            y_align: St.Align.MIDDLE,
+            x_expand: true,
+            child: label
         });
-        this.labelContainer.add_actor(this.label);
         this.container.add_actor(this.labelContainer);
 
         this.button = new St.Button({
@@ -770,11 +771,7 @@ class WindowThumbnail {
             this.thumbnailActor.height = 0;
         }
 
-        // Replace the old thumbnail
-        if (this.labelContainer) {
-            this.labelContainer.set_width(scaledWidth - ((scaledWidth * 0.05) * global.ui_scale));
-        }
-        this.label.text = this.metaWindow.title || '';
+        this.labelContainer.child.text = this.metaWindow.title || '';
         this.getThumbnail();
     }
 
