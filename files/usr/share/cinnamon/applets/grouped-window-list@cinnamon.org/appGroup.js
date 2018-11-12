@@ -64,11 +64,13 @@ class AppGroup {
             appName: params.app.get_name(),
             appInfo: params.app.get_app_info(),
             metaWindows: params.metaWindows || [],
+            windowCount: params.metaWindows ? params.metaWindows.length : 0,
             lastFocused: params.metaWindow || null,
             isFavoriteApp: !params.metaWindow ? true : params.isFavoriteApp === true,
             autoStartIndex: findIndex(this.state.autoStartApps, (app) => app.id === params.appId),
             willUnmount: false,
             tooltip: null,
+            verticalThumbs: this.state.settings.verticalThumbs,
             groupReady: false
         });
 
@@ -110,31 +112,48 @@ class AppGroup {
             important: true,
             show_on_set_parent: false
         });
-        this.container.add_actor(this.progressOverlay);
+        this.container.add_child(this.progressOverlay);
 
         // Create the app button icon, number label, and text label for titleDisplay
         this.iconBox = new St.Bin({name: 'appMenuIcon'});
         this.iconBox.connect('style-changed', (...args) => this.onIconBoxStyleChanged(...args));
         this.iconBottomClip = 0;
-        this.container.add_actor(this.iconBox);
-        this.updateIconBoxClip();
+        this.container.add_child(this.iconBox);
         this.setActorAttributes();
+
+        this.badge = new St.BoxLayout({
+            style_class: 'grouped-window-list-badge',
+            important: true,
+            width: 12 * global.ui_scale,
+            height: 12 * global.ui_scale,
+            x_align: St.Align.START,
+            y_align: St.Align.MIDDLE,
+            show_on_set_parent: false,
+            anchor_y: -2,
+        });
+        this.numberLabel = new St.Label({
+            style: 'font-size: 10px;padding: 0px;',
+            style_class: 'grouped-window-list-number-label',
+            important: true,
+            text: '',
+            anchor_x: -3 * global.ui_scale,
+            anchor_y: 1 + (global.ui_scale > 1 ? 2 : 0)
+        });
+        this.numberLabel.clutter_text.ellipsize = false;
+        this.badge.add(this.numberLabel, {
+            x_align: St.Align.START,
+            y_align: St.Align.START,
+        });
+        this.container.add_child(this.badge);
+
         this.label = new St.Label({
             style_class: 'grouped-window-list-button-label',
             important: true,
             text: '',
             show_on_set_parent: this.state.settings.titleDisplay !== 1 && this.state.settings.titleDisplay !== 4
         });
-        this.numberLabel = new St.Label({
-            style_class: 'grouped-window-list-item-label grouped-window-list-number-label',
-            important: true,
-            text: ''
-        });
-        this.numberLabel.clutter_text.ellipsize = false;
-
-        this.container.add_actor(this.numberLabel);
         this.label.x_align = St.Align.START;
-        this.container.add_actor(this.label);
+        this.container.add_child(this.label);
 
         this.groupState.set({tooltip: new Tooltips.PanelItemTooltip({actor: this.actor}, '', this.state.orientation)});
 
@@ -213,6 +232,7 @@ class AppGroup {
         if (!iconSize) {
             iconSize = this.state.trigger('getPanelIconSize');
         }
+        this.iconSize = iconSize;
 
         this.actor.style = null;
 
@@ -230,7 +250,7 @@ class AppGroup {
         if (this.state.isHorizontal) {
             this.actor.height = panelHeight;
         }
-        this.setIcon(iconSize);
+        this.setIcon();
         this.updateIconBoxClip();
         this.setIconPadding(panelHeight);
         this.setMargin();
@@ -280,12 +300,15 @@ class AppGroup {
         }
     }
 
-    setIcon(iconSize) {
-        this.iconSize = iconSize;
-
+    setIcon(metaWindow) {
         let icon;
+
         if (this.groupState.app) {
-            icon = this.groupState.app.create_icon_texture(this.iconSize);
+            if (metaWindow) {
+                icon = this.groupState.app.create_icon_texture_for_window(this.iconSize, metaWindow);
+            } else {
+                icon = this.groupState.app.create_icon_texture(this.iconSize);
+            }
         } else {
             icon = new St.Icon({
                 icon_name: 'application-default-icon',
@@ -388,18 +411,13 @@ class AppGroup {
             childBox.x1 = Math.max(0, childBox.x2 - naturalWidth);
         }
         this.label.allocate(childBox, flags);
-        if (direction === Clutter.TextDirection.LTR) {
-            childBox.x1 = -3 * global.ui_scale;
-            childBox.x2 = childBox.x1 + this.numberLabel.width;
-            childBox.y1 = box.y1 - 2;
-            childBox.y2 = box.y2 - 1;
-        } else {
-            childBox.x1 = -this.numberLabel.width;
-            childBox.x2 = childBox.x1 + this.numberLabel.width;
-            childBox.y1 = box.y1;
-            childBox.y2 = box.y2 - 1;
-        }
-        this.numberLabel.allocate(childBox, flags);
+
+        let windowCountFactor = this.groupState.windowCount > 9 ? 1.5 : 2;
+        childBox.x1 = 0;
+        childBox.x2 = childBox.x1 + (this.numberLabel.width * windowCountFactor);
+        childBox.y1 = box.y1 - 2;
+        childBox.y2 = box.y2 - 1;
+        this.badge.allocate(childBox, flags);
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation
         if (this.groupState.metaWindows.length > 0 && this.container.realized) {
@@ -485,11 +503,6 @@ class AppGroup {
     onEnter() {
         if (this.state.panelEditMode) return false;
 
-        if (this.actor.has_style_pseudo_class('closed')) {
-            this.hadClosedPseudoClass = true;
-            this.actor.remove_style_pseudo_class('closed');
-        }
-
         this.actor.add_style_pseudo_class('hover');
 
         this.hoverMenu.onMenuEnter();
@@ -498,18 +511,12 @@ class AppGroup {
     onLeave() {
         if (this.state.panelEditMode) return false;
 
-        this.resetHoverStatus();
-
-        if (this.hadClosedPseudoClass && this.groupState.metaWindows.length === 0) {
-            this.hadClosedPseudoClass = false;
-            this.actor.add_style_pseudo_class('closed');
-        }
-
-        this.setFavoriteAttributes();
         this.hoverMenu.onMenuLeave();
+        this.resetHoverStatus();
+        this.checkFocusStyle();
     }
 
-    resetHoverStatus() {
+    checkFocusStyle() {
         if (this.actor.is_finalized()) return;
 
         let focused = false;
@@ -520,9 +527,14 @@ class AppGroup {
             }
         });
 
-        if (!focused) {
-            this.actor.remove_style_pseudo_class('hover');
+        if (focused) {
+            this.actor.add_style_pseudo_class('focus');
         }
+    }
+
+    resetHoverStatus() {
+        if (this.actor.is_finalized()) return;
+        this.actor.remove_style_pseudo_class('hover');
     }
 
     setActiveStatus(state) {
@@ -546,6 +558,7 @@ class AppGroup {
     }
 
     onFocusChange(hasFocus) {
+        if (this.state.thumbnailMenuOpen) return;
         // If any of the windows associated with our app have focus,
         // we should set ourselves to active
         if (hasFocus) {
@@ -633,7 +646,7 @@ class AppGroup {
 
     showOrderLabel(number) {
         this.numberLabel.text = (number + 1).toString();
-        this.numberLabel.show();
+        this.badge.show();
     }
 
     launchNewInstance() {
@@ -747,7 +760,7 @@ class AppGroup {
             } else {
                 this.listState.trigger('closeAllHoverMenus');
             }
-            this.windowHandle(false);
+            this.windowHandle();
         }
     }
 
@@ -797,6 +810,8 @@ class AppGroup {
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
             this.signals.connect(metaWindow, 'notify::gtk-application-id', (w) => this.onAppChange(w));
             this.signals.connect(metaWindow, 'notify::wm-class', (w) => this.onAppChange(w));
+            this.signals.connect(metaWindow, 'notify::icon', (w) => this.setIcon(w));
+
             if (metaWindow.progress !== undefined) {
                 this._progress = metaWindow.progress;
                 this.signals.connect(metaWindow, 'notify::progress', () => this.onProgressChange(metaWindow));
@@ -808,7 +823,7 @@ class AppGroup {
                 this.groupState.metaWindows.push(metaWindow);
                 this.groupState.trigger('addThumbnailToMenu', metaWindow);
             }
-            this.calcWindowNumber(this.groupState.metaWindows);
+            this.calcWindowNumber();
             this.onFocusChange();
         }
         this.groupState.set({
@@ -827,7 +842,6 @@ class AppGroup {
         this.signals.disconnect('notify::wm-class', metaWindow);
 
         this.groupState.metaWindows.splice(refWindow, 1);
-        this.calcWindowNumber(this.groupState.metaWindows);
 
         if (this.groupState.metaWindows.length > 0 && !this.groupState.willUnmount) {
             if (this.progressOverlay.visible && metaWindow.progress > 0) {
@@ -840,7 +854,7 @@ class AppGroup {
                 lastFocused: this.groupState.metaWindows[this.groupState.metaWindows.length - 1]
             }, true);
             this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
-            this.groupState.trigger('refreshThumbnails');
+            this.calcWindowNumber();
         } else {
             // This is the last window, so this group needs to be destroyed. We'll call back windowRemoved
             // in appList to put the final nail in the coffin.
@@ -891,7 +905,7 @@ class AppGroup {
 
         each(this.hoverMenu.appThumbnails, (thumbnail) => {
             if (thumbnail.metaWindow === metaWindow) {
-                thumbnail.label.set_text(metaWindow.title);
+                thumbnail.labelContainer.child.set_text(metaWindow.title);
                 return false;
             }
         });
@@ -938,38 +952,36 @@ class AppGroup {
         if (changed) {
             setTimeout(() => this.listState.trigger('updateAppGroupIndexes', this.groupState.appId), 0);
         }
-        this.setFavoriteAttributes();
+
         if (this.groupState.metaWindows.length === 0 && this.state.appletReady) {
             this.hoverMenu.close();
             this.onLeave();
-            this.actor.add_style_pseudo_class('closed');
             return;
-        } else if (this.actor.has_style_pseudo_class('closed')) {
-            this.actor.remove_style_pseudo_class('closed');
         }
         this.onWindowTitleChanged(this.groupState.lastFocused);
         this.onFocusChange();
     }
 
-    setFavoriteAttributes() {
-        if ((!this.groupState.app || this.groupState.app.state === 0) && this.groupState.isFavoriteApp) {
-            this.actor.set_style_pseudo_class('closed');
-        }
-    }
-
     calcWindowNumber() {
         if (this.groupState.willUnmount) return;
 
-        let windowNum = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
-        this.numberLabel.text = windowNum.toString();
+        let windowCount = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
+        this.numberLabel.text = windowCount.toString();
+
+        setTimeout(() => {
+            if (!this.groupState.set) return;
+            this.groupState.set({windowCount});
+        }, 0);
+
         if (this.state.settings.numDisplay) {
-            if (windowNum <= 1) {
-                this.numberLabel.hide();
+            if (windowCount <= 1) {
+                this.badge.hide();
             } else {
-                this.numberLabel.show();
+                this.badge.show();
+
             }
         } else {
-            this.numberLabel.hide();
+            this.badge.hide();
         }
     }
 

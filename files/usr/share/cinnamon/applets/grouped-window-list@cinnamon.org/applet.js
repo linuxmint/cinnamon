@@ -251,6 +251,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             lastTitleDisplay: null,
             scrollActive: false,
             thumbnailMenuOpen: false,
+            thumbnailCloseButtonOffset: global.ui_scale > 1 ? -10 : 0
         });
 
         // key-function pairs of actions that can be triggered from the store's callback queue. This allows the
@@ -262,6 +263,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             getPanel: () => (this.panel ? this.panel : null),
             getPanelHeight: () => this._panelHeight,
             getPanelIconSize: () => this.getPanelIconSize(),
+            getPanelMonitor: () => Main.layoutManager.monitors[this.panel.monitorIndex],
             getAppSystem: () => Cinnamon.AppSystem.get_default(),
             getAppFromWMClass: (specialApps, metaWindow) => this.getAppFromWMClass(specialApps, metaWindow),
             getTracker: () => this.tracker,
@@ -396,24 +398,26 @@ class GroupedWindowListApplet extends Applet.Applet {
         if (this.state.appletReady && this.state.panelEditMode) {
             return;
         }
-        // Query apps for the current workspace
-        this.updateMonitorWatchlist();
-        this.onSwitchWorkspace();
         this.bindAppKeys();
         this.updateSpacing();
         this.state.set({appletReady: true});
     }
 
     on_applet_instances_changed(instance) {
-        if (!this.state.appletReady
-            || !this.state.settings.listMonitorWindows
-            || (instance && instance.instance_id === this.instance_id)) {
+        if (!this.state.appletReady) {
             return;
         }
 
-        this.numberOfMonitors = null;
-        this.updateMonitorWatchlist();
-        this.refreshCurrentWindows();
+        if (this.state.settings.listMonitorWindows) {
+            this.numberOfMonitors = null;
+            this.updateMonitorWatchlist();
+        }
+
+        if (instance && instance.instance_id === this.instance_id) {
+            this.onSwitchWorkspace();
+        } else {
+            this.refreshCurrentAppList();
+        }
     }
 
     on_panel_edit_mode_changed() {
@@ -576,11 +580,6 @@ class GroupedWindowListApplet extends Applet.Applet {
     refreshCurrentAppList() {
         let appList = this.appLists[this.state.currentWs];
         if (appList) setTimeout(() => appList.refreshList(), 0);
-    }
-
-    refreshCurrentWindows() {
-        let appList = this.appLists[this.state.currentWs];
-        if (appList) appList.refreshWindows();
     }
 
     refreshAllAppLists() {
@@ -900,7 +899,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             // In the case of dragging a group that has a delay before Cinnamon can grab its
             // thumbnail texture, e.g., LibreOffice, defer the refresh.
             if (source.groupState.metaWindows.length > 0) {
-                setTimeout(() => source.groupState.trigger('refreshThumbnails'), 0);
+                setTimeout(() => source.groupState.trigger('windowCount'), 0);
             }
 
 
@@ -962,6 +961,11 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     onSwitchWorkspace() {
+        setTimeout(() => this._onSwitchWorkspace(), 0);
+    }
+
+    _onSwitchWorkspace() {
+        if (!this.state) return;
         this.state.set({currentWs: global.screen.get_active_workspace_index()});
         let metaWorkspace = global.screen.get_workspace_by_index(this.state.currentWs);
 
@@ -999,6 +1003,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     onUIScaleChange() {
+        this.state.set({thumbnailCloseButtonOffset: global.ui_scale > 1 ? -10 : 0});
         this.refreshAllAppLists();
     }
 

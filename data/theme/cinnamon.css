@@ -1319,6 +1319,13 @@ StScrollBar StButton#vhandle:hover {
 .grouped-window-list-number-label {
     z-index: 99;
     text-shadow: black 1px 0px 2px;
+    font-size: 10px;
+    color:#fff;
+    padding: 0;
+}
+.grouped-window-list-badge {
+    border-radius: 256px;
+    background-color: #000000;
 }
 .grouped-window-list-button-label {
     padding-left: 4px;
@@ -1330,9 +1337,9 @@ StScrollBar StButton#vhandle:hover {
 .grouped-window-list-item-box {
     color: rgba(255,255,255,1.0);
     background-gradient-direction: vertical;
-    background-gradient-start: rgba(255,255,255,0.05);
-    background-gradient-end: rgba(255,255,255,0.2);
-    box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
+    background-gradient-start: rgba(255,255,255,0);
+    background-gradient-end: rgba(255,255,255,0);
+    box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0);
     border-radius: 2px 2px 0px 0px;
     transition-duration: 100;
     spacing: 0.5em;
@@ -1381,15 +1388,6 @@ StScrollBar StButton#vhandle:hover {
     box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.3);
 }
 
-.grouped-window-list-item-box:closed {
-    background-gradient-direction: vertical;
-    background-gradient-start: rgba(0,0,0,0.0);
-    background-gradient-end: rgba(0,0,0,0.0);
-    border-radius: 0px 0px 0px 0px;
-    border-image: none;
-    border-color: rgba(0,0,0,0.0);
-    box-shadow: inset 0px 0px 0px 0px rgba(0,0,0,0.0);
-}
 .grouped-window-list-item-demands-attention {
     background-gradient-start: rgba(255,52,52,0.5);
     background-gradient-end: rgba(255,144,144,0.5);
@@ -1422,8 +1420,9 @@ StScrollBar StButton#vhandle:hover {
     text-shadow: black 0px 0px 2px;
 }
 .grouped-window-list-thumbnail-menu .item-box {
-    padding: 8px;
+    padding: 10px;
     border-radius: 8px;
+    spacing: 4px;
 }
 .grouped-window-list-thumbnail-menu .item-box:outlined {
     padding: 6px;
@@ -1431,10 +1430,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .grouped-window-list-thumbnail-menu .item-box:selected {
     background: rgba(255,255,255,0.33);
-}
-.grouped-window-list-thumbnail-menu .thumbnail-box {
-    padding: 2px;
-    spacing: 4px;
 }
 .grouped-window-list-thumbnail-menu .thumbnail {
     width: 256px;

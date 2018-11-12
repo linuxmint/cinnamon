@@ -12,6 +12,7 @@ const SignalManager = imports.misc.signalManager;
 const {each, findIndex, tryFn, unref, trySpawnCommandLine, spawn_async} = imports.misc.util;
 const {
     CLOSE_BTN_SIZE,
+    CLOSED_BUTTON_STYLE,
     OPACITY_OPAQUE,
     RESERVE_KEYS,
     ICON_NAMES,
@@ -51,18 +52,14 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
     monitorMoveWindows(i) {
         if (this.state.settings.monitorMoveAllWindows) {
-            for (let z = 0, len = this.groupState.metaWindows.length; z < len; z++) {
-                if (!this.groupState.metaWindows[z]) {
-                    continue;
+            let metaWindows = this.groupState.metaWindows.slice();
+            while (metaWindows.length > 0) {
+                let metaWindow = metaWindows[0];
+                if (metaWindow === this.groupState.lastFocused) {
+                    Main.activateWindow(metaWindow, global.get_current_time());
                 }
-                let focused = 0;
-                if (this.groupState.metaWindows[z].has_focus()) {
-                    ++focused;
-                }
-                if (z === len - 1 && focused === 0) {
-                    Main.activateWindow(this.groupState.metaWindows[z], global.get_current_time());
-                }
-                this.groupState.metaWindows[z].move_to_monitor(i);
+                metaWindow.move_to_monitor(i);
+                metaWindows.splice(0, 1);
             }
         } else {
             this.groupState.lastFocused.move_to_monitor(i);
@@ -482,6 +479,9 @@ class WindowThumbnail {
                 if (this.state.overlayPreview) {
                     this.destroyOverlayPreview();
                 }
+            },
+            thumbnailCloseButtonOffset: ({thumbnailCloseButtonOffset}) => {
+                this.button.style = CLOSED_BUTTON_STYLE + `position: ${thumbnailCloseButtonOffset}px -2px;`;
             }
         });
         this.groupState = params.groupState;
@@ -494,7 +494,7 @@ class WindowThumbnail {
                 this.isFocused = this.groupState.lastFocused === this.metaWindow;
                 this.onFocusWindowChange();
             },
-            refreshThumbnails: () => this.refreshThumbnail()
+            windowCount: () => this.refreshThumbnail()
         });
 
         this.metaWindow = params.metaWindow;
@@ -521,7 +521,6 @@ class WindowThumbnail {
         });
         this.actor._delegate = null;
         // Override with own theme.
-        this.actor.add_style_class_name('thumbnail-box');
         this.thumbnailActor = new St.Bin({
             style_class: 'thumbnail',
             important: true
@@ -533,27 +532,24 @@ class WindowThumbnail {
             y_expand: false
         });
 
-        this.label = new St.Label({
+        let label = new St.Label({
             style_class: 'grouped-window-list-thumbnail-label',
             important: true
         });
 
         this.labelContainer = new St.Bin({
-            y_align: St.Align.MIDDLE
+            y_align: St.Align.MIDDLE,
+            x_expand: true,
+            child: label
         });
-        this.labelContainer.add_actor(this.label);
         this.container.add_actor(this.labelContainer);
-
-        let left = global.ui_scale > 1 ? -10 : 0;
 
         this.button = new St.Button({
             style_class: 'window-close',
             reactive: true,
             width: CLOSE_BTN_SIZE,
             height: CLOSE_BTN_SIZE,
-            style: 'padding: 0px; width: ' + CLOSE_BTN_SIZE + 'px; height: ' + CLOSE_BTN_SIZE + 'px; max-width: ' + CLOSE_BTN_SIZE
-                + 'px; max-height: ' + CLOSE_BTN_SIZE + 'px; ' + '-cinnamon-close-overlap: 0px; position: ' + left
-                + 'px -2px;background-size: ' + CLOSE_BTN_SIZE + 'px ' + CLOSE_BTN_SIZE + 'px;'
+            style: CLOSED_BUTTON_STYLE + `position: ${this.state.thumbnailCloseButtonOffset}px -2px;`
         });
 
         this.button.set_opacity(0);
@@ -562,13 +558,13 @@ class WindowThumbnail {
         this.actor.add_actor(this.bin);
         this.actor.add_actor(this.thumbnailActor);
 
-        setTimeout(() => this.handleFavorite(), 0);
-
         this.signals.connect(this.actor, 'enter-event', (...args) => this.onEnter(...args));
         this.signals.connect(this.actor, 'leave-event', (...args) => this.onLeave(...args));
         this.signals.connect(this.button, 'button-release-event', (...args) => this.onCloseButtonRelease(...args));
         this.signals.connect(this.actor, 'button-release-event', (...args) => this.connectToWindow(...args));
-        //update focused style
+
+        setTimeout(() => this.handleFavorite(), 0);
+        // Update focused style
         this.onFocusWindowChange();
     }
 
@@ -638,7 +634,6 @@ class WindowThumbnail {
     handleCloseClick() {
         this.onLeave();
         this.stopClick = true;
-        this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
         this.hoverPeek(OPACITY_OPAQUE);
 
         this.metaWindow.delete(global.get_current_time());
@@ -671,7 +666,8 @@ class WindowThumbnail {
     }
 
     getThumbnail() {
-        if (!this.state.settings.showThumbs) {
+        if (this.groupState.verticalThumbs || !this.state.settings.showThumbs) {
+            this.thumbnailActor.height = 0;
             return null;
         }
         // Create our own thumbnail if it doesn't exist
@@ -695,16 +691,18 @@ class WindowThumbnail {
             }
 
             let scale = Math.min(1.0, this.thumbnailWidth / width, this.thumbnailHeight / height) * global.ui_scale;
+            width = Math.round(width * scale);
+            height = Math.round(height * scale);
             if (isUpdate) {
                 this.thumbnailActor.child.source = windowTexture;
-                this.thumbnailActor.child.width = Math.round(width * scale);
-                this.thumbnailActor.child.height = Math.round(height * scale);
+                this.thumbnailActor.child.width = width;
+                this.thumbnailActor.child.height = height;
             } else {
                 this.thumbnailActor.child = new Clutter.Clone({
                     source: windowTexture,
                     reactive: true,
-                    width: Math.round(width * scale),
-                    height: Math.round(height * scale)
+                    width,
+                    height
                 });
             }
         } else if (this.groupState.isFavoriteApp) {
@@ -721,49 +719,60 @@ class WindowThumbnail {
             return;
         }
 
-        let monitor = Main.layoutManager.primaryMonitor;
+        let monitor = this.state.trigger('getPanelMonitor');
 
-        let setThumbSize = (divider = 70, offset = 16) => {
-            if (!this.thumbnailActor || this.thumbnailActor.is_finalized()) return;
+        if (!this.thumbnailActor || this.thumbnailActor.is_finalized()) return;
 
-            this.thumbnailWidth = Math.floor((monitor.width / divider) * this.state.settings.thumbSize) + offset;
-            this.thumbnailHeight = Math.floor((monitor.height / divider) * this.state.settings.thumbSize) + offset;
+        let divider = 80;
+        let offset = 16;
 
-            let monitorSize, thumbnailSize, thumbMultiplier;
-            if (!this.state.isHorizontal) {
-                thumbMultiplier = global.ui_scale + (global.ui_scale * 0.5);
-                monitorSize = monitor.height;
-                thumbnailSize = this.thumbnailHeight;
-            } else {
-                thumbMultiplier = global.ui_scale;
-                monitorSize = monitor.width;
-                thumbnailSize = this.thumbnailWidth;
+        this.thumbnailWidth = Math.floor((monitor.width / divider) * this.state.settings.thumbSize) + offset;
+        this.thumbnailHeight = Math.floor((monitor.height / divider) * this.state.settings.thumbSize) + offset;
+
+        let monitorSize, thumbnailSize;
+        if (!this.state.isHorizontal) {
+            monitorSize = monitor.height;
+            thumbnailSize = this.thumbnailHeight;
+        } else {
+            monitorSize = monitor.width;
+            thumbnailSize = this.thumbnailWidth;
+        }
+
+        let padding = this.thumbnailActor.style_length('padding');
+        let margin = this.thumbnailActor.style_length('margin');
+
+        let i = 0;
+        while (((thumbnailSize + this.thumbnailPadding + padding + margin) * this.groupState.windowCount > monitorSize)
+            && this.thumbnailWidth > 64
+            && this.thumbnailHeight > 64) {
+            this.thumbnailWidth -= 1;
+            this.thumbnailHeight -= 1;
+            thumbnailSize -= 1;
+            i++;
+            // Bail after 200 iterations
+            if (i > 200) {
+                break;
             }
+        }
 
-            if (((thumbnailSize * thumbMultiplier) * this.groupState.metaWindows.length) + thumbnailSize > monitorSize) {
-                let divideMultiplier = !this.state.isHorizontal ? 4.5 : 1.1;
-                setThumbSize(divider * divideMultiplier, 16);
-                return;
-            } else {
-                let scaledWidth = this.thumbnailWidth * global.ui_scale;
-                this.thumbnailActor.width = scaledWidth;
-                this.container.style = `width: ${Math.floor(this.thumbnailWidth - 16)}px;`;
-                if (this.state.settings.verticalThumbs && this.state.settings.showThumbs) {
-                    this.thumbnailActor.height = this.thumbnailHeight;
-                } else if (this.state.settings.verticalThumbs) {
-                    this.thumbnailActor.height = 0;
-                }
+        // If we can't fit all the thumbnails, revert to a vertical menu orientation
+        // with no thumbnails, which can hold more window selections.
+        let verticalThumbs = ((thumbnailSize + this.thumbnailPadding + padding + margin) * this.groupState.windowCount) > monitorSize;
+        let currentVerticalThumbsState = this.groupState.verticalThumbs;
+        this.groupState.set({verticalThumbs});
+        if (verticalThumbs !== currentVerticalThumbsState) return;
 
-                // Replace the old thumbnail
-                if (this.labelContainer) {
-                    this.labelContainer.set_width(scaledWidth - ((scaledWidth * 0.05) * global.ui_scale));
-                }
-                this.label.text = this.metaWindow.title || '';
-                this.getThumbnail();
-            }
-        };
+        let scaledWidth = this.thumbnailWidth * global.ui_scale;
+        this.thumbnailActor.width = scaledWidth;
+        this.container.style = `width: ${Math.floor(this.thumbnailWidth - 16)}px;`;
+        if (this.groupState.verticalThumbs || (this.state.settings.verticalThumbs && this.state.settings.showThumbs)) {
+            this.thumbnailActor.height = this.thumbnailHeight;
+        } else if (this.state.settings.verticalThumbs) {
+            this.thumbnailActor.height = 0;
+        }
 
-        setThumbSize();
+        this.labelContainer.child.text = this.metaWindow.title || '';
+        this.getThumbnail();
     }
 
     hoverPeek(opacity) {
@@ -840,6 +849,12 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                     this.appThumbnails[index] = undefined;
                     this.appThumbnails.splice(index, 1);
                 }
+            },
+            verticalThumbs: () => {
+                // Preserve the menu's open state after refreshing
+                let {isOpen} = this;
+                this.setVerticalSetting()
+                if (isOpen) this.open(true);
             }
         });
 
@@ -1079,7 +1094,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
 
     setVerticalSetting() {
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
-            this.box.vertical = this.state.settings.verticalThumbs;
+            this.box.vertical = this.groupState.verticalThumbs || this.state.settings.verticalThumbs;
         } else {
             this.box.vertical = true;
         }
