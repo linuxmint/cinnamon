@@ -513,9 +513,10 @@ class AppGroup {
 
         this.hoverMenu.onMenuLeave();
         this.resetHoverStatus();
+        this.checkFocusStyle();
     }
 
-    resetHoverStatus() {
+    checkFocusStyle() {
         if (this.actor.is_finalized()) return;
 
         let focused = false;
@@ -526,11 +527,14 @@ class AppGroup {
             }
         });
 
-        this.actor.remove_style_pseudo_class('hover');
-
         if (focused) {
             this.actor.add_style_pseudo_class('focus');
         }
+    }
+
+    resetHoverStatus() {
+        if (this.actor.is_finalized()) return;
+        this.actor.remove_style_pseudo_class('hover');
     }
 
     setActiveStatus(state) {
@@ -554,6 +558,7 @@ class AppGroup {
     }
 
     onFocusChange(hasFocus) {
+        if (this.state.thumbnailMenuOpen) return;
         // If any of the windows associated with our app have focus,
         // we should set ourselves to active
         if (hasFocus) {
@@ -755,7 +760,7 @@ class AppGroup {
             } else {
                 this.listState.trigger('closeAllHoverMenus');
             }
-            this.windowHandle(false);
+            this.windowHandle();
         }
     }
 
