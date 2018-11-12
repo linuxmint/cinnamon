@@ -250,8 +250,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             lastCycled: null,
             lastTitleDisplay: null,
             scrollActive: false,
-            thumbnailMenuOpen: false,
-            thumbnailCloseButtonOffset: global.ui_scale > 1 ? -10 : 0
+            thumbnailMenuOpen: false
         });
 
         // key-function pairs of actions that can be triggered from the store's callback queue. This allows the
@@ -1003,7 +1002,6 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     onUIScaleChange() {
-        this.state.set({thumbnailCloseButtonOffset: global.ui_scale > 1 ? -10 : 0});
         this.refreshAllAppLists();
     }
 

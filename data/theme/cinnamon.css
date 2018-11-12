@@ -1312,9 +1312,15 @@ StScrollBar StButton#vhandle:hover {
 /* ===================================================================
  * Grouped window list (grouped-window-list@cinnamon.org)
  * ===================================================================*/
-
-.grouped-window-list-thumbnail-label {
-    padding-left: 4px;
+.grouped-window-list-thumbnail-title {
+    spacing: 2px; /* Separate title from close button */
+}
+.grouped-window-list-thumbnail-close {
+    color: #ccc;
+}
+.grouped-window-list-thumbnail-close:hover {
+    color: #fff;
+    text-shadow: white 0px 0px 5px;
 }
 .grouped-window-list-number-label {
     z-index: 99;

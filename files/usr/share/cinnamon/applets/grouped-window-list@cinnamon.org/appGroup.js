@@ -905,7 +905,7 @@ class AppGroup {
 
         each(this.hoverMenu.appThumbnails, (thumbnail) => {
             if (thumbnail.metaWindow === metaWindow) {
-                thumbnail.labelContainer.child.set_text(metaWindow.title);
+                thumbnail.label.set_text(metaWindow.title);
                 return false;
             }
         });

@@ -12,7 +12,6 @@ const SignalManager = imports.misc.signalManager;
 const {each, findIndex, tryFn, unref, trySpawnCommandLine, spawn_async} = imports.misc.util;
 const {
     CLOSE_BTN_SIZE,
-    CLOSED_BUTTON_STYLE,
     OPACITY_OPAQUE,
     RESERVE_KEYS,
     ICON_NAMES,
@@ -479,9 +478,6 @@ class WindowThumbnail {
                 if (this.state.overlayPreview) {
                     this.destroyOverlayPreview();
                 }
-            },
-            thumbnailCloseButtonOffset: ({thumbnailCloseButtonOffset}) => {
-                this.button.style = CLOSED_BUTTON_STYLE + `position: ${thumbnailCloseButtonOffset}px -2px;`;
             }
         });
         this.groupState = params.groupState;
@@ -526,36 +522,37 @@ class WindowThumbnail {
             important: true
         });
 
-        this.container = new St.BoxLayout();
-
-        this.bin = new St.BoxLayout({
-            y_expand: false
+        this.titleBox = new St.BoxLayout({
+            style_class: 'grouped-window-list-thumbnail-title'
         });
 
-        let label = new St.Label({
+        this.label = new St.Label({
             style_class: 'grouped-window-list-thumbnail-label',
-            important: true
-        });
-
-        this.labelContainer = new St.Bin({
-            y_align: St.Align.MIDDLE,
+            important: true,
             x_expand: true,
-            child: label
+            y_expand: true,
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER
         });
-        this.container.add_actor(this.labelContainer);
 
-        this.button = new St.Button({
-            style_class: 'window-close',
+        this.button = new St.Icon({
+            icon_name: 'window-close',
+            icon_type: St.IconType.SYMBOLIC,
+            icon_size: CLOSE_BTN_SIZE,
             reactive: true,
-            width: CLOSE_BTN_SIZE,
-            height: CLOSE_BTN_SIZE,
-            style: CLOSED_BUTTON_STYLE + `position: ${this.state.thumbnailCloseButtonOffset}px -2px;`
+            track_hover: true,
+            style_class: 'grouped-window-list-thumbnail-close',
+            opacity: 0
         });
 
-        this.button.set_opacity(0);
-        this.bin.add_actor(this.container);
-        this.bin.add_actor(this.button);
-        this.actor.add_actor(this.bin);
+        // This is to keep the title center-aligned
+        let closeClone = new Clutter.Clone({ source: this.button, opacity: 0 });
+
+        this.titleBox.add_actor(closeClone);
+        this.titleBox.add_actor(this.label);
+        this.titleBox.add_actor(this.button);
+
+        this.actor.add_actor(this.titleBox);
         this.actor.add_actor(this.thumbnailActor);
 
         this.signals.connect(this.actor, 'enter-event', (...args) => this.onEnter(...args));
@@ -764,14 +761,14 @@ class WindowThumbnail {
 
         let scaledWidth = this.thumbnailWidth * global.ui_scale;
         this.thumbnailActor.width = scaledWidth;
-        this.container.style = `width: ${Math.floor(this.thumbnailWidth - 16)}px;`;
+        this.titleBox.width = scaledWidth;
         if (this.groupState.verticalThumbs || (this.state.settings.verticalThumbs && this.state.settings.showThumbs)) {
             this.thumbnailActor.height = this.thumbnailHeight;
         } else if (this.state.settings.verticalThumbs) {
             this.thumbnailActor.height = 0;
         }
 
-        this.labelContainer.child.text = this.metaWindow.title || '';
+        this.label.text = this.metaWindow.title || '';
         this.getThumbnail();
     }
 
@@ -823,8 +820,6 @@ class WindowThumbnail {
         this.state.disconnect(this.stateConnectId);
         this.groupState.disconnect(this.connectId);
         this.signals.disconnectAllSignals();
-        this.container.destroy();
-        this.bin.destroy();
         this.actor.destroy();
         unref(this, RESERVE_KEYS);
     }
