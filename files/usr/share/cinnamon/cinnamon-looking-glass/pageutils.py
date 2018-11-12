@@ -15,7 +15,7 @@ def shortenValue(value):
         value = value[:120]
 
     if changed:
-        value += "…"
+        value += "..."
 
     return value
 

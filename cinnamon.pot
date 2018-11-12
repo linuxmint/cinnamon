@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-05 12:14+0000\n"
+"POT-Creation-Date: 2018-11-12 15:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: src/cinnamon-app.c:463 src/cinnamon-app.c:471
-#: js/ui/notificationDaemon.js:561
+#: js/ui/notificationDaemon.js:565
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:65
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:94
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:789
@@ -111,14 +111,14 @@ msgid "Remove '%s'"
 msgstr ""
 
 #: js/ui/applet.js:567 js/ui/desklet.js:228
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:155
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:152
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:62
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:850
 msgid "About..."
 msgstr ""
 
 #: js/ui/applet.js:584 js/ui/desklet.js:233
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:159
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:156
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:66
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:854
 msgid "Configure..."
@@ -211,11 +211,11 @@ msgstr ""
 msgid "Invalid overview options: Incorrect number of corners"
 msgstr ""
 
-#: js/ui/lookingGlass.js:535
+#: js/ui/lookingGlass.js:588
 msgid "Execution time (ms): "
 msgstr ""
 
-#: js/ui/lookingGlass.js:629
+#: js/ui/lookingGlass.js:673
 msgid "Loaded successfully"
 msgstr ""
 
@@ -274,7 +274,7 @@ msgid "Open"
 msgstr ""
 
 #: js/ui/messageTray.js:1285
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:163
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:160
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:53
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_applets.py:54
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_desklets.py:76
@@ -308,7 +308,7 @@ msgid "More info"
 msgstr ""
 
 #: js/ui/modalDialog.js:569 js/ui/modalDialog.js:573 js/ui/workspace.js:1164
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:367
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:364
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:923
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:396
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:203
@@ -477,13 +477,13 @@ msgid "No open windows"
 msgstr ""
 
 #: js/ui/workspace.js:1168
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:318
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:315
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:898
 msgid "Restore"
 msgstr ""
 
 #: js/ui/workspace.js:1170
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:323
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:320
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:903
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:40
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:204
@@ -491,7 +491,7 @@ msgid "Minimize"
 msgstr ""
 
 #: js/ui/workspace.js:1173 js/ui/workspace.js:1246
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:336
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:333
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:916
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:205
 msgid "Maximize"
@@ -506,7 +506,7 @@ msgid "Move to right workspace"
 msgstr ""
 
 #: js/ui/workspace.js:1182 js/ui/workspace.js:1231
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:118
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:115
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:818
 msgid "Visible on all workspaces"
 msgstr ""
@@ -522,13 +522,13 @@ msgid "Move to monitor %d"
 msgstr ""
 
 #: js/ui/workspace.js:1229
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:111
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:108
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:812
 msgid "Only on this workspace"
 msgstr ""
 
 #: js/ui/workspace.js:1244
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:329
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:326
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:911
 msgid "Unmaximize"
 msgstr ""
@@ -595,71 +595,71 @@ msgstr ""
 msgid "Expo"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:101
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:98
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:791
 msgid "Move to the other monitor"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:102
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:99
 msgid "Move to monitor "
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:125
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:122
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:824
 msgid "Move to another workspace"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:152
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:149
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:59
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:847
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:63
 msgid "Preferences"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:173
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:170
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:822
 msgid "Places"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:205
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:202
 msgid "Recent"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:265
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:262
 msgid "New Window"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:283
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:280
 msgid "Unpin from Panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:286
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:283
 msgid "Pin to Panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:294
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:291
 msgid "Remove from Autostart"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:294
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:291
 msgid "Add to Autostart"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:301
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:298
 msgid "Create Shortcut"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:312
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:309
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:890
 msgid "Restore to full opacity"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:347
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:344
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:876
 msgid "Close others"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:357
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:354
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:867
 msgid "Close all"
 msgstr ""
@@ -767,52 +767,44 @@ msgstr ""
 #. menu@cinnamon.org->metadata.json->name
 #. menu@cinnamon.org->settings-schema.json->menu->title
 #. sound@cinnamon.org->settings-schema.json->section1->description
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1082
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1086
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:40
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:202
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2358
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2380
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:149
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2656
-msgid "Switch user"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2657
-msgid "Switch to another user account"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2683
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2717
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:142
 msgid "Lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2684
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2718
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:11
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2711
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2745
 msgid "Logout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2712
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2746
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2726
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2760
 msgid "Quit"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2727
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2761
 msgid "Shutdown the computer"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2854
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2887
 msgid "Type to search..."
 msgstr ""
 
@@ -6065,6 +6057,22 @@ msgstr ""
 msgid "Enter custom text to show in the panel."
 msgstr ""
 
+#. menu@cinnamon.org->settings-schema.json->favbox-min-height->units
+#. grouped-window-list@cinnamon.org->settings-schema.json->icon-spacing->units
+#. clock@cinnamon.org->settings-schema.json->font-size->units
+msgid "px"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->favbox-min-height->description
+msgid "Minimum height of the favorites section"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->favbox-min-height->tooltip
+msgid ""
+"The minimum size allocated for the favorites section (this has an impact on "
+"the overall height of the menu)."
+msgstr ""
+
 #. menu@cinnamon.org->settings-schema.json->show-category-icons->description
 msgid "Show category icons"
 msgstr ""
@@ -6083,7 +6091,7 @@ msgid "Choose whether or not to show icons on applications."
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->favbox-show->description
-msgid "Show favorites"
+msgid "Show favorites and session buttons"
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->favbox-show->tooltip
@@ -6679,11 +6687,6 @@ msgstr ""
 #. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-
 #. opacity->tooltip
 msgid "Opacity of the windows on hover."
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->icon-spacing->units
-#. clock@cinnamon.org->settings-schema.json->font-size->units
-msgid "px"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->icon-
