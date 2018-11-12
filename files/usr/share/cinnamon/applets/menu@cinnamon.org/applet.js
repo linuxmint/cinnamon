@@ -1265,9 +1265,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.applicationsScrollBox.style = "height: "+scrollBoxHeight / global.ui_scale +"px;";
         let monitor = Main.layoutManager.monitors[this.panel.monitorIndex];
-        let min_size = Math.max(this.favBoxMinHeight * global.ui_scale, this.categoriesBox.height - this.systemButtonsBox.height);
-        let max_size = monitor.height - (this.systemButtonsBox.height * 2);
-        let size = Math.min(min_size, max_size);
+        let minSize = Math.max(this.favBoxMinHeight * global.ui_scale, this.categoriesBox.height - this.systemButtonsBox.height);
+        let maxSize = monitor.height - (this.systemButtonsBox.height * 2);
+        let size = Math.min(minSize, maxSize);
         this.favoritesScrollBox.set_height(size);
     }
 
