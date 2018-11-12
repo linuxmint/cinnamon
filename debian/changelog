@@ -1,3 +1,83 @@
+cinnamon (4.0.1) tessa; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Menu: Add style classes for new objects and fix motion on hover
+  * Systray: Fix icon size in HiDPI when zone icon size changes
+  * Panel settings: Call the zones appropriately
+  * Packaging: Fixed breaks/replaces/recommends
+  * Packaging: Relax dependencies
+  * Menu: Change default logo to cinnamon-symbolic
+
+  [ Michael Webster ]
+  * cinnamon-desktop-editor.py: Allow custom paths for icons.
+
+  [ Jason Hicks ]
+  * st-polygon: Fix memory leak during picking (#7983)
+
+  [ IAmTheRedSpy ]
+  * Reduce word duplication in README.rst (#7982)
+
+  [ Jason Hicks ]
+  * panel: Preserve logic to only emit icon-size-changed on actual change, while exempting symbolic changes (#7981)
+
+  [ Michael Webster ]
+  * cs_panel.py: Re-arrange and group new panel settings.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Jason Hicks ]
+  * panel: Fix icon size, panel height defaults (#7984)
+
+  [ Clement Lefebvre ]
+  * Notifications: Fix symbolic icons rendering as fullcolor
+
+  [ JosephMcc ]
+  * applet-separator: Better support vertical panels (#8013)
+
+  [ NikoKrause ]
+  * show-desktop applet: use symbolic icon for "show desklets" action (#8001)
+
+  [ Jason Hicks ]
+  * panel: Fix invalid object access case (#7997)
+  * cinnamonDBus: Handle stale xlet settings (#7996)
+
+  [ Clement Lefebvre ]
+  * Menu applet: Ignore keywords/descriptions/ids when name is an exact match
+
+  [ Michael Webster ]
+  * st-texture-cache.c: Don't use a GIcon with fallback names.
+
+  [ James Ross ]
+  * melange: clean up a bunch of deprecation warnings (#8015)
+
+  [ Clement Lefebvre ]
+  * Menu applet: Go back to previous layout
+  * Menu applet: Fix height
+
+  [ Jason Hicks ]
+  * gwl: Give the number label badge styling, misc. clean up (#7986)
+
+  [ Clement Lefebvre ]
+  * Menu: Fix camelCase in previous menu commit
+
+  [ James Ross ]
+  * melange/lookingGlass: better object inspection (#7978)
+
+  [ Germán Franco ]
+  * gwl: Remove unnecesary styles that make themes look bad by default (#8005)
+
+  [ Jason Hicks ]
+  * indicatorManager: Fix icons not appearing (#7999)
+
+  [ Germán Franco ]
+  * st-theme-node: Fix border color blending (#7990)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 12 Nov 2018 15:01:24 +0000
+
 cinnamon (4.0.0) tessa; urgency=medium
 
   [ Michael Webster ]
