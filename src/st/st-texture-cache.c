@@ -1180,44 +1180,18 @@ st_texture_cache_load_sliced_image (StTextureCache *cache,
  * icon you are loading, use %ST_ICON_FULLCOLOR.
  */
 
-/* generates names like g_themed_icon_new_with_default_fallbacks(),
- * but *only* symbolic names
- */
-static char **
-symbolic_names_for_icon (const char *name)
+static char *
+symbolic_name_for_icon (const char *name)
 {
-  char **parts, **names;
-  int i, numnames;
-
-  parts = g_strsplit (name, "-", -1);
-  numnames = g_strv_length (parts);
-  names = g_new (char *, numnames + 1);
-  for (i = 0; parts[i]; i++)
-    {
-      if (i == 0)
-        {
-          names[i] = g_strdup_printf ("%s-symbolic", parts[i]);
-        }
-      else
-        {
-          names[i] = g_strdup_printf ("%.*s-%s-symbolic",
-                                      (int) (strlen (names[i - 1]) - strlen ("-symbolic")),
-                                      names[i - 1], parts[i]);
-        }
+    if (!name) {
+        return NULL;
     }
-  names[i] = NULL;
 
-  g_strfreev (parts);
+    if (g_str_has_suffix (name, "-symbolic")) {
+        return g_strdup (name);
+    }
 
-  /* need to reverse here, because longest (most specific)
-     name has to come first */
-  for (i = 0; i < (numnames / 2); i++) {
-    char *tmp = names[i];
-    names[i] = names[numnames - i - 1];
-    names[numnames - i - 1] = tmp;
-  }
-
-  return names;
+    return g_strdup_printf ("%s-symbolic", name);
 }
 
 typedef struct {
@@ -1348,8 +1322,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
   ClutterActor *texture;
   CoglTexture *cogltexture;
   GIcon *themed;
-  char **names;
-  char *cache_key;
+  char *cache_key, *symbolic_name;
   CreateFadedIconData data;
 
   g_return_val_if_fail (!(icon_type == ST_ICON_SYMBOLIC && theme_node == NULL), NULL);
@@ -1382,9 +1355,9 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       return CLUTTER_ACTOR (texture);
       break;
     case ST_ICON_SYMBOLIC:
-      names = symbolic_names_for_icon (name);
-      themed = g_themed_icon_new_from_names (names, -1);
-      g_strfreev (names);
+      symbolic_name = symbolic_name_for_icon (name);
+      themed = g_themed_icon_new (symbolic_name);
+      g_free (symbolic_name);
       texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale,
                                         st_theme_node_get_icon_colors (theme_node));
       g_object_unref (themed);
