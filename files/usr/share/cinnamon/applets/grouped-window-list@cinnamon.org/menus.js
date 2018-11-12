@@ -666,6 +666,7 @@ class WindowThumbnail {
 
     getThumbnail() {
         if (this.groupState.verticalThumbs || !this.state.settings.showThumbs) {
+            this.thumbnailActor.height = 0;
             return null;
         }
         // Create our own thumbnail if it doesn't exist
@@ -689,16 +690,18 @@ class WindowThumbnail {
             }
 
             let scale = Math.min(1.0, this.thumbnailWidth / width, this.thumbnailHeight / height) * global.ui_scale;
+            width = Math.round(width * scale);
+            height = Math.round(height * scale);
             if (isUpdate) {
                 this.thumbnailActor.child.source = windowTexture;
-                this.thumbnailActor.child.width = Math.round(width * scale);
-                this.thumbnailActor.child.height = Math.round(height * scale);
+                this.thumbnailActor.child.width = width;
+                this.thumbnailActor.child.height = height;
             } else {
                 this.thumbnailActor.child = new Clutter.Clone({
                     source: windowTexture,
                     reactive: true,
-                    width: Math.round(width * scale),
-                    height: Math.round(height * scale)
+                    width,
+                    height
                 });
             }
         } else if (this.groupState.isFavoriteApp) {
@@ -736,8 +739,8 @@ class WindowThumbnail {
 
         let i = 0;
         while (((thumbnailSize + this.thumbnailPadding) * this.groupState.windowCount > monitorSize)
-            && this.thumbnailWidth > 0
-            && this.thumbnailHeight > 0) {
+            && this.thumbnailWidth > 64
+            && this.thumbnailHeight > 64) {
             this.thumbnailWidth -= 1;
             this.thumbnailHeight -= 1;
             thumbnailSize -= 1;
@@ -750,7 +753,7 @@ class WindowThumbnail {
 
         // If we can't fit all the thumbnails, revert to a vertical menu orientation
         // with no thumbnails, which can hold more window selections.
-        let verticalThumbs = (thumbnailSize * this.groupState.windowCount) > monitorSize;
+        let verticalThumbs = ((thumbnailSize + this.thumbnailPadding) * this.groupState.windowCount) > monitorSize;
         let currentVerticalThumbsState = this.groupState.verticalThumbs;
         this.groupState.set({verticalThumbs});
         if (verticalThumbs !== currentVerticalThumbsState) return;
