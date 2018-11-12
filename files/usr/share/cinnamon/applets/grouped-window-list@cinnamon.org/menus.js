@@ -12,6 +12,7 @@ const SignalManager = imports.misc.signalManager;
 const {each, findIndex, tryFn, unref, trySpawnCommandLine, spawn_async} = imports.misc.util;
 const {
     CLOSE_BTN_SIZE,
+    CLOSED_BUTTON_STYLE,
     OPACITY_OPAQUE,
     RESERVE_KEYS,
     ICON_NAMES,
@@ -478,6 +479,9 @@ class WindowThumbnail {
                 if (this.state.overlayPreview) {
                     this.destroyOverlayPreview();
                 }
+            },
+            thumbnailCloseButtonOffset: ({thumbnailCloseButtonOffset}) => {
+                this.button.style = CLOSED_BUTTON_STYLE + `position: ${thumbnailCloseButtonOffset}px -2px;`;
             }
         });
         this.groupState = params.groupState;
@@ -539,16 +543,12 @@ class WindowThumbnail {
         this.labelContainer.add_actor(this.label);
         this.container.add_actor(this.labelContainer);
 
-        let left = global.ui_scale > 1 ? -10 : 0;
-
         this.button = new St.Button({
             style_class: 'window-close',
             reactive: true,
             width: CLOSE_BTN_SIZE,
             height: CLOSE_BTN_SIZE,
-            style: 'padding: 0px; width: ' + CLOSE_BTN_SIZE + 'px; height: ' + CLOSE_BTN_SIZE + 'px; max-width: ' + CLOSE_BTN_SIZE
-                + 'px; max-height: ' + CLOSE_BTN_SIZE + 'px; ' + '-cinnamon-close-overlap: 0px; position: ' + left
-                + 'px -2px;background-size: ' + CLOSE_BTN_SIZE + 'px ' + CLOSE_BTN_SIZE + 'px;'
+            style: CLOSED_BUTTON_STYLE + `position: ${this.state.thumbnailCloseButtonOffset}px -2px;`
         });
 
         this.button.set_opacity(0);
