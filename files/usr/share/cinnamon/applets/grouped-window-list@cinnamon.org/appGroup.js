@@ -503,11 +503,6 @@ class AppGroup {
     onEnter() {
         if (this.state.panelEditMode) return false;
 
-        if (this.actor.has_style_pseudo_class('closed')) {
-            this.hadClosedPseudoClass = true;
-            this.actor.remove_style_pseudo_class('closed');
-        }
-
         this.actor.add_style_pseudo_class('hover');
 
         this.hoverMenu.onMenuEnter();
@@ -516,7 +511,6 @@ class AppGroup {
     onLeave() {
         if (this.state.panelEditMode) return false;
 
-        this.setFavoriteAttributes();
         this.hoverMenu.onMenuLeave();
         this.resetHoverStatus();
     }
@@ -953,23 +947,14 @@ class AppGroup {
         if (changed) {
             setTimeout(() => this.listState.trigger('updateAppGroupIndexes', this.groupState.appId), 0);
         }
-        this.setFavoriteAttributes();
+
         if (this.groupState.metaWindows.length === 0 && this.state.appletReady) {
             this.hoverMenu.close();
             this.onLeave();
-            this.actor.add_style_pseudo_class('closed');
             return;
-        } else if (this.actor.has_style_pseudo_class('closed')) {
-            this.actor.remove_style_pseudo_class('closed');
         }
         this.onWindowTitleChanged(this.groupState.lastFocused);
         this.onFocusChange();
-    }
-
-    setFavoriteAttributes() {
-        if ((!this.groupState.app || this.groupState.app.state === 0) && this.groupState.isFavoriteApp) {
-            this.actor.set_style_pseudo_class('closed');
-        }
     }
 
     calcWindowNumber() {
