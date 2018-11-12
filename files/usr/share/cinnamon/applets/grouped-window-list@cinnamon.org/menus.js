@@ -517,7 +517,6 @@ class WindowThumbnail {
         });
         this.actor._delegate = null;
         // Override with own theme.
-        this.actor.add_style_class_name('thumbnail-box');
         this.thumbnailActor = new St.Bin({
             style_class: 'thumbnail',
             important: true
