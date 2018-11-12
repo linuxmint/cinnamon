@@ -890,16 +890,20 @@ class FavoritesButton extends GenericApplicationButton {
 }
 
 class SystemButton extends PopupMenu.PopupBaseMenuItem {
-    constructor(icon, name, desc) {
+    constructor(icon, nbFavorites, name, desc) {
         super({hover: false});
 
         this.name = name;
         this.desc = desc;
 
-        let icon_size = 16;
+        let monitorHeight = Main.layoutManager.primaryMonitor.height;
+        let real_size = (0.7 * monitorHeight) / nbFavorites;
+        let icon_size = 0.6 * real_size / global.ui_scale;
+        if (icon_size > MAX_FAV_ICON_SIZE)
+            icon_size = MAX_FAV_ICON_SIZE;
         this.actor.add_style_class_name('menu-favorites-button');
 
-        this.icon = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.SYMBOLIC});
+        this.icon = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});
 
         this.addActor(this.icon);
         this.icon.realize();
@@ -1171,7 +1175,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
         // In that particular case we get no signal at all.
         this._refreshAll();
-        this._refreshSystemButtons();
 
         this.set_show_label_in_vertical_panels(false);
     }
@@ -1262,7 +1265,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.applicationsScrollBox.style = "height: "+scrollBoxHeight / global.ui_scale +"px;";
 
-        this.favoritesScrollBox.set_height(this.categoriesBox.height);
+        this.favoritesScrollBox.set_height(this.categoriesBox.height - this.systemButtonsBox.height);
     }
 
     on_orientation_changed (orientation) {
@@ -1822,7 +1825,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     break;
                 case this.systemButtonsBox:
                     switch (whichWay) {
-                        case "left":
                         case "up":
                             this._previousSelectedActor = this.systemButtonsBox.get_child_at_index(index);
                             if (this._previousSelectedActor === this.sysBoxIter.getFirstVisible()) {
@@ -1832,7 +1834,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                                 item_actor = this.sysBoxIter.getPrevVisible(this._previousSelectedActor);
                             }
                             break;
-                        case "right":
                         case "down":
                             this._previousSelectedActor = this.systemButtonsBox.get_child_at_index(index);
                             if (this._previousSelectedActor === this.sysBoxIter.getLastVisible()) {
@@ -1842,10 +1843,28 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                                 item_actor = this.sysBoxIter.getNextVisible(this._previousSelectedActor);
                             }
                             break;
-                        case "first":
+                        case "right":
+                            item_actor = (this._previousTreeSelectedActor != null) ?
+                                this._previousTreeSelectedActor :
+                                this.catBoxIter.getFirstVisible();
+                            this._previousTreeSelectedActor = item_actor;
+                            break;
+                        case "left":
+                            item_actor = (this._previousTreeSelectedActor != null) ?
+                                this._previousTreeSelectedActor :
+                                this.catBoxIter.getFirstVisible();
+                            this._previousTreeSelectedActor = item_actor;
+                            index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
+
+                            item_actor._delegate.emit('enter-event');
+                            item_actor = (this._previousVisibleIndex != null) ?
+                                this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
+                                this.appBoxIter.getFirstVisible();
+                            break;
+                        case "top":
                             item_actor = this.systemButtonsBox.getFirstVisible();
                             break;
-                        case "last":
+                        case "bottom":
                             item_actor = this.systemButtonsBox.getLastVisible();
                             break;
                     }
@@ -2619,7 +2638,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         for ( let i = 0; i < launchers.length; ++i ) {
             let app = appSys.lookup_app(launchers[i]);
             if (app) {
-                let button = new FavoritesButton(this, app, launchers.length);
+                let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
                 this._favoritesButtons[app] = button;
                 this.favoritesBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
@@ -2628,58 +2647,70 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
         }
 
+        //Separator
+        // if (launchers.length != 0) {
+        //     let separator = new PopupMenu.PopupSeparatorMenuItem();
+        //     this.favoritesBox.add(separator.actor, { y_align: St.Align.END, y_fill: false });
+        // }
+
+        this._refreshSystemButtons(launchers);
+
         this._recalc_height();
     }
 
-    _refreshSystemButtons() {
+    _refreshSystemButtons(launchers) {
+        if (this.systemButtonsAdded) return;
+
         let button;
 
-        // Switch user
-        let lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
-        let commands;
-        if (!lockdownSettings.get_boolean('disable-user-switching')) {
-            if (GLib.getenv("XDG_SEAT_PATH")) { // LightDM
-                commands = [
-                    'cinnamon-screensaver-command --lock',
-                    'dm-tool switch-to-greeter'
-                ];
-            } else if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) { // MDM
-                commands = ['mdmflexiserver'];
-            } else if (GLib.file_test("/usr/bin/gdmflexiserver", GLib.FileTest.EXISTS)) { // GDM
-                commands = [
-                    'cinnamon-screensaver-command --lock',
-                    'gdmflexiserver'
-                ];
-            }
-            if (commands) {
-                button = new SystemButton("system-switch-user",
-                                          _("Switch user"),
-                                          _("Switch to another user account"));
+        // // Switch user (disabled for now, we don't have a fullcolor switch user icon... also careful when/if enabling this
+        // // the additional size for favbox is hardcoded to 3, not 4)
+        // let lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
+        // let commands;
+        // if (!lockdownSettings.get_boolean('disable-user-switching')) {
+        //     if (GLib.getenv("XDG_SEAT_PATH")) { // LightDM
+        //         commands = [
+        //             'cinnamon-screensaver-command --lock',
+        //             'dm-tool switch-to-greeter'
+        //         ];
+        //     } else if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) { // MDM
+        //         commands = ['mdmflexiserver'];
+        //     } else if (GLib.file_test("/usr/bin/gdmflexiserver", GLib.FileTest.EXISTS)) { // GDM
+        //         commands = [
+        //             'cinnamon-screensaver-command --lock',
+        //             'gdmflexiserver'
+        //         ];
+        //     }
+        //     if (commands) {
+        //         button = new SystemButton("system-switch-user", launchers.length + 3,
+        //                                   _("Switch user"),
+        //                                   _("Switch to another user account"));
 
-                this._addEnterEvent(button, Lang.bind(this, this._favEnterEvent, button));
-                button.actor.connect('leave-event', Lang.bind(this, this._favLeaveEvent, button));
+        //         this._addEnterEvent(button, Lang.bind(this, this._favEnterEvent, button));
+        //         button.actor.connect('leave-event', Lang.bind(this, this._favLeaveEvent, button));
 
-                button.activate = () => {
-                    this.menu.close();
+        //         button.activate = () => {
+        //             this.menu.close();
 
-                    for (let i = 0; i < commands.length; i++) {
-                        Util.spawnCommandLine(commands[i]);
-                    }
-                };
+        //             for (let i = 0; i < commands.length; i++) {
+        //                 Util.spawnCommandLine(commands[i]);
+        //             }
+        //         };
 
-                this.systemButtonsBox.add(button.actor, { x_align: St.Align.END, x_fill: false });
-            }
-        }
+        //         this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
+        //     }
+        // }
 
-        let lockdownSettingsId;
-        lockdownSettingsId = lockdownSettings.connect('changed::disable-user-switching', () => {
-            button.actor.get_parent().destroy_all_children();
-            lockdownSettings.disconnect(lockdownSettingsId);
-            this._refreshSystemButtons();
-        });
+        // let lockdownSettingsId;
+        // lockdownSettingsId = lockdownSettings.connect('changed::disable-user-switching', () => {
+        //     button.actor.get_parent().destroy_all_children();
+        //     this.systemButtonsAdded = false;
+        //     lockdownSettings.disconnect(lockdownSettingsId);
+        //     this._refreshFavs();
+        // });
 
         //Lock screen
-        button = new SystemButton("system-lock-screen",
+        button = new SystemButton("system-lock-screen", launchers.length + 3,
                                       _("Lock screen"),
                                       _("Lock the screen"));
 
@@ -2704,10 +2735,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
         };
 
-        this.systemButtonsBox.add(button.actor, { x_align: St.Align.END, x_fill: false });
+        this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
         //Logout button
-        button = new SystemButton("application-exit",
+        button = new SystemButton("system-log-out", launchers.length + 3,
                                       _("Logout"),
                                       _("Leave the session"));
 
@@ -2719,10 +2750,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._session.LogoutRemote(0);
         };
 
-        this.systemButtonsBox.add(button.actor, { x_align: St.Align.END, x_fill: false });
+        this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
 
         //Shutdown button
-        button = new SystemButton("system-shutdown",
+        button = new SystemButton("system-shutdown", launchers.length + 3,
                                       _("Quit"),
                                       _("Shutdown the computer"));
 
@@ -2734,7 +2765,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._session.ShutdownRemote();
         };
 
-        this.systemButtonsBox.add(button.actor, { x_align: St.Align.END, x_fill: false });
+        this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
+        this.systemButtonsAdded = true;
     }
 
     _loadCategory(dir, top_dir) {
@@ -2846,8 +2878,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         let rightPane = new St.BoxLayout({ vertical: true });
 
-        let topRow = new St.BoxLayout({style_class: 'menu-top-box'});
-
         this.searchBox = new St.BoxLayout({ style_class: 'menu-search-box' });
 
         this.searchEntry = new St.Entry({ name: 'menu-search-entry',
@@ -2863,7 +2893,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._previousSearchPattern = "";
 
         this.categoriesApplicationsBox = new CategoriesApplicationsBox();
-        rightPane.add_actor(topRow);
+        rightPane.add_actor(this.searchBox);
         rightPane.add_actor(this.categoriesApplicationsBox.actor);
 
         this.categoriesOverlayBox = new Clutter.Actor();
@@ -2916,9 +2946,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             y_fill: false
         });
 
-        this.systemButtonsBox = new St.BoxLayout({style_class: 'menu-systembuttons-box'});
-        topRow.add(this.searchBox,  {x_fill: true, x_align: St.Align.START, y_align: St.Align.MIDDLE, y_fill: false, expand: true});
-        topRow.add(this.systemButtonsBox, { x_align: St.Align.START, x_fill: true, expand: false });
+        this.systemButtonsBox = new St.BoxLayout({ vertical: true });
+        this.leftBox.add(this.systemButtonsBox, { y_align: St.Align.END, y_fill: false });
 
         this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-outer-box', vertical:false });
         this.mainBox.add_style_class_name('menu-applications-box'); //this is to support old themes
