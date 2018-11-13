@@ -1211,7 +1211,7 @@ var IndicatorActor = class IndicatorActor {
                 rowstride
             );
 
-            return new Clutter.Actor({
+            return new St.Icon({
                 width: Math.min(width, iconSize),
                 height: Math.min(height, iconSize),
                 content: image,
