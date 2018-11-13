@@ -26,17 +26,17 @@ if true#build_recorder
     ],
   )
 
-  test('recorder',
-    executable('test-recorder',
-      'test-recorder.c',
-      link_whole: libcinnamon_recorder,
-      include_directories: [ rootInclude, ],
-      dependencies: [
-        muffin_clutter,
-        gstreamer,
-      ],
-    )
-  )
+  # test('recorder',
+  #   executable('test-recorder',
+  #     'test-recorder.c',
+  #     link_whole: libcinnamon_recorder,
+  #     include_directories: [ rootInclude, ],
+  #     dependencies: [
+  #       muffin_clutter,
+  #       gstreamer,
+  #     ],
+  #   )
+  # )
 
 else
   libcinnamon_recorder = [ ]
