@@ -1358,6 +1358,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.closeContextMenus(null, false);
 
             this._clearAllSelections(true);
+            this._scrollToButton(this.favBoxIter.getFirstVisible()._delegate, this.favoritesScrollBox);
             this.destroyVectorBox();
         }
     }
