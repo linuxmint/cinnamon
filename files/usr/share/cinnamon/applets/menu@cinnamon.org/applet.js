@@ -1925,6 +1925,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     favPos = this._selectedItemIndex - 1;
                 appFavorites.moveFavoriteToPos(id, favPos);
                 item_actor = this.favoritesBox.get_child_at_index(favPos);
+                this._scrollToButton(item_actor._delegate, this.favoritesScrollBox);
             } else if (this.searchFilesystem && (this._fileFolderAccessActive || symbol === Clutter.slash)) {
                 if (symbol === Clutter.Return || symbol === Clutter.KP_Enter) {
                     if (this._run(this.searchEntry.get_text())) {
@@ -3036,7 +3037,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             actor.remove_style_pseudo_class("hover");
             actor.show();
         }
-        this._scrollToButton(this.sysBoxIter.getFirstVisible()._delegate);
     }
 
     _select_category (name) {
