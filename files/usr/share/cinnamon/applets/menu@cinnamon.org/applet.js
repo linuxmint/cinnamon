@@ -2912,7 +2912,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             x_fill: true,
             y_fill: false,
             y_align: St.Align.START,
-            style_class: 'vfade menu-applications-scrollbox'
+            style_class: 'vfade menu-favorites-scrollbox'
         });
 
         this.a11y_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.a11y.applications" });
@@ -2997,8 +2997,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                      this.a11y_mag_settings.get_double("mag-factor") > 1.0;
         if (mag_on) {
             this.applicationsScrollBox.style_class = "menu-applications-scrollbox";
+            this.favoritesScrollBox.style_class = "menu-favorites-scrollbox";
         } else {
             this.applicationsScrollBox.style_class = "vfade menu-applications-scrollbox";
+            this.favoritesScrollBox.style_class = "vfade menu-favorites-scrollbox";
         }
     }
 
