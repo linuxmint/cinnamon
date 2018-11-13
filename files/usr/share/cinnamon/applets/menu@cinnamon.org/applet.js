@@ -1609,7 +1609,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             case Clutter.KEY_Left:
                 if (!this.searchActive)
                     whichWay = "left";
-                if (this._activeContainer === this.favoritesBox)
+                if (this._activeContainer === this.favoritesBox || this._activeContainer === this.systemButtonsBox)
                     whichWay = "none";
                 else if (!this.favBoxShow &&
                             (this._activeContainer === this.categoriesBox || this._activeContainer === null))
@@ -3036,6 +3036,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             actor.remove_style_pseudo_class("hover");
             actor.show();
         }
+        this._scrollToButton(this.sysBoxIter.getFirstVisible()._delegate);
     }
 
     _select_category (name) {
