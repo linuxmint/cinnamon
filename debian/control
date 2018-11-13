@@ -3,8 +3,7 @@ Section: x11
 Priority: optional
 Maintainer: Linux Mint <root@linuxmint.com>
 Build-Depends:
- autoconf-archive,
- automake,
+ meson,
  debhelper (>= 10),
  dh-python,
  dpkg-dev (>= 1.16.1~),
