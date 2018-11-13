@@ -3030,6 +3030,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             actor.remove_style_pseudo_class("hover");
             actor.show();
         }
+        actors = this.systemButtonsBox.get_children();
+        for (let i = 0; i < actors.length; i++){
+            let actor = actors[i];
+            actor.remove_style_pseudo_class("hover");
+            actor.show();
+        }
     }
 
     _select_category (name) {
