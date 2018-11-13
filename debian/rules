@@ -16,7 +16,8 @@ override_dh_auto_build:
 	ninja -C debian/build
 
 override_dh_auto_test:
-	ninja test -C debian/build
+	# ninja test -C debian/build
+	:
 
 override_dh_auto_install:
   DESTDIR=${CURDIR}/debian/tmp ninja install -C debian/build
