@@ -2177,7 +2177,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 if (!this.searchActive) {
                     this.placesButton.isHovered = true;
 
-                    this._clearPrevCatSelection(this.placesButton);
+                    this._clearPrevCatSelection(this.placesButton.actor);
                     this.placesButton.actor.style_class = "menu-category-button-selected";
                     this.closeContextMenus(null, false);
                     this._select_category("places");
@@ -2191,8 +2191,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 } else {
                     let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
                     let nextIdx = this.catBoxIter.getVisibleIndex(this.placesButton.actor);
-                    let idxDiff = Math.abs(prevIdx - nextIdx);
-                    if (idxDiff <= 1 || Math.min(prevIdx, nextIdx) < 0) {
+
+                    if (Math.abs(prevIdx - nextIdx) <= 1) {
                         this._previousTreeSelectedActor = this.placesButton.actor;
                     }
                 }
