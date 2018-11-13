@@ -2053,9 +2053,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this._previousTreeSelectedActor = actor;
             }
         } else {
-            this.categoriesBox.get_children().forEach(Lang.bind(this, function (child) {
-                child.style_class = "menu-category-button";
-            }));
+            this.categoriesBox.get_children().forEach(child => child.style_class = "menu-category-button");
         }
     }
 
@@ -2475,9 +2473,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
         }
 
-        this._applicationsButtons.forEach(Lang.bind(this, function(button) {
-            button.destroy();
-        }));
+        this._applicationsButtons.forEach(button => button.destroy());
 
         this._applicationsButtons = [];
         // this.applicationsBox.destroy_all_children();
@@ -3104,11 +3100,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let selectedActor = null;
         if (appCategory) {
             if (appCategory == "all") {
-                this._applicationsButtons.forEach( function (item, index) {
-                    item.actor.show();
-                });
+                this._applicationsButtons.forEach(item => item.actor.show());
             } else {
-                this._applicationsButtons.forEach( function (item, index) {
+                this._applicationsButtons.forEach(item => {
                     if (item.category.indexOf(appCategory) != -1) {
                         item.actor.show();
                     } else {
@@ -3130,15 +3124,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 }
             }
         } else {
-            this._applicationsButtons.forEach( function (item, index) {
-                item.actor.hide();
-            });
+            this._applicationsButtons.forEach(item => item.actor.hide());
         }
         if (places) {
             if (places === -1) {
-                this._placesButtons.forEach( function (item, index) {
-                    item.actor.show();
-                });
+                this._placesButtons.forEach(item => item.actor.show());
             } else {
                 for (let i = 0; i < this._placesButtons.length; i++) {
                     let buttonName = this._placesButtons[i].button_name;
@@ -3152,15 +3142,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 }
             }
         } else {
-            this._placesButtons.forEach( function (item, index) {
-                item.actor.hide();
-            });
+            this._placesButtons.forEach(item => item.actor.hide());
         }
         if (recent) {
             if (recent == -1) {
-                this._recentButtons.forEach( function (item, index) {
-                    item.actor.show();
-                });
+                this._recentButtons.forEach(item => item.actor.show());
             } else {
                 for (let i = 0; i < this._recentButtons.length; i++) {
                     if (recent.indexOf(this._recentButtons[i].button_name) != -1) {
@@ -3171,15 +3157,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 }
             }
         } else {
-            this._recentButtons.forEach( function (item, index) {
-                item.actor.hide();
-            });
+            this._recentButtons.forEach(item => item.actor.hide());
         }
         if (autocompletes) {
 
-            this._transientButtons.forEach( function (item, index) {
-                item.actor.destroy();
-            });
+            this._transientButtons.forEach(item => item.actor.destroy());
             this._transientButtons = [];
 
             for (let i = 0; i < autocompletes.length; i++) {
@@ -3192,7 +3174,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
         }
 
-        this._searchProviderButtons.forEach( function (item, index) {
+        this._searchProviderButtons.forEach(item => {
             if (item.actor.visible) {
                 item.actor.hide();
             }
