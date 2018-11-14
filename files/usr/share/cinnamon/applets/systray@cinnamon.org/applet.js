@@ -52,10 +52,10 @@ class CinnamonSystrayApplet extends Applet.Applet {
         this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR) * global.ui_scale;
 
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
-            manager = new Clutter.BoxLayout( { spacing: 2,
+            manager = new Clutter.BoxLayout( { spacing: 4,
                                                orientation: Clutter.Orientation.HORIZONTAL });
         } else {
-            manager = new Clutter.BoxLayout( { spacing: 2,
+            manager = new Clutter.BoxLayout( { spacing: 4,
                                                orientation: Clutter.Orientation.VERTICAL });
         }
         this.manager = manager;
