@@ -1358,6 +1358,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.closeContextMenus(null, false);
 
             this._clearAllSelections(true);
+            this._scrollToButton(this.favBoxIter.getFirstVisible()._delegate, this.favoritesScrollBox);
             this.destroyVectorBox();
         }
     }
@@ -1609,7 +1610,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             case Clutter.KEY_Left:
                 if (!this.searchActive)
                     whichWay = "left";
-                if (this._activeContainer === this.favoritesBox)
+                if (this._activeContainer === this.favoritesBox || this._activeContainer === this.systemButtonsBox)
                     whichWay = "none";
                 else if (!this.favBoxShow &&
                             (this._activeContainer === this.categoriesBox || this._activeContainer === null))
@@ -1925,6 +1926,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     favPos = this._selectedItemIndex - 1;
                 appFavorites.moveFavoriteToPos(id, favPos);
                 item_actor = this.favoritesBox.get_child_at_index(favPos);
+                this._scrollToButton(item_actor._delegate, this.favoritesScrollBox);
             } else if (this.searchFilesystem && (this._fileFolderAccessActive || symbol === Clutter.slash)) {
                 if (symbol === Clutter.Return || symbol === Clutter.KP_Enter) {
                     if (this._run(this.searchEntry.get_text())) {
@@ -2906,6 +2908,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.categoriesOverlayBox.add_actor(this.categoriesBox);
 
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
+        this.favoritesScrollBox = new St.ScrollView({
+            x_fill: true,
+            y_fill: false,
+            y_align: St.Align.START,
+            style_class: 'vfade menu-favorites-scrollbox'
+        });
 
         this.a11y_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.a11y.applications" });
         this.a11y_settings.connect("changed::screen-magnifier-enabled", Lang.bind(this, this._updateVFade));
@@ -2934,16 +2942,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.categoriesApplicationsBox.actor.add_actor(this.categoriesOverlayBox);
         this.categoriesApplicationsBox.actor.add_actor(this.applicationsScrollBox);
 
-        this.favoritesScrollBox = new St.ScrollView({
-            x_fill: true,
-            y_fill: false,
-            y_align: St.Align.START,
-            style_class: 'vfade menu-applications-scrollbox'
-        });
-        this.favoritesScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER);
-
         this.favoritesBox = new FavoritesBox().actor;
         this.favoritesScrollBox.add_actor(this.favoritesBox);
+        this.favoritesScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER);
+
         this.leftBox.add(this.favoritesScrollBox, {
             y_align: St.Align.END,
             y_fill: false
@@ -2995,13 +2997,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                      this.a11y_mag_settings.get_double("mag-factor") > 1.0;
         if (mag_on) {
             this.applicationsScrollBox.style_class = "menu-applications-scrollbox";
+            this.favoritesScrollBox.style_class = "menu-favorites-scrollbox";
         } else {
             this.applicationsScrollBox.style_class = "vfade menu-applications-scrollbox";
+            this.favoritesScrollBox.style_class = "vfade menu-favorites-scrollbox";
         }
     }
 
     _update_autoscroll() {
         this.applicationsScrollBox.set_auto_scrolling(this.autoscroll_enabled);
+        this.favoritesScrollBox.set_auto_scrolling(this.autoscroll_enabled);
     }
 
     _on_allocation_changed(box, flags, data) {
@@ -3024,6 +3029,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             actor.show();
         }
         actors = this.favoritesBox.get_children();
+        for (let i = 0; i < actors.length; i++){
+            let actor = actors[i];
+            actor.remove_style_pseudo_class("hover");
+            actor.show();
+        }
+        actors = this.systemButtonsBox.get_children();
         for (let i = 0; i < actors.length; i++){
             let actor = actors[i];
             actor.remove_style_pseudo_class("hover");
