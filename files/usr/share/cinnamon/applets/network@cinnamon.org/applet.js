@@ -105,12 +105,6 @@ NMNetworkMenuItem.prototype = {
                                          style_class: 'popup-menu-icon' });
         this._icons.add_actor(this._signalIcon);
 
-        this._secureIcon = new St.Icon({ style_class: 'popup-menu-icon' });
-        if (this.bestAP._secType != NMAccessPointSecurity.UNKNOWN &&
-            this.bestAP._secType != NMAccessPointSecurity.NONE)
-            this._secureIcon.icon_name = 'network-wireless-encrypted';
-        this._icons.add_actor(this._secureIcon);
-
         this._accessPoints = [ ];
         for (let i = 0; i < accessPoints.length; i++) {
             let ap = accessPoints[i];
@@ -137,6 +131,9 @@ NMNetworkMenuItem.prototype = {
     _getIcon: function() {
         if (this.bestAP.mode == NM80211Mode.ADHOC)
             return 'network-workgroup';
+        else if (this.bestAP._secType != NMAccessPointSecurity.UNKNOWN &&
+            this.bestAP._secType != NMAccessPointSecurity.NONE)
+            return 'network-wireless-signal-' + signalToIcon(this.bestAP.strength) + '-secure';
         else
             return 'network-wireless-signal-' + signalToIcon(this.bestAP.strength);
     },
