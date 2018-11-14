@@ -12,10 +12,36 @@ FORBIDDEN_KEYVALS = [
     Gdk.KEY_Page_Down,
     Gdk.KEY_End,
     Gdk.KEY_Tab,
-    Gdk.KEY_KP_Enter,
     Gdk.KEY_Return,
     Gdk.KEY_space,
-    Gdk.KEY_Mode_switch
+    Gdk.KEY_Mode_switch,
+    Gdk.KEY_KP_0, # numerics currently are recogized only as _End, _Down, etc.. with or without numlock
+    Gdk.KEY_KP_1, # Gdk checks numlock and parses out the correct key, but this could change, so list
+    Gdk.KEY_KP_2, # these numerics anyhow. (This may differ depending on kb layouts, locales, etc.. but
+    Gdk.KEY_KP_3, # I didn't thoroughly check.)
+    Gdk.KEY_KP_4,
+    Gdk.KEY_KP_5,
+    Gdk.KEY_KP_6,
+    Gdk.KEY_KP_7,
+    Gdk.KEY_KP_8,
+    Gdk.KEY_KP_9,
+    Gdk.KEY_KP_End,
+    Gdk.KEY_KP_Down,
+    Gdk.KEY_KP_Next,
+    Gdk.KEY_KP_Left,
+    Gdk.KEY_KP_Begin,
+    Gdk.KEY_KP_Right,
+    Gdk.KEY_KP_Home,
+    Gdk.KEY_KP_Up,
+    Gdk.KEY_KP_Prior,
+    Gdk.KEY_KP_Insert,
+    Gdk.KEY_KP_Delete,
+    Gdk.KEY_KP_Add,
+    Gdk.KEY_KP_Subtract,
+    Gdk.KEY_KP_Multiply,
+    Gdk.KEY_KP_Divide,
+    Gdk.KEY_KP_Enter,
+    Gdk.KEY_Num_Lock
 ]
 
 class ButtonKeybinding(Gtk.TreeView):
@@ -255,7 +281,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         accel_string = Gtk.accelerator_name_with_keycode(None, accel_key, event.hardware_keycode, Gdk.ModifierType(accel_mods))
         accel_label = Gtk.accelerator_get_label_with_keycode(None, accel_key, event.hardware_keycode, Gdk.ModifierType(accel_mods))
 
-        # print("Storing %s as %s" % (accel_label, accel_string))
+        # print("accel_mods: %d, keyval: %d, Storing %s as %s" % (accel_mods, keyval, accel_label, accel_string))
 
         if (accel_mods == 0 or accel_mods == Gdk.ModifierType.SHIFT_MASK) and event.hardware_keycode != 0:
             if ((keyval >= Gdk.KEY_a                    and keyval <= Gdk.KEY_z)

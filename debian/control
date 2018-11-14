@@ -45,24 +45,24 @@ Package: cinnamon
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
 Depends:
- cinnamon-common (= ${source:Version}),
- cinnamon-control-center (>= ${cinnamon:Version}),
- cinnamon-desktop-data (>= ${cinnamon:Version}),
- cinnamon-l10n (>= ${cinnamon:Version}),
- cinnamon-screensaver (>= ${cinnamon:Version}),
- cinnamon-session (>= ${cinnamon:Version}),
- cinnamon-settings-daemon (>= ${cinnamon:Version}),
+ cinnamon-common,
+ cinnamon-control-center,
+ cinnamon-desktop-data,
+ cinnamon-l10n,
+ cinnamon-screensaver,
+ cinnamon-session,
+ cinnamon-settings-daemon,
  cjs (>= 3.8),
  cups-pk-helper,
  gir1.2-accountsservice-1.0,
  gir1.2-caribou-1.0,
- gir1.2-cinnamondesktop-3.0 (>= ${cinnamon:Version}),
- gir1.2-cmenu-3.0 (>= ${cinnamon:Version}),
+ gir1.2-cinnamondesktop-3.0,
+ gir1.2-cmenu-3.0,
  gir1.2-cvc-1.0,
  gir1.2-gkbd-3.0,
  gir1.2-gtkclutter-1.0,
  gir1.2-keybinder-3.0,
- gir1.2-meta-muffin-0.0 (>= ${cinnamon:Version}),
+ gir1.2-meta-muffin-0.0,
  gir1.2-nm-1.0 [linux-any] | gir1.2-networkmanager-1.0 [linux-any],
  gir1.2-nma-1.0 [linux-any],
  gir1.2-notify-0.7,
@@ -75,15 +75,15 @@ Depends:
  gsettings-desktop-schemas (>= 0.1.7),
  iso-flag-png,
  libcanberra-pulse,
- libcinnamon-desktop4 (>= ${cinnamon:Version}),
- libcinnamon-menu-3-0 (>= ${cinnamon:Version}),
+ libcinnamon-desktop4,
+ libcinnamon-menu-3-0,
  libcjs0f (>= 3.8),
  libglib2.0-bin,
- libmuffin0 (>= ${cinnamon:Version}),
+ libmuffin0,
  mate-panel | gnome-panel | tint2,
  mesa-utils,
  metacity,
- nemo (>= ${cinnamon:Version}),
+ nemo,
  network-manager-gnome [linux-any],
  policykit-1-gnome,
  python3,
@@ -103,26 +103,21 @@ Depends:
  ${python3:Depends},
  ${shlibs:Depends},
 Recommends:
- blueman,
  gnome-terminal | x-terminal-emulator,
  gnome-themes-extra | gnome-themes-standard,
 Suggests: cinnamon-doc
 Provides: notification-daemon, x-window-manager
-Replaces: cinnamon-common (<< ${cinnamon:Version})
-Breaks: cinnamon-common (<< ${cinnamon:Version})
 Description: Modern Linux desktop
  Cinnamon is a modern Linux desktop which provides advanced innovative
  features and a traditional user experience. It's easy to use, powerful
  and flexible.
 
 Package: cinnamon-common
-Replaces: cinnamon (<< ${cinnamon:Version})
-Breaks: cinnamon (<< ${cinnamon:Version})
 Architecture: all
 Depends:
  gettext,
- gir1.2-cinnamondesktop-3.0 (>= ${cinnamon:Version}),
- gir1.2-meta-muffin-0.0 (>= ${cinnamon:Version}),
+ gir1.2-cinnamondesktop-3.0,
+ gir1.2-meta-muffin-0.0,
  gvfs-bin,
  xdg-utils,
  ${misc:Depends},

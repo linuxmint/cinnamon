@@ -14,6 +14,7 @@ CUSTOM_ITEM_OPEN_FOLDER = "cc-item-open-folder"
 
 MEDIA_HANDLING_SCHEMA = "org.cinnamon.desktop.media-handling"
 TERMINAL_SCHEMA = "org.cinnamon.desktop.default-applications.terminal"
+CALCULATOR_SCHEMA = "org.cinnamon.desktop.default-applications.calculator"
 
 PREF_CONTENT_TYPE = 0
 PREF_GEN_CONTENT_TYPE = 1
@@ -275,6 +276,38 @@ class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this
         command_key = self.active_items[index_num]
         self.settings.set_string("exec", command_key)
 
+class DefaultCalculatorButton(Gtk.AppChooserButton):
+    def __init__(self):
+        super(DefaultCalculatorButton, self).__init__()
+        apps = Gio.app_info_get_all()
+        self.this_item = []
+        self.active_items = []
+        self.settings = Gio.Settings.new(CALCULATOR_SCHEMA)
+        self.key_value = self.settings.get_string("exec")
+        self.connect("changed", self.onChanged)
+        count_up = 0
+
+        while (self.this_item is not None and count_up < len(apps)):
+            self.this_item = apps[count_up]
+            cat_val = Gio.DesktopAppInfo.get_categories(self.this_item)
+            exec_val = Gio.DesktopAppInfo.get_string(self.this_item, "Exec")
+            name_val = Gio.DesktopAppInfo.get_string(self.this_item, "Name")
+            icon_val = Gio.DesktopAppInfo.get_string(self.this_item, "Icon")
+            #calculators don't have mime types, so we check for "Calculator" under the "Category" key in desktop files
+            if (cat_val is not None and "Calculator" in cat_val):
+                #this if statement makes sure remaining desktop file info is not empty
+                if (exec_val is not None and name_val is not None and icon_val is not None):
+                    self.append_custom_item(exec_val, name_val, Gio.ThemedIcon.new(icon_val))
+                    self.active_items.append(exec_val)
+                    if (self.key_value == exec_val):
+                        self.set_active_custom_item(self.key_value)
+            count_up += 1
+
+    def onChanged(self, button):
+        index_num = button.get_active()
+        command_key = self.active_items[index_num]
+        self.settings.set_string("exec", command_key)
+
 class CustomAppChooserButton(Gtk.AppChooserButton):
     def __init__(self, media_settings, content_type, heading=None):
         super(CustomAppChooserButton, self).__init__(content_type=content_type)
@@ -466,7 +499,7 @@ class Module:
     comment = _("Preferred Applications")
 
     def __init__(self, content_box):
-        keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autostart, autoplay")
+        keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autoplay, favorite, apps")
         sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, module=self)
         self.sidePage = sidePage
 
@@ -501,9 +534,20 @@ class Module:
                 if not button.get_active():
                     settings.add_row(widget)
 
+
+            # Terminal
             widget = SettingsWidget()
             button = DefaultTerminalButton()
             label = MnemonicLabel(_("Te_rminal"), button)
+            size_group.add_widget(button)
+            widget.pack_start(label, False, False, 0)
+            widget.pack_end(button, False, False, 0)
+            settings.add_row(widget)
+
+            # Calculator
+            widget = SettingsWidget()
+            button = DefaultCalculatorButton()
+            label = MnemonicLabel(_("_Calculator"), button)
             size_group.add_widget(button)
             widget.pack_start(label, False, False, 0)
             widget.pack_end(button, False, False, 0)

@@ -15,11 +15,13 @@ const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;  // Cinnamon C libraries using GObject Introspection
 const St = imports.gi.St;
+const Gio = imports.gi.Gio;
+const Gtk = imports.gi.Gtk;
+const Signals = imports.signals;
 
 const Applet = imports.ui.applet;
 const AppletManager = imports.ui.appletManager;
 const DND = imports.ui.dnd;
-const Gtk = imports.gi.Gtk;
 const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const PopupMenu = imports.ui.popupMenu;
@@ -38,20 +40,18 @@ const TIME_DELTA = 1500;
 const APPLETS_DROP_ANIMATION_TIME = 0.2;
 
 const EDIT_MODE_MIN_BOX_SIZE = 25;
+const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48];
 
 const PANEL_AUTOHIDE_KEY = "panels-autohide";
 const PANEL_SHOW_DELAY_KEY = "panels-show-delay";
 const PANEL_HIDE_DELAY_KEY = "panels-hide-delay";
 const PANEL_HEIGHT_KEY = "panels-height";
-const PANEL_RESIZABLE_KEY = "panels-resizable";
-const PANEL_SCALE_TEXT_ICONS_KEY = "panels-scale-text-icons";
+const PANEL_ZONE_ICON_SIZES = "panel-zone-icon-sizes";
 
 const DEFAULT_VALUES = {"panels-autohide": "false",
                         "panels-show-delay": "0",
                         "panels-hide-delay": "0",
-                        "panels-height": "25",
-                        "panels-resizable": "false",
-                        "panels-scale-text-icons": "true"};
+                        "panels-height": "40"};
 
 const Direction = {
     LEFT  : 0,
@@ -220,6 +220,55 @@ function getPanelLocFromName (pname) {
 };
 
 /**
+ * toStandardIconSize:
+ * @maxSize (integer): the maximum size of the icon
+ *
+ * Calculates the nearest standard icon size up to a maximum.
+ *
+ * Returns: an integer, the icon size
+ */
+function toStandardIconSize(maxSize) {
+    maxSize = Math.floor(maxSize);
+    if (maxSize < 22) return 16;
+    else if (maxSize < 24) return 22;
+    else if (maxSize < 32) return 24;
+    else if (maxSize < 48) return 32;
+    // Panel icons reach 32 at most with the largest panel, also on hidpi
+    return 48;
+}
+
+/**
+ * getSymbolicIconSize:
+ * @iconSize (integer): an icon size
+ * @settings (Gio.Settings): the settings
+ *
+ * Gets the symbolic icon size for a given fullcolor icon size.
+ *
+ * Returns: an integer, the icon size
+ */
+function getSymbolicIconSize(iconSize, settings) {
+    iconSize = Math.floor(iconSize);
+    if (iconSize < 22) return settings.get_int("symbolic-size-16");
+    else if (iconSize < 24) return settings.get_int("symbolic-size-22");
+    else if (iconSize < 32) return settings.get_int("symbolic-size-24");
+    else if (iconSize < 48) return settings.get_int("symbolic-size-32");
+    // Panel icons reach 32 at most with the largest panel, also on hidpi
+    return settings.get_int("symbolic-size-48");
+}
+
+function setHeightForPanel(panel) {
+    let height;
+
+    // for vertical panels use the width instead of the height
+    if (panel.panelPosition > 1) height = panel.actor.get_width();
+    else height = panel.actor.get_height();
+
+    if (height < 20) height = 40;
+
+    return height;
+}
+
+/**
  * #PanelManager
  *
  * @short_description: Manager of Cinnamon panels
@@ -346,13 +395,13 @@ PanelManager.prototype = {
                     pright = this._loadPanel(stash[j][0], stash[j][1], stash[j][2], [true,true]);
                 }
                 if (stash[j][2] == PanelLoc.bottom && stash[j][1] == i) {
-                    drawcorner[0] = (panels_used[i][2])? false : true;
-                    drawcorner[1] = (panels_used[i][3])? false : true;
+                    drawcorner[0] = !(panels_used[i][2]);
+                    drawcorner[1] = !(panels_used[i][3]);
                     this._loadPanel(stash[j][0], stash[j][1], stash[j][2], drawcorner);
                 }
                 if (stash[j][2] == PanelLoc.top && stash[j][1] == i) {
-                    drawcorner[0] = (panels_used[i][2])? false : true;
-                    drawcorner[1] = (panels_used[i][3])? false : true;
+                    drawcorner[0] = !(panels_used[i][2]);
+                    drawcorner[1] = !(panels_used[i][3]);
                     this._loadPanel(stash[j][0], stash[j][1], stash[j][2], drawcorner);
                 }
             }
@@ -896,8 +945,8 @@ PanelManager.prototype = {
             for (let j = 0, len = stash.length; j < len; j++) {
                 let drawcorner = [false, false];
                 if (stash[j][2] == PanelLoc.bottom && stash[j][1] == i) {
-                    drawcorner[0] = (panels_used[i][2])? false : true;
-                    drawcorner[1] = (panels_used[i][3])? false : true;
+                    drawcorner[0] = !(panels_used[i][2]);
+                    drawcorner[1] = !(panels_used[i][3]);
                     if (this.panels[stash[j][0]]) {  // panel will not have loaded if previous monitor disconnected etc.
                         this.panels[stash[j][0]].drawcorner = drawcorner;
                         this.panels[stash[j][0]].drawCorners(drawcorner);
@@ -916,8 +965,8 @@ PanelManager.prototype = {
                     }
                 }
                 if (stash[j][2] == PanelLoc.top && stash[j][1] == i) {
-                    drawcorner[0] = (panels_used[i][2])? false : true;
-                    drawcorner[1] = (panels_used[i][3])? false : true;
+                    drawcorner[0] = !(panels_used[i][2]);
+                    drawcorner[1] = !(panels_used[i][3]);
                     if (this.panels[stash[j][0]]) {
                         this.panels[stash[j][0]].drawcorner = drawcorner;
                         this.panels[stash[j][0]].drawCorners(drawcorner);
@@ -1086,7 +1135,7 @@ PanelDummy.prototype = {
         this.panelPosition = panelPosition;
         this.callback = callback;
         this.monitor = global.screen.get_monitor_geometry(monitorIndex);
-        let defaultheight = 25 * global.ui_scale;
+        let defaultheight = 40 * global.ui_scale;
 
         this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
 
@@ -1851,7 +1900,6 @@ PanelZoneDNDHandler.prototype = {
  * @monitor (Meta.Rectangle): the geometry (bounding box) of the monitor
  * @panelPosition (integer): where the panel is on the screen
  * @actor (Cinnamon.GenericContainer): the actor of the panel
- * @scaleMode (boolean): whether the applets should scale with the panel
  *
  * @_leftBox (St.BoxLayout): the box containing all the applets in the left region
  * @_centerBox (St.BoxLayout): the box containing all the applets in the center region
@@ -1884,11 +1932,11 @@ Panel.prototype = {
         this._disabled = false;
         this._panelEditMode = false;
         this._autohideSettings = null;
-        this._themeFontSize = null;
         this._destroyed = false;
         this._positionChanged = false;
         this._monitorsChanged = false;
         this._signalManager = new SignalManager.SignalManager(null);
+        this.height = 0;
         this.margin_top = 0;
         this.margin_bottom = 0;
         this.margin_left = 0;
@@ -1898,8 +1946,9 @@ Panel.prototype = {
         this._topPanelBarrier = 0;
         this._bottomPanelBarrier = 0;
         this._shadowBox = null;
+        this._panelZoneIconSizes = null;
 
-        this.scaleMode = false;
+        this.themeSettings = new Gio.Settings({ schema_id: 'org.cinnamon.theme' });
 
         this.actor = new Cinnamon.GenericContainer({ name: 'panel', reactive: true });
         this.addPanelStyleClass(this.panelPosition);
@@ -1942,13 +1991,21 @@ Panel.prototype = {
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
+        this.actor.connect('queue-relayout', () => this._setPanelHeight());
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);
-        this._signalManager.connect(global.settings, "changed::" + PANEL_RESIZABLE_KEY, this._moveResizePanel, this);
-        this._signalManager.connect(global.settings, "changed::" + PANEL_SCALE_TEXT_ICONS_KEY, this._onScaleTextIconsChanged, this);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_ICON_SIZES, this._onPanelZoneIconSizesChanged, this);
         this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged, this);
         this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers, this);
+
+        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-16", this._onPanelZoneIconSizesChanged, this);
+        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-22", this._onPanelZoneIconSizesChanged, this);
+        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-24", this._onPanelZoneIconSizesChanged, this);
+        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-32", this._onPanelZoneIconSizesChanged, this);
+        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-48", this._onPanelZoneIconSizesChanged, this);
+
+        this._onPanelZoneIconSizesChanged();
     },
 
     drawCorners: function(drawcorner)
@@ -2012,9 +2069,11 @@ Panel.prototype = {
             }
         }
 
-        if (this._leftCorner)
+        if (this.actor.is_finalized()) return;
+
+        if (this._leftCorner && !this._leftCorner.actor.is_finalized())
             this.actor.add_actor(this._leftCorner.actor);
-        if (this._rightCorner)
+        if (this._rightCorner && !this._rightCorner.actor.is_finalized())
             this.actor.add_actor(this._rightCorner.actor);
     },
 
@@ -2131,6 +2190,7 @@ Panel.prototype = {
         this._destroyed = true;    // set this early so that any routines triggered during
                                    // the destroy process can test it
 
+        this._removeZoneIconSizes();
         this._clearPanelBarriers();
         AppletManager.unloadAppletsOnPanel(this.panelId);
         this._context_menu.close();
@@ -2201,6 +2261,28 @@ Panel.prototype = {
         default:
             return property;
         }
+    },
+
+    /**
+     * _getJSONProperty
+     * @key (string): name of gsettings key
+     *
+     * Gets the desired JSON encoded property of the panel from gsettings
+     *
+     * Returns: property required
+     */
+    _getJSONProperty: function(key){
+        let json = global.settings.get_string(key);
+
+        Util.tryFn(function() {
+            json = JSON.parse(json);
+        }, function(err) {
+            err.message = `Failed to parse JSON property: \n${err.message}`;
+            global.logError(err);
+            json = null;
+        });
+
+        return json;
     },
 
     handleDragOver: function(source, actor, x, y, time) {
@@ -2426,7 +2508,7 @@ Panel.prototype = {
     },
 
     _onFocusChanged: function() {
-        if (global.display.focus_window &&
+        if (global.display.focus_window && this._focusWindow !== undefined &&
             this._focusWindow == global.display.focus_window.get_compositor_private())
             return;
 
@@ -2473,25 +2555,8 @@ Panel.prototype = {
      */
     _getScaledPanelHeight: function() {
         let panelHeight = 0;
-        let panelResizable = this._getProperty(PANEL_RESIZABLE_KEY, "b");
-        let isHorizontal = ((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false);
-
-        if (panelResizable) {
-            panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i") * global.ui_scale;
-        } else {
-            let themeNode = this.actor.get_theme_node();
-
-            if (isHorizontal)
-                panelHeight = themeNode.get_height();
-            else
-                panelHeight = themeNode.get_width();
-
-            if (!panelHeight || panelHeight <= 0) {
-                panelHeight = 25 * global.ui_scale;
-            }
-        }
-
-        return panelHeight;
+        panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i") * global.ui_scale;
+        return panelHeight < 20 ? 40 : panelHeight;
     },
 
    /**
@@ -2591,7 +2656,7 @@ Panel.prototype = {
         // else full screen windows will then go right to the edge with the panels floating over
         //
         this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
-        let horizontal_panel = ((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) ? true : false);
+        let horizontal_panel = (!!((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)));
 
         // this stands for width on vertical panels, and height on horizontal panels
         let panelHeight = this._getScaledPanelHeight();
@@ -2683,8 +2748,6 @@ Panel.prototype = {
             this.margin_left = newMarginLeft;
             this.margin_right = newMarginRight;
 
-            this._setFont(panelHeight);
-
             // update size and determine position depending on hidden state
             let newX, newY;
             if (horizontal_panel) {
@@ -2729,8 +2792,7 @@ Panel.prototype = {
             }
 
             // AppletManager might not be initialized yet
-            if (AppletManager.appletsLoaded)
-                AppletManager.updateAppletPanelHeights();
+            if (AppletManager.appletsLoaded) this._setPanelHeight();
         }
         return true;
     },
@@ -2786,25 +2848,151 @@ Panel.prototype = {
         this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
     },
 
-    _setFont: function(panelHeight) {
-        this.scaleMode = this._getProperty(PANEL_RESIZABLE_KEY, "b") && this._getProperty(PANEL_SCALE_TEXT_ICONS_KEY, "b");
+    _setPanelHeight: function() {
+        let height = setHeightForPanel(this);
+        if (height === this.height) return;
 
-        if (!this._themeFontSize) {
-            let themeNode = this.actor.get_theme_node();
-            this._themeFontSize = themeNode.get_length("font-size");
-        }
-        if (this.scaleMode) {
-            let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
-            this.actor.set_style('font-size: ' + textheight / global.ui_scale + 'px;');
-        } else {
-            this.actor.set_style('font-size: ' + this._themeFontSize ? this._themeFontSize + 'px;' : '8.5pt;');
-        }
+        this.height = height;
+
+        // In case icon sizes are responding to panel height
+        this._onPanelZoneIconSizesChanged();
+
+        this.emit('size-changed', height);
     },
 
-    _onScaleTextIconsChanged: function() {
-        let panelHeight = this._getScaledPanelHeight();
-        this._setFont(panelHeight);
-        AppletManager.updateAppletPanelHeights(true);
+    _onPanelZoneIconSizesChanged: function(value, key) {
+        if (this._destroyed) return;
+
+        let panelZoneIconSizes = this._getJSONProperty(PANEL_ZONE_ICON_SIZES);
+
+        if (!panelZoneIconSizes) return;
+
+        let changed = false;
+        let cached = this._panelZoneIconSizes;
+
+        Util.each(panelZoneIconSizes, (iconSizes, i) => {
+            if (iconSizes.panelId !== this.panelId) return;
+
+            // Validate sizes
+            if (!VALID_ICON_SIZE_VALUES.includes(iconSizes.left)) {
+                iconSizes.left = toStandardIconSize(iconSizes.left);
+            }
+            if (!VALID_ICON_SIZE_VALUES.includes(iconSizes.center)) {
+                iconSizes.center = toStandardIconSize(iconSizes.center);
+            }
+            if (!VALID_ICON_SIZE_VALUES.includes(iconSizes.right)) {
+                iconSizes.right = toStandardIconSize(iconSizes.right);
+            }
+            if (cached && (iconSizes.left !== cached.left
+                || iconSizes.center !== cached.center
+                || iconSizes.right !== cached.right)) {
+                changed = true;
+            }
+
+            iconSizes.cache = {
+                left: {
+                    symbolic: this._calculatePanelZoneIconSize(iconSizes.left, true),
+                    fullColor: this._calculatePanelZoneIconSize(iconSizes.left, false),
+                },
+                center: {
+                    symbolic: this._calculatePanelZoneIconSize(iconSizes.center, true),
+                    fullColor: this._calculatePanelZoneIconSize(iconSizes.center, false),
+                },
+                right: {
+                    symbolic: this._calculatePanelZoneIconSize(iconSizes.right, true),
+                    fullColor: this._calculatePanelZoneIconSize(iconSizes.right, false),
+                }
+            };
+
+            this._panelZoneIconSizes = iconSizes;
+        });
+
+        if (!this._panelZoneIconSizes) {
+            let defaultSymbolicSize = this._calculatePanelZoneIconSize(0, true);
+            let defaultFullColorSize = this._calculatePanelZoneIconSize(0, false);
+
+            let defaultZoneConfig = {
+                panelId: this.panelId,
+                left: 0,
+                center: 0,
+                right: 0
+            };
+
+            panelZoneIconSizes.push(defaultZoneConfig);
+            global.settings.set_string(PANEL_ZONE_ICON_SIZES, JSON.stringify(panelZoneIconSizes));
+
+            defaultZoneConfig.cache = {
+                left: {
+                    symbolic: defaultSymbolicSize,
+                    fullColor: defaultFullColorSize
+                },
+                center: {
+                    symbolic: defaultSymbolicSize,
+                    fullColor: defaultFullColorSize
+                },
+                right: {
+                    symbolic: defaultSymbolicSize,
+                    fullColor: defaultFullColorSize
+                }
+            };
+
+            this._panelZoneIconSizes = defaultZoneConfig;
+
+            global.log(`[Panel ${this.panelId}] Creating a new zone configuration`);
+        }
+
+        if (typeof key === 'string' && key.includes('symbolic-size')) changed = true;
+
+        if (changed) this.emit('icon-size-changed');
+    },
+
+    _calculatePanelZoneIconSize: function(iconSize, isSymbolic = false) {
+        let height = this.height / global.ui_scale;
+
+        if (iconSize === -1) { // Legacy: Scale to panel size
+            iconSize = height;
+        } else if (iconSize === 0 || iconSize > height) { // To best fit within the panel size
+            iconSize = toStandardIconSize(height);
+        }
+
+        // Always re-adjust symbolics
+        if (isSymbolic) {
+            iconSize = getSymbolicIconSize(iconSize, this.themeSettings);
+        }
+
+        return iconSize; // Always return a value above 0 or St will spam the log.
+    },
+
+    getPanelZoneIconSize: function(locationLabel, iconType) {
+        let zoneConfig = this._panelZoneIconSizes;
+        let symbolic = iconType === St.IconType.SYMBOLIC;
+
+        if (!zoneConfig) {
+            global.logError(`[Panel ${this.panelId}] Unable to find zone configuration`);
+            return this._calculatePanelZoneIconSize(0, symbolic);
+        }
+
+        if (symbolic) {
+            return zoneConfig.cache[locationLabel].symbolic;
+        }
+
+        return zoneConfig.cache[locationLabel].fullColor;
+    },
+
+    _removeZoneIconSizes: function() {
+        let panelZoneIconSizes = this._getJSONProperty(PANEL_ZONE_ICON_SIZES);
+        let zoneIndex = Util.findIndex(panelZoneIconSizes, (obj) => {
+            return obj.panelId === this.panelId;
+        });
+
+        if (zoneIndex < 0) return;
+
+        panelZoneIconSizes.splice(zoneIndex, 1);
+
+        this._panelZoneIconSizes = null;
+
+        global.settings.set_string(PANEL_ZONE_ICON_SIZES, JSON.stringify(panelZoneIconSizes));
+        global.log(`[Panel ${this.panelId}] Removing zone configuration`);
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
@@ -3433,3 +3621,5 @@ Panel.prototype = {
         this._rightBoxDNDHandler.reset();
     }
 };
+
+Signals.addSignalMethods(Panel.prototype);

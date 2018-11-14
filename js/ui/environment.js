@@ -45,10 +45,11 @@ function _patchContainerClass(containerClass) {
     };
 }
 
+function readOnlyError(property) {
+    global.logError(`The ${property} object is read-only.`);
+};
+
 function init() {
-    const readOnlyError = function(property) {
-        global.logError(`The ${property} object is read-only.`);
-    };
     // Add some bindings to the global JS namespace; (gjs keeps the web
     // browser convention of having that namespace be called 'window'.)
     Object.defineProperty(window, 'global', {
@@ -119,6 +120,14 @@ function init() {
     };
     Clutter.Actor.prototype.toString = function() {
         return St.describe_actor(this);
+    };
+
+    // Safe wrapper for theme inspection
+    St.Widget.prototype.style_length = function(property) {
+        if (this.is_finalized() || !this.realized) return 0;
+        let node = this.peek_theme_node();
+        if (!node) return 0;
+        return node.get_length(property);
     };
 
     let origToString = Object.prototype.toString;

@@ -29,6 +29,7 @@ shared: &shared
                 wget https://github.com/linuxmint/muffin/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O muffin.tar.gz
                 wget https://github.com/linuxmint/nemo/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O nemo.tar.gz
                 ls *.tar.gz | xargs -i tar zxvf {}
+                echo "APT::Cache-start 200000000;" > /etc/apt/apt.conf.d/00fixaptsegfaults
                 apt install --yes --allow-downgrades ./packages/*.deb
                 rm -rf packages
 

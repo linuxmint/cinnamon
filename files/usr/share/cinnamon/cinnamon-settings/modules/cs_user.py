@@ -32,7 +32,7 @@ class Module:
     comment = _("Change your user preferences and password")
 
     def __init__(self, content_box):
-        keywords = _("user, account, information, details")
+        keywords = _("user, account, information, details, password")
         sidePage = SidePage(_("Account details"), "cs-user", keywords, content_box, module=self)
         self.sidePage = sidePage
 

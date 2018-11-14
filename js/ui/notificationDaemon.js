@@ -150,10 +150,14 @@ NotificationDaemon.prototype = {
             else if (icon[0] == '/') {
                 let uri = GLib.filename_to_uri(icon, null);
                 return textureCache.load_uri_async(uri, size, size);
-            } else
+            } else {
+                let icon_type = St.IconType.FULLCOLOR;
+                if (icon.search("-symbolic") != -1)
+                    icon_type = St.IconType.SYMBOLIC;
                 return new St.Icon({ icon_name: icon,
-                                     icon_type: St.IconType.FULLCOLOR,
+                                     icon_type: icon_type,
                                      icon_size: size });
+            }
         } else if (hints['image-data']) {
             let [width, height, rowStride, hasAlpha,
                  bitsPerSample, nChannels, data] = hints['image-data'];
@@ -680,14 +684,13 @@ Source.prototype = {
         // notification-based icons (ie, not a trayicon) or if it was unset before
         if (!this.trayIcon) {
             this.useNotificationIcon = false;
-            
-            let icon = null;                
+            let icon = null;
             if (this.app.get_app_info() != null && this.app.get_app_info().get_icon() != null) {
                 icon = new St.Icon({gicon: this.app.get_app_info().get_icon(), icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
             }
             if (icon == null) {
-                icon = new St.Icon({icon_name: "application-x-executable", icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});        
-            }            
+                icon = new St.Icon({icon_name: "application-x-executable", icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+            }
 
             this._setSummaryIcon(icon);
         }

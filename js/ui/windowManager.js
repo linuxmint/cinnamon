@@ -920,7 +920,7 @@ WindowManager.prototype = {
                     this._snapOsd.addText(_("Hold <Ctrl> to enter snap mode"));
                 else if (mod == "Shift")
                     this._snapOsd.addText(_("Hold <Shift> to enter snap mode"));
-                this._snapOsd.addText(_("Use the arrow keys to shift workspaces"));
+                this._snapOsd.addText(_("Use the arrow or numeric keys to switch workspaces while dragging"));
             }
             this._snapOsd.show(monitorIndex);
         }

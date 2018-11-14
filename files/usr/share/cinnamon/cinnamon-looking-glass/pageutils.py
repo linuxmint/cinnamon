@@ -2,6 +2,23 @@
 
 from gi.repository import Gtk
 
+# truncate a string to single line 121 char max with ellipsis
+def shortenValue(value):
+    changed = False
+    truncPos = value.find("\n")
+    if truncPos >= 0:
+        changed = True
+        value = value[:truncPos]
+
+    if len(value) > 120:
+        changed = True
+        value = value[:120]
+
+    if changed:
+        value += "..."
+
+    return value
+
 class ResultTextDialog(Gtk.Dialog):
     def __init__(self, title, text):
         Gtk.Dialog.__init__(self, title, None, 0,

@@ -55,7 +55,7 @@
         "section5": {
             "type": "section",
             "title": "Command settings",
-            "keys": ["signal-test", "keybinding-test", "demo-button", "long-text"]
+            "keys": ["signal-test", "keybinding-test", "demo-button", "long-text", "custom-widget"]
         },
         "section6": {
             "type": "section",
@@ -274,5 +274,12 @@
         "type" : "label",
         "description" : "The value of the spinner above is greater than or equal to 5",
         "dependency" : "dep-spin>=5"
+    },
+    "custom-widget": {
+        "type" : "custom",
+        "file" : "CustomWidget.py",
+        "widget" : "MyWidget",
+        "description" : "Try out this custom widget!",
+        "default" : "5"
     }
 }

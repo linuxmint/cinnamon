@@ -54,8 +54,13 @@ class InspectView(pageutils.BaseListView):
 
     def setInspectionData(self, path, data):
         self.store.clear()
+        data.sort(key=lambda item: item["name"])
         for item in data:
-            self.store.append([item["name"], item["type"], item["shortValue"], item["value"], path + "['" + item["name"] + "']"])
+            self.store.append([item["name"],
+                               item["type"],
+                               pageutils.shortenValue(item["value"]),
+                               item["value"],
+                               path + "['" + item["name"] + "']"])
 
 class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self, parent):
@@ -124,7 +129,7 @@ class ModulePage(pageutils.WindowAndActionBars):
             self.insert.set_sensitive(True)
 
     def updateInspector(self, path, objType, name, value, pushToStack=False):
-        if objType == "object":
+        if objType in ("array", "object"):
             if pushToStack:
                 self.pushInspectionElement()
 
@@ -144,8 +149,8 @@ class ModulePage(pageutils.WindowAndActionBars):
                     self.view.store.clear()
             else:
                 self.view.store.clear()
-        elif objType == "undefined":
-            pageutils.ResultTextDialog("Value for '" + name + "'", "Value is <undefined>")
+        elif objType in ("undefined", "null"):
+            pageutils.ResultTextDialog("Value for '" + name + "'", "Value is <" + objType + ">")
         else:
             pageutils.ResultTextDialog("Value for " + objType + " '" + name + "'", value)
 

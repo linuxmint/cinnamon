@@ -90,7 +90,7 @@ function getWindowsForBinding(binding) {
 
     // Sort by user time
     windows.sort(sortWindowsByUserTime);
-    
+
     return windows;
 }
 
@@ -103,7 +103,7 @@ AppSwitcher.prototype = {
         this._initialDelayTimeoutId = null;
         this._binding = binding;
         this._windows = getWindowsForBinding(binding);
-        
+
         this._haveModal = false;
         this._destroyed = false;
         this._motionTimeoutId = 0;
@@ -119,7 +119,7 @@ AppSwitcher.prototype = {
 
         this._dcid = this._windowManager.connect('destroy', Lang.bind(this, this._windowDestroyed));
         this._mcid = this._windowManager.connect('map', Lang.bind(this, this._activateSelected));
-        
+
         this._enforcePrimaryMonitor = global.settings.get_boolean("alttab-switcher-enforce-primary-monitor");
         this._updateActiveMonitor();
     },
@@ -136,7 +136,7 @@ AppSwitcher.prototype = {
             // Initially disable hover so we ignore the enter-event if
             // the switcher appears underneath the current pointer location
             this._disableHover();
-        
+
             this.actor.connect('key-press-event', Lang.bind(this, this._keyPressEvent));
             this.actor.connect('key-release-event', Lang.bind(this, this._keyReleaseEvent));
             this.actor.connect('scroll-event', Lang.bind(this, this._scrollEvent));
@@ -152,7 +152,7 @@ AppSwitcher.prototype = {
                 this._activateSelected();
                 return false;
             }
-        
+
             // We delay showing the popup so that fast Alt+Tab users aren't
             // disturbed by the popup briefly flashing.
             let delay = global.settings.get_int("alttab-switcher-delay");
@@ -160,7 +160,7 @@ AppSwitcher.prototype = {
         }
         return this._haveModal;
     },
-    
+
     _popModal: function() {
         if (this._haveModal) {
             Main.popModal(this.actor);
@@ -171,7 +171,7 @@ AppSwitcher.prototype = {
     _show: function() {
         throw new Error("Abstract method _show not implemented");
     },
-    
+
     _hide: function() {
         throw new Error("Abstract method _hide not implemented");
     },
@@ -203,7 +203,7 @@ AppSwitcher.prototype = {
     _checkSwitchTime: function() {
         return true;
     },
-    
+
     _setCurrentWindow: function(window) {
     },
 
@@ -230,7 +230,7 @@ AppSwitcher.prototype = {
         }
         this._setCurrentWindow(this._windows[this._currentIndex]);
     },
-    
+
     _select: function(index) {
         this._currentIndex = index;
         this._setCurrentWindow(this._windows[this._currentIndex]);
@@ -247,31 +247,28 @@ AppSwitcher.prototype = {
     },
 
     _keyPressEvent: function(actor, event) {
-        let event_state = Cinnamon.get_event_state(event);
-        
+        let modifiers = Cinnamon.get_event_state(event);
+        let symbol = event.get_key_symbol();
+        let keycode = event.get_key_code();
+        // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
+        let action = global.display.get_keybinding_action(keycode, modifiers);
+
         this._disableHover();
-        
+
         // Switch workspace
-        if(event_state & Clutter.ModifierType.CONTROL_MASK) {
-            switch(event.get_key_symbol()) {
-                case Clutter.Right:
-                    if (this._switchWorkspace(1))
-                        return true;
-                    break;
-                case Clutter.Left:
-                    if (this._switchWorkspace(-1))
-                        return true;
-                    break;
-            }
+        if (modifiers & Clutter.ModifierType.CONTROL_MASK &&
+           (symbol === Clutter.Right || symbol === Clutter.Left)) {
+            if (this._switchWorkspace(symbol))
+                return true;
         }
-        
+
         // Extra keys
-        switch(event.get_key_symbol()) {
+        switch (symbol) {
             case Clutter.Escape:
                 // Esc -> Close switcher
                 this.destroy();
                 return true;
-                
+
             case Clutter.Return:
                 // Enter -> Select active window
                 this._activateSelected();
@@ -307,14 +304,13 @@ AppSwitcher.prototype = {
         }
 
         // Default alt-tab
-        let action = global.display.get_keybinding_action(event.get_key_code(), event_state);
-        switch(action) {
+        switch (action) {
             case Meta.KeyBindingAction.SWITCH_GROUP:
             case Meta.KeyBindingAction.SWITCH_WINDOWS:
             case Meta.KeyBindingAction.SWITCH_PANELS:
                 if(this._checkSwitchTime()) {
                     // shift -> backwards
-                    if(event_state & Clutter.ModifierType.SHIFT_MASK)
+                    if (modifiers & Clutter.ModifierType.SHIFT_MASK)
                         this._previous();
                     else
                         this._next();
@@ -370,19 +366,24 @@ AppSwitcher.prototype = {
         this._motionTimeoutId = 0;
         this._mouseActive = true;
     },
-    
+
     _switchWorkspace: function(direction) {
         if (global.screen.n_workspaces < 2)
             return false;
 
         let current = global.screen.get_active_workspace_index();
-        let nextIndex = (global.screen.n_workspaces + current + direction) % global.screen.n_workspaces;
-        let workspace = global.screen.get_workspace_by_index(nextIndex);
-        workspace.activate(global.get_current_time());
-        if (current == global.screen.get_active_workspace_index())
+
+        if (direction === Clutter.Left)
+            Main.wm.actionMoveWorkspaceLeft();
+        else if (direction === Clutter.Right)
+            Main.wm.actionMoveWorkspaceRight();
+        else
             return false;
-            
-        Main.wm.showWorkspaceOSD();
+
+        if (current === global.screen.get_active_workspace_index())
+            return false;
+
+        let workspace = global.screen.get_active_workspace();
         this._onWorkspaceSelected(workspace);
         return true;
     },
@@ -411,7 +412,7 @@ AppSwitcher.prototype = {
                         this._currentIndex--;
                     else
                         this._currentIndex %= this._windows.length;
-                    
+
                     this._updateList(0);
                     this._setCurrentWindow(this._windows[this._currentIndex]);
                 }
@@ -438,18 +439,18 @@ AppSwitcher.prototype = {
     destroy: function() {
         this._destroyed = true;
         this._popModal();
-        
+
         if (this._initialDelayTimeoutId !== 0)
             this._destroyActors();
         else
             this._hide();
-            
+
         if(this._initialDelayTimeoutId !== null && this._initialDelayTimeoutId > 0) {
             Mainloop.source_remove(this._initialDelayTimeoutId);
             this._initialDelayTimeoutId = 0;
         }
         this._onDestroy();
-        
+
         this._windows = null;
         if (this._motionTimeoutId != 0) {
             Mainloop.source_remove(this._motionTimeoutId);
@@ -459,7 +460,7 @@ AppSwitcher.prototype = {
             Mainloop.source_remove(this._checkDestroyedTimeoutId);
             this._checkDestroyedTimeoutId = 0;
         }
-        
+
         this._windowManager.disconnect(this._dcid);
         this._windowManager.disconnect(this._mcid);
     }

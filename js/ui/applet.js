@@ -16,13 +16,6 @@ const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
 const Gettext = imports.gettext;
 
-var COLOR_ICON_HEIGHT_FACTOR = .875;  // Panel height factor for normal color icons
-var PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
-var PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
-var DEFAULT_PANEL_HEIGHT = 25;
-var DEFAULT_ICON_HEIGHT = 22;
-var FALLBACK_ICON_HEIGHT = 22;
-
 var AllowedLayout = {  // the panel layout that an applet is suitable for
     VERTICAL: 'vertical',
     HORIZONTAL: 'horizontal',
@@ -121,7 +114,6 @@ var AppletPopupMenu = class AppletPopupMenu extends PopupMenu.PopupMenu {
  * @_order (int): The order of the applet within a panel location This is set
  * by appletManager *after* the applet is loaded.
  * @_draggable (Dnd._Draggable): The draggable object of the applet
- * @_scaleMode (boolean): Whether the applet scales according to the panel size
  * @_applet_tooltip (Tooltips.PanelItemTooltip): The tooltip of the applet
  * @_menuManager (PopupMenu.PopupMenuManager): The menu manager of the applet
  * @_applet_context_menu (Applet.AppletContextMenu): The context menu of the applet
@@ -164,16 +156,20 @@ var Applet = class Applet {
         this.actor._applet = this;  // Backlink to get the applet from its actor
                                     // (handy when we want to know stuff about a particular applet within the panel)
         this.actor._delegate = this;
+
+        this.panel = null;
         this._order = 0;        // Defined in gsettings, this is the order of the applet within a panel location.
                                 // This value is set by Cinnamon when loading/listening_to gsettings.
         this._newOrder = null;      //  Used when moving an applet
         this._panelLocation = null;     // Backlink to the panel location our applet is in, set by Cinnamon.
+        this.locationLabel = 'right';
         this._newPanelId = null;  //  Used when moving an applet
         this._newPanelLocation = null;  //  Used when moving an applet
         this._applet_enabled = true;    // Whether the applet is enabled or not (if not it hides in the panel as if it wasn't there)
         this._orientation = orientation;  // orientation of the panel the applet is on  St.Side.TOP BOTTOM LEFT RIGHT
+        this._lastIconType = St.IconType.FULLCOLOR;
+        this._iconSize = null;
 
-        this._panelHeight = panel_height ? panel_height : 25;
         this.instance_id = instance_id; // Needed by appletSettings
         this._uuid = null;      // Defined in gsettings, set by Cinnamon.
         this._hook = null;      // Defined in metadata.json, set by appletManager
@@ -184,27 +180,6 @@ var Applet = class Applet {
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
 
-        try {
-            let appletDefinition = AppletManager.getAppletDefinition({applet_id: instance_id});
-            if (appletDefinition) {
-                let panelIndex = Main.panelManager.panels.findIndex(function(panel) {
-                    return panel && (panel.panelId === appletDefinition.panelId);
-                });
-                if (panelIndex > -1) {
-                    this._scaleMode = Main.panelManager.panels[panelIndex].scaleMode;
-                }
-            } else {
-                throw new Error();
-            }
-        } catch (e) {
-            // Sometimes applets are naughty and don't pass us our instance_id. In that case, we just find the first non-empty panel and pretend we are on it.
-            for (let i in Main.panelManager.panels) {
-                this._scaleMode = true;
-                if (Main.panelManager.panels[i]) {
-                    this._scaleMode = Main.panelManager.panels[i].scaleMode;
-                }
-            }
-        }
         this._applet_tooltip_text = "";
 
         this.context_menu_item_remove = null;
@@ -214,6 +189,35 @@ var Applet = class Applet {
         this._panelEditModeChangedId = global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
             this._setAppletReactivity();
         }));
+
+        // FIXME: Cinnamon should be providing a sandbox environment for extensions, and not depend on data passed
+        // from the extension for basic state that we are already keeping track of in appletManager. Since applets
+        // need icon sizes available immediately in their constructor, this has to stay for now.
+        if (instance_id) {
+            this._getPanelInfo(instance_id);
+        } else {
+            setTimeout(() => this._getPanelInfo(), 0);
+        }
+    }
+
+    _getPanelInfo(instance_id) {
+        if (!instance_id) instance_id = this.instance_id;
+        let appletDefinition = AppletManager.getAppletDefinition({applet_id: instance_id});
+        if (appletDefinition) {
+            let panelIndex = Util.findIndex(Main.panelManager.panels, function(panel) {
+                return panel && (panel.panelId === appletDefinition.panelId);
+            });
+            if (panelIndex > -1) {
+                let panel = Main.panelManager.panels[panelIndex];
+                this.locationLabel = appletDefinition.location_label;
+                this.panel = panel;
+                this._uuid = appletDefinition.uuid;
+            } else {
+                global.logWarning(`[Applet] No panel found for ${instance_id}`);
+            }
+        } else {
+            throw new Error(`[Applet] Unable to find definition for applet ${instance_id}`);
+        }
     }
 
     /* FIXME:  This makes no sense - inhibit flag should = panel edit mode, right?
@@ -336,10 +340,14 @@ var Applet = class Applet {
 
     /**
      * on_applet_instances_changed:
+     * @instance (Applet) the instance that was changed
      *
      * This function is called when an applet *of the same uuid* is added or
      * removed from the panels. It is intended to assist in delegation of
      * responsibilities between duplicate applet instances.
+     *
+     * Applets should not create any references to @instance, since that
+     * could impede garbage collection.
      *
      * This is meant to be overridden in individual applets
      */
@@ -358,9 +366,11 @@ var Applet = class Applet {
             }));
         }
 
+        this._panelSizeChangeId = this.panel.connect('size-changed', () => this.on_panel_height_changed_internal());
+        this._panelIconSizeChangeId = this.panel.connect('icon-size-changed', () => this.on_panel_icon_size_changed_internal());
         this.on_applet_added_to_panel(userEnabled);
 
-        Main.AppletManager.callAppletInstancesChanged(this._uuid);
+        Main.AppletManager.callAppletInstancesChanged(this._uuid, this);
     }
 
     /**
@@ -396,9 +406,11 @@ var Applet = class Applet {
     // should only be called by appletManager
     _onAppletRemovedFromPanel(deleteConfig) {
         global.settings.disconnect(this._panelEditModeChangedId);
+        this.panel.disconnect(this._panelSizeChangeId);
+        this.panel.disconnect(this._panelIconSizeChangeId);
         this.on_applet_removed_from_panel(deleteConfig);
 
-        Main.AppletManager.callAppletInstancesChanged(this._uuid);
+        Main.AppletManager.callAppletInstancesChanged(this._uuid, this);
     }
 
     /**
@@ -429,10 +441,20 @@ var Applet = class Applet {
      * This function should only be called by appletManager
      */
     setOrientation (orientation) {
+        this._orientation = orientation;
         this.setOrientationInternal(orientation);
         this.on_orientation_changed(orientation);
         this.emit("orientation-changed", orientation);
         this.finalizeContextMenu();
+
+        if (typeof this.set_applet_label === 'function' && this._applet_label instanceof St.Label) {
+            this.set_applet_label(this._applet_label.get_text());
+        }
+
+        // FIXME: This function will be called from AppletManager before the panel is
+        // assigned. When the panel orientation changes, it becomes unavailable,
+        // so we need to check for this.panel here.
+        if (this.panel) this.on_panel_icon_size_changed_internal();
     }
 
     /**
@@ -470,18 +492,14 @@ var Applet = class Applet {
         // Implemented by Applets
     }
 
-    /**
-     * setPanelHeight:
-     * @panelHeight (int): panelHeight
-     *
-     * Sets the panel height property of the applet.
-     */
-    setPanelHeight (panel_height) {
-        if (panel_height && panel_height > 0) {
-            this._panelHeight = panel_height;
-        }
-        this._scaleMode = this.panel.scaleMode;
-        this.on_panel_height_changed_internal();
+    getPanelIconSize(iconType = St.IconType.FULLCOLOR) {
+        // If no panel, then the panel probably was added with pre-existing applet
+        // definitions associated to it. This means there's no zone config, so return early.
+        if (!this.panel) return;
+
+        this._lastIconType = iconType;
+        this._iconSize = this.panel.getPanelZoneIconSize(this.locationLabel, iconType);
+        return this._iconSize;
     }
 
     /**
@@ -501,6 +519,32 @@ var Applet = class Applet {
      * This is meant to be overridden in individual applets.
      */
     on_panel_height_changed() {
+        // Implemented byApplets
+    }
+
+    on_panel_icon_size_changed_internal() {
+        let size = this.panel.getPanelZoneIconSize(this.locationLabel, this._lastIconType);
+        if (!this._iconSize || this._iconSize !== size) {
+            this._iconSize = size;
+
+            if (this._applet_icon) {
+                this._applet_icon.set_icon_size(size);
+            }
+
+            this.on_panel_icon_size_changed(size);
+        }
+    }
+
+    /**
+     * on_panel_icon_size_changed:
+     * @size (number): new icon size
+     *
+     * This function is called when the icon size preference for the panel zone
+     * containing this applet is changed.
+     *
+     * This is meant to be overridden in individual applets.
+     */
+    on_panel_icon_size_changed() {
         // Implemented byApplets
     }
 
@@ -580,6 +624,15 @@ var Applet = class Applet {
 
     configureApplet() {
         Util.spawnCommandLine("xlet-settings applet " + this._uuid + " " + this.instance_id);
+    }
+
+    get _panelHeight() {
+        return this.panel.height;
+    }
+
+    get _scaleMode() {
+        global.logWarning(`[Applet/${this._uuid}] Use of scaleMode is deprecated.`);
+        return true;
     }
 };
 Signals.addSignalMethods(Applet.prototype);
@@ -694,29 +747,14 @@ var IconApplet = class IconApplet extends Applet {
     }
 
     _setStyle() {
-
-        let symb_scaleup = ((this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT) / global.ui_scale;
-        let fullcolor_scaleup = this._panelHeight * COLOR_ICON_HEIGHT_FACTOR / global.ui_scale;
         let icon_type = this._applet_icon.get_icon_type();
 
-        switch (icon_type) {
-            case St.IconType.FULLCOLOR:
-                this._applet_icon.set_icon_size(this._scaleMode ?
-                                                fullcolor_scaleup :
-                                                DEFAULT_ICON_HEIGHT);
-                this._applet_icon.set_style_class_name('applet-icon');
-            break;
-            case St.IconType.SYMBOLIC:
-                this._applet_icon.set_icon_size(this._scaleMode ?
-                                                symb_scaleup :
-                                                -1);
-                this._applet_icon.set_style_class_name('system-status-icon');
-            break;
-            default:
-                this._applet_icon.set_icon_size(this._scaleMode ?
-                                                symb_scaleup :
-                                                -1);
-                                                this._applet_icon.set_style_class_name('system-status-icon');
+        if (icon_type === St.IconType.FULLCOLOR) {
+            this._applet_icon.set_icon_size(this.getPanelIconSize(St.IconType.FULLCOLOR));
+            this._applet_icon.set_style_class_name('applet-icon');
+        } else {
+            this._applet_icon.set_icon_size(this.getPanelIconSize(St.IconType.SYMBOLIC));
+            this._applet_icon.set_style_class_name('system-status-icon');
         }
     }
 
@@ -907,17 +945,5 @@ var TextIconApplet = class TextIconApplet extends IconApplet {
 
     on_applet_added_to_panel() {
 
-    }
-
-    /**
-     * Override setOrientation, to recall set_applet_label
-     */
-    setOrientation (orientation) {
-        this.setOrientationInternal(orientation);
-        this.on_orientation_changed(orientation);
-        this.emit("orientation-changed", orientation);
-        this.finalizeContextMenu();
-        this._orientation = orientation;
-        this.set_applet_label(this._applet_label.get_text());
     }
 }

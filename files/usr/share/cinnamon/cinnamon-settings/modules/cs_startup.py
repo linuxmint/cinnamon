@@ -51,7 +51,7 @@ class Module:
     category = "prefs"
 
     def __init__(self, content_box):
-        keywords = _("startup, programs, boot, init, session")
+        keywords = _("startup, programs, boot, init, session, autostart, apps")
         sidePage = SidePage(_("Startup Applications"), "cs-startup-programs", keywords, content_box, module=self)
         self.sidePage = sidePage
 

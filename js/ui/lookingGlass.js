@@ -5,6 +5,7 @@ const Clutter = imports.gi.Clutter;
 const Cogl = imports.gi.Cogl;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const GObject = imports.gi.GObject;
 const Lang = imports.lang;
 const Meta = imports.gi.Meta;
 const Signals = imports.signals;
@@ -36,13 +37,98 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
                     'const r = Lang.bind(Main.lookingGlass, Main.lookingGlass.getResult); ';
 
 const HISTORY_KEY = 'looking-glass-history';
-function objectToString(o) {
-    if (typeof(o) == typeof(objectToString)) {
-        // special case this since the default is way, way too verbose
-        return '<js function>';
+
+/* fake types for special cases:
+ *  -"array": objects that pass Array.isArray() and should only show enumerable properties
+ *  -"boxedproto": boxed prototypes throw an error on property access
+ *  -"importer": objects that load modules on property access
+ */
+
+// returns [typeString, valueString] for any object
+function getObjInfo(o) {
+    let type, value;
+    if (o === null)
+        type = "null";
+    else if (o === undefined)
+        type = "undefined";
+
+    if (type) {
+        value = "[" + type + "]";
     } else {
-        return '' + o;
+        // try to detect importers via their string representation
+        try {
+            value = o.toString();
+        } catch (e) {
+            if (e.message.includes("not an object instance - cannot convert to GObject*")) {
+                // work around Clutter.Actor.prototype.toString override not handling being
+                // called with the prototype itself as 'this'
+                value = GObject.Object.prototype.toString.call(o);
+            } else {
+                value = "[error getting value]";
+            }
+        }
+
+        type = typeof(o);
+        if (type == "object") {
+            if (value.startsWith("[GjsFileImporter")
+                || value.startsWith("[object GjsModule gi")) {
+                type = "importer";
+            } else if (value.startsWith("[boxed prototype")) {
+                type = "boxedproto";
+            } else if (Array.isArray(o)) {
+                type = "array";
+            }
+        }
+
+        // make empty strings/arrays obvious
+        if (value === "")
+            value = "[empty]";
     }
+
+    return [type, value];
+}
+
+// returns an array of dictionaries conforming to the Inspect dbus schema
+function getObjKeysInfo(obj) {
+    let [type, ] = getObjInfo(obj);
+    if (!["array", "object"].includes(type))
+        return [];
+
+    let keys = new Set();
+    let curProto = obj;
+
+    // we ignore the Object prototype
+    while (curProto && curProto !== Object.prototype) {
+        let ownKeys;
+        if (type === "array")
+            ownKeys = curProto.keys(); // index properties only
+        else
+            ownKeys = Reflect.ownKeys(curProto); // all own properties and symbols
+
+        // adding to set ignores duplicates
+        for (let key of ownKeys)
+            keys.add(key);
+
+        curProto = Object.getPrototypeOf(curProto);
+    }
+
+
+    return Array.from(keys).map((k) => {
+        let [t, v] = getObjInfo(obj[k]);
+        return { name: k.toString(), type: t, value: v, shortValue: "" };
+    });
+}
+
+// always returns an object we can give back to melange.
+// it may be useful to inspect Error() objects
+function tryEval(js) {
+    let out;
+    try {
+        out = eval(js);
+    } catch (e) {
+        out = e;
+    }
+    return out;
 }
 
 function WindowList() {
@@ -93,13 +179,13 @@ WindowList.prototype = {
 
             let lgInfo = {
                 id: metaWindow._lgId.toString(),
-                title: objectToString(metaWindow.title),
-                wmclass: objectToString(metaWindow.get_wm_class()),
+                title: metaWindow.title + '',
+                wmclass: metaWindow.get_wm_class() + '',
                 app: '' };
 
             let app = tracker.get_window_app(metaWindow);
             if (app != null && !app.is_window_backed()) {
-                lgInfo.app = objectToString(app.get_id());
+                lgInfo.app = app.get_id() + '';
             } else {
                 lgInfo.app = '<untracked>';
             }
@@ -454,7 +540,8 @@ Melange.prototype = {
     _pushResult: function(command, obj, tooltip) {
         let index = this._results.length;
         let result = {"o": obj, "index": index};
-        this.rawResults.push({command: command, type: typeof(obj), object: objectToString(obj), index: index.toString(), tooltip: tooltip});
+        let [type, value] = getObjInfo(obj);
+        this.rawResults.push({command: command, type: type, object: value, index: index.toString(), tooltip: tooltip});
         this.emitResultUpdate();
 
         this._results.push(result);
@@ -463,34 +550,8 @@ Melange.prototype = {
 
     inspect: function(path) {
         let fullCmd = commandHeader + path;
-
-        let result = eval(fullCmd);
-        let resultObj = [];
-        for (let key in result) {
-            let type = typeof(result[key]);
-
-            //fixme: move this shortvalue stuff to python lg
-            let shortValue, value;
-            if (type === "undefined") {
-                value = "";
-                shortValue = "";
-            } else if (result[key] === null) {
-                value = "[null]";
-                shortValue = value;
-            } else {
-                value = result[key].toString();
-                shortValue = value;
-                let i = value.indexOf('\n');
-                let j = value.indexOf('\r');
-                if (j != -1 && (i == -1 || i > j))
-                    i = j;
-                if (i != -1)
-                    shortValue = value.substr(0, i) + '.. <more>';
-            }
-            resultObj.push({ name: key, type: type, value: value, shortValue: shortValue});
-        }
-
-        return resultObj;
+        let result = tryEval(fullCmd);
+        return getObjKeysInfo(result);
     },
 
     getIt: function () {
@@ -519,24 +580,14 @@ Melange.prototype = {
         this._history.addItem(command);
 
         let fullCmd = commandHeader + command;
-
-        let resultObj;
-
         let ts = GLib.get_monotonic_time();
 
-        try {
-            resultObj = eval(fullCmd);
-        } catch (e) {
-            resultObj = '<exception ' + e + '>';
-        }
+        let resultObj = tryEval(fullCmd);
 
         let ts2 = GLib.get_monotonic_time();
-
         let tooltip = _("Execution time (ms): ") + (ts2 - ts) / 1000;
 
         this._pushResult(command, resultObj, tooltip);
-
-        return;
     },
 
     // DBus function
@@ -547,14 +598,7 @@ Melange.prototype = {
     // DBus function
     AddResult: function(path) {
         let fullCmd = commandHeader + path;
-
-        let resultObj;
-        try {
-            resultObj = eval(fullCmd);
-        } catch (e) {
-            resultObj = '<exception ' + e + '>';
-        }
-        this._pushResult(path, resultObj, "");
+        this._pushResult(path, tryEval(fullCmd), "");
     },
 
     // DBus function

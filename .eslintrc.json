@@ -31,7 +31,7 @@
     "rules": {
         "comma-dangle": 0,
         "no-cond-assign": 0,
-        "no-console": 2,
+        "no-console": 0,
         "no-constant-condition": 0,
         "no-control-regex": 0,
         "no-debugger": 0,
@@ -125,7 +125,7 @@
             "args": "none",
             "ignoreRestSiblings": true,
             "vars": "local",
-            "varsIgnorePattern": "^main|^x|^y|^mask|[iI]d$|[A-Z_0-9]|^applets|^desklets|^extensions|^init|^start|^success|^mod|^mods|^timeout|^expires|^height|^rtl|^min"
+            "varsIgnorePattern": "^main|^x|^y|^mask|[iI]d$|[A-Z_0-9]|^applets|^desklets|^extensions|^init|^start|^success|^mod|^mods|^timeout|^expires|^height|^rtl|^min|^map|^find|^each|^filter|^throttle|^unref"
         }],
         "no-use-before-define": [2, {"functions": false}],
         "callback-return": 0,

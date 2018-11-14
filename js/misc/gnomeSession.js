@@ -31,12 +31,15 @@ function Presence(initCallback, cancellable) {
 var InhibitorIface = ' \
 <node> \
     <interface name="org.gnome.SessionManager.Inhibitor"> \
-        <property name="app_id" type="s" access="read" /> \
-        <property name="client_id" type="s" access="read" /> \
-        <property name="reason" type="s" access="read" /> \
-        <property name="flags" type="u" access="read" /> \
-        <property name="toplevel_xid" type="u" access="read" /> \
-        <property name="cookie" type="u" access="read" /> \
+        <method name="GetFlags"> \
+            <arg name="flags" type="u" direction="out"/> \
+        </method> \
+        <method name="GetReason"> \
+            <arg name="reason" type="s" direction="out"/> \
+        </method> \
+        <method name="GetAppId"> \
+            <arg name="app_id" type="s" direction="out"/> \
+        </method> \
     </interface> \
 </node>';
 
@@ -69,6 +72,15 @@ var SessionManagerIface = '\
            <arg type="u" name="flags" direction="in"/> \
            <arg type="b" name="is_inhibited" direction="out"/> \
        </method>   \
+       <method name="GetInhibitors"> \
+           <arg type="ao" name="inhibitors" direction="out"/> \
+       </method> \
+       <signal name="InhibitorAdded"> \
+           <arg type="o" name="id" direction="out"/> \
+       </signal> \
+       <signal name="InhibitorRemoved"> \
+           <arg type="o" name="id" direction="out"/> \
+       </signal> \
        <property name="InhibitedActions" type="u" access="read"/> \
     </interface> \
 </node>';

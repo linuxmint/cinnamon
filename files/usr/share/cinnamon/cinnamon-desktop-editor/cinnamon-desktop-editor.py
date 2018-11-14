@@ -10,7 +10,8 @@ import shutil
 import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("CMenu", "3.0")
-from gi.repository import GLib, Gtk, Gio, CMenu, GdkPixbuf
+gi.require_version("XApp", "1.0")
+from gi.repository import GLib, Gtk, Gio, CMenu, GdkPixbuf, XApp
 
 sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')
 from cme import util
@@ -34,62 +35,6 @@ def escape_space(string):
     return string.replace(" ", "\ ")
 
 
-def try_icon_name(filename):
-    # Detect if the user picked an icon, and make
-    # it into an icon name.
-    if not filename.endswith(EXTENSIONS):
-        return filename
-
-    noext_filename = filename[:-4]
-
-    theme = Gtk.IconTheme.get_default()
-    resolved_path = None
-    for path in theme.get_search_path():
-        if noext_filename.startswith(path):
-            resolved_path = noext_filename[len(path):].lstrip(os.sep)
-            break
-
-    if resolved_path is None:
-        return filename
-
-    parts = resolved_path.split(os.sep)
-    # icon-theme/size/category/icon
-    if len(parts) != 4:
-        return filename
-
-    return parts[3]
-
-
-def get_icon_string(image):
-    filename = image._file
-    if filename is not None:
-        return try_icon_name(filename)
-
-    return image._icon_name
-
-
-def strip_extensions(icon):
-    if icon.endswith(EXTENSIONS):
-        return icon[:-4]
-    else:
-        return icon
-
-
-def set_icon_string(image, icon):
-    if GLib.path_is_absolute(icon):
-        if os.path.isfile(icon):
-            image._file = icon
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon, 64, 64)
-            if pixbuf is not None:
-                image.set_from_pixbuf(pixbuf)
-        else:
-            image._icon_name = DEFAULT_ICON_NAME
-            image.set_from_icon_name(DEFAULT_ICON_NAME, Gtk.IconSize.BUTTON)
-    else:
-        image._icon_name = strip_extensions(icon)
-        image.set_from_icon_name(strip_extensions(icon), Gtk.IconSize.BUTTON)
-
-
 def ask(msg):
     dialog = Gtk.MessageDialog(None,
                                Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -107,55 +52,6 @@ def ask(msg):
 DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
 
 
-class IconPicker(object):
-    def __init__(self, dialog, button, image):
-        self.dialog = dialog
-        self.button = button
-        self.button.connect('clicked', self.pick_icon)
-        self.image = image
-
-    def pick_icon(self, button):
-        chooser = Gtk.FileChooserDialog(title=_("Choose an icon"),
-                                        parent=self.dialog,
-                                        buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
-                                                 Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
-        chooser.add_shortcut_folder("/usr/share/pixmaps")
-        chooser.add_shortcut_folder("/usr/share/icons")
-        fn = get_icon_string(self.image)
-        if fn:
-            if GLib.path_is_absolute(fn):
-                chooser.set_filename(fn)
-            else:
-                theme = Gtk.IconTheme.get_default()
-                icon_info = theme.lookup_icon(fn, 64, 0)
-                icon_info_fn = icon_info.get_filename() if icon_info != None else None
-                if icon_info_fn:
-                    chooser.set_filename(icon_info_fn)
-        filter = Gtk.FileFilter()
-        filter.add_pixbuf_formats ()
-        chooser.set_filter(filter)
-
-        preview = Gtk.Image()
-        chooser.set_preview_widget(preview)
-        chooser.connect("update-preview", self.update_icon_preview_cb, preview)
-
-        response = chooser.run()
-        if response == Gtk.ResponseType.ACCEPT:
-            set_icon_string (self.image, chooser.get_filename())
-        chooser.destroy()
-
-    def update_icon_preview_cb(self, chooser, preview):
-        filename = chooser.get_preview_filename()
-        if filename is None:
-            return
-        chooser.set_preview_widget_active(False)
-        if os.path.isfile(filename):
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
-            if pixbuf is not None:
-                preview.set_from_pixbuf(pixbuf)
-                chooser.set_preview_widget_active(True)
-
-
 class ItemEditor(object):
     ui_file = None
 
@@ -168,9 +64,8 @@ class ItemEditor(object):
 
         self.dialog.connect('response', self.on_response)
 
-        icon = self.builder.get_object('icon-image')
-        icon._file = None
-        icon._icon_name = None
+        self.icon_chooser = self.builder.get_object('icon-chooser')
+        self.icon_chooser.get_dialog().set_property("allow-paths", True)
 
         self.build_ui()
 
@@ -234,13 +129,15 @@ class ItemEditor(object):
         else:
             self.builder.get_object(ctl).set_active(val)
 
-    def set_icon(self, ctl, name):
+    def set_icon(self, name):
         try:
             val = self.keyfile.get_string(DESKTOP_GROUP, name)
         except GLib.GError:
             pass
         else:
-            set_icon_string(self.builder.get_object(ctl), val)
+            print(val)
+            self.icon_chooser.set_icon(val)
+            print('icon:', self.icon_chooser.get_icon())
 
     def load(self):
         self.keyfile = GLib.KeyFile()
@@ -284,10 +181,6 @@ class LauncherEditor(ItemEditor):
     ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui'
 
     def build_ui(self):
-        self.icon_picker = IconPicker(self.dialog,
-                                      self.builder.get_object('icon-button'),
-                                      self.builder.get_object('icon-image'))
-
         self.builder.get_object('exec-browse').connect('clicked', self.pick_exec)
 
         self.builder.get_object('name-entry').connect('changed', self.resync_validity)
@@ -306,14 +199,14 @@ class LauncherEditor(ItemEditor):
         self.set_text('exec-entry', "Exec")
         self.set_text('comment-entry', "Comment")
         self.set_check('terminal-check', "Terminal")
-        self.set_icon('icon-image', "Icon")
+        self.set_icon("Icon")
 
     def get_keyfile_edits(self):
         return dict(Name=self.builder.get_object('name-entry').get_text(),
                     Exec=self.builder.get_object('exec-entry').get_text(),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
-                    Icon=get_icon_string(self.builder.get_object('icon-image')),
+                    Icon=self.icon_chooser.get_icon(),
                     Type="Application")
 
     def pick_exec(self, button):
@@ -334,10 +227,6 @@ class DirectoryEditor(ItemEditor):
     ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui'
 
     def build_ui(self):
-        self.icon_picker = IconPicker(self.dialog,
-                                      self.builder.get_object('icon-button'),
-                                      self.builder.get_object('icon-image'))
-
         self.builder.get_object('name-entry').connect('changed', self.resync_validity)
 
     def resync_validity(self, *args):
@@ -349,12 +238,12 @@ class DirectoryEditor(ItemEditor):
         super(DirectoryEditor, self).load()
         self.set_text('name-entry', "Name")
         self.set_text('comment-entry', "Comment")
-        self.set_icon('icon-image', "Icon")
+        self.set_icon("Icon")
 
     def get_keyfile_edits(self):
         return dict(Name=self.builder.get_object('name-entry').get_text(),
                     Comment=self.builder.get_object('comment-entry').get_text(),
-                    Icon=get_icon_string(self.builder.get_object('icon-image')),
+                    Icon=self.icon_chooser.get_icon(),
                     Type="Directory")
 
     def check_custom_path(self):
@@ -365,10 +254,6 @@ class CinnamonLauncherEditor(ItemEditor):
     ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui'
 
     def build_ui(self):
-        self.icon_picker = IconPicker(self.dialog,
-                                      self.builder.get_object('icon-button'),
-                                      self.builder.get_object('icon-image'))
-
         self.builder.get_object('exec-browse').connect('clicked', self.pick_exec)
 
         self.builder.get_object('name-entry').connect('changed', self.resync_validity)
@@ -402,14 +287,14 @@ class CinnamonLauncherEditor(ItemEditor):
         self.set_text('exec-entry', "Exec")
         self.set_text('comment-entry', "Comment")
         self.set_check('terminal-check', "Terminal")
-        self.set_icon('icon-image', "Icon")
+        self.set_icon("Icon")
 
     def get_keyfile_edits(self):
         return dict(Name=self.builder.get_object('name-entry').get_text(),
                     Exec=self.builder.get_object('exec-entry').get_text(),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
-                    Icon=get_icon_string(self.builder.get_object('icon-image')),
+                    Icon=self.icon_chooser.get_icon(),
                     Type="Application")
 
     def pick_exec(self, button):

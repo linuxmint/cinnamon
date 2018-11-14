@@ -62,10 +62,6 @@ const Settings = imports.ui.settings;
 const SignalManager = imports.misc.signalManager;
 const Tooltips = imports.ui.tooltips;
 
-const HORIZONTAL_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamon-app.create_icon_texture returns a clutter actor, not a themable object -
-                                 // probably something that could be addressed
-const ICON_HEIGHT_FACTOR = 0.64;
-const VERTICAL_ICON_HEIGHT_FACTOR = 0.75;
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
 
@@ -582,7 +578,7 @@ class AppMenuButton {
         if (!this._hasFocus()) {
             Main.activateWindow(this.metaWindow, global.get_current_time());
             this.actor.add_style_pseudo_class('focus');
-        } else if (!fromDrag) {
+        } else if (!fromDrag && this._applet.leftClickMinimize) {
             this.metaWindow.minimize();
             this.actor.remove_style_pseudo_class('focus');
         }
@@ -676,7 +672,7 @@ class AppMenuButton {
             }
             childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
         } else {
-            childBox.x1 = box.x1 + Math.max(0, (allocWidth - naturalWidth) / 2);
+            childBox.x1 = box.x1 + Math.floor(Math.max(0, allocWidth - naturalWidth) / 2);
             childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
         }
         this._iconBox.allocate(childBox, flags);
@@ -728,18 +724,13 @@ class AppMenuButton {
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(this.metaWindow);
 
-        if (this._applet._scaleMode && this.labelVisible)
-            this.iconSize = Math.round(this._applet._panelHeight * ICON_HEIGHT_FACTOR / global.ui_scale);
-        else if (!this.labelVisible)
-            this.iconSize = Math.round(this._applet._panelHeight * VERTICAL_ICON_HEIGHT_FACTOR / global.ui_scale);
-        else
-            this.iconSize = HORIZONTAL_ICON_SIZE;
+        this.icon_size = this._applet.icon_size;
 
         let icon = app ?
-            app.create_icon_texture_for_window(this.iconSize, this.metaWindow) :
+            app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
             new St.Icon({ icon_name: 'application-default-icon',
                 icon_type: St.IconType.FULLCOLOR,
-                icon_size: this.iconSize });
+                icon_size: this.icon_size });
 
         let old_child = this._iconBox.get_child();
         this._iconBox.set_child(icon);
@@ -964,6 +955,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.actor.set_track_hover(false);
         this.actor.set_style_class_name("window-list-box");
         this.orientation = orientation;
+        this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR);
         this.appletEnabled = false;
         //
         // A layout manager is used to cater for vertical panels as well as horizontal
@@ -994,6 +986,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("enable-alerts", "enableAlerts", this._updateAttentionGrabber);
         this.settings.bind("enable-scrolling", "scrollable", this._onEnableScrollChanged);
         this.settings.bind("reverse-scrolling", "reverseScroll");
+        this.settings.bind("left-click-minimize", "leftClickMinimize");
         this.settings.bind("middle-click-close", "middleClickClose");
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
@@ -1029,6 +1022,12 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     on_panel_height_changed() {
+        this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR);
+        this._refreshAllItems();
+    }
+
+    on_panel_icon_size_changed(size) {
+        this.icon_size = size;
         this._refreshAllItems();
     }
 
@@ -1117,7 +1116,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
     _onWindowSkipTaskbarChanged(screen, metaWindow) {
         let window = this._windows.find(win => (win.metaWindow == metaWindow));
 
-        if (window && !Main.isInteresting(metaWindow)) {
+        if (window && window.is_skip_taskbar()) {
             this._removeWindow(metaWindow);
             return;
         }
@@ -1279,6 +1278,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
     _shouldAdd(metaWindow) {
         return Main.isInteresting(metaWindow) &&
+            !metaWindow.is_skip_taskbar() &&
             this._monitorWatchList.indexOf(metaWindow.get_monitor()) != -1;
     }
 

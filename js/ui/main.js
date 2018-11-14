@@ -116,6 +116,8 @@ const Keybindings = imports.ui.keybindings;
 const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
+const {readOnlyError} = imports.ui.environment;
+const {installPolyfills} = imports.ui.overrides;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -286,6 +288,8 @@ function start() {
     global.logWarning = _logWarning;
     global.logError = _logError;
     global.log = _logInfo;
+
+    installPolyfills(readOnlyError, _log);
 
     let cinnamonStartTime = new Date().getTime();
 
@@ -1255,9 +1259,10 @@ function _stageEventHandler(actor, event) {
 
     // This isn't a Meta.KeyBindingAction yet
     if (symbol == Clutter.Super_L || symbol == Clutter.Super_R) {
-        overview.hide();
-        expo.hide();
-        return true;
+        if (expo.visible) {
+            expo.hide();
+            return true;
+        }
     }
 
     if (action == Meta.KeyBindingAction.SWITCH_PANELS) {

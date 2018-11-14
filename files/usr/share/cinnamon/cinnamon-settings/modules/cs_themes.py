@@ -89,6 +89,21 @@ class Module:
             widget = GSettingsSwitch(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons")
             settings.add_row(widget)
 
+            widget = GSettingsSpinButton(_("Size of symbolic icons when icons are 16px"), "org.cinnamon.theme", "symbolic-size-16", mini=1, maxi=64, step=1)
+            settings.add_row(widget)
+
+            widget = GSettingsSpinButton(_("Size of symbolic icons when icons are 22px"), "org.cinnamon.theme", "symbolic-size-22", mini=1, maxi=64, step=1)
+            settings.add_row(widget)
+
+            widget = GSettingsSpinButton(_("Size of symbolic icons when icons are 24px"), "org.cinnamon.theme", "symbolic-size-24", mini=1, maxi=64, step=1)
+            settings.add_row(widget)
+
+            widget = GSettingsSpinButton(_("Size of symbolic icons when icons are 32px"), "org.cinnamon.theme", "symbolic-size-32", mini=1, maxi=64, step=1)
+            settings.add_row(widget)
+
+            widget = GSettingsSpinButton(_("Size of symbolic icons when icons are 48px"), "org.cinnamon.theme", "symbolic-size-48", mini=1, maxi=64, step=1)
+            settings.add_row(widget)
+
             self.builder = self.sidePage.builder
 
             for path in [os.path.expanduser("~/.themes"), os.path.expanduser("~/.icons")]:
