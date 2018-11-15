@@ -278,10 +278,10 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 let label, icon;
                 if (this.groupState.isFavoriteApp) {
                     label = _('Unpin from Panel');
-                    icon = 'gwl-unpin';
+                    icon = 'unpin';
                 } else {
                     label = _('Pin to Panel');
-                    icon = 'gwl-pin';
+                    icon = 'pin';
                 }
                 this.pinToggleItem = createMenuItem({label, icon});
                 this.signals.connect(this.pinToggleItem, 'activate', (...args) => this.toggleFavorite(...args));
