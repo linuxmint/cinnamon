@@ -665,7 +665,7 @@ class WindowThumbnail {
         this.stopClick = false;
     }
 
-    getThumbnail() {
+    getThumbnail(thumbnailWidth, thumbnailHeight) {
         if (this.groupState.verticalThumbs || !this.state.settings.showThumbs) {
             this.thumbnailActor.height = 0;
             return null;
@@ -690,7 +690,7 @@ class WindowThumbnail {
                 });
             }
 
-            let scale = Math.min(1.0, this.thumbnailWidth / width, this.thumbnailHeight / height) * global.ui_scale;
+            let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
             height = Math.round(height * scale);
             if (isUpdate) {
@@ -724,18 +724,24 @@ class WindowThumbnail {
         if (!this.thumbnailActor || this.thumbnailActor.is_finalized()) return;
 
         let divider = 80;
-        let offset = 16;
+        let {thumbSize} = this.state.settings;
 
-        this.thumbnailWidth = Math.floor((monitor.width / divider) * this.state.settings.thumbSize) + offset;
-        this.thumbnailHeight = Math.floor((monitor.height / divider) * this.state.settings.thumbSize) + offset;
+        if (monitor.height <= 1024) {
+            thumbSize += 6;
+        } else if (monitor.height <= 1200) {
+            thumbSize += 3;
+        }
+
+        let thumbnailWidth = Math.floor((monitor.width / divider) * thumbSize);
+        let thumbnailHeight = Math.floor((monitor.height / divider) * thumbSize);
 
         let monitorSize, thumbnailSize;
         if (!this.state.isHorizontal) {
             monitorSize = monitor.height;
-            thumbnailSize = this.thumbnailHeight;
+            thumbnailSize = thumbnailHeight;
         } else {
             monitorSize = monitor.width;
-            thumbnailSize = this.thumbnailWidth;
+            thumbnailSize = thumbnailWidth;
         }
 
         let padding = this.thumbnailActor.style_length('padding');
@@ -743,10 +749,10 @@ class WindowThumbnail {
 
         let i = 0;
         while (((thumbnailSize + this.thumbnailPadding + padding + margin) * this.groupState.windowCount > monitorSize)
-            && this.thumbnailWidth > 64
-            && this.thumbnailHeight > 64) {
-            this.thumbnailWidth -= 1;
-            this.thumbnailHeight -= 1;
+            && thumbnailWidth > 64
+            && thumbnailHeight > 64) {
+            thumbnailWidth -= 1;
+            thumbnailHeight -= 1;
             thumbnailSize -= 1;
             i++;
             // Bail after 200 iterations
@@ -762,17 +768,17 @@ class WindowThumbnail {
         this.groupState.set({verticalThumbs});
         if (verticalThumbs !== currentVerticalThumbsState) return;
 
-        let scaledWidth = this.thumbnailWidth * global.ui_scale;
+        let scaledWidth = thumbnailWidth * global.ui_scale;
         this.thumbnailActor.width = scaledWidth;
-        this.container.style = `width: ${Math.floor(this.thumbnailWidth - 16)}px;`;
+        this.container.style = `width: ${Math.floor(thumbnailWidth - 16)}px;`;
         if (this.groupState.verticalThumbs || (this.state.settings.verticalThumbs && this.state.settings.showThumbs)) {
-            this.thumbnailActor.height = this.thumbnailHeight;
+            this.thumbnailActor.height = thumbnailHeight;
         } else if (this.state.settings.verticalThumbs) {
             this.thumbnailActor.height = 0;
         }
 
         this.labelContainer.child.text = this.metaWindow.title || '';
-        this.getThumbnail();
+        this.getThumbnail(thumbnailWidth, thumbnailHeight);
     }
 
     hoverPeek(opacity) {
