@@ -245,12 +245,13 @@
   },
   "thumbnail-size": {
     "type": "combobox",
-    "default": 6,
+    "default": 9,
     "description": "Thumbnail size",
     "options": {
-      "Small": 3,
-      "Medium": 6,
-      "Large": 9
+      "Small": 6,
+      "Medium": 9,
+      "Large": 12,
+      "Largest": 15
     },
     "tooltip": "Controls the size of the thumbnails."
   },
