@@ -42,6 +42,7 @@ struct _StTextureCachePrivate
 
   /* Things that were loaded with a cache policy != NONE */
   GHashTable *keyed_cache; /* char * -> CoglTexture* */
+  GHashTable *keyed_surface_cache; /* char * -> cairo_surface_t* */
 
   /* Presently this is used to de-duplicate requests for GIcons and async URIs. */
   GHashTable *outstanding_requests; /* char * -> AsyncTextureLoadData * */
@@ -172,6 +173,12 @@ st_texture_cache_init (StTextureCache *self)
 
   self->priv->keyed_cache = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                    g_free, cogl_object_unref);
+
+  self->priv->keyed_surface_cache = g_hash_table_new_full (g_str_hash,
+                                                           g_str_equal,
+                                                           g_free,
+                                                           (GDestroyNotify) cairo_surface_destroy);
+
   self->priv->outstanding_requests = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                             g_free, NULL);
   self->priv->file_monitors = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -207,6 +214,7 @@ st_texture_cache_dispose (GObject *object)
     }
 
   g_clear_pointer (&self->priv->keyed_cache, g_hash_table_destroy);
+  g_clear_pointer (&self->priv->keyed_surface_cache, g_hash_table_destroy);
   g_clear_pointer (&self->priv->outstanding_requests, g_hash_table_destroy);
   g_clear_pointer (&self->priv->file_monitors, g_hash_table_destroy);
 
@@ -996,7 +1004,7 @@ file_changed_cb (GFileMonitor      *monitor,
   g_free (key);
 
   key = g_strconcat (CACHE_PREFIX_URI_FOR_CAIRO, uri, NULL);
-  g_hash_table_remove (cache->priv->keyed_cache, key);
+  g_hash_table_remove (cache->priv->keyed_surface_cache, key);
   g_free (key);
 
   g_signal_emit (cache, signals[TEXTURE_FILE_CHANGED], 0, uri);
@@ -1542,7 +1550,7 @@ st_texture_cache_load_uri_sync_to_cairo_surface (StTextureCache        *cache,
 
   key = g_strconcat (CACHE_PREFIX_URI_FOR_CAIRO, uri, NULL);
 
-  surface = g_hash_table_lookup (cache->priv->keyed_cache, key);
+  surface = g_hash_table_lookup (cache->priv->keyed_surface_cache, key);
 
   if (surface == NULL)
     {
@@ -1556,7 +1564,8 @@ st_texture_cache_load_uri_sync_to_cairo_surface (StTextureCache        *cache,
       if (policy == ST_TEXTURE_CACHE_POLICY_FOREVER)
         {
           cairo_surface_reference (surface);
-          g_hash_table_insert (cache->priv->keyed_cache, g_strdup (key), surface);
+          g_hash_table_insert (cache->priv->keyed_surface_cache,
+                               g_strdup (key), surface);
         }
     }
   else
