@@ -250,7 +250,8 @@
     "options": {
       "Small": 3,
       "Medium": 6,
-      "Large": 9
+      "Large": 9,
+      "Largest": 12
     },
     "tooltip": "Controls the size of the thumbnails."
   },
