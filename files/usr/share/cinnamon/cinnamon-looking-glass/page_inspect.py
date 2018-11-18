@@ -3,6 +3,19 @@
 import pageutils
 from gi.repository import Gtk
 
+# keep in sync with lookingGlass.js
+NON_INSPECTABLE_TYPES = [
+    'boolean',
+    'function',
+    'importer',
+    'null',
+    'number',
+    'prototype',
+    'string',
+    'symbol',
+    'undefined'
+]
+
 class InspectView(pageutils.BaseListView):
     def __init__(self, parent):
         self.parent = parent
@@ -129,7 +142,7 @@ class ModulePage(pageutils.WindowAndActionBars):
             self.insert.set_sensitive(True)
 
     def updateInspector(self, path, objType, name, value, pushToStack=False):
-        if objType in ("array", "object"):
+        if objType not in NON_INSPECTABLE_TYPES:
             if pushToStack:
                 self.pushInspectionElement()
 

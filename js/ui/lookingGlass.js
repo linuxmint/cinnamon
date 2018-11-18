@@ -4,6 +4,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const Cogl = imports.gi.Cogl;
 const Gio = imports.gi.Gio;
+const Gir = imports.gi.GIRepository;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Lang = imports.lang;
@@ -39,71 +40,130 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
 const HISTORY_KEY = 'looking-glass-history';
 
 /* fake types for special cases:
- *  -"array": objects that pass Array.isArray() and should only show enumerable properties
- *  -"boxedproto": boxed prototypes throw an error on property access
- *  -"importer": objects that load modules on property access
+ *  -'array': should only show enumerable properties
+ *  -'prototype': prototypes for gobject and gboxed - not inspectable
+ *  -'importer': file importers - not inspectable
+ *  -GTypes - inspected via GIRepository
  */
+
+// primitive js types and certain objects to avoid inspecting
+// keep in sync with page_inspect.py
+const NON_INSPECTABLE_TYPES = [
+    'boolean',
+    'function',
+    'importer',
+    'null',
+    'number',
+    'prototype',
+    'string',
+    'symbol',
+    'undefined'
+];
+
+// matches gi object toString values
+const GI_RE = /^\[(?:boxed|object) (instance|prototype) (?:proxy|of) (?:GType|GIName):[\w.]+ [^\r\n]+\]$/;
+// matches known importer toString values
+const IMPORT_RE = /^\[(?:GjsFileImporter \w+|object GjsModule gi)\]$/;
+const DASH_RE = /-/g;
 
 // returns [typeString, valueString] for any object
 function getObjInfo(o) {
     let type, value;
+
     if (o === null)
-        type = "null";
+        type = 'null';
     else if (o === undefined)
-        type = "undefined";
+        type = 'undefined';
 
     if (type) {
-        value = "[" + type + "]";
+        value = `[${type}]`;
     } else {
-        // try to detect importers via their string representation
-        try {
-            value = o.toString();
-        } catch (e) {
-            if (e.message.includes("not an object instance - cannot convert to GObject*")) {
-                // work around Clutter.Actor.prototype.toString override not handling being
-                // called with the prototype itself as 'this'
-                value = GObject.Object.prototype.toString.call(o);
-            } else {
-                value = "[error getting value]";
+        // try to detect detailed type by string representation
+        if (o instanceof GObject.Object) {
+            // work around Clutter.Actor.prototype.toString override
+            value = GObject.Object.prototype.toString.call(o);
+        } else {
+            // toString() throws when called on ByteArray(GBytes wrapper object in cjs)
+            try {
+                value = o.toString();
+            } catch (e) {
+                value = '[error getting value]';
             }
         }
 
         type = typeof(o);
-        if (type == "object") {
-            if (value.startsWith("[GjsFileImporter")
-                || value.startsWith("[object GjsModule gi")) {
-                type = "importer";
-            } else if (value.startsWith("[boxed prototype")) {
-                type = "boxedproto";
-            } else if (Array.isArray(o)) {
-                type = "array";
+        if (type === 'object') {
+            if (value.search(IMPORT_RE) != -1) {
+                type = 'importer';
+            } else if (o instanceof GIRepositoryNamespace) {
+                type = 'GIRepositoryNamespace';
+            } else {
+                let matches = value.match(GI_RE);
+                if (matches) {
+                    if (matches[1] === 'prototype') {
+                        type = 'prototype';
+                    } else {
+                        // 'instance'
+                        type = GObject.type_name(o.constructor.$gtype);
+                    }
+                } else if ('$gtype' in o) {
+                    type = GObject.type_name(o.$gtype);
+                } else if (Array.isArray(o)) {
+                    type = 'array';
+                }
             }
         }
 
         // make empty strings/arrays obvious
-        if (value === "")
-            value = "[empty]";
+        if (value === '')
+            value = '[empty]';
     }
 
     return [type, value];
 }
 
 // returns an array of dictionaries conforming to the Inspect dbus schema
-function getObjKeysInfo(obj) {
+function getObjKeyInfos(obj) {
     let [type, ] = getObjInfo(obj);
-    if (!["array", "object"].includes(type))
+    if (NON_INSPECTABLE_TYPES.includes(type))
         return [];
 
+    let keys = [];
+    if (['array', 'object'].includes(type))
+        keys = _jsObjectGetKeys(obj, type);
+    else
+        keys = _giGetKeys(obj, type);
+ 
+    let infos = [];
+    for (let i = 0; i < keys.length; i++) {
+        // muffin has some props that throw an error because they shouldn't be introspected
+        try {
+            let [t, v] = getObjInfo(obj[keys[i]]);
+            infos.push({ name: keys[i].toString(),
+                         type: t,
+                         value: v,
+                         shortValue: '' });
+        } catch(e) {
+        }
+    }
+    return infos;
+}
+
+// get list of keys for js objects
+function _jsObjectGetKeys(obj, type) {
     let keys = new Set();
     let curProto = obj;
 
     // we ignore the Object prototype
     while (curProto && curProto !== Object.prototype) {
         let ownKeys;
-        if (type === "array")
-            ownKeys = curProto.keys(); // index properties only
-        else
-            ownKeys = Reflect.ownKeys(curProto); // all own properties and symbols
+        if (type === 'array') {
+            // index properties only
+            ownKeys = curProto.keys();
+        } else {
+            // all own properties and symbols
+            ownKeys = Reflect.ownKeys(curProto);
+        }
 
         // adding to set ignores duplicates
         for (let key of ownKeys)
@@ -111,24 +171,145 @@ function getObjKeysInfo(obj) {
 
         curProto = Object.getPrototypeOf(curProto);
     }
+    return Array.from(keys);
+}
+
+// get list of keys for introspected c types by gType name string
+function _giGetKeys(obj, gTypeName) {
+    if (gTypeName === 'GIRepositoryNamespace')
+        return _giNamespaceGetKeys(obj)
+
+    let gType = GObject.type_from_name(gTypeName);
+    let info = Gir.Repository.get_default().find_by_gtype(gType);
+    if (!info)
+        return [];
+
+    let type = info.get_type();
+    switch (type) {
+        case Gir.InfoType.STRUCT:
+            return _giStructInfoGetKeys(info);
+        case Gir.InfoType.OBJECT:
+            return _giObjectInfoGetKeys(info);
+        case Gir.InfoType.ENUM:
+        case Gir.InfoType.FLAGS:
+            return _giEnumInfoGetKeys(info);
+        default:
+            // FIXME: remove log
+            log(`unhandled type ${type}`);
+            return [];
+    }
+}
+
+// grab the "useful" key names for a GirNamespace
+function _giNamespaceGetKeys(obj) {
+    let repo = Gir.Repository.get_default();
+    let keys = [];
+    // the "__name__" property is set in ns.cpp in cjs
+    let n = repo.get_n_infos(obj.__name__);
+    for (let i = 0; i < n; i++) {
+        let info = repo.get_info(obj.__name__, i);
+        let name = info.get_name();
+        switch (info.get_type()) {
+            case Gir.InfoType.ENUM:
+            case Gir.InfoType.FLAGS:
+            case Gir.InfoType.FUNCTION:
+            case Gir.InfoType.OBJECT:
+                keys.push(name);
+                break;
+            default:
+                // FIXME: remove
+                log(`not accepting namespace property type ${info.get_type()}`);
+        }
+    }
+    return keys;
+}
+
+// grabs methods for a GIBaseInfo using the GIInfoType as a string:
+// "enum", "object", "struct"
+// skips any constructor or virtual functions
+function _giInfoGetMethods(info, typeString) {
+    let keys = [];
+    let n = Gir[`${typeString}_info_get_n_methods`](info);
+    for (let i = 0; i < n; i++) {
+        let funcInfo = Gir[`${typeString}_info_get_method`](info, i);
+        let flags = Gir.function_info_get_flags(funcInfo);
+
+        if (!(flags & Gir.FunctionInfoFlags.WRAPS_VFUNC)
+            && !(flags & Gir.FunctionInfoFlags.IS_CONSTRUCTOR))
+            keys.push(funcInfo.get_name()
+                              .replace(DASH_RE, '_'));
+    }
+    return keys;
+}
 
 
-    return Array.from(keys).map((k) => {
-        let [t, v] = getObjInfo(obj[k]);
-        return { name: k.toString(), type: t, value: v, shortValue: "" };
-    });
+// grab constants, readable properties, and methods of a GI_INFO_TYPE_OBJECT
+// and its ancestors
+// do we get duplicate keys here ever?
+function _giObjectInfoGetKeys(info) {
+    let keys = [];
+    while(info) {
+        // skip object/initially unowned typelibs
+        let gType = Gir.registered_type_info_get_g_type(info);
+        if (gType === GObject.Object.$gtype || gType === GObject.InitiallyUnowned.$gtype)
+            break;
+
+        let n = Gir.object_info_get_n_constants(info);
+        for (let i = 0; i < n; i++)
+            keys.push(Gir.object_info_get_constant(info, i)
+                         .get_name()
+                         .replace(DASH_RE, '_'));
+
+        n = Gir.object_info_get_n_properties(info);
+        for (let i = 0; i < n; i++) {
+            let propInfo = Gir.object_info_get_property(info, i);
+            let flags = Gir.property_info_get_flags(propInfo);
+            if (flags & GObject.ParamFlags.READABLE)
+                keys.push(propInfo.get_name()
+                                  .replace(DASH_RE, '_'));
+        }
+
+        keys = keys.concat(_giInfoGetMethods(info, 'object'));
+
+        info = Gir.object_info_get_parent(info);
+    }
+    return keys;
+}
+
+// grab fields and methods for a GI_INFO_TYPE_STRUCT
+function _giStructInfoGetKeys(info) {
+    let keys = [];
+    let n = Gir.struct_info_get_n_fields(info);
+    for (let i = 0; i < n; i++)
+        keys.push(Gir.struct_info_get_field(info, i)
+                     .get_name()
+                     .replace(DASH_RE, '_'));
+
+    return keys.concat(_giInfoGetMethods(info, 'struct'));
+}
+
+// grab values for a GI_INFO_TYPE_ENUM or GI_INFO_TYPE_FLAGS
+// enum/flags object key names are always uppercase
+function _giEnumInfoGetKeys(info) {
+    let keys = [];
+    let n = Gir.enum_info_get_n_values(info);
+    for (let i = 0; i < n; i++)
+        keys.push(Gir.enum_info_get_value(info, i)
+                     .get_name()
+                     .replace(DASH_RE, '_')
+                     .toUpperCase());
+
+    return keys.concat(_giInfoGetMethods(info, 'enum'));
 }
 
 // always returns an object we can give back to melange.
 // it may be useful to inspect Error() objects
 function tryEval(js) {
-    let out;
     try {
-        out = eval(js);
+        return eval(js);
     } catch (e) {
-        out = e;
+        return e;
     }
-    return out;
 }
 
 function WindowList() {
@@ -551,7 +732,7 @@ Melange.prototype = {
     inspect: function(path) {
         let fullCmd = commandHeader + path;
         let result = tryEval(fullCmd);
-        return getObjKeysInfo(result);
+        return getObjKeyInfos(result);
     },
 
     getIt: function () {
