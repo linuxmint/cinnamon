@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-12 15:00+0000\n"
+"POT-Creation-Date: 2018-11-19 10:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -778,224 +778,224 @@ msgstr ""
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2717
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2715
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:142
 msgid "Lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2718
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2716
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:11
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2745
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2743
 msgid "Logout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2746
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2744
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2760
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2758
 msgid "Quit"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2761
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2759
 msgid "Shutdown the computer"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2887
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2885
 msgid "Type to search..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:81
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:68
 msgid "<unknown>"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:295
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:286
 msgid "disabled"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:502
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:493
 msgid "unmanaged"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:504
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:495
 msgid "disconnecting..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:510
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:501
 msgid "connecting..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:513
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:504
 msgid "authentication required"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:523
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:514
 msgid "firmware missing"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:530
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:521
 msgid "cable unplugged"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:535
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:526
 msgid "unavailable"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:537
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:528
 msgid "connection failed"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:601
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1595
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:592
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1605
 msgid "More"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:637
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1530
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:628
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1524
 msgid "Connected (private)"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:697
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:688
 msgid "Ethernet"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:698
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:689
 msgid "Wifi"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:699
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:690
 msgid "Modem"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:700
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:691
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:91
 msgid "Bluetooth"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:730
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:721
 msgid "Auto Ethernet"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:810
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:803
 msgid "Auto broadband"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:813
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:806
 msgid "Auto dial-up"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:935
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1542
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:928
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1536
 #, javascript-format
 msgid "Auto %s"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:937
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:930
 msgid "Auto bluetooth"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1544
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1538
 msgid "Auto wireless"
 msgstr ""
 
 #. network@cinnamon.org->metadata.json->name
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1632
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1642
 msgid "Network Manager"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1653
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1663
 msgid "Rescan for wireless networks"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1692
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1711
 msgid "Enable networking"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1704
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1723
 msgid "Wired"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1715
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1734
 msgid "Wireless"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1725
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1744
 msgid "Mobile broadband"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1735
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1754
 msgid "VPN Connections"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1761
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1780
 msgid "Network Settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1762
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1781
 msgid "Network Connections"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1935
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1967
 msgid "Connection failed"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1936
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1968
 msgid "Activation of network connection failed"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2217
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2234
 msgid "Networking is disabled"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2235
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2252
 msgid "No connection"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2241
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2258
 msgid "Connecting to the cellular network..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2245
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2262
 msgid "Connecting to the wireless network..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2249
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2266
 msgid "Connecting to the wired network..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2253
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2270
 msgid "Connecting to the VPN..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2259
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2276
 msgid "Connecting to the network..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2275
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2292
 msgid "Connected to the wireless network"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2278
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2295
 msgid "Wireless connection"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2286
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2303
 msgid "Connected to the wired network"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2297
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2302
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2314
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2319
 msgid "Connected to the cellular network"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2306
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2323
 msgid "Connected to the VPN"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2312
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2329
 msgid "Connected to the network"
 msgstr ""
 
@@ -6498,6 +6498,13 @@ msgid "Thumbnail size"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
+#. size->options
+#. window-list@cinnamon.org->settings-schema.json->window-preview-
+#. scale->options
+msgid "Largest"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
 #. size->tooltip
 msgid "Controls the size of the thumbnails."
 msgstr ""
@@ -6826,11 +6833,6 @@ msgstr ""
 #. window-list@cinnamon.org->settings-schema.json->window-preview-show-
 #. label->description
 msgid "Show title above thumbnail"
-msgstr ""
-
-#. window-list@cinnamon.org->settings-schema.json->window-preview-
-#. scale->options
-msgid "Largest"
 msgstr ""
 
 #. spacer@cinnamon.org->metadata.json->name
