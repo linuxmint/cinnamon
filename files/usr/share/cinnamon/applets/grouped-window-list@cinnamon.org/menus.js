@@ -723,12 +723,12 @@ class WindowThumbnail {
 
         if (!this.thumbnailActor || this.thumbnailActor.is_finalized()) return;
 
-        let divider = 80;
+        let divider = 80 * global.ui_scale;
         let {thumbSize} = this.state.settings;
 
-        if (monitor.height <= 1024) {
+        if (monitor.height / global.ui_scale <= 1024) {
             thumbSize += 6;
-        } else if (monitor.height <= 1200) {
+        } else if (monitor.height / global.ui_scale <= 1200) {
             thumbSize += 3;
         }
 
