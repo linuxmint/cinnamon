@@ -1868,19 +1868,38 @@ CinnamonNetworkApplet.prototype = {
 
     _syncSectionTitle: function(category) {
         let devices = this._devices[category].devices;
+        let vis_devices = [];
+
         let item = this._devices[category].item;
         let section = this._devices[category].section;
-        if (devices.length == 0)
+
+        /* We don't want unmanaged entries to clutter the list, but we do need to
+         * keep them around in case they become manageable and need to be made visible
+         * later (some valid wifi hardware starts out initially unmanaged, for instance.)
+         * We'll only count managed devices for evaluating what entries to display, and
+         * when to show or hide section titles. */
+        for (let i = 0; i < devices.length; i++) {
+            if (devices[i].device.state == NM.DeviceState.UNMANAGED) {
+                continue;
+            }
+
+            vis_devices.push(devices[i]);
+        }
+
+        if (vis_devices.length == 0) {
             section.actor.hide();
-        else {
+        } else {
             section.actor.show();
-            if (devices.length == 1) {
-                let dev = devices[0];
-                dev.statusItem.actor.hide();
+            if (vis_devices.length == 1) {
+                devices.forEach(function(dev) {
+                    dev.statusItem.actor.hide();
+                });
+
+                let dev = vis_devices[0];
                 item.updateForDevice(dev);
             } else {
                 devices.forEach(function(dev) {
-                    dev.statusItem.actor.show();
+                    dev.statusItem.actor.visible = (dev.device.state != NM.DeviceState.UNMANAGED);
                 });
                 // remove status text from the section title item
                 item.updateForDevice(null);
