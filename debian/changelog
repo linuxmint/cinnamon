@@ -1,3 +1,31 @@
+cinnamon (4.0.2) tessa; urgency=medium
+
+  [ Leigh Scott ]
+  * Network: Port to libnm (#7699)
+
+  [ NikoKrause ]
+  * network-applet: use new network-wireless-signal-secure icons (#8022)
+  * menu-applet: several fixes (#8021)
+
+  [ James Ross ]
+  * menu applet places hover fixup/forEach cleanup (#8023)
+
+  [ NikoKrause ]
+  * systray-applet: more spacing between icons (#8006)
+  * gwl: use generic icon names (#8027)
+
+  [ Michael Webster ]
+  * network applet: Keep track of unmanaged networks (and listen to their (#7628)
+
+  [ Jason Hicks ]
+  * st-texture-cache: Don't add NULL textures to cache (#8036)
+  * gwl: Improve thumbnail scaling for lower resolutions (#8035)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 19 Nov 2018 10:00:33 +0000
+
 cinnamon (4.0.1) tessa; urgency=medium
 
   [ Clement Lefebvre ]
