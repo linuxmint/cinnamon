@@ -24,6 +24,19 @@ THEME_FOLDERS = [
     os.path.join(GLib.get_home_dir(), ".themes")
 ] + [os.path.join(datadir, "themes") for datadir in GLib.get_system_data_dirs()]
 
+class Choosers:
+    def __init__(self):
+        self.choosers = []
+        self.idx = 0
+        self.len = 0
+
+    def append(self, chooser):
+        self.choosers.append(chooser)
+        self.len = len(self.choosers)
+
+    def __getitem__(self, index):
+        return self.choosers[index]
+
 class Module:
     comment = _("Manage themes to change how your desktop looks")
     name = "themes"
@@ -39,8 +52,6 @@ class Module:
     def on_module_selected(self):
         if not self.loaded:
             print("Loading Themes module")
-
-            self.spices = Spice_Harvester('theme', self.window)
 
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)
@@ -75,7 +86,7 @@ class Module:
             widget = self.make_group(_("Desktop"), self.cinnamon_chooser)
             settings.add_row(widget)
 
-            page = DownloadSpicesPage(self, 'theme', self.spices, self.window)
+            page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, visible=True)
             self.sidePage.stack.add_titled(page, 'download', _("Add/Remove"))
 
             page = SettingsPage()
@@ -124,29 +135,46 @@ class Module:
                         # File monitors can fail when the OS runs out of file handles
                         print(e)
 
-            self.refresh()
+            GObject.timeout_add(200, self.refresh)
 
     def on_file_changed(self, file, other, event, data):
         self.refresh()
 
     def refresh(self):
-        choosers = []
-        choosers.append((self.cursor_chooser, "cursors", self._load_cursor_themes(), self._on_cursor_theme_selected))
-        choosers.append((self.theme_chooser, "gtk-3.0", self._load_gtk_themes(), self._on_gtk_theme_selected))
-        choosers.append((self.metacity_chooser, "metacity-1", self._load_metacity_themes(), self._on_metacity_theme_selected))
-        choosers.append((self.cinnamon_chooser, "cinnamon", self._load_cinnamon_themes(), self._on_cinnamon_theme_selected))
-        choosers.append((self.icon_chooser, "icons", self._load_icon_themes(), self._on_icon_theme_selected))
-        for chooser in choosers:
-            chooser[0].clear_menu()
-            chooser[0].set_sensitive(False)
-            chooser[0].progress = 0.0
+        self.spices = Spice_Harvester('theme', self.window)
+        real_page = DownloadSpicesPage(self, 'theme', self.spices, self.window)
+        real_page.show_all()
 
-            chooser_obj = chooser[0]
-            path_suffix = chooser[1]
-            themes = chooser[2]
-            callback = chooser[3]
-            payload = (chooser_obj, path_suffix, themes, callback)
-            self.refresh_chooser(payload)
+        self.sidePage.stack.get_child_by_name('download').pack_start(real_page, True, True, 0)
+
+        choosers = Choosers()
+        choosers.append((self.cursor_chooser, "cursors", self._load_cursor_themes(), self._on_cursor_theme_selected))
+        choosers.append((self.metacity_chooser, "metacity-1", self._load_metacity_themes(), self._on_metacity_theme_selected))
+        choosers.append((self.icon_chooser, "icons", self._load_icon_themes(), self._on_icon_theme_selected))
+        choosers.append((self.theme_chooser, "gtk-3.0", self._load_gtk_themes(), self._on_gtk_theme_selected))
+        choosers.append((self.cinnamon_chooser, "cinnamon", self._load_cinnamon_themes(), self._on_cinnamon_theme_selected))
+
+        GObject.idle_add(self.refresh_iter_idle, choosers)
+
+    def refresh_iter_idle(self, choosers):
+        idx = choosers.idx
+
+        choosers[idx][0].clear_menu()
+        choosers[idx][0].progress = 0.0
+
+        chooser_obj = choosers[idx][0]
+        path_suffix = choosers[idx][1]
+        themes = choosers[idx][2]
+        callback = choosers[idx][3]
+        payload = (chooser_obj, path_suffix, themes, callback)
+        self.refresh_chooser(payload)
+
+        choosers.idx += 1
+
+        if choosers.idx < choosers.len:
+            return True
+        else:
+            return False
 
     def refresh_chooser(self, payload):
         (chooser, path_suffix, themes, callback) = payload
@@ -163,7 +191,6 @@ class Module:
                 if folder:
                     path = folder.get_filename()
                     chooser.add_picture(path, callback, title=theme, id=theme)
-                GLib.timeout_add(5, self.increment_progress, (chooser,inc))
         else:
             if path_suffix == "cinnamon":
                 chooser.add_picture("/usr/share/cinnamon/theme/thumbnail.png", callback, title="cinnamon", id="cinnamon")
@@ -179,21 +206,16 @@ class Module:
                             break
                 except:
                     chooser.add_picture("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix, callback, title=theme_name, id=theme_name)
-                GLib.timeout_add(5, self.increment_progress, (chooser, inc))
-        GLib.timeout_add(500, self.hide_progress, chooser)
+        GLib.timeout_add(200, self.hide_spinner, chooser)
 
-    def increment_progress(self, payload):
-        (chooser, inc) = payload
-        chooser.increment_loading_progress(inc)
-
-    def hide_progress(self, chooser):
-        chooser.set_sensitive(True)
-        chooser.reset_loading_progress()
+    def hide_spinner(self, chooser):
+        chooser.spinner.stop()
+        chooser.stack.set_visible_child_name("button")
 
     def _setParentRef(self, window):
         self.window = window
 
-    def make_group(self, group_label, widget, add_widget_to_size_group=True):
+    def make_group(self, group_label, widget):
         self.size_groups = getattr(self, "size_groups", [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for x in range(2)])
         box = SettingsWidget()
         label = Gtk.Label()
@@ -201,9 +223,22 @@ class Module:
         label.props.xalign = 0.0
         self.size_groups[0].add_widget(label)
         box.pack_start(label, False, False, 0)
-        if add_widget_to_size_group:
-            self.size_groups[1].add_widget(widget)
-        box.pack_end(widget, False, False, 0)
+
+        stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.CROSSFADE, transition_duration=200)
+        widget.stack = stack
+
+        spinner = Gtk.Spinner()
+        spinner.start()
+        spinner.set_no_show_all(True)
+        spinner.show()
+        widget.spinner = spinner
+
+        box.pack_end(stack, False, False, 0)
+
+        stack.add_named(spinner, "spinner")
+        stack.add_named(widget, "button")
+
+        self.size_groups[1].add_widget(stack)
 
         return box
 
