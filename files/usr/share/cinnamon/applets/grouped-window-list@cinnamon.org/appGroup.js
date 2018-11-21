@@ -129,7 +129,7 @@ class AppGroup {
             x_align: St.Align.START,
             y_align: St.Align.MIDDLE,
             show_on_set_parent: false,
-            anchor_y: -2,
+            style: 'margin: 0;',
         });
         this.numberLabel = new St.Label({
             style: 'font-size: 10px;padding: 0px;',
@@ -401,23 +401,26 @@ class AppGroup {
 
         // Set the label to start its text in the left of the icon
         let iconWidth = childBox.x2 - childBox.x1;
+
+        let windowCountFactor = this.groupState.windowCount > 9 ? 1.5 : 2;
+        let badgeOffset = 2 * global.ui_scale;
+        childBox.x1 = childBox.x1 - badgeOffset;
+        childBox.x2 = childBox.x1 + (this.numberLabel.width * windowCountFactor);
+        childBox.y1 = Math.max(childBox.y1 - badgeOffset, 0);
+        childBox.y2 = childBox.y1 + this.badge.get_preferred_height(childBox.get_width())[1];
+        this.badge.allocate(childBox, flags);
+
+
         let [naturalWidth, naturalHeight] = this.label.get_preferred_size();
         [childBox.y1, childBox.y2] = center(allocHeight, naturalHeight);
         if (direction === Clutter.TextDirection.LTR) {
-            childBox.x1 = iconWidth;
-            childBox.x2 = Math.min(allocWidth, MAX_BUTTON_WIDTH);
+            childBox.x1 = Math.min(box.x1 + iconWidth, box.x2);
+            childBox.x2 = box.x2;
         } else {
-            childBox.x2 = Math.min(allocWidth - iconWidth, MAX_BUTTON_WIDTH);
-            childBox.x1 = Math.max(0, childBox.x2 - naturalWidth);
+            childBox.x2 = Math.max(box.x2 - iconWidth, box.x1);
+            childBox.x1 = box.x1;
         }
         this.label.allocate(childBox, flags);
-
-        let windowCountFactor = this.groupState.windowCount > 9 ? 1.5 : 2;
-        childBox.x1 = 0;
-        childBox.x2 = childBox.x1 + (this.numberLabel.width * windowCountFactor);
-        childBox.y1 = box.y1 - 2;
-        childBox.y2 = box.y2 - 1;
-        this.badge.allocate(childBox, flags);
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation
         if (this.groupState.metaWindows.length > 0 && this.container.realized) {
