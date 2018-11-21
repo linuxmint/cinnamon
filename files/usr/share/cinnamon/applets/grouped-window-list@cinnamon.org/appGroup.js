@@ -561,7 +561,6 @@ class AppGroup {
     }
 
     onFocusChange(hasFocus) {
-        if (this.state.thumbnailMenuOpen) return;
         // If any of the windows associated with our app have focus,
         // we should set ourselves to active
         if (hasFocus) {
