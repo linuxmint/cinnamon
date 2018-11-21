@@ -22,6 +22,19 @@ var State = {
     OUT_OF_DATE: 3
 };
 
+// Xlets using imports.gi.NMClient. This should be removed in Cinnamon 4.2+,
+// after these applets have been updated on Spices.
+var knownCinnamon4Conflicts = [
+    // Applets
+    'turbonote@iksws.com.b',
+    'vnstat@linuxmint.com',
+    'netusagemonitor@pdcurtis',
+    'multicore-sys-monitor@ccadeptic23',
+    // Desklets
+    'netusage@30yavash.com',
+    'simple-system-monitor@ariel'
+];
+
 // macro for creating extension types
 function _createExtensionType(name, folder, manager, overrides){
     let type = {
@@ -186,6 +199,8 @@ Extension.prototype = {
         this.iconDirectory = null;
         this.meta = createMetaDummy(uuid, dir.get_path(), State.INITIALIZING);
 
+        let isPotentialNMClientConflict = knownCinnamon4Conflicts.indexOf(uuid) > -1;
+
         const finishLoad = () => {
             // Many xlets still use appletMeta/deskletMeta to get the path
             type.legacyMeta[uuid] = {path: this.meta.path};
@@ -231,8 +246,17 @@ Extension.prototype = {
                 return findExtensionSubdirectory(this.dir).then((dir) => {
                     this.dir = dir;
                     this.meta.path = this.dir.get_path();
+
+                    // If an xlet has known usage of imports.gi.NMClient, we require them to have a
+                    // 4.0 directory. It is the only way to assume they are patched for Cinnamon 4 from here.
+                    if (isPotentialNMClientConflict && this.meta.path.indexOf(`/4.0`) === -1) {
+                        throw new Error(`Found unpatched usage of imports.gi.NMClient for ${this.lowerType} ${uuid}`);
+                    }
+
                     return finishLoad();
                 });
+            } else if (isPotentialNMClientConflict) {
+                throw new Error(`Found un-versioned ${this.lowerType} ${uuid} with known usage of imports.gi.NMClient`);
             }
             return finishLoad();
         }).then((moduleIndex) => {
