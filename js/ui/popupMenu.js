@@ -2325,10 +2325,9 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         if (this._activeMenuItem)
             this._activeMenuItem.setActive(false);
 
-        this.actor.set_position(...this._calculatePosition());
-        this.actor.set_size(...this.actor.get_size());
-
         if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+            this.actor.set_position(...this._calculatePosition());
+            this.actor.set_size(...this.actor.get_size());
             this.animating = true;
             let tweenParams = {
                 transition: "easeInQuad",
