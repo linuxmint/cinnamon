@@ -37,7 +37,7 @@
     },
     "appButtonsSection": {
       "type" : "section",
-      "title" : "App Buttons",
+      "title" : "Application Buttons",
       "keys": [
         "title-display",
         "launcher-animation-effect",
@@ -98,31 +98,28 @@
   "number-display": {
     "type": "checkbox",
     "default": true,
-    "description": "Show window count numbers",
-    "tooltip": "Choose whether or not a number badge is shown next to an app icon when more than one window is present in an app group."
+    "description": "Show window count numbers"
   },
   "title-display": {
     "type": "combobox",
     "default": 1,
-    "description": "Title display",
+    "description": "Button label",
     "options": {
       "None": 1,
-      "App": 2,
-      "Title": 3,
-      "Focused": 4
-    },
-    "tooltip": "focused: show focused window title, title: display the window title, app: diplay app name, none: don't display anything"
+      "Application name": 2,
+      "Window title": 3,
+      "Window title (only for the focused window)": 4
+    }
   },
   "scroll-behavior": {
     "type": "combobox",
     "default": 1,
-    "description": "Mouse wheel scroll behavior",
+    "description": "Mouse wheel scroll action",
     "options": {
       "None": 1,
       "Cycle apps": 2,
       "Cycle windows": 3
-    },
-    "tooltip": "Choose if scrolling the mouse wheel cycles running apps, an app button's windows on hover, or is disabled."
+    }
   },
   "left-click-action": {
     "type": "combobox",
@@ -132,8 +129,7 @@
       "None": 1,
       "Toggle activation of last focused window": 2,
       "Cycle windows": 3
-    },
-    "tooltip": "Left click action"
+    }
   },
   "middle-click-action": {
     "type": "combobox",
@@ -143,8 +139,7 @@
       "None": 1,
       "Launch new app instance": 2,
       "Close last focused window in group": 3
-    },
-    "tooltip": "Middle click action"
+    }
   },
   "pinned-apps": {
     "type": "generic",
@@ -153,73 +148,62 @@
   "group-apps": {
     "type": "checkbox",
     "default": true,
-    "description": "Group apps",
-    "tooltip": "Group each app's set of windows."
+    "description": "Group windows by application"
   },
   "show-alerts": {
     "type": "checkbox",
     "default": true,
-    "description": "Show app alerts",
-    "tooltip": "Choose whether or not alerts will propagate to the app list and cause the button to blink."
+    "description": "Blink on app alerts"
   },
   "show-pinned": {
     "type": "checkbox",
     "default": true,
-    "description": "Show pinned apps",
-    "tooltip": "Controls whether or not the pinned apps appear in the panel if they are not open."
+    "description": "Show pinned apps"
   },
   "system-favorites": {
     "type": "checkbox",
     "default": false,
-    "description": "Use system favorites for pinned apps",
-    "tooltip": "Controls whether or not pinned apps consist of the system favorites list."
+    "description": "Pin system favorites"
   },
   "show-all-workspaces": {
     "type": "checkbox",
     "default": false,
-    "description": "Show windows from all workspaces",
-    "tooltip": "Show windows from all workspaces"
+    "description": "Show windows from all workspaces"
   },
   "enable-app-button-dragging": {
     "type": "checkbox",
     "default": true,
-    "description": "Enable app button dragging",
-    "tooltip": "Enable app button dragging"
+    "description": "Enable app button dragging"
   },
   "pinOnDrag": {
     "type": "checkbox",
     "default": false,
-    "description": "Pin apps when dragged to a new position",
-    "tooltip": "Pin apps when dragged to a new position"
+    "description": "Pin apps when dragged to a new position"
   },
   "launcher-animation-effect": {
     "type": "combobox",
     "default": 1,
-    "description": "Launcher animation effect",
+    "description": "Launcher animation",
     "options": {
       "None": 1,
       "Fade": 2,
       "Scale": 3
-    },
-    "tooltip": "Left click action"
+    }
   },
   "list-monitor-windows": {
     "type": "checkbox",
     "default": true,
-    "description": "Only list windows from the monitor displaying this instance",
-    "tooltip": "This option will only come into effect for monitors displaying a grouped window list instance."
+    "description": "Only list windows from the current monitor"
   },
   "cycleMenusHotkey": {
     "type": "keybinding",
     "default": "<Super>space",
-    "description": "Global hotkey for cycling through thumbnail menus",
-    "tooltip": "This allows you to cycle through the menus without activating a window."
+    "description": "Global hotkey for cycling through thumbnail menus"
   },
   "show-apps-order-hotkey": {
     "type": "keybinding",
     "default": "<Super>grave",
-    "description": "Global hotkey to show the order of apps",
-    "tooltip": "When triggered, the window count label will be replaced with its order in the app list temporarily."
+    "description": "Global hotkey to show the order of apps"
   },
   "show-apps-order-timeout": {
     "type": "spinbutton",
@@ -228,20 +212,18 @@
     "max": 10000,
     "step": 10,
     "units": "milliseconds",
-    "description": "Duration of the apps order display on hotkey press",
-    "tooltip": "Determines the duration the window count labels are replaced with the app's order number."
+    "description": "Duration of the apps order display on hotkey press"
   },
   "thumbnail-timeout": {
     "dependency": "!onclick-thumbnails",
     "type": "combobox",
     "default": 250,
-    "description": "Thumbnail timeout",
+    "description": "Delay before showing thumbnails",
     "options": {
       "50 ms": 50,
       "250 ms": 250,
       "500 ms": 500
-    },
-    "tooltip": "Controls how quickly the thumbnail menu will appear when the mouse hovers over an app button."
+    }
   },
   "thumbnail-size": {
     "type": "combobox",
@@ -252,62 +234,52 @@
       "Medium": 6,
       "Large": 9,
       "Largest": 12
-    },
-    "tooltip": "Controls the size of the thumbnails."
+    }
   },
   "thumbnail-scroll-behavior": {
     "type": "checkbox",
     "default": false,
-    "description": "Cycle windows on mouse wheel scroll",
-    "tooltip": "Choose whether or not scrolling the mouse wheel cycles windows when hovering over a thumbnail menu."
+    "description": "Cycle windows on mouse wheel scroll"
   },
   "show-thumbnails": {
     "type": "checkbox",
     "default": true,
-    "description": "Show thumbnails",
-    "tooltip": "Show window thumbnails when hovering over an app button."
+    "description": "Show thumbnails"
   },
   "animate-thumbnails": {
     "type": "checkbox",
     "default": false,
-    "description": "Animate thumbnails",
-    "tooltip": "If enabled, thumbnails will animate when appearing and disappearing."
+    "description": "Animate thumbnails"
   },
   "vertical-thumbnails": {
     "type": "checkbox",
     "default": false,
-    "description": "Enable vertical thumbnails",
-    "tooltip": "If enabled, thumbnails will stack vertically."
+    "description": "Enable vertical thumbnails"
   },
   "sort-thumbnails": {
     "type": "checkbox",
     "default": false,
-    "description": "Sort windows for each app by last focused",
-    "tooltip": "Controls whether the order windows appear for an app is by last focused, or the order they were opened."
+    "description": "Sort thumbnails according to the last focused windows"
   },
   "highlight-last-focused-thumbnail": {
     "type": "checkbox",
     "default": true,
-    "description": "Highlight the last focused window within an app group",
-    "tooltip": "When enabled, the last window that was interacted with will be indicated."
+    "description": "Highlight the thumbnail of the last focused window"
   },
   "onclick-thumbnails": {
     "type": "checkbox",
     "default": false,
-    "description": "Open thumbnails on click",
-    "tooltip": "Open the thumbnails on click if there is more than one window open."
+    "description": "Click to show thumbnails"
   },
   "show-recent": {
     "type": "checkbox",
     "default": true,
-    "description": "Show recent items",
-    "tooltip": "Controls whether recent items will appear in the context menu."
+    "description": "Show recent items"
   },
   "autostart-menu-item": {
     "type": "checkbox",
     "default": false,
-    "description": "Show autostart option",
-    "tooltip": "Shows the autostart toggle option in an app's context menu."
+    "description": "Show autostart option"
   },
   "launch-new-instance-menu-item": {
     "type": "checkbox",
@@ -324,8 +296,7 @@
   "enable-hover-peek": {
     "type": "checkbox",
     "default": true,
-    "description": "Show windows when hovered over",
-    "tooltip": "Controls whether or not windows display when hovered over."
+    "description": "Show the window when hovering its thumbnail"
   },
   "hover-peek-time-in": {
     "dependency": "enable-hover-peek",
@@ -336,8 +307,7 @@
       "150 ms": 150,
       "300 ms": 300,
       "450 ms": 450
-    },
-    "tooltip": "Controls how quickly a window will fade in on hover."
+    }
   },
   "hover-peek-time-out": {
     "dependency": "enable-hover-peek",
@@ -349,8 +319,7 @@
       "150 ms": 150,
       "300 ms": 300,
       "450 ms": 450
-    },
-    "tooltip": "Controls how quickly a window will fade out on hover."
+    }
   },
   "hover-peek-opacity": {
     "dependency": "enable-hover-peek",
@@ -360,8 +329,7 @@
     "max": 100,
     "step": 1,
     "units": "percent",
-    "description": "Window opacity",
-    "tooltip": "Opacity of the windows on hover."
+    "description": "Window opacity"
   },
   "icon-spacing": {
     "type": "spinbutton",
@@ -370,7 +338,6 @@
     "max": 15,
     "step": 1,
     "units": "px",
-    "description": "Icon spacing",
-    "tooltip": "Controls how much space is between the icons."
+    "description": "Space between icons"
   }
 }
