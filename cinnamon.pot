@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-19 10:00+0000\n"
+"POT-Creation-Date: 2018-11-21 11:51+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,7 +40,7 @@ msgid "File System"
 msgstr ""
 
 #: src/cinnamon-util.c:250
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:222
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:228
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:368
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:741
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:174
@@ -429,8 +429,8 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:59
 #: generate_additional_files.py:27
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:46
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:308
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:575
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:314
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:581
 msgid "System Settings"
 msgstr ""
 
@@ -1768,7 +1768,7 @@ msgstr ""
 msgid "systemd, units, services, systemctl, init"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:212
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:218
 msgid "Back to all settings"
 msgstr ""
 
@@ -5928,8 +5928,6 @@ msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->show-all-
 #. workspaces->description
-#. grouped-window-list@cinnamon.org->settings-schema.json->show-all-
-#. workspaces->tooltip
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:138
 msgid "Show windows from all workspaces"
 msgstr ""
@@ -6247,7 +6245,7 @@ msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-
 #. schema.json->appButtonsSection->title
-msgid "App Buttons"
+msgid "Application Buttons"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-
@@ -6265,43 +6263,29 @@ msgstr ""
 msgid "Show window count numbers"
 msgstr ""
 
-#. grouped-window-list@cinnamon.org->settings-schema.json->number-
-#. display->tooltip
-msgid ""
-"Choose whether or not a number badge is shown next to an app icon when more "
-"than one window is present in an app group."
-msgstr ""
-
 #. grouped-window-list@cinnamon.org->settings-schema.json->title-
 #. display->description
-msgid "Title display"
+msgid "Button label"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->title-
 #. display->options
-msgid "App"
+msgid "Application name"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->title-
 #. display->options
-msgid "Title"
+msgid "Window title"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->title-
 #. display->options
-msgid "Focused"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->title-
-#. display->tooltip
-msgid ""
-"focused: show focused window title, title: display the window title, app: "
-"diplay app name, none: don't display anything"
+msgid "Window title (only for the focused window)"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->scroll-
 #. behavior->description
-msgid "Mouse wheel scroll behavior"
+msgid "Mouse wheel scroll action"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->scroll-
@@ -6316,19 +6300,8 @@ msgstr ""
 msgid "Cycle windows"
 msgstr ""
 
-#. grouped-window-list@cinnamon.org->settings-schema.json->scroll-
-#. behavior->tooltip
-msgid ""
-"Choose if scrolling the mouse wheel cycles running apps, an app button's "
-"windows on hover, or is disabled."
-msgstr ""
-
 #. grouped-window-list@cinnamon.org->settings-schema.json->left-click-
 #. action->description
-#. grouped-window-list@cinnamon.org->settings-schema.json->left-click-
-#. action->tooltip
-#. grouped-window-list@cinnamon.org->settings-schema.json->launcher-animation-
-#. effect->tooltip
 msgid "Left click action"
 msgstr ""
 
@@ -6339,8 +6312,6 @@ msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->middle-click-
 #. action->description
-#. grouped-window-list@cinnamon.org->settings-schema.json->middle-click-
-#. action->tooltip
 msgid "Middle click action"
 msgstr ""
 
@@ -6356,23 +6327,12 @@ msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->group-
 #. apps->description
-msgid "Group apps"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->group-apps->tooltip
-msgid "Group each app's set of windows."
+msgid "Group windows by application"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->show-
 #. alerts->description
-msgid "Show app alerts"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->show-
-#. alerts->tooltip
-msgid ""
-"Choose whether or not alerts will propagate to the app list and cause the "
-"button to blink."
+msgid "Blink on app alerts"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->show-
@@ -6380,63 +6340,34 @@ msgstr ""
 msgid "Show pinned apps"
 msgstr ""
 
-#. grouped-window-list@cinnamon.org->settings-schema.json->show-
-#. pinned->tooltip
-msgid ""
-"Controls whether or not the pinned apps appear in the panel if they are not "
-"open."
-msgstr ""
-
 #. grouped-window-list@cinnamon.org->settings-schema.json->system-
 #. favorites->description
-msgid "Use system favorites for pinned apps"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->system-
-#. favorites->tooltip
-msgid ""
-"Controls whether or not pinned apps consist of the system favorites list."
+msgid "Pin system favorites"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->enable-app-button-
 #. dragging->description
-#. grouped-window-list@cinnamon.org->settings-schema.json->enable-app-button-
-#. dragging->tooltip
 msgid "Enable app button dragging"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-
 #. schema.json->pinOnDrag->description
-#. grouped-window-list@cinnamon.org->settings-schema.json->pinOnDrag->tooltip
 msgid "Pin apps when dragged to a new position"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->launcher-animation-
 #. effect->description
-msgid "Launcher animation effect"
+msgid "Launcher animation"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->list-monitor-
 #. windows->description
-msgid "Only list windows from the monitor displaying this instance"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->list-monitor-
-#. windows->tooltip
-msgid ""
-"This option will only come into effect for monitors displaying a grouped "
-"window list instance."
+msgid "Only list windows from the current monitor"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-
 #. schema.json->cycleMenusHotkey->description
 msgid "Global hotkey for cycling through thumbnail menus"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-
-#. schema.json->cycleMenusHotkey->tooltip
-msgid ""
-"This allows you to cycle through the menus without activating a window."
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->show-apps-order-
@@ -6445,27 +6376,13 @@ msgid "Global hotkey to show the order of apps"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->show-apps-order-
-#. hotkey->tooltip
-msgid ""
-"When triggered, the window count label will be replaced with its order in "
-"the app list temporarily."
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->show-apps-order-
 #. timeout->description
 msgid "Duration of the apps order display on hotkey press"
 msgstr ""
 
-#. grouped-window-list@cinnamon.org->settings-schema.json->show-apps-order-
-#. timeout->tooltip
-msgid ""
-"Determines the duration the window count labels are replaced with the app's "
-"order number."
-msgstr ""
-
 #. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
 #. timeout->description
-msgid "Thumbnail timeout"
+msgid "Delay before showing thumbnails"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
@@ -6484,13 +6401,6 @@ msgid "500 ms"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
-#. timeout->tooltip
-msgid ""
-"Controls how quickly the thumbnail menu will appear when the mouse hovers "
-"over an app button."
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
 #. size->description
 #. window-list@cinnamon.org->settings-schema.json->window-preview-
 #. scale->description
@@ -6504,21 +6414,9 @@ msgstr ""
 msgid "Largest"
 msgstr ""
 
-#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
-#. size->tooltip
-msgid "Controls the size of the thumbnails."
-msgstr ""
-
 #. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-scroll-
 #. behavior->description
 msgid "Cycle windows on mouse wheel scroll"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-scroll-
-#. behavior->tooltip
-msgid ""
-"Choose whether or not scrolling the mouse wheel cycles windows when hovering"
-" over a thumbnail menu."
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->show-
@@ -6526,19 +6424,9 @@ msgstr ""
 msgid "Show thumbnails"
 msgstr ""
 
-#. grouped-window-list@cinnamon.org->settings-schema.json->show-
-#. thumbnails->tooltip
-msgid "Show window thumbnails when hovering over an app button."
-msgstr ""
-
 #. grouped-window-list@cinnamon.org->settings-schema.json->animate-
 #. thumbnails->description
 msgid "Animate thumbnails"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->animate-
-#. thumbnails->tooltip
-msgid "If enabled, thumbnails will animate when appearing and disappearing."
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->vertical-
@@ -6546,42 +6434,19 @@ msgstr ""
 msgid "Enable vertical thumbnails"
 msgstr ""
 
-#. grouped-window-list@cinnamon.org->settings-schema.json->vertical-
-#. thumbnails->tooltip
-msgid "If enabled, thumbnails will stack vertically."
-msgstr ""
-
 #. grouped-window-list@cinnamon.org->settings-schema.json->sort-
 #. thumbnails->description
-msgid "Sort windows for each app by last focused"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->sort-
-#. thumbnails->tooltip
-msgid ""
-"Controls whether the order windows appear for an app is by last focused, or "
-"the order they were opened."
+msgid "Sort thumbnails according to the last focused windows"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->highlight-last-
 #. focused-thumbnail->description
-msgid "Highlight the last focused window within an app group"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->highlight-last-
-#. focused-thumbnail->tooltip
-msgid ""
-"When enabled, the last window that was interacted with will be indicated."
+msgid "Highlight the thumbnail of the last focused window"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->onclick-
 #. thumbnails->description
-msgid "Open thumbnails on click"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->onclick-
-#. thumbnails->tooltip
-msgid "Open the thumbnails on click if there is more than one window open."
+msgid "Click to show thumbnails"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->show-
@@ -6589,19 +6454,9 @@ msgstr ""
 msgid "Show recent items"
 msgstr ""
 
-#. grouped-window-list@cinnamon.org->settings-schema.json->show-
-#. recent->tooltip
-msgid "Controls whether recent items will appear in the context menu."
-msgstr ""
-
 #. grouped-window-list@cinnamon.org->settings-schema.json->autostart-menu-
 #. item->description
 msgid "Show autostart option"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->autostart-menu-
-#. item->tooltip
-msgid "Shows the autostart toggle option in an app's context menu."
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->launch-new-
@@ -6631,12 +6486,7 @@ msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->enable-hover-
 #. peek->description
-msgid "Show windows when hovered over"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->enable-hover-
-#. peek->tooltip
-msgid "Controls whether or not windows display when hovered over."
+msgid "Show the window when hovering its thumbnail"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
@@ -6666,18 +6516,8 @@ msgid "450 ms"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
-#. in->tooltip
-msgid "Controls how quickly a window will fade in on hover."
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
 #. out->description
 msgid "Window fade-out time"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
-#. out->tooltip
-msgid "Controls how quickly a window will fade out on hover."
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-
@@ -6691,19 +6531,9 @@ msgstr ""
 msgid "Window opacity"
 msgstr ""
 
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-
-#. opacity->tooltip
-msgid "Opacity of the windows on hover."
-msgstr ""
-
 #. grouped-window-list@cinnamon.org->settings-schema.json->icon-
 #. spacing->description
-msgid "Icon spacing"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->icon-
-#. spacing->tooltip
-msgid "Controls how much space is between the icons."
+msgid "Space between icons"
 msgstr ""
 
 #. network@cinnamon.org->metadata.json->description
