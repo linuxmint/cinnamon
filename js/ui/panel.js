@@ -1579,21 +1579,21 @@ function populateSettingsMenu(menu, panelId) {
     menu.addPanelItem = new PopupMenu.PopupIconMenuItem(_("Add panel"), "list-add", St.IconType.SYMBOLIC); // submenu item add panel
     menu.addPanelItem.activate = Lang.bind(menu, function() {
         Main.panelManager.addPanelQuery();
-        this.close();
+        this.close(true);
     });
     panelSettingsSection.menu.addMenuItem(menu.addPanelItem);
 
     menu.movePanelItem = new PopupMenu.PopupIconMenuItem(_("Move panel"), "move", St.IconType.SYMBOLIC); // submenu item move panel
     menu.movePanelItem.activate = Lang.bind(menu, function() {
         Main.panelManager.movePanelQuery(this.panelId);
-        this.close();
+        this.close(true);
     });
     panelSettingsSection.menu.addMenuItem(menu.movePanelItem);
 
     menu.copyAppletItem = new PopupMenu.PopupIconMenuItem(_("Copy applet configuration"), "edit-copy", St.IconType.SYMBOLIC);
     menu.copyAppletItem.activate = Lang.bind(menu, function() {
         AppletManager.copyAppletConfiguration(this.panelId);
-        this.close();
+        this.close(true);
     });
     panelSettingsSection.menu.addMenuItem(menu.copyAppletItem);  // submenu item copy applet config
 
