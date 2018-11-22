@@ -248,12 +248,7 @@ function toStandardIconSize(maxSize) {
  */
 function getSymbolicIconSize(iconSize, settings) {
     iconSize = Math.floor(iconSize);
-    if (iconSize < 22) return settings.get_int("symbolic-size-16");
-    else if (iconSize < 24) return settings.get_int("symbolic-size-22");
-    else if (iconSize < 32) return settings.get_int("symbolic-size-24");
-    else if (iconSize < 48) return settings.get_int("symbolic-size-32");
-    // Panel icons reach 32 at most with the largest panel, also on hidpi
-    return settings.get_int("symbolic-size-48");
+    return Math.floor(iconSize * settings.get_double("symbolic-relative-size"))
 }
 
 function setHeightForPanel(panel) {
@@ -1999,11 +1994,7 @@ Panel.prototype = {
         this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged, this);
         this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers, this);
 
-        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-16", this._onPanelZoneIconSizesChanged, this);
-        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-22", this._onPanelZoneIconSizesChanged, this);
-        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-24", this._onPanelZoneIconSizesChanged, this);
-        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-32", this._onPanelZoneIconSizesChanged, this);
-        this._signalManager.connect(this.themeSettings, "changed::symbolic-size-48", this._onPanelZoneIconSizesChanged, this);
+        this._signalManager.connect(this.themeSettings, "changed::symbolic-relative-size", this._onPanelZoneIconSizesChanged, this);
 
         this._onPanelZoneIconSizesChanged();
     },
@@ -2941,7 +2932,7 @@ Panel.prototype = {
             global.log(`[Panel ${this.panelId}] Creating a new zone configuration`);
         }
 
-        if (typeof key === 'string' && key.includes('symbolic-size')) changed = true;
+        if (typeof key === 'string' && key.includes('symbolic-relative-size')) changed = true;
 
         if (changed) this.emit('icon-size-changed');
     },

@@ -136,6 +136,12 @@ class Module:
             self.sidePage.add_widget(page)
             section = page.add_section(_("General Panel Options"))
 
+            widget = GSettingsRange(_("Symbolic icon size adjustment"),
+                                    "org.cinnamon.theme", "symbolic-relative-size",
+                                    _("Smaller"), _("Larger"),
+                                    0.4, 1.0, step=0.1, show_value=False)
+            section.add_row(widget)
+
             buttons = SettingsWidget()
             self.add_panel_button = Gtk.Button(label=_("Add new panel"))
 
