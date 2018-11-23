@@ -121,15 +121,17 @@ class PanelAppLauncher extends DND.LauncherDraggable {
 
         this._iconBox = new St.Bin({ style_class: 'icon-box',
                                      important: true });
-        this._iconBox.connect('style-changed',
-                              Lang.bind(this, this._onIconBoxStyleChanged));
-        this._iconBox.connect('notify::allocation',
-                              Lang.bind(this, this._updateIconBoxClip));
+
         this.actor.add_actor(this._iconBox);
         this._iconBottomClip = 0;
 
         this.icon = this._getIconActor();
         this._iconBox.set_child(this.icon);
+
+        this._iconBox.connect('style-changed',
+                              Lang.bind(this, this._updateIconSize));
+        this._iconBox.connect('notify::allocation',
+                              Lang.bind(this, this._updateIconSize));
 
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._menu = new PanelAppLauncherMenu(this, orientation);
@@ -259,18 +261,13 @@ class PanelAppLauncher extends DND.LauncherDraggable {
         }
     }
 
-    _onIconBoxStyleChanged() {
+    _updateIconSize() {
         let node = this._iconBox.get_theme_node();
-        this._iconBottomClip = node.get_length('panel-launcher-bottom-clip');
-        this._updateIconBoxClip();
-    }
+        let maxHeight = this._iconBox.height - node.get_vertical_padding();
 
-    _updateIconBoxClip() {
-        let allocation = this._iconBox.allocation;
-        if (this._iconBottomClip > 0)
-            this._iconBox.set_clip(0, 0, allocation.x2 - allocation.x1, allocation.y2 - allocation.y1 - this._iconBottomClip);
-        else
-            this._iconBox.remove_clip();
+        if (maxHeight < this.icon.get_icon_size()) {
+            this.icon.set_icon_size(maxHeight);
+        }
     }
 
     getAppInfo() {
