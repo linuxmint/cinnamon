@@ -71,7 +71,8 @@ class AppGroup {
             willUnmount: false,
             tooltip: null,
             verticalThumbs: this.state.settings.verticalThumbs,
-            groupReady: false
+            groupReady: false,
+            thumbnailMenuEntered:  false
         });
 
         this.groupState.connect({
@@ -164,7 +165,7 @@ class AppGroup {
         }, this.state.orientation);
 
         // Set up the hover menu
-        this.hoverMenuManager = new HoverMenuController({actor: this.actor});
+        this.hoverMenuManager = new HoverMenuController(this.actor, this.groupState);
         this.rightClickMenuManager = new PopupMenu.PopupMenuManager({actor: this.actor});
         this.hoverMenu = new AppThumbnailHoverMenu(this.state, this.groupState);
         this.hoverMenu.actor.hide();

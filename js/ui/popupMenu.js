@@ -3336,9 +3336,10 @@ var PopupMenuManager = class PopupMenuManager {
         return this._init.apply(this, arguments);
     }
 
-    _init(owner) {
+    _init(owner, shouldGrab = true) {
         this._owner = owner;
         this.grabbed = false;
+        this.shouldGrab = shouldGrab;
 
         this._eventCaptureId = 0;
         this._enterEventId = 0;
@@ -3387,6 +3388,9 @@ var PopupMenuManager = class PopupMenuManager {
             this._signals.disconnect(null, menu.sourceActor);
 
         this._menus.splice(position, 1);
+
+        // Make sure destroy is called after the last menu is removed/destroyed.
+        if (this._menus.length === 0) this.destroy();
     }
 
     _grab() {
@@ -3428,6 +3432,8 @@ var PopupMenuManager = class PopupMenuManager {
                 this._didPop = true;
             }
         }
+
+        if (!this.shouldGrab) return;
 
         // Check what the focus was before calling pushModal/popModal
         let focus = global.stage.key_focus;

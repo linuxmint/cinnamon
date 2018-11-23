@@ -247,7 +247,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             settings: {},
             homeDir: GLib.get_home_dir(),
             overlayPreview: null,
-            lastCycled: null,
+            lastCycled: -1,
             lastTitleDisplay: null,
             scrollActive: false,
             thumbnailMenuOpen: false,

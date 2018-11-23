@@ -1,3 +1,4 @@
+const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const Meta = imports.gi.Meta;
 const St = imports.gi.St;
@@ -466,8 +467,26 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 }
 
 class HoverMenuController extends PopupMenu.PopupMenuManager {
+    constructor(actor, groupState) {
+        super({actor}, false); // owner, shouldGrab
+        this.groupState = groupState;
+        this.connectId = this.groupState.connect({
+            thumbnailMenuEntered: ({thumbnailMenuEntered}) => {
+                this.shouldGrab = thumbnailMenuEntered;
+                this._onMenuOpenState(this._menus[0], this._menus[0].isOpen);
+                if (!this.grabbed) return;
+                if (!thumbnailMenuEntered) this._ungrab();
+            }
+        });
+    }
+
     _onEventCapture() {
         return false;
+    }
+
+    destroy() {
+        this.groupState.disconnect(this.connectId);
+        super.destroy();
     }
 }
 
@@ -845,6 +864,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         this.connectId = this.groupState.connect({
             hoverMenuClose: () => {
                 this.shouldClose = true;
+                this.groupState.set({thumbnailMenuEntered: false});
                 this.close();
             },
             addThumbnailToMenu: (win) => this.addThumbnail(win),
@@ -861,7 +881,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                 let {isOpen} = this;
                 this.setVerticalSetting()
                 if (isOpen) this.open(true);
-            }
+            },
         });
 
         this.appThumbnails = [];
@@ -875,30 +895,40 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         setTimeout(() => this.close(), this.state.settings.thumbTimeout);
     }
 
-    onMenuEnter() {
+    onMenuEnter(actor) {
         if (this.state.panelEditMode ||
             (!this.isOpen && this.state.settings.onClickThumbs) ||
             this.state.menuOpen) {
             return false;
         }
+
         this.shouldClose = false;
 
         let timeout;
-
         if (this.state.thumbnailMenuOpen) {
             timeout = 50;
         } else {
             timeout = this.state.settings.thumbTimeout;
         }
 
+        if (actor != null) {
+            this.groupState.set({thumbnailMenuEntered: this.isOpen});
+        }
+
         setTimeout(() => this.open(), timeout);
     }
 
-    onMenuLeave() {
+    onMenuLeave(actor) {
         if (this.state.menuOpen || this.state.panelEditMode) {
             return false;
         }
+
         this.shouldClose = true;
+
+        if (actor != null) {
+            this.groupState.set({thumbnailMenuEntered: false});
+        }
+
         setTimeout(() => this.close(), 50);
     }
 
