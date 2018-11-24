@@ -447,7 +447,9 @@ class Player extends PopupMenu.PopupMenuSection {
         this._owner = owner;
         this._busName = busname;
         this._applet = applet;
-        this._name = this._busName.split('.')[3];
+
+        // We'll update this later with a proper name
+        this._name = this._busName;
 
         Interfaces.getDBusProxyWithOwnerAsync(MEDIA_PLAYER_2_NAME,
                                               this._busName,
@@ -486,6 +488,12 @@ class Player extends PopupMenu.PopupMenuSection {
     _dbus_acquired() {
         if (!this._prop || !this._mediaServerPlayer || !this._mediaServer)
             return;
+
+        if (this._mediaServer.Identity) {
+            this._name = this._mediaServer.Identity;
+        } else {
+            this._name = this._busName.split('.')[3]
+        }
 
         let mainBox = new PopupMenu.PopupMenuSection();
         this.addMenuItem(mainBox);
@@ -623,7 +631,6 @@ class Player extends PopupMenu.PopupMenuSection {
     _getName() {
         return this._name.charAt(0).toUpperCase() + this._name.slice(1);
     }
-
 
     _setName(status) {
         this.playerLabel.set_text(this._getName() + " - " + _(status));
@@ -1245,8 +1252,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         } else if (owner) {
             let player = new Player(this, busName, owner);
 
-            // Add the player to the list of active players in GUI
-            let item = new PopupMenu.PopupMenuItem(player._getName());
+            // Add the player to the list of active players in GUI.
+            // We don't have the org.mpris.MediaPlayer2 interface set up at this point,
+            // add the player's busName as a placeholder until we can get its Identity.
+            let item = new PopupMenu.PopupMenuItem(busName);
             item.activate = Lang.bind(this, function() { this._switchPlayer(player._owner); });
             this._chooseActivePlayerItem.menu.addMenuItem(item);
 
@@ -1381,6 +1390,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             // Show a dot on the active player in the switching menu
             for (let i = 0, l = this._playerItems.length; i < l; ++i) {
                 let playerItem = this._playerItems[i];
+
+                playerItem.item.setLabel(playerItem.player._name);
                 playerItem.item.setShowDot(playerItem.player._owner === this._activePlayer);
             }
 

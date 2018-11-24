@@ -480,6 +480,10 @@ var PopupMenuItem = class PopupMenuItem extends PopupBaseMenuItem {
         this.addActor(this.label);
         this.actor.label_actor = this.label;
     }
+
+    setLabel(label) {
+        this.label.set_text(label);
+    }
 }
 
 var PopupSeparatorMenuItem = class PopupSeparatorMenuItem extends PopupBaseMenuItem {
