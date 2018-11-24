@@ -446,13 +446,20 @@ class AppGroup {
         }
     }
 
-    _showLabel() {
+    _showLabel(animate = false) {
+        if (this.label.is_finalized()) return;
+
         this.labelVisible = true;
         if (this.label.text == null) {
             this.label.set_text('');
         }
         // TODO: This should be set by the theme.
         this.label.set_style('padding-right: 4px;');
+
+        if (!animate) {
+            this.label.show();
+            return;
+        }
 
         Tweener.addTween(this.label, {
             width: MAX_BUTTON_WIDTH, // Should probably check preferred width
@@ -463,24 +470,24 @@ class AppGroup {
                 this.label.show();
             }
         });
-        return false;
+        return;
     }
 
-    showLabel() {
+    showLabel(animate) {
         if (!this.label || !this.state.isHorizontal) {
-            return false;
+            return;
         }
 
         // Fixes 'st_widget_get_theme_node called on the widget which is not in the stage' warnings
         if (!this.label.realized) {
             setTimeout(() => this._showLabel(), 0);
         } else {
-            this._showLabel();
+            this._showLabel(animate);
         }
     }
 
     hideLabel(animate) {
-        if (!this.label) return false;
+        if (!this.label || this.label.is_finalized() || !this.label.realized) return false;
 
         if (this.label.text == null) {
             this.label.set_text('');
@@ -563,14 +570,16 @@ class AppGroup {
     }
 
     onFocusChange(hasFocus) {
+        let {appId, metaWindows, lastFocused} = this.groupState;
+
         if (hasFocus === undefined) {
-            hasFocus = this.listState.lastFocusedApp === this.groupState.appId;
+            hasFocus = this.listState.lastFocusedApp === appId;
         }
 
         // If any of the windows associated with our app have focus,
         // we should set ourselves to active
         if (hasFocus) {
-            this.listState.trigger('updateFocusState', this.groupState.appId);
+            this.listState.trigger('updateFocusState', appId);
             this.actor.add_style_pseudo_class('focus');
             if (this.actor.has_style_class_name('grouped-window-list-item-demands-attention')) {
                 this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
@@ -579,10 +588,11 @@ class AppGroup {
         } else {
             this.actor.remove_style_pseudo_class('focus');
         }
-        if (this.groupState.metaWindows.length > 0) {
+        if (metaWindows.length > 0) {
             this.actor.add_style_pseudo_class('active');
         }
         this.resetHoverStatus();
+        if (lastFocused) this.handleButtonLabel(lastFocused, hasFocus);
     }
 
     onWindowDemandsAttention(metaWindow) {
@@ -596,7 +606,7 @@ class AppGroup {
                 // Even though this may not be the last focused window, we want it to be
                 // the window that gets focused when a user responds to an alert.
                 this.groupState.set({lastFocused: metaWindow});
-                this.setText(metaWindow.get_title());
+                this.handleButtonLabel(metaWindow);
                 this.getAttention();
                 return true;
             }
@@ -921,15 +931,8 @@ class AppGroup {
         this.groupState.set({
             appName: this.groupState.app.get_name()
         });
-        if (this.state.settings.titleDisplay === TitleDisplay.Title) {
-            this.setText(metaWindow.title);
-            this.showLabel(true);
-        } else if (this.state.settings.titleDisplay === TitleDisplay.App) {
-            if (this.groupState.appName) {
-                this.setText(this.groupState.appName);
-                this.showLabel(true);
-            }
-        }
+
+        this.handleButtonLabel(metaWindow);
     }
 
     onFocusWindowChange(metaWindow) {
@@ -941,16 +944,29 @@ class AppGroup {
             this.groupState.set({lastFocused: metaWindow});
         }
         this.onFocusChange(hasFocus);
-        if (this.state.settings.titleDisplay > 1) {
-            if (hasFocus) {
-                this.setText(metaWindow.title);
-                this.showLabel(true);
-            } else if (this.state.settings.titleDisplay === TitleDisplay.Focused) {
-                this.hideLabel(true);
-            }
-        }
+
         if (this.state.settings.sortThumbs) {
             this.hoverMenu.addThumbnail(metaWindow);
+        }
+    }
+
+    handleButtonLabel(metaWindow, focus) {
+        if (this.state.settings.titleDisplay === TitleDisplay.Title) {
+            this.setText(metaWindow.title);
+            this.showLabel();
+        } else if (this.state.settings.titleDisplay === TitleDisplay.App) {
+            if (this.groupState.appName) {
+                this.setText(this.groupState.appName);
+                this.showLabel();
+            }
+        } else if (this.state.settings.titleDisplay === TitleDisplay.Focused) {
+            if (focus === undefined) focus = getFocusState(metaWindow);
+            if (focus) {
+                this.setText(metaWindow.title);
+                this.showLabel(true);
+            } else {
+                this.hideLabel(true);
+            }
         }
     }
 
@@ -996,9 +1012,7 @@ class AppGroup {
     handleTitleDisplayChange() {
         each(this.groupState.metaWindows, (win) => {
             this.onWindowTitleChanged(win, true);
-            if (this.state.settings.titleDisplay !== TitleDisplay.Focused || getFocusState(win)) {
-                this.showLabel();
-            }
+            this.handleButtonLabel(win);
         });
     }
 
