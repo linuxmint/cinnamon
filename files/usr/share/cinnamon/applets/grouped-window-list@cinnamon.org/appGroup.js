@@ -78,7 +78,8 @@ class AppGroup {
         this.groupState.connect({
             isFavoriteApp: () => this.handleFavorite(true),
             getActor: () => this.actor,
-            launchNewInstance: () => this.launchNewInstance()
+            launchNewInstance: () => this.launchNewInstance(),
+            checkFocusStyle: () => this.checkFocusStyle()
         });
 
         this.signals = new SignalManager(null);
@@ -562,6 +563,10 @@ class AppGroup {
     }
 
     onFocusChange(hasFocus) {
+        if (hasFocus === undefined) {
+            hasFocus = this.listState.lastFocusedApp === this.groupState.appId;
+        }
+
         // If any of the windows associated with our app have focus,
         // we should set ourselves to active
         if (hasFocus) {

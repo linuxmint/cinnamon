@@ -473,6 +473,7 @@ class HoverMenuController extends PopupMenu.PopupMenuManager {
             thumbnailMenuEntered: ({thumbnailMenuEntered}) => {
                 this.shouldGrab = thumbnailMenuEntered;
                 this._onMenuOpenState(this._menus[0], this._menus[0].isOpen);
+                this.groupState.trigger('checkFocusStyle');
                 if (!this.grabbed) return;
                 if (!thumbnailMenuEntered) this._ungrab();
             }
