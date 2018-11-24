@@ -492,7 +492,8 @@ class Player extends PopupMenu.PopupMenuSection {
         if (this._mediaServer.Identity) {
             this._name = this._mediaServer.Identity;
         } else {
-            this._name = this._busName.split('.')[3]
+            let displayName = this._busName.replace('org.mpris.MediaPlayer2.', '');
+            this._name = displayName.charAt(0).toUpperCase() + this._name.slice(1);
         }
 
         let mainBox = new PopupMenu.PopupMenuSection();
@@ -510,7 +511,7 @@ class Player extends PopupMenu.PopupMenuSection {
 
         if (this._mediaServer.CanRaise) {
             let btn = new ControlButton("go-up", _("Open Player"), Lang.bind(this, function() {
-                if (this._name === "spotify") {
+                if (this._name.toLowerCase() === "spotify") {
                     // Spotify isn't able to raise via Dbus once its main UI is closed
                     Util.spawn(['spotify']);
                 }
@@ -601,7 +602,7 @@ class Player extends PopupMenu.PopupMenuSection {
         }
 
         // Position slider
-        this._seeker = new Seeker(this._mediaServerPlayer, this._prop, this._name);
+        this._seeker = new Seeker(this._mediaServerPlayer, this._prop, this._name.toLowerCase());
         this.vertBox.add_actor(this._seeker.actor);
 
         this._applet._updatePlayerMenuItems();
@@ -628,12 +629,8 @@ class Player extends PopupMenu.PopupMenuSection {
         }));
     }
 
-    _getName() {
-        return this._name.charAt(0).toUpperCase() + this._name.slice(1);
-    }
-
     _setName(status) {
-        this.playerLabel.set_text(this._getName() + " - " + _(status));
+        this.playerLabel.set_text(this._name + " - " + _(status));
     }
 
     _updateControls() {
