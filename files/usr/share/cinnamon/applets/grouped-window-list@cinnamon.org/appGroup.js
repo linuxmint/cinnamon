@@ -967,6 +967,8 @@ class AppGroup {
             } else {
                 this.hideLabel(true);
             }
+            // Re-orient the menu after the focus button expands
+            this.hoverMenu.setStyleOptions(false);
         }
     }
 
