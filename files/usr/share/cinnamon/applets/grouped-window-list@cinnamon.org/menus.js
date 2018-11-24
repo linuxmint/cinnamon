@@ -739,6 +739,7 @@ class WindowThumbnail {
         }
 
         let monitor = this.state.trigger('getPanelMonitor');
+        if (!monitor) return;
 
         if (!this.thumbnailActor || this.thumbnailActor.is_finalized()) return;
 

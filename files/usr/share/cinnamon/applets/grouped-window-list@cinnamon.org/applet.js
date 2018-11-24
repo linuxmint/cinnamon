@@ -263,7 +263,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             getPanel: () => (this.panel ? this.panel : null),
             getPanelHeight: () => this._panelHeight,
             getPanelIconSize: () => this.getPanelIconSize(),
-            getPanelMonitor: () => Main.layoutManager.monitors[this.panel.monitorIndex],
+            getPanelMonitor: () => this.panel ? Main.layoutManager.monitors[this.panel.monitorIndex] : null,
             getAppSystem: () => Cinnamon.AppSystem.get_default(),
             getAppFromWMClass: (specialApps, metaWindow) => this.getAppFromWMClass(specialApps, metaWindow),
             getTracker: () => this.tracker,
