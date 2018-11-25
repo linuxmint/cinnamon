@@ -460,6 +460,7 @@ class AppGroup {
         this.label.set_style('padding-right: 4px;');
 
         if (!animate) {
+            this.label.width = this.labelWidth || this.actor.width - this.iconBox.width;
             this.label.show();
             return;
         }
@@ -488,15 +489,13 @@ class AppGroup {
     hideLabel(animate) {
         if (!this.label || this.label.is_finalized() || !this.label.realized) return false;
 
-        if (this.label.text == null) {
-            this.label.set_text('');
-        }
         this.labelVisible = false;
         if (!animate) {
-            this.label.width = 1;
             this.label.hide();
             return false;
         }
+
+        let {width} = this.label;
 
         Tweener.addTween(this.label, {
             width: 1,
@@ -505,7 +504,7 @@ class AppGroup {
             onCompleteScope: this,
             onComplete() {
                 this.label.hide();
-                this.label.set_style('padding-right: 0px;');
+                this.labelWidth = width;
             }
         });
         return false;
@@ -909,7 +908,7 @@ class AppGroup {
                 || !metaWindow.title
                 || (this.groupState.metaWindows.length === 0 && this.groupState.isFavoriteApp)
                     || !this.state.isHorizontal)) {
-            this.hideLabel();
+            this.hideLabel(false);
             return;
         }
 
