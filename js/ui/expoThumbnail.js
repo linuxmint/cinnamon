@@ -12,6 +12,7 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const ModalDialog = imports.ui.modalDialog;
 const Tooltips = imports.ui.tooltips;
+const {GenericContainer} = imports.ui.genericContainer;
 const PointerTracker = imports.misc.pointerTracker;
 const SignalManager = imports.misc.signalManager;
 const GridNavigator = imports.misc.gridNavigator;
@@ -1008,12 +1009,15 @@ function ExpoThumbnailsBox() {
 
 ExpoThumbnailsBox.prototype = {
     _init: function() {
-        this.actor = new Cinnamon.GenericContainer({ style_class: 'workspace-thumbnails',
-                                                   reactive: true,
-                                                  request_mode: Clutter.RequestMode.WIDTH_FOR_HEIGHT });
-        this.actor.connect('get-preferred-width', Lang.bind(this, this.getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this.getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this.allocate));
+        this.actor = new GenericContainer({
+            style_class: 'workspace-thumbnails',
+            reactive: true,
+            request_mode: Clutter.RequestMode.WIDTH_FOR_HEIGHT
+        }, {
+            allocate: (...args) => this.allocate(...args),
+            get_preferred_width: (...args) => this.getPreferredWidth(...args),
+            get_preferred_height: (...args) => this.getPreferredHeight(...args)
+        });
 
         // When we animate the scale, we don't animate the requested size of the thumbnails, rather
         // we ask for our final size and then animate within that size. This slightly simplifies the
@@ -1486,57 +1490,35 @@ ExpoThumbnailsBox.prototype = {
         }
     },
 
-    getPreferredHeight: function(actor, forWidth, alloc) {
+    getPreferredHeight: function(actor, forWidth) {
         // See comment about this.background in _init()
-        let themeNode = this.background.get_theme_node();
-
-        forWidth = themeNode.adjust_for_width(forWidth);
-
         // Note that for getPreferredWidth/Height we cheat a bit and skip propagating
         // the size request to our children because we know how big they are and know
         // that the actors aren't depending on the virtual functions being called.
 
-        if (this.thumbnails.length == 0)
+        if (this.thumbnails.length === 0)
             return;
 
-        let spacing = this.actor.get_theme_node().get_length('spacing');
-        let nWorkspaces = global.screen.n_workspaces;
-        let totalSpacing = (nWorkspaces - 1) * spacing;
+        let themeNode = this.background.get_theme_node();
+        forWidth = themeNode.adjust_for_width(forWidth);
 
-        let avail = Main.layoutManager.primaryMonitor.width - totalSpacing;
-
-        let [nColumns, nRows] = this.getNumberOfColumnsAndRows(nWorkspaces);
-        let scale = (avail / nColumns) / this.porthole.width;
-
-        let height = Math.round(this.porthole.height * scale);
-        [alloc.min_size, alloc.natural_size] =
-            themeNode.adjust_preferred_height(400,
-                                              Main.layoutManager.primaryMonitor.height);
+        return themeNode.adjust_preferred_height(400, Main.layoutManager.primaryMonitor.height);
     },
 
-    getPreferredWidth: function(actor, forHeight, alloc) {
+    getPreferredWidth: function(actor, forHeight) {
         // See comment about this.background in _init()
-        let themeNode = this.background.get_theme_node();
-
-        if (this.thumbnails.length == 0)
-            return;
-
         // We don't animate our preferred width, which is always reported according
         // to the actual number of current workspaces, we just animate within that
 
+        if (this.thumbnails.length === 0)
+            return;
+
+        let themeNode = this.background.get_theme_node();
         let spacing = this.actor.get_theme_node().get_length('spacing');
         let nWorkspaces = global.screen.n_workspaces;
         let totalSpacing = (nWorkspaces - 1) * spacing;
 
-        let avail = Main.layoutManager.primaryMonitor.width - totalSpacing;
-
-        let [nColumns, nRows] = this.getNumberOfColumnsAndRows(nWorkspaces);
-        let scale = (avail / nColumns) / this.porthole.width;
-
-        let width = Math.round(this.porthole.width * scale);
-        let maxWidth = (width) * nWorkspaces;
-        [alloc.min_size, alloc.natural_size] =
-            themeNode.adjust_preferred_width(totalSpacing, Main.layoutManager.primaryMonitor.width);
+        return themeNode.adjust_preferred_width(totalSpacing, Main.layoutManager.primaryMonitor.width);
     },
 
     allocate: function(actor, box, flags) {
