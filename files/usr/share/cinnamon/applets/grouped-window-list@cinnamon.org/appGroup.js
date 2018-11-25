@@ -951,7 +951,13 @@ class AppGroup {
     }
 
     handleButtonLabel(metaWindow, focus) {
-        if (this.state.settings.titleDisplay === TitleDisplay.Title) {
+        if (this.state.settings.titleDisplay === TitleDisplay.None) {
+            return;
+        }
+
+        if (this.groupState.metaWindows.length === 0) {
+            this.hideLabel(false);
+        } else if (this.state.settings.titleDisplay === TitleDisplay.Title) {
             this.setText(metaWindow.title);
             this.showLabel();
         } else if (this.state.settings.titleDisplay === TitleDisplay.App) {
@@ -969,8 +975,6 @@ class AppGroup {
             }
             // Re-orient the menu after the focus button expands
             this.hoverMenu.setStyleOptions(false);
-        } else if (this.labelVisible) {
-            this.hideLabel(false);
         }
     }
 
