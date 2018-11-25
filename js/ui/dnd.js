@@ -9,6 +9,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
+const {GenericContainer} = imports.ui.genericContainer;
 
 const Params = imports.misc.params;
 
@@ -684,13 +685,13 @@ function GenericDragItemContainer() {
 
 GenericDragItemContainer.prototype = {
     _init: function() {
-        this.actor = new Cinnamon.GenericContainer({ style_class: 'drag-item-container' });
-        this.actor.connect('get-preferred-width',
-                           Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height',
-                           Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate',
-                           Lang.bind(this, this._allocate));
+        this.actor = new GenericContainer({
+            style_class: 'drag-item-container'
+        }, {
+            allocate: (...args) => this._allocate(...args),
+            get_preferred_width: (...args) => this._getPreferredWidth(...args),
+            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+        });
         this.actor._delegate = this;
 
         this.child = null;
@@ -721,28 +722,32 @@ GenericDragItemContainer.prototype = {
         this.child.allocate(childBox, flags);
     },
 
-    _getPreferredHeight: function(actor, forWidth, alloc) {
-        alloc.min_size = 0;
-        alloc.natural_size = 0;
+    _getPreferredHeight: function(actor, forWidth) {
+        let min_size = 0;
+        let natural_size = 0;
 
         if (this.child == null)
             return;
 
         let [minHeight, natHeight] = this.child.get_preferred_height(forWidth);
-        alloc.min_size += minHeight * this.child.scale_y;
-        alloc.natural_size += natHeight * this.child.scale_y;
+        min_size += minHeight * this.child.scale_y;
+        natural_size += natHeight * this.child.scale_y;
+
+        return [min_size, natural_size];
     },
 
-    _getPreferredWidth: function(actor, forHeight, alloc) {
-        alloc.min_size = 0;
-        alloc.natural_size = 0;
+    _getPreferredWidth: function(actor, forHeight) {
+        let min_size = 0;
+        let natural_size = 0;
 
         if (this.child == null)
             return;
 
         let [minWidth, natWidth] = this.child.get_preferred_width(forHeight);
-        alloc.min_size = minWidth * this.child.scale_y;
-        alloc.natural_size = natWidth * this.child.scale_y;
+        min_size = minWidth * this.child.scale_y;
+        natural_size = natWidth * this.child.scale_y;
+
+        return [min_size, natural_size];
     },
 
     setChild: function(actor) {
