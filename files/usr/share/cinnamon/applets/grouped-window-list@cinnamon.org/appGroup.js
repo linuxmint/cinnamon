@@ -1069,7 +1069,6 @@ class AppGroup {
         this.hoverMenu.destroy();
         this.listState.trigger('removeChild', this.actor);
         this.actor.destroy();
-        this.actor.destroy();
 
         if (!skipRefCleanup) {
             this.groupState.destroy();
