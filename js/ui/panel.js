@@ -25,6 +25,7 @@ const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const PopupMenu = imports.ui.popupMenu;
+const {GenericContainer} = imports.ui.genericContainer;
 const SignalManager = imports.misc.signalManager;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
@@ -1132,7 +1133,7 @@ PanelDummy.prototype = {
         this.monitor = global.screen.get_monitor_geometry(monitorIndex);
         let defaultheight = 40 * global.ui_scale;
 
-        this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
+        this.actor = new St.Widget({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
 
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
         //
@@ -1945,7 +1946,14 @@ Panel.prototype = {
 
         this.themeSettings = new Gio.Settings({ schema_id: 'org.cinnamon.theme' });
 
-        this.actor = new Cinnamon.GenericContainer({ name: 'panel', reactive: true });
+        this.actor = new GenericContainer({
+            name: 'panel',
+            reactive: true
+        }, {
+            allocate: (...args) => this._allocate(...args),
+            get_preferred_width: (...args) => this._getPreferredWidth(...args),
+            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+        });
         this.addPanelStyleClass(this.panelPosition);
 
         this.actor._delegate = this;
@@ -1983,9 +1991,6 @@ Panel.prototype = {
         this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
         this.actor.connect('queue-relayout', () => this._setPanelHeight());
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
@@ -2987,24 +2992,11 @@ Panel.prototype = {
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
-
-        alloc.min_size = -1;
-        alloc.natural_size = -1;
-
- /*       if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
-            alloc.natural_size = Main.layoutManager.primaryMonitor.width;
-        } */
+        return [-1, -1];
     },
 
     _getPreferredHeight: function(actor, forWidth, alloc) {
-
-        alloc.min_size = -1;
-        alloc.natural_size = -1;
-
-/*        if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
-            alloc.natural_size = Main.layoutManager.primaryMonitor.height;
-            alloc.natural_size = alloc.natural_size - this.toppanelHeight - this.bottompanelHeight - this.margin_top - this.margin_bottom;
-        } */
+        return [-1, -1];
     },
 
     /**

@@ -17,6 +17,7 @@ const SignalManager = imports.misc.signalManager;
 const Tweener = imports.ui.tweener;
 const CheckBox = imports.ui.checkBox;
 const RadioButton = imports.ui.radioButton;
+const {GenericContainer} = imports.ui.genericContainer;
 
 const Params = imports.misc.params;
 const Util = imports.misc.util;
@@ -107,14 +108,18 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
                                          focusOnHover: true
                                        });
         this._signals = new SignalManager.SignalManager(null);
-        this.actor = new Cinnamon.GenericContainer({ style_class: 'popup-menu-item',
-                                                  reactive: params.reactive,
-                                                  track_hover: params.reactive,
-                                                  can_focus: params.reactive,
-                                                  accessible_role: Atk.Role.MENU_ITEM });
-        this._signals.connect(this.actor, 'get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this._signals.connect(this.actor, 'get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this._signals.connect(this.actor, 'allocate', Lang.bind(this, this._allocate));
+        this.actor = new GenericContainer({
+            style_class: 'popup-menu-item',
+            reactive: params.reactive,
+            track_hover: params.reactive,
+            can_focus: params.reactive,
+            accessible_role: Atk.Role.MENU_ITEM
+        }, {
+            allocate: (...args) => this._allocate(...args),
+            get_preferred_width: (...args) => this._getPreferredWidth(...args),
+            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+        });
+
         this._signals.connect(this.actor, 'style-changed', Lang.bind(this, this._onStyleChanged));
         this.actor._delegate = this;
 
@@ -300,7 +305,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         this._columnWidths = widths;
     }
 
-    _getPreferredWidth(actor, forHeight, alloc) {
+    _getPreferredWidth(actor, forHeight) {
         let width = 0;
         if (this._columnWidths) {
             for (let i = 0; i < this._columnWidths.length; i++) {
@@ -317,10 +322,10 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
                 width += natural;
             }
         }
-        alloc.min_size = alloc.natural_size = width;
+        return [width, width];
     }
 
-    _getPreferredHeight(actor, forWidth, alloc) {
+    _getPreferredHeight(actor, forWidth) {
         let height = 0, x = 0, minWidth, childWidth;
         for (let i = 0; i < this._children.length; i++) {
             let child = this._children[i];
@@ -343,7 +348,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
             if (natural > height)
                 height = natural;
         }
-        alloc.min_size = alloc.natural_size = height;
+        return [height, height];
     }
 
     _allocate(actor, box, flags) {
@@ -2113,10 +2118,11 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
 
         this.setOrientation(orientation);
 
-        this._boxWrapper = new Cinnamon.GenericContainer();
-        this._signals.connect(this._boxWrapper, 'get-preferred-width', Lang.bind(this, this._boxGetPreferredWidth));
-        this._signals.connect(this._boxWrapper, 'get-preferred-height', Lang.bind(this, this._boxGetPreferredHeight));
-        this._signals.connect(this._boxWrapper, 'allocate', Lang.bind(this, this._boxAllocate));
+        this._boxWrapper = new GenericContainer({}, {
+            allocate: (...args) => this._boxAllocate(...args),
+            get_preferred_width: (...args) => this._boxGetPreferredWidth(...args),
+            get_preferred_height: (...args) => this._boxGetPreferredHeight(...args)
+        });
         this.actor.set_child(this._boxWrapper);
         this._boxWrapper.add_actor(this.box);
 
@@ -2534,16 +2540,16 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         return [Math.round(xPos), Math.round(yPos)];
     }
 
-    _boxGetPreferredWidth (actor, forHeight, alloc) {
+    _boxGetPreferredWidth (actor, forWidth) {
         let columnWidths = this.getColumnWidths();
         this.setColumnWidths(columnWidths);
 
         // Now they will request the right sizes
-        [alloc.min_size, alloc.natural_size] = this.box.get_preferred_width(forHeight);
+        return this.box.get_preferred_width(forWidth);
     }
 
-    _boxGetPreferredHeight (actor, forWidth, alloc) {
-        [alloc.min_size, alloc.natural_size] = this.box.get_preferred_height(forWidth);
+    _boxGetPreferredHeight (actor, forHeight) {
+        return this.box.get_preferred_height(forHeight);
     }
 
     _boxAllocate (actor, box, flags) {

@@ -273,6 +273,23 @@ function _reparentActor(actor, newParent) {
         newParent.add_actor(actor);
 }
 
+class uiGroupBase extends Cinnamon.GenericContainer {
+    constructor() {
+        super(...arguments);
+        this.add_constraint(new Clutter.BindConstraint({
+            source: global.stage,
+            coordinate: Clutter.BindCoordinate.ALL,
+        }));
+    }
+    vfunc_allocate(box, flags) {
+        let children = uiGroup.get_children();
+        for (let i = 0; i < children.length; i++) {
+            children[i].allocate_preferred_size(flags);
+        }
+    }
+}
+uiGroupBase = GObject.registerClass(uiGroupBase);
+
 /**
  * start:
  *
@@ -345,23 +362,9 @@ function start() {
     deskletContainer = new DeskletManager.DeskletContainer();
 
     // Set up stage hierarchy to group all UI actors under one container.
-    uiGroup = new Cinnamon.GenericContainer({ name: 'uiGroup' });
-    uiGroup.connect('allocate',
-                    function (actor, box, flags) {
-                        let children = uiGroup.get_children();
-                        for (let i = 0; i < children.length; i++)
-                            children[i].allocate_preferred_size(flags);
-                    });
-    uiGroup.connect('get-preferred-width',
-                    function(actor, forHeight, alloc) {
-                        let width = global.stage.width;
-                        [alloc.min_size, alloc.natural_size] = [width, width];
-                    });
-    uiGroup.connect('get-preferred-height',
-                    function(actor, forWidth, alloc) {
-                        let height = global.stage.height;
-                        [alloc.min_size, alloc.natural_size] = [height, height];
-                    });
+    // uiGroup needs to have Cinnamon.GenericContainer in its prototype chain
+    // for the set/get_skip_paint methods.
+    uiGroup = new uiGroupBase({ name: 'uiGroup' });
 
     global.reparentActor(global.background_actor, uiGroup);
     global.background_actor.hide();
