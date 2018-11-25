@@ -1194,7 +1194,7 @@ cinnamon_global_destroy_pointer_barrier (CinnamonGlobal *global, guint32 barrier
 void
 cinnamon_global_reexec_self (CinnamonGlobal *global)
 {
-  meta_display_restart (cinnamon_global_get_display (global));
+  meta_restart ();
 }
 
 void

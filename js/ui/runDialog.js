@@ -150,6 +150,8 @@ __proto__: ModalDialog.ModalDialog.prototype,
         }));
         this._enableInternalCommands = global.settings.get_boolean('development-tools');
 
+        global.display.connect('restart', () => this.close());
+
         let label = new St.Label({ style_class: 'run-dialog-label',
                                    text: _("Please enter a command:") });
 
