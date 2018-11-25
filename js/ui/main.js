@@ -282,7 +282,7 @@ class uiGroupBase extends Cinnamon.GenericContainer {
         }));
     }
     vfunc_allocate(box, flags) {
-        let children = uiGroup.get_children();
+        let children = this.get_children();
         for (let i = 0; i < children.length; i++) {
             children[i].allocate_preferred_size(flags);
         }
