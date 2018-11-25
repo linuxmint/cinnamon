@@ -986,7 +986,7 @@ class AppGroup {
             return;
         }
         this.onWindowTitleChanged(this.groupState.lastFocused);
-        this.onFocusWindowChange(this.groupState.lastFocused);
+        this.onFocusChange();
         this.checkFocusStyle();
     }
 
