@@ -3,7 +3,7 @@ const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 
 var GenericContainer = class GenericContainer extends St.Widget {
-    _init(params, callbacks = {
+    _init(params = {}, callbacks = {
         allocate: null,
         get_preferred_width: null,
         get_preferred_height: null
@@ -37,7 +37,6 @@ var GenericContainer = class GenericContainer extends St.Widget {
             let alloc = this.callbacks.get_preferred_height(this, forHeight);
             return node.adjust_preferred_height(...alloc);
         }
-
         return [0, 0];
     }
 }

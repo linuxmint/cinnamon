@@ -13,6 +13,7 @@ const Mainloop = imports.mainloop;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
+const {GenericContainer} = imports.ui.genericContainer;
 
 const WindowUtils = imports.misc.windowUtils;
 
@@ -45,10 +46,16 @@ ClassicSwitcher.prototype = {
     _init: function() {
         AppSwitcher.AppSwitcher.prototype._init.apply(this, arguments);
 
-        this.actor = new Cinnamon.GenericContainer({ name: 'altTabPopup',
-                                                  reactive: true,
-                                                  visible: false });
-        
+        this.actor = new GenericContainer({
+            name: 'altTabPopup',
+            reactive: true,
+            visible: false
+        }, {
+            allocate: (...args) => this._allocate(...args),
+            get_preferred_width: (...args) => this._getPreferredWidth(...args),
+            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+        });
+
         this._thumbnailTimeoutId = 0;
         this.thumbnailsVisible = false;
         this._displayPreviewTimeoutId = 0;
@@ -71,35 +78,27 @@ ClassicSwitcher.prototype = {
         
         this._updateList(0);
 
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
-        
         // Need to force an allocation so we can figure out whether we
         // need to scroll when selecting
         this.actor.opacity = 0;
         this.actor.show();
-        this.actor.get_allocation_box();
     },
 
-    _getPreferredWidth: function (actor, forHeight, alloc) {
-        alloc.min_size = global.screen_width;
-        alloc.natural_size = global.screen_width;
+    _getPreferredWidth: function (actor, forHeight) {
+        return [global.screen_width, global.screen_width];
     },
 
-    _getPreferredHeight: function (actor, forWidth, alloc) {
-        alloc.min_size = global.screen_height;
-        alloc.natural_size = global.screen_height;
+    _getPreferredHeight: function (actor, forWidth) {
+        return [global.screen_height, global.screen_height];
     },
 
     _allocate: function (actor, box, flags) {
         let childBox = new Clutter.ActorBox();
         let monitor = this._activeMonitor;
 
-        let leftPadding = this.actor.get_theme_node().get_padding(St.Side.LEFT);
-        let rightPadding = this.actor.get_theme_node().get_padding(St.Side.RIGHT);
-        let bottomPadding = this.actor.get_theme_node().get_padding(St.Side.BOTTOM);
-        let vPadding = this.actor.get_theme_node().get_vertical_padding();
+        let leftPadding = actor.style_length('padding-left');
+        let rightPadding = actor.style_length('padding-right');
+        let bottomPadding = actor.style_length('padding-bottom');
         let hPadding = leftPadding + rightPadding;
 
         // Allocate the appSwitcher
@@ -126,7 +125,7 @@ ClassicSwitcher.prototype = {
                 childBox.x1 = Math.max(monitor.x + leftPadding, childBox.x1 - offset - hPadding);
             }
 
-            let spacing = this.actor.get_theme_node().get_length('spacing');
+            let spacing = actor.style_length('spacing');
 
             childBox.x2 = childBox.x1 +  childNaturalWidth;
             if (childBox.x2 > monitor.x + monitor.width - rightPadding)
@@ -188,7 +187,6 @@ ClassicSwitcher.prototype = {
         this._appList.connect('item-entered', Lang.bind(this, this._appEntered));
         
         this._appIcons = this._appList.icons;
-        this.actor.get_allocation_box();
     },
 
     _selectNext: function() {
@@ -455,22 +453,25 @@ function SwitcherList(squareItems, activeMonitor) {
 
 SwitcherList.prototype = {
     _init : function(squareItems, activeMonitor) {
-        this.actor = new Cinnamon.GenericContainer({ style_class: 'switcher-list' });
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocateTop));
+        this.actor = new GenericContainer({
+            style_class: 'switcher-list'
+        }, {
+            allocate: (...args) => this._allocateTop(...args),
+            get_preferred_width: (...args) => this._getPreferredWidth(...args),
+            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+        });
 
         // Here we use a GenericContainer so that we can force all the
         // children except the separator to have the same width.
-        this._list = new Cinnamon.GenericContainer({ style_class: 'switcher-list-item-container' });
+        this._list = new GenericContainer({
+            style_class: 'switcher-list-item-container'
+        }, {
+            allocate: (...args) => this._allocate(...args),
+            get_preferred_width: (...args) => this._getPreferredWidth(...args),
+            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+        });
         this._list.spacing = 0;
-        this._list.connect('style-changed', Lang.bind(this, function() {
-                                                        this._list.spacing = this._list.get_theme_node().get_length('spacing');
-                                                     }));
-
-        this._list.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this._list.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this._list.connect('allocate', Lang.bind(this, this._allocate));
+        this._list.connect('style-changed', () => this._list.spacing = this._list.style_length('spacing'));
 
         this._clipBin = new St.Bin({style_class: 'cbin'});
         this._clipBin.child = this._list;
@@ -661,7 +662,7 @@ SwitcherList.prototype = {
         return [maxChildMin, maxChildNat];
     },
 
-    _getPreferredWidth: function (actor, forHeight, alloc) {
+    _getPreferredWidth: function (actor, forHeight) {
         let [maxChildMin, maxChildNat] = this._maxChildWidth(forHeight);
 
         let separatorWidth = 0;
@@ -671,12 +672,14 @@ SwitcherList.prototype = {
         }
 
         let totalSpacing = this._list.spacing * Math.max(1, (this._items.length - 1));
-        alloc.min_size = this._items.length * maxChildMin + separatorWidth + totalSpacing;
-        alloc.natural_size = alloc.min_size;
-        this._minSize = alloc.min_size;
+        let min_size = this._items.length * maxChildMin + separatorWidth + totalSpacing;
+        let natural_size = min_size;
+        this._minSize = min_size;
+
+        return [min_size, natural_size];
     },
 
-    _getPreferredHeight: function (actor, forWidth, alloc) {
+    _getPreferredHeight: function (actor, forWidth) {
         let maxChildMin = 0;
         let maxChildNat = 0;
 
@@ -692,8 +695,7 @@ SwitcherList.prototype = {
             maxChildNat = maxChildMin;
         }
 
-        alloc.min_size = maxChildMin;
-        alloc.natural_size = maxChildNat;
+        return [maxChildMin, maxChildNat];
     },
 
     _allocate: function (actor, box, flags) {
@@ -798,10 +800,9 @@ AppList.prototype = {
         this._activeMonitor = activeMonitor;
     },
 
-    _getPreferredHeight: function (actor, forWidth, alloc) {
+    _getPreferredHeight: function (actor, forWidth) {
         if (this._items.length < 1) {
-            alloc.min_size = alloc.natural_size = 32;
-            return;
+            return [32, 32];
         }
         let j = 0;
         while(this._items.length > 1 && this._items[j].style_class != 'item-box') {
@@ -840,8 +841,7 @@ AppList.prototype = {
             this.icons[i].set_size(this._iconSize);
         }
 
-        alloc.min_size = height;
-        alloc.natural_size = height;
+        return [height, height];
     },
 
     _allocate: function (actor, box, flags) {
