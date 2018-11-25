@@ -1024,13 +1024,6 @@ class AppGroup {
         }
     }
 
-    handleTitleDisplayChange() {
-        each(this.groupState.metaWindows, (win) => {
-            this.onWindowTitleChanged(win, true);
-            this.handleButtonLabel(win);
-        });
-    }
-
     animate(step = 0) {
         let effect = this.state.settings.launcherAnimationEffect;
 

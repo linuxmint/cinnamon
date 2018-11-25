@@ -13,6 +13,7 @@ const {AppletSettings} = imports.ui.settings;
 const {SignalManager} = imports.misc.signalManager;
 const {each, find, findIndex, filter, throttle, unref, trySpawnCommandLine} = imports.misc.util;
 const {createStore} = imports.misc.state;
+const Mainloop = imports.mainloop;
 
 const AppList = require('./appList');
 const {
@@ -248,7 +249,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             homeDir: GLib.get_home_dir(),
             overlayPreview: null,
             lastCycled: -1,
-            lastTitleDisplay: null,
             scrollActive: false,
             thumbnailMenuOpen: false,
             thumbnailCloseButtonOffset: global.ui_scale > 1 ? -10 : 0
@@ -371,7 +371,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'show-thumbnails', value: 'showThumbs', cb: this.updateVerticalThumbnailState},
             {key: 'animate-thumbnails', value: 'animateThumbs', cb: null},
             {key: 'number-display', value: 'numDisplay', cb: this.updateWindowNumberState},
-            {key: 'title-display', value: 'titleDisplay', cb: this.updateTitleDisplay},
+            {key: 'title-display', value: 'titleDisplay', cb: this.refreshCurrentAppList},
             {key: 'scroll-behavior', value: 'scrollBehavior', cb: null},
             {key: 'icon-spacing', value: 'iconSpacing', cb: this.updateSpacing},
             {key: 'show-recent', value: 'showRecent', cb: null},
@@ -390,8 +390,6 @@ class GroupedWindowListApplet extends Applet.Applet {
                 settingsProps[i].cb ? (...args) => settingsProps[i].cb.call(this, ...args) : null
             );
         }
-
-        this.state.set({lastTitleDisplay: this.state.settings.titleDisplay});
     }
 
     on_applet_added_to_panel() {
@@ -579,7 +577,8 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     refreshCurrentAppList() {
         let appList = this.appLists[this.state.currentWs];
-        if (appList) setTimeout(() => appList.refreshList(), 0);
+
+        if (appList) Mainloop.idle_add_full(Mainloop.PRIORITY_LOW, () => appList.refreshList());
     }
 
     refreshAllAppLists() {
@@ -640,21 +639,6 @@ class GroupedWindowListApplet extends Applet.Applet {
                 }
             });
         });
-    }
-
-    updateTitleDisplay(titleDisplay) {
-        if (titleDisplay === TitleDisplay.None
-            || this.state.lastTitleDisplay === TitleDisplay.None) {
-            this.refreshCurrentAppList();
-        }
-        let appList = this.getCurrentAppList().appList;
-        each(appList, (appGroup) => {
-            if (titleDisplay === TitleDisplay.Focused) {
-                appGroup.hideLabel(false);
-            }
-            appGroup.handleTitleDisplayChange();
-        });
-        this.state.set({lastTitleDisplay: titleDisplay});
     }
 
     getAppFromWMClass(specialApps, metaWindow) {
