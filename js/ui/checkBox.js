@@ -2,23 +2,24 @@ const Clutter = imports.gi.Clutter;
 const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
+const {GenericContainer} = imports.ui.genericContainer;
 const Params = imports.misc.params;
 
 const Lang = imports.lang;
 
 function CheckBoxContainer() {
-   this._init();
+    this._init();
 }
 
 CheckBoxContainer.prototype = {
     _init: function() {
-        this.actor = new Cinnamon.GenericContainer({ y_align: St.Align.MIDDLE });
-        this.actor.connect('get-preferred-width',
-                           Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height',
-                           Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate',
-                           Lang.bind(this, this._allocate));
+        this.actor = new GenericContainer({
+            y_align: St.Align.MIDDLE
+        }, {
+            allocate: (...args) => this._allocate(...args),
+            get_preferred_width: (...args) => this._getPreferredWidth(...args),
+            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+        });
         this.actor.connect('style-changed', Lang.bind(this,
             function() {
                 let node = this.actor.get_theme_node();
@@ -37,7 +38,7 @@ CheckBoxContainer.prototype = {
         this._spacing = 0;
     },
 
-    _getPreferredWidth: function(actor, forHeight, alloc) {
+    _getPreferredWidth: function(actor, forHeight) {
         let node = this.actor.get_theme_node();
         forHeight = node.adjust_for_height(forHeight);
 
@@ -53,18 +54,16 @@ CheckBoxContainer.prototype = {
         let nat = natBoxWidth + natLabelWidth + this._spacing;
         [min, nat] = node.adjust_preferred_width(min, nat);
 
-        alloc.min_size = min;
-        alloc.natural_size = nat;
+        return [min, nat];
     },
 
-    _getPreferredHeight: function(actor, forWidth, alloc) {
+    _getPreferredHeight: function(actor, forWidth) {
         let [minBoxHeight, natBoxHeight] =
             this._box.get_preferred_height(-1);
         let [minLabelHeight, natLabelHeight] =
             this.label.get_preferred_height(-1);
 
-        alloc.min_size = Math.max(minBoxHeight, minLabelHeight);
-        alloc.natural_size = Math.max(natBoxHeight, natLabelHeight);
+        return [Math.max(minBoxHeight, minLabelHeight), Math.max(natBoxHeight, natLabelHeight)];
     },
 
     _allocate: function(actor, box, flags) {
