@@ -61,6 +61,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Settings = imports.ui.settings;
 const SignalManager = imports.misc.signalManager;
 const Tooltips = imports.ui.tooltips;
+const {GenericContainer} = imports.ui.genericContainer;
 
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
@@ -230,12 +231,17 @@ class WindowPreview extends Tooltips.TooltipBase {
 
 class AppMenuButton {
     constructor(applet, metaWindow, alert) {
-        this.actor = new Cinnamon.GenericContainer({
+        this.actor = new GenericContainer({
             name: 'appMenu',
             style_class: 'window-list-item-box',
             reactive: true,
             can_focus: true,
-            track_hover: true });
+            track_hover: true
+        }, {
+            allocate: (...args) => this._allocate(...args),
+            get_preferred_width: (...args) => this._getPreferredWidth(...args),
+            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+        });
 
         this._applet = applet;
         this.metaWindow = metaWindow;
@@ -255,12 +261,6 @@ class AppMenuButton {
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
-
-        this.actor.connect('get-preferred-width',
-                Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height',
-                Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
         this.progressOverlay = new St.Widget({ style_class: "progress", reactive: false, important: true  });
 
@@ -607,33 +607,37 @@ class AppMenuButton {
     }
 
     _getPreferredWidth(actor, forHeight, alloc) {
+        let min_size = 0, natural_size = 0;
         let [minSize, naturalSize] = this._iconBox.get_preferred_width(forHeight);
         // minimum size just enough for icon if we ever get that many apps going
-        alloc.min_size = naturalSize;
+        min_size = naturalSize;
 
         if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM ) {
         // the 'buttons use entire space' option only makes sense on horizontal panels
             if (this._applet.buttonsUseEntireSpace) {
                 let [lminSize, lnaturalSize] = this._label.get_preferred_width(forHeight);
                 let spacing = this.actor.get_theme_node().get_length('spacing');
-                alloc.natural_size = Math.max(150 * global.ui_scale,
+                natural_size = Math.max(150 * global.ui_scale,
                         naturalSize + spacing + lnaturalSize);
             } else {
-                alloc.natural_size = 150 * global.ui_scale;
+                natural_size = 150 * global.ui_scale;
             }
         } else {
-            alloc.natural_size = this._applet._panelHeight;
+            natural_size = this._applet._panelHeight;
         }
+
+        return [min_size, natural_size];
     }
 
-    _getPreferredHeight(actor, forWidth, alloc) {
+    _getPreferredHeight(actor, forWidth) {
+        let min_size = 0, natural_size = 0;
         let [minSize1, naturalSize1] = this._iconBox.get_preferred_height(forWidth);
 
         if (this.labelVisible) {
             let [minSize2, naturalSize2] = this._label.get_preferred_height(forWidth);
-            alloc.min_size = Math.max(minSize1, minSize2);
+            min_size = Math.max(minSize1, minSize2);
         } else {
-            alloc.min_size = minSize1;
+            min_size = minSize1;
         }
 
         if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM ) {
@@ -643,10 +647,12 @@ class AppMenuButton {
                Assigning the natural size to the full panel height used to cause recursion errors but seems fine now.
                If this happens to avoid this you can subtract 1 or 2 pixels, but this will give an unreactive
                strip at the edge of the screen */
-            alloc.natural_size = this._applet._panelHeight;
+            natural_size = this._applet._panelHeight;
         } else {
-            alloc.natural_size = naturalSize1;
+            natural_size = naturalSize1;
         }
+
+        return [min_size, natural_size];
     }
 
     _allocate(actor, box, flags) {
