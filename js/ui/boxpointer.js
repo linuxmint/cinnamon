@@ -5,6 +5,7 @@ const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Meta = imports.gi.Meta;
 const St = imports.gi.St;
+const {GenericContainer} = imports.ui.genericContainer;
 
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
@@ -39,11 +40,12 @@ BoxPointer.prototype = {
         this._arrowOrigin = 0;
         this.actor = new St.Bin({ x_fill: true,
                                   y_fill: true });
-        this._container = new Cinnamon.GenericContainer();
+        this._container = new GenericContainer({}, {
+            allocate: (...args) => this._allocate(...args),
+            get_preferred_width: (...args) => this._getPreferredWidth(...args),
+            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+        });
         this.actor.set_child(this._container);
-        this._container.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this._container.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this._container.connect('allocate', Lang.bind(this, this._allocate));
         this.bin = new St.Bin(binProperties);
         this._container.add_actor(this.bin);
         this._border = new St.DrawingArea();
@@ -162,18 +164,22 @@ BoxPointer.prototype = {
         }
     },
 
-    _getPreferredWidth: function(actor, forHeight, alloc) {
+    _getPreferredWidth: function(actor, forHeight) {
+        let alloc = {};
         let [minInternalSize, natInternalSize] = this.bin.get_preferred_width(forHeight);
         alloc.min_size = minInternalSize;
         alloc.natural_size = natInternalSize;
         this._adjustAllocationForArrow(true, alloc);
+        return [alloc.min_size, alloc.natural_size];
     },
 
-    _getPreferredHeight: function(actor, forWidth, alloc) {
+    _getPreferredHeight: function(actor, forWidth) {
+        let alloc = {};
         let [minSize, naturalSize] = this.bin.get_preferred_height(forWidth);
         alloc.min_size = minSize;
         alloc.natural_size = naturalSize;
         this._adjustAllocationForArrow(false, alloc);
+        return [alloc.min_size, alloc.natural_size];
     },
 
     _allocate: function(actor, box, flags) {
