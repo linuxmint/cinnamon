@@ -462,7 +462,7 @@ class AppGroup {
         this.label.set_style('padding-right: 4px;');
 
         if (!animate) {
-            this.label.width = this.labelWidth || this.actor.width - this.iconBox.width;
+            this.label.width = 150 * global.ui_scale;
             this.label.show();
             return;
         }
@@ -493,20 +493,17 @@ class AppGroup {
 
         this.labelVisible = false;
         if (!animate) {
+            this.label.width = 1;
             this.label.hide();
             return false;
         }
-
-        let {width} = this.label;
 
         Tweener.addTween(this.label, {
             width: 1,
             time: BUTTON_BOX_ANIMATION_TIME,
             transition: 'easeOutQuad',
-            onCompleteScope: this,
-            onComplete() {
+            onComplete: () => {
                 this.label.hide();
-                this.labelWidth = width;
             }
         });
         return false;
@@ -966,9 +963,10 @@ class AppGroup {
                 this.showLabel();
             }
         } else if (this.state.settings.titleDisplay === TitleDisplay.Focused) {
+            this.setText(metaWindow.title);
+
             if (focus === undefined) focus = getFocusState(metaWindow);
             if (focus) {
-                this.setText(metaWindow.title);
                 this.showLabel(true);
             } else {
                 this.hideLabel(true);
