@@ -1655,7 +1655,7 @@ var PopupMenuBase = class PopupMenuBase {
         } else {
             this.box = new St.BoxLayout({ vertical: true });
         }
-        this._signals.connect_after(this.box, 'queue-relayout', Lang.bind(this, this._menuQueueRelayout));
+
         this.length = 0;
 
         this.isOpen = false;
@@ -1979,16 +1979,6 @@ var PopupMenuBase = class PopupMenuBase {
             if (items[i].maybeGet("_delegate") instanceof PopupBaseMenuItem || items[i].maybeGet("_delegate") instanceof PopupMenuBase)
                 items[i]._delegate.setColumnWidths(widths);
         }
-    }
-
-    // Because of the above column-width funniness, we need to do a
-    // queue-relayout on every item whenever the menu itself changes
-    // size, to force clutter to drop its cached size requests. (The
-    // menuitems will in turn call queue_relayout on their parent, the
-    // menu, but that call will be a no-op since the menu already
-    // has a relayout queued, so we won't get stuck in a loop.
-    _menuQueueRelayout() {
-        this.box.get_children().forEach(actor => actor.queue_relayout());
     }
 
     addActor(actor) {
