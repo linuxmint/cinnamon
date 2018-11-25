@@ -390,6 +390,7 @@ class AppGroup {
         let allocHeight = box.y2 - box.y1;
         let childBox = new Clutter.ActorBox();
         let direction = this.actor.get_text_direction();
+        let {iconSpacing, titleDisplay} = this.state.settings;
 
         // Set the icon to be left-justified (or right-justified) and centered vertically
         let [iconNaturalWidth, iconNaturalHeight] = this.iconBox.get_preferred_size();
@@ -437,13 +438,25 @@ class AppGroup {
             });
         }
 
-        if (this.progressOverlay.visible) {
+        if (!this.progressOverlay.visible) {
+            return;
+        }
+
+        if (titleDisplay > 1) {
+            childBox.x1 = -(this.iconBox.width / iconSpacing) - badgeOffset;
+            childBox.y1 = 0;
+            childBox.x2 = this.actor.width;
+            childBox.y2 = this.actor.height;
+            let clipWidth = Math.max((this.actor.width) * (this._progress / 100.0), 1.0);
+            this.progressOverlay.set_clip(0, 0, clipWidth, this.actor.height);
+        } else {
             childBox.x1 = -this.padding;
             childBox.y1 = 0;
-            childBox.y2 = this.container.height;
             childBox.x2 = Math.max(this.container.width * (this._progress / 100.0), 1.0);
-            this.progressOverlay.allocate(childBox, flags);
+            childBox.y2 = this.container.height;
         }
+
+        this.progressOverlay.allocate(childBox, flags);
     }
 
     _showLabel(animate = false) {
