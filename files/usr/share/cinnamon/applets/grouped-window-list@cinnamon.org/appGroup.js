@@ -255,7 +255,9 @@ class AppGroup {
     }
 
     setIconPadding(panelHeight) {
-        this.iconBox.style = this.actor.style = 'padding: 0px;';
+        this.iconBox.style = 'padding: 0px';
+        if (!this.state.isHorizontal) return;
+        this.actor.style = 'padding-left: 0px; padding-right: 0px;';
     }
 
     setMargin() {
