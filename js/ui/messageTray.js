@@ -20,6 +20,7 @@ const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 const AppletManager = imports.ui.appletManager;
+const {GenericContainer} = imports.ui.genericContainer;
 
 var ANIMATION_TIME = .2;
 var NOTIFICATION_TIMEOUT = 4;
@@ -468,10 +469,11 @@ Notification.prototype = {
         // make St.Table or St.BoxLayout do this the way we want (don't
         // show banner at all if title needs to be ellipsized), so we
         // use Cinnamon.GenericContainer.
-        this._bannerBox = new Cinnamon.GenericContainer();
-        this._bannerBox.connect('get-preferred-width', Lang.bind(this, this._bannerBoxGetPreferredWidth));
-        this._bannerBox.connect('get-preferred-height', Lang.bind(this, this._bannerBoxGetPreferredHeight));
-        this._bannerBox.connect('allocate', Lang.bind(this, this._bannerBoxAllocate));
+        this._bannerBox = new GenericContainer({}, {
+            allocate: (...args) => this._bannerBoxAllocate(...args),
+            get_preferred_width: (...args) => this._bannerBoxGetPreferredWidth(...args),
+            get_preferred_height: (...args) => this._bannerBoxGetPreferredHeight(...args)
+        });
         this._table.add(this._bannerBox, { row: 0,
                                            col: 1,
                                            col_span: 2,
@@ -825,29 +827,34 @@ Notification.prototype = {
         this._spacing = this._table.get_theme_node().get_length('spacing-columns');
     },
 
-    _bannerBoxGetPreferredWidth: function(actor, forHeight, alloc) {
+    _bannerBoxGetPreferredWidth: function(actor, forHeight) {
+        let min_size = 0, natural_size = 0;
         let [titleMin, titleNat] = this._titleLabel.get_preferred_width(forHeight);
         let [bannerMin, bannerNat] = this._bannerLabel.get_preferred_width(forHeight);
         let [timeMin, timeNat] = this._timeLabel.get_preferred_width(forHeight);
         if (this._inNotificationBin) {
-            alloc.min_size = Math.max(titleMin, timeMin);
-            alloc.natural_size = Math.max(titleNat, timeNat) + this._spacing + bannerNat;
+            min_size = Math.max(titleMin, timeMin);
+            natural_size = Math.max(titleNat, timeNat) + this._spacing + bannerNat;
         } else {
-            alloc.min_size = titleMin;
-            alloc.natural_size = titleNat + this._spacing + bannerNat;
+            min_size = titleMin;
+            natural_size = titleNat + this._spacing + bannerNat;
         }
+
+        return [min_size, natural_size];
     },
 
-    _bannerBoxGetPreferredHeight: function(actor, forWidth, alloc) {
+    _bannerBoxGetPreferredHeight: function(actor, forWidth) {
+        let min_size = 0, natural_size = 0;
         if (this._inNotificationBin) {
             let [titleMin, titleNat] = this._titleLabel.get_preferred_height(forWidth);
             let [timeMin, timeNat] = this._timeLabel.get_preferred_height(forWidth);
-            alloc.min_size = titleMin + timeMin;
-            alloc.natural_size = titleNat + timeNat;
+            min_size = titleMin + timeMin;
+            natural_size = titleNat + timeNat;
         } else {
-            [alloc.min_size, alloc.natural_size] =
-                this._titleLabel.get_preferred_height(forWidth);
+            [min_size, natural_size] = this._titleLabel.get_preferred_height(forWidth);
         }
+
+        return [min_size, natural_size];
     },
 
     _bannerBoxAllocate: function(actor, box, flags) {
@@ -1044,10 +1051,11 @@ Source.prototype = {
     _init: function(title) {
         this.title = title;
 
-        this.actor = new Cinnamon.GenericContainer();
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
+        this.actor = new GenericContainer({}, {
+            allocate: (...args) => this._allocate(...args),
+            get_preferred_width: (...args) => this._getPreferredWidth(...args),
+            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+        });
         this.actor.connect('destroy', Lang.bind(this,
             function() {
                 this._actorDestroyed = true;
@@ -1071,14 +1079,12 @@ Source.prototype = {
         this.notifications = [];
     },
 
-    _getPreferredWidth: function (actor, forHeight, alloc) {
-        let [min, nat] = this._iconBin.get_preferred_width(forHeight);
-        alloc.min_size = min; alloc.nat_size = nat;
+    _getPreferredWidth: function (actor, forHeight) {
+        return this._iconBin.get_preferred_width(forHeight);
     },
 
-    _getPreferredHeight: function (actor, forWidth, alloc) {
-        let [min, nat] = this._iconBin.get_preferred_height(forWidth);
-        alloc.min_size = min; alloc.nat_size = nat;
+    _getPreferredHeight: function (actor, forWidth) {
+        return this._iconBin.get_preferred_height(forWidth);
     },
 
     _allocate: function(actor, box, flags) {
