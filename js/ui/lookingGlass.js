@@ -15,6 +15,7 @@ const System = imports.system;
 const Extension = imports.ui.extension;
 const History = imports.misc.history;
 const Main = imports.ui.main;
+const {GenericContainer} = imports.ui.genericContainer;
 
 /* Imports...feel free to add here as needed */
 var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
@@ -239,9 +240,12 @@ function Inspector() {
 
 Inspector.prototype = {
     _init: function() {
-        let container = new Cinnamon.GenericContainer({ width: 0,
-                                                     height: 0 });
-        container.connect('allocate', Lang.bind(this, this._allocate));
+        let container = new GenericContainer({
+            width: 0,
+            height: 0
+        }, {
+            allocate: (...args) => this._allocate(...args)
+        });
         Main.uiGroup.add_actor(container);
 
         let eventHandler = new St.BoxLayout({ name: 'LookingGlassDialog',
