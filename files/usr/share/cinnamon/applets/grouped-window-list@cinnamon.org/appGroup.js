@@ -451,8 +451,14 @@ class AppGroup {
         }
     }
 
-    _showLabel(animate = false) {
-        if (this.label.is_finalized()) return;
+    showLabel(animate = false) {
+        if (!this.label
+            || !this.state.isHorizontal
+            || this.label.is_finalized()
+            || !this.label.realized) {
+            return;
+        }
+        let width = MAX_BUTTON_WIDTH * global.ui_scale;
 
         this.labelVisible = true;
         if (this.label.text == null) {
@@ -462,13 +468,13 @@ class AppGroup {
         this.label.set_style('padding-right: 4px;');
 
         if (!animate) {
-            this.label.width = 150 * global.ui_scale;
             this.label.show();
+            this.label.width = width;
             return;
         }
 
         Tweener.addTween(this.label, {
-            width: MAX_BUTTON_WIDTH, // Should probably check preferred width
+            width,
             time: BUTTON_BOX_ANIMATION_TIME,
             transition: 'easeOutQuad',
             onComplete: () => {
@@ -479,34 +485,12 @@ class AppGroup {
         return;
     }
 
-    showLabel(animate) {
-        if (!this.label || !this.state.isHorizontal) {
-            return;
-        }
-
-        // Fixes 'st_widget_get_theme_node called on the widget which is not in the stage' warnings
-        setTimeout(() => this._showLabel(animate), 0);
-    }
-
-    hideLabel(animate) {
-        if (!this.label || this.label.is_finalized() || !this.label.realized) return false;
+    hideLabel() {
+        if (!this.label || this.label.is_finalized() || !this.label.realized) return;
 
         this.labelVisible = false;
-        if (!animate) {
-            this.label.width = 1;
-            this.label.hide();
-            return false;
-        }
-
-        Tweener.addTween(this.label, {
-            width: 1,
-            time: BUTTON_BOX_ANIMATION_TIME,
-            transition: 'easeOutQuad',
-            onComplete: () => {
-                this.label.hide();
-            }
-        });
-        return false;
+        this.label.width = 1;
+        this.label.hide();
     }
 
     onEnter() {
@@ -589,7 +573,7 @@ class AppGroup {
             this.actor.add_style_pseudo_class('active');
         }
         this.resetHoverStatus();
-        if (lastFocused) this.handleButtonLabel(lastFocused, hasFocus);
+        if (lastFocused) this.handleButtonLabel(lastFocused, hasFocus, true);
     }
 
     onWindowDemandsAttention(metaWindow) {
@@ -907,7 +891,7 @@ class AppGroup {
                 || !metaWindow.title
                 || (this.groupState.metaWindows.length === 0 && this.groupState.isFavoriteApp)
                     || !this.state.isHorizontal)) {
-            this.hideLabel(false);
+            this.hideLabel();
             return;
         }
 
@@ -947,29 +931,28 @@ class AppGroup {
         }
     }
 
-    handleButtonLabel(metaWindow, focus) {
+    handleButtonLabel(metaWindow, focus, animate = false) {
         if (this.state.settings.titleDisplay === TitleDisplay.None) {
             return;
         }
 
         if (this.groupState.metaWindows.length === 0) {
-            this.hideLabel(false);
+            this.hideLabel();
         } else if (this.state.settings.titleDisplay === TitleDisplay.Title) {
             this.setText(metaWindow.title);
-            this.showLabel();
+            this.showLabel(animate);
         } else if (this.state.settings.titleDisplay === TitleDisplay.App) {
             if (this.groupState.appName) {
                 this.setText(this.groupState.appName);
-                this.showLabel();
+                this.showLabel(animate);
             }
         } else if (this.state.settings.titleDisplay === TitleDisplay.Focused) {
             this.setText(metaWindow.title);
-
             if (focus === undefined) focus = getFocusState(metaWindow);
             if (focus) {
-                this.showLabel(true);
+                this.showLabel(animate);
             } else {
-                this.hideLabel(true);
+                this.hideLabel();
             }
             // Re-orient the menu after the focus button expands
             this.hoverMenu.setStyleOptions(false);
