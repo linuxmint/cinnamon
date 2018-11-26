@@ -381,6 +381,7 @@ class AppGroup {
         let childBox = new Clutter.ActorBox();
         let direction = this.actor.get_text_direction();
         let {iconSpacing} = this.state.settings;
+        let panelHeight = this.state.trigger('getPanelHeight');
 
         // Set the icon to be left-justified (or right-justified) and centered vertically
         let [minWidth, minHeight, naturalWidth, naturalHeight] = this.iconBox.get_preferred_size();
@@ -412,6 +413,7 @@ class AppGroup {
         this.badge.allocate(childBox, flags);
 
         if (this.labelVisible) {
+            let spacing = iconSpacing + Math.round(panelHeight / 1.5);
             [minWidth, minHeight, naturalWidth, naturalHeight] = this.label.get_preferred_size();
 
             yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
@@ -419,10 +421,10 @@ class AppGroup {
             childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
             if (direction === Clutter.TextDirection.LTR) {
                 // Reuse the values from the previous allocation
-                childBox.x1 = Math.min(childBox.x2 + (iconSpacing * 4), box.x2);
+                childBox.x1 = Math.min(childBox.x2 + spacing, box.x2);
                 childBox.x2 = box.x2;
             } else {
-                childBox.x2 = Math.max(childBox.x1 - (iconSpacing * 4), box.x1);
+                childBox.x2 = Math.max(childBox.x1 - spacing, box.x1);
                 childBox.x1 = box.x1;
             }
 
