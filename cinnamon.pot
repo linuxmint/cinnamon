@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-21 11:51+0000\n"
+"POT-Creation-Date: 2018-11-27 15:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -191,22 +191,6 @@ msgid ""
 "\n"
 msgstr ""
 
-#: js/ui/extension.js:464
-msgid "Initializing"
-msgstr ""
-
-#: js/ui/extension.js:466
-msgid "Loaded"
-msgstr ""
-
-#: js/ui/extension.js:468
-msgid "Error"
-msgstr ""
-
-#: js/ui/extension.js:470
-msgid "Out of date"
-msgstr ""
-
 #: js/ui/hotCorner.js:41
 msgid "Invalid overview options: Incorrect number of corners"
 msgstr ""
@@ -329,103 +313,103 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#: js/ui/panel.js:305
+#: js/ui/panel.js:300
 msgid "Select position of new panel. Esc to cancel."
 msgstr ""
 
-#: js/ui/panel.js:306
+#: js/ui/panel.js:301
 msgid "Select new position of panel. Esc to cancel."
 msgstr ""
 
-#: js/ui/panel.js:882
+#: js/ui/panel.js:877
 msgid ""
 "You don't have any panels added.\n"
 "Do you want to open panel settings?"
 msgstr ""
 
-#: js/ui/panel.js:1549
+#: js/ui/panel.js:1544
 msgid "Troubleshoot"
 msgstr ""
 
-#: js/ui/panel.js:1550
+#: js/ui/panel.js:1545
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:145
 msgid "Restart Cinnamon"
 msgstr ""
 
-#: js/ui/panel.js:1554
+#: js/ui/panel.js:1549
 msgid "Looking Glass"
 msgstr ""
 
-#: js/ui/panel.js:1558
+#: js/ui/panel.js:1553
 msgid "Restore all settings to default"
 msgstr ""
 
-#: js/ui/panel.js:1559
+#: js/ui/panel.js:1554
 msgid ""
 "Are you sure you want to restore all settings to default?\n"
 "\n"
 msgstr ""
 
-#: js/ui/panel.js:1571
+#: js/ui/panel.js:1566
 msgid "Modify panel"
 msgstr ""
 
-#: js/ui/panel.js:1573
+#: js/ui/panel.js:1568
 msgid "Remove panel"
 msgstr ""
 
-#: js/ui/panel.js:1579
+#: js/ui/panel.js:1574
 msgid "Add panel"
 msgstr ""
 
-#: js/ui/panel.js:1586
+#: js/ui/panel.js:1581
 msgid "Move panel"
 msgstr ""
 
-#: js/ui/panel.js:1593
+#: js/ui/panel.js:1588
 msgid "Copy applet configuration"
 msgstr ""
 
-#: js/ui/panel.js:1600
+#: js/ui/panel.js:1595
 msgid "Paste applet configuration"
 msgstr ""
 
-#: js/ui/panel.js:1603
+#: js/ui/panel.js:1598
 msgid ""
 "Pasting applet configuration will remove all existing applets on this panel."
 " Do you want to continue?"
 msgstr ""
 
-#: js/ui/panel.js:1611
+#: js/ui/panel.js:1606
 msgid "Clear all applets"
 msgstr ""
 
-#: js/ui/panel.js:1614
+#: js/ui/panel.js:1609
 msgid "Are you sure you want to clear all applets on this panel?"
 msgstr ""
 
-#: js/ui/panel.js:1629
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:143
+#: js/ui/panel.js:1624
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:152
 msgid "Panel edit mode"
 msgstr ""
 
-#: js/ui/panel.js:1652
+#: js/ui/panel.js:1647
 msgid "Add applets to the panel"
 msgstr ""
 
 #. settings-example@cinnamon.org->settings-schema.json->section1->title
-#: js/ui/panel.js:1655
+#: js/ui/panel.js:1650
 msgid "Panel settings"
 msgstr ""
 
-#: js/ui/panel.js:1658
+#: js/ui/panel.js:1653
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:36
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:59
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:61
 msgid "Themes"
 msgstr ""
 
-#: js/ui/panel.js:1661
+#: js/ui/panel.js:1656
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:59
 #: generate_additional_files.py:27
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:46
@@ -447,7 +431,7 @@ msgstr ""
 msgid "Connect to..."
 msgstr ""
 
-#: js/ui/runDialog.js:154
+#: js/ui/runDialog.js:156
 msgid "Please enter a command:"
 msgstr ""
 
@@ -773,38 +757,38 @@ msgstr ""
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2380
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2382
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:149
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2715
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2717
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:142
 msgid "Lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2716
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2718
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:11
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2743
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2745
 msgid "Logout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2744
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2746
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2758
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2760
 msgid "Quit"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2759
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2761
 msgid "Shutdown the computer"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2885
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2887
 msgid "Type to search..."
 msgstr ""
 
@@ -1333,118 +1317,118 @@ msgstr ""
 msgid "Stopped"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:504
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:513
 msgid "Open Player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:517
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:526
 msgid "Quit Player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:538
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:678
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:547
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:682
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:686
 msgid "Unknown Artist"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:539
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:689
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:548
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:693
 msgid "Unknown Album"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:540
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:694
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:549
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:698
 msgid "Unknown Title"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:561
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:570
 msgid "Previous"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:564
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:748
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:754
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:573
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:752
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:758
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:180
 msgid "Play"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:567
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:576
 msgid "Stop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:570
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:579
 msgid "Next"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:581
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:778
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:590
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:782
 msgid "Consecutive Playing"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:588
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:792
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:597
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:796
 msgid "No Shuffle"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:742
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:746
 msgid "Pause"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:780
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:784
 msgid "Repeat Single"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:782
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:786
 msgid "Repeat All"
 msgstr ""
 
 #. photoframe@cinnamon.org->settings-schema.json->shuffle->description
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:792
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:796
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:189
 msgid "Shuffle"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:979
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:983
 msgid "Mute output"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:980
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:984
 msgid "Mute input"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:986
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:990
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:609
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:615
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_startup.py:891
 msgid "Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:987
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:991
 msgid "Output device"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:994
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:998
 msgid "Microphone"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:996
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1000
 msgid "Input device"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1332
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1338
 msgid "Choose player controls"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1337
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1343
 msgid "Launch player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1343
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1428
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1349
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1436
 msgid "Volume"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1349
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1355
 msgid "Sound Settings"
 msgstr ""
 
@@ -4460,11 +4444,13 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:47
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:63
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:88
 msgid "Smaller"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:47
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:63
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:88
 msgid "Larger"
 msgstr ""
 
@@ -4725,38 +4711,42 @@ msgstr ""
 msgid "Center panel zone icon size"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:91
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:86
+msgid "Symbolic icon size adjustment"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:100
 msgid "Manage Cinnamon panel settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:94
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:103
 msgid "panel, height, bottom, top, autohide, size, layout"
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->panel->title
 #. sound@cinnamon.org->settings-schema.json->section2->description
 #. grouped-window-list@cinnamon.org->settings-schema.json->panelPage->title
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:95
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:104
 msgid "Panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:113
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:122
 msgid "Previous panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:114
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:123
 msgid "Next panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:137
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:146
 msgid "General Panel Options"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:140
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:149
 msgid "Add new panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:149
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:158
 msgid "Allow the pointer to pass through the edges of panels"
 msgstr ""
 
@@ -5585,26 +5575,6 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:89
 msgid "Show icons on buttons"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:92
-msgid "Size of symbolic icons when icons are 16px"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:95
-msgid "Size of symbolic icons when icons are 22px"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:98
-msgid "Size of symbolic icons when icons are 24px"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:101
-msgid "Size of symbolic icons when icons are 32px"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:104
-msgid "Size of symbolic icons when icons are 48px"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_tiling.py:8
