@@ -672,44 +672,9 @@
       </description>
     </key>
 
-    <key name="symbolic-size-16" type="i">
-      <default>16</default>
-      <summary>The size to scale symbolic icons when fullcolor icons are 16px</summary>
-      <description>
-        The size to scale symbolic icons when fullcolor icons are 16px
-      </description>
-    </key>
-
-    <key name="symbolic-size-22" type="i">
-      <default>22</default>
-      <summary>The size to scale symbolic icons when fullcolor icons are 22px</summary>
-      <description>
-        The size to scale symbolic icons when fullcolor icons are 22px
-      </description>
-    </key>
-
-    <key name="symbolic-size-24" type="i">
-      <default>22</default>
-      <summary>The size to scale symbolic icons when fullcolor icons are 24px</summary>
-      <description>
-        The size to scale symbolic icons when fullcolor icons are 24px
-      </description>
-    </key>
-
-    <key name="symbolic-size-32" type="i">
-      <default>30</default>
-      <summary>The size to scale symbolic icons when fullcolor icons are 32px</summary>
-      <description>
-        The size to scale symbolic icons when fullcolor icons are 32px
-      </description>
-    </key>
-
-    <key name="symbolic-size-48" type="i">
-      <default>42</default>
-      <summary>The size to scale symbolic icons when fullcolor icons are 48px</summary>
-      <description>
-        The size to scale symbolic icons when fullcolor icons are 48px
-      </description>
+    <key name="symbolic-relative-size" type="d">
+      <default>0.9</default>
+      <summary>Relative size of symbolic icons to the zone's icon size</summary>
     </key>
 
   </schema>
