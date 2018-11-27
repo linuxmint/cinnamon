@@ -1,3 +1,60 @@
+cinnamon (4.0.3) tessa; urgency=medium
+
+  [ Michael Webster ]
+  * cinnamon-settings.py: Don't animate stack transitions when launching directly to a sidepage.
+
+  [ Clement Lefebvre ]
+  * l10n: Simplify msgids in gwl applet
+  * l10n: Update POT
+
+  [ Jason Hicks ]
+  * extension: Prevent loading xlets that use imports.gi.NMClient that have no 4.0 directory (#8050)
+
+  [ Germán Franco ]
+  * gwl: Pin badge position to icon corner (#8040)
+
+  [ Jason Hicks ]
+  * gwl: Fix focus change (#8045)
+
+  [ Simon Brown ]
+  * grouped-window-list: ensure thumbnails are same size in hidpi (#8041)
+
+  [ James Ross ]
+  * panel.js: be more consistent about closing menu (#8047)
+  * PopupMenu: update position and fix size before tweening out (#8046)
+
+  [ Simon Brown ]
+  * systray: stop indicator icons coming up oversize (#8051)
+
+  [ Michael Webster ]
+  * panel-launcher applet: Make sure the icon's aspect ratio is correct, even if that means using a non-optimal size.
+  * sound applet: Use player Identity property for labels if available.
+  * menu applet: Initialize the favBoxIter when the menu opens, since we try to access it when closing the menu, whether we've interacted with favorites or not (which is ordinarily when the iterator would first be populated).
+  * sound applet: Capitalize the player name only when the bus name is used to generate it, and convert to lowercase when needed for matching our support lists.
+  * sound applet: Use string.capitalize() for fixing up the player name.
+
+  [ brownsr ]
+  * panel launcher: ensure icon aspect is correct in any panel extends eda3e20d6b530169c625eb00977d8f5255ad4141
+
+  [ Jason Hicks ]
+  * Make transitions between restarts seamless
+
+  [ Michael Webster ]
+  * panel/theme: Use just a single relative percentage for sizing symbolic icons. (#8055)
+
+  [ Clement Lefebvre ]
+  * Panel settings: Move symbolic setting to customize section
+
+  [ Jason Hicks ]
+  * popupMenu: Avoid unnecessary relayouts (#8065)
+  * gwl: Improve thumbnail menu input and button label handling (#8057)
+  * gwl: Round the actor transformed position (#8067)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 27 Nov 2018 17:15:50 +0000
+
 cinnamon (4.0.2) tessa; urgency=medium
 
   [ Leigh Scott ]
