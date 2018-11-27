@@ -83,6 +83,15 @@ class PanelSettingsPage(SettingsPage):
         widget = PanelJSONComboBox(right_zone_icon_size_text, "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'right', options, size_group=size_group)
         section.add_row(widget)
 
+        widget = GSettingsRange(_("Symbolic icon size adjustment"),
+                                    "org.cinnamon.theme", "symbolic-relative-size",
+                                    _("Smaller"), _("Larger"),
+                                    0.4, 1.0, step=0.1, show_value=False)
+        widget.add_mark(0.9, Gtk.PositionType.TOP, None)
+        widget.set_rounding(2)
+
+        section.add_row(widget)
+
         self.show_all()
 
 class Module:
@@ -135,15 +144,6 @@ class Module:
             page = SettingsPage()
             self.sidePage.add_widget(page)
             section = page.add_section(_("General Panel Options"))
-
-            widget = GSettingsRange(_("Symbolic icon size adjustment"),
-                                    "org.cinnamon.theme", "symbolic-relative-size",
-                                    _("Smaller"), _("Larger"),
-                                    0.4, 1.0, step=0.1, show_value=False)
-            widget.add_mark(0.9, Gtk.PositionType.TOP, None)
-            widget.set_rounding(2)
-
-            section.add_row(widget)
 
             buttons = SettingsWidget()
             self.add_panel_button = Gtk.Button(label=_("Add new panel"))
