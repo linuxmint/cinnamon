@@ -599,11 +599,12 @@ class AppGroup {
 
     onDragBegin() {
         // Keep the drag actor contained within the applet area
+        let [x, y] = this.actor.get_transformed_position();
         if (this.state.isHorizontal) {
-            this._draggable._overrideY = this.actor.get_transformed_position()[1];
+            this._draggable._overrideY = Math.round(y);
             this._draggable._overrideX = null;
         } else {
-            this._draggable._overrideX = this.actor.get_transformed_position()[0];
+            this._draggable._overrideX = Math.round(x);
             this._draggable._overrideY = null;
         }
         this.groupState.trigger('hoverMenuClose');
