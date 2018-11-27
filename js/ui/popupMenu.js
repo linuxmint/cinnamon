@@ -1992,7 +1992,10 @@ var PopupMenuBase = class PopupMenuBase {
     // menu, but that call will be a no-op since the menu already
     // has a relayout queued, so we won't get stuck in a loop.
     _menuQueueRelayout() {
-        this.box.get_children().forEach(actor => actor.queue_relayout());
+        let node = this.actor.peek_theme_node();
+        if (node && node.get_background_image()) {
+            Util.each(this.box.get_children(), (actor) => actor.queue_relayout());
+        }
     }
 
     addActor(actor) {
