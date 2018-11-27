@@ -69,7 +69,8 @@ class AppList {
     closeAllHoverMenus(cb) {
         for (let i = 0, len = this.appList.length; i < len; i++) {
             if (this.appList[i].hoverMenu.isOpen) {
-                this.appList[i].hoverMenu.close();
+                this.appList[i].groupState.set({thumbnailMenuEntered: false});
+                this.appList[i].hoverMenu.close(true);
             }
         }
         if (typeof cb === 'function') cb();
@@ -101,29 +102,41 @@ class AppList {
         setTimeout(() => this.calcAllWindowNumbers(), this.state.settings.showAppsOrderTimeout);
     }
 
-    cycleMenus() {
-        let refApp = 0;
-        if (!this.state.lastCycled && this.listState.lastFocusedApp) {
-            refApp = findIndex(this.appList, (app) => app.groupState.appId === this.listState.lastFocusedApp);
+    cycleMenus(r = 0) {
+        if (r > this.appList.length) {
+            this.state.set({lastCycled: -1});
+            return;
         }
-        if (this.state.lastCycled && this.appList[this.state.lastCycled]) {
-            this.appList[this.state.lastCycled].hoverMenu.close();
-            refApp = this.state.lastCycled + 1;
+
+        let {lastCycled} = this.state;
+        this.lastCycledTime = Date.now();
+        this.closeAllHoverMenus();
+
+        if (lastCycled < 0) {
+            lastCycled = findIndex(this.appList, (app) => {
+                return app.groupState.appId === this.listState.lastFocusedApp;
+            });
         }
-        if (refApp === this.state.lastCycled) {
-            refApp = this.state.lastCycled + 1;
+
+        if (lastCycled < 0 || lastCycled > this.appList.length - 1) lastCycled = 0;
+
+        this.appList[lastCycled].groupState.set({thumbnailMenuEntered: true});
+        this.appList[lastCycled].hoverMenu.open(true);
+
+        lastCycled++;
+        this.state.set({lastCycled});
+
+        if (this.appList[lastCycled - 1].groupState.metaWindows.length === 0) {
+            this.cycleMenus(r + 1);
         }
-        this.state.lastCycled = refApp;
-        if (refApp > this.appList.length - 1) {
-            refApp = 0;
-            this.state.lastCycled = 0;
-        }
-        this.state.set({lastCycled: this.state.lastCycled});
-        if (refApp > -1 && this.appList[refApp].groupState.metaWindows.length > 0) {
-            this.appList[refApp].hoverMenu.open();
-        } else {
-            this.cycleMenus();
-        }
+
+
+        let lastCycledTime = this.lastCycledTime;
+        setTimeout(() => {
+            if (lastCycledTime === this.lastCycledTime) {
+                this.state.set({lastCycled: -1});
+            }
+        }, 2000)
     }
 
     updateSpacing() {

@@ -71,13 +71,15 @@ class AppGroup {
             willUnmount: false,
             tooltip: null,
             verticalThumbs: this.state.settings.verticalThumbs,
-            groupReady: false
+            groupReady: false,
+            thumbnailMenuEntered:  false
         });
 
         this.groupState.connect({
             isFavoriteApp: () => this.handleFavorite(true),
             getActor: () => this.actor,
-            launchNewInstance: () => this.launchNewInstance()
+            launchNewInstance: () => this.launchNewInstance(),
+            checkFocusStyle: () => this.checkFocusStyle()
         });
 
         this.signals = new SignalManager(null);
@@ -91,20 +93,16 @@ class AppGroup {
         this.focusedWindow = false;
         this.title = '';
 
-        this.actor = new St.Bin({
+        this.actor =  new Cinnamon.GenericContainer({
+            name: 'appButton',
             style_class: 'grouped-window-list-item-box',
             important: true,
             reactive: true,
             can_focus: true,
-            x_fill: true,
-            y_fill: true,
-            track_hover: false
+            track_hover: true
         });
         this.actor._delegate = this;
-        this.container = new Cinnamon.GenericContainer({
-            name: 'iconLabelButton'
-        });
-        this.actor.set_child(this.container);
+
         this.progressOverlay = new St.Widget({
             name: 'progressOverlay',
             style_class: 'progress',
@@ -112,13 +110,13 @@ class AppGroup {
             important: true,
             show_on_set_parent: false
         });
-        this.container.add_child(this.progressOverlay);
+        this.actor.add_child(this.progressOverlay);
 
         // Create the app button icon, number label, and text label for titleDisplay
         this.iconBox = new St.Bin({name: 'appMenuIcon'});
         this.iconBox.connect('style-changed', (...args) => this.onIconBoxStyleChanged(...args));
         this.iconBottomClip = 0;
-        this.container.add_child(this.iconBox);
+        this.actor.add_child(this.iconBox);
         this.setActorAttributes();
 
         this.badge = new St.BoxLayout({
@@ -144,16 +142,16 @@ class AppGroup {
             x_align: St.Align.START,
             y_align: St.Align.START,
         });
-        this.container.add_child(this.badge);
+        this.actor.add_child(this.badge);
 
         this.label = new St.Label({
             style_class: 'grouped-window-list-button-label',
             important: true,
             text: '',
-            show_on_set_parent: this.state.settings.titleDisplay !== 1 && this.state.settings.titleDisplay !== 4
+            show_on_set_parent: this.state.settings.titleDisplay > 1
         });
         this.label.x_align = St.Align.START;
-        this.container.add_child(this.label);
+        this.actor.add_child(this.label);
 
         this.groupState.set({tooltip: new Tooltips.PanelItemTooltip({actor: this.actor}, '', this.state.orientation)});
 
@@ -164,7 +162,7 @@ class AppGroup {
         }, this.state.orientation);
 
         // Set up the hover menu
-        this.hoverMenuManager = new HoverMenuController({actor: this.actor});
+        this.hoverMenuManager = new HoverMenuController(this.actor, this.groupState);
         this.rightClickMenuManager = new PopupMenu.PopupMenuManager({actor: this.actor});
         this.hoverMenu = new AppThumbnailHoverMenu(this.state, this.groupState);
         this.hoverMenu.actor.hide();
@@ -190,9 +188,9 @@ class AppGroup {
             (c, e) => this.state.trigger('cycleWindows', e, this.actor._delegate));
         this.signals.connect(this.hoverMenu.box, 'key-press-event',
             (...args) => this.hoverMenu.onKeyPress.call(this.hoverMenu, ...args));
-        this.signals.connect(this.container, 'get-preferred-width', (...args) => this.getPreferredWidth(...args));
-        this.signals.connect(this.container, 'get-preferred-height', (...args) => this.getPreferredHeight(...args));
-        this.signals.connect(this.container, 'allocate', (...args) => this.allocate(...args));
+        this.signals.connect(this.actor, 'get-preferred-width', (...args) => this.getPreferredWidth(...args));
+        this.signals.connect(this.actor, 'get-preferred-height', (...args) => this.getPreferredHeight(...args));
+        this.signals.connect(this.actor, 'allocate', (...args) => this.allocate(...args));
         this.signals.connect(this.actor, 'enter-event', (...args) => this.onEnter(...args));
         this.signals.connect(this.actor, 'leave-event', (...args) => this.onLeave(...args));
         this.signals.connect(this.actor, 'button-release-event', (...args) => this.onAppButtonRelease(...args));
@@ -257,18 +255,9 @@ class AppGroup {
     }
 
     setIconPadding(panelHeight) {
-        if (this.state.settings.titleDisplay > 1 && this.labelVisible) {
-            this.iconBox.style = 'padding: 0px;';
-            return;
-        }
-
-        this.padding = (panelHeight / global.ui_scale) - this.iconSize;
-
-        if (global.ui_scale === 1) {
-            this.padding /= 2;
-        }
-
-        this.actor.style = `padding-left: ${this.padding / global.ui_scale}px; padding-right: 0px;`;
+        this.iconBox.style = 'padding: 0px';
+        if (!this.state.isHorizontal) return;
+        this.actor.style = 'padding-left: 0px; padding-right: 0px;';
     }
 
     setMargin() {
@@ -365,12 +354,15 @@ class AppGroup {
 
     getPreferredWidth(actor, forHeight, alloc) {
         let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(forHeight);
-        let labelNaturalSize = this.label.get_preferred_width(forHeight)[1];
+        let [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
+        let {iconSpacing} = this.state.settings;
         // The label text starts in the center of the icon, so we should allocate the space
         // needed for the icon plus the space needed for(label - icon/2)
-        alloc.min_size = iconMinSize;
+        alloc.min_size = iconNaturalSize + iconSpacing;
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
-            alloc.natural_size = Math.min(iconNaturalSize + Math.max(0, labelNaturalSize), MAX_BUTTON_WIDTH);
+            let max = this.labelVisible && this.groupState.metaWindows.length > 0 ?
+                labelNaturalSize + iconNaturalSize + iconSpacing : 0;
+            alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH);
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
         }
@@ -388,19 +380,28 @@ class AppGroup {
         let allocHeight = box.y2 - box.y1;
         let childBox = new Clutter.ActorBox();
         let direction = this.actor.get_text_direction();
+        let {iconSpacing} = this.state.settings;
+        let panelHeight = this.state.trigger('getPanelHeight');
 
         // Set the icon to be left-justified (or right-justified) and centered vertically
-        let [iconNaturalWidth, iconNaturalHeight] = this.iconBox.get_preferred_size();
-        [childBox.y1, childBox.y2] = center(allocHeight, iconNaturalHeight);
-        if (direction === Clutter.TextDirection.LTR) {
-            [childBox.x1, childBox.x2] = [0, Math.min(iconNaturalWidth, allocWidth)];
-        } else {
-            [childBox.x1, childBox.x2] = [Math.max(0, allocWidth - iconNaturalWidth), allocWidth];
-        }
-        this.iconBox.allocate(childBox, flags);
+        let [minWidth, minHeight, naturalWidth, naturalHeight] = this.iconBox.get_preferred_size();
+        let yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
 
-        // Set the label to start its text in the left of the icon
-        let iconWidth = childBox.x2 - childBox.x1;
+        childBox.y1 = box.y1 + yPadding;
+        childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
+
+        if (this.labelVisible && this.groupState.metaWindows.length > 0) {
+            if (direction === Clutter.TextDirection.LTR) {
+                childBox.x1 = box.x1 + iconSpacing;
+            } else {
+                childBox.x1 = Math.max(box.x1, box.x2 - naturalWidth);
+            }
+            childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
+        } else {
+            [childBox.x1, childBox.x2] = center(allocWidth, naturalWidth);
+        }
+
+        this.iconBox.allocate(childBox, flags);
 
         let windowCountFactor = this.groupState.windowCount > 9 ? 1.5 : 2;
         let badgeOffset = 2 * global.ui_scale;
@@ -408,25 +409,33 @@ class AppGroup {
         childBox.x2 = childBox.x1 + (this.numberLabel.width * windowCountFactor);
         childBox.y1 = Math.max(childBox.y1 - badgeOffset, 0);
         childBox.y2 = childBox.y1 + this.badge.get_preferred_height(childBox.get_width())[1];
+
         this.badge.allocate(childBox, flags);
 
+        if (this.labelVisible) {
+            let spacing = iconSpacing + Math.round(panelHeight / 1.5);
+            [minWidth, minHeight, naturalWidth, naturalHeight] = this.label.get_preferred_size();
 
-        let [naturalWidth, naturalHeight] = this.label.get_preferred_size();
-        [childBox.y1, childBox.y2] = center(allocHeight, naturalHeight);
-        if (direction === Clutter.TextDirection.LTR) {
-            childBox.x1 = Math.min(box.x1 + iconWidth, box.x2);
-            childBox.x2 = box.x2;
-        } else {
-            childBox.x2 = Math.max(box.x2 - iconWidth, box.x1);
-            childBox.x1 = box.x1;
+            yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
+            childBox.y1 = box.y1 + yPadding;
+            childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
+            if (direction === Clutter.TextDirection.LTR) {
+                // Reuse the values from the previous allocation
+                childBox.x1 = Math.min(childBox.x2 + spacing, box.x2);
+                childBox.x2 = box.x2;
+            } else {
+                childBox.x2 = Math.max(childBox.x1 - spacing, box.x1);
+                childBox.x1 = box.x1;
+            }
+
+            this.label.allocate(childBox, flags);
         }
-        this.label.allocate(childBox, flags);
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation
-        if (this.groupState.metaWindows.length > 0 && this.container.realized) {
+        if (this.groupState.metaWindows.length > 0 && this.actor.realized) {
             let rect = new Meta.Rectangle();
-            [rect.x, rect.y] = this.container.get_transformed_position();
-            [rect.width, rect.height] = this.container.get_transformed_size();
+            [rect.x, rect.y] = this.actor.get_transformed_position();
+            [rect.width, rect.height] = this.actor.get_transformed_size();
 
             each(this.groupState.metaWindows, (metaWindow) => {
                 if (metaWindow) {
@@ -436,15 +445,23 @@ class AppGroup {
         }
 
         if (this.progressOverlay.visible) {
-            childBox.x1 = -this.padding;
+            childBox.x1 = 0;
             childBox.y1 = 0;
-            childBox.y2 = this.container.height;
-            childBox.x2 = Math.max(this.container.width * (this._progress / 100.0), 1.0);
+            childBox.x2 = Math.max((this.actor.width) * (this._progress / 100.0), 1.0);
+            childBox.y2 = this.actor.height;
             this.progressOverlay.allocate(childBox, flags);
         }
     }
 
-    _showLabel() {
+    showLabel(animate = false) {
+        if (!this.label
+            || !this.state.isHorizontal
+            || this.label.is_finalized()
+            || !this.label.realized) {
+            return;
+        }
+        let width = MAX_BUTTON_WIDTH * global.ui_scale;
+
         this.labelVisible = true;
         if (this.label.text == null) {
             this.label.set_text('');
@@ -452,8 +469,14 @@ class AppGroup {
         // TODO: This should be set by the theme.
         this.label.set_style('padding-right: 4px;');
 
+        if (!animate) {
+            this.label.show();
+            this.label.width = width;
+            return;
+        }
+
         Tweener.addTween(this.label, {
-            width: MAX_BUTTON_WIDTH, // Should probably check preferred width
+            width,
             time: BUTTON_BOX_ANIMATION_TIME,
             transition: 'easeOutQuad',
             onComplete: () => {
@@ -461,46 +484,15 @@ class AppGroup {
                 this.label.show();
             }
         });
-        return false;
+        return;
     }
 
-    showLabel() {
-        if (!this.label || !this.state.isHorizontal) {
-            return false;
-        }
+    hideLabel() {
+        if (!this.label || this.label.is_finalized() || !this.label.realized) return;
 
-        // Fixes 'st_widget_get_theme_node called on the widget which is not in the stage' warnings
-        if (!this.label.realized) {
-            setTimeout(() => this._showLabel(), 0);
-        } else {
-            this._showLabel();
-        }
-    }
-
-    hideLabel(animate) {
-        if (!this.label) return false;
-
-        if (this.label.text == null) {
-            this.label.set_text('');
-        }
         this.labelVisible = false;
-        if (!animate) {
-            this.label.width = 1;
-            this.label.hide();
-            return false;
-        }
-
-        Tweener.addTween(this.label, {
-            width: 1,
-            time: BUTTON_BOX_ANIMATION_TIME,
-            transition: 'easeOutQuad',
-            onCompleteScope: this,
-            onComplete() {
-                this.label.hide();
-                this.label.set_style('padding-right: 0px;');
-            }
-        });
-        return false;
+        this.label.width = 1;
+        this.label.hide();
     }
 
     onEnter() {
@@ -556,15 +548,21 @@ class AppGroup {
             } else {
                 this.progressOverlay.hide();
             }
-            this.container.queue_relayout();
+            this.actor.queue_relayout();
         }
     }
 
     onFocusChange(hasFocus) {
+        let {appId, metaWindows, lastFocused} = this.groupState;
+
+        if (hasFocus === undefined) {
+            hasFocus = this.listState.lastFocusedApp === appId;
+        }
+
         // If any of the windows associated with our app have focus,
         // we should set ourselves to active
         if (hasFocus) {
-            this.listState.trigger('updateFocusState', this.groupState.appId);
+            this.listState.trigger('updateFocusState', appId);
             this.actor.add_style_pseudo_class('focus');
             if (this.actor.has_style_class_name('grouped-window-list-item-demands-attention')) {
                 this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
@@ -573,10 +571,11 @@ class AppGroup {
         } else {
             this.actor.remove_style_pseudo_class('focus');
         }
-        if (this.groupState.metaWindows.length > 0) {
+        if (metaWindows.length > 0) {
             this.actor.add_style_pseudo_class('active');
         }
         this.resetHoverStatus();
+        if (lastFocused) this.handleButtonLabel(lastFocused, hasFocus, true);
     }
 
     onWindowDemandsAttention(metaWindow) {
@@ -590,7 +589,7 @@ class AppGroup {
                 // Even though this may not be the last focused window, we want it to be
                 // the window that gets focused when a user responds to an alert.
                 this.groupState.set({lastFocused: metaWindow});
-                this.setText(metaWindow.get_title());
+                this.handleButtonLabel(metaWindow);
                 this.getAttention();
                 return true;
             }
@@ -915,15 +914,8 @@ class AppGroup {
         this.groupState.set({
             appName: this.groupState.app.get_name()
         });
-        if (this.state.settings.titleDisplay === TitleDisplay.Title) {
-            this.setText(metaWindow.title);
-            this.showLabel(true);
-        } else if (this.state.settings.titleDisplay === TitleDisplay.App) {
-            if (this.groupState.appName) {
-                this.setText(this.groupState.appName);
-                this.showLabel(true);
-            }
-        }
+
+        this.handleButtonLabel(metaWindow);
     }
 
     onFocusWindowChange(metaWindow) {
@@ -935,16 +927,37 @@ class AppGroup {
             this.groupState.set({lastFocused: metaWindow});
         }
         this.onFocusChange(hasFocus);
-        if (this.state.settings.titleDisplay > 1) {
-            if (hasFocus) {
-                this.setText(metaWindow.title);
-                this.showLabel(true);
-            } else if (this.state.settings.titleDisplay === TitleDisplay.Focused) {
-                this.hideLabel(true);
-            }
-        }
+
         if (this.state.settings.sortThumbs) {
             this.hoverMenu.addThumbnail(metaWindow);
+        }
+    }
+
+    handleButtonLabel(metaWindow, focus, animate = false) {
+        if (this.state.settings.titleDisplay === TitleDisplay.None) {
+            return;
+        }
+
+        if (this.groupState.metaWindows.length === 0) {
+            this.hideLabel();
+        } else if (this.state.settings.titleDisplay === TitleDisplay.Title) {
+            this.setText(metaWindow.title);
+            this.showLabel(animate);
+        } else if (this.state.settings.titleDisplay === TitleDisplay.App) {
+            if (this.groupState.appName) {
+                this.setText(this.groupState.appName);
+                this.showLabel(animate);
+            }
+        } else if (this.state.settings.titleDisplay === TitleDisplay.Focused) {
+            this.setText(metaWindow.title);
+            if (focus === undefined) focus = getFocusState(metaWindow);
+            if (focus) {
+                this.showLabel(animate);
+            } else {
+                this.hideLabel();
+            }
+            // Re-orient the menu after the focus button expands
+            this.hoverMenu.setStyleOptions(false);
         }
     }
 
@@ -962,6 +975,7 @@ class AppGroup {
         }
         this.onWindowTitleChanged(this.groupState.lastFocused);
         this.onFocusChange();
+        this.checkFocusStyle();
     }
 
     calcWindowNumber() {
@@ -990,9 +1004,7 @@ class AppGroup {
     handleTitleDisplayChange() {
         each(this.groupState.metaWindows, (win) => {
             this.onWindowTitleChanged(win, true);
-            if (this.state.settings.titleDisplay !== TitleDisplay.Focused || getFocusState(win)) {
-                this.showLabel();
-            }
+            this.handleButtonLabel(win);
         });
     }
 
@@ -1051,7 +1063,6 @@ class AppGroup {
         }
         this.hoverMenu.destroy();
         this.listState.trigger('removeChild', this.actor);
-        this.container.destroy();
         this.actor.destroy();
 
         if (!skipRefCleanup) {

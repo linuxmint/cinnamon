@@ -466,8 +466,27 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 }
 
 class HoverMenuController extends PopupMenu.PopupMenuManager {
+    constructor(actor, groupState) {
+        super({actor}, false); // owner, shouldGrab
+        this.groupState = groupState;
+        this.connectId = this.groupState.connect({
+            thumbnailMenuEntered: ({thumbnailMenuEntered}) => {
+                this.shouldGrab = thumbnailMenuEntered;
+                this._onMenuOpenState(this._menus[0], this._menus[0].isOpen);
+                this.groupState.trigger('checkFocusStyle');
+                if (!this.grabbed) return;
+                if (!thumbnailMenuEntered) this._ungrab();
+            }
+        });
+    }
+
     _onEventCapture() {
         return false;
+    }
+
+    destroy() {
+        this.groupState.disconnect(this.connectId);
+        super.destroy();
     }
 }
 
@@ -720,6 +739,7 @@ class WindowThumbnail {
         }
 
         let monitor = this.state.trigger('getPanelMonitor');
+        if (!monitor) return;
 
         if (!this.thumbnailActor || this.thumbnailActor.is_finalized()) return;
 
@@ -845,6 +865,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         this.connectId = this.groupState.connect({
             hoverMenuClose: () => {
                 this.shouldClose = true;
+                this.groupState.set({thumbnailMenuEntered: false});
                 this.close();
             },
             addThumbnailToMenu: (win) => this.addThumbnail(win),
@@ -861,7 +882,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                 let {isOpen} = this;
                 this.setVerticalSetting()
                 if (isOpen) this.open(true);
-            }
+            },
         });
 
         this.appThumbnails = [];
@@ -875,30 +896,40 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         setTimeout(() => this.close(), this.state.settings.thumbTimeout);
     }
 
-    onMenuEnter() {
+    onMenuEnter(actor) {
         if (this.state.panelEditMode ||
             (!this.isOpen && this.state.settings.onClickThumbs) ||
             this.state.menuOpen) {
             return false;
         }
+
         this.shouldClose = false;
 
         let timeout;
-
         if (this.state.thumbnailMenuOpen) {
             timeout = 50;
         } else {
             timeout = this.state.settings.thumbTimeout;
         }
 
+        if (actor != null) {
+            this.groupState.set({thumbnailMenuEntered: this.isOpen});
+        }
+
         setTimeout(() => this.open(), timeout);
     }
 
-    onMenuLeave() {
+    onMenuLeave(actor) {
         if (this.state.menuOpen || this.state.panelEditMode) {
             return false;
         }
+
         this.shouldClose = true;
+
+        if (actor != null) {
+            this.groupState.set({thumbnailMenuEntered: false});
+        }
+
         setTimeout(() => this.close(), 50);
     }
 
@@ -948,6 +979,9 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
     }
 
     onKeyPress(actor, e) {
+        let {orientation} = this.state;
+        let {vertical} = this.box;
+
         let symbol = e.get_key_symbol();
         let i = findIndex(this.appThumbnails, (item) => item.entered === true);
         let entered = i > -1;
@@ -961,19 +995,25 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
         let args;
         let closeArg;
-        if (this.state.orientation === St.Side.TOP) {
+        if (orientation === St.Side.TOP) {
             closeArg = Clutter.KEY_Up;
             args = [Clutter.KEY_Left, Clutter.KEY_Right];
-        } else if (this.state.orientation === St.Side.BOTTOM) {
+        } else if (orientation === St.Side.BOTTOM) {
             closeArg = Clutter.KEY_Down;
             args = [Clutter.KEY_Right, Clutter.KEY_Left];
-        } else if (this.state.orientation === St.Side.LEFT) {
+        } else if (orientation === St.Side.LEFT) {
             closeArg = Clutter.KEY_Left;
             args = [Clutter.KEY_Up, Clutter.KEY_Down];
-        } else if (this.state.orientation === St.Side.RIGHT) {
+        } else if (orientation === St.Side.RIGHT) {
             closeArg = Clutter.KEY_Right;
             args = [Clutter.KEY_Down, Clutter.KEY_Up];
         }
+
+        // Panel is oriented horizontally, but the menu is vertical
+        if (vertical && (orientation === St.Side.TOP || orientation === St.Side.BOTTOM)) {
+            args = [Clutter.KEY_Down, Clutter.KEY_Up];
+        }
+
         let index;
         if (symbol === args[0]) {
             if (!entered) {
