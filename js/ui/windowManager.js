@@ -52,6 +52,8 @@ const ZONE_TR = 5;
 const ZONE_BR = 6;
 const ZONE_BL = 7;
 
+const EFFECTS_BLACKLIST = ['xpad'];
+
 function getTopInvisibleBorder(metaWindow) {
     let outerRect = metaWindow.get_outer_rect();
     let inputRect = metaWindow.get_input_rect();
@@ -495,13 +497,16 @@ WindowManager.prototype = {
         this._animationBlockCount = Math.max(0, this._animationBlockCount - 1);
     },
 
-    _shouldAnimate : function(actor) {
+    _shouldAnimate: function(actor, name) {
         if (Main.modalCount) {
             // system is in modal state
             return false;
         }
         if (Main.software_rendering)
             return false;
+        if (name === 'map' && EFFECTS_BLACKLIST.indexOf(actor.meta_window.wm_class) > -1) {
+            return false;
+        }
         if (!actor)
             return global.settings.get_boolean("desktop-effects");
         let type = actor.meta_window.get_window_type();
@@ -521,7 +526,7 @@ WindowManager.prototype = {
 
     _startWindowEffect: function(cinnamonwm, name, actor, args, overwriteKey){
         let effect = this.effects[name];
-        if(!this._shouldAnimate(actor)){
+        if (!this._shouldAnimate(actor, name)) {
             cinnamonwm[effect.wmCompleteName](actor);
             return;
         }
