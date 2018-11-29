@@ -521,13 +521,10 @@ WindowManager.prototype = {
     },
 
     _startWindowEffect: function(cinnamonwm, name, actor, args, overwriteKey){
-        // If we have no actor, abort the effect
-        if (!actor) return;
+        if (!actor) return; // If we have no actor, abort the effect
 
         let effect = this.effects[name];
-        let shouldAnimate = this._shouldAnimate(actor, name);
-
-        if (!shouldAnimate) {
+        if (!this._shouldAnimate(actor, name)) {
             cinnamonwm[effect.wmCompleteName](actor);
             return;
         }
