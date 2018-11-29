@@ -215,3 +215,30 @@ function clutter_stagePaintDone(time) {
     if (!haveSwapComplete)
         _frameDone(time);
 }
+
+/**
+ * benchmarkPrototype:
+ * @object (object): JS class.
+ * @threshold (number): The minimum latency of interest.
+ *
+ * This uses a proxy to intercept and time function invocations within a given @object.
+ */
+function benchmarkPrototype(object, threshold = 3) {
+    let keys = Object.getOwnPropertyNames(object.prototype);
+    for (let i = 0; i < keys.length; i++) {
+        let key = keys[i];
+        let fn = object.prototype[key];
+        if (typeof fn !== 'function') {
+            continue;
+        }
+        object.prototype[key] = new Proxy(fn, {
+            apply(target, thisA, args) {
+                let now = Date.now();
+                let val = target.apply(thisA, args);
+                let time = Date.now() - now;
+                if (time >= threshold) global.log(`${key} took ${time}ms`);
+                return val;
+            }
+        });
+    }
+}
