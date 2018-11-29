@@ -501,6 +501,10 @@ WindowManager.prototype = {
         if (Main.modalCount) return false; // system is in modal state
         if (Main.software_rendering) return false;
 
+        if (actor === true) { // workspace switch case
+            return global.settings.get_boolean("desktop-effects");
+        }
+
         if (name === 'map' && EFFECTS_BLACKLIST.indexOf(actor.meta_window.wm_class) > -1) {
             return false;
         }
@@ -727,7 +731,7 @@ WindowManager.prototype = {
     },
 
     _switchWorkspace : function(cinnamonwm, from, to, direction) {
-        if (!this._shouldAnimate()) {
+        if (!this._shouldAnimate(true)) {
             this.showWorkspaceOSD();
             cinnamonwm.completed_switch_workspace();
             return;
