@@ -498,13 +498,13 @@ WindowManager.prototype = {
     },
 
     _shouldAnimate: function(actor, name) {
-        if (!actor) return null;
         if (Main.modalCount) return false; // system is in modal state
         if (Main.software_rendering) return false;
 
         if (name === 'map' && EFFECTS_BLACKLIST.indexOf(actor.meta_window.wm_class) > -1) {
             return false;
         }
+
         let type = actor.meta_window.window_type;
         if (type == Meta.WindowType.NORMAL) {
             return global.settings.get_boolean("desktop-effects");
@@ -521,11 +521,11 @@ WindowManager.prototype = {
     },
 
     _startWindowEffect: function(cinnamonwm, name, actor, args, overwriteKey){
+        // If we have no actor, abort the effect
+        if (!actor) return;
+
         let effect = this.effects[name];
         let shouldAnimate = this._shouldAnimate(actor, name);
-
-        // If we have no actor, abort the effect
-        if (shouldAnimate === null) return;
 
         if (!shouldAnimate) {
             cinnamonwm[effect.wmCompleteName](actor);
