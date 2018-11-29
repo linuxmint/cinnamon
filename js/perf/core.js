@@ -225,6 +225,7 @@ function clutter_stagePaintDone(time) {
  */
 function benchmarkPrototype(object, threshold = 3) {
     let keys = Object.getOwnPropertyNames(object.prototype);
+    let times = [];
     for (let i = 0; i < keys.length; i++) {
         let key = keys[i];
         let fn = object.prototype[key];
@@ -236,7 +237,18 @@ function benchmarkPrototype(object, threshold = 3) {
                 let now = Date.now();
                 let val = target.apply(thisA, args);
                 let time = Date.now() - now;
-                if (time >= threshold) global.log(`${key} took ${time}ms`);
+                if (time >= threshold) {
+                    times.push(time);
+                    let total = 0;
+                    for (let z = 0; z < times.length; z++) total += times[z];
+
+                    let max = Math.max(...times);
+                    let avg = (total / times.length).toFixed(2);
+
+                    let output = `${thisA.constructor.name}.${key}: ${time}ms `
+                        + `(MAX: ${max}ms AVG: ${avg}ms)`;
+                    global.log(output)
+                }
                 return val;
             }
         });
