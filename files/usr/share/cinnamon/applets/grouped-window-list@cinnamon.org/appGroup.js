@@ -362,7 +362,7 @@ class AppGroup {
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
             let max = this.labelVisible && this.groupState.metaWindows.length > 0 ?
                 labelNaturalSize + iconNaturalSize + iconSpacing : 0;
-            alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH);
+            alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
         }
