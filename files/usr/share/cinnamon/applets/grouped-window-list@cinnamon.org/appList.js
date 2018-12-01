@@ -68,9 +68,10 @@ class AppList {
 
     closeAllHoverMenus(cb) {
         for (let i = 0, len = this.appList.length; i < len; i++) {
-            if (this.appList[i].hoverMenu.isOpen) {
-                this.appList[i].groupState.set({thumbnailMenuEntered: false});
-                this.appList[i].hoverMenu.close(true);
+            let {hoverMenu, groupState} = this.appList[i];
+            if (hoverMenu && hoverMenu.isOpen) {
+                groupState.set({thumbnailMenuEntered: false});
+                hoverMenu.close(true);
             }
         }
         if (typeof cb === 'function') cb();
@@ -205,7 +206,7 @@ class AppList {
             if (appGroup.groupState.metaWindows) {
                 appGroup.onWindowDemandsAttention(window);
             }
-            if (appGroup.hoverMenu.isOpen) {
+            if (appGroup.hoverMenu && appGroup.hoverMenu.isOpen) {
                 each(appGroup.hoverMenu.appThumbnails, (thumbnail) => {
                     thumbnail.onWindowDemandsAttention(window);
                     return false;

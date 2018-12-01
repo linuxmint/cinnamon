@@ -424,8 +424,8 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.state.set({panelEditMode: !this.state.panelEditMode});
         each(this.appLists, (workspace) => {
             each(workspace.appList, (appGroup) => {
-                appGroup.hoverMenu.actor.reactive = !this.state.panelEditMode;
-                appGroup.rightClickMenu.actor.reactive = !this.state.panelEditMode;
+                if (appGroup.hoverMenu) appGroup.hoverMenu.actor.reactive = !this.state.panelEditMode;
+                if (appGroup.rightClickMenu) appGroup.rightClickMenu.actor.reactive = !this.state.panelEditMode;
                 appGroup.actor.reactive = !this.state.panelEditMode;
             });
         });
@@ -596,7 +596,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     updateThumbnailSize() {
         each(this.appLists, (workspace) => {
             each(workspace.appList, (appGroup) => {
-                appGroup.hoverMenu.updateThumbnailSize();
+                if (appGroup.hoverMenu) appGroup.hoverMenu.updateThumbnailSize();
             });
         });
     }
