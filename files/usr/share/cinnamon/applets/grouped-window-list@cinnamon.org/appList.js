@@ -122,6 +122,7 @@ class AppList {
         if (lastCycled < 0 || lastCycled > this.appList.length - 1) lastCycled = 0;
 
         this.appList[lastCycled].groupState.set({thumbnailMenuEntered: true});
+        if (!this.appList[lastCycled].hoverMenu) this.appList[lastCycled].initThumbnailMenu();
         this.appList[lastCycled].hoverMenu.open(true);
 
         lastCycled++;

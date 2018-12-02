@@ -607,7 +607,7 @@ class AppGroup {
             this._draggable._overrideX = Math.round(x);
             this._draggable._overrideY = null;
         }
-        this.groupState.trigger('hoverMenuClose');
+        if (this.hoverMenu) this.groupState.trigger('hoverMenuClose');
     }
 
     onDragEnd() {
