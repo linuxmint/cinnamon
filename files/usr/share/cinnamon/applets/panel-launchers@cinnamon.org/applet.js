@@ -61,16 +61,16 @@ class PanelAppLauncherMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(subMenu);
 
         item = new PopupMenu.PopupIconMenuItem(_("About..."), "dialog-question", St.IconType.SYMBOLIC);
-        this._signals.connect(item, 'activate', Lang.bind(this._launcher._applet, this._launcher._applet.openAbout));
+        this._signals.connect(item, 'activate', Lang.bind(this._launcher.launchersBox, this._launcher.launchersBox.openAbout));
         subMenu.menu.addMenuItem(item);
 
         item = new PopupMenu.PopupIconMenuItem(_("Configure..."), "system-run", St.IconType.SYMBOLIC);
-        this._signals.connect(item, 'activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
+        this._signals.connect(item, 'activate', Lang.bind(this._launcher.launchersBox, this._launcher.launchersBox.configureApplet));
         subMenu.menu.addMenuItem(item);
 
         item = new PopupMenu.PopupIconMenuItem(_("Remove '%s'").format(_("Panel launchers")), "edit-delete", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this, function() {
-            AppletManager._removeAppletFromPanel(this._launcher._applet._uuid, this._launcher._applet.instance_id);
+            AppletManager._removeAppletFromPanel(this._launcher.launchersBox._uuid, this._launcher.launchersBox.instance_id);
         }));
         subMenu.menu.addMenuItem(item);
     }
@@ -99,11 +99,9 @@ class PanelAppLauncherMenu extends Applet.AppletPopupMenu {
 
 class PanelAppLauncher extends DND.LauncherDraggable {
     constructor(launchersBox, app, appinfo, orientation, icon_size) {
-        super();
+        super(launchersBox);
         this.app = app;
         this.appinfo = appinfo;
-        this.launchersBox = launchersBox;
-        this._applet = launchersBox;
         this.orientation = orientation;
         this.icon_size = icon_size;
 
@@ -163,7 +161,7 @@ class PanelAppLauncher extends DND.LauncherDraggable {
     _onDragEnd() {
         this._dragging = false;
         this._tooltip.preventShow = false;
-        this._applet._clearDragPlaceholder();
+        this.launchersBox._clearDragPlaceholder();
     }
 
     _onDragCancelled() {

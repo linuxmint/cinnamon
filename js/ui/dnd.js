@@ -843,16 +843,12 @@ GenericDragPlaceholderItem.prototype = {
     }
 };
 
-function LauncherDraggable() {
-    this._init();
-}
+var LauncherDraggable = class {
+    constructor(launchersBox) {
+        this.launchersBox = launchersBox;
+    }
 
-LauncherDraggable.prototype = {
-    _init: function() {
-        this.launchersBox = null;
-    },
-
-    getId: function() {
+    getId() {
         /* Implemented by draggable launchers */
         global.logError("Could not complete drag-and-drop.  Launcher does not implement LauncherDraggable");
     }
