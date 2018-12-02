@@ -21,11 +21,10 @@ const {
 } = require('./constants');
 
 // returns [x1,x2] so that the area between x1 and x2 is
-// centered in length
-
-const center = function(length, naturalLength) {
+// centered in length, optionaly with an offset
+const center = function(length, naturalLength, offset = 0) {
     let maxLength = Math.min(length, naturalLength);
-    let x1 = Math.floor((length - maxLength) / 2);
+    let x1 = offset + Math.floor((length - maxLength) / 2);
     let x2 = x1 + maxLength;
     return [x1, x2];
 };
@@ -102,6 +101,10 @@ class AppGroup {
             track_hover: true
         });
         this.actor._delegate = this;
+
+        this.spacing = 0;
+        this.actor.connect('style-changed',
+            () => this.spacing = this.actor.peek_theme_node().get_length('spacing'));
 
         this.progressOverlay = new St.Widget({
             name: 'progressOverlay',
@@ -226,6 +229,12 @@ class AppGroup {
         }
     }
 
+    isButtonIconOnly() {
+        return !this.state.isHorizontal                  // Vertical panels
+            || !this.labelVisible                        // Apps with no label
+            || this.groupState.metaWindows.length === 0; // Pinned apps
+    }
+
     setActorAttributes(iconSize) {
         if (!iconSize) {
             iconSize = this.state.trigger('getPanelIconSize');
@@ -235,29 +244,15 @@ class AppGroup {
         this.actor.style = null;
 
         let panelHeight = this.state.trigger('getPanelHeight');
-
-        // TODO: Button width should be applied to buttons if they don't have a label set, not based on
-        // mode, but not currently sure how to unset the fixed width on the actor so it revert to a
-        // resizable state without destroying it. Otherwise, buttons with labels don't have enough padding set.
-        if (!this.state.isHorizontal
-            || this.state.settings.titleDisplay === 1
-            || this.state.settings.titleDisplay === 3 && !this.labelVisible) {
-            this.actor.width = panelHeight;
-        }
-
         if (this.state.isHorizontal) {
-            this.actor.height = panelHeight;
+            this.actor.set_size(-1, panelHeight);
+        } else {
+            this.actor.set_size(panelHeight, -1);
         }
+
         this.setIcon();
         this.updateIconBoxClip();
-        this.setIconPadding(panelHeight);
         this.setMargin();
-    }
-
-    setIconPadding(panelHeight) {
-        this.iconBox.style = 'padding: 0px';
-        if (!this.state.isHorizontal) return;
-        this.actor.style = 'padding-left: 0px; padding-right: 0px;';
     }
 
     setMargin() {
@@ -353,26 +348,24 @@ class AppGroup {
     }
 
     getPreferredWidth(actor, forHeight, alloc) {
-        let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(forHeight);
-        let [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
-        let {iconSpacing} = this.state.settings;
-        // The label text starts in the center of the icon, so we should allocate the space
-        // needed for the icon plus the space needed for(label - icon/2)
-        alloc.min_size = iconNaturalSize + iconSpacing;
-        if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
-            let max = this.labelVisible && this.groupState.metaWindows.length > 0 ?
-                labelNaturalSize + iconNaturalSize + iconSpacing : 0;
-            alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
+        let [iconWidth] = this.iconBox.get_preferred_width(forHeight);
+
+        alloc.min_size = iconWidth;
+        if (this.isButtonIconOnly()) {
+            alloc.natural_size = iconWidth;
         } else {
-            alloc.natural_size = this.state.trigger('getPanelHeight');
+            let [labelWidth] = this.label.get_preferred_width(forHeight);
+            alloc.natural_size = Math.min(MAX_BUTTON_WIDTH, iconWidth + this.spacing + labelWidth);
         }
     }
 
     getPreferredHeight(actor, forWidth, alloc) {
-        let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_height(forWidth);
-        let [labelMinSize, labelNaturalSize] = this.label.get_preferred_height(forWidth);
-        alloc.min_size = Math.min(iconMinSize, labelMinSize);
-        alloc.natural_size = Math.max(iconNaturalSize, labelNaturalSize);
+        [alloc.min_size] = this.iconBox.get_preferred_height(forWidth);
+        if (this.state.isHorizontal) {
+            alloc.natural_size = this.state.trigger('getPanelHeight');
+        } else {
+            alloc.natural_size = alloc.min_size;
+        }
     }
 
     allocate(actor, box, flags) {
@@ -380,8 +373,6 @@ class AppGroup {
         let allocHeight = box.y2 - box.y1;
         let childBox = new Clutter.ActorBox();
         let direction = this.actor.get_text_direction();
-        let {iconSpacing} = this.state.settings;
-        let panelHeight = this.state.trigger('getPanelHeight');
 
         // Set the icon to be left-justified (or right-justified) and centered vertically
         let [minWidth, minHeight, naturalWidth, naturalHeight] = this.iconBox.get_preferred_size();
@@ -392,15 +383,14 @@ class AppGroup {
 
         if (this.labelVisible && this.groupState.metaWindows.length > 0) {
             if (direction === Clutter.TextDirection.LTR) {
-                childBox.x1 = box.x1 + iconSpacing;
+                childBox.x1 = box.x1;
             } else {
                 childBox.x1 = Math.max(box.x1, box.x2 - naturalWidth);
             }
             childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
         } else {
-            [childBox.x1, childBox.x2] = center(allocWidth, naturalWidth);
+            [childBox.x1, childBox.x2] = center(allocWidth, naturalWidth, box.x1);
         }
-
         this.iconBox.allocate(childBox, flags);
 
         let windowCountFactor = this.groupState.windowCount > 9 ? 1.5 : 2;
@@ -413,18 +403,17 @@ class AppGroup {
         this.badge.allocate(childBox, flags);
 
         if (this.labelVisible) {
-            let spacing = iconSpacing + Math.round(panelHeight / 1.5);
+            let iconWidth = naturalWidth; // Save icon width for later
             [minWidth, minHeight, naturalWidth, naturalHeight] = this.label.get_preferred_size();
 
             yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
             childBox.y1 = box.y1 + yPadding;
             childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
             if (direction === Clutter.TextDirection.LTR) {
-                // Reuse the values from the previous allocation
-                childBox.x1 = Math.min(childBox.x2 + spacing, box.x2);
+                childBox.x1 = Math.min(box.x1 + iconWidth + this.spacing, box.x2);
                 childBox.x2 = box.x2;
             } else {
-                childBox.x2 = Math.max(childBox.x1 - spacing, box.x1);
+                childBox.x2 = Math.max(box.x2 - iconWidth - this.spacing, box.x1);
                 childBox.x1 = box.x1;
             }
 
@@ -466,8 +455,6 @@ class AppGroup {
         if (this.label.text == null) {
             this.label.set_text('');
         }
-        // TODO: This should be set by the theme.
-        this.label.set_style('padding-right: 4px;');
 
         if (!animate) {
             this.label.show();

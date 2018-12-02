@@ -1328,7 +1328,6 @@ StScrollBar StButton#vhandle:hover {
     background-color: #000000;
 }
 .grouped-window-list-button-label {
-    padding-left: 4px;
 }
 .grouped-window-list-thumbnail-alert {
     background: rgba(255,52,52,0.3);
