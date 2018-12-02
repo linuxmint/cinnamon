@@ -755,7 +755,7 @@ GenericDragItemContainer.prototype = {
         this.actor.add_actor(this.child);
     },
 
-    animateIn: function() {
+    animateIn: function(onCompleteFunc=null) {
         if (this.child == null)
             return;
 
@@ -765,11 +765,15 @@ GenericDragItemContainer.prototype = {
                          { childScale: 1.0,
                            childOpacity: 255,
                            time: DND_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
+                           transition: 'easeOutQuad',
+                           onComplete: () => {
+                               if (typeof onCompleteFunc == 'function')
+                                   onCompleteFunc();
+                           }
                          });
     },
 
-    animateOutAndDestroy: function() {
+    animateOutAndDestroy: function(onCompleteFunc=null) {
         if (this.child == null) {
             this.actor.destroy();
             return;
@@ -782,9 +786,11 @@ GenericDragItemContainer.prototype = {
                            childOpacity: 0,
                            time: DND_ANIMATION_TIME,
                            transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this, function() {
+                           onComplete: () => {
                                this.actor.destroy();
-                           })
+                               if (typeof onCompleteFunc == 'function')
+                                   onCompleteFunc();
+                           }
                          });
     },
 
