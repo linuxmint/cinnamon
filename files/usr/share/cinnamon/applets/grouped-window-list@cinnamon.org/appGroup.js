@@ -151,9 +151,9 @@ class AppGroup {
             style_class: 'grouped-window-list-button-label',
             important: true,
             text: '',
-            show_on_set_parent: this.state.settings.titleDisplay > 1
+            show_on_set_parent: this.state.settings.titleDisplay > 1,
+            x_align: Clutter.ActorAlign.FILL
         });
-        this.label.x_align = St.Align.START;
         this.actor.add_child(this.label);
 
         this.groupState.set({tooltip: new Tooltips.PanelItemTooltip({actor: this.actor}, '', this.state.orientation)});
@@ -245,7 +245,8 @@ class AppGroup {
 
         let panelHeight = this.state.trigger('getPanelHeight');
         if (this.state.isHorizontal) {
-            this.actor.set_size(-1, panelHeight);
+            let width = this.isButtonIconOnly() ? -1 : MAX_BUTTON_WIDTH;
+            this.actor.set_size(width, panelHeight);
         } else {
             this.actor.set_size(panelHeight, -1);
         }
@@ -459,6 +460,7 @@ class AppGroup {
 
     showLabel(animate = false) {
         if (!this.label
+            || this.labelVisible
             || !this.state.isHorizontal
             || this.label.is_finalized()
             || !this.label.realized) {
@@ -473,11 +475,11 @@ class AppGroup {
 
         if (!animate) {
             this.label.show();
-            this.label.width = width;
+            this.actor.set_width(width);
             return;
         }
 
-        Tweener.addTween(this.label, {
+        Tweener.addTween(this.actor, {
             width,
             time: BUTTON_BOX_ANIMATION_TIME,
             transition: 'easeOutQuad',
@@ -491,9 +493,8 @@ class AppGroup {
 
     hideLabel() {
         if (!this.label || this.label.is_finalized() || !this.label.realized) return;
-
         this.labelVisible = false;
-        this.label.width = 1;
+        this.actor.set_width(-1);
         this.label.hide();
     }
 
