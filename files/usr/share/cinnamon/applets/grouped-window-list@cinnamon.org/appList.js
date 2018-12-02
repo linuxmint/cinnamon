@@ -258,21 +258,17 @@ class AppList {
             transientFavorite = false;
 
         each(this.appList, (appGroup, i) => {
-            let shouldReturn = false;
             if (app === appGroup.groupState.app) {
                 refApp = i;
             }
-            each(appGroup.groupState.metaWindows, (win, z) => {
-                if (win === metaWindow) {
-                    if (refApp === -1 || !this.state.settings.groupApps) {
-                        refApp = i;
-                    }
-                    refWindow = z;
-                    shouldReturn = true;
-                    return false;
+            let ref = appGroup.groupState.metaWindows.indexOf(metaWindow);
+            if (ref > -1) {
+                if (refApp === -1 || !this.state.settings.groupApps) {
+                    refApp = i;
                 }
-            });
-            if (shouldReturn) return false;
+                refWindow = ref;
+                return false;
+            }
         });
 
         if (!this.state.settings.groupApps && !isFavoriteApp) {
