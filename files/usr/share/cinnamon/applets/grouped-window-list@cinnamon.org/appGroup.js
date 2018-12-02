@@ -252,7 +252,16 @@ class AppGroup {
 
         this.setIcon();
         this.updateIconBoxClip();
+        this.setIconPadding();
         this.setMargin();
+    }
+
+    setIconPadding() {
+        if (this.state.isHorizontal) {
+            this.actor.style = 'padding-right: 0px; padding-left: 0px;';
+        } else {
+            this.actor.style = 'padding-bottom: 0px; padding-bottom: 0px;';
+        }
     }
 
     setMargin() {
@@ -350,9 +359,10 @@ class AppGroup {
     getPreferredWidth(actor, forHeight, alloc) {
         let [iconWidth] = this.iconBox.get_preferred_width(forHeight);
 
-        alloc.min_size = iconWidth;
+        // alloc.min_size = iconWidth; // future: use same allocation as the rest of the applets
+        alloc.min_size = this.state.trigger('getPanelHeight');
         if (this.isButtonIconOnly()) {
-            alloc.natural_size = iconWidth;
+            alloc.natural_size = alloc.min_size;
         } else {
             let [labelWidth] = this.label.get_preferred_width(forHeight);
             alloc.natural_size = Math.min(MAX_BUTTON_WIDTH, iconWidth + this.spacing + labelWidth);
@@ -382,6 +392,11 @@ class AppGroup {
         childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
 
         if (this.labelVisible && this.groupState.metaWindows.length > 0) {
+             /* Same padding top/bottom and right/left since we nullify padding
+                (only for buttons with labels) */
+            box.x1 = Math.max(box.x1, yPadding);
+            box.x2 = Math.min(box.x2, this.actor.width - yPadding);
+
             if (direction === Clutter.TextDirection.LTR) {
                 childBox.x1 = box.x1;
             } else {
