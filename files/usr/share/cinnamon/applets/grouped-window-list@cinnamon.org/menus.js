@@ -460,7 +460,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
     destroy() {
         this.signals.disconnectAllSignals();
-        Applet.AppletPopupMenu.prototype.destroy.call(this);
+        super.destroy();
         unref(this, RESERVE_KEYS);
     }
 }
@@ -582,7 +582,8 @@ class WindowThumbnail {
         this.signals.connect(this.button, 'button-release-event', (...args) => this.onCloseButtonRelease(...args));
         this.signals.connect(this.actor, 'button-release-event', (...args) => this.connectToWindow(...args));
 
-        setTimeout(() => this.handleFavorite(), 0);
+
+        this.handleFavorite();
         // Update focused style
         this.onFocusWindowChange();
     }
@@ -697,18 +698,10 @@ class WindowThumbnail {
         }
         this.metaWindowActor = this.metaWindow.get_compositor_private();
         if (this.metaWindowActor) {
-            let windowTexture = this.metaWindowActor.get_texture();
-            let [width, height] = windowTexture.get_size();
             this.signals.connect(this.metaWindowActor, 'size-changed', () => this.refreshThumbnail());
 
-            if (this.groupState.isFavoriteApp) {
-                this.signals.connect(this.metaWindowActor, 'destroy', () => {
-                    if (this.willUnmount || !this.groupState.trigger) return;
-                    this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
-                    this.metaWindowActor = null;
-                });
-            }
-
+            let windowTexture = this.metaWindowActor.get_texture();
+            let [width, height] = windowTexture.get_size();
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
             height = Math.round(height * scale);
@@ -868,7 +861,13 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                 this.groupState.set({thumbnailMenuEntered: false});
                 this.close();
             },
-            addThumbnailToMenu: (win) => this.addThumbnail(win),
+            addThumbnailToMenu: (win) => {
+                if (this.isOpen) {
+                    setTimeout(() => this.addThumbnail(win), 0);
+                    return;
+                }
+                this.queuedWindows.push(win);
+            },
             removeThumbnailFromMenu: (win) => {
                 let index = findIndex(this.appThumbnails, (item) => item.metaWindow === win);
                 if (index > -1) {
@@ -876,16 +875,19 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                     this.appThumbnails[index] = undefined;
                     this.appThumbnails.splice(index, 1);
                 }
+                index = this.queuedWindows.indexOf(win);
+                if (index > -1) this.queuedWindows.splice(index, 1);
             },
             verticalThumbs: () => {
                 // Preserve the menu's open state after refreshing
                 let {isOpen} = this;
-                this.setVerticalSetting()
+                this.setVerticalSetting();
                 if (isOpen) this.open(true);
             },
         });
 
         this.appThumbnails = [];
+        this.queuedWindows = [];
     }
 
     onButtonPress() {
@@ -910,6 +912,11 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             timeout = 50;
         } else {
             timeout = this.state.settings.thumbTimeout;
+        }
+
+        if (this.queuedWindows.length > 0) {
+            each(this.queuedWindows, (win) => this.addThumbnail(win));
+            this.queuedWindows = [];
         }
 
         if (actor != null) {
@@ -954,7 +961,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.tooltip.show();
         } else {
             this.state.set({thumbnailMenuOpen: true});
-            PopupMenu.PopupMenu.prototype.open.call(this, this.state.settings.animateThumbs);
+            super.open(this.state.settings.animateThumbs);
         }
     }
 
@@ -965,13 +972,14 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             || !this.groupState.tooltip) {
             return;
         }
-        if (!this.groupState.metaWindows || this.groupState.metaWindows.length === 0) {
+        if ((!this.groupState.metaWindows || this.groupState.metaWindows.length === 0)
+            && !this.groupState.tooltip._tooltip.is_finalized()) {
             this.groupState.tooltip.set_text('');
             this.groupState.tooltip.hide();
         }
         if (this.isOpen) {
             this.state.set({thumbnailMenuOpen: false});
-            PopupMenu.PopupMenu.prototype.close.call(this, this.state.settings.animateThumbs);
+            super.close(this.state.settings.animateThumbs);
         }
         for (let i = 0; i < this.appThumbnails.length; i++) {
             this.appThumbnails[i].destroyOverlayPreview();
@@ -1172,8 +1180,9 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             }
         }
         this.removeAll();
-        PopupMenu.PopupMenu.prototype.destroy.call(this);
+        super.destroy();
         this.groupState.disconnect(this.connectId);
         unref(this, RESERVE_KEYS);
     }
 }
+

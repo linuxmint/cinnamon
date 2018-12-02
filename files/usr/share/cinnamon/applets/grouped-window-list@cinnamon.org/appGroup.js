@@ -800,16 +800,10 @@ class AppGroup {
         }
     }
 
-    windowAdded(metaWindow, metaWindows) {
-        if (metaWindows) {
-            this.groupState.metaWindows = [];
-            for (var i = 0; i < metaWindows.length; i++) {
-                this.groupState.metaWindows.push(metaWindows[i]);
-            }
-        }
-        let refWindow = findIndex(this.groupState.metaWindows, (win) => {
-            return win === metaWindow;
-        });
+    windowAdded(metaWindow, _metaWindows) {
+        let {metaWindows, trigger, set} = this.groupState;
+        if (_metaWindows) metaWindows = _metaWindows;
+        let refWindow = metaWindows.indexOf(metaWindow);
         if (metaWindow) {
             this.signals.connect(metaWindow, 'notify::title', (...args) => this.onWindowTitleChanged(...args));
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
@@ -823,16 +817,16 @@ class AppGroup {
             }
 
             // Set the initial button label as not all windows will get updated via signals initially.
-            this.onWindowTitleChanged(metaWindow);
+            if (this.state.settings.titleDisplay > 1) this.onWindowTitleChanged(metaWindow);
             if (refWindow === -1) {
-                this.groupState.metaWindows.push(metaWindow);
-                if (this.hoverMenu) this.groupState.trigger('addThumbnailToMenu', metaWindow);
+                metaWindows.push(metaWindow);
+                if (this.hoverMenu) trigger('addThumbnailToMenu', metaWindow)
             }
             this.calcWindowNumber();
             this.onFocusChange();
         }
-        this.groupState.set({
-            metaWindows: this.groupState.metaWindows,
+        set({
+            metaWindows,
             lastFocused: metaWindow
         });
         this.handleFavorite();
@@ -864,7 +858,7 @@ class AppGroup {
             // This is the last window, so this group needs to be destroyed. We'll call back windowRemoved
             // in appList to put the final nail in the coffin.
             if (typeof cb === 'function') {
-                if (this.groupState.isFavoriteApp) {
+                if (this.hoverMenu && this.groupState.isFavoriteApp) {
                     this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
                 }
                 cb(this.groupState.appId, this.groupState.isFavoriteApp);
