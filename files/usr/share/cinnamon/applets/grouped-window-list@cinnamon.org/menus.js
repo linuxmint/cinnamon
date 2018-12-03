@@ -886,6 +886,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         });
 
         this.appThumbnails = [];
+        this.setCustomStyleClass("grouped-window-list-thumbnail-menu");
     }
 
     onButtonPress() {
@@ -1052,7 +1053,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.destroyThumbnails();
         }
         this.addWindowThumbnails(this.groupState.metaWindows);
-        this.setStyleOptions(false);
     }
 
     destroyThumbnails() {
@@ -1112,30 +1112,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         for (let i = 0, len = this.groupState.metaWindows.length; i < len; i++) {
             this.addThumbnail(this.groupState.metaWindows[i]);
         }
-    }
-
-    setStyleOptions(skipThumbnailIconResize) {
-        if (this.willUnmount || !this.box) return;
-
-        // The styling cannot be set correctly unless the menu is closed. Fortunately this
-        // can be closed and reopened too quickly for the user to notice.
-        if (this.isOpen) this.close(true);
-
-        this.box.show();
-        this.box.style = null;
-
-        let thumbnailTheme = this.box.peek_theme_node();
-        let padding = thumbnailTheme ? thumbnailTheme.get_horizontal_padding() : null;
-        let thumbnailPadding = padding && (padding > 1 && padding < 21) ? padding : 10;
-        this.box.style = `padding: ${thumbnailPadding / 2}px`;
-        let boxTheme = this.box.peek_theme_node();
-        padding = boxTheme ? boxTheme.get_vertical_padding() : null;
-        let boxPadding = padding && padding > 0 ? padding : 3;
-        this.box.style = `padding: ${boxPadding}px;`;
-
-        if (skipThumbnailIconResize) return;
-
-        if (this.isOpen) this.open();
     }
 
     setVerticalSetting() {
