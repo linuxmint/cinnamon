@@ -637,7 +637,7 @@ class AppGroup {
     }
 
     getDragActor() {
-        return this.groupState.app.create_icon_texture(this.state.trigger('getPanelHeight'));
+        return this.groupState.app.create_icon_texture(this.state.trigger('getPanelHeight') / global.ui_scale);
     }
 
     // Returns the original actor that should align with the actor
