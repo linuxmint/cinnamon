@@ -109,8 +109,6 @@ class AppGroup {
 
         // Create the app button icon, number label, and text label for titleDisplay
         this.iconBox = new St.Bin({name: 'appMenuIcon'});
-        this.iconBox.connect('style-changed', (...args) => this.onIconBoxStyleChanged(...args));
-        this.iconBottomClip = 0;
         this.actor.add_child(this.iconBox);
         this.setActorAttributes();
 
@@ -263,23 +261,15 @@ class AppGroup {
         this.actor.style = existingStyle + 'margin-' + direction + ': ' + this.state.settings.iconSpacing + 'px;';
     }
 
-    onIconBoxStyleChanged() {
-        if (this.state.panelEditMode || this.groupState.metaWindows.length === 0) {
-            return;
-        }
-        let node = this.iconBox.get_theme_node();
-        this.iconBottomClip = node.get_length('app-icon-bottom-clip');
-        this.updateIconBoxClip();
-    }
-
     updateIconBoxClip() {
+        let iconBottomClip = this.iconBox.style_length('app-icon-bottom-clip');
         let allocation = this.iconBox.allocation;
-        if (this.iconBottomClip > 0) {
+        if (iconBottomClip > 0) {
             this.iconBox.set_clip(
                 0,
                 0,
                 allocation.x2 - allocation.x1,
-                allocation.y2 - allocation.y1 - this.iconBottomClip
+                allocation.y2 - allocation.y1 - iconBottomClip
             );
         } else {
             this.iconBox.remove_clip();
