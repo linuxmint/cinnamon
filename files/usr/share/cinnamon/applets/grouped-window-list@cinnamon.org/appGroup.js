@@ -10,6 +10,7 @@ const PopupMenu = imports.ui.popupMenu;
 const {SignalManager} = imports.misc.signalManager;
 const {each, findIndex, unref} = imports.misc.util;
 const {createStore} = imports.misc.state;
+const {GenericContainer} = imports.ui.genericContainer;
 
 const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
 const {
@@ -87,13 +88,17 @@ class AppGroup {
         this.labelVisible = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
         this._progress = 0;
 
-        this.actor =  new Cinnamon.GenericContainer({
+        this.actor = new GenericContainer({
             name: 'appButton',
             style_class: 'grouped-window-list-item-box',
             important: true,
             reactive: true,
             can_focus: true,
             track_hover: true
+        }, {
+            allocate: (...args) => this.allocate(...args),
+            get_preferred_width: (...args) => this.getPreferredWidth(...args),
+            get_preferred_height: (...args) => this.getPreferredHeight(...args)
         });
         this.actor._delegate = this;
 
@@ -149,9 +154,6 @@ class AppGroup {
 
         this._draggable = new DND._Draggable(this.actor);
 
-        this.signals.connect(this.actor, 'get-preferred-width', (...args) => this.getPreferredWidth(...args));
-        this.signals.connect(this.actor, 'get-preferred-height', (...args) => this.getPreferredHeight(...args));
-        this.signals.connect(this.actor, 'allocate', (...args) => this.allocate(...args));
         this.signals.connect(this.actor, 'enter-event', (...args) => this.onEnter(...args));
         this.signals.connect(this.actor, 'leave-event', (...args) => this.onLeave(...args));
         this.signals.connect(this.actor, 'button-release-event', (...args) => this.onAppButtonRelease(...args));
@@ -339,26 +341,27 @@ class AppGroup {
     }
 
     getPreferredWidth(actor, forHeight, alloc) {
+        let minSize = 0, naturalSize = 0;
         let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(forHeight);
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
         let {iconSpacing} = this.state.settings;
         // The label text starts in the center of the icon, so we should allocate the space
         // needed for the icon plus the space needed for(label - icon/2)
-        alloc.min_size = iconNaturalSize + iconSpacing;
+        minSize = iconNaturalSize + iconSpacing;
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
             let max = this.labelVisible && this.groupState.metaWindows.length > 0 ?
                 labelNaturalSize + iconNaturalSize + iconSpacing : 0;
-            alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
+            naturalSize = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
         } else {
-            alloc.natural_size = this.state.trigger('getPanelHeight');
+            naturalSize = this.state.trigger('getPanelHeight');
         }
+        return [minSize, naturalSize];
     }
 
     getPreferredHeight(actor, forWidth, alloc) {
         let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_height(forWidth);
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_height(forWidth);
-        alloc.min_size = Math.min(iconMinSize, labelMinSize);
-        alloc.natural_size = Math.max(iconNaturalSize, labelNaturalSize);
+        return [Math.min(iconMinSize, labelMinSize), Math.max(iconNaturalSize, labelNaturalSize)];
     }
 
     allocate(actor, box, flags) {
