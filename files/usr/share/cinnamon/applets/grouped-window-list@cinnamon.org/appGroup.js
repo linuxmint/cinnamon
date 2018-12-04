@@ -52,10 +52,6 @@ const getFocusState = function(metaWindow) {
 
 class AppGroup {
     constructor(params) {
-        if (DND.LauncherDraggable) {
-            DND.LauncherDraggable.prototype._init.call(this);
-        }
-
         this.state = params.state;
         this.listState = params.listState;
         this.groupState = createStore({
@@ -616,7 +612,6 @@ class AppGroup {
     handleDragOver(source, actor, x, y, time) {
         if (!this.state.settings.enableDragging
             || source instanceof AppGroup
-            || (DND.LauncherDraggable && source instanceof DND.LauncherDraggable)
             || this.state.panelEditMode) {
             return DND.DragMotionResult.CONTINUE;
         }
