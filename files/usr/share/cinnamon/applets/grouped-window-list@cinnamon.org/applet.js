@@ -325,8 +325,8 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.getAutoStartApps();
         this.onSwitchWorkspace = throttle(this.onSwitchWorkspace, 100, true);
         this.signals.connect(this.actor, 'scroll-event', (c, e) => this.handleScroll(e));
-        this.signals.connect(this.actor, 'enter-event', () => this.handleKeyGrab());
-        this.signals.connect(this.actor, 'leave-event', () => this.handleKeyUngrab());
+        this.signals.connect(this.actor, 'enter-event', () => setTimeout(() => this.handleKeyGrab(), 0));
+        this.signals.connect(this.actor, 'leave-event', () => setTimeout(() => this.handleKeyUngrab(), 0));
         this.signals.connect(global, 'scale-changed', (...args) => this.onUIScaleChange(...args));
         this.signals.connect(global.window_manager, 'switch-workspace', (...args) => this.onSwitchWorkspace(...args));
         this.signals.connect(global.screen, 'workspace-removed', (...args) => this.onWorkspaceRemoved(...args));
