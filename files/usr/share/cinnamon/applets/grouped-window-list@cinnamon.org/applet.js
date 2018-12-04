@@ -325,8 +325,8 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.getAutoStartApps();
         this.onSwitchWorkspace = throttle(this.onSwitchWorkspace, 100, true);
         this.signals.connect(this.actor, 'scroll-event', (c, e) => this.handleScroll(e));
-        this.signals.connect(this.actor, 'enter-event', () => setTimeout(() => this.handleKeyGrab(), 0));
-        this.signals.connect(this.actor, 'leave-event', () => setTimeout(() => this.handleKeyUngrab(), 0));
+        this.signals.connect(this.actor, 'enter-event', (...args) => this.handleKeyGrab(...args));
+        this.signals.connect(this.actor, 'leave-event', (...args) => this.handleKeyUngrab(...args));
         this.signals.connect(global, 'scale-changed', (...args) => this.onUIScaleChange(...args));
         this.signals.connect(global.window_manager, 'switch-workspace', (...args) => this.onSwitchWorkspace(...args));
         this.signals.connect(global.screen, 'workspace-removed', (...args) => this.onWorkspaceRemoved(...args));
@@ -794,26 +794,44 @@ class GroupedWindowListApplet extends Applet.Applet {
         setTimeout(() => this.state.set({scrollActive: false}, 4000));
     }
 
-    handleKeyGrab() {
-        if (this.grabbed || !Main.pushModal(this.actor)) return;
-
-        this.grabbed = true;
-        this.signals.connect(this.actor, 'key-press-event', (...args) => this.handleKeyPress(...args));
-        this.signals.connect(this.actor, 'key-release-event', (...args) => this.handleKeyPress(...args));
-    }
-
-    handleKeyUngrab(passThrough = false) {
-        if (!this.grabbed) return;
-
-        if (passThrough) {
-            setTimeout(() => this.grabbed = false, 1000);
-        } else {
-            this.grabbed = false;
+    handleKeyGrab(actor, event) {
+        let sourceActor = event.get_source();
+        if (sourceActor instanceof Cinnamon.GenericContainer) {
+            let currentAppList = this.getCurrentAppList();
+            let appGroup = find(currentAppList.appList, (appGroup) => appGroup.actor === sourceActor);
+            appGroup.onEnter(actor, event);
         }
 
-        this.signals.disconnect('key-press-event', this.actor);
-        this.signals.disconnect('key-release-event', this.actor);
-        Main.popModal(this.actor);
+        if (!this.grabbed && Main.pushModal(this.actor) && event) {
+            this.grabbed = true;
+            this.signals.connect(this.actor, 'key-press-event', (...args) => this.handleKeyPress(...args));
+            this.signals.connect(this.actor, 'key-release-event', (...args) => this.handleKeyPress(...args));
+        }
+
+        return true;
+    }
+
+    handleKeyUngrab(actor, event) {
+        let sourceActor = event.get_source();
+        if (sourceActor instanceof Cinnamon.GenericContainer) {
+            let currentAppList = this.getCurrentAppList();
+            let appGroup = find(currentAppList.appList, (appGroup) => appGroup.actor === sourceActor);
+            appGroup.onLeave(actor, event);
+        }
+
+        if (this.grabbed) {
+            if (actor === null) { // null: passThrough, false: key event
+                setTimeout(() => this.grabbed = false, 1000);
+            } else {
+                this.grabbed = false;
+            }
+
+            this.signals.disconnect('key-press-event', this.actor);
+            this.signals.disconnect('key-release-event', this.actor);
+            Main.popModal(this.actor);
+        }
+
+        return true;
     }
 
     handleKeyPress(actor, event) {
@@ -828,14 +846,14 @@ class GroupedWindowListApplet extends Applet.Applet {
                 workspace.closeAllHoverMenus();
                 workspace.closeAllRightClickMenus();
             });
-            this.handleKeyUngrab();
+            this.handleKeyUngrab(false, event);
             return true;
         }
 
         let ctrlKey = modifierState & ModifierType.CONTROL_MASK || symbol === 65507 || symbol === 65508;
         this.state.set({ctrlKey: typeof ctrlKey === 'boolean'});
 
-        if (!ctrlKey) this.handleKeyUngrab(true);
+        if (!ctrlKey) this.handleKeyUngrab(null, event);
 
         return true;
     }
