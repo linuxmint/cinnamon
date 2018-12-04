@@ -241,7 +241,7 @@ class AppMenuButton {
         this.metaWindow = metaWindow;
         this.alert = alert;
         this.labelVisible = false;
-        this.window_signals = new SignalManager.SignalManager(null);
+        this._signals = new SignalManager.SignalManager();
 
         if (this._applet.orientation == St.Side.TOP)
             this.actor.add_style_class_name('top');
@@ -253,23 +253,23 @@ class AppMenuButton {
             this.actor.add_style_class_name('right');
 
         this.actor._delegate = this;
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
-        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
+        this._signals.connect(this.actor, 'button-release-event', Lang.bind(this, this._onButtonRelease));
+        this._signals.connect(this.actor, 'button-press-event', Lang.bind(this, this._onButtonPress));
 
-        this.actor.connect('get-preferred-width',
+        this._signals.connect(this.actor, 'get-preferred-width',
                 Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height',
+        this._signals.connect(this.actor, 'get-preferred-height',
                 Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
+        this._signals.connect(this.actor, 'allocate', Lang.bind(this, this._allocate));
 
         this.progressOverlay = new St.Widget({ style_class: "progress", reactive: false, important: true  });
 
         this.actor.add_actor(this.progressOverlay);
 
         this._iconBox = new Cinnamon.Slicer({ name: 'appMenuIcon' });
-        this._iconBox.connect('style-changed',
+        this._signals.connect(this._iconBox, 'style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
-        this._iconBox.connect('notify::allocation',
+        this._signals.connect(this._iconBox, 'notify::allocation',
                               Lang.bind(this, this._updateIconBoxClipAndGeometry));
         this.actor.add_actor(this._iconBox);
 
@@ -316,13 +316,13 @@ class AppMenuButton {
             this._menuManager.addMenu(this.rightClickMenu);
 
             this._draggable = DND.makeDraggable(this.actor, null, this._applet.actor);
-            this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-            this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
-            this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+            this._signals.connect(this._draggable, 'drag-begin', Lang.bind(this, this._onDragBegin));
+            this._signals.connect(this._draggable, 'drag-cancelled', Lang.bind(this, this._onDragCancelled));
+            this._signals.connect(this._draggable, 'drag-end', Lang.bind(this, this._onDragEnd));
         }
 
         this.onPanelEditModeChanged();
-        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.onPanelEditModeChanged));
+        this._signals.connect(global.settings, 'changed::panel-edit-mode', Lang.bind(this, this.onPanelEditModeChanged));
 
         this._windows = this._applet._windows;
 
@@ -337,12 +337,12 @@ class AppMenuButton {
         if (this.alert)
             this.getAttention();
 
-        this.window_signals.connect(this.metaWindow, 'notify::title', this.setDisplayTitle, this);
-        this.window_signals.connect(this.metaWindow, "notify::minimized", this.setDisplayTitle, this);
-        this.window_signals.connect(this.metaWindow, "notify::tile-type", this.setDisplayTitle, this);
-        this.window_signals.connect(this.metaWindow, "icon-changed", this.setIcon, this);
-        this.window_signals.connect(this.metaWindow, "notify::appears-focused", this.onFocus, this);
-        this.window_signals.connect(this.metaWindow, "unmanaged", this.onUnmanaged, this);
+        this._signals.connect(this.metaWindow, 'notify::title', this.setDisplayTitle, this);
+        this._signals.connect(this.metaWindow, "notify::minimized", this.setDisplayTitle, this);
+        this._signals.connect(this.metaWindow, "notify::tile-type", this.setDisplayTitle, this);
+        this._signals.connect(this.metaWindow, "icon-changed", this.setIcon, this);
+        this._signals.connect(this.metaWindow, "notify::appears-focused", this.onFocus, this);
+        this._signals.connect(this.metaWindow, "unmanaged", this.onUnmanaged, this);
     }
 
     onUnmanaged() {
@@ -501,11 +501,12 @@ class AppMenuButton {
     }
 
     destroy() {
-        this.window_signals.disconnectAllSignals();
+        this._signals.disconnectAllSignals();
         this._tooltip.destroy();
         if (this.rightClickMenu) {
             this.rightClickMenu.destroy();
         }
+        this._menuManager.destroy();
         this.actor.destroy();
     }
 
@@ -773,7 +774,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
         this._launcher = launcher;
         this._windows = launcher._applet._windows;
-        this.connect('open-state-changed', Lang.bind(this, this._onToggled));
+        this._signals.connect(this, 'open-state-changed', Lang.bind(this, this._onToggled));
 
         this.orientation = orientation;
         this.metaWindow = metaWindow;
@@ -789,7 +790,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             Main.layoutManager.monitors.forEach(function (monitor, index) {
                 if (index === mw.get_monitor()) return;
                 item = new PopupMenu.PopupMenuItem(_("Move to the other monitor"));
-                item.connect('activate', function() {
+                this._signals.connect(item, 'activate', function() {
                     mw.move_to_monitor(index);
                 });
                 this.addMenuItem(item);
@@ -799,7 +800,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             Main.layoutManager.monitors.forEach(function (monitor, index) {
                 if (index === mw.get_monitor()) return;
                 item = new PopupMenu.PopupMenuItem(_("Move to monitor %d").format(index + 1));
-                item.connect('activate', function() {
+                this._signals.connect(item, 'activate', function() {
                     mw.move_to_monitor(index);
                 });
                 this.addMenuItem(item);
@@ -810,13 +811,13 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         if ((length = global.screen.n_workspaces) > 1) {
             if (mw.is_on_all_workspaces()) {
                 item = new PopupMenu.PopupMenuItem(_("Only on this workspace"));
-                item.connect('activate', function() {
+                this._signals.connect(item, 'activate', function() {
                     mw.unstick();
                 });
                 this.addMenuItem(item);
             } else {
                 item = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
-                item.connect('activate', function() {
+                this._signals.connect(item, 'activate', function() {
                     mw.stick();
                 });
                 this.addMenuItem(item);
@@ -834,7 +835,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                     if (i == curr_index)
                         ws.setSensitive(false);
 
-                    ws.connect('activate', function() {
+                    this._signals.connect(ws, 'activate', function() {
                         mw.change_workspace(global.screen.get_workspace_by_index(j));
                     });
                     item.menu.addMenuItem(ws);
@@ -848,15 +849,15 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(subMenu);
 
         item = new PopupMenu.PopupIconMenuItem(_("About..."), "dialog-question", St.IconType.SYMBOLIC);
-        item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.openAbout));
+        this._signals.connect(item, 'activate', Lang.bind(this._launcher._applet, this._launcher._applet.openAbout));
         subMenu.menu.addMenuItem(item);
 
         item = new PopupMenu.PopupIconMenuItem(_("Configure..."), "system-run", St.IconType.SYMBOLIC);
-        item.connect('activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
+        this._signals.connect(item, 'activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
         subMenu.menu.addMenuItem(item);
 
         item = new PopupMenu.PopupIconMenuItem(_("Remove 'Window list'"), "edit-delete", St.IconType.SYMBOLIC);
-        item.connect('activate', Lang.bind(this, function() {
+        this._signals.connect(item, 'activate', Lang.bind(this, function() {
             AppletManager._removeAppletFromPanel(this._launcher._applet._uuid, this._launcher._applet.instance_id);
         }));
         subMenu.menu.addMenuItem(item);
@@ -865,7 +866,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
         // Close all/others
         item = new PopupMenu.PopupIconMenuItem(_("Close all"), "application-exit", St.IconType.SYMBOLIC);
-        item.connect('activate', Lang.bind(this, function() {
+        this._signals.connect(item, 'activate', Lang.bind(this, function() {
             for (let window of this._windows)
                 if (window.actor.visible &&
                    !window._needsAttention)
@@ -874,7 +875,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(item);
 
         item = new PopupMenu.PopupIconMenuItem(_("Close others"), "window-close", St.IconType.SYMBOLIC);
-        item.connect('activate', Lang.bind(this, function() {
+        this._signals.connect(item, 'activate', Lang.bind(this, function() {
             for (let window of this._windows)
                 if (window.actor.visible &&
                     window.metaWindow != this.metaWindow &&
@@ -888,7 +889,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         // Miscellaneous
         if (mw.get_compositor_private().opacity != 255) {
             item = new PopupMenu.PopupMenuItem(_("Restore to full opacity"));
-            item.connect('activate', function() {
+            this._signals.connect(item, 'activate', function() {
                 mw.get_compositor_private().set_opacity(255);
             });
             this.addMenuItem(item);
@@ -896,12 +897,12 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
         if (mw.minimized) {
             item = new PopupMenu.PopupIconMenuItem(_("Restore"), "view-sort-descending", St.IconType.SYMBOLIC);
-            item.connect('activate', function() {
+            this._signals.connect(item, 'activate', function() {
                 Main.activateWindow(mw, global.get_current_time());
             });
         } else {
             item = new PopupMenu.PopupIconMenuItem(_("Minimize"), "view-sort-ascending", St.IconType.SYMBOLIC);
-            item.connect('activate', function() {
+            this._signals.connect(item, 'activate', function() {
                 mw.minimize();
             });
         }
@@ -909,19 +910,19 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
         if (mw.get_maximized()) {
             item = new PopupMenu.PopupIconMenuItem(_("Unmaximize"), "view-restore", St.IconType.SYMBOLIC);
-            item.connect('activate', function() {
+            this._signals.connect(item, 'activate', function() {
                 mw.unmaximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
             });
         } else {
             item = new PopupMenu.PopupIconMenuItem(_("Maximize"), "view-fullscreen", St.IconType.SYMBOLIC);
-            item.connect('activate', function() {
+            this._signals.connect(item, 'activate', function() {
                 mw.maximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
             });
         }
         this.addMenuItem(item);
 
         item = new PopupMenu.PopupIconMenuItem(_("Close"), "edit-delete", St.IconType.SYMBOLIC);
-        item.connect('activate', function() {
+        this._signals.connect(item, 'activate', function() {
             mw.delete(global.get_current_time());
         });
         this.addMenuItem(item);
