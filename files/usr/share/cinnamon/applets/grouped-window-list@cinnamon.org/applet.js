@@ -819,12 +819,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                 if (this.state.dragPlaceholder) {
                     this.state.dragPlaceholder.animateOutAndDestroy();
                     this.state.animatingPlaceholdersCount++;
-                    this.state.dragPlaceholder.actor.connect(
-                        'destroy',
-                        () => {
-                            this.state.animatingPlaceholdersCount--;
-                        }
-                    );
+                    this.state.dragPlaceholder.actor.connect('destroy', () => this.state.animatingPlaceholdersCount--);
                 }
                 this.state.dragPlaceholder = null;
 
