@@ -654,7 +654,8 @@ class AppGroup {
         let nWindows = this.groupState.metaWindows.length;
 
         let shouldStartInstance = (
-            (button === 1
+            (button === 1 && this.state.ctrlKey)
+            || (button === 1
                 && this.groupState.isFavoriteApp
                 && nWindows === 0
                 && (this.state.settings.leftClickAction === 2 || nWindows < 1))

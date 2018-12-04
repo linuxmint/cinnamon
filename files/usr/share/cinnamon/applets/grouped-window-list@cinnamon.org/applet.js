@@ -3,6 +3,7 @@ const Gtk = imports.gi.Gtk;
 const GLib = imports.gi.GLib;
 const Gdk = imports.gi.Gdk;
 const Meta = imports.gi.Meta;
+const {ModifierType} = imports.gi.Clutter;
 const St = imports.gi.St;
 const Gettext = imports.gettext;
 const Applet = imports.ui.applet;
@@ -250,6 +251,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             lastCycled: -1,
             lastTitleDisplay: null,
             scrollActive: false,
+            ctrlKey: false,
             thumbnailMenuOpen: false,
             thumbnailCloseButtonOffset: global.ui_scale > 1 ? -10 : 0
         });
@@ -323,6 +325,8 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.getAutoStartApps();
         this.onSwitchWorkspace = throttle(this.onSwitchWorkspace, 100, true);
         this.signals.connect(this.actor, 'scroll-event', (c, e) => this.handleScroll(e));
+        this.signals.connect(this.actor, 'enter-event', () => this.handleKeyGrab());
+        this.signals.connect(this.actor, 'leave-event', () => this.handleKeyUngrab());
         this.signals.connect(global, 'scale-changed', (...args) => this.onUIScaleChange(...args));
         this.signals.connect(global.window_manager, 'switch-workspace', (...args) => this.onSwitchWorkspace(...args));
         this.signals.connect(global.screen, 'workspace-removed', (...args) => this.onWorkspaceRemoved(...args));
@@ -788,6 +792,52 @@ class GroupedWindowListApplet extends Applet.Applet {
             : source.groupState.metaWindows[z];
         Main.activateWindow(_window, global.get_current_time());
         setTimeout(() => this.state.set({scrollActive: false}, 4000));
+    }
+
+    handleKeyGrab() {
+        if (this.grabbed || !Main.pushModal(this.actor)) return;
+
+        this.grabbed = true;
+        this.signals.connect(this.actor, 'key-press-event', (...args) => this.handleKeyPress(...args));
+        this.signals.connect(this.actor, 'key-release-event', (...args) => this.handleKeyPress(...args));
+    }
+
+    handleKeyUngrab(passThrough = false) {
+        if (!this.grabbed) return;
+
+        if (passThrough) {
+            setTimeout(() => this.grabbed = false, 1000);
+        } else {
+            this.grabbed = false;
+        }
+
+        this.signals.disconnect('key-press-event', this.actor);
+        this.signals.disconnect('key-release-event', this.actor);
+        Main.popModal(this.actor);
+    }
+
+    handleKeyPress(actor, event) {
+        let symbol = event.get_key_symbol();
+        let keyCode = event.get_key_code();
+        let modifierState = Cinnamon.get_event_state(event);
+
+        // Make sure to close menus and pop the modal if another key binding takes over
+        let action = global.display.get_keybinding_action(keyCode, modifierState);
+        if (action === Meta.KeyBindingAction.CUSTOM) {
+            each(this.appLists, (workspace) => {
+                workspace.closeAllHoverMenus();
+                workspace.closeAllRightClickMenus();
+            });
+            this.handleKeyUngrab();
+            return true;
+        }
+
+        let ctrlKey = modifierState & ModifierType.CONTROL_MASK || symbol === 65507 || symbol === 65508;
+        this.state.set({ctrlKey: typeof ctrlKey === 'boolean'});
+
+        if (!ctrlKey) this.handleKeyUngrab(true);
+
+        return true;
     }
 
     handleDragOver(source, actor, x, y) {
