@@ -14,14 +14,14 @@ class CinnamonSlideshowApplet extends Applet.IconApplet {
 
         if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
             if (!this._slideshowSettings.get_boolean("slideshow-paused")) {
-                this.set_applet_icon_symbolic_name('slideshow-play-symbolic.svg');
+                this.set_applet_icon_symbolic_name('slideshow-play');
                 this.set_applet_tooltip(_("Click to pause the slideshow"));
             } else {
-                this.set_applet_icon_symbolic_name('slideshow-pause-symbolic.svg');
+                this.set_applet_icon_symbolic_name('slideshow-pause');
                 this.set_applet_tooltip(_("Click to resume the slideshow"));
             }
         } else {
-            this.set_applet_icon_symbolic_name('slideshow-disabled-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-disabled');
             this.set_applet_tooltip(_("The slideshow is disabled"));
         }
 
@@ -55,11 +55,11 @@ class CinnamonSlideshowApplet extends Applet.IconApplet {
         if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
             if (!this._slideshowSettings.get_boolean("slideshow-paused")) {
                 this._slideshowSettings.set_boolean("slideshow-paused", true);
-                this.set_applet_icon_symbolic_name('slideshow-pause-symbolic.svg');
+                this.set_applet_icon_symbolic_name('slideshow-pause');
                 this.set_applet_tooltip(_("Click to resume the slideshow"));
             } else {
                 this._slideshowSettings.set_boolean("slideshow-paused", false);
-                this.set_applet_icon_symbolic_name('slideshow-play-symbolic.svg');
+                this.set_applet_icon_symbolic_name('slideshow-play');
                 this.set_applet_tooltip(_("Click to pause the slideshow"));
             }
         }
@@ -68,11 +68,11 @@ class CinnamonSlideshowApplet extends Applet.IconApplet {
     _on_slideshow_enabled_toggled() {
         if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
             this._slideshowSettings.set_boolean("slideshow-enabled", false);
-            this.set_applet_icon_symbolic_name('slideshow-disabled-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-disabled');
             this.set_applet_tooltip(_("The slideshow is disabled"));
         } else {
             this._slideshowSettings.set_boolean("slideshow-enabled", true);
-            this.set_applet_icon_symbolic_name('slideshow-play-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-play');
             this.set_applet_tooltip(_("Click to pause the slideshow"));
         }
     }
@@ -80,21 +80,21 @@ class CinnamonSlideshowApplet extends Applet.IconApplet {
     _on_slideshow_enabled_changed() {
         if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
             this.enable_slideshow_switch.setToggleState(true);
-            this.set_applet_icon_symbolic_name('slideshow-play-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-play');
             this.set_applet_tooltip(_("Click to pause the slideshow"));
         } else {
             this.enable_slideshow_switch.setToggleState(false);
-            this.set_applet_icon_symbolic_name('slideshow-disabled-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-disabled');
             this.set_applet_tooltip(_("The slideshow is disabled"));
         }
     }
 
     _on_slideshow_paused_changed() {
         if (this._slideshowSettings.get_boolean("slideshow-paused")) {
-            this.set_applet_icon_symbolic_name('slideshow-pause-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-pause');
             this.set_applet_tooltip(_("Click to resume the slideshow"));
         } else {
-            this.set_applet_icon_symbolic_name('slideshow-play-symbolic.svg');
+            this.set_applet_icon_symbolic_name('slideshow-play');
             this.set_applet_tooltip(_("Click to pause the slideshow"));
         }
     }
