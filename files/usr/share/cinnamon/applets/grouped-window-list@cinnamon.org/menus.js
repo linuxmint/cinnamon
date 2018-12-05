@@ -983,7 +983,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
         if (this.isOpen) {
             this.state.set({thumbnailMenuOpen: false});
-            super.close(this.state.settings.animateThumbs);
+            if (!this.actor.is_finalized()) super.close(this.state.settings.animateThumbs);
         }
         for (let i = 0; i < this.appThumbnails.length; i++) {
             this.appThumbnails[i].destroyOverlayPreview();
