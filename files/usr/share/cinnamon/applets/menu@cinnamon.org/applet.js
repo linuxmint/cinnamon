@@ -1198,6 +1198,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         try {
             this._refreshApps();
             this._refreshFavs();
+            this._refreshSystemButtons();
             this._refreshPlaces();
             this._refreshRecent();
 
@@ -2656,61 +2657,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         //     this.favoritesBox.add(separator.actor, { y_align: St.Align.END, y_fill: false });
         // }
 
-        this._refreshSystemButtons(launchers);
-
         this._recalc_height();
     }
 
-    _refreshSystemButtons(launchers) {
-        if (this.systemButtonsAdded) return;
+    _refreshSystemButtons() {
+        // Remove all system buttons
+        this.systemButtonsBox.destroy_all_children();
 
+        // Load system buttons again
+        let launchers = global.settings.get_strv('favorite-apps');
         let button;
-
-        // // Switch user (disabled for now, we don't have a fullcolor switch user icon... also careful when/if enabling this
-        // // the additional size for favbox is hardcoded to 3, not 4)
-        // let lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
-        // let commands;
-        // if (!lockdownSettings.get_boolean('disable-user-switching')) {
-        //     if (GLib.getenv("XDG_SEAT_PATH")) { // LightDM
-        //         commands = [
-        //             'cinnamon-screensaver-command --lock',
-        //             'dm-tool switch-to-greeter'
-        //         ];
-        //     } else if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) { // MDM
-        //         commands = ['mdmflexiserver'];
-        //     } else if (GLib.file_test("/usr/bin/gdmflexiserver", GLib.FileTest.EXISTS)) { // GDM
-        //         commands = [
-        //             'cinnamon-screensaver-command --lock',
-        //             'gdmflexiserver'
-        //         ];
-        //     }
-        //     if (commands) {
-        //         button = new SystemButton("system-switch-user", launchers.length + 3,
-        //                                   _("Switch user"),
-        //                                   _("Switch to another user account"));
-
-        //         this._addEnterEvent(button, Lang.bind(this, this._favEnterEvent, button));
-        //         button.actor.connect('leave-event', Lang.bind(this, this._favLeaveEvent, button));
-
-        //         button.activate = () => {
-        //             this.menu.close();
-
-        //             for (let i = 0; i < commands.length; i++) {
-        //                 Util.spawnCommandLine(commands[i]);
-        //             }
-        //         };
-
-        //         this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
-        //     }
-        // }
-
-        // let lockdownSettingsId;
-        // lockdownSettingsId = lockdownSettings.connect('changed::disable-user-switching', () => {
-        //     button.actor.get_parent().destroy_all_children();
-        //     this.systemButtonsAdded = false;
-        //     lockdownSettings.disconnect(lockdownSettingsId);
-        //     this._refreshFavs();
-        // });
 
         //Lock screen
         button = new SystemButton("system-lock-screen", launchers.length + 3,
@@ -2769,7 +2725,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         };
 
         this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
-        this.systemButtonsAdded = true;
     }
 
     _loadCategory(dir, top_dir) {
