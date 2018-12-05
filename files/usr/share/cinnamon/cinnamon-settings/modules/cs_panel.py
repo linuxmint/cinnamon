@@ -139,8 +139,8 @@ class Module:
             widget = GSettingsRange(_("Symbolic icon size adjustment"),
                                     "org.cinnamon.theme", "symbolic-relative-size",
                                     _("Smaller"), _("Larger"),
-                                    0.4, 1.0, step=0.1, show_value=False)
-            widget.add_mark(0.9, Gtk.PositionType.TOP, None)
+                                    0.4, 1.0, step=0.01, show_value=True)
+            widget.add_mark(0.67, Gtk.PositionType.TOP, None)
             widget.set_rounding(2)
 
             section.add_row(widget)
