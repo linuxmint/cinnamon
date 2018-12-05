@@ -62,7 +62,7 @@
  },
  "favbox-min-height" : {
     "type": "spinbutton",
-    "default" : 400,
+    "default" : 300,
     "min" : 50,
     "max" : 1000,
     "step" : 10,
