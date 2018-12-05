@@ -52,10 +52,6 @@ const getFocusState = function(metaWindow) {
 
 class AppGroup {
     constructor(params) {
-        if (DND.LauncherDraggable) {
-            DND.LauncherDraggable.prototype._init.call(this);
-        }
-
         this.state = params.state;
         this.listState = params.listState;
         this.groupState = createStore({
@@ -87,11 +83,6 @@ class AppGroup {
         // TODO: This needs to be in state so it can be updated more reliably.
         this.labelVisible = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
         this._progress = 0;
-        this.padding = 0;
-        this.wasFavapp = false;
-        this.time = params.time;
-        this.focusedWindow = false;
-        this.title = '';
 
         this.actor =  new Cinnamon.GenericContainer({
             name: 'appButton',
@@ -114,8 +105,6 @@ class AppGroup {
 
         // Create the app button icon, number label, and text label for titleDisplay
         this.iconBox = new St.Bin({name: 'appMenuIcon'});
-        this.iconBox.connect('style-changed', (...args) => this.onIconBoxStyleChanged(...args));
-        this.iconBottomClip = 0;
         this.actor.add_child(this.iconBox);
         this.setActorAttributes();
 
@@ -155,39 +144,8 @@ class AppGroup {
 
         this.groupState.set({tooltip: new Tooltips.PanelItemTooltip({actor: this.actor}, '', this.state.orientation)});
 
-        this.rightClickMenu = new AppMenuButtonRightClickMenu({
-                state: this.state,
-                groupState: this.groupState,
-                actor: this.actor
-        }, this.state.orientation);
-
-        // Set up the hover menu
-        this.hoverMenuManager = new HoverMenuController(this.actor, this.groupState);
-        this.rightClickMenuManager = new PopupMenu.PopupMenuManager({actor: this.actor});
-        this.hoverMenu = new AppThumbnailHoverMenu(this.state, this.groupState);
-        this.hoverMenu.actor.hide();
-
-        Main.layoutManager.addChrome(this.hoverMenu.actor, {});
-
-        this.hoverMenu.setVerticalSetting();
-        this.hoverMenu.actor.set_style_class_name('');
-        this.hoverMenu.box.set_important(true);
-        this.hoverMenu.box.set_style_class_name('grouped-window-list-thumbnail-menu');
-
-        this.hoverMenuManager.addMenu(this.hoverMenu);
-        this.rightClickMenuManager.addMenu(this.rightClickMenu);
-
         this._draggable = new DND._Draggable(this.actor);
-        this.signals.connect(this.hoverMenu.actor, 'enter-event',
-            (...args) => this.hoverMenu.onMenuEnter.call(this.hoverMenu, ...args));
-        this.signals.connect(this.hoverMenu.actor, 'leave-event',
-            (...args) => this.hoverMenu.onMenuLeave.call(this.hoverMenu, ...args));
-        this.signals.connect(this.hoverMenu.actor, 'key-release-event',
-            (...args) => this.hoverMenu.onKeyRelease.call(this.hoverMenu, ...args));
-        this.signals.connect(this.hoverMenu.actor, 'scroll-event',
-            (c, e) => this.state.trigger('cycleWindows', e, this.actor._delegate));
-        this.signals.connect(this.hoverMenu.box, 'key-press-event',
-            (...args) => this.hoverMenu.onKeyPress.call(this.hoverMenu, ...args));
+
         this.signals.connect(this.actor, 'get-preferred-width', (...args) => this.getPreferredWidth(...args));
         this.signals.connect(this.actor, 'get-preferred-height', (...args) => this.getPreferredHeight(...args));
         this.signals.connect(this.actor, 'allocate', (...args) => this.allocate(...args));
@@ -198,15 +156,46 @@ class AppGroup {
         this.signals.connect(this._draggable, 'drag-begin', (...args) => this.onDragBegin(...args));
         this.signals.connect(this._draggable, 'drag-cancelled', (...args) => this.onDragCancelled(...args));
         this.signals.connect(this._draggable, 'drag-end', (...args) => this.onDragEnd(...args));
-        this.calcWindowNumber(this.groupState.metaWindows);
 
+        this.calcWindowNumber();
         this.on_orientation_changed(true);
-        setTimeout(() => {
-            if (!this.groupState.set) return;
+        this.handleFavorite();
+    }
 
-            this.groupState.set({groupReady: true});
-            this.handleFavorite();
-        }, 0);
+    initThumbnailMenu() {
+        this.hoverMenuManager = new HoverMenuController(this.actor, this.groupState);
+
+        this.hoverMenu = new AppThumbnailHoverMenu(this.state, this.groupState);
+        this.hoverMenu.actor.hide();
+
+        Main.layoutManager.addChrome(this.hoverMenu.actor, {});
+
+        this.hoverMenu.setVerticalSetting();
+        this.hoverMenu.actor.set_style_class_name('');
+        this.hoverMenu.box.set_important(true);
+        this.hoverMenu.box.set_style_class_name('grouped-window-list-thumbnail-menu');
+        this.hoverMenuManager.addMenu(this.hoverMenu);
+        this.signals.connect(this.hoverMenu.actor, 'enter-event',
+            (...args) => this.hoverMenu.onMenuEnter.call(this.hoverMenu, ...args));
+        this.signals.connect(this.hoverMenu.actor, 'leave-event',
+            (...args) => this.hoverMenu.onMenuLeave.call(this.hoverMenu, ...args));
+        this.signals.connect(this.hoverMenu.actor, 'key-release-event',
+            (...args) => this.hoverMenu.onKeyRelease.call(this.hoverMenu, ...args));
+        this.signals.connect(this.hoverMenu.actor, 'scroll-event',
+            (c, e) => this.state.trigger('cycleWindows', e, this.actor._delegate));
+        this.signals.connect(this.hoverMenu.box, 'key-press-event',
+            (...args) => this.hoverMenu.onKeyPress.call(this.hoverMenu, ...args));
+    }
+
+    initRightClickMenu() {
+        let {state, groupState, actor} = this;
+        this.rightClickMenu = new AppMenuButtonRightClickMenu({
+            state,
+            groupState,
+            actor
+        }, this.state.orientation);
+        this.rightClickMenuManager = new PopupMenu.PopupMenuManager({actor});
+        this.rightClickMenuManager.addMenu(this.rightClickMenu);
     }
 
     on_orientation_changed(fromInit) {
@@ -224,6 +213,8 @@ class AppGroup {
         if (this.state.appletReady && !fromInit) {
             this.setActorAttributes();
         }
+
+        if (fromInit) this.groupState.set({groupReady: true});
     }
 
     setActorAttributes(iconSize) {
@@ -266,23 +257,15 @@ class AppGroup {
         this.actor.style = existingStyle + 'margin-' + direction + ': ' + this.state.settings.iconSpacing + 'px;';
     }
 
-    onIconBoxStyleChanged() {
-        if (this.state.panelEditMode || this.groupState.metaWindows.length === 0) {
-            return;
-        }
-        let node = this.iconBox.get_theme_node();
-        this.iconBottomClip = node.get_length('app-icon-bottom-clip');
-        this.updateIconBoxClip();
-    }
-
     updateIconBoxClip() {
+        let iconBottomClip = this.iconBox.style_length('app-icon-bottom-clip');
         let allocation = this.iconBox.allocation;
-        if (this.iconBottomClip > 0) {
+        if (iconBottomClip > 0) {
             this.iconBox.set_clip(
                 0,
                 0,
                 allocation.x2 - allocation.x1,
-                allocation.y2 - allocation.y1 - this.iconBottomClip
+                allocation.y2 - allocation.y1 - iconBottomClip
             );
         } else {
             this.iconBox.remove_clip();
@@ -506,13 +489,16 @@ class AppGroup {
 
         this.actor.add_style_pseudo_class('hover');
 
+        if (!this.hoverMenu) {
+            this.initThumbnailMenu();
+        }
         this.hoverMenu.onMenuEnter();
     }
 
     onLeave() {
         if (this.state.panelEditMode) return false;
 
-        this.hoverMenu.onMenuLeave();
+        if (this.hoverMenu) this.hoverMenu.onMenuLeave();
         this.resetHoverStatus();
         this.checkFocusStyle();
     }
@@ -613,26 +599,25 @@ class AppGroup {
             this._draggable._overrideX = Math.round(x);
             this._draggable._overrideY = null;
         }
-        this.groupState.trigger('hoverMenuClose');
+        if (this.hoverMenu) this.groupState.trigger('hoverMenuClose');
     }
 
     onDragEnd() {
-        this.rightClickMenu.close(false);
-        this.hoverMenu.close(false);
+        if (this.rightClickMenu) this.rightClickMenu.close(false);
+        if (this.hoverMenu) this.hoverMenu.close(false);
         this.listState.trigger('updateAppGroupIndexes', this.groupState.appId);
         this.state.trigger('clearDragPlaceholder');
     }
 
     onDragCancelled() {
-        this.rightClickMenu.close(false);
-        this.hoverMenu.close(false);
+        if (this.rightClickMenu) this.rightClickMenu.close(false);
+        if (this.hoverMenu) this.hoverMenu.close(false);
         this.state.trigger('clearDragPlaceholder');
     }
 
     handleDragOver(source, actor, x, y, time) {
         if (!this.state.settings.enableDragging
             || source instanceof AppGroup
-            || (DND.LauncherDraggable && source instanceof DND.LauncherDraggable)
             || this.state.panelEditMode) {
             return DND.DragMotionResult.CONTINUE;
         }
@@ -693,6 +678,7 @@ class AppGroup {
 
         let handleMinimizeToggle = (win) => {
             if (this.state.settings.onClickThumbs && nWindows > 1) {
+                if (!this.hoverMenu) this.initThumbnailMenu();
                 if (this.hoverMenu.isOpen) {
                     this.hoverMenu.close();
                 } else {
@@ -719,8 +705,8 @@ class AppGroup {
                 this.state.trigger('cycleWindows', null, this.actor._delegate);
                 return;
             }
-            this.hoverMenu.shouldOpen = false;
-            if (this.rightClickMenu.isOpen) {
+            if (this.hoverMenu) this.hoverMenu.shouldOpen = false;
+            if (this.rightClickMenu && this.rightClickMenu.isOpen) {
                 this.rightClickMenu.toggle();
             }
             if (nWindows === 1) {
@@ -739,6 +725,7 @@ class AppGroup {
                 }
             }
         } else if (button === 3) {
+            if (!this.rightClickMenu) this.initRightClickMenu();
             if (!this.rightClickMenu.isOpen) {
                 this.listState.trigger('closeAllRightClickMenus', () => {
                     this.listState.trigger('closeAllHoverMenus', () => {
@@ -749,7 +736,7 @@ class AppGroup {
                 this.listState.trigger('closeAllRightClickMenus', this.listState.trigger('closeAllHoverMenus'));
             }
         }
-        this.hoverMenu.onButtonPress();
+        if (this.hoverMenu) this.hoverMenu.onButtonPress();
     }
 
     onAppButtonPress(actor, event) {
@@ -764,6 +751,7 @@ class AppGroup {
             this.launchNewInstance();
         } else {
             if (this.groupState.metaWindows.length > 1) {
+                if (!this.hoverMenu) this.initThumbnailMenu();
                 this.hoverMenu.open(true);
             } else {
                 this.listState.trigger('closeAllHoverMenus');
@@ -803,16 +791,10 @@ class AppGroup {
         }
     }
 
-    windowAdded(metaWindow, metaWindows) {
-        if (metaWindows) {
-            this.groupState.metaWindows = [];
-            for (var i = 0; i < metaWindows.length; i++) {
-                this.groupState.metaWindows.push(metaWindows[i]);
-            }
-        }
-        let refWindow = findIndex(this.groupState.metaWindows, (win) => {
-            return win === metaWindow;
-        });
+    windowAdded(metaWindow, _metaWindows) {
+        let {metaWindows, trigger, set} = this.groupState;
+        if (_metaWindows) metaWindows = _metaWindows;
+        let refWindow = metaWindows.indexOf(metaWindow);
         if (metaWindow) {
             this.signals.connect(metaWindow, 'notify::title', (...args) => this.onWindowTitleChanged(...args));
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
@@ -826,16 +808,16 @@ class AppGroup {
             }
 
             // Set the initial button label as not all windows will get updated via signals initially.
-            this.onWindowTitleChanged(metaWindow);
+            if (this.state.settings.titleDisplay > 1) this.onWindowTitleChanged(metaWindow);
             if (refWindow === -1) {
-                this.groupState.metaWindows.push(metaWindow);
-                this.groupState.trigger('addThumbnailToMenu', metaWindow);
+                metaWindows.push(metaWindow);
+                if (this.hoverMenu) trigger('addThumbnailToMenu', metaWindow)
             }
             this.calcWindowNumber();
             this.onFocusChange();
         }
-        this.groupState.set({
-            metaWindows: this.groupState.metaWindows,
+        set({
+            metaWindows,
             lastFocused: metaWindow
         });
         this.handleFavorite();
@@ -861,13 +843,13 @@ class AppGroup {
                 metaWindows: this.groupState.metaWindows,
                 lastFocused: this.groupState.metaWindows[this.groupState.metaWindows.length - 1]
             }, true);
-            this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
+            if (this.hoverMenu) this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
             this.calcWindowNumber();
         } else {
             // This is the last window, so this group needs to be destroyed. We'll call back windowRemoved
             // in appList to put the final nail in the coffin.
             if (typeof cb === 'function') {
-                if (this.groupState.isFavoriteApp) {
+                if (this.hoverMenu && this.groupState.isFavoriteApp) {
                     this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
                 }
                 cb(this.groupState.appId, this.groupState.isFavoriteApp);
@@ -911,12 +893,14 @@ class AppGroup {
         }
         metaWindow.lastTitle = metaWindow.title;
 
-        each(this.hoverMenu.appThumbnails, (thumbnail) => {
-            if (thumbnail.metaWindow === metaWindow) {
-                thumbnail.labelContainer.child.set_text(metaWindow.title);
-                return false;
-            }
-        });
+        if (this.hoverMenu) {
+            each(this.hoverMenu.appThumbnails, (thumbnail) => {
+                if (thumbnail.metaWindow === metaWindow) {
+                    thumbnail.labelContainer.child.set_text(metaWindow.title);
+                    return false;
+                }
+            });
+        }
 
         this.groupState.set({
             appName: this.groupState.app.get_name()
@@ -935,7 +919,7 @@ class AppGroup {
         }
         this.onFocusChange(hasFocus);
 
-        if (this.state.settings.sortThumbs) {
+        if (this.state.settings.sortThumbs && this.hoverMenu) {
             this.hoverMenu.addThumbnail(metaWindow);
         }
     }
@@ -964,7 +948,7 @@ class AppGroup {
                 this.hideLabel();
             }
             // Re-orient the menu after the focus button expands
-            this.hoverMenu.setStyleOptions(false);
+            if (this.hoverMenu) this.hoverMenu.setStyleOptions(false);
         }
     }
 
@@ -976,7 +960,7 @@ class AppGroup {
         }
 
         if (this.groupState.metaWindows.length === 0 && this.state.appletReady) {
-            this.hoverMenu.close();
+            if (this.hoverMenu) this.hoverMenu.close();
             this.onLeave();
             return;
         }
@@ -991,10 +975,7 @@ class AppGroup {
         let windowCount = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
         this.numberLabel.text = windowCount.toString();
 
-        setTimeout(() => {
-            if (!this.groupState.set) return;
-            this.groupState.set({windowCount});
-        }, 0);
+        this.groupState.set({windowCount});
 
         if (this.state.settings.numDisplay) {
             if (windowCount <= 1) {
@@ -1068,7 +1049,7 @@ class AppGroup {
             }
             this.rightClickMenu.destroy();
         }
-        this.hoverMenu.destroy();
+        if (this.hoverMenu) this.hoverMenu.destroy();
         this.listState.trigger('removeChild', this.actor);
         this.actor.destroy();
 
