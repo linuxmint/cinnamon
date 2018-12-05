@@ -399,7 +399,11 @@ class AppGroup {
             spacing = childBox.x1;
             childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
         } else {
-            [childBox.x1, childBox.x2] = center(allocWidth, naturalWidth);
+            let offset = 0;
+            if (this.state.orientation === St.Side.LEFT) {
+                offset += this.actor.style_length('border-left-width') * 2;
+            }
+            [childBox.x1, childBox.x2] = center(allocWidth + offset, naturalWidth);
         }
 
         this.iconBox.allocate(childBox, flags);
