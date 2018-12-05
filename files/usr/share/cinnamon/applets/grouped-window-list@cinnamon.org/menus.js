@@ -157,7 +157,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.signals.connect(item, 'activate', () => this.state.trigger('configureApplet'));
         subMenu.menu.addMenuItem(item);
 
-        item = createMenuItem({label: _('Remove') + " 'Grouped window list'", icon: 'edit-delete'});
+        item = createMenuItem({label: _("Remove '%s'").format(_("Grouped window list")), icon: 'edit-delete'});
         this.signals.connect(item, 'activate', () => {
             AppletManager._removeAppletFromPanel(this.state.uuid, this.state.instance_id);
         });
@@ -460,7 +460,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
     destroy() {
         this.signals.disconnectAllSignals();
-        Applet.AppletPopupMenu.prototype.destroy.call(this);
+        super.destroy();
         unref(this, RESERVE_KEYS);
     }
 }
@@ -582,7 +582,8 @@ class WindowThumbnail {
         this.signals.connect(this.button, 'button-release-event', (...args) => this.onCloseButtonRelease(...args));
         this.signals.connect(this.actor, 'button-release-event', (...args) => this.connectToWindow(...args));
 
-        setTimeout(() => this.handleFavorite(), 0);
+
+        this.handleFavorite();
         // Update focused style
         this.onFocusWindowChange();
     }
@@ -686,33 +687,28 @@ class WindowThumbnail {
 
     getThumbnail(thumbnailWidth, thumbnailHeight) {
         if (this.groupState.verticalThumbs || !this.state.settings.showThumbs) {
-            this.thumbnailActor.height = 0;
+            this.thumbnailActor.hide();
             return null;
+        } else if (this.thumbnailActor.realized) {
+            this.thumbnailActor.show();
         }
         // Create our own thumbnail if it doesn't exist
-        let isUpdate = false;
         if (this.metaWindowActor) {
-            isUpdate = true;
             this.signals.disconnect('size-changed', this.metaWindowActor);
+        } else {
+            this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
-        this.metaWindowActor = this.metaWindow.get_compositor_private();
         if (this.metaWindowActor) {
-            let windowTexture = this.metaWindowActor.get_texture();
-            let [width, height] = windowTexture.get_size();
             this.signals.connect(this.metaWindowActor, 'size-changed', () => this.refreshThumbnail());
 
-            if (this.groupState.isFavoriteApp) {
-                this.signals.connect(this.metaWindowActor, 'destroy', () => {
-                    if (this.willUnmount || !this.groupState.trigger) return;
-                    this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
-                    this.metaWindowActor = null;
-                });
-            }
-
+            let windowTexture = this.metaWindowActor.get_texture();
+            let [width, height] = windowTexture.get_size();
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
             height = Math.round(height * scale);
-            if (isUpdate) {
+            if (this.thumbnailActor.child) {
+                this.thumbnailActor.height = height;
+                this.thumbnailActor.width = width;
                 this.thumbnailActor.child.source = windowTexture;
                 this.thumbnailActor.child.width = width;
                 this.thumbnailActor.child.height = height;
@@ -868,7 +864,13 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                 this.groupState.set({thumbnailMenuEntered: false});
                 this.close();
             },
-            addThumbnailToMenu: (win) => this.addThumbnail(win),
+            addThumbnailToMenu: (win) => {
+                if (this.isOpen) {
+                    setTimeout(() => this.addThumbnail(win), 0);
+                    return;
+                }
+                this.queuedWindows.push(win);
+            },
             removeThumbnailFromMenu: (win) => {
                 let index = findIndex(this.appThumbnails, (item) => item.metaWindow === win);
                 if (index > -1) {
@@ -876,17 +878,21 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                     this.appThumbnails[index] = undefined;
                     this.appThumbnails.splice(index, 1);
                 }
+                index = this.queuedWindows.indexOf(win);
+                if (index > -1) this.queuedWindows.splice(index, 1);
             },
             verticalThumbs: () => {
                 // Preserve the menu's open state after refreshing
                 let {isOpen} = this;
-                this.setVerticalSetting()
+                this.setVerticalSetting();
                 if (isOpen) this.open(true);
             },
         });
 
         this.appThumbnails = [];
         this.setCustomStyleClass("grouped-window-list-thumbnail-menu");
+        this.queuedWindows = [];
+        this.fullyRefreshThumbnails();
     }
 
     onButtonPress() {
@@ -911,6 +917,11 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             timeout = 50;
         } else {
             timeout = this.state.settings.thumbTimeout;
+        }
+
+        if (this.queuedWindows.length > 0) {
+            each(this.queuedWindows, (win) => this.addThumbnail(win));
+            this.queuedWindows = [];
         }
 
         if (actor != null) {
@@ -955,7 +966,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.tooltip.show();
         } else {
             this.state.set({thumbnailMenuOpen: true});
-            PopupMenu.PopupMenu.prototype.open.call(this, this.state.settings.animateThumbs);
+            super.open(this.state.settings.animateThumbs);
         }
     }
 
@@ -966,13 +977,14 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             || !this.groupState.tooltip) {
             return;
         }
-        if (!this.groupState.metaWindows || this.groupState.metaWindows.length === 0) {
+        if ((!this.groupState.metaWindows || this.groupState.metaWindows.length === 0)
+            && !this.groupState.tooltip._tooltip.is_finalized()) {
             this.groupState.tooltip.set_text('');
             this.groupState.tooltip.hide();
         }
         if (this.isOpen) {
             this.state.set({thumbnailMenuOpen: false});
-            PopupMenu.PopupMenu.prototype.close.call(this, this.state.settings.animateThumbs);
+            super.close(this.state.settings.animateThumbs);
         }
         for (let i = 0; i < this.appThumbnails.length; i++) {
             this.appThumbnails[i].destroyOverlayPreview();
@@ -1120,15 +1132,27 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         } else {
             this.box.vertical = true;
         }
-        this.fullyRefreshThumbnails();
+
+        // Do a full refresh if thumbnails don't exist - this happens when the thumbnail menu
+        // initializes vertically from lack of calculated space, or thumbnails are disabled.
+        if (!this.appThumbnails[0] || !this.appThumbnails[0].thumbnailActor.child) {
+            this.fullyRefreshThumbnails();
+        } else {
+            this.updateThumbnailSize();
+        }
     }
 
     updateThumbnailSize() {
         for (let i = 0; i < this.appThumbnails.length; i++) {
             if (this.appThumbnails[i]) {
                 this.appThumbnails[i].refreshThumbnail();
+                // Make sure Clutter updates, otherwise setStyleOptions is called afterwards,
+                // and will be calculating styles from old actor values because it closes the menu
+                // to avoid incorrect padding values.
+                this.appThumbnails[i].thumbnailActor.realize();
             }
         }
+        this.setStyleOptions();
     }
 
     destroy() {
@@ -1148,7 +1172,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             }
         }
         this.removeAll();
-        PopupMenu.PopupMenu.prototype.destroy.call(this);
+        super.destroy();
         this.groupState.disconnect(this.connectId);
         unref(this, RESERVE_KEYS);
     }

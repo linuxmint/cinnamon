@@ -68,9 +68,10 @@ class AppList {
 
     closeAllHoverMenus(cb) {
         for (let i = 0, len = this.appList.length; i < len; i++) {
-            if (this.appList[i].hoverMenu.isOpen) {
-                this.appList[i].groupState.set({thumbnailMenuEntered: false});
-                this.appList[i].hoverMenu.close(true);
+            let {hoverMenu, groupState} = this.appList[i];
+            if (hoverMenu && hoverMenu.isOpen) {
+                groupState.set({thumbnailMenuEntered: false});
+                hoverMenu.close(true);
             }
         }
         if (typeof cb === 'function') cb();
@@ -121,6 +122,7 @@ class AppList {
         if (lastCycled < 0 || lastCycled > this.appList.length - 1) lastCycled = 0;
 
         this.appList[lastCycled].groupState.set({thumbnailMenuEntered: true});
+        if (!this.appList[lastCycled].hoverMenu) this.appList[lastCycled].initThumbnailMenu();
         this.appList[lastCycled].hoverMenu.open(true);
 
         lastCycled++;
@@ -205,7 +207,7 @@ class AppList {
             if (appGroup.groupState.metaWindows) {
                 appGroup.onWindowDemandsAttention(window);
             }
-            if (appGroup.hoverMenu.isOpen) {
+            if (appGroup.hoverMenu && appGroup.hoverMenu.isOpen) {
                 each(appGroup.hoverMenu.appThumbnails, (thumbnail) => {
                     thumbnail.onWindowDemandsAttention(window);
                     return false;
@@ -256,21 +258,17 @@ class AppList {
             transientFavorite = false;
 
         each(this.appList, (appGroup, i) => {
-            let shouldReturn = false;
             if (app === appGroup.groupState.app) {
                 refApp = i;
             }
-            each(appGroup.groupState.metaWindows, (win, z) => {
-                if (win === metaWindow) {
-                    if (refApp === -1 || !this.state.settings.groupApps) {
-                        refApp = i;
-                    }
-                    refWindow = z;
-                    shouldReturn = true;
-                    return false;
+            let ref = appGroup.groupState.metaWindows.indexOf(metaWindow);
+            if (ref > -1) {
+                if (refApp === -1 || !this.state.settings.groupApps) {
+                    refApp = i;
                 }
-            });
-            if (shouldReturn) return false;
+                refWindow = ref;
+                return false;
+            }
         });
 
         if (!this.state.settings.groupApps && !isFavoriteApp) {

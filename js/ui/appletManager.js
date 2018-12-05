@@ -4,6 +4,7 @@ const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
 
+const Mainloop = imports.mainloop;
 const Main = imports.ui.main;
 const Applet = imports.ui.applet;
 const Extension = imports.ui.extension;
@@ -597,11 +598,12 @@ function createApplet(extension, appletDefinition, panel = null) {
 }
 
 function _removeAppletFromPanel(uuid, applet_id) {
-    let definition = queryCollection(definitions, {uuid, applet_id});
-    if (!definition) {
+    Mainloop.idle_add(() => {
+        let definition = queryCollection(definitions, {uuid, applet_id});
+        if (definition)
+            removeApplet(definition);
         return false;
-    }
-    removeApplet(definition);
+    });
 }
 
 function saveAppletsPositions() {
