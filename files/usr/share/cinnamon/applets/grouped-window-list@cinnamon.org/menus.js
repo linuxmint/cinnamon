@@ -857,6 +857,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         super._init.call(this, groupState.trigger('getActor'), state.orientation, 0.5);
         this.state = state;
         this.groupState = groupState;
+        this.setCustomStyleClass("grouped-window-list-thumbnail-menu");
 
         this.connectId = this.groupState.connect({
             hoverMenuClose: () => {
@@ -890,7 +891,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         });
 
         this.appThumbnails = [];
-        this.setCustomStyleClass("grouped-window-list-thumbnail-menu");
         this.queuedWindows = [];
         this.fullyRefreshThumbnails();
     }
@@ -1152,7 +1152,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                 this.appThumbnails[i].thumbnailActor.realize();
             }
         }
-        this.setStyleOptions();
     }
 
     destroy() {
