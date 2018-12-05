@@ -812,13 +812,6 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     handleKeyUngrab(actor, event) {
-        let sourceActor = event.get_source();
-        if (sourceActor instanceof Cinnamon.GenericContainer) {
-            let currentAppList = this.getCurrentAppList();
-            let appGroup = find(currentAppList.appList, (appGroup) => appGroup.actor === sourceActor);
-            appGroup.onLeave(actor, event);
-        }
-
         if (this.grabbed) {
             if (actor === null) { // null: passThrough, false: key event
                 setTimeout(() => this.grabbed = false, 1000);
@@ -829,6 +822,13 @@ class GroupedWindowListApplet extends Applet.Applet {
             this.signals.disconnect('key-press-event', this.actor);
             this.signals.disconnect('key-release-event', this.actor);
             Main.popModal(this.actor);
+        }
+
+        let sourceActor = event.get_source();
+        if (sourceActor instanceof Cinnamon.GenericContainer) {
+            let currentAppList = this.getCurrentAppList();
+            let appGroup = find(currentAppList.appList, (appGroup) => appGroup.actor === sourceActor);
+            appGroup.onLeave(actor, event);
         }
 
         return true;
