@@ -673,7 +673,7 @@
     </key>
 
     <key name="symbolic-relative-size" type="d">
-      <default>0.9</default>
+      <default>0.67</default>
       <summary>Relative size of symbolic icons to the zone's icon size</summary>
     </key>
 
