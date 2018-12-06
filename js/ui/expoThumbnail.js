@@ -1490,7 +1490,7 @@ ExpoThumbnailsBox.prototype = {
         }
     },
 
-    getPreferredHeight: function(actor, forWidth) {
+    getPreferredHeight: function(forWidth) {
         // See comment about this.background in _init()
         // Note that for getPreferredWidth/Height we cheat a bit and skip propagating
         // the size request to our children because we know how big they are and know
@@ -1505,7 +1505,7 @@ ExpoThumbnailsBox.prototype = {
         return themeNode.adjust_preferred_height(400, Main.layoutManager.primaryMonitor.height);
     },
 
-    getPreferredWidth: function(actor, forHeight) {
+    getPreferredWidth: function(forHeight) {
         // See comment about this.background in _init()
         // We don't animate our preferred width, which is always reported according
         // to the actual number of current workspaces, we just animate within that
@@ -1521,7 +1521,7 @@ ExpoThumbnailsBox.prototype = {
         return themeNode.adjust_preferred_width(totalSpacing, Main.layoutManager.primaryMonitor.width);
     },
 
-    allocate: function(actor, box, flags) {
+    allocate: function(box, flags) {
         this.box = box;
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 

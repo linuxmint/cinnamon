@@ -2909,11 +2909,11 @@ Panel.prototype = {
         global.log(`[Panel ${this.panelId}] Removing zone configuration`);
     },
 
-    _getPreferredWidth: function(actor, forHeight, alloc) {
+    _getPreferredWidth: function(forHeight, alloc) {
         return [-1, -1];
     },
 
-    _getPreferredHeight: function(actor, forWidth, alloc) {
+    _getPreferredHeight: function(forWidth, alloc) {
         return [-1, -1];
     },
 
@@ -3122,7 +3122,7 @@ Panel.prototype = {
         return;
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
 
         let cornerMinWidth = 0;
         let cornerWidth = 0;

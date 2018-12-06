@@ -19,13 +19,13 @@ var GenericContainer = class GenericContainer extends St.Widget {
         if (this.node) {
             box = this.node.get_content_box(box);
         }
-        this.callbacks.allocate(this, box, flags);
+        this.callbacks.allocate(box, flags);
     }
 
     vfunc_get_preferred_width(forWidth) {
         if (!this.node) this.node = this.get_theme_node();
         if (this.node && this.callbacks.get_preferred_width) {
-            let [width, height] = this.callbacks.get_preferred_width(this, forWidth);
+            let [width, height] = this.callbacks.get_preferred_width(forWidth);
             return this.node.adjust_preferred_width(width, height);
         }
         return [0, 0];
@@ -34,7 +34,7 @@ var GenericContainer = class GenericContainer extends St.Widget {
     vfunc_get_preferred_height(forHeight) {
         if (!this.node) this.node = this.get_theme_node();
         if (this.node && this.callbacks.get_preferred_height) {
-            let [width, height] = this.callbacks.get_preferred_height(this, forHeight);
+            let [width, height] = this.callbacks.get_preferred_height(forHeight);
             return this.node.adjust_preferred_height(width, height);
         }
         return [0, 0];

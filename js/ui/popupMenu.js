@@ -305,7 +305,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         this._columnWidths = widths;
     }
 
-    _getPreferredWidth(actor, forHeight) {
+    _getPreferredWidth(forHeight) {
         let width = 0;
         if (this._columnWidths) {
             for (let i = 0; i < this._columnWidths.length; i++) {
@@ -325,7 +325,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         return [width, width];
     }
 
-    _getPreferredHeight(actor, forWidth) {
+    _getPreferredHeight(forWidth) {
         let height = 0, x = 0, minWidth, childWidth;
         for (let i = 0; i < this._children.length; i++) {
             let child = this._children[i];
@@ -351,7 +351,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         return [height, height];
     }
 
-    _allocate(actor, box, flags) {
+    _allocate(box, flags) {
         let height = box.y2 - box.y1;
         let direction = this.actor.get_direction();
 
@@ -2540,7 +2540,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         return [Math.round(xPos), Math.round(yPos)];
     }
 
-    _boxGetPreferredWidth (actor, forWidth) {
+    _boxGetPreferredWidth (forWidth) {
         let columnWidths = this.getColumnWidths();
         this.setColumnWidths(columnWidths);
 
@@ -2548,11 +2548,11 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         return this.box.get_preferred_width(forWidth);
     }
 
-    _boxGetPreferredHeight (actor, forHeight) {
+    _boxGetPreferredHeight (forHeight) {
         return this.box.get_preferred_height(forHeight);
     }
 
-    _boxAllocate (actor, box, flags) {
+    _boxAllocate (box, flags) {
         this.box.allocate(box, flags);
         if (!this.animating && !this.sourceActor.is_finalized() && this.sourceActor.get_stage() != null) {
             let [xPos, yPos] = this._calculatePosition();

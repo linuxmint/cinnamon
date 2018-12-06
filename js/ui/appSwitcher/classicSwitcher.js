@@ -84,17 +84,18 @@ ClassicSwitcher.prototype = {
         this.actor.show();
     },
 
-    _getPreferredWidth: function (actor, forHeight) {
+    _getPreferredWidth: function (forHeight) {
         return [global.screen_width, global.screen_width];
     },
 
-    _getPreferredHeight: function (actor, forWidth) {
+    _getPreferredHeight: function (forWidth) {
         return [global.screen_height, global.screen_height];
     },
 
-    _allocate: function (actor, box, flags) {
+    _allocate: function (box, flags) {
         let childBox = new Clutter.ActorBox();
         let monitor = this._activeMonitor;
+        let {actor} = this;
 
         let leftPadding = actor.style_length('padding-left');
         let rightPadding = actor.style_length('padding-right');
@@ -505,7 +506,7 @@ SwitcherList.prototype = {
         this._activeMonitor = activeMonitor;
     },
 
-    _allocateTop: function(actor, box, flags) {
+    _allocateTop: function(box, flags) {
         let leftPadding = this.actor.get_theme_node().get_padding(St.Side.LEFT);
         let rightPadding = this.actor.get_theme_node().get_padding(St.Side.RIGHT);
 
@@ -662,7 +663,7 @@ SwitcherList.prototype = {
         return [maxChildMin, maxChildNat];
     },
 
-    _getPreferredWidth: function (actor, forHeight) {
+    _getPreferredWidth: function (forHeight) {
         let [maxChildMin, maxChildNat] = this._maxChildWidth(forHeight);
 
         let separatorWidth = 0;
@@ -679,7 +680,7 @@ SwitcherList.prototype = {
         return [min_size, natural_size];
     },
 
-    _getPreferredHeight: function (actor, forWidth) {
+    _getPreferredHeight: function (forWidth) {
         let maxChildMin = 0;
         let maxChildNat = 0;
 
@@ -698,7 +699,7 @@ SwitcherList.prototype = {
         return [maxChildMin, maxChildNat];
     },
 
-    _allocate: function (actor, box, flags) {
+    _allocate: function (box, flags) {
         let childHeight = box.y2 - box.y1;
 
         let [maxChildMin, maxChildNat] = this._maxChildWidth(childHeight);
@@ -800,7 +801,7 @@ AppList.prototype = {
         this._activeMonitor = activeMonitor;
     },
 
-    _getPreferredHeight: function (actor, forWidth) {
+    _getPreferredHeight: function (forWidth) {
         if (this._items.length < 1) {
             return [32, 32];
         }
@@ -844,9 +845,9 @@ AppList.prototype = {
         return [height, height];
     },
 
-    _allocate: function (actor, box, flags) {
+    _allocate: function (box, flags) {
         // Allocate the main list items
-        SwitcherList.prototype._allocate.call(this, actor, box, flags);
+        SwitcherList.prototype._allocate.call(this, box, flags);
 
         if (this._showArrows) {
             let arrowHeight = Math.floor(this.actor.get_theme_node().get_padding(St.Side.BOTTOM) / 3);

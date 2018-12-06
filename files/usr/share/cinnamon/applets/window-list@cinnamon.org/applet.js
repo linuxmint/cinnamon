@@ -606,7 +606,7 @@ class AppMenuButton {
         this.metaWindow.set_icon_geometry(rect);
     }
 
-    _getPreferredWidth(actor, forHeight, alloc) {
+    _getPreferredWidth(forHeight) {
         let min_size = 0, natural_size = 0;
         let [minSize, naturalSize] = this._iconBox.get_preferred_width(forHeight);
         // minimum size just enough for icon if we ever get that many apps going
@@ -629,7 +629,7 @@ class AppMenuButton {
         return [min_size, natural_size];
     }
 
-    _getPreferredHeight(actor, forWidth) {
+    _getPreferredHeight(forWidth) {
         let min_size = 0, natural_size = 0;
         let [minSize1, naturalSize1] = this._iconBox.get_preferred_height(forWidth);
 
@@ -655,7 +655,7 @@ class AppMenuButton {
         return [min_size, natural_size];
     }
 
-    _allocate(actor, box, flags) {
+    _allocate(box, flags) {
         let allocWidth = box.x2 - box.x1;
         let allocHeight = box.y2 - box.y1;
 

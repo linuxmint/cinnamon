@@ -38,7 +38,7 @@ CheckBoxContainer.prototype = {
         this._spacing = 0;
     },
 
-    _getPreferredWidth: function(actor, forHeight) {
+    _getPreferredWidth: function(forHeight) {
         let node = this.actor.get_theme_node();
         forHeight = node.adjust_for_height(forHeight);
 
@@ -57,7 +57,7 @@ CheckBoxContainer.prototype = {
         return [min, nat];
     },
 
-    _getPreferredHeight: function(actor, forWidth) {
+    _getPreferredHeight: function(forWidth) {
         let [minBoxHeight, natBoxHeight] =
             this._box.get_preferred_height(-1);
         let [minLabelHeight, natLabelHeight] =
@@ -66,7 +66,7 @@ CheckBoxContainer.prototype = {
         return [Math.max(minBoxHeight, minLabelHeight), Math.max(natBoxHeight, natLabelHeight)];
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
         let availWidth = box.x2 - box.x1;
         let availHeight = box.y2 - box.y1;
 

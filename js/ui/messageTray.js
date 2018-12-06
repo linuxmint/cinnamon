@@ -827,7 +827,7 @@ Notification.prototype = {
         this._spacing = this._table.get_theme_node().get_length('spacing-columns');
     },
 
-    _bannerBoxGetPreferredWidth: function(actor, forHeight) {
+    _bannerBoxGetPreferredWidth: function(forHeight) {
         let min_size = 0, natural_size = 0;
         let [titleMin, titleNat] = this._titleLabel.get_preferred_width(forHeight);
         let [bannerMin, bannerNat] = this._bannerLabel.get_preferred_width(forHeight);
@@ -843,7 +843,7 @@ Notification.prototype = {
         return [min_size, natural_size];
     },
 
-    _bannerBoxGetPreferredHeight: function(actor, forWidth) {
+    _bannerBoxGetPreferredHeight: function(forWidth) {
         let min_size = 0, natural_size = 0;
         if (this._inNotificationBin) {
             let [titleMin, titleNat] = this._titleLabel.get_preferred_height(forWidth);
@@ -857,7 +857,7 @@ Notification.prototype = {
         return [min_size, natural_size];
     },
 
-    _bannerBoxAllocate: function(actor, box, flags) {
+    _bannerBoxAllocate: function(box, flags) {
         let availWidth = box.x2 - box.x1;
 
         let [titleMinW, titleNatW] = this._titleLabel.get_preferred_width(-1);
@@ -1079,15 +1079,15 @@ Source.prototype = {
         this.notifications = [];
     },
 
-    _getPreferredWidth: function (actor, forHeight) {
+    _getPreferredWidth: function (forHeight) {
         return this._iconBin.get_preferred_width(forHeight);
     },
 
-    _getPreferredHeight: function (actor, forWidth) {
+    _getPreferredHeight: function (forWidth) {
         return this._iconBin.get_preferred_height(forWidth);
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
         // the iconBin should fill our entire box
         this._iconBin.allocate(box, flags);
 

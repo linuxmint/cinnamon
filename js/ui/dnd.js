@@ -700,7 +700,7 @@ GenericDragItemContainer.prototype = {
         this.animatingOut = false;
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
         if (this.child == null)
             return;
 
@@ -722,7 +722,7 @@ GenericDragItemContainer.prototype = {
         this.child.allocate(childBox, flags);
     },
 
-    _getPreferredHeight: function(actor, forWidth) {
+    _getPreferredHeight: function(forWidth) {
         let min_size = 0;
         let natural_size = 0;
 
@@ -736,7 +736,7 @@ GenericDragItemContainer.prototype = {
         return [min_size, natural_size];
     },
 
-    _getPreferredWidth: function(actor, forHeight) {
+    _getPreferredWidth: function(forHeight) {
         let min_size = 0;
         let natural_size = 0;
 

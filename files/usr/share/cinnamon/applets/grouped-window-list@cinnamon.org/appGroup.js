@@ -340,7 +340,7 @@ class AppGroup {
         }
     }
 
-    getPreferredWidth(actor, forHeight, alloc) {
+    getPreferredWidth(forHeight) {
         let minSize = 0, naturalSize = 0;
         let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(forHeight);
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
@@ -358,13 +358,13 @@ class AppGroup {
         return [minSize, naturalSize];
     }
 
-    getPreferredHeight(actor, forWidth, alloc) {
+    getPreferredHeight(forWidth) {
         let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_height(forWidth);
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_height(forWidth);
         return [Math.min(iconMinSize, labelMinSize), Math.max(iconNaturalSize, labelNaturalSize)];
     }
 
-    allocate(actor, box, flags) {
+    allocate(box, flags) {
         let allocWidth = box.x2 - box.x1;
         let allocHeight = box.y2 - box.y1;
         let childBox = new Clutter.ActorBox();

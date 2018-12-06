@@ -138,9 +138,9 @@ BoxPointer.prototype = {
     /**
      * setArrowSide:
      * @side (St.Side): The new side of the menu
-     * 
+     *
      * Sets the arrow side of the menu. Note that the side is the side
-     * of the source actor, not the menu, e.g. If St.Side.TOP is set, 
+     * of the source actor, not the menu, e.g. If St.Side.TOP is set,
      * then the menu will appear below the source actor (the source
      * actor will be on top of the menu)
      */
@@ -164,7 +164,7 @@ BoxPointer.prototype = {
         }
     },
 
-    _getPreferredWidth: function(actor, forHeight) {
+    _getPreferredWidth: function(forHeight) {
         let alloc = {};
         let [minInternalSize, natInternalSize] = this.bin.get_preferred_width(forHeight);
         alloc.min_size = minInternalSize;
@@ -173,7 +173,7 @@ BoxPointer.prototype = {
         return [alloc.min_size, alloc.natural_size];
     },
 
-    _getPreferredHeight: function(actor, forWidth) {
+    _getPreferredHeight: function(forWidth) {
         let alloc = {};
         let [minSize, naturalSize] = this.bin.get_preferred_height(forWidth);
         alloc.min_size = minSize;
@@ -182,7 +182,7 @@ BoxPointer.prototype = {
         return [alloc.min_size, alloc.natural_size];
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
         let themeNode = this.actor.get_theme_node();
         let borderWidth = themeNode.get_length('-arrow-border-width');
         let rise = themeNode.get_length('-arrow-rise');

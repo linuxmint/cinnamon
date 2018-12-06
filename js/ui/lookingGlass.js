@@ -308,7 +308,7 @@ Inspector.prototype = {
         }
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
         if (!this._eventHandler)
             return;
 

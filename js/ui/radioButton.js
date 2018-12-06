@@ -37,13 +37,13 @@ RadioButtonContainer.prototype = {
         this._spacing = 0;
     },
 
-    _getPreferredWidth: function(actor, forHeight) {
+    _getPreferredWidth: function(forHeight) {
         let [minWidth, natWidth] = this._box.get_preferred_width(forHeight);
 
         return [minWidth + this._spacing, natWidth + this._spacing];
     },
 
-    _getPreferredHeight: function(actor, forWidth) {
+    _getPreferredHeight: function(forWidth) {
         let [minBoxHeight, natBoxHeight] =
             this._box.get_preferred_height(-1);
         let [minLabelHeight, natLabelHeight] =
@@ -52,7 +52,7 @@ RadioButtonContainer.prototype = {
         return [Math.max(minBoxHeight, 2 * minLabelHeight), Math.max(natBoxHeight, 2 * natLabelHeight)];
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
         let availWidth = box.x2 - box.x1;
         let availHeight = box.y2 - box.y1;
 
