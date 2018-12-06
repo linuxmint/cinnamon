@@ -20,7 +20,7 @@ const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 const AppletManager = imports.ui.appletManager;
-const {GenericContainer} = imports.ui.genericContainer;
+const {newGObject} = imports.ui.genericContainer;
 
 var ANIMATION_TIME = .2;
 var NOTIFICATION_TIMEOUT = 4;
@@ -469,7 +469,7 @@ Notification.prototype = {
         // make St.Table or St.BoxLayout do this the way we want (don't
         // show banner at all if title needs to be ellipsized), so we
         // use Cinnamon.GenericContainer.
-        this._bannerBox = new GenericContainer({}, {
+        this._bannerBox = newGObject(St.Widget, {}, {
             allocate: (...args) => this._bannerBoxAllocate(...args),
             get_preferred_width: (...args) => this._bannerBoxGetPreferredWidth(...args),
             get_preferred_height: (...args) => this._bannerBoxGetPreferredHeight(...args)
@@ -1051,7 +1051,7 @@ Source.prototype = {
     _init: function(title) {
         this.title = title;
 
-        this.actor = new GenericContainer({}, {
+        this.actor = newGObject(St.Widget, {}, {
             allocate: (...args) => this._allocate(...args),
             get_preferred_width: (...args) => this._getPreferredWidth(...args),
             get_preferred_height: (...args) => this._getPreferredHeight(...args)

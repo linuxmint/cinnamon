@@ -15,7 +15,7 @@ const System = imports.system;
 const Extension = imports.ui.extension;
 const History = imports.misc.history;
 const Main = imports.ui.main;
-const {GenericContainer} = imports.ui.genericContainer;
+const {newGObject} = imports.ui.genericContainer;
 
 /* Imports...feel free to add here as needed */
 var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
@@ -240,7 +240,7 @@ function Inspector() {
 
 Inspector.prototype = {
     _init: function() {
-        let container = new GenericContainer({
+        let container = newGObject(St.Widget, {
             width: 0,
             height: 0
         }, {

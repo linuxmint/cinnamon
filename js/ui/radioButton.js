@@ -2,7 +2,7 @@ const Clutter = imports.gi.Clutter;
 const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
-const {GenericContainer} = imports.ui.genericContainer;
+const {newGObject} = imports.ui.genericContainer;
 const Signals = imports.signals;
 
 const Lang = imports.lang;
@@ -12,7 +12,7 @@ function RadioButtonContainer() {
 }
 RadioButtonContainer.prototype = {
     _init: function() {
-        this.actor = new GenericContainer({
+        this.actor = newGObject(St.Widget, {
             y_align: St.Align.MIDDLE
         }, {
             allocate: (...args) => this._allocate(...args),
@@ -150,9 +150,9 @@ RadioButtonGroup.prototype = {
 
    addButton: function(buttonId, label) {
       this.radioButton = new RadioButton(label);
-      this.radioButton.actor.connect("clicked", 
+      this.radioButton.actor.connect("clicked",
          Lang.bind(this, function(actor) {
-            this.buttonClicked(actor, buttonId); 
+            this.buttonClicked(actor, buttonId);
          }));
 
       this._buttons.push({ id: buttonId, button: this.radioButton });
@@ -172,7 +172,7 @@ RadioButtonGroup.prototype = {
                 button['button'].actor.checked = true;
             }
         }
-      
+
         // Only trigger real changes to radio selection.
         if (buttonId !== this._activeId) {
             this._activeId = buttonId;

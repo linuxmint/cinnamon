@@ -9,7 +9,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
-const {GenericContainer} = imports.ui.genericContainer;
+const {newGObject} = imports.ui.genericContainer;
 
 const Params = imports.misc.params;
 
@@ -685,7 +685,7 @@ function GenericDragItemContainer() {
 
 GenericDragItemContainer.prototype = {
     _init: function() {
-        this.actor = new GenericContainer({
+        this.actor = newGObject(St.Widget, {
             style_class: 'drag-item-container'
         }, {
             allocate: (...args) => this._allocate(...args),

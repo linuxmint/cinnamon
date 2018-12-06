@@ -61,7 +61,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Settings = imports.ui.settings;
 const SignalManager = imports.misc.signalManager;
 const Tooltips = imports.ui.tooltips;
-const {GenericContainer} = imports.ui.genericContainer;
+const {newGObject} = imports.ui.genericContainer;
 
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
@@ -231,7 +231,7 @@ class WindowPreview extends Tooltips.TooltipBase {
 
 class AppMenuButton {
     constructor(applet, metaWindow, alert) {
-        this.actor = new GenericContainer({
+        this.actor = newGObject(St.Widget, {
             name: 'appMenu',
             style_class: 'window-list-item-box',
             reactive: true,

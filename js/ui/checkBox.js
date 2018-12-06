@@ -2,7 +2,7 @@ const Clutter = imports.gi.Clutter;
 const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
-const {GenericContainer} = imports.ui.genericContainer;
+const {newGObject} = imports.ui.genericContainer;
 const Params = imports.misc.params;
 
 const Lang = imports.lang;
@@ -13,7 +13,7 @@ function CheckBoxContainer() {
 
 CheckBoxContainer.prototype = {
     _init: function() {
-        this.actor = new GenericContainer({
+        this.actor = newGObject(St.Widget, {
             y_align: St.Align.MIDDLE
         }, {
             allocate: (...args) => this._allocate(...args),

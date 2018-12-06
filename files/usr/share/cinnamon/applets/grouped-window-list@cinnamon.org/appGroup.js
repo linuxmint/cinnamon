@@ -10,7 +10,7 @@ const PopupMenu = imports.ui.popupMenu;
 const {SignalManager} = imports.misc.signalManager;
 const {each, findIndex, unref} = imports.misc.util;
 const {createStore} = imports.misc.state;
-const {GenericContainer} = imports.ui.genericContainer;
+const {newGObject} = imports.ui.genericContainer;
 
 const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
 const {
@@ -88,7 +88,7 @@ class AppGroup {
         this.labelVisible = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
         this._progress = 0;
 
-        this.actor = new GenericContainer({
+        this.actor = newGObject(St.Widget, {
             name: 'appButton',
             style_class: 'grouped-window-list-item-box',
             important: true,

@@ -25,7 +25,7 @@ const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const PopupMenu = imports.ui.popupMenu;
-const {GenericContainer} = imports.ui.genericContainer;
+const {newGObject} = imports.ui.genericContainer;
 const SignalManager = imports.misc.signalManager;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
@@ -1864,14 +1864,19 @@ Panel.prototype = {
 
         this.themeSettings = new Gio.Settings({ schema_id: 'org.cinnamon.theme' });
 
-        this.actor = new GenericContainer({
+        this.actor = newGObject(St.Widget, {
             name: 'panel',
             reactive: true
         }, {
             allocate: (...args) => this._allocate(...args),
             get_preferred_width: (...args) => this._getPreferredWidth(...args),
-            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+            get_preferred_height: (...args) => this._getPreferredHeight(...args),
+            queue_relayout: () => this._setPanelHeight(),
+            enter_event: () => this._enterPanel(),
+            leave_event: () => this._leavePanel(),
+            button_press_event: (e) => this._onButtonPressEvent(e) // Clutter.ButtonEvent
         });
+
         this.addPanelStyleClass(this.panelPosition);
 
         this.actor._delegate = this;
@@ -1905,11 +1910,7 @@ Panel.prototype = {
         this._onPanelEditModeChanged();
         this._processPanelAutoHide();
 
-        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
         this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
-        this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
-        this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
-        this.actor.connect('queue-relayout', () => this._setPanelHeight());
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);
@@ -2384,16 +2385,14 @@ Panel.prototype = {
         this.actor.queue_relayout();
     },
 
-    _onButtonPressEvent: function (actor, event) {
-        if (event.get_button() == 1) {
+    _onButtonPressEvent: function (event) {
+        let {button, x, y} = event;
+        if (button == 1) {
             if (this._context_menu.isOpen)
                 this._context_menu.toggle();
         }
-        if (event.get_button() == 3) {  // right click
+        if (button == 3) {  // right click
             try {
-                let [x, y] = event.get_coords();
-                let xe = x;
-                let ye = y;
                 let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
 
                 // NB test on parent fails with centre aligned vertical box, but works for the test against the actor

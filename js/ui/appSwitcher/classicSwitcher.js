@@ -13,7 +13,7 @@ const Mainloop = imports.mainloop;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
-const {GenericContainer} = imports.ui.genericContainer;
+const {newGObject} = imports.ui.genericContainer;
 
 const WindowUtils = imports.misc.windowUtils;
 
@@ -42,11 +42,11 @@ function ClassicSwitcher() {
 
 ClassicSwitcher.prototype = {
     __proto__: AppSwitcher.AppSwitcher.prototype,
-    
+
     _init: function() {
         AppSwitcher.AppSwitcher.prototype._init.apply(this, arguments);
 
-        this.actor = new GenericContainer({
+        this.actor = newGObject(St.Widget, {
             name: 'altTabPopup',
             reactive: true,
             visible: false
@@ -64,7 +64,7 @@ ClassicSwitcher.prototype = {
 
         if (!this._setupModal())
             return;
-            
+
         let styleSettings = global.settings.get_string("alttab-switcher-style");
         let features = styleSettings.split('+');
         this._iconsEnabled = features.indexOf('icons') !== -1;
@@ -75,7 +75,7 @@ ClassicSwitcher.prototype = {
 
         this._showThumbnails = this._thumbnailsEnabled && !this._iconsEnabled;
         this._showArrows = this._thumbnailsEnabled && this._iconsEnabled;
-        
+
         this._updateList(0);
 
         // Need to force an allocation so we can figure out whether we
@@ -141,12 +141,12 @@ ClassicSwitcher.prototype = {
 
     _show: function() {
         Main.panelManager.panels.forEach(function(panel) { panel.actor.set_reactive(false); });
-        
+
         this.actor.opacity = 255;
         this._initialDelayTimeoutId = 0;
         this._next();
     },
-    
+
     _hide: function() {
         // window title and icon
         if(this._windowTitle) {
@@ -172,7 +172,7 @@ ClassicSwitcher.prototype = {
     _updateList: function(direction) {
         if(direction !== 0)
             return;
-        
+
         if (this._appList) {
             this._clearPreview();
             this._destroyThumbnails();
@@ -186,7 +186,7 @@ ClassicSwitcher.prototype = {
         }
         this._appList.connect('item-activated', Lang.bind(this, this._appActivated));
         this._appList.connect('item-entered', Lang.bind(this, this._appEntered));
-        
+
         this._appIcons = this._appList.icons;
     },
 
@@ -212,17 +212,17 @@ ClassicSwitcher.prototype = {
         this._updateList(0);
         this._select(0);
     },
-    
+
     _setCurrentWindow: function(window) {
         this._appList.highlight(this._currentIndex, false);
         this._doWindowPreview();
         this._destroyThumbnails();
-        
+
         if (this._thumbnailTimeoutId != 0) {
             Mainloop.source_remove(this._thumbnailTimeoutId);
             this._thumbnailTimeoutId = 0;
         }
-        
+
         if (this._showArrows) {
             this._thumbnailTimeoutId = Mainloop.timeout_add(
                 THUMBNAIL_POPUP_TIME, Lang.bind(this, function() {
@@ -260,7 +260,7 @@ ClassicSwitcher.prototype = {
     _windowActivated : function(thumbnailList, n) {
         this._activateSelected();
     },
-    
+
     _clearPreview: function() {
         if (this._previewClones) {
             for (let i = 0; i < this._previewClones.length; ++i) {
@@ -279,7 +279,7 @@ ClassicSwitcher.prototype = {
             this._previewClones = null;
         }
     },
-    
+
     _doWindowPreview: function() {
         if (!this._previewEnabled || this._windows.length < 1)
         {
@@ -294,7 +294,7 @@ ClassicSwitcher.prototype = {
         let delay = PREVIEW_DELAY_TIMEOUT;
         this._displayPreviewTimeoutId = Mainloop.timeout_add(delay, Lang.bind(this, this._showWindowPreview));
     },
-    
+
     _showWindowPreview: function() {
         this._displayPreviewTimeoutId = 0;
 
@@ -354,7 +354,7 @@ ClassicSwitcher.prototype = {
         this.actor.remove_actor(thumbnailsActor);
         thumbnailsActor.destroy();
         this.thumbnailsVisible = false;
-        
+
     },
 
     _createThumbnails : function() {
@@ -398,10 +398,10 @@ AppIcon.prototype = {
         let title = window.get_title();
         if (title) {
             if (window.minimized) {
-                this.label = new St.Label({ text: "[" + title + "]"});               
-                let contrast_effect = new Clutter.BrightnessContrastEffect();                
+                this.label = new St.Label({ text: "[" + title + "]"});
+                let contrast_effect = new Clutter.BrightnessContrastEffect();
                 contrast_effect.set_brightness_full(-0.5, -0.5, -0.5);
-                this._iconBin.add_effect(contrast_effect);                
+                this._iconBin.add_effect(contrast_effect);
             }
             else if (window.tile_type == Meta.WindowTileType.TILED) {
                 this.label = new St.Label({ text: "|" + title });
@@ -410,9 +410,9 @@ AppIcon.prototype = {
                 this.label = new St.Label({ text: "||" + title });
             }
             else {
-                this.label = new St.Label({ text: title });    
+                this.label = new St.Label({ text: title });
             }
-            
+
             let bin = new St.Bin({ x_align: St.Align.MIDDLE });
             bin.add_actor(this.label);
             this.actor.add(bin);
@@ -454,7 +454,7 @@ function SwitcherList(squareItems, activeMonitor) {
 
 SwitcherList.prototype = {
     _init : function(squareItems, activeMonitor) {
-        this.actor = new GenericContainer({
+        this.actor = newGObject(St.Widget, {
             style_class: 'switcher-list'
         }, {
             allocate: (...args) => this._allocateTop(...args),
@@ -464,7 +464,7 @@ SwitcherList.prototype = {
 
         // Here we use a GenericContainer so that we can force all the
         // children except the separator to have the same width.
-        this._list = new GenericContainer({
+        this._list = newGObject(St.Widget, {
             style_class: 'switcher-list-item-container'
         }, {
             allocate: (...args) => this._allocate(...args),
@@ -887,10 +887,10 @@ AppList.prototype = {
         if (this._curApp != -1) {
             this._arrows[this._curApp].hide();
         }
-        
+
         SwitcherList.prototype.highlight.call(this, n, justOutline);
         this._curApp = n;
- 
+
         if (n != -1 && this._showArrows) {
             this._arrows[n].show();
         }

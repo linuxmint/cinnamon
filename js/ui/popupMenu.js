@@ -17,7 +17,7 @@ const SignalManager = imports.misc.signalManager;
 const Tweener = imports.ui.tweener;
 const CheckBox = imports.ui.checkBox;
 const RadioButton = imports.ui.radioButton;
-const {GenericContainer} = imports.ui.genericContainer;
+const {newGObject} = imports.ui.genericContainer;
 
 const Params = imports.misc.params;
 const Util = imports.misc.util;
@@ -108,7 +108,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
                                          focusOnHover: true
                                        });
         this._signals = new SignalManager.SignalManager(null);
-        this.actor = new GenericContainer({
+        this.actor = newGObject(St.Widget, {
             style_class: 'popup-menu-item',
             reactive: params.reactive,
             track_hover: params.reactive,
@@ -2118,7 +2118,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
 
         this.setOrientation(orientation);
 
-        this._boxWrapper = new GenericContainer({}, {
+        this._boxWrapper = newGObject(St.Widget, {}, {
             allocate: (...args) => this._boxAllocate(...args),
             get_preferred_width: (...args) => this._boxGetPreferredWidth(...args),
             get_preferred_height: (...args) => this._boxGetPreferredHeight(...args)

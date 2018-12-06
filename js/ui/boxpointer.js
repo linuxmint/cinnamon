@@ -5,7 +5,7 @@ const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Meta = imports.gi.Meta;
 const St = imports.gi.St;
-const {GenericContainer} = imports.ui.genericContainer;
+const {newGObject} = imports.ui.genericContainer;
 
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
@@ -40,7 +40,7 @@ BoxPointer.prototype = {
         this._arrowOrigin = 0;
         this.actor = new St.Bin({ x_fill: true,
                                   y_fill: true });
-        this._container = new GenericContainer({}, {
+        this._container = newGObject(St.Widget, {}, {
             allocate: (...args) => this._allocate(...args),
             get_preferred_width: (...args) => this._getPreferredWidth(...args),
             get_preferred_height: (...args) => this._getPreferredHeight(...args)
