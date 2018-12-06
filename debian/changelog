@@ -1,3 +1,44 @@
+cinnamon (4.0.4) tessa; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Revert "Panel settings: Move symbolic setting to customize section"
+
+  [ Leigh Scott ]
+  * Update muffin minimum required version (#8076)
+
+  [ Michael Webster ]
+  * grouped window list: appGroup.js: account for the desktop scale factor when determining window list item widths
+
+  [ NikoKrause ]
+  * menu-applet: fix vanishing system buttons (#8107)
+
+  [ Clement Lefebvre ]
+  * Settings: Fix mintlocale-im launcher
+
+  [ NikoKrause ]
+  * fix broken slideshow applet (#8099)
+
+  [ James Ross ]
+  * AppletManager: perform _removeAppletFromPanel on idle (#8101)
+
+  [ Jason Hicks ]
+  * utils: Simplify URL regex to only support one layer of parentheses (#8079)
+  * gwl: Fix the drag actor being too big in high DPI (#8098)
+  * gwl: Fix spacing between icons and labels (#8091)
+  * gwl: Fix icon alignment in left oriented panels (#8084)
+  * gwl: Translate preferences context menu item (#8086)
+  * gwl: Speed up initialization (#8092)
+
+  [ Clement Lefebvre ]
+  * Xlet settings: Fix UUID filtering
+  * Adjust the default look of Cinnamon 4.0 (#8108)
+
+  [ Jason Hicks ]
+  * gwl: Fix unresponsive window dialog appearing when closing windows with middle click (#8109)
+  * gwl: Open new windows by holding ctrl and left clicking (#8103)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 06 Dec 2018 13:24:54 +0000
+
 cinnamon (4.0.3) tessa; urgency=medium
 
   [ Michael Webster ]
