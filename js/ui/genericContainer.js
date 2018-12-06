@@ -10,32 +10,32 @@ var GenericContainer = class GenericContainer extends St.Widget {
     }) {
         super._init(params);
         this.callbacks = callbacks;
+        this.node = null;
     }
 
     vfunc_allocate(box, flags) {
         this.set_allocation(box, flags);
-        if (!this.callbacks.allocate) return;
-        let node = this.get_theme_node();
-        if (node) {
-            box = node.get_content_box(box);
+        if (!this.node) this.node = this.get_theme_node();
+        if (this.node) {
+            box = this.node.get_content_box(box);
         }
         this.callbacks.allocate(this, box, flags);
     }
 
     vfunc_get_preferred_width(forWidth) {
-        let node = this.get_theme_node();
-        if (node && this.callbacks.get_preferred_width) {
-            let alloc = this.callbacks.get_preferred_width(this, forWidth);
-            return node.adjust_preferred_width(...alloc);
+        if (!this.node) this.node = this.get_theme_node();
+        if (this.node && this.callbacks.get_preferred_width) {
+            let [width, height] = this.callbacks.get_preferred_width(this, forWidth);
+            return this.node.adjust_preferred_width(width, height);
         }
         return [0, 0];
     }
 
     vfunc_get_preferred_height(forHeight) {
-        let node = this.get_theme_node();
-        if (node && this.callbacks.get_preferred_height) {
-            let alloc = this.callbacks.get_preferred_height(this, forHeight);
-            return node.adjust_preferred_height(...alloc);
+        if (!this.node) this.node = this.get_theme_node();
+        if (this.node && this.callbacks.get_preferred_height) {
+            let [width, height] = this.callbacks.get_preferred_height(this, forHeight);
+            return this.node.adjust_preferred_height(width, height);
         }
         return [0, 0];
     }
