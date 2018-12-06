@@ -664,7 +664,8 @@ class AppGroup {
 
         let shouldEndInstance = button === 2
             && this.state.settings.middleClickAction === 3
-            && this.groupState.lastFocused;
+            && this.groupState.lastFocused
+            && nWindows > 0;
 
         if (shouldStartInstance) {
             this.launchNewInstance();
