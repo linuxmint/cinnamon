@@ -1,3 +1,10 @@
+cinnamon (4.0.5) tessa; urgency=medium
+
+  * Revert "gwl: Open new windows by holding ctrl and left clicking (#8103)"
+  * gwl: Open new windows by holding ctrl and left clicking
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 06 Dec 2018 15:17:14 +0000
+
 cinnamon (4.0.4) tessa; urgency=medium
 
   [ Clement Lefebvre ]
