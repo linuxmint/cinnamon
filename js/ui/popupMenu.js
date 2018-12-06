@@ -495,12 +495,14 @@ var PopupSeparatorMenuItem = class PopupSeparatorMenuItem extends PopupBaseMenuI
     _init () {
         super._init.call(this, { reactive: false });
 
-        this._drawingArea = new St.DrawingArea({ style_class: 'popup-separator-menu-item' });
+        this._drawingArea = newGObject(St.DrawingArea, {style_class: 'popup-separator-menu-item'}, {
+            repaint: (area) => this._onRepaint(area)
+        });
         this.addActor(this._drawingArea, { span: -1, expand: true });
-        this._signals.connect(this._drawingArea, 'repaint', Lang.bind(this, this._onRepaint));
     }
 
-    _onRepaint(area) {
+    _onRepaint() {
+        let area = this._drawingArea;
         let cr = area.get_context();
         let themeNode = area.get_theme_node();
         let [width, height] = area.get_surface_size();
@@ -629,11 +631,14 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
             throw TypeError('The slider value must be a number');
         this._value = Math.max(Math.min(value, 1), 0);
 
-        this._slider = new St.DrawingArea({ style_class: 'popup-slider-menu-item', reactive: true });
+        this._slider = newGObject(St.DrawingArea, {style_class: 'popup-slider-menu-item', reactive: true}, {
+            repaint: () => this._sliderRepaint(),
+            button_press_event: (e) => this._startDragging(e),
+            button_release_event: () => this._endDragging(),
+            scroll_event: (e) => this._onScrollEvent(e),
+            motion_event: (e) => this._motionEvent(e)
+        });
         this.addActor(this._slider, { span: -1, expand: true });
-        this._signals.connect(this._slider, 'repaint', Lang.bind(this, this._sliderRepaint));
-        this._signals.connect(this.actor, 'button-press-event', Lang.bind(this, this._startDragging));
-        this._signals.connect(this.actor, 'scroll-event', Lang.bind(this, this._onScrollEvent));
 
         this._releaseId = this._motionId = 0;
         this._dragging = false;
@@ -648,7 +653,8 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         this._slider.queue_repaint();
     }
 
-    _sliderRepaint(area) {
+    _sliderRepaint() {
+        let area = this._slider;
         let cr = area.get_context();
         let themeNode = area.get_theme_node();
         let [width, height] = area.get_surface_size();
@@ -711,7 +717,7 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         cr.$dispose();
     }
 
-    _startDragging(actor, event) {
+    _startDragging(event) {
         if (this._dragging) // don't allow two drags at the same time
             return;
 
@@ -722,17 +728,12 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         // the event, but for some weird reason events are still delivered
         // outside the slider if using clutter_grab_pointer_for_device
         Clutter.grab_pointer(this._slider);
-        this._signals.connect(this._slider, 'button-release-event', Lang.bind(this, this._endDragging));
-        this._signals.connect(this._slider, 'motion-event', Lang.bind(this, this._motionEvent));
-        let absX, absY;
-        [absX, absY] = event.get_coords();
-        this._moveHandle(absX, absY);
+        let {x, y} = event;
+        this._moveHandle(x, y);
     }
 
     _endDragging() {
         if (this._dragging) {
-            this._signals.disconnect('button-release-event', this._slider);
-            this._signals.disconnect('motion-event', this._slider);
 
             Clutter.ungrab_pointer();
             this._dragging = false;
@@ -742,8 +743,8 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         return true;
     }
 
-    _onScrollEvent (actor, event) {
-        let direction = event.get_scroll_direction();
+    _onScrollEvent (event) {
+        let {direction} = event;
 
         if (direction == Clutter.ScrollDirection.DOWN) {
             this._value = Math.max(0, this._value - SLIDER_SCROLL_STEP);
@@ -756,10 +757,10 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         this.emit('value-changed', this._value);
     }
 
-    _motionEvent(actor, event) {
-        let absX, absY;
-        [absX, absY] = event.get_coords();
-        this._moveHandle(absX, absY);
+    _motionEvent(event) {
+        if (!this._dragging) return;
+        let {x, y} = event;
+        this._moveHandle(x, y);
         return true;
     }
 
@@ -1658,13 +1659,13 @@ var PopupMenuBase = class PopupMenuBase {
         this.sourceActor = sourceActor;
 
         this._signals = new SignalManager.SignalManager(null);
+        let args = {vertical: true};
         if (styleClass !== undefined) {
-            this.box = new St.BoxLayout({ style_class: styleClass,
-                                          vertical: true });
-        } else {
-            this.box = new St.BoxLayout({ vertical: true });
+            args.style_class = styleClass;
         }
-        this._signals.connect_after(this.box, 'queue-relayout', Lang.bind(this, this._menuQueueRelayout));
+        this.box = newGObject(St.BoxLayout, args, {
+            queue_relayout: () => this._menuQueueRelayout()
+        });
         this.length = 0;
 
         this.isOpen = false;
