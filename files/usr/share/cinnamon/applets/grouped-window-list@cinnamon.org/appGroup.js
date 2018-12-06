@@ -653,8 +653,12 @@ class AppGroup {
         let button = event.get_button();
         let nWindows = this.groupState.metaWindows.length;
 
+        let modifiers = Cinnamon.get_event_state(event);
+        let ctrlPressed = (modifiers & Clutter.ModifierType.CONTROL_MASK);
+
         let shouldStartInstance = (
-            (button === 1
+            (button === 1 && ctrlPressed)
+            || (button === 1
                 && this.groupState.isFavoriteApp
                 && nWindows === 0
                 && (this.state.settings.leftClickAction === 2 || nWindows < 1))
