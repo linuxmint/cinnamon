@@ -149,6 +149,8 @@ class AppGroup {
         this.signals.connect(this.actor, 'get-preferred-width', (...args) => this.getPreferredWidth(...args));
         this.signals.connect(this.actor, 'get-preferred-height', (...args) => this.getPreferredHeight(...args));
         this.signals.connect(this.actor, 'allocate', (...args) => this.allocate(...args));
+        this.signals.connect(this.actor, 'enter-event', (...args) => this.onEnter(...args));
+        this.signals.connect(this.actor, 'leave-event', (...args) => this.onLeave(...args));
         this.signals.connect(this.actor, 'button-release-event', (...args) => this.onAppButtonRelease(...args));
         this.signals.connect(this.actor, 'button-press-event', (...args) => this.onAppButtonPress(...args));
         this.signals.connect(this._draggable, 'drag-begin', (...args) => this.onDragBegin(...args));
@@ -652,8 +654,7 @@ class AppGroup {
         let nWindows = this.groupState.metaWindows.length;
 
         let shouldStartInstance = (
-            (button === 1 && this.state.ctrlKey)
-            || (button === 1
+            (button === 1
                 && this.groupState.isFavoriteApp
                 && nWindows === 0
                 && (this.state.settings.leftClickAction === 2 || nWindows < 1))
