@@ -43,37 +43,32 @@ var newGObject = function newGObject(parent, params, callbacks = {
 
         each(callbacks, (value, key) => {
             if (key === 'allocate') {
-                Class.prototype.vfunc_allocate = function(box, flags) {
+                Class.prototype.vfunc_allocate = function vfunc_allocate(box, flags) {
                     this.set_allocation(box, flags);
                     if (!this.node) this.node = this.get_theme_node(); // always returns a node during allocation
                     this.callbacks.allocate(this.node.get_content_box(box), flags);
                 };
             } else if (key === 'get_preferred_width') {
-                Class.prototype.vfunc_get_preferred_width = function(forWidth) {
+                Class.prototype.vfunc_get_preferred_width = function vfunc_get_preferred_width(forWidth) {
                     if (!this.node) this.node = this.get_theme_node();
                     let [min, nat] = this.callbacks.get_preferred_width(forWidth);
                     return this.node.adjust_preferred_width(min, nat);
                 };
             } else if (key === 'get_preferred_height') {
-                Class.prototype.vfunc_get_preferred_height = function(forHeight) {
+                Class.prototype.vfunc_get_preferred_height = function vfunc_get_preferred_height(forHeight) {
                     if (!this.node) this.node = this.get_theme_node();
                     let [min, nat] = this.callbacks.get_preferred_height(forHeight);
                     return this.node.adjust_preferred_height(min, nat);
                 };
             } else { // Generic vfunc support
                 let prop = `vfunc_${key}`;
-                let parentFunc = parent.prototype[prop];
                 // Better to check this once than at every invocation
-                if (parentFunc) {
-                    Class.prototype[prop] = function(...args) {
+                Object.defineProperty(Class.prototype, prop, {
+                    value(...args) {
                         this.callbacks[key](...args);
-                        return parentFunc.call(this, ...args);
+                        if (parent.prototype[prop]) return parent.prototype[prop].call(this, ...args);
                     }
-                } else {
-                    Class.prototype[prop] = function(...args) {
-                        return this.callbacks[key](...args);
-                    }
-                }
+                });
             }
         });
     }
