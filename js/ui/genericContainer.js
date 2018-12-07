@@ -1,7 +1,5 @@
-const GObject = imports.gi.GObject;
-const Clutter = imports.gi.Clutter;
-const St = imports.gi.St;
-const {tryFn, find, each} = imports.misc.util;
+const {registerClass} = imports.gi.GObject;
+const {find, each} = imports.misc.util;
 
 let registered = [];
 
@@ -12,8 +10,11 @@ var newGObject = function newGObject(parent, params, callbacks = {
     queue_relayout: null
 }) {
     let parentName = parent.name;
-    let callbacksSignature = Object.keys(callbacks).sort().join(',');
-    let Class = find(registered, function(item) {
+    let callbacksSignature = Object.keys(callbacks).sort().join('_');
+    let name = `${parentName}_${callbacksSignature}`;
+    let Class;
+
+    Class = find(registered, function(item) {
         return item.parent === parentName
             && item.callbacks === callbacksSignature;
     });
@@ -26,62 +27,58 @@ var newGObject = function newGObject(parent, params, callbacks = {
         // class based on the callbacks specified, so only instances that have defined
         // vfunc callbacks will have their corresponding vfunc on the prototype. Then cache
         // the classes and index them uniquely based on the vfuncs they contain.
-        // Because of the way GObject.registerClass works, we can't mutate the prototype
-        // and add vfuncs later. After much trial and error, this is currently the best way to
-        // get dynamically assigned vfuncs to work.
+        // We need to generate a class from the function constructor because GObject uses the
+        // class name for identification.
         let str = `
-        return class ${parentName}_${Date.now()} extends parent {
+        return class ${name} extends parent {
             _init(params, callbacks) {
                 super._init(params);
                 this.callbacks = callbacks;
-                this.node = null;
-            }`
+                this._node = null;
+                this.lastWidth = [0, 0];
+                this.lastHeight = [0, 0];
+            }
+        }`
+        Class = Function('parent', str).call(this, parent);
 
         each(callbacks, (value, key) => {
             if (key === 'allocate') {
-                str += `
-                vfunc_allocate(box, flags) {
+                Class.prototype.vfunc_allocate = function(box, flags) {
                     this.set_allocation(box, flags);
-                    if (!this.node) this.node = this.get_theme_node();
-                    if (this.node) {
-                        box = this.node.get_content_box(box);
-                    }
-                    this.callbacks.allocate(box, flags);
-                }`
+                    if (!this.node) this.node = this.get_theme_node(); // always returns a node during allocation
+                    this.callbacks.allocate(this.node.get_content_box(box), flags);
+                };
             } else if (key === 'get_preferred_width') {
-                str += `
-                vfunc_get_preferred_width(forWidth) {
+                Class.prototype.vfunc_get_preferred_width = function(forWidth) {
                     if (!this.node) this.node = this.get_theme_node();
-                    if (this.node) {
-                        let [width, height] = this.callbacks.get_preferred_width(forWidth);
-                        return this.node.adjust_preferred_width(width, height);
-                    }
-                    return super.vfunc_get_preferred_width(forWidth);
-                }`
+                    let [min, nat] = this.callbacks.get_preferred_width(forWidth);
+                    return this.node.adjust_preferred_width(min, nat);
+                };
             } else if (key === 'get_preferred_height') {
-                str += `
-                vfunc_get_preferred_height(forHeight) {
+                Class.prototype.vfunc_get_preferred_height = function(forHeight) {
                     if (!this.node) this.node = this.get_theme_node();
-                    if (this.node) {
-                        let [width, height] = this.callbacks.get_preferred_height(forHeight);
-                        return this.node.adjust_preferred_height(width, height);
+                    let [min, nat] = this.callbacks.get_preferred_height(forHeight);
+                    return this.node.adjust_preferred_height(min, nat);
+                };
+            } else { // Generic vfunc support
+                let prop = `vfunc_${key}`;
+                let parentFunc = parent.prototype[prop];
+                // Better to check this once than at every invocation
+                if (parentFunc) {
+                    Class.prototype[prop] = function(...args) {
+                        this.callbacks[key](...args);
+                        return parentFunc.call(this, ...args);
                     }
-                    return super.vfunc_get_preferred_height(forHeight);
-                }`
-            } else {
-                str += `
-                vfunc_${key}(...args) {
-                    this.callbacks.${key}(...args);
-                    if (super.vfunc_${key}) return super.vfunc_${key}(...args);
-                }`
+                } else {
+                    Class.prototype[prop] = function(...args) {
+                        return this.callbacks[key](...args);
+                    }
+                }
             }
         });
-
-        str += '}';
-        Class = Function('parent', str).call(this, parent);
     }
 
-    Class = GObject.registerClass(Class);
+    Class = registerClass({GTypeName: name}, Class);
 
     registered.push({
         callbacks: callbacksSignature,

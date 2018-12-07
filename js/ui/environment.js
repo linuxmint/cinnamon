@@ -125,12 +125,11 @@ function init() {
     // Safe wrapper for theme inspection
     St.Widget.prototype.style_length = function(property) {
         if (this.is_finalized() || !this.realized) return 0;
-        if (!this.themeNode) {
-            this.themeNode = this.peek_theme_node();
-            this.connect('destroy', () => this.themeNode = null);
+        if (!this.node) {
+            this.node = this.peek_theme_node();
         }
-        if (!this.themeNode) return 0;
-        return this.themeNode.get_length(property);
+        if (!this.node) return 0;
+        return this.node.get_length(property);
     };
 
     let origToString = Object.prototype.toString;
