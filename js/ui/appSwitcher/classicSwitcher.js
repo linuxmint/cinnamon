@@ -469,10 +469,10 @@ SwitcherList.prototype = {
         }, {
             allocate: (...args) => this._allocate(...args),
             get_preferred_width: (...args) => this._getPreferredWidth(...args),
-            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+            get_preferred_height: (...args) => this._getPreferredHeight(...args),
+            style_changed: () => this._list.spacing = this._list.style_length('spacing')
         });
         this._list.spacing = 0;
-        this._list.connect('style-changed', () => this._list.spacing = this._list.style_length('spacing'));
 
         this._clipBin = new St.Bin({style_class: 'cbin'});
         this._clipBin.child = this._list;

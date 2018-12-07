@@ -27,19 +27,10 @@ function Overview() {
 
 Overview.prototype = {
     _init : function() {
-        this._spacing = 0;
-
         this._group = new St.Widget({ name: 'overview',
                                       reactive: true });
         this._group._delegate = this;
-        this._group.connect('style-changed',
-            Lang.bind(this, function() {
-                let node = this._group.get_theme_node();
-                let spacing = node.get_length('spacing');
-                if (spacing != this._spacing) {
-                    this._spacing = spacing;
-                }
-            }));
+
         this._group.hide();
         global.overlay_group.add_actor(this._group);
 

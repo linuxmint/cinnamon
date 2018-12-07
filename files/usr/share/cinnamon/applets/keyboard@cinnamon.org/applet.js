@@ -8,6 +8,7 @@ const Util = imports.misc.util;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Cairo = imports.cairo;
+const {newGObject} = imports.ui.genericContainer;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
@@ -16,10 +17,10 @@ class EmblemedIcon {
         this.path = path;
         this.id = id;
 
-        this.actor = new St.DrawingArea({ style_class: style_class });
-
-        this.actor.connect("style-changed", Lang.bind(this, this._style_changed));
-        this.actor.connect("repaint", Lang.bind(this, this._repaint));
+        this.actor = newGObject(St.DrawingArea, {style_class}, {
+            style_changed: () => this._style_changed(),
+            repaint: () => this._repaint()
+        });
     }
 
     _style_changed(actor) {
@@ -28,7 +29,8 @@ class EmblemedIcon {
         this.actor.natural_width = this.actor.natural_height = icon_size;
     }
 
-    _repaint(actor) {
+    _repaint() {
+        let {actor} = this;
         let cr = actor.get_context();
         let [w, h] = actor.get_surface_size();
 

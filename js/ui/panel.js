@@ -1271,10 +1271,12 @@ PanelCorner.prototype = {
         this._cornertype = cornertype;
         this.cornerRadius = 0;
 
-        this.actor = new St.DrawingArea({ style_class: 'panel-corner' });
-
-        this.actor.connect('style-changed', Lang.bind(this, this._styleChanged));
-        this.actor.connect('repaint', Lang.bind(this, this._repaint));
+        this.actor = newGObject(St.DrawingArea, {
+            style_class: 'panel-corner'
+        }, {
+            style_changed: () => this._styleChanged(),
+            repaint: () => this._repaint()
+        });
     },
 
     _repaint: function() {
@@ -1874,7 +1876,8 @@ Panel.prototype = {
             queue_relayout: () => this._setPanelHeight(),
             enter_event: () => this._enterPanel(),
             leave_event: () => this._leavePanel(),
-            button_press_event: (e) => this._onButtonPressEvent(e) // Clutter.ButtonEvent
+            button_press_event: (e) => this._onButtonPressEvent(e), // Clutter.ButtonEvent
+            style_changed: () => this._moveResizePanel()
         });
 
         this.addPanelStyleClass(this.panelPosition);
@@ -1909,8 +1912,6 @@ Panel.prototype = {
         this._moveResizePanel();
         this._onPanelEditModeChanged();
         this._processPanelAutoHide();
-
-        this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);

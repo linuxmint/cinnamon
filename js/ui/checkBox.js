@@ -18,13 +18,9 @@ CheckBoxContainer.prototype = {
         }, {
             allocate: (...args) => this._allocate(...args),
             get_preferred_width: (...args) => this._getPreferredWidth(...args),
-            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+            get_preferred_height: (...args) => this._getPreferredHeight(...args),
+            style_changed: () => this._spacing = Math.round(this.actor.style_length('spacing'))
         });
-        this.actor.connect('style-changed', Lang.bind(this,
-            function() {
-                let node = this.actor.get_theme_node();
-                this._spacing = Math.round(node.get_length('spacing'));
-            }));
         this.actor.request_mode = Clutter.RequestMode.HEIGHT_FOR_WIDTH;
 
         this._box = new St.Bin();

@@ -94,18 +94,23 @@ URLHighlighter.prototype = {
     _init: function(text, lineWrap, allowMarkup) {
         if (!text)
             text = '';
-        this.actor = new St.Label({ reactive: true, style_class: 'url-highlighter' });
-        this._linkColor = '#ccccff';
-        this.actor.connect('style-changed', Lang.bind(this, function() {
-            let [hasColor, color] = this.actor.get_theme_node().lookup_color('link-color', false);
-            if (hasColor) {
-                let linkColor = color.to_string().substr(0, 7);
-                if (linkColor != this._linkColor) {
-                    this._linkColor = linkColor;
-                    this._highlightUrls();
+        this.actor = newGObject(St.Label, {
+            reactive: true,
+            style_class: 'url-highlighter'
+        }, {
+            style_changed: () => {
+                let [hasColor, color] = this.actor.get_theme_node().lookup_color('link-color', false);
+                if (hasColor) {
+                    let linkColor = color.to_string().substr(0, 7);
+                    if (linkColor !== this._linkColor) {
+                        this._linkColor = linkColor;
+                        this._highlightUrls();
+                    }
                 }
             }
-        }));
+        });
+        this._linkColor = '#ccccff';
+
         if (lineWrap) {
             this.actor.clutter_text.line_wrap = true;
             this.actor.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
@@ -457,9 +462,12 @@ Notification.prototype = {
         this.actor.connect('clicked', Lang.bind(this, this._onClicked));
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
-        this._table = new St.Table({ name: 'notification',
-                                     reactive: true });
-        this._table.connect('style-changed', Lang.bind(this, this._styleChanged));
+        this._table = newGObject(St.Table, {
+            name: 'notification',
+            reactive: true
+        }, {
+            style_changed: () => this._styleChanged()
+        });
         this.actor.set_child(this._table);
 
         this._buttonFocusManager = St.FocusManager.get_for_stage(global.stage);

@@ -14,6 +14,7 @@ const Main = imports.ui.main;
 const Overview = imports.ui.overview;
 const PopupMenu = imports.ui.popupMenu;
 const Tweener = imports.ui.tweener;
+const {newGObject} = imports.ui.genericContainer;
 const PointerTracker = imports.misc.pointerTracker;
 const GridNavigator = imports.misc.gridNavigator;
 const WindowUtils = imports.misc.windowUtils;
@@ -223,7 +224,12 @@ WindowOverlay.prototype = {
         }
 
         // Window border
-        this.border = new St.Widget({ style_class: 'window-border', important: true });
+        this.border = newGObject(St.Widget, {
+            style_class: 'window-border',
+            important: true
+        }, {
+           style_changed: () => this._onStyleChanged()
+        });
         this.borderWidth = 0;
 
         // Caption (icon + title)
@@ -252,11 +258,6 @@ WindowOverlay.prototype = {
 
         this.caption = caption;
         this.closeButton = button;
-
-        let styleChangedCallback = this._onStyleChanged.bind(this);
-        this.border.connect('style-changed', styleChangedCallback);
-        caption.connect('style-changed', styleChangedCallback);
-        button.connect('style-changed', styleChangedCallback);
 
         this._pointerTracker = new PointerTracker.PointerTracker();
         windowClone.actor.connect('motion-event', this._onPointerMotion.bind(this));

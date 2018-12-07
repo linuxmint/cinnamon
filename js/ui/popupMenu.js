@@ -117,10 +117,10 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         }, {
             allocate: (...args) => this._allocate(...args),
             get_preferred_width: (...args) => this._getPreferredWidth(...args),
-            get_preferred_height: (...args) => this._getPreferredHeight(...args)
+            get_preferred_height: (...args) => this._getPreferredHeight(...args),
+            style_changed: () => this._onStyleChanged()
         });
 
-        this._signals.connect(this.actor, 'style-changed', Lang.bind(this, this._onStyleChanged));
         this.actor._delegate = this;
 
         this._children = [];
@@ -149,8 +149,8 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         }
     }
 
-    _onStyleChanged(actor) {
-        this._spacing = Math.round(actor.get_theme_node().get_length('spacing'));
+    _onStyleChanged() {
+        this._spacing = Math.round(this.actor.get_theme_node().get_length('spacing'));
     }
 
     _onButtonReleaseEvent(actor, event) {

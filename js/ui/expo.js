@@ -38,20 +38,9 @@ Expo.prototype = {
         this._background.hide();
         global.overlay_group.add_actor(this._background);
 
-        this._spacing = 0;
-
         this._group = new St.Widget({ name: 'expo',
                                       reactive: true });
         this._group._delegate = this;
-        this._group.connect('style-changed',
-            Lang.bind(this, function() {
-                let node = this._group.get_theme_node();
-                let spacing = node.get_length('spacing');
-                if (spacing != this._spacing) {
-                    this._spacing = spacing;
-                    this._relayout();
-                }
-            }));
 
         this.visible = false;           // animating to overview, in overview, animating out
         this._shown = false;            // show() and not hide()
@@ -201,11 +190,6 @@ Expo.prototype = {
         this._coverPane.set_position(0, 0);
         this._coverPane.set_size(primary.width, contentHeight);
 
-        let viewWidth = primary.width - this._spacing;
-        let viewHeight = contentHeight - 2 * this._spacing;
-        let viewY = contentY + this._spacing;
-        let viewX = rtl ? 0 : this._spacing;
-
         let node = this._addWorkspaceButton.get_theme_node();
         let buttonWidth = node.get_length('width');
         let buttonHeight = node.get_length('height');
@@ -220,9 +204,9 @@ Expo.prototype = {
         let buttonY = (primary.height - buttonHeight) / 2;
 
         this._addWorkspaceButton.set_position((primary.width - buttonWidth), buttonY);
-        this._addWorkspaceButton.set_size(buttonWidth, buttonHeight); 
+        this._addWorkspaceButton.set_size(buttonWidth, buttonHeight);
         if (this._addWorkspaceButton.get_theme_node().get_background_image() == null)
-            this._addWorkspaceButton.set_style('background-image: url("/usr/share/cinnamon/theme/add-workspace.png");'); 
+            this._addWorkspaceButton.set_style('background-image: url("/usr/share/cinnamon/theme/add-workspace.png");');
 
         this._windowCloseArea.set_position((primary.width - this._windowCloseArea.width) / 2 , primary.height);
         this._windowCloseArea.set_size(this._windowCloseArea.width, this._windowCloseArea.height);
@@ -288,7 +272,7 @@ Expo.prototype = {
 
         this._expo.connect('drag-begin', Lang.bind(this, this._showCloseArea));
         this._expo.connect('drag-end', Lang.bind(this, this._hideCloseArea));
-        
+
         let activeWorkspace = this._expo.lastActiveWorkspace;
         let activeWorkspaceActor = activeWorkspace.actor;
 
@@ -308,17 +292,17 @@ Expo.prototype = {
                 Tweener.addTween(clone, {
                     x: Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1,
                     y: Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1,
-                    scale_x: activeWorkspaceActor.get_scale()[0] , 
-                    scale_y: activeWorkspaceActor.get_scale()[1], 
+                    scale_x: activeWorkspaceActor.get_scale()[0] ,
+                    scale_y: activeWorkspaceActor.get_scale()[1],
                     time: ANIMATION_TIME,
-                    transition: 'easeOutQuad', 
+                    transition: 'easeOutQuad',
                     onComplete: function() {
                         global.overlay_group.remove_actor(clone);
                         clone.destroy();
                         if (index == Main.layoutManager.monitors.length < 1) {
                             this._showDone();
                         }
-                    }, 
+                    },
                     onCompleteScope: this
                 });
             }, this);

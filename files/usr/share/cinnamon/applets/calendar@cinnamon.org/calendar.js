@@ -9,6 +9,7 @@ const Pango = imports.gi.Pango;
 const Gettext_gtk30 = imports.gettext.domain('gtk30');
 const Cinnamon = imports.gi.Cinnamon;
 const Settings = imports.ui.settings;
+const {newGObject} = imports.ui.genericContainer;
 
 const MSECS_IN_DAY = 24 * 60 * 60 * 1000;
 const WEEKDATE_HEADER_WIDTH_DIGITS = 3;
@@ -166,12 +167,14 @@ class Calendar {
         // Start off with the current date
         this._selectedDate = new Date();
 
-        this.actor = new St.Table({ homogeneous: false,
-                                    style_class: 'calendar',
-                                    reactive: true });
-
-        this.actor.connect('scroll-event',
-                           Lang.bind(this, this._onScroll));
+        this.actor = newGObject(St.Table, {
+            homogeneous: false,
+            style_class: 'calendar',
+            reactive: true
+        }, {
+            style_changed: () => this._onStyleChange(),
+            scroll_event: (e) => this._onScroll(e)
+        });
 
         this._buildHeader ();
     }
@@ -213,8 +216,6 @@ class Calendar {
             this.actor.add(this._topBoxYear,
                        {row: 0, col: 0, col_span: offsetCols + 3});
         }
-
-        this.actor.connect('style-changed', Lang.bind(this, this._onStyleChange));
 
         let back = new St.Button({ style_class: 'calendar-change-month-back' });
         this._topBoxMonth.add(back);
@@ -263,7 +264,7 @@ class Calendar {
         this._firstDayIndex = this.actor.get_n_children();
     }
 
-    _onStyleChange(actor, event) {
+    _onStyleChange() {
         // width of a digit in pango units
         this._digitWidth = _getDigitWidth(this.actor) / Pango.SCALE;
         this._setWeekdateHeaderWidth();
@@ -275,16 +276,16 @@ class Calendar {
         }
     }
 
-    _onScroll (actor, event) {
-        switch (event.get_scroll_direction()) {
-        case Clutter.ScrollDirection.UP:
-        case Clutter.ScrollDirection.LEFT:
-            this._onPrevMonthButtonClicked();
-            break;
-        case Clutter.ScrollDirection.DOWN:
-        case Clutter.ScrollDirection.RIGHT:
-            this._onNextMonthButtonClicked();
-            break;
+    _onScroll (event) {
+        switch (event.direction) {
+            case Clutter.ScrollDirection.UP:
+            case Clutter.ScrollDirection.LEFT:
+                this._onPrevMonthButtonClicked();
+                break;
+            case Clutter.ScrollDirection.DOWN:
+            case Clutter.ScrollDirection.RIGHT:
+                this._onNextMonthButtonClicked();
+                break;
         }
     }
 
