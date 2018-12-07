@@ -630,7 +630,7 @@ class AppGroup {
                 if (this.groupState.fileDrag) {
                     this.listState.trigger('closeAllHoverMenus');
                 }
-                // Open the thumbnail window and activate the window corresponding to the dragged over thumbnail.
+                // Open the thumbnail menu and activate the window corresponding to the dragged over thumbnail.
                 if (!this.hoverMenu) this.initThumbnailMenu();
                 this.groupState.set({fileDrag: true});
                 this.hoverMenu.open(true);
