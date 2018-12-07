@@ -889,6 +889,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
             // Move the button
             currentAppList.actor.set_child_at_index(source.actor, pos);
+            currentAppList.updateAppGroupIndexes();
             // Refresh the group's thumbnails so hoverMenu is aware of the position change
             // In the case of dragging a group that has a delay before Cinnamon can grab its
             // thumbnail texture, e.g., LibreOffice, defer the refresh.
