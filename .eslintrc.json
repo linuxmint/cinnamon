@@ -26,7 +26,8 @@
         "get_locale_string": false,
         "__dirname": false,
         "__filename": false,
-        "__meta": false
+        "__meta": false,
+        "StopIteration": false
     },
     "rules": {
         "comma-dangle": 0,
