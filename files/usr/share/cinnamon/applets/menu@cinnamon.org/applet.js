@@ -1324,9 +1324,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _onOpenStateChanged(menu, open) {
         if (open) {
-            if (this._appletEnterEventId > 0) {
-                this.actor.handler_block(this._appletEnterEventId);
-            }
             this.menuIsOpening = true;
             this.actor.add_style_pseudo_class('active');
             global.stage.set_key_focus(this.searchEntry);
@@ -1346,10 +1343,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
             Mainloop.idle_add(Lang.bind(this, this._initial_cat_selection, n));
         } else {
-            if (this._appletEnterEventId > 0) {
-                this.actor.handler_unblock(this._appletEnterEventId);
-            }
-
             this.actor.remove_style_pseudo_class('active');
             if (this.searchActive) {
                 this.resetSearch();
