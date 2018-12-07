@@ -66,7 +66,9 @@ class AppGroup {
             autoStartIndex: findIndex(this.state.autoStartApps, (app) => app.id === params.appId),
             willUnmount: false,
             tooltip: null,
-            verticalThumbs: this.state.settings.verticalThumbs,
+            // Not to be confused with the vertical thumbnail setting, this is for overriding horizontal
+            // orientation when there are too many thumbnails to fit the monitor without making them tiny.
+            verticalThumbs: false,
             groupReady: false,
             thumbnailMenuEntered:  false
         });
