@@ -857,7 +857,6 @@ class AppGroup {
                     this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
                 }
                 cb(this.groupState.appId, this.groupState.isFavoriteApp);
-                if (this.groupState.isFavoriteApp) this.setActiveStatus(false);
             }
         }
     }
