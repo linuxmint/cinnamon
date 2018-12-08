@@ -796,9 +796,8 @@ class AppGroup {
         }
     }
 
-    windowAdded(metaWindow, _metaWindows) {
+    windowAdded(metaWindow) {
         let {metaWindows, trigger, set} = this.groupState;
-        if (_metaWindows) metaWindows = _metaWindows;
         let refWindow = metaWindows.indexOf(metaWindow);
         if (metaWindow) {
             this.signals.connect(metaWindow, 'notify::title', (...args) => this.onWindowTitleChanged(...args));

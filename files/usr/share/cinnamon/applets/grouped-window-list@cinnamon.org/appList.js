@@ -324,9 +324,9 @@ class AppList {
             }
         } else if (metaWindow && this.shouldWindowBeAdded(metaWindow)) {
             if (this.state.settings.groupApps) {
-                this.appList[refApp].windowAdded(metaWindow, null);
+                this.appList[refApp].windowAdded(metaWindow);
             } else if (transientFavorite && this.appList[refApp].groupState.metaWindows.length === 0) {
-                this.appList[refApp].windowAdded(metaWindow, [metaWindow]);
+                this.appList[refApp].windowAdded(metaWindow);
             } else if (refWindow === -1) {
                 initApp([metaWindow], metaWindow);
             }
