@@ -894,6 +894,12 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         this.fullyRefreshThumbnails();
     }
 
+    addQueuedThumbnails() {
+        if (this.queuedWindows.length === 0) return;
+        each(this.queuedWindows, (win) => this.addThumbnail(win));
+        this.queuedWindows = [];
+    }
+
     onButtonPress() {
         if (this.state.settings.onClickThumbs && this.box.get_children().length > 1) {
             return;
@@ -918,10 +924,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             timeout = this.state.settings.thumbTimeout;
         }
 
-        if (this.queuedWindows.length > 0) {
-            each(this.queuedWindows, (win) => this.addThumbnail(win));
-            this.queuedWindows = [];
-        }
+        this.addQueuedThumbnails();
 
         if (actor != null) {
             this.groupState.set({thumbnailMenuEntered: this.isOpen});
@@ -964,6 +967,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.tooltip.set_text(this.groupState.appName);
             this.groupState.tooltip.show();
         } else {
+            if (force) this.addQueuedThumbnails();
             this.state.set({thumbnailMenuOpen: true});
             super.open(this.state.settings.animateThumbs);
         }
