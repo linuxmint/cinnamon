@@ -386,6 +386,10 @@ class AppList {
         });
         if (refApp > -1) {
             this.appList[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp) => {
+                if (this.state.settings.titleDisplay > 1) {
+                    this.state.trigger('updateThumbnailsStyle');
+                }
+
                 if (isFavoriteApp || (isFavoriteApp && !this.state.settings.groupApps && windowCount === 0)) {
                     this.appList[refApp].groupState.set({groupReady: false});
                     this.appList[refApp].actor.set_style_pseudo_class('closed');
