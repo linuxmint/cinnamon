@@ -293,11 +293,19 @@ class DefaultCalculatorButton(Gtk.AppChooserButton):
             exec_val = Gio.DesktopAppInfo.get_string(self.this_item, "Exec")
             name_val = Gio.DesktopAppInfo.get_string(self.this_item, "Name")
             icon_val = Gio.DesktopAppInfo.get_string(self.this_item, "Icon")
+            comment_val = Gio.DesktopAppInfo.get_string(self.this_item, "Comment")
             #calculators don't have mime types, so we check for "Calculator" under the "Category" key in desktop files
-            if (cat_val is not None and "Calculator" in cat_val):
+            if (cat_val is not None and "Calculator" in cat_val) or \
+               (exec_val is not None and "alculator" in exec_val.lower()) or \
+               (name_val is not None and "alculator" in name_val.lower()) or \
+               (comment_val is not None and "alculator" in comment_val.lower()):
                 #this if statement makes sure remaining desktop file info is not empty
                 if (exec_val is not None and name_val is not None and icon_val is not None):
-                    self.append_custom_item(exec_val, name_val, Gio.ThemedIcon.new(icon_val))
+                    if os.path.exists(icon_val):
+                        icon = Gio.FileIcon.new(Gio.File.new_for_path(icon_val))
+                    else:
+                        icon = Gio.ThemedIcon.new(icon_val)
+                    self.append_custom_item(exec_val, name_val, icon)
                     self.active_items.append(exec_val)
                     if (self.key_value == exec_val):
                         self.set_active_custom_item(self.key_value)
