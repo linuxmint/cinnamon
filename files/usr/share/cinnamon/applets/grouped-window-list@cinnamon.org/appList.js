@@ -387,6 +387,10 @@ class AppList {
         });
         if (refApp > -1) {
             this.appList[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp) => {
+                if (this.state.settings.titleDisplay > 1) {
+                    this.state.trigger('updateThumbnailsStyle');
+                }
+
                 isFavoriteApp = isFavoriteApp && (this.state.settings.groupApps || this.getWindowCount(appId) === 0);
                 if (isFavoriteApp) {
                     this.appList[refApp].groupState.set({groupReady: false});

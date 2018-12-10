@@ -858,6 +858,13 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         this.state = state;
         this.groupState = groupState;
 
+        this.stateConnectId = this.state.connect({
+            updateThumbnailsStyle: () => {
+                if (this.groupState.metaWindows.length === 0) return;
+                this.setStyleOptions();
+            }
+        });
+
         this.connectId = this.groupState.connect({
             hoverMenuClose: () => {
                 this.shouldClose = true;
@@ -1196,6 +1203,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
         this.removeAll();
         super.destroy();
+        this.state.disconnect(this.stateConnectId);
         this.groupState.disconnect(this.connectId);
         unref(this, RESERVE_KEYS);
     }
