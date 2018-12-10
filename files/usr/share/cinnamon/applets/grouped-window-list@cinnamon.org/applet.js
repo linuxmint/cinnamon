@@ -843,7 +843,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             this.state.dragPlaceholder.child.width = iconSize;
             this.state.dragPlaceholder.child.height = iconSize;
 
-            // For menu items, don't insert the actor at a specific index,
+            // For menu items, don't insert actors at specific indices,
             // they will get attached to the end of the list anyway.
             if (!isForeign) {
                 appList.actor.insert_child_at_index(
