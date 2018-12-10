@@ -228,6 +228,8 @@ class AppList {
     windowAdded(metaWorkspace, metaWindow, app, isFavoriteApp) {
         if (!this.state) return;
 
+        if (metaWindow && !this.shouldWindowBeAdded(metaWindow)) return;
+
         if (this.state.appletReady && this.state.settings.showAllWorkspaces && metaWindow && !metaWindow.__gwlInit__) {
             metaWindow.__gwlInit__ = true;
             this.state.trigger('addWindowToAllWorkspaces', metaWindow, app, isFavoriteApp);
@@ -322,7 +324,7 @@ class AppList {
                     initApp([], null);
                 }
             }
-        } else if (metaWindow && this.shouldWindowBeAdded(metaWindow)) {
+        } else if (metaWindow) {
             if (this.state.settings.groupApps) {
                 this.appList[refApp].windowAdded(metaWindow, null);
             } else if (transientFavorite && this.appList[refApp].groupState.metaWindows.length === 0) {
