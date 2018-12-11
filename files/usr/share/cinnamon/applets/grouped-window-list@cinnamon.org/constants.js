@@ -13,6 +13,7 @@ const constants = {
     RESERVE_KEYS: ['willUnmount'],
     ICON_NAMES: {
         area_shot: 'screenshot-area',
+        base: 'x-office-database',
         big_picture: 'view-fullscreen',
         calc: 'x-office-spreadsheet',
         community: 'system-users',
@@ -24,6 +25,7 @@ const constants = {
         fullscreen: 'view-fullscreen',
         impress: 'x-office-presentation',
         library: 'accessories-dictionary',
+        math: 'x-office-math',
         mute: 'audio-volume-muted',
         new_document: 'document-new',
         new_private_window: 'view-private',

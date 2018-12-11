@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   height="16"
+   width="16"
+   version="1.1"
+   id="svg8">
+  <metadata
+     id="metadata14">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs12" />
+  <path
+     style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#bebebe;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:20;marker:none;enable-background:new"
+     d="M 8 7 C 6.3431458 7 5 7.6715729 5 8.5 C 5.0036 9.4680904 5.0000551 10.457652 5 11.333984 C 5 12.479828 5.635 13 8 13 C 10.365 13 11 12.479824 11 11.333984 L 11 8.5 C 11 7.6715729 9.6568542 7 8 7 z M 8 8 A 2 0.5 0 0 1 10 8.5 A 2 0.5 0 0 1 8 9 A 2 0.5 0 0 1 6 8.5 A 2 0.5 0 0 1 8 8 z M 6 9.6152344 C 6.5491933 9.8622278 7.2613297 9.9992306 8 10 C 8.7386703 9.9992306 9.4508067 9.8622278 10 9.6152344 L 10 11.300781 C 10 11.650697 9.468961 12 8.03125 12 C 6.5792293 12 6 11.564143 6 11.300781 L 6 9.6152344 z "
+     id="path4164" />
+  <path
+     d="M 2.8125,1 A 1.0000999,1.0000999 0 0 0 2,2.0000001 V 15 a 1.0000999,1.0000999 0 0 0 1,1 h 10 a 1.0000999,1.0000999 0 0 0 1,-1 V 5.5625005 a 1.0000999,1.0000999 0 0 0 -0.28125,-0.71875 L 10.15625,1.28125 A 1.0000999,1.0000999 0 0 0 9.4375,1 H 3 A 1.0000999,1.0000999 0 0 0 2.9063,1 1.0000999,1.0000999 0 0 0 2.8126,1 Z M 4,3.0000001 h 5 v 3.0000004 h 3 V 14 H 4 Z"
+     id="path35724"
+     style="color:#000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:medium;line-height:normal;font-family:Sans;-inkscape-font-specification:Sans;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;letter-spacing:normal;word-spacing:normal;text-transform:none;writing-mode:lr-tb;direction:ltr;baseline-shift:baseline;text-anchor:start;display:inline;overflow:visible;visibility:visible;fill:#bebebe;fill-opacity:1;stroke:none;stroke-width:1.99999988;marker:none;enable-background:accumulate" />
+</svg>
