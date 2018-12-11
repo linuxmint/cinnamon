@@ -823,9 +823,8 @@ class AppGroup {
         }
     }
 
-    windowAdded(metaWindow, _metaWindows) {
+    windowAdded(metaWindow) {
         let {metaWindows, trigger, set} = this.groupState;
-        if (_metaWindows) metaWindows = _metaWindows;
         let refWindow = metaWindows.indexOf(metaWindow);
         if (metaWindow) {
             this.signals.connect(metaWindow, 'notify::title', (...args) => this.onWindowTitleChanged(...args));
@@ -843,10 +842,13 @@ class AppGroup {
             }
 
             // Set the initial button label as not all windows will get updated via signals initially.
-            if (this.state.settings.titleDisplay > 1) this.onWindowTitleChanged(metaWindow);
+            if (this.state.settings.titleDisplay > 1) {
+                this.onWindowTitleChanged(metaWindow);
+                this.state.trigger('updateThumbnailsStyle');
+            }
             if (refWindow === -1) {
                 metaWindows.push(metaWindow);
-                if (this.hoverMenu) trigger('addThumbnailToMenu', metaWindow)
+                if (this.hoverMenu) trigger('addThumbnailToMenu', metaWindow);
             }
             this.calcWindowNumber();
             this.onFocusChange();
@@ -888,7 +890,6 @@ class AppGroup {
                     this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
                 }
                 cb(this.groupState.appId, this.groupState.isFavoriteApp);
-                if (this.groupState.isFavoriteApp) this.setActiveStatus(false);
             }
         }
     }

@@ -301,7 +301,8 @@ class GroupedWindowListApplet extends Applet.Applet {
             getFavorites: () => this.pinnedFavorites._favorites,
             cycleWindows: (e, source) => this.handleScroll(e, source),
             openAbout: () => this.openAbout(),
-            configureApplet: () => this.configureApplet()
+            configureApplet: () => this.configureApplet(),
+            updateThumbnailsStyle: () => null // Silence missing key warnings
         });
 
         this.settings = new AppletSettings(this.state.settings, metadata.uuid, instance_id);
