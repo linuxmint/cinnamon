@@ -345,7 +345,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'show-alerts', value: 'showAlerts', cb: this.updateAttentionState},
             {key: 'group-apps', value: 'groupApps', cb: this.refreshCurrentAppList},
             {key: 'enable-app-button-dragging', value: 'enableDragging', cb: null},
-            {key: 'pinOnDrag', value: 'pinOnDrag', cb: null},
             {key: 'launcher-animation-effect', value: 'launcherAnimationEffect', cb: null},
             {key: 'pinned-apps', value: 'pinnedApps', cb: null},
             {key: 'middle-click-action', value: 'middleClickAction', cb: null},
@@ -890,6 +889,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
             // Move the button
             currentAppList.actor.set_child_at_index(source.actor, pos);
+            currentAppList.updateAppGroupIndexes();
             // Refresh the group's thumbnails so hoverMenu is aware of the position change
             // In the case of dragging a group that has a delay before Cinnamon can grab its
             // thumbnail texture, e.g., LibreOffice, defer the refresh.
@@ -899,8 +899,7 @@ class GroupedWindowListApplet extends Applet.Applet {
 
 
             // Handle favoriting if pin on drag is enabled
-            if (this.state.settings.pinOnDrag
-                && !source.groupState.app.is_window_backed()) {
+            if (!source.groupState.app.is_window_backed()) {
                 let opts = {
                     appId: source.groupState.appId,
                     app: source.groupState.app,
@@ -909,8 +908,6 @@ class GroupedWindowListApplet extends Applet.Applet {
                 let refFav = findIndex(this.pinnedFavorites._favorites, (favorite) => favorite.id === source.groupState.appId);
                 if (refFav > -1) {
                     this.pinnedFavorites.moveFavoriteToPos(opts);
-                } else if (this.state.settings.pinOnDrag) {
-                    this.pinnedFavorites.addFavorite(opts);
                 }
             }
 

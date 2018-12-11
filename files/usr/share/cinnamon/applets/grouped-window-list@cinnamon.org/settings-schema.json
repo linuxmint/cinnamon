@@ -46,8 +46,7 @@
         "pinned-apps",
         "show-alerts",
         "show-pinned",
-        "enable-app-button-dragging",
-        "pinOnDrag"
+        "enable-app-button-dragging"
       ]
     },
     "hotKeysSection": {
@@ -174,11 +173,6 @@
     "type": "checkbox",
     "default": true,
     "description": "Enable app button dragging"
-  },
-  "pinOnDrag": {
-    "type": "checkbox",
-    "default": false,
-    "description": "Pin apps when dragged to a new position"
   },
   "launcher-animation-effect": {
     "type": "combobox",
