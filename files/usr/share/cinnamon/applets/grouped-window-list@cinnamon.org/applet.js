@@ -800,6 +800,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         let appList = this.appLists[this.state.currentWs];
         let children = appList.actor.get_children();
         let windowPos = children.indexOf(source.actor);
+        let isForeign = typeof source.groupState === 'undefined';
 
         let pos = 0;
 
@@ -837,15 +838,19 @@ class GroupedWindowListApplet extends Applet.Applet {
                 fadeIn = true;
             }
 
-            let childWidth = source.actor.width;
-            let childHeight = source.actor.height;
+            let iconSize = this.getPanelIconSize();
             this.state.dragPlaceholder = new DND.GenericDragPlaceholderItem();
-            this.state.dragPlaceholder.child.width = childWidth;
-            this.state.dragPlaceholder.child.height = childHeight;
-            appList.actor.insert_child_at_index(
-                this.state.dragPlaceholder.actor,
-                this.state.dragPlaceholderPos
-            );
+            this.state.dragPlaceholder.child.width = iconSize;
+            this.state.dragPlaceholder.child.height = iconSize;
+
+            // For menu items, don't insert actors at specific indices,
+            // they will get attached to the end of the list anyway.
+            if (!isForeign) {
+                appList.actor.insert_child_at_index(
+                    this.state.dragPlaceholder.actor,
+                    this.state.dragPlaceholderPos
+                );
+            }
 
             if (fadeIn) this.state.dragPlaceholder.animateIn();
         }
