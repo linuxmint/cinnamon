@@ -757,6 +757,10 @@ class AppGroup {
         if (this.groupState.isFavoriteApp && this.groupState.metaWindows.length === 0) {
             this.launchNewInstance();
         } else {
+            if (this.appKeyTimeout) {
+                clearTimeout(this.appKeyTimeout);
+                this.appKeyTimeout = 0;
+            }
             if (this.groupState.metaWindows.length > 1) {
                 if (!this.hoverMenu) this.initThumbnailMenu();
                 this.hoverMenu.open(true);
@@ -764,6 +768,15 @@ class AppGroup {
                 this.listState.trigger('closeAllHoverMenus');
             }
             this.windowHandle();
+            this.appKeyTimeout = setTimeout(() => {
+                if (this.groupState.thumbnailMenuEntered) {
+                    clearTimeout(this.appKeyTimeout);
+                    this.appKeyTimeout = 0;
+                    return;
+                }
+                this.hoverMenu.close(true);
+                this.appKeyTimeout = 0;
+            }, this.state.settings.showAppsOrderTimeout);
         }
     }
 
