@@ -1,3 +1,35 @@
+cinnamon (4.0.6) tessa; urgency=medium
+
+  [ Michael Webster ]
+  * cs_default.py: Improve heuristic used to find calculator programs.
+  * cd_keyboard.py: Escape the accel label when setting the markup for the shortcut conflict-resolution dialog.
+  * cs_fonts.py: Rename title to 'Font Selection' so it doesn't conflict with the font viewer (also called 'Fonts').
+
+  [ Clement Lefebvre ]
+  * l10n: Regenerate cs_fonts desktop file
+
+  [ Jason Hicks ]
+  * gwl: Always persist pinned apps' positioning after drag, fix duplicate thumbnails on init in vertical menu orientation (#8115)
+
+  [ NikoKrause ]
+  * menu-applet: fix broken option `Open menu on hover` (#8117)
+
+  [ Jason Hicks ]
+  * gwl: Fix the thumbnail menu not closing when using Super + # keys (#8121)
+  * gwl: Always check the skip-taskbar hint (#8126)
+  * window-list: Fix icons not appearing for some apps (#8123)
+
+  [ NikoKrause ]
+  * gwl: add missing icons for libreoffice actions (#8127)
+
+  [ Jason Hicks ]
+  * gwl: Only use notify::icon signal for un-grouped apps (#8113)
+  * gwl: Add support for dragging files to windows from the thumbnail menu (#8118)
+  * gwl: Fix a couple ungrouped mode bugs, fix thumbnail menu positioning on window add/remove (#8120)
+  * gwl: Fix DND ops originating from menu items leaving large gaps (#8125)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 11 Dec 2018 11:14:18 +0000
+
 cinnamon (4.0.5) tessa; urgency=medium
 
   * Revert "gwl: Open new windows by holding ctrl and left clicking (#8103)"
