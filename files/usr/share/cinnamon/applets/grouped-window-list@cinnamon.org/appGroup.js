@@ -70,7 +70,8 @@ class AppGroup {
             // orientation when there are too many thumbnails to fit the monitor without making them tiny.
             verticalThumbs: false,
             groupReady: false,
-            thumbnailMenuEntered:  false
+            thumbnailMenuEntered: false,
+            fileDrag: false
         });
 
         this.groupState.connect({
@@ -623,8 +624,19 @@ class AppGroup {
             || this.state.panelEditMode) {
             return DND.DragMotionResult.CONTINUE;
         }
-        if (this.groupState.metaWindows.length > 0 && this.groupState.lastFocused) {
-            Main.activateWindow(this.groupState.lastFocused, global.get_current_time());
+        let nWindows = this.groupState.metaWindows.length;
+        if (nWindows > 0 && this.groupState.lastFocused) {
+            if (nWindows === 1) {
+                Main.activateWindow(this.groupState.lastFocused, global.get_current_time());
+            } else {
+                if (this.groupState.fileDrag) {
+                    this.listState.trigger('closeAllHoverMenus');
+                }
+                // Open the thumbnail menu and activate the window corresponding to the dragged over thumbnail.
+                if (!this.hoverMenu) this.initThumbnailMenu();
+                this.groupState.set({fileDrag: true});
+                this.hoverMenu.open(true);
+            }
         }
         return true;
     }

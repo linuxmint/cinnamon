@@ -887,6 +887,30 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                 this.setVerticalSetting();
                 if (isOpen) this.open(true);
             },
+            fileDrag: ({fileDrag}) => {
+                if (fileDrag) {
+                    // When a drag operation from another app is started, no events fire, so we have to grab the
+                    // cursor, find the actor by coordinates, and then look up the thumbnail actor. Do this on a
+                    // 50ms loop until the menu closes so we continue getting data in the absence of events.
+                    this.interval = setInterval(() => {
+                        let [x, y, mask] = global.get_pointer();
+                        let draggedOverActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
+                        if (draggedOverActor instanceof Meta.ShapedTexture) {
+                            this.groupState.set({fileDrag: false});
+                            this.close(true);
+                            return;
+                        }
+                        each(this.appThumbnails, function(thumbnail) {
+                            if (thumbnail.thumbnailActor === draggedOverActor) {
+                                Main.activateWindow(thumbnail.metaWindow, global.get_current_time());
+                                return false;
+                            }
+                        });
+                    }, 50);
+                } else if (this.interval) {
+                    clearInterval(this.interval);
+                }
+            }
         });
 
         this.appThumbnails = [];
@@ -991,6 +1015,10 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
         for (let i = 0; i < this.appThumbnails.length; i++) {
             this.appThumbnails[i].destroyOverlayPreview();
+        }
+
+        if (this.groupState.fileDrag) {
+            this.groupState.set({fileDrag: false});
         }
     }
 
