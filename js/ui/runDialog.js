@@ -194,24 +194,39 @@ __proto__: ModalDialog.ModalDialog.prototype,
                                                      entry: this._entryText,
                                                      deduplicate: true });
         this._entryText.connect('key-press-event', Lang.bind(this, this._onKeyPress));
+        this._entryText.connect('key-focus-out', () => this.cancelAsyncCommand());
 
         this._updateCompletionTimer = 0;
-     },
+    },
+
+    get asyncCommandInProgress() {
+        return this.subprocess && !this.subprocess.get_if_exited()
+    },
+
+    cancelAsyncCommand: function() {
+        // If a process opens a new window and causes loss of focus (e.g. pkexec), we want
+        // to make sure our async callback is cancelled, and close the run dialog.
+        setTimeout(() => {
+            if (this.asyncCommandInProgress) {
+                this.subprocess.cancellable.cancel();
+                this.subprocess = null;
+                this.close();
+            }
+        }, 0);
+    },
 
     _onKeyPress: function (o, e) {
+        if (this.asyncCommandInProgress) return;
+
         let symbol = e.get_key_symbol();
         if (symbol == Clutter.Return || symbol == Clutter.KP_Enter) {
             this.popModal();
-            if (Cinnamon.get_event_state(e) & Clutter.ModifierType.CONTROL_MASK)
-                this._run(o.get_text(), true);
-            else
-                this._run(o.get_text(), false);
-            if (!this._commandError)
-                this.close();
-            else {
-                if (!this.pushModal())
-                    this.close();
-            }
+            let inTerminal = Cinnamon.get_event_state(e) & Clutter.ModifierType.CONTROL_MASK;
+            this._run(o.get_text(), inTerminal, (success) => {
+                if (this.state == ModalDialog.State.CLOSED || this.state == ModalDialog.State.CLOSING) return;
+                if (success) return this.close();
+                if (!this.pushModal()) this.close();
+            });
             return true;
         }
         if (symbol == Clutter.Escape || symbol == Clutter.Super_L || symbol == Clutter.Super_R) {
@@ -341,10 +356,10 @@ __proto__: ModalDialog.ModalDialog.prototype,
         this._entryText.set_selection(-1, orig.length);
     },
 
-    _run : function(input, inTerminal) {
+    _run: function(input, inTerminal, callback) {
+        input = input.trim();
         this._history.addItem(input);
-        this._commandError = false;
-        if (this._enableInternalCommands && input.trim() in DEVEL_COMMANDS) {
+        if (this._enableInternalCommands && input in DEVEL_COMMANDS) {
             DEVEL_COMMANDS[input.trim()]();
             return;
         }
@@ -368,11 +383,18 @@ __proto__: ModalDialog.ModalDialog.prototype,
                 let exec_arg = this._terminalSettings.get_string(EXEC_ARG_KEY);
                 command = exec + ' ' + exec_arg + ' ' + input;
             }
-            Util.spawnCommandLineAsync(command, null, null);
+            this.subprocess = Util.spawnCommandLineAsync(command, (stdout, stderr, code, pid) => {
+                this.subprocess = null;
+                if (stderr) {
+                    this._showError(stderr);
+                    callback(false);
+                    return;
+                }
+                callback(true);
+            });
         } catch (e) {
             // Mmmh, that failed - see if @input matches an existing file
             let path = null;
-            input = input.trim();
             if (input.charAt(0) == '/') {
                 path = input;
             } else {
@@ -403,7 +425,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
     _showError : function(message) {
         this._commandError = true;
 
-        this._errorMessage.set_text(message);
+        this._errorMessage.set_text(message.trim());
 
         if (!this._errorBox.visible) {
             let [errorBoxMinHeight, errorBoxNaturalHeight] = this._errorBox.get_preferred_height(-1);
