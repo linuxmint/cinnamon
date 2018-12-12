@@ -376,50 +376,48 @@ __proto__: ModalDialog.ModalDialog.prototype,
             }
         }
         let command = split.join(" ");
-
-        try {
-            if (inTerminal) {
-                let exec = this._terminalSettings.get_string(EXEC_KEY);
-                let exec_arg = this._terminalSettings.get_string(EXEC_ARG_KEY);
-                command = exec + ' ' + exec_arg + ' ' + input;
-            }
-            this.subprocess = Util.spawnCommandLineAsync(command, (stdout, stderr, code, pid) => {
-                this.subprocess = null;
-                if (stderr) {
-                    this._showError(stderr);
-                    callback(false);
-                    return;
-                }
-                callback(true);
-            });
-        } catch (e) {
-            // Mmmh, that failed - see if @input matches an existing file
-            let path = null;
-            if (input.charAt(0) == '/') {
+        let path = null;
+        let isHome = input.charAt(0) === '~';
+        let isPath = input.charAt(0) == '/'
+        if (isPath || isHome) {
+            if (isPath) {
                 path = input;
             } else {
-                if (input.charAt(0) == '~')
-                    input = input.slice(1);
+                input = input.slice(1);
                 path = GLib.build_filenamev([GLib.get_home_dir(), input]);
             }
 
             if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
                 let file = Gio.file_new_for_path(path);
-                try {
-                    Gio.app_info_launch_default_for_uri(file.get_uri(),
-                            global.create_app_launch_context());
-                } catch (e) {
+                Util.tryFn(() => {
+                    Gio.app_info_launch_default_for_uri(file.get_uri(), global.create_app_launch_context());
+                }, (e) => {
                     // The exception from gjs contains an error string like:
                     //     Error invoking Gio.app_info_launch_default_for_uri: No application
                     //     is registered as handling this file
                     // We are only interested in the part after the first colon.
                     let message = e.message.replace(/[^:]*: *(.+)/, '$1');
                     this._showError(message);
-                }
-            } else {
-                this._showError(e.message);
+                });
+                this.close();
+                return;
             }
         }
+
+        if (inTerminal) {
+            let exec = this._terminalSettings.get_string(EXEC_KEY);
+            let exec_arg = this._terminalSettings.get_string(EXEC_ARG_KEY);
+            command = exec + ' ' + exec_arg + ' ' + input;
+        }
+        this.subprocess = Util.spawnCommandLineAsync(command, (stdout, stderr, code) => {
+            this.subprocess = null;
+            if (stderr) {
+                this._showError(stderr);
+                callback(false);
+                return;
+            }
+            callback(true);
+        });
     },
 
     _showError : function(message) {
