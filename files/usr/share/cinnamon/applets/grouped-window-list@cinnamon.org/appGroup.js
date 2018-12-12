@@ -109,7 +109,7 @@ class AppGroup {
         // Create the app button icon, number label, and text label for titleDisplay
         this.iconBox = new St.Bin({name: 'appMenuIcon'});
         this.actor.add_child(this.iconBox);
-        this.setActorAttributes();
+        this.setActorAttributes(null, params.metaWindow);
 
         this.badge = new St.BoxLayout({
             style_class: 'grouped-window-list-badge',
@@ -220,7 +220,7 @@ class AppGroup {
         if (fromInit) this.groupState.set({groupReady: true});
     }
 
-    setActorAttributes(iconSize) {
+    setActorAttributes(iconSize, metaWindow) {
         if (!iconSize) {
             iconSize = this.state.trigger('getPanelIconSize');
         }
@@ -242,7 +242,7 @@ class AppGroup {
         if (this.state.isHorizontal) {
             this.actor.height = panelHeight;
         }
-        this.setIcon();
+        this.setIcon(metaWindow);
         this.updateIconBoxClip();
         this.setIconPadding(panelHeight);
         this.setMargin();
