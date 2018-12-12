@@ -159,10 +159,10 @@ function trySpawnCommandLine(command_line) {
  * @callback (function): called on success or failure
  * @opts (object): options: argv, flags, input
  *
- * Runs @command in the background. Callback has two arguments -
+ * Runs @command in the background. Callback has three arguments -
  * stdout, stderr, and exitCode.
  *
- * Returns (object): Gio.Subprocess instances
+ * Returns (object): a Gio.Subprocess instance
  */
 function spawnCommandLineAsync(command, callback, opts = {}) {
     let {argv, flags, input} = opts;
