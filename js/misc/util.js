@@ -177,14 +177,14 @@ function spawnCommandLineAsync(command, callback, opts = {}) {
     let cancellable = new Gio.Cancellable();
 
     subprocess.communicate_utf8_async(input, cancellable, (obj, res) => {
-        let exitCode, stdout, stderr;
+        let success, stdout, stderr, exitCode;
         // This will throw on cancel with "Gio.IOErrorEnum: Operation was cancelled"
-        tryFn(() => [, stdout, stderr] = obj.communicate_utf8_finish(res));
+        tryFn(() => [success, stdout, stderr] = obj.communicate_utf8_finish(res));
         if (typeof callback === 'function' && !cancellable.is_cancelled()) {
             if (stderr && stderr.indexOf('bash: ') > -1) {
                 stderr = stderr.replace(/bash: /, '');
             }
-            exitCode = subprocess.get_exit_status();
+            exitCode = success ? subprocess.get_exit_status() : -1;
             callback(stdout, stderr, exitCode);
         }
         subprocess.cancellable = null;
