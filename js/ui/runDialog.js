@@ -368,7 +368,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
                 let exec_arg = this._terminalSettings.get_string(EXEC_ARG_KEY);
                 command = exec + ' ' + exec_arg + ' ' + input;
             }
-            Util.trySpawnCommandLine(command);
+            Util.spawnCommandLineAsync(command, null, null);
         } catch (e) {
             // Mmmh, that failed - see if @input matches an existing file
             let path = null;
