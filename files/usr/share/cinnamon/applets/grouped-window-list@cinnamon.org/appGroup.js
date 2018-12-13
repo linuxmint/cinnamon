@@ -446,12 +446,14 @@ class AppGroup {
     }
 
     showLabel(animate = false) {
-        if (!this.label
+        if (this.labelVisible
+            || !this.label
             || !this.state.isHorizontal
             || this.label.is_finalized()
             || !this.label.realized) {
             return;
         }
+
         let width = MAX_BUTTON_WIDTH * global.ui_scale;
 
         this.labelVisible = true;
@@ -482,6 +484,7 @@ class AppGroup {
     hideLabel() {
         if (!this.label || this.label.is_finalized() || !this.label.realized) return;
 
+        this.label.set_text('');
         this.labelVisible = false;
         this.label.width = 1;
         this.label.hide();
@@ -965,7 +968,7 @@ class AppGroup {
             return;
         }
 
-        if (this.groupState.metaWindows.length === 0) {
+        if (!metaWindow || this.groupState.metaWindows.length === 0) {
             this.hideLabel();
         } else if (this.state.settings.titleDisplay === TitleDisplay.Title) {
             this.setText(metaWindow.title);
@@ -978,9 +981,13 @@ class AppGroup {
         } else if (this.state.settings.titleDisplay === TitleDisplay.Focused) {
             this.setText(metaWindow.title);
             if (focus === undefined) focus = getFocusState(metaWindow);
-            if (focus) {
+            if (focus
+                && this.groupState.metaWindows.length > 0) {
                 this.showLabel(animate);
-            } else {
+            // If a skip-taskbar window is focused from this group, do nothing.
+            // Show the last trackable window's label because the application is focused.
+            } else if (global.display.focus_window
+                && this.groupState.appId.indexOf(global.display.focus_window.wm_class.toLowerCase()) === -1) {
                 this.hideLabel();
             }
             // Re-orient the menu after the focus button expands

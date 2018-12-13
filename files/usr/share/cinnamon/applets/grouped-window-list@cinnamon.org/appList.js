@@ -395,13 +395,13 @@ class AppList {
 
                 isFavoriteApp = isFavoriteApp && (this.state.settings.groupApps || this.getWindowCount(appId) === 0);
                 if (isFavoriteApp) {
-                    this.appList[refApp].groupState.set({groupReady: false});
+                    this.appList[refApp].groupState.set({groupReady: false, lastFocused: null});
                     this.appList[refApp].actor.set_style_pseudo_class('closed');
                     this.appList[refApp].actor.remove_style_class_name('grouped-window-list-item-demands-attention');
-                    if (this.state.settings.titleDisplay > 1) {
-                        this.appList[refApp].hideLabel(true);
-                    }
                     this.appList[refApp].setActiveStatus(false);
+                    if (this.state.settings.titleDisplay > 1) {
+                        this.appList[refApp].hideLabel();
+                    }
                     return;
                 }
                 this.appList[refApp].destroy(true);
