@@ -672,9 +672,11 @@ class AppGroup {
 
         let modifiers = Cinnamon.get_event_state(event);
         let ctrlPressed = (modifiers & Clutter.ModifierType.CONTROL_MASK);
+        let shiftPressed = (modifiers & Clutter.ModifierType.SHIFT_MASK);
 
         let shouldStartInstance = (
             (button === 1 && ctrlPressed)
+            || (button === 1 && shiftPressed)
             || (button === 1
                 && this.groupState.isFavoriteApp
                 && nWindows === 0
