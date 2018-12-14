@@ -30,7 +30,6 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
                     /* Utility functions...we should probably be able to use these
                      * in Cinnamon core code too. */
                     'const stage = global.stage; ' +
-                    'const color = function(pixel) { let c= new Clutter.Color(); c.from_pixel(pixel); return c; }; ' +
                     /* Special lookingGlass functions */
                     'const it = Main.lookingGlass.getIt(); ' +
                     'const a = Lang.bind(Main.lookingGlass, Main.lookingGlass.getWindowApp); '+
