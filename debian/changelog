@@ -1,3 +1,21 @@
+cinnamon (4.0.7) tessa; urgency=medium
+
+  [ Clement Lefebvre ]
+  * GWL: Fix blurry logout/shutdown dialog icon
+  * RunDialog: Fix pkexec support
+
+  [ Jason Hicks ]
+  * gwl: Fix incorrect app group button widths on close with labels enabled (#8137)
+
+  [ Clement Lefebvre ]
+  * GWL: Launch new instances on Shift+Click
+  * cinnamon-settings: Fix if->elif statement
+
+  [ Steve M ]
+  * Stock theme - fix expo workspace entry not expanding to fit scaled fonts (#8142)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 15 Dec 2018 13:59:20 +0000
+
 cinnamon (4.0.6) tessa; urgency=medium
 
   [ Michael Webster ]
