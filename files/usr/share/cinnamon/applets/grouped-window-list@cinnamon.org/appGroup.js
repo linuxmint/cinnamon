@@ -279,7 +279,7 @@ class AppGroup {
         let icon;
 
         if (this.groupState.app) {
-            if (metaWindow) {
+            if (metaWindow && !this.state.settings.groupApps) {
                 icon = this.groupState.app.create_icon_texture_for_window(this.iconSize, metaWindow);
             } else {
                 icon = this.groupState.app.create_icon_texture(this.iconSize);
