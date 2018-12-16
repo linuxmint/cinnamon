@@ -196,13 +196,6 @@ class MainWindow:
         self.window = XApp.GtkWindow(window_position=Gtk.WindowPosition.CENTER,
                                      default_width=800, default_height=600)
 
-        if len(sys.argv) > 1:
-            # If we're launching a module directly, set the WM class so GWL
-            # can consider it as a standalone app and give it its own
-            # group.
-            wm_class = "cinnamon-settings %s" % sys.argv[1]
-            self.window.set_wmclass(wm_class, wm_class)
-
         main_box = self.builder.get_object("main_box")
         self.window.add(main_box)
         self.top_bar = self.builder.get_object("top_bar")
@@ -238,7 +231,6 @@ class MainWindow:
         self.search_entry.connect("icon-press", self.onClearSearchBox)
 
         self.window.connect("destroy", self.quit)
-        self.window.show()
 
         self.builder.connect_signals(self)
         self.unsortedSidePages = []
@@ -324,6 +316,11 @@ class MainWindow:
 
         # Select the first sidePage
         if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters:
+            # If we're launching a module directly, set the WM class so GWL
+            # can consider it as a standalone app and give it its own
+            # group.
+            wm_class = "cinnamon-settings %s" % sys.argv[1]
+            self.window.set_wmclass(wm_class, wm_class)
             self.button_back.hide()
             (iter, cat) = sidePagesIters[sys.argv[1]]
             path = self.store[cat].get_path(iter)
@@ -335,6 +332,8 @@ class MainWindow:
             self.search_entry.grab_focus()
             self.window.connect("key-press-event", self.on_keypress)
             self.window.connect("button-press-event", self.on_buttonpress)
+
+        self.window.show()
 
     def on_keypress(self, widget, event):
         grab = False
