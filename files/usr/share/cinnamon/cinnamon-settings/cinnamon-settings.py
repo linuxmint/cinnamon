@@ -115,7 +115,7 @@ class MainWindow:
             self.deselect(cat)
             filtered_path = side_view.get_model().convert_path_to_child_path(selected_items[0])
             if filtered_path is not None:
-                self.go_to_sidepage(cat, filtered_path, animate=True)
+                self.go_to_sidepage(cat, filtered_path, user_action=True)
 
     def _on_sidepage_hide_stack(self):
         self.stack_switcher.set_opacity(0)
@@ -123,12 +123,13 @@ class MainWindow:
     def _on_sidepage_show_stack(self):
         self.stack_switcher.set_opacity(1)
 
-    def go_to_sidepage(self, cat, path, animate=True):
+    def go_to_sidepage(self, cat, path, user_action=True):
         iterator = self.store[cat].get_iter(path)
         sidePage = self.store[cat].get_value(iterator,2)
         if not sidePage.is_standalone:
-            self.window.set_title(sidePage.name)
-            self.window.set_icon_name(sidePage.icon)
+            if not user_action:
+                self.window.set_title(sidePage.name)
+                self.window.set_icon_name(sidePage.icon)
             sidePage.build()
             if sidePage.stack:
                 current_page = sidePage.stack.get_visible_child_name()
@@ -147,7 +148,7 @@ class MainWindow:
                     self.stack_switcher.set_opacity(0)
             else:
                 self.stack_switcher.set_opacity(0)
-            if animate:
+            if user_action:
                 self.main_stack.set_visible_child_name("content_box_page")
                 self.header_stack.set_visible_child_name("content_box")
 
@@ -325,7 +326,7 @@ class MainWindow:
             (iter, cat) = sidePagesIters[sys.argv[1]]
             path = self.store[cat].get_path(iter)
             if path:
-                self.go_to_sidepage(cat, path, animate=False)
+                self.go_to_sidepage(cat, path, user_action=False)
             else:
                 self.search_entry.grab_focus()
         else:
