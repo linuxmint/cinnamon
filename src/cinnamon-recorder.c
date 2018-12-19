@@ -111,6 +111,14 @@ static void recorder_set_filename (CinnamonRecorder *recorder,
 
 static void recorder_pipeline_set_caps (RecorderPipeline *pipeline);
 static void recorder_pipeline_closed   (RecorderPipeline *pipeline);
+static void
+recorder_record_frame (CoglFramebuffer *fb, CinnamonRecorder *recorder);
+static CoglPipeline * ensure_icon_pipeline (CoglPipeline *pl);
+static CoglPipeline * ensure_meter_pipeline (CoglPipeline *pl);
+static void
+recorder_draw_buffer_meter (CoglFramebuffer *fb, CinnamonRecorder *recorder);
+static void
+recorder_close_pipeline (CinnamonRecorder *recorder);
 
 enum {
   PROP_0,
@@ -325,7 +333,7 @@ recorder_on_stage_destroy (ClutterActor  *actor,
 }
 
 static CoglPipeline *
-ensure_pipeline (CoglPipeline *pl)
+ensure_icon_pipeline (CoglPipeline *pl)
 {
   static CoglPipeline *icon_pipeline_template = NULL;
 
@@ -342,6 +350,23 @@ ensure_pipeline (CoglPipeline *pl)
   return (cogl_pipeline_copy (icon_pipeline_template));
 }
 
+static CoglPipeline *
+ensure_meter_pipeline (CoglPipeline *pl)
+{
+  static CoglPipeline *meter_pipeline_template = NULL;
+
+  if (pl != COGL_INVALID_HANDLE)
+    return (pl);
+
+  if (G_UNLIKELY (meter_pipeline_template == NULL))
+    {
+      CoglContext *ctx = st_get_cogl_context();
+
+      meter_pipeline_template = cogl_pipeline_new (ctx);
+    }
+
+  return (cogl_pipeline_copy (meter_pipeline_template));
+}
 /* Add together the memory used by all pipelines; both the
  * currently recording pipeline and pipelines finishing
  * recording asynchronously.
@@ -510,7 +535,7 @@ recorder_draw_buffer_meter (CoglFramebuffer *fb, CinnamonRecorder *recorder)
   float rects[16];
 
   recorder_update_memory_used (recorder, FALSE);
-  recorder->meter_pipeline = ensure_pipeline(recorder->meter_pipeline);
+  recorder->meter_pipeline = ensure_meter_pipeline(recorder->meter_pipeline);
 
   /* As the buffer gets more full, we go from green, to yellow, to red */
   if (recorder->memory_used > (recorder->memory_target * 3) / 4)
@@ -615,7 +640,7 @@ recorder_on_stage_paint (ClutterActor  *actor,
       if (!recorder->only_paint)
         recorder_record_frame (fb,recorder);  /* NB frame recorded before drawing icon and meter
                                                  so they are not included in the recording */
-      recorder->icon_pipeline = ensure_pipeline (recorder->icon_pipeline);
+      recorder->icon_pipeline = ensure_icon_pipeline (recorder->icon_pipeline);
       cogl_pipeline_set_layer_texture (recorder->icon_pipeline, 0, recorder->recording_icon);
 
       cogl_framebuffer_draw_rectangle (fb,
