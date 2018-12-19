@@ -6,6 +6,7 @@ import gettext
 import glob
 from optparse import OptionParser
 import shutil
+import subprocess
 
 import gi
 gi.require_version("Gtk", "3.0")
@@ -160,7 +161,9 @@ class ItemEditor(object):
                 f.write(contents)
             if need_exec:
                 os.chmod(self.item_path, 0o755)
-        except IOError:
+
+            subprocess.Popen(['update-desktop-database', util.getUserItemPath()], env=os.environ)
+        except IOError as e:
             if ask(_("Cannot create the launcher at this location.  Add to the desktop instead?")):
                 self.destdir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP)
                 self.save()
@@ -220,8 +223,7 @@ class LauncherEditor(ItemEditor):
         chooser.destroy()
 
     def check_custom_path(self):
-        pass
-
+        self.item_path = os.path.join(util.getUserItemPath(), os.path.split(self.item_path)[1])
 
 class DirectoryEditor(ItemEditor):
     ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui'
@@ -247,8 +249,7 @@ class DirectoryEditor(ItemEditor):
                     Type="Directory")
 
     def check_custom_path(self):
-        pass
-
+        self.item_path = os.path.join(util.getUserDirectoryPath(), os.path.split(self.item_path)[1])
 
 class CinnamonLauncherEditor(ItemEditor):
     ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui'

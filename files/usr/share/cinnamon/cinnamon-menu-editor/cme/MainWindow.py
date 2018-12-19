@@ -308,14 +308,11 @@ class MainWindow(object):
             return
 
         if isinstance(item, CMenu.TreeEntry):
-            file_path = os.path.join(util.getUserItemPath(), item.get_desktop_file_id())
             file_type = 'launcher'
         elif isinstance(item, CMenu.TreeDirectory):
-            file_path = os.path.join(util.getUserDirectoryPath(), os.path.split(item.get_desktop_file_path())[1])
             file_type = 'directory'
 
-        if not os.path.isfile(file_path):
-            shutil.copy(item.get_desktop_file_path(), file_path)
+        file_path = item.get_desktop_file_path()
 
         if file_path not in self.edit_pool:
             self.edit_pool.append(file_path)
