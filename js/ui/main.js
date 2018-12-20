@@ -215,6 +215,11 @@ function _initRecorder() {
             recorder.set_filename('cinnamon-%d%u-%c.' + recorderSettings.get_string('file-extension'));
             let pipeline = recorderSettings.get_string('pipeline');
 
+            if (layoutManager.monitors.length > 0) {
+                let {x, y, width, height} = layoutManager.primaryMonitor;
+                recorder.set_area(x, y, width, height);
+            }
+
             if (!pipeline.match(/^\s*$/))
                 recorder.set_pipeline(pipeline);
             else
