@@ -875,11 +875,12 @@ class AppGroup {
 
         this.groupState.metaWindows.splice(refWindow, 1);
 
+        if (metaWindow.progress > 0 && this.progressOverlay.visible) {
+            this._progress = 0;
+            this.progressOverlay.visible = false;
+        }
+
         if (this.groupState.metaWindows.length > 0 && !this.groupState.willUnmount) {
-            if (this.progressOverlay.visible && metaWindow.progress > 0) {
-                this._progress = 0;
-                this.progressOverlay.visible = false;
-            }
             this.onWindowTitleChanged(this.groupState.lastFocused);
             this.groupState.set({
                 metaWindows: this.groupState.metaWindows,
