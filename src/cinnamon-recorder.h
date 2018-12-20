@@ -37,10 +37,10 @@ void               cinnamon_recorder_set_filename (CinnamonRecorder *recorder,
 void               cinnamon_recorder_set_pipeline (CinnamonRecorder *recorder,
 						const char    *pipeline);
 void cinnamon_recorder_set_area (CinnamonRecorder *recorder,
-																 int               x,
-																 int               y,
-																 int               width,
-																 int               height);
+                                 int               x,
+                                 int               y,
+                                 int               width,
+                                 int               height);
 gboolean           cinnamon_recorder_record       (CinnamonRecorder *recorder);
 void               cinnamon_recorder_close        (CinnamonRecorder *recorder);
 void               cinnamon_recorder_pause        (CinnamonRecorder *recorder);
