@@ -616,7 +616,14 @@ recorder_on_stage_paint (ClutterActor     *actor,
                          CinnamonRecorder *recorder)
 {
   if (recorder->state == RECORDER_STATE_RECORDING)
-    recorder_record_frame (recorder, FALSE);
+    {
+      if (!recorder->only_paint)
+        recorder_record_frame (recorder, FALSE);
+
+      cogl_set_source_texture (recorder->recording_icon);
+      cogl_rectangle (recorder->horizontal_adjust - 32, recorder->stage_height - recorder->vertical_adjust - 42,
+                      recorder->horizontal_adjust,      recorder->stage_height - recorder->vertical_adjust - 10);
+    }
 }
 
 static void
