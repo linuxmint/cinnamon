@@ -87,9 +87,6 @@ struct _CinnamonRecorder {
   guint update_memory_used_timeout;
   guint update_pointer_timeout;
   guint repaint_hook_id;
-
-  CoglPipeline *icon_pipeline;
-  CoglPipeline *meter_pipeline;
 };
 
 struct _RecorderPipeline
@@ -290,8 +287,6 @@ cinnamon_recorder_init (CinnamonRecorder *recorder)
 
   recorder->state = RECORDER_STATE_CLOSED;
   recorder->framerate = DEFAULT_FRAMES_PER_SECOND;
-  recorder->icon_pipeline = COGL_INVALID_HANDLE;
-  recorder->meter_pipeline = COGL_INVALID_HANDLE;
 }
 
 static void
@@ -312,8 +307,7 @@ cinnamon_recorder_finalize (GObject  *object)
   recorder_set_filename (recorder, NULL);
 
   cogl_handle_unref (recorder->recording_icon);
-  cogl_handle_unref (recorder->icon_pipeline);
-  cogl_handle_unref (recorder->meter_pipeline);
+
   G_OBJECT_CLASS (cinnamon_recorder_parent_class)->finalize (object);
 }
 
@@ -322,24 +316,6 @@ recorder_on_stage_destroy (ClutterActor  *actor,
                            CinnamonRecorder *recorder)
 {
   recorder_set_stage (recorder, NULL);
-}
-
-static CoglPipeline *
-ensure_pipeline (CoglPipeline *pl)
-{
-  static CoglPipeline *icon_pipeline_template = NULL;
-
-  if (pl != COGL_INVALID_HANDLE)
-    return (pl);
-
-  if (G_UNLIKELY (icon_pipeline_template == NULL))
-    {
-      CoglContext *ctx = st_get_cogl_context();
-
-      icon_pipeline_template = cogl_pipeline_new (ctx);
-    }
-
-  return (cogl_pipeline_copy (icon_pipeline_template));
 }
 
 /* Add together the memory used by all pipelines; both the
@@ -504,48 +480,32 @@ recorder_draw_cursor (CinnamonRecorder *recorder,
  * for buffering frames.
  */
 static void
-recorder_draw_buffer_meter (CoglFramebuffer *fb, CinnamonRecorder *recorder)
+recorder_draw_buffer_meter (CinnamonRecorder *recorder)
 {
   int fill_level;
-  float rects[16];
 
   recorder_update_memory_used (recorder, FALSE);
-  recorder->meter_pipeline = ensure_pipeline(recorder->meter_pipeline);
 
   /* As the buffer gets more full, we go from green, to yellow, to red */
   if (recorder->memory_used > (recorder->memory_target * 3) / 4)
-    cogl_pipeline_set_color4f (recorder->meter_pipeline, 1, 0, 0, 1);
+    cogl_set_source_color4f (1, 0, 0, 1);
   else if (recorder->memory_used > recorder->memory_target / 2)
-    cogl_pipeline_set_color4f (recorder->meter_pipeline, 1, 1, 0, 1);
+    cogl_set_source_color4f (1, 1, 0, 1);
   else
-    cogl_pipeline_set_color4f (recorder->meter_pipeline, 0, 1, 0, 1);
+    cogl_set_source_color4f (0, 1, 0, 1);
 
   fill_level = MIN (60, (recorder->memory_used * 60) / recorder->memory_target);
 
   /* A hollow rectangle filled from the left to fill_level */
-  rects[0] = recorder->horizontal_adjust - 64;
-  rects[1] = recorder->stage_height - recorder->vertical_adjust - 10;
-  rects[2] = recorder->horizontal_adjust - 2;
-  rects[3] = recorder->stage_height - recorder->vertical_adjust - 9;
-
-  rects[4] = recorder->horizontal_adjust - 64;
-  rects[5] = recorder->stage_height - recorder->vertical_adjust - 9;
-  rects[6] = recorder->horizontal_adjust - (63 - fill_level);
-  rects[7] = recorder->stage_height - recorder->vertical_adjust - 3;
-
-  rects[8] = recorder->horizontal_adjust - 3;
-  rects[9] = recorder->stage_height - recorder->vertical_adjust - 9;
-  rects[10] = recorder->horizontal_adjust - 2;
-  rects[11] = recorder->stage_height - recorder->vertical_adjust - 3;
-
-  rects[12] = recorder->horizontal_adjust - 64;
-  rects[13] = recorder->stage_height - recorder->vertical_adjust - 3;
-  rects[14] = recorder->horizontal_adjust - 2;
-  rects[15] = recorder->stage_height - recorder->vertical_adjust - 2;
-
-  cogl_framebuffer_draw_rectangles (fb, recorder->meter_pipeline, rects, 4);
+  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 10,
+                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 9);
+  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 9,
+                  recorder->horizontal_adjust - (63 - fill_level), recorder->stage_height - recorder->vertical_adjust - 3);
+  cogl_rectangle (recorder->horizontal_adjust - 3,  recorder->stage_height - recorder->vertical_adjust - 9,
+                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 3);
+  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 3,
+                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 2);
 }
-
 
 /* We want to time-stamp each frame based on the actual time it was
  * recorded. We probably should use the pipeline clock rather than
@@ -566,7 +526,7 @@ get_wall_time (void)
 /* Retrieve a frame and feed it into the pipeline
  */
 static void
-recorder_record_frame (CoglFramebuffer *fb, CinnamonRecorder *recorder)
+recorder_record_frame (CinnamonRecorder *recorder)
 {
   GstBuffer *buffer;
   guint8 *data;
@@ -582,12 +542,11 @@ recorder_record_frame (CoglFramebuffer *fb, CinnamonRecorder *recorder)
 
   GST_BUFFER_PTS(buffer) = get_wall_time() - recorder->start_time;
 
-  cogl_framebuffer_read_pixels (fb,
-                                0,
-                                0,
-                                recorder->stage_width, recorder->stage_height,
-                                CLUTTER_CAIRO_FORMAT_ARGB32,
-                                data);
+  cogl_read_pixels (0, 0,
+                    recorder->stage_width, recorder->stage_height,
+                    COGL_READ_PIXELS_COLOR_BUFFER,
+                    CLUTTER_CAIRO_FORMAT_ARGB32,
+                    data);
 
   recorder_draw_cursor (recorder, buffer);
 
@@ -606,28 +565,18 @@ static void
 recorder_on_stage_paint (ClutterActor  *actor,
                          CinnamonRecorder *recorder)
 {
-  CoglFramebuffer *fb;
-
-  fb = cogl_get_draw_framebuffer ();
-
   if (recorder->state == RECORDER_STATE_RECORDING)
     {
       if (!recorder->only_paint)
-        recorder_record_frame (fb,recorder);  /* NB frame recorded before drawing icon and meter
-                                                 so they are not included in the recording */
-      recorder->icon_pipeline = ensure_pipeline (recorder->icon_pipeline);
-      cogl_pipeline_set_layer_texture (recorder->icon_pipeline, 0, recorder->recording_icon);
+        recorder_record_frame (recorder);
 
-      cogl_framebuffer_draw_rectangle (fb,
-                                       recorder->icon_pipeline,
-                                       recorder->horizontal_adjust - 32,
-                                       recorder->stage_height - recorder->vertical_adjust - 42,
-                                       recorder->horizontal_adjust,
-                                       recorder->stage_height - recorder->vertical_adjust - 10);
+      cogl_set_source_texture (recorder->recording_icon);
+      cogl_rectangle (recorder->horizontal_adjust - 32, recorder->stage_height - recorder->vertical_adjust - 42,
+                      recorder->horizontal_adjust,      recorder->stage_height - recorder->vertical_adjust - 10);
     }
 
   if (recorder->state == RECORDER_STATE_RECORDING || recorder->memory_used != 0)
-    recorder_draw_buffer_meter (fb, recorder);
+    recorder_draw_buffer_meter (recorder);
 }
 
 static void
