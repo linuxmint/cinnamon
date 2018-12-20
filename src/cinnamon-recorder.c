@@ -624,6 +624,9 @@ recorder_on_stage_paint (ClutterActor     *actor,
       cogl_rectangle (recorder->horizontal_adjust - 32, recorder->stage_height - recorder->vertical_adjust - 42,
                       recorder->horizontal_adjust,      recorder->stage_height - recorder->vertical_adjust - 10);
     }
+
+  if (recorder->state == RECORDER_STATE_RECORDING || recorder->memory_used != 0)
+    recorder_draw_buffer_meter (recorder);
 }
 
 static void
