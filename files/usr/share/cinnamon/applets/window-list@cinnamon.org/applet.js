@@ -724,11 +724,6 @@ class AppMenuButton {
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(this.metaWindow);
 
-        if (!app) {
-            setTimeout(() => this.setIcon(), 0);
-            return;
-        }
-
         this.icon_size = this._applet.icon_size;
 
         let icon = app ?
@@ -1101,6 +1096,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     _onWindowMonitorChanged(screen, metaWindow, monitor) {
+        if (!metaWindow.get_compositor_private().visible) return;
         if (this._shouldAdd(metaWindow))
             this._addWindow(metaWindow, false);
         else
