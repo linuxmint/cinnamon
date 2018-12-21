@@ -83,6 +83,10 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             return new PopupMenu.PopupMenuItem(opts.label);
         };
 
+        // TODO: When no windows exist on the active workspace, but do on another,
+        // we should detect those cases and offer workspace options if they are pinned. Otherwise,
+        // user needs to switch workspaces just to switch the window back. This should behave this way
+        // when showAllWorkspaces is disabled as well since its a UX problem.
         if (hasWindows) {
             // Monitors
             if (Main.layoutManager.monitors.length > 1) {
@@ -108,6 +112,9 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                     item = createMenuItem({label: _('Only on this workspace')});
                     this.signals.connect(item, 'activate', () => {
                         this.groupState.lastFocused.unstick();
+                        // Always index windows from all workspaces while showAllWorkspaces is enabled
+                        if (this.state.settings.showAllWorkspaces) return;
+                        this.state.removingWindowFromWorkspaces = true;
                         this.state.trigger('removeWindowFromOtherWorkspaces', this.groupState.lastFocused);
                     });
                     this.addMenuItem(item);
@@ -128,12 +135,12 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                         });
                     };
                     for (let i = 0; i < length; i++) {
-                        // Make the index a local letiable to pass to function
+                        // Make the index a local variable to pass to function
                         let j = i;
                         let name = Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i);
                         let ws = createMenuItem({label: _(name)});
 
-                        if (i === this.state.currentWs) {
+                        if (i === this.groupState.lastFocused.get_workspace().index()) {
                             ws.setSensitive(false);
                         }
 
@@ -305,7 +312,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         if (hasWindows) {
             let metaWindowActor = this.groupState.lastFocused.get_compositor_private();
             // Miscellaneous
-            if (metaWindowActor.opacity !== 255) {
+            if (metaWindowActor && metaWindowActor.opacity !== 255) {
                 item = createMenuItem({label: _('Restore to full opacity')});
                 this.signals.connect(item, 'activate', () => metaWindowActor.set_opacity(255));
                 this.addMenuItem(item);
@@ -351,6 +358,9 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 });
                 this.addMenuItem(item);
                 // Close all
+                // TODO: We should detect if windows from this group are on another workspace
+                // and close windows across all workspaces while showAllWorkspaces is enabled.
+                // Ditto for 'Close others'.
                 item = createMenuItem({label: _('Close all'), icon: 'application-exit'});
                 this.signals.connect(item, 'activate', () => {
                     if (!this.groupState.isFavoriteApp) {

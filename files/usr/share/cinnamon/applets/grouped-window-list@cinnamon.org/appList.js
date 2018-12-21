@@ -366,8 +366,11 @@ class AppList {
         if (!this.state) return;
 
         if ((metaWindow.is_on_all_workspaces() || this.state.settings.showAllWorkspaces)
-            && !metaWindow.__gwlFinalize__) {
-            metaWindow.__gwlFinalize__ = true;
+            && !this.state.removingWindowFromWorkspaces) {
+            // Abort the remove if the window is just changing workspaces, window
+            // should always remain indexed on all workspaces while its mapped.
+            if (!metaWindow.showing_on_its_workspace()) return;
+            this.state.removingWindowFromWorkspaces = true;
             this.state.trigger('removeWindowFromAllWorkspaces', metaWindow);
             return;
         }
@@ -387,6 +390,7 @@ class AppList {
                 return false;
             }
         });
+
         if (refApp > -1) {
             this.appList[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp) => {
                 if (this.state.settings.titleDisplay > 1) {
