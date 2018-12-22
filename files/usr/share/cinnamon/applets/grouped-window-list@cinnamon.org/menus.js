@@ -138,14 +138,15 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                         // Make the index a local variable to pass to function
                         let j = i;
                         let name = Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i);
-                        let ws = createMenuItem({label: _(name)});
+                        let menuItem = createMenuItem({label: _(name)});
+                        let ws = this.groupState.lastFocused.get_workspace();
 
-                        if (i === this.groupState.lastFocused.get_workspace().index()) {
-                            ws.setSensitive(false);
+                        if (ws && i === ws.index()) {
+                            menuItem.setSensitive(false);
                         }
 
-                        connectWorkspaceEvent(ws, j);
-                        item.menu.addMenuItem(ws);
+                        connectWorkspaceEvent(menuItem, j);
+                        item.menu.addMenuItem(menuItem);
                     }
                 }
             }
