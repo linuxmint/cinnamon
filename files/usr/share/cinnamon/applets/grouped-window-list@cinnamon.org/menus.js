@@ -713,6 +713,7 @@ class WindowThumbnail {
             this.signals.connect(this.metaWindowActor, 'size-changed', () => this.refreshThumbnail());
 
             let windowTexture = this.metaWindowActor.get_texture();
+            if (!windowTexture) return;
             let [width, height] = windowTexture.get_size();
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
