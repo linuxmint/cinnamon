@@ -49,7 +49,9 @@ class CinnamonSystrayApplet extends Applet.Applet {
         let manager;
 
         this.orientation = orientation;
-        this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR) * global.ui_scale;
+        // treat all icons as symbolic even if full colour.  Full colour icons will often be
+        // sized larger, and larger icons in the systray look dumb.
+        this.icon_size = this.getPanelIconSize(St.IconType.SYMBOLIC) * global.ui_scale;
 
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
             manager = new Clutter.BoxLayout( { spacing: 4,
@@ -108,12 +110,11 @@ class CinnamonSystrayApplet extends Applet.Applet {
         }
 
         this._shellIndicators = [];
-
     }
 
     _onIndicatorAdded(manager, appIndicator) {
         if (!(appIndicator.id in this._shellIndicators)) {
-            let indicatorActor = appIndicator.getActor(this.icon_size / global.ui_scale);
+            let indicatorActor = appIndicator.getActor(this.icon_size / global.ui_scale, this.orientation);
 
             this._shellIndicators.push({
                 id: appIndicator.id,

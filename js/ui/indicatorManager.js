@@ -478,8 +478,8 @@ AppIndicator.prototype = {
         }
     },
 
-    getActor: function(size) {
-        return new IndicatorActor(this, size);
+    getActor: function(size, orientation) {
+        return new IndicatorActor(this, size, orientation);
     },
 
     //async because we may need to check the presence of a menubar object as well as the creation is async.
@@ -951,9 +951,9 @@ function IndicatorActor() {
 
 IndicatorActor.prototype = {
 
-    _init: function(indicator, size) {
+    _init: function(indicator, size, orientation) {
         this.actor = new St.BoxLayout({
-            style_class: 'applet-box', //FIXME: Use instead the status actor style class.
+            style_class: 'system-status-icon',
             reactive: true,
             track_hover: true,
             // The systray use a layout manager, we need to fill the space of the actor
@@ -963,7 +963,11 @@ IndicatorActor.prototype = {
         });
 
         this.actor._delegate = this;
-
+        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT) {
+            this.actor.set_x_align(Clutter.ActorAlign.FILL);
+            this.actor.set_y_align(Clutter.ActorAlign.END);
+            this.actor.set_vertical(true);
+        }
         this.menu = null;
         this._menuSignal = 0;
         // FIXME: This could be desided on settings:
@@ -1058,9 +1062,11 @@ IndicatorActor.prototype = {
     _updatedLabel: function() {
         if (this._indicator.label != undefined) {
             this._label.set_text(this._indicator.label);
+            this._label.show();
         } else {
             this._label.set_text("");
-            this.actor.remove_style_class_name('applet-box');
+            this._label.hide(); // blanking out a label is not enough, its presence may trigger
+                                // unwanted 'spacing' CSS.
         }
     },
 
