@@ -16,41 +16,42 @@ class CinnamonSettingsExampleApplet extends Applet.TextIconApplet {
         this.menuManager.addMenu(this.menu);
 
         /* Initialize your settings handler instance      this,            the uuid              instance id  */
-        this.settings = new Settings.AppletSettings(this, "settings-example@cinnamon.org", instance_id);
+        this.settings = new Settings.AppletSettings(this, "settings-example@cinnamon.org", instance_id, true);
+        this.settings.connect('ready', () => {
+            /* Now we'll proceed with setting up individual setting bindings. */
 
-        /* Now we'll proceed with setting up individual setting bindings. */
+            this.settings.bind("icon-name",                // The setting key, from the setting schema file
+            "icon_name",                // The property to bind the setting to - in this case it will initialize this.icon_name to the setting value
+            this.on_settings_changed,   // The method to call when this.icon_name has changed, so you can update your applet
+            null);                      // Any extra information you want to pass to the callback (optional - pass null or just leave out this last argument)
 
-        this.settings.bind("icon-name",                // The setting key, from the setting schema file
-                           "icon_name",                // The property to bind the setting to - in this case it will initialize this.icon_name to the setting value
-                           this.on_settings_changed,   // The method to call when this.icon_name has changed, so you can update your applet
-                           null);                      // Any extra information you want to pass to the callback (optional - pass null or just leave out this last argument)
+            this.settings.bind("scale-demo", "scale_val", this.on_settings_changed);
+            this.settings.bind("color", "bg_color", this.on_settings_changed);
+            this.settings.bind("spinner-number", "spinner_number", this.on_settings_changed);
+            this.settings.bind("combo-selection", "combo_choice", this.on_settings_changed);
+            this.settings.bind("use-custom-label",  "use_custom", this.on_settings_changed);
+            this.settings.bind("custom-label", "custom_label", this.on_settings_changed);
+            this.settings.bind("tween-function", "tween_function", this.on_settings_changed);
+            this.settings.bind("keybinding-test", "keybinding", this.on_keybinding_changed);
 
-        this.settings.bind("scale-demo", "scale_val", this.on_settings_changed);
-        this.settings.bind("color", "bg_color", this.on_settings_changed);
-        this.settings.bind("spinner-number", "spinner_number", this.on_settings_changed);
-        this.settings.bind("combo-selection", "combo_choice", this.on_settings_changed);
-        this.settings.bind("use-custom-label",  "use_custom", this.on_settings_changed);
-        this.settings.bind("custom-label", "custom_label", this.on_settings_changed);
-        this.settings.bind("tween-function", "tween_function", this.on_settings_changed);
-        this.settings.bind("keybinding-test", "keybinding", this.on_keybinding_changed);
+            this.settings.connect("changed::signal-test", Lang.bind(this, this.on_signal_test_fired));
 
-        this.settings.connect("changed::signal-test", Lang.bind(this, this.on_signal_test_fired));
+            /* Lets create and add our menu items - we'll set their true values after */
 
-        /* Lets create and add our menu items - we'll set their true values after */
+            this.spinner_val_demo = new PopupMenu.PopupMenuItem("");
+            this.combo_val_demo = new PopupMenu.PopupMenuItem("");
+            this.slider_demo = new PopupMenu.PopupSliderMenuItem(0);
+            this.slider_demo.connect("value-changed", Lang.bind(this, this.on_slider_changed));
 
-        this.spinner_val_demo = new PopupMenu.PopupMenuItem("");
-        this.combo_val_demo = new PopupMenu.PopupMenuItem("");
-        this.slider_demo = new PopupMenu.PopupSliderMenuItem(0);
-        this.slider_demo.connect("value-changed", Lang.bind(this, this.on_slider_changed));
-
-        this.menu.addMenuItem(this.spinner_val_demo);
-        this.menu.addMenuItem(this.combo_val_demo);
-        this.menu.addMenuItem(this.slider_demo);
+            this.menu.addMenuItem(this.spinner_val_demo);
+            this.menu.addMenuItem(this.combo_val_demo);
+            this.menu.addMenuItem(this.slider_demo);
 
 
-        /* Let's set up our applet's initial state now that we have our setting properties defined */
-        this.on_keybinding_changed();
-        this.on_settings_changed();
+            /* Let's set up our applet's initial state now that we have our setting properties defined */
+            this.on_keybinding_changed();
+            this.on_settings_changed();
+        });
     }
 
     on_keybinding_changed() {

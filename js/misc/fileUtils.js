@@ -2,7 +2,8 @@
 
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-
+const {tryFn} = imports.misc.util;
+const ByteArray = imports.byteArray;
 var importNames = [
     'mainloop',
     'jsUnit',
@@ -109,6 +110,86 @@ function getUserDesktopDir() {
     let file = Gio.file_new_for_path(path);
     if (file.query_exists(null)) return path;
     else return null;
+}
+
+function readFileAsync(file, opts = {utf8: true}) {
+    const {utf8} = opts;
+    return new Promise(function(resolve, reject) {
+        if (typeof file === 'string' || file instanceof String) {
+            file = Gio.File.new_for_path(file);
+        }
+        if (!file.query_exists(null)) reject(new Error('File does not exist.'));
+        file.load_contents_async(null, function(object, result) {
+            tryFn(() => {
+                let [success, data] = file.load_contents_finish(result);
+                if (!success) return reject(new Error('File cannot be read.'));
+                if (utf8) {
+                    if (data instanceof Uint8Array) data = ByteArray.toString(data);
+                    else data = data.toString();
+                }
+                resolve(data);
+            }, (e) => reject(e));
+        });
+    });
+};
+
+function writeFileAsync(file, data) {
+    return new Promise(function(resolve, reject) {
+        if (typeof file === 'string' || file instanceof String) {
+            file = Gio.File.new_for_path(file);
+        }
+
+        let write = (stream) => {
+            stream.truncate(0, null);
+            stream.output_stream.write_bytes_async(ByteArray.fromString(String(data)), 0, null, (source, result) => {
+                source.write_bytes_finish(result);
+                source.flush_async(0, null, (source, result) => {
+                    source.flush_finish(result);
+                    source.close_async(0, null, (source, result) => {
+                        resolve(!source.close_finish(result));
+                    });
+                });
+            });
+        };
+
+        file.create_readwrite_async(Gio.FileCreateFlags.REPLACE_DESTINATION, 0, null, (source, result) => {
+            tryFn(function() {
+                write(source.create_readwrite_finish(result));
+            }, function(e) {
+                tryFn(function() {
+                    file.open_readwrite_async(0, null, (source, result) => {
+                        write(source.open_readwrite_finish(result));
+                    });
+                }, function(e) {
+                    reject(e);
+                });
+            });
+        });
+    });
+}
+
+function readJSONAsync(file) {
+    return readFileAsync(file).then(function(json) {
+        return JSON.parse(json);
+    })
+};
+
+function copyFileAsync(file, destinationFile, userData) {
+    return new Promise(function(resolve, reject) {
+        file.copy_async(
+            destinationFile, // destination
+            Gio.FileCopyFlags.OVERWRITE, // set of Gio.FileCopyFlags
+            0, // IO priority
+            null, // Gio.Cancellable
+            null, // progress callback
+            function(localFile, taskJob) {
+                tryFn(function() {
+                    if (!file.copy_finish(taskJob)) return reject(new Error('File cannot be copied.'));
+                    resolve(userData);
+                }, (e) => reject(e));
+            }
+        );
+    });
 }
 
 function findModuleIndex(path) {
