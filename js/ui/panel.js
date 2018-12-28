@@ -2388,11 +2388,11 @@ Panel.prototype = {
 
     _onButtonPressEvent: function (event) {
         let {button, x, y} = event;
-        if (button == 1) {
+        if (button === 1) {
             if (this._context_menu.isOpen)
                 this._context_menu.toggle();
         }
-        if (button == 3) {  // right click
+        if (button === 3) {  // right click
             try {
                 let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
 
