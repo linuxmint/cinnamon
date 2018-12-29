@@ -105,6 +105,16 @@ function overrideDumpStack() {
 }
 
 function overrideGObject() {
+    const {each, toFastproperties} = imports.misc.util;
+
+    const originalInit = GObject.Object.prototype._init;
+    GObject.Object.prototype._init = function _init() {
+        originalInit.call(this, ...arguments);
+        each(this, function(value) {
+            if (value && !Array.isArray(value)) toFastproperties(value);
+        });
+    }
+
     GObject.Object.prototype.disconnect = function(id) {
         if (this.is_finalized()) {
             return true;
