@@ -111,6 +111,9 @@ struct _StEntryPrivate
   guint         blink_time;
   guint         blink_timeout;
   gboolean      cursor_visible;
+  CoglHandle    text_shadow_material;
+  gfloat        shadow_width;
+  gfloat        shadow_height;
 };
 
 static guint entry_signals[LAST_SIGNAL] = { 0, };
@@ -231,6 +234,12 @@ st_entry_dispose (GObject *object)
       priv->entry = NULL;
     }
 
+  if (priv->text_shadow_material != COGL_INVALID_HANDLE)
+    {
+      cogl_handle_unref (priv->text_shadow_material);
+      priv->text_shadow_material = COGL_INVALID_HANDLE;
+    }
+
   keymap = gdk_keymap_get_for_display (gdk_display_get_default ());
   g_signal_handlers_disconnect_by_func (keymap, keymap_state_changed, entry);
 
@@ -255,6 +264,12 @@ st_entry_style_changed (StWidget *self)
   StThemeNode *theme_node;
   ClutterColor color;
   gdouble size;
+
+  if (priv->text_shadow_material != COGL_INVALID_HANDLE)
+    {
+      cogl_handle_unref (priv->text_shadow_material);
+      priv->text_shadow_material = COGL_INVALID_HANDLE;
+    }
 
   theme_node = st_widget_get_theme_node (self);
 
@@ -714,6 +729,22 @@ clutter_text_cursor_changed (ClutterText *text, ClutterActor *actor)
 }
 
 static void
+clutter_text_changed_cb (GObject    *object,
+                         GParamSpec *pspec,
+                         gpointer    user_data)
+{
+  StEntry *entry = ST_ENTRY (user_data);
+  StEntryPrivate *priv = ST_ENTRY_PRIV (entry);
+
+  /* Since the text changed, force a regen of the shadow texture */
+  if (priv->text_shadow_material != COGL_INVALID_HANDLE)
+    {
+      cogl_handle_unref (priv->text_shadow_material);
+      priv->text_shadow_material = COGL_INVALID_HANDLE;
+    }
+}
+
+static void
 st_entry_clipboard_callback (StClipboard *clipboard,
                              const gchar *text,
                              gpointer     data)
@@ -766,6 +797,55 @@ clutter_text_button_press_event (ClutterActor       *actor,
   return FALSE;
 }
 
+static void
+st_entry_paint (ClutterActor *actor)
+{
+  StEntryPrivate *priv = ST_ENTRY_PRIV (actor);
+  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
+  StShadow *shadow_spec = st_theme_node_get_text_shadow (theme_node);
+  ClutterActorClass *parent_class;
+
+  st_widget_paint_background (ST_WIDGET (actor));
+
+  if (shadow_spec)
+    {
+      ClutterActorBox allocation;
+      float width, height;
+
+      clutter_actor_get_allocation_box (priv->entry, &allocation);
+      clutter_actor_box_get_size (&allocation, &width, &height);
+
+      if (priv->text_shadow_material == COGL_INVALID_HANDLE ||
+          width != priv->shadow_width ||
+          height != priv->shadow_height)
+        {
+          CoglHandle material;
+
+          if (priv->text_shadow_material != COGL_INVALID_HANDLE)
+            cogl_handle_unref (priv->text_shadow_material);
+
+          material = _st_create_shadow_pipeline_from_actor (shadow_spec,
+                                                            priv->entry);
+
+          priv->shadow_width = width;
+          priv->shadow_height = height;
+          priv->text_shadow_material = material;
+        }
+
+      if (priv->text_shadow_material != COGL_INVALID_HANDLE)
+        _st_paint_shadow_with_opacity (shadow_spec,
+                                       priv->text_shadow_material,
+                                       &allocation,
+                                       clutter_actor_get_paint_opacity (priv->entry));
+    }
+
+  /* Since we paint the background ourselves, chain to the parent class
+   * of StWidget, to avoid painting it twice.
+   * This is needed as we still want to paint children.
+   */
+  parent_class = g_type_class_peek_parent (st_entry_parent_class);
+  parent_class->paint (actor);
+}
 
 static gboolean
 st_entry_key_press_event (ClutterActor    *actor,
@@ -867,6 +947,7 @@ st_entry_class_init (StEntryClass *klass)
   actor_class->get_preferred_width = st_entry_get_preferred_width;
   actor_class->get_preferred_height = st_entry_get_preferred_height;
   actor_class->allocate = st_entry_allocate;
+  actor_class->paint = st_entry_paint;
 
   actor_class->key_press_event = st_entry_key_press_event;
   actor_class->key_focus_in = st_entry_key_focus_in;
@@ -948,6 +1029,9 @@ st_entry_init (StEntry *entry)
   g_signal_connect (priv->entry, "button-press-event",
                     G_CALLBACK (clutter_text_button_press_event), entry);
 
+  g_signal_connect (priv->entry, "notify::text",
+                    G_CALLBACK (clutter_text_changed_cb), entry);
+
   g_signal_connect (priv->entry, "notify::selection-bound",
                     G_CALLBACK (clutter_text_selection_bound_cb), entry);
 
@@ -955,6 +1039,10 @@ st_entry_init (StEntry *entry)
                     G_CALLBACK (clutter_text_cursor_changed), entry);
 
   priv->spacing = 6.0f;
+
+  priv->text_shadow_material = COGL_INVALID_HANDLE;
+  priv->shadow_width = -1.;
+  priv->shadow_height = -1.;
 
   clutter_actor_add_child (CLUTTER_ACTOR (entry), priv->entry);
   clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
