@@ -13,12 +13,9 @@ function CheckBoxContainer() {
 CheckBoxContainer.prototype = {
     _init: function() {
         this.actor = new Cinnamon.GenericContainer({ y_align: St.Align.MIDDLE });
-        this.actor.connect('get-preferred-width',
-                           Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height',
-                           Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate',
-                           Lang.bind(this, this._allocate));
+        this.actor.set_allocation_callback((b, f) => this._allocate(b, f))
+        this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
+        this.actor.set_preferred_height_callback((a) => this._getPreferredWidth(a));
         this.actor.connect('style-changed', Lang.bind(this,
             function() {
                 let node = this.actor.get_theme_node();
@@ -37,15 +34,16 @@ CheckBoxContainer.prototype = {
         this._spacing = 0;
     },
 
-    _getPreferredWidth: function(actor, forHeight, alloc) {
+    _getPreferredWidth: function(alloc) {
+        let {for_size} = alloc;
         let node = this.actor.get_theme_node();
-        forHeight = node.adjust_for_height(forHeight);
+        for_size = node.adjust_for_height(for_size);
 
-        let [minBoxWidth, natBoxWidth] = this._box.get_preferred_width(forHeight);
+        let [minBoxWidth, natBoxWidth] = this._box.get_preferred_width(for_size);
         let boxNode = this._box.get_theme_node();
         [minBoxWidth, natBoxWidth] = boxNode.adjust_preferred_width(minBoxWidth, natBoxWidth);
 
-        let [minLabelWidth, natLabelWidth] = this.label.get_preferred_width(forHeight);
+        let [minLabelWidth, natLabelWidth] = this.label.get_preferred_width(for_size);
         let labelNode = this.label.get_theme_node();
         [minLabelWidth, natLabelWidth] = labelNode.adjust_preferred_width(minLabelWidth, natLabelWidth);
 
@@ -57,7 +55,7 @@ CheckBoxContainer.prototype = {
         alloc.natural_size = nat;
     },
 
-    _getPreferredHeight: function(actor, forWidth, alloc) {
+    _getPreferredHeight: function(alloc) {
         let [minBoxHeight, natBoxHeight] =
             this._box.get_preferred_height(-1);
         let [minLabelHeight, natLabelHeight] =
@@ -67,7 +65,7 @@ CheckBoxContainer.prototype = {
         alloc.natural_size = Math.max(natBoxHeight, natLabelHeight);
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
         let availWidth = box.x2 - box.x1;
         let availHeight = box.y2 - box.y1;
 

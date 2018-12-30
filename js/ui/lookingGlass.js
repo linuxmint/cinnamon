@@ -241,7 +241,7 @@ Inspector.prototype = {
     _init: function() {
         let container = new Cinnamon.GenericContainer({ width: 0,
                                                      height: 0 });
-        container.connect('allocate', Lang.bind(this, this._allocate));
+        container.set_allocation_callback((b, f) => this._allocate(b, f));
         Main.uiGroup.add_actor(container);
 
         let eventHandler = new St.BoxLayout({ name: 'LookingGlassDialog',
@@ -304,7 +304,7 @@ Inspector.prototype = {
         }
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
         if (!this._eventHandler)
             return;
 

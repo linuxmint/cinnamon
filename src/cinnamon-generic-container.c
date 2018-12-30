@@ -31,6 +31,9 @@ G_DEFINE_TYPE_WITH_CODE(CinnamonGenericContainer,
 
 struct _CinnamonGenericContainerPrivate {
   GHashTable *skip_paint;
+  CinnamonGenericContainerAllocationCallback allocation_callback;
+  CinnamonGenericContainerPreferredSizeCallback preferred_width_callback;
+  CinnamonGenericContainerPreferredSizeCallback preferred_height_callback;
 };
 
 /* Signals */
@@ -59,10 +62,11 @@ cinnamon_generic_container_allocation_unref (CinnamonGenericContainerAllocation 
 }
 
 static void
-cinnamon_generic_container_allocate (ClutterActor           *self,
-                                  const ClutterActorBox  *box,
-                                  ClutterAllocationFlags  flags)
+cinnamon_generic_container_allocate (ClutterActor          *self,
+                                     const ClutterActorBox *box,
+                                     ClutterAllocationFlags flags)
 {
+  CinnamonGenericContainerPrivate *priv = CINNAMON_GENERIC_CONTAINER (self)->priv;
   StThemeNode *theme_node;
   ClutterActorBox content_box;
 
@@ -71,24 +75,34 @@ cinnamon_generic_container_allocate (ClutterActor           *self,
   theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
-  g_signal_emit (G_OBJECT (self), cinnamon_generic_container_signals[ALLOCATE], 0,
-                 &content_box, flags);
+  if (priv->allocation_callback != NULL)
+    (priv->allocation_callback) (&content_box, flags);
+  else
+    g_signal_emit (G_OBJECT (self), cinnamon_generic_container_signals[ALLOCATE], 0,
+                  &content_box, flags);
 }
 
 static void
 cinnamon_generic_container_get_preferred_width (ClutterActor *actor,
-                                             gfloat        for_height,
-                                             gfloat       *min_width_p,
-                                             gfloat       *natural_width_p)
+                                                gfloat        for_height,
+                                                gfloat       *min_width_p,
+                                                gfloat       *natural_width_p)
 {
+  CinnamonGenericContainerPrivate *priv = CINNAMON_GENERIC_CONTAINER (actor)->priv;
   CinnamonGenericContainerAllocation *alloc = g_slice_new0 (CinnamonGenericContainerAllocation);
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
 
   st_theme_node_adjust_for_height (theme_node, &for_height);
 
   alloc->_refcount = 1;
-  g_signal_emit (G_OBJECT (actor), cinnamon_generic_container_signals[GET_PREFERRED_WIDTH], 0,
-                 for_height, alloc);
+  if (priv->preferred_width_callback != NULL)
+    {
+      alloc->for_size = for_height;
+      (priv->preferred_width_callback) (alloc);
+    }
+  else
+    g_signal_emit (G_OBJECT (actor), cinnamon_generic_container_signals[GET_PREFERRED_WIDTH], 0,
+                  for_height, alloc);
   if (min_width_p)
     *min_width_p = alloc->min_size;
   if (natural_width_p)
@@ -100,18 +114,25 @@ cinnamon_generic_container_get_preferred_width (ClutterActor *actor,
 
 static void
 cinnamon_generic_container_get_preferred_height (ClutterActor *actor,
-                                              gfloat        for_width,
-                                              gfloat       *min_height_p,
-                                              gfloat       *natural_height_p)
+                                                 gfloat        for_width,
+                                                 gfloat       *min_height_p,
+                                                 gfloat       *natural_height_p)
 {
+  CinnamonGenericContainerPrivate *priv = CINNAMON_GENERIC_CONTAINER (actor)->priv;
   CinnamonGenericContainerAllocation *alloc = g_slice_new0 (CinnamonGenericContainerAllocation);
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
 
   st_theme_node_adjust_for_width (theme_node, &for_width);
 
   alloc->_refcount = 1;
-  g_signal_emit (G_OBJECT (actor), cinnamon_generic_container_signals[GET_PREFERRED_HEIGHT], 0,
-                 for_width, alloc);
+  if (priv->preferred_height_callback != NULL)
+    {
+      alloc->for_size = for_width;
+      (priv->preferred_height_callback) (alloc);
+    }
+  else
+    g_signal_emit (G_OBJECT (actor), cinnamon_generic_container_signals[GET_PREFERRED_HEIGHT], 0,
+                  for_width, alloc);
   if (min_height_p)
     *min_height_p = alloc->min_size;
   if (natural_height_p)
@@ -235,6 +256,67 @@ cinnamon_generic_container_set_skip_paint (CinnamonGenericContainer  *self,
 
   clutter_actor_queue_redraw (CLUTTER_ACTOR (self));
 }
+
+/**
+ * cinnamon_generic_container_set_allocation_callback:
+ * @self: the #CinnamonGenericContainer
+ * @allocation_callback (scope notified): callback
+ * @user_data (closure): user data
+ * @data_destroy: a #GDestroyNotify
+ *
+ * Sets the callback which will be invoked on allocation. When a callback
+ * is set, it replaces signal emission.
+ */
+void
+cinnamon_generic_container_set_allocation_callback (CinnamonGenericContainer                  *self,
+                                                    CinnamonGenericContainerAllocationCallback allocation_callback,
+                                                    gpointer                                   user_data,
+                                                    GDestroyNotify                             data_destroy)
+{
+  CinnamonGenericContainerPrivate *priv = CINNAMON_GENERIC_CONTAINER (self)->priv;
+  priv->allocation_callback = allocation_callback;
+}
+
+/**
+ * cinnamon_generic_container_set_preferred_width_callback:
+ * @self: the #CinnamonGenericContainer
+ * @preferred_width_callback (scope notified): callback
+ * @user_data (closure): user data
+ * @data_destroy: a #GDestroyNotify
+ *
+ * Sets the callback which will be invoked on allocation. When a callback
+ * is set, it replaces signal emission.
+ */
+void
+cinnamon_generic_container_set_preferred_width_callback (CinnamonGenericContainer                     *self,
+                                                         CinnamonGenericContainerPreferredSizeCallback preferred_width_callback,
+                                                         gpointer                                      user_data,
+                                                         GDestroyNotify                                data_destroy)
+{
+  CinnamonGenericContainerPrivate *priv = CINNAMON_GENERIC_CONTAINER (self)->priv;
+  priv->preferred_width_callback = preferred_width_callback;
+}
+
+/**
+ * cinnamon_generic_container_set_preferred_height_callback:
+ * @self: the #CinnamonGenericContainer
+ * @preferred_height_callback (scope notified): callback
+ * @user_data (closure): user data
+ * @data_destroy: a #GDestroyNotify
+ *
+ * Sets the callback which will be invoked on allocation. When a callback
+ * is set, it replaces signal emission.
+ */
+void
+cinnamon_generic_container_set_preferred_height_callback (CinnamonGenericContainer                     *self,
+                                                          CinnamonGenericContainerPreferredSizeCallback preferred_height_callback,
+                                                          gpointer                                      user_data,
+                                                          GDestroyNotify                                data_destroy)
+{
+  CinnamonGenericContainerPrivate *priv = CINNAMON_GENERIC_CONTAINER (self)->priv;
+  priv->preferred_height_callback = preferred_height_callback;
+}
+
 
 static gboolean
 cinnamon_generic_container_get_paint_volume (ClutterActor *self,

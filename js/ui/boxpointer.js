@@ -41,9 +41,9 @@ BoxPointer.prototype = {
                                   y_fill: true });
         this._container = new Cinnamon.GenericContainer();
         this.actor.set_child(this._container);
-        this._container.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this._container.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this._container.connect('allocate', Lang.bind(this, this._allocate));
+        this.actor.set_allocation_callback((b, f) => this._allocate(b, f))
+        this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
+        this.actor.set_preferred_height_callback((a) => this._getPreferredWidth(a));
         this.bin = new St.Bin(binProperties);
         this._container.add_actor(this.bin);
         this._border = new St.DrawingArea();
@@ -136,9 +136,9 @@ BoxPointer.prototype = {
     /**
      * setArrowSide:
      * @side (St.Side): The new side of the menu
-     * 
+     *
      * Sets the arrow side of the menu. Note that the side is the side
-     * of the source actor, not the menu, e.g. If St.Side.TOP is set, 
+     * of the source actor, not the menu, e.g. If St.Side.TOP is set,
      * then the menu will appear below the source actor (the source
      * actor will be on top of the menu)
      */
@@ -162,21 +162,23 @@ BoxPointer.prototype = {
         }
     },
 
-    _getPreferredWidth: function(actor, forHeight, alloc) {
-        let [minInternalSize, natInternalSize] = this.bin.get_preferred_width(forHeight);
+    _getPreferredWidth: function(alloc) {
+        let {for_size} = alloc;
+        let [minInternalSize, natInternalSize] = this.bin.get_preferred_width(for_size);
         alloc.min_size = minInternalSize;
         alloc.natural_size = natInternalSize;
         this._adjustAllocationForArrow(true, alloc);
     },
 
-    _getPreferredHeight: function(actor, forWidth, alloc) {
-        let [minSize, naturalSize] = this.bin.get_preferred_height(forWidth);
+    _getPreferredHeight: function(alloc) {
+        let {for_size} = alloc;
+        let [minSize, naturalSize] = this.bin.get_preferred_height(for_size);
         alloc.min_size = minSize;
         alloc.natural_size = naturalSize;
         this._adjustAllocationForArrow(false, alloc);
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
         let themeNode = this.actor.get_theme_node();
         let borderWidth = themeNode.get_length('-arrow-border-width');
         let rise = themeNode.get_length('-arrow-rise');
