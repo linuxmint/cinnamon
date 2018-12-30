@@ -52,7 +52,7 @@ ClassicSwitcher.prototype = {
         });
         this.actor.set_allocation_callback((b, f) => this._allocate(b, f))
         this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
-        this.actor.set_preferred_height_callback((a) => this._getPreferredWidth(a));
+        this.actor.set_preferred_height_callback((a) => this._getPreferredHeight(a));
 
         this._thumbnailTimeoutId = 0;
         this.thumbnailsVisible = false;
@@ -459,7 +459,7 @@ SwitcherList.prototype = {
         this.actor = new Cinnamon.GenericContainer({ style_class: 'switcher-list' });
         this.actor.set_allocation_callback((b, f) => this._allocateTop(b, f))
         this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
-        this.actor.set_preferred_height_callback((a) => this._getPreferredWidth(a));
+        this.actor.set_preferred_height_callback((a) => this._getPreferredHeight(a));
 
         // Here we use a GenericContainer so that we can force all the
         // children except the separator to have the same width.
@@ -471,7 +471,7 @@ SwitcherList.prototype = {
 
         this._list.set_allocation_callback((b, f) => this._allocate(b, f))
         this._list.set_preferred_width_callback((a) => this._getPreferredWidth(a))
-        this._list.set_preferred_height_callback((a) => this._getPreferredWidth(a));
+        this._list.set_preferred_height_callback((a) => this._getPreferredHeight(a));
 
         this._clipBin = new St.Bin({style_class: 'cbin'});
         this._clipBin.child = this._list;

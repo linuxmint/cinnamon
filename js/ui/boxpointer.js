@@ -43,7 +43,7 @@ BoxPointer.prototype = {
         this.actor.set_child(this._container);
         this.actor.set_allocation_callback((b, f) => this._allocate(b, f))
         this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
-        this.actor.set_preferred_height_callback((a) => this._getPreferredWidth(a));
+        this.actor.set_preferred_height_callback((a) => this._getPreferredHeight(a));
         this.bin = new St.Bin(binProperties);
         this._container.add_actor(this.bin);
         this._border = new St.DrawingArea();
