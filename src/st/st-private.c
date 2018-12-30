@@ -472,7 +472,8 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
       CoglTexture *texture;
 
       texture = clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (actor));
-      shadow_pipeline = _st_create_shadow_pipeline (shadow_spec, texture);
+      if (texture)
+        shadow_pipeline = _st_create_shadow_pipeline (shadow_spec, texture);
     }
   else
     {
