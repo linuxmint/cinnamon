@@ -466,30 +466,32 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
                                        ClutterActor *actor)
 {
   CoglPipeline *shadow_pipeline = NULL;
+  ClutterActorBox box;
+  float width, height;
+
+  clutter_actor_get_allocation_box (actor, &box);
+  clutter_actor_box_get_size (&box, &width, &height);
+
+  if (width == 0 || height == 0)
+    return NULL;
 
   if (CLUTTER_IS_TEXTURE (actor))
     {
       CoglTexture *texture;
 
       texture = clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (actor));
-      if (texture)
+      if (texture &&
+          cogl_texture_get_width (texture) == width &&
+          cogl_texture_get_height (texture) == height)
         shadow_pipeline = _st_create_shadow_pipeline (shadow_spec, texture);
     }
-  else
+  if (shadow_pipeline == NULL)
     {
       CoglTexture *buffer;
       CoglOffscreen *offscreen;
       CoglFramebuffer *fb;
-      ClutterActorBox box;
       CoglColor clear_color;
-      float width, height;
       CoglError *catch_error = NULL;
-
-      clutter_actor_get_allocation_box (actor, &box);
-      clutter_actor_box_get_size (&box, &width, &height);
-
-      if (width == 0 || height == 0)
-        return NULL;
 
       buffer = st_cogl_texture_new_with_size_wrapper (width, height,
                                                       COGL_TEXTURE_NO_SLICING,
