@@ -685,12 +685,9 @@ function GenericDragItemContainer() {
 GenericDragItemContainer.prototype = {
     _init: function() {
         this.actor = new Cinnamon.GenericContainer({ style_class: 'drag-item-container' });
-        this.actor.connect('get-preferred-width',
-                           Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height',
-                           Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate',
-                           Lang.bind(this, this._allocate));
+        this.actor.set_allocation_callback((b, f) => this._allocate(b, f))
+        this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
+        this.actor.set_preferred_height_callback((a) => this._getPreferredWidth(a));
         this.actor._delegate = this;
 
         this.child = null;
@@ -699,7 +696,7 @@ GenericDragItemContainer.prototype = {
         this.animatingOut = false;
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
         if (this.child == null)
             return;
 
@@ -721,26 +718,28 @@ GenericDragItemContainer.prototype = {
         this.child.allocate(childBox, flags);
     },
 
-    _getPreferredHeight: function(actor, forWidth, alloc) {
+    _getPreferredHeight: function(alloc) {
+        let {for_size} = alloc;
         alloc.min_size = 0;
         alloc.natural_size = 0;
 
         if (this.child == null)
             return;
 
-        let [minHeight, natHeight] = this.child.get_preferred_height(forWidth);
+        let [minHeight, natHeight] = this.child.get_preferred_height(for_size);
         alloc.min_size += minHeight * this.child.scale_y;
         alloc.natural_size += natHeight * this.child.scale_y;
     },
 
-    _getPreferredWidth: function(actor, forHeight, alloc) {
+    _getPreferredWidth: function(alloc) {
+        let {for_size} = alloc;
         alloc.min_size = 0;
         alloc.natural_size = 0;
 
         if (this.child == null)
             return;
 
-        let [minWidth, natWidth] = this.child.get_preferred_width(forHeight);
+        let [minWidth, natWidth] = this.child.get_preferred_width(for_size);
         alloc.min_size = minWidth * this.child.scale_y;
         alloc.natural_size = natWidth * this.child.scale_y;
     },

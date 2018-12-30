@@ -112,9 +112,9 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
                                                   track_hover: params.reactive,
                                                   can_focus: params.reactive,
                                                   accessible_role: Atk.Role.MENU_ITEM });
-        this._signals.connect(this.actor, 'get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this._signals.connect(this.actor, 'get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this._signals.connect(this.actor, 'allocate', Lang.bind(this, this._allocate));
+        this.actor.set_allocation_callback((b, f) => this._allocate(b, f))
+        this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
+        this.actor.set_preferred_height_callback((a) => this._getPreferredWidth(a));
         this._signals.connect(this.actor, 'style-changed', Lang.bind(this, this._onStyleChanged));
         this.actor._delegate = this;
 
@@ -300,7 +300,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         this._columnWidths = widths;
     }
 
-    _getPreferredWidth(actor, forHeight, alloc) {
+    _getPreferredWidth(alloc) {
         let width = 0;
         if (this._columnWidths) {
             for (let i = 0; i < this._columnWidths.length; i++) {
@@ -320,7 +320,8 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         alloc.min_size = alloc.natural_size = width;
     }
 
-    _getPreferredHeight(actor, forWidth, alloc) {
+    _getPreferredHeight(alloc) {
+        let {for_size} = alloc;
         let height = 0, x = 0, minWidth, childWidth;
         for (let i = 0; i < this._children.length; i++) {
             let child = this._children[i];
@@ -333,7 +334,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
                     childWidth = this._columnWidths[i];
             } else {
                 if (child.span == -1)
-                    childWidth = forWidth - x;
+                    childWidth = for_size - x;
                 else
                     [minWidth, childWidth] = child.actor.get_preferred_width(-1);
             }
@@ -346,7 +347,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         alloc.min_size = alloc.natural_size = height;
     }
 
-    _allocate(actor, box, flags) {
+    _allocate(box, flags) {
         let height = box.y2 - box.y1;
         let direction = this.actor.get_direction();
 
@@ -2114,9 +2115,9 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         this.setOrientation(orientation);
 
         this._boxWrapper = new Cinnamon.GenericContainer();
-        this._signals.connect(this._boxWrapper, 'get-preferred-width', Lang.bind(this, this._boxGetPreferredWidth));
-        this._signals.connect(this._boxWrapper, 'get-preferred-height', Lang.bind(this, this._boxGetPreferredHeight));
-        this._signals.connect(this._boxWrapper, 'allocate', Lang.bind(this, this._boxAllocate));
+        this._boxWrapper.set_allocation_callback((b, f) => this._boxAllocate(b, f));
+        this._boxWrapper.set_preferred_width_callback((a) => this._boxGetPreferredWidth(a));
+        this._boxWrapper.set_preferred_height_callback((a) => this._boxGetPreferredHeight(a));
         this.actor.set_child(this._boxWrapper);
         this._boxWrapper.add_actor(this.box);
 
@@ -2540,19 +2541,21 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         return [Math.round(xPos), Math.round(yPos)];
     }
 
-    _boxGetPreferredWidth (actor, forHeight, alloc) {
+    _boxGetPreferredWidth (alloc) {
+        let {for_size} = alloc;
         let columnWidths = this.getColumnWidths();
         this.setColumnWidths(columnWidths);
 
         // Now they will request the right sizes
-        [alloc.min_size, alloc.natural_size] = this.box.get_preferred_width(forHeight);
+        [alloc.min_size, alloc.natural_size] = this.box.get_preferred_width(for_size);
     }
 
-    _boxGetPreferredHeight (actor, forWidth, alloc) {
-        [alloc.min_size, alloc.natural_size] = this.box.get_preferred_height(forWidth);
+    _boxGetPreferredHeight (alloc) {
+        let {for_size} = alloc;
+        [alloc.min_size, alloc.natural_size] = this.box.get_preferred_height(for_size);
     }
 
-    _boxAllocate (actor, box, flags) {
+    _boxAllocate (box, flags) {
         this.box.allocate(box, flags);
         if (!this.animating && !this.sourceActor.is_finalized() && this.sourceActor.get_stage() != null) {
             let [xPos, yPos] = this._calculatePosition();

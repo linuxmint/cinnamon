@@ -12,12 +12,9 @@ function RadioButtonContainer() {
 RadioButtonContainer.prototype = {
     _init: function() {
         this.actor = new Cinnamon.GenericContainer({ y_align: St.Align.MIDDLE });
-        this.actor.connect('get-preferred-width',
-                           Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height',
-                           Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate',
-                           Lang.bind(this, this._allocate));
+        this.actor.set_allocation_callback((b, f) => this._allocate(b, f));
+        this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a));
+        this.actor.set_preferred_height_callback((a) => this._getPreferredHeight(a));
         this.actor.connect('style-changed', Lang.bind(this,
             function() {
                 let node = this.actor.get_theme_node();
@@ -36,14 +33,15 @@ RadioButtonContainer.prototype = {
         this._spacing = 0;
     },
 
-    _getPreferredWidth: function(actor, forHeight, alloc) {
-        let [minWidth, natWidth] = this._box.get_preferred_width(forHeight);
+    _getPreferredWidth: function(alloc) {
+        let {for_size} = alloc;
+        let [minWidth, natWidth] = this._box.get_preferred_width(for_size);
 
         alloc.min_size = minWidth + this._spacing;
         alloc.natural_size = natWidth + this._spacing;
     },
 
-    _getPreferredHeight: function(actor, forWidth, alloc) {
+    _getPreferredHeight: function(alloc) {
         let [minBoxHeight, natBoxHeight] =
             this._box.get_preferred_height(-1);
         let [minLabelHeight, natLabelHeight] =
@@ -53,9 +51,8 @@ RadioButtonContainer.prototype = {
         alloc.natural_size = Math.max(natBoxHeight, 2 * natLabelHeight);
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
         let availWidth = box.x2 - box.x1;
-        let availHeight = box.y2 - box.y1;
 
         let childBox = new Clutter.ActorBox();
         let [minBoxWidth, natBoxWidth] =
@@ -151,9 +148,9 @@ RadioButtonGroup.prototype = {
 
    addButton: function(buttonId, label) {
       this.radioButton = new RadioButton(label);
-      this.radioButton.actor.connect("clicked", 
+      this.radioButton.actor.connect("clicked",
          Lang.bind(this, function(actor) {
-            this.buttonClicked(actor, buttonId); 
+            this.buttonClicked(actor, buttonId);
          }));
 
       this._buttons.push({ id: buttonId, button: this.radioButton });
@@ -173,7 +170,7 @@ RadioButtonGroup.prototype = {
                 button['button'].actor.checked = true;
             }
         }
-      
+
         // Only trigger real changes to radio selection.
         if (buttonId !== this._activeId) {
             this._activeId = buttonId;

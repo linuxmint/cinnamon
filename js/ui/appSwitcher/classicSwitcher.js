@@ -45,10 +45,15 @@ ClassicSwitcher.prototype = {
     _init: function() {
         AppSwitcher.AppSwitcher.prototype._init.apply(this, arguments);
 
-        this.actor = new Cinnamon.GenericContainer({ name: 'altTabPopup',
-                                                  reactive: true,
-                                                  visible: false });
-        
+        this.actor = new Cinnamon.GenericContainer({
+            name: 'altTabPopup',
+            reactive: true,
+            visible: false
+        });
+        this.actor.set_allocation_callback((b, f) => this._allocate(b, f))
+        this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
+        this.actor.set_preferred_height_callback((a) => this._getPreferredWidth(a));
+
         this._thumbnailTimeoutId = 0;
         this.thumbnailsVisible = false;
         this._displayPreviewTimeoutId = 0;
@@ -71,10 +76,6 @@ ClassicSwitcher.prototype = {
         
         this._updateList(0);
 
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
-        
         // Need to force an allocation so we can figure out whether we
         // need to scroll when selecting
         this.actor.opacity = 0;
@@ -82,17 +83,17 @@ ClassicSwitcher.prototype = {
         this.actor.get_allocation_box();
     },
 
-    _getPreferredWidth: function (actor, forHeight, alloc) {
+    _getPreferredWidth: function (alloc) {
         alloc.min_size = global.screen_width;
         alloc.natural_size = global.screen_width;
     },
 
-    _getPreferredHeight: function (actor, forWidth, alloc) {
+    _getPreferredHeight: function (alloc) {
         alloc.min_size = global.screen_height;
         alloc.natural_size = global.screen_height;
     },
 
-    _allocate: function (actor, box, flags) {
+    _allocate: function (box, flags) {
         let childBox = new Clutter.ActorBox();
         let monitor = this._activeMonitor;
 
@@ -456,9 +457,9 @@ function SwitcherList(squareItems, activeMonitor) {
 SwitcherList.prototype = {
     _init : function(squareItems, activeMonitor) {
         this.actor = new Cinnamon.GenericContainer({ style_class: 'switcher-list' });
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocateTop));
+        this.actor.set_allocation_callback((b, f) => this._allocateTop(b, f))
+        this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
+        this.actor.set_preferred_height_callback((a) => this._getPreferredWidth(a));
 
         // Here we use a GenericContainer so that we can force all the
         // children except the separator to have the same width.
@@ -468,9 +469,9 @@ SwitcherList.prototype = {
                                                         this._list.spacing = this._list.get_theme_node().get_length('spacing');
                                                      }));
 
-        this._list.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this._list.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this._list.connect('allocate', Lang.bind(this, this._allocate));
+        this._list.set_allocation_callback((b, f) => this._allocate(b, f))
+        this._list.set_preferred_width_callback((a) => this._getPreferredWidth(a))
+        this._list.set_preferred_height_callback((a) => this._getPreferredWidth(a));
 
         this._clipBin = new St.Bin({style_class: 'cbin'});
         this._clipBin.child = this._list;
@@ -504,7 +505,7 @@ SwitcherList.prototype = {
         this._activeMonitor = activeMonitor;
     },
 
-    _allocateTop: function(actor, box, flags) {
+    _allocateTop: function(box, flags) {
         let leftPadding = this.actor.get_theme_node().get_padding(St.Side.LEFT);
         let rightPadding = this.actor.get_theme_node().get_padding(St.Side.RIGHT);
 
@@ -661,12 +662,13 @@ SwitcherList.prototype = {
         return [maxChildMin, maxChildNat];
     },
 
-    _getPreferredWidth: function (actor, forHeight, alloc) {
-        let [maxChildMin, maxChildNat] = this._maxChildWidth(forHeight);
+    _getPreferredWidth: function (alloc) {
+        let {for_size} = alloc;
+        let [maxChildMin, maxChildNat] = this._maxChildWidth(for_size);
 
         let separatorWidth = 0;
         if (this._separator) {
-            let [sepMin, sepNat] = this._separator.get_preferred_width(forHeight);
+            let [sepMin, sepNat] = this._separator.get_preferred_width(for_size);
             separatorWidth = sepNat + this._list.spacing;
         }
 
@@ -676,7 +678,7 @@ SwitcherList.prototype = {
         this._minSize = alloc.min_size;
     },
 
-    _getPreferredHeight: function (actor, forWidth, alloc) {
+    _getPreferredHeight: function (alloc) {
         let maxChildMin = 0;
         let maxChildNat = 0;
 
@@ -696,7 +698,7 @@ SwitcherList.prototype = {
         alloc.natural_size = maxChildNat;
     },
 
-    _allocate: function (actor, box, flags) {
+    _allocate: function (box, flags) {
         let childHeight = box.y2 - box.y1;
 
         let [maxChildMin, maxChildNat] = this._maxChildWidth(childHeight);
@@ -798,7 +800,7 @@ AppList.prototype = {
         this._activeMonitor = activeMonitor;
     },
 
-    _getPreferredHeight: function (actor, forWidth, alloc) {
+    _getPreferredHeight: function (alloc) {
         if (this._items.length < 1) {
             alloc.min_size = alloc.natural_size = 32;
             return;
@@ -844,9 +846,9 @@ AppList.prototype = {
         alloc.natural_size = height;
     },
 
-    _allocate: function (actor, box, flags) {
+    _allocate: function (box, flags) {
         // Allocate the main list items
-        SwitcherList.prototype._allocate.call(this, actor, box, flags);
+        SwitcherList.prototype._allocate.call(this, box, flags);
 
         if (this._showArrows) {
             let arrowHeight = Math.floor(this.actor.get_theme_node().get_padding(St.Side.BOTTOM) / 3);
