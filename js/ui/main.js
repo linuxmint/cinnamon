@@ -519,6 +519,32 @@ function start() {
         global.connect('shutdown', do_shutdown_sequence);
 
         global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
+
+        let reactive = [];
+
+        const disableReactivityRecursive = function(children) {
+            Util.each(children, function(actor) {
+                if (actor.reactive) {
+                    reactive.push(actor);
+                    actor.reactive = false;
+                }
+                let _children = actor.get_children();
+                if (_children.length > 0) disableReactivityRecursive(_children);
+            });
+        }
+
+        global.display.connect('grab-op-begin', function() {
+            disableReactivityRecursive(uiGroup.get_children());
+            disableReactivityRecursive(global.bottom_window_group.get_children());
+            disableReactivityRecursive(global.window_group.get_children())
+            disableReactivityRecursive(global.background_actor.get_children())
+        });
+        global.display.connect('grab-op-end', function() {
+            Util.each(reactive, function(actor) {
+                actor.reactive = true;
+            });
+            reactive = [];
+        });
     });
 }
 
