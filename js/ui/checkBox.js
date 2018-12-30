@@ -15,7 +15,7 @@ CheckBoxContainer.prototype = {
         this.actor = new Cinnamon.GenericContainer({ y_align: St.Align.MIDDLE });
         this.actor.set_allocation_callback((b, f) => this._allocate(b, f))
         this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
-        this.actor.set_preferred_height_callback((a) => this._getPreferredWidth(a));
+        this.actor.set_preferred_height_callback((a) => this._getPreferredHeight(a));
         this.actor.connect('style-changed', Lang.bind(this,
             function() {
                 let node = this.actor.get_theme_node();

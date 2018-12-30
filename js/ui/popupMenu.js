@@ -114,7 +114,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
                                                   accessible_role: Atk.Role.MENU_ITEM });
         this.actor.set_allocation_callback((b, f) => this._allocate(b, f))
         this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
-        this.actor.set_preferred_height_callback((a) => this._getPreferredWidth(a));
+        this.actor.set_preferred_height_callback((a) => this._getPreferredHeight(a));
         this._signals.connect(this.actor, 'style-changed', Lang.bind(this, this._onStyleChanged));
         this.actor._delegate = this;
 
