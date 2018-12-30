@@ -1242,89 +1242,6 @@ AnimatedIcon.prototype = {
             Mainloop.source_remove(this._timeoutId);
     }
 };
-/* FIXME:  Find out if this TextShadower functionality below is actually used */
-
-function TextShadower() {
-    this._init();
-}
-
-TextShadower.prototype = {
-    _init: function() {
-
-        this.actor = new Cinnamon.GenericContainer();
-
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
-
-        this._label = new St.Label();
-        this.actor.add_actor(this._label);
-        for (let i = 0; i < 4; i++) {
-            let actor = new St.Label({ style_class: 'label-shadow' });
-            actor.clutter_text.ellipsize = Pango.EllipsizeMode.END;
-            this.actor.add_actor(actor);
-        }
-        this._label.raise_top();
-    },
-
-    _getPreferredWidth: function(actor, forHeight, alloc) {
-        let [minWidth, natWidth] = this._label.get_preferred_width(forHeight);
-        alloc.min_size = minWidth + 2;
-        alloc.natural_size = natWidth + 2;
-    },
-
-    _getPreferredHeight: function(actor, forWidth, alloc) {
-        let [minHeight, natHeight] = this._label.get_preferred_height(forWidth);
-        alloc.min_size = minHeight + 2;
-        alloc.natural_size = natHeight + 2;
-    },
-
-    _allocate: function(actor, box, flags) {
-        let children = this.actor.get_children();
-
-        let availWidth = box.x2 - box.x1;
-        let availHeight = box.y2 - box.y1;
-
-        let [minChildWidth, minChildHeight, natChildWidth, natChildHeight] =
-            this._label.get_preferred_size();
-
-        let childWidth = Math.min(natChildWidth, availWidth - 2);
-        let childHeight = Math.min(natChildHeight, availHeight - 2);
-
-        for (let i = 0; i < children.length; i++) {
-            let child = children[i];
-            let childBox = new Clutter.ActorBox();
-            // The order of the labels here is arbitrary, except
-            // we know the "real" label is at the end because Clutter.Group
-            // sorts by Z order
-            switch (i) {
-                case 0: // top
-                    childBox.x1 = 1;
-                    childBox.y1 = 0;
-                    break;
-                case 1: // right
-                    childBox.x1 = 2;
-                    childBox.y1 = 1;
-                    break;
-                case 2: // bottom
-                    childBox.x1 = 1;
-                    childBox.y1 = 2;
-                    break;
-                case 3: // left
-                    childBox.x1 = 0;
-                    childBox.y1 = 1;
-                    break;
-                case 4: // center
-                    childBox.x1 = 1;
-                    childBox.y1 = 1;
-                    break;
-            }
-            childBox.x2 = childBox.x1 + childWidth;
-            childBox.y2 = childBox.y1 + childHeight;
-            child.allocate(childBox, flags);
-        }
-    }
-};
     /**
      * PanelCorner:
      * @box: the box in a panel the corner is associated with
@@ -1946,6 +1863,9 @@ Panel.prototype = {
         this.themeSettings = new Gio.Settings({ schema_id: 'org.cinnamon.theme' });
 
         this.actor = new Cinnamon.GenericContainer({ name: 'panel', reactive: true });
+        this.actor.set_allocation_callback((b, f) => this._allocate(b, f));
+        this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a));
+        this.actor.set_preferred_height_callback((a) => this._getPreferredHeight(a));
         this.addPanelStyleClass(this.panelPosition);
 
         this.actor._delegate = this;
@@ -1983,9 +1903,6 @@ Panel.prototype = {
         this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
         this.actor.connect('queue-relayout', () => this._setPanelHeight());
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
@@ -2986,25 +2903,14 @@ Panel.prototype = {
         global.log(`[Panel ${this.panelId}] Removing zone configuration`);
     },
 
-    _getPreferredWidth: function(actor, forHeight, alloc) {
-
+    _getPreferredWidth: function(alloc) {
         alloc.min_size = -1;
         alloc.natural_size = -1;
-
- /*       if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
-            alloc.natural_size = Main.layoutManager.primaryMonitor.width;
-        } */
     },
 
-    _getPreferredHeight: function(actor, forWidth, alloc) {
-
+    _getPreferredHeight: function(alloc) {
         alloc.min_size = -1;
         alloc.natural_size = -1;
-
-/*        if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
-            alloc.natural_size = Main.layoutManager.primaryMonitor.height;
-            alloc.natural_size = alloc.natural_size - this.toppanelHeight - this.bottompanelHeight - this.margin_top - this.margin_bottom;
-        } */
     },
 
     /**
@@ -3212,7 +3118,7 @@ Panel.prototype = {
         return;
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(box, flags) {
 
         let cornerMinWidth = 0;
         let cornerWidth = 0;

@@ -95,6 +95,10 @@ class AppGroup {
             can_focus: true,
             track_hover: true
         });
+        this.actor.set_allocation_callback((b, f) => this.allocate(b, f))
+        this.actor.set_preferred_width_callback((w) => this.getPreferredWidth(w))
+        this.actor.set_preferred_height_callback((h) => this.getPreferredHeight(h));
+
         this.actor._delegate = this;
 
         this.progressOverlay = new St.Widget({
@@ -149,9 +153,6 @@ class AppGroup {
 
         this._draggable = new DND._Draggable(this.actor);
 
-        this.signals.connect(this.actor, 'get-preferred-width', (...args) => this.getPreferredWidth(...args));
-        this.signals.connect(this.actor, 'get-preferred-height', (...args) => this.getPreferredHeight(...args));
-        this.signals.connect(this.actor, 'allocate', (...args) => this.allocate(...args));
         this.signals.connect(this.actor, 'enter-event', (...args) => this.onEnter(...args));
         this.signals.connect(this.actor, 'leave-event', (...args) => this.onLeave(...args));
         this.signals.connect(this.actor, 'button-release-event', (...args) => this.onAppButtonRelease(...args));
@@ -338,9 +339,10 @@ class AppGroup {
         }
     }
 
-    getPreferredWidth(actor, forHeight, alloc) {
-        let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(forHeight);
-        let [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
+    getPreferredWidth(alloc) {
+        let {for_size} = alloc;
+        let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(for_size);
+        let [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(for_size);
         let {iconSpacing} = this.state.settings;
         // The label text starts in the center of the icon, so we should allocate the space
         // needed for the icon plus the space needed for(label - icon/2)
@@ -354,14 +356,15 @@ class AppGroup {
         }
     }
 
-    getPreferredHeight(actor, forWidth, alloc) {
-        let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_height(forWidth);
-        let [labelMinSize, labelNaturalSize] = this.label.get_preferred_height(forWidth);
+    getPreferredHeight(alloc) {
+        let {for_size} = alloc;
+        let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_height(for_size);
+        let [labelMinSize, labelNaturalSize] = this.label.get_preferred_height(for_size);
         alloc.min_size = Math.min(iconMinSize, labelMinSize);
         alloc.natural_size = Math.max(iconNaturalSize, labelNaturalSize);
     }
 
-    allocate(actor, box, flags) {
+    allocate(box, flags) {
         let allocWidth = box.x2 - box.x1;
         let allocHeight = box.y2 - box.y1;
         let childBox = new Clutter.ActorBox();

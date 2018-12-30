@@ -1011,9 +1011,9 @@ ExpoThumbnailsBox.prototype = {
         this.actor = new Cinnamon.GenericContainer({ style_class: 'workspace-thumbnails',
                                                    reactive: true,
                                                   request_mode: Clutter.RequestMode.WIDTH_FOR_HEIGHT });
-        this.actor.connect('get-preferred-width', Lang.bind(this, this.getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this.getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this.allocate));
+        this.actor.set_allocation_callback((b, f) => this.allocate(b, f));
+        this.actor.set_preferred_width_callback((a) => this.getPreferredWidth(a));
+        this.actor.set_preferred_height_callback((a) => this.getPreferredHeight(a));
 
         // When we animate the scale, we don't animate the requested size of the thumbnails, rather
         // we ask for our final size and then animate within that size. This slightly simplifies the
@@ -1486,11 +1486,12 @@ ExpoThumbnailsBox.prototype = {
         }
     },
 
-    getPreferredHeight: function(actor, forWidth, alloc) {
+    getPreferredHeight: function(alloc) {
+        let {for_size} = alloc;
         // See comment about this.background in _init()
         let themeNode = this.background.get_theme_node();
 
-        forWidth = themeNode.adjust_for_width(forWidth);
+        for_size = themeNode.adjust_for_width(for_size);
 
         // Note that for getPreferredWidth/Height we cheat a bit and skip propagating
         // the size request to our children because we know how big they are and know
@@ -1499,22 +1500,11 @@ ExpoThumbnailsBox.prototype = {
         if (this.thumbnails.length == 0)
             return;
 
-        let spacing = this.actor.get_theme_node().get_length('spacing');
-        let nWorkspaces = global.screen.n_workspaces;
-        let totalSpacing = (nWorkspaces - 1) * spacing;
-
-        let avail = Main.layoutManager.primaryMonitor.width - totalSpacing;
-
-        let [nColumns, nRows] = this.getNumberOfColumnsAndRows(nWorkspaces);
-        let scale = (avail / nColumns) / this.porthole.width;
-
-        let height = Math.round(this.porthole.height * scale);
         [alloc.min_size, alloc.natural_size] =
-            themeNode.adjust_preferred_height(400,
-                                              Main.layoutManager.primaryMonitor.height);
+            themeNode.adjust_preferred_height(400, Main.layoutManager.primaryMonitor.height);
     },
 
-    getPreferredWidth: function(actor, forHeight, alloc) {
+    getPreferredWidth: function(alloc) {
         // See comment about this.background in _init()
         let themeNode = this.background.get_theme_node();
 
@@ -1528,18 +1518,11 @@ ExpoThumbnailsBox.prototype = {
         let nWorkspaces = global.screen.n_workspaces;
         let totalSpacing = (nWorkspaces - 1) * spacing;
 
-        let avail = Main.layoutManager.primaryMonitor.width - totalSpacing;
-
-        let [nColumns, nRows] = this.getNumberOfColumnsAndRows(nWorkspaces);
-        let scale = (avail / nColumns) / this.porthole.width;
-
-        let width = Math.round(this.porthole.width * scale);
-        let maxWidth = (width) * nWorkspaces;
         [alloc.min_size, alloc.natural_size] =
             themeNode.adjust_preferred_width(totalSpacing, Main.layoutManager.primaryMonitor.width);
     },
 
-    allocate: function(actor, box, flags) {
+    allocate: function(box, flags) {
         this.box = box;
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 

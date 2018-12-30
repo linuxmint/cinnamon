@@ -237,7 +237,11 @@ class AppMenuButton {
             style_class: 'window-list-item-box',
             reactive: true,
             can_focus: true,
-            track_hover: true });
+            track_hover: true
+        });
+        this.actor.set_allocation_callback((b, f) => this._allocate(b, f))
+        this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
+        this.actor.set_preferred_height_callback((a) => this._getPreferredWidth(a));
 
         this._applet = applet;
         this.metaWindow = metaWindow;
@@ -257,12 +261,6 @@ class AppMenuButton {
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
-
-        this.actor.connect('get-preferred-width',
-                Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height',
-                Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
         this.progressOverlay = new St.Widget({ style_class: "progress", reactive: false, important: true  });
 
@@ -608,15 +606,16 @@ class AppMenuButton {
         this.metaWindow.set_icon_geometry(rect);
     }
 
-    _getPreferredWidth(actor, forHeight, alloc) {
-        let [minSize, naturalSize] = this._iconBox.get_preferred_width(forHeight);
+    _getPreferredWidth(alloc) {
+        let {for_size} = alloc;
+        let [minSize, naturalSize] = this._iconBox.get_preferred_width(for_size);
         // minimum size just enough for icon if we ever get that many apps going
         alloc.min_size = naturalSize;
 
         if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM ) {
         // the 'buttons use entire space' option only makes sense on horizontal panels
             if (this._applet.buttonsUseEntireSpace) {
-                let [lminSize, lnaturalSize] = this._label.get_preferred_width(forHeight);
+                let [lminSize, lnaturalSize] = this._label.get_preferred_width(for_size);
                 let spacing = this.actor.get_theme_node().get_length('spacing');
                 alloc.natural_size = Math.max(150 * global.ui_scale,
                         naturalSize + spacing + lnaturalSize);
@@ -628,11 +627,12 @@ class AppMenuButton {
         }
     }
 
-    _getPreferredHeight(actor, forWidth, alloc) {
-        let [minSize1, naturalSize1] = this._iconBox.get_preferred_height(forWidth);
+    _getPreferredHeight(alloc) {
+        let {for_size} = alloc;
+        let [minSize1, naturalSize1] = this._iconBox.get_preferred_height(for_size);
 
         if (this.labelVisible) {
-            let [minSize2, naturalSize2] = this._label.get_preferred_height(forWidth);
+            let [minSize2, naturalSize2] = this._label.get_preferred_height(for_size);
             alloc.min_size = Math.max(minSize1, minSize2);
         } else {
             alloc.min_size = minSize1;
@@ -651,7 +651,7 @@ class AppMenuButton {
         }
     }
 
-    _allocate(actor, box, flags) {
+    _allocate(box, flags) {
         let allocWidth = box.x2 - box.x1;
         let allocHeight = box.y2 - box.y1;
 
