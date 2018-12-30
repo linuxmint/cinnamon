@@ -466,11 +466,9 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
                                        ClutterActor *actor)
 {
   CoglPipeline *shadow_pipeline = NULL;
-  ClutterActorBox box;
   float width, height;
 
-  clutter_actor_get_allocation_box (actor, &box);
-  clutter_actor_box_get_size (&box, &width, &height);
+  clutter_actor_box_get_size (&actor, &width, &height);
 
   if (width == 0 || height == 0)
     return NULL;
@@ -492,6 +490,7 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
       CoglFramebuffer *fb;
       CoglColor clear_color;
       CoglError *catch_error = NULL;
+      float x,y;
 
       buffer = st_cogl_texture_new_with_size_wrapper (width, height,
                                                       COGL_TEXTURE_NO_SLICING,
@@ -512,6 +511,7 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
         }
 
       cogl_color_init_from_4ub (&clear_color, 0, 0, 0, 0);
+      clutter_actor_get_position (actor, &x, &y);
 
       /* XXX: There's no way to render a ClutterActor to an offscreen
        * as it uses the implicit API. */
@@ -520,7 +520,7 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
       G_GNUC_END_IGNORE_DEPRECATIONS;
 
       cogl_framebuffer_clear (fb, COGL_BUFFER_BIT_COLOR, &clear_color);
-      cogl_framebuffer_translate (fb, -box.x1, -box.y1, 0);
+      cogl_framebuffer_translate (fb, -x, -y, 0);
       cogl_framebuffer_orthographic (fb, 0, 0, width, height, 0, 1.0);
       clutter_actor_paint (actor);
 
