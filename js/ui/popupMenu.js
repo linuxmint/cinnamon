@@ -2784,7 +2784,6 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
         // Move focus back to parent menu if the user types Left.
 
         if (this.isOpen && event.get_key_symbol() == Clutter.KEY_Left) {
-
             this.sourceActor._delegate.setActive(true);
             this.close(true);
             return true;
