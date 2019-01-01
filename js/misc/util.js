@@ -655,7 +655,7 @@ const FastObject = function(o) {
     return new FastObject;
 }
 FastObject();
-function toFastproperties(obj) {
+function toFastProperties(obj) {
     each(obj, function(value) {
         if (value && !Array.isArray(value)) FastObject(value);
     });
