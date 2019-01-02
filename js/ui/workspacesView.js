@@ -58,7 +58,7 @@ WorkspacesView.prototype = {
         this._scrolling = false; // swipe-scrolling
         this._animatingScroll = false; // programatically updating the adjustment
 
-        this._keyIsHandled = false;
+        this._keyIsHandled = true;
 
         let activeWorkspaceIndex = global.screen.get_active_workspace_index();
         this._workspaces = [];
