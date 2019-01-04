@@ -1137,6 +1137,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._recentButtons = [];
         this._categoryButtons = [];
         this._searchProviderButtons = [];
+        this._appButtonsEnabled = true;
         this._selectedItemIndex = null;
         this._previousSelectedActor = null;
         this._previousVisibleIndex = null;
@@ -2806,6 +2807,24 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         if (box_height + current_scroll_value < button.actor.get_allocation_box().y2 + 10) new_scroll_value = button.actor.get_allocation_box().y2-box_height + 10;
         if (new_scroll_value != current_scroll_value) scrollBox.get_vscroll_bar().get_adjustment().set_value(new_scroll_value);
     }
+    
+    _enableAppButtons() {
+        if (!this._appButtonsEnabled) {
+            for (let i in this._applicationsButtons) {
+                this._applicationsButtons[i].actor.reactive = true;
+            }
+        }
+        this._appButtonsEnabled = true;
+    }
+
+    _disableAppButtons() {
+        if (this._appButtonsEnabled) {
+            for (let i in this._applicationsButtons) {
+                this._applicationsButtons[i].actor.reactive = false;
+            }
+            this._appButtonsEnabled = false;
+        }
+    }
 
     _display() {
         this._activeContainer = null;
@@ -2880,6 +2899,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         Lang.bind(this, function() {
                             this.menu.passEvents = false;
                         }));
+        
+        // Disable app buttons while scrolling with mouse                
+        this.applicationsScrollBox.connect('scroll-event',
+            Lang.bind(this, this._disableAppButtons));
+        this.applicationsScrollBox.connect('motion-event',
+            Lang.bind(this, this._enableAppButtons));
+        this.applicationsScrollBox.connect('button-press-event',
+            Lang.bind(this, this._enableAppButtons));
 
         this.applicationsBox = new St.BoxLayout({ style_class: 'menu-applications-inner-box', vertical:true });
         this.applicationsBox.add_style_class_name('menu-applications-box'); //this is to support old themes
