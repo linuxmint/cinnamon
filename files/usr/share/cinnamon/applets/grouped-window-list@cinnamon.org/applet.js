@@ -252,6 +252,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             scrollActive: false,
             thumbnailMenuOpen: false,
             thumbnailCloseButtonOffset: global.ui_scale > 1 ? -10 : 0,
+            addingWindowToWorkspaces: false,
             removingWindowFromWorkspaces: false,
         });
 
@@ -272,6 +273,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                 each(this.appLists, function(appList) {
                     appList.windowAdded(appList.metaWorkspace, win, app, isFavoriteApp);
                 });
+                this.state.addingWindowToWorkspaces = false;
             },
             removeWindowFromAllWorkspaces: (win) => {
                 each(this.appLists, function(appList) {

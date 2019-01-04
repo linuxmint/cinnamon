@@ -239,8 +239,11 @@ class AppList {
 
         if (metaWindow && !this.shouldWindowBeAdded(metaWindow)) return;
 
-        if (this.state.appletReady && this.state.settings.showAllWorkspaces && metaWindow && !metaWindow.__gwlInit__) {
-            metaWindow.__gwlInit__ = true;
+        if (metaWindow
+            && this.state.appletReady
+            && this.state.settings.showAllWorkspaces
+            && !this.state.addingWindowToWorkspaces) {
+            this.state.addingWindowToWorkspaces = true;
             this.state.trigger('addWindowToAllWorkspaces', metaWindow, app, isFavoriteApp);
         }
         // Check to see if the window that was added already has an app group.
