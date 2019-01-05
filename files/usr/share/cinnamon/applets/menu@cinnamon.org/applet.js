@@ -3041,27 +3041,25 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _listApplications(pattern){
         let res = [];
         let exactMatch = null;
-        if (pattern){
-            res = [];
+        if (pattern) {
             let regexpPattern = new RegExp("\\b"+pattern);
-            for (let i in this._applicationsButtons) {
-                let app = this._applicationsButtons[i].app;
+            Util.each(this._applicationsButtons, (button) => {
+                let app = button.app;
                 let latinisedLowerName = Util.latinise(app.get_name().toLowerCase());
                 if (latinisedLowerName.match(regexpPattern) !== null) {
                     res.push(app.get_id());
                     if (!exactMatch && latinisedLowerName === pattern)
                         exactMatch = app.get_id();
                 }
-            }
+            });
             if (!exactMatch) {
-                for (let i in this._applicationsButtons) {
-                    let app = this._applicationsButtons[i].app;
-                    if (Util.latinise(app.get_name().toLowerCase()).indexOf(pattern)!==-1 ||
-                        (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).indexOf(pattern)!==-1) ||
-                        (app.get_description() && Util.latinise(app.get_description().toLowerCase()).indexOf(pattern)!==-1) ||
-                        (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).indexOf(pattern)!==-1))
+                Util.each(this._applicationsButtons, (button) => {
+                    let app = button.app;
+                    if ((app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).split(';').some(keyword => keyword.startsWith(pattern))) ||
+                        (app.get_description() && Util.latinise(app.get_description().toLowerCase()).match(regexpPattern) !== null)) {
                         res.push(app.get_id());
-                }
+                    }
+                });
             }
         }
         return [res, exactMatch];
