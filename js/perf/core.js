@@ -1,5 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+const {get_monotonic_time} = imports.gi.GLib;
 const Main = imports.ui.main;
 const Scripting = imports.ui.scripting;
 
@@ -234,16 +235,17 @@ function benchmarkPrototype(object, threshold = 3) {
         }
         object.prototype[key] = new Proxy(fn, {
             apply(target, thisA, args) {
-                let now = Date.now();
+                let now = get_monotonic_time();
                 let val = target.apply(thisA, args);
-                let time = Date.now() - now;
+                let time = get_monotonic_time() - now;
                 if (time >= threshold) {
                     times.push(time);
                     let total = 0;
                     for (let z = 0; z < times.length; z++) total += times[z];
 
-                    let max = Math.max(...times);
-                    let avg = (total / times.length).toFixed(2);
+                    let max = (Math.max(...times) / 1000).toFixed(2);
+                    let avg = ((total / times.length) / 1000).toFixed(2);
+                    time = (time / 1000).toFixed(2);
 
                     let output = `${thisA.constructor.name}.${key}: ${time}ms `
                         + `(MAX: ${max}ms AVG: ${avg}ms)`;
