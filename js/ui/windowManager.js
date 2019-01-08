@@ -115,7 +115,7 @@ TilePreview.prototype = {
         this._showing = false;
     },
 
-    show: function(window, tileRect, monitorIndex, snapQueued) {
+    show: function(window, tileRect, monitorIndex, snapQueued, effectsEnabled) {
         let windowActor = window.get_compositor_private();
         if (!windowActor)
             return;
@@ -134,6 +134,7 @@ TilePreview.prototype = {
         this._monitorIndex = monitorIndex;
         this._rect = tileRect;
         let monitor = Main.layoutManager.monitors[monitorIndex];
+        let {x, y, width, height} = tileRect;
 
         if (!this._showing || changeMonitor) {
             let monitorRect = new Meta.Rectangle({ x: monitor.x,
@@ -150,26 +151,43 @@ TilePreview.prototype = {
         this.actor.show();
         windowActor.raise_top();
 
-        Tweener.addTween(this.actor,
-                         { x: tileRect.x,
-                           y: tileRect.y,
-                           width: tileRect.width,
-                           height: tileRect.height,
-                           opacity: 255,
-                           time: WINDOW_ANIMATION_TIME,
-                           transition: 'easeOutQuad' });
+        let props = {
+            x,
+            y,
+            width,
+            height,
+            opacity: 255,
+        };
+
+        if (effectsEnabled) {
+            Object.assign(props, {
+                time: WINDOW_ANIMATION_TIME,
+                transition: 'easeOutQuad'
+            });
+            Tweener.addTween(this.actor, props);
+            return;
+        }
+
+        Object.assign(this.actor, props);
     },
 
-    hide: function() {
+    hide: function(effectsEnabled) {
         if (!this._showing)
             return;
 
         this._showing = false;
-        Tweener.addTween(this.actor,
-                         { opacity: 0,
-                           time: WINDOW_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this, this._reset) });
+
+        if (effectsEnabled) {
+            Tweener.addTween(this.actor, {
+                opacity: 0,
+                time: WINDOW_ANIMATION_TIME,
+                transition: 'easeOutQuad',
+                onComplete: () => this._reset()
+            });
+            return;
+        }
+        this.actor.opacity = 0;
+
     },
 
     _reset: function() {
@@ -209,7 +227,7 @@ HudPreview.prototype = {
         this._showing = false;
     },
 
-    show: function(currentProximityZone, workArea, snapQueued) {
+    show: function(currentProximityZone, workArea, snapQueued, effectsEnabled) {
         let changeZone = (this._zone != currentProximityZone);
 
         if (this._snapQueued != snapQueued) {
@@ -342,30 +360,50 @@ HudPreview.prototype = {
             this.actor.raise_top();
             this.actor.opacity = 0;
 
-            Tweener.addTween(this.actor,
-                         { x: this._animatedX,
-                           y: this._animatedY,
-                           width: this._animatedW,
-                           height: this._animatedH,
-                           opacity: 255,
-                           time: TILE_HUD_ANIMATION_TIME,
-                           transition: 'easeOutQuad' });
+            let props = {
+                x: this._animatedX,
+                y: this._animatedY,
+                width: this._animatedW,
+                height: this._animatedH,
+                opacity: 255,
+            };
+
+            if (effectsEnabled) {
+                Object.assign(props, {
+                    time: TILE_HUD_ANIMATION_TIME,
+                    transition: 'easeOutQuad'
+                })
+                Tweener.addTween(this.actor, props);
+                return;
+            }
+
+            Object.assign(this.actor, props);
         }
     },
 
-    hide: function() {
+    hide: function(effectsEnabled) {
         if (!this._showing)
             return;
         this._showing = false;
-        Tweener.addTween(this.actor,
-                         { x: this._x,
-                           y: this._y,
-                           width: this._w,
-                           height: this._h,
-                           opacity: 0,
-                           time: TILE_HUD_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this, this._reset) });
+        let props = {
+            x: this._x,
+            y: this._y,
+            width: this._w,
+            height: this._h,
+            opacity: 0,
+        };
+
+        if (effectsEnabled) {
+            Object.assign(props, {
+                time: TILE_HUD_ANIMATION_TIME,
+                transition: 'easeOutQuad',
+                onComplete: () => this._reset()
+            });
+            Tweener.addTween(this.actor, props);
+            return;
+        }
+
+        Object.assign(this.actor, props);
     },
 
     _reset: function () {
@@ -871,13 +909,13 @@ WindowManager.prototype = {
     _showTilePreview: function(cinnamonwm, window, tileRect, monitorIndex, snapQueued) {
         if (!this._tilePreview)
             this._tilePreview = new TilePreview();
-        this._tilePreview.show(window, tileRect, monitorIndex, snapQueued);
+        this._tilePreview.show(window, tileRect, monitorIndex, snapQueued, this.settingsState['desktop-effects']);
     },
 
     _hideTilePreview: function(cinnamonwm) {
         if (!this._tilePreview)
             return;
-        this._tilePreview.hide();
+        this._tilePreview.hide(this.settingsState['desktop-effects']);
         this._tilePreview.destroy();
         this._tilePreview = null;
     },
@@ -886,14 +924,14 @@ WindowManager.prototype = {
         if (this.settingsState['show-tile-hud']) {
             if (!this._hudPreview)
                 this._hudPreview = new HudPreview();
-            this._hudPreview.show(currentProximityZone, workArea, snapQueued);
+            this._hudPreview.show(currentProximityZone, workArea, snapQueued, this.settingsState['desktop-effects']);
         }
     },
 
     _hideHudPreview: function(cinnamonwm) {
         if (!this._hudPreview)
             return;
-        this._hudPreview.hide();
+        this._hudPreview.hide(this.settingsState['desktop-effects']);
         this._hudPreview.destroy();
         this._hudPreview = null;
     },
@@ -920,9 +958,10 @@ WindowManager.prototype = {
 
     _showWorkspaceOSDOnMonitor : function(monitor, osd_x, osd_y, duration, current_workspace_index) {
         let osd = new St.Label({style_class:'workspace-osd', important: true});
+        let effectsEnabled = this.settingsState['desktop-effects'];
         this._workspace_osd_array.push(osd);
         osd.set_text(Main.getWorkspaceName(current_workspace_index));
-        osd.set_opacity = 0;
+        if (effectsEnabled) osd.set_opacity = 0;
         Main.layoutManager.addChrome(osd, { visibleInFullscreen: false, affectsInputRegion: false });
         /*
          * This aligns the osd edges to the minimum/maximum values from gsettings,
@@ -938,11 +977,17 @@ WindowManager.prototype = {
         delta = (osd_y - minY) / (maxY - minY);
         let y = monitor.y + Math.round((monitor.height * osd_y / 100) - (osd.height * delta));
         osd.set_position(x, y);
-        Tweener.addTween(osd, { opacity: 255,
-                                time: duration,
-                                transition: 'linear',
-                                onComplete: this._hideWorkspaceOSD,
-                                onCompleteScope: this });
+
+        if (effectsEnabled) {
+            Tweener.addTween(osd, {
+                opacity: 255,
+                time: duration,
+                transition: 'linear',
+                onComplete: () => this._hideWorkspaceOSD()
+            });
+            return;
+        }
+        setTimeout(() => this._hideWorkspaceOSD(), duration * 1000);
     },
 
     _hideWorkspaceOSD : function() {
