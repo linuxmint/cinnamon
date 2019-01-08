@@ -13,7 +13,7 @@ const CoverflowSwitcher = imports.ui.appSwitcher.coverflowSwitcher;
 const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
 const ClassicSwitcher = imports.ui.appSwitcher.classicSwitcher;
 const WindowEffects = imports.ui.windowEffects;
-const {each} = imports.misc.util;
+const {each, filter, tryFn} = imports.misc.util;
 
 const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
@@ -559,7 +559,7 @@ WindowManager.prototype = {
         const desktopEffectsOnDialogs = this.settingsState['desktop-effects-on-dialogs'];
         const desktopEffectsOnMenus = this.settingsState['desktop-effects-on-menus'];
 
-        switch (actor.meta_window.get_window_type()) {
+        switch (actor.meta_window.window_type) {
             case WindowType.NORMAL:
                 return desktopEffects;
             case WindowType.DIALOG:
@@ -626,7 +626,7 @@ WindowManager.prototype = {
         Main.soundManager.play('minimize');
 
         // reset all cached values in case "traditional" is no longer in effect
-        actor.get_meta_window()._cinnamonwm_has_origin = false;
+        actor.meta_window._cinnamonwm_has_origin = false;
         this._startWindowEffect(cinnamonwm, "minimize", actor);
     },
 
@@ -720,57 +720,48 @@ WindowManager.prototype = {
         }
     },
 
-    _mapWindow : function(cinnamonwm, actor) {
-        actor._windowType = actor.meta_window.get_window_type();
-        actor._notifyWindowTypeSignalId = actor.meta_window.connect('notify::window-type', Lang.bind(this, function () {
-            let type = actor.meta_window.get_window_type();
-            actor._windowType = type;
-        }));
-
-        if (actor.meta_window.is_attached_dialog()) {
-            this._checkDimming(actor.get_meta_window().get_transient_for());
+    _mapWindow: function(cinnamonwm, actor) {
+        let {meta_window} = actor;
+        if (meta_window.is_attached_dialog()) {
+            this._checkDimming(meta_window.get_transient_for());
         }
 
-        if (actor.get_meta_window()._cinnamonwm_has_origin && actor.get_meta_window()._cinnamonwm_has_origin === true) {
+        if (meta_window._cinnamonwm_has_origin && meta_window._cinnamonwm_has_origin === true) {
             Main.soundManager.play('minimize');
-            try {
-                this._startWindowEffect(cinnamonwm, "unminimize", actor, null, "minimize")
-                return;
-            } catch(e) {
-                //catch "no origin found"
-            }
-        } else if (actor.meta_window.get_window_type() === WindowType.NORMAL) {
+            tryFn(() => this._startWindowEffect(cinnamonwm, 'unminimize', actor, null, 'minimize'));
+            return;
+        } else if (meta_window.window_type === WindowType.NORMAL) {
             Main.soundManager.play('map');
         }
         this._startWindowEffect(cinnamonwm, "map", actor);
     },
 
-    _destroyWindow : function(cinnamonwm, actor) {
+    _destroyWindow: function(cinnamonwm, actor) {
+        let {meta_window} = actor;
 
-        if (actor.meta_window.get_window_type() === WindowType.NORMAL) {
+        if (actor.meta_window.window_type === WindowType.NORMAL) {
             Main.soundManager.play('close');
         }
 
         actor.orig_opacity = actor.opacity;
+        actor.orig_opacity = actor.opacity;
 
-        let window = actor.meta_window;
-
-        if (window.is_attached_dialog()) {
-            let parent = window.get_transient_for();
-            this._checkDimming(parent, window);
+        if (meta_window.is_attached_dialog()) {
+            let parent = meta_window.get_transient_for();
+            this._checkDimming(parent, meta_window);
         }
 
         if (actor._notifyWindowTypeSignalId) {
-            window.disconnect(actor._notifyWindowTypeSignalId);
+            meta_window.disconnect(actor._notifyWindowTypeSignalId);
             actor._notifyWindowTypeSignalId = 0;
         }
-        if (window._dimmed) {
-            this._dimmedWindows = this._dimmedWindows.filter(function(win) {
-                                                                 return win != window;
-                                                             });
+        if (meta_window._dimmed) {
+            this._dimmedWindows = filter(this._dimmedWindows, function(win) {
+                return win !== meta_window;
+            });
         }
 
-        if (window.minimized) {
+        if (meta_window.minimized) {
             cinnamonwm.completed_destroy(actor);
             return;
         }
@@ -823,7 +814,7 @@ WindowManager.prototype = {
             if ((window.meta_window == this._movingWindow) ||
                 ((global.display.get_grab_op() == Meta.GrabOp.MOVING ||
                   global.display.get_grab_op() == Meta.GrabOp.KEYBOARD_MOVING)
-                 && window.meta_window == global.display.get_focus_window())) {
+                 && window.meta_window == global.display.focus_window)) {
                 /* We are moving this window to the other workspace. In fact,
                  * it is already on the other workspace, so it is hidden. We
                  * force it to show and then don't animate it, so it stays
@@ -914,9 +905,9 @@ WindowManager.prototype = {
                 this._showWorkspaceOSDOnMonitor(Main.layoutManager.primaryMonitor, osd_x, osd_y, duration, current_workspace_index);
             }
             else {
-                for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
-                    let monitor = Main.layoutManager.monitors[i];
-                    this._showWorkspaceOSDOnMonitor(monitor, osd_x, osd_y, duration, current_workspace_index);
+                let {monitors} = Main.layoutManager;
+                for (let i = 0; i < monitors.length; i++) {
+                    this._showWorkspaceOSDOnMonitor(monitors[i], osd_x, osd_y, duration, current_workspace_index);
                 }
             }
         }
@@ -1004,7 +995,7 @@ WindowManager.prototype = {
     },
 
     _shiftWindowToWorkspace : function(window, direction) {
-        if (window.get_window_type() === WindowType.DESKTOP) {
+        if (window.window_type === WindowType.DESKTOP) {
             return;
         }
         this._movingWindow = window;

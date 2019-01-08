@@ -137,11 +137,7 @@ Map.prototype = {
     },
 
     traditional: function(cinnamonwm, actor, time, transition) {
-        if (!actor._windowType) {
-            actor._windowType = actor.meta_window.get_window_type();
-        }
-
-        switch (actor._windowType) {
+        switch (actor.meta_window.window_type) {
             case Meta.WindowType.NORMAL:
             case Meta.WindowType.MODAL_DIALOG:
             case Meta.WindowType.DIALOG:
@@ -237,11 +233,7 @@ Close.prototype = {
     },
 
     traditional: function(cinnamonwm, actor, time, transition) {
-        if (!actor._windowType) {
-            actor._windowType = actor.meta_window.get_window_type();
-        }
-
-        switch (actor._windowType) {
+        switch (actor.meta_window.window_type) {
             case Meta.WindowType.NORMAL:
             case Meta.WindowType.MODAL_DIALOG:
             case Meta.WindowType.DIALOG:
@@ -279,7 +271,7 @@ Minimize.prototype = {
             yDest = geom.y;
             xScale = geom.width / actor.width;
             yScale = geom.height / actor.height;
-            actor.get_meta_window()._cinnamonwm_has_origin = true;
+            actor.meta_window._cinnamonwm_has_origin = true;
             this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
             this._scaleWindow(cinnamonwm, actor, xScale, yScale, time, transition, true);
             this._fadeWindow(cinnamonwm, actor, 0, time, transition);
