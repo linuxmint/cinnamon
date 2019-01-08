@@ -149,7 +149,7 @@ TilePreview.prototype = {
 
         this._showing = true;
         this.actor.show();
-        windowActor.raise_top();
+        windowActor.get_parent().set_child_above_sibling(windowActor, null);
 
         let props = {
             x,
@@ -357,7 +357,7 @@ HudPreview.prototype = {
 
             this._showing = true;
             this.actor.show();
-            this.actor.raise_top();
+            this.actor.get_parent().set_child_above_sibling(this.actor, null);
             this.actor.opacity = 0;
 
             let props = {
