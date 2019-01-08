@@ -3,7 +3,7 @@
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Meta = imports.gi.Meta;
-const {WindowType} = Meta;
+const {WindowType, MotionDirection, GrabOp} = Meta;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
@@ -668,9 +668,9 @@ WindowManager.prototype = {
                 this._dimWindow(window, true);
         } else if (!shouldDim && window._dimmed) {
             window._dimmed = false;
-            this._dimmedWindows = this._dimmedWindows.filter(function(win) {
-                                                                 return win != window;
-                                                             });
+            this._dimmedWindows = filter(this._dimmedWindows, function(win) {
+                return win !== window;
+            });
             if (!Main.overview.visible)
                 this._undimWindow(window, true);
         }
@@ -786,42 +786,47 @@ WindowManager.prototype = {
          * opposite direction.
          */
         let xDest = 0, yDest = 0;
+        let {display, screen_width, screen_height} = global;
+        let {focus_window} = display;
+        let grabOp = display.get_grab_op();
 
-        if (direction == Meta.MotionDirection.UP ||
-            direction == Meta.MotionDirection.UP_LEFT ||
-            direction == Meta.MotionDirection.UP_RIGHT)
-                yDest = global.screen_height;
-        else if (direction == Meta.MotionDirection.DOWN ||
-            direction == Meta.MotionDirection.DOWN_LEFT ||
-            direction == Meta.MotionDirection.DOWN_RIGHT)
-                yDest = -global.screen_height;
 
-        if (direction == Meta.MotionDirection.LEFT ||
-            direction == Meta.MotionDirection.UP_LEFT ||
-            direction == Meta.MotionDirection.DOWN_LEFT)
-                xDest = global.screen_width;
-        else if (direction == Meta.MotionDirection.RIGHT ||
-                 direction == Meta.MotionDirection.UP_RIGHT ||
-                 direction == Meta.MotionDirection.DOWN_RIGHT)
-                xDest = -global.screen_width;
+        if (direction == MotionDirection.UP ||
+            direction == MotionDirection.UP_LEFT ||
+            direction == MotionDirection.UP_RIGHT)
+            yDest = screen_height;
+        else if (direction == MotionDirection.DOWN ||
+            direction == MotionDirection.DOWN_LEFT ||
+            direction == MotionDirection.DOWN_RIGHT)
+            yDest = -screen_height;
+
+        if (direction == MotionDirection.LEFT ||
+            direction == MotionDirection.UP_LEFT ||
+            direction == MotionDirection.DOWN_LEFT)
+            xDest = screen_width;
+        else if (direction == MotionDirection.RIGHT ||
+                 direction == MotionDirection.UP_RIGHT ||
+                 direction == MotionDirection.DOWN_RIGHT)
+            xDest = -screen_width;
 
         for (let i = 0; i < windows.length; i++) {
             let window = windows[i];
+            let {meta_window} = window;
 
-            if (!window.meta_window.showing_on_its_workspace())
+            if (!meta_window.showing_on_its_workspace())
                 continue;
 
-            if ((window.meta_window == this._movingWindow) ||
-                ((global.display.get_grab_op() == Meta.GrabOp.MOVING ||
-                  global.display.get_grab_op() == Meta.GrabOp.KEYBOARD_MOVING)
-                 && window.meta_window == global.display.focus_window)) {
+            if ((meta_window === this._movingWindow) ||
+                ((grabOp === GrabOp.MOVING ||
+                  grabOp === GrabOp.KEYBOARD_MOVING)
+                 && meta_window === focus_window)) {
                 /* We are moving this window to the other workspace. In fact,
                  * it is already on the other workspace, so it is hidden. We
                  * force it to show and then don't animate it, so it stays
                  * there while other windows move. */
                 window.show_all();
                 this._movingWindow = undefined;
-            } else if (window.get_workspace() == from) {
+            } else if (window.get_workspace() === from) {
                 if (window.origX == undefined) {
                     window.origX = window.x;
                     window.origY = window.y;
@@ -838,22 +843,22 @@ WindowManager.prototype = {
                               window.origY = undefined;
                           }
                         });
-            } else if (window.get_workspace() == to) {
+            } else if (window.get_workspace() === to) {
                 if (window.origX == undefined) {
                     window.origX = window.x;
                     window.origY = window.y;
                     window.set_position(window.origX - xDest, window.origY - yDest);
                 }
-                Tweener.addTween(window,
-                        { x: window.origX,
-                          y: window.origY,
-                          time: WINDOW_ANIMATION_TIME,
-                          transition: 'easeOutQuad',
-                          onComplete: Lang.bind(window, function() {
-                              window.origX = undefined;
-                              window.origY = undefined;
-                          })
-                        });
+                Tweener.addTween(window, {
+                    x: window.origX,
+                    y: window.origY,
+                    time: WINDOW_ANIMATION_TIME,
+                    transition: 'easeOutQuad',
+                    onComplete: function() {
+                        window.origX = undefined;
+                        window.origY = undefined;
+                    }
+                });
                 window.show_all();
             }
         }
@@ -1007,11 +1012,11 @@ WindowManager.prototype = {
     },
 
     _moveWindowToWorkspaceLeft : function(display, screen, window, binding) {
-        this._shiftWindowToWorkspace(window, Meta.MotionDirection.LEFT);
+        this._shiftWindowToWorkspace(window, MotionDirection.LEFT);
     },
 
     _moveWindowToWorkspaceRight : function(display, screen, window, binding) {
-        this._shiftWindowToWorkspace(window, Meta.MotionDirection.RIGHT);
+        this._shiftWindowToWorkspace(window, MotionDirection.RIGHT);
     },
 
     moveToWorkspace: function(workspace, direction_hint) {
@@ -1046,31 +1051,31 @@ WindowManager.prototype = {
 
     actionMoveWorkspaceLeft: function() {
         let active = global.screen.get_active_workspace();
-        let neighbor = active.get_neighbor(Meta.MotionDirection.LEFT)
+        let neighbor = active.get_neighbor(MotionDirection.LEFT)
         if (active != neighbor) {
-            this.moveToWorkspace(neighbor, Meta.MotionDirection.LEFT);
+            this.moveToWorkspace(neighbor, MotionDirection.LEFT);
         }
     },
 
     actionMoveWorkspaceRight: function() {
         let active = global.screen.get_active_workspace();
-        let neighbor = active.get_neighbor(Meta.MotionDirection.RIGHT)
+        let neighbor = active.get_neighbor(MotionDirection.RIGHT)
         if (active != neighbor) {
-            this.moveToWorkspace(neighbor, Meta.MotionDirection.RIGHT);
+            this.moveToWorkspace(neighbor, MotionDirection.RIGHT);
         }
     },
 
     actionMoveWorkspaceUp: function() {
-        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.UP).activate(global.get_current_time());
+        global.screen.get_active_workspace().get_neighbor(MotionDirection.UP).activate(global.get_current_time());
     },
 
     actionMoveWorkspaceDown: function() {
-        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.DOWN).activate(global.get_current_time());
+        global.screen.get_active_workspace().get_neighbor(MotionDirection.DOWN).activate(global.get_current_time());
     },
 
     actionFlipWorkspaceLeft: function() {
         var active = global.screen.get_active_workspace();
-        var neighbor = active.get_neighbor(Meta.MotionDirection.LEFT);
+        var neighbor = active.get_neighbor(MotionDirection.LEFT);
         if (active != neighbor) {
             neighbor.activate(global.get_current_time());
             let [x, y, mods] = global.get_pointer();
@@ -1080,7 +1085,7 @@ WindowManager.prototype = {
 
     actionFlipWorkspaceRight: function() {
         var active = global.screen.get_active_workspace();
-        var neighbor = active.get_neighbor(Meta.MotionDirection.RIGHT);
+        var neighbor = active.get_neighbor(MotionDirection.RIGHT);
         if (active != neighbor) {
             neighbor.activate(global.get_current_time());
             let [x, y, mods] = global.get_pointer();
