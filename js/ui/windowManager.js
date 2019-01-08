@@ -1075,11 +1075,12 @@ WindowManager.prototype = {
     },
 
     _showWorkspaceSwitcher : function(display, screen, window, binding) {
-        if (binding.get_name() == 'switch-to-workspace-up') {
+        let bindingName = binding.get_name();
+        if (bindingName === 'switch-to-workspace-up') {
             Main.expo.toggle();
             return;
         }
-        if (binding.get_name() == 'switch-to-workspace-down') {
+        if (bindingName === 'switch-to-workspace-down') {
             Main.overview.toggle();
             return;
         }
@@ -1087,10 +1088,10 @@ WindowManager.prototype = {
         if (screen.n_workspaces == 1)
             return;
 
-        if (binding.get_name() == 'switch-to-workspace-left') {
-           this.actionMoveWorkspaceLeft();
-        } else if (binding.get_name() == 'switch-to-workspace-right') {
-           this.actionMoveWorkspaceRight();
+        if (bindingName === 'switch-to-workspace-left') {
+            this.actionMoveWorkspaceLeft();
+        } else if (bindingName === 'switch-to-workspace-right') {
+            this.actionMoveWorkspaceRight();
         }
     },
 
