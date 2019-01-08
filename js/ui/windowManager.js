@@ -3,6 +3,7 @@
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Meta = imports.gi.Meta;
+const {WindowType} = Meta;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
@@ -12,6 +13,7 @@ const CoverflowSwitcher = imports.ui.appSwitcher.coverflowSwitcher;
 const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
 const ClassicSwitcher = imports.ui.appSwitcher.classicSwitcher;
 const WindowEffects = imports.ui.windowEffects;
+const {each} = imports.misc.util;
 
 const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
@@ -51,6 +53,8 @@ const ZONE_TL = 4;
 const ZONE_TR = 5;
 const ZONE_BR = 6;
 const ZONE_BL = 7;
+
+const SETTINGS_EFFECTS_TYPES = [['effect', 'get_string'], ['time', 'get_int'], ['transition', 'get_string']];
 
 function getTopInvisibleBorder(metaWindow) {
     let outerRect = metaWindow.get_outer_rect();
@@ -402,8 +406,6 @@ function WindowManager() {
 
 WindowManager.prototype = {
     _init : function() {
-        this._cinnamonwm =  global.window_manager;
-
         this._minimizing = [];
         this._maximizing = [];
         this._unmaximizing = [];
@@ -421,6 +423,47 @@ WindowManager.prototype = {
             unmaximize: new WindowEffects.Unmaximize(this)
         };
 
+        this.settings = new Gio.Settings({schema_id: 'org.cinnamon.muffin'});
+
+        const settingsState = {
+            'desktop-effects': global.settings.get_boolean('desktop-effects'),
+            'desktop-effects-on-dialogs': global.settings.get_boolean('desktop-effects-on-dialogs'),
+            'desktop-effects-on-menus': global.settings.get_boolean('desktop-effects-on-menus'),
+            'show-snap-osd': global.settings.get_boolean('show-snap-osd'),
+            'show-tile-hud': global.settings.get_boolean('show-tile-hud'),
+            'workspace-osd-visible': global.settings.get_boolean('workspace-osd-visible'),
+            'workspace-osd-x': global.settings.get_int('workspace-osd-x'),
+            'workspace-osd-y': global.settings.get_int('workspace-osd-y'),
+            'workspace-osd-duration': global.settings.get_int('workspace-osd-duration'),
+            'alttab-switcher-style': global.settings.get_string('alttab-switcher-style'),
+            'workspaces-only-on-primary': this.settings.get_boolean('workspaces-only-on-primary'),
+            'snap-modifier': this.settings.get_string('snap-modifier'),
+        };
+
+        global.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        global.settings.connect('changed::desktop-effects-on-dialogs', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        global.settings.connect('changed::desktop-effects-on-menus', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        global.settings.connect('changed::show-snap-osd', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        global.settings.connect('changed::show-tile-hud', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        global.settings.connect('changed::workspace-osd-visible', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        global.settings.connect('changed::workspace-osd-x', (s, k) => this.onSettingsChanged(s, k, 'get_int'));
+        global.settings.connect('changed::workspace-osd-y', (s, k) => this.onSettingsChanged(s, k, 'get_int'));
+        global.settings.connect('changed::workspace-osd-duration', (s, k) => this.onSettingsChanged(s, k, 'get_int'));
+        global.settings.connect('changed::alttab-switcher-style', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+        this.settings.connect('changed::workspaces-only-on-primary', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        this.settings.connect('changed::snap-modifier', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+
+        each(this.effects, (value, key) => {
+            each(SETTINGS_EFFECTS_TYPES, (item) => {
+                let [name, type] = item;
+                let property = `desktop-effects-${key}-${name}`;
+                settingsState[property] = global.settings[type](property);
+                global.settings.connect(`changed::${property}`, (s, k) => this.onSettingsChanged(s, k, type));
+            });
+        });
+
+        this.settingsState = settingsState;
+
         this._snapOsd = null;
         this._workspace_osd_array = [];
 
@@ -432,19 +475,18 @@ WindowManager.prototype = {
         this._animationBlockCount = 0;
 
         this._switchData = null;
-        this._cinnamonwm.connect('kill-window-effects', Lang.bind(this, this._killWindowEffects));
-        this._cinnamonwm.connect('switch-workspace', Lang.bind(this, this._switchWorkspace));
-        this._cinnamonwm.connect('minimize', Lang.bind(this, this._minimizeWindow));
-        this._cinnamonwm.connect('maximize', Lang.bind(this, this._maximizeWindow));
-        this._cinnamonwm.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
-        this._cinnamonwm.connect('tile', Lang.bind(this, this._tileWindow));
-        this._cinnamonwm.connect('show-tile-preview', Lang.bind(this, this._showTilePreview));
-        this._cinnamonwm.connect('hide-tile-preview', Lang.bind(this, this._hideTilePreview));
-        this._cinnamonwm.connect('show-hud-preview', Lang.bind(this, this._showHudPreview));
-        this._cinnamonwm.connect('hide-hud-preview', Lang.bind(this, this._hideHudPreview));
-        this._cinnamonwm.connect('map', Lang.bind(this, this._mapWindow));
-        this._cinnamonwm.connect('destroy', Lang.bind(this, this._destroyWindow));
-
+        global.window_manager.connect('kill-window-effects', Lang.bind(this, this._killWindowEffects));
+        global.window_manager.connect('switch-workspace', Lang.bind(this, this._switchWorkspace));
+        global.window_manager.connect('minimize', Lang.bind(this, this._minimizeWindow));
+        global.window_manager.connect('maximize', Lang.bind(this, this._maximizeWindow));
+        global.window_manager.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
+        global.window_manager.connect('tile', Lang.bind(this, this._tileWindow));
+        global.window_manager.connect('show-tile-preview', Lang.bind(this, this._showTilePreview));
+        global.window_manager.connect('hide-tile-preview', Lang.bind(this, this._hideTilePreview));
+        global.window_manager.connect('show-hud-preview', Lang.bind(this, this._showHudPreview));
+        global.window_manager.connect('hide-hud-preview', Lang.bind(this, this._hideHudPreview));
+        global.window_manager.connect('map', Lang.bind(this, this._mapWindow));
+        global.window_manager.connect('destroy', Lang.bind(this, this._destroyWindow));
         Meta.keybindings_set_custom_handler('move-to-workspace-left',
                                             Lang.bind(this, this._moveWindowToWorkspaceLeft));
         Meta.keybindings_set_custom_handler('move-to-workspace-right',
@@ -483,8 +525,17 @@ WindowManager.prototype = {
         global.screen.connect ("show-snap-osd", Lang.bind (this, this._showSnapOSD));
         global.screen.connect ("hide-snap-osd", Lang.bind (this, this._hideSnapOSD));
         global.screen.connect ("show-workspace-osd", Lang.bind (this, this.showWorkspaceOSD));
+    },
 
-        this.settings = new Gio.Settings({schema_id: "org.cinnamon.muffin"});
+    onSettingsChanged: function(settings, key, type) {
+        switch (settings.schema) {
+            case 'org.cinnamon':
+                this.settingsState[key] = global.settings[type](key);
+                break;
+            case 'org.cinnamon.muffin':
+                this.settingsState[key] = this.settings[type](key);
+                break;
+        }
     },
 
     blockAnimations: function() {
@@ -495,28 +546,32 @@ WindowManager.prototype = {
         this._animationBlockCount = Math.max(0, this._animationBlockCount - 1);
     },
 
-    _shouldAnimate : function(actor) {
-        if (Main.modalCount) {
-            // system is in modal state
+    _shouldAnimate: function(actor) {
+        // Check if system is in modal state or in software rendering
+        if (Main.modalCount || Main.software_rendering) {
             return false;
         }
-        if (Main.software_rendering)
-            return false;
-        if (!actor)
-            return global.settings.get_boolean("desktop-effects");
-        let type = actor.meta_window.get_window_type();
-        if (type == Meta.WindowType.NORMAL) {
-            return global.settings.get_boolean("desktop-effects");
+
+        const desktopEffects = this.settingsState['desktop-effects'];
+
+        if (!actor) return desktopEffects;
+
+        const desktopEffectsOnDialogs = this.settingsState['desktop-effects-on-dialogs'];
+        const desktopEffectsOnMenus = this.settingsState['desktop-effects-on-menus'];
+
+        switch (actor.meta_window.get_window_type()) {
+            case WindowType.NORMAL:
+                return desktopEffects;
+            case WindowType.DIALOG:
+            case WindowType.MODAL_DIALOG:
+                return desktopEffects && desktopEffectsOnDialogs;
+            case WindowType.MENU:
+            case WindowType.DROPDOWN_MENU:
+            case WindowType.POPUP_MENU:
+                return desktopEffects && desktopEffectsOnMenus;
+            default:
+                return false;
         }
-        if (type == Meta.WindowType.DIALOG || type == Meta.WindowType.MODAL_DIALOG) {
-            return global.settings.get_boolean("desktop-effects") && global.settings.get_boolean("desktop-effects-on-dialogs");
-        }
-        if (type == Meta.WindowType.MENU ||
-            type == Meta.WindowType.DROPDOWN_MENU ||
-            type == Meta.WindowType.POPUP_MENU) {
-            return global.settings.get_boolean("desktop-effects") && global.settings.get_boolean("desktop-effects-on-menus");
-        }
-        return false;
     },
 
     _startWindowEffect: function(cinnamonwm, name, actor, args, overwriteKey){
@@ -527,7 +582,7 @@ WindowManager.prototype = {
         }
 
         let key = "desktop-effects-" + (overwriteKey || effect.name);
-        let type = global.settings.get_string(key + "-effect");
+        let type = this.settingsState[`${key}-effect`];
 
         //make sure to end a running effect
         if(actor.current_effect_name){
@@ -539,8 +594,8 @@ WindowManager.prototype = {
         actor.show();
 
         if(effect[type]){
-            let time = global.settings.get_int(key + "-time") / 1000;
-            let transition = global.settings.get_string(key + "-transition");
+            let time = this.settingsState[`${key}-time`] / 1000;
+            let transition = this.settingsState[`${key}-transition`];
 
             effect[type](cinnamonwm, actor, time, transition, args);
         } else if(!overwriteKey) //when not unminimizing, but the effect was not found, end it
@@ -684,7 +739,7 @@ WindowManager.prototype = {
             } catch(e) {
                 //catch "no origin found"
             }
-        } else if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
+        } else if (actor.meta_window.get_window_type() === WindowType.NORMAL) {
             Main.soundManager.play('map');
         }
         this._startWindowEffect(cinnamonwm, "map", actor);
@@ -692,7 +747,7 @@ WindowManager.prototype = {
 
     _destroyWindow : function(cinnamonwm, actor) {
 
-        if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
+        if (actor.meta_window.get_window_type() === WindowType.NORMAL) {
             Main.soundManager.play('close');
         }
 
@@ -832,7 +887,7 @@ WindowManager.prototype = {
     },
 
     _showHudPreview: function(cinnamonwm, currentProximityZone, workArea, snapQueued) {
-        if (global.settings.get_boolean("show-tile-hud")) {
+        if (this.settingsState['show-tile-hud']) {
             if (!this._hudPreview)
                 this._hudPreview = new HudPreview();
             this._hudPreview.show(currentProximityZone, workArea, snapQueued);
@@ -850,12 +905,12 @@ WindowManager.prototype = {
     showWorkspaceOSD : function() {
         this._hideSnapOSD();
         this._hideWorkspaceOSD();
-        if (global.settings.get_boolean("workspace-osd-visible")) {
-            let osd_x = global.settings.get_int("workspace-osd-x");
-            let osd_y = global.settings.get_int("workspace-osd-y");
-            let duration = global.settings.get_int("workspace-osd-duration") / 1000;
+        if (this.settingsState['workspace-osd-visible']) {
+            let osd_x = this.settingsState['workspace-osd-x'];
+            let osd_y = this.settingsState['workspace-osd-y'];
+            let duration = this.settingsState['workspace-osd-duration'] / 1000;
             let current_workspace_index = global.screen.get_active_workspace_index();
-            if (this.settings.get_boolean("workspaces-only-on-primary")) {
+            if (this.settingsState['workspaces-only-on-primary']) {
                 this._showWorkspaceOSDOnMonitor(Main.layoutManager.primaryMonitor, osd_x, osd_y, duration, current_workspace_index);
             }
             else {
@@ -907,11 +962,11 @@ WindowManager.prototype = {
     },
 
     _showSnapOSD : function(metaScreen, monitorIndex) {
-        if (global.settings.get_boolean("show-snap-osd")) {
+        if (this.settingsState['show-snap-osd']) {
             if (this._snapOsd == null) {
                 this._snapOsd = new ModalDialog.InfoOSD();
 
-                let mod = this.settings.get_string("snap-modifier");
+                let mod = this.settingsState['snap-modifier'];
                 if (mod == "Super")
                     this._snapOsd.addText(_("Hold <Super> to enter snap mode"));
                 else if (mod == "Alt")
@@ -935,7 +990,7 @@ WindowManager.prototype = {
     _createAppSwitcher : function(binding) {
         if (AppSwitcher.getWindowsForBinding(binding).length == 0)
             return;
-        let style = global.settings.get_string("alttab-switcher-style");
+        let style = this.settingsState['alttab-switcher-style'];
         if(style == 'coverflow')
             new CoverflowSwitcher.CoverflowSwitcher(binding);
         else if(style == 'timeline')
@@ -949,7 +1004,7 @@ WindowManager.prototype = {
     },
 
     _shiftWindowToWorkspace : function(window, direction) {
-        if (window.get_window_type() === Meta.WindowType.DESKTOP) {
+        if (window.get_window_type() === WindowType.DESKTOP) {
             return;
         }
         this._movingWindow = window;
