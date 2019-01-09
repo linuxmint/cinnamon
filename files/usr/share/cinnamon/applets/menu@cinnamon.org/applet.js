@@ -2883,15 +2883,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         if (name === "places") {
             this._displayButtons(null, -1);
-        } else
-        if (name === "recent") {
+        } else if (name === "recent") {
             this._displayButtons(null, null, -1);
-        } else
-        if (name == null) {
-            this._displayButtons(this._listApplications(null)[0]);
-        } else
-        {
-            this._displayButtons(this._listApplications(name)[0]);
+        } else if (name == null) {
+            this._displayButtons(-1);
+        } else {
+            // category id
+            this._displayButtons(name);
         }
 
         this.closeContextMenus(null, false);
@@ -2946,7 +2944,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _displayButtons(appCategory, places, recent, apps, autocompletes, exactMatch){
         let selectedActor = null;
         if (appCategory) {
-            if (appCategory == "all") {
+            if (appCategory === -1) {
                 this._applicationsButtons.forEach(item => item.actor.show());
             } else {
                 this._applicationsButtons.forEach(item => {
@@ -2992,7 +2990,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._placesButtons.forEach(item => item.actor.hide());
         }
         if (recent) {
-            if (recent == -1) {
+            if (recent === -1) {
                 this._recentButtons.forEach(item => item.actor.show());
             } else {
                 for (let i = 0; i < this._recentButtons.length; i++) {
