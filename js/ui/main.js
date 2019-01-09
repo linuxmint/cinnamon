@@ -83,6 +83,7 @@ const St = imports.gi.St;
 const GObject = imports.gi.GObject;
 const PointerTracker = imports.misc.pointerTracker;
 const Lang = imports.lang;
+const DocInfo = imports.misc.docInfo;
 
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
@@ -126,6 +127,7 @@ var LAYOUT_CLASSIC = "classic";
 var DEFAULT_BACKGROUND_COLOR = Clutter.Color.from_pixel(0x000000ff);
 
 var panel = null;
+var recentManager = null;
 var soundManager = null;
 var backgroundManager = null;
 var slideshowManager = null;
@@ -321,6 +323,11 @@ function start() {
     let startTime = new Date().getTime();
     Cinnamon.AppSystem.get_default();
     global.log('Cinnamon.AppSystem.get_default() started in %d ms'.format(new Date().getTime() - startTime));
+
+    // Initiate docinfo
+    startTime = new Date().getTime();
+    recentManager = DocInfo.getDocManager();
+    global.log('DocInfo.getDocManager() started in %d ms'.format(new Date().getTime() - startTime));
 
     // The stage is always covered so Clutter doesn't need to clear it; however
     // the color is used as the default contents for the Muffin root background

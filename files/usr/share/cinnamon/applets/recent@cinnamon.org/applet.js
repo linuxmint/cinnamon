@@ -1,4 +1,4 @@
-const DocInfo = imports.misc.docInfo;
+const Main = imports.ui.main;
 const Gtk = imports.gi.Gtk;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
@@ -49,7 +49,7 @@ class CinnamonRecentApplet extends Applet.IconApplet {
         this.recentsScrollBox.add_actor(this.recentsBox);
         this.recentsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
 
-        this.RecentManager = new DocInfo.getDocManager();
+        this.RecentManager = Main.recentManager;
         this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
 
         this._recentButtons = [];
@@ -78,6 +78,7 @@ class CinnamonRecentApplet extends Applet.IconApplet {
     }
 
     _launchFile(a, b, c, uri) {
+        this.menu.toggle();
         Gio.app_info_launch_default_for_uri(uri, global.create_app_launch_context());
     }
 

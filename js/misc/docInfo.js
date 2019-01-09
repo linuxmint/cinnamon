@@ -10,8 +10,6 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Main = imports.ui.main;
 
-const MAX_RECENT_FILES = 20;
-
 function DocInfo(recentInfo) {
     this._init(recentInfo);
 }
@@ -73,7 +71,7 @@ DocManager.prototype = {
         let docs = this._docSystem.get_all();
         this._infosByTimestamp = [];
         let i = 0;
-        while (i < docs.length && i < MAX_RECENT_FILES) {
+        while (i < docs.length) {
             let recentInfo = docs[i];
             let docInfo = new DocInfo(recentInfo);
             this._infosByTimestamp.push(docInfo);
