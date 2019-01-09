@@ -223,7 +223,8 @@ class LauncherEditor(ItemEditor):
         chooser.destroy()
 
     def check_custom_path(self):
-        self.item_path = os.path.join(util.getUserItemPath(), os.path.split(self.item_path)[1])
+        if self.item_path:
+            self.item_path = os.path.join(util.getUserItemPath(), os.path.split(self.item_path)[1])
 
 class DirectoryEditor(ItemEditor):
     ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui'
