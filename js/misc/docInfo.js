@@ -1,5 +1,19 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+/**
+* DOCINFO
+*
+* DocInfo is a JS layer on top of Cinnamon's DocSystem (which is written in C).
+*
+* The advantages of using DocInfo (rather than Gtk.RecentManager) are:
+*
+*  - Results are limited to 20 (with RecentManager you can get a huge number of results)
+*  - Results are sorted by timestamp (they're not sorted by RecentManager)
+*  - Sorting and clamping of the results is done in C and only the 20 most recent results are stored in memory
+*  - The "changed" signal sent by DocSystem is delayed via idle_timeout, so your applet doesn't rebuild immediately when Gtk.RecentManager sends its signal (which could potentially reduce the speed at which apps are launched)
+*  - DocInfo provides decoded URIs and the ability to quickly create the icon so your applet doesn't need to do that itself.
+*/
+
 const St = imports.gi.St;
 const Mainloop = imports.mainloop;
 const Cinnamon = imports.gi.Cinnamon;
