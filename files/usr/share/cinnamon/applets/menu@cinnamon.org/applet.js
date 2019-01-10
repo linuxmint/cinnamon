@@ -2239,6 +2239,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _refreshRecent () {
+
+        for (let i = 0; i < this._recentButtons.length; i ++) {
+            this._recentButtons[i].destroy();
+        }
+
+        this._recentButtons = [];
+
         if (this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
             if (this.recentButton == null) {
                 this.recentButton = new RecentCategoryButton(null, this.showCategoryIcons);
@@ -2287,164 +2294,47 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._categoryButtons.splice(this._categoryButtons.indexOf(this.recentButton), 1);
             this._categoryButtons.push(this.recentButton);
 
-            let new_recents = [];
-
             if (this.RecentManager._infosByTimestamp.length > 0) {
-
-                let handleEnterEvent = (button) => {
-                    this._addEnterEvent(button, () => {
-                        this._clearPrevSelection(button.actor);
-                        button.actor.style_class = "menu-application-button-selected";
+                let id = 0;
+                while (id < this.RecentManager._infosByTimestamp.length) {
+                    let new_button = new RecentButton(this, this.RecentManager._infosByTimestamp[id], this.showApplicationIcons);
+                    this._addEnterEvent(new_button, () => {
+                        this._clearPrevSelection(new_button.actor);
+                        new_button.actor.style_class = "menu-application-button-selected";
                         this.selectedAppTitle.set_text("");
-                        let selectedAppUri = button.uriDecoded;
+                        let selectedAppUri = new_button.uriDecoded;
                         let fileIndex = selectedAppUri.indexOf("file:///");
                         if (fileIndex !== -1)
                             selectedAppUri = selectedAppUri.substr(fileIndex + 7);
                         this.selectedAppDescription.set_text(selectedAppUri);
                     });
-                };
-
-                let handleLeaveEvent = (button) => {
-                    button.actor.connect('leave-event', () => {
-                        button.actor.style_class = "menu-application-button";
-                        this._previousSelectedActor = button.actor;
+                    new_button.actor.connect('leave-event', () => {
+                        new_button.actor.style_class = "menu-application-button";
+                        this._previousSelectedActor = new_button.actor;
                         this.selectedAppTitle.set_text("");
                         this.selectedAppDescription.set_text("");
                     });
-                };
-
-                let handleNewButton = (id) => {
-                    let uri = this.RecentManager._infosByTimestamp[id].uri;
-                    return this._recentButtons.find(button => ((button instanceof RecentButton) &&
-                                                                     (button.uri) && (button.uri == uri)));
-                };
-
-                let id = 0;
-                while (id < this.RecentManager._infosByTimestamp.length) {
-                    let new_button = null;
-
-                    new_button = handleNewButton(id);
-
-                    if (new_button == undefined) {
-                        let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id], this.showApplicationIcons);
-                        handleEnterEvent(button);
-                        handleLeaveEvent(button);
-
-                        new_button = button;
-                    }
-
-                    new_recents.push(new_button);
-
+                    this._recentButtons.push(new_button);
+                    this.applicationsBox.add_child(new_button.actor);
                     id++;
                 }
-
-                let recent_clear_button = null;
-
-                recent_clear_button = this._recentButtons.find(button => (button instanceof RecentClearButton));
-
-                if (recent_clear_button == undefined) {
-                    let button = new RecentClearButton(this);
-                    this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevSelection(button.actor);
-                        button.actor.style_class = "menu-application-button-selected";
-                    }));
-                    button.actor.connect('leave-event', Lang.bind(this, function() {
-                        button.actor.style_class = "menu-application-button";
-                        this._previousSelectedActor = button.actor;
-                    }));
-
-                    recent_clear_button = button;
-                }
-
-                new_recents.push(recent_clear_button);
-
-                this.noRecentDocuments = false;
+                let recent_clear_button = new RecentClearButton(this);
+                this._addEnterEvent(recent_clear_button, Lang.bind(this, function() {
+                    this._clearPrevSelection(recent_clear_button.actor);
+                    recent_clear_button.actor.style_class = "menu-application-button-selected";
+                }));
+                recent_clear_button.actor.connect('leave-event', Lang.bind(this, function() {
+                    recent_clear_button.actor.style_class = "menu-application-button";
+                    this._previousSelectedActor = recent_clear_button.actor;
+                }));
+                this._recentButtons.push(recent_clear_button);
+                this.applicationsBox.add_child(recent_clear_button.actor);
             } else {
-                let new_button = null;
-
-                for (let existing_button in this._recentButtons) {
-                    let button = this._recentButtons[existing_button];
-
-                    if (button instanceof NoRecentDocsButton) {
-                        new_button = button;
-                        break;
-                    }
-                }
-
-                if (new_button == null) {
-                    new_button = new NoRecentDocsButton(_("No recent documents"), null, false, null);
-                }
-
-                this.noRecentDocuments = true;
-                new_recents.push(new_button);
+                let no_recent_button = new NoRecentDocsButton(_("No recent documents"), null, false, null);
+                this._recentButtons.push(no_recent_button);
+                this.applicationsBox.add_child(no_recent_button.actor);
             }
-
-            let to_remove = [];
-
-            /* Remove no-longer-valid items */
-            for (let i = 0; i < this._recentButtons.length; i++) {
-                let button = this._recentButtons[i];
-
-                if (button instanceof NoRecentDocsButton && !this.noRecentDocuments) {
-                    to_remove.push(button);
-                } else if (button instanceof RecentButton) {
-                    if (new_recents.indexOf(button) == -1) {
-                        to_remove.push(button);
-                    }
-                }
-            }
-
-            if (to_remove.length > 0) {
-                for (let i in to_remove) {
-                    to_remove[i].destroy();
-                    this._recentButtons.splice(this._recentButtons.indexOf(to_remove[i]), 1);
-                }
-            }
-
-            to_remove = [];
-
-            /* Now, add new actors, shuffle existing actors */
-
-            let placeholder = null;
-
-            /* Find the first occurrence of a RecentButton, if it exists */
-            let children = this.applicationsBox.get_children();
-            for (let i = children.length - 1; i > 0; i--) {
-                if ((children[i]._delegate instanceof RecentButton) ||
-                    (children[i]._delegate instanceof RecentClearButton) ||
-                    (i == children.length - 1)) {
-                    placeholder = children[i - 1];
-                    break;
-                }
-            }
-
-            children = null;
-
-            for (let i = 0; i < new_recents.length; i++) {
-                let actor = new_recents[i].actor;
-
-                let parent = actor.get_parent();
-                if (parent != null) {
-                    parent.remove_child(actor);
-                }
-
-                if (placeholder != actor) {
-                    this.applicationsBox.insert_child_above(actor, placeholder);
-                } else {
-                    this.applicationsBox.add_child(actor);
-                }
-
-                placeholder = actor;
-            }
-
-            this._recentButtons = new_recents;
         } else {
-            for (let i = 0; i < this._recentButtons.length; i ++) {
-                this._recentButtons[i].destroy();
-            }
-
-            this._recentButtons = [];
-
             for (let i = 0; i < this._categoryButtons.length; i++) {
                 if (this._categoryButtons[i] instanceof RecentCategoryButton) {
                     this._categoryButtons[i].destroy();
