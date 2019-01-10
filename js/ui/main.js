@@ -541,6 +541,7 @@ function start() {
         });
         global.display.connect('grab-op-end', function() {
             Util.each(reactive, function(actor) {
+                if (actor.is_finalized()) return;
                 actor.reactive = true;
             });
             reactive = [];
