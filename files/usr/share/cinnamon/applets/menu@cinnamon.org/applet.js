@@ -553,13 +553,13 @@ class RecentContextMenuItem extends PopupMenu.PopupBaseMenuItem {
 }
 
 class RecentButton extends PopupMenu.PopupBaseMenuItem {
-    constructor(appsMenuButton, file, showIcon) {
+    constructor(appsMenuButton, recent, showIcon) {
         super({hover: false});
-        this.mimeType = file.mimeType;
-        this.uri = file.uri;
-        this.uriDecoded = file.uriDecoded;
+        this.mimeType = recent.mimeType;
+        this.uri = recent.uri;
+        this.uriDecoded = recent.uriDecoded;
         this.appsMenuButton = appsMenuButton;
-        this.button_name = file.name;
+        this.button_name = recent.name;
 
         this.menu = null;
 
@@ -569,7 +569,7 @@ class RecentButton extends PopupMenu.PopupBaseMenuItem {
         this.label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         this.label.set_style(MAX_BUTTON_WIDTH);
         if (showIcon) {
-            this.icon = file.createIcon(APPLICATION_ICON_SIZE);
+            this.icon = recent.createIcon(APPLICATION_ICON_SIZE);
             this.addActor(this.icon);
         }
         this.addActor(this.label);
