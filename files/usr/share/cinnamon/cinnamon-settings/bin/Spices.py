@@ -15,6 +15,7 @@ try:
     import dbus
     from PIL import Image
     import datetime
+    import locale
 except Exception as detail:
     print(detail)
     sys.exit(1)
@@ -792,3 +793,5 @@ class Spice_Harvester(GObject.Object):
         except Exception as e:
             print("There was an error processing one of the images. Try refreshing the cache.")
             return Gtk.Image.new_from_icon_name('image-missing', 2)
+locale.setlocale(locale.LC_ALL, 'C')
+        
