@@ -1,29 +1,35 @@
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
-const Desklet = imports.ui.desklet;
+const {Desklet} = imports.ui.desklet;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
-const Settings = imports.ui.settings;
+const {DeskletSettings} = imports.ui.settings;
 
-class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
+class CinnamonPhotoFrameDesklet extends Desklet {
     constructor(metadata, desklet_id) {
         super(metadata, desklet_id);
 
         this.metadata = metadata;
         this.update_id = 0;
 
-        this.settings = new Settings.DeskletSettings(this, this.metadata.uuid, this.instance_id);
-        this.settings.bind('directory', 'dir', this.on_setting_changed);
-        this.settings.bind('shuffle', 'shuffle', this.on_setting_changed);
-        this.settings.bind('delay', 'delay', this.on_setting_changed);
-        this.settings.bind('height', 'height', this.on_setting_changed);
-        this.settings.bind('width', 'width', this.on_setting_changed);
-        this.settings.bind('fade-delay', 'fade_delay', this.on_setting_changed);
-        this.settings.bind('effect', 'effect', this.on_setting_changed);
+        this.state = {};
+
+        this.settings = new DeskletSettings(this.state, metadata.uuid, this.instance_id, true);
+        this.settings.promise.then(() => this.settingsInit());
+    }
+
+    settingsInit() {
+        this.settings.bind('directory', 'dir', () => this.on_setting_changed());
+        this.settings.bind('shuffle', 'shuffle', () => this.on_setting_changed());
+        this.settings.bind('delay', 'delay', () => this.on_setting_changed());
+        this.settings.bind('height', 'height', () => this.on_setting_changed());
+        this.settings.bind('width', 'width', () => this.on_setting_changed());
+        this.settings.bind('fade-delay', 'fade_delay', () => this.on_setting_changed());
+        this.settings.bind('effect', 'effect', () => this.on_setting_changed());
 
         this.dir_monitor_id = 0;
         this.dir_monitor = null;
@@ -48,6 +54,8 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
     }
 
     _setup_dir_monitor() {
+        let {dir} = this.state;
+
         if (this.dir_monitor_id != 0 && this.dir_monitor) {
             this.dir_monitor.disconnect(this.dir_monitor_id);
             this.dir_monitor_id = 0;
@@ -57,17 +65,17 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
            was changed to use a URI instead of a path. This check is just
            to ensure that people upgrading cinnamon versions will get the
            existing path converted to a proper URI */
-        if (this.dir.indexOf('://') === -1) {
-            let file = Gio.file_new_for_path(this.dir);
-            this.dir = file.get_uri();
+        if (dir.indexOf('://') === -1) {
+            let file = Gio.file_new_for_path(dir);
+            this.state.dir = file.get_uri();
         }
 
-        if (this.dir === ' ') {
+        if (dir === ' ') {
             let file = Gio.file_new_for_path(GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES));
-            this.dir = file.get_uri();
+            this.state.dir = file.get_uri();
         }
 
-        this.dir_file = Gio.file_new_for_uri(this.dir);
+        this.dir_file = Gio.file_new_for_uri(dir);
         this.dir_monitor = this.dir_file.monitor_directory(0, null);
         this.dir_monitor_id = this.dir_monitor.connect('changed', Lang.bind(this, this.on_setting_changed));
     }
@@ -103,19 +111,21 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
     }
 
     setup_display() {
+        let {width, height, effect, dir} = this.state;
+
         this._photoFrame = new St.Bin({style_class: 'photoframe-box', x_align: St.Align.START});
 
         this._bin = new St.Bin();
-        this._bin.set_size(this.width, this.height);
+        this._bin.set_size(width, height);
 
         this._images = [];
         this._photoFrame.set_child(this._bin);
         this.setContent(this._photoFrame);
 
-        if (this.effect == 'black-and-white') {
+        if (effect === 'black-and-white') {
             let effect = new Clutter.DesaturateEffect();
             this._bin.add_effect(effect);
-        } else if (this.effect == 'sepia') {
+        } else if (effect === 'sepia') {
             let color = new Clutter.Color();
             color.from_hls(17.0, 0.59, 0.4);
             let colorize_effect = new Clutter.ColorizeEffect(color);
@@ -130,7 +140,7 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
         }
 
         if (this.dir_file.query_exists(null)) {
-            this._scan_dir(this.dir);
+            this._scan_dir(dir);
 
             this.updateInProgress = false;
             this.currentPicture = null;
@@ -142,25 +152,26 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
 
     _update_loop() {
         this._update();
-        this.update_id = Mainloop.timeout_add_seconds(this.delay, Lang.bind(this, this._update_loop));
+        this.update_id = Mainloop.timeout_add_seconds(this.state.delay, Lang.bind(this, this._update_loop));
     }
 
     _size_pic(image) {
         image.disconnect(image._notif_id);
 
-        let height, width;
+        let {height, width} = this.state;
+        let _width, _height;
         let imageRatio = image.width / image.height;
-        let frameRatio = this.width / this.height;
+        let frameRatio = width / height;
 
         if (imageRatio > frameRatio) {
-            width = this.width;
-            height = this.width / imageRatio;
+            _width = width;
+            _height = width / imageRatio;
         } else {
-            height = this.height;
-            width = this.height * imageRatio;
+            _height = height;
+            _width = height * imageRatio;
         }
 
-        image.set_size(width, height);
+        image.set_size(_width, _height);
     }
 
     _update() {
@@ -168,8 +179,9 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
             return;
         }
         this.updateInProgress = true;
+        let {shuffle, fade_delay} = this.state;
         let image_path;
-        if (!this.shuffle) {
+        if (!shuffle) {
             image_path = this._images.shift();
             this._images.push(image_path);
         } else {
@@ -192,16 +204,16 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
         this.currentPicture = image;
         this.currentPicture.path = image_path;
 
-        if (this.fade_delay > 0) {
+        if (fade_delay > 0) {
             Tweener.addTween(this._bin, {
                 opacity: 0,
-                time: this.fade_delay,
+                time: fade_delay,
                 transition: 'easeInSine',
                 onComplete: () => {
                     this._bin.set_child(this.currentPicture);
                     Tweener.addTween(this._bin, {
                         opacity: 255,
-                        time: this.fade_delay,
+                        time: fade_delay,
                         transition: 'easeInSine'
                     });
                 }
@@ -230,7 +242,7 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
 
     _loadImage(filePath) {
         try {
-            let image = St.TextureCache.get_default().load_uri_async(filePath, this.width, this.height);
+            let image = St.TextureCache.get_default().load_uri_async(filePath, this.state.width, this.state.height);
 
             image._notif_id = image.connect('notify::size', Lang.bind(this, this._size_pic));
 
