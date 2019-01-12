@@ -1,12 +1,18 @@
-const Gio = imports.gi.Gio;
-const St = imports.gi.St;
+const {
+    file_new_for_path,
+    file_new_for_uri,
+    FileQueryInfoFlags,
+    FileType
+} = imports.gi.Gio;
+const {
+    Align,
+    Bin,
+    TextureCache
+} = imports.gi.St;
 const {Desklet} = imports.ui.desklet;
-const Lang = imports.lang;
-const Mainloop = imports.mainloop;
-const Clutter = imports.gi.Clutter;
-const GLib = imports.gi.GLib;
-const Tweener = imports.ui.tweener;
-const Util = imports.misc.util;
+const {get_user_special_dir, UserDirectory} = imports.gi.GLib;
+const {addTween} = imports.ui.tweener;
+const {spawn} = imports.misc.util;
 const {DeskletSettings} = imports.ui.settings;
 
 class CinnamonPhotoFrameDesklet extends Desklet {
@@ -14,7 +20,6 @@ class CinnamonPhotoFrameDesklet extends Desklet {
         super(metadata, desklet_id);
 
         this.metadata = metadata;
-        this.update_id = 0;
 
         this.state = {};
 
@@ -41,10 +46,6 @@ class CinnamonPhotoFrameDesklet extends Desklet {
     }
 
     on_setting_changed() {
-        if (this.update_id != 0) {
-            Mainloop.source_remove(this.update_id);
-        }
-        this.update_id = 0;
         this._setup_dir_monitor();
         if (this.currentPicture) {
             this.currentPicture.destroy();
@@ -66,18 +67,18 @@ class CinnamonPhotoFrameDesklet extends Desklet {
            to ensure that people upgrading cinnamon versions will get the
            existing path converted to a proper URI */
         if (dir.indexOf('://') === -1) {
-            let file = Gio.file_new_for_path(dir);
+            let file = file_new_for_path(dir);
             this.state.dir = file.get_uri();
         }
 
         if (dir === ' ') {
-            let file = Gio.file_new_for_path(GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES));
+            let file = file_new_for_path(get_user_special_dir(UserDirectory.DIRECTORY_PICTURES));
             this.state.dir = file.get_uri();
         }
 
-        this.dir_file = Gio.file_new_for_uri(dir);
+        this.dir_file = file_new_for_uri(dir);
         this.dir_monitor = this.dir_file.monitor_directory(0, null);
-        this.dir_monitor_id = this.dir_monitor.connect('changed', Lang.bind(this, this.on_setting_changed));
+        this.dir_monitor_id = this.dir_monitor.connect('changed', () => this.on_setting_changed());
     }
 
     on_desklet_removed() {
@@ -85,22 +86,17 @@ class CinnamonPhotoFrameDesklet extends Desklet {
             this.dir_monitor.disconnect(this.dir_monitor_id);
             this.dir_monitor_id = null;
         }
-
-        if (this.update_id != 0) {
-            Mainloop.source_remove(this.update_id);
-            this.update_id = 0;
-        }
     }
 
     _scan_dir(dir) {
-        let dir_file = Gio.file_new_for_uri(dir);
-        let fileEnum = dir_file.enumerate_children('standard::type,standard::name', Gio.FileQueryInfoFlags.NONE, null);
+        let dir_file = file_new_for_uri(dir);
+        let fileEnum = dir_file.enumerate_children('standard::type,standard::name', FileQueryInfoFlags.NONE, null);
 
         let info;
         while ((info = fileEnum.next_file(null)) != null) {
             let fileType = info.get_file_type();
             let fileName = dir + '/' + info.get_name();
-            if (fileType != Gio.FileType.DIRECTORY) {
+            if (fileType != FileType.DIRECTORY) {
                 this._images.push(fileName);
             } else {
                 this._scan_dir(fileName);
@@ -113,9 +109,9 @@ class CinnamonPhotoFrameDesklet extends Desklet {
     setup_display() {
         let {width, height, effect, dir} = this.state;
 
-        this._photoFrame = new St.Bin({style_class: 'photoframe-box', x_align: St.Align.START});
+        this._photoFrame = new Bin({style_class: 'photoframe-box', x_align: Align.START});
 
-        this._bin = new St.Bin();
+        this._bin = new Bin();
         this._bin.set_size(width, height);
 
         this._images = [];
@@ -145,14 +141,13 @@ class CinnamonPhotoFrameDesklet extends Desklet {
             this.updateInProgress = false;
             this.currentPicture = null;
 
-            this.update_id = 0;
             this._update_loop();
         }
     }
 
     _update_loop() {
         this._update();
-        this.update_id = Mainloop.timeout_add_seconds(this.state.delay, Lang.bind(this, this._update_loop));
+        setTimeout(() => this._update_loop(), this.state.delay * 1000);
     }
 
     _size_pic(image) {
@@ -205,13 +200,13 @@ class CinnamonPhotoFrameDesklet extends Desklet {
         this.currentPicture.path = image_path;
 
         if (fade_delay > 0) {
-            Tweener.addTween(this._bin, {
+            addTween(this._bin, {
                 opacity: 0,
                 time: fade_delay,
                 transition: 'easeInSine',
                 onComplete: () => {
                     this._bin.set_child(this.currentPicture);
-                    Tweener.addTween(this._bin, {
+                    addTween(this._bin, {
                         opacity: 255,
                         time: fade_delay,
                         transition: 'easeInSine'
@@ -233,7 +228,7 @@ class CinnamonPhotoFrameDesklet extends Desklet {
             if (event.get_button() == 1) {
                 this._update();
             } else if (event.get_button() == 2) {
-                Util.spawn(['xdg-open', this.currentPicture.path]);
+                spawn(['xdg-open', this.currentPicture.path]);
             }
         } catch (e) {
             global.logError(e);
@@ -242,9 +237,9 @@ class CinnamonPhotoFrameDesklet extends Desklet {
 
     _loadImage(filePath) {
         try {
-            let image = St.TextureCache.get_default().load_uri_async(filePath, this.state.width, this.state.height);
+            let image = TextureCache.get_default().load_uri_async(filePath, this.state.width, this.state.height);
 
-            image._notif_id = image.connect('notify::size', Lang.bind(this, this._size_pic));
+            image._notif_id = image.connect('notify::size', (i) => this._size_pic(i));
 
             return image;
         } catch (x) {
