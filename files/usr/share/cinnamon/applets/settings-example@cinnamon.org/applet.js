@@ -1,48 +1,59 @@
-const Applet = imports.ui.applet;
-const Lang = imports.lang;
-const PopupMenu = imports.ui.popupMenu;
-const Mainloop = imports.mainloop;
-const Settings = imports.ui.settings;  // Needed for settings API
-const Gio = imports.gi.Gio;
-const Tweener = imports.ui.tweener;
-const Main = imports.ui.main;
+// Use destructuring assignment for imports, this reduces inefficient property access.
+const {TextIconApplet, AppletPopupMenu} = imports.ui.applet;
+const {PopupMenuManager, PopupMenuItem, PopupSliderMenuItem} = imports.ui.popupMenu;
+const {AppletSettings} = imports.ui.settings;  // Needed for settings API
+const {File} = imports.gi.Gio;
+const {addTween} = imports.ui.tweener;
+const {keybindingManager} = imports.ui.main;
 
-class CinnamonSettingsExampleApplet extends Applet.TextIconApplet {
+class CinnamonSettingsExampleApplet extends TextIconApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
-        this.menuManager = new PopupMenu.PopupMenuManager(this);
-        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager = new PopupMenuManager(this);
+        this.menu = new AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
-        /* Initialize your settings handler instance      this,            the uuid              instance id  */
-        this.settings = new Settings.AppletSettings(this, "settings-example@cinnamon.org", instance_id, true);
-        this.settings.connect('ready', () => {
+        // Passing a separate state object to the settings constructor will prevent circular references,
+        // which results in better memory management and CPU usage by the JS engine.
+        this.state = {};
+
+        /* Initialize your settings handler instance */
+        let settings = new AppletSettings(
+            this.state, // State object
+            'settings-example@cinnamon.org', // UUID
+            instance_id, // Instance ID
+            true // Async enabled
+        );
+        settings.promise.then(() => {
             /* Now we'll proceed with setting up individual setting bindings. */
 
-            this.settings.bind("icon-name",                // The setting key, from the setting schema file
-            "icon_name",                // The property to bind the setting to - in this case it will initialize this.icon_name to the setting value
-            this.on_settings_changed,   // The method to call when this.icon_name has changed, so you can update your applet
-            null);                      // Any extra information you want to pass to the callback (optional - pass null or just leave out this last argument)
+            settings.bind(
+                'icon-name', // The setting key, from the setting schema file
+                'icon_name', // The property to bind the setting to - in this case it will initialize this.state.icon_name to the setting value
+                this.on_settings_changed.bind(this), // The method to call when this.state.icon_name has changed, so you can update your applet
+                null  // Any extra information you want to pass to the callback (optional - pass null or just leave out this last argument)
+            );
 
-            this.settings.bind("scale-demo", "scale_val", this.on_settings_changed);
-            this.settings.bind("color", "bg_color", this.on_settings_changed);
-            this.settings.bind("spinner-number", "spinner_number", this.on_settings_changed);
-            this.settings.bind("combo-selection", "combo_choice", this.on_settings_changed);
-            this.settings.bind("use-custom-label",  "use_custom", this.on_settings_changed);
-            this.settings.bind("custom-label", "custom_label", this.on_settings_changed);
-            this.settings.bind("tween-function", "tween_function", this.on_settings_changed);
-            this.settings.bind("keybinding-test", "keybinding", this.on_keybinding_changed);
+            settings.bind('scale-demo', 'scale_val', (...args) => this.on_settings_changed(...args));
+            settings.bind('color', 'bg_color', (...args) => this.on_settings_changed);
+            settings.bind('spinner-number', 'spinner_number', (...args) => this.on_settings_changed(...args));
+            settings.bind('combo-selection', 'combo_choice', (...args) => this.on_settings_changed(...args));
+            settings.bind('use-custom-label',  'use_custom', (...args) => this.on_settings_changed(...args));
+            settings.bind('custom-label', 'custom_label', (...args) => this.on_settings_changed(...args));
+            settings.bind('tween-function', 'tween_function', (...args) => this.on_settings_changed(...args));
+            settings.bind('keybinding-test', 'keybinding', (...args) => this.on_keybinding_changed(...args));
 
-            this.settings.connect("changed::signal-test", Lang.bind(this, this.on_signal_test_fired));
+            settings.connect('changed::signal-test', (...args) => this.on_signal_test_fired(...args));
 
             /* Lets create and add our menu items - we'll set their true values after */
+            this.sliderValDemo = new PopupMenuItem('');
+            this.spinner_val_demo = new PopupMenuItem('');
+            this.combo_val_demo = new PopupMenuItem('');
+            this.slider_demo = new PopupSliderMenuItem(0);
+            this.slider_demo.connect('value-changed', (...args) => this.on_slider_changed(...args));
 
-            this.spinner_val_demo = new PopupMenu.PopupMenuItem("");
-            this.combo_val_demo = new PopupMenu.PopupMenuItem("");
-            this.slider_demo = new PopupMenu.PopupSliderMenuItem(0);
-            this.slider_demo.connect("value-changed", Lang.bind(this, this.on_slider_changed));
-
+            this.menu.addMenuItem(this.sliderValDemo);
             this.menu.addMenuItem(this.spinner_val_demo);
             this.menu.addMenuItem(this.combo_val_demo);
             this.menu.addMenuItem(this.slider_demo);
@@ -51,42 +62,46 @@ class CinnamonSettingsExampleApplet extends Applet.TextIconApplet {
             /* Let's set up our applet's initial state now that we have our setting properties defined */
             this.on_keybinding_changed();
             this.on_settings_changed();
+            this.settings = settings;
         });
     }
 
     on_keybinding_changed() {
-        Main.keybindingManager.addHotKey("must-be-unique-id", this.keybinding, Lang.bind(this, this.on_hotkey_triggered));
+        keybindingManager.addHotKey('must-be-unique-id', this.state.keybinding, () => this.on_hotkey_triggered());
     }
 
     on_settings_changed() {
-        if (this.use_custom) {
-            this.set_applet_label(this.custom_label);
+        if (this.state.use_custom) {
+            this.set_applet_label(this.state.custom_label);
         } else {
-            this.set_applet_label(_("Hi there!"));
+            this.set_applet_label(_('Hi there!'));
         }
 
-        let icon_file = Gio.File.new_for_path(this.icon_name);
+        let icon_file = File.new_for_path(this.state.icon_name);
         if (icon_file.query_exists(null)) {
-            this.set_applet_icon_path(this.icon_name);
+            this.set_applet_icon_path(this.state.icon_name);
         } else {
-            this.set_applet_icon_name(this.icon_name);
+            this.set_applet_icon_name(this.state.icon_name);
         }
 
-        this.spinner_val_demo.label.clutter_text.set_text("Spinner value is: " + this.spinner_number);
-        this.combo_val_demo.label.clutter_text.set_text("Combo value is: " + this.combo_choice);
-        this.slider_demo.setValue(this.scale_val);
+        this.sliderValDemo.label.clutter_text.set_text('Slider value is: ' + this.state.scale_val);
+        this.spinner_val_demo.label.clutter_text.set_text('Spinner value is: ' + this.state.spinner_number);
+        this.combo_val_demo.label.clutter_text.set_text('Combo value is: ' + this.state.combo_choice);
+        this.slider_demo.setValue(this.state.scale_val);
 
-        this.actor.style = "background-color:" + this.bg_color + "; width:" + this.spinner_number + "px";
+        this.actor.style = 'background-color:' + this.state.bg_color + '; width:' + this.state.spinner_number + 'px';
 
     }
 
     on_signal_test_fired(setting_prov, key, oldval, newval) {
-        global.logError("Test signal fired.  Old value for key "+ key + " was " + oldval + ".  New value is " + newval + ".");
+        global.logError('Test signal fired.  Old value for key '+ key + ' was ' + oldval + '.  New value is ' + newval + '.');
     }
 
     on_slider_changed(slider, value) {
-        this.scale_val = value;  // This is our BIDIRECTIONAL setting - by updating this.scale_val,
-                                               // Our configuration file will also be updated
+        this.state.scale_val = value;  // This is our BIDIRECTIONAL setting - by updating this.state.scale_val,
+                                       // Our configuration file will also be updated
+        this.settings.setValue('scale-demo', value); // Update the slider value being set through the panel widget
+        this.on_settings_changed(); // setValue doesn't cause the value-changed signal to be emitted
     }
 
 
@@ -95,22 +110,20 @@ class CinnamonSettingsExampleApplet extends Applet.TextIconApplet {
  * This could useful to open a link to your web page, or just about anything you want
  */
     on_config_button_pressed() {
-        this.set_applet_label(_("YOU PRESSED THE BUTTON!!!"));
+        this.set_applet_label(_('YOU PRESSED THE BUTTON!!!'));
 
-        let timeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function() {
-            this.on_settings_changed();
-        }));
+        setTimeout(() => this.on_settings_changed(), 3000);
 
         //animate icon
-        Tweener.addTween(this._applet_icon, {
+        addTween(this._applet_icon, {
             margin_left: 10,
             time: 0.5,
-            transition: this.tween_function,
+            transition: this.state.tween_function,
             onComplete() {
-                Tweener.addTween(this._applet_icon, {
+                addTween(this._applet_icon, {
                     margin_left: 0,
                     time: 0.5,
-                    transition: this.tween_function
+                    transition: this.state.tween_function
                 });
             },
             onCompleteScope: this
@@ -118,11 +131,9 @@ class CinnamonSettingsExampleApplet extends Applet.TextIconApplet {
     }
 
     on_hotkey_triggered() {
-        this.set_applet_label(_("YOU USED THE HOTKEY!!!"));
+        this.set_applet_label(_('YOU USED THE HOTKEY!!!'));
 
-        let timeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function() {
-            this.on_settings_changed();
-        }));
+        setTimeout(() => this.on_settings_changed(), 3000);
     }
 
     on_applet_clicked(event) {
