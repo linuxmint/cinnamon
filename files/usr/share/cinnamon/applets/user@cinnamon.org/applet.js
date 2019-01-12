@@ -1,4 +1,4 @@
-const Applet = imports.ui.applet;
+const {TextIconApplet, AppletPopupMenu, AllowedLayout} = imports.ui.applet;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
@@ -8,22 +8,25 @@ const Gio = imports.gi.Gio;
 const AccountsService = imports.gi.AccountsService;
 const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
-const Settings = imports.ui.settings;
+const {AppletSettings} = imports.ui.settings;
 
-class CinnamonUserApplet extends Applet.TextIconApplet {
+class CinnamonUserApplet extends TextIconApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
-        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+        this.setAllowedLayout(AllowedLayout.BOTH);
 
         this._session = new GnomeSession.SessionManager();
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
-        this.settings = new Settings.AppletSettings(this, "user@cinnamon.org", instance_id);
+        this.settings = new AppletSettings(this, 'user@cinnamon.org', instance_id, true);
+        this.settings.promise.then(() => this.settingsInit(orientation));
+    }
 
+    settingsInit(orientation) {
         this.set_applet_icon_symbolic_name("avatar-default");
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
-        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menu = new AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
         this._contentSection = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(this._contentSection);
