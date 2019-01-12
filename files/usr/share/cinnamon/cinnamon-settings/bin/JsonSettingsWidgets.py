@@ -116,7 +116,7 @@ class JSONSettingsHandler(object):
         with info["obj"].freeze_notify():
             if "map_get" in info and info["map_get"] != None:
                 value = info["map_get"](value)
-            if value != info["obj"].get_property(info["prop"]) and isinstance(value, int):
+            if value != info["obj"].get_property(info["prop"]) and value is not None:
                 info["obj"].set_property(info["prop"], value)
 
     def check_settings(self, *args):
