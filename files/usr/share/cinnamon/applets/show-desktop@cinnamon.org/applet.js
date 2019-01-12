@@ -1,5 +1,5 @@
 const Applet = imports.ui.applet;
-const { AppletSettings } = imports.ui.settings;  // Needed for settings API
+const {AppletSettings} = imports.ui.settings;  // Needed for settings API
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
@@ -7,20 +7,23 @@ const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
-const SignalManager = imports.misc.signalManager;
+const {SignalManager} = imports.misc.signalManager;
 
 class CinnamonShowDesktopApplet extends Applet.IconApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
-        this.settings = new AppletSettings(this, "show-desktop@cinnamon.org", instance_id);
+        this.settings = new AppletSettings(this, "show-desktop@cinnamon.org", instance_id, true);
+        this.settings.promise.then(() => this.settingsInit());
+    }
 
-        this.settings.bind("peek-at-desktop", "peek_at_desktop");
-        this.settings.bind("peek-delay", "peek_delay");
-        this.settings.bind("peek-opacity", "peek_opacity");
-        this.settings.bind("peek-blur", "peek_blur");
+    settingsInit() {
+        this.settings.bind('peek-at-desktop', 'peek_at_desktop');
+        this.settings.bind('peek-delay', 'peek_delay');
+        this.settings.bind('peek-opacity', 'peek_opacity');
+        this.settings.bind('peek-blur', 'peek_blur');
 
-        this.signals = new SignalManager.SignalManager(null);
+        this.signals = new SignalManager(null);
         this.actor.connect('enter-event', Lang.bind(this, this._on_enter));
         this.actor.connect('leave-event', Lang.bind(this, this._on_leave));
         this.signals.connect(global.stage, 'notify::key-focus', this._on_leave, this);
@@ -42,6 +45,7 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
 
     on_applet_removed_from_panel() {
         this.signals.disconnectAllSignals();
+        this.settings.finalize();
     }
 
     show_all_windows(time) {
