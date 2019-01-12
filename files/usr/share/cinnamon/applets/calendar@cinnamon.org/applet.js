@@ -1,64 +1,46 @@
-const Applet = imports.ui.applet;
-const Gio = imports.gi.Gio;
-const Lang = imports.lang;
-const Clutter = imports.gi.Clutter;
-const St = imports.gi.St;
-const Util = imports.misc.util;
-const PopupMenu = imports.ui.popupMenu;
-const UPowerGlib = imports.gi.UPowerGlib;
-const Settings = imports.ui.settings;
-const Calendar = require('./calendar');
-const CinnamonDesktop = imports.gi.CinnamonDesktop;
+const {TextApplet, AppletPopupMenu, AllowedLayout} = imports.ui.applet;
+const {Settings} = imports.gi.Gio;
+const {Label, Side} = imports.gi.St;
+const {spawnCommandLine} = imports.misc.util;
+const {PopupMenuManager, PopupSeparatorMenuItem, PopupMenuItem} = imports.ui.popupMenu;
+const {Client} = imports.gi.UPowerGlib;
+const {AppletSettings} = imports.ui.settings;
+const {Calendar} = require('./calendar');
+const {WallClock} = imports.gi.CinnamonDesktop;
 
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
-function _onVertSepRepaint (area)
-{
-    let cr = area.get_context();
-    let themeNode = area.get_theme_node();
-    let [width, height] = area.get_surface_size();
-    let stippleColor = themeNode.get_color('-stipple-color');
-    let stippleWidth = themeNode.get_length('-stipple-width');
-    let x = Math.floor(width/2) + 0.5;
-    cr.moveTo(x, 0);
-    cr.lineTo(x, height);
-    Clutter.cairo_set_source_color(cr, stippleColor);
-    cr.setDash([1, 3], 1); // Hard-code for now
-    cr.setLineWidth(stippleWidth);
-    cr.stroke();
-
-    cr.$dispose();
-};
-
-class CinnamonCalendarApplet extends Applet.TextApplet {
+class CinnamonCalendarApplet extends TextApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
-        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+        this.setAllowedLayout(AllowedLayout.BOTH);
 
-        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menuManager = new PopupMenuManager(this);
         this.orientation = orientation;
 
         this._initContextMenu();
         this.menu.setCustomStyleClass('calendar-background');
 
         // Date
-        this._date = new St.Label();
+        this._date = new Label();
         this._date.style_class = 'datemenu-date-label';
         this.menu.addActor(this._date);
 
-        this.settings = new Settings.AppletSettings(this, "calendar@cinnamon.org", this.instance_id, true);
+        this.state = {};
+
+        this.settings = new AppletSettings(this.state, "calendar@cinnamon.org", this.instance_id, true);
         this.settings.promise.then(() => {
             // Calendar
-            this._calendar = new Calendar.Calendar(this.settings);
+            this._calendar = new Calendar(this.settings);
 
             this.menu.addActor(this._calendar.actor);
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.menu.addMenuItem(new PopupSeparatorMenuItem());
 
-            let item = new PopupMenu.PopupMenuItem(_("Date and Time Settings"))
-            item.connect("activate", Lang.bind(this, this._onLaunchSettings));
+            let item = new PopupMenuItem(_("Date and Time Settings"))
+            item.connect("activate", () => this._onLaunchSettings());
 
             this.menu.addMenuItem(item);
 
@@ -70,23 +52,19 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             /* FIXME: Add gobject properties to the WallClock class to allow easier access from
              * its clients, and possibly a separate signal to notify of updates to these properties
              * (though GObject "changed" would be sufficient.) */
-            this.desktop_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
-            this.desktop_settings.connect("changed::clock-use-24h", Lang.bind(this, function(key) {
-                this._onSettingsChanged();
-            }));
-            this.desktop_settings.connect("changed::clock-show-seconds", Lang.bind(this, function(key) {
-                this._onSettingsChanged();
-            }));
+            this.desktop_settings = new Settings({ schema_id: "org.cinnamon.desktop.interface" });
+            this.desktop_settings.connect("changed::clock-use-24h", () => this._onSettingsChanged());
+            this.desktop_settings.connect("changed::clock-show-seconds", () => this._onSettingsChanged());
 
-            this.clock = new CinnamonDesktop.WallClock();
+            this.clock = new WallClock();
             this.clock_notify_id = 0;
 
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
-            this._upClient = new UPowerGlib.Client();
+            this._upClient = new Client();
             try {
-                this._upClient.connect('notify-resume', Lang.bind(this, this._updateClockAndDate));
+                this._upClient.connect('notify-resume', () => this._updateClockAndDate());
             } catch (e) {
-                this._upClient.connect('notify::resume', Lang.bind(this, this._updateClockAndDate));
+                this._upClient.connect('notify::resume', () => this._updateClockAndDate());
             }
 
             this._onSettingsChanged();
@@ -114,19 +92,19 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     }
 
     on_custom_format_button_pressed() {
-        Util.spawnCommandLine("xdg-open http://www.foragoodstrftime.com/");
+        spawnCommandLine("xdg-open http://www.foragoodstrftime.com/");
     }
 
     _onLaunchSettings() {
         this.menu.close();
-        Util.spawnCommandLine("cinnamon-settings calendar");
+        spawnCommandLine("cinnamon-settings calendar");
     }
 
     _updateFormatString() {
-        let in_vertical_panel = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
+        let in_vertical_panel = (this.orientation === Side.LEFT || this.orientation === Side.RIGHT);
 
-        if (this.use_custom_format) {
-            if (!this.clock.set_format_string(this.custom_format)) {
+        if (this.state.use_custom_format) {
+            if (!this.clock.set_format_string(this.state.custom_format)) {
                 global.logError("Calendar applet: bad time format string - check your string.");
                 this.clock.set_format_string("~CLOCK FORMAT ERROR~ %l:%M %p");
             }
@@ -155,7 +133,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     _updateClockAndDate() {
         let label_string = this.clock.get_clock();
 
-        if (!this.use_custom_format) {
+        if (!this.state.use_custom_format) {
             label_string = label_string.capitalize();
         }
 
@@ -177,15 +155,15 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     }
 
     _initContextMenu () {
-        this.menu = new Applet.AppletPopupMenu(this, this.orientation);
+        this.menu = new AppletPopupMenu(this, this.orientation);
         this.menuManager.addMenu(this.menu);
 
         // Whenever the menu is opened, select today
-        this.menu.connect('open-state-changed', Lang.bind(this, function(menu, isOpen) {
+        this.menu.connect('open-state-changed', (menu, isOpen) => {
             if (isOpen) {
                 this._updateCalendar();
             }
-        }));
+        });
     }
 
     _updateCalendar () {
