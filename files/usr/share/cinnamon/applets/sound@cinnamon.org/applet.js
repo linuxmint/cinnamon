@@ -487,16 +487,16 @@ class Player extends PopupMenuSection {
         // We'll update this later with a proper name
         this._name = this._busName;
 
-        getDBusProxyWithOwnerAsync(MEDIA_PLAYER_2_NAME, this._busName, (p, e) => this.dbusCallback(p, e));
-        getDBusProxyWithOwnerAsync(MEDIA_PLAYER_2_PLAYER_NAME, this._busName, (p, e) => this.dbusCallback(p, e));
-        getDBusPropertiesAsync(this._busName, MEDIA_PLAYER_2_PATH, (p, e) => this.dbusCallback(p, e));
+        getDBusProxyWithOwnerAsync(MEDIA_PLAYER_2_NAME, this._busName, (p, e) => this.dbusCallback(p, e, '_mediaServer'));
+        getDBusProxyWithOwnerAsync(MEDIA_PLAYER_2_PLAYER_NAME, this._busName, (p, e) => this.dbusCallback(p, e, '_mediaServerPlayer'));
+        getDBusPropertiesAsync(this._busName, MEDIA_PLAYER_2_PATH, (p, e) => this.dbusCallback(p, e, '_prop'));
     }
 
-    dbusCallback(proxy, error) {
+    dbusCallback(proxy, error, prop) {
         if (error) {
             log(error);
         } else {
-            this._mediaServer = proxy;
+            this[prop] = proxy;
             this._dbus_acquired();
         }
     }
