@@ -1,5 +1,4 @@
 const Applet = imports.ui.applet;
-const Lang = imports.lang;
 const Main = imports.ui.main;
 const Gtk = imports.gi.Gtk;
 const Gio = imports.gi.Gio;
@@ -8,7 +7,7 @@ const St = imports.gi.St;
 const Mainloop = imports.mainloop;
 const Urgency = imports.ui.messageTray.Urgency;
 const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
-const Settings = imports.ui.settings;
+const {AppletSettings} = imports.ui.settings;
 const Gettext = imports.gettext.domain("cinnamon-applets");
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
@@ -19,25 +18,35 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
-        // Settings
-        this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
-        this.settings.bind("ignoreTransientNotifications", "ignoreTransientNotifications");
-        this.settings.bind("showEmptyTray", "showEmptyTray", this._show_hide_tray);
+        this.state = {};
 
         // Layout
         this._orientation = orientation;
-        this.menuManager = new PopupMenu.PopupMenuManager(this);
 
         // Lists
         this.notifications = [];	// The list of notifications, in order from oldest to newest.
 
+        // Settings
+        this.settings = new AppletSettings(this.state, metadata.uuid, instanceId, true);
+        this.settings.promise.then(() => this.settingsInit(orientation));
+    }
+
+    settingsInit(orientation) {
+        this.settings.bind("ignoreTransientNotifications", "ignoreTransientNotifications");
+        this.settings.bind("showEmptyTray", "showEmptyTray", () => this._show_hide_tray());
+
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+
         // Events
-        Main.messageTray.connect('notify-applet-update', Lang.bind(this, this._notification_added));
-        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._on_panel_edit_mode_changed));
+        Main.messageTray.connect('notify-applet-update', (m, n) => this._notification_added(m, n));
+        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, () => this._on_panel_edit_mode_changed());
 
         // States
         this._blinking = false;
         this._blink_toggle = false;
+
+        this.on_orientation_changed(this._orientation);
+        this._show_hide_tray();
     }
 
     _display() {
@@ -59,7 +68,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.clear_separator = new PopupMenu.PopupSeparatorMenuItem();
 
         this.clear_action = new PopupMenu.PopupMenuItem(_("Clear notifications"));
-        this.clear_action.connect('activate', Lang.bind(this, this._clear_all));
+        this.clear_action.connect('activate', () => this._clear_all());
         this.clear_action.actor.hide();
 
         if (this._orientation == St.Side.BOTTOM) {
@@ -80,12 +89,8 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.scrollview.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
 
         let vscroll = this.scrollview.get_vscroll_bar();
-        vscroll.connect('scroll-start', Lang.bind(this, function() {
-            this.menu.passEvents = true;
-        }));
-        vscroll.connect('scroll-stop', Lang.bind(this, function() {
-            this.menu.passEvents = false;
-        }));
+        vscroll.connect('scroll-start', () => this.menu.passEvents = true);
+        vscroll.connect('scroll-stop', () => this.menu.passEvents = false);
 
         // Alternative tray icons.
         this._crit_icon = new St.Icon({icon_name: 'critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
@@ -96,7 +101,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
     _notification_added (mtray, notification) {	// Notification event handler.
         // Ignore transient notifications?
-        if (this.ignoreTransientNotifications && notification.isTransient) {
+        if (this.state.ignoreTransientNotifications && notification.isTransient) {
             notification.destroy();
             return;
         }
@@ -126,8 +131,8 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         notification.actor._parent_container = this._notificationbin;
         notification.actor.add_style_class_name('notification-applet-padding');
         // Register for destruction.
-        notification.connect('clicked', Lang.bind(this, this._item_clicked, false));
-        notification.connect('destroy', Lang.bind(this, this._item_clicked, true));
+        notification.connect('clicked', (n) => this._item_clicked(n, false));
+        notification.connect('destroy', (n) => this._item_clicked(n, true));
         notification._timeLabel.show();
 
         this.update_list();
@@ -180,7 +185,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                 this.set_applet_label('');
                 this.set_applet_icon_symbolic_name("empty-notif");
                 this.clear_action.actor.hide();
-                if (!this.showEmptyTray) {
+                if (!this.state.showEmptyTray) {
                     this.actor.hide();
                 }
             }
@@ -205,7 +210,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     }
 
     _show_hide_tray() {	// Show or hide the notification tray.
-        if (this.notifications.length || this.showEmptyTray) {
+        if (this.notifications.length || this.state.showEmptyTray) {
             this.actor.show();
         } else {
             this.actor.hide();
@@ -218,10 +223,6 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         } else {
             this.update_list();
         }
-    }
-
-    on_applet_added_to_panel() {
-        this.on_orientation_changed(this._orientation);
     }
 
     on_orientation_changed (orientation) {
@@ -238,6 +239,10 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     on_applet_clicked(event) {
         this._update_timestamp();
         this.menu.toggle();
+    }
+
+    on_applet_removed_from_panel() {
+        this.settings.finalize();
     }
 
     _update_timestamp() {
@@ -260,7 +265,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             this._applet_icon_box.child = this._alt_crit_icon;
         }
         this._blink_toggle = !this._blink_toggle;
-        Mainloop.timeout_add_seconds(1, Lang.bind(this, this.critical_blink));
+        Mainloop.timeout_add_seconds(1, () => this.critical_blink());
     }
 }
 
