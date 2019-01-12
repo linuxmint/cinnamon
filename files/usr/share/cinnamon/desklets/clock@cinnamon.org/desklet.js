@@ -28,6 +28,12 @@ class CinnamonClockDesklet extends Desklet {
         this.settings.bind('use-custom-format', 'use_custom_format', () => this._onSettingsChanged());
 
         this._menu.addSettingsAction(_('Date and Time Settings'), 'calendar');
+
+        this._onSettingsChanged();
+
+        if (this.clock_notify_id == 0) {
+            this.clock_notify_id = this.clock.connect("notify::clock", () => this._clockNotify());
+        }
     }
 
     _clockNotify(obj, pspec, data) {
@@ -38,14 +44,6 @@ class CinnamonClockDesklet extends Desklet {
         this._date.style = `font-size:${this.state.size}pt;color:${this.state.color}`;
         this._updateFormatString();
         this._updateClock();
-    }
-
-    on_desklet_added_to_desktop() {
-        this._onSettingsChanged();
-
-        if (this.clock_notify_id == 0) {
-            this.clock_notify_id = this.clock.connect("notify::clock", () => this._clockNotify());
-        }
     }
 
     on_desklet_removed() {

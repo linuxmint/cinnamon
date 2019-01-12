@@ -5,6 +5,12 @@ const {
     FileType
 } = imports.gi.Gio;
 const {
+    BrightnessContrastEffect,
+    Color,
+    ColorizeEffect,
+    DesaturateEffect
+} = imports.gi.Clutter;
+const {
     Align,
     Bin,
     TextureCache
@@ -119,14 +125,14 @@ class CinnamonPhotoFrameDesklet extends Desklet {
         this.setContent(this._photoFrame);
 
         if (effect === 'black-and-white') {
-            let effect = new Clutter.DesaturateEffect();
+            let effect = new DesaturateEffect();
             this._bin.add_effect(effect);
         } else if (effect === 'sepia') {
-            let color = new Clutter.Color();
+            let color = new Color();
             color.from_hls(17.0, 0.59, 0.4);
-            let colorize_effect = new Clutter.ColorizeEffect(color);
-            let contrast_effect = new Clutter.BrightnessContrastEffect();
-            let desaturate_effect = new Clutter.DesaturateEffect();
+            let colorize_effect = new ColorizeEffect(color);
+            let contrast_effect = new BrightnessContrastEffect();
+            let desaturate_effect = new DesaturateEffect();
             desaturate_effect.set_factor(0.41);
             contrast_effect.set_brightness_full(0.1, 0.1, 0.1);
             contrast_effect.set_contrast_full(0.1, 0.1, 0.1);

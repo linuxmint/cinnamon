@@ -387,7 +387,7 @@ class Calendar {
             this.actor.add(button,
                            { row: row, col: offsetCols + (7 + iter.getDay() - this._weekStart) % 7 });
 
-            if (this.state.show_week_numbers && iter.getDay() == 4) {
+            if (this.state.show_week_numbers && iter.getDay() === 4) {
                 let label = new St.Label({ text: iter.toLocaleFormat('%V'),
                                            style_class: 'calendar-day-base calendar-week-number'});
                 this.actor.add(label,
