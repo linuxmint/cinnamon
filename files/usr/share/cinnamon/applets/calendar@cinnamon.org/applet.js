@@ -38,20 +38,19 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
-        try {
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.orientation = orientation;
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.orientation = orientation;
 
-            this._initContextMenu();
-            this.menu.setCustomStyleClass('calendar-background');
+        this._initContextMenu();
+        this.menu.setCustomStyleClass('calendar-background');
 
-            // Date
-            this._date = new St.Label();
-            this._date.style_class = 'datemenu-date-label';
-            this.menu.addActor(this._date);
+        // Date
+        this._date = new St.Label();
+        this._date.style_class = 'datemenu-date-label';
+        this.menu.addActor(this._date);
 
-            this.settings = new Settings.AppletSettings(this, "calendar@cinnamon.org", this.instance_id);
-
+        this.settings = new Settings.AppletSettings(this, "calendar@cinnamon.org", this.instance_id, true);
+        this.settings.promise.then(() => {
             // Calendar
             this._calendar = new Calendar.Calendar(this.settings);
 
@@ -89,10 +88,16 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             } catch (e) {
                 this._upClient.connect('notify::resume', Lang.bind(this, this._updateClockAndDate));
             }
-        }
-        catch (e) {
-            global.logError(e);
-        }
+
+            this._onSettingsChanged();
+
+            if (this.clock_notify_id == 0) {
+                this.clock_notify_id = this.clock.connect("notify::clock", () => this._clockNotify());
+            }
+
+            /* Populates the calendar so our menu allocation is correct for animation */
+            this._updateCalendar();
+        });
     }
 
     _clockNotify(obj, pspec, data) {
@@ -162,17 +167,6 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
         this._date.set_text(dateFormattedFull);
         this.set_applet_tooltip(dateFormattedFull);
-    }
-
-    on_applet_added_to_panel() {
-        this._onSettingsChanged();
-
-        if (this.clock_notify_id == 0) {
-            this.clock_notify_id = this.clock.connect("notify::clock", () => this._clockNotify());
-        }
-
-        /* Populates the calendar so our menu allocation is correct for animation */
-        this._updateCalendar();
     }
 
     on_applet_removed_from_panel() {
