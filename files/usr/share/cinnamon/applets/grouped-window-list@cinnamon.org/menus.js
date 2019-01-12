@@ -709,7 +709,7 @@ class WindowThumbnail {
         } else {
             this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
-        if (this.metaWindowActor) {
+        if (this.metaWindowActor && !this.metaWindowActor.is_finalized()) {
             this.signals.connect(this.metaWindowActor, 'size-changed', () => this.refreshThumbnail());
 
             let windowTexture = this.metaWindowActor.get_texture();
@@ -810,7 +810,10 @@ class WindowThumbnail {
     }
 
     hoverPeek(opacity) {
-        if (!this.state.settings.enablePeek || this.state.overlayPreview || this.state.scrollActive) {
+        if (!this.state.settings.enablePeek
+            || this.state.overlayPreview
+            || this.state.scrollActive
+            || (this.metaWindowActor && this.metaWindowActor.is_finalized())) {
             return;
         }
         if (!this.metaWindowActor) {
