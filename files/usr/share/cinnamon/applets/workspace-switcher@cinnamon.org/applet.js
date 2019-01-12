@@ -238,8 +238,12 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         if (global.display.focus_window)
             this._focusWindow = global.display.focus_window.get_compositor_private();
 
-        this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
-        this.settings.bind("display_type", "display_type", this.queueCreateButtons);
+        this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id, true);
+        this.settings.promise.then(() => this.settingsInit());
+    }
+
+    settingsInit() {
+        this.settings.bind("display_type", "display_type", this._createButtons);
 
         this.actor.connect('scroll-event', this.hook.bind(this));
 
