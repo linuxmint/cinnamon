@@ -1,22 +1,20 @@
-const Applet = imports.ui.applet;
-const Main = imports.ui.main;
-const Gtk = imports.gi.Gtk;
-const Gio = imports.gi.Gio;
-const PopupMenu = imports.ui.popupMenu;
-const St = imports.gi.St;
-const Mainloop = imports.mainloop;
-const Urgency = imports.ui.messageTray.Urgency;
-const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
+const {TextIconApplet, AppletPopupMenu, AllowedLayout} = imports.ui.applet;
+const {messageTray} = imports.ui.main;
+const {PolicyType} = imports.gi.Gtk;
+const {Settings} = imports.gi.Gio;
+const {PopupMenuManager, PopupMenuItem, PopupSeparatorMenuItem} = imports.ui.popupMenu;
+const {BoxLayout, ScrollView, Icon, IconType, Align, Side} = imports.gi.St;
+const {Urgency, NotificationDestroyedReason} = imports.ui.messageTray;
 const {AppletSettings} = imports.ui.settings;
-const Gettext = imports.gettext.domain("cinnamon-applets");
+const {ngettext} = imports.gettext.domain("cinnamon-applets");
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
-class CinnamonNotificationsApplet extends Applet.TextIconApplet {
+class CinnamonNotificationsApplet extends TextIconApplet {
     constructor(metadata, orientation, panel_height, instanceId) {
         super(orientation, panel_height, instanceId);
 
-        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+        this.setAllowedLayout(AllowedLayout.BOTH);
 
         this.state = {};
 
@@ -35,10 +33,10 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.settings.bind("ignoreTransientNotifications", "ignoreTransientNotifications");
         this.settings.bind("showEmptyTray", "showEmptyTray", () => this._show_hide_tray());
 
-        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menuManager = new PopupMenuManager(this);
 
         // Events
-        Main.messageTray.connect('notify-applet-update', (m, n) => this._notification_added(m, n));
+        this.trayId = messageTray.connect('notify-applet-update', (m, n) => this._notification_added(m, n));
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, () => this._on_panel_edit_mode_changed());
 
         // States
@@ -55,23 +53,23 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.set_applet_tooltip(_("Notifications"));
 
         // Setup the notification container.
-        this._maincontainer = new St.BoxLayout({name: 'traycontainer', vertical: true});
-        this._notificationbin = new St.BoxLayout({vertical:true});
-        this.button_label_box = new St.BoxLayout();
+        this._maincontainer = new BoxLayout({name: 'traycontainer', vertical: true});
+        this._notificationbin = new BoxLayout({vertical:true});
+        this.button_label_box = new BoxLayout();
 
         // Setup the tray icon.
-        this.menu_label = new PopupMenu.PopupMenuItem(stringify(this.notifications.length));
+        this.menu_label = new PopupMenuItem(stringify(this.notifications.length));
         this.menu_label.actor.reactive = false;
         this.menu_label.actor.can_focus = false;
         this.menu_label.label.add_style_class_name('popup-subtitle-menu-item');
 
-        this.clear_separator = new PopupMenu.PopupSeparatorMenuItem();
+        this.clear_separator = new PopupSeparatorMenuItem();
 
-        this.clear_action = new PopupMenu.PopupMenuItem(_("Clear notifications"));
+        this.clear_action = new PopupMenuItem(_("Clear notifications"));
         this.clear_action.connect('activate', () => this._clear_all());
         this.clear_action.actor.hide();
 
-        if (this._orientation == St.Side.BOTTOM) {
+        if (this._orientation == Side.BOTTOM) {
             this.menu.addMenuItem(this.menu_label);
             this.menu.addActor(this._maincontainer);
             this.menu.addMenuItem(this.clear_separator);
@@ -83,18 +81,18 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             this.menu.addActor(this._maincontainer);
         }
 
-        this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START, style_class: "vfade"});
+        this.scrollview = new ScrollView({ x_fill: true, y_fill: true, y_align: Align.START, style_class: "vfade"});
         this._maincontainer.add(this.scrollview);
         this.scrollview.add_actor(this._notificationbin);
-        this.scrollview.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        this.scrollview.set_policy(PolicyType.NEVER, PolicyType.AUTOMATIC);
 
         let vscroll = this.scrollview.get_vscroll_bar();
         vscroll.connect('scroll-start', () => this.menu.passEvents = true);
         vscroll.connect('scroll-stop', () => this.menu.passEvents = false);
 
         // Alternative tray icons.
-        this._crit_icon = new St.Icon({icon_name: 'critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
-        this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+        this._crit_icon = new Icon({icon_name: 'critical-notif', icon_type: IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+        this._alt_crit_icon = new Icon({icon_name: 'alt-critical-notif', icon_type: IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
 
         this._on_panel_edit_mode_changed();
     }
@@ -231,7 +229,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         if (this.menu) {
             this.menu.destroy();
         }
-        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menu = new AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
         this._display();
     }
@@ -241,8 +239,17 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.menu.toggle();
     }
 
+    on_applet_reloaded() {
+        global.notificationsAppletReloading = true;
+    }
+
     on_applet_removed_from_panel() {
+        if (this.trayId && !global.notificationsAppletReloading) {
+            messageTray.disconnect('notify-applet-update', this.trayId);
+            this.trayId = 0;
+        }
         this.settings.finalize();
+        global.notificationsAppletReloading = false;
     }
 
     _update_timestamp() {
@@ -265,7 +272,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             this._applet_icon_box.child = this._alt_crit_icon;
         }
         this._blink_toggle = !this._blink_toggle;
-        Mainloop.timeout_add_seconds(1, () => this.critical_blink());
+        setTimeout(() => this.critical_blink(), 1000);
     }
 }
 
@@ -292,7 +299,7 @@ function stringify(count) {
 }
 
 function timeify(orig_time) {
-    let settings = new Gio.Settings({schema_id: 'org.cinnamon.desktop.interface'});
+    let settings = new Settings({schema_id: 'org.cinnamon.desktop.interface'});
     let use_24h = settings.get_boolean('clock-use-24h');
     let now = new Date();
     let diff = Math.floor((now.getTime() - orig_time.getTime()) / 1000); // get diff in seconds
@@ -307,11 +314,11 @@ function timeify(orig_time) {
             str += " (" + _("just now") + ")";
             break;
         } case (diff > 15 && diff <= 59): {
-            str += " (" + Gettext.ngettext("%d second ago", "%d seconds ago", diff).format(diff) + ")";
+            str += " (" + ngettext("%d second ago", "%d seconds ago", diff).format(diff) + ")";
             break;
         } case (diff > 59 && diff <= 3540): {
             let diff_minutes = Math.floor(diff / 60);
-            str += " (" + Gettext.ngettext("%d minute ago", "%d minutes ago", diff_minutes).format(diff_minutes) + ")";
+            str += " (" + ngettext("%d minute ago", "%d minutes ago", diff_minutes).format(diff_minutes) + ")";
             break;
         }
     }
