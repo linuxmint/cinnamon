@@ -309,7 +309,7 @@ Unminimize.prototype = {
             this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, true);
             this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
         } else {
-            throw "No origin found";
+            global.logWarning('windowEffects.Unminimize: No origin found.');
         }
     }
 }
