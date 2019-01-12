@@ -895,8 +895,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
 
-        this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
+        this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id, true);
+        this.settings.promise.then(() => this.settingsInit());
+    }
 
+    settingsInit() {
         this.settings.bind("show-places", "showPlaces", this._refreshBelowApps);
 
         this._appletEnterEventId = 0;
