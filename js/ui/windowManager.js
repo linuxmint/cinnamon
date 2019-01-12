@@ -56,12 +56,6 @@ const ZONE_BL = 7;
 
 const SETTINGS_EFFECTS_TYPES = [['effect', 'get_string'], ['time', 'get_int'], ['transition', 'get_string']];
 
-function getTopInvisibleBorder(metaWindow) {
-    let outerRect = metaWindow.get_outer_rect();
-    let inputRect = metaWindow.get_input_rect();
-    return outerRect.y - inputRect.y;
-}
-
 class WindowDimmer {
     constructor(actor) {
         this._desaturateEffect = new Clutter.DesaturateEffect();
