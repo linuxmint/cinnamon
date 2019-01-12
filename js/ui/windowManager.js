@@ -90,7 +90,7 @@ WindowDimmer.prototype = {
     },
 
     get dimFactor() {
-       return this._dimFactor;
+        return this._dimFactor;
     }
 };
 
@@ -492,6 +492,7 @@ WindowManager.prototype = {
         this.settings.connect('changed::snap-modifier', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
 
         each(this.effects, (value, key) => {
+            if (key === 'unmaximize' || key === 'unminimize') return;
             each(SETTINGS_EFFECTS_TYPES, (item) => {
                 let [name, type] = item;
                 let property = `desktop-effects-${key}-${name}`;
