@@ -1,4 +1,4 @@
-const Applet = imports.ui.applet;
+const {TextIconApplet, AppletPopupMenu, AllowedLayout} = imports.ui.applet;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Interfaces = imports.misc.interfaces;
@@ -12,7 +12,7 @@ const GLib = imports.gi.GLib;
 const Cvc = imports.gi.Cvc;
 const Tooltips = imports.ui.tooltips;
 const Main = imports.ui.main;
-const Settings = imports.ui.settings;
+const {AppletSettings} = imports.ui.settings;
 const Slider = imports.ui.slider;
 
 const MEDIA_PLAYER_2_PATH = "/org/mpris/MediaPlayer2";
@@ -871,14 +871,18 @@ class MediaPlayerLauncher extends PopupMenu.PopupBaseMenuItem {
     }
 }
 
-class CinnamonSoundApplet extends Applet.TextIconApplet {
+class CinnamonSoundApplet extends TextIconApplet {
     constructor(metadata, orientation, panel_height, instanceId) {
         super(orientation, panel_height, instanceId);
 
-        this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+        this.setAllowedLayout(AllowedLayout.BOTH);
 
         this.metadata = metadata;
-        this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
+        this.settings = new AppletSettings(this, metadata.uuid, instanceId, true);
+        this.settings.promise.then(() => this.settingsInit(orientation));
+    }
+
+    settingsInit(orientation) {
         this.settings.bind("showtrack", "showtrack", this.on_settings_changed);
         this.settings.bind("middleClickAction", "middleClickAction");
         this.settings.bind("horizontalScroll", "horizontalScroll")
@@ -900,7 +904,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         if (this.hideSystray) this.registerSystrayIcons();
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
-        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menu = new AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
         this.set_applet_icon_symbolic_name('audio-x-generic');
@@ -1059,6 +1063,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         for(let i in this._players)
             this._players[i].destroy();
+
+        this.settings.finalize();
     }
 
     on_applet_clicked(event) {
@@ -1143,7 +1149,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             this._players[this._activePlayer]._mediaServerPlayer.NextRemote();
         }
 
-        return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
+        return super._onButtonPressEvent(actor, event);
     }
 
     setIcon(icon, source) {
