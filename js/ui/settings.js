@@ -261,18 +261,18 @@ function has_required_fields(props, key) {
  * #DeskletSettings, or #ExtensionSettings)
  */
 class XletSettingsBase {
-    constructor(bindObject, uuid, instanceId, async = false) {
+    constructor(bindObject, uuid, instanceId, asynchronous = false) {
         this.isReady = false;
         this.bindObject = bindObject;
         this.uuid = uuid;
-        this.async = async;
+        this.async = asynchronous;
         if (this._get_is_multi_instance_xlet(this.uuid)) this.instanceId = instanceId;
         else this.instanceId = this.uuid;
         this.bindings = {};
         this.settingsData = {};
         this.promise = null;
 
-        if (async) this.promise = this._ensureSettingsFiles();
+        if (asynchronous) this.promise = this._ensureSettingsFiles();
         else if (this._ensureSettingsFiles()) this._register();
     }
 
@@ -881,8 +881,8 @@ var AppletSettings = class AppletSettings extends XletSettingsBase {
      * @uuid (string): uuid of the applet
      * @instanceId (int): instance id of the applet
      */
-    constructor(xlet, uuid, instanceId, async) {
-        super(xlet, uuid, instanceId, async);
+    constructor(xlet, uuid, instanceId, asynchronous) {
+        super(xlet, uuid, instanceId, asynchronous);
     }
 
     _get_is_multi_instance_xlet(uuid) {
@@ -903,8 +903,8 @@ var DeskletSettings = class DeskletSettings extends XletSettingsBase {
      * @uuid (string): uuid of the desklet
      * @instanceId (int): instance id of the desklet
      */
-    constructor(xlet, uuid, instanceId, async) {
-        super(xlet, uuid, instanceId, async);
+    constructor(xlet, uuid, instanceId, asynchronous) {
+        super(xlet, uuid, instanceId, asynchronous);
     }
 
     _get_is_multi_instance_xlet(uuid) {
@@ -924,8 +924,8 @@ var ExtensionSettings = class ExtensionSettings extends XletSettingsBase {
      * @xlet (Object): the object variables are binded to (usually `this`)
      * @uuid (string): uuid of the extension
      */
-    constructor(xlet, uuid, async) {
-        super(xlet, uuid, null, async);
+    constructor(xlet, uuid, asynchronous) {
+        super(xlet, uuid, null, asynchronous);
     }
 
     _get_is_multi_instance_xlet(uuid) {
