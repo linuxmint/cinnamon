@@ -1,23 +1,49 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Clutter = imports.gi.Clutter;
+const {BrightnessContrastEffect, DesaturateEffect} = imports.gi.Clutter;
 const Lang = imports.lang;
-const Meta = imports.gi.Meta;
-const {WindowType, MotionDirection, GrabOp} = Meta;
-const St = imports.gi.St;
-const Cinnamon = imports.gi.Cinnamon;
-const Mainloop = imports.mainloop;
-const Gio = imports.gi.Gio;
-const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
-const CoverflowSwitcher = imports.ui.appSwitcher.coverflowSwitcher;
-const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
-const ClassicSwitcher = imports.ui.appSwitcher.classicSwitcher;
-const WindowEffects = imports.ui.windowEffects;
+const {
+    GrabOp,
+    Rectangle,
+    MotionDirection,
+    WindowType,
+    keybindings_set_custom_handler,
+    prefs_get_attach_modal_dialogs
+} = imports.gi.Meta;
+const {
+    Bin,
+    Label,
+    ThemeContext
+} = imports.gi.St;
+const {Settings} = imports.gi.Gio;
+const {getWindowsForBinding} = imports.ui.appSwitcher.appSwitcher;
+const {CoverflowSwitcher} = imports.ui.appSwitcher.coverflowSwitcher;
+const {TimelineSwitcher} = imports.ui.appSwitcher.timelineSwitcher;
+const {ClassicSwitcher} = imports.ui.appSwitcher.classicSwitcher;
+const {
+    Map,
+    Close,
+    Minimize,
+    Unminimize,
+    Tile,
+    Maximize,
+    Unmaximize
+} = imports.ui.windowEffects;
 const {each, filter, tryFn} = imports.misc.util;
-
 const Main = imports.ui.main;
-const ModalDialog = imports.ui.modalDialog;
-const Tweener = imports.ui.tweener;
+const {
+    expo,
+    getWorkspaceName,
+    layoutManager,
+    overview,
+    panelManager,
+    soundManager,
+} = Main;
+const {InfoOSD} = imports.ui.modalDialog;
+const {
+    addTween,
+    removeTweens
+} = imports.ui.tweener;
 
 const WINDOW_ANIMATION_TIME = 0.25;
 const TILE_HUD_ANIMATION_TIME = 0.15;
@@ -58,8 +84,8 @@ const SETTINGS_EFFECTS_TYPES = [['effect', 'get_string'], ['time', 'get_int'], [
 
 class WindowDimmer {
     constructor(actor) {
-        this._desaturateEffect = new Clutter.DesaturateEffect();
-        this._brightnessEffect = new Clutter.BrightnessContrastEffect();
+        this._desaturateEffect = new DesaturateEffect();
+        this._brightnessEffect = new BrightnessContrastEffect();
         actor.add_effect(this._desaturateEffect);
         actor.add_effect(this._brightnessEffect);
 
@@ -92,7 +118,7 @@ function getWindowDimmer(actor) {
 
 class TilePreview {
     constructor() {
-        this.actor = new St.Bin({ style_class: 'tile-preview', important: true });
+        this.actor = new Bin({ style_class: 'tile-preview', important: true });
         global.window_group.add_actor(this.actor);
 
         this._snapQueued = 0;
@@ -118,11 +144,11 @@ class TilePreview {
 
         this._monitorIndex = monitorIndex;
         this._rect = tileRect;
-        let monitor = Main.layoutManager.monitors[monitorIndex];
+        let monitor = layoutManager.monitors[monitorIndex];
         let {x, y, width, height} = tileRect;
 
         if (!this._showing || changeMonitor) {
-            let monitorRect = new Meta.Rectangle({ x: monitor.x,
+            let monitorRect = new Rectangle({ x: monitor.x,
                                                    y: monitor.y,
                                                    width: monitor.width,
                                                    height: monitor.height });
@@ -149,7 +175,7 @@ class TilePreview {
                 time: WINDOW_ANIMATION_TIME,
                 transition: 'easeOutQuad'
             });
-            Tweener.addTween(this.actor, props);
+            addTween(this.actor, props);
             return;
         }
 
@@ -163,7 +189,7 @@ class TilePreview {
         this._showing = false;
 
         if (effectsEnabled) {
-            Tweener.addTween(this.actor, {
+            addTween(this.actor, {
                 opacity: 0,
                 time: WINDOW_ANIMATION_TIME,
                 transition: 'easeOutQuad',
@@ -195,11 +221,11 @@ class TilePreview {
 
 class HudPreview {
     constructor() {
-        this.actor = new St.Bin({ style_class: 'tile-hud', important: true });
+        this.actor = new Bin({ style_class: 'tile-hud', important: true });
         global.window_group.add_actor(this.actor);
 
-        this._tileHudSettings = new Gio.Settings({ schema_id: "org.cinnamon.muffin" });
-        this._tileHudSettings.connect("changed::tile-hud-threshold", Lang.bind(this, this._onTileHudSettingsChanged));
+        this._tileHudSettings = new Settings({ schema_id: "org.cinnamon.muffin" });
+        this._tileHudSettings.connect("changed::tile-hud-threshold", () => this._onTileHudSettingsChanged());
 
         this._onTileHudSettingsChanged();
         this._snapQueued = 0;
@@ -354,7 +380,7 @@ class HudPreview {
                     time: TILE_HUD_ANIMATION_TIME,
                     transition: 'easeOutQuad'
                 })
-                Tweener.addTween(this.actor, props);
+                addTween(this.actor, props);
                 return;
             }
 
@@ -380,7 +406,7 @@ class HudPreview {
                 transition: 'easeOutQuad',
                 onComplete: () => this._reset()
             });
-            Tweener.addTween(this.actor, props);
+            addTween(this.actor, props);
             return;
         }
 
@@ -393,7 +419,7 @@ class HudPreview {
     }
 
     _onTileHudSettingsChanged() {
-        let scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+        let scaleFactor = ThemeContext.get_for_stage(global.stage).scale_factor;
         this._hudSize = this._tileHudSettings.get_int("tile-hud-threshold") * scaleFactor;
 
     }
@@ -429,16 +455,16 @@ var WindowManager = class WindowManager {
         this._destroying = [];
 
         this.effects = {
-            map: new WindowEffects.Map(this),
-            close: new WindowEffects.Close(this),
-            minimize: new WindowEffects.Minimize(this),
-            unminimize: new WindowEffects.Unminimize(this),
-            tile: new WindowEffects.Tile(this),
-            maximize: new WindowEffects.Maximize(this),
-            unmaximize: new WindowEffects.Unmaximize(this)
+            map: new Map(this),
+            close: new Close(this),
+            minimize: new Minimize(this),
+            unminimize: new Unminimize(this),
+            tile: new Tile(this),
+            maximize: new Maximize(this),
+            unmaximize: new Unmaximize(this)
         };
 
-        this.settings = new Gio.Settings({schema_id: 'org.cinnamon.muffin'});
+        this.settings = new Settings({schema_id: 'org.cinnamon.muffin'});
 
         const settingsState = {
             'desktop-effects': global.settings.get_boolean('desktop-effects'),
@@ -491,56 +517,49 @@ var WindowManager = class WindowManager {
         this._animationBlockCount = 0;
 
         this._switchData = null;
-        global.window_manager.connect('kill-window-effects', Lang.bind(this, this._killWindowEffects));
-        global.window_manager.connect('switch-workspace', Lang.bind(this, this._switchWorkspace));
-        global.window_manager.connect('minimize', Lang.bind(this, this._minimizeWindow));
-        global.window_manager.connect('maximize', Lang.bind(this, this._maximizeWindow));
-        global.window_manager.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
-        global.window_manager.connect('tile', Lang.bind(this, this._tileWindow));
-        global.window_manager.connect('show-tile-preview', Lang.bind(this, this._showTilePreview));
-        global.window_manager.connect('hide-tile-preview', Lang.bind(this, this._hideTilePreview));
-        global.window_manager.connect('show-hud-preview', Lang.bind(this, this._showHudPreview));
-        global.window_manager.connect('hide-hud-preview', Lang.bind(this, this._hideHudPreview));
-        global.window_manager.connect('map', Lang.bind(this, this._mapWindow));
-        global.window_manager.connect('destroy', Lang.bind(this, this._destroyWindow));
-        Meta.keybindings_set_custom_handler('move-to-workspace-left',
-                                            Lang.bind(this, this._moveWindowToWorkspaceLeft));
-        Meta.keybindings_set_custom_handler('move-to-workspace-right',
-                                            Lang.bind(this, this._moveWindowToWorkspaceRight));
+        global.window_manager.connect('kill-window-effects', (c, a) => this._killWindowEffects(c, a));
+        global.window_manager.connect('switch-workspace', (c, f, t, d) => this._switchWorkspace(c, f, t, d));
+        global.window_manager.connect('minimize', (c, a) => this._minimizeWindow(c, a));
+        global.window_manager.connect('maximize', (c, a, x, y, w, h) => this._maximizeWindow(c, a, x, y, w, h));
+        global.window_manager.connect('unmaximize', (c, a, x, y, w, h) => this._unmaximizeWindow(c, a, x, y, w, h));
+        global.window_manager.connect('tile', (c, a, x, y, w, h) => this._tileWindow(c, a, x, y, w, h));
+        global.window_manager.connect('show-tile-preview', (c, w, t, m, s) => this._showTilePreview(c, w, t, m, s));
+        global.window_manager.connect('hide-tile-preview', (c) => this._hideTilePreview(c));
+        global.window_manager.connect('show-hud-preview', (c, p, w, s) => this._showHudPreview(c, p, w, s));
+        global.window_manager.connect('hide-hud-preview', (c) => this._hideHudPreview(c));
+        global.window_manager.connect('map', (c, a) => this._mapWindow(c, a));
+        global.window_manager.connect('destroy', (c, a) => this._destroyWindow(c, a));
 
-        Meta.keybindings_set_custom_handler('switch-to-workspace-left',
-                                            Lang.bind(this, this._showWorkspaceSwitcher));
-        Meta.keybindings_set_custom_handler('switch-to-workspace-right',
-                                            Lang.bind(this, this._showWorkspaceSwitcher));
-        Meta.keybindings_set_custom_handler('switch-to-workspace-up',
-                                            Lang.bind(this, this._showWorkspaceSwitcher));
-        Meta.keybindings_set_custom_handler('switch-to-workspace-down',
-                                            Lang.bind(this, this._showWorkspaceSwitcher));
-        Meta.keybindings_set_custom_handler('switch-windows',
-                                            Lang.bind(this, this._startAppSwitcher));
-        Meta.keybindings_set_custom_handler('switch-group',
-                                            Lang.bind(this, this._startAppSwitcher));
-        Meta.keybindings_set_custom_handler('switch-windows-backward',
-                                            Lang.bind(this, this._startAppSwitcher));
-        Meta.keybindings_set_custom_handler('switch-group-backward',
-                                            Lang.bind(this, this._startAppSwitcher));
-        Meta.keybindings_set_custom_handler('switch-panels',
-                                            Lang.bind(this, this._startAppSwitcher));
-        Meta.keybindings_set_custom_handler('switch-panels-backward',
-                                            Lang.bind(this, this._startAppSwitcher));
+        keybindings_set_custom_handler('move-to-workspace-left', (d, s, w, b) => this._moveWindowToWorkspaceLeft(d, s, w, b));
+        keybindings_set_custom_handler('move-to-workspace-right', (d, s, w, b) => this._moveWindowToWorkspaceRight(d, s, w, b));
 
-        Main.overview.connect('showing', Lang.bind(this, function() {
-            for (let i = 0; i < this._dimmedWindows.length; i++)
-                this._undimWindow(this._dimmedWindows[i], true);
-        }));
-        Main.overview.connect('hiding', Lang.bind(this, function() {
-            for (let i = 0; i < this._dimmedWindows.length; i++)
-                this._dimWindow(this._dimmedWindows[i], true);
-        }));
+        keybindings_set_custom_handler('switch-to-workspace-left', (d, s, w, b) => this._showWorkspaceSwitcher(d, s, w, b));
+        keybindings_set_custom_handler('switch-to-workspace-right', (d, s, w, b) => this._showWorkspaceSwitcher(d, s, w, b));
+        keybindings_set_custom_handler('switch-to-workspace-up', (d, s, w, b) => this._showWorkspaceSwitcher(d, s, w, b));
+        keybindings_set_custom_handler('switch-to-workspace-down', (d, s, w, b) => this._showWorkspaceSwitcher(d, s, w, b));
+        keybindings_set_custom_handler('switch-windows', (d, s, w, b) => this._startAppSwitcher(d, s, w, b));
+        keybindings_set_custom_handler('switch-group', (d, s, w, b) => this._startAppSwitcher(d, s, w, b));
+        keybindings_set_custom_handler('switch-windows-backward', (d, s, w, b) => this._startAppSwitcher(d, s, w, b));
+        keybindings_set_custom_handler('switch-group-backward', (d, s, w, b) => this._startAppSwitcher(d, s, w, b));
+        keybindings_set_custom_handler('switch-panels', (d, s, w, b) => this._startAppSwitcher(d, s, w, b));
+        keybindings_set_custom_handler('switch-panels-backward', (d, s, w, b) => this._startAppSwitcher(d, s, w, b));
 
-        global.screen.connect ("show-snap-osd", Lang.bind (this, this._showSnapOSD));
-        global.screen.connect ("hide-snap-osd", Lang.bind (this, this._hideSnapOSD));
-        global.screen.connect ("show-workspace-osd", Lang.bind (this, this.showWorkspaceOSD));
+        overview.connect('showing', () => {
+            let {_dimmedWindows} = this;
+            for (let i = 0, len = _dimmedWindows.length; i < len; i++) {
+                this._undimWindow(_dimmedWindows[i], true);
+            }
+        });
+        overview.connect('hiding', () => {
+            let {_dimmedWindows} = this;
+            for (let i = 0, len = _dimmedWindows.length; i < len; i++) {
+                this._dimWindow(_dimmedWindows[i], true);
+            }
+        });
+
+        global.screen.connect ('show-snap-osd', (m, i) => this._showSnapOSD(m, i));
+        global.screen.connect ('hide-snap-osd', () => this._hideSnapOSD());
+        global.screen.connect ('show-workspace-osd', () => this.showWorkspaceOSD());
     }
 
     onSettingsChanged(settings, key, type) {
@@ -620,15 +639,15 @@ var WindowManager = class WindowManager {
 
     _endWindowEffect(cinnamonwm, name, actor){
         let effect = this.effects[name];
-        //effect will be an instance of WindowEffects.Effect
+        //effect will be an instance of Effect
         let idx = this[effect.arrayName].indexOf(actor);
         if(idx !== -1){
             this[effect.arrayName].splice(idx, 1);
-            Tweener.removeTweens(actor);
+            removeTweens(actor);
             delete actor.current_effect_name;
             effect._end(actor);
             cinnamonwm[effect.wmCompleteName](actor);
-            Main.panelManager.updatePanelsVisibility();
+            panelManager.updatePanelsVisibility();
         }
     }
 
@@ -639,7 +658,7 @@ var WindowManager = class WindowManager {
     }
 
     _minimizeWindow(cinnamonwm, actor) {
-        Main.soundManager.play('minimize');
+        soundManager.play('minimize');
 
         // reset all cached values in case "traditional" is no longer in effect
         actor.meta_window._cinnamonwm_has_origin = false;
@@ -647,19 +666,19 @@ var WindowManager = class WindowManager {
     }
 
     _tileWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
-        Main.soundManager.play('tile');
+        soundManager.play('tile');
 
         this._startWindowEffect(cinnamonwm, "tile", actor, [targetX, targetY, targetWidth, targetHeight]);
     }
 
     _maximizeWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
-        Main.soundManager.play('maximize');
+        soundManager.play('maximize');
 
         this._startWindowEffect(cinnamonwm, "maximize", actor, [targetX, targetY, targetWidth, targetHeight]);
     }
 
     _unmaximizeWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
-        Main.soundManager.play('unmaximize');
+        soundManager.play('unmaximize');
 
         this._startWindowEffect(cinnamonwm, "unmaximize", actor, [targetX, targetY, targetWidth, targetHeight]);
     }
@@ -680,14 +699,14 @@ var WindowManager = class WindowManager {
         if (shouldDim && !window._dimmed) {
             window._dimmed = true;
             this._dimmedWindows.push(window);
-            if (!Main.overview.visible)
+            if (!overview.visible)
                 this._dimWindow(window, true);
         } else if (!shouldDim && window._dimmed) {
             window._dimmed = false;
             this._dimmedWindows = filter(this._dimmedWindows, function(win) {
                 return win !== window;
             });
-            if (!Main.overview.visible)
+            if (!overview.visible)
                 this._undimWindow(window, true);
         }
     }
@@ -698,13 +717,13 @@ var WindowManager = class WindowManager {
             return;
 
         let dimmer = getWindowDimmer(actor);
-        let enabled = Meta.prefs_get_attach_modal_dialogs();
+        let enabled = prefs_get_attach_modal_dialogs();
         dimmer.setEnabled(enabled);
         if (!enabled)
             return;
 
         if (animate) {
-            Tweener.addTween(dimmer,
+            addTween(dimmer,
                              { dimFactor: 1.0,
                                time: DIM_TIME,
                                transition: 'linear'
@@ -720,13 +739,13 @@ var WindowManager = class WindowManager {
             return;
 
         let dimmer = getWindowDimmer(actor);
-        let enabled = Meta.prefs_get_attach_modal_dialogs();
+        let enabled = prefs_get_attach_modal_dialogs();
         dimmer.setEnabled(enabled);
         if (!enabled)
             return;
 
         if (animate) {
-            Tweener.addTween(dimmer,
+            addTween(dimmer,
                              { dimFactor: 0.0,
                                time: UNDIM_TIME,
                                transition: 'linear'
@@ -743,11 +762,11 @@ var WindowManager = class WindowManager {
         }
 
         if (meta_window._cinnamonwm_has_origin && meta_window._cinnamonwm_has_origin === true) {
-            Main.soundManager.play('minimize');
+            soundManager.play('minimize');
             tryFn(() => this._startWindowEffect(cinnamonwm, 'unminimize', actor, null, 'minimize'));
             return;
         } else if (meta_window.window_type === WindowType.NORMAL) {
-            Main.soundManager.play('map');
+            soundManager.play('map');
         }
         this._startWindowEffect(cinnamonwm, "map", actor);
     }
@@ -756,7 +775,7 @@ var WindowManager = class WindowManager {
         let {meta_window} = actor;
 
         if (actor.meta_window.window_type === WindowType.NORMAL) {
-            Main.soundManager.play('close');
+            soundManager.play('close');
         }
 
         actor.orig_opacity = actor.opacity;
@@ -792,7 +811,7 @@ var WindowManager = class WindowManager {
             return;
         }
 
-        Main.soundManager.play('switch');
+        soundManager.play('switch');
         this.showWorkspaceOSD();
 
         let windows = global.get_window_actors();
@@ -847,7 +866,7 @@ var WindowManager = class WindowManager {
                     window.origX = window.x;
                     window.origY = window.y;
                 }
-                Tweener.addTween(window,
+                addTween(window,
                         { x: window.origX + xDest,
                           y: window.origY + yDest,
                           time: WINDOW_ANIMATION_TIME,
@@ -865,7 +884,7 @@ var WindowManager = class WindowManager {
                     window.origY = window.y;
                     window.set_position(window.origX - xDest, window.origY - yDest);
                 }
-                Tweener.addTween(window, {
+                addTween(window, {
                     x: window.origX,
                     y: window.origY,
                     time: WINDOW_ANIMATION_TIME,
@@ -879,7 +898,7 @@ var WindowManager = class WindowManager {
             }
         }
 
-        Tweener.addTween(this, {time: WINDOW_ANIMATION_TIME, onComplete: function() {
+        addTween(this, {time: WINDOW_ANIMATION_TIME, onComplete: function() {
             cinnamonwm.completed_switch_workspace();
         }});
     }
@@ -923,10 +942,10 @@ var WindowManager = class WindowManager {
             let duration = this.settingsState['workspace-osd-duration'] / 1000;
             let current_workspace_index = global.screen.get_active_workspace_index();
             if (this.settingsState['workspaces-only-on-primary']) {
-                this._showWorkspaceOSDOnMonitor(Main.layoutManager.primaryMonitor, osd_x, osd_y, duration, current_workspace_index);
+                this._showWorkspaceOSDOnMonitor(layoutManager.primaryMonitor, osd_x, osd_y, duration, current_workspace_index);
             }
             else {
-                let {monitors} = Main.layoutManager;
+                let {monitors} = layoutManager;
                 for (let i = 0; i < monitors.length; i++) {
                     this._showWorkspaceOSDOnMonitor(monitors[i], osd_x, osd_y, duration, current_workspace_index);
                 }
@@ -935,12 +954,12 @@ var WindowManager = class WindowManager {
     }
 
     _showWorkspaceOSDOnMonitor(monitor, osd_x, osd_y, duration, current_workspace_index) {
-        let osd = new St.Label({style_class:'workspace-osd', important: true});
+        let osd = new Label({style_class:'workspace-osd', important: true});
         let effectsEnabled = this.settingsState['desktop-effects'];
         this._workspace_osd_array.push(osd);
-        osd.set_text(Main.getWorkspaceName(current_workspace_index));
+        osd.set_text(getWorkspaceName(current_workspace_index));
         if (effectsEnabled) osd.set_opacity = 0;
-        Main.layoutManager.addChrome(osd, { visibleInFullscreen: false, affectsInputRegion: false });
+        layoutManager.addChrome(osd, { visibleInFullscreen: false, affectsInputRegion: false });
         /*
          * This aligns the osd edges to the minimum/maximum values from gsettings,
          * if those are selected to be used. For values in between minimum/maximum,
@@ -957,7 +976,7 @@ var WindowManager = class WindowManager {
         osd.set_position(x, y);
 
         if (effectsEnabled) {
-            Tweener.addTween(osd, {
+            addTween(osd, {
                 opacity: 255,
                 time: duration,
                 transition: 'linear',
@@ -973,7 +992,7 @@ var WindowManager = class WindowManager {
             let osd = this._workspace_osd_array[i];
             if (osd != null) {
                 osd.hide();
-                Main.layoutManager.removeChrome(osd);
+                layoutManager.removeChrome(osd);
                 osd.destroy();
             }
         }
@@ -983,7 +1002,7 @@ var WindowManager = class WindowManager {
     _showSnapOSD(metaScreen, monitorIndex) {
         if (this.settingsState['show-snap-osd']) {
             if (this._snapOsd == null) {
-                this._snapOsd = new ModalDialog.InfoOSD();
+                this._snapOsd = new InfoOSD();
 
                 let mod = this.settingsState['snap-modifier'];
                 if (mod == "Super")
@@ -1007,15 +1026,18 @@ var WindowManager = class WindowManager {
     }
 
     _createAppSwitcher(binding) {
-        if (AppSwitcher.getWindowsForBinding(binding).length == 0)
-            return;
-        let style = this.settingsState['alttab-switcher-style'];
-        if(style == 'coverflow')
-            new CoverflowSwitcher.CoverflowSwitcher(binding);
-        else if(style == 'timeline')
-            new TimelineSwitcher.TimelineSwitcher(binding);
-        else
-            new ClassicSwitcher.ClassicSwitcher(binding);
+        if (getWindowsForBinding(binding).length === 0) return;
+
+        switch (this.settingsState['alttab-switcher-style']) {
+            case 'coverflow':
+                new CoverflowSwitcher(binding);
+                break;
+            case 'timeline':
+                new TimelineSwitcher(binding);
+                break;
+            default:
+                new ClassicSwitcher(binding);
+        }
     }
 
     _startAppSwitcher(display, screen, window, binding) {
@@ -1055,11 +1077,11 @@ var WindowManager = class WindowManager {
     _showWorkspaceSwitcher(display, screen, window, binding) {
         let bindingName = binding.get_name();
         if (bindingName === 'switch-to-workspace-up') {
-            Main.expo.toggle();
+            expo.toggle();
             return;
         }
         if (bindingName === 'switch-to-workspace-down') {
-            Main.overview.toggle();
+            overview.toggle();
             return;
         }
 
