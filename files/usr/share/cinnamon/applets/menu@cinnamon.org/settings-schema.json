@@ -25,7 +25,7 @@
         "menu-layout" : {
             "type" : "section",
             "title" : "Layout and content",
-            "keys" : ["favbox-min-height", "show-category-icons", "show-application-icons", "favbox-show", "show-places", "menu-editor-button"]
+            "keys" : ["show-category-icons", "show-application-icons", "favbox-show", "favbox-min-height", "show-places", "menu-editor-button"]
         },
         "menu-behave" : {
             "type" : "section",
@@ -67,6 +67,7 @@
     "max" : 1000,
     "step" : 10,
     "units" : "px",
+    "dependency" : "favbox-show",
     "description" : "Minimum height of the favorites section",
     "tooltip" : "The minimum size allocated for the favorites section (this has an impact on the overall height of the menu)."
  },
