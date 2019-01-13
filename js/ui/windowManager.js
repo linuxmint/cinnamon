@@ -686,7 +686,7 @@ var WindowManager = class WindowManager {
     }
 
     _hasAttachedDialogs(window, ignoreWindow) {
-        var count = 0;
+        let count = 0;
         window.foreach_transient(function(win) {
             if (win != ignoreWindow && win.is_attached_dialog())
                 count++;
@@ -1122,8 +1122,8 @@ var WindowManager = class WindowManager {
     }
 
     actionFlipWorkspaceLeft() {
-        var active = global.screen.get_active_workspace();
-        var neighbor = active.get_neighbor(MotionDirection.LEFT);
+        let active = global.screen.get_active_workspace();
+        let neighbor = active.get_neighbor(MotionDirection.LEFT);
         if (active != neighbor) {
             neighbor.activate(global.get_current_time());
             let [x, y, mods] = global.get_pointer();
@@ -1132,8 +1132,8 @@ var WindowManager = class WindowManager {
     }
 
     actionFlipWorkspaceRight() {
-        var active = global.screen.get_active_workspace();
-        var neighbor = active.get_neighbor(MotionDirection.RIGHT);
+        let active = global.screen.get_active_workspace();
+        let neighbor = active.get_neighbor(MotionDirection.RIGHT);
         if (active != neighbor) {
             neighbor.activate(global.get_current_time());
             let [x, y, mods] = global.get_pointer();
