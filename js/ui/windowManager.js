@@ -609,9 +609,9 @@ var WindowManager = class WindowManager {
         }
     }
 
-    _startWindowEffect(cinnamonwm, name, actor, args, overwriteKey){
+    _startWindowEffect(cinnamonwm, name, actor, args, overwriteKey) {
         let effect = this.effects[name];
-        if(!this._shouldAnimate(actor)){
+        if (!this._shouldAnimate(actor)) {
             cinnamonwm[effect.wmCompleteName](actor);
             return;
         }
@@ -619,8 +619,8 @@ var WindowManager = class WindowManager {
         let key = "desktop-effects-" + (overwriteKey || effect.name);
         let type = this.settingsState[`${key}-effect`];
 
-        //make sure to end a running effect
-        if(actor.current_effect_name){
+        // make sure to end a running effect
+        if (actor.current_effect_name) {
             this._endWindowEffect(cinnamonwm, actor.current_effect_name, actor);
         }
         this[effect.arrayName].push(actor);
@@ -628,20 +628,20 @@ var WindowManager = class WindowManager {
         actor.orig_opacity = actor.opacity;
         actor.show();
 
-        if(effect[type]){
+        if (effect[type]) {
             let time = this.settingsState[`${key}-time`] / 1000;
             let transition = this.settingsState[`${key}-transition`];
 
             effect[type](cinnamonwm, actor, time, transition, args);
-        } else if(!overwriteKey) //when not unminimizing, but the effect was not found, end it
+        } else if (!overwriteKey) // when not unminimizing, but the effect was not found, end it
             this._endWindowEffect(cinnamonwm, name, actor);
     }
 
-    _endWindowEffect(cinnamonwm, name, actor){
+    _endWindowEffect(cinnamonwm, name, actor) {
         let effect = this.effects[name];
-        //effect will be an instance of Effect
+        // effect will be an instance of Effect
         let idx = this[effect.arrayName].indexOf(actor);
-        if(idx !== -1){
+        if (idx !== -1) {
             this[effect.arrayName].splice(idx, 1);
             removeTweens(actor);
             delete actor.current_effect_name;
@@ -652,7 +652,7 @@ var WindowManager = class WindowManager {
     }
 
     _killWindowEffects(cinnamonwm, actor) {
-        for(let i in this.effects){
+        for (let i in this.effects) {
             this._endWindowEffect(cinnamonwm, i, actor);
         }
     }
