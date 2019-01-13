@@ -454,14 +454,16 @@ var WindowManager = class WindowManager {
         this._mapping = [];
         this._destroying = [];
 
+        const _endWindowEffect = (c, n, a) => this._endWindowEffect(c, n, a);
+
         this.effects = {
-            map: new Map(this),
-            close: new Close(this),
-            minimize: new Minimize(this),
-            unminimize: new Unminimize(this),
-            tile: new Tile(this),
-            maximize: new Maximize(this),
-            unmaximize: new Unmaximize(this)
+            map: new Map(_endWindowEffect),
+            close: new Close(_endWindowEffect),
+            minimize: new Minimize(_endWindowEffect),
+            unminimize: new Unminimize(_endWindowEffect),
+            tile: new Tile(_endWindowEffect),
+            maximize: new Maximize(_endWindowEffect),
+            unmaximize: new Unmaximize(_endWindowEffect)
         };
 
         this.settings = new Settings({schema_id: 'org.cinnamon.muffin'});

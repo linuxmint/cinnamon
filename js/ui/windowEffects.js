@@ -6,9 +6,8 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 
 class Effect {
-    constructor(wm) {
-        //wm is the instance of windowManger.js
-        this.wm = wm;
+    constructor(endWindowEffect) {
+        this.endWindowEffect = endWindowEffect;
     }
 
     _end(actor) {
@@ -19,14 +18,12 @@ class Effect {
 
     _fadeWindow(cinnamonwm, actor, opacity, time, transition) {
         Tweener.addTween(actor, {
-            opacity: opacity,
-            time: time,
+            opacity,
+            time,
             min: 0,
             max: 255,
-            transition: transition,
-            onComplete: this.wm._endWindowEffect,
-            onCompleteScope: this.wm,
-            onCompleteParams: [cinnamonwm, this.name, actor]
+            transition,
+            onComplete: () => this.endWindowEffect(cinnamonwm, this.name, actor),
         });
     }
 
@@ -35,26 +32,22 @@ class Effect {
             actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);
 
         Tweener.addTween(actor, {
-            scale_x: scale_x,
-            scale_y: scale_y,
-            time: time,
+            scale_x,
+            scale_y,
+            time,
             min: 0,
-            transition: transition,
-            onComplete: this.wm._endWindowEffect,
-            onCompleteScope: this.wm,
-            onCompleteParams: [cinnamonwm, this.name, actor]
+            transition,
+            onComplete: () => this.endWindowEffect(cinnamonwm, this.name, actor),
         });
     }
 
     _moveWindow(cinnamonwm, actor, x, y, time, transition) {
         Tweener.addTween(actor, {
-            x: x,
-            y: y,
-            time: time,
-            transition: transition,
-            onComplete: this.wm._endWindowEffect,
-            onCompleteScope: this.wm,
-            onCompleteParams: [cinnamonwm, this.name, actor]
+            x,
+            y,
+            time,
+            transition,
+            onComplete: () => this.endWindowEffect(cinnamonwm, this.name, actor),
         });
     }
 };
