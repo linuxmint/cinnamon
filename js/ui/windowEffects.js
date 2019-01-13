@@ -1,9 +1,7 @@
-const Clutter = imports.gi.Clutter;
-const Meta = imports.gi.Meta;
-
-const AppletManager = imports.ui.appletManager;
-const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
+const {Gravity} = imports.gi.Clutter;
+const {Rectangle, WindowType} = imports.gi.Meta;
+const {layoutManager} = imports.ui.main;
+const {addTween, removeTweens} = imports.ui.tweener;
 
 class Effect {
     constructor(endWindowEffect) {
@@ -13,11 +11,11 @@ class Effect {
     _end(actor) {
         actor.set_scale(1, 1);
         actor.opacity = actor.orig_opacity || 255;
-        actor.move_anchor_point_from_gravity(Clutter.Gravity.NORTH_WEST);
+        actor.move_anchor_point_from_gravity(Gravity.NORTH_WEST);
     }
 
     _fadeWindow(cinnamonwm, actor, opacity, time, transition) {
-        Tweener.addTween(actor, {
+        addTween(actor, {
             opacity,
             time,
             min: 0,
@@ -29,9 +27,9 @@ class Effect {
 
     _scaleWindow(cinnamonwm, actor, scale_x, scale_y, time, transition, keepAnchorPoint) {
         if (!keepAnchorPoint)
-            actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);
+            actor.move_anchor_point_from_gravity(Gravity.CENTER);
 
-        Tweener.addTween(actor, {
+        addTween(actor, {
             scale_x,
             scale_y,
             time,
@@ -42,7 +40,7 @@ class Effect {
     }
 
     _moveWindow(cinnamonwm, actor, x, y, time, transition) {
-        Tweener.addTween(actor, {
+        addTween(actor, {
             x,
             y,
             time,
@@ -96,7 +94,7 @@ var Map = class Map extends Effect {
     }
 
     flyUp(cinnamonwm, actor, time, transition) {
-        //FIXME: somehow we need this line to get the correct position, without it will return [0, 0]
+        // FIXME: somehow we need this line to get the correct position, without it will return [0, 0]
         actor.get_allocation_box().get_size();
         let [xDest, yDest] = actor.get_transformed_position();
         let ySrc = global.stage.get_height();
@@ -104,14 +102,14 @@ var Map = class Map extends Effect {
         actor.set_position(xDest, ySrc);
 
         let dist = Math.abs(ySrc - yDest);
-        time *= dist / Main.layoutManager.primaryMonitor.height * 2; // The transition time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
+        time *= dist / layoutManager.primaryMonitor.height * 2; // The transition time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
 
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
 
     }
 
     flyDown(cinnamonwm, actor, time, transition) {
-        //FIXME - see also flyUp
+        // FIXME - see also flyUp
         actor.get_allocation_box().get_size();
         let [xDest, yDest] = actor.get_transformed_position();
         let ySrc = -actor.get_allocation_box().get_height();
@@ -119,16 +117,16 @@ var Map = class Map extends Effect {
         actor.set_position(xDest, ySrc);
 
         let dist = Math.abs(ySrc - yDest);
-        time *= dist / Main.layoutManager.primaryMonitor.height * 2; // The time time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
+        time *= dist / layoutManager.primaryMonitor.height * 2; // The time time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
 
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
     traditional(cinnamonwm, actor, time, transition) {
         switch (actor.meta_window.window_type) {
-            case Meta.WindowType.NORMAL:
-            case Meta.WindowType.MODAL_DIALOG:
-            case Meta.WindowType.DIALOG:
+            case WindowType.NORMAL:
+            case WindowType.MODAL_DIALOG:
+            case WindowType.DIALOG:
                 actor.set_pivot_point(0, 0);
                 actor.scale_x = 0.94;
                 actor.scale_y = 0.94;
@@ -136,9 +134,9 @@ var Map = class Map extends Effect {
                 this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
                 this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
                 break;
-            case Meta.WindowType.MENU:
-            case Meta.WindowType.DROPDOWN_MENU:
-            case Meta.WindowType.POPUP_MENU:
+            case WindowType.MENU:
+            case WindowType.DROPDOWN_MENU:
+            case WindowType.POPUP_MENU:
                 let [width, height] = actor.get_allocation_box().get_size();
                 let [destX, destY] = actor.get_transformed_position();
                 let [pointerX, pointerY] = global.get_pointer();
@@ -172,7 +170,7 @@ var Close = class Close extends Effect {
 
     _end(actor) {
         let parent = actor.get_meta_window().get_transient_for();
-        if(parent && actor._parentDestroyId) {
+        if (parent && actor._parentDestroyId) {
             parent.disconnect(actor._parentDestroyId);
             actor._parentDestroyId = 0;
         }
@@ -183,7 +181,7 @@ var Close = class Close extends Effect {
     }
 
     fade(cinnamonwm, actor, time, transition) {
-        Tweener.removeTweens(actor);
+        removeTweens(actor);
         this._fadeWindow(cinnamonwm, actor, 0, time, transition);
     }
 
@@ -204,7 +202,7 @@ var Close = class Close extends Effect {
         let yDest = -actor.get_allocation_box().get_height();
 
         let dist = Math.abs(actor.get_transformed_position()[1] - yDest);
-        time *= dist / Main.layoutManager.primaryMonitor.height * 2; // The time time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
+        time *= dist / layoutManager.primaryMonitor.height * 2; // The time time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
 
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
@@ -214,16 +212,16 @@ var Close = class Close extends Effect {
         let yDest = global.stage.get_height();
 
         let dist = Math.abs(actor.get_transformed_position()[1] - yDest);
-        time *= dist / Main.layoutManager.primaryMonitor.height * 2; // The transition time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
+        time *= dist / layoutManager.primaryMonitor.height * 2; // The transition time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
 
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
     traditional(cinnamonwm, actor, time, transition) {
         switch (actor.meta_window.window_type) {
-            case Meta.WindowType.NORMAL:
-            case Meta.WindowType.MODAL_DIALOG:
-            case Meta.WindowType.DIALOG:
+            case WindowType.NORMAL:
+            case WindowType.MODAL_DIALOG:
+            case WindowType.DIALOG:
                 actor.set_pivot_point(0, 0);
                 this._scaleWindow(cinnamonwm, actor, 0.88, 0.88, time, transition);
                 this._fadeWindow(cinnamonwm, actor, 0, time, transition);
@@ -248,7 +246,7 @@ var Minimize = class Minimize extends Close {
 
     traditional(cinnamonwm, actor, time, transition) {
         let success;
-        let geom = new Meta.Rectangle();
+        let geom = new Rectangle();
         success = actor.meta_window.get_icon_geometry(geom);
         if (success) {
             actor.set_scale(1, 1);
@@ -268,7 +266,7 @@ var Minimize = class Minimize extends Close {
 }
 
 // unminimizing is a 'map' effect but should use 'minimize' setting values
-class Unminimize extends Effect {
+var Unminimize = class Unminimize extends Effect {
     constructor() {
         super(...arguments);
 
@@ -281,7 +279,7 @@ class Unminimize extends Effect {
 
     traditional(cinnamonwm, actor, time, transition) {
         let success;
-        let geom = new Meta.Rectangle();
+        let geom = new Rectangle();
         success = actor.meta_window.get_icon_geometry(geom);
         if (success) {
             actor.set_scale(0.1, 0.1);
@@ -310,10 +308,9 @@ var Tile = class Tile extends Effect {
 
     scale(cinnamonwm, actor, time, transition, args) {
         let [targetX, targetY, targetWidth, targetHeight] = args;
-        if(targetWidth == actor.width)
-            targetWidth -= 1;
-        if(targetHeight == actor.height)
-            targetHeight -= 1;
+
+        if (targetWidth === actor.width) targetWidth -= 1;
+        if (targetHeight === actor.height) targetHeight -= 1;
 
         let scale_x = targetWidth / actor.width;
         let scale_y = targetHeight / actor.height;
