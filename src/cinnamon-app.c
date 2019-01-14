@@ -38,6 +38,10 @@ typedef struct {
 
   /* Whether or not we need to resort the windows; this is done on demand */
   guint window_sort_stale : 1;
+
+  /* DBus property notification subscription */
+  guint properties_changed_id : 1;
+
   /* See GApplication documentation */
   GDBusMenuModel   *remote_menu;
   GActionMuxer     *muxer;
@@ -1111,6 +1115,84 @@ cinnamon_app_on_ws_switch (MetaScreen         *screen,
   g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
 }
 
+static void
+application_properties_changed (GDBusConnection *connection,
+                                const gchar     *sender_name,
+                                const gchar     *object_path,
+                                const gchar     *interface_name,
+                                const gchar     *signal_name,
+                                GVariant        *parameters,
+                                gpointer         user_data)
+{
+  CinnamonApp *app = user_data;
+  GVariant *changed_properties;
+  GVariantIter iter;
+  gboolean busy = FALSE;
+  const gchar *key, *interface_name_for_signal;
+  GVariant *value;
+
+  g_variant_get (parameters,
+                 "(&s@a{sv}as)",
+                 &interface_name_for_signal,
+                 &changed_properties,
+                 NULL);
+
+  if (g_strcmp0 (interface_name_for_signal, "org.gtk.Application") != 0)
+    return;
+
+  g_variant_iter_init (&iter, changed_properties);
+  while (g_variant_iter_next (&iter, "{&sv}", &key, &value))
+    {
+      if (g_strcmp0 (key, "Busy") != 0)
+        {
+          g_variant_unref (value);
+          continue;
+        }
+
+      busy = g_variant_get_boolean (value);
+      g_variant_unref (value);
+      break;
+    }
+
+  if (busy)
+    cinnamon_app_state_transition (app, CINNAMON_APP_STATE_BUSY);
+  else
+    cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
+
+  if (changed_properties != NULL)
+    g_variant_unref (changed_properties);
+}
+
+static void
+cinnamon_app_ensure_busy_watch (CinnamonApp *app)
+{
+  CinnamonAppRunningState *running_state = app->running_state;
+  MetaWindow *window;
+  const gchar *object_path;
+
+  if (running_state->properties_changed_id != 0)
+    return;
+
+  if (running_state->unique_bus_name == NULL)
+    return;
+
+  window = g_slist_nth_data (running_state->windows, 0);
+  object_path = meta_window_get_gtk_application_object_path (window);
+
+  if (object_path == NULL)
+    return;
+
+  running_state->properties_changed_id =
+    g_dbus_connection_signal_subscribe (running_state->session,
+                                        running_state->unique_bus_name,
+                                        "org.freedesktop.DBus.Properties",
+                                        "PropertiesChanged",
+                                        object_path,
+                                        "org.gtk.Application",
+                                        G_DBUS_SIGNAL_FLAGS_NONE,
+                                        application_properties_changed, app, NULL);
+}
+
 void
 _cinnamon_app_add_window (CinnamonApp        *app,
                        MetaWindow      *window)
@@ -1129,6 +1211,7 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   g_signal_connect (window, "notify::user-time", G_CALLBACK(cinnamon_app_on_user_time_changed), app);
 
   cinnamon_app_update_app_menu (app, window);
+  cinnamon_app_ensure_busy_watch (app);
 
   if (app->state != CINNAMON_APP_STATE_STARTING)
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
@@ -1379,7 +1462,7 @@ create_running_state (CinnamonApp *app)
   app->running_state->muxer = g_action_muxer_new ();
 }
 
-static void
+void
 cinnamon_app_update_app_menu (CinnamonApp   *app,
                            MetaWindow *window)
 {
@@ -1433,6 +1516,9 @@ unref_running_state (CinnamonAppRunningState *state)
 
   screen = cinnamon_global_get_screen (cinnamon_global_get ());
   g_signal_handler_disconnect (screen, state->workspace_switch_id);
+
+  if (state->properties_changed_id != 0)
+    g_dbus_connection_signal_unsubscribe (state->session, state->properties_changed_id);
 
   g_clear_object (&state->remote_menu);
   g_clear_object (&state->muxer);
