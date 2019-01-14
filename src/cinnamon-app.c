@@ -964,8 +964,6 @@ int
 cinnamon_app_compare (CinnamonApp *app,
                    CinnamonApp *other)
 {
-  gboolean vis_app, vis_other;
-
   if (app->state != other->state)
     {
       if (app->state == CINNAMON_APP_STATE_RUNNING)
