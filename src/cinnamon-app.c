@@ -17,6 +17,12 @@
 #include "st.h"
 #include "gtkactionmuxer.h"
 
+#ifdef HAVE_SYSTEMD
+#include <systemd/sd-journal.h>
+#include <errno.h>
+#include <unistd.h>
+#endif
+
 typedef enum {
   MATCH_NONE,
   MATCH_SUBSTRING, /* Not prefix, substring */
@@ -1300,6 +1306,29 @@ _gather_pid_callback (GDesktopAppInfo   *gapp,
                                                app);
 }
 
+#ifdef HAVE_SYSTEMD
+/* This sets up the launched application to log to the journal
+ * using its own identifier, instead of just "cinnamon-session".
+ */
+static void
+app_child_setup (gpointer user_data)
+{
+  const char *appid = user_data;
+  int res;
+  int journalfd = sd_journal_stream_fd (appid, LOG_INFO, FALSE);
+  if (journalfd >= 0)
+    {
+      do
+        res = dup2 (journalfd, 1);
+      while (G_UNLIKELY (res == -1 && errno == EINTR));
+      do
+        res = dup2 (journalfd, 2);
+      while (G_UNLIKELY (res == -1 && errno == EINTR));
+      (void) close (journalfd);
+    }
+}
+#endif
+
 /**
  * cinnamon_app_launch:
  * @timestamp: Event timestamp, or 0 for current event timestamp
@@ -1342,7 +1371,11 @@ cinnamon_app_launch (CinnamonApp     *app,
   ret = g_desktop_app_info_launch_uris_as_manager (app->info, NULL,
                                                    G_APP_LAUNCH_CONTEXT (context),
                                                    G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
+#ifdef HAVE_SYSTEMD
+                                                   app_child_setup, (gpointer)shell_app_get_id (app),
+#else
                                                    NULL, NULL,
+#endif
                                                    _gather_pid_callback, app,
                                                    error);
   g_object_unref (context);
