@@ -446,7 +446,9 @@ cinnamon_app_get_faded_icon (CinnamonApp *app, int size)
   context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
   g_object_get (context, "scale-factor", &scale, NULL);
 
-  cache_key = g_strdup_printf ("faded-icon:%s,size=%d,scale=%d", cinnamon_app_get_id (app), size, scale);
+  /* Use icon: prefix so that we get evicted from the cache on
+   * icon theme changes. */
+  cache_key = g_strdup_printf ("icon:%s,size=%d,faded", cinnamon_app_get_id (app), size);
   data.app = app;
   data.size = size;
   data.scale = scale;

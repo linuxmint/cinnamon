@@ -1389,7 +1389,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       break;
     case ST_ICON_FADED:
       themed = g_themed_icon_new (name);
-      cache_key = g_strdup_printf ("faded-icon:%s,size=%d,scale=%f", name, size, cache->priv->scale);
+      cache_key = g_strdup_printf ("icon:%s,size=%d,scale=%f,faded", name, size, cache->priv->scale);
       data.name = g_strdup (name);
       data.size = size;
       data.scale = cache->priv->scale;
