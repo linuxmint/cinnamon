@@ -477,8 +477,10 @@ update_focus_app (CinnamonWindowTracker *self)
   new_focus_win = meta_display_get_focus_window (cinnamon_global_get_display (cinnamon_global_get ()));
   new_focus_app = new_focus_win ? cinnamon_window_tracker_get_window_app (self, new_focus_win) : NULL;
 
-  if (new_focus_app)
+  if (new_focus_app) {
     cinnamon_app_update_window_actions (new_focus_app, new_focus_win);
+    cinnamon_app_update_app_menu (new_focus_app, new_focus_win);
+  }
 
   set_focus_app (self, new_focus_app);
   g_clear_object (&new_focus_app);
