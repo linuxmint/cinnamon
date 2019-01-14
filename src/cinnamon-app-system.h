@@ -5,8 +5,6 @@
 #include <gio/gio.h>
 #include <clutter/clutter.h>
 #include <meta/window.h>
-#define GMENU_I_KNOW_THIS_IS_UNSTABLE
-#include <gmenu-tree.h>
 
 #include "cinnamon-app.h"
 

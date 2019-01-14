@@ -4,9 +4,8 @@
 
 #include <clutter/clutter.h>
 #include <gio/gio.h>
+#include <gio/gdesktopappinfo.h>
 #include <meta/window.h>
-#define GMENU_I_KNOW_THIS_IS_UNSTABLE
-#include <gmenu-tree.h>
 
 G_BEGIN_DECLS
 
