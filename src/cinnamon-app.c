@@ -41,7 +41,8 @@ typedef struct {
   /* See GApplication documentation */
   GDBusMenuModel   *remote_menu;
   GActionMuxer     *muxer;
-  char * unique_bus_name;
+  char             * unique_bus_name;
+  GDBusConnection  *session;
 } CinnamonAppRunningState;
 
 /**
@@ -703,7 +704,7 @@ cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window)
       actions = g_object_get_data (G_OBJECT (window), "actions");
       if (actions == NULL)
         {
-          actions = G_ACTION_GROUP (g_dbus_action_group_get (g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL),
+          actions = G_ACTION_GROUP (g_dbus_action_group_get (app->running_state->session,
                                                              meta_window_get_gtk_unique_bus_name (window),
                                                              object_path));
           g_object_set_data_full (G_OBJECT (window), "actions", actions, g_object_unref);
@@ -1372,6 +1373,9 @@ create_running_state (CinnamonApp *app)
   app->running_state->refcount = 1;
   app->running_state->workspace_switch_id =
     g_signal_connect (screen, "workspace-switched", G_CALLBACK(cinnamon_app_on_ws_switch), app);
+
+  app->running_state->session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
+  g_assert (app->running_state->session != NULL);
   app->running_state->muxer = g_action_muxer_new ();
 }
 
@@ -1398,7 +1402,6 @@ cinnamon_app_update_app_menu (CinnamonApp   *app,
     {
       const gchar *application_object_path;
       const gchar *app_menu_object_path;
-      GDBusConnection *session;
       GDBusActionGroup *actions;
 
       application_object_path = meta_window_get_gtk_application_object_path (window);
@@ -1407,16 +1410,13 @@ cinnamon_app_update_app_menu (CinnamonApp   *app,
       if (application_object_path == NULL || app_menu_object_path == NULL || unique_bus_name == NULL)
         return;
 
-      session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
-      g_assert (session != NULL);
       g_clear_pointer (&app->running_state->unique_bus_name, g_free);
       app->running_state->unique_bus_name = g_strdup (unique_bus_name);
       g_clear_object (&app->running_state->remote_menu);
-      app->running_state->remote_menu = g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path);
-      actions = g_dbus_action_group_get (session, unique_bus_name, application_object_path);
+      app->running_state->remote_menu = g_dbus_menu_model_get (app->running_state->session, unique_bus_name, app_menu_object_path);
+      actions = g_dbus_action_group_get (app->running_state->session, unique_bus_name, application_object_path);
       g_action_muxer_insert (app->running_state->muxer, "app", G_ACTION_GROUP (actions));
       g_object_unref (actions);
-      g_object_unref (session);
     }
 }
 
@@ -1436,6 +1436,7 @@ unref_running_state (CinnamonAppRunningState *state)
 
   g_clear_object (&state->remote_menu);
   g_clear_object (&state->muxer);
+  g_clear_object (&state->session);
   g_clear_pointer (&state->unique_bus_name, g_free);
   g_clear_pointer (&state->remote_menu, g_free);
 
