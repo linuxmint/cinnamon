@@ -906,25 +906,6 @@ cinnamon_app_get_n_windows (CinnamonApp *app)
   return g_slist_length (app->running_state->windows);
 }
 
-static gboolean
-cinnamon_app_has_visible_windows (CinnamonApp   *app)
-{
-  GSList *iter;
-
-  if (app->running_state == NULL)
-    return FALSE;
-
-  for (iter = app->running_state->windows; iter; iter = iter->next)
-    {
-      MetaWindow *window = iter->data;
-
-      if (meta_window_showing_on_its_workspace (window))
-        return TRUE;
-    }
-
-  return FALSE;
-}
-
 gboolean
 cinnamon_app_is_on_workspace (CinnamonApp *app,
                            MetaWorkspace   *workspace)
