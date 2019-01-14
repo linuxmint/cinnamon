@@ -38,10 +38,11 @@ typedef struct {
   /* Whether or not we need to resort the windows; this is done on demand */
   guint window_sort_stale : 1;
   /* See GApplication documentation */
-  guint             name_watcher_id;
+  gint             name_watcher_id;
   gchar            *dbus_name;
+  GDBusProxy       *app_proxy;
   GDBusActionGroup *remote_actions;
-  GMenuProxy       *remote_menu;
+  GMenuModel       *remote_menu;
   GCancellable     *dbus_cancellable;
 } CinnamonAppRunningState;
 
@@ -81,7 +82,7 @@ struct _CinnamonApp
 
 enum {
   PROP_0,
-  PROP_STATE
+  PROP_STATE,
   PROP_ID,
   PROP_DBUS_ID,
   PROP_ACTION_GROUP,
@@ -1182,7 +1183,7 @@ on_action_group_acquired (GObject      *object,
   CinnamonApp *self = CINNAMON_APP (user_data);
   CinnamonAppRunningState *state = self->running_state;
   GError *error = NULL;
-  char *object_path;
+  GVariant *menu_property;
 
   state->remote_actions = g_dbus_action_group_new_finish (result,
                                                           &error);
@@ -1193,6 +1194,64 @@ on_action_group_acquired (GObject      *object,
           !g_error_matches (error, G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_METHOD))
         {
           g_warning ("Unexpected error while reading application actions: %s", error->message);
+        }
+
+      g_clear_error (&error);
+      g_clear_object (&state->dbus_cancellable);
+      g_clear_object (&state->app_proxy);
+
+      if (state->name_watcher_id)
+        {
+          g_bus_unwatch_name (state->name_watcher_id);
+          state->name_watcher_id = 0;
+        }
+
+      g_free (state->dbus_name);
+      state->dbus_name = NULL;
+
+      g_object_unref (self);
+      return;
+    }
+
+  g_object_notify (G_OBJECT (self), "action-group");
+
+  /* third step: the application menu */
+  menu_property = g_dbus_proxy_get_cached_property (state->app_proxy, "AppMenu");
+
+  if (menu_property && g_variant_n_children (menu_property) > 0)
+    {
+      const gchar *object_path;
+
+      g_variant_get_child (menu_property, 0, "&o", &object_path);
+
+      state->remote_menu = G_MENU_MODEL (g_dbus_menu_model_get (g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL),
+                                                                state->dbus_name,
+                                                                object_path));
+
+      g_object_notify (G_OBJECT (self), "menu");
+    }
+
+  g_object_unref (self);
+}
+
+static void
+on_dbus_proxy_gotten (GObject      *initable,
+                      GAsyncResult *result,
+                      gpointer      user_data)
+{
+  CinnamonApp *self = CINNAMON_APP (user_data);
+  CinnamonAppRunningState *state = self->running_state;
+  GError *error = NULL;
+
+  state->app_proxy = g_dbus_proxy_new_finish (result,
+                                              &error);
+
+  if (error)
+    {
+      if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED) &&
+          !g_error_matches (error, G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_METHOD))
+        {
+          g_warning ("Unexpected error while creating application proxy: %s", error->message);
         }
 
       g_clear_error (&error);
@@ -1211,19 +1270,15 @@ on_action_group_acquired (GObject      *object,
       return;
     }
 
-  object_path = g_strconcat ("/", state->dbus_name, NULL);
-  g_strdelimit (object_path, ".", '/');
+  /* on to the second step, the primary action group */
 
-  state->remote_menu = g_menu_proxy_get (g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL),
-                                         state->dbus_name,
-                                         object_path);
-
-  g_object_notify (G_OBJECT (self), "dbus-id");
-  g_object_notify (G_OBJECT (self), "action-group");
-  g_object_notify (G_OBJECT (self), "menu");
-
-  g_object_unref (self);
-  g_free (object_path);
+  g_dbus_action_group_new (g_dbus_proxy_get_connection (state->app_proxy),
+                           g_dbus_proxy_get_name (state->app_proxy),
+                           g_dbus_proxy_get_object_path (state->app_proxy),
+                           G_DBUS_ACTION_GROUP_FLAGS_NONE,
+                           state->dbus_cancellable,
+                           on_action_group_acquired,
+                           self);
 }
 
 static void
@@ -1244,13 +1299,19 @@ on_dbus_name_appeared (GDBusConnection *bus,
   if (!state->dbus_cancellable)
     state->dbus_cancellable = g_cancellable_new ();
 
-  g_dbus_action_group_new (bus,
-                           name,
-                           object_path,
-                           G_DBUS_ACTION_GROUP_FLAGS_NONE,
-                           state->dbus_cancellable,
-                           on_action_group_acquired,
-                           g_object_ref (self));
+ /* first step: the application proxy */
+
+  g_dbus_proxy_new (bus,
+                    G_DBUS_PROXY_FLAGS_NONE,
+                    NULL, /* interface info */
+                    name_owner,
+                    object_path,
+                    "org.gtk.Application",
+                    state->dbus_cancellable,
+                    on_dbus_proxy_gotten,
+                    g_object_ref (self));
+
+  g_object_notify (G_OBJECT (self), "dbus-id");
 
   g_free (object_path);
 }
@@ -1271,6 +1332,7 @@ on_dbus_name_disappeared (GDBusConnection *bus,
       g_clear_object (&state->dbus_cancellable);
     }
 
+  g_clear_object (&state->app_proxy);
   g_clear_object (&state->remote_actions);
   g_clear_object (&state->remote_menu);
 
@@ -1518,6 +1580,7 @@ unref_running_state (CinnamonAppRunningState *state)
       g_object_unref (state->dbus_cancellable);
     }
 
+  g_clear_object (&state->app_proxy);
   g_clear_object (&state->remote_actions);
   g_clear_object (&state->remote_menu);
   g_free (state->dbus_name);
@@ -1810,7 +1873,7 @@ cinnamon_app_class_init(CinnamonAppClass *klass)
                                    g_param_spec_object ("menu",
                                                         "Application Menu",
                                                         "The primary menu exported by the remote application",
-                                                        G_TYPE_MENU_PROXY,
+                                                        G_TYPE_MENU_MODEL,
                                                         G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
 }
