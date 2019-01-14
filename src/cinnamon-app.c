@@ -81,12 +81,7 @@ struct _CinnamonApp
   CinnamonAppRunningState *running_state;
 
   char *window_id_string;
-
-  char *casefolded_name;
-  char *casefolded_generic_name;
   char *name_collation_key;
-  char *casefolded_exec;
-  char **casefolded_keywords;
   char *keywords;
 };
 
@@ -1499,49 +1494,6 @@ trim_exec_line (const char *str)
   return g_strndup (start, end - start);
 }
 
-static void
-cinnamon_app_init_search_data (CinnamonApp *app)
-{
-  const char *name;
-  const char *generic_name;
-  const char *exec;
-  const char * const *keywords;
-  char *normalized_exec;
-
-  name = g_app_info_get_name (G_APP_INFO (app->info));
-  app->casefolded_name = cinnamon_util_normalize_casefold_and_unaccent (name);
-
-  generic_name = g_desktop_app_info_get_generic_name (app->info);
-  if (generic_name)
-    app->casefolded_generic_name = cinnamon_util_normalize_casefold_and_unaccent (generic_name);
-  else
-    app->casefolded_generic_name = NULL;
-
-  exec = g_app_info_get_executable (G_APP_INFO (app->info));
-  normalized_exec = cinnamon_util_normalize_casefold_and_unaccent (exec);
-  app->casefolded_exec = trim_exec_line (normalized_exec);
-  g_free (normalized_exec);
-
-  keywords = g_desktop_app_info_get_keywords (app->info);
-
-  if (keywords)
-    {
-      int i;
-
-      app->casefolded_keywords = g_new0 (char*, g_strv_length ((char **)keywords) + 1);
-
-      i = 0;
-      while (keywords[i])
-        {
-          app->casefolded_keywords[i] = cinnamon_util_normalize_casefold_and_unaccent (keywords[i]);
-          ++i;
-        }
-      app->casefolded_keywords[i] = NULL;
-    }
-  else
-    app->casefolded_keywords = NULL;
-}
-
 /**
  * cinnamon_app_compare_by_name:
  * @app: One app
@@ -1557,119 +1509,6 @@ cinnamon_app_compare_by_name (CinnamonApp *app, CinnamonApp *other)
 {
   return strcmp (app->name_collation_key, other->name_collation_key);
 }
-
-static CinnamonAppSearchMatch
-_cinnamon_app_match_search_terms (CinnamonApp  *app,
-                               GSList    *terms)
-{
-  GSList *iter;
-  CinnamonAppSearchMatch match;
-
-  if (G_UNLIKELY (!app->casefolded_name))
-    cinnamon_app_init_search_data (app);
-
-  match = MATCH_NONE;
-  for (iter = terms; iter; iter = iter->next)
-    {
-      CinnamonAppSearchMatch current_match;
-      const char *term = iter->data;
-      const char *p;
-
-      current_match = MATCH_NONE;
-
-      p = strstr (app->casefolded_name, term);
-      if (p != NULL)
-        {
-          if (p == app->casefolded_name || *(p - 1) == ' ')
-            current_match = MATCH_PREFIX;
-          else
-            current_match = MATCH_SUBSTRING;
-        }
-
-      if (app->casefolded_generic_name)
-        {
-          p = strstr (app->casefolded_generic_name, term);
-          if (p != NULL)
-            {
-              if (p == app->casefolded_generic_name || *(p - 1) == ' ')
-                current_match = MATCH_PREFIX;
-              else if (current_match < MATCH_PREFIX)
-                current_match = MATCH_SUBSTRING;
-            }
-        }
-
-      if (app->casefolded_exec)
-        {
-          p = strstr (app->casefolded_exec, term);
-          if (p != NULL)
-            {
-              if (p == app->casefolded_exec || *(p - 1) == '-')
-                current_match = MATCH_PREFIX;
-              else if (current_match < MATCH_PREFIX)
-                current_match = MATCH_SUBSTRING;
-            }
-        }
-
-      if (app->casefolded_keywords)
-        {
-          int i = 0;
-          while (app->casefolded_keywords[i] && current_match < MATCH_PREFIX)
-            {
-              p = strstr (app->casefolded_keywords[i], term);
-              if (p != NULL)
-                {
-                  if (p == app->casefolded_keywords[i])
-                    current_match = MATCH_PREFIX;
-                  else
-                    current_match = MATCH_SUBSTRING;
-                }
-              ++i;
-            }
-        }
-
-      if (current_match == MATCH_NONE)
-        return current_match;
-
-      if (current_match > match)
-        match = current_match;
-    }
-  return match;
-}
-
-void
-_cinnamon_app_do_match (CinnamonApp         *app,
-                     GSList           *terms,
-                     GSList          **prefix_results,
-                     GSList          **substring_results)
-{
-  CinnamonAppSearchMatch match;
-
-  g_assert (app != NULL);
-
-  /* Skip window-backed apps */
-  if (app->info == NULL)
-    return;
-  /* Skip not-visible apps */
-  if (!g_app_info_should_show (G_APP_INFO (app->info)))
-    return;
-
-  match = _cinnamon_app_match_search_terms (app, terms);
-  switch (match)
-    {
-      case MATCH_NONE:
-        break;
-      case MATCH_PREFIX:
-        *prefix_results = g_slist_prepend (*prefix_results, app);
-        break;
-      case MATCH_SUBSTRING:
-        *substring_results = g_slist_prepend (*substring_results, app);
-        break;
-      default:
-        g_warning("cinnamon_app_do_match: default case");
-        break;
-    }
-}
-
 
 static void
 cinnamon_app_init (CinnamonApp *self)
@@ -1704,12 +1543,7 @@ cinnamon_app_finalize (GObject *object)
   CinnamonApp *app = CINNAMON_APP (object);
 
   g_free (app->window_id_string);
-
-  g_free (app->casefolded_name);
-  g_free (app->casefolded_generic_name);
   g_free (app->name_collation_key);
-  g_free (app->casefolded_exec);
-  g_strfreev (app->casefolded_keywords);
 
   G_OBJECT_CLASS(cinnamon_app_parent_class)->finalize (object);
 }

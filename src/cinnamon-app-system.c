@@ -143,26 +143,6 @@ cinnamon_app_system_finalize (GObject *object)
 }
 
 /**
- * cinnamon_app_system_lookup_setting:
- *
- * Returns: (transfer none): Application in gnomecc.menu, or %NULL if none
- * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
- * RETURNS NULL IF NOT FOUND IN STANDARD APPS
- *
- */
-CinnamonApp *
-cinnamon_app_system_lookup_setting (CinnamonAppSystem *self,
-                                 const char     *id)
-{
-  CinnamonApp *app;
-  /* Actually defer to the main app set if there's overlap */
-  app = cinnamon_app_system_lookup_app (self, id);
-  if (app != NULL)
-    return app;
-  return NULL;
-}
-
-/**
  * cinnamon_app_system_get_default:
  *
  * Return Value: (transfer none): The global #CinnamonAppSystem singleton
@@ -222,21 +202,6 @@ cinnamon_app_system_lookup_app (CinnamonAppSystem   *self,
 }
 
 /**
- * cinnamon_app_system_lookup_settings_app:
- *
- * Return value: (transfer none): The #CinnamonApp for id, or %NULL if none
- * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
- * RETURNS NULL
- *
- */
-CinnamonApp *
-cinnamon_app_system_lookup_settings_app (CinnamonAppSystem   *self,
-                             const char       *id)
-{
-  return NULL;
-}
-
-/**
  * cinnamon_app_system_lookup_heuristic_basename:
  * @system: a #CinnamonAppSystem
  * @id: Probable application identifier
@@ -255,10 +220,6 @@ cinnamon_app_system_lookup_heuristic_basename (CinnamonAppSystem *system,
   const char *const *prefix;
 
   result = cinnamon_app_system_lookup_app (system, name);
-  if (result != NULL)
-    return result;
-
-  result = cinnamon_app_system_lookup_settings_app (system, name);
   if (result != NULL)
     return result;
 
@@ -432,121 +393,4 @@ cinnamon_app_system_get_running (CinnamonAppSystem *self)
   ret = g_slist_sort (ret, (GCompareFunc)cinnamon_app_compare);
 
   return ret;
-}
-
-/**
- * normalize_terms:
- * @terms: (element-type utf8): Input search terms
- *
- * Returns: (element-type utf8) (transfer full): Unicode-normalized and lowercased terms
- */
-static GSList *
-normalize_terms (GSList *terms)
-{
-  GSList *normalized_terms = NULL;
-  GSList *iter;
-  for (iter = terms; iter; iter = iter->next)
-    {
-      const char *term = iter->data;
-      normalized_terms = g_slist_prepend (normalized_terms, cinnamon_util_normalize_casefold_and_unaccent (term));
-    }
-  return normalized_terms;
-}
-
-static GSList *
-search_tree (CinnamonAppSystem *self,
-             GSList         *terms,
-             GHashTable     *apps)
-{
-  GSList *prefix_results = NULL;
-  GSList *substring_results = NULL;
-  GSList *normalized_terms;
-  GHashTableIter iter;
-  gpointer key, value;
-
-  normalized_terms = normalize_terms (terms);
-
-  g_hash_table_iter_init (&iter, apps);
-  while (g_hash_table_iter_next (&iter, &key, &value))
-    {
-      CinnamonApp *app = value;
-
-      _cinnamon_app_do_match (app, normalized_terms,
-                           &prefix_results,
-                           &substring_results);
-    }
-  g_slist_free_full (normalized_terms, g_free);
-
-  return g_slist_concat (prefix_results, substring_results);
-}
-
-/**
- * cinnamon_app_system_initial_search:
- * @system: A #CinnamonAppSystem
- * @terms: (element-type utf8): List of terms, logical AND
- *
- * Search through applications for the given search terms.
- *
- * Returns: (transfer container) (element-type utf8): List of applications
- */
-GSList *
-cinnamon_app_system_initial_search (CinnamonAppSystem  *self,
-                                 GSList          *terms)
-{
-  return search_tree (self, terms, self->priv->id_to_app);
-}
-
-/**
- * cinnamon_app_system_subsearch:
- * @system: A #CinnamonAppSystem
- * @previous_results: (element-type utf8): List of previous results
- * @terms: (element-type utf8): List of terms, logical AND
- *
- * Search through a previous result set; for more information, see
- * js/ui/search.js. Note that returned strings are only valid until
- * a return to the main loop.
- *
- * Returns: (transfer container) (element-type utf8): List of application identifiers
- */
-GSList *
-cinnamon_app_system_subsearch (CinnamonAppSystem   *system,
-                            GSList           *previous_results,
-                            GSList           *terms)
-{
-  GSList *iter;
-  GSList *prefix_results = NULL;
-  GSList *substring_results = NULL;
-  GSList *normalized_terms = normalize_terms (terms);
-
-  for (iter = previous_results; iter; iter = iter->next)
-    {
-      CinnamonApp *app = cinnamon_app_system_lookup_app (system, iter->data);
-
-      _cinnamon_app_do_match (app, normalized_terms,
-                           &prefix_results,
-                           &substring_results);
-    }
-  g_slist_free_full (normalized_terms, g_free);
-
-  /* Note that a shorter term might have matched as a prefix, but
-     when extended only as a substring, so we have to redo the
-     sort rather than reusing the existing ordering */
-  return g_slist_concat (prefix_results, substring_results);
-}
-
-/**
- * cinnamon_app_system_search_settings:
- * @system: A #CinnamonAppSystem
- * @terms: (element-type utf8): List of terms, logical AND
- *
- * Search through settings for the given search terms.
- *
- * Returns: (transfer container) (element-type CinnamonApp): List of setting applications
- */
-GSList *
-cinnamon_app_system_search_settings (CinnamonAppSystem  *self,
-                                  GSList          *terms)
-{
-  GSList *null_list = NULL; /* if this is just a stub, let's at least do zero-init */
-  return null_list;
 }
