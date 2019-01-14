@@ -139,7 +139,7 @@ class TilePreview {
         if (this._rect && this._rect.equal(tileRect))
             return;
 
-        let changeMonitor = (this._monitorIndex == -1 ||
+        let changeMonitor = (this._monitorIndex === -1 ||
                              this._monitorIndex != monitorIndex);
 
         this._monitorIndex = monitorIndex;
@@ -469,7 +469,6 @@ var WindowManager = class WindowManager {
         this.settings = new Settings({schema_id: 'org.cinnamon.muffin'});
 
         const settingsState = {
-            'desktop-effects': global.settings.get_boolean('desktop-effects'),
             'desktop-effects-on-dialogs': global.settings.get_boolean('desktop-effects-on-dialogs'),
             'desktop-effects-on-menus': global.settings.get_boolean('desktop-effects-on-menus'),
             'show-snap-osd': global.settings.get_boolean('show-snap-osd'),
@@ -479,11 +478,11 @@ var WindowManager = class WindowManager {
             'workspace-osd-y': global.settings.get_int('workspace-osd-y'),
             'workspace-osd-duration': global.settings.get_int('workspace-osd-duration'),
             'alttab-switcher-style': global.settings.get_string('alttab-switcher-style'),
+            'desktop-effects': this.settings.get_boolean('desktop-effects'),
             'workspaces-only-on-primary': this.settings.get_boolean('workspaces-only-on-primary'),
             'snap-modifier': this.settings.get_string('snap-modifier'),
         };
 
-        global.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         global.settings.connect('changed::desktop-effects-on-dialogs', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         global.settings.connect('changed::desktop-effects-on-menus', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         global.settings.connect('changed::show-snap-osd', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
@@ -493,6 +492,7 @@ var WindowManager = class WindowManager {
         global.settings.connect('changed::workspace-osd-y', (s, k) => this.onSettingsChanged(s, k, 'get_int'));
         global.settings.connect('changed::workspace-osd-duration', (s, k) => this.onSettingsChanged(s, k, 'get_int'));
         global.settings.connect('changed::alttab-switcher-style', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+        this.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         this.settings.connect('changed::workspaces-only-on-primary', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         this.settings.connect('changed::snap-modifier', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
 
@@ -765,7 +765,7 @@ var WindowManager = class WindowManager {
 
         if (meta_window._cinnamonwm_has_origin && meta_window._cinnamonwm_has_origin === true) {
             soundManager.play('minimize');
-            tryFn(() => this._startWindowEffect(cinnamonwm, 'unminimize', actor, null, 'minimize'));
+            this._startWindowEffect(cinnamonwm, 'unminimize', actor, null, 'minimize');
             return;
         } else if (meta_window.window_type === WindowType.NORMAL) {
             soundManager.play('map');
@@ -828,22 +828,22 @@ var WindowManager = class WindowManager {
         let grabOp = display.get_grab_op();
 
 
-        if (direction == MotionDirection.UP ||
-            direction == MotionDirection.UP_LEFT ||
-            direction == MotionDirection.UP_RIGHT)
+        if (direction === MotionDirection.UP ||
+            direction === MotionDirection.UP_LEFT ||
+            direction === MotionDirection.UP_RIGHT)
             yDest = screen_height;
-        else if (direction == MotionDirection.DOWN ||
-            direction == MotionDirection.DOWN_LEFT ||
-            direction == MotionDirection.DOWN_RIGHT)
+        else if (direction === MotionDirection.DOWN ||
+            direction === MotionDirection.DOWN_LEFT ||
+            direction === MotionDirection.DOWN_RIGHT)
             yDest = -screen_height;
 
-        if (direction == MotionDirection.LEFT ||
-            direction == MotionDirection.UP_LEFT ||
-            direction == MotionDirection.DOWN_LEFT)
+        if (direction === MotionDirection.LEFT ||
+            direction === MotionDirection.UP_LEFT ||
+            direction === MotionDirection.DOWN_LEFT)
             xDest = screen_width;
-        else if (direction == MotionDirection.RIGHT ||
-                 direction == MotionDirection.UP_RIGHT ||
-                 direction == MotionDirection.DOWN_RIGHT)
+        else if (direction === MotionDirection.RIGHT ||
+                 direction === MotionDirection.UP_RIGHT ||
+                 direction === MotionDirection.DOWN_RIGHT)
             xDest = -screen_width;
 
         for (let i = 0; i < windows.length; i++) {
@@ -1007,13 +1007,13 @@ var WindowManager = class WindowManager {
                 this._snapOsd = new InfoOSD();
 
                 let mod = this.settingsState['snap-modifier'];
-                if (mod == "Super")
+                if (mod === 'Super')
                     this._snapOsd.addText(_("Hold <Super> to enter snap mode"));
-                else if (mod == "Alt")
+                else if (mod === 'Alt')
                     this._snapOsd.addText(_("Hold <Alt> to enter snap mode"));
-                else if (mod == "Control")
+                else if (mod === 'Control')
                     this._snapOsd.addText(_("Hold <Ctrl> to enter snap mode"));
-                else if (mod == "Shift")
+                else if (mod === 'Shift')
                     this._snapOsd.addText(_("Hold <Shift> to enter snap mode"));
                 this._snapOsd.addText(_("Use the arrow or numeric keys to switch workspaces while dragging"));
             }
@@ -1087,7 +1087,7 @@ var WindowManager = class WindowManager {
             return;
         }
 
-        if (screen.n_workspaces == 1)
+        if (screen.n_workspaces === 1)
             return;
 
         if (bindingName === 'switch-to-workspace-left') {

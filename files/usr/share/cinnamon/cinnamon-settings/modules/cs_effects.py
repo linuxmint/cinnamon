@@ -117,7 +117,7 @@ class Module:
 
             settings = page.add_section(_("Enable Effects"))
 
-            widget = GSettingsSwitch(_("Window effects"), "org.cinnamon", "desktop-effects")
+            widget = GSettingsSwitch(_("Window effects"), "org.cinnamon.muffin", "desktop-effects")
             settings.add_row(widget)
 
             widget = GSettingsSwitch(_("Effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs")
