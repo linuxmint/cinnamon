@@ -39,13 +39,8 @@ typedef struct {
   /* Whether or not we need to resort the windows; this is done on demand */
   guint window_sort_stale : 1;
   /* See GApplication documentation */
-  gint             name_watcher_id;
-  gchar            *dbus_name;
-  GDBusProxy       *app_proxy;
-  GActionGroup     *remote_actions;
-  GMenuModel       *remote_menu;
+  GDBusMenuModel   *remote_menu;
   GActionMuxer     *muxer;
-  GCancellable     *dbus_cancellable;
 } CinnamonAppRunningState;
 
 /**
@@ -99,14 +94,8 @@ enum {
 static guint cinnamon_app_signals[LAST_SIGNAL] = { 0 };
 
 static void create_running_state (CinnamonApp *app);
+static void setup_running_state (CinnamonApp *app, MetaWindow *window);
 static void unref_running_state (CinnamonAppRunningState *state);
-static void on_dbus_name_appeared (GDBusConnection *bus,
-                                   const gchar     *name,
-                                   const gchar     *name_owner,
-                                   gpointer         user_data);
-static void on_dbus_name_disappeared (GDBusConnection *bus,
-                                      const gchar     *name,
-                                      gpointer         user_data);
 
 G_DEFINE_TYPE (CinnamonApp, cinnamon_app, G_TYPE_OBJECT)
 
@@ -125,9 +114,6 @@ cinnamon_app_get_property (GObject    *gobject,
       break;
     case PROP_ID:
       g_value_set_string (value, cinnamon_app_get_id (app));
-      break;
-    case PROP_DBUS_ID:
-      g_value_set_string (value, cinnamon_app_get_dbus_id (app));
       break;
     case PROP_ACTION_GROUP:
       if (app->running_state)
@@ -229,15 +215,6 @@ window_backed_app_get_icon (CinnamonApp *app,
   g_object_set (actor, "width", (float) size, "height", (float) size, NULL);
 
   return actor;
-}
-
-const char *
-cinnamon_app_get_dbus_id (CinnamonApp *app)
-{
-  if (app->running_state)
-    return app->running_state->dbus_name;
-  else
-    return NULL;
 }
 
 /**
@@ -712,7 +689,7 @@ cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window)
 {
   const char *object_path;
 
-  object_path = meta_window_get_dbus_object_path (window);
+  object_path = meta_window_get_gtk_window_object_path (window);
   if (object_path != NULL)
     {
       GActionGroup *actions;
@@ -721,7 +698,7 @@ cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window)
       if (actions == NULL)
         {
           actions = G_ACTION_GROUP (g_dbus_action_group_get (g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL),
-                                                             meta_window_get_dbus_unique_name (window),
+                                                             meta_window_get_gtk_unique_bus_name (window),
                                                              object_path));
           g_object_set_data_full (G_OBJECT (window), "actions", actions, g_object_unref);
         }
@@ -1127,34 +1104,6 @@ cinnamon_app_on_ws_switch (MetaScreen         *screen,
   g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
 }
 
-static void
-on_dbus_application_id_changed (MetaWindow   *window,
-                                GParamSpec   *pspec,
-                                gpointer      user_data)
-{
-  const char *appid;
-  CinnamonApp *app = CINNAMON_APP (user_data);
-
-  /* Ignore changes in the appid after it's set, shouldn't happen */
-  if (app->running_state->dbus_name != NULL)
-    return;
-
-  appid = meta_window_get_dbus_application_id (window);
-
-  if (!appid)
-    return;
-
-  g_assert (app->running_state != NULL);
-  app->running_state->dbus_name = g_strdup (appid);
-  app->running_state->name_watcher_id = g_bus_watch_name (G_BUS_TYPE_SESSION,
-                                                          appid,
-                                                          G_BUS_NAME_WATCHER_FLAGS_NONE,
-                                                          on_dbus_name_appeared,
-                                                          on_dbus_name_disappeared,
-                                                          g_object_ref (app),
-                                                          g_object_unref);
-}
-
 void
 _cinnamon_app_add_window (CinnamonApp        *app,
                        MetaWindow      *window)
@@ -1172,11 +1121,10 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   g_signal_connect (window, "unmanaged", G_CALLBACK(cinnamon_app_on_unmanaged), app);
   g_signal_connect (window, "notify::user-time", G_CALLBACK(cinnamon_app_on_user_time_changed), app);
 
+  setup_running_state (app, window);
+
   if (app->state != CINNAMON_APP_STATE_STARTING)
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
-
-  g_signal_connect (window, "notify::dbus-application-id", G_CALLBACK(on_dbus_application_id_changed), app);
-  on_dbus_application_id_changed (window, NULL, app);
 
   g_object_thaw_notify (G_OBJECT (app));
 
@@ -1194,7 +1142,6 @@ _cinnamon_app_remove_window (CinnamonApp   *app,
 
   g_signal_handlers_disconnect_by_func (window, G_CALLBACK(cinnamon_app_on_unmanaged), app);
   g_signal_handlers_disconnect_by_func (window, G_CALLBACK(cinnamon_app_on_user_time_changed), app);
-  g_signal_handlers_disconnect_by_func (window, G_CALLBACK(on_dbus_application_id_changed), app);
   g_object_unref (window);
   app->running_state->windows = g_slist_remove (app->running_state->windows, window);
 
@@ -1202,137 +1149,6 @@ _cinnamon_app_remove_window (CinnamonApp   *app,
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STOPPED);
 
   g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
-}
-
-static void
-on_dbus_proxy_gotten (GObject      *initable,
-                      GAsyncResult *result,
-                      gpointer      user_data)
-{
-  CinnamonApp *self = CINNAMON_APP (user_data);
-  CinnamonAppRunningState *state = self->running_state;
-  GError *error = NULL;
-  GVariant *menu_property;
-
-  state->app_proxy = g_dbus_proxy_new_finish (result,
-                                              &error);
-
-  if (error)
-    {
-      if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED) &&
-          !g_error_matches (error, G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_METHOD))
-        {
-          g_warning ("Unexpected error while creating application proxy: %s", error->message);
-        }
-
-      g_clear_error (&error);
-      g_clear_object (&state->dbus_cancellable);
-
-      if (state->name_watcher_id)
-        {
-          g_bus_unwatch_name (state->name_watcher_id);
-          state->name_watcher_id = 0;
-        }
-
-      g_free (state->dbus_name);
-      state->dbus_name = NULL;
-
-      g_object_unref (self);
-      return;
-    }
-
-  /* on to the second step, the primary action group */
-
-  state->remote_actions = (GActionGroup*)g_dbus_action_group_get (
-                           g_dbus_proxy_get_connection (state->app_proxy),
-                           g_dbus_proxy_get_name (state->app_proxy),
-                           g_dbus_proxy_get_object_path (state->app_proxy));
-
-  if (!state->muxer)
-    state->muxer = g_action_muxer_new ();
-
-  g_action_muxer_insert (state->muxer, "app", state->remote_actions);
-  g_strfreev (g_action_group_list_actions (state->remote_actions));
-
-  g_object_notify (G_OBJECT (self), "action-group");
-
-  menu_property = g_dbus_proxy_get_cached_property (state->app_proxy, "AppMenu");
-
-  if (menu_property && g_variant_n_children (menu_property) > 0)
-    {
-      const gchar *object_path;
-
-      g_variant_get_child (menu_property, 0, "&o", &object_path);
-
-      state->remote_menu = G_MENU_MODEL (g_dbus_menu_model_get (g_dbus_proxy_get_connection (state->app_proxy),
-                                                                g_dbus_proxy_get_name (state->app_proxy),
-                                                                object_path));
-
-      g_object_notify (G_OBJECT (self), "menu");
-    }
-}
-
-static void
-on_dbus_name_appeared (GDBusConnection *bus,
-                       const gchar     *name,
-                       const gchar     *name_owner,
-                       gpointer         user_data)
-{
-  CinnamonApp *self = CINNAMON_APP (user_data);
-  CinnamonAppRunningState *state = self->running_state;
-  char *object_path;
-
-  g_assert (state != NULL);
-
-  object_path = g_strconcat ("/", name, NULL);
-  g_strdelimit (object_path, ".", '/');
-
-  if (!state->dbus_cancellable)
-    state->dbus_cancellable = g_cancellable_new ();
-
- /* first step: the application proxy */
-
-  g_dbus_proxy_new (bus,
-                    G_DBUS_PROXY_FLAGS_NONE,
-                    NULL, /* interface info */
-                    name_owner,
-                    object_path,
-                    "org.gtk.Application",
-                    state->dbus_cancellable,
-                    on_dbus_proxy_gotten,
-                    g_object_ref (self));
-
-  g_object_notify (G_OBJECT (self), "dbus-id");
-
-  g_free (object_path);
-}
-
-static void
-on_dbus_name_disappeared (GDBusConnection *bus,
-                          const gchar     *name,
-                          gpointer         user_data)
-{
-  CinnamonApp *self = CINNAMON_APP (user_data);
-  CinnamonAppRunningState *state = self->running_state;
-
-  g_assert (state != NULL);
-
-  if (state->dbus_cancellable)
-    {
-      g_cancellable_cancel (state->dbus_cancellable);
-      g_clear_object (&state->dbus_cancellable);
-    }
-
-  g_clear_object (&state->app_proxy);
-  g_clear_object (&state->remote_actions);
-  g_clear_object (&state->remote_menu);
-  g_clear_object (&state->muxer);
-
-  g_free (state->dbus_name);
-  state->dbus_name = NULL;
-
-  g_bus_unwatch_name (state->name_watcher_id);
-  state->name_watcher_id = 0;
 }
 
 /**
@@ -1550,6 +1366,46 @@ create_running_state (CinnamonApp *app)
   app->running_state->refcount = 1;
   app->running_state->workspace_switch_id =
     g_signal_connect (screen, "workspace-switched", G_CALLBACK(cinnamon_app_on_ws_switch), app);
+  app->running_state->muxer = g_action_muxer_new ();
+}
+
+static void
+setup_running_state (CinnamonApp   *app,
+                     MetaWindow *window)
+{
+  /* We assume that 'gtk-unique-bus-name', gtk-application-object-path'
+   * and 'gtk-app-menu-object-path' are the same for all windows which
+   * have it set.
+   *
+   * It could be possible, however, that the first window we see
+   * belonging to the app didn't have them set.  For this reason, we
+   * take the values from the first window that has them set and ignore
+   * all the rest (until the app is stopped and restarted).
+   */
+
+  if (app->running_state->remote_menu == NULL)
+    {
+      const gchar *application_object_path;
+      const gchar *app_menu_object_path;
+      const gchar *unique_bus_name;
+      GDBusConnection *session;
+      GDBusActionGroup *actions;
+
+      application_object_path = meta_window_get_gtk_application_object_path (window);
+      app_menu_object_path = meta_window_get_gtk_app_menu_object_path (window);
+      unique_bus_name = meta_window_get_gtk_unique_bus_name (window);
+
+      if (application_object_path == NULL || app_menu_object_path == NULL || unique_bus_name == NULL)
+        return;
+
+      session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
+      g_assert (session != NULL);
+      app->running_state->remote_menu = g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path);
+      actions = g_dbus_action_group_get (session, unique_bus_name, application_object_path);
+      g_action_muxer_insert (app->running_state->muxer, "app", G_ACTION_GROUP (actions));
+      g_object_unref (actions);
+      g_object_unref (session);
+    }
 }
 
 static void
@@ -1566,20 +1422,8 @@ unref_running_state (CinnamonAppRunningState *state)
   screen = cinnamon_global_get_screen (cinnamon_global_get ());
   g_signal_handler_disconnect (screen, state->workspace_switch_id);
 
-  if (state->dbus_cancellable)
-    {
-      g_cancellable_cancel (state->dbus_cancellable);
-      g_object_unref (state->dbus_cancellable);
-    }
-
-  g_clear_object (&state->app_proxy);
-  g_clear_object (&state->remote_actions);
   g_clear_object (&state->remote_menu);
   g_clear_object (&state->muxer);
-  g_free (state->dbus_name);
-
-  if (state->name_watcher_id)
-    g_bus_unwatch_name (state->name_watcher_id);
 
   g_slice_free (CinnamonAppRunningState, state);
 }
@@ -1825,20 +1669,6 @@ cinnamon_app_class_init(CinnamonAppClass *klass)
                                    g_param_spec_string ("id",
                                                         "Application id",
                                                         "The desktop file id of this CinnamonApp",
-                                                        NULL,
-                                                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
-
-  /**
-   * CinnamonApp:dbus-id:
-   *
-   * The DBus well-known name of the application, if one can be associated
-   * to this CinnamonApp (it means that the application is using GApplication)
-   */
-  g_object_class_install_property (gobject_class,
-                                   PROP_DBUS_ID,
-                                   g_param_spec_string ("dbus-id",
-                                                        "Application DBus Id",
-                                                        "The DBus well-known name of the application",
                                                         NULL,
                                                         G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 

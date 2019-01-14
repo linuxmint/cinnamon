@@ -40,8 +40,6 @@ const char *cinnamon_app_get_id (CinnamonApp *app);
 GMenuTreeEntry *cinnamon_app_get_tree_entry (CinnamonApp *app);
 GDesktopAppInfo *cinnamon_app_get_app_info (CinnamonApp *app);
 
-const char *cinnamon_app_get_dbus_id (CinnamonApp *app);
-
 ClutterActor *cinnamon_app_create_icon_texture (CinnamonApp *app,
                                                 int          size);
 ClutterActor *cinnamon_app_create_icon_texture_for_window (CinnamonApp   *app,
