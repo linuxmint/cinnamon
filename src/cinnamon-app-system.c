@@ -74,9 +74,19 @@ static void cinnamon_app_system_class_init(CinnamonAppSystemClass *klass)
 }
 
 static void
+installed_changed (GAppInfoMonitor *monitor,
+                   gpointer         user_data)
+{
+  CinnamonAppSystem *self = user_data;
+
+  g_signal_emit (self, signals[INSTALLED_CHANGED], 0, NULL);
+}
+
+static void
 cinnamon_app_system_init (CinnamonAppSystem *self)
 {
   CinnamonAppSystemPrivate *priv;
+  GAppInfoMonitor *monitor;
 
   self->priv = priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
                                                    CINNAMON_TYPE_APP_SYSTEM,
@@ -88,6 +98,10 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
                                            (GDestroyNotify)g_object_unref);
 
   priv->startup_wm_class_to_id = g_hash_table_new (g_str_hash, g_str_equal);
+
+  monitor = g_app_info_monitor_get ();
+  g_signal_connect (monitor, "changed", G_CALLBACK (installed_changed), self);
+  installed_changed (monitor, self);
 }
 
 static void
