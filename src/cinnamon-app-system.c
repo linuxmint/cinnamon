@@ -531,42 +531,6 @@ cinnamon_app_system_lookup_settings_app (CinnamonAppSystem   *self,
 }
 
 /**
- * cinnamon_app_system_lookup_app_for_path:
- * @system: a #CinnamonAppSystem
- * @desktop_path: (type utf8): UTF-8 encoded absolute file name
- *
- * Find or create a #CinnamonApp corresponding to a given absolute file
- * name which must be in the standard paths (XDG_DATA_DIRS).  For
- * files outside the datadirs, this function returns %NULL.
- *
- * Return value: (transfer none): The #CinnamonApp for id, or %NULL if none
- */
-CinnamonApp *
-cinnamon_app_system_lookup_app_for_path (CinnamonAppSystem   *system,
-                                      const char       *desktop_path)
-{
-  const char *basename;
-  const char *app_path;
-  CinnamonApp *app;
-
-  basename = g_strrstr (desktop_path, "/");
-  if (basename)
-    basename += 1;
-  else
-    basename = desktop_path;
-
-  app = cinnamon_app_system_lookup_app (system, basename);
-  if (!app)
-    return NULL;
-
-  app_path = gmenu_tree_entry_get_desktop_file_path (cinnamon_app_get_tree_entry (app));
-  if (strcmp (desktop_path, app_path) != 0)
-    return NULL;
-
-  return app;
-}
-
-/**
  * cinnamon_app_system_lookup_heuristic_basename:
  * @system: a #CinnamonAppSystem
  * @id: Probable application identifier

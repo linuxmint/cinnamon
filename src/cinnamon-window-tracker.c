@@ -874,6 +874,7 @@ CinnamonApp *
 cinnamon_startup_sequence_get_app (CinnamonStartupSequence *sequence)
 {
   const char *appid;
+  char *basename;
   CinnamonAppSystem *appsys;
   CinnamonApp *app;
 
@@ -881,8 +882,10 @@ cinnamon_startup_sequence_get_app (CinnamonStartupSequence *sequence)
   if (!appid)
     return NULL;
 
+  basename = g_path_get_basename (appid);
   appsys = cinnamon_app_system_get_default ();
-  app = cinnamon_app_system_lookup_app_for_path (appsys, appid);
+  app = cinnamon_app_system_lookup_app (appsys, basename);
+  g_free (basename);
   return app;
 }
 
