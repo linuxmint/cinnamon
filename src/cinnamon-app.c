@@ -707,6 +707,30 @@ cinnamon_app_activate_window (CinnamonApp     *app,
     }
 }
 
+void
+cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window)
+{
+  const char *object_path;
+
+  object_path = meta_window_get_dbus_object_path (window);
+  if (object_path != NULL)
+    {
+      GActionGroup *actions;
+
+      actions = g_object_get_data (G_OBJECT (window), "actions");
+      if (actions == NULL)
+        {
+          actions = G_ACTION_GROUP (g_dbus_action_group_get (g_dbus_proxy_get_connection (app->running_state->app_proxy),
+                                                             meta_window_get_dbus_unique_name (window),
+                                                             object_path));
+          g_object_set_data_full (G_OBJECT (window), "actions", actions, g_object_unref);
+        }
+
+      g_action_muxer_insert (app->running_state->muxer, "win", actions);
+      g_object_notify (G_OBJECT (app), "action-group");
+    }
+}
+
 /**
  * cinnamon_app_activate:
  * @app: a #CinnamonApp
@@ -1234,7 +1258,7 @@ on_dbus_proxy_gotten (GObject      *initable,
 
       g_variant_get_child (menu_property, 0, "&o", &object_path);
 
-      state->remote_menu = G_MENU_MODEL (g_dbus_menu_model_get (g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL),
+      state->remote_menu = G_MENU_MODEL (g_dbus_menu_model_get (g_dbus_proxy_get_connection (state->app_proxy),
                                                                 state->dbus_name,
                                                                 object_path));
 

@@ -87,6 +87,8 @@ int cinnamon_app_compare_by_name (CinnamonApp *app, CinnamonApp *other);
 
 int cinnamon_app_compare (CinnamonApp *app, CinnamonApp *other);
 
+void cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window);
+
 G_END_DECLS
 
 #endif /* __CINNAMON_APP_H__ */
