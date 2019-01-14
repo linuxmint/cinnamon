@@ -775,7 +775,7 @@ search_tree (CinnamonAppSystem *self,
  *
  * Search through applications for the given search terms.
  *
- * Returns: (transfer container) (element-type CinnamonApp): List of applications
+ * Returns: (transfer container) (element-type utf8): List of applications
  */
 GSList *
 cinnamon_app_system_initial_search (CinnamonAppSystem  *self,
@@ -787,14 +787,14 @@ cinnamon_app_system_initial_search (CinnamonAppSystem  *self,
 /**
  * cinnamon_app_system_subsearch:
  * @system: A #CinnamonAppSystem
- * @previous_results: (element-type CinnamonApp): List of previous results
+ * @previous_results: (element-type utf8): List of previous results
  * @terms: (element-type utf8): List of terms, logical AND
  *
  * Search through a previous result set; for more information, see
  * js/ui/search.js. Note that returned strings are only valid until
  * a return to the main loop.
  *
- * Returns: (transfer container) (element-type CinnamonApp): List of application identifiers
+ * Returns: (transfer container) (element-type utf8): List of application identifiers
  */
 GSList *
 cinnamon_app_system_subsearch (CinnamonAppSystem   *system,
@@ -808,8 +808,8 @@ cinnamon_app_system_subsearch (CinnamonAppSystem   *system,
 
   for (iter = previous_results; iter; iter = iter->next)
     {
-      CinnamonApp *app = iter->data;
-      
+      CinnamonApp *app = cinnamon_app_system_lookup_app (system, iter->data);
+
       _cinnamon_app_do_match (app, normalized_terms,
                            &prefix_results,
                            &substring_results);
