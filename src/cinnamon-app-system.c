@@ -97,26 +97,6 @@ setup_merge_dir_symlink(void)
 }
 
 static void
-load_apps (CinnamonAppSystem *self)
-{
-  CinnamonAppSystemPrivate *priv = self->priv;
-  GList *apps, *l;
-
-  apps = g_app_info_get_all ();
-  for (l = apps; l != NULL; l = l->next)
-    {
-      GAppInfo *info = l->data;
-      g_hash_table_insert (priv->id_to_app,
-                           (char *) g_app_info_get_id (info),
-                           _cinnamon_app_new (G_DESKTOP_APP_INFO (info)));
-    }
-
-  g_list_free_full (apps, g_object_unref);
-
-  g_signal_emit (self, signals[INSTALLED_CHANGED], 0);
-}
-
-static void
 cinnamon_app_system_init (CinnamonAppSystem *self)
 {
   CinnamonAppSystemPrivate *priv;
@@ -139,8 +119,6 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
  * ~/.config/menus directory
  */
   setup_merge_dir_symlink();
-
-  load_apps (self);
 }
 
 static void
@@ -217,13 +195,21 @@ CinnamonApp *
 cinnamon_app_system_lookup_app (CinnamonAppSystem   *self,
                              const char       *id)
 {
-  CinnamonApp *result;
+  CinnamonAppSystemPrivate *priv = self->priv;
+  CinnamonApp *app;
+  GDesktopAppInfo *info;
 
-  result = g_hash_table_lookup (self->priv->id_to_app, id);
-  if (result == NULL) {
-    result = g_hash_table_find (self->priv->id_to_app, (GHRFunc) case_insensitive_search, (gpointer) id);
-  }
-  return result;
+  app = g_hash_table_lookup (priv->id_to_app, id);
+  if (app)
+    return app;
+
+  info = g_desktop_app_info_new (id);
+  if (!info)
+    return NULL;
+
+  app = _cinnamon_app_new (info);
+  g_hash_table_insert (priv->id_to_app, (char *) id, app);
+  return app;
 }
 
 /**
