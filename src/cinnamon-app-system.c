@@ -362,7 +362,6 @@ on_apps_tree_changed_cb (GMenuTree *tree,
     {
       const char *id = key;
       GMenuTreeEntry *entry = value;
-      GMenuTreeEntry *old_entry;
       char *prefix;
       CinnamonApp *app;
 
@@ -378,54 +377,38 @@ on_apps_tree_changed_cb (GMenuTree *tree,
                                                             prefix);
       else
         g_free (prefix);
-      
+
+      info = gmenu_tree_entry_get_app_info (entry);
+
       app = g_hash_table_lookup (self->priv->id_to_app, id);
       if (app != NULL)
-        {
-          /* We hold a reference to the original entry temporarily,
-           * because otherwise the hash table would be referencing
-           * potentially free'd memory until we replace it below with
-           * the new data.
-           */
-          old_entry = cinnamon_app_get_tree_entry (app);
-          gmenu_tree_item_ref (old_entry);
-          _cinnamon_app_set_entry (app, entry);
-          g_object_ref (app);  /* Extra ref, removed in _replace below */
-        }
-      else
-        {
-          old_entry = NULL;
-          app = _cinnamon_app_new (entry);
-        }
-      /* Note that "id" is owned by app->entry.  Since we're always
-       * setting a new entry, even if the app already exists in the
-       * hash table we need to replace the key so that the new id
-       * string is pointed to.
-       */
-      g_hash_table_replace (self->priv->id_to_app, (char*)id, app);
-      // if (!gmenu_tree_entry_get_is_nodisplay_recurse (entry))
-      //    g_hash_table_replace (self->priv->visible_id_to_app, (char*)id, app);
-
-      if (old_entry)
         {
           GDesktopAppInfo *old_info;
           const gchar *old_startup_wm_class;
 
-          old_info = gmenu_tree_entry_get_app_info (old_entry);
+          old_info = cinnamon_app_get_app_info (app);
           old_startup_wm_class = g_desktop_app_info_get_startup_wm_class (old_info);
 
           if (old_startup_wm_class)
             g_hash_table_remove (self->priv->startup_wm_class_to_app, old_startup_wm_class);
+
+          _cinnamon_app_set_app_info (app, info);
+          g_object_ref (app);  /* Extra ref, removed in _replace below */
+        }
+      else
+        {
+          app = _cinnamon_app_new (info);
         }
 
-      info = gmenu_tree_entry_get_app_info (entry);
+      g_hash_table_replace (self->priv->id_to_app, (char*)id, app);
+      if (!gmenu_tree_entry_get_is_nodisplay_recurse (entry))
+        g_hash_table_replace (self->priv->visible_id_to_app, (char*)id, app);
+
       startup_wm_class = g_desktop_app_info_get_startup_wm_class (info);
       if (startup_wm_class)
         g_hash_table_replace (self->priv->startup_wm_class_to_app,
                               (char*)startup_wm_class, g_object_ref (app));
 
-      if (old_entry)
-        gmenu_tree_item_unref (old_entry);
     }
   /* Now iterate over the apps again; we need to unreference any apps
    * which have been removed.  The JS code may still be holding a

@@ -12,9 +12,9 @@ G_BEGIN_DECLS
 
 CinnamonApp* _cinnamon_app_new_for_window (MetaWindow *window);
 
-CinnamonApp* _cinnamon_app_new (GMenuTreeEntry *entry);
+CinnamonApp* _cinnamon_app_new (GDesktopAppInfo *info);
 
-void _cinnamon_app_set_entry (CinnamonApp *app, GMenuTreeEntry *entry);
+void _cinnamon_app_set_app_info (CinnamonApp *app, GDesktopAppInfo *info);
 
 void _cinnamon_app_handle_startup_sequence (CinnamonApp *app, SnStartupSequence *sequence);
 
