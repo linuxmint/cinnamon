@@ -30,9 +30,6 @@ typedef enum {
 typedef struct {
   guint refcount;
 
-  /* Last time the user interacted with any of this application's windows */
-  guint32 last_user_time;
-
   /* Signal connection to dirty window sort list on workspace changes */
   guint workspace_switch_id;
 
@@ -660,16 +657,6 @@ cinnamon_app_activate_window (CinnamonApp     *app,
                                                   meta_window_get_user_time (most_recent_transient)))
         window = most_recent_transient;
 
-
-      if (!cinnamon_window_tracker_is_window_interesting (cinnamon_window_tracker_get_default (), window))
-        {
-          /* We won't get notify::user-time signals for uninteresting windows,
-           * which means that an app's last_user_time won't get updated.
-           * Update it here instead.
-           */
-          app->running_state->last_user_time = timestamp;
-        }
-
       if (active != workspace)
         meta_workspace_activate_with_focus (workspace, window, timestamp);
       else
@@ -907,6 +894,23 @@ cinnamon_app_is_on_workspace (CinnamonApp *app,
   return FALSE;
 }
 
+static int
+cinnamon_app_get_last_user_time (CinnamonApp *app)
+{
+  GSList *iter;
+  int last_user_time;
+
+  last_user_time = 0;
+
+  if (app->running_state != NULL)
+    {
+      for (iter = app->running_state->windows; iter; iter = iter->next)
+        last_user_time = MAX (last_user_time, meta_window_get_user_time (iter->data));
+    }
+
+  return last_user_time;
+}
+
 /**
  * cinnamon_app_compare:
  * @app:
@@ -946,7 +950,8 @@ cinnamon_app_compare (CinnamonApp *app,
         return -1;
       else if (!app->running_state->windows && other->running_state->windows)
         return 1;
-      return other->running_state->last_user_time - app->running_state->last_user_time;
+
+      return cinnamon_app_get_last_user_time (other) - cinnamon_app_get_last_user_time (app);
     }
 
   return 0;
@@ -1026,8 +1031,6 @@ cinnamon_app_on_user_time_changed (MetaWindow *window,
 {
   g_assert (app->running_state != NULL);
 
-  app->running_state->last_user_time = meta_window_get_user_time (window);
-
   /* Ideally we don't want to emit windows-changed if the sort order
    * isn't actually changing. This check catches most of those.
    */
@@ -1058,8 +1061,6 @@ void
 _cinnamon_app_add_window (CinnamonApp        *app,
                        MetaWindow      *window)
 {
-  guint32 user_time;
-
   if (app->running_state && g_slist_find (app->running_state->windows, window))
     return;
 
@@ -1072,10 +1073,6 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   app->running_state->windows = g_slist_prepend (app->running_state->windows, g_object_ref (window));
   g_signal_connect (window, "unmanaged", G_CALLBACK(cinnamon_app_on_unmanaged), app);
   g_signal_connect (window, "notify::user-time", G_CALLBACK(cinnamon_app_on_user_time_changed), app);
-
-  user_time = meta_window_get_user_time (window);
-  if (user_time > app->running_state->last_user_time)
-    app->running_state->last_user_time = user_time;
 
   if (app->state != CINNAMON_APP_STATE_STARTING)
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
