@@ -73,7 +73,6 @@ struct _CinnamonApp
 
   char *casefolded_name;
   char *name_collation_key;
-  char *casefolded_description;
   char *casefolded_exec;
   char **casefolded_keywords;
   char *keywords;
@@ -1464,7 +1463,6 @@ cinnamon_app_init_search_data (CinnamonApp *app)
 {
   const char *name;
   const char *exec;
-  const char *comment;
   const char * const *keywords;
   char *normalized_exec;
   GDesktopAppInfo *appinfo;
@@ -1472,9 +1470,6 @@ cinnamon_app_init_search_data (CinnamonApp *app)
   appinfo = gmenu_tree_entry_get_app_info (app->entry);
   name = g_app_info_get_name (G_APP_INFO (appinfo));
   app->casefolded_name = cinnamon_util_normalize_and_casefold (name);
-
-  comment = g_app_info_get_description (G_APP_INFO (appinfo));
-  app->casefolded_description = cinnamon_util_normalize_and_casefold (comment);
 
   exec = g_app_info_get_executable (G_APP_INFO (appinfo));
   normalized_exec = cinnamon_util_normalize_and_casefold (exec);
@@ -1555,16 +1550,6 @@ _cinnamon_app_match_search_terms (CinnamonApp  *app,
               else if (current_match < MATCH_PREFIX)
                 current_match = MATCH_SUBSTRING;
             }
-        }
-
-      if (app->casefolded_description && current_match < MATCH_PREFIX)
-        {
-          /* Only do substring matches, as prefix matches are not meaningful
-           * enough for descriptions
-           */
-          p = strstr (app->casefolded_description, term);
-          if (p != NULL)
-            current_match = MATCH_SUBSTRING;
         }
 
       if (app->casefolded_keywords)
@@ -1670,7 +1655,6 @@ cinnamon_app_finalize (GObject *object)
 
   g_free (app->casefolded_name);
   g_free (app->name_collation_key);
-  g_free (app->casefolded_description);
   g_free (app->casefolded_exec);
   g_strfreev (app->casefolded_keywords);
 
