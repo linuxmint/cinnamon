@@ -22,6 +22,8 @@ int      cinnamon_util_get_week_start             (void);
 
 char    *cinnamon_util_normalize_and_casefold     (const char       *str);
 
+char    *cinnamon_util_normalize_casefold_and_unaccent (const char  *str);
+
 char    *cinnamon_util_format_date                (const char       *format,
                                                 gint64            time_ms);
 
