@@ -100,6 +100,32 @@ scan_startup_wm_class_to_id (CinnamonAppSystem *self)
   g_list_free_full (apps, g_object_unref);
 }
 
+static gboolean
+app_is_stale (CinnamonApp *app)
+{
+  GDesktopAppInfo *info;
+  gboolean is_stale;
+
+  if (cinnamon_app_is_window_backed (app))
+    return FALSE;
+
+  info = g_desktop_app_info_new (cinnamon_app_get_id (app));
+  is_stale = (info == NULL);
+
+  if (info)
+    g_object_unref (info);
+
+  return is_stale;
+}
+
+static gboolean
+stale_app_remove_func (gpointer key,
+                       gpointer value,
+                       gpointer user_data)
+{
+  return app_is_stale (value);
+}
+
 static void
 installed_changed (GAppInfoMonitor *monitor,
                    gpointer         user_data)
@@ -107,6 +133,8 @@ installed_changed (GAppInfoMonitor *monitor,
   CinnamonAppSystem *self = user_data;
 
   scan_startup_wm_class_to_id (self);
+
+  g_hash_table_foreach_remove (self->priv->id_to_app, stale_app_remove_func, NULL);
 
   g_signal_emit (self, signals[INSTALLED_CHANGED], 0, NULL);
 }
