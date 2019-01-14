@@ -72,6 +72,7 @@ struct _CinnamonApp
   char *window_id_string;
 
   char *casefolded_name;
+  char *casefolded_generic_name;
   char *name_collation_key;
   char *casefolded_exec;
   char **casefolded_keywords;
@@ -1464,6 +1465,7 @@ static void
 cinnamon_app_init_search_data (CinnamonApp *app)
 {
   const char *name;
+  const char *generic_name;
   const char *exec;
   const char * const *keywords;
   char *normalized_exec;
@@ -1472,6 +1474,12 @@ cinnamon_app_init_search_data (CinnamonApp *app)
   appinfo = gmenu_tree_entry_get_app_info (app->entry);
   name = g_app_info_get_name (G_APP_INFO (appinfo));
   app->casefolded_name = cinnamon_util_normalize_and_casefold (name);
+
+  generic_name = g_desktop_app_info_get_generic_name (appinfo);
+  if (generic_name)
+    app->casefolded_generic_name = cinnamon_util_normalize_and_casefold (generic_name);
+  else
+    app->casefolded_generic_name = NULL;
 
   exec = g_app_info_get_executable (G_APP_INFO (appinfo));
   normalized_exec = cinnamon_util_normalize_and_casefold (exec);
@@ -1540,6 +1548,18 @@ _cinnamon_app_match_search_terms (CinnamonApp  *app,
             current_match = MATCH_PREFIX;
           else
             current_match = MATCH_SUBSTRING;
+        }
+
+      if (app->casefolded_generic_name)
+        {
+          p = strstr (app->casefolded_generic_name, term);
+          if (p != NULL)
+            {
+              if (p == app->casefolded_generic_name || *(p - 1) == ' ')
+                current_match = MATCH_PREFIX;
+              else if (current_match < MATCH_PREFIX)
+                current_match = MATCH_SUBSTRING;
+            }
         }
 
       if (app->casefolded_exec)
@@ -1656,6 +1676,7 @@ cinnamon_app_finalize (GObject *object)
   g_free (app->window_id_string);
 
   g_free (app->casefolded_name);
+  g_free (app->casefolded_generic_name);
   g_free (app->name_collation_key);
   g_free (app->casefolded_exec);
   g_strfreev (app->casefolded_keywords);
