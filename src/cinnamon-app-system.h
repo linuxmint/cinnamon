@@ -39,8 +39,6 @@ struct _CinnamonAppSystemClass
 GType           cinnamon_app_system_get_type    (void) G_GNUC_CONST;
 CinnamonAppSystem *cinnamon_app_system_get_default (void);
 
-GMenuTree      *cinnamon_app_system_get_tree                     (CinnamonAppSystem *system);
-
 CinnamonApp       *cinnamon_app_system_lookup_app                   (CinnamonAppSystem  *system,
                                                                const char      *id);
 CinnamonApp       *cinnamon_app_system_lookup_settings_app          (CinnamonAppSystem  *system,

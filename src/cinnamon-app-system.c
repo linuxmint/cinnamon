@@ -446,17 +446,6 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 }
 
 /**
- * cinnamon_app_system_get_tree:
- *
- * Return Value: (transfer none): The #GMenuTree for apps
- */
-GMenuTree *
-cinnamon_app_system_get_tree (CinnamonAppSystem *self)
-{
-  return self->priv->apps_tree;
-}
-
-/**
  * cinnamon_app_system_lookup_setting:
  *
  * Returns: (transfer none): Application in gnomecc.menu, or %NULL if none
