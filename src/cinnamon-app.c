@@ -15,7 +15,7 @@
 #include "cinnamon-app-system-private.h"
 #include "cinnamon-window-tracker-private.h"
 #include "st.h"
-#include "gactionmuxer.h"
+#include "gtkactionmuxer.h"
 
 typedef enum {
   MATCH_NONE,
@@ -44,7 +44,7 @@ typedef struct {
 
   /* See GApplication documentation */
   GDBusMenuModel   *remote_menu;
-  GActionMuxer     *muxer;
+  GtkActionMuxer    *muxer;
   char             * unique_bus_name;
   GDBusConnection  *session;
 } CinnamonAppRunningState;
@@ -715,9 +715,9 @@ cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window)
         }
 
       if (!app->running_state->muxer)
-        app->running_state->muxer = g_action_muxer_new ();
+        app->running_state->muxer = gtk_action_muxer_new ();
 
-      g_action_muxer_insert (app->running_state->muxer, "win", actions);
+      gtk_action_muxer_insert (app->running_state->muxer, "win", actions);
       g_object_notify (G_OBJECT (app), "action-group");
     }
 }
@@ -1459,7 +1459,7 @@ create_running_state (CinnamonApp *app)
 
   app->running_state->session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
   g_assert (app->running_state->session != NULL);
-  app->running_state->muxer = g_action_muxer_new ();
+  app->running_state->muxer = gtk_action_muxer_new ();
 }
 
 void
@@ -1498,7 +1498,7 @@ cinnamon_app_update_app_menu (CinnamonApp   *app,
       g_clear_object (&app->running_state->remote_menu);
       app->running_state->remote_menu = g_dbus_menu_model_get (app->running_state->session, unique_bus_name, app_menu_object_path);
       actions = g_dbus_action_group_get (app->running_state->session, unique_bus_name, application_object_path);
-      g_action_muxer_insert (app->running_state->muxer, "app", G_ACTION_GROUP (actions));
+      gtk_action_muxer_insert (app->running_state->muxer, "app", G_ACTION_GROUP (actions));
       g_object_unref (actions);
     }
 }
