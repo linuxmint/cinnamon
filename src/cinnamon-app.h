@@ -77,9 +77,7 @@ gboolean cinnamon_app_is_on_workspace (CinnamonApp *app, MetaWorkspace *workspac
 
 gboolean cinnamon_app_launch (CinnamonApp     *app,
                            guint         timestamp,
-                           GList        *uris,
                            int           workspace,
-                           char        **startup_id,
                            GError      **error);
 
 int cinnamon_app_compare_by_name (CinnamonApp *app, CinnamonApp *other);
