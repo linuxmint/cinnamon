@@ -791,9 +791,8 @@ cinnamon_app_system_initial_search (CinnamonAppSystem  *self,
  * @terms: (element-type utf8): List of terms, logical AND
  *
  * Search through a previous result set; for more information, see
- * js/ui/search.js.  Note the value of @prefs must be
- * the same as passed to cinnamon_app_system_initial_search().  Note that returned
- * strings are only valid until a return to the main loop.
+ * js/ui/search.js. Note that returned strings are only valid until
+ * a return to the main loop.
  *
  * Returns: (transfer container) (element-type CinnamonApp): List of application identifiers
  */
