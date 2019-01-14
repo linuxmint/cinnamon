@@ -74,10 +74,35 @@ static void cinnamon_app_system_class_init(CinnamonAppSystemClass *klass)
 }
 
 static void
+scan_startup_wm_class_to_id (CinnamonAppSystem *self)
+{
+  CinnamonAppSystemPrivate *priv = self->priv;
+  GList *apps, *l;
+
+  g_hash_table_remove_all (priv->startup_wm_class_to_id);
+
+  apps = g_app_info_get_all ();
+  for (l = apps; l != NULL; l = l->next)
+    {
+      GAppInfo *info = l->data;
+      const char *startup_wm_class, *id;
+
+      id = g_app_info_get_id (info);
+      startup_wm_class = g_desktop_app_info_get_startup_wm_class (G_DESKTOP_APP_INFO (info));
+      if (startup_wm_class != NULL)
+        g_hash_table_insert (priv->startup_wm_class_to_id, (char *) startup_wm_class, (char *) id);
+    }
+
+  g_list_free_full (apps, g_object_unref);
+}
+
+static void
 installed_changed (GAppInfoMonitor *monitor,
                    gpointer         user_data)
 {
   CinnamonAppSystem *self = user_data;
+
+  scan_startup_wm_class_to_id (self);
 
   g_signal_emit (self, signals[INSTALLED_CHANGED], 0, NULL);
 }
