@@ -41,6 +41,7 @@ typedef struct {
   /* See GApplication documentation */
   GDBusMenuModel   *remote_menu;
   GActionMuxer     *muxer;
+  char * unique_bus_name;
 } CinnamonAppRunningState;
 
 /**
@@ -95,7 +96,6 @@ enum {
 static guint cinnamon_app_signals[LAST_SIGNAL] = { 0 };
 
 static void create_running_state (CinnamonApp *app);
-static void setup_running_state (CinnamonApp *app, MetaWindow *window);
 static void unref_running_state (CinnamonAppRunningState *state);
 
 G_DEFINE_TYPE (CinnamonApp, cinnamon_app, G_TYPE_OBJECT)
@@ -1127,7 +1127,7 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   g_signal_connect (window, "unmanaged", G_CALLBACK(cinnamon_app_on_unmanaged), app);
   g_signal_connect (window, "notify::user-time", G_CALLBACK(cinnamon_app_on_user_time_changed), app);
 
-  setup_running_state (app, window);
+  cinnamon_app_update_app_menu (app, window);
 
   if (app->state != CINNAMON_APP_STATE_STARTING)
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
@@ -1376,11 +1376,13 @@ create_running_state (CinnamonApp *app)
 }
 
 static void
-setup_running_state (CinnamonApp   *app,
-                     MetaWindow *window)
+cinnamon_app_update_app_menu (CinnamonApp   *app,
+                           MetaWindow *window)
 {
-  /* We assume that 'gtk-unique-bus-name', gtk-application-object-path'
-   * and 'gtk-app-menu-object-path' are the same for all windows which
+  const gchar *unique_bus_name;
+
+  /* We assume that 'gtk-application-object-path' and
+   * 'gtk-app-menu-object-path' are the same for all windows which
    * have it set.
    *
    * It could be possible, however, that the first window we see
@@ -1389,23 +1391,27 @@ setup_running_state (CinnamonApp   *app,
    * all the rest (until the app is stopped and restarted).
    */
 
-  if (app->running_state->remote_menu == NULL)
+  unique_bus_name = meta_window_get_gtk_unique_bus_name (window);
+
+  if (app->running_state->remote_menu == NULL ||
+      g_strcmp0 (app->running_state->unique_bus_name, unique_bus_name) != 0)
     {
       const gchar *application_object_path;
       const gchar *app_menu_object_path;
-      const gchar *unique_bus_name;
       GDBusConnection *session;
       GDBusActionGroup *actions;
 
       application_object_path = meta_window_get_gtk_application_object_path (window);
       app_menu_object_path = meta_window_get_gtk_app_menu_object_path (window);
-      unique_bus_name = meta_window_get_gtk_unique_bus_name (window);
 
       if (application_object_path == NULL || app_menu_object_path == NULL || unique_bus_name == NULL)
         return;
 
       session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
       g_assert (session != NULL);
+      g_clear_pointer (&app->running_state->unique_bus_name, g_free);
+      app->running_state->unique_bus_name = g_strdup (unique_bus_name);
+      g_clear_object (&app->running_state->remote_menu);
       app->running_state->remote_menu = g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path);
       actions = g_dbus_action_group_get (session, unique_bus_name, application_object_path);
       g_action_muxer_insert (app->running_state->muxer, "app", G_ACTION_GROUP (actions));
@@ -1486,7 +1492,7 @@ cinnamon_app_init_search_data (CinnamonApp *app)
       i = 0;
       while (keywords[i])
         {
-          app->casefolded_keywords[i] = shell_util_normalize_and_casefold (keywords[i]);
+          app->casefolded_keywords[i] = cinnamon_util_normalize_and_casefold (keywords[i]);
           ++i;
         }
       app->casefolded_keywords[i] = NULL;
