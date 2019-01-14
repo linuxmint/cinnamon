@@ -74,29 +74,6 @@ static void cinnamon_app_system_class_init(CinnamonAppSystemClass *klass)
 }
 
 static void
-setup_merge_dir_symlink(void)
-{
-    gchar *user_config = (gchar *) g_get_user_config_dir();
-    gchar *merge_path = g_build_filename (user_config, "menus", "applications-merged", NULL);
-    GFile *merge_file = g_file_new_for_path (merge_path);
-    gchar *sym_path;
-    GFile *sym_file;
-
-    g_file_make_directory_with_parents (merge_file, NULL, NULL);
-
-    sym_path = g_build_filename (user_config, "menus", "cinnamon-applications-merged", NULL);
-    sym_file = g_file_new_for_path (sym_path);
-    if (!g_file_query_exists (sym_file, NULL)) {
-        g_file_make_symbolic_link (sym_file, merge_path, NULL, NULL);
-    }
-
-    g_free (merge_path);
-    g_free (sym_path);
-    g_object_unref (merge_file);
-    g_object_unref (sym_file);
-}
-
-static void
 cinnamon_app_system_init (CinnamonAppSystem *self)
 {
   CinnamonAppSystemPrivate *priv;
@@ -111,14 +88,6 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
                                            (GDestroyNotify)g_object_unref);
 
   priv->startup_wm_class_to_id = g_hash_table_new (g_str_hash, g_str_equal);
-
-
-/* According to desktop spec, since our menu file is called 'cinnamon-applications', our
- * merged menu folders need to be called 'cinnamon-applications-merged'.  We'll setup the folder
- * 'applications-merged' if it doesn't exist yet, and a symlink pointing to it in the
- * ~/.config/menus directory
- */
-  setup_merge_dir_symlink();
 }
 
 static void
