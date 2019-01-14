@@ -15,8 +15,6 @@
 #include "cinnamon-app-system-private.h"
 #include "cinnamon-window-tracker-private.h"
 #include "st.h"
-#include "gtkactionmuxer.h"
-#include "org-gtk-application.h"
 
 #ifdef HAVE_SYSTEMD
 #include <systemd/sd-journal.h>
@@ -47,16 +45,6 @@ typedef struct {
 
   /* Whether or not we need to resort the windows; this is done on demand */
   guint window_sort_stale : 1;
-
-  /* See GApplication documentation */
-  GDBusMenuModel   *remote_menu;
-  GtkActionMuxer    *muxer;
-  char             * unique_bus_name;
-  GDBusConnection  *session;
-
-  /* GDBus Proxy for getting application busy state */
-  CinnamonOrgGtkApplication *application_proxy;
-  GCancellable              *cancellable;
 
 } CinnamonAppRunningState;
 
@@ -92,11 +80,7 @@ struct _CinnamonApp
 enum {
   PROP_0,
   PROP_STATE,
-  PROP_BUSY,
   PROP_ID,
-  PROP_DBUS_ID,
-  PROP_ACTION_GROUP,
-  PROP_MENU,
   PROP_APP_INFO
 };
 
@@ -125,19 +109,8 @@ cinnamon_app_get_property (GObject    *gobject,
     case PROP_STATE:
       g_value_set_enum (value, app->state);
       break;
-    case PROP_BUSY:
-      g_value_set_boolean (value, cinnamon_app_get_busy (app));
-      break;
     case PROP_ID:
       g_value_set_string (value, cinnamon_app_get_id (app));
-      break;
-    case PROP_ACTION_GROUP:
-      if (app->running_state)
-        g_value_set_object (value, app->running_state->muxer);
-      break;
-    case PROP_MENU:
-      if (app->running_state)
-        g_value_set_object (value, app->running_state->remote_menu);
       break;
     case PROP_APP_INFO:
       if (app->info)
@@ -548,31 +521,6 @@ cinnamon_app_activate_window (CinnamonApp     *app,
     }
 }
 
-void
-cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window)
-{
-  const char *object_path;
-
-  object_path = meta_window_get_gtk_window_object_path (window);
-  if (object_path != NULL)
-    {
-      GActionGroup *actions;
-
-      actions = g_object_get_data (G_OBJECT (window), "actions");
-      if (actions == NULL)
-        {
-          actions = G_ACTION_GROUP (g_dbus_action_group_get (app->running_state->session,
-                                                             meta_window_get_gtk_unique_bus_name (window),
-                                                             object_path));
-          g_object_set_data_full (G_OBJECT (window), "actions", actions, g_object_unref);
-        }
-
-      g_assert (app->running_state->muxer);
-      gtk_action_muxer_insert (app->running_state->muxer, "win", actions);
-      g_object_notify (G_OBJECT (app), "action-group");
-    }
-}
-
 /**
  * cinnamon_app_activate:
  * @app: a #CinnamonApp
@@ -667,23 +615,6 @@ cinnamon_app_open_new_window (CinnamonApp      *app,
       return;
     }
 
-  /* Next, check whether the app exports an explicit "new-window" action
-   * that we can activate on the bus - the muxer will add startup notification
-   * information to the platform data, so this should work just as well as
-   * desktop actions.
-   */
-  group = app->running_state ? G_ACTION_GROUP (app->running_state->muxer)
-                             : NULL;
-
-  if (group &&
-      g_action_group_has_action (group, "app.new-window") &&
-      g_action_group_get_action_parameter_type (group, "app.new-window") == NULL)
-    {
-      g_action_group_activate_action (group, "app.new-window", NULL);
-
-      return;
-    }
-
   /* Lastly, just always launch the application again, even if we know
    * it was already running.  For most applications this
    * should have the effect of creating a new window, whether that's
@@ -715,12 +646,6 @@ cinnamon_app_can_open_new_window (CinnamonApp *app)
 
   state = app->running_state;
 
-  /* If the app has an explicit new-window action, then it can
-     (or it should be able to) ...
-  */
-  if (g_action_group_has_action (G_ACTION_GROUP (state->muxer), "app.new-window"))
-    return TRUE;
-
   /* If the app doesn't have a desktop file, then nothing is possible */
   if (!app->info)
     return FALSE;
@@ -730,24 +655,6 @@ cinnamon_app_can_open_new_window (CinnamonApp *app)
                                   "X-GNOME-SingleWindow"))
     return !g_desktop_app_info_get_boolean (G_DESKTOP_APP_INFO (app->info),
                                             "X-GNOME-SingleWindow");
-
-  /* If this is a unique GtkApplication, and we don't have a new-window, then
-     probably we can't
-     We don't consider non-unique GtkApplications here to handle cases like
-     evince, which don't export a new-window action because each window is in
-     a different process. In any case, in a non-unique GtkApplication each
-     Activate() knows nothing about the other instances, so it will show a
-     new window.
-  */
-  if (state->remote_menu)
-    {
-      const char *application_id;
-      application_id = meta_window_get_gtk_application_id (state->windows->data);
-      if (application_id != NULL)
-        return FALSE;
-      else
-        return TRUE;
-    }
 
   /* In all other cases, we don't have a reliable source of information
      or a decent heuristic, so we err on the compatibility side and say
@@ -1077,89 +984,6 @@ cinnamon_app_on_ws_switch (MetaScreen         *screen,
   g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
 }
 
-gboolean
-cinnamon_app_get_busy (CinnamonApp *app)
-{
-  if (app->running_state != NULL &&
-      app->running_state->application_proxy != NULL &&
-      cinnamon_org_gtk_application_get_busy (app->running_state->application_proxy))
-    return TRUE;
-
-  return FALSE;
-}
-
-static void
-busy_changed_cb (GObject    *object,
-                 GParamSpec *pspec,
-                 gpointer    user_data)
-{
-  CinnamonApp *app = user_data;
-
-  g_assert (CINNAMON_IS_APP (app));
-
-  g_object_notify (G_OBJECT (app), "busy");
-}
-
-static void
-get_application_proxy (GObject      *source,
-                       GAsyncResult *result,
-                       gpointer      user_data)
-{
-  CinnamonApp *app = user_data;
-  CinnamonOrgGtkApplication *proxy;
-
-  g_assert (CINNAMON_IS_APP (app));
-
-  proxy = cinnamon_org_gtk_application_proxy_new_finish (result, NULL);
-  if (proxy != NULL)
-    {
-      app->running_state->application_proxy = proxy;
-      g_signal_connect (proxy,
-                        "notify::busy",
-                        G_CALLBACK (busy_changed_cb),
-                        app);
-      if (cinnamon_org_gtk_application_get_busy (proxy))
-        g_object_notify (G_OBJECT (app), "busy");
-    }
-
-  if (app->running_state != NULL)
-    g_clear_object (&app->running_state->cancellable);
-
-  g_object_unref (app);
-}
-
-static void
-cinnamon_app_ensure_busy_watch (CinnamonApp *app)
-{
-  CinnamonAppRunningState *running_state = app->running_state;
-  MetaWindow *window;
-  const gchar *object_path;
-
-    if (running_state->application_proxy != NULL ||
-      running_state->cancellable != NULL)
-    return;
-
-  if (running_state->unique_bus_name == NULL)
-    return;
-
-  window = g_slist_nth_data (running_state->windows, 0);
-  object_path = meta_window_get_gtk_application_object_path (window);
-
-  if (object_path == NULL)
-    return;
-
-  running_state->cancellable = g_cancellable_new();
-  /* Take a reference to app to make sure it isn't finalized before
-     get_application_proxy runs */
-  cinnamon_org_gtk_application_proxy_new (running_state->session,
-                                          G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
-                                          running_state->unique_bus_name,
-                                          object_path,
-                                          running_state->cancellable,
-                                          get_application_proxy,
-                                          g_object_ref (app));
-}
-
 void
 _cinnamon_app_add_window (CinnamonApp        *app,
                        MetaWindow      *window)
@@ -1177,9 +1001,6 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   g_signal_connect (window, "unmanaged", G_CALLBACK(cinnamon_app_on_unmanaged), app);
   g_signal_connect (window, "notify::user-time", G_CALLBACK(cinnamon_app_on_user_time_changed), app);
   g_signal_connect (window, "notify::skip-taskbar", G_CALLBACK(cinnamon_app_on_skip_taskbar_changed), app);
-
-  cinnamon_app_update_app_menu (app, window);
-  cinnamon_app_ensure_busy_watch (app);
 
   if (!meta_window_is_skip_taskbar (window))
     app->running_state->interesting_windows++;
@@ -1475,51 +1296,6 @@ create_running_state (CinnamonApp *app)
   app->running_state->refcount = 1;
   app->running_state->workspace_switch_id =
     g_signal_connect (screen, "workspace-switched", G_CALLBACK(cinnamon_app_on_ws_switch), app);
-
-  app->running_state->session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
-  g_assert (app->running_state->session != NULL);
-  app->running_state->muxer = gtk_action_muxer_new ();
-}
-
-void
-cinnamon_app_update_app_menu (CinnamonApp   *app,
-                           MetaWindow *window)
-{
-  const gchar *unique_bus_name;
-
-  /* We assume that 'gtk-application-object-path' and
-   * 'gtk-app-menu-object-path' are the same for all windows which
-   * have it set.
-   *
-   * It could be possible, however, that the first window we see
-   * belonging to the app didn't have them set.  For this reason, we
-   * take the values from the first window that has them set and ignore
-   * all the rest (until the app is stopped and restarted).
-   */
-
-  unique_bus_name = meta_window_get_gtk_unique_bus_name (window);
-
-  if (app->running_state->remote_menu == NULL ||
-      g_strcmp0 (app->running_state->unique_bus_name, unique_bus_name) != 0)
-    {
-      const gchar *application_object_path;
-      const gchar *app_menu_object_path;
-      GDBusActionGroup *actions;
-
-      application_object_path = meta_window_get_gtk_application_object_path (window);
-      app_menu_object_path = meta_window_get_gtk_app_menu_object_path (window);
-
-      if (application_object_path == NULL || app_menu_object_path == NULL || unique_bus_name == NULL)
-        return;
-
-      g_clear_pointer (&app->running_state->unique_bus_name, g_free);
-      app->running_state->unique_bus_name = g_strdup (unique_bus_name);
-      g_clear_object (&app->running_state->remote_menu);
-      app->running_state->remote_menu = g_dbus_menu_model_get (app->running_state->session, unique_bus_name, app_menu_object_path);
-      actions = g_dbus_action_group_get (app->running_state->session, unique_bus_name, application_object_path);
-      gtk_action_muxer_insert (app->running_state->muxer, "app", G_ACTION_GROUP (actions));
-      g_object_unref (actions);
-    }
 }
 
 static void
@@ -1535,20 +1311,6 @@ unref_running_state (CinnamonAppRunningState *state)
 
   screen = cinnamon_global_get_screen (cinnamon_global_get ());
   g_signal_handler_disconnect (screen, state->workspace_switch_id);
-
-  g_clear_object (&state->application_proxy);
-
-  if (state->cancellable != NULL)
-    {
-      g_cancellable_cancel (state->cancellable);
-      g_clear_object (&state->cancellable);
-    }
-
-  g_clear_object (&state->remote_menu);
-  g_clear_object (&state->muxer);
-  g_clear_object (&state->session);
-  g_clear_pointer (&state->unique_bus_name, g_free);
-  g_clear_pointer (&state->remote_menu, g_free);
 
   g_slice_free (CinnamonAppRunningState, state);
 }
@@ -1637,19 +1399,6 @@ cinnamon_app_class_init(CinnamonAppClass *klass)
                                                       G_PARAM_READABLE));
 
   /**
-   * CinnamonApp:busy:
-   *
-   * Whether the application has marked itself as busy.
-   */
-  g_object_class_install_property (gobject_class,
-                                   PROP_BUSY,
-                                   g_param_spec_boolean ("busy",
-                                                         "Busy",
-                                                         "Busy state",
-                                                         FALSE,
-                                                         G_PARAM_READABLE));
-
-  /**
    * CinnamonApp:id:
    *
    * The id of this application (a desktop filename, or a special string
@@ -1661,33 +1410,6 @@ cinnamon_app_class_init(CinnamonAppClass *klass)
                                                         "Application id",
                                                         "The desktop file id of this CinnamonApp",
                                                         NULL,
-                                                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
-
-  /**
-   * CinnamonApp:action-group:
-   *
-   * The #GDBusActionGroup associated with this CinnamonApp, if any. See the
-   * documentation of #GApplication and #GActionGroup for details.
-   */
-  g_object_class_install_property (gobject_class,
-                                   PROP_ACTION_GROUP,
-                                   g_param_spec_object ("action-group",
-                                                        "Application Action Group",
-                                                        "The action group exported by the remote application",
-                                                        G_TYPE_ACTION_GROUP,
-                                                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
-  /**
-   * CinnamonApp:menu:
-   *
-   * The #GMenuProxy associated with this CinnamonApp, if any. See the
-   * documentation of #GMenuModel for details.
-   */
-  g_object_class_install_property (gobject_class,
-                                   PROP_MENU,
-                                   g_param_spec_object ("menu",
-                                                        "Application Menu",
-                                                        "The primary menu exported by the remote application",
-                                                        G_TYPE_MENU_MODEL,
                                                         G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
     /**
