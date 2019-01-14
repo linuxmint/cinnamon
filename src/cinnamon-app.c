@@ -1265,7 +1265,7 @@ on_dbus_proxy_gotten (GObject      *initable,
       g_variant_get_child (menu_property, 0, "&o", &object_path);
 
       state->remote_menu = G_MENU_MODEL (g_dbus_menu_model_get (g_dbus_proxy_get_connection (state->app_proxy),
-                                                                state->dbus_name,
+                                                                g_dbus_proxy_get_name (state->app_proxy),
                                                                 object_path));
 
       g_object_notify (G_OBJECT (self), "menu");
