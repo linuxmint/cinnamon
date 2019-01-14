@@ -1095,10 +1095,8 @@ application_properties_changed (GDBusConnection *connection,
 {
   CinnamonApp *app = user_data;
   GVariant *changed_properties;
-  GVariantIter iter;
   gboolean busy = FALSE;
-  const gchar *key, *interface_name_for_signal;
-  GVariant *value;
+  const gchar *interface_name_for_signal;
 
   g_variant_get (parameters,
                  "(&s@a{sv}as)",
@@ -1109,19 +1107,7 @@ application_properties_changed (GDBusConnection *connection,
   if (g_strcmp0 (interface_name_for_signal, "org.gtk.Application") != 0)
     return;
 
-  g_variant_iter_init (&iter, changed_properties);
-  while (g_variant_iter_next (&iter, "{&sv}", &key, &value))
-    {
-      if (g_strcmp0 (key, "Busy") != 0)
-        {
-          g_variant_unref (value);
-          continue;
-        }
-
-      busy = g_variant_get_boolean (value);
-      g_variant_unref (value);
-      break;
-    }
+  g_variant_lookup (changed_properties, "Busy", "b", &busy);
 
   if (busy)
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_BUSY);
