@@ -72,9 +72,6 @@ int cinnamon_app_compare_by_name (CinnamonApp *app, CinnamonApp *other);
 
 int cinnamon_app_compare (CinnamonApp *app, CinnamonApp *other);
 
-void cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window);
-void cinnamon_app_update_app_menu       (CinnamonApp *app, MetaWindow *window);
-
 gboolean cinnamon_app_get_busy          (CinnamonApp *app);
 
 G_END_DECLS
