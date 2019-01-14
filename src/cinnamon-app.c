@@ -53,7 +53,7 @@ typedef struct {
  * SECTION:cinnamon-app
  * @short_description: Object representing an application
  *
- * This object wraps a #GMenuTreeEntry, providing methods and signals
+ * This object wraps a #GDesktopAppInfo, providing methods and signals
  * primarily useful for running applications.
  */
 struct _CinnamonApp
@@ -64,7 +64,7 @@ struct _CinnamonApp
 
   CinnamonAppState state;
 
-  GMenuTreeEntry *entry; /* If NULL, this app is backed by one or more
+  GDesktopAppInfo *info; /* If NULL, this app is backed by one or more
                           * MetaWindow.  For purposes of app title
                           * etc., we use the first window added,
                           * because it's most likely to be what we
@@ -138,14 +138,15 @@ cinnamon_app_get_property (GObject    *gobject,
 const char *
 cinnamon_app_get_id (CinnamonApp *app)
 {
-  if (app->entry)
-    return gmenu_tree_entry_get_desktop_file_id (app->entry);
+  if (app->info)
+    return g_app_info_get_id (G_APP_INFO (app->info));
   return app->window_id_string;
 }
 
 static MetaWindow *
 window_backed_app_get_window (CinnamonApp     *app)
 {
+  g_assert (app->info == NULL);
   g_assert (app->running_state);
   g_assert (app->running_state->windows);
   return app->running_state->windows->data;
@@ -242,12 +243,12 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
 
   ret = NULL;
 
-  if (app->entry == NULL)
+  if (app->info == NULL)
     {
       return window_backed_app_get_icon (app, size);
     }
 
-  icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+  icon = g_app_info_get_icon (G_APP_INFO (app->info));
 
   if (icon != NULL)
     {
@@ -353,7 +354,7 @@ cinnamon_app_create_faded_icon_cpu (StTextureCache *cache,
 
   info = NULL;
 
-  icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+  icon = g_app_info_get_icon (G_APP_INFO (app->info));
   if (icon != NULL)
     {
       info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
@@ -444,7 +445,7 @@ cinnamon_app_get_faded_icon (CinnamonApp *app, int size)
    * property tracking bits, and this helps us visually distinguish
    * app-tracked from not.
    */
-  if (!app->entry)
+  if (!app->info)
     return window_backed_app_get_icon (app, size);
 
   global = cinnamon_global_get ();
@@ -482,8 +483,8 @@ cinnamon_app_get_faded_icon (CinnamonApp *app, int size)
 const char *
 cinnamon_app_get_name (CinnamonApp *app)
 {
-  if (app->entry)
-    return g_app_info_get_name (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+  if (app->info)
+    return g_app_info_get_name (G_APP_INFO (app->info));
   else if (app->running_state == NULL)
     return _("Unknown");
   else
@@ -501,8 +502,8 @@ cinnamon_app_get_name (CinnamonApp *app)
 const char *
 cinnamon_app_get_description (CinnamonApp *app)
 {
-  if (app->entry)
-    return g_app_info_get_description (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+  if (app->info)
+    return g_app_info_get_description (G_APP_INFO (app->info));
   else
     return NULL;
 }
@@ -518,8 +519,8 @@ cinnamon_app_get_keywords (CinnamonApp *app)
   if (app->keywords)
     return app->keywords;
 
-  if (app->entry)
-    keywords = g_desktop_app_info_get_keywords (G_DESKTOP_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+  if (app->info)
+    keywords = g_desktop_app_info_get_keywords (G_DESKTOP_APP_INFO (app->info));
   else
     keywords = NULL;
 
@@ -551,7 +552,7 @@ cinnamon_app_get_keywords (CinnamonApp *app)
 gboolean
 cinnamon_app_is_window_backed (CinnamonApp *app)
 {
-  return app->entry == NULL;
+  return app->info == NULL;
 }
 
 typedef struct {
@@ -800,7 +801,7 @@ void
 cinnamon_app_open_new_window (CinnamonApp      *app,
                            int            workspace)
 {
-  g_return_if_fail (app->entry != NULL);
+  g_return_if_fail (app->info != NULL);
 
   /* Here we just always launch the application again, even if we know
    * it was already running.  For most applications this
@@ -990,25 +991,24 @@ _cinnamon_app_new_for_window (MetaWindow      *window)
 }
 
 CinnamonApp *
-_cinnamon_app_new (GMenuTreeEntry *info)
+_cinnamon_app_new (GDesktopAppInfo *info)
 {
   CinnamonApp *app;
 
   app = g_object_new (CINNAMON_TYPE_APP, NULL);
 
-  _cinnamon_app_set_entry (app, info);
+  _cinnamon_app_set_app_info (app, info);
 
   return app;
 }
 
 void
-_cinnamon_app_set_entry (CinnamonApp       *app,
-                      GMenuTreeEntry *entry)
+_cinnamon_app_set_app_info (CinnamonApp       *app,
+                            GDesktopAppInfo   *info)
 {
-  if (app->entry != NULL)
-    gmenu_tree_item_unref (app->entry);
-  app->entry = gmenu_tree_item_ref (entry);
-  
+  g_clear_object (&app->info);
+  app->info = g_object_ref (info);
+
   if (app->name_collation_key != NULL)
     g_free (app->name_collation_key);
   app->name_collation_key = g_utf8_collate_key (cinnamon_app_get_name (app), -1);
@@ -1312,14 +1312,13 @@ cinnamon_app_launch (CinnamonApp     *app,
                   int           workspace,
                   GError      **error)
 {
-  GDesktopAppInfo *gapp;
   GdkAppLaunchContext *context;
   gboolean ret;
   CinnamonGlobal *global;
   MetaScreen *screen;
   GdkDisplay *gdisplay;
 
-  if (app->entry == NULL)
+  if (app->info == NULL)
     {
       MetaWindow *window = window_backed_app_get_window (app);
       meta_window_activate (window, timestamp);
@@ -1340,8 +1339,7 @@ cinnamon_app_launch (CinnamonApp     *app,
   gdk_app_launch_context_set_timestamp (context, timestamp);
   gdk_app_launch_context_set_desktop (context, workspace);
 
-  gapp = gmenu_tree_entry_get_app_info (app->entry);
-  ret = g_desktop_app_info_launch_uris_as_manager (gapp, NULL,
+  ret = g_desktop_app_info_launch_uris_as_manager (app->info, NULL,
                                                    G_APP_LAUNCH_CONTEXT (context),
                                                    G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
                                                    NULL, NULL,
@@ -1361,21 +1359,7 @@ cinnamon_app_launch (CinnamonApp     *app,
 GDesktopAppInfo *
 cinnamon_app_get_app_info (CinnamonApp *app)
 {
-  if (app->entry)
-    return gmenu_tree_entry_get_app_info (app->entry);
-  return NULL;
-}
-
-/**
- * cinnamon_app_get_tree_entry:
- * @app: a #CinnamonApp
- *
- * Returns: (transfer none): The #GMenuTreeEntry for this app, or %NULL if backed by a window
- */
-GMenuTreeEntry *
-cinnamon_app_get_tree_entry (CinnamonApp *app)
-{
-  return app->entry;
+  return app->info;
 }
 
 static void
@@ -1490,24 +1474,22 @@ cinnamon_app_init_search_data (CinnamonApp *app)
   const char *exec;
   const char * const *keywords;
   char *normalized_exec;
-  GDesktopAppInfo *appinfo;
 
-  appinfo = gmenu_tree_entry_get_app_info (app->entry);
-  name = g_app_info_get_name (G_APP_INFO (appinfo));
+  name = g_app_info_get_name (G_APP_INFO (app->info));
   app->casefolded_name = cinnamon_util_normalize_casefold_and_unaccent (name);
 
-  generic_name = g_desktop_app_info_get_generic_name (appinfo);
+  generic_name = g_desktop_app_info_get_generic_name (app->info);
   if (generic_name)
     app->casefolded_generic_name = cinnamon_util_normalize_casefold_and_unaccent (generic_name);
   else
     app->casefolded_generic_name = NULL;
 
-  exec = g_app_info_get_executable (G_APP_INFO (appinfo));
+  exec = g_app_info_get_executable (G_APP_INFO (app->info));
   normalized_exec = cinnamon_util_normalize_casefold_and_unaccent (exec);
   app->casefolded_exec = trim_exec_line (normalized_exec);
   g_free (normalized_exec);
 
-  keywords = g_desktop_app_info_get_keywords (appinfo);
+  keywords = g_desktop_app_info_get_keywords (app->info);
 
   if (keywords)
     {
@@ -1628,16 +1610,14 @@ _cinnamon_app_do_match (CinnamonApp         *app,
                      GSList          **substring_results)
 {
   CinnamonAppSearchMatch match;
-  GAppInfo *appinfo;
 
   g_assert (app != NULL);
 
-  /* Skip window-backed apps */ 
-  appinfo = (GAppInfo*)cinnamon_app_get_app_info (app);
-  if (appinfo == NULL)
+  /* Skip window-backed apps */
+  if (app->info == NULL)
     return;
-  /* Skip not-visible apps */ 
-  if (!g_app_info_should_show (appinfo))
+  /* Skip not-visible apps */
+  if (!g_app_info_should_show (G_APP_INFO (app->info)))
     return;
 
   match = _cinnamon_app_match_search_terms (app, terms);
@@ -1670,11 +1650,7 @@ cinnamon_app_dispose (GObject *object)
 {
   CinnamonApp *app = CINNAMON_APP (object);
 
-  if (app->entry)
-    {
-      gmenu_tree_item_unref (app->entry);
-      app->entry = NULL;
-    }
+  g_clear_object (&app->info);
 
   while (app->running_state)
     _cinnamon_app_remove_window (app, app->running_state->windows->data);
