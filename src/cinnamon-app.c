@@ -720,7 +720,7 @@ cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window)
       actions = g_object_get_data (G_OBJECT (window), "actions");
       if (actions == NULL)
         {
-          actions = G_ACTION_GROUP (g_dbus_action_group_get (g_dbus_proxy_get_connection (app->running_state->app_proxy),
+          actions = G_ACTION_GROUP (g_dbus_action_group_get (g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL),
                                                              meta_window_get_dbus_unique_name (window),
                                                              object_path));
           g_object_set_data_full (G_OBJECT (window), "actions", actions, g_object_unref);
