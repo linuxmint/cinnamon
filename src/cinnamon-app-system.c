@@ -669,7 +669,7 @@ strip_extension (gchar *wm_class)
 /**
  * cinnamon_app_system_lookup_desktop_wmclass:
  * @system: a #CinnamonAppSystem
- * @wmclass: (allow-none): A WM_CLASS value
+ * @wmclass: (nullable): A WM_CLASS value
  *
  * Find a valid application whose .desktop file, without the extension
  * and properly canonicalized, matches @wmclass.
@@ -710,7 +710,7 @@ cinnamon_app_system_lookup_desktop_wmclass (CinnamonAppSystem *system,
 /**
  * cinnamon_app_system_lookup_startup_wmclass:
  * @system: a #CinnamonAppSystem
- * @wmclass: (allow-none): A WM_CLASS value
+ * @wmclass: (nullable): A WM_CLASS value
  *
  * Find a valid application whose .desktop file contains a
  * StartupWMClass entry matching @wmclass.
