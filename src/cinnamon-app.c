@@ -1475,25 +1475,6 @@ unref_running_state (CinnamonAppRunningState *state)
   g_slice_free (CinnamonAppRunningState, state);
 }
 
-static char *
-trim_exec_line (const char *str)
-{
-  const char *start, *end, *pos;
-
-  if (str == NULL)
-    return NULL;
-
-  end = strchr (str, ' ');
-  if (end == NULL)
-    end = str + strlen (str);
-
-  start = str;
-  while ((pos = strchr (start, '/')) && pos < end)
-    start = ++pos;
-
-  return g_strndup (start, end - start);
-}
-
 /**
  * cinnamon_app_compare_by_name:
  * @app: One app
