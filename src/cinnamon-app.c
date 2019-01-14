@@ -1435,6 +1435,8 @@ unref_running_state (CinnamonAppRunningState *state)
 
   g_clear_object (&state->remote_menu);
   g_clear_object (&state->muxer);
+  g_clear_pointer (&state->unique_bus_name, g_free);
+  g_clear_pointer (&state->remote_menu, g_free);
 
   g_slice_free (CinnamonAppRunningState, state);
 }
