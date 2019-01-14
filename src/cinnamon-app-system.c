@@ -42,8 +42,6 @@ struct _CinnamonAppSystemPrivate {
   GHashTable *id_to_app;
   GHashTable *startup_wm_class_to_id;
 
-  GSList *known_vendor_prefixes;
-
   GMenuTree *settings_tree;
   GHashTable *setting_id_to_app;
 };
@@ -150,116 +148,8 @@ cinnamon_app_system_finalize (GObject *object)
   g_hash_table_destroy (priv->id_to_app);
   g_hash_table_destroy (priv->setting_id_to_app);
   g_hash_table_destroy (priv->startup_wm_class_to_id);
-  g_slist_free_full (priv->known_vendor_prefixes, g_free);
-  priv->known_vendor_prefixes = NULL;
 
   G_OBJECT_CLASS (cinnamon_app_system_parent_class)->finalize (object);
-}
-
-static char *
-get_prefix_for_entry (GMenuTreeEntry *entry)
-{
-  char *prefix = NULL, *file_prefix = NULL;
-  const char *id;
-  GFile *file;
-  char *name;
-  int i = 0;
-
-  id = gmenu_tree_entry_get_desktop_file_id (entry);
-  file = g_file_new_for_path (gmenu_tree_entry_get_desktop_file_path (entry));
-  name = g_file_get_basename (file);
-
-  if (!name)
-    {
-      g_object_unref (file);
-      return NULL;
-    }
-  for (i = 0; vendor_prefixes[i]; i++)
-    {
-      if (g_str_has_prefix (name, vendor_prefixes[i]))
-        {
-          file_prefix = g_strdup (vendor_prefixes[i]);
-          break;
-        }
-    }
-
-  while (strcmp (name, id) != 0)
-    {
-      char *t;
-      char *pname;
-      GFile *parent = g_file_get_parent (file);
-
-      if (!parent)
-        {
-          g_warn_if_reached ();
-          break;
-        }
-
-      pname = g_file_get_basename (parent);
-      if (!pname)
-        {
-          g_object_unref (parent);
-          break;
-        }
-      if (!g_strstr_len (id, -1, pname))
-        {
-          /* handle <LegacyDir prefix="..."> */
-          char *t1;
-          size_t name_len = strlen (name);
-          size_t id_len = strlen (id);
-          char *t_id = g_strdup (id);
-
-          t_id[id_len - name_len] = '\0';
-          t1 = g_strdup(t_id);
-          g_free (prefix);
-          g_free (t_id);
-          g_free (name);
-          name = g_strdup (id);
-          prefix = t1;
-
-          g_object_unref (file);
-          file = parent;
-          g_free (pname);
-          g_free (file_prefix);
-          file_prefix = NULL;
-          break;
-        }
-
-      t = g_strconcat (pname, "-", name, NULL);
-      g_free (name);
-      name = t;
-
-      t = g_strconcat (pname, "-", prefix, NULL);
-      g_free (prefix);
-      prefix = t;
-
-      g_object_unref (file);
-      file = parent;
-      g_free (pname);
-    }
-
-  if (file)
-    g_object_unref (file);
-
-  if (strcmp (name, id) == 0)
-    {
-      g_free (name);
-      if (file_prefix && !prefix)
-        return file_prefix;
-      if (file_prefix)
-        {
-          char *t = g_strconcat (prefix, "-", file_prefix, NULL);
-          g_free (prefix);
-          g_free (file_prefix);
-          prefix = t;
-        }
-      return prefix;
-    }
-
-  g_free (name);
-  g_free (prefix);
-  g_free (file_prefix);
-  g_return_val_if_reached (NULL);
 }
 
 static void
@@ -338,9 +228,6 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
   g_assert (tree == self->priv->apps_tree);
 
-  g_slist_free_full (self->priv->known_vendor_prefixes, g_free);
-  self->priv->known_vendor_prefixes = NULL;
-
   if (!gmenu_tree_load_sync (self->priv->apps_tree, &error))
     {
       if (error)
@@ -361,21 +248,10 @@ on_apps_tree_changed_cb (GMenuTree *tree,
     {
       const char *id = key;
       GMenuTreeEntry *entry = value;
-      char *prefix;
       CinnamonApp *app;
 
       GDesktopAppInfo *info;
       const char *startup_wm_class;
-      
-      prefix = get_prefix_for_entry (entry);
-      
-      if (prefix != NULL
-          && !g_slist_find_custom (self->priv->known_vendor_prefixes, prefix,
-                                   (GCompareFunc)g_strcmp0))
-        self->priv->known_vendor_prefixes = g_slist_append (self->priv->known_vendor_prefixes,
-                                                            prefix);
-      else
-        g_free (prefix);
 
       info = gmenu_tree_entry_get_app_info (entry);
 
@@ -528,7 +404,7 @@ cinnamon_app_system_lookup_heuristic_basename (CinnamonAppSystem *system,
                                             const char     *name)
 {
   CinnamonApp *result;
-  GSList *prefix;
+  const char *const *prefix;
 
   result = cinnamon_app_system_lookup_app (system, name);
   if (result != NULL)
@@ -538,9 +414,9 @@ cinnamon_app_system_lookup_heuristic_basename (CinnamonAppSystem *system,
   if (result != NULL)
     return result;
 
-  for (prefix = system->priv->known_vendor_prefixes; prefix; prefix = g_slist_next (prefix))
+  for (prefix = vendor_prefixes; *prefix != NULL; prefix++)
     {
-      char *tmpid = g_strconcat ((char*)prefix->data, name, NULL);
+      char *tmpid = g_strconcat (*prefix, name, NULL);
       result = cinnamon_app_system_lookup_app (system, tmpid);
       g_free (tmpid);
       if (result != NULL)
