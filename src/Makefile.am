@@ -134,7 +134,13 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-util.c			\
 	cinnamon-window-tracker.c		\
 	cinnamon-wm.c			\
-	cinnamon-xfixes-cursor.c
+	cinnamon-xfixes-cursor.c \
+	gactionmuxer.h			\
+	gactionmuxer.c			\
+	gactionobservable.h		\
+	gactionobservable.c		\
+	gactionobserver.h		\
+	gactionobserver.c
 
 libcinnamon_la_gir_sources = \
 	$(filter-out %-private.h $(cinnamon_recorder_non_gir_sources), $(cinnamon_public_headers_h) $(libcinnamon_la_SOURCES))

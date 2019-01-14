@@ -15,6 +15,7 @@
 #include "cinnamon-app-system-private.h"
 #include "cinnamon-window-tracker-private.h"
 #include "st.h"
+#include "gactionmuxer.h"
 
 typedef enum {
   MATCH_NONE,
@@ -37,6 +38,9 @@ typedef struct {
 
   /* Whether or not we need to resort the windows; this is done on demand */
   guint window_sort_stale : 1;
+  /* See GApplication documentation */
+  GDBusMenuModel   *remote_menu;
+  GActionMuxer     *muxer;
 } CinnamonAppRunningState;
 
 /**
@@ -73,11 +77,13 @@ struct _CinnamonApp
   char *keywords;
 };
 
-G_DEFINE_TYPE (CinnamonApp, cinnamon_app, G_TYPE_OBJECT);
-
 enum {
   PROP_0,
-  PROP_STATE
+  PROP_STATE,
+  PROP_ID,
+  PROP_DBUS_ID,
+  PROP_ACTION_GROUP,
+  PROP_MENU
 };
 
 enum {
@@ -88,7 +94,10 @@ enum {
 static guint cinnamon_app_signals[LAST_SIGNAL] = { 0 };
 
 static void create_running_state (CinnamonApp *app);
+static void setup_running_state (CinnamonApp *app, MetaWindow *window);
 static void unref_running_state (CinnamonAppRunningState *state);
+
+G_DEFINE_TYPE (CinnamonApp, cinnamon_app, G_TYPE_OBJECT)
 
 static void
 cinnamon_app_get_property (GObject    *gobject,
@@ -102,6 +111,17 @@ cinnamon_app_get_property (GObject    *gobject,
     {
     case PROP_STATE:
       g_value_set_enum (value, app->state);
+      break;
+    case PROP_ID:
+      g_value_set_string (value, cinnamon_app_get_id (app));
+      break;
+    case PROP_ACTION_GROUP:
+      if (app->running_state)
+        g_value_set_object (value, app->running_state->muxer);
+      break;
+    case PROP_MENU:
+      if (app->running_state)
+        g_value_set_object (value, app->running_state->remote_menu);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -664,6 +684,33 @@ cinnamon_app_activate_window (CinnamonApp     *app,
     }
 }
 
+void
+cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window)
+{
+  const char *object_path;
+
+  object_path = meta_window_get_gtk_window_object_path (window);
+  if (object_path != NULL)
+    {
+      GActionGroup *actions;
+
+      actions = g_object_get_data (G_OBJECT (window), "actions");
+      if (actions == NULL)
+        {
+          actions = G_ACTION_GROUP (g_dbus_action_group_get (g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL),
+                                                             meta_window_get_gtk_unique_bus_name (window),
+                                                             object_path));
+          g_object_set_data_full (G_OBJECT (window), "actions", actions, g_object_unref);
+        }
+
+      if (!app->running_state->muxer)
+        app->running_state->muxer = g_action_muxer_new ();
+
+      g_action_muxer_insert (app->running_state->muxer, "win", actions);
+      g_object_notify (G_OBJECT (app), "action-group");
+    }
+}
+
 /**
  * cinnamon_app_activate:
  * @app: a #CinnamonApp
@@ -1074,6 +1121,8 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   g_signal_connect (window, "unmanaged", G_CALLBACK(cinnamon_app_on_unmanaged), app);
   g_signal_connect (window, "notify::user-time", G_CALLBACK(cinnamon_app_on_user_time_changed), app);
 
+  setup_running_state (app, window);
+
   if (app->state != CINNAMON_APP_STATE_STARTING)
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
 
@@ -1317,6 +1366,46 @@ create_running_state (CinnamonApp *app)
   app->running_state->refcount = 1;
   app->running_state->workspace_switch_id =
     g_signal_connect (screen, "workspace-switched", G_CALLBACK(cinnamon_app_on_ws_switch), app);
+  app->running_state->muxer = g_action_muxer_new ();
+}
+
+static void
+setup_running_state (CinnamonApp   *app,
+                     MetaWindow *window)
+{
+  /* We assume that 'gtk-unique-bus-name', gtk-application-object-path'
+   * and 'gtk-app-menu-object-path' are the same for all windows which
+   * have it set.
+   *
+   * It could be possible, however, that the first window we see
+   * belonging to the app didn't have them set.  For this reason, we
+   * take the values from the first window that has them set and ignore
+   * all the rest (until the app is stopped and restarted).
+   */
+
+  if (app->running_state->remote_menu == NULL)
+    {
+      const gchar *application_object_path;
+      const gchar *app_menu_object_path;
+      const gchar *unique_bus_name;
+      GDBusConnection *session;
+      GDBusActionGroup *actions;
+
+      application_object_path = meta_window_get_gtk_application_object_path (window);
+      app_menu_object_path = meta_window_get_gtk_app_menu_object_path (window);
+      unique_bus_name = meta_window_get_gtk_unique_bus_name (window);
+
+      if (application_object_path == NULL || app_menu_object_path == NULL || unique_bus_name == NULL)
+        return;
+
+      session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
+      g_assert (session != NULL);
+      app->running_state->remote_menu = g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path);
+      actions = g_dbus_action_group_get (session, unique_bus_name, application_object_path);
+      g_action_muxer_insert (app->running_state->muxer, "app", G_ACTION_GROUP (actions));
+      g_object_unref (actions);
+      g_object_unref (session);
+    }
 }
 
 static void
@@ -1324,13 +1413,18 @@ unref_running_state (CinnamonAppRunningState *state)
 {
   MetaScreen *screen;
 
+  g_assert (state->refcount > 0);
+
   state->refcount--;
   if (state->refcount > 0)
     return;
 
   screen = cinnamon_global_get_screen (cinnamon_global_get ());
-
   g_signal_handler_disconnect (screen, state->workspace_switch_id);
+
+  g_clear_object (&state->remote_menu);
+  g_clear_object (&state->muxer);
+
   g_slice_free (CinnamonAppRunningState, state);
 }
 
@@ -1508,6 +1602,11 @@ cinnamon_app_dispose (GObject *object)
   while (app->running_state)
     _cinnamon_app_remove_window (app, app->running_state->windows->data);
 
+
+  /* We should have been transitioned when we removed all of our windows */
+  g_assert (app->state == CINNAMON_APP_STATE_STOPPED);
+  g_assert (app->running_state == NULL);
+
   g_clear_pointer (&app->keywords, g_free);
 
   G_OBJECT_CLASS(cinnamon_app_parent_class)->dispose (object);
@@ -1558,4 +1657,46 @@ cinnamon_app_class_init(CinnamonAppClass *klass)
                                                       CINNAMON_TYPE_APP_STATE,
                                                       CINNAMON_APP_STATE_STOPPED,
                                                       G_PARAM_READABLE));
+
+  /**
+   * CinnamonApp:id:
+   *
+   * The id of this application (a desktop filename, or a special string
+   * like window:0xabcd1234)
+   */
+  g_object_class_install_property (gobject_class,
+                                   PROP_ID,
+                                   g_param_spec_string ("id",
+                                                        "Application id",
+                                                        "The desktop file id of this CinnamonApp",
+                                                        NULL,
+                                                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
+  /**
+   * CinnamonApp:action-group:
+   *
+   * The #GDBusActionGroup associated with this CinnamonApp, if any. See the
+   * documentation of #GApplication and #GActionGroup for details.
+   */
+  g_object_class_install_property (gobject_class,
+                                   PROP_ACTION_GROUP,
+                                   g_param_spec_object ("action-group",
+                                                        "Application Action Group",
+                                                        "The action group exported by the remote application",
+                                                        G_TYPE_ACTION_GROUP,
+                                                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+  /**
+   * CinnamonApp:menu:
+   *
+   * The #GMenuProxy associated with this CinnamonApp, if any. See the
+   * documentation of #GMenuModel for details.
+   */
+  g_object_class_install_property (gobject_class,
+                                   PROP_MENU,
+                                   g_param_spec_object ("menu",
+                                                        "Application Menu",
+                                                        "The primary menu exported by the remote application",
+                                                        G_TYPE_MENU_MODEL,
+                                                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
 }
