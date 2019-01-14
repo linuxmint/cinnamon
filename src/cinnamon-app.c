@@ -726,6 +726,9 @@ cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window)
           g_object_set_data_full (G_OBJECT (window), "actions", actions, g_object_unref);
         }
 
+      if (!app->running_state->muxer)
+        app->running_state->muxer = g_action_muxer_new ();
+
       g_action_muxer_insert (app->running_state->muxer, "win", actions);
       g_object_notify (G_OBJECT (app), "action-group");
     }
@@ -1244,7 +1247,10 @@ on_dbus_proxy_gotten (GObject      *initable,
                            g_dbus_proxy_get_connection (state->app_proxy),
                            g_dbus_proxy_get_name (state->app_proxy),
                            g_dbus_proxy_get_object_path (state->app_proxy));
-  state->muxer = g_action_muxer_new ();
+
+  if (!state->muxer)
+    state->muxer = g_action_muxer_new ();
+
   g_action_muxer_insert (state->muxer, "app", state->remote_actions);
   g_strfreev (g_action_group_list_actions (state->remote_actions));
 
