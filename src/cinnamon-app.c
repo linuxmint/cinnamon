@@ -785,6 +785,7 @@ cinnamon_app_activate_full (CinnamonApp      *app,
       case CINNAMON_APP_STATE_STARTING:
         break;
       case CINNAMON_APP_STATE_RUNNING:
+      case CINNAMON_APP_STATE_BUSY:
         cinnamon_app_activate_window (app, NULL, timestamp);
         break;
       default:
