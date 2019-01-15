@@ -642,7 +642,7 @@ cinnamon_app_activate_full (CinnamonApp      *app,
       case CINNAMON_APP_STATE_STOPPED:
         {
           GError *error = NULL;
-          if (!cinnamon_app_launch (app, timestamp, workspace, &error))
+          if (!cinnamon_app_launch (app, timestamp, workspace, FALSE, &error))
             {
               char *msg;
               msg = g_strdup_printf (_("Failed to launch '%s'"), cinnamon_app_get_name (app));
@@ -686,7 +686,7 @@ cinnamon_app_open_new_window (CinnamonApp      *app,
    * as say Pidgin.  Ideally, we have the application express to us
    * that it supports an explicit new-window action.
    */
-  cinnamon_app_launch (app, 0, workspace, NULL);
+  cinnamon_app_launch (app, 0, workspace, FALSE, NULL);
 }
 
 /**
@@ -1341,12 +1341,14 @@ app_child_setup (gpointer user_data)
  * cinnamon_app_launch:
  * @timestamp: Event timestamp, or 0 for current event timestamp
   * @workspace: Start on this workspace, or -1 for default
+  * @discrete_gpu: Whether to start on the discrete GPU
   * @error: A #GError
  */
 gboolean
 cinnamon_app_launch (CinnamonApp     *app,
                   guint         timestamp,
                   int           workspace,
+                  gboolean      discrete_gpu,
                   GError      **error)
 {
   CinnamonGlobal *global;
@@ -1368,6 +1370,8 @@ cinnamon_app_launch (CinnamonApp     *app,
 
   global = cinnamon_global_get ();
   context = cinnamon_global_create_app_launch_context_for_workspace (global, timestamp, workspace);
+  if (discrete_gpu)
+    g_app_launch_context_setenv (context, "DRI_PRIME", "1");
 
   ret = g_desktop_app_info_launch_uris_as_manager (app->info, NULL,
                                                    context,
