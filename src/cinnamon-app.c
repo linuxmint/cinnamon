@@ -93,6 +93,7 @@ struct _CinnamonApp
 enum {
   PROP_0,
   PROP_STATE,
+  PROP_BUSY,
   PROP_ID,
   PROP_DBUS_ID,
   PROP_ACTION_GROUP,
@@ -123,6 +124,9 @@ cinnamon_app_get_property (GObject    *gobject,
     {
     case PROP_STATE:
       g_value_set_enum (value, app->state);
+      break;
+    case PROP_BUSY:
+      g_value_set_boolean (value, cinnamon_app_get_busy (app));
       break;
     case PROP_ID:
       g_value_set_string (value, cinnamon_app_get_id (app));
@@ -785,7 +789,6 @@ cinnamon_app_activate_full (CinnamonApp      *app,
       case CINNAMON_APP_STATE_STARTING:
         break;
       case CINNAMON_APP_STATE_RUNNING:
-      case CINNAMON_APP_STATE_BUSY:
         cinnamon_app_activate_window (app, NULL, timestamp);
         break;
       default:
@@ -1168,22 +1171,27 @@ cinnamon_app_on_ws_switch (MetaScreen         *screen,
   g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
 }
 
+gboolean
+cinnamon_app_get_busy (CinnamonApp *app)
+{
+  if (app->running_state != NULL &&
+      app->running_state->application_proxy != NULL &&
+      cinnamon_org_gtk_application_get_busy (app->running_state->application_proxy))
+    return TRUE;
+
+  return FALSE;
+}
+
 static void
 busy_changed_cb (GObject    *object,
                  GParamSpec *pspec,
                  gpointer    user_data)
 {
-  CinnamonOrgGtkApplication *proxy;
   CinnamonApp *app = user_data;
 
-  g_assert (CINNAMON_IS_ORG_GTK_APPLICATION (object));
   g_assert (CINNAMON_IS_APP (app));
 
-  proxy = CINNAMON_ORG_GTK_APPLICATION (object);
-  if (cinnamon_org_gtk_application_get_busy (proxy))
-    cinnamon_app_state_transition (app, CINNAMON_APP_STATE_BUSY);
-  else
-    cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
+  g_object_notify (G_OBJECT (app), "busy");
 }
 
 static void
@@ -1205,7 +1213,7 @@ get_application_proxy (GObject      *source,
                         G_CALLBACK (busy_changed_cb),
                         app);
       if (cinnamon_org_gtk_application_get_busy (proxy))
-        cinnamon_app_state_transition (app, CINNAMON_APP_STATE_BUSY);
+        g_object_notify (G_OBJECT (app), "busy");
     }
 
   if (app->running_state != NULL)
@@ -1692,6 +1700,19 @@ cinnamon_app_class_init(CinnamonAppClass *klass)
                                                       CINNAMON_TYPE_APP_STATE,
                                                       CINNAMON_APP_STATE_STOPPED,
                                                       G_PARAM_READABLE));
+
+  /**
+   * CinnamonApp:busy:
+   *
+   * Whether the application has marked itself as busy.
+   */
+  g_object_class_install_property (gobject_class,
+                                   PROP_BUSY,
+                                   g_param_spec_boolean ("busy",
+                                                         "Busy",
+                                                         "Busy state",
+                                                         FALSE,
+                                                         G_PARAM_READABLE));
 
   /**
    * CinnamonApp:id:
