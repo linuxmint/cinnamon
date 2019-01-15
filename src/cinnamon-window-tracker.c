@@ -522,9 +522,6 @@ track_window (CinnamonWindowTracker *self,
 {
   CinnamonApp *app;
 
-  if (!cinnamon_window_tracker_is_window_interesting (self, window))
-    return;
-
   app = get_app_for_window (self, window);
   if (!app)
     return;
@@ -564,12 +561,9 @@ disassociate_window (CinnamonWindowTracker   *self,
 
   g_hash_table_remove (self->window_to_app, window);
 
-  if (cinnamon_window_tracker_is_window_interesting (self, window))
-    {
-      _cinnamon_app_remove_window (app, window);
-      g_signal_handlers_disconnect_by_func (window, G_CALLBACK(on_wm_class_changed), self);
-      g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_gtk_application_id_changed), self);
-    }
+  _cinnamon_app_remove_window (app, window);
+  g_signal_handlers_disconnect_by_func (window, G_CALLBACK(on_wm_class_changed), self);
+  g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_gtk_application_id_changed), self);
 
   g_signal_emit (self, signals[TRACKED_WINDOWS_CHANGED], 0);
 
