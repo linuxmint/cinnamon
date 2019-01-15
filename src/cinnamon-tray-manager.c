@@ -15,6 +15,15 @@
 #include "cinnamon-embedded-window.h"
 #include "cinnamon-global.h"
 
+typedef struct _CinnamonTrayManagerPrivate CinnamonTrayManagerPrivate;
+
+struct _CinnamonTrayManager
+{
+  GObject parent_instance;
+
+  CinnamonTrayManagerPrivate *priv;
+};
+
 struct _CinnamonTrayManagerPrivate {
   NaTrayManager *na_manager;
   ClutterStage *stage;
