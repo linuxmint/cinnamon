@@ -3121,14 +3121,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         return this._matchNames(Main.placesManager.getMounts(), pattern);
     }
 
-    _listApplications(category_menu_id, pattern){
-        var applist = [];
-        if (category_menu_id) {
-            applist = category_menu_id;
-        } else {
-            applist = "all";
-        }
-        let res;
+    _listApplications(pattern){
+        let res = [];
         let exactMatch = null;
         if (pattern){
             res = [];
@@ -3152,7 +3146,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         res.push(app.get_id());
                 }
             }
-        } else res = applist;
+        }
         return [res, exactMatch];
     }
 
@@ -3168,14 +3162,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._previousTreeSelectedActor = null;
         this._previousSelectedActor = null;
 
-       // _listApplications returns all the applications when the search
-       // string is zero length. This will happened if you type a space
-       // in the search entry.
-        if (pattern.length == 0) {
-            return false;
-        }
-
-        let result = this._listApplications(null, pattern);
+        let result = this._listApplications(pattern);
         let appResults = result[0];
         let exactMatch = result[1];
         let placesResults = [];
