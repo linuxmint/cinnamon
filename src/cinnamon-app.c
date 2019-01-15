@@ -866,10 +866,10 @@ cinnamon_app_compare_windows (gconstpointer   a,
  * cinnamon_app_get_windows:
  * @app:
  *
- * Get the toplevel, interesting windows which are associated with this
- * application.  The returned list will be sorted first by whether
- * they're on the active workspace, then by whether they're visible,
- * and finally by the time the user last interacted with them.
+ * Get the windows which are associated with this application. The
+ * returned list will be sorted first by whether they're on the
+ * active workspace, then by whether they're visible, and finally
+ * by the time the user last interacted with them.
  *
  * Returns: (transfer none) (element-type MetaWindow): List of windows
  */
