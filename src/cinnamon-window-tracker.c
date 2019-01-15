@@ -47,9 +47,6 @@ struct _CinnamonWindowTracker
 
   /* <MetaWindow * window, CinnamonApp *app> */
   GHashTable *window_to_app;
-
-  /* <int, CinnamonApp *app> */
-  GHashTable *launched_pid_to_app;
 };
 
 G_DEFINE_TYPE (CinnamonWindowTracker, cinnamon_window_tracker, G_TYPE_OBJECT);
@@ -368,7 +365,7 @@ get_app_from_window_pid (CinnamonWindowTracker  *tracker,
   if (pid == -1)
     return NULL;
 
-  result = g_hash_table_lookup (tracker->launched_pid_to_app, GINT_TO_POINTER (pid));
+  result = cinnamon_window_tracker_get_app_from_pid (tracker, pid);
   if (result != NULL)
     g_object_ref (result);
 
@@ -670,8 +667,6 @@ cinnamon_window_tracker_init (CinnamonWindowTracker *self)
   self->window_to_app = g_hash_table_new_full (g_direct_hash, g_direct_equal,
                                                NULL, (GDestroyNotify) g_object_unref);
 
-  self->launched_pid_to_app = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify) g_object_unref);
-
   screen = cinnamon_global_get_screen (cinnamon_global_get ());
 
   g_signal_connect (G_OBJECT (screen), "startup-sequence-changed",
@@ -687,7 +682,6 @@ cinnamon_window_tracker_finalize (GObject *object)
   CinnamonWindowTracker *self = CINNAMON_WINDOW_TRACKER (object);
 
   g_hash_table_destroy (self->window_to_app);
-  g_hash_table_destroy (self->launched_pid_to_app);
 
   G_OBJECT_CLASS (cinnamon_window_tracker_parent_class)->finalize(object);
 }
@@ -759,40 +753,6 @@ cinnamon_window_tracker_get_app_from_pid (CinnamonWindowTracker *self,
   g_slist_free (running);
 
   return result;
-}
-
-static void
-on_child_exited (GPid      pid,
-                 gint      status,
-                 gpointer  unused_data)
-{
-  CinnamonWindowTracker *tracker;
-
-  tracker = cinnamon_window_tracker_get_default ();
-
-  g_hash_table_remove (tracker->launched_pid_to_app, GINT_TO_POINTER((gint)pid));
-}
-
-void
-_cinnamon_window_tracker_add_child_process_app (CinnamonWindowTracker *tracker,
-                                             GPid                pid,
-                                             CinnamonApp           *app)
-{
-  gpointer pid_ptr = GINT_TO_POINTER((int)pid);
-
-  if (g_hash_table_lookup (tracker->launched_pid_to_app,
-                           &pid_ptr))
-    return;
-
-  g_hash_table_insert (tracker->launched_pid_to_app,
-                       pid_ptr,
-                       g_object_ref (app));
-  g_child_watch_add (pid, on_child_exited, NULL);
-  /* TODO: rescan unassociated windows
-   * Unlikely in practice that the launched app gets ahead of us
-   * enough to map an X window before we get scheduled after the fork(),
-   * but adding this note for future reference.
-   */
 }
 
 static void
