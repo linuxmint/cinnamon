@@ -77,6 +77,7 @@ gboolean cinnamon_app_is_on_workspace (CinnamonApp *app, MetaWorkspace *workspac
 gboolean cinnamon_app_launch (CinnamonApp     *app,
                            guint         timestamp,
                            int           workspace,
+                           gboolean      discrete_gpu,
                            GError      **error);
 
 void cinnamon_app_launch_action (CinnamonApp  *app,
