@@ -110,18 +110,21 @@ class VisibleChildIterator {
 }
 
 class SimpleMenuItem {
-    constructor(reactive=true, activatable=true) {
+    constructor(reactive=true, activatable=true, name="", description="", styleClass="") {
         this._signals = new SignalManager.SignalManager();
 
         this.actor = new St.BoxLayout({ style_class: 'popup-menu-item',
                                         reactive: reactive,
                                         accessible_role: Atk.Role.MENU_ITEM });
+        if (styleClass)
+            this.actor.add_style_class_name(styleClass);
+
         this.actor._delegate = this;
 
         this.label = null;
         this.icon = null;
-        this.name = "";
-        this.description = "";
+        this.name = name;
+        this.description = description;
 
         if (reactive && activatable) {
             this._signals.connect(this.actor, 'button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
@@ -279,15 +282,11 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
 }
 
 class GenericApplicationButton extends SimpleMenuItem {
-    constructor(applet, app, withMenu) {
-        super();
+    constructor(applet, app, withMenu=false, styleClass="") {
+        let desc = app.get_description() || "";
+        super(true, true, app.get_name(), desc.split("\n")[0], styleClass);
         this.app = app;
         this.applet = applet;
-
-        this.name = this.app.get_name();
-        let desc = app.get_description();
-        if (desc)
-            this.description = desc.split("\n")[0];
 
         this.withMenu = withMenu;
         if (this.withMenu){
@@ -395,10 +394,7 @@ class GenericApplicationButton extends SimpleMenuItem {
 
 class TransientButton extends SimpleMenuItem {
     constructor(applet, pathOrCommand) {
-        super();
-        this.name = "";
-        this.description = pathOrCommand;
-
+        super(true, true, "", pathOrCommand, 'menu-application-button');
         if (pathOrCommand.charAt(0) == '~') {
             pathOrCommand = pathOrCommand.slice(1);
             pathOrCommand = GLib.get_home_dir() + pathOrCommand;
@@ -422,7 +418,7 @@ class TransientButton extends SimpleMenuItem {
         this.app = {
             get_app_info: {
                 get_filename() {
-                    return pathOrCommand;
+                    return this.name;
                 }
             },
             get_id() {
@@ -451,7 +447,6 @@ class TransientButton extends SimpleMenuItem {
             this.icon = new St.Icon({icon_name: iconName, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
             // @todo Would be nice to indicate we don't have a handler for this file.
         }
-        this.actor.set_style_class_name('menu-application-button');
 
         this.addActor(this.icon);
 
@@ -482,9 +477,8 @@ class TransientButton extends SimpleMenuItem {
 
 class ApplicationButton extends GenericApplicationButton {
     constructor(applet, app) {
-        super(applet, app, true);
+        super(applet, app, true, 'menu-application-button');
         this.category = [];
-        this.actor.set_style_class_name('menu-application-button');
 
         if (applet.showApplicationIcons) {
             this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
@@ -523,15 +517,10 @@ class ApplicationButton extends GenericApplicationButton {
 
 class SearchProviderResultButton extends SimpleMenuItem {
     constructor(applet, provider, result) {
-        super();
+        super(true, true, result.label, result.description, 'menu-application-button');
         this.provider = provider;
         this.result = result;
-
-        this.name = result.label;
-        this.description = result.description;
-
         this.applet = applet;
-        this.actor.set_style_class_name('menu-application-button');
 
         if (result.icon) {
             this.icon = result.icon;
@@ -567,19 +556,14 @@ class SearchProviderResultButton extends SimpleMenuItem {
 
 class PlaceButton extends SimpleMenuItem {
     constructor(applet, place) {
-        super();
-        this.applet = applet;
-        this.place = place;
-
-        this.name = place.name;
-        let selectedAppId = place.idDecoded;
-        selectedAppId = selectedAppId.substr(selectedAppId.indexOf(':') + 1);
+        let selectedAppId = place.idDecoded.substr(place.idDecoded.indexOf(':') + 1);
         let fileIndex = selectedAppId.indexOf('file:///');
         if (fileIndex !== -1)
             selectedAppId = selectedAppId.substr(fileIndex + 7);
-        this.description = selectedAppId;
 
-        this.actor.set_style_class_name('menu-application-button');
+        super(true, true, place.name, selectedAppId, 'menu-application-button');
+        this.applet = applet;
+        this.place = place;
 
         if (applet.showApplicationIcons) {
             this.icon = place.iconFactory(APPLICATION_ICON_SIZE);
@@ -624,22 +608,17 @@ class RecentContextMenuItem extends PopupMenu.PopupBaseMenuItem {
 
 class RecentButton extends SimpleMenuItem {
     constructor(applet, recent) {
-        super();
+        let fileIndex = recent.uriDecoded.indexOf("file:///");
+        let selectedAppUri = fileIndex === -1 ? "" : recent.uriDecoded.substr(fileIndex + 7);
+
+        super(true, true, recent.name, selectedAppUri, 'menu-application-button');
+
         this.mimeType = recent.mimeType;
         this.uri = recent.uri;
         this.uriDecoded = recent.uriDecoded;
         this.applet = applet;
 
-        this.name = recent.name;
-        let selectedAppUri = recent.uriDecoded;
-        let fileIndex = selectedAppUri.indexOf("file:///");
-        if (fileIndex !== -1)
-            selectedAppUri = selectedAppUri.substr(fileIndex + 7);
-        this.description = selectedAppUri;
-
         this.menu = null;
-
-        this.actor.set_style_class_name('menu-application-button');
 
         if (applet.showApplicationIcons) {
             this.icon = recent.createIcon(APPLICATION_ICON_SIZE);
@@ -786,30 +765,6 @@ class RecentButton extends SimpleMenuItem {
     }
 }
 
-class RecentClearButton extends SimpleMenuItem {
-    constructor(applet) {
-        super();
-        this.applet = applet;
-        this.actor.set_style_class_name('menu-application-button');
-
-        this.name = _("Clear list");
-        this.description = _("Clear all recent documents");
-
-        this.addIcon(APPLICATION_ICON_SIZE, 'edit-clear', null, true);
-        this.addLabel(this.name, 'menu-application-button-label');
-    }
-
-    activate() {
-        this.applet.menu.close();
-        (new Gtk.RecentManager()).purge_items();
-    }
-
-    destroy() {
-        delete this.applet;
-        super.destroy();
-    }
-}
-
 class CategoryButton extends SimpleMenuItem {
     constructor(category, showIcon) {
         super(true, false);
@@ -831,30 +786,25 @@ class CategoryButton extends SimpleMenuItem {
 
 class PlaceCategoryButton extends SimpleMenuItem {
     constructor(showIcon) {
-        super(true, false);
-        this.actor.set_style_class_name('menu-category-button');
+        super(true, false, _('Places'), '', 'menu-category-button');
         if (showIcon)
             this.addIcon(CATEGORY_ICON_SIZE, 'folder');
-        this.addLabel(_("Places"), 'menu-category-button-label');
+        this.addLabel(this.name, 'menu-category-button-label');
     }
 }
 
 class RecentCategoryButton extends SimpleMenuItem {
     constructor(showIcon) {
-        super(true, false);
-        this.actor.set_style_class_name('menu-category-button');
+        super(true, false, _('Recent Files'), '', 'menu-category-button');
         if (showIcon)
             this.addIcon(CATEGORY_ICON_SIZE, 'folder-recent');
-        this.addLabel(_("Recent Files"), 'menu-category-button-label');
+        this.addLabel(this.name, 'menu-category-button-label');
     }
 }
 
 class FavoritesButton extends GenericApplicationButton {
     constructor(applet, app) {
-        super(applet, app);
-
-        this.actor.add_style_class_name('menu-favorites-button');
-
+        super(applet, app, false, 'menu-favorites-button');
         this.icon = app.create_icon_texture(getFavIconSize());
         this.addActor(this.icon);
 
@@ -889,12 +839,7 @@ class FavoritesButton extends GenericApplicationButton {
 
 class SystemButton extends SimpleMenuItem {
     constructor(iconName, name, desc) {
-        super();
-        this.name = name;
-        this.description = desc;
-
-        this.actor.add_style_class_name('menu-favorites-button');
-
+        super(true, true, name, desc, 'menu-favorites-button');
         this.addIcon(getFavIconSize(), iconName);
     }
 }
@@ -2011,7 +1956,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this._previousSelectedActor._delegate instanceof RecentButton ||
                 this._previousSelectedActor._delegate instanceof SearchProviderResultButton ||
                 this._previousSelectedActor._delegate instanceof PlaceButton ||
-                this._previousSelectedActor._delegate instanceof RecentClearButton ||
+                this._previousSelectedActor._delegate === this._recentClearButton ||
                 this._previousSelectedActor._delegate instanceof TransientButton)
                 this._previousSelectedActor.style_class = "menu-application-button";
             else if (this._previousSelectedActor._delegate instanceof FavoritesButton ||
@@ -2296,7 +2241,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     this.applicationsBox.add_child(new_button.actor);
                     id++;
                 }
-                let recent_clear_button = new RecentClearButton(this);
+                let recent_clear_button = new SimpleMenuItem(true, true, _("Clear list"), ("Clear all recent documents"), 'menu-application-button');
+                button.addIcon(APPLICATION_ICON_SIZE, 'edit-clear', null, true);
+                button.addLabel(button.name, 'menu-application-button-label');
+                button.activate = () => {
+                    this.menu.close();
+                    (new Gtk.RecentManager()).purge_items();
+                };
                 this._addEnterEvent(recent_clear_button, Lang.bind(this, function() {
                     this._clearPrevSelection(recent_clear_button.actor);
                     recent_clear_button.actor.style_class = "menu-application-button-selected";
@@ -3086,7 +3037,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         let recentResults = [];
         for (let i = 0; i < this._recentButtons.length; i++) {
-            if (!(this._recentButtons[i] instanceof RecentClearButton) && this._recentButtons[i].name.toLowerCase().indexOf(pattern) != -1)
+            if (!(this._recentButtons[i] === this._recentClearButton) && this._recentButtons[i].name.toLowerCase().indexOf(pattern) != -1)
                 recentResults.push(this._recentButtons[i].name);
         }
 
