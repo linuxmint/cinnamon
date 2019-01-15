@@ -786,14 +786,6 @@ class RecentButton extends SimpleMenuItem {
     }
 }
 
-class NoRecentDocsButton extends SimpleMenuItem {
-    constructor(label) {
-        super(false, false);
-        this.actor.set_style_class_name('menu-application-button');
-        this.addLabel(label, 'menu-application-button-label');
-    }
-}
-
 class RecentClearButton extends SimpleMenuItem {
     constructor(applet) {
         super();
@@ -2316,7 +2308,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this._recentButtons.push(recent_clear_button);
                 this.applicationsBox.add_child(recent_clear_button.actor);
             } else {
-                let no_recent_button = new NoRecentDocsButton(_("No recent documents"), null, false, null);
+                let no_recent_button = new SimpleMenuItem(false, false);
+                no_recent_button.actor.set_style_class_name('menu-application-button');
+                no_recent_button.addLabel(_("No recent documents"), 'menu-application-button-label');
                 this._recentButtons.push(no_recent_button);
                 this.applicationsBox.add_child(no_recent_button.actor);
             }
