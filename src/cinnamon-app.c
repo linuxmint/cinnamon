@@ -684,7 +684,7 @@ cinnamon_app_activate_window (CinnamonApp     *app,
         {
           MetaWindow *other_window = iter->data;
 
-          if (other_window != window)
+          if (other_window != window && meta_window_get_workspace (other_window) == workspace)
             meta_window_raise (other_window);
         }
       g_slist_free (windows_reversed);
