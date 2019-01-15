@@ -816,6 +816,70 @@ cinnamon_app_open_new_window (CinnamonApp      *app,
 }
 
 /**
+ * cinnamon_app_can_open_new_window:
+ * @app: a #CinnamonApp
+ *
+ * Returns %TRUE if the app supports opening a new window through
+ * cinnamon_app_open_new_window() (ie, if calling that function will
+ * result in actually opening a new window and not something else,
+ * like presenting the most recently active one)
+ */
+gboolean
+cinnamon_app_can_open_new_window (CinnamonApp *app)
+{
+  CinnamonAppRunningState *state;
+
+  /* Apps that are not running can always open new windows, because
+     activating them would open the first one */
+  if (!app->running_state)
+    return TRUE;
+
+  state = app->running_state;
+
+  /* If the app has an explicit new-window action, then it can
+     (or it should be able to - we don't actually call the action
+     because we need to trigger startup notification, so it still
+     depends on what the app decides to do for Activate vs ActivateAction)
+  */
+  if (g_action_group_has_action (G_ACTION_GROUP (state->muxer), "app.new-window"))
+    return TRUE;
+
+  /* If the app doesn't have a desktop file, then nothing is possible */
+  if (!app->info)
+    return FALSE;
+
+  /* If the app is explicitly telling us, then we know for sure */
+  if (g_desktop_app_info_has_key (G_DESKTOP_APP_INFO (app->info),
+                                  "X-GNOME-SingleWindow"))
+    return !g_desktop_app_info_get_boolean (G_DESKTOP_APP_INFO (app->info),
+                                            "X-GNOME-SingleWindow");
+
+  /* If this is a unique GtkApplication, and we don't have a new-window, then
+     probably we can't
+     We don't consider non-unique GtkApplications here to handle cases like
+     evince, which don't export a new-window action because each window is in
+     a different process. In any case, in a non-unique GtkApplication each
+     Activate() knows nothing about the other instances, so it will show a
+     new window.
+  */
+  if (state->remote_menu)
+    {
+      const char *application_id;
+      application_id = meta_window_get_gtk_application_id (state->windows->data);
+      if (application_id != NULL)
+        return FALSE;
+      else
+        return TRUE;
+    }
+
+  /* In all other cases, we don't have a reliable source of information
+     or a decent heuristic, so we err on the compatibility side and say
+     yes.
+  */
+  return TRUE;
+}
+
+/**
  * cinnamon_app_get_state:
  * @app: a #CinnamonApp
  *
