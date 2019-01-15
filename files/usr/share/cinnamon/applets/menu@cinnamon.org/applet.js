@@ -2922,23 +2922,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
-    _resize_actor_iter(actor) {
-        let [min, nat] = actor.get_preferred_width(-1.0);
-        if (nat > this._applicationsBoxWidth){
-            this._applicationsBoxWidth = nat;
-            this.applicationsBox.set_width(this._applicationsBoxWidth + 42); // The answer to life...
-        }
-    }
-
     _resizeApplicationsBox() {
-        this._applicationsBoxWidth = 0;
-        this.applicationsBox.set_width(-1);
-        let child = this.applicationsBox.get_first_child();
-        this._resize_actor_iter(child);
-
-        while ((child = child.get_next_sibling()) != null) {
-            this._resize_actor_iter(child);
-        }
+        let width = -1;
+        Util.each(this.applicationsBox.get_children(), c => {
+            let [min, nat] = c.get_preferred_width(-1.0);
+            if (nat > width)
+                width = nat;
+        });
+        this.applicationsBox.set_width(width + 42); // The answer to life...
     }
 
     _displayButtons(appCategory, places, recent, apps, autocompletes, exactMatch){
