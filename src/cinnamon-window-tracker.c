@@ -459,12 +459,6 @@ get_app_for_window (CinnamonWindowTracker    *tracker,
   return result;
 }
 
-const char *
-_cinnamon_window_tracker_get_app_context (CinnamonWindowTracker *tracker, CinnamonApp *app)
-{
-  return "";
-}
-
 static void
 update_focus_app (CinnamonWindowTracker *self)
 {
