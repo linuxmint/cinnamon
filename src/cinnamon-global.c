@@ -1471,7 +1471,7 @@ cinnamon_global_create_app_launch_context_for_workspace (CinnamonGlobal *global,
   context = gdk_display_get_app_launch_context (global->gdk_display);
 
   if (timestamp == 0)
-    timestamp = shell_global_get_current_time (global);
+    timestamp = cinnamon_global_get_current_time (global);
   gdk_app_launch_context_set_timestamp (context, timestamp);
 
   if (workspace < 0)
