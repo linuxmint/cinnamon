@@ -678,13 +678,41 @@ cinnamon_app_open_new_window (CinnamonApp      *app,
 {
   g_return_if_fail (app->info != NULL);
 
-  /* Here we just always launch the application again, even if we know
+   /* First check whether the application provides a "new-window" desktop
+   * action - it is a safe bet that it will open a new window, and activating
+   * it will trigger startup notification if necessary
+   */
+  actions = g_desktop_app_info_list_actions (G_DESKTOP_APP_INFO (app->info));
+
+  if (g_strv_contains (actions, "new-window"))
+    {
+      cinnamon_app_launch_action (app, "new-window", 0, workspace);
+      return;
+    }
+
+  /* Next, check whether the app exports an explicit "new-window" action
+   * that we can activate on the bus - the muxer will add startup notification
+   * information to the platform data, so this should work just as well as
+   * desktop actions.
+   */
+  group = app->running_state ? G_ACTION_GROUP (app->running_state->muxer)
+                             : NULL;
+
+  if (group &&
+      g_action_group_has_action (group, "app.new-window") &&
+      g_action_group_get_action_parameter_type (group, "app.new-window") == NULL)
+    {
+      g_action_group_activate_action (group, "app.new-window", NULL);
+
+      return;
+    }
+
+  /* Lastly, just always launch the application again, even if we know
    * it was already running.  For most applications this
    * should have the effect of creating a new window, whether that's
    * a second process (in the case of Calculator) or IPC to existing
    * instance (Firefox).  There are a few less-sensical cases such
-   * as say Pidgin.  Ideally, we have the application express to us
-   * that it supports an explicit new-window action.
+   * as say Pidgin.
    */
   cinnamon_app_launch (app, 0, workspace, FALSE, NULL);
 }
@@ -711,9 +739,7 @@ cinnamon_app_can_open_new_window (CinnamonApp *app)
   state = app->running_state;
 
   /* If the app has an explicit new-window action, then it can
-     (or it should be able to - we don't actually call the action
-     because we need to trigger startup notification, so it still
-     depends on what the app decides to do for Activate vs ActivateAction)
+     (or it should be able to) ...
   */
   if (g_action_group_has_action (G_ACTION_GROUP (state->muxer), "app.new-window"))
     return TRUE;
