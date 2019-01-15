@@ -786,6 +786,44 @@ cinnamon_app_open_new_window (CinnamonApp      *app,
 }
 
 /**
+ * cinnamon_app_can_open_new_window:
+ * @app: a #CinnamonApp
+ *
+ * Returns %TRUE if the app supports opening a new window through
+ * cinnamon_app_open_new_window() (ie, if calling that function will
+ * result in actually opening a new window and not something else,
+ * like presenting the most recently active one)
+ */
+gboolean
+cinnamon_app_can_open_new_window (CinnamonApp *app)
+{
+  CinnamonAppRunningState *state;
+
+  /* Apps that are not running can always open new windows, because
+     activating them would open the first one */
+  if (!app->running_state)
+    return TRUE;
+
+  state = app->running_state;
+
+  /* If the app doesn't have a desktop file, then nothing is possible */
+  if (!app->info)
+    return FALSE;
+
+  /* If the app is explicitly telling us, then we know for sure */
+  if (g_desktop_app_info_has_key (G_DESKTOP_APP_INFO (app->info),
+                                  "X-GNOME-SingleWindow"))
+    return !g_desktop_app_info_get_boolean (G_DESKTOP_APP_INFO (app->info),
+                                            "X-GNOME-SingleWindow");
+
+  /* In all other cases, we don't have a reliable source of information
+     or a decent heuristic, so we err on the compatibility side and say
+     yes.
+  */
+  return TRUE;
+}
+
+/**
  * cinnamon_app_get_state:
  * @app: a #CinnamonApp
  *

@@ -60,6 +60,8 @@ void cinnamon_app_activate_full (CinnamonApp      *app,
 void cinnamon_app_open_new_window (CinnamonApp *app,
                                 int       workspace);
 
+gboolean cinnamon_app_can_open_new_window (CinnamonApp *app);
+
 CinnamonAppState cinnamon_app_get_state (CinnamonApp *app);
 
 gboolean cinnamon_app_request_quit (CinnamonApp *app);
