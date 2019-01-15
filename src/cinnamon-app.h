@@ -30,8 +30,7 @@ struct _CinnamonAppClass
 typedef enum {
   CINNAMON_APP_STATE_STOPPED,
   CINNAMON_APP_STATE_STARTING,
-  CINNAMON_APP_STATE_RUNNING,
-  CINNAMON_APP_STATE_BUSY
+  CINNAMON_APP_STATE_RUNNING
 } CinnamonAppState;
 
 GType cinnamon_app_get_type (void) G_GNUC_CONST;
@@ -92,6 +91,8 @@ int cinnamon_app_compare (CinnamonApp *app, CinnamonApp *other);
 
 void cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window);
 void cinnamon_app_update_app_menu       (CinnamonApp *app, MetaWindow *window);
+
+gboolean cinnamon_app_get_busy          (CinnamonApp *app);
 
 G_END_DECLS
 
