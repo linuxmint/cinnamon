@@ -446,9 +446,10 @@ char ***
 cinnamon_app_system_search (const char *search_string)
 {
     char ***results = g_desktop_app_info_search (search_string);
+    char ***groups, **ids;
 
-    for (char ***groups = results; *groups; groups++)
-      for (char **ids = *groups; *ids; ids++)
+    for (groups = results; *groups; groups++)
+      for (ids = *groups; *ids; ids++)
         if (!g_utf8_validate (*ids, -1, NULL))
           **ids = '\0';
 
