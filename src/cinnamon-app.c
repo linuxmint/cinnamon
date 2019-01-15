@@ -1205,16 +1205,10 @@ _cinnamon_app_remove_window (CinnamonApp   *app,
 
   if (!meta_window_is_skip_taskbar (window))
     app->running_state->interesting_windows--;
+  cinnamon_app_sync_running_state (app);
 
   if (app->running_state->windows == NULL)
-    {
-      g_clear_pointer (&app->running_state, unref_running_state);
-      cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STOPPED);
-    }
-  else
-    {
-      cinnamon_app_sync_running_state (app);
-    }
+    g_clear_pointer (&app->running_state, unref_running_state);
 
   g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
 }
