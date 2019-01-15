@@ -52,4 +52,6 @@ GSList         *cinnamon_app_system_get_all                   (CinnamonAppSystem
 
 GSList         *cinnamon_app_system_get_running               (CinnamonAppSystem  *self);
 
+char         ***cinnamom_app_system_search                    (const char *search_string);
+
 #endif /* __CINNAMON_APP_SYSTEM_H__ */
