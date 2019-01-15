@@ -1354,7 +1354,7 @@ cinnamon_app_launch (CinnamonApp     *app,
                                                    context,
                                                    G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
 #ifdef HAVE_SYSTEMD
-                                                   app_child_setup, (gpointer)shell_app_get_id (app),
+                                                   app_child_setup, (gpointer)cinnamon_app_get_id (app),
 #else
                                                    NULL, NULL,
 #endif
