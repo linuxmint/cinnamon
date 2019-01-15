@@ -53,6 +53,12 @@ generated_script_substitutions = \
       -e "s|@MUFFIN_TYPELIB_DIR[@]|$(MUFFIN_TYPELIB_DIR)|" \
       -e "s|@GJS_CONSOLE[@]|$(GJS_CONSOLE)|"
 
+org-gtk-application.c org-gtk-application.h: org.gtk.Application.xml Makefile
+	$(AM_V_GEN) $(GDBUS_CODEGEN) \
+			--generate-c-code org-gtk-application \
+			--c-namespace Cinnamon \
+			$<
+
 CLEANFILES += cinnamon $(bin_SCRIPTS)
 
 include Makefile-st.am
@@ -82,6 +88,8 @@ privlibdir = $(pkglibdir)
 privlib_LTLIBRARIES = libcinnamon.la $(MUFFIN_LIBS)
 
 cinnamon_built_sources = \
+	org-gtk-application.h \
+	org-gtk-application.c \
 	cinnamon-enum-types.h \
 	cinnamon-enum-types.c
 

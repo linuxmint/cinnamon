@@ -198,6 +198,12 @@ else
 fi
 AC_SUBST(CINNAMON_SYSTEM_CA_FILE,["$with_ca_certificates"])
 
+AC_ARG_VAR([GDBUS_CODEGEN],[the gdbus-codegen programme])
+AC_PATH_PROG([GDBUS_CODEGEN],[gdbus-codegen],[])
+if test -z "$GDBUS_CODEGEN"; then
+  AC_MSG_ERROR([gdbus-codegen not found])
+fi
+
 GTK_DOC_CHECK([1.15], [--flavour no-tmpl])
 AC_CONFIG_FILES([
   Makefile
