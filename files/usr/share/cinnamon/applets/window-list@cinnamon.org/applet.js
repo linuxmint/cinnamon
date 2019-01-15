@@ -1011,6 +1011,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
         this.on_orientation_changed(orientation);
         this._updateAttentionGrabber();
+        this._onPreviewChanged();
     }
 
     on_applet_added_to_panel(userEnabled) {
