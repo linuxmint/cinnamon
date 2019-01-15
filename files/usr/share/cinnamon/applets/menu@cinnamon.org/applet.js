@@ -2906,88 +2906,49 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.applicationsBox.set_width(width + 42); // The answer to life...
     }
 
+
     _displayButtons(appCategory, places, recent, apps, autocompletes, exactMatch){
+        // destroy temporary buttons
+        Util.each(this._transientButtons, item => item.destroy());
+        this._transientButtons = [];
+        Util.each(this._searchProviderButtons, item => item.destroy());
+        this._searchProviderButtons = [];
+
         let selectedActor = null;
         if (appCategory) {
-            if (appCategory === -1) {
-                this._applicationsButtons.forEach(item => item.actor.show());
-            } else {
-                this._applicationsButtons.forEach(item => {
-                    if (item.category.indexOf(appCategory) != -1) {
-                        item.actor.show();
-                    } else {
-                        item.actor.hide();
-                    }
-                });
-            }
+            Util.each(this._applicationsButtons, item => { item.actor.visible = appCategory === -1 || item.category.includes(appCategory) });
         } else if (apps) {
-            for (let i = 0; i < this._applicationsButtons.length; i++) {
-                let button = this._applicationsButtons[i];
-                let appId = button.app.get_id();
-                if (apps.indexOf(appId) !== -1) {
-                    button.actor.show();
-                    if (appId === exactMatch) {
-                        selectedActor = button.actor;
-                    }
-                } else {
-                    button.actor.hide();
-                }
-            }
+            Util.each(this._applicationsButtons, item => {
+                let appId = item.app.get_id();
+                item.actor.visible = apps.includes(appId);
+                if (appId === exactMatch)
+                    selectedActor = item.actor;
+            });
         } else {
-            this._applicationsButtons.forEach(item => item.actor.hide());
+            Util.each(this._applicationsButtons, item => { item.actor.visible = false });
         }
+
         if (places) {
-            if (places === -1) {
-                this._placesButtons.forEach(item => item.actor.show());
-            } else {
-                for (let i = 0; i < this._placesButtons.length; i++) {
-                    let buttonName = this._placesButtons[i].button_name;
-                    if (places.indexOf(buttonName) !== -1) {
-                        this._placesButtons[i].actor.show();
-                        if (!selectedActor && buttonName === exactMatch)
-                            selectedActor = this._placesButtons[i].actor;
-                    } else {
-                        this._placesButtons[i].actor.hide();
-                    }
-                }
-            }
+            Util.each(this._placesButtons, item => {
+                item.actor.visible =  places === -1 || places.includes(item.button_name)
+                if (!selectedActor && item.button_name === exactMatch)
+                    selectedActor = item.actor;
+            });
         } else {
-            this._placesButtons.forEach(item => item.actor.hide());
+            Util.each(this._placesButtons, item => { item.actor.visible = false });
         }
-        if (recent) {
-            if (recent === -1) {
-                this._recentButtons.forEach(item => item.actor.show());
-            } else {
-                for (let i = 0; i < this._recentButtons.length; i++) {
-                    if (recent.indexOf(this._recentButtons[i].button_name) != -1) {
-                        this._recentButtons[i].actor.show();
-                    } else {
-                        this._recentButtons[i].actor.hide();
-                    }
-                }
-            }
-        } else {
-            this._recentButtons.forEach(item => item.actor.hide());
-        }
+
+        Util.each(this._recentButtons, item => { item.actor.visible = recent == null ? false : recent === -1 || recent.includes(item.button_name) });
+
         if (autocompletes) {
-
-            this._transientButtons.forEach(item => item.actor.destroy());
-            this._transientButtons = [];
-
-            for (let i = 0; i < autocompletes.length; i++) {
-                let button = new TransientButton(this, autocompletes[i]);
+            Util.each(autocompletes, item => {
+                let button = new TransientButton(this, item);
                 button.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, button));
                 this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
                 this._transientButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
-            }
+            });
         }
-
-        this._searchProviderButtons.forEach(item => {
-            if (item.actor.visible) {
-                item.actor.hide();
-            }
-        });
 
         return selectedActor;
     }
