@@ -888,7 +888,9 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             },
             addThumbnailToMenu: (win) => {
                 if (this.isOpen) {
-                    setTimeout(() => this.addThumbnail(win), 0);
+                    this.close(true);
+                    this.addThumbnail(win);
+                    this.open(true);
                     return;
                 }
                 this.queuedWindows.push(win);
@@ -1013,7 +1015,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.tooltip.set_text(this.groupState.appName);
             this.groupState.tooltip.show();
         } else {
-            if (force) this.addQueuedThumbnails();
+            if (force || this.state.settings.onClickThumbs) this.addQueuedThumbnails();
             this.state.set({thumbnailMenuOpen: true});
             super.open(this.state.settings.animateThumbs);
         }
