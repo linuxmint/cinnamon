@@ -29,9 +29,6 @@ struct _CinnamonAppSystem
 struct _CinnamonAppSystemClass
 {
   GObjectClass parent_class;
-
-  void (*installed_changed)(CinnamonAppSystem *appsys, gpointer user_data);
-  void (*favorites_changed)(CinnamonAppSystem *appsys, gpointer user_data);
 };
 
 GType           cinnamon_app_system_get_type    (void) G_GNUC_CONST;
