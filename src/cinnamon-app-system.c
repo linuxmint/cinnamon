@@ -115,19 +115,40 @@ scan_startup_wm_class_to_id (CinnamonAppSystem *self)
 static gboolean
 app_is_stale (CinnamonApp *app)
 {
-  GDesktopAppInfo *info;
-  gboolean is_stale;
+  GDesktopAppInfo *info, *old;
+  GAppInfo *old_info, *new_info;
+  gboolean is_unchanged;
 
   if (cinnamon_app_is_window_backed (app))
     return FALSE;
 
   info = g_desktop_app_info_new (cinnamon_app_get_id (app));
-  is_stale = (info == NULL);
+  if (!info)
+    return TRUE;
 
-  if (info)
-    g_object_unref (info);
+  old = cinnamon_app_get_app_info (app);
+  old_info = G_APP_INFO (old);
+  new_info = G_APP_INFO (info);
 
-  return is_stale;
+  is_unchanged =
+    g_app_info_should_show (old_info) == g_app_info_should_show (new_info) &&
+    strcmp (g_desktop_app_info_get_filename (old),
+            g_desktop_app_info_get_filename (info)) == 0 &&
+    g_strcmp0 (g_app_info_get_executable (old_info),
+               g_app_info_get_executable (new_info)) == 0 &&
+    g_strcmp0 (g_app_info_get_commandline (old_info),
+               g_app_info_get_commandline (new_info)) == 0 &&
+    strcmp (g_app_info_get_name (old_info),
+            g_app_info_get_name (new_info)) == 0 &&
+    g_strcmp0 (g_app_info_get_description (old_info),
+               g_app_info_get_description (new_info)) == 0 &&
+    strcmp (g_app_info_get_display_name (old_info),
+            g_app_info_get_display_name (new_info)) == 0 &&
+    g_icon_equal (g_app_info_get_icon (old_info),
+                  g_app_info_get_icon (new_info));
+
+  g_object_unref (info);
+  return !is_unchanged;
 }
 
 static gboolean
