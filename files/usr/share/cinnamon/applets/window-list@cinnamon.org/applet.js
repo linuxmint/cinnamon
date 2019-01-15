@@ -145,6 +145,7 @@ class WindowPreview extends Tooltips.TooltipBase {
 
         this.thumbnailBin.set_child(this.thumbnail);
 
+        this.muffinWindow.set_obscured(false);
         this.actor.show();
         this._set_position();
 
@@ -159,6 +160,7 @@ class WindowPreview extends Tooltips.TooltipBase {
             this._sizeChangedId = null;
         }
         if (this.thumbnail) {
+            this.muffinWindow.set_obscured(true);
             this.thumbnailBin.set_child(null);
             this.thumbnail.destroy();
             this.thumbnail = null;
