@@ -857,6 +857,25 @@ cinnamon_app_get_last_user_time (CinnamonApp *app)
   return (int)last_user_time;
 }
 
+static gboolean
+cinnamon_app_is_minimized (CinnamonApp *app)
+{
+  GSList *iter;
+
+  if (app->running_state == NULL)
+    return FALSE;
+
+  for (iter = app->running_state->windows; iter; iter = iter->next)
+    {
+      if (meta_window_showing_on_its_workspace (iter->data))
+        return FALSE;
+    }
+
+  return TRUE;
+}
+
+
+
 /**
  * cinnamon_app_compare:
  * @app: A #CinnamonApp
@@ -864,16 +883,30 @@ cinnamon_app_get_last_user_time (CinnamonApp *app)
  *
  * Compare one #CinnamonApp instance to another, in the following way:
  *   - Running applications sort before not-running applications.
- *   - The application which the user interacted with most recently
+ *   - If one of them has non-minimized windows and the other does not,
+ *     the one with visible windows is first.
+ *   - Finally, the application which the user interacted with most recently
  *     compares earlier.
  */
 int
 cinnamon_app_compare (CinnamonApp *app,
                    CinnamonApp *other)
 {
+  gboolean min_app, min_other;
+
   if (app->state != other->state)
     {
       if (app->state == CINNAMON_APP_STATE_RUNNING)
+        return -1;
+      return 1;
+    }
+
+  min_app = cinnamon_app_is_minimized (app);
+  min_other = cinnamon_app_is_minimized (other);
+
+  if (min_app != min_other)
+    {
+      if (min_other)
         return -1;
       return 1;
     }
