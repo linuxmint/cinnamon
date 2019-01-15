@@ -718,9 +718,7 @@ cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window)
           g_object_set_data_full (G_OBJECT (window), "actions", actions, g_object_unref);
         }
 
-      if (!app->running_state->muxer)
-        app->running_state->muxer = gtk_action_muxer_new ();
-
+      g_assert (app->running_state->muxer);
       gtk_action_muxer_insert (app->running_state->muxer, "win", actions);
       g_object_notify (G_OBJECT (app), "action-group");
     }
