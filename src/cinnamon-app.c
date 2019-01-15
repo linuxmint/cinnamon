@@ -1184,7 +1184,7 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   cinnamon_app_update_app_menu (app, window);
   cinnamon_app_ensure_busy_watch (app);
 
-  if (cinnamon_window_tracker_is_window_interesting (window))
+  if (!meta_window_is_skip_taskbar (window))
     app->running_state->interesting_windows++;
 
   cinnamon_app_maybe_start_stop (app);
@@ -1209,7 +1209,7 @@ _cinnamon_app_remove_window (CinnamonApp   *app,
   g_object_unref (window);
   app->running_state->windows = g_slist_remove (app->running_state->windows, window);
 
-  if (cinnamon_window_tracker_is_window_interesting (window))
+  if (!meta_window_is_skip_taskbar (window))
     app->running_state->interesting_windows--;
 
   cinnamon_app_maybe_start_stop (app);
@@ -1307,7 +1307,7 @@ cinnamon_app_request_quit (CinnamonApp   *app)
     {
       MetaWindow *win = iter->data;
 
-      if (!cinnamon_window_tracker_is_window_interesting (cinnamon_window_tracker_get_default (), win))
+      if (meta_window_is_skip_taskbar (win))
         continue;
 
       meta_window_delete (win, cinnamon_global_get_current_time (global));
