@@ -967,10 +967,13 @@ cinnamon_app_sync_running_state (CinnamonApp *app)
 {
   g_return_if_fail (app->running_state != NULL);
 
-  if (app->running_state->interesting_windows == 0)
-    cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STOPPED);
-  else if (app->state != CINNAMON_APP_STATE_STARTING)
-    cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
+  if (app->state != CINNAMON_APP_STATE_STARTING)
+    {
+      if (app->running_state->interesting_windows == 0)
+        cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STOPPED);
+      else
+        cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
+    }
 }
 
 
@@ -1141,10 +1144,15 @@ _cinnamon_app_remove_window (CinnamonApp   *app,
   if (!meta_window_is_skip_taskbar (window))
     app->running_state->interesting_windows--;
 
-  cinnamon_app_sync_running_state (app);
-
-  if (app->running_state && app->running_state->windows == NULL)
-    g_clear_pointer (&app->running_state, unref_running_state);
+  if (app->running_state->windows == NULL)
+    {
+      g_clear_pointer (&app->running_state, unref_running_state);
+      cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STOPPED);
+    }
+  else
+    {
+      cinnamon_app_sync_running_state (app);
+    }
 
   g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
 }
