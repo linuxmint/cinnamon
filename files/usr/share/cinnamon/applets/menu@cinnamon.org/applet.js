@@ -183,15 +183,18 @@ class GenericApplicationButton extends PopupMenu.PopupBaseMenuItem {
     }
 
     highlight() {
+        if (this.actor.has_style_pseudo_class('highlighted'))
+            return;
+
         this.actor.add_style_pseudo_class('highlighted');
     }
 
     unhighlight() {
-        var app_key = this.app.get_id();
-        if (app_key == null) {
-            app_key = this.app.get_name() + ":" + this.app.get_description();
-        }
-        this.appsMenuButton._knownApps.push(app_key);
+        if (!this.actor.has_style_pseudo_class('highlighted'))
+            return;
+
+        let appKey = this.app.get_id() || `${this.app.get_name()}:${this.app.get_description()}`;
+        this.appsMenuButton._knownApps.add(appKey);
         this.actor.remove_style_pseudo_class('highlighted');
     }
 
@@ -1145,7 +1148,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._activeActor = null;
         this._applicationsBoxWidth = 0;
         this.menuIsOpening = false;
-        this._knownApps = []; // Used to keep track of apps that are already installed, so we can highlight newly installed ones
+        this._knownApps = new Set(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
         this._appsWereRefreshed = false;
         this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
         this._isBumblebeeInstalled = GLib.file_test("/usr/bin/optirun", GLib.FileTest.EXISTS);
@@ -2633,18 +2636,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
                         let applicationButton = new ApplicationButton(this, app, this.showApplicationIcons);
 
-                        let app_is_known = false;
-                        for (let i = 0; i < this._knownApps.length; i++) {
-                            if (this._knownApps[i] == app_key) {
-                                app_is_known = true;
-                            }
-                        }
-                        if (!app_is_known) {
+                        if (!this._knownApps.has(app_key)) {
                             if (this._appsWereRefreshed) {
                                 applicationButton.highlight();
-                            }
-                            else {
-                                this._knownApps.push(app_key);
+                            } else {
+                                this._knownApps.add(app_key);
                             }
                         }
 
