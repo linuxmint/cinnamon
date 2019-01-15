@@ -1336,11 +1336,9 @@ cinnamon_app_launch (CinnamonApp     *app,
                   int           workspace,
                   GError      **error)
 {
-  GdkAppLaunchContext *context;
-  gboolean ret;
   CinnamonGlobal *global;
-  MetaScreen *screen;
-  GdkDisplay *gdisplay;
+  GAppLaunchContext *context;
+  gboolean ret;
 
   if (app->info == NULL)
     {
@@ -1350,21 +1348,10 @@ cinnamon_app_launch (CinnamonApp     *app,
     }
 
   global = cinnamon_global_get ();
-  screen = cinnamon_global_get_screen (global);
-  gdisplay = gdk_screen_get_display (cinnamon_global_get_gdk_screen (global));
-
-  if (timestamp == 0)
-    timestamp = cinnamon_global_get_current_time (global);
-
-  if (workspace < 0)
-    workspace = meta_screen_get_active_workspace_index (screen);
-
-  context = gdk_display_get_app_launch_context (gdisplay);
-  gdk_app_launch_context_set_timestamp (context, timestamp);
-  gdk_app_launch_context_set_desktop (context, workspace);
+  context = cinnamon_global_create_app_launch_context_for_workspace (global, timestamp, workspace);
 
   ret = g_desktop_app_info_launch_uris_as_manager (app->info, NULL,
-                                                   G_APP_LAUNCH_CONTEXT (context),
+                                                   context,
                                                    G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
 #ifdef HAVE_SYSTEMD
                                                    app_child_setup, (gpointer)shell_app_get_id (app),
@@ -1376,6 +1363,32 @@ cinnamon_app_launch (CinnamonApp     *app,
   g_object_unref (context);
 
   return ret;
+}
+
+/**
+ * cinnamon_app_launch_action:
+ * @app: the #CinnamonApp
+ * @action_name: the name of the action to launch (as obtained by
+ *               g_desktop_app_info_list_actions())
+ * @timestamp: Event timestamp, or 0 for current event timestamp
+ * @workspace: Start on this workspace, or -1 for default
+ */
+void
+cinnamon_app_launch_action (CinnamonApp  *app,
+                         const char      *action_name,
+                         guint            timestamp,
+                         int              workspace)
+{
+  CinnamonGlobal *global;
+  GAppLaunchContext *context;
+
+  global = cinnamon_global_get ();
+  context = cinnamon_global_create_app_launch_context_for_workspace (global, timestamp, workspace);
+
+  g_desktop_app_info_launch_action (G_DESKTOP_APP_INFO (app->info),
+                                    action_name, context);
+
+  g_object_unref (context);
 }
 
 /**
