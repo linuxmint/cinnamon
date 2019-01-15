@@ -66,7 +66,7 @@ static void cinnamon_app_system_class_init(CinnamonAppSystemClass *klass)
     g_signal_new ("installed-changed",
 		  CINNAMON_TYPE_APP_SYSTEM,
 		  G_SIGNAL_RUN_LAST,
-		  G_STRUCT_OFFSET (CinnamonAppSystemClass, installed_changed),
+		  0,
 		  NULL, NULL, NULL,
 		  G_TYPE_NONE, 0);
 }
