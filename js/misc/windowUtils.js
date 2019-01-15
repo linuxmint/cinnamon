@@ -22,7 +22,8 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
     let [x, y] = metaWindowActor.get_position();
     let [minX, minY] = [x, y];
     let [maxX, maxY] = [minX + windowWidth, minY + windowHeight];
-    textures.push({t: texture, x: x, y: y, w: windowWidth, h: windowHeight});
+    metaWindowActor.set_obscured(false);
+    textures.push({t: texture, x: x, y: y, w: windowWidth, h: windowHeight, metaWindowActor});
     if (withTransients) {
         metaWindow.foreach_transient(function(win) {
             let metaWindowActor = win.get_compositor_private();
@@ -35,7 +36,8 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
             maxX = Math.max(maxX, x + windowWidth);
             minY = Math.min(minY, y);
             maxY = Math.max(maxY, y + windowHeight);
-            textures.push({t: texture, x: x, y: y, w: windowWidth, h: windowHeight});
+            metaWindowActor.set_obscured(false);
+            textures.push({t: texture, x, y, w: windowWidth, h: windowHeight, metaWindowActor});
         });
     }
     let scale = 1;
@@ -66,8 +68,14 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
             x = Math.round(x * scale);
             y = Math.round(y * scale);
         }
-        let clone = {actor: new Clutter.Clone(params), x: x, y: y};
-        clones.push(clone);
+        let actor = new Clutter.Clone(params);
+        actor.connect('destroy', function() {
+            const {metaWindowActor} = data;
+            if (!metaWindowActor || metaWindowActor.is_finalized()) return;
+            metaWindowActor.set_obscured(true);
+        });
+
+        clones.push({actor, x, y});
     }
     return clones;
 }
