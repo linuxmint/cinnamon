@@ -109,10 +109,8 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
 
         if (iconName != null) {
             this.icon = new St.Icon({ icon_name: iconName, icon_size: 12, icon_type: St.IconType.SYMBOLIC });
-            if (this.icon) {
+            if (this.icon)
                 this.addActor(this.icon);
-                this.icon.realize();
-            }
         }
 
         this.addActor(this.label);
@@ -399,10 +397,6 @@ class ApplicationButton extends GenericApplicationButton {
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
         this.isDraggableApp = true;
         this.actor.label_actor = this.label;
-        if (showIcon) {
-            this.icon.realize();
-        }
-        this.label.realize();
     }
 
     get_app_id() {
@@ -474,10 +468,6 @@ class SearchProviderResultButton extends PopupMenu.PopupBaseMenuItem {
         this.label = new St.Label({ text: result.label, style_class: 'menu-application-button-label' });
         this.addActor(this.label);
         this.isDraggableApp = false;
-        if (this.icon) {
-            this.icon.realize();
-        }
-        this.label.realize();
     }
 
     _onButtonReleaseEvent (actor, event) {
@@ -519,9 +509,6 @@ class PlaceButton extends PopupMenu.PopupBaseMenuItem {
                 this.addActor(this.icon);
         }
         this.addActor(this.label);
-        if (showIcon)
-            this.icon.realize();
-        this.label.realize();
     }
 
     _onButtonReleaseEvent (actor, event) {
@@ -577,9 +564,6 @@ class RecentButton extends PopupMenu.PopupBaseMenuItem {
             this.addActor(this.icon);
         }
         this.addActor(this.label);
-        if (showIcon)
-            this.icon.realize();
-        this.label.realize();
     }
 
     _onButtonReleaseEvent (actor, event) {
@@ -741,7 +725,6 @@ class NoRecentDocsButton extends PopupMenu.PopupBaseMenuItem {
         }
 
         this.addActor(this.label);
-        this.label.realize();
 
         this.actor.reactive = reactive;
         this.callback = callback;
@@ -806,14 +789,11 @@ class CategoryButton extends PopupMenu.PopupBaseMenuItem {
         if (category && this.icon_name) {
             this.icon = new St.Icon({gicon: icon, icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
 
-            if (this.icon) {
+            if (this.icon)
                 this.addActor(this.icon);
-                this.icon.realize();
-            }
         }
         this.actor.accessible_role = Atk.Role.LIST_ITEM;
         this.addActor(this.label);
-        this.label.realize();
     }
 }
 
@@ -826,12 +806,10 @@ class PlaceCategoryButton extends PopupMenu.PopupBaseMenuItem {
         if (showIcon) {
             this.icon = new St.Icon({icon_name: "folder", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
             this.addActor(this.icon);
-            this.icon.realize();
         } else {
             this.icon = null;
         }
         this.addActor(this.label);
-        this.label.realize();
     }
 }
 
@@ -844,12 +822,10 @@ class RecentCategoryButton extends PopupMenu.PopupBaseMenuItem {
         if (showIcon) {
             this.icon = new St.Icon({icon_name: "folder-recent", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
             this.addActor(this.icon);
-            this.icon.realize();
         } else {
             this.icon = null;
         }
         this.addActor(this.label);
-        this.label.realize();
     }
 }
 
@@ -866,7 +842,6 @@ class FavoritesButton extends GenericApplicationButton {
         let icon = app.create_icon_texture(icon_size);
 
         this.addActor(icon);
-        icon.realize();
 
         this._draggable = DND.makeDraggable(this.actor);
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
@@ -909,7 +884,6 @@ class SystemButton extends PopupMenu.PopupBaseMenuItem {
         this.icon = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});
 
         this.addActor(this.icon);
-        this.icon.realize();
     }
 
     _onButtonReleaseEvent(actor, event) {
@@ -3006,7 +2980,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
                 this._transientButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
-                button.actor.realize();
             }
         }
 
@@ -3208,7 +3181,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
                         this._searchProviderButtons.push(button);
                         this.applicationsBox.add_actor(button.actor);
-                        button.actor.realize();
                         if (this._selectedItemIndex === null) {
                             this.appBoxIter.reloadVisible();
                             let item_actor = this.appBoxIter.getFirstVisible();
