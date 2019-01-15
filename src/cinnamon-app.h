@@ -79,6 +79,11 @@ gboolean cinnamon_app_launch (CinnamonApp     *app,
                            int           workspace,
                            GError      **error);
 
+void cinnamon_app_launch_action (CinnamonApp  *app,
+                              const char      *action_name,
+                              guint            timestamp,
+                              int              workspace);
+
 int cinnamon_app_compare_by_name (CinnamonApp *app, CinnamonApp *other);
 
 int cinnamon_app_compare (CinnamonApp *app, CinnamonApp *other);
