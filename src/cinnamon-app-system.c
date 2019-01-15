@@ -47,7 +47,7 @@ gboolean case_insensitive_search (const char *key,
                                   const char *value,
                                   gpointer user_data);
 
-G_DEFINE_TYPE(CinnamonAppSystem, cinnamon_app_system, G_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE (CinnamonAppSystem, cinnamon_app_system, G_TYPE_OBJECT);
 
 static void cinnamon_app_system_class_init(CinnamonAppSystemClass *klass)
 {
@@ -69,8 +69,6 @@ static void cinnamon_app_system_class_init(CinnamonAppSystemClass *klass)
 		  G_STRUCT_OFFSET (CinnamonAppSystemClass, installed_changed),
 		  NULL, NULL, NULL,
 		  G_TYPE_NONE, 0);
-
-  g_type_class_add_private (gobject_class, sizeof (CinnamonAppSystemPrivate));
 }
 
 static void
@@ -150,9 +148,7 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
   CinnamonAppSystemPrivate *priv;
   GAppInfoMonitor *monitor;
 
-  self->priv = priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-                                                   CINNAMON_TYPE_APP_SYSTEM,
-                                                   CinnamonAppSystemPrivate);
+  self->priv = priv = cinnamon_app_system_get_instance_private (self);
 
   priv->running_apps = g_hash_table_new_full (NULL, NULL, (GDestroyNotify) g_object_unref, NULL);
   priv->id_to_app = g_hash_table_new_full (g_str_hash, g_str_equal,
