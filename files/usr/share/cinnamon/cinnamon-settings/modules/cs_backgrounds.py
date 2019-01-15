@@ -521,7 +521,7 @@ class Module:
         if settings.get_string("picture-uri").endswith(".png"):
             #the picture is a .png file
             show = True
-        if settings.get_string("picture-options") in PICTURE_OPTIONS_NEEDS_COLOR:
+        elif settings.get_string("picture-options") in PICTURE_OPTIONS_NEEDS_COLOR:
             #the picture is taking all the width
             if settings.get_string("color-shading-type") != "solid":
                 #it is using a gradient, so need to show
