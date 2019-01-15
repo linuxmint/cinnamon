@@ -328,12 +328,6 @@ cinnamon_app_create_icon_texture_for_window (CinnamonApp   *app,
   return cinnamon_app_create_icon_texture (app, size);
 }
 
-typedef struct {
-  CinnamonApp *app;
-  int size;
-  int scale;
-} CreateFadedIconData;
-
 const char *
 cinnamon_app_get_name (CinnamonApp *app)
 {
