@@ -23,8 +23,6 @@ CinnamonApp *cinnamon_window_tracker_get_app_from_pid (CinnamonWindowTracker *tr
 
 gboolean cinnamon_window_tracker_is_window_interesting (CinnamonWindowTracker *tracker, MetaWindow *window);
 
-const char *_cinnamon_window_tracker_get_app_context (CinnamonWindowTracker *tracker, CinnamonApp *app);
-
 GSList *cinnamon_window_tracker_get_startup_sequences (CinnamonWindowTracker *tracker);
 
 /* Hidden typedef for SnStartupSequence */
