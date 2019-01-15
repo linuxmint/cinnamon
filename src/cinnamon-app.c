@@ -1337,6 +1337,14 @@ app_child_setup (gpointer user_data)
 }
 #endif
 
+static void
+wait_pid (GDesktopAppInfo *appinfo,
+          GPid             pid,
+          gpointer         user_data)
+{
+  g_child_watch_add (pid, (GChildWatchFunc) g_spawn_close_pid, NULL);
+}
+
 /**
  * cinnamon_app_launch:
  * @timestamp: Event timestamp, or 0 for current event timestamp
@@ -1375,13 +1383,13 @@ cinnamon_app_launch (CinnamonApp     *app,
 
   ret = g_desktop_app_info_launch_uris_as_manager (app->info, NULL,
                                                    context,
-                                                   G_SPAWN_SEARCH_PATH,
+                                                   G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
 #ifdef HAVE_SYSTEMD
                                                    app_child_setup, (gpointer)cinnamon_app_get_id (app),
 #else
                                                    NULL, NULL,
 #endif
-                                                   NULL, NULL,
+                                                   wait_pid, NULL,
                                                    error);
   g_object_unref (context);
 
