@@ -1027,12 +1027,6 @@ cinnamon_app_state_transition (CinnamonApp      *app,
                       state == CINNAMON_APP_STATE_STARTING));
   app->state = state;
 
-  if (app->state == CINNAMON_APP_STATE_STOPPED && app->running_state)
-    {
-      unref_running_state (app->running_state);
-      app->running_state = NULL;
-    }
-
   _cinnamon_app_system_notify_app_state_changed (cinnamon_app_system_get_default (), app);
 
   g_object_notify (G_OBJECT (app), "state");
@@ -1165,7 +1159,7 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   if (cinnamon_window_tracker_is_window_interesting (window))
     app->running_state->interesting_windows++;
 
-  if (app->state != SHELL_APP_STATE_STARTING &&
+  if (app->state != CINNAMON_APP_STATE_STARTING &&
       app->running_state->interesting_windows > 0)
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
 
@@ -1193,6 +1187,9 @@ _cinnamon_app_remove_window (CinnamonApp   *app,
 
   if (app->running_state->interesting_windows == 0)
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STOPPED);
+
+  if (app->running_state && app->running_state->windows == NULL)
+    g_clear_pointer (&app->running_state, unref_running_state);
 
   g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
 }
