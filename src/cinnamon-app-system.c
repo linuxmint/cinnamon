@@ -35,6 +35,15 @@ enum {
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
+typedef struct _CinnamonAppSystemPrivate CinnamonAppSystemPrivate;
+
+struct _CinnamonAppSystem
+{
+  GObject parent;
+
+  CinnamonAppSystemPrivate *priv;
+};
+
 struct _CinnamonAppSystemPrivate {
   GHashTable *running_apps;
   GHashTable *id_to_app;

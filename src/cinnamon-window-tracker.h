@@ -11,23 +11,9 @@
 
 G_BEGIN_DECLS
 
-typedef struct _CinnamonWindowTracker CinnamonWindowTracker;
-typedef struct _CinnamonWindowTrackerClass CinnamonWindowTrackerClass;
-typedef struct _CinnamonWindowTrackerPrivate CinnamonWindowTrackerPrivate;
-
-#define CINNAMON_TYPE_WINDOW_TRACKER              (cinnamon_window_tracker_get_type ())
-#define CINNAMON_WINDOW_TRACKER(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), CINNAMON_TYPE_WINDOW_TRACKER, CinnamonWindowTracker))
-#define CINNAMON_WINDOW_TRACKER_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), CINNAMON_TYPE_WINDOW_TRACKER, CinnamonWindowTrackerClass))
-#define CINNAMON_IS_WINDOW_TRACKER(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), CINNAMON_TYPE_WINDOW_TRACKER))
-#define CINNAMON_IS_WINDOW_TRACKER_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), CINNAMON_TYPE_WINDOW_TRACKER))
-#define CINNAMON_WINDOW_TRACKER_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), CINNAMON_TYPE_WINDOW_TRACKER, CinnamonWindowTrackerClass))
-
-struct _CinnamonWindowTrackerClass
-{
-  GObjectClass parent_class;
-};
-
-GType cinnamon_window_tracker_get_type (void) G_GNUC_CONST;
+#define CINNAMON_TYPE_WINDOW_TRACKER (cinnamon_window_tracker_get_type ())
+G_DECLARE_FINAL_TYPE (CinnamonWindowTracker, cinnamon_window_tracker,
+                      CINNAMON, WINDOW_TRACKER, GObject)
 
 CinnamonWindowTracker* cinnamon_window_tracker_get_default(void);
 

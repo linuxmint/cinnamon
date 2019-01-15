@@ -9,31 +9,14 @@
 
 G_BEGIN_DECLS
 
-typedef struct _CinnamonApp CinnamonApp;
-typedef struct _CinnamonAppClass CinnamonAppClass;
-typedef struct _CinnamonAppPrivate CinnamonAppPrivate;
-typedef struct _CinnamonAppAction CinnamonAppAction;
-
-#define CINNAMON_TYPE_APP              (cinnamon_app_get_type ())
-#define CINNAMON_APP(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), CINNAMON_TYPE_APP, CinnamonApp))
-#define CINNAMON_APP_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), CINNAMON_TYPE_APP, CinnamonAppClass))
-#define CINNAMON_IS_APP(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), CINNAMON_TYPE_APP))
-#define CINNAMON_IS_APP_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), CINNAMON_TYPE_APP))
-#define CINNAMON_APP_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), CINNAMON_TYPE_APP, CinnamonAppClass))
-
-struct _CinnamonAppClass
-{
-  GObjectClass parent_class;
-
-};
+#define CINNAMON_TYPE_APP (cinnamon_app_get_type ())
+G_DECLARE_FINAL_TYPE (CinnamonApp, cinnamon_app, CINNAMON, APP, GObject)
 
 typedef enum {
   CINNAMON_APP_STATE_STOPPED,
   CINNAMON_APP_STATE_STARTING,
   CINNAMON_APP_STATE_RUNNING
 } CinnamonAppState;
-
-GType cinnamon_app_get_type (void) G_GNUC_CONST;
 
 const char *cinnamon_app_get_id (CinnamonApp *app);
 
