@@ -86,15 +86,20 @@ scan_startup_wm_class_to_id (CinnamonAppSystem *self)
   for (l = apps; l != NULL; l = l->next)
     {
       GAppInfo *info = l->data;
-      const char *startup_wm_class, *id;
+      const char *startup_wm_class, *id, *old_id;;
 
       id = g_app_info_get_id (info);
       startup_wm_class = g_desktop_app_info_get_startup_wm_class (G_DESKTOP_APP_INFO (info));
-      if (startup_wm_class != NULL)
-        {
+
+      if (startup_wm_class == NULL)
+        continue;
+
+      /* In case multiple .desktop files set the same StartupWMClass, prefer
+       * the one where ID and StartupWMClass match */
+      old_id = g_hash_table_lookup (priv->startup_wm_class_to_id, startup_wm_class);
+      if (old_id == NULL || strcmp (id, startup_wm_class) == 0)
           g_hash_table_insert (priv->startup_wm_class_to_id,
                                g_strdup (startup_wm_class), g_strdup (id));
-        }
     }
 
   g_list_free_full (apps, g_object_unref);
