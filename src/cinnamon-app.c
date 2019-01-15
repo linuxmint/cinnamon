@@ -42,6 +42,8 @@ typedef struct {
 
   GSList *windows;
 
+  guint interesting_windows;
+
   /* Whether or not we need to resort the windows; this is done on demand */
   guint window_sort_stale : 1;
 
@@ -1160,7 +1162,11 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   cinnamon_app_update_app_menu (app, window);
   cinnamon_app_ensure_busy_watch (app);
 
-  if (app->state != CINNAMON_APP_STATE_STARTING)
+  if (cinnamon_window_tracker_is_window_interesting (window))
+    app->running_state->interesting_windows++;
+
+  if (app->state != SHELL_APP_STATE_STARTING &&
+      app->running_state->interesting_windows > 0)
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
 
   g_object_thaw_notify (G_OBJECT (app));
@@ -1182,7 +1188,10 @@ _cinnamon_app_remove_window (CinnamonApp   *app,
   g_object_unref (window);
   app->running_state->windows = g_slist_remove (app->running_state->windows, window);
 
-  if (app->running_state->windows == NULL)
+  if (cinnamon_window_tracker_is_window_interesting (window))
+    app->running_state->interesting_windows--;
+
+  if (app->running_state->interesting_windows == 0)
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STOPPED);
 
   g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
