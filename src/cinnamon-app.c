@@ -838,7 +838,7 @@ static int
 cinnamon_app_get_last_user_time (CinnamonApp *app)
 {
   GSList *iter;
-  int last_user_time;
+  guint32 last_user_time;
 
   last_user_time = 0;
 
@@ -848,7 +848,7 @@ cinnamon_app_get_last_user_time (CinnamonApp *app)
         last_user_time = MAX (last_user_time, meta_window_get_user_time (iter->data));
     }
 
-  return last_user_time;
+  return (int)last_user_time;
 }
 
 /**
