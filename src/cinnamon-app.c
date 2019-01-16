@@ -87,7 +87,6 @@ struct _CinnamonApp
 
   char *window_id_string;
   char *name_collation_key;
-  char *keywords;
 };
 
 enum {
@@ -386,38 +385,13 @@ cinnamon_app_get_description (CinnamonApp *app)
     return NULL;
 }
 
-const char *
+const char * const *
 cinnamon_app_get_keywords (CinnamonApp *app)
 {
-  const char * const *keywords;
-  const char *keyword;
-  gint i;
-  gchar *ret = NULL;
-
-  if (app->keywords)
-    return app->keywords;
-
   if (app->info)
-    keywords = g_desktop_app_info_get_keywords (G_DESKTOP_APP_INFO (app->info));
+    return g_desktop_app_info_get_keywords (app->info);
   else
-    keywords = NULL;
-
-  if (keywords != NULL)
-    {
-      GString *keyword_list = g_string_new(NULL);
-
-      for (i = 0; keywords[i] != NULL; i++)
-        {
-          keyword = keywords[i];
-          g_string_append_printf (keyword_list, "%s;", keyword);
-        }
-
-      ret = g_string_free (keyword_list, FALSE);
-    }
-
-    app->keywords = ret;
-
-    return ret;
+    return NULL;
 }
 
 /**
@@ -1599,7 +1573,6 @@ static void
 cinnamon_app_init (CinnamonApp *self)
 {
   self->state = CINNAMON_APP_STATE_STOPPED;
-  self->keywords = NULL;
 }
 
 static void
@@ -1616,8 +1589,6 @@ cinnamon_app_dispose (GObject *object)
   /* We should have been transitioned when we removed all of our windows */
   g_assert (app->state == CINNAMON_APP_STATE_STOPPED);
   g_assert (app->running_state == NULL);
-
-  g_clear_pointer (&app->keywords, g_free);
 
   G_OBJECT_CLASS(cinnamon_app_parent_class)->dispose (object);
 }
