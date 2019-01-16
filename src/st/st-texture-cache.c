@@ -994,7 +994,7 @@ file_changed_cb (GFileMonitor      *monitor,
   StTextureCache *cache = user_data;
   char *uri, *key;
 
-  if (event_type != G_FILE_MONITOR_EVENT_CHANGED)
+  if (event_type != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT)
     return;
 
   uri = g_file_get_uri (file);
