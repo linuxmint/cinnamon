@@ -210,8 +210,8 @@ __proto__: ModalDialog.ModalDialog.prototype,
             if (this.asyncCommandInProgress) {
                 this.subprocess.cancellable.cancel();
                 this.subprocess = null;
-                this.close();
             }
+            this.close();
         }, 0);
     },
 
