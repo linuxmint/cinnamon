@@ -27,15 +27,16 @@ DEF_HEADING = 2
 preferred_app_defs = [
     # 1st mimetype is to let us find apps
     # 2nd mimetype is to set default handler for (so we handle all of that type, not just a specific format)
-    ( "inode/directory",         "inode/directory",            _("File Manager") ),
-    ( "x-scheme-handler/http",   "x-scheme-handler/http",      _("_Web") ),
-    ( "x-scheme-handler/mailto", "x-scheme-handler/mailto",    _("_Mail") ),
+    ( "inode/directory",         "inode/directory",          _("File Manager") ),
+    ( "x-scheme-handler/http",   "x-scheme-handler/http",    _("_Web") ),
+    ( "x-scheme-handler/mailto", "x-scheme-handler/mailto",  _("_Mail") ),
     ( "application/msword",      "application/msword",       _("Documents") ),
     ( "text/plain",              "text/plain",               _("Plain Text") ),
     ( "audio/x-vorbis+ogg",      "audio",                    _("M_usic") ),
     ( "video/x-ogm+ogg",         "video",                    _("_Video") ),
     ( "image/jpeg",              "image",                    _("_Photos") ),
-    ( "text/x-python",           "text/x-python",          _("Source Code") ),
+    ( "text/x-python",           "text/x-python",            _("Source Code") ),
+    ( "application/pdf",         "application/pdf",          _("PDF") ),
 ]
 
 mimetypes = {}
