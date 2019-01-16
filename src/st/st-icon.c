@@ -186,10 +186,8 @@ st_icon_paint (ClutterActor *actor)
       if (priv->shadow_pipeline)
         {
           ClutterActorBox allocation;
-          float width, height;
 
           clutter_actor_get_allocation_box (priv->icon_texture, &allocation);
-          clutter_actor_box_get_size (&allocation, &width, &height);
 
           _st_paint_shadow_with_opacity (priv->shadow_spec,
                                          priv->shadow_pipeline,
