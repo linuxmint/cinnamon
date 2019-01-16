@@ -511,7 +511,7 @@ function tryFn(callback, errCallback) {
     try {
         return callback();
     } catch (e) {
-        if (typeof errCb === 'function') {
+        if (typeof errCallback === 'function') {
             return errCallback(e);
         }
     }
