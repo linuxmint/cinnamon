@@ -10,6 +10,7 @@
  */
 
 const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const GObject = imports.gi.GObject;
 const Gir = imports.gi.GIRepository;
 const Mainloop = imports.mainloop;
@@ -154,33 +155,43 @@ function trySpawnCommandLine(command_line) {
 
 /**
  * spawnCommandLineAsync:
- * @command_line: a command line
- * @callback (function): called on success
- * @errback (function): called on error
+ * @command: a command
+ * @callback (function): called on success or failure
+ * @opts (object): options: argv, flags, input
  *
- * Runs @command_line in the background. If the process exits without
- * error, a callback will be called, or an error callback will be
- * called if one is provided.
+ * Runs @command in the background. Callback has three arguments -
+ * stdout, stderr, and exitCode.
+ *
+ * Returns (object): a Gio.Subprocess instance
  */
-function spawnCommandLineAsync(command_line, callback, errback) {
-    let pid;
+function spawnCommandLineAsync(command, callback, opts = {}) {
+    let {argv, flags, input} = opts;
+    if (!input) input = null;
 
-    let [success, argv] = GLib.shell_parse_argv(command_line);
-    pid = trySpawn(argv, true);
-
-    GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, function(pid, status) {
-        GLib.spawn_close_pid(pid);
-
-        if (status !== 0) {
-            if (typeof errback === 'function') {
-                errback();
-            }
-        } else {
-            if (typeof callback === 'function') {
-                callback();
-            }
-        }
+    let subprocess = new Gio.Subprocess({
+        argv: argv ? argv : ['bash', '-c', command],
+        flags: flags ? flags
+            : Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDIN_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
     });
+    subprocess.init(null);
+    let cancellable = new Gio.Cancellable();
+
+    subprocess.communicate_utf8_async(input, cancellable, (obj, res) => {
+        let success, stdout, stderr, exitCode;
+        // This will throw on cancel with "Gio.IOErrorEnum: Operation was cancelled"
+        tryFn(() => [success, stdout, stderr] = obj.communicate_utf8_finish(res));
+        if (typeof callback === 'function' && !cancellable.is_cancelled()) {
+            if (stderr && stderr.indexOf('bash: ') > -1) {
+                stderr = stderr.replace(/bash: /, '');
+            }
+            exitCode = success ? subprocess.get_exit_status() : -1;
+            callback(stdout, stderr, exitCode);
+        }
+        subprocess.cancellable = null;
+    });
+    subprocess.cancellable = cancellable;
+
+    return subprocess;
 }
 
 function _handleSpawnError(command, err) {

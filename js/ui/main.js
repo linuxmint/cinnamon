@@ -1394,11 +1394,14 @@ function popModal(actor, timestamp) {
     modalCount -= 1;
 
     let record = modalActorFocusStack[focusIndex];
-    record.actor.disconnect(record.destroyId);
+    if (record.destroyId) record.actor.disconnect(record.destroyId);
+    record.destroyId = 0;
 
     if (focusIndex == modalActorFocusStack.length - 1) {
-        if (record.focus)
+        if (record.focusDestroyId) {
             record.focus.disconnect(record.focusDestroyId);
+            record.focusDestroyId = 0;
+        }
         global.stage.set_key_focus(record.focus);
     } else {
         let t = modalActorFocusStack[modalActorFocusStack.length - 1];
