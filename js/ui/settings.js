@@ -501,6 +501,23 @@ XletSettingsBase.prototype = {
     },
 
     /**
+     * getDefaultValue:
+     * @key (string): the name of the settings key
+     *
+     * Gets the default value of the setting @key.
+     *
+     * Returns: The default value of the setting
+     */
+    getDefaultValue: function(key) {
+        if (key in this.settingsData) {
+            return this.settingsData[key].default;
+        } else {
+            key_not_found_error(key, this.uuid);
+            return null;
+        }
+    },
+
+    /**
      * getOptions:
      * @key (String): the name of the settings key
      *
