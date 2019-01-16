@@ -225,12 +225,6 @@ st_entry_dispose (GObject *object)
       priv->blink_timeout = 0;
     }
 
-  if (priv->entry)
-    {
-      clutter_actor_destroy (priv->entry);
-      priv->entry = NULL;
-    }
-
   keymap = gdk_keymap_get_for_display (gdk_display_get_default ());
   g_signal_handlers_disconnect_by_func (keymap, keymap_state_changed, entry);
 
