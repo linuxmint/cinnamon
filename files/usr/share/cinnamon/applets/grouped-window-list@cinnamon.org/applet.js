@@ -251,7 +251,9 @@ class GroupedWindowListApplet extends Applet.Applet {
             lastTitleDisplay: null,
             scrollActive: false,
             thumbnailMenuOpen: false,
-            thumbnailCloseButtonOffset: global.ui_scale > 1 ? -10 : 0
+            thumbnailCloseButtonOffset: global.ui_scale > 1 ? -10 : 0,
+            addingWindowToWorkspaces: false,
+            removingWindowFromWorkspaces: false,
         });
 
         // key-function pairs of actions that can be triggered from the store's callback queue. This allows the
@@ -271,11 +273,13 @@ class GroupedWindowListApplet extends Applet.Applet {
                 each(this.appLists, function(appList) {
                     appList.windowAdded(appList.metaWorkspace, win, app, isFavoriteApp);
                 });
+                this.state.addingWindowToWorkspaces = false;
             },
             removeWindowFromAllWorkspaces: (win) => {
                 each(this.appLists, function(appList) {
                     appList.windowRemoved(appList.metaWorkspace, win);
                 });
+                this.state.removingWindowFromWorkspaces = false;
             },
             removeWindowFromOtherWorkspaces: (win) => {
                 each(this.appLists, (appList) => {
@@ -284,6 +288,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                     }
                     appList.windowRemoved(appList.metaWorkspace, win);
                 });
+                this.state.removingWindowFromWorkspaces = false;
             },
             refreshCurrentAppList: () => this.refreshCurrentAppList(),
             getCurrentAppList: () => this.getCurrentAppList(),

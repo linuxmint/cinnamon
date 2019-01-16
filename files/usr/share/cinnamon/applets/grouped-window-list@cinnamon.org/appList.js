@@ -239,8 +239,11 @@ class AppList {
 
         if (metaWindow && !this.shouldWindowBeAdded(metaWindow)) return;
 
-        if (this.state.appletReady && this.state.settings.showAllWorkspaces && metaWindow && !metaWindow.__gwlInit__) {
-            metaWindow.__gwlInit__ = true;
+        if (metaWindow
+            && this.state.appletReady
+            && this.state.settings.showAllWorkspaces
+            && !this.state.addingWindowToWorkspaces) {
+            this.state.addingWindowToWorkspaces = true;
             this.state.trigger('addWindowToAllWorkspaces', metaWindow, app, isFavoriteApp);
         }
         // Check to see if the window that was added already has an app group.
@@ -366,8 +369,11 @@ class AppList {
         if (!this.state) return;
 
         if ((metaWindow.is_on_all_workspaces() || this.state.settings.showAllWorkspaces)
-            && !metaWindow.__gwlFinalize__) {
-            metaWindow.__gwlFinalize__ = true;
+            && !this.state.removingWindowFromWorkspaces) {
+            // Abort the remove if the window is just changing workspaces, window
+            // should always remain indexed on all workspaces while its mapped.
+            if (!metaWindow.showing_on_its_workspace()) return;
+            this.state.removingWindowFromWorkspaces = true;
             this.state.trigger('removeWindowFromAllWorkspaces', metaWindow);
             return;
         }
@@ -387,6 +393,7 @@ class AppList {
                 return false;
             }
         });
+
         if (refApp > -1) {
             this.appList[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp) => {
                 if (this.state.settings.titleDisplay > 1) {
