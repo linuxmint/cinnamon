@@ -29,7 +29,7 @@ ClutterActor *cinnamon_app_create_icon_texture_for_window (CinnamonApp   *app,
                                                            MetaWindow    *for_window);
 const char *cinnamon_app_get_name (CinnamonApp *app);
 const char *cinnamon_app_get_description (CinnamonApp *app);
-const char *cinnamon_app_get_keywords (CinnamonApp *app);
+const char * const *cinnamon_app_get_keywords (CinnamonApp *app);
 gboolean cinnamon_app_is_window_backed (CinnamonApp *app);
 
 void cinnamon_app_activate_window (CinnamonApp *app, MetaWindow *window, guint32 timestamp);
