@@ -512,14 +512,14 @@ class XletSettingsBase {
      *
      * Returns: The default value of the setting
      */
-    getDefaultValue: function(key) {
+    getDefaultValue(key) {
         if (key in this.settingsData) {
             return this.settingsData[key].default;
         } else {
             key_not_found_error(key, this.uuid);
             return null;
         }
-    },
+    }
 
     /**
      * getOptions:
