@@ -85,7 +85,7 @@ class AppGroup {
 
         // TODO: This needs to be in state so it can be updated more reliably.
         this.labelVisible = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
-        this._progress = 0;
+        this.progress = 0;
 
         this.actor =  new Cinnamon.GenericContainer({
             name: 'appButton',
@@ -436,13 +436,7 @@ class AppGroup {
             });
         }
 
-        if (this.progressOverlay.visible) {
-            childBox.x1 = 0;
-            childBox.y1 = 0;
-            childBox.x2 = Math.max((this.actor.width) * (this._progress / 100.0), 1.0);
-            childBox.y2 = this.actor.height;
-            this.progressOverlay.allocate(childBox, flags);
-        }
+        if (this.progressOverlay.visible) this.allocateProgress(childBox, flags);
     }
 
     showLabel(animate = false) {
@@ -538,15 +532,38 @@ class AppGroup {
         }
     }
 
+    averageProgress() {
+        let {metaWindows} = this.groupState;
+        let total = 0;
+        let count = 0;
+        each(metaWindows, function(metaWindow) {
+            let {progress} = metaWindow;
+            if (progress < 1) return;
+            total += progress;
+            count++;
+        });
+        return total / count;
+    }
+
+    allocateProgress(childBox = null, flags = 0) {
+        if (!childBox) childBox = new Clutter.ActorBox();
+        childBox.x1 = 0;
+        childBox.y1 = 0;
+        childBox.x2 = Math.max((this.actor.width) * (this.progress / 100.0), 1.0);
+        childBox.y2 = this.actor.height;
+        this.progressOverlay.allocate(childBox, flags);
+    }
+
     onProgressChange(metaWindow) {
-        if (metaWindow.progress !== this._progress) {
-            this._progress = metaWindow.progress;
-            if (this._progress > 0) {
-                this.progressOverlay.show();
+        let progress = this.averageProgress();
+        if (progress !== this.progress) {
+            this.progress = progress;
+            if (this.progress > 0) {
+                if (!this.progressOverlay.visible) this.progressOverlay.show();
+                this.allocateProgress();
             } else {
                 this.progressOverlay.hide();
             }
-            this.actor.queue_relayout();
         }
     }
 
@@ -842,7 +859,13 @@ class AppGroup {
             }
 
             if (metaWindow.progress !== undefined) {
-                this._progress = metaWindow.progress;
+                // Check if GWL is starting with pre-existing windows that have progress,
+                // and defer to the next tick in case the actor isn't on the stage yet.
+                if (metaWindow.progress > 0 || this.progress > 0) {
+                    setTimeout(() => this.onProgressChange(), 0);
+                } else {
+                    this.progress = 0;
+                }
                 this.signals.connect(metaWindow, 'notify::progress', () => this.onProgressChange(metaWindow));
             }
 
@@ -875,10 +898,7 @@ class AppGroup {
 
         this.groupState.metaWindows.splice(refWindow, 1);
 
-        if (metaWindow.progress > 0 && this.progressOverlay.visible) {
-            this._progress = 0;
-            this.progressOverlay.visible = false;
-        }
+        if (this.progressOverlay.visible) this.onProgressChange();
 
         if (this.groupState.metaWindows.length > 0 && !this.groupState.willUnmount) {
             this.onWindowTitleChanged(this.groupState.lastFocused);
