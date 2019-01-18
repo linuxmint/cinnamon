@@ -2756,14 +2756,12 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
                                        this._arrow.rotation_angle_z = this.actor._arrowRotation;
                                }
                              });
-            } else {
-                if (this._arrow)
-                    this._arrow.rotation_angle_z = 0;
-                this.actor.hide();
-
-                this.isOpen = false;
-                this.emit('open-state-changed', false);
-            }
+        } else {
+            if (this._arrow) this._arrow.rotation_angle_z = 0;
+            this.actor.hide();
+            this.isOpen = false;
+            this.emit('open-state-changed', false);
+        }
     }
 
     //Closes the submenu after it has been unmapped. Used to prevent size changes
@@ -2786,8 +2784,8 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
         // Move focus back to parent menu if the user types Left.
 
         if (this.isOpen && event.get_key_symbol() == Clutter.KEY_Left) {
-            this.close(true);
             this.sourceActor._delegate.setActive(true);
+            this.close(true);
             return true;
         }
 

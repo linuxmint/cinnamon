@@ -1,3 +1,17 @@
+cinnamon (4.0.9) tessa; urgency=medium
+
+  [ Michael Webster ]
+  * menu/desktop editor: Run update-desktop-database on the user's applications folder when modifying a desktop entry.
+
+  [ Jason Hicks ]
+  * window-list: Prevent _addWindow from getting called before windows finish mapping (#8180)
+  * PopupSubMenu: Set sourceActor active before closing menu (#8242)
+
+  [ Simon Brown ]
+  * st-private: Don't try to create shadow for empty texture (#8217)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 08 Jan 2019 16:38:19 +0000
+
 cinnamon (4.0.8) tessa; urgency=medium
 
   * Cinnamon Settings: Make directly launched modules feel like standalone apps (#8146)

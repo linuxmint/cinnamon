@@ -187,15 +187,15 @@ st_bin_get_preferred_height (ClutterActor *self,
 }
 
 static void
-st_bin_dispose (GObject *gobject)
+st_bin_destroy (ClutterActor *actor)
 {
-  StBinPrivate *priv = ST_BIN (gobject)->priv;
+  StBinPrivate *priv = ST_BIN (actor)->priv;
 
   if (priv->child)
     clutter_actor_destroy (priv->child);
   g_assert (priv->child == NULL);
 
-  G_OBJECT_CLASS (st_bin_parent_class)->dispose (gobject);
+  CLUTTER_ACTOR_CLASS (st_bin_parent_class)->destroy (actor);
 }
 
 static void
@@ -317,11 +317,11 @@ st_bin_class_init (StBinClass *klass)
 
   gobject_class->set_property = st_bin_set_property;
   gobject_class->get_property = st_bin_get_property;
-  gobject_class->dispose = st_bin_dispose;
 
   actor_class->get_preferred_width = st_bin_get_preferred_width;
   actor_class->get_preferred_height = st_bin_get_preferred_height;
   actor_class->allocate = st_bin_allocate;
+  actor_class->destroy = st_bin_destroy;
 
   widget_class->popup_menu = st_bin_popup_menu;
   widget_class->navigate_focus = st_bin_navigate_focus;

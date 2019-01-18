@@ -333,6 +333,7 @@ class Module:
             cat_column.set_property('min-width', 200)
 
             self.cat_tree.append_column(cat_column)
+            self.cat_tree.set_search_column(1)
             self.cat_tree.connect("cursor-changed", self.onCategoryChanged)
 
             kb_name_cell = Gtk.CellRendererText()

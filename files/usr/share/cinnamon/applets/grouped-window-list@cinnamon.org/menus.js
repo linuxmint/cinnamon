@@ -83,6 +83,10 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             return new PopupMenu.PopupMenuItem(opts.label);
         };
 
+        // TODO: When no windows exist on the active workspace, but do on another,
+        // we should detect those cases and offer workspace options if they are pinned. Otherwise,
+        // user needs to switch workspaces just to switch the window back. This should behave this way
+        // when showAllWorkspaces is disabled as well since its a UX problem.
         if (hasWindows) {
             // Monitors
             if (Main.layoutManager.monitors.length > 1) {
@@ -108,6 +112,9 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                     item = createMenuItem({label: _('Only on this workspace')});
                     this.signals.connect(item, 'activate', () => {
                         this.groupState.lastFocused.unstick();
+                        // Always index windows from all workspaces while showAllWorkspaces is enabled
+                        if (this.state.settings.showAllWorkspaces) return;
+                        this.state.removingWindowFromWorkspaces = true;
                         this.state.trigger('removeWindowFromOtherWorkspaces', this.groupState.lastFocused);
                     });
                     this.addMenuItem(item);
@@ -128,17 +135,18 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                         });
                     };
                     for (let i = 0; i < length; i++) {
-                        // Make the index a local letiable to pass to function
+                        // Make the index a local variable to pass to function
                         let j = i;
                         let name = Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i);
-                        let ws = createMenuItem({label: _(name)});
+                        let menuItem = createMenuItem({label: _(name)});
+                        let ws = this.groupState.lastFocused.get_workspace();
 
-                        if (i === this.state.currentWs) {
-                            ws.setSensitive(false);
+                        if (ws && i === ws.index()) {
+                            menuItem.setSensitive(false);
                         }
 
-                        connectWorkspaceEvent(ws, j);
-                        item.menu.addMenuItem(ws);
+                        connectWorkspaceEvent(menuItem, j);
+                        item.menu.addMenuItem(menuItem);
                     }
                 }
             }
@@ -305,7 +313,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         if (hasWindows) {
             let metaWindowActor = this.groupState.lastFocused.get_compositor_private();
             // Miscellaneous
-            if (metaWindowActor.opacity !== 255) {
+            if (metaWindowActor && metaWindowActor.opacity !== 255) {
                 item = createMenuItem({label: _('Restore to full opacity')});
                 this.signals.connect(item, 'activate', () => metaWindowActor.set_opacity(255));
                 this.addMenuItem(item);
@@ -351,6 +359,9 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 });
                 this.addMenuItem(item);
                 // Close all
+                // TODO: We should detect if windows from this group are on another workspace
+                // and close windows across all workspaces while showAllWorkspaces is enabled.
+                // Ditto for 'Close others'.
                 item = createMenuItem({label: _('Close all'), icon: 'application-exit'});
                 this.signals.connect(item, 'activate', () => {
                     if (!this.groupState.isFavoriteApp) {
@@ -698,10 +709,11 @@ class WindowThumbnail {
         } else {
             this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
-        if (this.metaWindowActor) {
+        if (this.metaWindowActor && !this.metaWindowActor.is_finalized()) {
             this.signals.connect(this.metaWindowActor, 'size-changed', () => this.refreshThumbnail());
 
             let windowTexture = this.metaWindowActor.get_texture();
+            if (!windowTexture) return;
             let [width, height] = windowTexture.get_size();
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
@@ -798,7 +810,10 @@ class WindowThumbnail {
     }
 
     hoverPeek(opacity) {
-        if (!this.state.settings.enablePeek || this.state.overlayPreview || this.state.scrollActive) {
+        if (!this.state.settings.enablePeek
+            || this.state.overlayPreview
+            || this.state.scrollActive
+            || (this.metaWindowActor && this.metaWindowActor.is_finalized())) {
             return;
         }
         if (!this.metaWindowActor) {
@@ -873,7 +888,9 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             },
             addThumbnailToMenu: (win) => {
                 if (this.isOpen) {
-                    setTimeout(() => this.addThumbnail(win), 0);
+                    this.close(true);
+                    this.addThumbnail(win);
+                    this.open(true);
                     return;
                 }
                 this.queuedWindows.push(win);
@@ -998,7 +1015,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.tooltip.set_text(this.groupState.appName);
             this.groupState.tooltip.show();
         } else {
-            if (force) this.addQueuedThumbnails();
+            if (force || this.state.settings.onClickThumbs) this.addQueuedThumbnails();
             this.state.set({thumbnailMenuOpen: true});
             super.open(this.state.settings.animateThumbs);
         }

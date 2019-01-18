@@ -1672,7 +1672,7 @@ StScrollBar StButton#vhandle:hover {
 }
 .applet-box.vertical:hover > .applet-label {
 }
-.applet-icon {
+.applet-icon {   /* symbolic icons will use system-status-icon instead */
     color: #ccc;
     icon-size: 22px;
 }

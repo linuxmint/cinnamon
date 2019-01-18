@@ -194,24 +194,39 @@ __proto__: ModalDialog.ModalDialog.prototype,
                                                      entry: this._entryText,
                                                      deduplicate: true });
         this._entryText.connect('key-press-event', Lang.bind(this, this._onKeyPress));
+        this._entryText.connect('key-focus-out', () => this.cancelAsyncCommand());
 
         this._updateCompletionTimer = 0;
-     },
+    },
+
+    get asyncCommandInProgress() {
+        return this.subprocess && !this.subprocess.get_if_exited()
+    },
+
+    cancelAsyncCommand: function() {
+        // If a process opens a new window and causes loss of focus (e.g. pkexec), we want
+        // to make sure our async callback is cancelled, and close the run dialog.
+        setTimeout(() => {
+            if (this.asyncCommandInProgress) {
+                this.subprocess.cancellable.cancel();
+                this.subprocess = null;
+            }
+            this.close();
+        }, 0);
+    },
 
     _onKeyPress: function (o, e) {
+        if (this.asyncCommandInProgress) return;
+
         let symbol = e.get_key_symbol();
         if (symbol == Clutter.Return || symbol == Clutter.KP_Enter) {
             this.popModal();
-            if (Cinnamon.get_event_state(e) & Clutter.ModifierType.CONTROL_MASK)
-                this._run(o.get_text(), true);
-            else
-                this._run(o.get_text(), false);
-            if (!this._commandError)
-                this.close();
-            else {
-                if (!this.pushModal())
-                    this.close();
-            }
+            let inTerminal = Cinnamon.get_event_state(e) & Clutter.ModifierType.CONTROL_MASK;
+            this._run(o.get_text(), inTerminal, (success) => {
+                if (this.state == ModalDialog.State.CLOSED || this.state == ModalDialog.State.CLOSING) return;
+                if (success) return this.close();
+                if (!this.pushModal()) this.close();
+            });
             return true;
         }
         if (symbol == Clutter.Escape || symbol == Clutter.Super_L || symbol == Clutter.Super_R) {
@@ -341,10 +356,10 @@ __proto__: ModalDialog.ModalDialog.prototype,
         this._entryText.set_selection(-1, orig.length);
     },
 
-    _run : function(input, inTerminal) {
+    _run: function(input, inTerminal, callback) {
+        input = input.trim();
         this._history.addItem(input);
-        this._commandError = false;
-        if (this._enableInternalCommands && input.trim() in DEVEL_COMMANDS) {
+        if (this._enableInternalCommands && input in DEVEL_COMMANDS) {
             DEVEL_COMMANDS[input.trim()]();
             return;
         }
@@ -361,49 +376,54 @@ __proto__: ModalDialog.ModalDialog.prototype,
             }
         }
         let command = split.join(" ");
-
-        try {
-            if (inTerminal) {
-                let exec = this._terminalSettings.get_string(EXEC_KEY);
-                let exec_arg = this._terminalSettings.get_string(EXEC_ARG_KEY);
-                command = exec + ' ' + exec_arg + ' ' + input;
-            }
-            Util.spawnCommandLineAsync(command, null, null);
-        } catch (e) {
-            // Mmmh, that failed - see if @input matches an existing file
-            let path = null;
-            input = input.trim();
-            if (input.charAt(0) == '/') {
+        let path = null;
+        let isHome = input.charAt(0) === '~';
+        let isPath = input.charAt(0) == '/'
+        if (isPath || isHome) {
+            if (isPath) {
                 path = input;
             } else {
-                if (input.charAt(0) == '~')
-                    input = input.slice(1);
+                input = input.slice(1);
                 path = GLib.build_filenamev([GLib.get_home_dir(), input]);
             }
 
             if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
                 let file = Gio.file_new_for_path(path);
-                try {
-                    Gio.app_info_launch_default_for_uri(file.get_uri(),
-                            global.create_app_launch_context());
-                } catch (e) {
+                Util.tryFn(() => {
+                    Gio.app_info_launch_default_for_uri(file.get_uri(), global.create_app_launch_context());
+                }, (e) => {
                     // The exception from gjs contains an error string like:
                     //     Error invoking Gio.app_info_launch_default_for_uri: No application
                     //     is registered as handling this file
                     // We are only interested in the part after the first colon.
                     let message = e.message.replace(/[^:]*: *(.+)/, '$1');
                     this._showError(message);
-                }
-            } else {
-                this._showError(e.message);
+                });
+                this.close();
+                return;
             }
         }
+
+        if (inTerminal) {
+            let exec = this._terminalSettings.get_string(EXEC_KEY);
+            let exec_arg = this._terminalSettings.get_string(EXEC_ARG_KEY);
+            command = exec + ' ' + exec_arg + ' ' + input;
+        }
+        this.subprocess = Util.spawnCommandLineAsync(command, (stdout, stderr, code) => {
+            this.subprocess = null;
+            if (stderr) {
+                this._showError(stderr);
+                callback(false);
+                return;
+            }
+            callback(true);
+        });
     },
 
     _showError : function(message) {
         this._commandError = true;
 
-        this._errorMessage.set_text(message);
+        this._errorMessage.set_text(message.trim());
 
         if (!this._errorBox.visible) {
             let [errorBoxMinHeight, errorBoxNaturalHeight] = this._errorBox.get_preferred_height(-1);

@@ -1,7 +1,7 @@
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const {SignalManager} = imports.misc.signalManager;
-const {each, findIndex, find, unref} = imports.misc.util;
+const {each, filter, findIndex, find, unref} = imports.misc.util;
 const {createStore} = imports.misc.state;
 
 const AppGroup = require('./appGroup');
@@ -194,7 +194,16 @@ class AppList {
             }
             if (!app) continue;
 
-            this.windowAdded(this.metaWorkspace, null, app, true);
+            let appWindows = filter(app.get_windows(), (metaWindow) => this.shouldWindowBeAdded(metaWindow));
+
+            if (appWindows.length === 0) {
+                this.windowAdded(this.metaWorkspace, null, app, true);
+                continue;
+            }
+
+            for (let i = 0; i < appWindows.length; i++) {
+                this.windowAdded(this.metaWorkspace, appWindows[i], app, true);
+            }
         }
     }
 
@@ -239,8 +248,11 @@ class AppList {
 
         if (metaWindow && !this.shouldWindowBeAdded(metaWindow)) return;
 
-        if (this.state.appletReady && this.state.settings.showAllWorkspaces && metaWindow && !metaWindow.__gwlInit__) {
-            metaWindow.__gwlInit__ = true;
+        if (metaWindow
+            && this.state.appletReady
+            && this.state.settings.showAllWorkspaces
+            && !this.state.addingWindowToWorkspaces) {
+            this.state.addingWindowToWorkspaces = true;
             this.state.trigger('addWindowToAllWorkspaces', metaWindow, app, isFavoriteApp);
         }
         // Check to see if the window that was added already has an app group.
@@ -289,57 +301,30 @@ class AppList {
             if (refFav > -1) transientFavorite = true;
         }
 
-        let initApp = (metaWindows, window) => {
+        let initApp = () => {
             let appGroup = new AppGroup({
                 state: this.state,
                 listState: this.listState,
                 app,
                 isFavoriteApp,
                 metaWorkspace,
-                metaWindows,
                 metaWindow,
                 appId
             });
             this.actor.add_child(appGroup.actor);
             this.appList.push(appGroup);
-
-            if (this.state.settings.groupApps && metaWindows.length > 0) {
-                each(metaWindows, (win) => {
-                    appGroup.windowAdded(win, metaWindows);
-                });
-            } else {
-                appGroup.windowAdded(window);
-            }
+            appGroup.windowAdded(metaWindow);
         };
 
         if (refApp === -1) {
-            let _appWindows = app.get_windows();
-            let appWindows = [];
-
-            for (let i = 0; i < _appWindows.length; i++) {
-                if (this.shouldWindowBeAdded(_appWindows[i])) {
-                    appWindows.push(_appWindows[i]);
-                }
-            }
-
-            if (this.state.settings.groupApps) {
-                initApp(appWindows);
-            } else {
-                if (appWindows.length > 0) {
-                    each(appWindows, (win) => {
-                        initApp([win], win);
-                    });
-                } else {
-                    initApp([], null);
-                }
-            }
+            initApp(metaWindow);
         } else if (metaWindow) {
             if (this.state.settings.groupApps) {
                 this.appList[refApp].windowAdded(metaWindow);
             } else if (transientFavorite && this.appList[refApp].groupState.metaWindows.length === 0) {
                 this.appList[refApp].windowAdded(metaWindow);
             } else if (refWindow === -1) {
-                initApp([metaWindow], metaWindow);
+                initApp();
             }
         }
     }
@@ -366,8 +351,11 @@ class AppList {
         if (!this.state) return;
 
         if ((metaWindow.is_on_all_workspaces() || this.state.settings.showAllWorkspaces)
-            && !metaWindow.__gwlFinalize__) {
-            metaWindow.__gwlFinalize__ = true;
+            && !this.state.removingWindowFromWorkspaces) {
+            // Abort the remove if the window is just changing workspaces, window
+            // should always remain indexed on all workspaces while its mapped.
+            if (!metaWindow.showing_on_its_workspace()) return;
+            this.state.removingWindowFromWorkspaces = true;
             this.state.trigger('removeWindowFromAllWorkspaces', metaWindow);
             return;
         }
@@ -387,6 +375,7 @@ class AppList {
                 return false;
             }
         });
+
         if (refApp > -1) {
             this.appList[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp) => {
                 if (this.state.settings.titleDisplay > 1) {

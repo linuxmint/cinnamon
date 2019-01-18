@@ -215,6 +215,11 @@ function _initRecorder() {
             recorder.set_filename('cinnamon-%d%u-%c.' + recorderSettings.get_string('file-extension'));
             let pipeline = recorderSettings.get_string('pipeline');
 
+            if (layoutManager.monitors.length > 1) {
+                let {x, y, width, height} = layoutManager.primaryMonitor;
+                recorder.set_area(x, y, width, height);
+            }
+
             if (!pipeline.match(/^\s*$/))
                 recorder.set_pipeline(pipeline);
             else
@@ -1394,11 +1399,14 @@ function popModal(actor, timestamp) {
     modalCount -= 1;
 
     let record = modalActorFocusStack[focusIndex];
-    record.actor.disconnect(record.destroyId);
+    if (record.destroyId) record.actor.disconnect(record.destroyId);
+    record.destroyId = 0;
 
     if (focusIndex == modalActorFocusStack.length - 1) {
-        if (record.focus)
+        if (record.focusDestroyId) {
             record.focus.disconnect(record.focusDestroyId);
+            record.focusDestroyId = 0;
+        }
         global.stage.set_key_focus(record.focus);
     } else {
         let t = modalActorFocusStack[modalActorFocusStack.length - 1];
