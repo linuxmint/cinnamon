@@ -850,8 +850,10 @@ class FileChooser(SettingsWidget):
 class SoundFileChooser(SettingsWidget):
     bind_dir = None
 
-    def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
+    def __init__(self, label, event_sounds=True, size_group=None, dep_key=None, tooltip=""):
         super(SoundFileChooser, self).__init__(dep_key=dep_key)
+
+        self.event_sounds = event_sounds
 
         self.label = SettingsLabel(label)
         self.content_widget = Gtk.Box()
@@ -910,11 +912,17 @@ class SoundFileChooser(SettingsWidget):
                                        buttons=(_("_Cancel"), Gtk.ResponseType.CANCEL,
                                                 _("_Open"), Gtk.ResponseType.ACCEPT))
 
-        dialog.set_filename(self.get_value())
+        if os.path.exists(self.get_value()):
+            dialog.set_filename(self.get_value())
+        else:
+            dialog.set_current_folder('/usr/share/sounds')
 
         sound_filter = Gtk.FileFilter()
-        sound_filter.add_mime_type("audio/x-wav")
-        sound_filter.add_mime_type("audio/x-vorbis+ogg")
+        if self.event_sounds:
+            sound_filter.add_mime_type("audio/x-wav")
+            sound_filter.add_mime_type("audio/x-vorbis+ogg")
+        else:
+            sound_filter.add_mime_type("audio/*")
         sound_filter.set_name(_("Sound files"))
         dialog.add_filter(sound_filter)
 
