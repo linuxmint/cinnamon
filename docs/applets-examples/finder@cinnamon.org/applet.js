@@ -10,12 +10,12 @@ const St = imports.gi.St;
 const Mainloop = imports.mainloop;
 const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
-const Settings = imports.ui.settings;
+const { AppletSettings } = imports.ui.settings;
 const _ = Gettext.gettext;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const Clutter = imports.gi.Clutter;
 
-const RESULT_TYPES_LABELS = 
+const RESULT_TYPES_LABELS =
 {
     software: _("Software"),
     pictures: _("Pictures"),
@@ -32,14 +32,14 @@ function SearchProviderResultButton(applet, provider, result) {
 
 SearchProviderResultButton.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-    
+
     _init: function(applet, provider, result) {
         this.provider = provider;
         this.result = result;
         this._applet = applet;
 
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {focusOnHover: false});
-        
+
         this.icon = null;
         if (result.icon){
             this.icon = result.icon;
@@ -48,7 +48,7 @@ SearchProviderResultButton.prototype = {
         }else if (result.icon_filename){
             this.icon = new St.Icon({gicon: new Gio.FileIcon({file: Gio.file_new_for_path(result.icon_filename)}), icon_size: 16});
         }
-        
+
         if (this.icon){
             this.addActor(this.icon);
         }
@@ -59,17 +59,17 @@ SearchProviderResultButton.prototype = {
             this.icon.realize();
         }
         this.label.realize();
-        
+
         this.connect('activate', Lang.bind(this, this._on_activate));
     },
-    
+
     _onButtonReleaseEvent: function (actor, event) {
         if (event.get_button() == 1){
             this.activate(event);
         }
         return true;
     },
-    
+
     _on_activate: function(event) {
         try{
             this.provider.on_result_selected(this.result);
@@ -87,17 +87,17 @@ function ApplicationResultButton(applet, app)
     this._init(applet, app);
 }
 
-ApplicationResultButton.prototype = 
+ApplicationResultButton.prototype =
 {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-    
+
     _init: function(applet, app)
     {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {focusOnHover: false});
-        
+
         this._app = app;
         this._applet = applet;
-        
+
         this.icon = this._app.create_icon_texture(16);
         this.addActor(this.icon);
         this.name = this._app.get_name();
@@ -109,10 +109,10 @@ ApplicationResultButton.prototype =
         this.addActor(this.label);
         this.icon.realize();
         this.label.realize();
-        
+
         this.connect('activate', Lang.bind(this, this._on_activate));
     },
-    
+
     _on_activate: function()
     {
         this._applet._search_menu.close();
@@ -125,17 +125,17 @@ function FileResultButton(applet, result, type)
     this._init(applet, result, type);
 }
 
-FileResultButton.prototype = 
+FileResultButton.prototype =
 {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-    
+
     _init: function(applet, result, type, custom_label)
     {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {focusOnHover: false});
-        
+
         this._filename = result["url"];
         this._applet = applet;
-        
+
         try
         {
             let icon = Cinnamon.util_get_icon_for_uri(this._filename);
@@ -164,10 +164,10 @@ FileResultButton.prototype =
         this.addActor(this.label);
         this.icon.realize();
         this.label.realize();
-        
+
         this.connect('activate', Lang.bind(this, this._on_activate));
     },
-    
+
     _on_activate: function()
     {
         this._applet._search_menu.close();
@@ -180,10 +180,10 @@ function MusicResultButton(applet, result, type)
     this._init(applet, result, type);
 }
 
-MusicResultButton.prototype = 
+MusicResultButton.prototype =
 {
     __proto__: FileResultButton.prototype,
-    
+
     _init: function(applet, result, type)
     {
         var basename = result["url"].split("/");
@@ -207,20 +207,16 @@ MyApplet.prototype =
         try
         {
             Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
-        
+
             menuItem = new Applet.MenuItem(_("Indexing Preferences"), null, Lang.bind(this, function(actor, event)
             {
                 Util.spawnCommandLine('tracker-preferences');
             }));
             this._applet_context_menu.addMenuItem(menuItem);
-            
-            this.settings = new Settings.AppletSettings(this, "finder@cinnamon.org", instanceId);
-            this.settings.bindProperty(Settings.BindingDirection.IN,
-                                     "launch_shortcut",
-                                     "launch_shortcut",
-                                     this.on_launch_shortcut_changed,
-                                     null);
-                                     
+
+            this.settings = new AppletSettings(this, "finder@cinnamon.org", instanceId);
+            this.settings.bind("launch_shortcut", "launch_shortcut", this.on_launch_shortcut_changed, null);
+
             this.set_applet_icon_name("edit-find-symbolic");
             this.set_applet_tooltip(_("Search using search providers"));
 
@@ -249,7 +245,7 @@ MyApplet.prototype =
             this._search_menu.actor.connect('key-release-event', Lang.bind(this, this._onKeyPress));
 
             section.actor.add_actor(this.searchEntry);
-            
+
             this._scrollBox = new St.ScrollView(
             {
                 x_fill: true,
@@ -268,11 +264,11 @@ MyApplet.prototype =
 
             this.searchEntryText = this.searchEntry.clutter_text;
             this.searchEntryText.connect('text-changed', Lang.bind(this, this._onSearchTextChanged));
-            
+
             this._search_timer = null;
-                        
+
             this._appSys = Cinnamon.AppSystem.get_default();
-            
+
             this.on_launch_shortcut_changed();
         }
         catch(e)
@@ -280,7 +276,7 @@ MyApplet.prototype =
             global.logError(e);
         }
     },
-    
+
     _onKeyPress: function(actor, event)
     {
         let symbol = event.get_key_symbol();
@@ -289,7 +285,7 @@ MyApplet.prototype =
             global.stage.set_key_focus(this.searchEntry);
         }
     },
-    
+
     on_launch_shortcut_changed: function()
     {
         Main.keybindingManager.addHotKey("finder_launch", this.launch_shortcut, Lang.bind(this, this.launch));
@@ -313,7 +309,7 @@ MyApplet.prototype =
             }));
         }
     },
-    
+
     _process_search: function(searchString)
     {
         this._currentSearchString = searchString;
@@ -340,14 +336,14 @@ MyApplet.prototype =
             this._show_results(searchString, query_results);
         }, searchString));
     },
-    
+
     _show_results: function(searchString, results)
     {
         if (searchString != this._currentSearchString)
         {
             return;
         }
-        
+
         var results_buttons = {};
         let button;
         let this_results;
@@ -410,13 +406,13 @@ MyApplet.prototype =
                 }
             }
         }
-        
+
         all_result_types.sort(function(a, b)
         {
             var order = ["software", "music", "pictures", "videos", "folders", "files", "provider"];
             return order.indexOf(a) - order.indexOf(b);
         });
-        
+
         let this_results_buttons, label;
         for (var i in all_result_types)
         {
@@ -437,7 +433,7 @@ MyApplet.prototype =
                 {
                     label = RESULT_TYPES_LABELS[result_type];
                 }
-                var result_type_label = new PopupMenu.PopupMenuItem(label, 
+                var result_type_label = new PopupMenu.PopupMenuItem(label,
                 {
                     reactive: false,
                     hover: false,
@@ -446,7 +442,7 @@ MyApplet.prototype =
                 });
                 result_type_label.actor.set_style("font-weight: bold;");
                 this._container.add_actor(result_type_label.actor);
-                
+
                 for (var i in this_results_buttons)
                 {
                     this._container.add_actor(this_results_buttons[i].actor);
@@ -462,14 +458,14 @@ MyApplet.prototype =
             this.launch();
         }
     },
-    
+
     launch: function()
     {
         this._search_menu.toggle();
         global.stage.set_key_focus(this.searchEntry);
         this.searchEntryText.set_selection(0, this.searchEntry.get_text().length);
     },
-    
+
     _scrollToButton: function(button)
     {
         var current_scroll_value = this._scrollBox.get_vscroll_bar().get_adjustment().get_value();
