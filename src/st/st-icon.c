@@ -337,8 +337,13 @@ static void
 on_pixbuf_changed (ClutterTexture *texture,
                    StIcon         *icon)
 {
-  st_icon_clear_shadow_pipeline (icon);
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (icon));
+  StIconPrivate *priv = icon->priv;
+
+  if (priv->shadow_pipeline)
+    {
+      st_icon_clear_shadow_pipeline (icon);
+      clutter_actor_queue_redraw (CLUTTER_ACTOR (icon));
+    }
 }
 
 static void
