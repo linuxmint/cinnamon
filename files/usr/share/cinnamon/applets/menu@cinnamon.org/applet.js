@@ -287,13 +287,8 @@ class GenericApplicationButton extends SimpleMenuItem {
         let desc = app.get_description() || "";
         super(applet, true, true, app.get_name(), desc.split("\n")[0], styleClass);
         this.app = app;
-
+        this.menu = null;
         this.withMenu = withMenu;
-        if (this.withMenu){
-            this.menu = new PopupMenu.PopupSubMenu(this.actor);
-            this.menu.actor.set_style_class_name('menu-context-menu');
-            this._signals.connect(this.menu, 'open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
-        }
     }
 
     highlight() {
@@ -327,39 +322,56 @@ class GenericApplicationButton extends SimpleMenuItem {
     }
 
     activateContextMenus() {
-        if (this.withMenu && !this.menu.isOpen)
-            this.applet.closeContextMenus(this.app, true);
+        if (!this.withMenu)
+            return;
+
+        let menu = this.applet.contextMenu;
+
+        if (menu != null && menu.sourceActor._delegate != this)
+            this.applet.closeContextMenu(this, true);
+
         this.toggleMenu();
     }
 
-    closeMenu() {
-        if (this.withMenu) this.menu.close();
-    }
-
     toggleMenu() {
-        if (!this.withMenu) return;
+        if (!this.withMenu)
+            return;
+
+        if (this.applet.contextMenu == null) {
+            this.applet.createContextMenu(this.actor);
+        }
+
+        let menu = this.applet.contextMenu;
+        this.menu = menu;
 
         if (!this.menu.isOpen){
             Util.each(this.menu.box.get_children(), c => { c.destroy() });
 
+            menu.sourceActor = this.actor;
+            this.actor.get_parent().set_child_above_sibling(menu.actor, this.actor);
+
             let menuItem;
             menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel", "list-add");
             this.menu.addMenuItem(menuItem);
+
             if (USER_DESKTOP_PATH){
                 menuItem = new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop", "computer");
                 this.menu.addMenuItem(menuItem);
             }
+
             if (AppFavorites.getAppFavorites().isFavorite(this.app.get_id())){
                 menuItem = new ApplicationContextMenuItem(this, _("Remove from favorites"), "remove_from_favorites", "starred");
                 this.menu.addMenuItem(menuItem);
-            }else{
+            } else {
                 menuItem = new ApplicationContextMenuItem(this, _("Add to favorites"), "add_to_favorites", "non-starred");
                 this.menu.addMenuItem(menuItem);
             }
+
             if (this.applet._canUninstallApps) {
                 menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "edit-delete");
                 this.menu.addMenuItem(menuItem);
             }
+
             if (this.applet._isBumblebeeInstalled) {
                 menuItem = new ApplicationContextMenuItem(this, _("Run with NVIDIA GPU"), "run_with_nvidia_gpu", "cpu");
                 this.menu.addMenuItem(menuItem);
@@ -379,12 +391,10 @@ class GenericApplicationButton extends SimpleMenuItem {
     }
 
     get _contextIsOpen() {
-        return this.menu.isOpen;
+        return this.menu != null && this.menu.isOpen;
     }
 
     destroy() {
-        if (this.withMenu)
-            this.menu.destroy();
         delete this.menu;
         delete this.app;
         super.destroy();
@@ -640,17 +650,12 @@ class RecentButton extends SimpleMenuItem {
     }
 
     activateContextMenus() {
-        let menu = this.applet.recentContextMenu;
+        let menu = this.applet.contextMenu;
 
         if (menu != null && menu.sourceActor._delegate != this)
-            this.applet.closeContextMenus(this, true);
+            this.applet.closeContextMenu(this, true);
 
         this.toggleMenu();
-    }
-
-    closeMenu() {
-        this.menu = null;
-        this.menu.close();
     }
 
     hasLocalPath(file) {
@@ -658,23 +663,18 @@ class RecentButton extends SimpleMenuItem {
     }
 
     toggleMenu() {
-        if (this.applet.recentContextMenu == null) {
-            this.applet.createRecentContextMenu(this.actor);
+        if (this.applet.contextMenu == null) {
+            this.applet.createContextMenu(this.actor);
         }
 
-        let menu = this.applet.recentContextMenu;
+        let menu = this.applet.contextMenu;
         this.menu = menu;
 
         if (!menu.isOpen) {
-            let parent = menu.actor.get_parent();
-            if (parent != null) {
-                parent.remove_child(menu.actor);
-            }
+            Util.each(this.menu.box.get_children(), c => { c.destroy() });
 
             menu.sourceActor = this.actor;
-            this.actor.get_parent().insert_child_above(menu.actor, this.actor);
-
-            Util.each(menu.box.get_children(), c => { c.destroy() });
+            this.actor.get_parent().set_child_above_sibling(menu.actor, this.actor);
 
             let menuItem;
 
@@ -734,7 +734,7 @@ class RecentButton extends SimpleMenuItem {
                 menu.addMenuItem(menuItem);
             }
         }
-        this.applet.recentContextMenu.toggle();
+        this.menu.toggle();
     }
 
     get _contextIsOpen() {
@@ -742,9 +742,6 @@ class RecentButton extends SimpleMenuItem {
     }
 
     destroy() {
-        if (this.menu)
-            this.menu.destroy();
-
         delete this.menu;
         delete this.file;
 
@@ -1061,8 +1058,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("search-filesystem", "searchFilesystem");
         this.refreshing = false; // used as a flag to know if we're currently refreshing (so we don't do it more than once concurrently)
 
-        this.recentContextMenu = null;
-        this.appsContextMenu = null;
+        this.contextMenu = null;
 
         this.lastSelectedCategory = null;
 
@@ -1245,7 +1241,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.selectedAppDescription.set_text("");
             this._previousTreeSelectedActor = null;
             this._previousSelectedActor = null;
-            this.closeContextMenus(null, false);
+            this.closeContextMenu(null, false);
 
             this._clearAllSelections(true);
             this._scrollToButton(this.favBoxIter.getFirstVisible()._delegate, this.favoritesScrollBox);
@@ -1329,26 +1325,23 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
-    _recentMenuOpenStateChanged(recentContextMenu) {
-        if (recentContextMenu.isOpen) {
-            this._activeContextMenuParent = recentContextMenu.sourceActor._delegate;
-            this._scrollToButton(recentContextMenu);
+    _contextMenuOpenStateChanged(menu) {
+        if (menu.isOpen) {
+            this._activeContextMenuParent = menu.sourceActor._delegate;
+            this._scrollToButton(menu);
         } else {
             this._activeContextMenuItem = null;
             this._activeContextMenuParent = null;
-            for (let item in this._recentButtons) {
-                if (this._recentButtons[item].menu) {
-                    this._recentButtons[item].menu = null;
-                }
-            }
+            menu.sourceActor._delegate.menu = null;
         }
     }
 
-    createRecentContextMenu(actor) {
+    createContextMenu(actor) {
         let menu = new PopupMenu.PopupSubMenu(actor);
         menu.actor.set_style_class_name('menu-context-menu');
-        menu.connect('open-state-changed', Lang.bind(this, this._recentMenuOpenStateChanged));
-        this.recentContextMenu = menu;
+        menu.connect('open-state-changed', Lang.bind(this, this._contextMenuOpenStateChanged));
+        this.contextMenu = menu;
+        this.applicationsBox.add_actor(menu.actor);
     }
 
     _navigateContextMenu(button, symbol, ctrlKey) {
@@ -1914,7 +1907,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 return;
             button.isHovered = true;
             this._clearPrevCatSelection(button.actor);
-            this.closeContextMenus(null, false);
+            this.closeContextMenu(null, false);
             this._select_category(button.categoryId);
             this.makeVectorBox(button.actor);
         } else {
@@ -2285,7 +2278,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         for (let i = 0; i < this._applicationsButtons.length; i++) {
             this.applicationsBox.add_actor(this._applicationsButtons[i].actor);
-            this.applicationsBox.add_actor(this._applicationsButtons[i].menu.actor);
         }
 
         this._appsWereRefreshed = true;
@@ -2625,30 +2617,21 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._displayButtons(name);
         }
 
-        this.closeContextMenus(null, false);
+        this.closeContextMenu(null, false);
     }
 
-    closeContextMenus(excluded, animate) {
-        for (let app in this._applicationsButtons){
-            if (this._applicationsButtons[app] != excluded && this._applicationsButtons[app].menu.isOpen){
-                if (animate)
-                    this._applicationsButtons[app].toggleMenu();
-                else
-                    this._applicationsButtons[app].closeMenu();
-            }
-        }
-
-        if (!this.recentContextMenu) {
+    closeContextMenu(excluded, animate) {
+        if (!this.contextMenu)
             return;
-        }
 
-        let item = this.recentContextMenu.sourceActor._delegate;
+        let menu = this.contextMenu;
+        let item = menu.sourceActor._delegate;
 
         if ((item != excluded || excluded == null) && item.menu && item.menu.isOpen) {
             if (animate)
-                this.recentContextMenu.toggle();
+                menu.toggle();
             else
-                this.recentContextMenu.close();
+                menu.close();
 
             this._activeContextMenuParent = null;
             this._activeContextMenuItem = null;
