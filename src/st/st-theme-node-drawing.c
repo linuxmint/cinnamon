@@ -1550,10 +1550,7 @@ st_theme_node_ensure_color_pipeline (StThemeNode *node)
 
   if (G_UNLIKELY (color_pipeline_template == NULL))
     {
-      CoglContext *ctx =
-        clutter_backend_get_cogl_context (clutter_get_default_backend ());
-
-      color_pipeline_template = cogl_pipeline_new (ctx);
+      color_pipeline_template = cogl_pipeline_new (st_get_cogl_context ());
     }
 
   node->color_pipeline = cogl_pipeline_copy (color_pipeline_template);

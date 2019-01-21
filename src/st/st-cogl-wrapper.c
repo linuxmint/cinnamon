@@ -26,9 +26,9 @@ hardware_supports_npot_sizes (void)
 CoglContext *
 st_get_cogl_context (void)
 {
-    if (cogl_context == NULL)
-      cogl_context = clutter_backend_get_cogl_context (clutter_get_default_backend ());
-    return cogl_context;
+  if (G_UNLIKELY (cogl_context == NULL))
+    cogl_context = clutter_backend_get_cogl_context (clutter_get_default_backend ());
+  return cogl_context;
 }
 
 /**
