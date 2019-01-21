@@ -619,6 +619,14 @@ var WindowManager = class WindowManager {
         }
 
         let key = "desktop-effects-" + (overwriteKey || effect.name);
+        let time = this.settingsState[`${key}-time`];
+
+        // Transition time is 0ms, bail
+        if (!time) {
+            cinnamonwm[effect.wmCompleteName](actor);
+            return;
+        }
+
         let type = this.settingsState[`${key}-effect`];
 
         // make sure to end a running effect
@@ -631,7 +639,7 @@ var WindowManager = class WindowManager {
         actor.show();
 
         if (effect[type]) {
-            let time = this.settingsState[`${key}-time`] / 1000;
+            time = time / 1000;
             let transition = this.settingsState[`${key}-transition`];
 
             effect[type](cinnamonwm, actor, time, transition, args);
