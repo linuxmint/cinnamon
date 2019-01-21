@@ -184,9 +184,10 @@ st_label_allocate (ClutterActor          *actor,
       priv->shadow_width = width;
       priv->shadow_height = height;
       priv->size_changed = TRUE;
-
-      clutter_actor_allocate (priv->label, &content_box, flags);
+      priv->allocation = &content_box;
     }
+
+  clutter_actor_allocate (priv->label, &content_box, flags);
 }
 
 static void
@@ -220,12 +221,9 @@ st_label_paint (ClutterActor *actor)
 
       if (priv->text_shadow_pipeline != NULL)
         {
-          ClutterActorBox allocation;
-          clutter_actor_get_allocation_box (priv->label, &allocation);
-
           _st_paint_shadow_with_opacity (shadow_spec,
                                          priv->text_shadow_pipeline,
-                                         &allocation,
+                                         priv->allocation,
                                          clutter_actor_get_paint_opacity (priv->label));
         }
     }
