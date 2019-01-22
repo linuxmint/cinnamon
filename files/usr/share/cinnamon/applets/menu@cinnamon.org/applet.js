@@ -23,6 +23,7 @@ const Settings = imports.ui.settings;
 const Pango = imports.gi.Pango;
 const AccountsService = imports.gi.AccountsService;
 const SearchProviderManager = imports.ui.searchProviderManager;
+const DocInfo = imports.misc.docInfo;
 
 const MAX_FAV_ICON_SIZE = 32;
 const CATEGORY_ICON_SIZE = 22;
@@ -1148,7 +1149,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._appsWereRefreshed = false;
         this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
         this._isBumblebeeInstalled = GLib.file_test("/usr/bin/optirun", GLib.FileTest.EXISTS);
-        this.RecentManager = Main.recentManager;
+        this.RecentManager = DocInfo.getDocManager();
         this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
         this.noRecentDocuments = true;
         this._activeContextMenuParent = null;

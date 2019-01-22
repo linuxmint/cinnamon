@@ -5,6 +5,7 @@ const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
+const DocInfo = imports.misc.docInfo;
 
 const PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy";
 const REMEMBER_RECENT_KEY = "remember-recent-files";
@@ -49,7 +50,7 @@ class CinnamonRecentApplet extends Applet.IconApplet {
         this.recentsScrollBox.add_actor(this.recentsBox);
         this.recentsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
 
-        this.RecentManager = Main.recentManager;
+        this.RecentManager = DocInfo.getDocManager();
         this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
 
         this._recentButtons = [];
