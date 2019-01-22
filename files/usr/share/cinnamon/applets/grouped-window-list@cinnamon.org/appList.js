@@ -189,9 +189,6 @@ class AppList {
         const appSystem = this.state.trigger('getAppSystem');
         for (let i = 0; i < favorites.length; i++) {
             let app = appSystem.lookup_app(favorites[i].id);
-            if (!app) {
-                app = appSystem.lookup_settings_app(favorites[i].id);
-            }
             if (!app) continue;
 
             this.windowAdded(this.metaWorkspace, null, app, true);
