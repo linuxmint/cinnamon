@@ -31,7 +31,7 @@ struct _CinnamonDocSystemPrivate {
 G_DEFINE_TYPE(CinnamonDocSystem, cinnamon_doc_system, G_TYPE_OBJECT);
 
 // Showing all recent items isn't viable, GTK.RecentManager can contain
-// thousands of items and this can significantly affect performance
+// up to 1000 items and this can significantly affect performance
 // in the JS layer.
 static const MAX_RECENT_ITEMS = 20;
 

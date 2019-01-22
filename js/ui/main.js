@@ -83,6 +83,7 @@ const St = imports.gi.St;
 const GObject = imports.gi.GObject;
 const PointerTracker = imports.misc.pointerTracker;
 const Lang = imports.lang;
+
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
 const SlideshowManager = imports.ui.slideshowManager;
@@ -125,7 +126,6 @@ var LAYOUT_CLASSIC = "classic";
 var DEFAULT_BACKGROUND_COLOR = Clutter.Color.from_pixel(0x000000ff);
 
 var panel = null;
-var recentManager = null;
 var soundManager = null;
 var backgroundManager = null;
 var slideshowManager = null;

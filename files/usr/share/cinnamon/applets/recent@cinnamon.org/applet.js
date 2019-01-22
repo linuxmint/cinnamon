@@ -1,11 +1,10 @@
-const Main = imports.ui.main;
+const DocInfo = imports.misc.docInfo;
 const Gtk = imports.gi.Gtk;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
-const DocInfo = imports.misc.docInfo;
 
 const PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy";
 const REMEMBER_RECENT_KEY = "remember-recent-files";

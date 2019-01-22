@@ -18,12 +18,12 @@ const FileUtils = imports.misc.fileUtils;
 const Util = imports.misc.util;
 const DND = imports.ui.dnd;
 const Meta = imports.gi.Meta;
+const DocInfo = imports.misc.docInfo;
 const GLib = imports.gi.GLib;
 const Settings = imports.ui.settings;
 const Pango = imports.gi.Pango;
 const AccountsService = imports.gi.AccountsService;
 const SearchProviderManager = imports.ui.searchProviderManager;
-const DocInfo = imports.misc.docInfo;
 
 const MAX_FAV_ICON_SIZE = 32;
 const CATEGORY_ICON_SIZE = 22;
