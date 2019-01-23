@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import getopt
 import sys
 
 import os
@@ -30,7 +31,7 @@ gettext.install("cinnamon", "/usr/share/locale", names="ngettext")
 # Standard setting pages... this can be expanded to include applet dirs maybe?
 mod_files = glob.glob(config.currentPath + "/modules/*.py")
 mod_files.sort()
-if len(mod_files) is 0:
+if len(mod_files) == 0:
     print("No settings modules found!!")
     sys.exit(1)
 
@@ -136,7 +137,16 @@ class MainWindow:
                 self.stack_switcher.set_stack(sidePage.stack)
                 l = sidePage.stack.get_children()
                 if len(l) > 0:
-                    sidePage.stack.set_visible_child(l[0])
+                    if self.tab in range(len(l)):
+                        sidePage.stack.set_visible_child(l[self.tab])
+                        visible_child = sidePage.stack.get_visible_child()
+                        if self.tab == 1 \
+                        and hasattr(visible_child, 'sort_combo') \
+                        and self.sort in range(4):
+                            visible_child.sort_combo.set_active(self.sort)
+                            visible_child.sort_changed()
+                    else:
+                        sidePage.stack.set_visible_child(l[0])
                     if sidePage.stack.get_visible():
                         self.stack_switcher.set_opacity(1)
                     else:
@@ -315,8 +325,73 @@ class MainWindow:
 
         self.calculate_bar_heights()
 
+        self.tab = 0 # open 'manage' tab by default
+        self.sort = 1 # sorted by 'score' by default
+
         # Select the first sidePage
         if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters:
+            # Analyses arguments to know the tab to open
+            # and the sort to apply if the tab is the 'more' one.
+            # Examples:
+            #   cinnamon-settings.py applets --tab=more --sort=date
+            #   cinnamon-settings.py applets --tab=1 --sort=2
+            #   cinnamon-settings.py applets --tab=more --sort=date
+            #   cinnamon-settings.py applets --tab=1 -s 2
+            #   cinnamon-settings.py applets -t 1 -s installed
+            #   cinnamon-settings.py desklets -t 2
+            # Please note that useless or wrong arguments are ignored.
+            opts = []
+            sorts_literal = {"name":0, "score":1, "date":2, "installed":3}
+            arg1 = sys.argv[1]
+            if arg1 == "accessibility":
+                tabs_literal = {"visual": 0, "keyboard": 1, "typing": 2, "mouse": 3}
+            elif arg1 == "applets":
+                tabs_literal = {"installed": 0, "more": 1}
+            elif arg1 == "backgrounds":
+                tabs_literal = {"images": 0, "settings": 1}
+            elif arg1 == "default":
+                tabs_literal = {"preferred": 0, "removable": 1}
+            elif arg1 == "desklets":
+                tabs_literal = {"installed": 0, "more": 1, "general": 2}
+            elif arg1 == "effects":
+                tabs_literal = {"effects": 0, "customize": 1}
+            elif arg1 == "extensions":
+                tabs_literal = {"installed": 0, "more": 1}
+            elif arg1 == "keyboard":
+                tabs_literal = {"typing": 0, "shortcuts": 1, "layouts": 2}
+            elif arg1 == "mouse":
+                tabs_literal = {"mouse": 0, "touchpad": 1}
+            elif arg1 == "power":
+                tabs_literal = {"power": 0, "batteries": 1, "brightness": 2}
+            elif arg1 == "screensaver":
+                tabs_literal = {"settings": 0, "customize": 1}
+            elif arg1 == "sound":
+                tabs_literal = {"output": 0, "input": 1, "sounds": 2, "applications": 3,
+                                "settings": 4}
+            elif arg1 == "themes":
+                tabs_literal = {"themes": 0, "download": 1, "options": 2}
+            elif arg1 == "windows":
+                tabs_literal = {"titlebar": 0, "behavior": 1, "alttab": 2}
+            elif arg1 == "workspaces":
+                tabs_literal = {"osd": 0, "settings": 1}
+
+            try:
+                if len(sys.argv) > 2:
+                    opts = getopt.getopt(sys.argv[2:], "t:s:", ["tab=", "sort="])[0]
+            except getopt.GetoptError:
+                pass
+            for opt, arg in opts:
+                if opt in ("-t", "--tab"):
+                    if arg.isdecimal():
+                        self.tab = int(arg)
+                    elif arg in tabs_literal.keys():
+                        self.tab = tabs_literal[arg]
+                if opt in ("-s", "--sort"):
+                    if arg.isdecimal():
+                        self.sort = int(arg)
+                    elif arg in sorts_literal.keys():
+                        self.sort = sorts_literal[arg]
+
             # If we're launching a module directly, set the WM class so GWL
             # can consider it as a standalone app and give it its own
             # group.
