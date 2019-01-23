@@ -22,7 +22,6 @@ const DocInfo = imports.misc.docInfo;
 const GLib = imports.gi.GLib;
 const Settings = imports.ui.settings;
 const Pango = imports.gi.Pango;
-const AccountsService = imports.gi.AccountsService;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const SignalManager = imports.misc.signalManager;
 const Params = imports.misc.params;
@@ -896,7 +895,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
 
-        this.settings.bind("show-places", "showPlaces", () => this._refreshBelowApps);
+        this.settings.bind("show-places", "showPlaces", this._refreshBelowApps);
 
         this._appletEnterEventId = 0;
         this._appletLeaveEventId = 0;
@@ -991,7 +990,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     onAppSysChanged() {
         if (this.refreshing == false) {
             this.refreshing = true;
-            Mainloop.timeout_add_seconds(1, this._refreshAll.bind(this));
+            Mainloop.timeout_add_seconds(1, () => this._refreshAll());
         }
     }
 
