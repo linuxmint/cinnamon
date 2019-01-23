@@ -15,6 +15,15 @@
 #include "cinnamon-embedded-window.h"
 #include "cinnamon-global.h"
 
+typedef struct _CinnamonTrayManagerPrivate CinnamonTrayManagerPrivate;
+
+struct _CinnamonTrayManager
+{
+  GObject parent_instance;
+
+  CinnamonTrayManagerPrivate *priv;
+};
+
 struct _CinnamonTrayManagerPrivate {
   NaTrayManager *na_manager;
   ClutterStage *stage;
@@ -156,7 +165,7 @@ cinnamon_tray_manager_class_init (CinnamonTrayManagerClass *klass)
     g_signal_new ("tray-icon-added",
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (CinnamonTrayManagerClass, tray_icon_added),
+                  0,
                   NULL, NULL, NULL,
                   G_TYPE_NONE, 1,
                   CLUTTER_TYPE_ACTOR);
@@ -164,7 +173,7 @@ cinnamon_tray_manager_class_init (CinnamonTrayManagerClass *klass)
     g_signal_new ("tray-icon-removed",
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (CinnamonTrayManagerClass, tray_icon_removed),
+                  0,
                   NULL, NULL, NULL,
                   G_TYPE_NONE, 1,
                   CLUTTER_TYPE_ACTOR);

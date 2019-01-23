@@ -6,7 +6,6 @@
 import os
 import sys
 import gettext
-
 import gi
 gi.require_version('Gtk', '3.0')  # noqa
 from gi.repository import Gtk

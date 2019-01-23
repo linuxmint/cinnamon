@@ -116,6 +116,10 @@ void cinnamon_global_run_at_leisure (CinnamonGlobal          *global,
 void     cinnamon_global_sync_pointer              (CinnamonGlobal  *global);
 
 GAppLaunchContext *
+         cinnamon_global_create_app_launch_context_for_workspace (CinnamonGlobal  *global,
+                                                                  int             timestamp,
+                                                                  int             workspace);
+GAppLaunchContext *
          cinnamon_global_create_app_launch_context (CinnamonGlobal  *global);
 
 void     cinnamon_global_notify_error              (CinnamonGlobal  *global,

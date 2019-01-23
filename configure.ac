@@ -57,6 +57,21 @@ fi
 
 AM_CONDITIONAL(BUILD_RECORDER, $build_recorder)
 
+AC_ARG_ENABLE([systemd],
+              AS_HELP_STRING([--enable-systemd], [Use systemd]),
+              [enable_systemd=$enableval],
+              [enable_systemd=auto])
+AS_IF([test x$enable_systemd != xno], [
+  AC_MSG_CHECKING([for libsystemd-journal])
+  PKG_CHECK_EXISTS([libsystemd-journal],
+                   [have_systemd=yes
+                    AC_DEFINE([HAVE_SYSTEMD], [1], [Define if we have systemd])],
+                   [have_systemd=no])
+  AC_MSG_RESULT($have_systemd)
+])
+
+AC_MSG_RESULT($enable_systemd)
+
 CLUTTER_MIN_VERSION=0
 GOBJECT_INTROSPECTION_MIN_VERSION=0.9.2
 GJS_MIN_VERSION=3.2.0
@@ -67,21 +82,27 @@ POLKIT_MIN_VERSION=0.100
 STARTUP_NOTIFICATION_MIN_VERSION=0.11
 
 # Collect more than 20 libraries for a prize!
-PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
-                               gio-unix-2.0 dbus-glib-1 libxml-2.0
-                               gtk+-3.0 >= $GTK_MIN_VERSION
-                               libmuffin >= $MUFFIN_MIN_VERSION
-                               cjs-1.0 >= $GJS_MIN_VERSION
-                               libcinnamon-menu-3.0 $recorder_modules
-                               gdk-x11-3.0 libsoup-2.4 gl
-                               muffin-cogl-pango-0
-                               muffin-cogl-path-0
-                               muffin-cogl-0
-                               muffin-clutter-0
-                               libstartup-notification-1.0 >= $STARTUP_NOTIFICATION_MIN_VERSION
-                               gobject-introspection-1.0 >= $GOBJECT_INTROSPECTION_MIN_VERSION
-                               polkit-agent-1 >= $POLKIT_MIN_VERSION xfixes
-                               libnm atk-bridge-2.0)
+SHARED_PCS="gio-2.0 >= $GIO_MIN_VERSION
+             gio-unix-2.0 dbus-glib-1 libxml-2.0
+             gtk+-3.0 >= $GTK_MIN_VERSION
+             libmuffin >= $MUFFIN_MIN_VERSION
+             cjs-1.0 >= $GJS_MIN_VERSION
+             $recorder_modules
+             gdk-x11-3.0 libsoup-2.4 gl
+             muffin-cogl-pango-0
+             muffin-cogl-path-0
+             muffin-cogl-0
+             muffin-clutter-0
+             libstartup-notification-1.0 >= $STARTUP_NOTIFICATION_MIN_VERSION
+             gobject-introspection-1.0 >= $GOBJECT_INTROSPECTION_MIN_VERSION
+             polkit-agent-1 >= $POLKIT_MIN_VERSION xfixes
+             libnm atk-bridge-2.0"
+
+if test x$have_systemd = xyes; then
+  SHARED_PCS="${SHARED_PCS} libsystemd-journal"
+fi
+
+PKG_CHECK_MODULES(CINNAMON, $SHARED_PCS)
 
 PKG_CHECK_MODULES(CINNAMON_PERF_HELPER, gtk+-3.0 gio-2.0)
 
@@ -176,6 +197,12 @@ else
    AC_DEFINE_UNQUOTED(CINNAMON_SYSTEM_CA_FILE, ["$with_ca_certificates"], [The system TLS CA list])
 fi
 AC_SUBST(CINNAMON_SYSTEM_CA_FILE,["$with_ca_certificates"])
+
+AC_ARG_VAR([GDBUS_CODEGEN],[the gdbus-codegen programme])
+AC_PATH_PROG([GDBUS_CODEGEN],[gdbus-codegen],[])
+if test -z "$GDBUS_CODEGEN"; then
+  AC_MSG_ERROR([gdbus-codegen not found])
+fi
 
 GTK_DOC_CHECK([1.15], [--flavour no-tmpl])
 AC_CONFIG_FILES([

@@ -53,6 +53,12 @@ generated_script_substitutions = \
       -e "s|@MUFFIN_TYPELIB_DIR[@]|$(MUFFIN_TYPELIB_DIR)|" \
       -e "s|@GJS_CONSOLE[@]|$(GJS_CONSOLE)|"
 
+org-gtk-application.c org-gtk-application.h: org.gtk.Application.xml Makefile
+	$(AM_V_GEN) $(GDBUS_CODEGEN) \
+			--generate-c-code org-gtk-application \
+			--c-namespace Cinnamon \
+			$<
+
 CLEANFILES += cinnamon $(bin_SCRIPTS)
 
 include Makefile-st.am
@@ -82,6 +88,8 @@ privlibdir = $(pkglibdir)
 privlib_LTLIBRARIES = libcinnamon.la $(MUFFIN_LIBS)
 
 cinnamon_built_sources = \
+	org-gtk-application.h \
+	org-gtk-application.c \
 	cinnamon-enum-types.h \
 	cinnamon-enum-types.c
 
@@ -134,7 +142,13 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-util.c			\
 	cinnamon-window-tracker.c		\
 	cinnamon-wm.c			\
-	cinnamon-xfixes-cursor.c
+	cinnamon-xfixes-cursor.c \
+	gtkactionmuxer.h		\
+	gtkactionmuxer.c		\
+	gtkactionobservable.h		\
+	gtkactionobservable.c		\
+	gtkactionobserver.h		\
+	gtkactionobserver.c
 
 libcinnamon_la_gir_sources = \
 	$(filter-out %-private.h $(cinnamon_recorder_non_gir_sources), $(cinnamon_public_headers_h) $(libcinnamon_la_SOURCES))

@@ -1452,6 +1452,36 @@ cinnamon_global_get_md5_for_string (CinnamonGlobal *global, const gchar *string)
 }
 
 /**
+ * cinnamon_global_create_app_launch_context_for_workspace:
+ * @global: A #CinnamonGlobal
+ * @timestamp: the timestamp for the launch (or 0 for current time)
+ * @workspace: a workspace index, or -1 to indicate the current one
+ * Create a #GAppLaunchContext set up with the correct timestamp, and
+ * targeted to activate on the current workspace.
+ *
+ * Return value: (transfer full): A new #GAppLaunchContext
+ */
+GAppLaunchContext *
+cinnamon_global_create_app_launch_context_for_workspace (CinnamonGlobal *global,
+                                                         int             timestamp,
+                                                         int             workspace)
+{
+  GdkAppLaunchContext *context;
+
+  context = gdk_display_get_app_launch_context (global->gdk_display);
+
+  if (timestamp == 0)
+    timestamp = cinnamon_global_get_current_time (global);
+  gdk_app_launch_context_set_timestamp (context, timestamp);
+
+  if (workspace < 0)
+    workspace = meta_screen_get_active_workspace_index (global->meta_screen);
+  gdk_app_launch_context_set_desktop (context, workspace);
+
+  return (GAppLaunchContext *)context;
+}
+
+/**
  * cinnamon_global_create_app_launch_context:
  * @global: A #CinnamonGlobal
  *
