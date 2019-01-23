@@ -277,9 +277,7 @@ setup_framebuffers (StThemeNodeTransition *transition,
     {
       if (G_UNLIKELY (material_template == COGL_INVALID_HANDLE))
         {
-          CoglContext *ctx =
-            clutter_backend_get_cogl_context (clutter_get_default_backend ());
-          material_template = cogl_pipeline_new (ctx);
+          material_template = cogl_pipeline_new (st_get_cogl_context ());
 
           cogl_pipeline_set_layer_combine (material_template, 0,
                                            "RGBA = REPLACE (TEXTURE)",
