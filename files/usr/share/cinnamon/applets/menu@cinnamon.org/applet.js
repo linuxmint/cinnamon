@@ -2508,14 +2508,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 button.actor.connect('leave-event', Lang.bind(this, this._favLeaveEvent, button));
             }
         }
-
-        //Separator
-        // if (launchers.length != 0) {
-        //     let separator = new PopupMenu.PopupSeparatorMenuItem();
-        //     this.favoritesBox.add(separator.actor, { y_align: St.Align.END, y_fill: false });
-        // }
-
-        this._recalc_height();
     }
 
     _refreshSystemButtons() {
