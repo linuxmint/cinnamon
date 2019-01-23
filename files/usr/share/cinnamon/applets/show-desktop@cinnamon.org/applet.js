@@ -1,5 +1,5 @@
 const Applet = imports.ui.applet;
-const Settings = imports.ui.settings;  // Needed for settings API
+const { AppletSettings } = imports.ui.settings;  // Needed for settings API
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
@@ -13,12 +13,12 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
-        this.settings = new Settings.AppletSettings(this, "show-desktop@cinnamon.org", instance_id);
+        this.settings = new AppletSettings(this, "show-desktop@cinnamon.org", instance_id);
 
-        this.settings.bindProperty(Settings.BindingDirection.IN, "peek-at-desktop", "peek_at_desktop", null, null);
-        this.settings.bindProperty(Settings.BindingDirection.IN, "peek-delay", "peek_delay", null, null);
-        this.settings.bindProperty(Settings.BindingDirection.IN, "peek-opacity", "peek_opacity", null, null);
-        this.settings.bindProperty(Settings.BindingDirection.IN, "peek-blur", "peek_blur", null, null);
+        this.settings.bind("peek-at-desktop", "peek_at_desktop");
+        this.settings.bind("peek-delay", "peek_delay");
+        this.settings.bind("peek-opacity", "peek_opacity");
+        this.settings.bind("peek-blur", "peek_blur");
 
         this.signals = new SignalManager.SignalManager(null);
         this.actor.connect('enter-event', Lang.bind(this, this._on_enter));
