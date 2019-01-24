@@ -1154,7 +1154,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.closeContextMenu(false);
 
             this._clearAllSelections(true);
-            this._scrollToButton(this.favBoxIter.getFirstVisible()._delegate, this.favoritesScrollBox);
+            this._scrollToButton(null, this.favoritesScrollBox);
             this.destroyVectorBox();
         }
     }
@@ -1442,18 +1442,18 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         case "up":
                             this._activeContainer = this.categoriesBox;
                             item_actor = this.catBoxIter.getLastVisible();
-                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
+                            this._scrollToButton();
                             break;
                         case "down":
                             this._activeContainer = this.categoriesBox;
                             item_actor = this.catBoxIter.getFirstVisible();
                             item_actor = this.catBoxIter.getNextVisible(item_actor);
-                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
+                            this._scrollToButton();
                             break;
                         case "right":
                             this._activeContainer = this.applicationsBox;
                             item_actor = this.appBoxIter.getFirstVisible();
-                            this._scrollToButton(item_actor._delegate);
+                            this._scrollToButton();
                             break;
                         case "left":
                             if (this.favBoxShow) {
@@ -1462,18 +1462,18 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             } else {
                                 this._activeContainer = this.applicationsBox;
                                 item_actor = this.appBoxIter.getFirstVisible();
-                                this._scrollToButton(item_actor._delegate);
+                                this._scrollToButton();
                             }
                             break;
                         case "top":
                             this._activeContainer = this.categoriesBox;
                             item_actor = this.catBoxIter.getFirstVisible();
-                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
+                            this._scrollToButton();
                             break;
                         case "bottom":
                             this._activeContainer = this.categoriesBox;
                             item_actor = this.catBoxIter.getLastVisible();
-                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
+                            this._scrollToButton();
                             break;
                     }
                     break;
@@ -1483,13 +1483,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                             this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getPrevVisible(this._activeActor);
-                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
+                            this._scrollToButton();
                             break;
                         case "down":
                             this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                             this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getNextVisible(this._activeActor);
-                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
+                            this._scrollToButton();
                             break;
                         case "right":
                             if ((this.categoriesBox.get_child_at_index(index))._delegate.categoryId === "recent" &&
@@ -1511,7 +1511,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             if(this.favBoxShow) {
                                 this._previousSelectedActor = this.categoriesBox.get_child_at_index(index);
                                 item_actor = this.favBoxIter.getFirstVisible();
-                                this._scrollToButton(item_actor._delegate, this.favoritesScrollBox);
+                                this._scrollToButton(null, this.favoritesScrollBox);
                             } else {
                                 if ((this.categoriesBox.get_child_at_index(index))._delegate.categoryId === "recent" &&
                                     this.noRecentDocuments) {
@@ -1527,13 +1527,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                             this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getFirstVisible();
-                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
+                            this._scrollToButton();
                             break;
                         case "bottom":
                             this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                             this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getLastVisible();
-                            this._scrollToButton(this.appBoxIter.getFirstVisible()._delegate);
+                            this._scrollToButton();
                             break;
                     }
                     break;
@@ -1645,7 +1645,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             this._previousSelectedActor = this.systemButtonsBox.get_child_at_index(index);
                             if (this._previousSelectedActor === this.sysBoxIter.getLastVisible()) {
                                 item_actor = this.favBoxIter.getFirstVisible();
-                                this._scrollToButton(item_actor._delegate, this.favoritesScrollBox);
+                                this._scrollToButton(null, this.favoritesScrollBox);
                             } else {
                                 item_actor = this.sysBoxIter.getNextVisible(this._previousSelectedActor);
                             }
@@ -2308,15 +2308,27 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _scrollToButton(button, scrollBox = null) {
-        if (!scrollBox) scrollBox = this.applicationsScrollBox;
+        if (!scrollBox)
+            scrollBox = this.applicationsScrollBox;
 
-        let current_scroll_value = scrollBox.get_vscroll_bar().get_adjustment().get_value();
-        let box_height = scrollBox.get_allocation_box().y2 - scrollBox.get_allocation_box().y1;
-        let new_scroll_value = current_scroll_value;
+        let adj = scrollBox.get_vscroll_bar().get_adjustment();
+        if (button) {
+            let box = scrollBox.get_allocation_box();
+            let boxHeight = box.y2 - box.y1;
+            let actorBox = button.actor.get_allocation_box();
+            let currentValue = adj.get_value();
+            let newValue = currentValue;
 
-        if (current_scroll_value > button.actor.get_allocation_box().y1 - 10) new_scroll_value = button.actor.get_allocation_box().y1 - 10;
-        if (box_height + current_scroll_value < button.actor.get_allocation_box().y2 + 10) new_scroll_value = button.actor.get_allocation_box().y2-box_height + 10;
-        if (new_scroll_value != current_scroll_value) scrollBox.get_vscroll_bar().get_adjustment().set_value(new_scroll_value);
+            if (currentValue > actorBox.y1 - 10)
+                newValue = actorBox.y1 - 10;
+            if (boxHeight + currentValue < actorBox.y2 + 10)
+                newValue = actorBox.y2 - boxHeight + 10;
+
+            if (newValue != currentValue)
+                adj.set_value(newValue);
+        } else {
+            adj.set_value(0);
+        }
     }
 
     _display() {
