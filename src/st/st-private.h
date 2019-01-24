@@ -115,6 +115,8 @@ struct _StWidgetPrivate
    * that we can remove the pseudo classes on them. */
   StWidget *prev_last_child;
   StWidget *prev_first_child;
+
+  StWidgetCallback style_changed_callback;
 };
 
 #endif /* __ST_PRIVATE_H__ */
