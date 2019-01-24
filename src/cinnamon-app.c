@@ -1392,7 +1392,7 @@ cinnamon_app_launch (CinnamonApp     *app,
     int journalfd = -1;
 
 #ifdef HAVE_SYSTEMD
-    journalfd = sd_journal_stream_fd (shell_app_get_id (app), LOG_INFO, FALSE);
+    journalfd = sd_journal_stream_fd (cinnamon_app_get_id (app), LOG_INFO, FALSE);
 #endif /* HAVE_SYSTEMD */
 
     ret = g_desktop_app_info_launch_uris_as_manager_with_fds (app->info, NULL,
