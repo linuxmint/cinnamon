@@ -1600,7 +1600,9 @@ st_widget_recompute_style (StWidget    *widget,
       st_widget_remove_transition (widget);
     }
 
-  g_signal_emit (widget, signals[STYLE_CHANGED], 0);
+  if (!paint_equal)
+    g_signal_emit (widget, signals[STYLE_CHANGED], 0);
+
   widget->priv->is_style_dirty = FALSE;
 }
 
