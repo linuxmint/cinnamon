@@ -82,6 +82,8 @@ struct _StWidgetPrivate
    * that we can remove the pseudo classes on them. */
   StWidget *prev_last_child;
   StWidget *prev_first_child;
+
+  StWidgetCallback style_changed_callback;
 };
 
 /**
@@ -1544,13 +1546,14 @@ static void
 st_widget_recompute_style (StWidget    *widget,
                            StThemeNode *old_theme_node)
 {
+  StWidgetPrivate *priv = widget->priv;
   StThemeNode *new_theme_node = st_widget_get_theme_node (widget);
   int transition_duration;
   gboolean paint_equal;
 
   if (new_theme_node == old_theme_node)
     {
-      widget->priv->is_style_dirty = FALSE;
+      priv->is_style_dirty = FALSE;
       return;
     }
 
@@ -1569,9 +1572,9 @@ st_widget_recompute_style (StWidget    *widget,
 
   if (transition_duration > 0)
     {
-      if (widget->priv->transition_animation != NULL)
+      if (priv->transition_animation != NULL)
         {
-          st_theme_node_transition_update (widget->priv->transition_animation,
+          st_theme_node_transition_update (priv->transition_animation,
                                            new_theme_node);
         }
       else if (old_theme_node && !paint_equal)
@@ -1582,28 +1585,33 @@ st_widget_recompute_style (StWidget    *widget,
            * we can't animate that anyways.
            */
 
-          widget->priv->transition_animation =
+          priv->transition_animation =
             st_theme_node_transition_new (old_theme_node,
                                           new_theme_node,
                                           transition_duration);
 
-          g_signal_connect (widget->priv->transition_animation, "completed",
+          g_signal_connect (priv->transition_animation, "completed",
                             G_CALLBACK (on_transition_completed), widget);
-          g_signal_connect_swapped (widget->priv->transition_animation,
+          g_signal_connect_swapped (priv->transition_animation,
                                     "new-frame",
                                     G_CALLBACK (clutter_actor_queue_redraw),
                                     widget);
         }
     }
-  else if (widget->priv->transition_animation)
+  else if (priv->transition_animation)
     {
       st_widget_remove_transition (widget);
     }
 
   if (!paint_equal)
-    g_signal_emit (widget, signals[STYLE_CHANGED], 0);
+    {
+      if (priv->style_changed_callback != NULL)
+        (priv->style_changed_callback) (new_theme_node);
+      else
+        g_signal_emit (widget, signals[STYLE_CHANGED], 0);
+    }
 
-  widget->priv->is_style_dirty = FALSE;
+  priv->is_style_dirty = FALSE;
 }
 
 /**
@@ -2989,4 +2997,24 @@ st_widget_move_before (StWidget     *widget,
 {
   clutter_actor_set_child_below_sibling (CLUTTER_ACTOR (widget),
                                          actor, sibling);
+}
+
+/**
+ * st_widget_set_style_changed_callback:
+ * @widget: an #StWidget
+ * @callback (scope notified): callback
+ * @user_data (closure): user data
+ * @data_destroy: a #GDestroyNotify
+ *
+ * Sets the callback which will be invoked on style change. When a callback
+ * is set, it replaces signal emission for the instance.
+ */
+void
+st_widget_set_style_changed_callback (StWidget        *widget,
+                                      StWidgetCallback callback,
+                                      gpointer         user_data,
+                                      GDestroyNotify   data_destroy)
+{
+  StWidgetPrivate *priv = ST_WIDGET (widget)->priv;
+  priv->style_changed_callback = callback;
 }

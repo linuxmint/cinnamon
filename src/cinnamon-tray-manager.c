@@ -53,6 +53,8 @@ static const ClutterColor default_color = { 0x00, 0x00, 0x00, 0xff };
 static void na_tray_icon_added (NaTrayManager *na_manager, GtkWidget *child, gpointer manager);
 static void na_tray_icon_removed (NaTrayManager *na_manager, GtkWidget *child, gpointer manager);
 
+static CinnamonTrayManager *manager_global = NULL;
+
 static void
 free_tray_icon (gpointer data)
 {
@@ -189,17 +191,13 @@ cinnamon_tray_manager_new (void)
 }
 
 static void
-cinnamon_tray_manager_style_changed (StWidget *theme_widget,
-                                  gpointer  user_data)
+cinnamon_tray_manager_style_changed (StThemeNode *theme_node)
 {
-  CinnamonTrayManager *manager = user_data;
-  StThemeNode *theme_node;
   StIconColors *icon_colors;
 
-  theme_node = st_widget_get_theme_node (theme_widget);
   icon_colors = st_theme_node_get_icon_colors (theme_node);
 
-  na_tray_manager_set_colors (manager->priv->na_manager,
+  na_tray_manager_set_colors (manager_global->priv->na_manager,
                               &icon_colors->foreground,
                               &icon_colors->warning,
                               &icon_colors->error,
@@ -218,6 +216,8 @@ cinnamon_tray_manager_manage_stage (CinnamonTrayManager *manager,
   gint scale;
 
   g_return_if_fail (manager->priv->stage == NULL);
+
+  manager_global = manager;
 
   manager->priv->stage = g_object_ref (stage);
 
@@ -253,10 +253,9 @@ cinnamon_tray_manager_manage_stage (CinnamonTrayManager *manager,
 
   na_tray_manager_manage_screen (manager->priv->na_manager, screen);
 
-  g_signal_connect_object (theme_widget, "style-changed",
-                    G_CALLBACK (cinnamon_tray_manager_style_changed),
-                    manager, 0);
-  cinnamon_tray_manager_style_changed (theme_widget, manager);
+  st_widget_set_style_changed_callback (theme_widget, cinnamon_tray_manager_style_changed, NULL, NULL);
+
+  cinnamon_tray_manager_style_changed (st_widget_get_theme_node (theme_widget));
 }
 
 static void

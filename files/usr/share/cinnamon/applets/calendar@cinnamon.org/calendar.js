@@ -214,7 +214,7 @@ class Calendar {
                        {row: 0, col: 0, col_span: offsetCols + 3});
         }
 
-        this.actor.connect('style-changed', Lang.bind(this, this._onStyleChange));
+        this.actor.set_style_changed_callback(() => this._onStyleChange());
 
         let back = new St.Button({ style_class: 'calendar-change-month-back' });
         this._topBoxMonth.add(back);

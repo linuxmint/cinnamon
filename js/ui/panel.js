@@ -1271,7 +1271,7 @@ PanelCorner.prototype = {
 
         this.actor = new St.DrawingArea({ style_class: 'panel-corner' });
 
-        this.actor.connect('style-changed', Lang.bind(this, this._styleChanged));
+        this.actor.set_style_changed_callback((n) => this._styleChanged(n));
         this.actor.connect('repaint', Lang.bind(this, this._repaint));
     },
 
@@ -1414,11 +1414,8 @@ PanelCorner.prototype = {
         }
     },
 
-    _styleChanged: function() {
-        let node = this.actor.get_theme_node();
-
+    _styleChanged: function(node) {
         let cornerRadius = node.get_length("-panel-corner-radius");
-        let innerBorderWidth = node.get_length('-panel-corner-inner-border-width');
 
         this.actor.set_size(cornerRadius, cornerRadius);
         this.actor.set_anchor_point(0, 0);
@@ -1900,7 +1897,7 @@ Panel.prototype = {
         this._processPanelAutoHide();
 
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
-        this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
+        this.actor.set_style_changed_callback((n) => this._moveResizePanel(n));
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
         this.actor.connect('queue-relayout', () => this._setPanelHeight());
@@ -2553,7 +2550,7 @@ Panel.prototype = {
      * Function to update the panel position, size, and clip region according to settings
      * values.  Note that this is also called when the style changes.
      */
-    _moveResizePanel: function() {
+    _moveResizePanel: function(themeNode) {
         if (this._destroyed)
             return false;
 
@@ -2576,7 +2573,7 @@ Panel.prototype = {
         if (Main.panelManager && !horizontal_panel)
             [this.toppanelHeight, this.bottompanelHeight] = heightsUsedMonitor(this.monitorIndex, Main.panelManager.panels);
         // get shadow and margins
-        let themeNode = this.actor.get_theme_node();
+        if (!themeNode) themeNode = this.actor.get_theme_node();
 
         // FIXME: inset shadows will probably break clipping.
         // I haven't seen a theme with inset panel shadows, but if there
