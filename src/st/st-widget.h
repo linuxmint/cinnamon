@@ -97,6 +97,14 @@ struct _StWidgetClass
   GList *  (* get_focus_chain)     (StWidget         *widget);
 };
 
+/**
+ * StWidgetCallback:
+ * @theme_node: (closure): an #StThemeNode
+ *
+ * Callback type for StWidget
+ */
+typedef void (* StWidgetCallback) (StThemeNode *theme_node);
+
 GType st_widget_get_type (void) G_GNUC_CONST;
 
 void                  st_widget_set_style_pseudo_class    (StWidget        *actor,
@@ -200,6 +208,11 @@ const gchar *         st_widget_get_accessible_name       (StWidget *widget);
 
 void                  st_widget_set_accessible           (StWidget    *widget,
                                                           AtkObject   *accessible);
+
+void st_widget_set_style_changed_callback (StWidget        *widget,
+                                           StWidgetCallback callback,
+                                           gpointer         user_data,
+                                           GDestroyNotify   data_destroy);
 
 G_END_DECLS
 
