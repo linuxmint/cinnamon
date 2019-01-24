@@ -131,6 +131,12 @@ class List(SettingsWidget):
 
             if render_type == 'boolean':
                 renderer = Gtk.CellRendererToggle()
+
+                def toggle_checkbox(renderer, path, column):
+                    self.model[path][column] = not self.model[path][column]
+                    self.list_changed()
+
+                renderer.connect('toggled', toggle_checkbox, i)
                 prop_name = 'active'
             elif render_type == 'icon':
                 renderer = Gtk.CellRendererPixbuf()
