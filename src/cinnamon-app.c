@@ -16,12 +16,6 @@
 #include "cinnamon-window-tracker-private.h"
 #include "st.h"
 
-#ifdef HAVE_SYSTEMD
-#include <systemd/sd-journal.h>
-#include <errno.h>
-#include <unistd.h>
-#endif
-
 typedef enum {
   MATCH_NONE,
   MATCH_SUBSTRING, /* Not prefix, substring */
@@ -1078,29 +1072,6 @@ cinnamon_app_request_quit (CinnamonApp   *app)
   return TRUE;
 }
 
-#if !defined(HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS) && defined(HAVE_SYSTEMD)
-/* This sets up the launched application to log to the journal
- * using its own identifier, instead of just "cinnamon-session".
- */
-static void
-app_child_setup (gpointer user_data)
-{
-  const char *appid = user_data;
-  int res;
-  int journalfd = sd_journal_stream_fd (appid, LOG_INFO, FALSE);
-  if (journalfd >= 0)
-    {
-      do
-        res = dup2 (journalfd, 1);
-      while (G_UNLIKELY (res == -1 && errno == EINTR));
-      do
-        res = dup2 (journalfd, 2);
-      while (G_UNLIKELY (res == -1 && errno == EINTR));
-      (void) close (journalfd);
-    }
-}
-#endif
-
 static void
 wait_pid (GDesktopAppInfo *appinfo,
           GPid             pid,
@@ -1153,40 +1124,12 @@ cinnamon_app_launch (CinnamonApp     *app,
   flags = G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD |
           G_SPAWN_LEAVE_DESCRIPTORS_OPEN;
 
-#ifdef HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS
-  /* Optimized spawn path, avoiding a child_setup function */
-  {
-    int journalfd = -1;
-
-#ifdef HAVE_SYSTEMD
-    journalfd = sd_journal_stream_fd (cinnamon_app_get_id (app), LOG_INFO, FALSE);
-#endif /* HAVE_SYSTEMD */
-
-    ret = g_desktop_app_info_launch_uris_as_manager_with_fds (app->info, NULL,
-                                                              context,
-                                                              flags,
-                                                              NULL, NULL,
-                                                              wait_pid, NULL,
-                                                              -1,
-                                                              journalfd,
-                                                              journalfd,
-                                                              error);
-
-    if (journalfd >= 0)
-      (void) close (journalfd);
-  }
-#else /* !HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS */
   ret = g_desktop_app_info_launch_uris_as_manager (app->info, NULL,
                                                    context,
                                                    flags,
-#ifdef HAVE_SYSTEMD
-                                                   app_child_setup, (gpointer)cinnamon_app_get_id (app),
-#else
                                                    NULL, NULL,
-#endif
                                                    wait_pid, NULL,
                                                    error);
-#endif /* HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS */
   g_object_unref (context);
 
   return ret;
