@@ -41,8 +41,6 @@ typedef struct {
 
   GSList *windows;
 
-  guint interesting_windows;
-
   /* Whether or not we need to resort the windows; this is done on demand */
   guint window_sort_stale : 1;
 
@@ -935,40 +933,6 @@ cinnamon_app_on_user_time_changed (MetaWindow *window,
 }
 
 static void
-cinnamon_app_sync_running_state (CinnamonApp *app)
-{
-  g_return_if_fail (app->running_state != NULL);
-
-  if (app->state != CINNAMON_APP_STATE_STARTING)
-    {
-      if (app->running_state->interesting_windows == 0)
-        cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STOPPED);
-      else
-        cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
-    }
-}
-
-
-static void
-cinnamon_app_on_skip_taskbar_changed (MetaWindow  *window,
-                                      GParamSpec  *pspec,
-                                      CinnamonApp *app)
-{
-  g_assert (app->running_state != NULL);
-
-  /* we rely on MetaWindow:skip-taskbar only being notified
-   * when it actually changes; when that assumption breaks,
-   * we'll have to track the "interesting" windows themselves
-   */
-  if (meta_window_is_skip_taskbar (window))
-    app->running_state->interesting_windows--;
-  else
-    app->running_state->interesting_windows++;
-
-  cinnamon_app_sync_running_state (app);
-}
-
-static void
 cinnamon_app_on_ws_switch (MetaScreen         *screen,
                         int                 from,
                         int                 to,
@@ -1000,12 +964,9 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   app->running_state->windows = g_slist_prepend (app->running_state->windows, g_object_ref (window));
   g_signal_connect (window, "unmanaged", G_CALLBACK(cinnamon_app_on_unmanaged), app);
   g_signal_connect (window, "notify::user-time", G_CALLBACK(cinnamon_app_on_user_time_changed), app);
-  g_signal_connect (window, "notify::skip-taskbar", G_CALLBACK(cinnamon_app_on_skip_taskbar_changed), app);
 
-  if (!meta_window_is_skip_taskbar (window))
-    app->running_state->interesting_windows++;
-
-  cinnamon_app_sync_running_state (app);
+  if (app->state != CINNAMON_APP_STATE_STARTING)
+    cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
 
   g_object_thaw_notify (G_OBJECT (app));
 
@@ -1023,15 +984,13 @@ _cinnamon_app_remove_window (CinnamonApp   *app,
 
   g_signal_handlers_disconnect_by_func (window, G_CALLBACK(cinnamon_app_on_unmanaged), app);
   g_signal_handlers_disconnect_by_func (window, G_CALLBACK(cinnamon_app_on_user_time_changed), app);
-  g_signal_handlers_disconnect_by_func (window, G_CALLBACK(cinnamon_app_on_skip_taskbar_changed), app);
   g_object_unref (window);
   app->running_state->windows = g_slist_remove (app->running_state->windows, window);
 
-  if (!meta_window_is_skip_taskbar (window))
-    app->running_state->interesting_windows--;
-  cinnamon_app_sync_running_state (app);
-
   if (app->running_state->windows == NULL)
+    cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STOPPED);
+
+  if (app->running_state && app->running_state->windows == NULL)
     g_clear_pointer (&app->running_state, unref_running_state);
 
   g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
@@ -1124,7 +1083,7 @@ cinnamon_app_request_quit (CinnamonApp   *app)
     {
       MetaWindow *win = iter->data;
 
-      if (meta_window_is_skip_taskbar (win))
+      if (!cinnamon_window_tracker_is_window_interesting (cinnamon_window_tracker_get_default (), win))
         continue;
 
       meta_window_delete (win, cinnamon_global_get_current_time (global));
