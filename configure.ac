@@ -57,21 +57,6 @@ fi
 
 AM_CONDITIONAL(BUILD_RECORDER, $build_recorder)
 
-AC_ARG_ENABLE([systemd],
-              AS_HELP_STRING([--enable-systemd], [Use systemd]),
-              [enable_systemd=$enableval],
-              [enable_systemd=auto])
-AS_IF([test x$enable_systemd != xno], [
-  AC_MSG_CHECKING([for libsystemd-journal])
-  PKG_CHECK_EXISTS([libsystemd-journal],
-                   [have_systemd=yes
-                    AC_DEFINE([HAVE_SYSTEMD], [1], [Define if we have systemd])],
-                   [have_systemd=no])
-  AC_MSG_RESULT($have_systemd)
-])
-
-AC_MSG_RESULT($enable_systemd)
-
 CLUTTER_MIN_VERSION=0
 GOBJECT_INTROSPECTION_MIN_VERSION=0.9.2
 GJS_MIN_VERSION=3.2.0
@@ -97,10 +82,6 @@ SHARED_PCS="gio-2.0 >= $GIO_MIN_VERSION
              gobject-introspection-1.0 >= $GOBJECT_INTROSPECTION_MIN_VERSION
              polkit-agent-1 >= $POLKIT_MIN_VERSION xfixes
              libnm atk-bridge-2.0"
-
-if test x$have_systemd = xyes; then
-  SHARED_PCS="${SHARED_PCS} libsystemd-journal"
-fi
 
 PKG_CHECK_MODULES(CINNAMON, $SHARED_PCS)
 
