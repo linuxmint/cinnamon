@@ -88,13 +88,6 @@ enum {
   PROP_APP_INFO
 };
 
-enum {
-  WINDOWS_CHANGED,
-  LAST_SIGNAL
-};
-
-static guint cinnamon_app_signals[LAST_SIGNAL] = { 0 };
-
 static void create_running_state (CinnamonApp *app);
 static void unref_running_state (CinnamonAppRunningState *state);
 
@@ -915,14 +908,11 @@ cinnamon_app_on_user_time_changed (MetaWindow *window,
 
   app->running_state->last_user_time = meta_window_get_user_time (window);
 
-  /* Ideally we don't want to emit windows-changed if the sort order
+  /* Ideally we don't want to mark the order stale if the sort order
    * isn't actually changing. This check catches most of those.
    */
   if (window != app->running_state->windows->data)
-    {
-      app->running_state->window_sort_stale = TRUE;
-      g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
-    }
+    app->running_state->window_sort_stale = TRUE;
 }
 
 static void
@@ -937,8 +927,6 @@ cinnamon_app_on_ws_switch (MetaScreen         *screen,
   g_assert (app->running_state != NULL);
 
   app->running_state->window_sort_stale = TRUE;
-
-  g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
 }
 
 void
@@ -968,8 +956,6 @@ _cinnamon_app_add_window (CinnamonApp        *app,
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
 
   g_object_thaw_notify (G_OBJECT (app));
-
-  g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
 }
 
 void
@@ -991,8 +977,6 @@ _cinnamon_app_remove_window (CinnamonApp   *app,
 
   if (app->running_state && app->running_state->windows == NULL)
     g_clear_pointer (&app->running_state, unref_running_state);
-
-  g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
 }
 
 /**
@@ -1322,13 +1306,6 @@ cinnamon_app_class_init(CinnamonAppClass *klass)
   gobject_class->set_property = cinnamon_app_set_property;
   gobject_class->dispose = cinnamon_app_dispose;
   gobject_class->finalize = cinnamon_app_finalize;
-
-  cinnamon_app_signals[WINDOWS_CHANGED] = g_signal_new ("windows-changed",
-                                     CINNAMON_TYPE_APP,
-                                     G_SIGNAL_RUN_LAST,
-                                     0,
-                                     NULL, NULL, NULL,
-                                     G_TYPE_NONE, 0);
 
   /**
    * CinnamonApp:state:
