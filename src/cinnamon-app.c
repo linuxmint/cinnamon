@@ -516,7 +516,7 @@ cinnamon_app_activate_window (CinnamonApp     *app,
         window = most_recent_transient;
 
 
-      if (!cinnamon_window_tracker_is_window_interesting (cinnamon_window_tracker_get_default (), window))
+      if (!meta_window_is_interesting (window))
         {
           /* We won't get notify::user-time signals for uninteresting windows,
            * which means that an app's last_user_time won't get updated.
@@ -1085,9 +1085,6 @@ cinnamon_app_request_quit (CinnamonApp   *app)
   for (iter = app->running_state->windows; iter; iter = iter->next)
     {
       MetaWindow *win = iter->data;
-
-      if (!meta_window_is_interesting (win))
-        continue;
 
       meta_window_delete (win, cinnamon_global_get_current_time (global));
     }
