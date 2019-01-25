@@ -167,7 +167,7 @@ class WorkspaceGraph extends WorkspaceButton {
 class SimpleButton extends WorkspaceButton {
     constructor(index, applet) {
         super(index, applet);
-
+        this.index = index;
         this.actor = new St.Button({ name: 'workspaceButton',
                                      style_class: 'workspace-button',
                                      reactive: applet._draggable.inhibit });
@@ -178,13 +178,14 @@ class SimpleButton extends WorkspaceButton {
             this.actor.set_width(applet._panelHeight);
             this.actor.add_style_class_name('vertical');
         }
-
-        let label = new St.Label({ text: (index + 1).toString() });
+        this.actor.set_width(200);
+        let label = new St.Label({ text: Main.getWorkspaceName(index) });
         label.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
         this.actor.set_child(label);
     }
 
     activate(active) {
+		this.actor.get_child().set_text(Main.getWorkspaceName(this.index));
         if (active)
             this.actor.add_style_pseudo_class('outlined');
         else
