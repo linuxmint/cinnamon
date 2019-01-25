@@ -160,6 +160,30 @@ stale_app_remove_func (gpointer key,
 }
 
 static void
+load_apps (CinnamonAppSystem *self)
+{
+  CinnamonAppSystemPrivate *priv = self->priv;
+  GList *apps, *l;
+
+  apps = g_app_info_get_all ();
+  for (l = apps; l != NULL; l = l->next)
+    {
+      GAppInfo *info = l->data;
+      char *id = g_app_info_get_id (info);
+
+      if (g_hash_table_lookup (priv->id_to_app, id) ||
+          g_hash_table_find (self->priv->id_to_app, (GHRFunc) case_insensitive_search, (gpointer) id))
+        continue;
+
+      g_hash_table_insert (priv->id_to_app,
+                           id,
+                           _cinnamon_app_new (G_DESKTOP_APP_INFO (info)));
+    }
+
+  g_list_free_full (apps, g_object_unref);
+}
+
+static void
 installed_changed (GAppInfoMonitor *monitor,
                    gpointer         user_data)
 {
@@ -168,6 +192,8 @@ installed_changed (GAppInfoMonitor *monitor,
   scan_startup_wm_class_to_id (self);
 
   g_hash_table_foreach_remove (self->priv->id_to_app, stale_app_remove_func, NULL);
+
+  load_apps (self);
 
   g_signal_emit (self, signals[INSTALLED_CHANGED], 0, NULL);
 }
@@ -243,25 +269,10 @@ case_insensitive_search (const char *key,
  * Return value: (transfer none): The #CinnamonApp for id, or %NULL if none
  */
 CinnamonApp *
-cinnamon_app_system_lookup_app (CinnamonAppSystem   *self,
-                             const char       *id)
+cinnamon_app_system_lookup_app (CinnamonAppSystem *self,
+                                const char        *id)
 {
-  CinnamonAppSystemPrivate *priv = self->priv;
-  CinnamonApp *app;
-  GDesktopAppInfo *info;
-
-  app = g_hash_table_lookup (priv->id_to_app, id);
-  if (app)
-    return app;
-
-  info = g_desktop_app_info_new (id);
-  if (!info)
-    return NULL;
-
-  app = _cinnamon_app_new (info);
-  g_hash_table_insert (priv->id_to_app, (char *) cinnamon_app_get_id (app), app);
-  g_object_unref (info);
-  return app;
+  return g_hash_table_lookup (self->priv->id_to_app, id);
 }
 
 /**
@@ -395,7 +406,7 @@ cinnamon_app_system_get_all (CinnamonAppSystem  *self)
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
       CinnamonApp *app = value;
-      
+
       if (!g_desktop_app_info_get_nodisplay (cinnamon_app_get_app_info (app)))
         result = g_slist_prepend (result, app);
     }
