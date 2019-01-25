@@ -143,40 +143,7 @@ cinnamon_window_tracker_class_init (CinnamonWindowTrackerClass *klass)
 gboolean
 cinnamon_window_tracker_is_window_interesting (CinnamonWindowTracker *tracker, MetaWindow *window)
 {
-  if (meta_window_is_override_redirect (window)
-      || meta_window_is_skip_taskbar (window))
-    return FALSE;
-
-  switch (meta_window_get_window_type (window))
-    {
-      /* Definitely ignore these. */
-      case META_WINDOW_DESKTOP:
-      case META_WINDOW_DOCK:
-      case META_WINDOW_SPLASHSCREEN:
-      /* Should have already been handled by override_redirect above,
-       * but explicitly list here so we get the "unhandled enum"
-       * warning if in the future anything is added.*/
-      case META_WINDOW_DROPDOWN_MENU:
-      case META_WINDOW_POPUP_MENU:
-      case META_WINDOW_TOOLTIP:
-      case META_WINDOW_NOTIFICATION:
-      case META_WINDOW_COMBO:
-      case META_WINDOW_DND:
-      case META_WINDOW_OVERRIDE_OTHER:
-        return FALSE;
-      case META_WINDOW_NORMAL:
-      case META_WINDOW_DIALOG:
-      case META_WINDOW_MODAL_DIALOG:
-      case META_WINDOW_MENU:
-      case META_WINDOW_TOOLBAR:
-      case META_WINDOW_UTILITY:
-        break;
-      default:
-        g_warning("cinnamon_window_tracker_is_window_interesting: default reached");
-      break;
-    }
-
-  return TRUE;
+  return meta_window_is_interesting (window);
 }
 
 /**
@@ -506,6 +473,9 @@ static void
 track_window (CinnamonWindowTracker *self,
               MetaWindow      *window)
 {
+  if (!meta_window_is_interesting (window))
+    return;
+
   CinnamonApp *app;
 
   app = get_app_for_window (self, window);
@@ -537,6 +507,9 @@ static void
 disassociate_window (CinnamonWindowTracker   *self,
                      MetaWindow        *window)
 {
+  if (!meta_window_is_interesting (window))
+    return;
+
   CinnamonApp *app;
 
   app = g_hash_table_lookup (self->window_to_app, window);
