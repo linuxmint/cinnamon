@@ -946,7 +946,7 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   app->running_state->window_sort_stale = TRUE;
   app->running_state->windows = g_slist_prepend (app->running_state->windows, g_object_ref (window));
   g_signal_connect (window, "unmanaged", G_CALLBACK(cinnamon_app_on_unmanaged), app);
-  g_signal_connect (window, "notify::user-time", G_CALLBACK(cinnamon_app_on_user_time_changed), app);
+  g_signal_connect_after (window, "notify::user-time", G_CALLBACK(cinnamon_app_on_user_time_changed), app);
 
   user_time = meta_window_get_user_time (window);
   if (user_time > app->running_state->last_user_time)
