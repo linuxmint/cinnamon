@@ -124,9 +124,14 @@ cinnamon_app_get_id (CinnamonApp *app)
 static MetaWindow *
 window_backed_app_get_window (CinnamonApp     *app)
 {
-  g_assert (app->running_state);
-  g_assert (app->running_state->windows);
-  return app->running_state->windows->data;
+  g_assert (app->info == NULL);
+  if (app->running_state)
+    {
+      g_assert (app->running_state->windows);
+      return app->running_state->windows->data;
+    }
+  else
+    return NULL;
 }
 
 static ClutterActor *
@@ -167,7 +172,7 @@ static ClutterActor *
 window_backed_app_get_icon (CinnamonApp *app,
                             int          size)
 {
-  MetaWindow *window;
+  MetaWindow *window = NULL;
   ClutterActor *actor;
   gint scale;
   CinnamonGlobal *global;
@@ -183,14 +188,15 @@ window_backed_app_get_icon (CinnamonApp *app,
    * window-backend apps, it's possible we get a request for the icon.
    * Avoid asserting here and just return an empty image.
    */
-  if (app->running_state == NULL)
+  if (app->running_state != NULL)
+    window = window_backed_app_get_window (app);
+
+  if (window == NULL)
     {
       actor = clutter_texture_new ();
       g_object_set (actor, "opacity", 0, "width", (float) size, "height", (float) size, NULL);
       return actor;
     }
-
-  window = window_backed_app_get_window (app);
 
   size *= scale;
 
@@ -467,7 +473,8 @@ cinnamon_app_get_name (CinnamonApp *app)
       MetaWindow *window = window_backed_app_get_window (app);
       const char *name;
 
-      name = meta_window_get_wm_class (window);
+      if (window)
+        name = meta_window_get_wm_class (window);
       if (!name)
         name = _("Unknown");
       return name;
