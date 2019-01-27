@@ -318,12 +318,12 @@ get_flattened_entries_from_tree (GMenuTree *tree)
                                  (GDestroyNotify) gmenu_tree_item_unref);
 
   root = gmenu_tree_get_root_directory (tree);
-  
+
   if (root != NULL)
     get_flattened_entries_recurse (root, table);
 
   gmenu_tree_item_unref (root);
-  
+
   return table;
 }
 
@@ -368,9 +368,9 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
       GDesktopAppInfo *info;
       const char *startup_wm_class;
-      
+
       prefix = get_prefix_for_entry (entry);
-      
+
       if (prefix != NULL
           && !g_slist_find_custom (self->priv->known_vendor_prefixes, prefix,
                                    (GCompareFunc)g_strcmp0))
@@ -378,7 +378,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
                                                             prefix);
       else
         g_free (prefix);
-      
+
       app = g_hash_table_lookup (self->priv->id_to_app, id);
       if (app != NULL)
         {
@@ -418,11 +418,14 @@ on_apps_tree_changed_cb (GMenuTree *tree,
             g_hash_table_remove (self->priv->startup_wm_class_to_app, old_startup_wm_class);
         }
 
-      info = gmenu_tree_entry_get_app_info (entry);
-      startup_wm_class = g_desktop_app_info_get_startup_wm_class (info);
-      if (startup_wm_class)
-        g_hash_table_replace (self->priv->startup_wm_class_to_app,
-                              (char*)startup_wm_class, g_object_ref (app));
+      info = cinnamon_app_get_app_info (app);
+      if (info)
+        {
+          startup_wm_class = g_desktop_app_info_get_startup_wm_class (info);
+          if (startup_wm_class)
+            g_hash_table_replace (self->priv->startup_wm_class_to_app,
+                                  (char*)startup_wm_class, g_object_ref (app));
+        }
 
       if (old_entry)
         gmenu_tree_item_unref (old_entry);
@@ -435,11 +438,11 @@ on_apps_tree_changed_cb (GMenuTree *tree,
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
       const char *id = key;
-      
+
       if (!g_hash_table_lookup (new_apps, id))
         g_hash_table_iter_remove (&iter);
     }
-      
+
   g_hash_table_destroy (new_apps);
 
   g_signal_emit (self, signals[INSTALLED_CHANGED], 0);
@@ -741,7 +744,7 @@ cinnamon_app_system_get_all (CinnamonAppSystem  *self)
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
       CinnamonApp *app = value;
-      
+
       if (!g_desktop_app_info_get_nodisplay (cinnamon_app_get_app_info (app)))
         result = g_slist_prepend (result, app);
     }
@@ -891,7 +894,7 @@ cinnamon_app_system_subsearch (CinnamonAppSystem   *system,
   for (iter = previous_results; iter; iter = iter->next)
     {
       CinnamonApp *app = iter->data;
-      
+
       _cinnamon_app_do_match (app, normalized_terms,
                            &prefix_results,
                            &substring_results);

@@ -64,6 +64,7 @@ struct _CinnamonApp
                           * want (e.g. it will be of TYPE_NORMAL from
                           * the way cinnamon-window-tracker.c works).
                           */
+  GDesktopAppInfo *info;
 
   CinnamonAppRunningState *running_state;
 
@@ -224,7 +225,7 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
       return window_backed_app_get_icon (app, size);
     }
 
-  icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+  icon = g_app_info_get_icon (G_APP_INFO (app->info));
 
   if (icon != NULL)
     {
@@ -330,7 +331,7 @@ cinnamon_app_create_faded_icon_cpu (StTextureCache *cache,
 
   info = NULL;
 
-  icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+  icon = g_app_info_get_icon (G_APP_INFO (app->info));
   if (icon != NULL)
     {
       info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
@@ -458,7 +459,7 @@ const char *
 cinnamon_app_get_name (CinnamonApp *app)
 {
   if (app->entry)
-    return g_app_info_get_name (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+    return g_app_info_get_name (G_APP_INFO (app->info));
   else if (app->running_state == NULL)
     return _("Unknown");
   else
@@ -477,7 +478,7 @@ const char *
 cinnamon_app_get_description (CinnamonApp *app)
 {
   if (app->entry)
-    return g_app_info_get_description (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+    return g_app_info_get_description (G_APP_INFO (app->info));
   else
     return NULL;
 }
@@ -493,8 +494,8 @@ cinnamon_app_get_keywords (CinnamonApp *app)
   if (app->keywords)
     return app->keywords;
 
-  if (app->entry)
-    keywords = g_desktop_app_info_get_keywords (G_DESKTOP_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+  if (app->info)
+    keywords = g_desktop_app_info_get_keywords (app->info);
   else
     keywords = NULL;
 
@@ -984,8 +985,12 @@ _cinnamon_app_set_entry (CinnamonApp       *app,
 {
   if (app->entry != NULL)
     gmenu_tree_item_unref (app->entry);
-  app->entry = gmenu_tree_item_ref (entry);
-  
+  entry = gmenu_tree_item_ref (entry);
+
+  if (entry && app->info == NULL)
+    app->info = g_object_ref (gmenu_tree_entry_get_app_info (entry));
+  app->entry = entry;
+
   if (app->name_collation_key != NULL)
     g_free (app->name_collation_key);
   app->name_collation_key = g_utf8_collate_key (cinnamon_app_get_name (app), -1);
@@ -1234,7 +1239,6 @@ cinnamon_app_launch (CinnamonApp     *app,
                   char        **startup_id,
                   GError      **error)
 {
-  GDesktopAppInfo *gapp;
   GdkAppLaunchContext *context;
   gboolean ret;
   CinnamonGlobal *global;
@@ -1270,8 +1274,7 @@ cinnamon_app_launch (CinnamonApp     *app,
   gdk_app_launch_context_set_timestamp (context, timestamp);
   gdk_app_launch_context_set_desktop (context, workspace);
 
-  gapp = gmenu_tree_entry_get_app_info (app->entry);
-  ret = g_desktop_app_info_launch_uris_as_manager (gapp, uris,
+  ret = g_desktop_app_info_launch_uris_as_manager (app->info, uris,
                                                    G_APP_LAUNCH_CONTEXT (context),
                                                    G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
                                                    NULL, NULL,
@@ -1291,9 +1294,7 @@ cinnamon_app_launch (CinnamonApp     *app,
 GDesktopAppInfo *
 cinnamon_app_get_app_info (CinnamonApp *app)
 {
-  if (app->entry)
-    return gmenu_tree_entry_get_app_info (app->entry);
-  return NULL;
+  return app->info;
 }
 
 /**
@@ -1365,7 +1366,7 @@ cinnamon_app_init_search_data (CinnamonApp *app)
   char *normalized_exec;
   GDesktopAppInfo *appinfo;
 
-  appinfo = gmenu_tree_entry_get_app_info (app->entry);
+  appinfo = app->info;
   name = g_app_info_get_name (G_APP_INFO (appinfo));
   app->casefolded_name = cinnamon_util_normalize_and_casefold (name);
 
@@ -1463,11 +1464,11 @@ _cinnamon_app_do_match (CinnamonApp         *app,
 
   g_assert (app != NULL);
 
-  /* Skip window-backed apps */ 
-  appinfo = (GAppInfo*)cinnamon_app_get_app_info (app);
+  /* Skip window-backed apps */
+  appinfo = (GAppInfo*) app->info;
   if (appinfo == NULL)
     return;
-  /* Skip not-visible apps */ 
+  /* Skip not-visible apps */
   if (!g_app_info_should_show (appinfo))
     return;
 
@@ -1505,6 +1506,12 @@ cinnamon_app_dispose (GObject *object)
     {
       gmenu_tree_item_unref (app->entry);
       app->entry = NULL;
+    }
+
+  if (app->info)
+    {
+      g_object_unref (app->info);
+      app->info = NULL;
     }
 
   while (app->running_state)
