@@ -3,6 +3,7 @@ const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
+const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const PopupMenu = imports.ui.popupMenu;
 const SignalManager = imports.misc.signalManager;
@@ -60,36 +61,66 @@ class WorkspaceGraph extends WorkspaceButton {
     constructor(index, applet) {
         super(index, applet);
 
+        this.scaleFactor = 0;
+
         this.actor = new St.Bin({ reactive: applet._draggable.inhibit,
                                   style_class: 'workspace',
                                   y_fill: true,
                                   important: true });
 
         this.graphArea = new St.DrawingArea({ style_class: 'windows', important: true });
-        this.actor.child = this.graphArea;
+        this.actor.add_actor(this.graphArea);
         this.panelApplet = applet;
-        this.workspace_size = new Meta.Rectangle();
-        this.workspace.get_work_area_all_monitors(this.workspace_size);
-        this.sizeRatio = this.workspace_size.width / this.workspace_size.height;
-        let height = applet._panelHeight - 6;
 
-        if (applet.orientation == St.Side.LEFT || applet.orientation == St.Side.RIGHT)
-            height = height / this.sizeRatio;
-
-        let width = Math.round(this.sizeRatio * height);
-        this.actor.set_size(width, height);
-        this.graphArea.set_size(width, height);
+        this.graphArea.set_size(1, 1);
         this.graphArea.connect('repaint', Lang.bind(this, this.onRepaint));
     }
 
-    scale (windows_rect, workspace_rect, area_width, area_height) {
+    getSizeAdjustment (actor, vertical) {
+        let themeNode = actor.get_theme_node()
+        if (vertical) {
+            return themeNode.get_horizontal_padding() +
+                themeNode.get_border_width(St.Side.LEFT) +
+                themeNode.get_border_width(St.Side.RIGHT);
+        }
+        else {
+            return themeNode.get_vertical_padding() +
+                themeNode.get_border_width(St.Side.TOP) +
+                themeNode.get_border_width(St.Side.BOTTOM);
+        }
+    }
+
+    setGraphSize () {
+        this.workspace_size = new Meta.Rectangle();
+        this.workspace.get_work_area_all_monitors(this.workspace_size);
+
+        let height, width;
+        if (this.panelApplet.orientation == St.Side.LEFT ||
+            this.panelApplet.orientation == St.Side.RIGHT) {
+
+            width = this.panelApplet._panelHeight -
+                this.getSizeAdjustment(this.panelApplet.actor, true) -
+                this.getSizeAdjustment(this.actor, true);
+            this.scaleFactor = this.workspace_size.width / width;
+            height = Math.round(this.workspace_size.height / this.scaleFactor);
+        }
+        else {
+            height = this.panelApplet._panelHeight -
+                this.getSizeAdjustment(this.panelApplet.actor, false) -
+                this.getSizeAdjustment(this.actor, false);
+            this.scaleFactor = this.workspace_size.height / height;
+            width = Math.round(this.workspace_size.width / this.scaleFactor);
+        }
+
+        this.graphArea.set_size(width, height);
+    }
+
+    scale (windows_rect, workspace_rect) {
         let scaled_rect = new Meta.Rectangle();
-        let x_ratio = area_width / workspace_rect.width;
-        let y_ratio = area_height / workspace_rect.height;
-        scaled_rect.x = windows_rect.x * x_ratio;
-        scaled_rect.y = windows_rect.y * y_ratio;
-        scaled_rect.width = windows_rect.width * x_ratio;
-        scaled_rect.height = windows_rect.height * y_ratio;
+        scaled_rect.x = Math.round((windows_rect.x - workspace_rect.x) / this.scaleFactor);
+        scaled_rect.y = Math.round((windows_rect.y - workspace_rect.y) / this.scaleFactor);
+        scaled_rect.width = Math.round(windows_rect.width / this.scaleFactor);
+        scaled_rect.height = Math.round(windows_rect.height / this.scaleFactor);
         return scaled_rect;
     }
 
@@ -100,14 +131,12 @@ class WorkspaceGraph extends WorkspaceButton {
     }
 
     onRepaint(area) {
-        let graphThemeNode = this.graphArea.get_theme_node();
-        let workspaceThemeNode = this.panelApplet.actor.get_theme_node();
-        let height = this.panelApplet._panelHeight - workspaceThemeNode.get_vertical_padding();
-        let borderWidth = workspaceThemeNode.get_border_width(St.Side.TOP) + workspaceThemeNode.get_border_width(St.Side.BOTTOM);
+        // we need to set the size of the drawing area the first time, but we can't get
+        // accurate measurements until everything is added to the stage
+        if (this.scaleFactor === 0) this.setGraphSize();
 
-        this.graphArea.set_size(this.sizeRatio * height, height - borderWidth);
+        let graphThemeNode = this.graphArea.get_theme_node();
         let cr = area.get_context();
-        let [area_width, area_height] = area.get_surface_size();
 
         // construct a list with all windows
         let windows = this.workspace.list_windows();
@@ -123,7 +152,7 @@ class WorkspaceGraph extends WorkspaceButton {
             let windowBorderColor;
             for (let i = 0; i < windows.length; ++i) {
                 let metaWindow = windows[i];
-                let scaled_rect = this.scale(metaWindow.get_outer_rect(), this.workspace_size, area_width, area_height);
+                let scaled_rect = this.scale(metaWindow.get_outer_rect(), this.workspace_size);
 
                 cr.setLineWidth(1);
                 if (metaWindow.has_focus()) {
@@ -199,38 +228,24 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         this.orientation = orientation;
-        this.panel_height = panel_height;
         this.signals = new SignalManager.SignalManager(null);
         this.buttons = [];
         this._last_switch = 0;
         this._last_switch_direction = 0;
-
-        let manager;
-        if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
-            manager = new Clutter.BoxLayout({ spacing: 2 * global.ui_scale,
-                                                homogeneous: true,
-                                                orientation: Clutter.Orientation.HORIZONTAL });
-        } else {
-            manager = new Clutter.BoxLayout({ spacing: 2 * global.ui_scale,
-                                                homogeneous: true,
-                                                orientation: Clutter.Orientation.VERTICAL });
-        }
-        this.manager = manager;
-        this.manager_container = new Clutter.Actor({ layout_manager: manager });
-        this.actor.add_actor (this.manager_container);
-        this.manager_container.show();
+        this.createButtonsQueued = false;
 
         this._focusWindow = 0;
         if (global.display.focus_window)
             this._focusWindow = global.display.focus_window.get_compositor_private();
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
-        this.settings.bind("display_type", "display_type", this._createButtons);
+        this.settings.bind("display_type", "display_type", this.queueCreateButtons);
 
         this.actor.connect('scroll-event', this.hook.bind(this));
 
-        this._createButtons();
+        this.queueCreateButtons();
         global.screen.connect('notify::n-workspaces', Lang.bind(this, this.onNumberOfWorkspacesChanged));
+        global.screen.connect('workareas-changed', Lang.bind(this, this.queueCreateButtons));
         global.window_manager.connect('switch-workspace', this._onWorkspaceChanged.bind(this));
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
 
@@ -257,7 +272,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
     onNumberOfWorkspacesChanged() {
         this.removeWorkspaceMenuItem.setSensitive(global.screen.n_workspaces > 1);
-        this._createButtons();
+        this.queueCreateButtons();
     }
 
     removeWorkspace  (){
@@ -295,15 +310,15 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.orientation = neworientation;
 
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
-            this.manager.set_vertical(false);
+            this.actor.set_vertical(false);
         else
-            this.manager.set_vertical(true);
+            this.actor.set_vertical(true);
 
-        this._createButtons();
+        this.queueCreateButtons();
     }
 
     on_panel_height_changed() {
-        this._createButtons();
+        this.queueCreateButtons();
     }
 
     hook(actor, event) {
@@ -326,20 +341,37 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         }
     }
 
+    queueCreateButtons() {
+        if (!this.createButtonsQueued) {
+            Mainloop.idle_add(Lang.bind(this, this._createButtons));
+            this.createButtonsQueued = true;
+        }
+    }
+
     _createButtons() {
+        this.createButtonsQueued = false;
         for (let i = 0; i < this.buttons.length; ++i) {
             this.buttons[i].destroy();
         }
 
-        let suppress_graph = false; // suppress the graph and replace by buttons if size ratio
-                                    // would be unworkable in a vertical panel
-        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
+        // we're just doing a rough estimate here, but less than about 20px in either
+        // direction makes visual layout useless.
+        let suppress_graph = false;
+        if (this._panelHeight < 26) suppress_graph = true;
+        else {
             let workspace_size = new Meta.Rectangle();
             global.screen.get_workspace_by_index(0).get_work_area_all_monitors(workspace_size);
-            let sizeRatio = workspace_size.width / workspace_size.height;
-            if (sizeRatio >= 2.35) {  // completely empirical, other than the widest
-                                    // ratio single screen I know is 21*9 = 2.33
-                suppress_graph = true;
+            if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
+                let estHeight = (this._panelHeight - 6) / workspace_size.width * workspace_size.height;
+                if (estHeight < 20) {
+                    suppress_graph = true;
+                }
+            }
+            else {
+                let estWidth = (this._panelHeight - 6) / workspace_size.height * workspace_size.width;
+                if (estWidth < 20) {
+                    suppress_graph = true;
+                }
             }
         }
 
@@ -357,7 +389,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             else
                 this.buttons[i] = new SimpleButton(i, this);
 
-            this.manager_container.add_actor(this.buttons[i].actor);
+            this.actor.add_actor(this.buttons[i].actor);
             this.buttons[i].show();
         }
 
