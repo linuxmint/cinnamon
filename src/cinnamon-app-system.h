@@ -5,6 +5,9 @@
 #include <gio/gio.h>
 #include <clutter/clutter.h>
 #include <meta/window.h>
+// TODO: Remove this silly check from cmenu
+#define GMENU_I_KNOW_THIS_IS_UNSTABLE
+#include <gmenu-tree.h>
 
 #include "cinnamon-app.h"
 
@@ -30,5 +33,7 @@ GSList         *cinnamon_app_system_get_all                   (CinnamonAppSystem
 GSList         *cinnamon_app_system_get_running               (CinnamonAppSystem  *self);
 
 char         ***cinnamom_app_system_search                    (const char *search_string);
+
+GMenuTree * cinnamon_app_system_get_tree (CinnamonAppSystem *self);
 
 #endif /* __CINNAMON_APP_SYSTEM_H__ */

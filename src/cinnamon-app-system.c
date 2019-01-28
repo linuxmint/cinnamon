@@ -45,6 +45,8 @@ struct _CinnamonAppSystem
 };
 
 struct _CinnamonAppSystemPrivate {
+  GMenuTree *apps_tree;
+
   GHashTable *running_apps;
   GHashTable *id_to_app;
   GHashTable *startup_wm_class_to_id;
@@ -112,90 +114,153 @@ scan_startup_wm_class_to_id (CinnamonAppSystem *self)
   g_list_free_full (apps, g_object_unref);
 }
 
-static gboolean
-app_is_stale (CinnamonApp *app)
-{
-  GDesktopAppInfo *info, *old;
-  GAppInfo *old_info, *new_info;
-  gboolean is_unchanged;
-
-  if (cinnamon_app_is_window_backed (app))
-    return FALSE;
-
-  info = g_desktop_app_info_new (cinnamon_app_get_id (app));
-  if (!info)
-    return TRUE;
-
-  old = cinnamon_app_get_app_info (app);
-  old_info = G_APP_INFO (old);
-  new_info = G_APP_INFO (info);
-
-  is_unchanged =
-    g_app_info_should_show (old_info) == g_app_info_should_show (new_info) &&
-    strcmp (g_desktop_app_info_get_filename (old),
-            g_desktop_app_info_get_filename (info)) == 0 &&
-    g_strcmp0 (g_app_info_get_executable (old_info),
-               g_app_info_get_executable (new_info)) == 0 &&
-    g_strcmp0 (g_app_info_get_commandline (old_info),
-               g_app_info_get_commandline (new_info)) == 0 &&
-    strcmp (g_app_info_get_name (old_info),
-            g_app_info_get_name (new_info)) == 0 &&
-    g_strcmp0 (g_app_info_get_description (old_info),
-               g_app_info_get_description (new_info)) == 0 &&
-    strcmp (g_app_info_get_display_name (old_info),
-            g_app_info_get_display_name (new_info)) == 0 &&
-    g_icon_equal (g_app_info_get_icon (old_info),
-                  g_app_info_get_icon (new_info));
-
-  g_object_unref (info);
-  return !is_unchanged;
-}
-
-static gboolean
-stale_app_remove_func (gpointer key,
-                       gpointer value,
-                       gpointer user_data)
-{
-  return app_is_stale (value);
-}
-
 static void
-load_apps (CinnamonAppSystem *self)
+get_flattened_entries_recurse (GMenuTreeDirectory *dir,
+                               GHashTable         *entry_set)
 {
-  CinnamonAppSystemPrivate *priv = self->priv;
-  GList *apps, *l;
+  GMenuTreeIter *iter = gmenu_tree_directory_iter (dir);
+  GMenuTreeItemType next_type;
 
-  apps = g_app_info_get_all ();
-  for (l = apps; l != NULL; l = l->next)
+  while ((next_type = gmenu_tree_iter_next (iter)) != GMENU_TREE_ITEM_INVALID)
     {
-      GAppInfo *info = l->data;
-      char *id = g_app_info_get_id (info);
+      gpointer item = NULL;
 
-      if (g_hash_table_lookup (priv->id_to_app, id) ||
-          g_hash_table_find (self->priv->id_to_app, (GHRFunc) case_insensitive_search, (gpointer) id))
-        continue;
-
-      g_hash_table_insert (priv->id_to_app,
-                           id,
-                           _cinnamon_app_new (G_DESKTOP_APP_INFO (info)));
+      switch (next_type)
+        {
+        case GMENU_TREE_ITEM_ENTRY:
+          {
+            GMenuTreeEntry *entry;
+            item = entry = gmenu_tree_iter_get_entry (iter);
+            /* Key is owned by entry */
+            g_hash_table_replace (entry_set,
+                                  (char*)gmenu_tree_entry_get_desktop_file_id (entry),
+                                  gmenu_tree_item_ref (entry));
+          }
+          break;
+        case GMENU_TREE_ITEM_DIRECTORY:
+          {
+            item = gmenu_tree_iter_get_directory (iter);
+            get_flattened_entries_recurse ((GMenuTreeDirectory*)item, entry_set);
+          }
+          break;
+        case GMENU_TREE_ITEM_INVALID:
+        case GMENU_TREE_ITEM_SEPARATOR:
+        case GMENU_TREE_ITEM_HEADER:
+        case GMENU_TREE_ITEM_ALIAS:
+          break;
+        default:
+          break;
+        }
+      if (item != NULL)
+        gmenu_tree_item_unref (item);
     }
 
-  g_list_free_full (apps, g_object_unref);
+  gmenu_tree_iter_unref (iter);
+}
+
+static GHashTable *
+get_flattened_entries_from_tree (GMenuTree *tree)
+{
+  GHashTable *table;
+  GMenuTreeDirectory *root;
+
+  table = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                 (GDestroyNotify) NULL,
+                                 (GDestroyNotify) gmenu_tree_item_unref);
+
+  root = gmenu_tree_get_root_directory (tree);
+
+  if (root != NULL)
+    get_flattened_entries_recurse (root, table);
+
+  gmenu_tree_item_unref (root);
+
+  return table;
 }
 
 static void
-installed_changed (GAppInfoMonitor *monitor,
-                   gpointer         user_data)
+installed_change (GMenuTree *tree,
+                         gpointer   user_data)
 {
-  CinnamonAppSystem *self = user_data;
+  CinnamonAppSystem *self = CINNAMON_APP_SYSTEM (user_data);
+  GError *error = NULL;
+  GHashTable *new_apps;
+  GHashTableIter iter;
+  gpointer key, value;
 
-  scan_startup_wm_class_to_id (self);
+  g_assert (tree == self->priv->apps_tree);
 
-  g_hash_table_foreach_remove (self->priv->id_to_app, stale_app_remove_func, NULL);
+  if (!gmenu_tree_load_sync (self->priv->apps_tree, &error))
+    {
+      if (error)
+        {
+          g_warning ("Failed to load apps: %s", error->message);
+          g_error_free (error);
+        }
+      else
+        {
+          g_warning ("Failed to load apps");
+        }
+      return;
+    }
 
-  load_apps (self);
+  new_apps = get_flattened_entries_from_tree (self->priv->apps_tree);
+  g_hash_table_iter_init (&iter, new_apps);
+  while (g_hash_table_iter_next (&iter, &key, &value))
+    {
+      const char *id = key;
+      GMenuTreeEntry *entry = value;
+      CinnamonApp *app;
 
-  g_signal_emit (self, signals[INSTALLED_CHANGED], 0, NULL);
+      GDesktopAppInfo *info;
+      const char *startup_wm_class;
+
+      info = gmenu_tree_entry_get_app_info (entry);
+
+      app = g_hash_table_lookup (self->priv->id_to_app, id);
+      if (app != NULL)
+        {
+          GDesktopAppInfo *old_info;
+          const gchar *old_startup_wm_class;
+
+          old_info = cinnamon_app_get_app_info (app);
+          old_startup_wm_class = g_desktop_app_info_get_startup_wm_class (old_info);
+
+          if (old_startup_wm_class)
+            g_hash_table_remove (self->priv->startup_wm_class_to_id, old_startup_wm_class);
+
+          _cinnamon_app_set_app_info (app, info);
+          g_object_ref (app);  /* Extra ref, removed in _replace below */
+        }
+      else
+        {
+          app = _cinnamon_app_new (info);
+        }
+
+      g_hash_table_replace (self->priv->id_to_app, (char*)id, app);
+
+      startup_wm_class = g_desktop_app_info_get_startup_wm_class (info);
+      if (startup_wm_class)
+        g_hash_table_replace (self->priv->startup_wm_class_to_id,
+                              (char*)startup_wm_class, (char*)id);
+
+    }
+  /* Now iterate over the apps again; we need to unreference any apps
+   * which have been removed.  The JS code may still be holding a
+   * reference; that's fine.
+   */
+  g_hash_table_iter_init (&iter, self->priv->id_to_app);
+  while (g_hash_table_iter_next (&iter, &key, &value))
+    {
+      const char *id = key;
+
+      if (!g_hash_table_lookup (new_apps, id))
+        g_hash_table_iter_remove (&iter);
+    }
+
+  g_hash_table_destroy (new_apps);
+
+  g_signal_emit (self, signals[INSTALLED_CHANGED], 0);
 }
 
 static void
@@ -213,9 +278,10 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
 
   priv->startup_wm_class_to_id = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
-  monitor = g_app_info_monitor_get ();
-  g_signal_connect (monitor, "changed", G_CALLBACK (installed_changed), self);
-  installed_changed (monitor, self);
+  priv->apps_tree = gmenu_tree_new ("cinnamon-applications.menu", GMENU_TREE_FLAGS_INCLUDE_NODISPLAY);
+  g_signal_connect (priv->apps_tree, "changed", G_CALLBACK (installed_change), self);
+
+  installed_change (priv->apps_tree, self);
 }
 
 static void
@@ -224,11 +290,23 @@ cinnamon_app_system_finalize (GObject *object)
   CinnamonAppSystem *self = CINNAMON_APP_SYSTEM (object);
   CinnamonAppSystemPrivate *priv = self->priv;
 
+  g_object_unref (priv->apps_tree);
   g_hash_table_destroy (priv->running_apps);
   g_hash_table_destroy (priv->id_to_app);
   g_hash_table_destroy (priv->startup_wm_class_to_id);
 
   G_OBJECT_CLASS (cinnamon_app_system_parent_class)->finalize (object);
+}
+
+/**
+ * cinnamon_app_system_get_tree:
+ *
+ * Return Value: (transfer none): The #GMenuTree for apps
+ */
+GMenuTree *
+cinnamon_app_system_get_tree (CinnamonAppSystem *self)
+{
+  return self->priv->apps_tree;
 }
 
 /**
