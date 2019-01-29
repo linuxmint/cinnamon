@@ -1099,7 +1099,6 @@ cinnamon_app_launch (CinnamonApp     *app,
   GAppLaunchContext *context;
   gboolean ret;
   GSpawnFlags flags;
-  int journalfd;
 
   if (app->info == NULL)
     {
