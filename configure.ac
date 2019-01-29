@@ -63,8 +63,21 @@ GJS_MIN_VERSION=3.2.0
 MUFFIN_MIN_VERSION=4.0.3
 GTK_MIN_VERSION=3.12.0
 GIO_MIN_VERSION=2.35.0
+GIO_OPTIMAL_VERSION=2.57.2
 POLKIT_MIN_VERSION=0.100
 STARTUP_NOTIFICATION_MIN_VERSION=0.11
+
+use_optimized_spawn=false
+
+AC_MSG_CHECKING([for optimal GLib version (>= 2.57.2)])
+if $PKG_CONFIG --exists gio-2.0 '>=' $GIO_OPTIMAL_VERSION ; then
+   AC_MSG_RESULT(yes)
+   use_optimized_spawn=true
+else
+   AC_MSG_RESULT(no)
+fi
+
+AM_CONDITIONAL(USE_OPTIMIZED_SPAWN, $use_optimized_spawn)
 
 # Collect more than 20 libraries for a prize!
 SHARED_PCS="gio-2.0 >= $GIO_MIN_VERSION

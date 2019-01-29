@@ -84,6 +84,13 @@ cinnamon_cflags =				\
 	-DCINNAMON_PKGLIBEXECDIR=\"$(pkglibexecdir)\"	\
 	-DJSDIR=\"$(pkgdatadir)/js\"
 
+optimized_flag = -DHAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS
+
+if USE_OPTIMIZED_SPAWN
+cinnamon_cflags += \
+  $(optimized_flag)
+endif
+
 privlibdir = $(pkglibdir)
 privlib_LTLIBRARIES = libcinnamon.la $(MUFFIN_LIBS)
 

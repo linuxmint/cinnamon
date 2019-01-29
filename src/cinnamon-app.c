@@ -1099,6 +1099,7 @@ cinnamon_app_launch (CinnamonApp     *app,
   GAppLaunchContext *context;
   gboolean ret;
   GSpawnFlags flags;
+  int journalfd;
 
   if (app->info == NULL)
     {
@@ -1123,14 +1124,35 @@ cinnamon_app_launch (CinnamonApp     *app,
    * so that they are automatically closed even with this flag set.
    */
   flags = G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD |
-          G_SPAWN_LEAVE_DESCRIPTORS_OPEN;
+          G_SPAWN_LEAVE_DESCRIPTORS_OPEN |
+          G_SPAWN_STDOUT_TO_DEV_NULL | G_SPAWN_STDERR_TO_DEV_NULL;
 
+#ifdef HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS
+  /* Optimized spawn path, avoiding a child_setup function */
+  {
+    int journalfd = -1;
+
+    ret = g_desktop_app_info_launch_uris_as_manager_with_fds (app->info, NULL,
+                                                              context,
+                                                              flags,
+                                                              NULL, NULL,
+                                                              wait_pid, NULL,
+                                                              -1,
+                                                              journalfd,
+                                                              journalfd,
+                                                              error);
+
+    if (journalfd >= 0)
+      (void) close (journalfd);
+  }
+#else /* !HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS */
   ret = g_desktop_app_info_launch_uris_as_manager (app->info, NULL,
                                                    context,
                                                    flags,
                                                    NULL, NULL,
                                                    wait_pid, NULL,
                                                    error);
+#endif /* HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS */
   g_object_unref (context);
 
   return ret;
