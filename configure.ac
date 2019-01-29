@@ -72,7 +72,7 @@ SHARED_PCS="gio-2.0 >= $GIO_MIN_VERSION
              gtk+-3.0 >= $GTK_MIN_VERSION
              libmuffin >= $MUFFIN_MIN_VERSION
              cjs-1.0 >= $GJS_MIN_VERSION
-             $recorder_modules
+             libcinnamon-menu-3.0 $recorder_modules
              gdk-x11-3.0 libsoup-2.4 gl
              muffin-cogl-pango-0
              muffin-cogl-path-0

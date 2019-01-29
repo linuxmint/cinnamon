@@ -2367,8 +2367,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
         this._categoryButtons.push(this._allAppsCategoryButton);
 
-        let tree = new CMenu.Tree({ menu_basename: "cinnamon-applications.menu" });
-        tree.load_sync();
+        let tree = appsys.get_tree();
         let root = tree.get_root_directory();
         let dirs = [];
         let iter = root.iter();
