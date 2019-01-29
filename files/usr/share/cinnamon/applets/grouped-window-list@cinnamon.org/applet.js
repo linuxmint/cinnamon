@@ -131,6 +131,9 @@ class PinnedFavs {
             opts.app = appSystem.lookup_app(opts.appId);
         }
         if (!opts.app) {
+            opts.app = appSystem.lookup_settings_app(opts.appId);
+        }
+        if (!opts.app) {
             opts.app = appSystem.lookup_desktop_wmclass(opts.appId);
         }
         if (!opts.app) {
@@ -665,6 +668,9 @@ class GroupedWindowListApplet extends Applet.Applet {
             for (let i = 0, len = specialApps.length; i < len; i++) {
                 if (specialApps[i].wmClass === wmClass) {
                     app = this.appSystem.lookup_app(specialApps[i].id);
+                    if (!app) {
+                        app = this.appSystem.lookup_settings_app(specialApps[i].id);
+                    }
                     if (app) {
                         app.wmClass = wmClass;
                     }

@@ -48,6 +48,9 @@ class CinnamonLauncherDesklet extends Desklet.Desklet {
                 desktopFile = settingsList[i].split(':')[1];
                 app = appSys.lookup_app(desktopFile);
                 if (!app) {
+                    app = appSys.lookup_settings_app(desktopFile);
+                }
+                if (!app) {
                     app = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH + desktopFile);
                 }
                 return app;

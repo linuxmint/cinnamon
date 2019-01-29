@@ -56,7 +56,7 @@ AppFavorites.prototype = {
             return false;
 
         let appSys = Cinnamon.AppSystem.get_default();
-        let app = appSys.lookup_app(appId);
+        let app = appSys.lookup_app(appId) || appSys.lookup_settings_app(appId);
 
         if (!app)
             return false;

@@ -15,14 +15,6 @@
 #include "cinnamon-app-system-private.h"
 #include "cinnamon-window-tracker-private.h"
 #include "st.h"
-#include "gtkactionmuxer.h"
-#include "org-gtk-application.h"
-
-#ifdef HAVE_SYSTEMD
-#include <systemd/sd-journal.h>
-#include <errno.h>
-#include <unistd.h>
-#endif
 
 typedef enum {
   MATCH_NONE,
@@ -38,33 +30,23 @@ typedef enum {
 typedef struct {
   guint refcount;
 
+  /* Last time the user interacted with any of this application's windows */
+  guint32 last_user_time;
+
   /* Signal connection to dirty window sort list on workspace changes */
   guint workspace_switch_id;
 
   GSList *windows;
 
-  guint interesting_windows;
-
   /* Whether or not we need to resort the windows; this is done on demand */
   guint window_sort_stale : 1;
-
-  /* See GApplication documentation */
-  GDBusMenuModel   *remote_menu;
-  GtkActionMuxer    *muxer;
-  char             * unique_bus_name;
-  GDBusConnection  *session;
-
-  /* GDBus Proxy for getting application busy state */
-  CinnamonOrgGtkApplication *application_proxy;
-  GCancellable              *cancellable;
-
 } CinnamonAppRunningState;
 
 /**
  * SECTION:cinnamon-app
  * @short_description: Object representing an application
  *
- * This object wraps a #GDesktopAppInfo, providing methods and signals
+ * This object wraps a #GMenuTreeEntry, providing methods and signals
  * primarily useful for running applications.
  */
 struct _CinnamonApp
@@ -75,7 +57,7 @@ struct _CinnamonApp
 
   CinnamonAppState state;
 
-  GDesktopAppInfo *info; /* If NULL, this app is backed by one or more
+  GMenuTreeEntry *entry; /* If NULL, this app is backed by one or more
                           * MetaWindow.  For purposes of app title
                           * etc., we use the first window added,
                           * because it's most likely to be what we
@@ -86,18 +68,19 @@ struct _CinnamonApp
   CinnamonAppRunningState *running_state;
 
   char *window_id_string;
+
+  char *casefolded_name;
   char *name_collation_key;
+  char *casefolded_description;
+  char *casefolded_exec;
+  char *keywords;
 };
+
+G_DEFINE_TYPE (CinnamonApp, cinnamon_app, G_TYPE_OBJECT);
 
 enum {
   PROP_0,
-  PROP_STATE,
-  PROP_BUSY,
-  PROP_ID,
-  PROP_DBUS_ID,
-  PROP_ACTION_GROUP,
-  PROP_MENU,
-  PROP_APP_INFO
+  PROP_STATE
 };
 
 enum {
@@ -109,8 +92,6 @@ static guint cinnamon_app_signals[LAST_SIGNAL] = { 0 };
 
 static void create_running_state (CinnamonApp *app);
 static void unref_running_state (CinnamonAppRunningState *state);
-
-G_DEFINE_TYPE (CinnamonApp, cinnamon_app, G_TYPE_OBJECT)
 
 static void
 cinnamon_app_get_property (GObject    *gobject,
@@ -125,43 +106,6 @@ cinnamon_app_get_property (GObject    *gobject,
     case PROP_STATE:
       g_value_set_enum (value, app->state);
       break;
-    case PROP_BUSY:
-      g_value_set_boolean (value, cinnamon_app_get_busy (app));
-      break;
-    case PROP_ID:
-      g_value_set_string (value, cinnamon_app_get_id (app));
-      break;
-    case PROP_ACTION_GROUP:
-      if (app->running_state)
-        g_value_set_object (value, app->running_state->muxer);
-      break;
-    case PROP_MENU:
-      if (app->running_state)
-        g_value_set_object (value, app->running_state->remote_menu);
-      break;
-    case PROP_APP_INFO:
-      if (app->info)
-        g_value_set_object (value, app->info);
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
-      break;
-    }
-}
-
-static void
-cinnamon_app_set_property (GObject      *gobject,
-                        guint         prop_id,
-                        const GValue *value,
-                        GParamSpec   *pspec)
-{
-  CinnamonApp *app = CINNAMON_APP (gobject);
-
-  switch (prop_id)
-    {
-    case PROP_APP_INFO:
-      _cinnamon_app_set_app_info (app, g_value_get_object (value));
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -171,22 +115,17 @@ cinnamon_app_set_property (GObject      *gobject,
 const char *
 cinnamon_app_get_id (CinnamonApp *app)
 {
-  if (app->info)
-    return g_app_info_get_id (G_APP_INFO (app->info));
+  if (app->entry)
+    return gmenu_tree_entry_get_desktop_file_id (app->entry);
   return app->window_id_string;
 }
 
 static MetaWindow *
 window_backed_app_get_window (CinnamonApp     *app)
 {
-  g_assert (app->info == NULL);
-  if (app->running_state)
-    {
-      g_assert (app->running_state->windows);
-      return app->running_state->windows->data;
-    }
-  else
-    return NULL;
+  g_assert (app->running_state);
+  g_assert (app->running_state->windows);
+  return app->running_state->windows->data;
 }
 
 static ClutterActor *
@@ -227,7 +166,7 @@ static ClutterActor *
 window_backed_app_get_icon (CinnamonApp *app,
                             int          size)
 {
-  MetaWindow *window = NULL;
+  MetaWindow *window;
   ClutterActor *actor;
   gint scale;
   CinnamonGlobal *global;
@@ -243,15 +182,14 @@ window_backed_app_get_icon (CinnamonApp *app,
    * window-backend apps, it's possible we get a request for the icon.
    * Avoid asserting here and just return an empty image.
    */
-  if (app->running_state != NULL)
-    window = window_backed_app_get_window (app);
-
-  if (window == NULL)
+  if (app->running_state == NULL)
     {
       actor = clutter_texture_new ();
       g_object_set (actor, "opacity", 0, "width", (float) size, "height", (float) size, NULL);
       return actor;
     }
+
+  window = window_backed_app_get_window (app);
 
   size *= scale;
 
@@ -281,12 +219,12 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
 
   ret = NULL;
 
-  if (app->info == NULL)
+  if (app->entry == NULL)
     {
       return window_backed_app_get_icon (app, size);
     }
 
-  icon = g_app_info_get_icon (G_APP_INFO (app->info));
+  icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
 
   if (icon != NULL)
     {
@@ -356,20 +294,179 @@ cinnamon_app_create_icon_texture_for_window (CinnamonApp   *app,
   return cinnamon_app_create_icon_texture (app, size);
 }
 
+typedef struct {
+  CinnamonApp *app;
+  int size;
+  int scale;
+} CreateFadedIconData;
+
+static CoglHandle
+cinnamon_app_create_faded_icon_cpu (StTextureCache *cache,
+                                 const char     *key,
+                                 void           *datap,
+                                 GError        **error)
+{
+  CreateFadedIconData *data = datap;
+  CinnamonApp *app;
+  GdkPixbuf *pixbuf;
+  int size;
+  int scale;
+  CoglHandle texture;
+  gint width, height, rowstride;
+  guint8 n_channels;
+  gboolean have_alpha;
+  gint fade_start;
+  gint fade_range;
+  int i, j;
+  guint pixbuf_byte_size;
+  guint8 *orig_pixels;
+  guint8 *pixels;
+  GIcon *icon;
+  GtkIconInfo *info;
+
+  app = data->app;
+  size = data->size;
+  scale = data->scale;
+
+  info = NULL;
+
+  icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+  if (icon != NULL)
+    {
+      info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
+                                                       icon, size, scale,
+                                                       GTK_ICON_LOOKUP_FORCE_SIZE);
+    }
+
+  if (info == NULL)
+    {
+      icon = g_themed_icon_new ("application-x-executable");
+      info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
+                                                       icon, size, scale,
+                                                       GTK_ICON_LOOKUP_FORCE_SIZE);
+      g_object_unref (icon);
+    }
+
+  if (info == NULL)
+    return COGL_INVALID_HANDLE;
+
+  pixbuf = gtk_icon_info_load_icon (info, NULL);
+  g_object_unref (info);
+
+  if (pixbuf == NULL)
+    return COGL_INVALID_HANDLE;
+
+  width = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
+  rowstride = gdk_pixbuf_get_rowstride (pixbuf);
+  n_channels = gdk_pixbuf_get_n_channels (pixbuf);
+  orig_pixels = gdk_pixbuf_get_pixels (pixbuf);
+  have_alpha = gdk_pixbuf_get_has_alpha (pixbuf);
+
+  pixbuf_byte_size = (height - 1) * rowstride +
+    + width * ((n_channels * gdk_pixbuf_get_bits_per_sample (pixbuf) + 7) / 8);
+
+  pixels = g_malloc0 (rowstride * height);
+  memcpy (pixels, orig_pixels, pixbuf_byte_size);
+
+  fade_start = width / 2;
+  fade_range = width - fade_start;
+  for (i = fade_start; i < width; i++)
+    {
+      for (j = 0; j < height; j++)
+        {
+          guchar *pixel = &pixels[j * rowstride + i * n_channels];
+          float fade = 1.0 - ((float) i - fade_start) / fade_range;
+          pixel[0] = 0.5 + pixel[0] * fade;
+          pixel[1] = 0.5 + pixel[1] * fade;
+          pixel[2] = 0.5 + pixel[2] * fade;
+          if (have_alpha)
+            pixel[3] = 0.5 + pixel[3] * fade;
+        }
+    }
+
+    texture = st_cogl_texture_new_from_data_wrapper (width, height,
+                                                     COGL_TEXTURE_NONE,
+                                                     have_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
+                                                     COGL_PIXEL_FORMAT_ANY,
+                                                     rowstride, pixels);
+
+  g_free (pixels);
+  g_object_unref (pixbuf);
+
+  return texture;
+}
+
+/**
+ * cinnamon_app_get_faded_icon:
+ * @app: A #CinnamonApp
+ * @size: Size in pixels
+ *
+ * Return an actor with a horizontally faded look.
+ *
+ * Return value: (transfer none): A floating #ClutterActor, or %NULL if no icon
+ */
+ClutterActor *
+cinnamon_app_get_faded_icon (CinnamonApp *app, int size)
+{
+  CoglHandle texture;
+  ClutterActor *result;
+  char *cache_key;
+  CreateFadedIconData data;
+  gint scale;
+  CinnamonGlobal *global;
+  StThemeContext *context;
+
+  /* Don't fade for window backed apps for now...easier to reuse the
+   * property tracking bits, and this helps us visually distinguish
+   * app-tracked from not.
+   */
+  if (!app->entry)
+    return window_backed_app_get_icon (app, size);
+
+  global = cinnamon_global_get ();
+  context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
+  g_object_get (context, "scale-factor", &scale, NULL);
+
+  cache_key = g_strdup_printf ("faded-icon:%s,size=%d,scale=%d", cinnamon_app_get_id (app), size, scale);
+  data.app = app;
+  data.size = size;
+  data.scale = scale;
+  texture = st_texture_cache_load (st_texture_cache_get_default (),
+                                   cache_key,
+                                   ST_TEXTURE_CACHE_POLICY_FOREVER,
+                                   cinnamon_app_create_faded_icon_cpu,
+                                   &data,
+                                   NULL);
+  g_free (cache_key);
+
+  if (texture != COGL_INVALID_HANDLE)
+    {
+      result = clutter_texture_new ();
+      clutter_texture_set_cogl_texture (CLUTTER_TEXTURE (result), texture);
+    }
+  else
+    {
+      result = clutter_texture_new ();
+      g_object_set (result, "opacity", 0, "width", (float) size * scale, "height", (float) size * scale, NULL);
+
+    }
+  return result;
+}
+
 const char *
 cinnamon_app_get_name (CinnamonApp *app)
 {
-  if (app->info)
-    return g_app_info_get_name (G_APP_INFO (app->info));
+  if (app->entry)
+    return g_app_info_get_name (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
   else if (app->running_state == NULL)
     return _("Unknown");
   else
     {
       MetaWindow *window = window_backed_app_get_window (app);
-      const char *name = NULL;
+      const char *name;
 
-      if (window)
-        name = meta_window_get_wm_class (window);
+      name = meta_window_get_wm_class (window);
       if (!name)
         name = _("Unknown");
       return name;
@@ -379,19 +476,44 @@ cinnamon_app_get_name (CinnamonApp *app)
 const char *
 cinnamon_app_get_description (CinnamonApp *app)
 {
-  if (app->info)
-    return g_app_info_get_description (G_APP_INFO (app->info));
+  if (app->entry)
+    return g_app_info_get_description (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
   else
     return NULL;
 }
 
-const char * const *
+const char *
 cinnamon_app_get_keywords (CinnamonApp *app)
 {
-  if (app->info)
-    return g_desktop_app_info_get_keywords (app->info);
+  const char * const *keywords;
+  const char *keyword;
+  gint i;
+  gchar *ret = NULL;
+
+  if (app->keywords)
+    return app->keywords;
+
+  if (app->entry)
+    keywords = g_desktop_app_info_get_keywords (G_DESKTOP_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
   else
-    return NULL;
+    keywords = NULL;
+
+  if (keywords != NULL)
+    {
+      GString *keyword_list = g_string_new(NULL);
+
+      for (i = 0; keywords[i] != NULL; i++)
+        {
+          keyword = keywords[i];
+          g_string_append_printf (keyword_list, "%s;", keyword);
+        }
+
+      ret = g_string_free (keyword_list, FALSE);
+    }
+
+    app->keywords = ret;
+
+    return ret;
 }
 
 /**
@@ -404,7 +526,7 @@ cinnamon_app_get_keywords (CinnamonApp *app)
 gboolean
 cinnamon_app_is_window_backed (CinnamonApp *app)
 {
-  return app->info == NULL;
+  return app->entry == NULL;
 }
 
 typedef struct {
@@ -474,7 +596,7 @@ find_most_recent_transient_on_same_workspace (MetaDisplay *display,
 /**
  * cinnamon_app_activate_window:
  * @app: a #CinnamonApp
- * @window: (nullable): Window to be focused
+ * @window: (allow-none): Window to be focused
  * @timestamp: Event timestamp
  *
  * Bring all windows for the given app to the foreground,
@@ -502,7 +624,7 @@ cinnamon_app_activate_window (CinnamonApp     *app,
     return;
   else
     {
-      GSList *windows_reversed, *iter;
+      GSList *iter;
       CinnamonGlobal *global = cinnamon_global_get ();
       MetaScreen *screen = cinnamon_global_get_screen (global);
       MetaDisplay *display = meta_screen_get_display (screen);
@@ -520,16 +642,13 @@ cinnamon_app_activate_window (CinnamonApp     *app,
       /* Now raise all the other windows for the app that are on
        * the same workspace, in reverse order to preserve the stacking.
        */
-      windows_reversed = g_slist_copy (windows);
-      windows_reversed = g_slist_reverse (windows_reversed);
-      for (iter = windows_reversed; iter; iter = iter->next)
+      for (iter = windows; iter; iter = iter->next)
         {
           MetaWindow *other_window = iter->data;
 
-          if (other_window != window && meta_window_get_workspace (other_window) == workspace)
+          if (other_window != window)
             meta_window_raise (other_window);
         }
-      g_slist_free (windows_reversed);
 
       /* If we have a transient that the user's interacted with more recently than
        * the window, pick that.
@@ -541,35 +660,20 @@ cinnamon_app_activate_window (CinnamonApp     *app,
                                                   meta_window_get_user_time (most_recent_transient)))
         window = most_recent_transient;
 
+
+      if (!cinnamon_window_tracker_is_window_interesting (cinnamon_window_tracker_get_default (), window))
+        {
+          /* We won't get notify::user-time signals for uninteresting windows,
+           * which means that an app's last_user_time won't get updated.
+           * Update it here instead.
+           */
+          app->running_state->last_user_time = timestamp;
+        }
+
       if (active != workspace)
         meta_workspace_activate_with_focus (workspace, window, timestamp);
       else
         meta_window_activate (window, timestamp);
-    }
-}
-
-void
-cinnamon_app_update_window_actions (CinnamonApp *app, MetaWindow *window)
-{
-  const char *object_path;
-
-  object_path = meta_window_get_gtk_window_object_path (window);
-  if (object_path != NULL)
-    {
-      GActionGroup *actions;
-
-      actions = g_object_get_data (G_OBJECT (window), "actions");
-      if (actions == NULL)
-        {
-          actions = G_ACTION_GROUP (g_dbus_action_group_get (app->running_state->session,
-                                                             meta_window_get_gtk_unique_bus_name (window),
-                                                             object_path));
-          g_object_set_data_full (G_OBJECT (window), "actions", actions, g_object_unref);
-        }
-
-      g_assert (app->running_state->muxer);
-      gtk_action_muxer_insert (app->running_state->muxer, "win", actions);
-      g_object_notify (G_OBJECT (app), "action-group");
     }
 }
 
@@ -616,7 +720,12 @@ cinnamon_app_activate_full (CinnamonApp      *app,
       case CINNAMON_APP_STATE_STOPPED:
         {
           GError *error = NULL;
-          if (!cinnamon_app_launch (app, timestamp, workspace, FALSE, &error))
+          if (!cinnamon_app_launch (app,
+                                 timestamp,
+                                 NULL,
+                                 workspace,
+                                 NULL,
+                                 &error))
             {
               char *msg;
               msg = g_strdup_printf (_("Failed to launch '%s'"), cinnamon_app_get_name (app));
@@ -650,110 +759,22 @@ void
 cinnamon_app_open_new_window (CinnamonApp      *app,
                            int            workspace)
 {
-  GActionGroup *group = NULL;
-  const char * const *actions;
+  g_return_if_fail (app->entry != NULL);
 
-  g_return_if_fail (app->info != NULL);
-
-   /* First check whether the application provides a "new-window" desktop
-   * action - it is a safe bet that it will open a new window, and activating
-   * it will trigger startup notification if necessary
-   */
-  actions = g_desktop_app_info_list_actions (G_DESKTOP_APP_INFO (app->info));
-
-  if (g_strv_contains (actions, "new-window"))
-    {
-      cinnamon_app_launch_action (app, "new-window", 0, workspace);
-      return;
-    }
-
-  /* Next, check whether the app exports an explicit "new-window" action
-   * that we can activate on the bus - the muxer will add startup notification
-   * information to the platform data, so this should work just as well as
-   * desktop actions.
-   */
-  group = app->running_state ? G_ACTION_GROUP (app->running_state->muxer)
-                             : NULL;
-
-  if (group &&
-      g_action_group_has_action (group, "app.new-window") &&
-      g_action_group_get_action_parameter_type (group, "app.new-window") == NULL)
-    {
-      g_action_group_activate_action (group, "app.new-window", NULL);
-
-      return;
-    }
-
-  /* Lastly, just always launch the application again, even if we know
+  /* Here we just always launch the application again, even if we know
    * it was already running.  For most applications this
    * should have the effect of creating a new window, whether that's
    * a second process (in the case of Calculator) or IPC to existing
    * instance (Firefox).  There are a few less-sensical cases such
-   * as say Pidgin.
+   * as say Pidgin.  Ideally, we have the application express to us
+   * that it supports an explicit new-window action.
    */
-  cinnamon_app_launch (app, 0, workspace, FALSE, NULL);
-}
-
-/**
- * cinnamon_app_can_open_new_window:
- * @app: a #CinnamonApp
- *
- * Returns %TRUE if the app supports opening a new window through
- * cinnamon_app_open_new_window() (ie, if calling that function will
- * result in actually opening a new window and not something else,
- * like presenting the most recently active one)
- */
-gboolean
-cinnamon_app_can_open_new_window (CinnamonApp *app)
-{
-  CinnamonAppRunningState *state;
-
-  /* Apps that are not running can always open new windows, because
-     activating them would open the first one */
-  if (!app->running_state)
-    return TRUE;
-
-  state = app->running_state;
-
-  /* If the app has an explicit new-window action, then it can
-     (or it should be able to) ...
-  */
-  if (g_action_group_has_action (G_ACTION_GROUP (state->muxer), "app.new-window"))
-    return TRUE;
-
-  /* If the app doesn't have a desktop file, then nothing is possible */
-  if (!app->info)
-    return FALSE;
-
-  /* If the app is explicitly telling us, then we know for sure */
-  if (g_desktop_app_info_has_key (G_DESKTOP_APP_INFO (app->info),
-                                  "X-GNOME-SingleWindow"))
-    return !g_desktop_app_info_get_boolean (G_DESKTOP_APP_INFO (app->info),
-                                            "X-GNOME-SingleWindow");
-
-  /* If this is a unique GtkApplication, and we don't have a new-window, then
-     probably we can't
-     We don't consider non-unique GtkApplications here to handle cases like
-     evince, which don't export a new-window action because each window is in
-     a different process. In any case, in a non-unique GtkApplication each
-     Activate() knows nothing about the other instances, so it will show a
-     new window.
-  */
-  if (state->remote_menu)
-    {
-      const char *application_id;
-      application_id = meta_window_get_gtk_application_id (state->windows->data);
-      if (application_id != NULL)
-        return FALSE;
-      else
-        return TRUE;
-    }
-
-  /* In all other cases, we don't have a reliable source of information
-     or a decent heuristic, so we err on the compatibility side and say
-     yes.
-  */
-  return TRUE;
+  cinnamon_app_launch (app,
+                    0,
+                    NULL,
+                    workspace,
+                    NULL,
+                    NULL);
 }
 
 /**
@@ -807,10 +828,10 @@ cinnamon_app_compare_windows (gconstpointer   a,
  * cinnamon_app_get_windows:
  * @app:
  *
- * Get the windows which are associated with this application. The
- * returned list will be sorted first by whether they're on the
- * active workspace, then by whether they're visible, and finally
- * by the time the user last interacted with them.
+ * Get the toplevel, interesting windows which are associated with this
+ * application.  The returned list will be sorted first by whether
+ * they're on the active workspace, then by whether they're visible,
+ * and finally by the time the user last interacted with them.
  *
  * Returns: (transfer none) (element-type MetaWindow): List of windows
  */
@@ -840,6 +861,25 @@ cinnamon_app_get_n_windows (CinnamonApp *app)
   return g_slist_length (app->running_state->windows);
 }
 
+static gboolean
+cinnamon_app_has_visible_windows (CinnamonApp   *app)
+{
+  GSList *iter;
+
+  if (app->running_state == NULL)
+    return FALSE;
+
+  for (iter = app->running_state->windows; iter; iter = iter->next)
+    {
+      MetaWindow *window = iter->data;
+
+      if (meta_window_showing_on_its_workspace (window))
+        return TRUE;
+    }
+
+  return FALSE;
+}
+
 gboolean
 cinnamon_app_is_on_workspace (CinnamonApp *app,
                            MetaWorkspace   *workspace)
@@ -867,51 +907,15 @@ cinnamon_app_is_on_workspace (CinnamonApp *app,
   return FALSE;
 }
 
-static int
-cinnamon_app_get_last_user_time (CinnamonApp *app)
-{
-  GSList *iter;
-  guint32 last_user_time;
-
-  last_user_time = 0;
-
-  if (app->running_state != NULL)
-    {
-      for (iter = app->running_state->windows; iter; iter = iter->next)
-        last_user_time = MAX (last_user_time, meta_window_get_user_time (iter->data));
-    }
-
-  return (int)last_user_time;
-}
-
-static gboolean
-cinnamon_app_is_minimized (CinnamonApp *app)
-{
-  GSList *iter;
-
-  if (app->running_state == NULL)
-    return FALSE;
-
-  for (iter = app->running_state->windows; iter; iter = iter->next)
-    {
-      if (meta_window_showing_on_its_workspace (iter->data))
-        return FALSE;
-    }
-
-  return TRUE;
-}
-
-
-
 /**
  * cinnamon_app_compare:
- * @app: A #CinnamonApp
+ * @app:
  * @other: A #CinnamonApp
  *
  * Compare one #CinnamonApp instance to another, in the following way:
  *   - Running applications sort before not-running applications.
- *   - If one of them has non-minimized windows and the other does not,
- *     the one with visible windows is first.
+ *   - If one of them has visible windows and the other does not, the one
+ *     with visible windows is first.
  *   - Finally, the application which the user interacted with most recently
  *     compares earlier.
  */
@@ -919,7 +923,7 @@ int
 cinnamon_app_compare (CinnamonApp *app,
                    CinnamonApp *other)
 {
-  gboolean min_app, min_other;
+  gboolean vis_app, vis_other;
 
   if (app->state != other->state)
     {
@@ -928,15 +932,13 @@ cinnamon_app_compare (CinnamonApp *app,
       return 1;
     }
 
-  min_app = cinnamon_app_is_minimized (app);
-  min_other = cinnamon_app_is_minimized (other);
+  vis_app = cinnamon_app_has_visible_windows (app);
+  vis_other = cinnamon_app_has_visible_windows (other);
 
-  if (min_app != min_other)
-    {
-      if (min_other)
-        return -1;
-      return 1;
-    }
+  if (vis_app && !vis_other)
+    return -1;
+  else if (!vis_app && vis_other)
+    return 1;
 
   if (app->state == CINNAMON_APP_STATE_RUNNING)
     {
@@ -944,8 +946,7 @@ cinnamon_app_compare (CinnamonApp *app,
         return -1;
       else if (!app->running_state->windows && other->running_state->windows)
         return 1;
-
-      return cinnamon_app_get_last_user_time (other) - cinnamon_app_get_last_user_time (app);
+      return other->running_state->last_user_time - app->running_state->last_user_time;
     }
 
   return 0;
@@ -966,26 +967,28 @@ _cinnamon_app_new_for_window (MetaWindow      *window)
 }
 
 CinnamonApp *
-_cinnamon_app_new (GDesktopAppInfo *info)
+_cinnamon_app_new (GMenuTreeEntry *info)
 {
   CinnamonApp *app;
 
-  app = g_object_new (CINNAMON_TYPE_APP,
-                      "app-info", info,
-                      NULL);
+  app = g_object_new (CINNAMON_TYPE_APP, NULL);
+
+  _cinnamon_app_set_entry (app, info);
 
   return app;
 }
 
 void
-_cinnamon_app_set_app_info (CinnamonApp       *app,
-                            GDesktopAppInfo   *info)
+_cinnamon_app_set_entry (CinnamonApp       *app,
+                      GMenuTreeEntry *entry)
 {
-  g_set_object (&app->info, info);
-
-  g_clear_pointer (&app->name_collation_key, g_free);
-  if (app->info)
-    app->name_collation_key = g_utf8_collate_key (cinnamon_app_get_name (app), -1);
+  if (app->entry != NULL)
+    gmenu_tree_item_unref (app->entry);
+  app->entry = gmenu_tree_item_ref (entry);
+  
+  if (app->name_collation_key != NULL)
+    g_free (app->name_collation_key);
+  app->name_collation_key = g_utf8_collate_key (cinnamon_app_get_name (app), -1);
 }
 
 static void
@@ -997,6 +1000,12 @@ cinnamon_app_state_transition (CinnamonApp      *app,
   g_return_if_fail (!(app->state == CINNAMON_APP_STATE_RUNNING &&
                       state == CINNAMON_APP_STATE_STARTING));
   app->state = state;
+
+  if (app->state == CINNAMON_APP_STATE_STOPPED && app->running_state)
+    {
+      unref_running_state (app->running_state);
+      app->running_state = NULL;
+    }
 
   _cinnamon_app_system_notify_app_state_changed (cinnamon_app_system_get_default (), app);
 
@@ -1017,6 +1026,8 @@ cinnamon_app_on_user_time_changed (MetaWindow *window,
 {
   g_assert (app->running_state != NULL);
 
+  app->running_state->last_user_time = meta_window_get_user_time (window);
+
   /* Ideally we don't want to emit windows-changed if the sort order
    * isn't actually changing. This check catches most of those.
    */
@@ -1025,40 +1036,6 @@ cinnamon_app_on_user_time_changed (MetaWindow *window,
       app->running_state->window_sort_stale = TRUE;
       g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
     }
-}
-
-static void
-cinnamon_app_sync_running_state (CinnamonApp *app)
-{
-  g_return_if_fail (app->running_state != NULL);
-
-  if (app->state != CINNAMON_APP_STATE_STARTING)
-    {
-      if (app->running_state->interesting_windows == 0)
-        cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STOPPED);
-      else
-        cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
-    }
-}
-
-
-static void
-cinnamon_app_on_skip_taskbar_changed (MetaWindow  *window,
-                                      GParamSpec  *pspec,
-                                      CinnamonApp *app)
-{
-  g_assert (app->running_state != NULL);
-
-  /* we rely on MetaWindow:skip-taskbar only being notified
-   * when it actually changes; when that assumption breaks,
-   * we'll have to track the "interesting" windows themselves
-   */
-  if (meta_window_is_skip_taskbar (window))
-    app->running_state->interesting_windows--;
-  else
-    app->running_state->interesting_windows++;
-
-  cinnamon_app_sync_running_state (app);
 }
 
 static void
@@ -1077,93 +1054,12 @@ cinnamon_app_on_ws_switch (MetaScreen         *screen,
   g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
 }
 
-gboolean
-cinnamon_app_get_busy (CinnamonApp *app)
-{
-  if (app->running_state != NULL &&
-      app->running_state->application_proxy != NULL &&
-      cinnamon_org_gtk_application_get_busy (app->running_state->application_proxy))
-    return TRUE;
-
-  return FALSE;
-}
-
-static void
-busy_changed_cb (GObject    *object,
-                 GParamSpec *pspec,
-                 gpointer    user_data)
-{
-  CinnamonApp *app = user_data;
-
-  g_assert (CINNAMON_IS_APP (app));
-
-  g_object_notify (G_OBJECT (app), "busy");
-}
-
-static void
-get_application_proxy (GObject      *source,
-                       GAsyncResult *result,
-                       gpointer      user_data)
-{
-  CinnamonApp *app = user_data;
-  CinnamonOrgGtkApplication *proxy;
-
-  g_assert (CINNAMON_IS_APP (app));
-
-  proxy = cinnamon_org_gtk_application_proxy_new_finish (result, NULL);
-  if (proxy != NULL)
-    {
-      app->running_state->application_proxy = proxy;
-      g_signal_connect (proxy,
-                        "notify::busy",
-                        G_CALLBACK (busy_changed_cb),
-                        app);
-      if (cinnamon_org_gtk_application_get_busy (proxy))
-        g_object_notify (G_OBJECT (app), "busy");
-    }
-
-  if (app->running_state != NULL)
-    g_clear_object (&app->running_state->cancellable);
-
-  g_object_unref (app);
-}
-
-static void
-cinnamon_app_ensure_busy_watch (CinnamonApp *app)
-{
-  CinnamonAppRunningState *running_state = app->running_state;
-  MetaWindow *window;
-  const gchar *object_path;
-
-    if (running_state->application_proxy != NULL ||
-      running_state->cancellable != NULL)
-    return;
-
-  if (running_state->unique_bus_name == NULL)
-    return;
-
-  window = g_slist_nth_data (running_state->windows, 0);
-  object_path = meta_window_get_gtk_application_object_path (window);
-
-  if (object_path == NULL)
-    return;
-
-  running_state->cancellable = g_cancellable_new();
-  /* Take a reference to app to make sure it isn't finalized before
-     get_application_proxy runs */
-  cinnamon_org_gtk_application_proxy_new (running_state->session,
-                                          G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
-                                          running_state->unique_bus_name,
-                                          object_path,
-                                          running_state->cancellable,
-                                          get_application_proxy,
-                                          g_object_ref (app));
-}
-
 void
 _cinnamon_app_add_window (CinnamonApp        *app,
                        MetaWindow      *window)
 {
+  guint32 user_time;
+
   if (app->running_state && g_slist_find (app->running_state->windows, window))
     return;
 
@@ -1176,15 +1072,13 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   app->running_state->windows = g_slist_prepend (app->running_state->windows, g_object_ref (window));
   g_signal_connect (window, "unmanaged", G_CALLBACK(cinnamon_app_on_unmanaged), app);
   g_signal_connect (window, "notify::user-time", G_CALLBACK(cinnamon_app_on_user_time_changed), app);
-  g_signal_connect (window, "notify::skip-taskbar", G_CALLBACK(cinnamon_app_on_skip_taskbar_changed), app);
 
-  cinnamon_app_update_app_menu (app, window);
-  cinnamon_app_ensure_busy_watch (app);
+  user_time = meta_window_get_user_time (window);
+  if (user_time > app->running_state->last_user_time)
+    app->running_state->last_user_time = user_time;
 
-  if (!meta_window_is_skip_taskbar (window))
-    app->running_state->interesting_windows++;
-
-  cinnamon_app_sync_running_state (app);
+  if (app->state != CINNAMON_APP_STATE_STARTING)
+    cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
 
   g_object_thaw_notify (G_OBJECT (app));
 
@@ -1202,16 +1096,11 @@ _cinnamon_app_remove_window (CinnamonApp   *app,
 
   g_signal_handlers_disconnect_by_func (window, G_CALLBACK(cinnamon_app_on_unmanaged), app);
   g_signal_handlers_disconnect_by_func (window, G_CALLBACK(cinnamon_app_on_user_time_changed), app);
-  g_signal_handlers_disconnect_by_func (window, G_CALLBACK(cinnamon_app_on_skip_taskbar_changed), app);
   g_object_unref (window);
   app->running_state->windows = g_slist_remove (app->running_state->windows, window);
 
-  if (!meta_window_is_skip_taskbar (window))
-    app->running_state->interesting_windows--;
-  cinnamon_app_sync_running_state (app);
-
   if (app->running_state->windows == NULL)
-    g_clear_pointer (&app->running_state, unref_running_state);
+    cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STOPPED);
 
   g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
 }
@@ -1303,7 +1192,7 @@ cinnamon_app_request_quit (CinnamonApp   *app)
     {
       MetaWindow *win = iter->data;
 
-      if (meta_window_is_skip_taskbar (win))
+      if (!cinnamon_window_tracker_is_window_interesting (cinnamon_window_tracker_get_default (), win))
         continue;
 
       meta_window_delete (win, cinnamon_global_get_current_time (global));
@@ -1311,144 +1200,86 @@ cinnamon_app_request_quit (CinnamonApp   *app)
   return TRUE;
 }
 
-#if !defined(HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS) && defined(HAVE_SYSTEMD)
-/* This sets up the launched application to log to the journal
- * using its own identifier, instead of just "cinnamon-session".
- */
 static void
-app_child_setup (gpointer user_data)
+_gather_pid_callback (GDesktopAppInfo   *gapp,
+                      GPid               pid,
+                      gpointer           data)
 {
-  const char *appid = user_data;
-  int res;
-  int journalfd = sd_journal_stream_fd (appid, LOG_INFO, FALSE);
-  if (journalfd >= 0)
-    {
-      do
-        res = dup2 (journalfd, 1);
-      while (G_UNLIKELY (res == -1 && errno == EINTR));
-      do
-        res = dup2 (journalfd, 2);
-      while (G_UNLIKELY (res == -1 && errno == EINTR));
-      (void) close (journalfd);
-    }
-}
-#endif
+  CinnamonApp *app;
+  CinnamonWindowTracker *tracker;
 
-static void
-wait_pid (GDesktopAppInfo *appinfo,
-          GPid             pid,
-          gpointer         user_data)
-{
-  g_child_watch_add (pid, (GChildWatchFunc) g_spawn_close_pid, NULL);
+  g_return_if_fail (data != NULL);
+
+  app = CINNAMON_APP (data);
+  tracker = cinnamon_window_tracker_get_default ();
+
+  _cinnamon_window_tracker_add_child_process_app (tracker,
+                                               pid,
+                                               app);
 }
 
 /**
  * cinnamon_app_launch:
  * @timestamp: Event timestamp, or 0 for current event timestamp
-  * @workspace: Start on this workspace, or -1 for default
-  * @discrete_gpu: Whether to start on the discrete GPU
-  * @error: A #GError
+ * @uris: (element-type utf8): List of uris to pass to application
+ * @workspace: Start on this workspace, or -1 for default
+ * @startup_id: (out): Returned startup notification ID, or %NULL if none
+ * @error: A #GError
  */
 gboolean
 cinnamon_app_launch (CinnamonApp     *app,
                   guint         timestamp,
+                  GList        *uris,
                   int           workspace,
-                  gboolean      discrete_gpu,
+                  char        **startup_id,
                   GError      **error)
 {
-  CinnamonGlobal *global;
-  GAppLaunchContext *context;
+  GDesktopAppInfo *gapp;
+  GdkAppLaunchContext *context;
   gboolean ret;
-  GSpawnFlags flags;
+  CinnamonGlobal *global;
+  MetaScreen *screen;
+  GdkDisplay *gdisplay;
 
-  if (app->info == NULL)
+  if (startup_id)
+    *startup_id = NULL;
+
+  if (app->entry == NULL)
     {
       MetaWindow *window = window_backed_app_get_window (app);
-      /* We don't use an error return if there no longer any windows, because the
-       * user attempting to activate a stale window backed app isn't something
-       * we would expect the caller to meaningfully handle or display an error
-       * message to the user.
+      /* We can't pass URIs into a window; shouldn't hit this
+       * code path.  If we do, fix the caller to disallow it.
        */
-      if (window)
-        meta_window_activate (window, timestamp);
+      g_return_val_if_fail (uris == NULL, TRUE);
+
+      meta_window_activate (window, timestamp);
       return TRUE;
     }
 
   global = cinnamon_global_get ();
-  context = cinnamon_global_create_app_launch_context_for_workspace (global, timestamp, workspace);
-  if (discrete_gpu)
-    g_app_launch_context_setenv (context, "DRI_PRIME", "1");
+  screen = cinnamon_global_get_screen (global);
+  gdisplay = gdk_screen_get_display (cinnamon_global_get_gdk_screen (global));
 
-  /* Set LEAVE_DESCRIPTORS_OPEN in order to use an optimized gspawn
-   * codepath. The shell's open file descriptors should be marked CLOEXEC
-   * so that they are automatically closed even with this flag set.
-   */
-  flags = G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD |
-          G_SPAWN_LEAVE_DESCRIPTORS_OPEN;
+  if (timestamp == 0)
+    timestamp = cinnamon_global_get_current_time (global);
 
-#ifdef HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS
-  /* Optimized spawn path, avoiding a child_setup function */
-  {
-    int journalfd = -1;
+  if (workspace < 0)
+    workspace = meta_screen_get_active_workspace_index (screen);
 
-#ifdef HAVE_SYSTEMD
-    journalfd = sd_journal_stream_fd (cinnamon_app_get_id (app), LOG_INFO, FALSE);
-#endif /* HAVE_SYSTEMD */
+  context = gdk_display_get_app_launch_context (gdisplay);
+  gdk_app_launch_context_set_timestamp (context, timestamp);
+  gdk_app_launch_context_set_desktop (context, workspace);
 
-    ret = g_desktop_app_info_launch_uris_as_manager_with_fds (app->info, NULL,
-                                                              context,
-                                                              flags,
-                                                              NULL, NULL,
-                                                              wait_pid, NULL,
-                                                              -1,
-                                                              journalfd,
-                                                              journalfd,
-                                                              error);
-
-    if (journalfd >= 0)
-      (void) close (journalfd);
-  }
-#else /* !HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS */
-  ret = g_desktop_app_info_launch_uris_as_manager (app->info, NULL,
-                                                   context,
-                                                   flags,
-#ifdef HAVE_SYSTEMD
-                                                   app_child_setup, (gpointer)cinnamon_app_get_id (app),
-#else
+  gapp = gmenu_tree_entry_get_app_info (app->entry);
+  ret = g_desktop_app_info_launch_uris_as_manager (gapp, uris,
+                                                   G_APP_LAUNCH_CONTEXT (context),
+                                                   G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
                                                    NULL, NULL,
-#endif
-                                                   wait_pid, NULL,
+                                                   _gather_pid_callback, app,
                                                    error);
-#endif /* HAVE_GIO_DESKTOP_LAUNCH_URIS_WITH_FDS */
   g_object_unref (context);
 
   return ret;
-}
-
-/**
- * cinnamon_app_launch_action:
- * @app: the #CinnamonApp
- * @action_name: the name of the action to launch (as obtained by
- *               g_desktop_app_info_list_actions())
- * @timestamp: Event timestamp, or 0 for current event timestamp
- * @workspace: Start on this workspace, or -1 for default
- */
-void
-cinnamon_app_launch_action (CinnamonApp  *app,
-                         const char      *action_name,
-                         guint            timestamp,
-                         int              workspace)
-{
-  CinnamonGlobal *global;
-  GAppLaunchContext *context;
-
-  global = cinnamon_global_get ();
-  context = cinnamon_global_create_app_launch_context_for_workspace (global, timestamp, workspace);
-
-  g_desktop_app_info_launch_action (G_DESKTOP_APP_INFO (app->info),
-                                    action_name, context);
-
-  g_object_unref (context);
 }
 
 /**
@@ -1460,7 +1291,21 @@ cinnamon_app_launch_action (CinnamonApp  *app,
 GDesktopAppInfo *
 cinnamon_app_get_app_info (CinnamonApp *app)
 {
-  return app->info;
+  if (app->entry)
+    return gmenu_tree_entry_get_app_info (app->entry);
+  return NULL;
+}
+
+/**
+ * cinnamon_app_get_tree_entry:
+ * @app: a #CinnamonApp
+ *
+ * Returns: (transfer none): The #GMenuTreeEntry for this app, or %NULL if backed by a window
+ */
+GMenuTreeEntry *
+cinnamon_app_get_tree_entry (CinnamonApp *app)
+{
+  return app->entry;
 }
 
 static void
@@ -1475,51 +1320,6 @@ create_running_state (CinnamonApp *app)
   app->running_state->refcount = 1;
   app->running_state->workspace_switch_id =
     g_signal_connect (screen, "workspace-switched", G_CALLBACK(cinnamon_app_on_ws_switch), app);
-
-  app->running_state->session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
-  g_assert (app->running_state->session != NULL);
-  app->running_state->muxer = gtk_action_muxer_new ();
-}
-
-void
-cinnamon_app_update_app_menu (CinnamonApp   *app,
-                           MetaWindow *window)
-{
-  const gchar *unique_bus_name;
-
-  /* We assume that 'gtk-application-object-path' and
-   * 'gtk-app-menu-object-path' are the same for all windows which
-   * have it set.
-   *
-   * It could be possible, however, that the first window we see
-   * belonging to the app didn't have them set.  For this reason, we
-   * take the values from the first window that has them set and ignore
-   * all the rest (until the app is stopped and restarted).
-   */
-
-  unique_bus_name = meta_window_get_gtk_unique_bus_name (window);
-
-  if (app->running_state->remote_menu == NULL ||
-      g_strcmp0 (app->running_state->unique_bus_name, unique_bus_name) != 0)
-    {
-      const gchar *application_object_path;
-      const gchar *app_menu_object_path;
-      GDBusActionGroup *actions;
-
-      application_object_path = meta_window_get_gtk_application_object_path (window);
-      app_menu_object_path = meta_window_get_gtk_app_menu_object_path (window);
-
-      if (application_object_path == NULL || app_menu_object_path == NULL || unique_bus_name == NULL)
-        return;
-
-      g_clear_pointer (&app->running_state->unique_bus_name, g_free);
-      app->running_state->unique_bus_name = g_strdup (unique_bus_name);
-      g_clear_object (&app->running_state->remote_menu);
-      app->running_state->remote_menu = g_dbus_menu_model_get (app->running_state->session, unique_bus_name, app_menu_object_path);
-      actions = g_dbus_action_group_get (app->running_state->session, unique_bus_name, application_object_path);
-      gtk_action_muxer_insert (app->running_state->muxer, "app", G_ACTION_GROUP (actions));
-      g_object_unref (actions);
-    }
 }
 
 static void
@@ -1527,41 +1327,65 @@ unref_running_state (CinnamonAppRunningState *state)
 {
   MetaScreen *screen;
 
-  g_assert (state->refcount > 0);
-
   state->refcount--;
   if (state->refcount > 0)
     return;
 
   screen = cinnamon_global_get_screen (cinnamon_global_get ());
+
   g_signal_handler_disconnect (screen, state->workspace_switch_id);
-
-  g_clear_object (&state->application_proxy);
-
-  if (state->cancellable != NULL)
-    {
-      g_cancellable_cancel (state->cancellable);
-      g_clear_object (&state->cancellable);
-    }
-
-  g_clear_object (&state->remote_menu);
-  g_clear_object (&state->muxer);
-  g_clear_object (&state->session);
-  g_clear_pointer (&state->unique_bus_name, g_free);
-  g_clear_pointer (&state->remote_menu, g_free);
-
   g_slice_free (CinnamonAppRunningState, state);
+}
+
+static char *
+trim_exec_line (const char *str)
+{
+  const char *start, *end, *pos;
+
+  if (str == NULL)
+    return NULL;
+
+  end = strchr (str, ' ');
+  if (end == NULL)
+    end = str + strlen (str);
+
+  start = str;
+  while ((pos = strchr (start, '/')) && pos < end)
+    start = ++pos;
+
+  return g_strndup (start, end - start);
+}
+
+static void
+cinnamon_app_init_search_data (CinnamonApp *app)
+{
+  const char *name;
+  const char *exec;
+  const char *comment;
+  char *normalized_exec;
+  GDesktopAppInfo *appinfo;
+
+  appinfo = gmenu_tree_entry_get_app_info (app->entry);
+  name = g_app_info_get_name (G_APP_INFO (appinfo));
+  app->casefolded_name = cinnamon_util_normalize_and_casefold (name);
+
+  comment = g_app_info_get_description (G_APP_INFO (appinfo));
+  app->casefolded_description = cinnamon_util_normalize_and_casefold (comment);
+
+  exec = g_app_info_get_executable (G_APP_INFO (appinfo));
+  normalized_exec = cinnamon_util_normalize_and_casefold (exec);
+  app->casefolded_exec = trim_exec_line (normalized_exec);
+  g_free (normalized_exec);
 }
 
 /**
  * cinnamon_app_compare_by_name:
- * @app: One app
- * @other: The other app
+ * @app:
+ * @other:
  *
  * Order two applications by name.
  *
- * Returns: -1, 0, or 1; suitable for use as a comparison function
- * for e.g. g_slist_sort()
+ * Returns: -1, 0, or 1; suitable for use as a comparison function for e.g. g_slist_sort()
  */
 int
 cinnamon_app_compare_by_name (CinnamonApp *app, CinnamonApp *other)
@@ -1569,10 +1393,107 @@ cinnamon_app_compare_by_name (CinnamonApp *app, CinnamonApp *other)
   return strcmp (app->name_collation_key, other->name_collation_key);
 }
 
+static CinnamonAppSearchMatch
+_cinnamon_app_match_search_terms (CinnamonApp  *app,
+                               GSList    *terms)
+{
+  GSList *iter;
+  CinnamonAppSearchMatch match;
+
+  if (G_UNLIKELY (!app->casefolded_name))
+    cinnamon_app_init_search_data (app);
+
+  match = MATCH_NONE;
+  for (iter = terms; iter; iter = iter->next)
+    {
+      CinnamonAppSearchMatch current_match;
+      const char *term = iter->data;
+      const char *p;
+
+      current_match = MATCH_NONE;
+
+      p = strstr (app->casefolded_name, term);
+      if (p != NULL)
+        {
+          if (p == app->casefolded_name || *(p - 1) == ' ')
+            current_match = MATCH_PREFIX;
+          else
+            current_match = MATCH_SUBSTRING;
+        }
+
+      if (app->casefolded_exec)
+        {
+          p = strstr (app->casefolded_exec, term);
+          if (p != NULL)
+            {
+              if (p == app->casefolded_exec || *(p - 1) == '-')
+                current_match = MATCH_PREFIX;
+              else if (current_match < MATCH_PREFIX)
+                current_match = MATCH_SUBSTRING;
+            }
+        }
+
+      if (app->casefolded_description && current_match < MATCH_PREFIX)
+        {
+          /* Only do substring matches, as prefix matches are not meaningful
+           * enough for descriptions
+           */
+          p = strstr (app->casefolded_description, term);
+          if (p != NULL)
+            current_match = MATCH_SUBSTRING;
+        }
+
+      if (current_match == MATCH_NONE)
+        return current_match;
+
+      if (current_match > match)
+        match = current_match;
+    }
+  return match;
+}
+
+void
+_cinnamon_app_do_match (CinnamonApp         *app,
+                     GSList           *terms,
+                     GSList          **prefix_results,
+                     GSList          **substring_results)
+{
+  CinnamonAppSearchMatch match;
+  GAppInfo *appinfo;
+
+  g_assert (app != NULL);
+
+  /* Skip window-backed apps */ 
+  appinfo = (GAppInfo*)cinnamon_app_get_app_info (app);
+  if (appinfo == NULL)
+    return;
+  /* Skip not-visible apps */ 
+  if (!g_app_info_should_show (appinfo))
+    return;
+
+  match = _cinnamon_app_match_search_terms (app, terms);
+  switch (match)
+    {
+      case MATCH_NONE:
+        break;
+      case MATCH_PREFIX:
+        *prefix_results = g_slist_prepend (*prefix_results, app);
+        break;
+      case MATCH_SUBSTRING:
+        *substring_results = g_slist_prepend (*substring_results, app);
+        break;
+      default:
+        g_warning("cinnamon_app_do_match: default case");
+        break;
+    }
+}
+
+
 static void
 cinnamon_app_init (CinnamonApp *self)
 {
   self->state = CINNAMON_APP_STATE_STOPPED;
+  self->keywords = NULL;
 }
 
 static void
@@ -1580,15 +1501,16 @@ cinnamon_app_dispose (GObject *object)
 {
   CinnamonApp *app = CINNAMON_APP (object);
 
-  g_clear_object (&app->info);
+  if (app->entry)
+    {
+      gmenu_tree_item_unref (app->entry);
+      app->entry = NULL;
+    }
 
   while (app->running_state)
     _cinnamon_app_remove_window (app, app->running_state->windows->data);
 
-
-  /* We should have been transitioned when we removed all of our windows */
-  g_assert (app->state == CINNAMON_APP_STATE_STOPPED);
-  g_assert (app->running_state == NULL);
+  g_clear_pointer (&app->keywords, g_free);
 
   G_OBJECT_CLASS(cinnamon_app_parent_class)->dispose (object);
 }
@@ -1599,7 +1521,11 @@ cinnamon_app_finalize (GObject *object)
   CinnamonApp *app = CINNAMON_APP (object);
 
   g_free (app->window_id_string);
+
+  g_free (app->casefolded_name);
   g_free (app->name_collation_key);
+  g_free (app->casefolded_description);
+  g_free (app->casefolded_exec);
 
   G_OBJECT_CLASS(cinnamon_app_parent_class)->finalize (object);
 }
@@ -1610,7 +1536,6 @@ cinnamon_app_class_init(CinnamonAppClass *klass)
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
   gobject_class->get_property = cinnamon_app_get_property;
-  gobject_class->set_property = cinnamon_app_set_property;
   gobject_class->dispose = cinnamon_app_dispose;
   gobject_class->finalize = cinnamon_app_finalize;
 
@@ -1635,74 +1560,4 @@ cinnamon_app_class_init(CinnamonAppClass *klass)
                                                       CINNAMON_TYPE_APP_STATE,
                                                       CINNAMON_APP_STATE_STOPPED,
                                                       G_PARAM_READABLE));
-
-  /**
-   * CinnamonApp:busy:
-   *
-   * Whether the application has marked itself as busy.
-   */
-  g_object_class_install_property (gobject_class,
-                                   PROP_BUSY,
-                                   g_param_spec_boolean ("busy",
-                                                         "Busy",
-                                                         "Busy state",
-                                                         FALSE,
-                                                         G_PARAM_READABLE));
-
-  /**
-   * CinnamonApp:id:
-   *
-   * The id of this application (a desktop filename, or a special string
-   * like window:0xabcd1234)
-   */
-  g_object_class_install_property (gobject_class,
-                                   PROP_ID,
-                                   g_param_spec_string ("id",
-                                                        "Application id",
-                                                        "The desktop file id of this CinnamonApp",
-                                                        NULL,
-                                                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
-
-  /**
-   * CinnamonApp:action-group:
-   *
-   * The #GDBusActionGroup associated with this CinnamonApp, if any. See the
-   * documentation of #GApplication and #GActionGroup for details.
-   */
-  g_object_class_install_property (gobject_class,
-                                   PROP_ACTION_GROUP,
-                                   g_param_spec_object ("action-group",
-                                                        "Application Action Group",
-                                                        "The action group exported by the remote application",
-                                                        G_TYPE_ACTION_GROUP,
-                                                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
-  /**
-   * CinnamonApp:menu:
-   *
-   * The #GMenuProxy associated with this CinnamonApp, if any. See the
-   * documentation of #GMenuModel for details.
-   */
-  g_object_class_install_property (gobject_class,
-                                   PROP_MENU,
-                                   g_param_spec_object ("menu",
-                                                        "Application Menu",
-                                                        "The primary menu exported by the remote application",
-                                                        G_TYPE_MENU_MODEL,
-                                                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
-
-    /**
-   * CinnamonApp:app-info:
-   *
-   * The #GDesktopAppInfo associated with this CinnamonApp, if any.
-   */
-  g_object_class_install_property (gobject_class,
-                                   PROP_APP_INFO,
-                                   g_param_spec_object ("app-info",
-                                                        "DesktopAppInfo",
-                                                        "The DesktopAppInfo associated with this app",
-                                                        G_TYPE_DESKTOP_APP_INFO,
-                                                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS));
-
-
-
 }

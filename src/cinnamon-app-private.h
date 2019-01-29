@@ -12,15 +12,20 @@ G_BEGIN_DECLS
 
 CinnamonApp* _cinnamon_app_new_for_window (MetaWindow *window);
 
-CinnamonApp* _cinnamon_app_new (GDesktopAppInfo *info);
+CinnamonApp* _cinnamon_app_new (GMenuTreeEntry *entry);
 
-void _cinnamon_app_set_app_info (CinnamonApp *app, GDesktopAppInfo *info);
+void _cinnamon_app_set_entry (CinnamonApp *app, GMenuTreeEntry *entry);
 
 void _cinnamon_app_handle_startup_sequence (CinnamonApp *app, SnStartupSequence *sequence);
 
 void _cinnamon_app_add_window (CinnamonApp *app, MetaWindow *window);
 
 void _cinnamon_app_remove_window (CinnamonApp *app, MetaWindow *window);
+
+void _cinnamon_app_do_match (CinnamonApp         *app,
+                          GSList           *terms,
+                          GSList          **prefix_results,
+                          GSList          **substring_results);
 
 G_END_DECLS
 
