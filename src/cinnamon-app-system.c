@@ -53,6 +53,7 @@ struct _CinnamonAppSystemPrivate {
 };
 
 static void cinnamon_app_system_finalize (GObject *object);
+gchar *strip_extension (gchar *wm_class);
 gboolean case_insensitive_search (const char *key,
                                   const char *value,
                                   gpointer user_data);
@@ -356,6 +357,19 @@ cinnamon_app_system_lookup_heuristic_basename (CinnamonAppSystem *system,
   return NULL;
 }
 
+gchar *
+strip_extension (gchar *wm_class)
+{
+    char *result;
+    if (g_str_has_suffix (wm_class, ".py") ||
+        g_str_has_suffix (wm_class, ".sh")) {
+            result = g_strndup (wm_class, strlen (wm_class) - 3);
+    } else {
+        result = g_strdup (wm_class);
+    }
+    return result;
+}
+
 /**
  * cinnamon_app_system_lookup_desktop_wmclass:
  * @system: a #CinnamonAppSystem
@@ -372,6 +386,7 @@ cinnamon_app_system_lookup_desktop_wmclass (CinnamonAppSystem *system,
 {
   char *canonicalized;
   char *desktop_file;
+  char *stripped_name;
   CinnamonApp *app;
 
   if (wmclass == NULL)
@@ -386,15 +401,18 @@ cinnamon_app_system_lookup_desktop_wmclass (CinnamonAppSystem *system,
 
   canonicalized = g_ascii_strdown (wmclass, -1);
 
+  stripped_name = strip_extension(canonicalized);
+
   /* This handles "Fedora Eclipse", probably others.
    * Note g_strdelimit is modify-in-place. */
-  g_strdelimit (canonicalized, " ", '-');
+  g_strdelimit (stripped_name, " ", '-');
 
-  desktop_file = g_strconcat (canonicalized, ".desktop", NULL);
+  desktop_file = g_strconcat (stripped_name, ".desktop", NULL);
 
   app = cinnamon_app_system_lookup_heuristic_basename (system, desktop_file);
 
   g_free (canonicalized);
+  g_free (stripped_name);
   g_free (desktop_file);
 
   return app;
