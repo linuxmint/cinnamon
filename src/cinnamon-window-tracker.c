@@ -659,12 +659,7 @@ CinnamonApp *
 cinnamon_window_tracker_get_window_app (CinnamonWindowTracker *tracker,
                                      MetaWindow         *metawin)
 {
-  MetaWindow *transient_for;
   CinnamonApp *app;
-
-  transient_for = meta_window_get_transient_for (metawin);
-  if (transient_for != NULL)
-    metawin = transient_for;
 
   app = g_hash_table_lookup (tracker->window_to_app, metawin);
   if (app)
