@@ -120,6 +120,8 @@ cinnamon_app_set_property (GObject      *gobject,
 
   switch (prop_id)
     {
+    case PROP_ID:
+      break;
     case PROP_APP_INFO:
       _cinnamon_app_set_app_info (app, g_value_get_object (value));
       break;
@@ -1291,7 +1293,7 @@ cinnamon_app_class_init(CinnamonAppClass *klass)
                                                         "Application id",
                                                         "The desktop file id of this CinnamonApp",
                                                         NULL,
-                                                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+                                                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
     /**
    * CinnamonApp:app-info:
