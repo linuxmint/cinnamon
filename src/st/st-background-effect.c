@@ -141,7 +141,7 @@ st_background_effect_pre_paint (ClutterEffect *effect)
         rowstride = (self->bg_width_i) * 4;
 
 
-        data = g_malloc (size);
+        data = malloc (size);
 
         cogl_read_pixels (self->bg_posx_i,
                           self->bg_posy_i,

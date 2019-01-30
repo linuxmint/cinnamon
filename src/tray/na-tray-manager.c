@@ -447,7 +447,7 @@ na_tray_manager_handle_begin_message (NaTrayManager       *manager,
       msg->len = len;
       msg->id = id;
       msg->remaining_len = msg->len;
-      msg->str = g_malloc (msg->len + 1);
+      msg->str = malloc (msg->len + 1);
       msg->str[msg->len] = '\0';
       manager->messages = g_list_prepend (manager->messages, msg);
     }

@@ -277,7 +277,7 @@ calculate_gaussian_kernel (float   sigma,
 
   half = n_values / 2;
 
-  ret = g_malloc (n_values * sizeof (gdouble));
+  ret = malloc (n_values * sizeof (gdouble));
   sum = 0.0;
 
   exp_divisor = 2 * sigma * sigma;
