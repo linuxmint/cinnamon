@@ -589,23 +589,16 @@ var WindowManager = class WindowManager {
             return false;
         }
 
-        const desktopEffects = this.settingsState['desktop-effects'];
-
-        if (!actor) return desktopEffects;
-
-        const desktopEffectsOnDialogs = this.settingsState['desktop-effects-on-dialogs'];
-        const desktopEffectsOnMenus = this.settingsState['desktop-effects-on-menus'];
-
         switch (actor.meta_window.window_type) {
             case WindowType.NORMAL:
-                return desktopEffects;
+                return true;
             case WindowType.DIALOG:
             case WindowType.MODAL_DIALOG:
-                return desktopEffects && desktopEffectsOnDialogs;
+                return this.settingsState['desktop-effects-on-dialogs'];
             case WindowType.MENU:
             case WindowType.DROPDOWN_MENU:
             case WindowType.POPUP_MENU:
-                return desktopEffects && desktopEffectsOnMenus;
+                return this.settingsState['desktop-effects-on-menus'];
             default:
                 return false;
         }
@@ -613,7 +606,7 @@ var WindowManager = class WindowManager {
 
     _startWindowEffect(cinnamonwm, name, actor, args, overwriteKey) {
         let effect = this.effects[name];
-        if (!this._shouldAnimate(actor)) {
+        if (!this.settingsState['desktop-effects'] || !this._shouldAnimate(actor)) {
             cinnamonwm[effect.wmCompleteName](actor);
             return;
         }
@@ -815,7 +808,7 @@ var WindowManager = class WindowManager {
     }
 
     _switchWorkspace(cinnamonwm, from, to, direction) {
-        if (!this._shouldAnimate()) {
+        if (!this.settingsState['desktop-effects'] || Main.modalCount || Main.software_rendering) {
             this.showWorkspaceOSD();
             cinnamonwm.completed_switch_workspace();
             return;
