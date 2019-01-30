@@ -313,7 +313,7 @@ out:
   g_object_unref (child);
 
   /* Free it since we tell the caller to stop calling us by returning FALSE */
-  g_free (packet);
+  free (packet);
   return FALSE;
 }
 
@@ -350,8 +350,8 @@ na_tray_manager_handle_dock_request (NaTrayManager       *manager,
 static void
 pending_message_free (PendingMessage *message)
 {
-  g_free (message->str);
-  g_free (message);
+  free (message->str);
+  free (message);
 }
 
 static void
@@ -750,7 +750,7 @@ na_tray_manager_manage_screen_x11 (NaTrayManager *manager,
   selection_atom_name = g_strdup_printf ("_NET_SYSTEM_TRAY_S%d",
 					 gdk_screen_get_number (screen));
   manager->selection_atom = gdk_atom_intern (selection_atom_name, FALSE);
-  g_free (selection_atom_name);
+  free (selection_atom_name);
 
   manager->invisible = invisible;
   g_object_ref (G_OBJECT (manager->invisible));
@@ -853,7 +853,7 @@ na_tray_manager_check_running_screen_x11 (GdkScreen *screen)
                                          gdk_screen_get_number (screen));
   selection_atom = gdk_x11_get_xatom_by_name_for_display (display,
                                                           selection_atom_name);
-  g_free (selection_atom_name);
+  free (selection_atom_name);
 
   if (XGetSelectionOwner (GDK_DISPLAY_XDISPLAY (display),
                           selection_atom) != None)

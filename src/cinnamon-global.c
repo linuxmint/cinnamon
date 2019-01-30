@@ -234,7 +234,7 @@ cinnamon_global_init (CinnamonGlobal *global)
     global->imagedir = imagedir;
   else
     {
-      g_free (imagedir);
+      free (imagedir);
       global->imagedir = g_strdup_printf ("%s/", datadir);
     }
 
@@ -771,7 +771,7 @@ cinnamon_global_set_stage_input_region (CinnamonGlobal *global,
     XFixesDestroyRegion (global->xdisplay, global->input_region);
 
   global->input_region = XFixesCreateRegion (global->xdisplay, rects, nrects);
-  g_free (rects);
+  free (rects);
 
   /* set_stage_input_mode() will figure out whether or not we
    * should actually change the input region right now.

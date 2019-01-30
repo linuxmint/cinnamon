@@ -258,7 +258,7 @@ get_app_from_gapplication_id (MetaWindow  *window)
   if (app)
     g_object_ref (app);
 
-  g_free (desktop_file);
+  free (desktop_file);
   return app;
 }
 

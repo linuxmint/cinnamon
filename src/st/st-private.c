@@ -186,7 +186,7 @@ _st_set_text_from_style (ClutterText *text,
   font = st_theme_node_get_font (theme_node);
   font_string = pango_font_description_to_string (font);
   clutter_text_set_font_name (text, font_string);
-  g_free (font_string);
+  free (font_string);
 
   decoration = st_theme_node_get_text_decoration (theme_node);
 
@@ -394,8 +394,8 @@ blur_pixels (guchar  *pixels_in,
                 }
             }
         }
-      g_free (kernel);
-      g_free (line);
+      free (kernel);
+      free (line);
     }
 
   return pixels_out;
@@ -428,7 +428,7 @@ _st_create_shadow_pipeline (StShadow     *shadow_spec,
   pixels_out = blur_pixels (pixels_in, width_in, height_in, rowstride_in,
                             shadow_spec->blur,
                             &width_out, &height_out, &rowstride_out);
-  g_free (pixels_in);
+  free (pixels_in);
 
   texture = st_cogl_texture_new_from_data_wrapper (width_out, height_out,
                                                    COGL_TEXTURE_NONE,
@@ -437,7 +437,7 @@ _st_create_shadow_pipeline (StShadow     *shadow_spec,
                                                    rowstride_out,
                                                    pixels_out);
 
-  g_free (pixels_out);
+  free (pixels_out);
 
   if (G_UNLIKELY (shadow_pipeline_template == NULL))
     {
@@ -625,7 +625,7 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
                                                      height_out,
                                                      rowstride_out);
   cairo_surface_set_user_data (surface_out, &shadow_pattern_user_data,
-                               pixels_out, (cairo_destroy_func_t) g_free);
+                               pixels_out, (cairo_destroy_func_t) free);
 
   dst_pattern = cairo_pattern_create_for_surface (surface_out);
   cairo_surface_destroy (surface_out);

@@ -168,7 +168,7 @@ st_background_effect_pre_paint (ClutterEffect *effect)
                                                                        rowstride,
                                                                        data);
 
-            g_free (data);
+            free (data);
 
           }
       }
@@ -485,7 +485,7 @@ st_background_effect_class_init (StBackgroundEffectClass *klass)
   gobject_class->set_property = st_background_effect_set_property;
   gobject_class->get_property = st_background_effect_get_property;
   gobject_class->dispose = st_background_effect_dispose;
-  
+
   offscreen_class = CLUTTER_OFFSCREEN_EFFECT_CLASS (klass);
   offscreen_class->paint_target = st_background_effect_paint_target;
 
@@ -508,11 +508,11 @@ st_background_effect_init (StBackgroundEffect *self)
 
   if (G_UNLIKELY (klass->base_pipeline == NULL))
     {
-      ctx = clutter_backend_get_cogl_context (clutter_get_default_backend ());
+      ctx = st_get_cogl_context ();
 
       klass->base_pipeline = cogl_pipeline_new (ctx);
     }
-    
+
   self->pipeline0 = cogl_pipeline_copy (klass->base_pipeline);
   self->pipeline1 = cogl_pipeline_copy (klass->base_pipeline);
   self->pipeline2 = cogl_pipeline_copy (klass->base_pipeline);
@@ -601,7 +601,7 @@ st_background_effect_init (StBackgroundEffect *self)
   cogl_pipeline_set_layer_null_texture (self->pipeline3,
                                         0,
                                         COGL_TEXTURE_TYPE_2D);
-  
+
   cogl_pipeline_set_layer_null_texture (self->pipeline4,
                                         0,
                                         COGL_TEXTURE_TYPE_2D);
@@ -649,7 +649,7 @@ st_background_effect_init (StBackgroundEffect *self)
   cogl_pipeline_set_alpha_test_function (self->pipeline3,
                                          COGL_PIPELINE_ALPHA_FUNC_GEQUAL,
                                          0.004f);
-    
+
   cogl_pipeline_set_color_mask (self->pipeline3,
                                 COGL_COLOR_MASK_ALL);
 
@@ -660,7 +660,7 @@ st_background_effect_init (StBackgroundEffect *self)
   cogl_pipeline_set_alpha_test_function (self->pipeline4,
                                          COGL_PIPELINE_ALPHA_FUNC_GEQUAL,
                                          0.004f);
-    
+
   cogl_pipeline_set_color_mask (self->pipeline4,
                                 COGL_COLOR_MASK_ALL);
 

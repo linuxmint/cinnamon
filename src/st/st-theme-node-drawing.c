@@ -173,7 +173,7 @@ create_corner_material (StCornerSpec *corner)
                                                    rowstride,
                                                    data);
 
-  g_free (data);
+  free (data);
 
   return texture;
 }
@@ -397,7 +397,7 @@ st_theme_node_lookup_corner (StThemeNode    *node,
       cogl_handle_unref (texture);
     }
 
-  g_free (key);
+  free (key);
 
   return material;
 }
@@ -1273,7 +1273,7 @@ st_theme_node_prerender_background (StThemeNode *node)
 
   cairo_destroy (cr);
   cairo_surface_destroy (surface);
-  g_free (data);
+  free (data);
 
   return texture;
 }

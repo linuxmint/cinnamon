@@ -553,7 +553,7 @@ cinnamon_app_activate_full (CinnamonApp      *app,
               cinnamon_global_notify_error (global,
                                          msg,
                                          error->message);
-              g_free (msg);
+              free (msg);
               g_clear_error (&error);
             }
         }
@@ -1124,7 +1124,7 @@ cinnamon_app_dispose (GObject *object)
   while (app->running_state)
     _cinnamon_app_remove_window (app, app->running_state->windows->data);
 
-  g_clear_pointer (&app->keywords, g_free);
+  g_clear_pointer (&app->keywords, free);
 
   G_OBJECT_CLASS(cinnamon_app_parent_class)->dispose (object);
 }
@@ -1134,7 +1134,7 @@ cinnamon_app_finalize (GObject *object)
 {
   CinnamonApp *app = CINNAMON_APP (object);
 
-  g_free (app->window_id_string);
+  free (app->window_id_string);
 
   G_OBJECT_CLASS(cinnamon_app_parent_class)->finalize (object);
 }
