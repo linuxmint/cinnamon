@@ -93,6 +93,25 @@ STANDALONE_MODULES = [
     [_("Manage Services and Units"),     "systemd-manager-pkexec",              "cs-sources",         "admin",          _("systemd, units, services, systemctl, init")]
 ]
 
+TABS = {
+    # KEY (cs_KEY.py): {"tab_name": tab_number, ... }
+    "accessibility":{"visual": 0, "keyboard": 1, "typing": 2, "mouse": 3},
+    "applets":      {"installed": 0, "more": 1},
+    "backgrounds":  {"images": 0, "settings": 1},
+    "default":      {"preferred": 0, "removable": 1},
+    "desklets":     {"installed": 0, "more": 1, "general": 2},
+    "effects":      {"effects": 0, "customize": 1},
+    "extensions":   {"installed": 0, "more": 1},
+    "keyboard":     {"typing": 0, "shortcuts": 1, "layouts": 2},
+    "mouse":        {"mouse": 0, "touchpad": 1},
+    "power":        {"power": 0, "batteries": 1, "brightness": 2},
+    "screensaver":  {"settings": 0, "customize": 1},
+    "sound":        {"output": 0, "input": 1, "sounds": 2, "applications": 3, "settings": 4},
+    "themes":       {"themes": 0, "download": 1, "options": 2},
+    "windows":      {"titlebar": 0, "behavior": 1, "alttab": 2},
+    "workspaces":   {"osd": 0, "settings": 1}
+}
+
 def print_timing(func):
     # decorate functions with @print_timing to output how long they take to run.
     def wrapper(*arg):
@@ -343,43 +362,16 @@ class MainWindow:
             opts = []
             sorts_literal = {"name":0, "score":1, "date":2, "installed":3}
             arg1 = sys.argv[1]
-            if arg1 == "accessibility":
-                tabs_literal = {"visual": 0, "keyboard": 1, "typing": 2, "mouse": 3}
-            elif arg1 == "applets":
-                tabs_literal = {"installed": 0, "more": 1}
-            elif arg1 == "backgrounds":
-                tabs_literal = {"images": 0, "settings": 1}
-            elif arg1 == "default":
-                tabs_literal = {"preferred": 0, "removable": 1}
-            elif arg1 == "desklets":
-                tabs_literal = {"installed": 0, "more": 1, "general": 2}
-            elif arg1 == "effects":
-                tabs_literal = {"effects": 0, "customize": 1}
-            elif arg1 == "extensions":
-                tabs_literal = {"installed": 0, "more": 1}
-            elif arg1 == "keyboard":
-                tabs_literal = {"typing": 0, "shortcuts": 1, "layouts": 2}
-            elif arg1 == "mouse":
-                tabs_literal = {"mouse": 0, "touchpad": 1}
-            elif arg1 == "power":
-                tabs_literal = {"power": 0, "batteries": 1, "brightness": 2}
-            elif arg1 == "screensaver":
-                tabs_literal = {"settings": 0, "customize": 1}
-            elif arg1 == "sound":
-                tabs_literal = {"output": 0, "input": 1, "sounds": 2, "applications": 3,
-                                "settings": 4}
-            elif arg1 == "themes":
-                tabs_literal = {"themes": 0, "download": 1, "options": 2}
-            elif arg1 == "windows":
-                tabs_literal = {"titlebar": 0, "behavior": 1, "alttab": 2}
-            elif arg1 == "workspaces":
-                tabs_literal = {"osd": 0, "settings": 1}
+            tabs_literal = {"default":0}
+            if arg1 in TABS.keys():
+                tabs_literal = TABS[arg1]
 
             try:
                 if len(sys.argv) > 2:
                     opts = getopt.getopt(sys.argv[2:], "t:s:", ["tab=", "sort="])[0]
             except getopt.GetoptError:
                 pass
+
             for opt, arg in opts:
                 if opt in ("-t", "--tab"):
                     if arg.isdecimal():
