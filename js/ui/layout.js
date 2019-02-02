@@ -694,6 +694,10 @@ Chrome.prototype = {
     },
 
     _windowsRestacked: function() {
+        // Figure out where the pointer is in case we lost track of
+        // it during a grab.
+        global.sync_pointer();
+
         let isPopupWindowVisible = global.top_window_group.get_children().some(isPopupMetaWindow);
         let popupVisibilityChanged = this._isPopupWindowVisible !== isPopupWindowVisible;
         this._isPopupWindowVisible = isPopupWindowVisible;
