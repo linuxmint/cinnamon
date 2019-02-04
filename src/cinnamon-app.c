@@ -71,7 +71,6 @@ struct _CinnamonApp
   char *window_id_string;
 
   char *casefolded_name;
-  char *name_collation_key;
   char *casefolded_description;
   char *casefolded_exec;
   char *keywords;
@@ -875,10 +874,6 @@ _cinnamon_app_set_entry (CinnamonApp       *app,
   if (entry && app->info == NULL)
     app->info = g_object_ref (gmenu_tree_entry_get_app_info (entry));
   app->entry = entry;
-
-  if (app->name_collation_key != NULL)
-    g_free (app->name_collation_key);
-  app->name_collation_key = g_utf8_collate_key (cinnamon_app_get_name (app), -1);
 }
 
 static void
@@ -1264,22 +1259,6 @@ cinnamon_app_init_search_data (CinnamonApp *app)
   g_free (normalized_exec);
 }
 
-/**
- * cinnamon_app_compare_by_name:
- * @app: One app
- * @other: The other app
- *
- * Order two applications by name.
- *
- * Returns: -1, 0, or 1; suitable for use as a comparison function
- * for e.g. g_slist_sort()
- */
-int
-cinnamon_app_compare_by_name (CinnamonApp *app, CinnamonApp *other)
-{
-  return strcmp (app->name_collation_key, other->name_collation_key);
-}
-
 static CinnamonAppSearchMatch
 _cinnamon_app_match_search_terms (CinnamonApp  *app,
                                GSList    *terms)
@@ -1416,7 +1395,6 @@ cinnamon_app_finalize (GObject *object)
   g_free (app->window_id_string);
 
   g_free (app->casefolded_name);
-  g_free (app->name_collation_key);
   g_free (app->casefolded_description);
   g_free (app->casefolded_exec);
 
