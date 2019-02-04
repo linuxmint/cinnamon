@@ -462,12 +462,6 @@ get_app_for_window (CinnamonWindowTracker    *tracker,
   return result;
 }
 
-const char *
-_cinnamon_window_tracker_get_app_context (CinnamonWindowTracker *tracker, CinnamonApp *app)
-{
-  return "";
-}
-
 static void
 update_focus_app (CinnamonWindowTracker *self)
 {
@@ -729,7 +723,7 @@ cinnamon_window_tracker_get_window_app (CinnamonWindowTracker *tracker,
  * Returns: (transfer none): A #CinnamonApp, or %NULL if none
  */
 CinnamonApp *
-cinnamon_window_tracker_get_app_from_pid (CinnamonWindowTracker *self, 
+cinnamon_window_tracker_get_app_from_pid (CinnamonWindowTracker *self,
                                        int                 pid)
 {
   GSList *running = cinnamon_app_system_get_running (cinnamon_app_system_get_default());
@@ -874,6 +868,7 @@ CinnamonApp *
 cinnamon_startup_sequence_get_app (CinnamonStartupSequence *sequence)
 {
   const char *appid;
+  char *basename;
   CinnamonAppSystem *appsys;
   CinnamonApp *app;
 
@@ -881,8 +876,10 @@ cinnamon_startup_sequence_get_app (CinnamonStartupSequence *sequence)
   if (!appid)
     return NULL;
 
+  basename = g_path_get_basename (appid);
   appsys = cinnamon_app_system_get_default ();
-  app = cinnamon_app_system_lookup_app_for_path (appsys, appid);
+  app = cinnamon_app_system_lookup_app (appsys, basename);
+  g_free (basename);
   return app;
 }
 

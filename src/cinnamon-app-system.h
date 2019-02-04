@@ -43,19 +43,6 @@ GMenuTree      *cinnamon_app_system_get_tree                     (CinnamonAppSys
 
 CinnamonApp       *cinnamon_app_system_lookup_app                   (CinnamonAppSystem  *system,
                                                                const char      *id);
-CinnamonApp       *cinnamon_app_system_lookup_settings_app          (CinnamonAppSystem  *system,
-                                                               const char      *id);
-
-
-CinnamonApp       *cinnamon_app_system_lookup_app_by_tree_entry     (CinnamonAppSystem  *system,
-                                                               GMenuTreeEntry  *entry);
-CinnamonApp       *cinnamon_app_system_lookup_settings_app_by_tree_entry     (CinnamonAppSystem  *system,
-                                                               GMenuTreeEntry  *entry);
-CinnamonApp       *cinnamon_app_system_lookup_app_for_path          (CinnamonAppSystem  *system,
-                                                               const char      *desktop_path);
-CinnamonApp       *cinnamon_app_system_lookup_heuristic_basename    (CinnamonAppSystem  *system,
-                                                               const char      *id);
-
 CinnamonApp       *cinnamon_app_system_lookup_startup_wmclass       (CinnamonAppSystem *system,
                                                                      const char     *wmclass);
 CinnamonApp       *cinnamon_app_system_lookup_desktop_wmclass       (CinnamonAppSystem *system,
@@ -65,16 +52,5 @@ CinnamonApp       *cinnamon_app_system_lookup_desktop_wmclass       (CinnamonApp
 GSList         *cinnamon_app_system_get_all                   (CinnamonAppSystem  *system);
 
 GSList         *cinnamon_app_system_get_running               (CinnamonAppSystem  *self);
-
-GSList         *cinnamon_app_system_initial_search            (CinnamonAppSystem  *system,
-                                                            GSList          *terms);
-GSList         *cinnamon_app_system_subsearch                 (CinnamonAppSystem  *system,
-                                                            GSList          *previous_results,
-                                                            GSList          *terms);
-
-GSList         *cinnamon_app_system_search_settings           (CinnamonAppSystem *system,
-                                                            GSList         *terms);
-CinnamonApp       *cinnamon_app_system_lookup_setting            (CinnamonAppSystem *system,
-                                                            const char     *id);
 
 #endif /* __CINNAMON_APP_SYSTEM_H__ */

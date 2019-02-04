@@ -1204,110 +1204,6 @@ symbolic_name_for_icon (const char *name)
     return g_strdup_printf ("%s-symbolic", name);
 }
 
-typedef struct {
-  char *name;
-  int size;
-  int scale;
-} CreateFadedIconData;
-
-static CoglTexture *
-create_faded_icon_cpu (StTextureCache *cache,
-                                 const char     *key,
-                                 void           *datap,
-                                 GError        **error)
-{
-  CreateFadedIconData *data = datap;
-  char *name;
-  GdkPixbuf *pixbuf;
-  int size;
-  CoglTexture *texture;
-  guint width, height, rowstride;
-  guint8 n_channels;
-  gboolean have_alpha;
-  gint fade_start;
-  gint fade_range;
-  guint i, j;
-  guint pixbuf_byte_size;
-  guint8 *orig_pixels;
-  guint8 *pixels;
-  GIcon *icon;
-  GtkIconInfo *info;
-  gint scale;
-
-  name = data->name;
-  size = data->size;
-  scale = data->scale;
-
-  info = NULL;
-
-  icon = g_themed_icon_new (name);
-  if (icon != NULL)
-    {
-      info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
-                                             icon, size, scale,
-                                             GTK_ICON_LOOKUP_FORCE_SIZE);
-    }
-
-  if (info == NULL)
-    {
-      icon = g_themed_icon_new ("application-x-executable");
-      info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
-                                             icon, size, scale,
-                                             GTK_ICON_LOOKUP_FORCE_SIZE);
-      g_object_unref (icon);
-    }
-
-  if (info == NULL)
-    return NULL;
-
-  pixbuf = gtk_icon_info_load_icon (info, NULL);
-  g_object_unref (info);
-
-
-  if (pixbuf == NULL)
-    return NULL;
-
-  width = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
-  rowstride = gdk_pixbuf_get_rowstride (pixbuf);
-  n_channels = gdk_pixbuf_get_n_channels (pixbuf);
-  orig_pixels = gdk_pixbuf_get_pixels (pixbuf);
-  have_alpha = gdk_pixbuf_get_has_alpha (pixbuf);
-
-  pixbuf_byte_size = (height - 1) * rowstride +
-    + width * ((n_channels * gdk_pixbuf_get_bits_per_sample (pixbuf) + 7) / 8);
-
-  pixels = g_malloc0 (rowstride * height);
-  memcpy (pixels, orig_pixels, pixbuf_byte_size);
-
-  fade_start = width / 2;
-  fade_range = width - fade_start;
-  for (i = fade_start; i < width; i++)
-    {
-      for (j = 0; j < height; j++)
-        {
-          guchar *pixel = &pixels[j * rowstride + i * n_channels];
-          float fade = 1.0 - ((float) i - fade_start) / fade_range;
-          pixel[0] = 0.5 + pixel[0] * fade;
-          pixel[1] = 0.5 + pixel[1] * fade;
-          pixel[2] = 0.5 + pixel[2] * fade;
-          if (have_alpha)
-            pixel[3] = 0.5 + pixel[3] * fade;
-        }
-    }
-
-  texture = st_cogl_texture_new_from_data_wrapper (width, height,
-                                                   COGL_TEXTURE_NONE,
-                                                   have_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
-                                                   COGL_PIXEL_FORMAT_ANY,
-                                                   rowstride,
-                                                   pixels);
-  g_free (pixels);
-  g_object_unref (pixbuf);
-
-  return texture;
-}
-
 /**
  * st_texture_cache_load_icon_name:
  * @cache: The texture cache instance
@@ -1333,7 +1229,6 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
   CoglTexture *cogltexture;
   GIcon *themed;
   char *cache_key, *symbolic_name;
-  CreateFadedIconData data;
 
   g_return_val_if_fail (!(icon_type == ST_ICON_SYMBOLIC && theme_node == NULL), NULL);
 
@@ -1385,39 +1280,6 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
           g_object_unref (themed);
         }
 
-      return CLUTTER_ACTOR (texture);
-      break;
-    case ST_ICON_FADED:
-      themed = g_themed_icon_new (name);
-      cache_key = g_strdup_printf ("faded-icon:%s,size=%d,scale=%f", name, size, cache->priv->scale);
-      data.name = g_strdup (name);
-      data.size = size;
-      data.scale = cache->priv->scale;
-      cogltexture = st_texture_cache_load (st_texture_cache_get_default (),
-                                      cache_key,
-                                      ST_TEXTURE_CACHE_POLICY_FOREVER,
-                                      create_faded_icon_cpu,
-                                      &data,
-                                      NULL);
-      g_free (data.name);
-      g_free (cache_key);
-
-      if (cogltexture != NULL)
-      {
-        texture = clutter_texture_new ();
-        clutter_texture_set_cogl_texture (CLUTTER_TEXTURE (texture), cogltexture);
-      }
-      else
-      {
-        texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
-        g_object_unref (themed);
-        if (texture == NULL)
-        {
-          themed = g_themed_icon_new ("image-missing");
-          texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
-          g_object_unref (themed);
-        }
-      }
       return CLUTTER_ACTOR (texture);
       break;
     default:
