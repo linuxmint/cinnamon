@@ -46,8 +46,6 @@ CinnamonApp       *cinnamon_app_system_lookup_app                   (CinnamonApp
 
 CinnamonApp       *cinnamon_app_system_lookup_app_by_tree_entry     (CinnamonAppSystem  *system,
                                                                GMenuTreeEntry  *entry);
-CinnamonApp       *cinnamon_app_system_lookup_app_for_path          (CinnamonAppSystem  *system,
-                                                               const char      *desktop_path);
 CinnamonApp       *cinnamon_app_system_lookup_heuristic_basename    (CinnamonAppSystem  *system,
                                                                const char      *id);
 
