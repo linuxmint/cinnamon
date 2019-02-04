@@ -25,9 +25,8 @@ import JsonSettingsWidgets
 gettext.install("cinnamon", "/usr/share/locale")
 # i18n for menu item
 
-#_ = gettext.gettext # bug !!! _ is already defined by gettext.install!
-home = os.path.expanduser("~")
-PANEL_LAUNCHER_PATH = os.path.join(home, ".cinnamon", "panel-launchers")
+xdg_config_home = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
+PANEL_LAUNCHER_PATH = os.path.join(xdg_config_home, "cinnamon", "panel-launchers")
 
 EXTENSIONS = (".png", ".xpm", ".svg")
 

@@ -10,7 +10,7 @@ const Desklet = imports.ui.desklet;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
 
-const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers/';
+const CUSTOM_LAUNCHERS_PATH = GLib.get_user_config_dir() + '/cinnamon/panel-launchers/';
 
 const ICON_SIZE = 48;
 const ANIM_ICON_SIZE = 40;

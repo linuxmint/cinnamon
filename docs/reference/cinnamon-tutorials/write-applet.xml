@@ -34,7 +34,7 @@
       </listitem>
     </itemizedlist>
     <para>
-      Applets go in <code>~/.local/share/cinnamon/applets</code> (or in <code>/usr/share/cinnamon/applets</code> if you want them installed system-wide). So let’s go there and let’s create the files and folders necessary for any Cinnamon applet.
+      Applets go in <code>$XDG_DATA_HOME/cinnamon/applets</code>, defaulting to <code>~/.local/share/<code/> as per the XDG Base Directory Specification (or in <code>/usr/share/cinnamon/applets</code> if you want them installed system-wide). So let’s go there and let’s create the files and folders necessary for any Cinnamon applet.
     </para>
 
     <screen>

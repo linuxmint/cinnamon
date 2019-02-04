@@ -28,6 +28,8 @@ try:
 except ImportError:
     import simplejson as json
 
+from os import.path import join as j
+
 home = os.path.expanduser("~")
 xdg_data_home = os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
 locale_inst = '%s/.local/share/locale' % home
@@ -156,7 +158,7 @@ class Spice_Harvester(GObject.Object):
         self.total_jobs = 0
         self.download_total_files = 0
         self.download_current_file = 0
-        self.cache_folder = '%s/.cinnamon/spices.cache/%s/' % (home, self.collection_type)
+        self.cache_folder = os.path.join(xdg_config_home, "cinnamon", "spices.cache", self.collection_types)
 
         if self.themes:
             self.settings = Gio.Settings.new('org.cinnamon.theme')
@@ -170,7 +172,7 @@ class Spice_Harvester(GObject.Object):
             self.install_folder = os.path.join(xdg_data_home, 'themes')
             self.spices_directories = (self.install_folder)
         else:
-            self.install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
+            self.install_folder = os.path.join(xdg_data_home, "cinnamon", self.collection_type + "s")
             self.spices_directories = ('/usr/share/cinnamon/%ss/' % self.collection_type, self.install_folder)
 
         self._load_metadata()

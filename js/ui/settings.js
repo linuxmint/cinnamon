@@ -675,7 +675,7 @@ XletSettingsBase.prototype = {
     },
 
     _ensureSettingsFiles: function() {
-        let configPath = [GLib.get_home_dir(), ".cinnamon", "configs", this.uuid].join("/");
+        let configPath = [GLib.get_user_settings_dir(), "cinnamon", "configs", this.uuid].join("/");
         let configDir = Gio.file_new_for_path(configPath);
         if (!configDir.query_exists(null)) configDir.make_directory_with_parents(null);
         this.file = configDir.get_child(this.instanceId + ".json");

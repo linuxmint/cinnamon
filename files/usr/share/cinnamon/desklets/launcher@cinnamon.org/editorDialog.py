@@ -11,8 +11,8 @@ from gi.repository import Gtk, Gio
 SCHEMAS = "org.cinnamon.desklets.launcher"
 LAUNCHER_KEY = "launcher-list"
 
-HOME_DIR = os.path.expanduser("~")+"/"
-CUSTOM_LAUNCHERS_PATH = HOME_DIR + ".cinnamon/panel-launchers/"
+xdg_config_home = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
+CUSTOM_LAUNCHERS_PATH = os.path.join(xdg_config_home, "cinnamon", "panel-launchers/")
 EDITOR_DIALOG_UI_PATH = "/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui"
 
 class EditorDialog:

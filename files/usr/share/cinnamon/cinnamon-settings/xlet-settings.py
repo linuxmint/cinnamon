@@ -4,6 +4,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
 
+import os
 import sys
 from setproctitle import setproctitle
 import config
@@ -20,7 +21,8 @@ from gi.repository import Gtk, Gio, XApp
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
 
-home = os.path.expanduser("~")
+xdg_config_home = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
+xdg_data_home = os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
 
 translations = {}
 
@@ -61,7 +63,7 @@ def translate(uuid, string):
     #check for a translation for this xlet
     if uuid not in translations:
         try:
-            translations[uuid] = gettext.translation(uuid, home + "/.local/share/locale").gettext
+            translations[uuid] = gettext.translation(uuid, os.path.join(xdg_data_home, "locale")).gettext
         except IOError:
             try:
                 translations[uuid] = gettext.translation(uuid, "/usr/share/locale").gettext
@@ -170,7 +172,7 @@ class MainWindow(object):
     def load_xlet_data (self):
         self.xlet_dir = "/usr/share/cinnamon/%ss/%s" % (self.type, self.uuid)
         if not os.path.exists(self.xlet_dir):
-            self.xlet_dir = "%s/.local/share/cinnamon/%ss/%s" % (home, self.type, self.uuid)
+            self.xlet_dir = os.path.join(xdg_data_home, "cinnamon", self.type, self.uuid)
 
         if os.path.exists("%s/metadata.json" % self.xlet_dir):
             raw_data = open("%s/metadata.json" % self.xlet_dir).read()
@@ -264,7 +266,7 @@ class MainWindow(object):
 
     def load_instances(self):
         self.instance_info = []
-        path = "%s/.cinnamon/configs/%s" % (home, self.uuid)
+        path = os.path.join(xdg_config_home, "cinnamon", "configs", self.uuid)
         instances = 0
         dir_items = sorted(os.listdir(path))
         try:

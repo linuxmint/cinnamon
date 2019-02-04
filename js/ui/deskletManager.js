@@ -274,8 +274,8 @@ function _unloadDesklet(deskletDefinition, deleteConfig) {
 }
 
 function _removeDeskletConfigFile(uuid, instanceId) {
-    let config_path = (GLib.get_home_dir() + "/" +
-                               ".cinnamon" + "/" +
+    let config_path = (GLib.get_user_config_dir() + "/" +
+                               "cinnamon" + "/" +
                                  "configs" + "/" +
                                       uuid + "/" +
                                 instanceId + ".json");

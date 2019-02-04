@@ -69,7 +69,7 @@ class DeskletsViewSidePage(SidePage):
         settings.add_reveal_row(GSettingsSpinButton(_("Width of desklet snap grid"), "org.cinnamon", "desklet-snap-interval", "", 0, 100, 1, 5), "org.cinnamon", "desklet-snap")
 
 class ManageDeskletsPage(ManageSpicesPage):
-    directories = [("%s/.local/share/cinnamon/desklets") % GLib.get_home_dir(), "/usr/share/cinnamon/desklets"]
+    directories = [("%s/cinnamon/desklets") % GLib.get_user_data_dir(), "/usr/share/cinnamon/desklets"]
     collection_type = "desklet"
     installed_page_title = _("Installed desklets")
     instance_button_text = _("Add")

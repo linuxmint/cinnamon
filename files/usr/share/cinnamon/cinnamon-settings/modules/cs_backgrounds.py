@@ -26,6 +26,8 @@ from GSettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
 
+xdg_config_home = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
+
 BACKGROUND_COLOR_SHADING_TYPES = [
     ("solid", _("Solid color")),
     ("horizontal", _("Horizontal gradient")),
@@ -344,7 +346,7 @@ class Module:
 
     def get_user_backgrounds(self):
         self.user_backgrounds = []
-        path = os.path.expanduser("~/.cinnamon/backgrounds/user-folders.lst")
+        path = os.path.join(xdg_config_home, "cinnamon", "backgrounds", "user-folders.lst")
         if os.path.exists(path):
             with open(path) as f:
                 folders = f.readlines()
@@ -467,10 +469,10 @@ class Module:
                         break
 
     def update_folder_list(self):
-        path = os.path.expanduser("~/.cinnamon/backgrounds")
+        path = os.path.join(xdg_config_home, "cinnamon", "backgrounds")
         if not os.path.exists(path):
             os.makedirs(path, mode=0o755, exist_ok=True)
-        path = os.path.expanduser("~/.cinnamon/backgrounds/user-folders.lst")
+        path = os.path.expanduser(xdg_config_home, "cinnamon", "backgrounds", "user-folders.lst")
         if len(self.user_backgrounds) == 0:
             file_data = ""
         else:

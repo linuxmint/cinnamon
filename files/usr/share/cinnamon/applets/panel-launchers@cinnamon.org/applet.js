@@ -18,7 +18,7 @@ const SignalManager = imports.misc.signalManager;
 const PANEL_EDIT_MODE_KEY = 'panel-edit-mode';
 const PANEL_LAUNCHERS_KEY = 'panel-launchers';
 
-const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers';
+const CUSTOM_LAUNCHERS_PATH = GLib.get_user_config_dir() + '/cinnamon/panel-launchers';
 
 let pressLauncher = null;
 

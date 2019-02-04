@@ -333,7 +333,7 @@ function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false)
 }
 
 function _removeAppletConfigFile(uuid, instanceId) {
-    let config_path = (GLib.get_home_dir() + "/" +
+    let config_path = (GLib.get_user_config_dir() + "/" +
                                ".cinnamon" + "/" +
                                  "configs" + "/" +
                                       uuid + "/" +
@@ -590,7 +590,7 @@ function createApplet(extension, appletDefinition, panel = null) {
     applet.panel = panel;
     appletDefinition.applet = applet;
 
-    Gettext.bindtextdomain(applet._uuid, GLib.get_home_dir() + "/.local/share/locale");
+    Gettext.bindtextdomain(applet._uuid, GLib.get_user_data_dir() + "/locale");
 
     applet.finalizeContextMenu();
 

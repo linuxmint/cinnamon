@@ -6,7 +6,7 @@ import subprocess
 import collections
 import argparse
 
-LOCALE_DIR = os.path.join(os.path.expanduser('~'), '.local/share/locale')
+LOCALE_DIR = os.path.join(os.getenv('XDG_DATA_HOME', os.path.expanduser('~/.local/share')), 'locale')
 
 USAGE_DESCRIPTION = """\
 Parses files in an applet, desklet or extension's directories, \

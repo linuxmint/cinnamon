@@ -7,6 +7,8 @@ import sys
 
 CLI = sys.argv
 
+xdg_data_home = os.getenv('XDG_DATA_HOME', os.path.expanduser('~/.local/share'))
+
 def parse_args(command):
     return command.split(' ')
 
@@ -54,7 +56,7 @@ def handle_cli():
 
             # Since this is a window backed app, make sure it has an icon association.
 
-            icons_dir = '{}/.local/share/icons/hicolor/48x48/apps/'.format(os.getenv('HOME'))
+            icons_dir = '{}/icons/hicolor/48x48/apps/'.format(xdg_data_home)
 
             if '\\ ' in process_name:
                 process_name = process_name.replace('\\ ', ' ')
@@ -97,7 +99,7 @@ def handle_cli():
                           'application/x-msi;application/x-ms-shortcut; \n' \
 
             desktop_file = '{}.cinnamon-generated.desktop'.format(process_name)
-            desktop_path = '{}/.local/share/applications/{}'.format(os.getenv('HOME'), desktop_file)
+            desktop_path = os.path.join(xdg_data_home, 'applications', desktop_file)
 
             with open(desktop_path, 'w', encoding='utf-8') as desktop:
                 print(g_menu)

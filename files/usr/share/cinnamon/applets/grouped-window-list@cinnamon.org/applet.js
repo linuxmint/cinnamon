@@ -303,7 +303,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.actor.set_track_hover(false);
         // Declare vertical panel compatibility
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
-        Gettext.bindtextdomain(metadata.uuid, GLib.get_home_dir() + '/.local/share/locale');
+        Gettext.bindtextdomain(metadata.uuid, GLib.get_user_data_dir() + '/locale');
 
         this.getAutoStartApps();
         this.onSwitchWorkspace = throttle(this.onSwitchWorkspace, 100, true);

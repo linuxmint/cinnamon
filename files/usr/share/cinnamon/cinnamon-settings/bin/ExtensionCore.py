@@ -18,7 +18,7 @@ from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
 from SettingsWidgets import SidePage, SettingsStack, SettingsPage, SettingsWidget, SettingsLabel
 from Spices import Spice_Harvester, ThreadedTaskManager
 
-home = os.path.expanduser('~')
+xdg_data_home = os.getenv('XDG_DATA_HOME', os.path.expanduser('~/.local/share')
 
 SHOW_ALL = 0
 SHOW_ACTIVE = 1
@@ -61,7 +61,7 @@ def translate(uuid, string):
     #check for a translation for this xlet
     if uuid not in translations:
         try:
-            translations[uuid] = gettext.translation(uuid, home + '/.local/share/locale').gettext
+            translations[uuid] = gettext.translation(uuid, os.path.join(xdg_data_home, 'locale')).gettext
         except IOError:
             try:
                 translations[uuid] = gettext.translation(uuid, '/usr/share/locale').gettext
