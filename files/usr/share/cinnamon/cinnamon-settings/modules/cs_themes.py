@@ -130,14 +130,14 @@ class Module:
 
             self.builder = self.sidePage.builder
 
-            for path in [os.path.expanduser("~/.themes"), os.path.expanduser("~/.icons")]:
+            for path in ICON_FOLDERS[0] + THEME_FOLDERS[0]:
                 try:
                     os.makedirs(path)
                 except OSError:
                     pass
 
             self.monitors = []
-            for path in [os.path.expanduser("~/.themes"), "/usr/share/themes", os.path.expanduser("~/.icons"), "/usr/share/icons"]:
+            for path in ICON_FOLDERS + THEME_FOLDERS:
                 if os.path.exists(path):
                     file_obj = Gio.File.new_for_path(path)
                     try:
@@ -413,7 +413,7 @@ class Module:
         return res
 
     def update_cursor_theme_link(self, path, name):
-        default_dir = os.path.join(os.path.expanduser("~"), ".icons", "default")
+        default_dir = os.path.join(ICON_FOLDERS[0], "default")
         index_path = os.path.join(default_dir, "index.theme")
 
         try:

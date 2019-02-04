@@ -29,6 +29,7 @@ except ImportError:
     import simplejson as json
 
 home = os.path.expanduser("~")
+xdg_data_home = os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
 locale_inst = '%s/.local/share/locale' % home
 settings_dir = '%s/.cinnamon/configs/' % home
 
@@ -166,8 +167,8 @@ class Spice_Harvester(GObject.Object):
         self.settings.connect('changed::%s' % self.enabled_key, self._update_status)
 
         if self.themes:
-            self.install_folder = '%s/.themes/' % (home)
-            self.spices_directories = (self.install_folder, )
+            self.install_folder = os.path.join(xdg_data_home, 'themes')
+            self.spices_directories = (self.install_folder)
         else:
             self.install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
             self.spices_directories = ('/usr/share/cinnamon/%ss/' % self.collection_type, self.install_folder)
