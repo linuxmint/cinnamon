@@ -505,18 +505,12 @@ cinnamon_app_system_lookup_app (CinnamonAppSystem   *self,
 }
 
 /**
- * cinnamon_app_system_lookup_heuristic_basename:
- * @system: a #CinnamonAppSystem
- * @id: Probable application identifier
- *
  * Find a valid application corresponding to a given
  * heuristically determined application identifier
  * string, or %NULL if none.
- *
- * Returns: (transfer none): A #CinnamonApp for @name
  */
 CinnamonApp *
-cinnamon_app_system_lookup_heuristic_basename (CinnamonAppSystem *system,
+lookup_heuristic_basename (CinnamonAppSystem *system,
                                             const char     *name)
 {
   CinnamonApp *result;
@@ -583,7 +577,7 @@ cinnamon_app_system_lookup_desktop_wmclass (CinnamonAppSystem *system,
 
   desktop_file = g_strconcat (stripped_name, ".desktop", NULL);
 
-  app = cinnamon_app_system_lookup_heuristic_basename (system, desktop_file);
+  app = lookup_heuristic_basename (system, desktop_file);
 
   g_free (canonicalized);
   g_free (stripped_name);
