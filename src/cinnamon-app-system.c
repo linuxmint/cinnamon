@@ -659,8 +659,7 @@ _cinnamon_app_system_notify_app_state_changed (CinnamonAppSystem *self,
  * @self: A #CinnamonAppSystem
  *
  * Returns the set of applications which currently have at least one
- * open window in the given context.  The returned list will be sorted
- * by cinnamon_app_compare().
+ * open window in the given context.
  *
  * Returns: (element-type CinnamonApp) (transfer container): Active applications
  */
@@ -680,8 +679,6 @@ cinnamon_app_system_get_running (CinnamonAppSystem *self)
 
       ret = g_slist_prepend (ret, app);
     }
-
-  ret = g_slist_sort (ret, (GCompareFunc)cinnamon_app_compare);
 
   return ret;
 }

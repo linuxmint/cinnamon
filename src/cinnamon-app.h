@@ -80,8 +80,6 @@ gboolean cinnamon_app_launch (CinnamonApp     *app,
                            char        **startup_id,
                            GError      **error);
 
-int cinnamon_app_compare (CinnamonApp *app, CinnamonApp *other);
-
 G_END_DECLS
 
 #endif /* __CINNAMON_APP_H__ */

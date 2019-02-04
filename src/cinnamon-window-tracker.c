@@ -723,7 +723,7 @@ cinnamon_window_tracker_get_window_app (CinnamonWindowTracker *tracker,
  * Returns: (transfer none): A #CinnamonApp, or %NULL if none
  */
 CinnamonApp *
-cinnamon_window_tracker_get_app_from_pid (CinnamonWindowTracker *self, 
+cinnamon_window_tracker_get_app_from_pid (CinnamonWindowTracker *self,
                                        int                 pid)
 {
   GSList *running = cinnamon_app_system_get_running (cinnamon_app_system_get_default());
