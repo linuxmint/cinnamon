@@ -505,26 +505,6 @@ cinnamon_app_system_lookup_app (CinnamonAppSystem   *self,
 }
 
 /**
- * cinnamon_app_system_lookup_app_by_tree_entry:
- * @system: a #CinnamonAppSystem
- * @entry: a #GMenuTreeEntry
- *
- * Find a #CinnamonApp corresponding to a #GMenuTreeEntry.
- *
- * Return value: (transfer none): The #CinnamonApp for @entry, or %NULL if none
- */
-CinnamonApp *
-cinnamon_app_system_lookup_app_by_tree_entry (CinnamonAppSystem  *self,
-                                           GMenuTreeEntry  *entry)
-{
-  /* If we looked up directly in ->entry_to_app, we'd lose the
-   * override of running apps.  Thus, indirect through the id.
-   */
-  return cinnamon_app_system_lookup_app (self, gmenu_tree_entry_get_desktop_file_id (entry));
-}
-
-
-/**
  * cinnamon_app_system_lookup_heuristic_basename:
  * @system: a #CinnamonAppSystem
  * @id: Probable application identifier

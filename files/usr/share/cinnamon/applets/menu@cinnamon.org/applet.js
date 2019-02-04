@@ -2590,7 +2590,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 let appInfo = entry.get_app_info();
                 if (appInfo && !appInfo.get_nodisplay()) {
                     has_entries = true;
-                    let app = appsys.lookup_app_by_tree_entry(entry);
+                    let app = appsys.lookup_app(entry.get_desktop_file_id());
                     let app_key = app.get_id();
                     if (app_key == null) {
                         app_key = app.get_name() + ":" +

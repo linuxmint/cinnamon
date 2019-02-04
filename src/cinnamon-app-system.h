@@ -44,8 +44,6 @@ GMenuTree      *cinnamon_app_system_get_tree                     (CinnamonAppSys
 CinnamonApp       *cinnamon_app_system_lookup_app                   (CinnamonAppSystem  *system,
                                                                const char      *id);
 
-CinnamonApp       *cinnamon_app_system_lookup_app_by_tree_entry     (CinnamonAppSystem  *system,
-                                                               GMenuTreeEntry  *entry);
 CinnamonApp       *cinnamon_app_system_lookup_heuristic_basename    (CinnamonAppSystem  *system,
                                                                const char      *id);
 
