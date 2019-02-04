@@ -16,12 +16,6 @@
 #include "cinnamon-window-tracker-private.h"
 #include "st.h"
 
-typedef enum {
-  MATCH_NONE,
-  MATCH_SUBSTRING, /* Not prefix, substring */
-  MATCH_PREFIX, /* Strict prefix */
-} CinnamonAppSearchMatch;
-
 /* This is mainly a memory usage optimization - the user is going to
  * be running far fewer of the applications at one time than they have
  * installed.  But it also just helps keep the code more logically
@@ -67,9 +61,6 @@ struct _CinnamonApp
 
   char *window_id_string;
 
-  char *casefolded_name;
-  char *casefolded_description;
-  char *casefolded_exec;
   char *keywords;
 };
 
@@ -1129,143 +1120,6 @@ unref_running_state (CinnamonAppRunningState *state)
   g_slice_free (CinnamonAppRunningState, state);
 }
 
-static char *
-trim_exec_line (const char *str)
-{
-  const char *start, *end, *pos;
-
-  if (str == NULL)
-    return NULL;
-
-  end = strchr (str, ' ');
-  if (end == NULL)
-    end = str + strlen (str);
-
-  start = str;
-  while ((pos = strchr (start, '/')) && pos < end)
-    start = ++pos;
-
-  return g_strndup (start, end - start);
-}
-
-static void
-cinnamon_app_init_search_data (CinnamonApp *app)
-{
-  const char *name;
-  const char *exec;
-  const char *comment;
-  char *normalized_exec;
-  GDesktopAppInfo *appinfo;
-
-  appinfo = app->info;
-  name = g_app_info_get_name (G_APP_INFO (appinfo));
-  app->casefolded_name = cinnamon_util_normalize_and_casefold (name);
-
-  comment = g_app_info_get_description (G_APP_INFO (appinfo));
-  app->casefolded_description = cinnamon_util_normalize_and_casefold (comment);
-
-  exec = g_app_info_get_executable (G_APP_INFO (appinfo));
-  normalized_exec = cinnamon_util_normalize_and_casefold (exec);
-  app->casefolded_exec = trim_exec_line (normalized_exec);
-  g_free (normalized_exec);
-}
-
-static CinnamonAppSearchMatch
-_cinnamon_app_match_search_terms (CinnamonApp  *app,
-                               GSList    *terms)
-{
-  GSList *iter;
-  CinnamonAppSearchMatch match;
-
-  if (G_UNLIKELY (!app->casefolded_name))
-    cinnamon_app_init_search_data (app);
-
-  match = MATCH_NONE;
-  for (iter = terms; iter; iter = iter->next)
-    {
-      CinnamonAppSearchMatch current_match;
-      const char *term = iter->data;
-      const char *p;
-
-      current_match = MATCH_NONE;
-
-      p = strstr (app->casefolded_name, term);
-      if (p != NULL)
-        {
-          if (p == app->casefolded_name || *(p - 1) == ' ')
-            current_match = MATCH_PREFIX;
-          else
-            current_match = MATCH_SUBSTRING;
-        }
-
-      if (app->casefolded_exec)
-        {
-          p = strstr (app->casefolded_exec, term);
-          if (p != NULL)
-            {
-              if (p == app->casefolded_exec || *(p - 1) == '-')
-                current_match = MATCH_PREFIX;
-              else if (current_match < MATCH_PREFIX)
-                current_match = MATCH_SUBSTRING;
-            }
-        }
-
-      if (app->casefolded_description && current_match < MATCH_PREFIX)
-        {
-          /* Only do substring matches, as prefix matches are not meaningful
-           * enough for descriptions
-           */
-          p = strstr (app->casefolded_description, term);
-          if (p != NULL)
-            current_match = MATCH_SUBSTRING;
-        }
-
-      if (current_match == MATCH_NONE)
-        return current_match;
-
-      if (current_match > match)
-        match = current_match;
-    }
-  return match;
-}
-
-void
-_cinnamon_app_do_match (CinnamonApp         *app,
-                     GSList           *terms,
-                     GSList          **prefix_results,
-                     GSList          **substring_results)
-{
-  CinnamonAppSearchMatch match;
-  GAppInfo *appinfo;
-
-  g_assert (app != NULL);
-
-  /* Skip window-backed apps */
-  appinfo = (GAppInfo*) app->info;
-  if (appinfo == NULL)
-    return;
-  /* Skip not-visible apps */
-  if (!g_app_info_should_show (appinfo))
-    return;
-
-  match = _cinnamon_app_match_search_terms (app, terms);
-  switch (match)
-    {
-      case MATCH_NONE:
-        break;
-      case MATCH_PREFIX:
-        *prefix_results = g_slist_prepend (*prefix_results, app);
-        break;
-      case MATCH_SUBSTRING:
-        *substring_results = g_slist_prepend (*substring_results, app);
-        break;
-      default:
-        g_warning("cinnamon_app_do_match: default case");
-        break;
-    }
-}
-
-
 static void
 cinnamon_app_init (CinnamonApp *self)
 {
@@ -1304,10 +1158,6 @@ cinnamon_app_finalize (GObject *object)
   CinnamonApp *app = CINNAMON_APP (object);
 
   g_free (app->window_id_string);
-
-  g_free (app->casefolded_name);
-  g_free (app->casefolded_description);
-  g_free (app->casefolded_exec);
 
   G_OBJECT_CLASS(cinnamon_app_parent_class)->finalize (object);
 }
