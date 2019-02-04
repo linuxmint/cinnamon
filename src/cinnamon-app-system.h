@@ -61,10 +61,4 @@ GSList         *cinnamon_app_system_get_all                   (CinnamonAppSystem
 
 GSList         *cinnamon_app_system_get_running               (CinnamonAppSystem  *self);
 
-GSList         *cinnamon_app_system_initial_search            (CinnamonAppSystem  *system,
-                                                            GSList          *terms);
-GSList         *cinnamon_app_system_subsearch                 (CinnamonAppSystem  *system,
-                                                            GSList          *previous_results,
-                                                            GSList          *terms);
-
 #endif /* __CINNAMON_APP_SYSTEM_H__ */
