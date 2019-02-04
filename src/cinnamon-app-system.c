@@ -47,6 +47,7 @@ struct _CinnamonAppSystemPrivate {
 
 static void cinnamon_app_system_finalize (GObject *object);
 static void on_apps_tree_changed_cb (GMenuTree *tree, gpointer user_data);
+CinnamonApp * lookup_heuristic_basename (CinnamonAppSystem *system, const char *name);
 gchar *strip_extension (gchar *wm_class);
 gboolean case_insensitive_search (const char *key,
                                   const char *value,

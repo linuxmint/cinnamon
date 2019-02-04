@@ -636,14 +636,10 @@ cinnamon_app_open_new_window (CinnamonApp      *app,
 gboolean
 cinnamon_app_can_open_new_window (CinnamonApp *app)
 {
-  CinnamonAppRunningState *state;
-
   /* Apps that are not running can always open new windows, because
      activating them would open the first one */
   if (!app->running_state)
     return TRUE;
-
-  state = app->running_state;
 
   /* If the app doesn't have a desktop file, then nothing is possible */
   if (!app->info)
