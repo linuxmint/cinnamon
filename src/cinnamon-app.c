@@ -815,23 +815,6 @@ cinnamon_app_on_unmanaged (MetaWindow      *window,
 }
 
 static void
-cinnamon_app_on_user_time_changed (MetaWindow *window,
-                                GParamSpec *pspec,
-                                CinnamonApp   *app)
-{
-  g_assert (app->running_state != NULL);
-
-  /* Ideally we don't want to emit windows-changed if the sort order
-   * isn't actually changing. This check catches most of those.
-   */
-  if (window != app->running_state->windows->data)
-    {
-      app->running_state->window_sort_stale = TRUE;
-      g_signal_emit (app, cinnamon_app_signals[WINDOWS_CHANGED], 0);
-    }
-}
-
-static void
 cinnamon_app_on_ws_switch (MetaScreen         *screen,
                         int                 from,
                         int                 to,
@@ -862,7 +845,6 @@ _cinnamon_app_add_window (CinnamonApp        *app,
   app->running_state->window_sort_stale = TRUE;
   app->running_state->windows = g_slist_prepend (app->running_state->windows, g_object_ref (window));
   g_signal_connect (window, "unmanaged", G_CALLBACK(cinnamon_app_on_unmanaged), app);
-  g_signal_connect (window, "notify::user-time", G_CALLBACK(cinnamon_app_on_user_time_changed), app);
 
   if (app->state != CINNAMON_APP_STATE_STARTING)
     cinnamon_app_state_transition (app, CINNAMON_APP_STATE_RUNNING);
@@ -882,7 +864,6 @@ _cinnamon_app_remove_window (CinnamonApp   *app,
     return;
 
   g_signal_handlers_disconnect_by_func (window, G_CALLBACK(cinnamon_app_on_unmanaged), app);
-  g_signal_handlers_disconnect_by_func (window, G_CALLBACK(cinnamon_app_on_user_time_changed), app);
   g_object_unref (window);
   app->running_state->windows = g_slist_remove (app->running_state->windows, window);
 
