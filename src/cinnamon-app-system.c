@@ -43,9 +43,6 @@ struct _CinnamonAppSystemPrivate {
   GHashTable *startup_wm_class_to_app;
 
   GSList *known_vendor_prefixes;
-
-  GMenuTree *settings_tree;
-  GHashTable *setting_id_to_app;
 };
 
 static void cinnamon_app_system_finalize (GObject *object);
@@ -146,10 +143,8 @@ cinnamon_app_system_finalize (GObject *object)
   CinnamonAppSystemPrivate *priv = self->priv;
 
   g_object_unref (priv->apps_tree);
-  g_object_unref (priv->settings_tree);
   g_hash_table_destroy (priv->running_apps);
   g_hash_table_destroy (priv->id_to_app);
-  g_hash_table_destroy (priv->setting_id_to_app);
   g_hash_table_destroy (priv->startup_wm_class_to_app);
   g_slist_free_full (priv->known_vendor_prefixes, g_free);
   priv->known_vendor_prefixes = NULL;
@@ -460,26 +455,6 @@ cinnamon_app_system_get_tree (CinnamonAppSystem *self)
 }
 
 /**
- * cinnamon_app_system_lookup_setting:
- *
- * Returns: (transfer none): Application in gnomecc.menu, or %NULL if none
- * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
- * RETURNS NULL IF NOT FOUND IN STANDARD APPS
- *
- */
-CinnamonApp *
-cinnamon_app_system_lookup_setting (CinnamonAppSystem *self,
-                                 const char     *id)
-{
-  CinnamonApp *app;
-  /* Actually defer to the main app set if there's overlap */
-  app = cinnamon_app_system_lookup_app (self, id);
-  if (app != NULL)
-    return app;
-  return NULL;
-}
-
-/**
  * cinnamon_app_system_get_default:
  *
  * Return Value: (transfer none): The global #CinnamonAppSystem singleton
@@ -530,21 +505,6 @@ cinnamon_app_system_lookup_app (CinnamonAppSystem   *self,
 }
 
 /**
- * cinnamon_app_system_lookup_settings_app:
- *
- * Return value: (transfer none): The #CinnamonApp for id, or %NULL if none
- * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
- * RETURNS NULL
- *
- */
-CinnamonApp *
-cinnamon_app_system_lookup_settings_app (CinnamonAppSystem   *self,
-                             const char       *id)
-{
-  return NULL;
-}
-
-/**
  * cinnamon_app_system_lookup_app_by_tree_entry:
  * @system: a #CinnamonAppSystem
  * @entry: a #GMenuTreeEntry
@@ -563,21 +523,6 @@ cinnamon_app_system_lookup_app_by_tree_entry (CinnamonAppSystem  *self,
   return cinnamon_app_system_lookup_app (self, gmenu_tree_entry_get_desktop_file_id (entry));
 }
 
-
-/**
- * cinnamon_app_system_lookup_settings_app_by_tree_entry:
- *
- * Return value: (transfer none): The #CinnamonApp for @entry, or %NULL if none
- * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
- * RETURNS NULL
- *
- */
-CinnamonApp *
-cinnamon_app_system_lookup_settings_app_by_tree_entry (CinnamonAppSystem  *self,
-                                           GMenuTreeEntry  *entry)
-{
-  return NULL;
-}
 
 /**
  * cinnamon_app_system_lookup_app_for_path:
@@ -634,10 +579,6 @@ cinnamon_app_system_lookup_heuristic_basename (CinnamonAppSystem *system,
   GSList *prefix;
 
   result = cinnamon_app_system_lookup_app (system, name);
-  if (result != NULL)
-    return result;
-
-  result = cinnamon_app_system_lookup_settings_app (system, name);
   if (result != NULL)
     return result;
 
@@ -906,19 +847,3 @@ cinnamon_app_system_subsearch (CinnamonAppSystem   *system,
   return g_slist_concat (prefix_results, substring_results);
 }
 
-/**
- * cinnamon_app_system_search_settings:
- * @system: A #CinnamonAppSystem
- * @terms: (element-type utf8): List of terms, logical AND
- *
- * Search through settings for the given search terms.
- *
- * Returns: (transfer container) (element-type CinnamonApp): List of setting applications
- */
-GSList *
-cinnamon_app_system_search_settings (CinnamonAppSystem  *self,
-                                  GSList          *terms)
-{
-  GSList *null_list = NULL; /* if this is just a stub, let's at least do zero-init */
-  return null_list;
-}
