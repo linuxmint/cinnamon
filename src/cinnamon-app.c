@@ -156,16 +156,24 @@ get_actor_for_icon_name (CinnamonApp *app,
 }
 
 static ClutterActor *
+get_failsafe_icon (int size)
+{
+  GIcon *icon = g_themed_icon_new ("application-x-executable");
+  ClutterActor *actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+  g_object_unref (icon);
+  return actor;
+}
+
+static ClutterActor *
 window_backed_app_get_icon (CinnamonApp *app,
                             int          size)
 {
   MetaWindow *window = NULL;
   ClutterActor *actor;
+  GdkPixbuf *pixbuf;
   gint scale;
   CinnamonGlobal *global;
   StThemeContext *context;
-
-  actor = NULL;
 
   global = cinnamon_global_get ();
   context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
@@ -178,28 +186,17 @@ window_backed_app_get_icon (CinnamonApp *app,
   if (app->running_state != NULL)
     window = window_backed_app_get_window (app);
 
-  if (window == NULL)
-    {
-      actor = clutter_texture_new ();
-      g_object_set (actor, "opacity", 0, "width", (float) size, "height", (float) size, NULL);
-      return actor;
-    }
-
   size *= scale;
 
-  if (!meta_window_create_icon (window, size, size))
-    {
-      GIcon *icon = g_themed_icon_new ("application-x-executable");
-      actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
-      g_object_unref (icon);
-      return actor;
-    }
+  if (window == NULL)
+    return get_failsafe_icon (size);
 
-  actor = st_texture_cache_bind_pixbuf_property (st_texture_cache_get_default (),
-                                                 G_OBJECT (window), "icon");
-  g_object_set (actor, "width", (float) size, "height", (float) size, NULL);
+  pixbuf = meta_window_create_icon (window, size);
 
-  return actor;
+  if (pixbuf == NULL)
+    return get_failsafe_icon (size);
+
+  return st_texture_cache_load_from_pixbuf (pixbuf, size);
 }
 
 /**
@@ -222,23 +219,15 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
   ret = NULL;
 
   if (app->entry == NULL)
-    {
-      return window_backed_app_get_icon (app, size);
-    }
+    return window_backed_app_get_icon (app, size);
 
   icon = g_app_info_get_icon (G_APP_INFO (app->info));
 
   if (icon != NULL)
-    {
-      ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
-    }
+    ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
 
   if (ret == NULL)
-    {
-      icon = g_themed_icon_new ("application-x-executable");
-      ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
-      g_object_unref (icon);
-    }
+    ret = get_failsafe_icon (size);
 
   return ret;
 }
