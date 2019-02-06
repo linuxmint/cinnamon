@@ -187,6 +187,14 @@ window_backed_app_get_icon (CinnamonApp *app,
 
   size *= scale;
 
+  if (!meta_window_create_icon (window, size, size))
+    {
+      GIcon *icon = g_themed_icon_new ("application-x-executable");
+      actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+      g_object_unref (icon);
+      return actor;
+    }
+
   actor = st_texture_cache_bind_pixbuf_property (st_texture_cache_get_default (),
                                                  G_OBJECT (window), "icon");
   g_object_set (actor, "width", (float) size, "height", (float) size, NULL);
