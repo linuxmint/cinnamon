@@ -837,9 +837,7 @@ class AppGroup {
             this.signals.connect(metaWindow, 'notify::gtk-application-id', (w) => this.onAppChange(w));
             this.signals.connect(metaWindow, 'notify::wm-class', (w) => this.onAppChange(w));
 
-            if (!this.state.settings.groupApps) {
-                this.signals.connect(metaWindow, 'icon-changed', (w) => this.onIconChanged(w));
-            }
+            this.signals.connect(metaWindow, 'icon-changed', (w) => this.setIcon(w));
 
             if (metaWindow.progress !== undefined) {
                 this._progress = metaWindow.progress;
