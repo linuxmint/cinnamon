@@ -193,7 +193,7 @@ window_backed_app_get_icon (CinnamonApp *app,
 
   size *= scale;
 
-  if (!meta_window_set_icon (window, size, size))
+  if (!meta_window_create_icon (window, size, size))
     {
       GIcon *icon = g_themed_icon_new ("application-x-executable");
       actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
