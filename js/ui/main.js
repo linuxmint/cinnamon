@@ -1623,7 +1623,7 @@ function isInteresting(metaWindow) {
         return false;
 
     // Include any window the tracker finds interesting
-    if (tracker.is_window_interesting(metaWindow)) {
+    if (metaWindow.is_interesting()) {
         return true;
     }
 

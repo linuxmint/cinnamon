@@ -960,7 +960,7 @@ cinnamon_app_request_quit (CinnamonApp   *app)
     {
       MetaWindow *win = iter->data;
 
-      if (!cinnamon_window_tracker_is_window_interesting (cinnamon_window_tracker_get_default (), win))
+      if (!meta_window_can_close (win))
         continue;
 
       meta_window_delete (win, cinnamon_global_get_current_time (global));
