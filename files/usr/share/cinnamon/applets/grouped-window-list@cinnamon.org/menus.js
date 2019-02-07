@@ -625,6 +625,7 @@ class WindowThumbnail {
 
     onLeave() {
         this.entered = false;
+        this.stopClick = false;
         this.actor.remove_style_pseudo_class('selected');
         this.onFocusWindowChange();
         this.button.set_opacity(0);
