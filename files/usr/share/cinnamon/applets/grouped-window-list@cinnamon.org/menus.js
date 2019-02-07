@@ -671,6 +671,8 @@ class WindowThumbnail {
         this.metaWindow.delete(global.get_current_time());
         if (!this.groupState.metaWindows || this.groupState.metaWindows.length <= 1) {
             this.groupState.trigger('hoverMenuClose');
+        } else {
+            this.groupState.trigger('checkShouldClose');
         }
     }
 
@@ -886,6 +888,20 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                 this.shouldClose = true;
                 this.groupState.set({thumbnailMenuEntered: false});
                 this.close();
+            },
+            checkShouldClose: () => {
+                // This is called after a close button is clicked. When the menu size changes, it can leave the cursor
+                // outside the menu bounds, and no leave event will be able to correct this situation where the menu is
+                // dangling open and only closable upon hovering over it again. This checks if the cursor is hovering
+                // over the menu and closes it if not.
+                setTimeout(() => {
+                    let [x, y, mask] = global.get_pointer();
+                    let draggedOverActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
+                    let parent = draggedOverActor.get_parent();
+                    if (!(parent instanceof St.Widget)) {
+                        this.close(true);
+                    }
+                }, 500);
             },
             addThumbnailToMenu: (win) => {
                 if (this.isOpen) {
