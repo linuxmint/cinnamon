@@ -95,13 +95,13 @@ STANDALONE_MODULES = [
 
 TABS = {
     # KEY (cs_KEY.py): {"tab_name": tab_number, ... }
-    "accessibility":{"visual": 0, "keyboard": 1, "typing": 2, "mouse": 3},
-    "applets":      {"installed": 0, "more": 1},
+    "universal-access":{"visual": 0, "keyboard": 1, "typing": 2, "mouse": 3},
+    "applets":      {"installed": 0, "more": 1, "download": 1},
     "backgrounds":  {"images": 0, "settings": 1},
     "default":      {"preferred": 0, "removable": 1},
-    "desklets":     {"installed": 0, "more": 1, "general": 2},
+    "desklets":     {"installed": 0, "more": 1, "download": 1, "general": 2},
     "effects":      {"effects": 0, "customize": 1},
-    "extensions":   {"installed": 0, "more": 1},
+    "extensions":   {"installed": 0, "more": 1, "download": 1},
     "keyboard":     {"typing": 0, "shortcuts": 1, "layouts": 2},
     "mouse":        {"mouse": 0, "touchpad": 1},
     "power":        {"power": 0, "batteries": 1, "brightness": 2},
@@ -110,6 +110,36 @@ TABS = {
     "themes":       {"themes": 0, "download": 1, "options": 2},
     "windows":      {"titlebar": 0, "behavior": 1, "alttab": 2},
     "workspaces":   {"osd": 0, "settings": 1}
+}
+
+ARG_REWRITE = {
+    'accessibility':    'universal-access',
+    'screen':           'display',
+    'bluetooth':        'blueberry',
+    'hotcorners':       'hotcorner',
+    'accounts':         'online-accounts',
+    'colors':           'color',
+    'me':               'user',
+    'lightdm-settings': 'pkexec lightdm-settings',
+    'login-screen':      'pkexec lightdm-settings',
+    'window':           'windows',
+    'background':       'backgrounds',
+    'driver-manager':   'pkexec driver-manager',
+    'drivers':          'pkexec driver-manager',
+    'printers':         'system-config-printer',
+    'printer':          'system-config-printer',
+    'infos':            'info',
+    'locale':           'mintlocale',
+    'language':         'mintlocale',
+    'input-method':     'mintlocale-im',
+    'nvidia':           'nvidia-settings',
+    'firewall':         'gufw',
+    'networks':         'network',
+    'sources':          'pkexec mintsources',
+    'mintsources':      'pkexec mintsources',
+    'panels':           'panel',
+    'tablet':           'wacom',
+    'users':            'cinnamon-settings-users'
 }
 
 def print_timing(func):
@@ -348,7 +378,11 @@ class MainWindow:
         self.sort = 1 # sorted by 'score' by default
 
         # Select the first sidePage
-        if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters:
+        if len(sys.argv) > 1:
+            arg1 = sys.argv[1]
+            if arg1 in ARG_REWRITE.keys():
+                arg1 = ARG_REWRITE[arg1]
+        if len(sys.argv) > 1 and arg1 in sidePagesIters:
             # Analyses arguments to know the tab to open
             # and the sort to apply if the tab is the 'more' one.
             # Examples:
@@ -361,7 +395,6 @@ class MainWindow:
             # Please note that useless or wrong arguments are ignored.
             opts = []
             sorts_literal = {"name":0, "score":1, "date":2, "installed":3}
-            arg1 = sys.argv[1]
             tabs_literal = {"default":0}
             if arg1 in TABS.keys():
                 tabs_literal = TABS[arg1]
@@ -387,21 +420,28 @@ class MainWindow:
             # If we're launching a module directly, set the WM class so GWL
             # can consider it as a standalone app and give it its own
             # group.
-            wm_class = "cinnamon-settings %s" % sys.argv[1]
+            wm_class = "cinnamon-settings %s" % arg1
             self.window.set_wmclass(wm_class, wm_class)
             self.button_back.hide()
-            (iter, cat) = sidePagesIters[sys.argv[1]]
+            (iter, cat) = sidePagesIters[arg1]
             path = self.store[cat].get_path(iter)
             if path:
                 self.go_to_sidepage(cat, path, user_action=False)
+                self.window.show()
+                if arg1 in ("mintlocale", "blueberry", "system-config-printer", \
+                            "mintlocale-im", "nvidia-settings"):
+                    # These modules do not need to leave the System Settings window open,
+                    # when selected by command line argument.
+                    self.window.close()
             else:
                 self.search_entry.grab_focus()
+                self.window.show()
         else:
             self.search_entry.grab_focus()
             self.window.connect("key-press-event", self.on_keypress)
             self.window.connect("button-press-event", self.on_buttonpress)
 
-        self.window.show()
+            self.window.show()
 
     def on_keypress(self, widget, event):
         grab = False
