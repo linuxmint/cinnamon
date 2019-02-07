@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import getopt
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
@@ -84,7 +84,54 @@ def translate(uuid, string):
     return _(string)
 
 class MainWindow(object):
-    def __init__(self, xlet_type, uuid, instance_id=None):
+    def __init__(self, xlet_type, uuid, *instance_id):
+        ## Respecting preview implementation, add the possibility to open a specific tab (if there
+        ## are multiple layouts) and/or a specific instance settings (if there are multiple
+        ## instances of a xlet).
+        ## To do this, two new arguments:
+        ##   -t <n> or --tab=<n>, where <n> is the tab index (starting at 0).
+        ##   -i <id> or --id=<id>, where <id> is the id of the instance.
+        ## Examples, supposing there are two instances of Cinnamenu@json applet, with ids '210' and
+        ## '235' (uncomment line 144 containing print("self.instance_info =", self.instance_info)
+        ## to know all instances ids):
+        ## (Please note that cinnamon-settings is the one offered in #8333)
+        ## cinnamon-settings applets Cinnamenu@json         # opens first tab in first instance
+        ## cinnamon-settings applets Cinnamenu@json '235'   # opens first tab in '235' instance
+        ## cinnamon-settings applets Cinnamenu@json 235     # idem
+        ## cinnamon-settings applets Cinnamenu@json -t 1 -i 235  # opens 2nd tab in '235' instance
+        ## cinnamon-settings applets Cinnamenu@json --tab=1 --id=235  # idem
+        ## cinnamon-settings applets Cinnamenu@json --tab=1 # opens 2nd tab in first instance
+        ## (Also works with 'xlet-settings applet' instead of 'cinnamon-settings applets'.)
+
+        #print("instance_id =", instance_id)
+        self.tab = 0
+        opts = []
+        try:
+            instance_id = int(instance_id[0])
+        except:
+            instance_id = None
+            try:
+                if len(sys.argv) > 3:
+                    opts = getopt.getopt(sys.argv[3:], "t:i:", ["tab=", "id="])[0]
+            except getopt.GetoptError:
+                pass
+            if len(sys.argv) > 4:
+                try:
+                    instance_id = int(sys.argv[4])
+                except ValueError:
+                    instance_id = None
+        #print("opts =", opts)
+        for opt, arg in opts:
+            if opt in ("-t", "--tab"):
+                if arg.isdecimal():
+                    self.tab = int(arg)
+            elif opt in ("-i", "--id"):
+                if arg.isdecimal():
+                    instance_id = int(arg)
+        if instance_id:
+            instance_id = str(instance_id)
+        #print("self.tab =", self.tab)
+        #print("instance_id =", instance_id)
         self.type = xlet_type
         self.uuid = uuid
         self.selected_instance = None
@@ -94,13 +141,15 @@ class MainWindow(object):
         self.load_xlet_data()
         self.build_window()
         self.load_instances()
+        #print("self.instance_info =", self.instance_info)
         self.window.show_all()
         if instance_id and len(self.instance_info) > 1:
             for info in self.instance_info:
                 if info["id"] == instance_id:
                     self.set_instance(info)
                     break
-
+        else:
+            self.set_instance(self.instance_info[0])
         try:
             Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
                                       "org.Cinnamon", "/org/Cinnamon", "org.Cinnamon", None, self._on_proxy_ready, None)
@@ -413,7 +462,10 @@ class MainWindow(object):
             self.stack_switcher.set_stack(info["stack"])
             children = info["stack"].get_children()
             if len(children) > 1:
-                info["stack"].set_visible_child(children[0])
+                if self.tab in range(len(children)):
+                    info["stack"].set_visible_child(children[self.tab])
+                else:
+                    info["stack"].set_visible_child(children[0])
         if proxy:
             proxy.highlightXlet('(ssb)', self.uuid, self.selected_instance["id"], False)
             proxy.highlightXlet('(ssb)', self.uuid, info["id"], True)
@@ -490,7 +542,7 @@ class MainWindow(object):
 if __name__ == "__main__":
     import signal
     if len(sys.argv) < 3:
-        print("Error: requres type and uuid")
+        print("Error: requires type and uuid")
         quit()
     xlet_type = sys.argv[1]
     if xlet_type not in ["applet", "desklet", "extension"]:
