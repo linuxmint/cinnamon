@@ -94,34 +94,35 @@ STANDALONE_MODULES = [
 ]
 
 TABS = {
-    # KEY (cs_KEY.py): {"tab_name": tab_number, ... }
-    "universal-access":{"visual": 0, "keyboard": 1, "typing": 2, "mouse": 3},
-    "applets":      {"installed": 0, "more": 1, "download": 1},
-    "backgrounds":  {"images": 0, "settings": 1},
-    "default":      {"preferred": 0, "removable": 1},
-    "desklets":     {"installed": 0, "more": 1, "download": 1, "general": 2},
-    "effects":      {"effects": 0, "customize": 1},
-    "extensions":   {"installed": 0, "more": 1, "download": 1},
-    "keyboard":     {"typing": 0, "shortcuts": 1, "layouts": 2},
-    "mouse":        {"mouse": 0, "touchpad": 1},
-    "power":        {"power": 0, "batteries": 1, "brightness": 2},
-    "screensaver":  {"settings": 0, "customize": 1},
-    "sound":        {"output": 0, "input": 1, "sounds": 2, "applications": 3, "settings": 4},
-    "themes":       {"themes": 0, "download": 1, "options": 2},
-    "windows":      {"titlebar": 0, "behavior": 1, "alttab": 2},
-    "workspaces":   {"osd": 0, "settings": 1}
+    # KEY (cs_KEY.py) : {"tab_name": tab_number, ... }
+    "universal-access": {"visual": 0, "keyboard": 1, "typing": 2, "mouse": 3},
+    "applets":          {"installed": 0, "more": 1, "download": 1},
+    "backgrounds":      {"images": 0, "settings": 1},
+    "default":          {"preferred": 0, "removable": 1},
+    "desklets":         {"installed": 0, "more": 1, "download": 1, "general": 2},
+    "effects":          {"effects": 0, "customize": 1},
+    "extensions":       {"installed": 0, "more": 1, "download": 1},
+    "keyboard":         {"typing": 0, "shortcuts": 1, "layouts": 2},
+    "mouse":            {"mouse": 0, "touchpad": 1},
+    "power":            {"power": 0, "batteries": 1, "brightness": 2},
+    "screensaver":      {"settings": 0, "customize": 1},
+    "sound":            {"output": 0, "input": 1, "sounds": 2, "applications": 3, "settings": 4},
+    "themes":           {"themes": 0, "download": 1, "options": 2},
+    "windows":          {"titlebar": 0, "behavior": 1, "alttab": 2},
+    "workspaces":       {"osd": 0, "settings": 1}
 }
 
 ARG_REWRITE = {
     'accessibility':    'universal-access',
     'screen':           'display',
+    'screens':          'display',
     'bluetooth':        'blueberry',
     'hotcorners':       'hotcorner',
     'accounts':         'online-accounts',
     'colors':           'color',
     'me':               'user',
     'lightdm-settings': 'pkexec lightdm-settings',
-    'login-screen':      'pkexec lightdm-settings',
+    'login-screen':     'pkexec lightdm-settings',
     'window':           'windows',
     'background':       'backgrounds',
     'driver-manager':   'pkexec driver-manager',

@@ -59,6 +59,44 @@ import getopt
 import os
 import sys
 
+def usage():
+    print("""Usage:
+cinnamon-settings [MODULE [OPTIONS]] [HELP_OPTION]
+
+Help option (HELP_OPTION):
+    -h, --help              Displays help message (e.g. this message).
+
+Module options:
+    -t, --tab               Opens the specified tab (see list in manpage) of
+                            module settings.
+
+    -s, --sort              xlets modules option.
+                            xlets are 'applets', 'desklets', 'extensions'
+                            and 'themes'.
+                            Sorts the xlets by:
+                                'name' or 0
+                                'score' or 1 (by default)
+                                'date' or 2
+                                'installed' or 3
+Example:
+    $ cinnamon-settings applets -t download -s date
+
+For complete description and examples, see the manpage: cinnamon-settings(1)
+    """)
+    exit(2)
+
+opts = []
+try:
+    if len(sys.argv) > 1:
+        opts = getopt.getopt(sys.argv[1:], "h", ["help"])[0]
+except getopt.GetoptError:
+    pass
+
+for opt, arg in opts:
+    if opt in ("-h", "--help"):
+        usage()
+        break
+
 opts = []
 try:
     if len(sys.argv) > 2:
