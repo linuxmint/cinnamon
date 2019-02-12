@@ -1256,13 +1256,18 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             menu.connect('open-state-changed', Lang.bind(this, this._contextMenuOpenStateChanged));
             this.contextMenu = menu;
             this.applicationsBox.add_actor(menu.actor);
+        } else if (this.contextMenu.isOpen &&
+                   this.contextMenu.sourceActor != button.actor) {
+            this.contextMenu.close();
         }
+
         if (!this.contextMenu.isOpen) {
             this.contextMenu.box.destroy_all_children();
             this.applicationsBox.set_child_above_sibling(this.contextMenu.actor, button.actor);
             this.contextMenu.sourceActor = button.actor;
             button.populateMenu(this.contextMenu);
         }
+
         this.contextMenu.toggle();
     }
 
