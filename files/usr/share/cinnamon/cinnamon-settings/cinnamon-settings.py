@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import getopt
 import sys
 
 import os
@@ -30,7 +31,7 @@ gettext.install("cinnamon", "/usr/share/locale", names="ngettext")
 # Standard setting pages... this can be expanded to include applet dirs maybe?
 mod_files = glob.glob(config.currentPath + "/modules/*.py")
 mod_files.sort()
-if len(mod_files) is 0:
+if len(mod_files) == 0:
     print("No settings modules found!!")
     sys.exit(1)
 
@@ -92,6 +93,56 @@ STANDALONE_MODULES = [
     [_("Manage Services and Units"),     "systemd-manager-pkexec",              "cs-sources",         "admin",          _("systemd, units, services, systemctl, init")]
 ]
 
+TABS = {
+    # KEY (cs_KEY.py) : {"tab_name": tab_number, ... }
+    "universal-access": {"visual": 0, "keyboard": 1, "typing": 2, "mouse": 3},
+    "applets":          {"installed": 0, "more": 1, "download": 1},
+    "backgrounds":      {"images": 0, "settings": 1},
+    "default":          {"preferred": 0, "removable": 1},
+    "desklets":         {"installed": 0, "more": 1, "download": 1, "general": 2},
+    "effects":          {"effects": 0, "customize": 1},
+    "extensions":       {"installed": 0, "more": 1, "download": 1},
+    "keyboard":         {"typing": 0, "shortcuts": 1, "layouts": 2},
+    "mouse":            {"mouse": 0, "touchpad": 1},
+    "power":            {"power": 0, "batteries": 1, "brightness": 2},
+    "screensaver":      {"settings": 0, "customize": 1},
+    "sound":            {"output": 0, "input": 1, "sounds": 2, "applications": 3, "settings": 4},
+    "themes":           {"themes": 0, "download": 1, "options": 2},
+    "windows":          {"titlebar": 0, "behavior": 1, "alttab": 2},
+    "workspaces":       {"osd": 0, "settings": 1}
+}
+
+ARG_REWRITE = {
+    'accessibility':    'universal-access',
+    'screen':           'display',
+    'screens':          'display',
+    'bluetooth':        'blueberry',
+    'hotcorners':       'hotcorner',
+    'accounts':         'online-accounts',
+    'colors':           'color',
+    'me':               'user',
+    'lightdm-settings': 'pkexec lightdm-settings',
+    'login-screen':     'pkexec lightdm-settings',
+    'window':           'windows',
+    'background':       'backgrounds',
+    'driver-manager':   'pkexec driver-manager',
+    'drivers':          'pkexec driver-manager',
+    'printers':         'system-config-printer',
+    'printer':          'system-config-printer',
+    'infos':            'info',
+    'locale':           'mintlocale',
+    'language':         'mintlocale',
+    'input-method':     'mintlocale-im',
+    'nvidia':           'nvidia-settings',
+    'firewall':         'gufw',
+    'networks':         'network',
+    'sources':          'pkexec mintsources',
+    'mintsources':      'pkexec mintsources',
+    'panels':           'panel',
+    'tablet':           'wacom',
+    'users':            'cinnamon-settings-users'
+}
+
 def print_timing(func):
     # decorate functions with @print_timing to output how long they take to run.
     def wrapper(*arg):
@@ -136,7 +187,16 @@ class MainWindow:
                 self.stack_switcher.set_stack(sidePage.stack)
                 l = sidePage.stack.get_children()
                 if len(l) > 0:
-                    sidePage.stack.set_visible_child(l[0])
+                    if self.tab in range(len(l)):
+                        sidePage.stack.set_visible_child(l[self.tab])
+                        visible_child = sidePage.stack.get_visible_child()
+                        if self.tab == 1 \
+                        and hasattr(visible_child, 'sort_combo') \
+                        and self.sort in range(4):
+                            visible_child.sort_combo.set_active(self.sort)
+                            visible_child.sort_changed()
+                    else:
+                        sidePage.stack.set_visible_child(l[0])
                     if sidePage.stack.get_visible():
                         self.stack_switcher.set_opacity(1)
                     else:
@@ -315,26 +375,74 @@ class MainWindow:
 
         self.calculate_bar_heights()
 
+        self.tab = 0 # open 'manage' tab by default
+        self.sort = 1 # sorted by 'score' by default
+
         # Select the first sidePage
-        if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters:
+        if len(sys.argv) > 1:
+            arg1 = sys.argv[1]
+            if arg1 in ARG_REWRITE.keys():
+                arg1 = ARG_REWRITE[arg1]
+        if len(sys.argv) > 1 and arg1 in sidePagesIters:
+            # Analyses arguments to know the tab to open
+            # and the sort to apply if the tab is the 'more' one.
+            # Examples:
+            #   cinnamon-settings.py applets --tab=more --sort=date
+            #   cinnamon-settings.py applets --tab=1 --sort=2
+            #   cinnamon-settings.py applets --tab=more --sort=date
+            #   cinnamon-settings.py applets --tab=1 -s 2
+            #   cinnamon-settings.py applets -t 1 -s installed
+            #   cinnamon-settings.py desklets -t 2
+            # Please note that useless or wrong arguments are ignored.
+            opts = []
+            sorts_literal = {"name":0, "score":1, "date":2, "installed":3}
+            tabs_literal = {"default":0}
+            if arg1 in TABS.keys():
+                tabs_literal = TABS[arg1]
+
+            try:
+                if len(sys.argv) > 2:
+                    opts = getopt.getopt(sys.argv[2:], "t:s:", ["tab=", "sort="])[0]
+            except getopt.GetoptError:
+                pass
+
+            for opt, arg in opts:
+                if opt in ("-t", "--tab"):
+                    if arg.isdecimal():
+                        self.tab = int(arg)
+                    elif arg in tabs_literal.keys():
+                        self.tab = tabs_literal[arg]
+                if opt in ("-s", "--sort"):
+                    if arg.isdecimal():
+                        self.sort = int(arg)
+                    elif arg in sorts_literal.keys():
+                        self.sort = sorts_literal[arg]
+
             # If we're launching a module directly, set the WM class so GWL
             # can consider it as a standalone app and give it its own
             # group.
-            wm_class = "cinnamon-settings %s" % sys.argv[1]
+            wm_class = "cinnamon-settings %s" % arg1
             self.window.set_wmclass(wm_class, wm_class)
             self.button_back.hide()
-            (iter, cat) = sidePagesIters[sys.argv[1]]
+            (iter, cat) = sidePagesIters[arg1]
             path = self.store[cat].get_path(iter)
             if path:
                 self.go_to_sidepage(cat, path, user_action=False)
+                self.window.show()
+                if arg1 in ("mintlocale", "blueberry", "system-config-printer", \
+                            "mintlocale-im", "nvidia-settings"):
+                    # These modules do not need to leave the System Settings window open,
+                    # when selected by command line argument.
+                    self.window.close()
             else:
                 self.search_entry.grab_focus()
+                self.window.show()
         else:
             self.search_entry.grab_focus()
             self.window.connect("key-press-event", self.on_keypress)
             self.window.connect("button-press-event", self.on_buttonpress)
 
-        self.window.show()
+            self.window.show()
 
     def on_keypress(self, widget, event):
         grab = False
