@@ -1,6 +1,5 @@
 const Applet = imports.ui.applet;
 const Mainloop = imports.mainloop;
-const CMenu = imports.gi.CMenu;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
@@ -38,6 +37,8 @@ const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 
 const PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy";
 const REMEMBER_RECENT_KEY = "remember-recent-files";
+
+const AppUtils = require('./appUtils');
 
 let appsys = Cinnamon.AppSystem.get_default();
 
@@ -932,7 +933,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             icon_type: St.IconType.SYMBOLIC });
         this._searchIconClickedId = 0;
         this._applicationsButtons = [];
-        this._applicationsButtonFromApp = {};
         this._favoritesButtons = [];
         this._placesButtons = [];
         this._transientButtons = [];
@@ -2102,84 +2102,40 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._applicationsButtons.forEach(button => button.destroy());
         this._applicationsButtons = [];
 
-        this._applicationsButtonFromApp = {};
-
         this._allAppsCategoryButton = new CategoryButton(this);
-
         this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
         this._categoryButtons.push(this._allAppsCategoryButton);
 
-        let trees = [appsys.get_tree()];
+        // grab top level directories and all apps in them
+        let [apps, dirs] = AppUtils.getApps();
 
-        for (var i in trees) {
-            let tree = trees[i];
-            let root = tree.get_root_directory();
-            let dirs = [];
-            let iter = root.iter();
-            let nextType;
-
-            while ((nextType = iter.next()) != CMenu.TreeItemType.INVALID) {
-                if (nextType == CMenu.TreeItemType.DIRECTORY) {
-                    dirs.push(iter.get_directory());
-                }
-            }
-
-            let prefCats = ["administration", "preferences"];
-
-            let sortDirs = function(a, b) {
-                let menuIdA = a.get_menu_id().toLowerCase();
-                let menuIdB = b.get_menu_id().toLowerCase();
-
-                let prefIdA = prefCats.indexOf(menuIdA);
-                let prefIdB = prefCats.indexOf(menuIdB);
-
-                if (prefIdA < 0 && prefIdB >= 0) {
-                    return -1;
-                }
-                if (prefIdA >= 0 && prefIdB < 0) {
-                    return 1;
-                }
-
-                let nameA = a.get_name().toLowerCase();
-                let nameB = b.get_name().toLowerCase();
-
-                if (nameA > nameB) {
-                    return 1;
-                }
-                if (nameA < nameB) {
-                    return -1;
-                }
-                return 0;
-            };
-
-            dirs = dirs.sort(sortDirs);
-
-            for (let i = 0; i < dirs.length; i++) {
-                let dir = dirs[i];
-                if (dir.get_is_nodisplay())
-                    continue;
-                if (this._loadCategory(dir)) {
-                    let categoryButton = new CategoryButton(this, dir.get_menu_id(), dir.get_name(), dir.get_icon());
-                    this._categoryButtons.push(categoryButton);
-                    this.categoriesBox.add_actor(categoryButton.actor);
-                }
-            }
-        }
-        // Sort apps and add to applicationsBox
-        this._applicationsButtons.sort(function(a, b) {
-            a = Util.latinise(a.name.toLowerCase());
-            b = Util.latinise(b.name.toLowerCase());
-            return a > b;
+        // generate all category buttons from top-level directories
+        Util.each(dirs, (d) => {
+            let categoryButton = new CategoryButton(this, d.get_menu_id(), d.get_name(), d.get_icon());
+            this._categoryButtons.push(categoryButton);
+            this.categoriesBox.add_actor(categoryButton.actor);
         });
 
-        for (let i = 0; i < this._applicationsButtons.length; i++) {
-            this.applicationsBox.add_actor(this._applicationsButtons[i].actor);
-        }
+        // generate all app buttons and associate all categories
+        Util.each(apps, (a) => {
+            let app = a[0];
+            let button = new ApplicationButton(this, app);
+            button.category = a[1];
+            let appKey = app.get_id() || `${app.get_name()}:${app.get_description()}`;
+
+            // appsWereRefreshed if this is not initial load. on initial load every
+            // app is marked known.
+            if (this._appsWereRefreshed && !this._knownApps.has(appKey))
+                button.highlight();
+            else
+                this._knownApps.add(appKey);
+
+            this._applicationsButtons.push(button);
+            this.applicationsBox.add_actor(button.actor);
+        });
 
         this._appsWereRefreshed = true;
     }
-
-
 
     _refreshFavs() {
         //Remove all favorites
@@ -2188,9 +2144,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         //Load favorites again
         this._favoritesButtons = [];
         let launchers = global.settings.get_strv('favorite-apps');
-        let appSys = Cinnamon.AppSystem.get_default();
         for ( let i = 0; i < launchers.length; ++i ) {
-            let app = appSys.lookup_app(launchers[i]);
+            let app = appsys.lookup_app(launchers[i]);
             if (app) {
                 let button = new FavoritesButton(this, app);
                 this._favoritesButtons[app] = button;
@@ -2254,51 +2209,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         };
 
         this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
-    }
-
-    _loadCategory(dir, top_dir) {
-        let iter = dir.iter();
-        let has_entries = false;
-        let nextType;
-        if (!top_dir) top_dir = dir;
-        while ((nextType = iter.next()) != CMenu.TreeItemType.INVALID) {
-            if (nextType == CMenu.TreeItemType.ENTRY) {
-                let entry = iter.get_entry();
-                let app = appsys.lookup_app(entry.get_desktop_file_id());
-                if (!app.get_nodisplay()) {
-                    has_entries = true;
-                    let app_key = app.get_id();
-                    if (app_key == null) {
-                        app_key = app.get_name() + ":" +
-                            app.get_description();
-                    }
-                    if (!(app_key in this._applicationsButtonFromApp)) {
-
-                        let applicationButton = new ApplicationButton(this, app);
-
-                        if (!this._knownApps.has(app_key)) {
-                            if (this._appsWereRefreshed) {
-                                applicationButton.highlight();
-                            } else {
-                                this._knownApps.add(app_key);
-                            }
-                        }
-
-                        this._applicationsButtons.push(applicationButton);
-                        applicationButton.category.push(top_dir.get_menu_id());
-                        this._applicationsButtonFromApp[app_key] = applicationButton;
-                    } else {
-                        this._applicationsButtonFromApp[app_key].category.push(dir.get_menu_id());
-                    }
-                }
-            } else if (nextType == CMenu.TreeItemType.DIRECTORY) {
-                let subdir = iter.get_directory();
-                if (this._loadCategory(subdir, top_dir)) {
-                    has_entries = true;
-                }
-            }
-        }
-        return has_entries;
     }
 
     _scrollToButton(button, scrollBox = null) {
