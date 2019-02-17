@@ -889,7 +889,7 @@ WorkspaceMonitor.prototype = {
             else
                 this._updateEmptyPlaceholder();
         } else {
-            let animate = global.settings.get_boolean("desktop-effects");
+            let animate = Main.wm.settingsState['desktop-effects'];
             this.positionWindows(animate ? WindowPositionFlags.ANIMATE : 0);
         }
 
@@ -928,7 +928,7 @@ WorkspaceMonitor.prototype = {
 
         if (this.actor.get_stage()) {
             clone._is_new_window = true;
-            let animate = global.settings.get_boolean("desktop-effects");
+            let animate = Main.wm.settingsState['desktop-effects'];
             this.positionWindows(animate ? WindowPositionFlags.ANIMATE : 0);
         }
     },
@@ -967,7 +967,7 @@ WorkspaceMonitor.prototype = {
 
     // Animate the full-screen to Overview transition.
     zoomToOverview : function() {
-        let animate = global.settings.get_boolean("desktop-effects");
+        let animate = Main.wm.settingsState['desktop-effects'];
         // Position and scale the windows.
         if (Main.overview.animationInProgress && animate)
             this.positionWindows(WindowPositionFlags.ANIMATE | WindowPositionFlags.INITIAL);
@@ -991,7 +991,7 @@ WorkspaceMonitor.prototype = {
         if (this.metaWorkspace != null && this.metaWorkspace != currentWorkspace)
             return;
 
-        let animate = global.settings.get_boolean("desktop-effects");
+        let animate = Main.wm.settingsState['desktop-effects'];
         if (!animate)
             return;
 

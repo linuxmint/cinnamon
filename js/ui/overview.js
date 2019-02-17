@@ -289,7 +289,7 @@ Overview.prototype = {
         global.overlay_group.add_actor(this.workspacesView.actor);
         Main.panelManager.disablePanels();
 
-        let animate = global.settings.get_boolean("desktop-effects");
+        let animate = Main.wm.settingsState['desktop-effects'];
         if (animate) {
             this._group.opacity = 0;
             Tweener.addTween(this._group, {
@@ -408,7 +408,7 @@ Overview.prototype = {
 
         this.workspacesView.hide();
 
-        let animate = global.settings.get_boolean("desktop-effects");
+        let animate = Main.wm.settingsState['desktop-effects'];
         if (animate) {
             // Make other elements fade out.
             Tweener.addTween(this._group, {
