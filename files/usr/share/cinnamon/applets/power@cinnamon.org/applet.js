@@ -581,7 +581,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             // The menu is built. Below, we update the information present in the panel (icon, tooltip and label)
             this.set_applet_enabled(true);
             let panel_device = null;
-            if (this._primaryDevice != null && !this.showmulti) {
+            if (this._primaryDevice != null && (!this.showmulti || this._devices.length == 1)) {
                 this.showDeviceInPanel(this._primaryDevice);
             }
             else {
