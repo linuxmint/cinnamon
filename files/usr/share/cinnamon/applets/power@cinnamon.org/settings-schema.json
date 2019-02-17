@@ -9,5 +9,11 @@
             "Show percentage and time remaining": "percentage_time",
             "Hide label": "nothing"
         }
+    },
+    "showmulti" : {
+        "type" : "switch",
+        "default" : false,
+        "description": "Always show all batteries",
+        "tooltip": "Check this to always show multiple batteries in the panel, regardless of whether one of them is marked primary."
     }
 }
