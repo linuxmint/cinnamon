@@ -594,12 +594,12 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                     if (this.labelinfo !== "nothing") {
                         for (let i = 0; i < this._devices.length; i++) {
                             labelText += i + ': ';
-                            let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = this._devices[i];
+                            let [, , , , , percentage, , , seconds] = this._devices[i];
                             if (this.labelinfo == "time" && seconds != 0) {
                                 let time = Math.round(seconds / 60);
                                 let minutes = time % 60;
                                 let hours = Math.floor(time / 60);
-                                labelText += C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+                                labelText += C_("time of battery remaining", "%d:%02d").format(hours, minutes);
                             }
                             else if (this.labelinfo == "percentage" || (this.labelinfo == "percentage_time" && seconds == 0)) {
                                 labelText += C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
