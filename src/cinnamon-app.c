@@ -444,7 +444,7 @@ cinnamon_app_activate_window (CinnamonApp     *app,
 {
   GSList *windows;
 
-  if (cinnamon_app_get_state (app) != CINNAMON_APP_STATE_RUNNING)
+  if (app->state != CINNAMON_APP_STATE_RUNNING)
     return;
 
   windows = cinnamon_app_get_windows (app);
@@ -722,7 +722,7 @@ cinnamon_app_is_on_workspace (CinnamonApp *app,
 {
   GSList *iter;
 
-  if (cinnamon_app_get_state (app) == CINNAMON_APP_STATE_STARTING)
+  if (app->state == CINNAMON_APP_STATE_STARTING)
     {
       if (app->started_on_workspace == -1 ||
           meta_workspace_index (workspace) == app->started_on_workspace)
@@ -907,7 +907,7 @@ _cinnamon_app_handle_startup_sequence (CinnamonApp          *app,
    * if it's currently stopped, set it as our application focus,
    * but focus the no_focus window.
    */
-  if (starting && cinnamon_app_get_state (app) == CINNAMON_APP_STATE_STOPPED)
+  if (starting && app->state == CINNAMON_APP_STATE_STOPPED)
     {
       MetaScreen *screen = cinnamon_global_get_screen (cinnamon_global_get ());
       MetaDisplay *display = meta_screen_get_display (screen);
@@ -945,7 +945,7 @@ cinnamon_app_request_quit (CinnamonApp   *app)
   CinnamonGlobal *global;
   GSList *iter;
 
-  if (cinnamon_app_get_state (app) != CINNAMON_APP_STATE_RUNNING)
+  if (app->state != CINNAMON_APP_STATE_RUNNING)
     return FALSE;
 
   /* TODO - check for an XSMP connection; we could probably use that */
