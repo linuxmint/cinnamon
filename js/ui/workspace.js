@@ -91,7 +91,7 @@ WindowClone.prototype = {
     refreshClone: function(withTransients) {
         this.actor.destroy_all_children();
 
-        let {x, y, width, height} = this.metaWindow.get_outer_rect();
+        let {x, y, width, height} = this.realWindow;
         let clones = WindowUtils.createWindowClone(this.metaWindow, 0, 0, withTransients);
         let leftGap, topGap;
         for (let clone of clones) {
@@ -676,7 +676,7 @@ WorkspaceMonitor.prototype = {
      */
     _computeWindowLayout: function(metaWindow, slot) {
         let [x, y, width, height] = this._getSlotGeometry(slot);
-        let rect = metaWindow.get_outer_rect();
+        let rect = metaWindow.get_input_rect();
         let topBorder = 0, bottomBorder = 0, leftBorder = 0, rightBorder = 0;
 
         if (this._windows.length) {
