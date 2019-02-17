@@ -10,7 +10,7 @@
 
 #include "cinnamon-app-private.h"
 #include "cinnamon-enum-types.h"
-#include "cinnamon-global.h"
+#include "cinnamon-global-private.h"
 #include "cinnamon-util.h"
 #include "cinnamon-app-system-private.h"
 #include "cinnamon-window-tracker-private.h"
@@ -43,6 +43,8 @@ typedef struct {
 struct _CinnamonApp
 {
   GObject parent;
+
+  CinnamonGlobal *global;
 
   int started_on_workspace;
 
@@ -174,8 +176,8 @@ window_backed_app_get_icon (CinnamonApp *app,
   CinnamonGlobal *global;
   StThemeContext *context;
 
-  global = cinnamon_global_get ();
-  context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
+  global = app->global;
+  context = st_theme_context_get_for_stage (global->stage);
   g_object_get (context, "scale-factor", &scale, NULL);
 
   /* During a state transition from running to not-running for
@@ -456,9 +458,9 @@ cinnamon_app_activate_window (CinnamonApp     *app,
   else
     {
       GSList *iter;
-      CinnamonGlobal *global = cinnamon_global_get ();
-      MetaScreen *screen = cinnamon_global_get_screen (global);
-      MetaDisplay *display = meta_screen_get_display (screen);
+      CinnamonGlobal *global = app->global;
+      MetaScreen *screen = global->meta_screen;
+      MetaDisplay *display = global->meta_display;
       MetaWorkspace *active = meta_screen_get_active_workspace (screen);
       MetaWorkspace *workspace = meta_window_get_workspace (window);
       guint32 last_user_timestamp = meta_display_get_last_user_time (display);
@@ -531,7 +533,7 @@ cinnamon_app_activate_full (CinnamonApp      *app,
 {
   CinnamonGlobal *global;
 
-  global = cinnamon_global_get ();
+  global = app->global;
 
   if (timestamp == 0)
     timestamp = cinnamon_global_get_current_time (global);
@@ -700,7 +702,7 @@ cinnamon_app_get_windows (CinnamonApp *app)
     {
       CompareWindowsData data;
       data.app = app;
-      data.active_workspace = meta_screen_get_active_workspace (cinnamon_global_get_screen (cinnamon_global_get ()));
+      data.active_workspace = meta_screen_get_active_workspace (app->global->meta_screen);
       app->running_state->windows = g_slist_sort_with_data (app->running_state->windows, cinnamon_app_compare_windows, &data);
       app->running_state->window_sort_stale = FALSE;
     }
@@ -909,7 +911,7 @@ _cinnamon_app_handle_startup_sequence (CinnamonApp          *app,
    */
   if (starting && app->state == CINNAMON_APP_STATE_STOPPED)
     {
-      MetaScreen *screen = cinnamon_global_get_screen (cinnamon_global_get ());
+      MetaScreen *screen = app->global->meta_screen;
       MetaDisplay *display = meta_screen_get_display (screen);
 
       cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STARTING);
@@ -950,7 +952,7 @@ cinnamon_app_request_quit (CinnamonApp   *app)
 
   /* TODO - check for an XSMP connection; we could probably use that */
 
-  global = cinnamon_global_get ();
+  global = app->global;
 
   for (iter = app->running_state->windows; iter; iter = iter->next)
     {
@@ -1019,9 +1021,9 @@ cinnamon_app_launch (CinnamonApp     *app,
       return TRUE;
     }
 
-  global = cinnamon_global_get ();
-  screen = cinnamon_global_get_screen (global);
-  gdisplay = gdk_screen_get_display (cinnamon_global_get_gdk_screen (global));
+  global = app->global;
+  screen = global->meta_screen;
+  gdisplay = global->gdk_display;
 
   if (timestamp == 0)
     timestamp = cinnamon_global_get_current_time (global);
@@ -1075,7 +1077,7 @@ create_running_state (CinnamonApp *app)
 
   g_assert (app->running_state == NULL);
 
-  screen = cinnamon_global_get_screen (cinnamon_global_get ());
+  screen = app->global->meta_screen;
   app->running_state = g_slice_new0 (CinnamonAppRunningState);
   app->running_state->refcount = 1;
   app->running_state->workspace_switch_id =
@@ -1086,12 +1088,14 @@ static void
 unref_running_state (CinnamonAppRunningState *state)
 {
   MetaScreen *screen;
+  CinnamonGlobal *global;
 
   state->refcount--;
   if (state->refcount > 0)
     return;
 
-  screen = cinnamon_global_get_screen (cinnamon_global_get ());
+  global = cinnamon_global_get ();
+  screen = global->meta_screen;
 
   g_signal_handler_disconnect (screen, state->workspace_switch_id);
   g_slice_free (CinnamonAppRunningState, state);
@@ -1102,6 +1106,7 @@ cinnamon_app_init (CinnamonApp *self)
 {
   self->state = CINNAMON_APP_STATE_STOPPED;
   self->keywords = NULL;
+  self->global = cinnamon_global_get ();
 }
 
 static void
