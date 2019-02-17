@@ -19,7 +19,7 @@
 
 #include "cinnamon-window-tracker-private.h"
 #include "cinnamon-app-private.h"
-#include "cinnamon-global.h"
+#include "cinnamon-global-private.h"
 #include "st.h"
 
 /* This file includes modified code from
@@ -42,6 +42,8 @@
 struct _CinnamonWindowTracker
 {
   GObject parent;
+
+  CinnamonGlobal *global;
 
   CinnamonApp *focus_app;
 
@@ -435,7 +437,7 @@ update_focus_app (CinnamonWindowTracker *self)
   MetaWindow *new_focus_win;
   CinnamonApp *new_focus_app;
 
-  new_focus_win = meta_display_get_focus_window (cinnamon_global_get_display (cinnamon_global_get ()));
+  new_focus_win = meta_display_get_focus_window (self->global->meta_display);
   new_focus_app = new_focus_win ? cinnamon_window_tracker_get_window_app (self, new_focus_win) : NULL;
 
   set_focus_app (self, new_focus_app);
@@ -544,7 +546,7 @@ static void
 load_initial_windows (CinnamonWindowTracker *tracker)
 {
   GList *workspaces, *iter;
-  MetaScreen *screen = cinnamon_global_get_screen (cinnamon_global_get ());
+  MetaScreen *screen = tracker->global->meta_screen;
   workspaces = meta_screen_get_workspaces (screen);
 
   for (iter = workspaces; iter; iter = iter->next)
@@ -599,7 +601,7 @@ static void
 init_window_tracking (CinnamonWindowTracker *self)
 {
   MetaDisplay *display;
-  MetaScreen *screen = cinnamon_global_get_screen (cinnamon_global_get ());
+  MetaScreen *screen = self->global->meta_screen;
 
   g_signal_connect (screen, "notify::n-workspaces",
                     G_CALLBACK (cinnamon_window_tracker_on_n_workspaces_changed), self);
@@ -629,12 +631,14 @@ cinnamon_window_tracker_init (CinnamonWindowTracker *self)
 {
   MetaScreen *screen;
 
+  self->global = cinnamon_global_get ();
+
   self->window_to_app = g_hash_table_new_full (g_direct_hash, g_direct_equal,
                                                NULL, (GDestroyNotify) g_object_unref);
 
   self->launched_pid_to_app = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify) g_object_unref);
 
-  screen = cinnamon_global_get_screen (cinnamon_global_get ());
+  screen = self->global->meta_screen;
 
   g_signal_connect (G_OBJECT (screen), "startup-sequence-changed",
                     G_CALLBACK (on_startup_sequence_changed), self);
@@ -792,9 +796,7 @@ on_focus_window_changed (MetaDisplay        *display,
 GSList *
 cinnamon_window_tracker_get_startup_sequences (CinnamonWindowTracker *self)
 {
-  CinnamonGlobal *global = cinnamon_global_get ();
-  MetaScreen *screen = cinnamon_global_get_screen (global);
-  return meta_screen_get_startup_sequences (screen);
+  return meta_screen_get_startup_sequences (self->global->meta_screen);
 }
 
 /* sn_startup_sequence_ref returns void, so make a
@@ -886,7 +888,7 @@ cinnamon_startup_sequence_create_icon (CinnamonStartupSequence *sequence, guint 
       texture = clutter_texture_new ();
 
       global = cinnamon_global_get ();
-      context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
+      context = st_theme_context_get_for_stage (global->stage);
       g_object_get (context, "scale-factor", &scale, NULL);
 
       clutter_actor_set_size (texture, size * scale, size * scale);
