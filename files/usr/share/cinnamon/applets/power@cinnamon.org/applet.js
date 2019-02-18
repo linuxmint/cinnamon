@@ -581,7 +581,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             // The menu is built. Below, we update the information present in the panel (icon, tooltip and label)
             this.set_applet_enabled(true);
             let panel_device = null;
-            if (this._primaryDevice != null && (!this.showmulti || this._devices.length == 1)) {
+            if (this._primaryDevice != null && (!this.showmulti || this._devices.length === 1)) {
                 this.showDeviceInPanel(this._primaryDevice);
             }
             else {
@@ -595,13 +595,13 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         for (let i = 0; i < this._devices.length; i++) {
                             labelText += i + ': ';
                             let [, , , , , percentage, , , seconds] = this._devices[i];
-                            if (this.labelinfo == "time" && seconds != 0) {
+                            if (this.labelinfo == "time" && seconds !== 0) {
                                 let time = Math.round(seconds / 60);
                                 let minutes = time % 60;
                                 let hours = Math.floor(time / 60);
                                 labelText += C_("time of battery remaining", "%d:%02d").format(hours, minutes);
                             }
-                            else if (this.labelinfo == "percentage" || (this.labelinfo == "percentage_time" && seconds == 0)) {
+                            else if (this.labelinfo == "percentage" || (this.labelinfo == "percentage_time" && seconds === 0)) {
                                 labelText += C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
                             }
                             else if (this.labelinfo == "percentage_time") {
