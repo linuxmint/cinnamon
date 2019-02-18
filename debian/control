@@ -94,6 +94,7 @@ Depends:
  python3-pexpect,
  python3-pil,
  python3-pyinotify,
+ python3-setproctitle,
  streamer,
  wget,
  xapps-common,

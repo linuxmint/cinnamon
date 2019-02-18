@@ -8,8 +8,10 @@ Usage:  cinnamon-subprocess-wrapper ls ~/
 import subprocess
 import sys
 import dbus
+from setproctitle import setproctitle
 
 if __name__ == "__main__":
+    setproctitle("cinnamon-subprocess-wrapper")
     process_id = int(sys.argv[1])
     try:
         result = subprocess.check_output(sys.argv[2:])

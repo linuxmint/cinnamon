@@ -6,6 +6,7 @@ and runs in the background to detect that keybinding
 
 import os
 import syslog
+from setproctitle import setproctitle
 
 import gi
 gi.require_version('Keybinder', '3.0')  # noqa
@@ -53,5 +54,6 @@ class KillerDaemon:
 
 
 if __name__ == '__main__':
+    setproctitle("cinnamon-killer-daemon")
     daemon = KillerDaemon()
     Gtk.main()
