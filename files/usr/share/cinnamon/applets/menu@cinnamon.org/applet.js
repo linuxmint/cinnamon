@@ -891,7 +891,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
-        this.orientation = orientation;
 
         this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
 
@@ -1075,18 +1074,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     on_orientation_changed (orientation) {
-        this.orientation = orientation;
-
-        this.menu.destroy();
-        this.menu = new Applet.AppletPopupMenu(this, orientation);
-        this.menuManager.addMenu(this.menu);
-
-        this.menu.setCustomStyleClass('menu-background');
-        this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
-        this._display();
-
-        if (this.initial_load_done)
-            this._refreshAll();
         this._updateIconAndLabel();
     }
 
@@ -1220,7 +1207,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         // Hide the menu label in vertical panels
-        if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT)
+        if (this._orientation == St.Side.LEFT || this._orientation == St.Side.RIGHT)
         {
             this.set_applet_label("");
         }
