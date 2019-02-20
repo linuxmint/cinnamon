@@ -471,30 +471,12 @@ var WindowManager = class WindowManager {
         const settingsState = {
             'desktop-effects-on-dialogs': global.settings.get_boolean('desktop-effects-on-dialogs'),
             'desktop-effects-on-menus': global.settings.get_boolean('desktop-effects-on-menus'),
-            'show-snap-osd': global.settings.get_boolean('show-snap-osd'),
-            'show-tile-hud': global.settings.get_boolean('show-tile-hud'),
-            'workspace-osd-visible': global.settings.get_boolean('workspace-osd-visible'),
-            'workspace-osd-x': global.settings.get_int('workspace-osd-x'),
-            'workspace-osd-y': global.settings.get_int('workspace-osd-y'),
-            'workspace-osd-duration': global.settings.get_int('workspace-osd-duration'),
-            'alttab-switcher-style': global.settings.get_string('alttab-switcher-style'),
             'desktop-effects': this.settings.get_boolean('desktop-effects'),
-            'workspaces-only-on-primary': this.settings.get_boolean('workspaces-only-on-primary'),
-            'snap-modifier': this.settings.get_string('snap-modifier'),
         };
 
         global.settings.connect('changed::desktop-effects-on-dialogs', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         global.settings.connect('changed::desktop-effects-on-menus', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
-        global.settings.connect('changed::show-snap-osd', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
-        global.settings.connect('changed::show-tile-hud', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
-        global.settings.connect('changed::workspace-osd-visible', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
-        global.settings.connect('changed::workspace-osd-x', (s, k) => this.onSettingsChanged(s, k, 'get_int'));
-        global.settings.connect('changed::workspace-osd-y', (s, k) => this.onSettingsChanged(s, k, 'get_int'));
-        global.settings.connect('changed::workspace-osd-duration', (s, k) => this.onSettingsChanged(s, k, 'get_int'));
-        global.settings.connect('changed::alttab-switcher-style', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
         this.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
-        this.settings.connect('changed::workspaces-only-on-primary', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
-        this.settings.connect('changed::snap-modifier', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
 
         each(this.effects, (value, key) => {
             if (key === 'unmaximize' || key === 'unminimize') return;
@@ -921,7 +903,7 @@ var WindowManager = class WindowManager {
     }
 
     _showHudPreview(cinnamonwm, currentProximityZone, workArea, snapQueued) {
-        if (this.settingsState['show-tile-hud']) {
+        if (global.settings.get_boolean('show-tile-hud')) {
             if (!this._hudPreview)
                 this._hudPreview = new HudPreview();
             this._hudPreview.show(currentProximityZone, workArea, snapQueued, this.settingsState['desktop-effects']);
@@ -939,12 +921,12 @@ var WindowManager = class WindowManager {
     showWorkspaceOSD() {
         this._hideSnapOSD();
         this._hideWorkspaceOSD();
-        if (this.settingsState['workspace-osd-visible']) {
-            let osd_x = this.settingsState['workspace-osd-x'];
-            let osd_y = this.settingsState['workspace-osd-y'];
-            let duration = this.settingsState['workspace-osd-duration'] / 1000;
+        if (global.settings.get_boolean('workspace-osd-visible')) {
+            let osd_x = global.settings.get_int('workspace-osd-x');
+            let osd_y = global.settings.get_int('workspace-osd-y');
+            let duration = global.settings.get_int('workspace-osd-duration') / 1000;
             let current_workspace_index = global.screen.get_active_workspace_index();
-            if (this.settingsState['workspaces-only-on-primary']) {
+            if (this.settings.get_boolean('workspaces-only-on-primary')) {
                 this._showWorkspaceOSDOnMonitor(layoutManager.primaryMonitor, osd_x, osd_y, duration, current_workspace_index);
             }
             else {
@@ -1003,11 +985,11 @@ var WindowManager = class WindowManager {
     }
 
     _showSnapOSD(metaScreen, monitorIndex) {
-        if (this.settingsState['show-snap-osd']) {
+        if (global.settings.get_boolean('show-snap-osd')) {
             if (this._snapOsd == null) {
                 this._snapOsd = new InfoOSD();
 
-                let mod = this.settingsState['snap-modifier'];
+                let mod = this.settings.get_string('snap-modifier');
                 if (mod === 'Super')
                     this._snapOsd.addText(_("Hold <Super> to enter snap mode"));
                 else if (mod === 'Alt')
@@ -1031,7 +1013,7 @@ var WindowManager = class WindowManager {
     _createAppSwitcher(binding) {
         if (getWindowsForBinding(binding).length === 0) return;
 
-        switch (this.settingsState['alttab-switcher-style']) {
+        switch (global.settings.get_string('alttab-switcher-style')) {
             case 'coverflow':
                 new CoverflowSwitcher(binding);
                 break;
