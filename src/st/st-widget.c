@@ -1591,14 +1591,14 @@ StThemeNode *new_theme_node = st_widget_get_theme_node (widget);
         }
       if (new_theme_node->background_bumpmap != NULL)
         {
-          const char *bumpmap_path;
-
           if (widget->priv->background_bumpmap_effect == NULL)
             {
+              const char *bumpmap_path;
+
               widget->priv->background_bumpmap_effect = (StBackgroundBumpmapEffect *) st_background_bumpmap_effect_new ();
+              bumpmap_path = st_theme_node_get_background_bumpmap(new_theme_node);
+              widget->priv->background_bumpmap_effect->bumpmap_path = strdup (bumpmap_path);
             }
-          bumpmap_path = st_theme_node_get_background_bumpmap(new_theme_node);
-          widget->priv->background_bumpmap_effect->bumpmap_path = strdup (bumpmap_path);
         }
     }
 }

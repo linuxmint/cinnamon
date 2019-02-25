@@ -532,25 +532,6 @@ st_background_bumpmap_effect_init (StBackgroundBumpmapEffect *self)
 
   self->bg_texture = NULL;
 
-  self->bumpmap_path = "/usr/share/cinnamon/bumpmaps/frost.png";
-
-  self->bg_bumpmap = st_cogl_texture_new_from_file_wrapper (self->bumpmap_path,
-                                                            COGL_TEXTURE_NO_SLICING,
-                                                            COGL_PIXEL_FORMAT_RGBA_8888_PRE);
-  if (self->bg_bumpmap != NULL)
-    {
-      self->bumptex_width = cogl_texture_get_width (self->bg_bumpmap);
-      self->bumptex_height = cogl_texture_get_height (self->bg_bumpmap);
-
-      cogl_pipeline_set_layer_texture (self->pipeline0, 1, self->bg_bumpmap);
-    }
-  else
-    {
-      cogl_pipeline_set_layer_null_texture (self->pipeline0,
-                                            1,
-                                            COGL_TEXTURE_TYPE_2D);
-    }
-
   cogl_pipeline_set_layer_combine (self->pipeline0,1,
                                    "RGBA = REPLACE (PREVIOUS)",
                                    NULL);
