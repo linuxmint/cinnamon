@@ -1899,7 +1899,7 @@ Panel.prototype = {
         this._processPanelAutoHide();
 
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
-        this.actor.set_style_changed_callback((n) => this._moveResizePanel(n));
+        this.actor.set_style_changed_callback((n) => this._moveResizePanel(null, null, n));
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
         this.actor.connect('queue-relayout', () => this._setPanelHeight());
@@ -2553,7 +2553,7 @@ Panel.prototype = {
      * Function to update the panel position, size, and clip region according to settings
      * values.  Note that this is also called when the style changes.
      */
-    _moveResizePanel: function(themeNode) {
+    _moveResizePanel: function(settings, key, themeNode) {
         if (this._destroyed)
             return false;
 
