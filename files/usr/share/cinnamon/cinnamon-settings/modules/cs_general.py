@@ -40,11 +40,18 @@ class Module:
 
                 combo.content_widget.connect('changed', on_changed)
 
-            settings = page.add_section(_("Miscellaneous Options"))
+            settings = page.add_section(_("Compositor Options"))
+
+            switch = GSettingsSwitch(_("Enable VBlank (Requires Cinnamon restart)"), "org.cinnamon.muffin", "sync-to-vblank")
+            switch.set_tooltip_text(_("""Select this option to allow Cinnamon to match the timing of frames rendered with the monitor's refresh rate. """
+                """Choose this option if you are experiencing screen-tearing. The option to disable compositing for full-screen windows overrides this setting."""))
+            settings.add_row(switch)
 
             switch = GSettingsSwitch(_("Disable compositing for full-screen windows"), "org.cinnamon.muffin", "unredirect-fullscreen-windows")
             switch.set_tooltip_text(_("Select this option to let full-screen applications skip the compositing manager and run at maximum speed. Unselect it if you're experiencing screen-tearing in full screen mode."))
             settings.add_row(switch)
+
+            settings = page.add_section(_("Miscellaneous Options"))
 
             switch = GSettingsSwitch(_("Disable automatic screen rotation"), "org.cinnamon.settings-daemon.peripherals.touchscreen", "orientation-lock")
             switch.set_tooltip_text(_("Select this option to disable automatic screen rotation on hardware equipped with supported accelerometers."))

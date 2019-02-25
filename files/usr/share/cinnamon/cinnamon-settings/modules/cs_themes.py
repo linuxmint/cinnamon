@@ -3,7 +3,6 @@
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
 
 from GSettingsWidgets import *
-from CinnamonGtkSettings import GtkSettingsSwitch
 from ExtensionCore import DownloadSpicesPage
 from Spices import Spice_Harvester
 
@@ -11,6 +10,19 @@ import glob
 
 ICON_SIZE = 48
 
+# Gtk and Cinnamon check folders in order of precedence.  These lists match the
+# order.  It doesn't really matter here, since we're only looking for names,
+# but it's helpful to be aware of it.
+
+ICON_FOLDERS = [
+    os.path.join(GLib.get_user_data_dir(), "icons"),
+    os.path.join(GLib.get_home_dir(), ".icons")
+] + [os.path.join(datadir, "icons") for datadir in GLib.get_system_data_dirs()]
+
+THEME_FOLDERS = [
+    os.path.join(GLib.get_user_data_dir(), "themes"),
+    os.path.join(GLib.get_home_dir(), ".themes")
+] + [os.path.join(datadir, "themes") for datadir in GLib.get_system_data_dirs()]
 
 class Module:
     comment = _("Manage themes to change how your desktop looks")
@@ -77,13 +89,6 @@ class Module:
             widget = GSettingsSwitch(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons")
             settings.add_row(widget)
 
-            dark_text = _("Use a dark theme variant when available in certain applications")
-            dark_italic = _("(Applications must be restarted for this change to take effect)")
-
-            widget = GtkSettingsSwitch("%s\n<i><small>%s</small></i>" % (dark_text, dark_italic),
-                                       "gtk-application-prefer-dark-theme")
-            settings.add_row(widget)
-
             self.builder = self.sidePage.builder
 
             for path in [os.path.expanduser("~/.themes"), os.path.expanduser("~/.icons")]:
@@ -96,9 +101,13 @@ class Module:
             for path in [os.path.expanduser("~/.themes"), "/usr/share/themes", os.path.expanduser("~/.icons"), "/usr/share/icons"]:
                 if os.path.exists(path):
                     file_obj = Gio.File.new_for_path(path)
-                    file_monitor = file_obj.monitor_directory(Gio.FileMonitorFlags.SEND_MOVED, None)
-                    file_monitor.connect("changed", self.on_file_changed)
-                    self.monitors.append(file_monitor)
+                    try:
+                        file_monitor = file_obj.monitor_directory(Gio.FileMonitorFlags.SEND_MOVED, None)
+                        file_monitor.connect("changed", self.on_file_changed)
+                        self.monitors.append(file_monitor)
+                    except Exception as e:
+                        # File monitors can fail when the OS runs out of file handles
+                        print(e)
 
             self.refresh()
 
@@ -258,7 +267,7 @@ class Module:
 
     def _load_gtk_themes(self):
         """ Only shows themes that have variations for gtk+-3 and gtk+-2 """
-        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
+        dirs = THEME_FOLDERS
         valid = walk_directories(dirs, self.filter_func_gtk_dir, return_directories=True)
         valid.sort(key=lambda a: a[0].lower())
         res = []
@@ -283,7 +292,7 @@ class Module:
         return False
 
     def _load_icon_themes(self):
-        dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
+        dirs = ICON_FOLDERS
         walked = walk_directories(dirs, lambda d: os.path.isdir(d), return_directories=True)
         valid = []
         for directory in walked:
@@ -310,7 +319,7 @@ class Module:
         return res
 
     def _load_cursor_themes(self):
-        dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
+        dirs = ICON_FOLDERS
         valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True)
         valid.sort(key=lambda a: a[0].lower())
         res = []
@@ -325,7 +334,7 @@ class Module:
         return res
 
     def _load_metacity_themes(self):
-        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
+        dirs = THEME_FOLDERS
         valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "metacity-1/metacity-theme-3.xml")), return_directories=True)
         valid.sort(key=lambda a: a[0].lower())
         res = []
@@ -340,7 +349,7 @@ class Module:
         return res
 
     def _load_cinnamon_themes(self):
-        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
+        dirs = THEME_FOLDERS
         valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "cinnamon")), return_directories=True)
         valid.sort(key=lambda a: a[0].lower())
         res = []

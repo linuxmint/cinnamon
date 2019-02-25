@@ -351,6 +351,13 @@ CinnamonDBus.prototype = {
     },
 
     updateSetting: function(uuid, instance_id, key, payload) {
+        if (!Main.settingsManager.uuids[uuid]) {
+            global.logWarning(
+                `[CinnamonDBus] [${uuid}] Unable to find UUID from SettingsManager - ` +
+                'this is likely due to configuring settings from a removed xlet.'
+            );
+            return;
+        }
         Main.settingsManager.uuids[uuid][instance_id].remoteUpdate(key, payload);
     },
 

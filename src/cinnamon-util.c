@@ -499,20 +499,6 @@ cinnamon_util_get_transformed_allocation (ClutterActor    *actor,
   box->y2 = y_max;
 }
 
-char *
-cinnamon_util_normalize_and_casefold (const char *str)
-{
-  char *normalized, *result;
-
-  if (str == NULL)
-    return NULL;
-
-  normalized = g_utf8_normalize (str, -1, G_NORMALIZE_ALL);
-  result = g_utf8_casefold (normalized, -1);
-  g_free (normalized);
-  return result;
-}
-
 /**
  * cinnamon_util_format_date:
  * @format: a strftime-style string format, as parsed by
@@ -610,8 +596,8 @@ cinnamon_util_get_week_start (void)
 
   if (week_start < 0 || week_start > 6)
     {
-      g_warning ("Whoever translated calendar:week_start:0 for GTK+ "
-                 "did so wrongly.\n");
+      g_warning ("calendar:week_start:0 for GTK+ "
+                 "was translated wrongly.\n");
       week_start = 0;
     }
 #endif

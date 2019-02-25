@@ -1,5 +1,5 @@
 AC_PREREQ(2.63)
-AC_INIT([cinnamon],[3.6.7],[https://github.com/linuxmint/Cinnamon/issues],[cinnamon])
+AC_INIT([cinnamon],[4.0.9],[https://github.com/linuxmint/Cinnamon/issues],[cinnamon])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/cinnamon-global.c])
@@ -15,6 +15,7 @@ AM_INIT_AUTOMAKE([1.11 no-dist-gzip dist-xz tar-ustar foreign subdir-objects])
 AM_MAINTAINER_MODE([enable])
 
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+m4_divert_text([DEFAULTS], [: "${ARFLAGS=cr} ${AR_FLAGS=cr}"])
 
 # Checks for programs.
 AC_PROG_CC
@@ -49,17 +50,17 @@ if $PKG_CONFIG --exists gstreamer-1.0 '>=' $GSTREAMER_MIN_VERSION ; then
    AC_MSG_RESULT(yes)
    build_recorder=true
    recorder_modules="gstreamer-1.0 gstreamer-base-1.0 x11"
-   PKG_CHECK_MODULES(TEST_CINNAMON_RECORDER, $recorder_modules clutter-1.0 xfixes)
+   PKG_CHECK_MODULES(TEST_CINNAMON_RECORDER, $recorder_modules muffin-clutter-0 xfixes)
 else
    AC_MSG_RESULT(no)
 fi
 
 AM_CONDITIONAL(BUILD_RECORDER, $build_recorder)
 
-CLUTTER_MIN_VERSION=1.10.0
+CLUTTER_MIN_VERSION=0
 GOBJECT_INTROSPECTION_MIN_VERSION=0.9.2
 GJS_MIN_VERSION=3.2.0
-MUFFIN_MIN_VERSION=3.5.0
+MUFFIN_MIN_VERSION=4.0.3
 GTK_MIN_VERSION=3.12.0
 GIO_MIN_VERSION=2.35.0
 POLKIT_MIN_VERSION=0.100
@@ -71,13 +72,16 @@ PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                libmuffin >= $MUFFIN_MIN_VERSION
                                cjs-1.0 >= $GJS_MIN_VERSION
-			       libcinnamon-menu-3.0 $recorder_modules
+                               libcinnamon-menu-3.0 $recorder_modules
                                gdk-x11-3.0 libsoup-2.4 gl
-			       clutter-x11-1.0 >= $CLUTTER_MIN_VERSION
+                               muffin-cogl-pango-0
+                               muffin-cogl-path-0
+                               muffin-cogl-0
+                               muffin-clutter-0
                                libstartup-notification-1.0 >= $STARTUP_NOTIFICATION_MIN_VERSION
                                gobject-introspection-1.0 >= $GOBJECT_INTROSPECTION_MIN_VERSION
                                polkit-agent-1 >= $POLKIT_MIN_VERSION xfixes
-                               libnm-glib libnm-util atk-bridge-2.0)
+                               libnm atk-bridge-2.0)
 
 PKG_CHECK_MODULES(CINNAMON_PERF_HELPER, gtk+-3.0 gio-2.0)
 
@@ -98,24 +102,10 @@ AC_CHECK_FUNCS(XFixesCreatePointerBarrier)
 CFLAGS=$saved_CFLAGS
 LIBS=$saved_LIBS
 
-PKG_CHECK_MODULES(ST, clutter-1.0 gtk+-3.0 libcroco-0.6 >= 0.6.2 cinnamon-desktop >= 2.4.0 x11)
+PKG_CHECK_MODULES(ST, muffin-cogl-path-0 muffin-clutter-0 gtk+-3.0 libcroco-0.6 >= 0.6.2 cinnamon-desktop >= 2.4.0 x11)
 PKG_CHECK_MODULES(GDMUSER, dbus-glib-1 gtk+-3.0)
-PKG_CHECK_MODULES(TRAY, clutter-1.0 gtk+-3.0)
+PKG_CHECK_MODULES(TRAY, muffin-clutter-0 gtk+-3.0)
 PKG_CHECK_MODULES(DESKTOP_SCHEMAS, cinnamon-desktop >= 2.4.0)
-
-AC_MSG_CHECKING([for bluetooth support])
-PKG_CHECK_EXISTS([gnome-bluetooth-1.0 >= 3.1.0],
-        [BLUETOOTH_DIR=`$PKG_CONFIG --variable=applet_libdir gnome-bluetooth-1.0`
-	 BLUETOOTH_LIBS=`$PKG_CONFIG --variable=applet_libs gnome-bluetooth-1.0`
-	 AC_SUBST([BLUETOOTH_LIBS],["$BLUETOOTH_LIBS"])
-	 AC_SUBST([BLUETOOTH_DIR],["$BLUETOOTH_DIR"])
-	 AC_DEFINE_UNQUOTED([BLUETOOTH_DIR],["$BLUETOOTH_DIR"],[Path to installed GnomeBluetooth typelib and library])
-	 AC_DEFINE([HAVE_BLUETOOTH],[1],[Define if you have libgnome-bluetooth-applet])
-	 AC_SUBST([HAVE_BLUETOOTH],[1])
-	 AC_MSG_RESULT([yes])],
-	[AC_DEFINE([HAVE_BLUETOOTH],[0])
-	 AC_SUBST([HAVE_BLUETOOTH],[0])
-	 AC_MSG_RESULT([no])])
 
 MUFFIN_GIR_DIR=`$PKG_CONFIG --variable=girdir libmuffin`
 MUFFIN_TYPELIB_DIR=`$PKG_CONFIG --variable=typelibdir libmuffin`

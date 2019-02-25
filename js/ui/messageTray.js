@@ -32,7 +32,6 @@ var LONGER_HIDE_TIMEOUT = 0.6;
 
 var MAX_SOURCE_TITLE_WIDTH = 180;
 
-
 // We delay hiding of the tray if the mouse is within MOUSE_LEFT_ACTOR_THRESHOLD
 // range from the point where it left the tray.
 var MOUSE_LEFT_ACTOR_THRESHOLD = 20;
@@ -196,21 +195,21 @@ URLHighlighter.prototype = {
     },
 
     _findUrlAtPos: function(event) {
+        if (!this._urls.length)
+            return -1;
+
         let success;
         let [x, y] = event.get_coords();
-        [success, x, y] = this.actor.transform_stage_point(x, y);
-        let find_pos = -1;
-        for (let i = 0; i < this.actor.clutter_text.text.length; i++) {
-            let [success, px, py, line_height] = this.actor.clutter_text.position_to_coords(i);
-            if (py > y || py + line_height < y || x < px)
-                continue;
-            find_pos = i;
-        }
-        if (find_pos != -1) {
-            for (let i = 0; i < this._urls.length; i++)
-            if (find_pos >= this._urls[i].pos &&
-                this._urls[i].pos + this._urls[i].url.length > find_pos)
-                return i;
+        let ct = this.actor.clutter_text;
+        [success, x, y] = ct.transform_stage_point(x, y);
+        if (success && x >= 0 && x <= ct.width
+                    && y >= 0 && y <= ct.height) {
+            let pos = ct.coords_to_position(x, y);
+            for (let i = 0; i < this._urls.length; i++) {
+                let url = this._urls[i]
+                if (pos >= url.pos && pos <= url.pos + url.url.length)
+                    return i;
+            }
         }
         return -1;
     }
@@ -453,7 +452,6 @@ Notification.prototype = {
             }));
 
         this.actor = new St.Button({ accessible_role: Atk.Role.NOTIFICATION });
-        this.actor._delegate = this;
         this.actor._parent_container = null;
         this.actor.connect('clicked', Lang.bind(this, this._onClicked));
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
@@ -623,10 +621,22 @@ Notification.prototype = {
 
     _createScrollArea: function() {
         this._table.add_style_class_name('multi-line-notification');
+
+        // FIXME: this doesn't actually scroll/limit notification size with the current policies.
+        // if we allow scrolling, then there doesn't seem to be a minimum height when inside the
+        // tray which breaks the layout and in the extreme case makes the notifications unreadable
         this._scrollArea = new St.ScrollView({ name: 'notification-scrollview',
                                                vscrollbar_policy: Gtk.PolicyType.NEVER,
                                                hscrollbar_policy: Gtk.PolicyType.NEVER,
                                                style_class: 'vfade' });
+
+        // prevent non-scrollable notifications from taking scroll events, otherwise we can't
+        // easily scroll the message tray.
+        // FIXME: if we enable scrolling then we may want to toggle this based on vscrollbar_visible
+        // or whether the notification is in the tray.
+        // something like: scrollArea.connect("notify::vscrollbar-visible", () => (enable = visible));
+        this._scrollArea.enable_mouse_scrolling = false;
+
         this._table.add(this._scrollArea, { row: 1,
                                             col: 2 });
         this._updateLastColumnSettings();
@@ -1019,7 +1029,6 @@ Notification.prototype = {
     destroy: function(reason) {
         this._destroyedReason = reason;
         this.actor.destroy();
-        this.actor._delegate = null;
     }
 };
 Signals.addSignalMethods(Notification.prototype);
@@ -1030,6 +1039,7 @@ function Source(title) {
 
 Source.prototype = {
     ICON_SIZE: 24,
+    MAX_NOTIFICATIONS: 10,
 
     _init: function(title) {
         this.title = title;
@@ -1109,6 +1119,10 @@ Source.prototype = {
 
     _updateCount: function() {
         let count = this.notifications.length;
+        if (count > this.MAX_NOTIFICATIONS) {
+            let oldestNotif = this.notifications.shift();
+            oldestNotif.destroy();
+        }
         this._setCount(count, count > 1);
     },
 
@@ -1423,8 +1437,6 @@ MessageTray.prototype = {
         this._traySummoned = false;
         this._useLongerTrayLeftTimeout = false;
         this._trayLeftTimeoutId = 0;
-        this._pointerInTray = false;
-        this._pointerInKeyboard = false;
         this._notificationState = State.HIDDEN;
         this._notificationTimeoutId = 0;
         this._notificationExpandedId = 0;
@@ -1581,14 +1593,12 @@ MessageTray.prototype = {
 
     _escapeTray: function() {
         this._unlock();
-        this._pointerInTray = false;
         this._updateNotificationTimeout(0);
         this._updateState();
     },
 
     // All of the logic for what happens when occurs here; the various
-    // event handlers merely update variables such as
-    // 'this._pointerInTray', 'this._summaryState', etc, and
+    // event handlers merely update variables and
     // _updateState() figures out what (if anything) needs to be done
     // at the present time.
     _updateState: function() {
@@ -1599,9 +1609,7 @@ MessageTray.prototype = {
 
         let notificationExpired = (this._notificationTimeoutId == 0 &&
                 !(this._notification && this._notification.urgency == Urgency.CRITICAL) &&
-                !this._pointerInTray &&
-                !this._locked &&
-                !(this._pointerInKeyboard && notificationExpanded)
+                !this._locked
             ) || this._notificationRemoved;
         let canShowNotification = notificationsPending && this._notificationsEnabled;
 
@@ -1665,8 +1673,8 @@ MessageTray.prototype = {
         let topPanel = Main.panelManager.getPanel(0, 0);
         let bottomPanel = Main.panelManager.getPanel(0, 1);
         let rightPanel = Main.panelManager.getPanel(0, 3);
-        let topGap = 5;
-        let bottomGap = 15;
+        let topGap = 10;
+        let bottomGap = 10;
         let rightGap = 0;
 
         if (rightPanel) {
@@ -1677,7 +1685,7 @@ MessageTray.prototype = {
             if (topPanel) {
                 topGap += topPanel.actor.get_height();
             }
-            this._notificationBin.y = monitor.y + topGap * 2; // Notifications appear from here (for the animation)
+            this._notificationBin.y = monitor.y + topGap; // Notifications appear from here (for the animation)
         }
 
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');
@@ -1695,7 +1703,7 @@ MessageTray.prototype = {
                 bottomGap += bottomPanel.actor.get_height();
             }
             let getBottomPositionY = () => {
-                return monitor.height - this._notificationBin.height - bottomGap;
+                return monitor.y + monitor.height - this._notificationBin.height - bottomGap;
             };
             let shouldReturn = false;
             let initialY = getBottomPositionY();
@@ -1716,17 +1724,11 @@ MessageTray.prototype = {
         this._updateShowingNotification();
 
         let [x, y, mods] = global.get_pointer();
-        // We save the position of the mouse at the time when we started showing the notification
-        // in order to determine if the notification popped up under it. We make that check if
-        // the user starts moving the mouse and _onTrayHoverChanged() gets called. We don't
-        // expand the notification if it just happened to pop up under the mouse unless the user
-        // explicitly mouses away from it and then mouses back in.
-        this._showNotificationMouseX = x;
-        this._showNotificationMouseY = y;
-        // We save the y coordinate of the mouse at the time when we started showing the notification
-        // and then we update it in _notifiationTimeout() if the mouse is moving towards the
-        // notification. We don't pop down the notification if the mouse is moving towards it.
-        this._lastSeenMouseY = y;
+        // We save the distance of the mouse to the notification at the time
+        // when we started showing the it and then we update it in
+        // _notifiationTimeout() if the mouse is moving towards the notification.
+        // We don't pop down the notification if the mouse is moving towards it.
+        this._lastSeenMouseDistance = Math.abs(this._notificationBin.y - y);
     },
 
     _updateShowingNotification: function() {
@@ -1787,12 +1789,13 @@ MessageTray.prototype = {
 
     _notificationTimeout: function() {
         let [x, y, mods] = global.get_pointer();
-        if (y > this._lastSeenMouseY + 10) {
+        let distance = Math.abs(this._notificationBin.y - y);
+        if (distance < this._lastSeenMouseDistance - 50 || this._notification.actor.hover) {
             // The mouse is moving towards the notification, so don't
             // hide it yet. (We just create a new timeout (and destroy
-            // the old one) each time because the bookkeeping is
-            // simpler.)
-            this._lastSeenMouseY = y;
+            // the old one) each time because the bookkeeping is simpler.)
+
+            this._lastSeenMouseDistance = distance;
             this._updateNotificationTimeout(1000);
         } else {
             this._notificationTimeoutId = 0;
@@ -1803,24 +1806,18 @@ MessageTray.prototype = {
     },
 
     _hideNotification: function() {
-        let y;
         this._focusGrabber.ungrabFocus();
         if (this._notificationExpandedId) {
             this._notification.disconnect(this._notificationExpandedId);
             this._notificationExpandedId = 0;
         }
 
+        let y = Main.layoutManager.primaryMonitor.y;
         if (this.bottomPosition) {
             if (this.bottomPositionSignal) {
                 this._notificationBin.disconnect(this.bottomPositionSignal);
             }
-            y = Main.layoutManager.primaryMonitor.height;
-            let bottomPanel = Main.panelManager.getPanel(0, 1);
-            if (bottomPanel) {
-                y -= bottomPanel.actor.get_height() - 15;
-            }
-        } else {
-            y = Main.layoutManager.primaryMonitor.y;
+            y += Main.layoutManager.primaryMonitor.height - this._notificationBin.height;
         }
 
         this._tween(this._notificationBin, '_notificationState', State.HIDDEN, {
@@ -1844,7 +1841,7 @@ MessageTray.prototype = {
             this.emit('notify-applet-update', notification);
         } else {
             if (notification.isTransient)
-                notification.destroy(NotificationDestroyedReason.EXPIRED);  
+                notification.destroy(NotificationDestroyedReason.EXPIRED);
         }
         this._notification = null;
         this._notificationRemoved = false;

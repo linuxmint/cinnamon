@@ -31,7 +31,7 @@
     </key>
 
     <key name="enabled-applets" type="as">
-      <default>['panel1:right:0:systray@cinnamon.org', 'panel1:left:0:menu@cinnamon.org', 'panel1:left:1:show-desktop@cinnamon.org', 'panel1:left:2:panel-launchers@cinnamon.org', 'panel1:left:3:window-list@cinnamon.org', 'panel1:right:1:keyboard@cinnamon.org', 'panel1:right:2:notifications@cinnamon.org', 'panel1:right:3:removable-drives@cinnamon.org', 'panel1:right:4:user@cinnamon.org', 'panel1:right:5:network@cinnamon.org', 'panel1:right:6:bluetooth@cinnamon.org', 'panel1:right:7:power@cinnamon.org', 'panel1:right:8:calendar@cinnamon.org', 'panel1:right:9:sound@cinnamon.org']</default>
+      <default>['panel1:right:0:systray@cinnamon.org', 'panel1:left:0:menu@cinnamon.org', 'panel1:left:1:show-desktop@cinnamon.org', 'panel1:left:2:grouped-window-list@cinnamon.org', 'panel1:right:1:keyboard@cinnamon.org', 'panel1:right:2:notifications@cinnamon.org', 'panel1:right:3:removable-drives@cinnamon.org', 'panel1:right:5:bluetooth@cinnamon.org', 'panel1:right:6:network@cinnamon.org', 'panel1:right:7:sound@cinnamon.org', 'panel1:right:8:power@cinnamon.org', 'panel1:right:9:calendar@cinnamon.org']</default>
       <_summary>Uuids of applets to enable</_summary>
       <_description>
         Cinnamon applets have a uuid property; this key lists applets
@@ -126,16 +126,8 @@
       <description>Duration of the delay (in milliseconds)</description>
     </key>
 
-    <key name="panels-resizable" type="as">
-      <default>['1:false']</default>
-      <_summary>Resizable panel</_summary>
-      <_description>
-        Whether the panel uses a user-defined height
-      </_description>
-    </key>
-    
     <key name="panels-height" type="as">
-      <default>['1:25']</default>
+      <default>['1:40']</default>
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for panels.  Note, this value may or may not be the true value in use at runtime, depending
@@ -143,19 +135,11 @@
       </_description>
     </key>
 
-    <key name="panels-scale-text-icons" type="as">
-      <default>['1:true']</default>
-      <_summary>Scale panel applet text and icons</_summary>
+    <key type="s" name="panel-zone-icon-sizes">
+      <default>'[{"panelId": 1, "left": 0, "center": 0, "right": 24}]'</default>
+      <_summary>Per-zone icon-size configuration</_summary>
       <_description>
-        Whether the panel icons and text from applets is resized according to the custom panel height
-      </_description>
-    </key>
-
-    <key name="panel-resizable" type="b">
-      <default>false</default>
-      <_summary>(Deprecated) Resizable panel</_summary>
-      <_description>
-        (Deprecated) Retained to avoid applets who read the property from crashing Cinnamon
+        Panel zone configuration objects for icon size.
       </_description>
     </key>
 
@@ -652,8 +636,24 @@
       <_summary>WM class names to skip processing for in windowAttentionHandler.js</_summary>
     </key>
 
+    <key name="app-menu-icon-name" type="s">
+      <default>"cinnamon-symbolic"</default>
+      <_summary>The default icon name of the application menu</_summary>
+      <_description>
+       Controls the default icon name used by the application menu.
+      </_description>
+    </key>
+
+    <key name="app-menu-label" type="s">
+      <default>""</default>
+      <_summary>The default label of the application menu</_summary>
+      <_description>
+       Controls the default label used by the application menu.
+      </_description>
+    </key>
+
   </schema>
- 
+
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
         gettext-domain="@GETTEXT_PACKAGE@">
     <key name="name" type="s">
@@ -671,6 +671,12 @@
         The timestamp of the last time the index cache was updated from the spices website
       </description>
     </key>
+
+    <key name="symbolic-relative-size" type="d">
+      <default>0.67</default>
+      <summary>Relative size of symbolic icons to the zone's icon size</summary>
+    </key>
+
   </schema>
 
   <schema id="org.cinnamon.keyboard" path="/org/cinnamon/keyboard/"

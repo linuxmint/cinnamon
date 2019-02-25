@@ -143,7 +143,6 @@ var SETTINGS_TYPES = {
             "default",
             "min",
             "max",
-            "units",
             "step",
             "description"
         ]
@@ -212,15 +211,19 @@ function settings_not_initialized_error(uuid) {
 }
 
 function key_not_found_error (key_name, uuid) {
-    global.logError("Could not find setting key '" + key_name + "' for applet/desklet uuid " + uuid);
+    global.logError("Could not find setting key '" + key_name + "' for xlet " + uuid);
+}
+
+function invalidKeyValueError (key_name, uuid) {
+    global.logError(`Setting key ${key_name} for xlet ${uuid} is undefined or null`);
 }
 
 function invalid_setting_type_error (key_name, uuid, type) {
-    global.logError("Invalid setting type '" + type + "' for setting key '" + key_name + "' of applet/desklet uuid " + uuid);
+    global.logError("Invalid setting type '" + type + "' for setting key '" + key_name + "' of xlet " + uuid);
 }
 
 function options_not_supported_error(key_name, uuid, type) {
-    global.logError("Invalid request for key '" + key_name + "' of applet/desklet uuid '" + uuid + "': type '" + type + "' doesn't support options");
+    global.logError("Invalid request for key '" + key_name + "' of xlet '" + uuid + "': type '" + type + "' doesn't support options");
 }
 
 function binding_not_found_error(key_name, uuid) {
@@ -299,6 +302,10 @@ XletSettingsBase.prototype = {
             key_not_found_error(key, this.uuid);
             return false;
         }
+        if (this.settingsData[key] == null) {
+            invalidKeyValueError(key, this.uuid);
+            return false;
+        }
         if (!(this.settingsData[key].type in SETTINGS_TYPES)) {
             invalid_setting_type_error(key, this.uuid, this.settingsData[key].type);
             return false;
@@ -319,7 +326,8 @@ XletSettingsBase.prototype = {
         this.bindings[key].push(info);
 
         // add a save function for objects or arrays
-        if (typeof(this.settingsData[key].value) === "object" && !this.settingsData[key].value.save) {
+        if (this.settingsData[key].value != null
+            && typeof(this.settingsData[key].value) === "object" && !this.settingsData[key].value.save) {
             info.isObject = true;
             this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
         }
@@ -490,6 +498,23 @@ XletSettingsBase.prototype = {
             return;
         }
         this._setValue(value, key);
+    },
+
+    /**
+     * getDefaultValue:
+     * @key (string): the name of the settings key
+     *
+     * Gets the default value of the setting @key.
+     *
+     * Returns: The default value of the setting
+     */
+    getDefaultValue: function(key) {
+        if (key in this.settingsData) {
+            return this.settingsData[key].default;
+        } else {
+            key_not_found_error(key, this.uuid);
+            return null;
+        }
     },
 
     /**
@@ -670,7 +695,7 @@ XletSettingsBase.prototype = {
         for (let key in this.settingsData) {
             let props = this.settingsData[key];
             if (!has_required_fields(props, key)) return false;
-            if (props.type in SETTINGS_TYPES)
+            if ('default' in props)
                 props.value = props.default;
         }
         this.settingsData.__md5__ = checksum;
@@ -685,15 +710,16 @@ XletSettingsBase.prototype = {
         for (let key in newSettings) {
             let props = newSettings[key];
 
-            if (!("type" in props) || !(props.type in SETTINGS_TYPES)) continue;
-            let type = SETTINGS_TYPES[props.type];
+            // ignore anything that doesn't appear to be a valid settings type
+            if (!("type" in props) || !("default" in props)) continue;
 
             // If the setting already exists, we want to use the old value. If not we use the default.
             let oldValue = null;
-            if (this.settingsData[key] && this.settingsData[key].value !== undefined)
+            if (this.settingsData[key] && this.settingsData[key].value !== undefined) {
                 oldValue = this.settingsData[key].value;
                 if (key in this.settingsData && this._checkSanity(oldValue, newSettings[key])) newSettings[key].value = oldValue;
-            if (!newSettings[key].value) newSettings[key].value = newSettings[key].default;
+            }
+            if (!("value" in newSettings[key])) newSettings[key].value = newSettings[key].default;
         }
 
         newSettings.__md5__ = checksum;

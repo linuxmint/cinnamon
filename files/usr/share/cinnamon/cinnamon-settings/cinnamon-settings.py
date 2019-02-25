@@ -12,6 +12,7 @@ import urllib.request as urllib
 from functools import cmp_to_key
 import unicodedata
 import config
+from setproctitle import setproctitle
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -25,7 +26,7 @@ import proxygsettings
 import SettingsWidgets
 
 # i18n
-gettext.install("cinnamon", "/usr/share/locale")
+gettext.install("cinnamon", "/usr/share/locale", names="ngettext")
 
 # Standard setting pages... this can be expanded to include applet dirs maybe?
 mod_files = glob.glob(config.currentPath + "/modules/*.py")
@@ -79,13 +80,12 @@ STANDALONE_MODULES = [
     [_("Firewall"),                      "gufw",                                "cs-firewall",        "admin",          _("firewall, block, filter, programs")],
     [_("Firewall"),                      "firewall-config",                     "cs-firewall",        "admin",          _("firewall, block, filter, programs")],
     [_("Languages"),                     "mintlocale",                          "cs-language",        "prefs",          _("language, install, foreign")],
-    [_("Input Method"),                  "mintlocale im",                       "cs-input-method",    "prefs",          _("language, install, foreign, input, method, chinese, korean, japanese, typing")],
-    [_("Login Window"),                  "gksu /usr/sbin/mdmsetup",             "cs-login",           "admin",          _("login, mdm, gdm, manager, user, password, startup, switch")],
-    [_("Login Window"),                  "lightdm-settings",                    "cs-login",           "admin",          _("login, lightdm, mdm, gdm, manager, user, password, startup, switch")],
+    [_("Input Method"),                  "mintlocale-im",                       "cs-input-method",    "prefs",          _("language, install, foreign, input, method, chinese, korean, japanese, typing")],
+    [_("Login Window"),                  "pkexec lightdm-settings",             "cs-login",           "admin",          _("login, lightdm, mdm, gdm, manager, user, password, startup, switch")],
     [_("Login Window"),                  "lightdm-gtk-greeter-settings-pkexec", "cs-login",           "admin",          _("login, lightdm, manager, settings, editor")],
-    [_("Driver Manager"),                "mintdrivers",                         "cs-drivers",         "admin",          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
+    [_("Driver Manager"),                "pkexec driver-manager",               "cs-drivers",         "admin",          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
     [_("Nvidia Settings"),               "nvidia-settings",                     "cs-drivers",         "admin",          _("video, driver, proprietary, nvidia, settings")],
-    [_("Software Sources"),              "mintsources",                         "cs-sources",         "admin",          _("ppa, repository, package, source, download")],
+    [_("Software Sources"),              "pkexec mintsources",                  "cs-sources",         "admin",          _("ppa, repository, package, source, download")],
     [_("Package Management"),            "dnfdragora",                          "cs-sources",         "admin",          _("update, install, repository, package, source, download")],
     [_("Package Management"),            "yumex-dnf",                           "cs-sources",         "admin",          _("update, install, repository, package, source, download")],
     [_("Users and Groups"),              "cinnamon-settings-users",             "cs-user-accounts",   "admin",          _("user, users, account, accounts, group, groups, password")],
@@ -116,7 +116,7 @@ class MainWindow:
             self.deselect(cat)
             filtered_path = side_view.get_model().convert_path_to_child_path(selected_items[0])
             if filtered_path is not None:
-                self.go_to_sidepage(cat, filtered_path)
+                self.go_to_sidepage(cat, filtered_path, user_action=True)
 
     def _on_sidepage_hide_stack(self):
         self.stack_switcher.set_opacity(0)
@@ -124,12 +124,13 @@ class MainWindow:
     def _on_sidepage_show_stack(self):
         self.stack_switcher.set_opacity(1)
 
-    def go_to_sidepage(self, cat, path):
+    def go_to_sidepage(self, cat, path, user_action=True):
         iterator = self.store[cat].get_iter(path)
         sidePage = self.store[cat].get_value(iterator,2)
         if not sidePage.is_standalone:
-            self.window.set_title(sidePage.name)
-            self.window.set_icon_name(sidePage.icon)
+            if not user_action:
+                self.window.set_title(sidePage.name)
+                self.window.set_icon_name(sidePage.icon)
             sidePage.build()
             if sidePage.stack:
                 current_page = sidePage.stack.get_visible_child_name()
@@ -148,8 +149,14 @@ class MainWindow:
                     self.stack_switcher.set_opacity(0)
             else:
                 self.stack_switcher.set_opacity(0)
-            self.main_stack.set_visible_child_name("content_box_page")
-            self.header_stack.set_visible_child_name("content_box")
+            if user_action:
+                self.main_stack.set_visible_child_name("content_box_page")
+                self.header_stack.set_visible_child_name("content_box")
+
+            else:
+                self.main_stack.set_visible_child_full("content_box_page", Gtk.StackTransitionType.NONE)
+                self.header_stack.set_visible_child_full("content_box", Gtk.StackTransitionType.NONE)
+
             self.current_sidepage = sidePage
             width = 0
             for widget in self.top_bar:
@@ -190,6 +197,7 @@ class MainWindow:
         self.builder.add_from_file(config.currentPath + "/cinnamon-settings.ui")
         self.window = XApp.GtkWindow(window_position=Gtk.WindowPosition.CENTER,
                                      default_width=800, default_height=600)
+
         main_box = self.builder.get_object("main_box")
         self.window.add(main_box)
         self.top_bar = self.builder.get_object("top_bar")
@@ -217,7 +225,7 @@ class MainWindow:
         self.stack_switcher = self.builder.get_object("stack_switcher")
 
         m, n = self.button_back.get_preferred_width()
-        self.stack_switcher.set_margin_right(n)
+        self.stack_switcher.set_margin_end(n)
 
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.set_placeholder_text(_("Search"))
@@ -225,12 +233,8 @@ class MainWindow:
         self.search_entry.connect("icon-press", self.onClearSearchBox)
 
         self.window.connect("destroy", self.quit)
-        self.window.connect("key-press-event", self.on_keypress)
-        self.window.connect("button-press-event", self.on_buttonpress)
-        self.window.show()
 
         self.builder.connect_signals(self)
-        self.window.set_has_resize_grip(False)
         self.unsortedSidePages = []
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
@@ -314,14 +318,24 @@ class MainWindow:
 
         # Select the first sidePage
         if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters:
+            # If we're launching a module directly, set the WM class so GWL
+            # can consider it as a standalone app and give it its own
+            # group.
+            wm_class = "cinnamon-settings %s" % sys.argv[1]
+            self.window.set_wmclass(wm_class, wm_class)
+            self.button_back.hide()
             (iter, cat) = sidePagesIters[sys.argv[1]]
             path = self.store[cat].get_path(iter)
             if path:
-                self.go_to_sidepage(cat, path)
+                self.go_to_sidepage(cat, path, user_action=False)
             else:
                 self.search_entry.grab_focus()
         else:
             self.search_entry.grab_focus()
+            self.window.connect("key-press-event", self.on_keypress)
+            self.window.connect("button-press-event", self.on_buttonpress)
+
+        self.window.show()
 
     def on_keypress(self, widget, event):
         grab = False
@@ -418,10 +432,9 @@ class MainWindow:
         img = Gtk.Image.new_from_icon_name(category["icon"], Gtk.IconSize.BUTTON)
         box.pack_start(img, False, False, 4)
 
-        widget = Gtk.Label()
+        widget = Gtk.Label(yalign=0.5)
         widget.set_use_markup(True)
         widget.set_markup('<span size="12000">%s</span>' % category["label"])
-        widget.set_alignment(.5, .5)
         box.pack_start(widget, False, False, 1)
         self.side_view_container.pack_start(box, False, False, 0)
         widget = Gtk.IconView.new_with_model(self.storeFilter[category["id"]])
@@ -435,9 +448,8 @@ class MainWindow:
         widget.set_margin(20)
 
         pixbuf_renderer = Gtk.CellRendererPixbuf()
-        text_renderer = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.NONE, wrap_mode=Pango.WrapMode.WORD_CHAR, wrap_width=0, width_chars=self.min_label_length, alignment=Pango.Alignment.CENTER)
+        text_renderer = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.NONE, wrap_mode=Pango.WrapMode.WORD_CHAR, wrap_width=0, width_chars=self.min_label_length, alignment=Pango.Alignment.CENTER, xalign=0.5)
 
-        text_renderer.set_alignment(.5, 0)
         area.pack_start(pixbuf_renderer, True, True, False)
         area.pack_start(text_renderer, True, True, False)
         area.add_attribute(pixbuf_renderer, "icon-name", 1)
@@ -596,6 +608,7 @@ class MainWindow:
         Gtk.main_quit()
 
 if __name__ == "__main__":
+    setproctitle("cinnamon-settings")
     import signal
 
     ps = proxygsettings.get_proxy_settings()

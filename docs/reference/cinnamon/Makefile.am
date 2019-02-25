@@ -88,7 +88,7 @@ expand_content_files=
 # e.g. GTKDOC_CFLAGS=-I$(top_srcdir) -I$(top_builddir) $(GTK_DEBUG_FLAGS)
 # e.g. GTKDOC_LIBS=$(top_builddir)/gtk/$(gtktargetlib)
 GTKDOC_CFLAGS=$(GNOME_SHELL_CFLAGS)
-GTKDOC_LIBS=$(GNOME_SHELL_LIBS) $(top_builddir)/src/libcinnamon.la
+GTKDOC_LIBS=$(GNOME_SHELL_LIBS) $(abs_top_builddir)/src/libcinnamon.la -rpath $(libdir)/muffin
 
 # This includes the standard gtk-doc make rules, copied by gtkdocize.
 include $(top_srcdir)/gtk-doc.make

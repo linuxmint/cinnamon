@@ -64,6 +64,11 @@ cinnamon_tray_icon_constructed (GObject *object)
   na_tray_child_get_wm_class (icon->priv->socket, NULL, &icon->priv->wm_class);
 
   icon_app_window = gtk_socket_get_plug_window (GTK_SOCKET (icon->priv->socket));
+  if (icon_app_window == NULL)
+    {
+      g_warning ("cinnamon tray: icon app window is gone");
+      return;
+    }
   plug_xid = GDK_WINDOW_XID (icon_app_window);
 
   display = gtk_widget_get_display (GTK_WIDGET (icon->priv->socket));
@@ -192,6 +197,12 @@ cinnamon_tray_icon_click (CinnamonTrayIcon *icon,
   gdk_error_trap_push ();
 
   remote_window = gtk_socket_get_plug_window (GTK_SOCKET (icon->priv->socket));
+  if (remote_window == NULL)
+    {
+      g_warning ("cinnamon tray: plug window is gone");
+      gdk_error_trap_pop_ignored ();
+      return;
+    }
   xwindow = GDK_WINDOW_XID (remote_window);
   xdisplay = GDK_WINDOW_XDISPLAY (remote_window);
   screen = gdk_window_get_screen (remote_window);

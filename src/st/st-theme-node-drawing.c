@@ -220,14 +220,16 @@ premultiply (ClutterColor *color)
 static void
 unpremultiply (ClutterColor *color)
 {
-  if (color->alpha != 0)
+  guint alpha = color->alpha;
+  guint round = alpha / 2;
+
+  if (alpha)
     {
-      color->red = (color->red * 255 + 127) / color->alpha;
-      color->green = (color->green * 255 + 127) / color->alpha;
-      color->blue = (color->blue * 255 + 127) / color->alpha;
+      color->red = (color->red * 255 + round) / alpha;
+      color->green = (color->green * 255 + round) / alpha;
+      color->blue = (color->blue * 255 + round) / alpha;
     }
 }
-
 static void
 over (const ClutterColor *source,
       const ClutterColor *destination,
@@ -241,9 +243,9 @@ over (const ClutterColor *source,
   premultiply (&dst);
 
   result->alpha = src.alpha + NORM ((255 - src.alpha) * dst.alpha);
-  result->red   = src.red +   NORM ((255 - src.alpha) * dst.red);
+  result->red   = src.red   + NORM ((255 - src.alpha) * dst.red);
   result->green = src.green + NORM ((255 - src.alpha) * dst.green);
-  result->blue  = src.blue +  NORM ((255 - src.alpha) * dst.blue);
+  result->blue  = src.blue  + NORM ((255 - src.alpha) * dst.blue);
 
   unpremultiply (result);
 }
@@ -1461,6 +1463,7 @@ st_theme_node_render_resources (StThemeNode   *node,
       else if (node->background_color.alpha > 0 || has_border)
         {
           CoglHandle buffer, offscreen;
+          CoglError *error = NULL;
           int texture_width = ceil (width);
           int texture_height = ceil (height);
 
@@ -1468,9 +1471,14 @@ st_theme_node_render_resources (StThemeNode   *node,
                                                           texture_height,
                                                           COGL_TEXTURE_NO_SLICING,
                                                           COGL_PIXEL_FORMAT_ANY);
+          if (buffer == NULL)
+            {
+              return;
+            }
+
           offscreen = cogl_offscreen_new_with_texture (buffer);
 
-          if (offscreen != COGL_INVALID_HANDLE)
+          if (cogl_framebuffer_allocate (COGL_FRAMEBUFFER (offscreen), &error))
             {
               ClutterActorBox box = { 0, 0, width, height };
               cogl_framebuffer_orthographic (offscreen, 0, 0,
@@ -1484,6 +1492,14 @@ st_theme_node_render_resources (StThemeNode   *node,
               node->box_shadow_material = _st_create_shadow_pipeline (box_shadow_spec,
                                                                       buffer);
             }
+          else
+            {
+              if (error)
+                {
+                  cogl_error_free (error);
+                }
+            }
+
           cogl_handle_unref (buffer);
         }
     }
@@ -1535,10 +1551,7 @@ st_theme_node_ensure_color_pipeline (StThemeNode *node)
 
   if (G_UNLIKELY (color_pipeline_template == NULL))
     {
-      CoglContext *ctx =
-        clutter_backend_get_cogl_context (clutter_get_default_backend ());
-
-      color_pipeline_template = cogl_pipeline_new (ctx);
+      color_pipeline_template = cogl_pipeline_new (st_get_cogl_context ());
     }
 
   node->color_pipeline = cogl_pipeline_copy (color_pipeline_template);

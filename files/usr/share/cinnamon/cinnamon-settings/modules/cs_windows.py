@@ -73,7 +73,10 @@ class Module:
             settings.add_row(widget)
 
             widget = GSettingsSwitch(_("Automatically raise focused windows"), "org.cinnamon.desktop.wm.preferences", "auto-raise")
-            settings.add_row(widget)
+            settings.add_reveal_row(widget)
+
+            widget.revealer.settings = Gio.Settings("org.cinnamon.desktop.wm.preferences")
+            widget.revealer.settings.bind_with_mapping("focus-mode", widget.revealer, "reveal-child", Gio.SettingsBindFlags.GET, lambda x: x in ("sloppy", "mouse"), None)
 
             widget = GSettingsSwitch(_("Bring windows which require attention to the current workspace"), "org.cinnamon", "bring-windows-to-current-workspace")
             settings.add_row(widget)
@@ -100,8 +103,8 @@ class Module:
             widget = GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", _("Pixels"), 1, 100, size_group=size_group)
             settings.add_row(widget)
 
-            widget = GSettingsSwitch(_("Edge resistance with other windows"), "org.cinnamon.muffin", "edge-resistance-window")
-            widget.set_tooltip_text(_("Make window borders stick when moved or resized near other windows."))
+            widget = GSettingsSwitch(_("Edge resistance with other windows and monitor boundaries"), "org.cinnamon.muffin", "edge-resistance-window")
+            widget.set_tooltip_text(_("Make window borders stick when moved or resized near other windows or monitor edges."))
             settings.add_row(widget)
 
             # Alt Tab

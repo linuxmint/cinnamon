@@ -22,7 +22,6 @@
 #define __ST_POLYGON_H__
 
 #include <clutter/clutter.h>
-#include <cairo.h>
 
 #define ST_TYPE_POLYGON                 (st_polygon_get_type ())
 #define ST_POLYGON(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), ST_TYPE_POLYGON, StPolygon))

@@ -7,15 +7,9 @@ const Gio = imports.gi.Gio;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 
-function MyApplet(orientation, panel_height, instance_id) {
-    this._init(orientation, panel_height, instance_id); // Be sure to pass instanceId from the main function
-}
-
-MyApplet.prototype = {
-    __proto__: Applet.TextIconApplet.prototype,
-
-    _init: function(orientation, panel_height, instance_id) {
-        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+class CinnamonSettingsExampleApplet extends Applet.TextIconApplet {
+    constructor(orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -57,13 +51,13 @@ MyApplet.prototype = {
         /* Let's set up our applet's initial state now that we have our setting properties defined */
         this.on_keybinding_changed();
         this.on_settings_changed();
-    },
+    }
 
-    on_keybinding_changed: function() {
+    on_keybinding_changed() {
         Main.keybindingManager.addHotKey("must-be-unique-id", this.keybinding, Lang.bind(this, this.on_hotkey_triggered));
-    },
+    }
 
-    on_settings_changed: function() {
+    on_settings_changed() {
         if (this.use_custom) {
             this.set_applet_label(this.custom_label);
         } else {
@@ -83,23 +77,23 @@ MyApplet.prototype = {
 
         this.actor.style = "background-color:" + this.bg_color + "; width:" + this.spinner_number + "px";
 
-    },
+    }
 
-    on_signal_test_fired: function(setting_prov, key, oldval, newval) {
+    on_signal_test_fired(setting_prov, key, oldval, newval) {
         global.logError("Test signal fired.  Old value for key "+ key + " was " + oldval + ".  New value is " + newval + ".");
-    },
+    }
 
-    on_slider_changed: function(slider, value) {
+    on_slider_changed(slider, value) {
         this.scale_val = value;  // This is our BIDIRECTIONAL setting - by updating this.scale_val,
                                                // Our configuration file will also be updated
-    },
+    }
 
 
 /* This method is a callback that is defined by a button type in our settings file
  * This button will appear in the configuration dialog, and pressing it will call this method
  * This could useful to open a link to your web page, or just about anything you want
  */
-    on_config_button_pressed: function() {
+    on_config_button_pressed() {
         this.set_applet_label(_("YOU PRESSED THE BUTTON!!!"));
 
         let timeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function() {
@@ -111,38 +105,37 @@ MyApplet.prototype = {
             margin_left: 10,
             time: 0.5,
             transition: this.tween_function,
-            onComplete: function(){
+            onComplete() {
                 Tweener.addTween(this._applet_icon, {
                     margin_left: 0,
                     time: 0.5,
                     transition: this.tween_function
                 });
             },
-           onCompleteScope: this
+            onCompleteScope: this
         });
-    },
+    }
 
-    on_hotkey_triggered: function() {
+    on_hotkey_triggered() {
         this.set_applet_label(_("YOU USED THE HOTKEY!!!"));
 
         let timeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function() {
             this.on_settings_changed();
         }));
-    },
+    }
 
-    on_applet_clicked: function(event) {
+    on_applet_clicked(event) {
         this.menu.toggle();
-    },
+    }
 
-    on_applet_removed_from_panel: function() {
+    on_applet_removed_from_panel() {
         this.settings.finalize();    // This is called when a user removes the applet from the panel.. we want to
                                      // Remove any connections and file listeners here, which our settings object
                                      // has a few of
     }
-};
+}
 
 function main(metadata, orientation, panel_height, instance_id) {  // Make sure you collect and pass on instanceId
-    let myApplet = new MyApplet(orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonSettingsExampleApplet(orientation, panel_height, instance_id);
 }
 

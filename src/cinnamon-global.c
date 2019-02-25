@@ -2,21 +2,14 @@
 
 #include "config.h"
 
-#include <dirent.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#ifdef HAVE_SYS_RESOURCE_H
-#include <sys/resource.h>
-#endif
 
 #include <X11/extensions/Xfixes.h>
 #include <cogl-pango/cogl-pango.h>
-#include <clutter/glx/clutter-glx.h>
 #include <clutter/x11/clutter-x11.h>
 #include <gdk/gdkx.h>
 #include <gio/gio.h>
@@ -51,7 +44,7 @@ struct _CinnamonGlobal {
   /* We use this window to get a notification from GTK+ when
    * a widget in our process does a GTK+ grab.  See
    * http://bugzilla.gnome.org/show_bug.cgi?id=570641
-   * 
+   *
    * This window is never mapped or shown.
    */
   GtkWindow *grab_notifier;
@@ -446,28 +439,28 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                    PROP_SETTINGS,
                                    g_param_spec_object ("settings",
                                                         "Settings",
-                                                        "GSettings instance for cinnamon configuration",
+                                                        "GSettings instance for Cinnamon configuration",
                                                         G_TYPE_SETTINGS,
                                                         G_PARAM_READABLE));
   g_object_class_install_property (gobject_class,
                                    PROP_DATADIR,
                                    g_param_spec_string ("datadir",
                                                         "Data directory",
-                                                        "Directory containing cinnamon data files",
+                                                        "Directory containing Cinnamon data files",
                                                         NULL,
                                                         G_PARAM_READABLE));
   g_object_class_install_property (gobject_class,
                                    PROP_IMAGEDIR,
                                    g_param_spec_string ("imagedir",
                                                         "Image directory",
-                                                        "Directory containing cinnamon image files",
+                                                        "Directory containing Cinnamon image files",
                                                         NULL,
                                                         G_PARAM_READABLE));
   g_object_class_install_property (gobject_class,
                                    PROP_USERDATADIR,
                                    g_param_spec_string ("userdatadir",
                                                         "User data directory",
-                                                        "Directory containing cinnamon user data",
+                                                        "Directory containing Cinnamon user data",
                                                         NULL,
                                                         G_PARAM_READABLE));
   g_object_class_install_property (gobject_class,
@@ -867,20 +860,22 @@ global_stage_notify_height (GObject    *gobject,
   g_object_notify (G_OBJECT (global), "screen-height");
 }
 
-static void
-global_stage_before_paint (ClutterStage *stage,
-                           CinnamonGlobal  *global)
+static gboolean
+global_stage_before_paint (CinnamonGlobal  *global)
 {
   cinnamon_perf_log_event (cinnamon_perf_log_get_default (),
                         "clutter.stagePaintStart");
+
+  return TRUE;
 }
 
-static void
-global_stage_after_paint (ClutterStage *stage,
-                          CinnamonGlobal  *global)
+static gboolean
+global_stage_after_paint (CinnamonGlobal  *global)
 {
   cinnamon_perf_log_event (cinnamon_perf_log_get_default (),
                         "clutter.stagePaintDone");
+
+  return TRUE;
 }
 
 static void
@@ -1016,13 +1011,13 @@ update_scale_factor (GtkSettings *settings,
     g_settings_set_int (global->settings, "active-display-scale", (int)scale);
   }
 
-   /* Make sure clutter and gdk scaling stays disabled
-    * window-scaling-factor doesn't exist yet in clutter < 1.18 */
-  if (g_object_class_find_property (G_OBJECT_GET_CLASS (clutter_settings_get_default ()),
-                                    "window-scaling-factor"))
-    {
-      g_object_set (clutter_settings_get_default (), "window-scaling-factor", 1, NULL);
-    }
+  GtkSettings *gtk_settings = gtk_settings_get_default ();
+  int xft_dpi;
+
+  g_object_get (gtk_settings, "gtk-xft-dpi", &xft_dpi, NULL);
+  g_object_set (clutter_settings_get_default (), "font-dpi", xft_dpi, NULL);
+
+   /* Make sure gdk scaling stays disabled */
   gdk_x11_display_set_window_scale (gdk_display_get_default (), 1);
 }
 
@@ -1054,10 +1049,13 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   g_signal_connect (global->stage, "notify::height",
                     G_CALLBACK (global_stage_notify_height), global);
 
-  g_signal_connect (global->stage, "paint",
-                    G_CALLBACK (global_stage_before_paint), global);
-  g_signal_connect_after (global->stage, "paint",
-                          G_CALLBACK (global_stage_after_paint), global);
+  clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_PRE_PAINT,
+                                         global_stage_before_paint,
+                                         NULL, NULL);
+
+  clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_POST_PAINT,
+                                         global_stage_after_paint,
+                                         NULL, NULL);
 
   cinnamon_perf_log_define_event (cinnamon_perf_log_get_default(),
                                "clutter.stagePaintStart",
@@ -1187,140 +1185,16 @@ cinnamon_global_destroy_pointer_barrier (CinnamonGlobal *global, guint32 barrier
 #endif
 }
 
-/* Code to close all file descriptors before we exec; copied from gspawn.c in GLib.
- *
- * Authors: Padraig O'Briain, Matthias Clasen, Lennart Poettering
- *
- * http://bugzilla.gnome.org/show_bug.cgi?id=469231
- * http://bugzilla.gnome.org/show_bug.cgi?id=357585
- */
-
-static int
-set_cloexec (void *data, gint fd)
-{
-  if (fd >= GPOINTER_TO_INT (data))
-    fcntl (fd, F_SETFD, FD_CLOEXEC);
-
-  return 0;
-}
-
-#ifndef HAVE_FDWALK
-static int
-fdwalk (int (*cb)(void *data, int fd), void *data)
-{
-  gint open_max;
-  gint fd;
-  gint res = 0;
-
-#ifdef HAVE_SYS_RESOURCE_H
-  struct rlimit rl;
-#endif
-
-#ifdef __linux__
-  DIR *d;
-
-  if ((d = opendir("/proc/self/fd"))) {
-      struct dirent *de;
-
-      while ((de = readdir(d))) {
-          glong l;
-          gchar *e = NULL;
-
-          if (de->d_name[0] == '.')
-              continue;
-
-          errno = 0;
-          l = strtol(de->d_name, &e, 10);
-          if (errno != 0 || !e || *e)
-              continue;
-
-          fd = (gint) l;
-
-          if ((glong) fd != l)
-              continue;
-
-          if (fd == dirfd(d))
-              continue;
-
-          if ((res = cb (data, fd)) != 0)
-              break;
-        }
-
-      closedir(d);
-      return res;
-  }
-
-  /* If /proc is not mounted or not accessible we fall back to the old
-   * rlimit trick */
-
-#endif
-
-#ifdef HAVE_SYS_RESOURCE_H
-  if (getrlimit(RLIMIT_NOFILE, &rl) == 0 && rl.rlim_max != RLIM_INFINITY)
-      open_max = rl.rlim_max;
-  else
-#endif
-      open_max = sysconf (_SC_OPEN_MAX);
-
-  for (fd = 0; fd < open_max; fd++)
-      if ((res = cb (data, fd)) != 0)
-          break;
-
-  return res;
-}
-#endif
-
-static void
-pre_exec_close_fds(void)
-{
-  fdwalk (set_cloexec, GINT_TO_POINTER(3));
-}
-
 /**
  * cinnamon_global_reexec_self:
  * @global: A #CinnamonGlobal
- * 
- * Restart the current process.  Only intended for development purposes. 
+ *
+ * Restart the current process.  Only intended for development purposes.
  */
-void 
+void
 cinnamon_global_reexec_self (CinnamonGlobal *global)
 {
-  GPtrArray *arr;
-  gsize len;
-  char *buf;
-  char *buf_p;
-  char *buf_end;
-  GError *error = NULL;
-  
-  /* Linux specific (I think, anyways). */
-  if (!g_file_get_contents ("/proc/self/cmdline", &buf, &len, &error))
-    {
-      g_warning ("failed to get /proc/self/cmdline: %s", error->message);
-      return;
-    }
-      
-  buf_end = buf+len;
-  arr = g_ptr_array_new ();
-  /* The cmdline file is NUL-separated */
-  for (buf_p = buf; buf_p < buf_end; buf_p = buf_p + strlen (buf_p) + 1)
-    g_ptr_array_add (arr, buf_p);
-  
-  g_ptr_array_add (arr, NULL);
-
-  /* Close all file descriptors other than stdin/stdout/stderr, otherwise
-   * they will leak and stay open after the exec. In particular, this is
-   * important for file descriptors that represent mapped graphics buffer
-   * objects.
-   */
-  pre_exec_close_fds ();
-
-  meta_display_unmanage_screen (cinnamon_global_get_display (global),
-                                cinnamon_global_get_screen (global),
-                                cinnamon_global_get_current_time (global));
-
-  execvp (arr->pdata[0], (char**)arr->pdata);
-  g_warning ("failed to reexec: %s", g_strerror (errno));
-  g_ptr_array_free (arr, TRUE);
+  meta_restart ();
 }
 
 void
@@ -1328,7 +1202,7 @@ cinnamon_global_shutdown (void)
 {
     g_signal_emit_by_name (the_object, "shutdown");
 
-    pre_exec_close_fds ();
+    meta_pre_exec_close_fds ();
 
     meta_display_unmanage_screen (cinnamon_global_get_display (the_object),
                                   cinnamon_global_get_screen (the_object),
@@ -1358,7 +1232,7 @@ static void
 grab_notify (GtkWidget *widget, gboolean was_grabbed, gpointer user_data)
 {
   CinnamonGlobal *global = CINNAMON_GLOBAL (user_data);
-  
+
   global->gtk_grab_active = !was_grabbed;
 
   /* Update for the new setting of gtk_grab_active */
@@ -1415,7 +1289,7 @@ cinnamon_global_get_pointer (CinnamonGlobal         *global,
   GdkDevice *gdevice;
   GdkScreen *gscreen;
   GdkModifierType raw_mods;
-  
+
   gmanager = gdk_display_get_device_manager (global->gdk_display);
   gdevice = gdk_device_manager_get_client_pointer (gmanager);
   gdk_device_get_position (gdevice, &gscreen, x, y);
@@ -1444,7 +1318,7 @@ cinnamon_global_set_pointer (CinnamonGlobal         *global,
   GdkDevice *gdevice;
   GdkScreen *gscreen;
   int x2, y2;
-  
+
   gmanager = gdk_display_get_device_manager (global->gdk_display);
   gdevice = gdk_device_manager_get_client_pointer (gmanager);
   gdk_device_get_position (gdevice, &gscreen, &x2, &y2);
@@ -1592,7 +1466,7 @@ cinnamon_global_create_app_launch_context (CinnamonGlobal *global)
   GdkAppLaunchContext *context;
 
   context = gdk_display_get_app_launch_context (global->gdk_display);
-  
+
   gdk_app_launch_context_set_timestamp (context, cinnamon_global_get_current_time (global));
 
   // Make sure that the app is opened on the current workspace even if

@@ -15,7 +15,7 @@
         "panel-appear" : {
             "type" : "section",
             "title" : "Appearance",
-            "keys" : ["menu-icon-custom", "menu-icon", "menu-label"]
+            "keys" : ["menu-custom", "menu-icon", "menu-label"]
         },
         "panel-behave" : {
             "type" : "section",
@@ -25,7 +25,7 @@
         "menu-layout" : {
             "type" : "section",
             "title" : "Layout and content",
-            "keys" : ["show-category-icons", "show-application-icons", "favbox-show", "show-places", "menu-editor-button"]
+            "keys" : ["show-category-icons", "show-application-icons", "favbox-show", "favbox-min-height", "show-places", "menu-editor-button"]
         },
         "menu-behave" : {
             "type" : "section",
@@ -38,25 +38,38 @@
     "description" : "Keyboard shortcut to open and close the menu",
     "default" : "Super_L::Super_R"
  },
- "menu-icon-custom" : {
+ "menu-custom" : {
     "type" : "switch",
     "default" : false,
-    "description" : "Use a custom icon",
-    "tooltip" : "Unchecking this allows the theme to set the icon"
+    "description" : "Use a custom icon and label",
+    "tooltip" : "Check this to specify a custom icon and label"
  },
  "menu-icon" : {
     "type" : "iconfilechooser",
-    "default" : "/usr/share/cinnamon/theme/menu-symbolic.svg",
+    "default" : "cinnamon-symbolic",
     "description" : "Icon",
     "tooltip" : "Select an icon to show in the panel.",
-    "dependency" : "menu-icon-custom",
-    "indent" : "true"
+    "dependency" : "menu-custom",
+    "indent" : true
  },
  "menu-label" : {
     "type" : "entry",
     "default" : "Menu",
     "description" : "Text",
-    "tooltip" : "Enter custom text to show in the panel."
+    "tooltip" : "Enter custom text to show in the panel.",
+    "dependency" : "menu-custom",
+    "indent": true
+ },
+ "favbox-min-height" : {
+    "type": "spinbutton",
+    "default" : 300,
+    "min" : 50,
+    "max" : 1000,
+    "step" : 10,
+    "units" : "px",
+    "dependency" : "favbox-show",
+    "description" : "Minimum height of the favorites section",
+    "tooltip" : "The minimum size allocated for the favorites section (this has an impact on the overall height of the menu)."
  },
  "show-category-icons" : {
     "type" : "switch",
@@ -73,7 +86,7 @@
  "favbox-show" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Show favorites and quit options",
+    "description" : "Show favorites and session buttons",
     "tooltip" : "Choose whether or not to show the left pane of the menu."
  },
  "show-places" : {

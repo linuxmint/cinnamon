@@ -1,5 +1,5 @@
 const Applet = imports.ui.applet;
-const Settings = imports.ui.settings;  // Needed for settings API
+const { AppletSettings } = imports.ui.settings;  // Needed for settings API
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
@@ -9,17 +9,16 @@ const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const SignalManager = imports.misc.signalManager;
 
-class MyApplet extends Applet.IconApplet {
+class CinnamonShowDesktopApplet extends Applet.IconApplet {
+    constructor(orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
-    _init(orientation, panel_height, instance_id) {
-        super._init(orientation, panel_height, instance_id);
+        this.settings = new AppletSettings(this, "show-desktop@cinnamon.org", instance_id);
 
-        this.settings = new Settings.AppletSettings(this, "show-desktop@cinnamon.org", instance_id);
-
-        this.settings.bindProperty(Settings.BindingDirection.IN, "peek-at-desktop", "peek_at_desktop", null, null);
-        this.settings.bindProperty(Settings.BindingDirection.IN, "peek-delay", "peek_delay", null, null);
-        this.settings.bindProperty(Settings.BindingDirection.IN, "peek-opacity", "peek_opacity", null, null);
-        this.settings.bindProperty(Settings.BindingDirection.IN, "peek-blur", "peek_blur", null, null);
+        this.settings.bind("peek-at-desktop", "peek_at_desktop");
+        this.settings.bind("peek-delay", "peek_delay");
+        this.settings.bind("peek-opacity", "peek_opacity");
+        this.settings.bind("peek-blur", "peek_blur");
 
         this.signals = new SignalManager.SignalManager(null);
         this.actor.connect('enter-event', Lang.bind(this, this._on_enter));
@@ -30,12 +29,12 @@ class MyApplet extends Applet.IconApplet {
         this._peek_timeout_id = 0;
 
         this.set_applet_icon_name("user-desktop");
-        this.set_applet_tooltip(_("Show desktop"));
+        this.set_applet_tooltip(_("Click to show the desktop or middle-click to show the desklets"));
 
         let showDeskletsOption = new PopupMenu.PopupIconMenuItem(
             _('Show Desklets'),
             'cs-desklets',
-            St.IconType.FULLCOLOR
+            St.IconType.SYMBOLIC
         );
         showDeskletsOption.connect('activate', () => this.toggleShowDesklets());
         this._applet_context_menu.addMenuItem(showDeskletsOption);
@@ -115,6 +114,10 @@ class MyApplet extends Applet.IconApplet {
         this._did_peek = false;
     }
 
+    on_applet_middle_clicked(event) {
+        Main.deskletContainer.toggle();
+    }
+
     toggleShowDesklets() {
         if (!Main.deskletContainer.isModal) {
             Main.deskletContainer.raise();
@@ -123,5 +126,5 @@ class MyApplet extends Applet.IconApplet {
 }
 
 function main(metadata, orientation, panel_height, instance_id) {
-    return new MyApplet(orientation, panel_height, instance_id);
+    return new CinnamonShowDesktopApplet(orientation, panel_height, instance_id);
 }

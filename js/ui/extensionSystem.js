@@ -45,6 +45,17 @@ function prepareExtensionUnload(extension) {
         delete extensionObj[extension.uuid];
 }
 
+
+// Callback for extension.js
+function prepareExtensionReload(extension) {
+    try {
+        let on_extension_reloaded = getModuleByIndex(extension.moduleIndex).on_extension_reloaded;
+        if (on_extension_reloaded) on_extension_reloaded();
+    } catch (e) {
+        Extension.logError('Failed to evaluate \'on_extension_reloaded\' function on extension: ' + extension.uuid, e);
+    }
+}
+
 // Callback for extension.js
 function finishExtensionLoad(extensionIndex) {
     let extension = Extension.extensions[extensionIndex];

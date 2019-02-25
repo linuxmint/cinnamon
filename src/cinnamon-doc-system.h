@@ -34,14 +34,4 @@ CinnamonDocSystem* cinnamon_doc_system_get_default (void);
 
 GSList *cinnamon_doc_system_get_all (CinnamonDocSystem    *system);
 
-GtkRecentInfo *cinnamon_doc_system_lookup_by_uri (CinnamonDocSystem  *system,
-                                               const char     *uri);
-
-void cinnamon_doc_system_queue_existence_check (CinnamonDocSystem   *system,
-                                             guint             n_items);
-
-void cinnamon_doc_system_open (CinnamonDocSystem *system,
-                            GtkRecentInfo  *info,
-                            int             workspace);
-
 #endif /* __CINNAMON_DOC_SYSTEM_H__ */

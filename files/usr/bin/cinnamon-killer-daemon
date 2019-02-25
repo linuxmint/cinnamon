@@ -6,10 +6,11 @@ and runs in the background to detect that keybinding
 
 import os
 import syslog
+from setproctitle import setproctitle
 
 import gi
-gi.require_version('Keybinder', '3.0')
-gi.require_version('Gtk', '3.0')
+gi.require_version('Keybinder', '3.0')  # noqa
+gi.require_version('Gtk', '3.0')  # noqa
 from gi.repository import Keybinder
 from gi.repository import Gtk, Gio
 
@@ -51,6 +52,8 @@ class KillerDaemon:
         os.system("nemo -n &")  # restart nemo if it's not running already
         os.system("cinnamon --replace &")  # restart Cinnamon whether it's running or not (can be handy in case of a DE freeze)
 
+
 if __name__ == '__main__':
+    setproctitle("cinnamon-killer-daemon")
     daemon = KillerDaemon()
     Gtk.main()

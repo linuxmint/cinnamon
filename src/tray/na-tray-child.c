@@ -384,6 +384,11 @@ na_tray_child_force_redraw (NaTrayChild *child)
       GtkAllocation allocation;
 
       plug_window = gtk_socket_get_plug_window (GTK_SOCKET (child));
+      if (plug_window == NULL)
+        {
+          g_warning ("na_tray_child: plug window is gone");
+          return;
+        }
       gtk_widget_get_allocation (widget, &allocation);
 
       xev.xexpose.type = Expose;

@@ -16,12 +16,13 @@ import pyinotify
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, GObject, Gdk, GLib
-import dbus, dbus.service, dbus.glib
+from dbus.mainloop.glib import DBusGMainLoop
+import dbus, dbus.service
 import pageutils
 from lookingglass_proxy import LookingGlassProxy
-from dbus.mainloop.glib import DBusGMainLoop
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+from setproctitle import setproctitle
 
 MELANGE_DBUS_NAME = "org.Cinnamon.Melange"
 MELANGE_DBUS_PATH = "/org/Cinnamon/Melange"
@@ -45,8 +46,8 @@ class MenuButton(Gtk.Button):
         h = parent.get_height()
         extents = parent.get_frame_extents()
         allocation = self.get_allocation()
-        return (x + (extents.width-w)/2 + allocation.x,
-                y + (extents.height-h)-(extents.width-w)/2 + allocation.y,
+        return (x + (extents.width-w)//2 + allocation.x,
+                y + (extents.height-h)-(extents.width-w)//2 + allocation.y,
                 allocation.width,
                 allocation.height)
 
@@ -275,7 +276,7 @@ class FileWatcherView(Gtk.ScrolledWindow):
 
 class ClosableTabLabel(Gtk.Box):
     __gsignals__ = {
-        "close-clicked": (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, ()),
+        "close-clicked": (GObject.SignalFlags.RUN_FIRST, GObject.TYPE_NONE, ()),
     }
     def __init__(self, label_text):
         Gtk.Box.__init__(self)
@@ -340,7 +341,7 @@ class MelangeApp(dbus.service.Object):
         self.commandline.grab_focus()
 
     def run(self):
-        self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        self.window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
         self.window.set_title("Melange")
         self.window.set_icon_name("system-search")
         self.window.set_default_size(1000, 400)
@@ -361,7 +362,7 @@ class MelangeApp(dbus.service.Object):
 
         numRows = 3
         numColumns = 6
-        table = Gtk.Table(numRows, numColumns, False)
+        table = Gtk.Table(n_rows=numRows, n_columns=numColumns, homogeneous=False)
         table.set_margin_start(6)
         table.set_margin_end(6)
         table.set_margin_top(6)
@@ -374,7 +375,7 @@ class MelangeApp(dbus.service.Object):
         self.notebook.set_show_border(True)
         self.notebook.set_show_tabs(True)
 
-        label = Gtk.Label("Melange")
+        label = Gtk.Label(label="Melange")
         label.set_markup("<u>Melange - Cinnamon Debugger</u> ")
         label.show()
         self.notebook.set_action_widget(label, Gtk.PackType.END)
@@ -392,44 +393,45 @@ class MelangeApp(dbus.service.Object):
 
         column = 0
         pickerButton = pageutils.ImageButton("color-select-symbolic")
+        pickerButton.set_tooltip_text("Select an actor to inspect")
         pickerButton.connect("clicked", self.onPickerClicked)
         table.attach(pickerButton, column, column+1, 1, 2, 0, 0, 2)
         column += 1
 
-        table.attach(Gtk.Label("Exec:"), column, column+1, 1, 2, 0, 0, 3)
+        fullGc = pageutils.ImageButton("user-trash-full-symbolic")
+        fullGc.set_tooltip_text("Invoke garbage collection")
+        # ignore signal arg
+        fullGc.connect ('clicked', lambda source: lookingGlassProxy.FullGc())
+        table.attach(fullGc, column, column+1, 1, 2, 0, 0, 2)
         column += 1
 
         self.commandline = CommandLine()
+        self.commandline.set_tooltip_text("Evaluate javascript")
         table.attach(self.commandline, column, column+1, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 3, 2)
         column += 1
 
-        self.statusLabel = Gtk.Label("Status")
+        self.statusLabel = Gtk.Label(label="Status")
         self.statusLabel.set_markup(" <span foreground='red'>[ Cinnamon is OFFLINE! ]</span> ")
         self.statusLabel.set_tooltip_text("The connection to cinnamon is broken")
         self.statusLabel.set_no_show_all(True)
         table.attach(self.statusLabel, column, column+1, 1, 2, 0, 0, 1)
         column += 1
 
-        settings = Gio.Settings("org.cinnamon.desktop.keybindings")
+        box = Gtk.HBox()
+        settings = Gio.Settings(schema="org.cinnamon.desktop.keybindings")
         arr = settings.get_strv("looking-glass-keybinding")
-        accel = ""
-        done_one = False
-
-        for element in arr:
-            if done_one:
-                accel += ", "
-
-            accel += element.replace("<", "&lt;").replace(">", "&gt;")
-            if not done_one:
-                done_one = True
-
-        keybinding = Gtk.Label()
-        keybinding.set_markup('<i>Toggle shortcut: %s</i>' % accel)
+        if len(arr) > 0:
+            # only the first mapped keybinding
+            [accelKey, mask] = Gtk.accelerator_parse(arr[0])
+            if accelKey == 0 and mask == 0:
+                # failed to parse, fallback to plain accel string
+                label = Gtk.Label(label=arr[0])
+            else:
+                label = Gtk.Label(label=Gtk.accelerator_get_label(accelKey, mask))
+            label.set_tooltip_text("Toggle shortcut")
+            box.pack_start(label, False, False, 3)
 
         actionButton = self.createActionButton()
-
-        box = Gtk.HBox()
-        box.pack_start(keybinding, False, False, 3)
         box.pack_start(actionButton, False, False, 3)
 
         table.attach(box, column, column+1, 1, 2, 0, 0, 1)
@@ -439,7 +441,7 @@ class MelangeApp(dbus.service.Object):
         self.window.set_focus(self.commandline)
 
     def createMenuItem(self, text, callback):
-        item = Gtk.MenuItem(text)
+        item = Gtk.MenuItem(label=text)
         item.connect("activate", callback)
         return item
 
@@ -455,7 +457,7 @@ class MelangeApp(dbus.service.Object):
         menu.append(self.createMenuItem('Quit', self.onDelete))
         menu.show_all()
 
-        button = Gtk.MenuButton("Actions \u25BE")
+        button = Gtk.MenuButton(label="Actions \u25BE")
         button.set_popup(menu)
         return button
 
@@ -528,14 +530,14 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
         self.window.hide()
 
     def createDummyPage(self, text, description):
-        label = Gtk.Label(text)
-        self.notebook.append_page(Gtk.Label(description), label)
+        label = Gtk.Label(label=text)
+        self.notebook.append_page(Gtk.Label(label=description), label)
 
     def createPage(self, text, moduleName):
         module = __import__("page_%s" % moduleName)
         module.lookingGlassProxy = self.lookingGlassProxy
         module.melangeApp = self
-        label = Gtk.Label(text)
+        label = Gtk.Label(label=text)
         page = module.ModulePage(self)
         self.pages[moduleName] = page
         self.notebook.append_page(page, label)
@@ -545,6 +547,7 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
         self.notebook.set_current_page(page)
 
 if __name__ == "__main__":
+    setproctitle("cinnamon-looking-glass")
     DBusGMainLoop(set_as_default=True)
 
     sessionBus = dbus.SessionBus ()

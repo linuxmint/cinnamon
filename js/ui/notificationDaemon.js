@@ -13,6 +13,10 @@ const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
 const Mainloop = imports.mainloop;
 
+// don't automatically clear these apps' notifications on window focus
+// lowercase only
+const AUTOCLEAR_BLACKLIST = ['chromium', 'firefox', 'google chrome'];
+
 let nextNotificationId = 1;
 
 // Should really be defined in Gio.js
@@ -121,6 +125,11 @@ NotificationDaemon.prototype = {
         }
         setting(this, this.settings, "boolean", "removeOld", "remove-old");
         setting(this, this.settings, "int", "timeout", "timeout");
+
+        Cinnamon.WindowTracker.get_default().connect('notify::focus-app',
+            Lang.bind(this, this._onFocusAppChanged));
+        Main.overview.connect('hidden',
+            Lang.bind(this, this._onFocusAppChanged));
     },
 
    // Create an icon for a notification from icon string/path.
@@ -141,10 +150,14 @@ NotificationDaemon.prototype = {
             else if (icon[0] == '/') {
                 let uri = GLib.filename_to_uri(icon, null);
                 return textureCache.load_uri_async(uri, size, size);
-            } else
+            } else {
+                let icon_type = St.IconType.FULLCOLOR;
+                if (icon.search("-symbolic") != -1)
+                    icon_type = St.IconType.SYMBOLIC;
                 return new St.Icon({ icon_name: icon,
-                                     icon_type: St.IconType.FULLCOLOR,
+                                     icon_type: icon_type,
                                      icon_size: size });
+            }
         } else if (hints['image-data']) {
             let [width, height, rowStride, hasAlpha,
                  bitsPerSample, nChannels, data] = hints['image-data'];
@@ -156,10 +169,10 @@ NotificationDaemon.prototype = {
             switch (hints.urgency) {
                 case Urgency.LOW:
                 case Urgency.NORMAL:
-                    stockIcon = 'gtk-dialog-info';
+                    stockIcon = 'dialog-information';
                     break;
                 case Urgency.CRITICAL:
-                    stockIcon = 'gtk-dialog-error';
+                    stockIcon = 'dialog-error';
                     break;
             }
             return new St.Icon({ icon_name: stockIcon,
@@ -520,6 +533,24 @@ NotificationDaemon.prototype = {
         ];
     },
 
+    _onFocusAppChanged: function() {
+        let tracker = Cinnamon.WindowTracker.get_default();
+        if (!tracker.focus_app)
+            return;
+
+        let name = tracker.focus_app.get_name();
+        if (name && AUTOCLEAR_BLACKLIST.includes(name.toLowerCase()))
+            return;
+
+        for (let i = 0; i < this._sources.length; i++) {
+            let source = this._sources[i];
+            if (source.app == tracker.focus_app) {
+                source.destroyNonResidentNotifications();
+                return;
+            }
+        }
+    },
+
     _emitNotificationClosed: function(id, reason) {
         this._dbusImpl.emit_signal('NotificationClosed',
                                    GLib.Variant.new('(uu)', [id, reason]));
@@ -578,7 +609,7 @@ Source.prototype = {
     _onNameVanished: function() {
         // Destroy the notification source when its sender is removed from DBus.
         // Only do so if this.app is set to avoid removing "notify-send" sources, senders
-        // of which аre removed from DBus immediately.
+        // of which are removed from DBus immediately.
         // Sender being removed from DBus would normally result in a tray icon being removed,
         // so allow the code path that handles the tray icon being removed to handle that case.
         if (!this.trayIcon && this.app)
@@ -653,14 +684,13 @@ Source.prototype = {
         // notification-based icons (ie, not a trayicon) or if it was unset before
         if (!this.trayIcon) {
             this.useNotificationIcon = false;
-            
-            let icon = null;                
+            let icon = null;
             if (this.app.get_app_info() != null && this.app.get_app_info().get_icon() != null) {
                 icon = new St.Icon({gicon: this.app.get_app_info().get_icon(), icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
             }
             if (icon == null) {
-                icon = new St.Icon({icon_name: "application-x-executable", icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});        
-            }            
+                icon = new St.Icon({icon_name: "application-x-executable", icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+            }
 
             this._setSummaryIcon(icon);
         }

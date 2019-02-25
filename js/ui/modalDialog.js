@@ -23,7 +23,7 @@ const OPEN_AND_CLOSE_TIME = 0.1;
 const FADE_IN_BUTTONS_TIME = 0.33;
 const FADE_OUT_DIALOG_TIME = 1.0;
 
-const State = {
+var State = {
     OPENED: 0,
     CLOSED: 1,
     OPENING: 2,
@@ -469,6 +469,7 @@ SpicesAboutDialog.prototype = {
                 icon = new St.Icon({icon_name: "cs-"+type, icon_size: 48, icon_type: St.IconType.FULLCOLOR, style_class: "about-icon"});
             }
         }
+        icon.set_y_align(Clutter.ActorAlign.START);
         topBox.add_actor(icon);
 
         let topTextBox = new St.BoxLayout({vertical: true});
@@ -653,15 +654,15 @@ ConfirmDialog.prototype = {
 
         this.setButtons([
             {
+                label: _("No"),
+                action: Lang.bind(this, this.destroy)
+            },
+            {
                 label: _("Yes"),
                 action: Lang.bind(this, function(){
                     this.destroy();
                     this.callback();
                 })
-            },
-            {
-                label: _("No"),
-                action: Lang.bind(this, this.destroy)
             }
         ]);
     },

@@ -46,16 +46,18 @@ struct _CinnamonRecorder {
   int count; /* How many times the recording has been started */
 
   ClutterStage *stage;
+  gboolean custom_area;
+  cairo_rectangle_int_t area;
   int stage_width;
   int stage_height;
 
   gboolean have_pointer;
   int pointer_x;
   int pointer_y;
-  
+
   guint vertical_adjust; // Y adjustment from bottom panel, if any
   guint horizontal_adjust; // X adjustment to position on right edge of primary monitor
-  
+
   gboolean have_xfixes;
   int xfixes_event_base;
 
@@ -87,9 +89,6 @@ struct _CinnamonRecorder {
   guint update_memory_used_timeout;
   guint update_pointer_timeout;
   guint repaint_hook_id;
-
-  CoglPipeline *icon_pipeline;
-  CoglPipeline *meter_pipeline;
 };
 
 struct _RecorderPipeline
@@ -290,8 +289,6 @@ cinnamon_recorder_init (CinnamonRecorder *recorder)
 
   recorder->state = RECORDER_STATE_CLOSED;
   recorder->framerate = DEFAULT_FRAMES_PER_SECOND;
-  recorder->icon_pipeline = COGL_INVALID_HANDLE;
-  recorder->meter_pipeline = COGL_INVALID_HANDLE;
 }
 
 static void
@@ -312,8 +309,7 @@ cinnamon_recorder_finalize (GObject  *object)
   recorder_set_filename (recorder, NULL);
 
   cogl_handle_unref (recorder->recording_icon);
-  cogl_handle_unref (recorder->icon_pipeline);
-  cogl_handle_unref (recorder->meter_pipeline);
+
   G_OBJECT_CLASS (cinnamon_recorder_parent_class)->finalize (object);
 }
 
@@ -322,24 +318,6 @@ recorder_on_stage_destroy (ClutterActor  *actor,
                            CinnamonRecorder *recorder)
 {
   recorder_set_stage (recorder, NULL);
-}
-
-static CoglPipeline *
-ensure_pipeline (CoglPipeline *pl)
-{
-  static CoglPipeline *icon_pipeline_template = NULL;
-
-  if (pl != COGL_INVALID_HANDLE)
-    return (pl);
-
-  if (G_UNLIKELY (icon_pipeline_template == NULL))
-    {
-      CoglContext *ctx = st_get_cogl_context();
-
-      icon_pipeline_template = cogl_pipeline_new (ctx);
-    }
-
-  return (cogl_pipeline_copy (icon_pipeline_template));
 }
 
 /* Add together the memory used by all pipelines; both the
@@ -469,10 +447,10 @@ recorder_draw_cursor (CinnamonRecorder *recorder,
   /* We don't show a cursor unless the hot spot is in the frame; this
    * means that sometimes we aren't going to draw a cursor even when
    * there is a little bit overlapping within the stage */
-  if (recorder->pointer_x < 0 ||
-      recorder->pointer_y < 0 ||
-      recorder->pointer_x >= recorder->stage_width ||
-      recorder->pointer_y >= recorder->stage_height)
+  if (recorder->pointer_x < recorder->area.x ||
+      recorder->pointer_y < recorder->area.y ||
+      recorder->pointer_x >= recorder->area.x + recorder->area.width ||
+      recorder->pointer_y >= recorder->area.y + recorder->area.height)
     return;
 
   if (!recorder->cursor_image)
@@ -484,15 +462,15 @@ recorder_draw_cursor (CinnamonRecorder *recorder,
   gst_buffer_map (buffer, &info, GST_MAP_WRITE);
   surface = cairo_image_surface_create_for_data (info.data,
                                                  CAIRO_FORMAT_ARGB32,
-                                                 recorder->stage_width,
-                                                 recorder->stage_height,
-                                                 recorder->stage_width * 4);
+                                                 recorder->area.width,
+                                                 recorder->area.height,
+                                                 recorder->area.width * 4);
 
   cr = cairo_create (surface);
   cairo_set_source_surface (cr,
                             recorder->cursor_image,
-                            recorder->pointer_x - recorder->cursor_hot_x,
-                            recorder->pointer_y - recorder->cursor_hot_y);
+                            recorder->pointer_x - recorder->cursor_hot_x - recorder->area.x,
+                            recorder->pointer_y - recorder->cursor_hot_y - recorder->area.y);
   cairo_paint (cr);
 
   cairo_destroy (cr);
@@ -504,48 +482,32 @@ recorder_draw_cursor (CinnamonRecorder *recorder,
  * for buffering frames.
  */
 static void
-recorder_draw_buffer_meter (CoglFramebuffer *fb, CinnamonRecorder *recorder)
+recorder_draw_buffer_meter (CinnamonRecorder *recorder)
 {
   int fill_level;
-  float rects[16];
 
   recorder_update_memory_used (recorder, FALSE);
-  recorder->meter_pipeline = ensure_pipeline(recorder->meter_pipeline);
 
   /* As the buffer gets more full, we go from green, to yellow, to red */
   if (recorder->memory_used > (recorder->memory_target * 3) / 4)
-    cogl_pipeline_set_color4f (recorder->meter_pipeline, 1, 0, 0, 1);
+    cogl_set_source_color4f (1, 0, 0, 1);
   else if (recorder->memory_used > recorder->memory_target / 2)
-    cogl_pipeline_set_color4f (recorder->meter_pipeline, 1, 1, 0, 1);
+    cogl_set_source_color4f (1, 1, 0, 1);
   else
-    cogl_pipeline_set_color4f (recorder->meter_pipeline, 0, 1, 0, 1);
+    cogl_set_source_color4f (0, 1, 0, 1);
 
   fill_level = MIN (60, (recorder->memory_used * 60) / recorder->memory_target);
 
   /* A hollow rectangle filled from the left to fill_level */
-  rects[0] = recorder->horizontal_adjust - 64;
-  rects[1] = recorder->stage_height - recorder->vertical_adjust - 10;
-  rects[2] = recorder->horizontal_adjust - 2;
-  rects[3] = recorder->stage_height - recorder->vertical_adjust - 9;
-
-  rects[4] = recorder->horizontal_adjust - 64;
-  rects[5] = recorder->stage_height - recorder->vertical_adjust - 9;
-  rects[6] = recorder->horizontal_adjust - (63 - fill_level);
-  rects[7] = recorder->stage_height - recorder->vertical_adjust - 3;
-
-  rects[8] = recorder->horizontal_adjust - 3;
-  rects[9] = recorder->stage_height - recorder->vertical_adjust - 9;
-  rects[10] = recorder->horizontal_adjust - 2;
-  rects[11] = recorder->stage_height - recorder->vertical_adjust - 3;
-
-  rects[12] = recorder->horizontal_adjust - 64;
-  rects[13] = recorder->stage_height - recorder->vertical_adjust - 3;
-  rects[14] = recorder->horizontal_adjust - 2;
-  rects[15] = recorder->stage_height - recorder->vertical_adjust - 2;
-
-  cogl_framebuffer_draw_rectangles (fb, recorder->meter_pipeline, rects, 4);
+  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 10,
+                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 9);
+  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 9,
+                  recorder->horizontal_adjust - (63 - fill_level), recorder->stage_height - recorder->vertical_adjust - 3);
+  cogl_rectangle (recorder->horizontal_adjust - 3,  recorder->stage_height - recorder->vertical_adjust - 9,
+                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 3);
+  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 3,
+                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 2);
 }
-
 
 /* We want to time-stamp each frame based on the actual time it was
  * recorded. We probably should use the pipeline clock rather than
@@ -566,28 +528,75 @@ get_wall_time (void)
 /* Retrieve a frame and feed it into the pipeline
  */
 static void
-recorder_record_frame (CoglFramebuffer *fb, CinnamonRecorder *recorder)
+recorder_record_frame (CinnamonRecorder *recorder,
+                       gboolean          paint)
 {
   GstBuffer *buffer;
-  guint8 *data;
+  ClutterCapture *captures;
+  int n_captures;
+  cairo_surface_t *image;
   guint size;
+  uint8_t *data;
+  GstMemory *memory;
+  int i;
+  GstClock *clock;
+  GstClockTime now, base_time;
 
-  size = recorder->stage_width * recorder->stage_height * 4;
-  data = g_malloc (size);
+  g_return_if_fail (recorder->current_pipeline != NULL);
+
+  /* If we get into the red zone, stop buffering new frames; 13/16 is
+  * a bit more than the 3/4 threshold for a red indicator to keep the
+  * indicator from flashing between red and yellow. */
+  if (recorder->memory_used > (recorder->memory_target * 13) / 16)
+    return;
+
+  /* Drop frames to get down to something like the target frame rate; since frames
+   * are generated with VBlank sync, we don't have full control anyways, so we just
+   * drop frames if the interval since the last frame is less than 75% of the
+   * desired inter-frame interval.
+   */
+  clock = gst_element_get_clock (recorder->current_pipeline->src);
+
+  /* If we have no clock yet, the pipeline is not yet in PLAYING */
+  if (!clock)
+    return;
+
+  base_time = gst_element_get_base_time (recorder->current_pipeline->src);
+  now = gst_clock_get_time (clock) - base_time;
+  gst_object_unref (clock);
+
+  if (GST_CLOCK_TIME_IS_VALID (recorder->start_time) &&
+      now - recorder->start_time < gst_util_uint64_scale_int (GST_SECOND, 3, 4 * recorder->framerate))
+    return;
+  recorder->start_time = now;
+
+  clutter_stage_capture (recorder->stage, paint, &recorder->area,
+                         &captures, &n_captures);
+
+  if (n_captures == 0)
+    return;
+
+  /*
+   * TODO: Deal with each capture region separately, instead of dropping
+   * anything except the first one.
+   */
+
+  image = captures[0].image;
+  data = cairo_image_surface_get_data (image);
+  size = captures[0].rect.width * captures[0].rect.height * 4;
+
+  /* TODO: Capture more than the first framebuffer. */
+  for (i = 1; i < n_captures; i++)
+    cairo_surface_destroy (captures[i].image);
+  g_free (captures);
 
   buffer = gst_buffer_new();
-  gst_buffer_insert_memory (buffer, -1,
-                            gst_memory_new_wrapped (0, data, size, 0,
-                                                    size, data, g_free));
+  memory = gst_memory_new_wrapped (0, data, size, 0, size,
+                                   image,
+                                   (GDestroyNotify) cairo_surface_destroy);
+  gst_buffer_insert_memory (buffer, -1, memory);
 
-  GST_BUFFER_PTS(buffer) = get_wall_time() - recorder->start_time;
-
-  cogl_framebuffer_read_pixels (fb,
-                                0,
-                                0,
-                                recorder->stage_width, recorder->stage_height,
-                                CLUTTER_CAIRO_FORMAT_ARGB32,
-                                data);
+  GST_BUFFER_PTS(buffer) = now;
 
   recorder_draw_cursor (recorder, buffer);
 
@@ -603,31 +612,21 @@ recorder_record_frame (CoglFramebuffer *fb, CinnamonRecorder *recorder)
  * by clutter before glSwapBuffers() makes it visible to the user.
  */
 static void
-recorder_on_stage_paint (ClutterActor  *actor,
+recorder_on_stage_paint (ClutterActor     *actor,
                          CinnamonRecorder *recorder)
 {
-  CoglFramebuffer *fb;
-
-  fb = cogl_get_draw_framebuffer ();
-
   if (recorder->state == RECORDER_STATE_RECORDING)
     {
       if (!recorder->only_paint)
-        recorder_record_frame (fb,recorder);  /* NB frame recorded before drawing icon and meter
-                                                 so they are not included in the recording */
-      recorder->icon_pipeline = ensure_pipeline (recorder->icon_pipeline);
-      cogl_pipeline_set_layer_texture (recorder->icon_pipeline, 0, recorder->recording_icon);
+        recorder_record_frame (recorder, FALSE);
 
-      cogl_framebuffer_draw_rectangle (fb,
-                                       recorder->icon_pipeline,
-                                       recorder->horizontal_adjust - 32,
-                                       recorder->stage_height - recorder->vertical_adjust - 42,
-                                       recorder->horizontal_adjust,
-                                       recorder->stage_height - recorder->vertical_adjust - 10);
+      cogl_set_source_texture (recorder->recording_icon);
+      cogl_rectangle (recorder->horizontal_adjust - 32, recorder->stage_height - recorder->vertical_adjust - 42,
+                      recorder->horizontal_adjust,      recorder->stage_height - recorder->vertical_adjust - 10);
     }
 
   if (recorder->state == RECORDER_STATE_RECORDING || recorder->memory_used != 0)
-    recorder_draw_buffer_meter (fb, recorder);
+    recorder_draw_buffer_meter (recorder);
 }
 
 static void
@@ -638,6 +637,14 @@ recorder_update_size (CinnamonRecorder *recorder)
   clutter_actor_get_allocation_box (CLUTTER_ACTOR (recorder->stage), &allocation);
   recorder->stage_width = (int)(0.5 + allocation.x2 - allocation.x1);
   recorder->stage_height = (int)(0.5 + allocation.y2 - allocation.y1);
+
+  if (!recorder->custom_area)
+    {
+      recorder->area.x = 0;
+      recorder->area.y = 0;
+      recorder->area.width = recorder->stage_width;
+      recorder->area.height = recorder->stage_height;
+    }
 }
 
 static void
@@ -1102,8 +1109,8 @@ recorder_pipeline_set_caps (RecorderPipeline *pipeline)
                               "bpp", G_TYPE_INT, 32,
                               "depth", G_TYPE_INT, 24,
                               "framerate", GST_TYPE_FRACTION, pipeline->recorder->framerate, 1,
-                              "width", G_TYPE_INT, pipeline->recorder->stage_width,
-                              "height", G_TYPE_INT, pipeline->recorder->stage_height,
+                              "width", G_TYPE_INT, pipeline->recorder->area.width,
+                              "height", G_TYPE_INT, pipeline->recorder->area.height,
                               NULL);
   g_object_set (pipeline->src, "caps", caps, NULL);
   gst_caps_unref (caps);
@@ -1689,6 +1696,31 @@ cinnamon_recorder_set_pipeline (CinnamonRecorder *recorder,
   recorder_set_pipeline (recorder, pipeline);
 }
 
+void
+cinnamon_recorder_set_area (CinnamonRecorder *recorder,
+                            int               x,
+                            int               y,
+                            int               width,
+                            int               height)
+{
+  g_return_if_fail (CINNAMON_IS_RECORDER (recorder));
+
+  recorder->custom_area = TRUE;
+  recorder->area.x = CLAMP (x, 0, recorder->stage_width);
+  recorder->area.y = CLAMP (y, 0, recorder->stage_height);
+  recorder->area.width = CLAMP (width,
+                                0, recorder->stage_width - recorder->area.x);
+  recorder->area.height = CLAMP (height,
+                                 0, recorder->stage_height - recorder->area.y);
+
+  /* This breaks the recording but tweaking the GStreamer pipeline a bit
+   * might make it work, at least if the codec can handle a stream where
+   * the frame size changes in the middle.
+   */
+  if (recorder->current_pipeline)
+    recorder_pipeline_set_caps (recorder->current_pipeline);
+}
+
 /**
  * cinnamon_recorder_record:
  * @recorder: the #CinnamonRecorder
@@ -1767,7 +1799,7 @@ cinnamon_recorder_pause (CinnamonRecorder *recorder)
   /* We want to record one more frame since some time may have
    * elapsed since the last frame
    */
-  clutter_actor_paint (CLUTTER_ACTOR (recorder->stage));
+  recorder_record_frame (recorder, TRUE);
 
   if (recorder->filename_has_count)
     recorder_close_pipeline (recorder);

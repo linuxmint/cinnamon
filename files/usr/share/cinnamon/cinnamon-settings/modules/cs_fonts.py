@@ -14,7 +14,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("font, size, small, large")
-        sidePage = SidePage(_("Fonts"), "cs-fonts", keywords, content_box, module=self)
+        sidePage = SidePage(_("Font Selection"), "cs-fonts", keywords, content_box, module=self)
         self.sidePage = sidePage
 
     def on_module_selected(self):

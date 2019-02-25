@@ -6,16 +6,14 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
-const Pango = imports.gi.Pango;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
-const GnomeSession = imports.misc.gnomeSession;
 
 const BrightnessBusName = "org.cinnamon.SettingsDaemon.Power.Screen";
 const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
-
+// TODO: why aren't we using introspection - upower-glib?
 const UPDeviceType = {
     UNKNOWN: 0,
     AC_POWER: 1,
@@ -40,6 +38,33 @@ const UPDeviceState = {
     PENDING_CHARGE: 5,
     PENDING_DISCHARGE: 6
 };
+
+const UPDeviceLevel = {
+    UNKNOWN: 0,
+    NONE: 1,
+    LOW: 3,
+    CRITICAL: 4,
+    NORMAL: 6,
+    HIGH: 7,
+    FULL: 8
+};
+
+function deviceLevelToString(level) {
+    switch (level) {
+        case UPDeviceLevel.FULL:
+            return _("Battery full");
+        case UPDeviceLevel.HIGH:
+            return _("Battery almost full");
+        case UPDeviceLevel.NORMAL:
+            return _("Battery good");
+        case UPDeviceLevel.LOW:
+            return _("Low battery");
+        case UPDeviceLevel.CRITICAL:
+            return _("Critically low battery");
+        default:
+            return _("Unknown");
+    }
+}
 
 function deviceTypeToString(type) {
     switch (type) {
@@ -95,17 +120,11 @@ function deviceToIcon(type, icon) {
     }
 }
 
-function DeviceItem() {
-    this._init.apply(this, arguments);
-}
+class DeviceItem extends PopupMenu.PopupBaseMenuItem {
+    constructor(device, status, aliases) {
+        super({reactive: false});
 
-DeviceItem.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-
-    _init: function(device, status, aliases) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, { reactive: false });
-
-        let [device_id, vendor, model, device_type, icon, percentage, state, time, timepercentage] = device;
+        let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, time] = device;
 
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._vbox = new St.BoxLayout({ style_class: 'popup-device-menu-item', vertical: true});
@@ -129,8 +148,15 @@ DeviceItem.prototype = {
             }
         }
 
-        this.label = new St.Label({ text: "%s %d%%".format(description, Math.round(percentage)) });
-        let statusLabel = new St.Label({ text: "%s".format(status), style_class: 'popup-inactive-menu-item' });
+        let statusLabel = null;
+
+        if (battery_level == UPDeviceLevel.NONE) {
+            this.label = new St.Label({ text: "%s %d%%".format(description, Math.round(percentage)) });
+            statusLabel = new St.Label({ text: "%s".format(status), style_class: 'popup-inactive-menu-item' });
+        } else {
+            this.label = new St.Label({ text: "%s".format(description) });
+            statusLabel = new St.Label({ text: "%s".format(deviceLevelToString(battery_level)), style_class: 'popup-inactive-menu-item' });
+        }
 
         let device_icon = deviceToIcon(device_type, icon);
         if (device_icon == icon) {
@@ -151,25 +177,20 @@ DeviceItem.prototype = {
     }
 }
 
-function BrightnessSlider(applet, label, icon, busName, minimum_value){
-    this._init(applet, label, icon, busName, minimum_value);
-}
-
-BrightnessSlider.prototype = {
-    __proto__: PopupMenu.PopupSliderMenuItem.prototype,
-
-    _init: function(applet, label, icon, busName, minimum_value){
-        PopupMenu.PopupSliderMenuItem.prototype._init.call(this, 0);
+class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
+    constructor(applet, label, icon, busName, minimum_value) {
+        super(0);
         this.actor.hide();
 
         this._applet = applet;
         this._seeking = false;
         this._minimum_value = minimum_value;
+        this._step = .05;
 
-        this.connect("drag-begin", Lang.bind(this, function(){
+        this.connect("drag-begin", Lang.bind(this, function() {
             this._seeking = true;
         }));
-        this.connect("drag-end", Lang.bind(this, function(){
+        this.connect("drag-end", Lang.bind(this, function() {
             this._seeking = false;
         }));
 
@@ -185,10 +206,18 @@ BrightnessSlider.prototype = {
         Interfaces.getDBusProxyAsync(busName, Lang.bind(this, function(proxy, error) {
             this._proxy = proxy;
             this._proxy.GetPercentageRemote(Lang.bind(this, this._dbusAcquired));
-        }));
-    },
 
-    _dbusAcquired: function(b, error){
+            try {
+                this._proxy.GetStepRemote((step) => {
+                    this._step = (step / 100);
+                });
+            } catch(e) {
+                this._step = .05;
+            }
+        }));
+    }
+
+    _dbusAcquired(b, error) {
         if(error)
             return;
 
@@ -201,54 +230,87 @@ BrightnessSlider.prototype = {
         //get notified
         this._proxy.connectSignal('Changed', Lang.bind(this, this._getBrightness));
         this._applet.menu.connect("open-state-changed", Lang.bind(this, this._getBrightnessForcedUpdate));
-    },
+    }
 
-    _sliderChanged: function(slider, value) {
+    _sliderChanged(slider, value) {
         if (value < this._minimum_value) {
             value = this._minimum_value;
         }
-        this._setBrightness(Math.round(value * 100));
-    },
 
-    _getBrightness: function() {
+        let i = this._minimum_value;
+        let v = value;
+        let step = this._step;
+
+        while (i < 1.0) {
+            if (v > (i + step)) {
+                i = i + step;
+                continue;
+            }
+
+            if (((i + step) - v) < (v - i)) {
+                v = i + step;
+            } else {
+                v = i;
+            }
+
+            break;
+        }
+
+        this.setValue(v);
+
+        // A non-zero minimum brightness can cause our stepped value
+        // to exceed 100, making the slider jitter (because c-s-d rejects
+        // the value)
+        this._setBrightness(Math.min(100, Math.round(v * 100)));
+    }
+
+    _getBrightness() {
         //This func is called when dbus signal is received.
         //Only update items value when slider is not used
         if (!this._seeking)
             this._getBrightnessForcedUpdate();
-    },
+    }
 
-    _getBrightnessForcedUpdate: function() {
+    _getBrightnessForcedUpdate() {
         this._proxy.GetPercentageRemote(Lang.bind(this, function(b) {
             this._updateBrightnessLabel(b);
             this.setValue(b / 100);
         }));
-    },
+    }
 
-    _setBrightness: function(value) {
+    _setBrightness(value) {
         this._proxy.SetPercentageRemote(value, Lang.bind(this, function(b) {
             this._updateBrightnessLabel(b);
         }));
-    },
+    }
 
-    _updateBrightnessLabel: function(value) {
+    _updateBrightnessLabel(value) {
         this.tooltipText = this.label;
         if(value)
             this.tooltipText += ": " + value + "%";
 
         this.tooltip.set_text(this.tooltipText);
     }
-};
 
-function MyApplet(metadata, orientation, panel_height, instanceId) {
-    this._init(metadata, orientation, panel_height, instanceId);
+    /* Overriding PopupSliderMenuItem so we can modify the scroll step */
+    _onScrollEvent(actor, event) {
+        let direction = event.get_scroll_direction();
+
+        if (direction == Clutter.ScrollDirection.DOWN) {
+            this._value = Math.max(0, this._value - this._step);
+        }
+        else if (direction == Clutter.ScrollDirection.UP) {
+            this._value = Math.min(1, this._value + this._step);
+        }
+
+        this._slider.queue_repaint();
+        this.emit('value-changed', this._value);
+    }
 }
 
-
-MyApplet.prototype = {
-    __proto__: Applet.TextIconApplet.prototype,
-
-    _init: function(metadata, orientation, panel_height, instanceId) {
-        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instanceId);
+class CinnamonPowerApplet extends Applet.TextIconApplet {
+    constructor(metadata, orientation, panel_height, instanceId) {
+        super(orientation, panel_height, instanceId);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
@@ -298,9 +360,9 @@ MyApplet.prototype = {
         }));
 
         this.set_show_label_in_vertical_panels(false);
-    },
+    }
 
-    _onPanelEditModeChanged: function() {
+    _onPanelEditModeChanged() {
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
             if (!this.actor.visible) {
                 this.set_applet_icon_symbolic_name("battery-missing");
@@ -310,39 +372,39 @@ MyApplet.prototype = {
         else {
             this._devicesChanged();
         }
-    },
+    }
 
-    _on_device_aliases_changed: function() {
+    _on_device_aliases_changed() {
         this.aliases = global.settings.get_strv("device-aliases");
         this._devicesChanged();
-    },
+    }
 
-    _onButtonPressEvent: function(actor, event){
+    _onButtonPressEvent(actor, event) {
         //toggle keyboard brightness on middle click
-        if(event.get_button() === 2){
-            this.keyboard._proxy.ToggleRemote(function(){});
+        if(event.get_button() === 2) {
+            this.keyboard._proxy.ToggleRemote(function() {});
         }
         return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
-    },
+    }
 
-    on_applet_clicked: function(event) {
+    on_applet_clicked(event) {
         this.menu.toggle();
-    },
+    }
 
-    _onScrollEvent: function(actor, event) {
+    _onScrollEvent(actor, event) {
         //adjust screen brightness on scroll
         let direction = event.get_scroll_direction();
         if (direction == Clutter.ScrollDirection.UP) {
-            this.brightness._proxy.StepUpRemote(function(){});
+            this.brightness._proxy.StepUpRemote(function() {});
         } else if (direction == Clutter.ScrollDirection.DOWN) {
-            this.brightness._proxy.StepDownRemote(function(){});
+            this.brightness._proxy.StepDownRemote(function() {});
         }
         this.brightness._getBrightnessForcedUpdate();
-    },
+    }
 
-    _getDeviceStatus: function(device) {
+    _getDeviceStatus(device) {
         let status = ""
-        let [device_id, vendor, model, device_type, icon, percentage, state, seconds] = device;
+        let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = device;
 
         let time = Math.round(seconds / 60);
         let minutes = time % 60;
@@ -389,15 +451,15 @@ MyApplet.prototype = {
         }
 
         return status;
-    },
+    }
 
-    on_panel_height_changed: function() {
+    on_panel_height_changed() {
         if (this._proxy)
             this._devicesChanged();
-    },
+    }
 
-    showDeviceInPanel: function(device) {
-        let [device_id, vendor, model, device_type, icon, percentage, state, seconds] = device;
+    showDeviceInPanel(device) {
+        let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = device;
         let status = this._getDeviceStatus(device);
         this.set_applet_tooltip(status);
         let labelText = "";
@@ -448,9 +510,9 @@ MyApplet.prototype = {
         } else {
             this._applet_icon.set_style_class_name ('system-status-icon');
         }
-    },
+    }
 
-    _devicesChanged: function() {
+    _devicesChanged() {
 
         this._devices = [];
         this._primaryDevice = null;
@@ -468,7 +530,7 @@ MyApplet.prototype = {
                     // Primary Device can be an array of primary devices rather than a single device, in that case, take the first one.
                     device = device[0];
                 }
-                let [device_id, vendor, model, device_type, icon, percentage, state, seconds] = device
+                let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = device
                 this._primaryDeviceId = device_id;
             }
         }));
@@ -483,7 +545,7 @@ MyApplet.prototype = {
                 let devices = result[0];
                 let position = 0;
                 for (let i = 0; i < devices.length; i++) {
-                    let [device_id, vendor, model, device_type, icon, percentage, state, seconds] = devices[i];
+                    let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = devices[i];
 
                     // Ignore AC_POWER devices
                     if (device_type == UPDeviceType.AC_POWER)
@@ -531,7 +593,7 @@ MyApplet.prototype = {
                     this.set_applet_label("");
                     let icon = this._proxy.Icon;
                     if(icon) {
-                        if (icon != this.panel_icon_name){
+                        if (icon != this.panel_icon_name) {
                             this.panel_icon_name = icon;
                             this.set_applet_icon_symbolic_name('battery-full');
                             let gicon = Gio.icon_new_for_string(icon);
@@ -567,14 +629,13 @@ MyApplet.prototype = {
                 }
             }
         }));
-    },
+    }
 
-    on_applet_removed_from_panel: function() {
+    on_applet_removed_from_panel() {
         Main.systrayManager.unregisterId(this.metadata.uuid);
     }
-};
+}
 
 function main(metadata, orientation, panel_height, instanceId) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height, instanceId);
-    return myApplet;
+    return new CinnamonPowerApplet(metadata, orientation, panel_height, instanceId);
 }

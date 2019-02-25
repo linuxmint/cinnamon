@@ -42,6 +42,7 @@ struct _StTextureCachePrivate
 
   /* Things that were loaded with a cache policy != NONE */
   GHashTable *keyed_cache; /* char * -> CoglTexture* */
+  GHashTable *keyed_surface_cache; /* char * -> cairo_surface_t* */
 
   /* Presently this is used to de-duplicate requests for GIcons and async URIs. */
   GHashTable *outstanding_requests; /* char * -> AsyncTextureLoadData * */
@@ -172,6 +173,12 @@ st_texture_cache_init (StTextureCache *self)
 
   self->priv->keyed_cache = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                    g_free, cogl_object_unref);
+
+  self->priv->keyed_surface_cache = g_hash_table_new_full (g_str_hash,
+                                                           g_str_equal,
+                                                           g_free,
+                                                           (GDestroyNotify) cairo_surface_destroy);
+
   self->priv->outstanding_requests = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                             g_free, NULL);
   self->priv->file_monitors = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -207,6 +214,7 @@ st_texture_cache_dispose (GObject *object)
     }
 
   g_clear_pointer (&self->priv->keyed_cache, g_hash_table_destroy);
+  g_clear_pointer (&self->priv->keyed_surface_cache, g_hash_table_destroy);
   g_clear_pointer (&self->priv->outstanding_requests, g_hash_table_destroy);
   g_clear_pointer (&self->priv->file_monitors, g_hash_table_destroy);
 
@@ -554,6 +562,8 @@ finish_texture_load (AsyncTextureLoadData *data,
     goto out;
 
   texdata = pixbuf_to_cogl_texture (pixbuf);
+  if (!texdata)
+    goto out;
 
   if (data->policy != ST_TEXTURE_CACHE_POLICY_NONE)
     {
@@ -652,112 +662,6 @@ load_texture_async (StTextureCache       *cache,
     }
   else
     g_assert_not_reached ();
-}
-
-typedef struct {
-  StTextureCache *cache;
-  ClutterTexture *texture;
-  GObject *source;
-  guint notify_signal_id;
-  gboolean weakref_active;
-} StTextureCachePropertyBind;
-
-static void
-st_texture_cache_reset_texture (StTextureCachePropertyBind *bind,
-                                const char                 *propname)
-{
-  GdkPixbuf *pixbuf;
-  CoglTexture *texdata;
-
-  g_object_get (bind->source, propname, &pixbuf, NULL);
-
-  g_return_if_fail (pixbuf == NULL || GDK_IS_PIXBUF (pixbuf));
-
-  if (pixbuf != NULL)
-    {
-      texdata = pixbuf_to_cogl_texture (pixbuf);
-      g_object_unref (pixbuf);
-
-      if (texdata)
-        {
-          clutter_texture_set_cogl_texture (bind->texture, texdata);
-          cogl_object_unref (texdata);
-        }
-
-      clutter_actor_set_opacity (CLUTTER_ACTOR (bind->texture), 255);
-    }
-  else
-    clutter_actor_set_opacity (CLUTTER_ACTOR (bind->texture), 0);
-}
-
-static void
-st_texture_cache_on_pixbuf_notify (GObject           *object,
-                                   GParamSpec        *paramspec,
-                                   gpointer           data)
-{
-  StTextureCachePropertyBind *bind = data;
-  st_texture_cache_reset_texture (bind, paramspec->name);
-}
-
-static void
-st_texture_cache_bind_weak_notify (gpointer     data,
-                                   GObject     *source_location)
-{
-  StTextureCachePropertyBind *bind = data;
-  bind->weakref_active = FALSE;
-  g_signal_handler_disconnect (bind->source, bind->notify_signal_id);
-}
-
-static void
-st_texture_cache_free_bind (gpointer data)
-{
-  StTextureCachePropertyBind *bind = data;
-  if (bind->weakref_active)
-    g_object_weak_unref (G_OBJECT(bind->texture), st_texture_cache_bind_weak_notify, bind);
-  g_free (bind);
-}
-
-/**
- * st_texture_cache_bind_pixbuf_property:
- * @cache:
- * @object: A #GObject with a property @property_name of type #GdkPixbuf
- * @property_name: Name of a property
- *
- * Create a #ClutterTexture which tracks the #GdkPixbuf value of a GObject property
- * named by @property_name.  Unlike other methods in StTextureCache, the underlying
- * #CoglTexture is not shared by default with other invocations to this method.
- *
- * If the source object is destroyed, the texture will continue to show the last
- * value of the property.
- *
- * Return value: (transfer none): A new #ClutterActor
- */
-ClutterActor *
-st_texture_cache_bind_pixbuf_property (StTextureCache    *cache,
-                                       GObject           *object,
-                                       const char        *property_name)
-{
-  ClutterTexture *texture;
-  gchar *notify_key;
-  StTextureCachePropertyBind *bind;
-
-  texture = CLUTTER_TEXTURE (clutter_texture_new ());
-
-  bind = g_new0 (StTextureCachePropertyBind, 1);
-  bind->cache = cache;
-  bind->texture = texture;
-  bind->source = object;
-  g_object_weak_ref (G_OBJECT (texture), st_texture_cache_bind_weak_notify, bind);
-  bind->weakref_active = TRUE;
-
-  st_texture_cache_reset_texture (bind, property_name);
-
-  notify_key = g_strdup_printf ("notify::%s", property_name);
-  bind->notify_signal_id = g_signal_connect_data (object, notify_key, G_CALLBACK(st_texture_cache_on_pixbuf_notify),
-                                                  bind, (GClosureNotify)st_texture_cache_free_bind, 0);
-  g_free (notify_key);
-
-  return CLUTTER_ACTOR(texture);
 }
 
 /**
@@ -954,24 +858,35 @@ st_texture_cache_load_gicon (StTextureCache    *cache,
     return load_gicon_with_colors (cache, icon, size, cache->priv->scale, theme_node ? st_theme_node_get_icon_colors (theme_node) : NULL);
 }
 
-static ClutterActor *
-load_from_pixbuf (GdkPixbuf *pixbuf)
+/**
+ * st_texture_cache_load_from_pixbuf:
+ * @pixbuf: A #GdkPixbuf
+ * @size: int
+ *
+ * Converts a #GdkPixbuf into a #ClutterTexture.
+ *
+ * Return value: (transfer none): A new #ClutterActor
+ */
+ClutterActor *
+st_texture_cache_load_from_pixbuf (GdkPixbuf *pixbuf,
+                                   int        size)
 {
   ClutterTexture *texture;
   CoglTexture *texdata;
-  int width = gdk_pixbuf_get_width (pixbuf);
-  int height = gdk_pixbuf_get_height (pixbuf);
+  ClutterActor *actor;
 
   texture = create_default_texture ();
+  actor = CLUTTER_ACTOR (texture);
 
-  clutter_actor_set_size (CLUTTER_ACTOR (texture), width, height);
+  clutter_actor_set_size (actor, size, size);
 
   texdata = pixbuf_to_cogl_texture (pixbuf);
 
   set_texture_cogl_texture (texture, texdata);
 
   cogl_object_unref (texdata);
-  return CLUTTER_ACTOR (texture);
+
+  return actor;
 }
 
 static void
@@ -984,7 +899,7 @@ file_changed_cb (GFileMonitor      *monitor,
   StTextureCache *cache = user_data;
   char *uri, *key;
 
-  if (event_type != G_FILE_MONITOR_EVENT_CHANGED)
+  if (event_type != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT)
     return;
 
   uri = g_file_get_uri (file);
@@ -994,7 +909,7 @@ file_changed_cb (GFileMonitor      *monitor,
   g_free (key);
 
   key = g_strconcat (CACHE_PREFIX_URI_FOR_CAIRO, uri, NULL);
-  g_hash_table_remove (cache->priv->keyed_cache, key);
+  g_hash_table_remove (cache->priv->keyed_surface_cache, key);
   g_free (key);
 
   g_signal_emit (cache, signals[TEXTURE_FILE_CHANGED], 0, uri);
@@ -1059,7 +974,8 @@ on_sliced_image_loaded (GObject *source_object,
   pixbufs = g_task_propagate_pointer (task, NULL);
   for (list = pixbufs; list; list = list->next)
     {
-      ClutterActor *actor = load_from_pixbuf (GDK_PIXBUF (list->data));
+      GdkPixbuf *pixbuf = GDK_PIXBUF (list->data);
+      ClutterActor *actor = st_texture_cache_load_from_pixbuf (pixbuf, gdk_pixbuf_get_width (pixbuf));
       clutter_actor_hide (actor);
       clutter_actor_add_child (data->actor, actor);
     }
@@ -1180,148 +1096,18 @@ st_texture_cache_load_sliced_image (StTextureCache *cache,
  * icon you are loading, use %ST_ICON_FULLCOLOR.
  */
 
-/* generates names like g_themed_icon_new_with_default_fallbacks(),
- * but *only* symbolic names
- */
-static char **
-symbolic_names_for_icon (const char *name)
+static char *
+symbolic_name_for_icon (const char *name)
 {
-  char **parts, **names;
-  int i, numnames;
-
-  parts = g_strsplit (name, "-", -1);
-  numnames = g_strv_length (parts);
-  names = g_new (char *, numnames + 1);
-  for (i = 0; parts[i]; i++)
-    {
-      if (i == 0)
-        {
-          names[i] = g_strdup_printf ("%s-symbolic", parts[i]);
-        }
-      else
-        {
-          names[i] = g_strdup_printf ("%.*s-%s-symbolic",
-                                      (int) (strlen (names[i - 1]) - strlen ("-symbolic")),
-                                      names[i - 1], parts[i]);
-        }
-    }
-  names[i] = NULL;
-
-  g_strfreev (parts);
-
-  /* need to reverse here, because longest (most specific)
-     name has to come first */
-  for (i = 0; i < (numnames / 2); i++) {
-    char *tmp = names[i];
-    names[i] = names[numnames - i - 1];
-    names[numnames - i - 1] = tmp;
-  }
-
-  return names;
-}
-
-typedef struct {
-  char *name;
-  int size;
-  int scale;
-} CreateFadedIconData;
-
-static CoglTexture *
-create_faded_icon_cpu (StTextureCache *cache,
-                                 const char     *key,
-                                 void           *datap,
-                                 GError        **error)
-{
-  CreateFadedIconData *data = datap;
-  char *name;
-  GdkPixbuf *pixbuf;
-  int size;
-  CoglTexture *texture;
-  guint width, height, rowstride;
-  guint8 n_channels;
-  gboolean have_alpha;
-  gint fade_start;
-  gint fade_range;
-  guint i, j;
-  guint pixbuf_byte_size;
-  guint8 *orig_pixels;
-  guint8 *pixels;
-  GIcon *icon;
-  GtkIconInfo *info;
-  gint scale;
-
-  name = data->name;
-  size = data->size;
-  scale = data->scale;
-
-  info = NULL;
-
-  icon = g_themed_icon_new (name);
-  if (icon != NULL)
-    {
-      info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
-                                             icon, size, scale,
-                                             GTK_ICON_LOOKUP_FORCE_SIZE);
+    if (!name) {
+        return NULL;
     }
 
-  if (info == NULL)
-    {
-      icon = g_themed_icon_new ("application-x-executable");
-      info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
-                                             icon, size, scale,
-                                             GTK_ICON_LOOKUP_FORCE_SIZE);
-      g_object_unref (icon);
+    if (g_str_has_suffix (name, "-symbolic")) {
+        return g_strdup (name);
     }
 
-  if (info == NULL)
-    return NULL;
-
-  pixbuf = gtk_icon_info_load_icon (info, NULL);
-  g_object_unref (info);
-
-
-  if (pixbuf == NULL)
-    return NULL;
-
-  width = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
-  rowstride = gdk_pixbuf_get_rowstride (pixbuf);
-  n_channels = gdk_pixbuf_get_n_channels (pixbuf);
-  orig_pixels = gdk_pixbuf_get_pixels (pixbuf);
-  have_alpha = gdk_pixbuf_get_has_alpha (pixbuf);
-
-  pixbuf_byte_size = (height - 1) * rowstride +
-    + width * ((n_channels * gdk_pixbuf_get_bits_per_sample (pixbuf) + 7) / 8);
-
-  pixels = g_malloc0 (rowstride * height);
-  memcpy (pixels, orig_pixels, pixbuf_byte_size);
-
-  fade_start = width / 2;
-  fade_range = width - fade_start;
-  for (i = fade_start; i < width; i++)
-    {
-      for (j = 0; j < height; j++)
-        {
-          guchar *pixel = &pixels[j * rowstride + i * n_channels];
-          float fade = 1.0 - ((float) i - fade_start) / fade_range;
-          pixel[0] = 0.5 + pixel[0] * fade;
-          pixel[1] = 0.5 + pixel[1] * fade;
-          pixel[2] = 0.5 + pixel[2] * fade;
-          if (have_alpha)
-            pixel[3] = 0.5 + pixel[3] * fade;
-        }
-    }
-
-  texture = st_cogl_texture_new_from_data_wrapper (width, height,
-                                                   COGL_TEXTURE_NONE,
-                                                   have_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
-                                                   COGL_PIXEL_FORMAT_ANY,
-                                                   rowstride,
-                                                   pixels);
-  g_free (pixels);
-  g_object_unref (pixbuf);
-
-  return texture;
+    return g_strdup_printf ("%s-symbolic", name);
 }
 
 /**
@@ -1348,9 +1134,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
   ClutterActor *texture;
   CoglTexture *cogltexture;
   GIcon *themed;
-  char **names;
-  char *cache_key;
-  CreateFadedIconData data;
+  char *cache_key, *symbolic_name;
 
   g_return_val_if_fail (!(icon_type == ST_ICON_SYMBOLIC && theme_node == NULL), NULL);
 
@@ -1382,9 +1166,9 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       return CLUTTER_ACTOR (texture);
       break;
     case ST_ICON_SYMBOLIC:
-      names = symbolic_names_for_icon (name);
-      themed = g_themed_icon_new_from_names (names, -1);
-      g_strfreev (names);
+      symbolic_name = symbolic_name_for_icon (name);
+      themed = g_themed_icon_new (symbolic_name);
+      g_free (symbolic_name);
       texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale,
                                         st_theme_node_get_icon_colors (theme_node));
       g_object_unref (themed);
@@ -1402,39 +1186,6 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
           g_object_unref (themed);
         }
 
-      return CLUTTER_ACTOR (texture);
-      break;
-    case ST_ICON_FADED:
-      themed = g_themed_icon_new (name);
-      cache_key = g_strdup_printf ("faded-icon:%s,size=%d,scale=%f", name, size, cache->priv->scale);
-      data.name = g_strdup (name);
-      data.size = size;
-      data.scale = cache->priv->scale;
-      cogltexture = st_texture_cache_load (st_texture_cache_get_default (),
-                                      cache_key,
-                                      ST_TEXTURE_CACHE_POLICY_FOREVER,
-                                      create_faded_icon_cpu,
-                                      &data,
-                                      NULL);
-      g_free (data.name);
-      g_free (cache_key);
-
-      if (cogltexture != NULL)
-      {
-        texture = clutter_texture_new ();
-        clutter_texture_set_cogl_texture (CLUTTER_TEXTURE (texture), cogltexture);
-      }
-      else
-      {
-        texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
-        g_object_unref (themed);
-        if (texture == NULL)
-        {
-          themed = g_themed_icon_new ("image-missing");
-          texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale, NULL);
-          g_object_unref (themed);
-        }
-      }
       return CLUTTER_ACTOR (texture);
       break;
     default:
@@ -1531,6 +1282,9 @@ st_texture_cache_load_uri_sync_to_cogl_texture (StTextureCache *cache,
       texdata = pixbuf_to_cogl_texture (pixbuf);
       g_object_unref (pixbuf);
 
+      if (!texdata)
+        goto out;
+
       if (policy == ST_TEXTURE_CACHE_POLICY_FOREVER)
         {
           cogl_object_ref (texdata);
@@ -1564,7 +1318,7 @@ st_texture_cache_load_uri_sync_to_cairo_surface (StTextureCache        *cache,
 
   key = g_strconcat (CACHE_PREFIX_URI_FOR_CAIRO, uri, NULL);
 
-  surface = g_hash_table_lookup (cache->priv->keyed_cache, key);
+  surface = g_hash_table_lookup (cache->priv->keyed_surface_cache, key);
 
   if (surface == NULL)
     {
@@ -1578,7 +1332,8 @@ st_texture_cache_load_uri_sync_to_cairo_surface (StTextureCache        *cache,
       if (policy == ST_TEXTURE_CACHE_POLICY_FOREVER)
         {
           cairo_surface_reference (surface);
-          g_hash_table_insert (cache->priv->keyed_cache, g_strdup (key), surface);
+          g_hash_table_insert (cache->priv->keyed_surface_cache,
+                               g_strdup (key), surface);
         }
     }
   else

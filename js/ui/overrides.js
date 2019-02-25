@@ -100,23 +100,15 @@ function overrideGio() {
 function overrideDumpStack() {
     global._dump_gjs_stack = global.dump_gjs_stack;
     global.dump_gjs_stack = function(message = 'global.dump_gjs_stack():') {
-        try {
-            throw new Error();
-        } catch (e) {
-            let lines = e.stack.split('\n')
-            // Remove stack leading to this function, so the problem function is at the top.
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].indexOf('overrides.js') > -1) {
-                    lines.splice(lines.indexOf(lines[i]), 1);
-                }
-            }
-            log(`${message}\n${lines.join('\n')}`);
-        }
+        global.logWarning(`${message}\n${new Error().stack}`);
     }
 }
 
 function overrideGObject() {
     GObject.Object.prototype.disconnect = function(id) {
+        if (this.is_finalized()) {
+            return true;
+        }
         if (GObject.signal_handler_is_connected (this, id)) {
             return GObject.signal_handler_disconnect(this, id);
         } else {
@@ -204,6 +196,57 @@ function overrideJS() {
         }
     };
     Object.defineProperty(Object.prototype, "maybeGet", {enumerable: false});
+}
+
+function installPolyfills(readOnlyError) {
+    // Add a few ubiquitous JS namespaces to the global scope.
+
+    // util.js depends on a fully setup environment, so cannot be
+    // in the top-level scope here.
+    const {setTimeout, clearTimeout, setInterval, clearInterval} = imports.misc.util;
+
+    // These abstractions around Mainloop are safer and easier
+    // to use for people learning GObject introspection bindings.
+    Object.defineProperty(window, 'setTimeout', {
+        get: function() {
+            return setTimeout;
+        },
+        set: function() {
+            readOnlyError('setTimeout');
+        },
+        configurable: false,
+        enumerable: false
+    });
+    Object.defineProperty(window, 'clearTimeout', {
+        get: function() {
+            return clearTimeout;
+        },
+        set: function() {
+            readOnlyError('clearTimeout');
+        },
+        configurable: false,
+        enumerable: false
+    });
+    Object.defineProperty(window, 'setInterval', {
+        get: function() {
+            return setInterval;
+        },
+        set: function() {
+            readOnlyError('setInterval');
+        },
+        configurable: false,
+        enumerable: false
+    });
+    Object.defineProperty(window, 'clearInterval', {
+        get: function() {
+            return clearInterval;
+        },
+        set: function() {
+            readOnlyError('clearInterval');
+        },
+        configurable: false,
+        enumerable: false
+    });
 }
 
 function overrideTweener() {
@@ -492,7 +535,7 @@ function overrideSignals() {
     }
 
     function _signalHandlerIsConnected(id) {
-        if (! '_signalConnections' in this)
+        if (!( '_signalConnections' in this))
             return false;
 
         for (let connection of this._signalConnections) {

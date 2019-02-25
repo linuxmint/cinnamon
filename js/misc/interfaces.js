@@ -96,10 +96,10 @@ xml['org.cinnamon.SettingsDaemon.Power'] =
             <property name='Icon' type='s' access='read'/> \
             <property name='Tooltip' type='s' access='read'/> \
             <method name='GetPrimaryDevice'> \
-                <arg name='device' type='(sssusdut)' direction='out' /> \
+                <arg name='device' type='(sssusduut)' direction='out' /> \
             </method> \
             <method name='GetDevices'> \
-                <arg name='devices' type='a(sssusdut)' direction='out' /> \
+                <arg name='devices' type='a(sssusduut)' direction='out' /> \
             </method> \
         </interface> \
     </node>",
@@ -146,6 +146,9 @@ xml['org.cinnamon.SettingsDaemon.Power.Keyboard'] =
             </method> \
             <method name='GetPercentage'> \
                 <arg type='u' name='percentage' direction='out'/> \
+            </method> \
+            <method name='GetStep'> \
+                <arg type='u' name='step' direction='out'/> \
             </method> \
             <method name='SetPercentage'> \
                 <arg type='u' name='percentage' direction='in'/> \

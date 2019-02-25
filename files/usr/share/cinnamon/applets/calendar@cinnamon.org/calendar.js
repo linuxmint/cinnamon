@@ -109,18 +109,14 @@ function _getCalendarDayAbbreviation(dayNumber) {
 
 // Abstraction for an appointment/event in a calendar
 
-function CalendarEvent(date, end, summary, allDay) {
-    this._init(date, end, summary, allDay);
-}
-
-CalendarEvent.prototype = {
-    _init: function(date, end, summary, allDay) {
+class CalendarEvent {
+    constructor(date, end, summary, allDay) {
         this.date = date;
         this.end = end;
         this.summary = summary;
         this.allDay = allDay;
     }
-};
+}
 
 function _datesEqual(a, b) {
     if (a < b)
@@ -140,12 +136,8 @@ function _dateIntervalsOverlap(a0, a1, b0, b1)
         return true;
 }
 
-function Calendar(settings) {
-    this._init(settings);
-}
-
-Calendar.prototype = {
-    _init: function(settings) {
+class Calendar {
+    constructor(settings) {
         this._weekStart = Cinnamon.util_get_week_start();
         this._weekdate = NaN;
         this._digitWidth = NaN;
@@ -182,16 +174,16 @@ Calendar.prototype = {
                            Lang.bind(this, this._onScroll));
 
         this._buildHeader ();
-    },
+    }
 
-    _onSettingsChange: function(object, key, old_val, new_val) {
+    _onSettingsChange(object, key, old_val, new_val) {
         if (key == FIRST_WEEKDAY_KEY) this._weekStart = Cinnamon.util_get_week_start();
         this._buildHeader();
         this._update(false);
-    },
+    }
 
     // Sets the calendar to show a specific date
-    setDate: function(date, forceReload) {
+    setDate(date, forceReload) {
         if (!_sameDay(date, this._selectedDate)) {
             this._selectedDate = date;
             this._update(forceReload);
@@ -200,9 +192,9 @@ Calendar.prototype = {
             if (forceReload)
                 this._update(forceReload);
         }
-    },
+    }
 
-    _buildHeader: function() {
+    _buildHeader() {
         let offsetCols = this.show_week_numbers ? 1 : 0;
         this.actor.destroy_all_children();
 
@@ -269,21 +261,21 @@ Calendar.prototype = {
 
         // All the children after this are days, and get removed when we update the calendar
         this._firstDayIndex = this.actor.get_n_children();
-    },
+    }
 
-    _onStyleChange: function(actor, event) {
+    _onStyleChange(actor, event) {
         // width of a digit in pango units
         this._digitWidth = _getDigitWidth(this.actor) / Pango.SCALE;
         this._setWeekdateHeaderWidth();
-    },
+    }
 
-    _setWeekdateHeaderWidth: function() {
-        if (this._digitWidth != NaN && this.show_week_numbers && this._weekdateHeader) {
+    _setWeekdateHeaderWidth() {
+        if (!isNaN(this._digitWidth) && this.show_week_numbers && this._weekdateHeader) {
             this._weekdateHeader.set_width (this._digitWidth * WEEKDATE_HEADER_WIDTH_DIGITS);
         }
-    },
+    }
 
-    _onScroll : function(actor, event) {
+    _onScroll (actor, event) {
         switch (event.get_scroll_direction()) {
         case Clutter.ScrollDirection.UP:
         case Clutter.ScrollDirection.LEFT:
@@ -294,9 +286,9 @@ Calendar.prototype = {
             this._onNextMonthButtonClicked();
             break;
         }
-    },
+    }
 
-    _applyDateBrowseAction: function(yearChange, monthChange) {
+    _applyDateBrowseAction(yearChange, monthChange) {
         let oldDate = this._selectedDate;
         let newMonth = oldDate.getMonth() + monthChange;
 
@@ -318,28 +310,28 @@ Calendar.prototype = {
         let newDate = new Date();
         newDate.setFullYear(newYear, newMonth, newDayOfMonth);
         this.setDate(newDate, false);
-    },
+    }
 
-    _onPrevYearButtonClicked: function() {
+    _onPrevYearButtonClicked() {
         this._applyDateBrowseAction(-1, 0);
-    },
+    }
 
-    _onNextYearButtonClicked: function() {
+    _onNextYearButtonClicked() {
         this._applyDateBrowseAction(+1, 0);
-    },
+    }
 
-    _onPrevMonthButtonClicked: function() {
+    _onPrevMonthButtonClicked() {
         this._applyDateBrowseAction(0, -1);
-    },
+    }
 
-    _onNextMonthButtonClicked: function() {
+    _onNextMonthButtonClicked() {
         this._applyDateBrowseAction(0, +1);
-    },
+    }
 
-    _update: function(forceReload) {
+    _update(forceReload) {
         let now = new Date();
 
-        this._monthLabel.text = this._selectedDate.toLocaleFormat('%B').capitalize();
+        this._monthLabel.text = this._selectedDate.toLocaleFormat('%OB').capitalize();
         this._yearLabel.text = this._selectedDate.toLocaleFormat('%Y');
 
         // Remove everything but the topBox and the weekday labels
@@ -404,7 +396,7 @@ Calendar.prototype = {
             iter.setTime(iter.getTime() + MSECS_IN_DAY);
             if (iter.getDay() == this._weekStart) {
                 row++;
-                // We always stop after placing 6 rows, even if month fits in 4 
+                // We always stop after placing 6 rows, even if month fits in 4
                 // to prevent issues with jumping controls, see #226
                 if (row > 7) {
                     break;
@@ -412,7 +404,7 @@ Calendar.prototype = {
             }
         }
     }
-};
+}
 
 Signals.addSignalMethods(Calendar.prototype);
 

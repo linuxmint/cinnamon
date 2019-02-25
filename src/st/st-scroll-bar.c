@@ -250,10 +250,10 @@ scroll_bar_allocate_children (StScrollBar           *bar,
           handle_size = CLAMP (handle_size, min_size, max_size);
 
           handle_box.x1 = content_box.x1;
-          handle_box.y1 = content_box.y1 + position * (avail_size - handle_size);
+          handle_box.y1 = content_box.y1 + floor (position * (avail_size - handle_size));
 
           handle_box.x2 = content_box.x2;
-          handle_box.y2 = handle_box.y1 + handle_size;
+          handle_box.y2 = handle_box.y1 + floor (handle_size);
         }
       else
         {
@@ -261,10 +261,10 @@ scroll_bar_allocate_children (StScrollBar           *bar,
           handle_size = increment * avail_size;
           handle_size = CLAMP (handle_size, min_size, max_size);
 
-          handle_box.x1 = content_box.x1 + position * (avail_size - handle_size);
+          handle_box.x1 = content_box.x1 + floor (position * (avail_size - handle_size));
           handle_box.y1 = content_box.y1;
 
-          handle_box.x2 = handle_box.x1 + handle_size;
+          handle_box.x2 = handle_box.x1 + floor (handle_size);
           handle_box.y2 = content_box.y2;
         }
 
@@ -974,4 +974,3 @@ st_scroll_bar_get_adjustment (StScrollBar *bar)
 
   return bar->priv->adjustment;
 }
-

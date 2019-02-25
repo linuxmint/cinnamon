@@ -1,139 +1,128 @@
 Source: cinnamon
-Section: gnome
+Section: x11
 Priority: optional
 Maintainer: Linux Mint <root@linuxmint.com>
-Build-Depends: debhelper (>= 9),
-               dh-autoreconf,
-               autoconf-archive,
-               python-dev,
-               gnome-pkg-tools (>= 0.11),
-               intltool,
-               libcjs-dev (>= 2.4.0),
-               gvfs-backends,
-               gobject-introspection (>= 0.9.2),
-               gir1.2-json-1.0,
-               gnome-bluetooth (>= 3.1.0),
-               gnome-common,
-               libcinnamon-desktop-dev (>= 3.5.0),
-               libcroco3-dev (>= 0.6.2),
-               libdbus-glib-1-dev,
-               libgirepository1.0-dev (>= 0.9.2),
-               libglib2.0-dev (>= 2.37.3),
-               libgnome-bluetooth-dev (>= 3.1.0),
-               libcinnamon-menu-3-dev,
-               libgstreamer1.0-dev,
-               libgtk-3-dev (>= 3.9.12),
-               libgudev-1.0-dev,
-               libnm-glib-dev (>= 0.8.999),
-               libstartup-notification0-dev (>= 0.11),
-               libmuffin-dev (>= 3.5.0),
-               librsvg2-dev,
-               libsoup2.4-dev,
-               libwnck-dev,
-               libclutter-1.0-dev (>= 1.10.0),
-               libxfixes-dev (>= 1:5.0),
-               libxss-dev,
-               libpulse-dev,
-               libpolkit-agent-1-dev (>= 0.100),
-               libjson-glib-dev (>= 0.13.2),
-               gtk-doc-tools
+Build-Depends:
+ autoconf-archive,
+ automake,
+ debhelper (>= 10),
+ dh-python,
+ dpkg-dev (>= 1.16.1~),
+ gir1.2-json-1.0,
+ gir1.2-meta-muffin-0.0 (>= 3.8),
+ gnome-pkg-tools (>= 0.11),
+ gobject-introspection (>= 1.29.15),
+ gtk-doc-tools,
+ intltool,
+ libcinnamon-desktop-dev (>= 3.8),
+ libcinnamon-menu-3-dev,
+ libcjs-dev (>= 3.8),
+ libcroco3-dev (>= 0.6.2),
+ libdbus-glib-1-dev,
+ libgirepository1.0-dev (>= 1.29.15),
+ libgl1-mesa-dev,
+ libglib2.0-dev (>= 2.25.11),
+ libgstreamer1.0-dev,
+ libgtk-3-dev (>= 3.9.12),
+ libgudev-1.0-dev,
+ libjson-glib-dev (>= 0.13.2),
+ libmuffin0 (>= 3.8),
+ libnm-dev (>= 1.6) [linux-any],
+ libnma-dev [linux-any],
+ libpolkit-agent-1-dev (>= 0.100),
+ libpulse-dev,
+ librsvg2-dev,
+ libsoup2.4-dev,
+ libstartup-notification0-dev (>= 0.11),
+ libwnck-dev,
+ libxfixes-dev (>= 1:5.0),
+ libxss-dev,
+ python3:any,
 Standards-Version: 3.9.5
 Homepage: http://cinnamon.linuxmint.com
 
 Package: cinnamon
 Architecture: any
-Depends: cinnamon-common (= ${source:Version}),
-         cinnamon-l10n (>= ${cinnamon:Version}),
-         cjs (>= 3.0.0),
-         libcjs0f (>= 3.2.0) | libcjs0e (>= 3.2.0),
-         cinnamon-desktop-data (>= 3.5.0),
-         libcinnamon-desktop4 (>= 3.5.0),
-         libcinnamon-menu-3-0 (>= ${cinnamon:Version}),
-         cinnamon-control-center (>= ${cinnamon:Version}),
-         cinnamon-settings-daemon (>= ${cinnamon:Version}),
-         cinnamon-session (>= ${cinnamon:Version}),
-         libmuffin0 (>= ${cinnamon:Version}),
-         gir1.2-meta-muffin-0.0 (>= ${cinnamon:Version}),
-         nemo (>= ${cinnamon:Version}),
-         cinnamon-screensaver (>= ${cinnamon:Version}),
-         network-manager-gnome,
-         ${gir:Depends},
-         ${shlibs:Depends},
-         ${misc:Depends},
-         gir1.2-caribou-1.0,
-         cups-pk-helper,
-         iso-flag-png,
-         gnome-icon-theme-symbolic (>= 2.91),
-         ${icon-theme:Depends},
-         gir1.2-accountsservice-1.0,
-         gir1.2-cinnamondesktop-3.0 (>= 3.5.0),
-         gir1.2-gkbd-3.0,
-         gir1.2-gnomebluetooth-1.0,
-         gir1.2-keybinder-3.0,
-         gir1.2-networkmanager-1.0,
-         gir1.2-polkit-1.0,
-         gir1.2-soup-2.4,
-         gir1.2-upowerglib-1.0,
-         gir1.2-gtkclutter-1.0,
-         gir1.2-cmenu-3.0 (>= ${cinnamon:Version}),
-         gir1.2-nmgtk-1.0,
-         gir1.2-notify-0.7,
-         gir1.2-cvc-1.0,
-         gir1.2-xapp-1.0,
-         libcanberra-pulse,
-         libglib2.0-bin,
-         ${python:Depends},
-         python3,
-         python3-gi,
-         python3-dbus,
-         python3-gi-cairo,
-         python3-pam,
-         python3-pexpect,
-         python3-pil,
-         python3-pyinotify,
-         pkg-config,
-         streamer,
-         mesa-utils,
-         gkbd-capplet,
-         metacity,
-         mate-panel | gnome-panel | tint2,
-         xapps-common,
-         wget
-Recommends: gnome-themes-standard, gnome-terminal, cinnamon-bluetooth
+Pre-Depends: ${misc:Pre-Depends}
+Depends:
+ cinnamon-common,
+ cinnamon-control-center,
+ cinnamon-desktop-data,
+ cinnamon-l10n,
+ cinnamon-screensaver,
+ cinnamon-session,
+ cinnamon-settings-daemon,
+ cjs (>= 3.8),
+ cups-pk-helper,
+ gir1.2-accountsservice-1.0,
+ gir1.2-caribou-1.0,
+ gir1.2-cinnamondesktop-3.0,
+ gir1.2-cmenu-3.0,
+ gir1.2-cvc-1.0,
+ gir1.2-gkbd-3.0,
+ gir1.2-gtkclutter-1.0,
+ gir1.2-keybinder-3.0,
+ gir1.2-meta-muffin-0.0,
+ gir1.2-nm-1.0 [linux-any] | gir1.2-networkmanager-1.0 [linux-any],
+ gir1.2-nma-1.0 [linux-any],
+ gir1.2-notify-0.7,
+ gir1.2-polkit-1.0,
+ gir1.2-soup-2.4,
+ gir1.2-upowerglib-1.0,
+ gir1.2-xapp-1.0 (>= 1.0.4~),
+ gkbd-capplet,
+ gnome-icon-theme-symbolic (>= 2.91),
+ gsettings-desktop-schemas (>= 0.1.7),
+ iso-flag-png,
+ libcanberra-pulse,
+ libcinnamon-desktop4,
+ libcinnamon-menu-3-0,
+ libcjs0f (>= 3.8),
+ libglib2.0-bin,
+ libmuffin0,
+ mate-panel | gnome-panel | tint2,
+ mesa-utils,
+ metacity,
+ nemo,
+ network-manager-gnome [linux-any],
+ policykit-1-gnome,
+ python3,
+ python3-dbus,
+ python3-gi,
+ python3-gi-cairo,
+ python3-pam | python3-pampy,
+ python3-pexpect,
+ python3-pil,
+ python3-pyinotify,
+ python3-setproctitle,
+ streamer,
+ wget,
+ xapps-common,
+ ${gir:Depends},
+ ${icon-theme:Depends},
+ ${misc:Depends},
+ ${python3:Depends},
+ ${shlibs:Depends},
+Recommends:
+ gnome-terminal | x-terminal-emulator,
+ gnome-themes-extra | gnome-themes-standard,
+Suggests: cinnamon-doc
 Provides: notification-daemon, x-window-manager
 Description: Modern Linux desktop
  Cinnamon is a modern Linux desktop which provides advanced innovative
  features and a traditional user experience. It's easy to use, powerful
  and flexible.
 
-Package: cinnamon-dbg
-Section: debug
-Priority: extra
-Architecture: any
-Depends: cinnamon (= ${binary:Version}),
-         ${misc:Depends},
-         nemo-dbg,
-         muffin-dbg,
-         libcvc-dbg,
-         libcinnamon-desktop-dbg,
-         libcinnamon-menu-3-0-dbg,
-         libcjs-dbg,
-         cinnamon-control-center-dbg
-Description: Debugging symbols for the Cinnamon desktop
- Cinnamon is a modern Linux desktop which provides advanced innovative
- features and a traditional user experience. It's easy to use, powerful
- and flexible.
- .
- This package contains the debugging symbols.
-
 Package: cinnamon-common
-Replaces: cinnamon (<< ${cinnamon:Version})
-Breaks: cinnamon (<< ${cinnamon:Version})
 Architecture: all
-Depends: gettext,
-         python,
-         xdg-utils,
-         ${misc:Depends}
+Depends:
+ gettext,
+ gir1.2-cinnamondesktop-3.0,
+ gir1.2-meta-muffin-0.0,
+ gvfs-bin,
+ xdg-utils,
+ ${misc:Depends},
+ ${python3:Depends},
 Description: Cinnamon desktop (Common data files)
  Cinnamon is a modern Linux desktop which provides advanced innovative
  features and a traditional user experience. It's easy to use, powerful
@@ -141,10 +130,32 @@ Description: Cinnamon desktop (Common data files)
  .
  This package contains the architecture independent files needed by Cinnamon
 
+Package: cinnamon-dbg
+Section: debug
+Priority: extra
+Architecture: any
+Depends:
+ cinnamon (= ${binary:Version}),
+ cinnamon-control-center-dbg,
+ libcinnamon-desktop-dbg,
+ libcinnamon-menu-3-0-dbg,
+ libcjs-dbg,
+ libcvc-dbg,
+ muffin-dbg,
+ nemo-dbg,
+ ${misc:Depends},
+Description: Debugging symbols for the Cinnamon desktop
+ Cinnamon is a modern Linux desktop which provides advanced innovative
+ features and a traditional user experience. It's easy to use, powerful
+ and flexible.
+ .
+ This package contains the debugging symbols.
+
 Package: cinnamon-doc
 Section: doc
 Architecture: all
-Depends: ${misc:Depends}, devhelp
+Multi-Arch: foreign
+Depends: devhelp, ${misc:Depends}
 Description: Cinnamon documentation
  Cinnamon is a modern Linux desktop which provides advanced innovative
  features and a traditional user experience. It's easy to use, powerful

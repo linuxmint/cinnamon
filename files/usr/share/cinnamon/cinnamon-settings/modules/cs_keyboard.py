@@ -50,8 +50,10 @@ CATEGORIES = [
 KEYBINDINGS = [
     #   KB Label                        Schema                  Key name               Array?  Category
     # General
-    [_("Toggle Scale"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down", "general"],
-    [_("Toggle Expo"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up", "general"],
+    [_("Show the window selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down", "general"],
+    [_("Show the workspace selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up", "general"],
+    [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop", "general"],
+    [_("Show Desklets"), CINNAMON_SCHEMA, "show-desklets", "general"],
     [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows", "general"],
     [_("Cycle backwards through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward", "general"],
     [_("Cycle through open windows of the same application"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-group", "general"],
@@ -64,7 +66,6 @@ KEYBINDINGS = [
     [_("Unmaximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "unmaximize", "windows"],
     [_("Minimize window"), MUFFIN_KEYBINDINGS_SCHEMA, "minimize", "windows"],
     [_("Close window"), MUFFIN_KEYBINDINGS_SCHEMA, "close", "windows"],
-    [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop", "windows"],
     [_("Activate window menu"), MUFFIN_KEYBINDINGS_SCHEMA, "activate-window-menu", "windows"],
     [_("Raise window"), MUFFIN_KEYBINDINGS_SCHEMA, "raise", "windows"],
     [_("Lower window"), MUFFIN_KEYBINDINGS_SCHEMA, "lower", "windows"],
@@ -256,7 +257,7 @@ class Module:
             headingbox.pack_end(Gtk.Label.new(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it.")), False, False, 1)
 
             paned = Gtk.Paned(orientation = Gtk.Orientation.HORIZONTAL)
-            Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(paned), "wide")
+            paned.set_wide_handle(True)
 
             left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
@@ -332,6 +333,7 @@ class Module:
             cat_column.set_property('min-width', 200)
 
             self.cat_tree.append_column(cat_column)
+            self.cat_tree.set_search_column(1)
             self.cat_tree.connect("cursor-changed", self.onCategoryChanged)
 
             kb_name_cell = Gtk.CellRendererText()
@@ -465,9 +467,7 @@ class Module:
             for keybinding in category.keybindings:
                 for entry in keybinding.entries:
                     found = False
-                    if accel_string.lower() == entry.lower():
-                        found = True
-                    elif accel_string.replace("<Primary>", "<Control>").lower() == entry.lower():
+                    if Gtk.accelerator_parse_with_keycode(accel_string) == Gtk.accelerator_parse_with_keycode(entry):
                         found = True
 
                     if found and keybinding.label != current_keybinding.label:
@@ -480,7 +480,7 @@ class Module:
                         msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
                         msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
                         msg += _("Do you want to continue with this operation?")
-                        dialog.set_markup(msg % {'combination':accel_label, 'old':cgi.escape(keybinding.label), 'new':cgi.escape(current_keybinding.label)})
+                        dialog.set_markup(msg % {'combination':cgi.escape(accel_label), 'old':cgi.escape(keybinding.label), 'new':cgi.escape(current_keybinding.label)})
                         dialog.show_all()
                         response = dialog.run()
                         dialog.destroy()

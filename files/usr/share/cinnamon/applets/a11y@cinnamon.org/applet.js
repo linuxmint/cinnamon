@@ -24,15 +24,9 @@ const HIGH_CONTRAST_THEME = 'HighContrast';
 
 const Keymap = Gdk.Keymap.get_default();
 
-function MyApplet(metadata, orientation, panel_height, applet_id) {
-    this._init(metadata, orientation, panel_height, applet_id);
-}
-
-MyApplet.prototype = {
-    __proto__: Applet.TextIconApplet.prototype,
-
-    _init: function(metadata, orientation, panel_height, instance_id) {
-        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+class CinnamonA11YApplet extends Applet.TextIconApplet {
+    constructor(metadata, orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
@@ -90,9 +84,9 @@ MyApplet.prototype = {
         catch (e) {
             global.logError(e);
         }
-    },
+    }
 
-    _handleStateChange: function(actor, event) {
+    _handleStateChange(actor, event) {
         if (this.a11y_settings.get_boolean(KEY_STICKY_KEYS_ENABLED)) {
             let state = Keymap.get_modifier_state();
             let modifiers = [];
@@ -126,18 +120,18 @@ MyApplet.prototype = {
         } else {
             this.reset_tooltip();
         }
-    },
+    }
 
-    on_applet_clicked: function(event) {
+    on_applet_clicked(event) {
         this.menu.toggle();
-    },
+    }
 
-    reset_tooltip: function () {
+    reset_tooltip () {
         this.set_applet_tooltip(_("Accessibility"));
         this._applet_tooltip.hide();
-    },
+    }
 
-    _buildItemExtended: function(string, initial_value, writable, on_set) {
+    _buildItemExtended(string, initial_value, writable, on_set) {
         let widget = new PopupMenu.PopupSwitchMenuItem(string, initial_value);
         if (!writable)
             widget.actor.reactive = false;
@@ -146,9 +140,9 @@ MyApplet.prototype = {
                 on_set(item.state);
             });
         return widget;
-    },
+    }
 
-    _buildItem: function(string, schema, key) {
+    _buildItem(string, schema, key) {
         let settings = new Gio.Settings({ schema_id: schema });
         let widget = this._buildItemExtended(string,
             settings.get_boolean(key),
@@ -160,9 +154,9 @@ MyApplet.prototype = {
             widget.setToggleState(settings.get_boolean(key));
         });
         return widget;
-    },
+    }
 
-    _buildHCItem: function() {
+    _buildHCItem() {
         let settings = new Gio.Settings({ schema_id: DESKTOP_INTERFACE_SCHEMA });
         let gtkTheme = settings.get_string(KEY_GTK_THEME);
         let iconTheme = settings.get_string(KEY_ICON_THEME);
@@ -198,9 +192,9 @@ MyApplet.prototype = {
                 iconTheme = value;
         });
         return highContrast;
-    },
+    }
 
-    _buildFontItem: function() {
+    _buildFontItem() {
         let settings = new Gio.Settings({ schema_id: DESKTOP_INTERFACE_SCHEMA });
 
         let factor = settings.get_double(KEY_TEXT_SCALING_FACTOR);
@@ -221,14 +215,13 @@ MyApplet.prototype = {
             widget.setToggleState(active);
         });
         return widget;
-    },
+    }
 
-    on_applet_removed_from_panel: function() {
+    on_applet_removed_from_panel() {
         Main.systrayManager.unregisterRole("a11y", this.metadata.uuid);
     }
-};
+}
 
 function main(metadata, orientation, panel_height, instance_id) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);
-    return myApplet;
+    return new CinnamonA11YApplet(metadata, orientation, panel_height, instance_id);
 }

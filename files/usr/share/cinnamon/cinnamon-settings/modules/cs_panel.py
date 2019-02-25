@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import sys
-
+import json
 import dbus
 import gi
 gi.require_version('Gtk', '3.0')
@@ -29,20 +29,26 @@ class PanelSettingsPage(SettingsPage):
         if position in ("top", "bottom"):
             dimension_text = _("Panel height:")
             scale_dimension_text = _("Allow Cinnamon to scale panel text and icons according to the panel height")
+            left_zone_icon_size_text = _("Left panel zone icon size")
+            right_zone_icon_size_text = _("Right panel zone icon size")
         else:
             dimension_text = _("Panel width:")
             scale_dimension_text = _("Allow Cinnamon to scale panel text and icons according to the panel width")
+            left_zone_icon_size_text = _("Top panel zone icon size")
+            right_zone_icon_size_text = _("Bottom panel zone icon size")
 
         def can_show(vlist, possible):
             for item in vlist:
                 if item.split(":")[0] == panel_id:
                     return item.split(":")[1] != "false"
 
-        section = SettingsBox(_("Settings"))
+        section = SettingsBox(_("Panel Visibility"))
         self.add(section)
 
+        size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+
         options = [["true", _("Auto hide panel")], ["false", _("Always show panel")], ["intel", _("Intelligently hide panel")]]
-        widget = PanelComboBox(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id, options)
+        widget = PanelComboBox(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id, options, size_group=size_group)
         section.add_row(widget)
 
         widget = PanelSpinButton(_("Show delay"), "org.cinnamon", "panels-show-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
@@ -51,16 +57,31 @@ class PanelSettingsPage(SettingsPage):
         widget = PanelSpinButton(_("Hide delay"), "org.cinnamon", "panels-hide-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
         section.add_reveal_row(widget, "org.cinnamon", "panels-autohide", check_func=can_show)
 
-        widget = PanelSwitch(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panels-resizable", self.panel_id)
+        section = SettingsBox(_("Customize"))
+        self.add(section)
+
+        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=60, show_value=True)
+        widget.set_rounding(0)
         section.add_row(widget)
 
-        widget = PanelSwitch(scale_dimension_text, "org.cinnamon", "panels-scale-text-icons", self.panel_id)#, "org.cinnamon/panels-resizable")
-        section.add_reveal_row(widget, "org.cinnamon", "panels-resizable", check_func=can_show)
+        options = [
+            [-1, _("Scale to panel size exactly")],
+            [0, _("Scale to panel size optimally")],
+            [16, '16px'],
+            [22, '22px'],
+            [24, '24px'],
+            [32, '32px'],
+            [48, '48px']
+        ]
 
-        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=50, show_value=False)#, dep_key="org.cinnamon/panels-resizable")
-        widget.add_mark(25.0, Gtk.PositionType.TOP, None)
-        widget.set_rounding(0)
-        section.add_reveal_row(widget, "org.cinnamon", "panels-resizable", check_func=can_show)
+        widget = PanelJSONComboBox(left_zone_icon_size_text, "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'left', options, size_group=size_group)
+        section.add_row(widget)
+
+        widget = PanelJSONComboBox(_("Center panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'center', options, size_group=size_group)
+        section.add_row(widget)
+
+        widget = PanelJSONComboBox(right_zone_icon_size_text, "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'right', options, size_group=size_group)
+        section.add_row(widget)
 
         self.show_all()
 
@@ -114,6 +135,15 @@ class Module:
             page = SettingsPage()
             self.sidePage.add_widget(page)
             section = page.add_section(_("General Panel Options"))
+
+            widget = GSettingsRange(_("Symbolic icon size adjustment"),
+                                    "org.cinnamon.theme", "symbolic-relative-size",
+                                    _("Smaller"), _("Larger"),
+                                    0.4, 1.0, step=0.01, show_value=True)
+            widget.add_mark(0.67, Gtk.PositionType.TOP, None)
+            widget.set_rounding(2)
+
+            section.add_row(widget)
 
             buttons = SettingsWidget()
             self.add_panel_button = Gtk.Button(label=_("Add new panel"))
@@ -400,11 +430,46 @@ class PanelComboBox(ComboBox, PanelWidgetBackend):
     def unstringify(self, value):
         return value
 
+class PanelJSONComboBox(ComboBox, PanelWidgetBackend):
+    def __init__(self, label, schema, key, panel_id, zone, *args, **kwargs):
+        self.panel_id = panel_id
+        self.zone = zone
+        super(PanelJSONComboBox, self).__init__(label, *args, **kwargs)
+
+        self.connect_to_settings(schema, key)
+
+    def stringify(self, value):
+        return value
+
+    def unstringify(self, value):
+        return value
+
+    def set_value(self, value):
+        vals = json.loads(self.settings[self.key])
+        for obj in vals:
+            if obj['panelId'] != int(self.panel_id):
+                continue
+            for key, val in obj.items():
+                if key == self.zone:
+                    obj[key] = int(value)
+                    break
+
+        self.settings[self.key] = json.dumps(vals)
+
+    def get_value(self):
+        vals = self.settings[self.key]
+        vals = json.loads(vals)
+        for obj in vals:
+            if obj['panelId'] != int(self.panel_id):
+                continue
+            for key, val in obj.items():
+                if key == self.zone:
+                    return int(val)
+
 class PanelRange(Range, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):
         self.panel_id = panel_id
         super(PanelRange, self).__init__(label, *args, **kwargs)
-
         self.connect_to_settings(schema, key)
 
     def get_range(self):

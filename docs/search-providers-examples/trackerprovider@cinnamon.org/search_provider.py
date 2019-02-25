@@ -20,7 +20,7 @@ CONVERT_TYPES = {
 if __name__ == "__main__":
     results = {}
     conn = Tracker.SparqlConnection.get()
-    words = sys.argv[1].split(" ");
+    words = sys.argv[1].split(" ")
     query_params = []
     for i in words:
         if i:
@@ -31,10 +31,10 @@ if __name__ == "__main__":
     query = """SELECT ?s nie:url(?s) nmm:musicAlbum(?s) nmm:performer(?s) nmm:trackNumber(?s) nie:title(?s) nie:mimeType(?s) rdf:type(?s)
                  WHERE { """ + " . ".join(query_params) + """ }
                  ORDER BY DESC (fts:rank(?s))
-                 LIMIT 100""";
+                 LIMIT 100"""
     cursor = conn.query(query)
     while cursor.next():
-        defined_type = None;
+        defined_type = None
         if not cursor.get_string(7)[0] or not cursor.get_string(1)[0]:
             #If we have no defined file type or no file url, skip
             continue
@@ -55,8 +55,8 @@ if __name__ == "__main__":
                 "title": cursor.get_string(5)[0],
                 "mimeType": cursor.get_string(6)[0],
                 "type": defined_type
-            });
+            })
     final_results = []
     for i in results:
         final_results += results[i]
-    print json.dumps(final_results)
+    print(json.dumps(final_results))

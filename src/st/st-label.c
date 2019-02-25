@@ -276,6 +276,9 @@ st_label_init (StLabel *label)
   label->priv->shadow_height = -1.;
   label->priv->orphan = FALSE;
 
+  /* This will ensure our pointer gets cleared the moment the ClutterText becomes invalid */
+  g_object_add_weak_pointer (G_OBJECT (label->priv->label), (gpointer) &label->priv->label);
+
   clutter_actor_add_child (CLUTTER_ACTOR (label), priv->label);
 }
 

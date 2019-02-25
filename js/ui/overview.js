@@ -15,7 +15,7 @@ const Tweener = imports.ui.tweener;
 const WorkspacesView = imports.ui.workspacesView;
 
 // Time for initial animation going into Overview mode
-const ANIMATION_TIME = 0.25;
+var ANIMATION_TIME = 0.25;
 
 const SwipeScrollDirection = WorkspacesView.SwipeScrollDirection;
 
@@ -131,16 +131,13 @@ Overview.prototype = {
                 // even if the user stops dragging rather "throws" by
                 // releasing during the drag.
                 let distance = this._dragStartValue - this._scrollAdjustment.value;
-                let noStop = Math.abs(distance / difference) > 0.5;
+                let dt = (event.get_time() - this._lastMotionTime) / 1000;
+                let passedHalf = Math.abs(distance / difference) > 0.5;
 
-                // We detect if the user is stopped by comparing the
-                // timestamp of the button release with the timestamp of
-                // the last motion. Experimentally, a difference of 0 or 1
-                // millisecond indicates that the mouse is in motion, a
-                // larger difference indicates that the mouse is stopped.
-                if ((this._lastMotionTime > 0 &&
-                     this._lastMotionTime > event.get_time() - 2) ||
-                    noStop) {
+                /* Switch to the next page if the scroll ammount is more
+                   than half the page width or is faster than 25px/s.
+                   This number comes from experimental tests. */
+                if (Math.abs(distance) > dt * 25 || passedHalf) {
                     if (this._dragStartValue + difference >= minValue &&
                         this._dragStartValue + difference <= maxValue)
                         newValue += difference;
@@ -235,8 +232,8 @@ Overview.prototype = {
         if (!Main.pushModal(this._group))
             return;
         this._modal = true;
-        this._animateVisible();
         this._shown = true;
+        this._animateVisible();
 
         this._buttonPressId = this._group.connect('button-press-event',
             Lang.bind(this, this._onButtonPress));
@@ -251,16 +248,16 @@ Overview.prototype = {
         // one. Instances of this class share a single CoglTexture behind the
         // scenes which allows us to show the background with different
         // rendering options without duplicating the texture data.
-        this._background = new Clutter.Group();
-        this._background.hide();
-        global.overlay_group.add_actor(this._background);
+        this._background = new Clutter.Actor();
+        this._background.set_position(0, 0);
+        this._group.add_actor(this._background);
 
-        this._desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
-        this._background.add_actor(this._desktopBackground);
+        let desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
+        this._background.add_actor(desktopBackground);
 
-        this._backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
-        this._background.add_actor(this._backgroundShade);
-        this._backgroundShade.set_size(global.screen_width, global.screen_height);
+        let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
+        backgroundShade.set_size(global.screen_width, global.screen_height);
+        this._background.add_actor(backgroundShade);
 
         this.visible = true;
         this.animationInProgress = true;
@@ -272,7 +269,7 @@ Overview.prototype = {
         this._group.add_actor(this._coverPane);
         this._coverPane.set_position(0, 0);
         this._coverPane.set_size(global.screen_width, global.screen_height);
-        this._coverPane.connect('event', Lang.bind(this, function (actor, event) { return true; }));
+        this._coverPane.connect('event', () => true);
         this._coverPane.hide();
 
         // All the the actors in the window group are completely obscured,
@@ -287,24 +284,32 @@ Overview.prototype = {
         Meta.disable_unredirect_for_screen(global.screen);
         global.window_group.hide();
         this._group.show();
-        this._background.show();
 
         this.workspacesView = new WorkspacesView.WorkspacesView();
         global.overlay_group.add_actor(this.workspacesView.actor);
         Main.panelManager.disablePanels();
 
-        this._group.opacity = 0;
-        Tweener.addTween(this._group,
-                         { opacity: 255,
-                           transition: 'easeOutQuad',
-                           time: ANIMATION_TIME,
-                           onComplete: this._showDone,
-                           onCompleteScope: this
-                         });
+        let animate = Main.wm.settingsState['desktop-effects'];
+        if (animate) {
+            this._group.opacity = 0;
+            Tweener.addTween(this._group, {
+                opacity: 255,
+                transition: 'easeOutQuad',
+                time: ANIMATION_TIME,
+                onComplete: this._showDone,
+                onCompleteScope: this
+            });
+        }
+
 
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('showing');
+
+        if (!animate) {
+            this._group.opacity = 255;
+            this._showDone();
+        }
     },
 
     // showTemporarily:
@@ -329,10 +334,10 @@ Overview.prototype = {
         if (!this._shown)
             return;
 
+        this._shown = false;
         if (!this._shownTemporarily)
             this._animateNotVisible();
 
-        this._shown = false;
         this._syncInputMode();
 
         if (this._buttonPressId > 0)
@@ -403,18 +408,24 @@ Overview.prototype = {
 
         this.workspacesView.hide();
 
-        // Make other elements fade out.
-        Tweener.addTween(this._group,
-                         { opacity: 0,
-                           transition: 'easeOutQuad',
-                           time: ANIMATION_TIME,
-                           onComplete: this._hideDone,
-                           onCompleteScope: this
-                         });
+        let animate = Main.wm.settingsState['desktop-effects'];
+        if (animate) {
+            // Make other elements fade out.
+            Tweener.addTween(this._group, {
+                opacity: 0,
+                transition: 'easeOutQuad',
+                time: ANIMATION_TIME,
+                onComplete: this._hideDone,
+                onCompleteScope: this
+            });
+        }
 
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('hiding');
+
+        if (!animate)
+            this._hideDone();
     },
 
     _showDone: function() {
@@ -435,7 +446,7 @@ Overview.prototype = {
         this._coverPane.destroy();
         this._coverPane = null;
 
-        global.overlay_group.remove_actor(this._background);
+        this._group.remove_actor(this._background);
         this._background.destroy();
         this._background = null;
 
@@ -464,5 +475,3 @@ Overview.prototype = {
     }
 };
 Signals.addSignalMethods(Overview.prototype);
-
-

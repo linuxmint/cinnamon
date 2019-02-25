@@ -10,11 +10,14 @@
  */
 
 const GLib = imports.gi.GLib;
-
+const Gio = imports.gi.Gio;
+const GObject = imports.gi.GObject;
+const Gir = imports.gi.GIRepository;
+const Mainloop = imports.mainloop;
 const Main = imports.ui.main;
 
 // http://daringfireball.net/2010/07/improved_regex_for_matching_urls
-const _balancedParens = '\\((?:[^\\s()<>]+|(?:\\(?:[^\\s()<>]+\\)))*\\)';
+const _balancedParens = '\\([^\\s()<>]+\\)';
 const _leadingJunk = '[\\s`(\\[{\'\\"<\u00AB\u201C\u2018]';
 const _notTrailingJunk = '[^\\s`!()\\[\\]{};:\'\\".,<>?\u00AB\u00BB\u201C\u201D\u2018\u2019]';
 
@@ -77,7 +80,7 @@ function spawn(argv) {
 }
 
 let subprocess_id = 0;
-let subprocess_callbacks = {};
+var subprocess_callbacks = {};
 /**
  * spawn_async:
  * @args: an array containing all arguments of the command to be run
@@ -152,33 +155,43 @@ function trySpawnCommandLine(command_line) {
 
 /**
  * spawnCommandLineAsync:
- * @command_line: a command line
- * @callback (function): called on success
- * @errback (function): called on error
+ * @command: a command
+ * @callback (function): called on success or failure
+ * @opts (object): options: argv, flags, input
  *
- * Runs @command_line in the background. If the process exits without
- * error, a callback will be called, or an error callback will be
- * called if one is provided.
+ * Runs @command in the background. Callback has three arguments -
+ * stdout, stderr, and exitCode.
+ *
+ * Returns (object): a Gio.Subprocess instance
  */
-function spawnCommandLineAsync(command_line, callback, errback) {
-    let pid;
+function spawnCommandLineAsync(command, callback, opts = {}) {
+    let {argv, flags, input} = opts;
+    if (!input) input = null;
 
-    let [success, argv] = GLib.shell_parse_argv(command_line);
-    pid = trySpawn(argv, true);
-
-    GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, function(pid, status) {
-        GLib.spawn_close_pid(pid);
-
-        if (status !== 0) {
-            if (typeof errback === 'function') {
-                errback();
-            }
-        } else {
-            if (typeof callback === 'function') {
-                callback();
-            }
-        }
+    let subprocess = new Gio.Subprocess({
+        argv: argv ? argv : ['bash', '-c', command],
+        flags: flags ? flags
+            : Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDIN_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
     });
+    subprocess.init(null);
+    let cancellable = new Gio.Cancellable();
+
+    subprocess.communicate_utf8_async(input, cancellable, (obj, res) => {
+        let success, stdout, stderr, exitCode;
+        // This will throw on cancel with "Gio.IOErrorEnum: Operation was cancelled"
+        tryFn(() => [success, stdout, stderr] = obj.communicate_utf8_finish(res));
+        if (typeof callback === 'function' && !cancellable.is_cancelled()) {
+            if (stderr && stderr.indexOf('bash: ') > -1) {
+                stderr = stderr.replace(/bash: /, '');
+            }
+            exitCode = success ? subprocess.get_exit_status() : -1;
+            callback(stdout, stderr, exitCode);
+        }
+        subprocess.cancellable = null;
+    });
+    subprocess.cancellable = cancellable;
+
+    return subprocess;
 }
 
 function _handleSpawnError(command, err) {
@@ -383,4 +396,297 @@ function queryCollection(collection, query, indexOnly = false) {
         }
     }
     return indexOnly ? -1 : null;
+}
+
+/**
+ * findIndex:
+ * @array (array): Array to be iterated.
+ * @callback (function): The function to call on every iteration,
+ * should return a boolean value.
+ *
+ * Returns (number): the index of @array, else -1.
+ */
+function findIndex(array, callback) {
+    for (let i = 0, len = array.length; i < len; i++) {
+        if (array[i] && callback(array[i], i, array)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/**
+ * find:
+ * @array (array): Array to be iterated.
+ * @callback (function): The function to call on every iteration,
+ * should return a boolean value.
+ *
+ * Returns (any): Returns the matched element, else null.
+ */
+function find(arr, callback) {
+    for (let i = 0, len = arr.length; i < len; i++) {
+        if (callback(arr[i], i, arr)) {
+            return arr[i];
+        }
+    }
+    return null;
+};
+
+/**
+ * each:
+ * @array (array|object): Array or object to be iterated.
+ * @callback (function): The function to call on every iteration.
+ *
+ * Iteratee functions may exit iteration early by explicitly returning false.
+ */
+function each(obj, callback) {
+    if (Array.isArray(obj)) {
+        for (let i = 0, len = obj.length; i < len; i++) {
+            if (callback(obj[i], i) === false) {
+                return;
+            }
+        }
+    } else {
+        let keys = Object.keys(obj);
+        for (let i = 0, len = keys.length; i < len; i++) {
+            let key = keys[i];
+            callback(obj[key], key);
+        }
+    }
+};
+
+/**
+ * filter:
+ * @array (array): Array to be iterated.
+ * @callback (function): The function to call on every iteration.
+ *
+ * Returns (array): Returns the new filtered array.
+ */
+function filter(arr, callback) {
+    let result = [];
+    for (let i = 0, len = arr.length; i < len; i++) {
+        if (callback(arr[i], i, arr)) {
+            result.push(arr[i]);
+        }
+    }
+    return result;
+};
+
+/**
+ * map:
+ * @array (array): Array to be iterated.
+ * @callback (function): The function to call on every iteration.
+ *
+ * Returns (array): Returns the new mapped array.
+ */
+function map(arr, callback) {
+    if (arr == null) {
+        return [];
+    }
+
+    let len = arr.length;
+    let out = Array(len);
+
+    for (let i = 0; i < len; i++) {
+        out[i] = callback(arr[i], i, arr);
+    }
+
+    return out;
+};
+
+/**
+ * tryFn:
+ * @callback (function): Function to wrap in a try-catch block.
+ * @errCallback (function): The function to call on error.
+ *
+ * Try-catch can degrade performance in the function scope it is
+ * called in. By using a wrapper for try-catch, the function scope is
+ * reduced to the wrapper and not a potentially performance critical
+ * function calling the wrapper. Use of try-catch in any form will
+ * be slower than writing defensive code.
+ *
+ * Returns (any): The output of whichever callback gets called.
+ */
+function tryFn(callback, errCallback) {
+    try {
+        return callback();
+    } catch (e) {
+        if (typeof errCallback === 'function') {
+            return errCallback(e);
+        }
+    }
+};
+
+/**
+ * setTimeout:
+ * @callback (function): Function to call at the end of the timeout.
+ * @ms (number): Milliseconds until the timeout expires.
+ *
+ * Convenience wrapper for a Mainloop.timeout_add loop that
+ * returns false.
+ *
+ * Returns (number): The ID of the loop.
+ */
+function setTimeout(callback, ms) {
+    let args = [];
+    if (arguments.length > 2) {
+        args = args.slice.call(arguments, 2);
+    }
+
+    let id = Mainloop.timeout_add(ms, () => {
+        callback.call(null, ...args);
+        return false; // Stop repeating
+    }, null);
+
+    return id;
+};
+
+/**
+ * clearTimeout:
+ * @id (number): The ID of the loop to remove.
+ *
+ * Convenience wrapper for Mainloop.source_remove.
+ */
+function clearTimeout(id) {
+    if (id) Mainloop.source_remove(id);
+};
+
+
+/**
+ * setInterval:
+ * @callback (function): Function to call on every interval.
+ * @ms (number): Milliseconds between invocations.
+ *
+ * Convenience wrapper for a Mainloop.timeout_add loop that
+ * returns true.
+ *
+ * Returns (number): The ID of the loop.
+ */
+function setInterval(callback, ms) {
+    let args = [];
+    if (arguments.length > 2) {
+        args = args.slice.call(arguments, 2);
+    }
+
+    let id = Mainloop.timeout_add(ms, () => {
+        callback.call(null, ...args);
+        return true; // Repeat
+    }, null);
+
+    return id;
+};
+
+/**
+ * clearInterval:
+ * @id (number): The ID of the loop to remove.
+ *
+ * Convenience wrapper for Mainloop.source_remove.
+ */
+function clearInterval(id) {
+    if (id) Mainloop.source_remove(id);
+};
+
+/**
+ * throttle:
+ * @callback (function): Function to throttle.
+ * @interval (number): Milliseconds to throttle invocations to.
+ * @callFirst (boolean): Specify invoking on the leading edge of the timeout.
+ *
+ * Returns (any): The output of @callback.
+ */
+function throttle(callback, interval, callFirst) {
+    let wait = false;
+    let callNow = false;
+    return function() {
+        callNow = callFirst && !wait;
+        let context = this;
+        let args = arguments;
+        if (!wait) {
+            wait = true;
+            setTimeout(function() {
+                wait = false;
+                if (!callFirst) {
+                    return callback.apply(context, args);
+                }
+            }, interval);
+        }
+        if (callNow) {
+            callNow = false;
+            return callback.apply(this, arguments);
+        }
+    };
+}
+
+/**
+ * unref:
+ * @object (object): Object to be nullified.
+ * @reserved (array): List of special keys (string) that should not be assigned null.
+ *
+ * This will iterate @object and assign null to every property
+ * value except for keys specified in the @reserved array. Calling unref()
+ * in an object that has many references can make garbage collection easier
+ * for the engine. This should be used at the end of the lifecycle for
+ * classes that do not reconstruct very frequently, as GC thrashing can
+ * reduce performance.
+ */
+function unref(object, reserved = []) {
+    // Some actors being destroyed have a cascading effect (e.g. PopupMenu items),
+    // so it is safest to wait for the next 'tick' before removing references.
+    setTimeout(() => {
+        let keys = Object.keys(object);
+        for (let i = 0; i < keys.length; i++) {
+            if (!reserved.includes(keys[i])) {
+                object[keys[i]] = null;
+            }
+        }
+    }, 0);
+};
+
+const READWRITE = GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE;
+
+// Based on https://gist.github.com/ptomato/c4245c77d375022a43c5
+function _getWritablePropertyNamesForObjectInfo(info) {
+    let propertyNames = [];
+    let propertyCount = Gir.object_info_get_n_properties(info);
+    for(let i = 0; i < propertyCount; i++) {
+        let propertyInfo = Gir.object_info_get_property(info, i);
+        let flags = Gir.property_info_get_flags(propertyInfo);
+        if ((flags & READWRITE) == READWRITE) {
+            propertyNames.push(propertyInfo.get_name());
+
+        }
+    }
+    return propertyNames;
+}
+
+/**
+ * getGObjectPropertyValues:
+ * @object (GObject.Object): GObject to inspect
+ *
+ * Returns (object): JS representation of the passed GObject
+ */
+function getGObjectPropertyValues(obj, r = 0) {
+    let repository = Gir.Repository.get_default();
+    let baseInfo = repository.find_by_gtype(obj.constructor.$gtype);
+    let propertyNames = [];
+    for (let info = baseInfo; info !== null; info = Gir.object_info_get_parent(info)) {
+        propertyNames = propertyNames.concat(_getWritablePropertyNamesForObjectInfo(info));
+    }
+    if (r > 0 && propertyNames.length === 0) {
+        return obj.toString();
+    }
+    let jsRepresentation = {};
+    for (let i = 0; i < propertyNames.length; i++) {
+        try {
+            let value = obj[propertyNames[i]];
+            if ((value instanceof GObject.Object) && r < 4) {
+                value = getGObjectPropertyValues(value, r + 1);
+            }
+            jsRepresentation[propertyNames[i]] = value;
+        } catch (e) {
+            /* Error: Can't convert non-null pointer to JS value */
+            jsRepresentation[propertyNames[i]] = '<non-null pointer>';
+        }
+    }
+    return jsRepresentation;
 }

@@ -2,15 +2,9 @@ const Applet = imports.ui.applet;
 const St = imports.gi.St;
 const Settings = imports.ui.settings;
 
-function MyApplet(metadata, orientation, panelHeight, instance_id) {
-    this._init(metadata, orientation, panelHeight, instance_id);
-}
-
-MyApplet.prototype = {
-    __proto__: Applet.IconApplet.prototype,
-
-    _init: function(metadata, orientation, panelHeight, instance_id) {
-        Applet.IconApplet.prototype._init.call(this, orientation, panelHeight, instance_id);
+class CinnamonSpacerApplet extends Applet.IconApplet {
+    constructor(metadata, orientation, panelHeight, instance_id) {
+        super(orientation, panelHeight, instance_id);
         this.actor.track_hover = false;
 
         this.bin = new St.Bin();
@@ -23,9 +17,9 @@ MyApplet.prototype = {
         this.orientation = orientation;
 
         this.width_changed();
-    },
+    }
 
-    on_orientation_changed: function(neworientation) {
+    on_orientation_changed(neworientation) {
         this.orientation = neworientation;
 
         if (this.bin) {
@@ -36,21 +30,20 @@ MyApplet.prototype = {
 
             this.width_changed();
         }
-    },
+    }
 
-    width_changed: function() {
+    width_changed() {
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
             this.bin.width = this.width;
         else
             this.bin.height = this.width;
-    },
+    }
 
-    on_applet_removed_from_panel: function() {
+    on_applet_removed_from_panel() {
         this.settings.finalize();
     }
-};
+}
 
 function main(metadata, orientation, panelHeight, instance_id) {
-    let myApplet = new MyApplet(metadata, orientation, panelHeight, instance_id);
-    return myApplet;
+    return new CinnamonSpacerApplet(metadata, orientation, panelHeight, instance_id);
 }

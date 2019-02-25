@@ -54,8 +54,13 @@ class InspectView(pageutils.BaseListView):
 
     def setInspectionData(self, path, data):
         self.store.clear()
+        data.sort(key=lambda item: item["name"])
         for item in data:
-            self.store.append([item["name"], item["type"], item["shortValue"], item["value"], path + "['" + item["name"] + "']"])
+            self.store.append([item["name"],
+                               item["type"],
+                               pageutils.shortenValue(item["value"]),
+                               item["value"],
+                               path + "['" + item["name"] + "']"])
 
 class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self, parent):
@@ -65,7 +70,6 @@ class ModulePage(pageutils.WindowAndActionBars):
 
         self.back = pageutils.ImageButton("go-previous-symbolic")
         self.back.set_tooltip_text("Go back")
-        self.back.set_sensitive(False)
         self.back.connect("clicked", self.onBackButton)
         self.addToLeftBar(self.back, 1)
 
@@ -106,24 +110,26 @@ class ModulePage(pageutils.WindowAndActionBars):
             lookingGlassProxy.AddResult(path)
 
     def onBackButton(self, widget):
-        self.popInspectionElement()
+        if len(self.stack) > 0:
+            self.popInspectionElement()
+        else:
+            melangeApp.activatePage("results")
+
 
     def popInspectionElement(self):
         if len(self.stack) > 0:
             self.updateInspector(*self.stack.pop())
 
         sensitive = len(self.stack) > 0
-        self.back.set_sensitive(sensitive)
         self.insert.set_sensitive(sensitive)
 
     def pushInspectionElement(self):
         if self.currentInspection is not None:
             self.stack.append(self.currentInspection)
-            self.back.set_sensitive(True)
             self.insert.set_sensitive(True)
 
     def updateInspector(self, path, objType, name, value, pushToStack=False):
-        if objType == "object":
+        if objType in ("array", "object"):
             if pushToStack:
                 self.pushInspectionElement()
 
@@ -143,14 +149,13 @@ class ModulePage(pageutils.WindowAndActionBars):
                     self.view.store.clear()
             else:
                 self.view.store.clear()
-        elif objType == "undefined":
-            pageutils.ResultTextDialog("Value for '" + name + "'", "Value is <undefined>")
+        elif objType in ("undefined", "null"):
+            pageutils.ResultTextDialog("Value for '" + name + "'", "Value is <" + objType + ">")
         else:
             pageutils.ResultTextDialog("Value for " + objType + " '" + name + "'", value)
 
     def inspectElement(self, path, objType, name, value):
         del self.stack[:]
         self.currentInspection = None
-        self.back.set_sensitive(False)
         self.insert.set_sensitive(False)
         self.updateInspector(path, objType, name, value)

@@ -104,7 +104,7 @@ for _file in _files:
     if not FILE_REGEX.match(parts[-1]):
         continue
 
-    file_obj = open(_file, 'r')
+    file_obj = open(_file, 'r', encoding="utf-8")
 
     curr_file = JSFile(parts[-2], parts[-1][:-3])
 

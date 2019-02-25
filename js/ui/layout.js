@@ -5,6 +5,7 @@
  * @short_description: The file responsible for managing Cinnamon chrome
  */
 const Clutter = imports.gi.Clutter;
+const Cinnamon = imports.gi.Cinnamon;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
@@ -108,7 +109,7 @@ LayoutManager.prototype = {
     // not exist yet when the LayoutManager was constructed.
     init: function() {
         this._chrome.init();
-        
+
         this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionFlipWorkspaceRight);
         this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionFlipWorkspaceLeft);
 
@@ -119,7 +120,7 @@ LayoutManager.prototype = {
 
         this.hotCornerManager = new HotCorner.HotCornerManager();
     },
-    
+
     _toggleExpo: function() {
         if (Main.expo.animationInProgress)
             return;
@@ -130,7 +131,7 @@ LayoutManager.prototype = {
         }
         Main.expo.toggle();
     },
-    
+
     _updateMonitors: function() {
         let screen = global.screen;
 
@@ -139,27 +140,13 @@ LayoutManager.prototype = {
         for (let i = 0; i < nMonitors; i++)
             this.monitors.push(new Monitor(i, screen.get_monitor_geometry(i)));
 
-        if (nMonitors == 1) {
-            this.primaryIndex = this.bottomIndex = 0;
-        } else {
-            // If there are monitors below the primary, then we need
-            // to split primary from bottom.
-            this.primaryIndex = this.bottomIndex = screen.get_primary_monitor();
-            for (let i = 0; i < this.monitors.length; i++) {
-                let monitor = this.monitors[i];
-                if (this._isAboveOrBelowPrimary(monitor)) {
-                    if (monitor.y > this.monitors[this.bottomIndex].y)
-                        this.bottomIndex = i;
-                }
-            }
-        }
+        this.primaryIndex = screen.get_primary_monitor();
         this.primaryMonitor = this.monitors[this.primaryIndex];
-        this.bottomMonitor = this.monitors[this.bottomIndex];
     },
 
     _updateBoxes: function() {
         if (this.hotCornerManager)
-            this.hotCornerManager.updatePosition(this.primaryMonitor, this.bottomMonitor);
+            this.hotCornerManager.updatePosition(this.primaryMonitor);
         this._chrome._queueUpdateRegions();
     },
 
@@ -167,20 +154,6 @@ LayoutManager.prototype = {
         this._updateMonitors();
         this._updateBoxes();
         this.emit('monitors-changed');
-    },
-
-    _isAboveOrBelowPrimary: function(monitor) {
-        let primary = this.monitors[this.primaryIndex];
-        let monitorLeft = monitor.x, monitorRight = monitor.x + monitor.width;
-        let primaryLeft = primary.x, primaryRight = primary.x + primary.width;
-
-        if ((monitorLeft >= primaryLeft && monitorLeft < primaryRight) ||
-            (monitorRight > primaryLeft && monitorRight <= primaryRight) ||
-            (primaryLeft >= monitorLeft && primaryLeft < monitorRight) ||
-            (primaryRight > monitorLeft && primaryRight <= monitorRight))
-            return true;
-
-        return false;
     },
 
     get focusIndex() {
@@ -238,7 +211,7 @@ LayoutManager.prototype = {
                            time: STARTUP_ANIMATION_TIME,
                            transition: 'easeOutQuad',
                            onComplete: this._startupAnimationComplete,
-                           onCompleteScope: this });       
+                           onCompleteScope: this });
     },
 
     _startupAnimationComplete: function() {
@@ -304,7 +277,7 @@ LayoutManager.prototype = {
         return false;
     },
 
-    /** 
+    /**
      * updateChrome:
      * @doVisibility (boolean): (optional) whether to recalculate visibility.
      *
@@ -539,7 +512,7 @@ Chrome.prototype = {
         }
         return -1;
     },
-    
+
     modifyActorParams: function(actor, params) {
         let index = this._findActor(actor);
         if (index == -1)
@@ -606,7 +579,21 @@ Chrome.prototype = {
             let actorData = this._trackedActors[i], visible;
             if (!actorData.isToplevel)
                 continue;
-            else if (this._inOverview)
+            else if (global.stage_input_mode == Cinnamon.StageInputMode.FULLSCREEN) {
+                let monitor = this.findMonitorForActor(actorData.actor);
+
+                if (global.screen.get_n_monitors() == 1 || !monitor.inFullscreen) {
+                    visible = true;
+                } else {
+                    if (Main.modalActorFocusStack.length > 0) {
+                        let modalActor = Main.modalActorFocusStack[Main.modalActorFocusStack.length - 1].actor;
+
+                        if (this.findMonitorForActor(modalActor) == monitor) {
+                            visible = true;
+                        }
+                    }
+                }
+            } else if (this._inOverview)
                 visible = true;
             else if (!actorData.visibleInFullscreen &&
                      this.findMonitorForActor(actorData.actor).inFullscreen)

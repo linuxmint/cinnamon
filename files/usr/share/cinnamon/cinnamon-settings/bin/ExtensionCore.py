@@ -814,7 +814,6 @@ class DownloadSpicesPage(SettingsPage):
 
         self.update_all_button = Gtk.Button.new_from_icon_name("software-update-available-symbolic", Gtk.IconSize.MENU)
         self.update_all_button.set_size_request(50, -1)
-        self.update_all_button.set_tooltip_text(_("Update all"))
         self.update_all_button.connect('clicked', self.update_all)
         box.add(self.update_all_button)
         self.update_all_button.set_sensitive(False)
@@ -926,7 +925,13 @@ class DownloadSpicesPage(SettingsPage):
             self.extension_rows.append(row)
             self.list_box.add(row)
 
-        self.update_all_button.set_sensitive(self.spices.are_updates_available())
+        updates_available = self.spices.get_n_updates()
+        self.update_all_button.set_sensitive(updates_available)
+        if updates_available > 0:
+            msg_text = _("Update all") + ' (' + ngettext("%d update available", "%d updates available", updates_available) % updates_available  + ')'
+        else:
+            msg_text = _("No updates available")
+        self.update_all_button.set_tooltip_text(msg_text)
         self.refresh_button.set_sensitive(True)
 
     def get_more_info(self, *args):

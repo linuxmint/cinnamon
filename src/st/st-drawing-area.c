@@ -71,6 +71,7 @@ st_drawing_area_dispose (GObject *object)
 static void
 st_drawing_area_paint (ClutterActor *self)
 {
+  static CoglPipeline *drawing_pipeline_template = NULL;
   StDrawingArea *area = ST_DRAWING_AREA (self);
   StDrawingAreaPrivate *priv = area->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
@@ -88,10 +89,9 @@ st_drawing_area_paint (ClutterActor *self)
 
   if (priv->pipeline == NULL)
     {
-      CoglContext *ctx =
-        clutter_backend_get_cogl_context (clutter_get_default_backend ());
-
-      priv->pipeline = cogl_pipeline_new (ctx);
+      if (G_UNLIKELY (drawing_pipeline_template == NULL))
+        drawing_pipeline_template = cogl_pipeline_new (st_get_cogl_context());
+      priv->pipeline = cogl_pipeline_copy (drawing_pipeline_template);
     }
 
   if (priv->texture != NULL &&
