@@ -386,7 +386,7 @@ gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
         return FALSE;
       }
 
-    /* set uniforms */
+    /* set uniforms i.e. the parameters into the GLSL code */
 
     if (self->pixel_step_uniform0 > -1)
       {
@@ -494,22 +494,14 @@ st_background_bumpmap_effect_init (StBackgroundBumpmapEffect *self)
   cogl_pipeline_add_layer_snippet (self->pipeline0, 0, snippet);
   cogl_object_unref (snippet);
 
-  cogl_pipeline_set_layer_wrap_mode (self->pipeline0, 0,
+  cogl_pipeline_set_layer_wrap_mode (self->pipeline0,
+                                     0,
                                      COGL_MATERIAL_WRAP_MODE_CLAMP_TO_EDGE);
 
-  cogl_pipeline_set_layer_wrap_mode (self->pipeline0, 1,
+  /* we need the bumpamp to be able to repeat over the effect area */
+  cogl_pipeline_set_layer_wrap_mode (self->pipeline0,
+                                     1,
                                      COGL_PIPELINE_WRAP_MODE_REPEAT);
-
-  cogl_pipeline_set_cull_face_mode (self->pipeline0,
-                                    COGL_PIPELINE_CULL_FACE_MODE_NONE);
-
-  cogl_pipeline_set_layer_filters (self->pipeline0, 0,
-                                   COGL_PIPELINE_FILTER_LINEAR,
-                                   COGL_PIPELINE_FILTER_LINEAR);
-
-  cogl_pipeline_set_layer_filters (self->pipeline0, 1,
-                                   COGL_PIPELINE_FILTER_NEAREST,
-                                   COGL_PIPELINE_FILTER_NEAREST);
 
   cogl_pipeline_set_layer_null_texture (self->pipeline0,
                                         0,
@@ -524,14 +516,15 @@ st_background_bumpmap_effect_init (StBackgroundBumpmapEffect *self)
   self->bump_step_uniform =
     cogl_pipeline_get_uniform_location (self->pipeline0, "bump_step");
 
-  cogl_pipeline_set_blend (self->pipeline0,
-                           "RGBA = ADD(SRC_COLOR, DST_COLOR*0)",
-                           NULL);
-
   self->bg_texture = NULL;
   self->bg_bumpmap = NULL;
 
-  cogl_pipeline_set_layer_combine (self->pipeline0,1,
+  /* note that as we are only working with one layer we don't care about a blend string
+     however we do have to suppress the original bumpmap image layer from displaying
+     over the top, just replace it with the previous layer */
+
+  cogl_pipeline_set_layer_combine (self->pipeline0,
+                                   1,
                                    "RGBA = REPLACE (PREVIOUS)",
                                    NULL);
 }
