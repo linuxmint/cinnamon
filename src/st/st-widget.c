@@ -398,12 +398,20 @@ st_widget_paint_background (StWidget *widget)
                                     &allocation,
                                     opacity);
   else
-    st_theme_node_paint (theme_node,
-                         cogl_get_draw_framebuffer(),
-                         &allocation,
-                         opacity,
-                         widget->priv->background_blur_effect,
-                         widget->priv->background_bumpmap_effect);
+    {
+      if ((theme_node->background_blur > 0 || theme_node->background_bumpmap)
+          && widget->priv->background_blur_effect == NULL
+          && widget->priv->background_bumpmap_effect == NULL)
+        {
+          st_widget_add_background_effects(widget, NULL);
+        }
+      st_theme_node_paint (theme_node,
+                           cogl_get_draw_framebuffer(),
+                           &allocation,
+                           opacity,
+                           widget->priv->background_blur_effect,
+                           widget->priv->background_bumpmap_effect);
+    }
 }
 
  static void
