@@ -151,14 +151,14 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         let label_string = this.clock.get_clock();
 
         if (!this.use_custom_format) {
-            label_string = label_string.capitalize();
+            label_string = capitalize(label_string);
         }
 
         this.set_applet_label(label_string);
 
         /* Applet content - st_label_set_text and set_applet_tooltip both compare new to
          * existing strings before proceeding, so no need to check here also */
-        let dateFormattedFull = this.clock.get_clock_for_format(this._dateFormatFull).capitalize();
+        let dateFormattedFull = capitalize(this.clock.get_clock_for_format(this._dateFormatFull));
 
         this._date.set_text(dateFormattedFull);
         this.set_applet_tooltip(dateFormattedFull);

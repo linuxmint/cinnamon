@@ -493,7 +493,7 @@ class Player extends PopupMenu.PopupMenuSection {
             this._name = this._mediaServer.Identity;
         } else {
             let displayName = this._busName.replace('org.mpris.MediaPlayer2.', '');
-            this._name = displayName.capitalize();
+            this._name = capitalize(displayName);
         }
 
         let mainBox = new PopupMenu.PopupMenuSection();

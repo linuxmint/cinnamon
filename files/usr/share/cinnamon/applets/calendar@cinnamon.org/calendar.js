@@ -331,7 +331,7 @@ class Calendar {
     _update(forceReload) {
         let now = new Date();
 
-        this._monthLabel.text = this._selectedDate.toLocaleFormat('%OB').capitalize();
+        this._monthLabel.text = capitalize(this._selectedDate.toLocaleFormat('%OB'));
         this._yearLabel.text = this._selectedDate.toLocaleFormat('%Y');
 
         // Remove everything but the topBox and the weekday labels

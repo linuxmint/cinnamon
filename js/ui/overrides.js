@@ -157,8 +157,8 @@ function overrideMainloop() {
 }
 
 function overrideJS() {
-    String.prototype.capitalize = function() {
-        return this.charAt(0).toUpperCase() + this.slice(1);
+    window.capitalize = function(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
     Object.prototype.maybeGet = function(prop) {
