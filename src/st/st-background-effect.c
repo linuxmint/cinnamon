@@ -164,6 +164,28 @@ gboolean st_paint_background_blur_effect (StBackgroundBlurEffect *self,
                                            pixel_step);
         }
 
+
+    /* if this theme node has radiused corners then mask them out
+       as otherwise the efect will be square and show outside the actor
+       note that the default blend is fine.  We should only need to do this
+       once as the mask will be fine for repeat use */
+
+    if (self->border_radius [0] > 0
+        || self->border_radius [1] > 0
+        || self->border_radius [2] > 0
+        || self->border_radius [3] > 0)
+      {
+        if (self->corner_texture == NULL)
+            self->corner_texture = mask_out_corners (self->border_radius[0],
+                                                     self->border_radius[1],
+                                                     self->border_radius[2],
+                                                     self->border_radius[3],
+                                                     fb,
+                                                     box,
+                                                     0);
+        cogl_pipeline_set_layer_texture (self->pipeline1, 1, self->corner_texture);
+      }
+
       cogl_pipeline_set_layer_texture (self->pipeline1, 0, self->bg_texture);
 
       cogl_framebuffer_draw_rectangle (fb, self->pipeline1, 0, 0, self->bg_width,self->bg_height);
@@ -249,17 +271,6 @@ st_background_blur_effect_init (StBackgroundBlurEffect *self)
 
   cogl_pipeline_set_layer_wrap_mode (self->pipeline1, 0,
                                      COGL_MATERIAL_WRAP_MODE_CLAMP_TO_EDGE);
-
-  cogl_pipeline_set_cull_face_mode (self->pipeline1,
-                                    COGL_PIPELINE_CULL_FACE_MODE_NONE);
-
-  cogl_pipeline_set_layer_filters (self->pipeline1, 0,
-                                   COGL_PIPELINE_FILTER_LINEAR,
-                                   COGL_PIPELINE_FILTER_LINEAR);
-
-  cogl_pipeline_set_layer_null_texture (self->pipeline1,
-                                        0,
-                                        COGL_TEXTURE_TYPE_2D);
 
   self->pixel_step_uniform =
       cogl_pipeline_get_uniform_location (self->pipeline1, "pixel_step");
