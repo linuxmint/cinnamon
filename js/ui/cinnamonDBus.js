@@ -238,7 +238,7 @@ CinnamonDBus.prototype = {
             params[param] = params[param].deep_unpack();
 
         let monitorIndex = -1;
-        if (params.maybeGet('monitor') >= 0) {
+        if (params.monitor) {
             monitorIndex = params['monitor'];
         }
 

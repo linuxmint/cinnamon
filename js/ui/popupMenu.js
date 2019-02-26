@@ -1858,12 +1858,13 @@ var PopupMenuBase = class PopupMenuBase {
             return;
 
         let childBeforeIndex = index - 1;
+        let previousChild = children[childBeforeIndex];
 
-        while (childBeforeIndex >= 0 && !children[childBeforeIndex].visible)
+        while (childBeforeIndex >= 0 && !previousChild.visible)
             childBeforeIndex--;
 
         if (childBeforeIndex < 0
-            || children[childBeforeIndex].maybeGet("_delegate") instanceof PopupSeparatorMenuItem) {
+            || (previousChild && previousChild._delegate && previousChild._delegate instanceof PopupSeparatorMenuItem)) {
             menuItem.actor.hide();
             return;
         }
@@ -1957,10 +1958,10 @@ var PopupMenuBase = class PopupMenuBase {
         let columnWidths = [];
         let items = this.box.get_children();
         for (let i = 0; i < items.length; i++) {
-            if (!items[i].visible)
-                continue;
-            if (items[i].maybeGet("_delegate") instanceof PopupBaseMenuItem || items[i].maybeGet("_delegate") instanceof PopupMenuBase) {
-                let itemColumnWidths = items[i]._delegate.getColumnWidths();
+            let item = items[i];
+            if (!item._delegate || !item.visible) continue;
+            if (item._delegate instanceof PopupBaseMenuItem || item._delegate instanceof PopupMenuBase) {
+                let itemColumnWidths = item._delegate.getColumnWidths();
                 for (let j = 0; j < itemColumnWidths.length; j++) {
                     if (j >= columnWidths.length || itemColumnWidths[j] > columnWidths[j])
                         columnWidths[j] = itemColumnWidths[j];
@@ -1980,8 +1981,11 @@ var PopupMenuBase = class PopupMenuBase {
     setColumnWidths(widths) {
         let items = this.box.get_children();
         for (let i = 0; i < items.length; i++) {
-            if (items[i].maybeGet("_delegate") instanceof PopupBaseMenuItem || items[i].maybeGet("_delegate") instanceof PopupMenuBase)
-                items[i]._delegate.setColumnWidths(widths);
+            let item = items[i];
+            if (!item._delegate) continue;
+            if (item._delegate instanceof PopupBaseMenuItem || item._delegate instanceof PopupMenuBase) {
+                item._delegate.setColumnWidths(widths);
+            }
         }
     }
 

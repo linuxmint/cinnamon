@@ -13,7 +13,6 @@ function init() {
     overrideGio();
     overrideGObject();
     overrideMainloop();
-    overrideJS();
     overrideTweener();
     overrideSignals();
 }
@@ -154,21 +153,6 @@ function overrideMainloop() {
         s.set_priority(priority);
         return s.attach(null);
     }
-}
-
-function overrideJS() {
-    window.capitalize = function(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    }
-
-    Object.prototype.maybeGet = function(prop) {
-        if (this.hasOwnProperty(prop)) {
-            return this[prop];
-        } else {
-            return undefined;
-        }
-    };
-    Object.defineProperty(Object.prototype, "maybeGet", {enumerable: false});
 }
 
 function installPolyfills(readOnlyError) {

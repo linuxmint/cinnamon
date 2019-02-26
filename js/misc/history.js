@@ -34,7 +34,7 @@ HistoryManager.prototype = {
         this._entry = params.entry;
 
         if (this._entry) {
-            this._entry.connect('key-press-event', 
+            this._entry.connect('key-press-event',
                                 Lang.bind(this, this._onEntryKeyPress));
         }
 
@@ -67,12 +67,13 @@ HistoryManager.prototype = {
     },
 
     lastItem: function() {
-        if (this._historyIndex != this._history.length) {
-            this._historyIndex = this._history.length;
+        let {length} = this._history;
+        if (this._historyIndex != length) {
+            this._historyIndex = length;
             this._indexChanged();
         }
 
-        return this._historyIndex.maybeGet(this._history.length);
+        return this._history[this._history.length - 1];
     },
 
     addItem: function(input) {

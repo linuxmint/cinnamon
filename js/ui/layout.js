@@ -659,7 +659,7 @@ Chrome.prototype = {
     getMonitorInfoForActor: function(actor) {
         // special case for hideable panel actors:
         // due to position and clip they may appear originate on an adjacent monitor
-        if (actor.maybeGet("_delegate") instanceof Panel.Panel
+        if (actor && actor._delegate && actor._delegate instanceof Panel.Panel
             && actor._delegate.isHideable())
             return [actor._delegate.monitorIndex, this._monitors[actor._delegate.monitorIndex]];
 
@@ -791,7 +791,7 @@ Chrome.prototype = {
 
                 // special case for hideable panel actors:
                 // clip any off-monitor input region
-                if (actorData.actor.maybeGet("_delegate") instanceof Panel.Panel
+                if (actorData.actor && actorData.actor._delegate instanceof Panel.Panel
                     && actorData.actor._delegate.isHideable()) {
                     let m = this._monitors[actorData.actor._delegate.monitorIndex];
                     if (m) rect = intersect(rect, m);

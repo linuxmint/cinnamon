@@ -20,7 +20,7 @@ const AUTOCLEAR_BLACKLIST = ['chromium', 'firefox', 'google chrome'];
 let nextNotificationId = 1;
 
 // Should really be defined in Gio.js
-const BusIface = 
+const BusIface =
     '<node> \
         <interface name="org.freedesktop.DBus"> \
             <method name="GetConnectionUnixProcessID"> \
@@ -215,7 +215,7 @@ NotificationDaemon.prototype = {
         if (ndata && ndata.notification)
             return ndata.notification.source;
 
-        let isForTransientNotification = (ndata && ndata.hints.maybeGet('transient') == true);
+        let isForTransientNotification = (ndata && ndata.hints && ndata.hints.transient);
 
         // We don't want to override a persistent notification
         // with a transient one from the same sender, so we
@@ -272,7 +272,7 @@ NotificationDaemon.prototype = {
         this._expireTimer = 0;
         return false;
     },
- 
+
     // Sends a notification to the notification daemon. Returns the id allocated to the notification.
     NotifyAsync: function(params, invocation) {
         let [appName, replacesId, icon, summary, body, actions, hints, timeout] = params;
@@ -334,7 +334,7 @@ NotificationDaemon.prototype = {
         } else {    // Custom expiration.
              expires = ndata.expires = Date.now()+timeout;
         }
- 
+
         // Does this notification expire?
         if (expires != 0) {
             // Find place in the notification queue.
@@ -469,7 +469,7 @@ NotificationDaemon.prototype = {
         }
 
         if (actions.length) {
-            notification.setUseActionIcons(hints.maybeGet('action-icons') == true);
+            notification.setUseActionIcons(hints && hints['action-icons']);
             for (let i = 0; i < actions.length - 1; i += 2) {
                 if (actions[i] == 'default')
                     notification.connect('clicked', Lang.bind(this,
@@ -491,10 +491,10 @@ NotificationDaemon.prototype = {
                 notification.setUrgency(MessageTray.Urgency.CRITICAL);
                 break;
         }
-        notification.setResident(hints.maybeGet('resident') == true);
+        notification.setResident(hints.resident);
         // 'transient' is a reserved keyword in JS, so we have to retrieve the value
         // of the 'transient' hint with hints['transient'] rather than hints.transient
-        notification.setTransient(hints.maybeGet('transient') == true);
+        notification.setTransient(hints.transient);
 
         let sourceIconActor = source.useNotificationIcon ? this._iconForNotificationData(icon, hints, source.ICON_SIZE) : null;
         source.processNotification(notification, sourceIconActor);

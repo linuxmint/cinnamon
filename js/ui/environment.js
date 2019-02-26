@@ -151,6 +151,10 @@ function init() {
         return Cinnamon.util_format_date(format, this.getTime());
     };
 
+    window.capitalize = function(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
     let slowdownEnv = GLib.getenv('CINNAMON_SLOWDOWN_FACTOR');
     if (slowdownEnv) {
         let factor = parseFloat(slowdownEnv);
