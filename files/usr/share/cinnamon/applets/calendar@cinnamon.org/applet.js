@@ -10,7 +10,7 @@ const Settings = imports.ui.settings;
 const Calendar = require('./calendar');
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
 
-class CinnamonCalendarApplet extends TextApplet {
+class CinnamonCalendarApplet extends Applet.TextApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
