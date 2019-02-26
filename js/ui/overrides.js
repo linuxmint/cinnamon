@@ -161,10 +161,6 @@ function overrideJS() {
         return this.charAt(0).toUpperCase() + this.slice(1);
     }
 
-    if (!String.prototype.includes) {
-        String.prototype.includes = String.prototype.contains;
-    }
-
     Object.prototype.maybeGet = function(prop) {
         if (this.hasOwnProperty(prop)) {
             return this[prop];
