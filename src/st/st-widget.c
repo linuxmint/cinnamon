@@ -495,9 +495,9 @@ st_widget_style_changed (StWidget *widget)
   if (clutter_actor_is_mapped (CLUTTER_ACTOR (widget)))
     {
       st_widget_recompute_style (widget, old_theme_node);
-
-      st_widget_add_background_effects(widget, old_theme_node);
     }
+
+  st_widget_add_background_effects(widget, old_theme_node);
 
   if (old_theme_node)
     g_object_unref (old_theme_node);
