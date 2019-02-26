@@ -161,10 +161,6 @@ function overrideJS() {
         return this.charAt(0).toUpperCase() + this.slice(1);
     }
 
-    String.prototype.first_cap = function() {
-        return this.charAt(0).toUpperCase();
-    }
-
     if (!String.prototype.includes) {
         String.prototype.includes = String.prototype.contains;
     }
