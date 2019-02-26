@@ -26,9 +26,11 @@ struct _StBackgroundBlurEffect
 
     ClutterActor *actor;
     CoglTexture  *bg_texture;
+    CoglTexture *corner_texture;
 
     gint pixel_step_uniform;
     gint blur_size;
+    int border_radius[4];
 
     gint bg_posx;
     gint bg_posy;
@@ -45,12 +47,14 @@ struct _StBackgroundBumpmapEffect
 
     ClutterActor *actor;
     CoglTexture  *bg_texture;
+    CoglTexture *corner_texture;
     CoglHandle    bg_bumpmap;
     char         *bumpmap_path;
 
     gint pixel_step_uniform0;
     gint BumpTex_uniform;
     gint bump_step_uniform;
+    int border_radius[4];
     
     gint bg_posx;
     gint bg_posy;

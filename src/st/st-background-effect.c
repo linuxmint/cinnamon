@@ -77,6 +77,10 @@ static const gchar *box_bumpmap_glsl_shader =
   "  cogl_texel =  displtex;\n"
   "}\n";
 
+static CoglTexture * mask_out_corners (int rad1, int rad2, int rad3, int rad4,
+                         CoglFramebuffer       *fb,
+                         const ClutterActorBox *box,
+                         guint8                 paint_opacity);
 /*
  * Blur effect
  */
@@ -197,6 +201,12 @@ st_background_blur_effect_dispose (GObject *gobject)
       self->bg_texture = NULL;
     }
 
+  if (self->corner_texture != NULL)
+    {
+      cogl_handle_unref (self->corner_texture);
+      self->corner_texture = NULL;
+    }
+
   G_OBJECT_CLASS (st_background_blur_effect_parent_class)->dispose (gobject);
 }
 
@@ -255,6 +265,7 @@ st_background_blur_effect_init (StBackgroundBlurEffect *self)
       cogl_pipeline_get_uniform_location (self->pipeline1, "pixel_step");
 
   self->bg_texture = NULL;
+  self->corner_texture = NULL;
 }
 
 ClutterEffect *
@@ -305,7 +316,8 @@ gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
 
   if (self->bumpmap_path == NULL)
     {
-      return FALSE;   /* should never happen */
+      g_message("bumpmap_path unexpectedly null");
+      return FALSE;
     }
 
     /* the bumpmap effect is created without the bumpmap loaded
@@ -343,7 +355,10 @@ gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
     size = (self->bg_width) * (self->bg_height) * 4;
 
     if (size <= 0)
+      {
+        g_message("Negative size background encountered");
         return FALSE;
+      }
 
     rowstride = self->bg_width * 4;
     data = g_malloc (size);
@@ -418,6 +433,27 @@ gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
 
     cogl_pipeline_set_layer_texture (self->pipeline0, 0, self->bg_texture);
 
+    /* if this theme node has radiused corners then mask them out
+       as otherwise the efect will be square and show outside the actor
+       note that the default blend is fine.  We should only need to do this
+       once as the mask will be fine for repeat use */
+
+    if (self->border_radius [0] > 0
+        || self->border_radius [1] > 0
+        || self->border_radius [2] > 0
+        || self->border_radius [3] > 0)
+      {
+        if (self->corner_texture == NULL)
+            self->corner_texture = mask_out_corners (self->border_radius[0],
+                                                     self->border_radius[1],
+                                                     self->border_radius[2],
+                                                     self->border_radius[3],
+                                                     fb,
+                                                     box,
+                                                     0);
+        cogl_pipeline_set_layer_texture (self->pipeline0, 2, self->corner_texture);
+      }
+
     cogl_framebuffer_draw_rectangle (fb, self->pipeline0, 0, 0, self->bg_width,self->bg_height);
 
     return TRUE;
@@ -444,6 +480,12 @@ st_background_bumpmap_effect_dispose (GObject *gobject)
     {
       cogl_handle_unref (self->bg_bumpmap);
       self->bg_bumpmap = NULL;
+    }
+    
+  if (self->corner_texture != NULL)
+    {
+      cogl_handle_unref (self->corner_texture);
+      self->corner_texture = NULL;
     }
 
   G_OBJECT_CLASS (st_background_bumpmap_effect_parent_class)->dispose (gobject);
@@ -510,6 +552,7 @@ st_background_bumpmap_effect_init (StBackgroundBumpmapEffect *self)
 
   self->bg_texture = NULL;
   self->bg_bumpmap = NULL;
+  self->corner_texture = NULL;
 
   /* note that as we are only working with one layer we don't care about a blend string
      however we do have to suppress the original bumpmap image layer from displaying
@@ -532,4 +575,103 @@ st_background_bumpmap_effect_new (void)
 /*
  *  Common code for effects
  */
+static CoglTexture * mask_out_corners (int border_rad1,
+                                       int border_rad2,
+                                       int border_rad3,
+                                       int border_rad4,
+                                       CoglFramebuffer *fb,
+                                       const ClutterActorBox *box,
+                                       guint8 paint_opacity)
+{
+  gint bg_width, bg_height;
 
+  CoglTexture *texture;
+  cairo_t *cr;
+  cairo_surface_t *surface;
+  guint rowstride;
+  guint8 *data;
+
+  bg_width = ceil(box->x2 - box->x1);
+  bg_height = ceil(box->y2 - box->y1);
+
+  rowstride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,bg_width);
+
+  data = g_try_new0 (guint8, rowstride*bg_height);
+
+  if (!data) return;
+
+  surface = cairo_image_surface_create_for_data (data,
+                                                 CAIRO_FORMAT_ARGB32,
+                                                 bg_width,
+                                                 bg_height,
+                                                 rowstride);
+
+
+  cr = cairo_create (surface);
+  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE); // replace destination layer
+//  cairo_scale (cr, size, size);
+
+  cairo_set_source_rgba (cr, 0.0, 1.0, 0.0,0.0);
+  cairo_rectangle (cr, 0.0, 0.0, bg_width, bg_height);
+  cairo_fill (cr);
+
+  cairo_set_source_rgba (cr,
+                         1.0,
+                         1.0,
+                         1.0,
+                         1.0);
+
+  cairo_arc (cr,
+             border_rad1,
+             border_rad1,
+             border_rad1,
+             M_PI,
+             3 * M_PI / 2);
+  cairo_line_to (cr,
+                 bg_width - border_rad1,
+                 0.0);
+  cairo_arc (cr,
+             bg_width - border_rad1,
+             border_rad1,
+             border_rad1,
+             3 * M_PI / 2,
+             2 * M_PI);
+  cairo_line_to (cr,
+                 bg_width,
+                 bg_height - border_rad1);
+  cairo_arc (cr,
+             bg_width - border_rad1,
+             bg_height - border_rad1,
+             border_rad1,
+             0,
+             M_PI / 2);
+  cairo_line_to (cr,
+                 border_rad1,
+                 bg_height);
+  cairo_arc (cr,
+             border_rad1,
+             bg_height - border_rad1,
+             border_rad1,
+             M_PI / 2,
+             M_PI);
+  cairo_line_to (cr,
+                 0,
+                 border_rad1);
+  cairo_fill (cr);  /* end result is a rectangle with rounded corners */
+
+  cairo_destroy (cr);
+
+  cairo_surface_destroy (surface);
+
+  texture = st_cogl_texture_new_from_data_wrapper (bg_width,
+                                                   bg_height,
+                                                   COGL_TEXTURE_NO_SLICING, // disable slicing
+                                                   CLUTTER_CAIRO_FORMAT_ARGB32,  // (COGL_PIXEL_FORMAT_BGRA_8888_PRE)
+                                                   COGL_PIXEL_FORMAT_RGBA_8888_PRE, // premultiplied 32 bit RGBA
+                                                   rowstride,
+                                                   data);
+
+  g_free (data);
+
+  return texture;
+}
