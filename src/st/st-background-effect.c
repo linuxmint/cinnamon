@@ -311,41 +311,39 @@ gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
       return FALSE;
     }
 
-    /* read the bumpmap in */
-
-  if (self->bg_bumpmap != NULL)
-    {
-      cogl_handle_unref (self->bg_bumpmap);
-      self->bg_bumpmap = NULL;
-    }
-
   if (self->bumpmap_path == NULL)
     {
-      return FALSE;
+      return FALSE;   /* should never happen */
     }
 
-  file = g_file_new_for_path (self->bumpmap_path);
-  if (g_file_query_exists (file, NULL))
-    {
-      self->bg_bumpmap = st_cogl_texture_new_from_file_wrapper (self->bumpmap_path,
-                                                                COGL_TEXTURE_NO_SLICING,
-                                                                COGL_PIXEL_FORMAT_RGBA_8888_PRE);
-    }
+    /* the bumpmap effect is created without the bumpmap loaded
+       so if this is the first time through we need to read the bumpmap in */
 
-  g_object_unref (file);
-
-  if (self->bg_bumpmap != NULL)
+  if (self->bg_bumpmap == NULL )
     {
-      self->bumptex_width = cogl_texture_get_width (self->bg_bumpmap);
-      self->bumptex_height = cogl_texture_get_height (self->bg_bumpmap);
+      file = g_file_new_for_path (self->bumpmap_path);
+      if (g_file_query_exists (file, NULL))
+        {
+          self->bg_bumpmap = st_cogl_texture_new_from_file_wrapper (self->bumpmap_path,
+                                                                    COGL_TEXTURE_NO_SLICING,
+                                                                    COGL_PIXEL_FORMAT_RGBA_8888_PRE);
+        }
 
-      cogl_pipeline_set_layer_texture (self->pipeline0, 1, self->bg_bumpmap);
-    }
-  else
-    {
-      cogl_pipeline_set_layer_null_texture (self->pipeline0,
-                                            1,
-                                            COGL_TEXTURE_TYPE_2D);
+      g_object_unref (file);
+
+      if (self->bg_bumpmap != NULL)
+        {
+          self->bumptex_width = cogl_texture_get_width (self->bg_bumpmap);
+          self->bumptex_height = cogl_texture_get_height (self->bg_bumpmap);
+
+          cogl_pipeline_set_layer_texture (self->pipeline0, 1, self->bg_bumpmap);
+        }
+      else
+        {
+          cogl_pipeline_set_layer_null_texture (self->pipeline0,
+                                                1,
+                                                COGL_TEXTURE_TYPE_2D);
+        }
     }
 
     /* read and stash the section of background currently displayed under the actor */
@@ -531,6 +529,7 @@ st_background_bumpmap_effect_init (StBackgroundBumpmapEffect *self)
                            NULL);
 
   self->bg_texture = NULL;
+  self->bg_bumpmap = NULL;
 
   cogl_pipeline_set_layer_combine (self->pipeline0,1,
                                    "RGBA = REPLACE (PREVIOUS)",
