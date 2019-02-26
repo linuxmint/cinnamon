@@ -169,10 +169,6 @@ function overrideJS() {
         String.prototype.includes = String.prototype.contains;
     }
 
-    Number.prototype.clamp = function(min, max) {
-        return Math.min(Math.max(this, min), max);
-    };
-
     Object.prototype.maybeGet = function(prop) {
         if (this.hasOwnProperty(prop)) {
             return this[prop];
