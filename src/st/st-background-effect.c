@@ -42,13 +42,6 @@ static const gchar *box_blur_glsl_shader =
 
 G_DEFINE_TYPE (StBackgroundBumpmapEffect, st_background_bumpmap_effect, CLUTTER_TYPE_OFFSCREEN_EFFECT);
 
-enum
-{
-  PROP_0,
-  PROP_BUMPMAP,
-  PROP_LAST
-};
-
 static const gchar *box_bumpmap_glsl_declarations =
   "uniform vec3 pixel_step;\n"
   "uniform vec2 bump_step;\n"
@@ -93,7 +86,6 @@ gboolean st_paint_background_blur_effect (StBackgroundBlurEffect *self,
                                           ClutterActorBox    *box)
 {
   unsigned int i;
-
 
   self->bg_width = ceil(box->x2 - box->x1);
   self->bg_height = ceil(box->y2 - box->y1);
@@ -155,18 +147,18 @@ gboolean st_paint_background_blur_effect (StBackgroundBlurEffect *self,
         }
 
       if (self->pixel_step_uniform > -1)
-      {
-        gfloat pixel_step[2];
+        {
+          gfloat pixel_step[2];
 
-        pixel_step[0] = 1.0f / (self->bg_width);
-        pixel_step[1] = 1.0f / (self->bg_height);
+          pixel_step[0] = 1.0f / (self->bg_width);
+          pixel_step[1] = 1.0f / (self->bg_height);
 
-        cogl_pipeline_set_uniform_float (self->pipeline1,
-                                         self->pixel_step_uniform,
-                                         2,
-                                         1,
-                                         pixel_step);
-      }
+          cogl_pipeline_set_uniform_float (self->pipeline1,
+                                           self->pixel_step_uniform,
+                                           2,
+                                           1,
+                                           pixel_step);
+        }
 
       cogl_pipeline_set_layer_texture (self->pipeline1, 0, self->bg_texture);
 
@@ -365,10 +357,10 @@ gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
     if (data != NULL)
       {
         if (self->bg_texture != NULL)
-            {
-                cogl_handle_unref (self->bg_texture);
-                self->bg_texture = NULL;
-            }
+          {
+            cogl_handle_unref (self->bg_texture);
+            self->bg_texture = NULL;
+          }
 
         self->bg_texture = st_cogl_texture_new_from_data_wrapper (self->bg_width,
                                                                   self->bg_height,
@@ -390,7 +382,7 @@ gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
 
     if (self->pixel_step_uniform0 > -1)
       {
-       gfloat pixel_step[3];
+        gfloat pixel_step[3];
 
         pixel_step[0] = 1.0f / (self->bg_width);
         pixel_step[1] = 1.0f / (self->bg_height);
@@ -410,7 +402,7 @@ gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
                                       1);
       }
 
-     if (self->bump_step_uniform > -1)
+    if (self->bump_step_uniform > -1)
       {
         gfloat bump_step[2];
 
