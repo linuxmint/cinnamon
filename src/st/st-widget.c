@@ -132,8 +132,6 @@ static void st_widget_recompute_style (StWidget    *widget,
                                        StThemeNode *old_theme_node);
 static void st_widget_add_background_effects (StWidget    *widget,
                                               StThemeNode *old_theme_node);
-static void st_widget_clear_background_effects (StWidget    *widget,
-                                                StThemeNode *old_theme_node);
 static gboolean st_widget_real_navigate_focus (StWidget         *widget,
                                                ClutterActor     *from,
                                                GtkDirectionType  direction);
@@ -502,17 +500,15 @@ st_widget_style_changed (StWidget *widget)
     }
 
   /* update the style only if we are mapped */
-  if (clutter_actor_is_mapped (CLUTTER_ACTOR (widget)))
+  if (clutter_actor_is_mapped (CLUTTER_ACTOR (widget))
+  || (old_theme_node != NULL &&
+      (old_theme_node->background_blur > 0
+       || old_theme_node->background_bumpmap != NULL)))
     {
       st_widget_recompute_style (widget, old_theme_node);
 
       st_widget_add_background_effects(widget, old_theme_node);
     }
-  else if (old_theme_node != NULL
-           &&
-          (old_theme_node->background_blur > 0
-           || old_theme_node->background_bumpmap != NULL))
-      st_widget_add_background_effects(widget, old_theme_node);
 
   if (old_theme_node)
     g_object_unref (old_theme_node);
@@ -1573,7 +1569,26 @@ static void st_widget_add_background_effects (StWidget    *widget,
 StThemeNode *new_theme_node = st_widget_get_theme_node (widget);
 
   if (old_theme_node)
-    st_widget_clear_background_effects(widget,old_theme_node);
+    {
+      if (old_theme_node->background_blur > 0)
+        {
+          if (widget->priv->background_blur_effect != NULL)
+            {
+              g_object_run_dispose (G_OBJECT (widget->priv->background_blur_effect));
+              g_object_unref (widget->priv->background_blur_effect);
+              widget->priv->background_blur_effect = NULL;
+            }
+        }
+      if (old_theme_node->background_bumpmap != NULL)
+        {
+          if (widget->priv->background_bumpmap_effect != NULL)
+            {
+              g_object_run_dispose (G_OBJECT (widget->priv->background_bumpmap_effect));
+              g_object_unref (widget->priv->background_bumpmap_effect);
+              widget->priv->background_bumpmap_effect = NULL;
+            }
+        }
+    }
 
   if (new_theme_node)
     {
@@ -1598,32 +1613,6 @@ StThemeNode *new_theme_node = st_widget_get_theme_node (widget);
               widget->priv->background_bumpmap_effect->bumpmap_path = strdup (bumpmap_path);
               for (int i=0;i<4;i++)
                 widget->priv->background_bumpmap_effect->border_radius[i] = new_theme_node->border_radius[i];
-            }
-        }
-    }
-}
-
-static void st_widget_clear_background_effects (StWidget    *widget,
-                                                StThemeNode *old_theme_node )
-{
-  if (old_theme_node)
-    {
-      if (old_theme_node->background_blur > 0)
-        {
-          if (widget->priv->background_blur_effect != NULL)
-            {
-              g_object_run_dispose (G_OBJECT (widget->priv->background_blur_effect));
-              g_object_unref (widget->priv->background_blur_effect);
-              widget->priv->background_blur_effect = NULL;
-            }
-        }
-      if (old_theme_node->background_bumpmap != NULL)
-        {
-          if (widget->priv->background_bumpmap_effect != NULL)
-            {
-              g_object_run_dispose (G_OBJECT (widget->priv->background_bumpmap_effect));
-              g_object_unref (widget->priv->background_bumpmap_effect);
-              widget->priv->background_bumpmap_effect = NULL;
             }
         }
     }
