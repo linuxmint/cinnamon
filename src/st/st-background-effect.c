@@ -77,17 +77,26 @@ static const gchar *box_bumpmap_glsl_shader =
   "  cogl_texel =  displtex;\n"
   "}\n";
 
-static CoglTexture * mask_out_corners (int rad1, int rad2, int rad3, int rad4,
-                         CoglFramebuffer       *fb,
-                         const ClutterActorBox *box,
-                         guint8                 paint_opacity);
-/*
- * Blur effect
- */
+static CoglTexture *
+mask_out_corners (int rad1, int rad2, int rad3, int rad4,
+                  CoglFramebuffer *fb,
+                  const ClutterActorBox *box,
+                  guint8 paint_opacity);
 
-gboolean st_paint_background_blur_effect (StBackgroundBlurEffect *self,
-                                          CoglFramebuffer    *fb,
-                                          const ClutterActorBox    *box)
+/**
+ * st_paint_background_blur_effect:
+ * @self: Source #StBackgroundBlurEffect
+ * @fb: a #CoglFramebuffer
+ * @box: a #ClutterActorBox
+ *
+ * paints a blur effect by snapshotting the screen and processing it
+ *
+ * Return value: %TRUE if successful
+ */
+gboolean
+st_paint_background_blur_effect (StBackgroundBlurEffect *self,
+                                 CoglFramebuffer *fb,
+                                 const ClutterActorBox *box)
 {
   self->bg_width = ceil(box->x2 - box->x1);
   self->bg_height = ceil(box->y2 - box->y1);
@@ -284,10 +293,6 @@ st_background_blur_effect_new (void)
                        NULL);
 }
 
-/*
- * Bumpmap effect
- */
-
 
 static gboolean
 st_background_bumpmap_effect_pre_paint (ClutterEffect *effect)
@@ -300,10 +305,20 @@ st_background_bumpmap_effect_paint_target (ClutterOffscreenEffect *effect)
 {
   return;
 }
-
-gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
-                                             CoglFramebuffer    *fb,
-                                             const ClutterActorBox    *box)
+/**
+ * st_paint_background_bumpmap_effect:
+ * @self: Source #StBackgroundBumpmapEffect
+ * @fb: a #CoglFramebuffer
+ * @box: a #ClutterActorBox
+ *
+ * paints a bumpmap effect by snapshotting the screen and processing it
+ *
+ * Return value: %TRUE if successful
+ */
+gboolean
+st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
+                                    CoglFramebuffer *fb,
+                                    const ClutterActorBox *box)
 {
   GFile *file;
   uint8_t *data;
@@ -585,13 +600,14 @@ st_background_bumpmap_effect_new (void)
 /*
  *  Common code for effects
  */
-static CoglTexture * mask_out_corners (int border_rad1,
-                                       int border_rad2,
-                                       int border_rad3,
-                                       int border_rad4,
-                                       CoglFramebuffer *fb,
-                                       const ClutterActorBox *box,
-                                       guint8 paint_opacity)
+static CoglTexture *
+mask_out_corners (int border_rad1,
+                  int border_rad2,
+                  int border_rad3,
+                  int border_rad4,
+                  CoglFramebuffer *fb,
+                  const ClutterActorBox *box,
+                  guint8 paint_opacity)
 {
   gint bg_width, bg_height;
 
@@ -616,10 +632,8 @@ static CoglTexture * mask_out_corners (int border_rad1,
                                                  bg_height,
                                                  rowstride);
 
-
   cr = cairo_create (surface);
   cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE); // replace destination layer
-//  cairo_scale (cr, size, size);
 
   cairo_set_source_rgba (cr, 0.0, 1.0, 0.0,0.0);
   cairo_rectangle (cr, 0.0, 0.0, bg_width, bg_height);
