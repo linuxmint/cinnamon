@@ -155,6 +155,10 @@ function init() {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
+    window.clamp = function(number, min, max) {
+        return Math.min(Math.max(number, min), max);
+    };
+
     let slowdownEnv = GLib.getenv('CINNAMON_SLOWDOWN_FACTOR');
     if (slowdownEnv) {
         let factor = parseFloat(slowdownEnv);
