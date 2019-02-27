@@ -87,10 +87,8 @@ static CoglTexture * mask_out_corners (int rad1, int rad2, int rad3, int rad4,
 
 gboolean st_paint_background_blur_effect (StBackgroundBlurEffect *self,
                                           CoglFramebuffer    *fb,
-                                          ClutterActorBox    *box)
+                                          const ClutterActorBox    *box)
 {
-  unsigned int i;
-
   self->bg_width = ceil(box->x2 - box->x1);
   self->bg_height = ceil(box->y2 - box->y1);
   self->bg_posx = ceil(box->x1);
@@ -104,7 +102,7 @@ gboolean st_paint_background_blur_effect (StBackgroundBlurEffect *self,
       return FALSE;
     }
 
-    for (i = 0; i < self->blur_size; i++)  /* process more blur as multiple repetitions */
+    for (int i = 0; i < self->blur_size; i++)  /* process more blur as multiple repetitions */
     {
       uint8_t *data;
       guint size;
@@ -297,6 +295,7 @@ st_background_bumpmap_effect_pre_paint (ClutterEffect *effect)
   return TRUE;
 }
 
+static void
 st_background_bumpmap_effect_paint_target (ClutterOffscreenEffect *effect)
 {
   return;
@@ -304,7 +303,7 @@ st_background_bumpmap_effect_paint_target (ClutterOffscreenEffect *effect)
 
 gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
                                              CoglFramebuffer    *fb,
-                                             ClutterActorBox    *box)
+                                             const ClutterActorBox    *box)
 {
   GFile *file;
   uint8_t *data;
@@ -609,7 +608,7 @@ static CoglTexture * mask_out_corners (int border_rad1,
 
   data = g_try_new0 (guint8, rowstride*bg_height);
 
-  if (!data) return;
+  if (!data) return NULL;
 
   surface = cairo_image_surface_create_for_data (data,
                                                  CAIRO_FORMAT_ARGB32,

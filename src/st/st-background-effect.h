@@ -91,10 +91,10 @@ ClutterEffect *st_background_bumpmap_effect_new (void);
 
 gboolean st_paint_background_blur_effect (StBackgroundBlurEffect *background_blur_effect,
                                      CoglFramebuffer     *fb,
-                                     ClutterActorBox *box);
+                                     const ClutterActorBox *box);
 gboolean st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *background_blur_effect,
                                      CoglFramebuffer     *fb,
-                                     ClutterActorBox *box);
+                                     const ClutterActorBox *box);
 
 G_END_DECLS
 #endif /* __ST_BACKGROUND_EFFECT_H__ */
