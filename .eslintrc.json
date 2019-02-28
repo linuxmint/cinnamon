@@ -27,7 +27,8 @@
         "__dirname": false,
         "__filename": false,
         "__meta": false,
-        "capitalize": false
+        "capitalize": false,
+        "clamp": false
     },
     "rules": {
         "comma-dangle": 0,
