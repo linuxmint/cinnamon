@@ -105,16 +105,16 @@ function init() {
     _patchContainerClass(St.Table);
 
     // Cache the original toString since it will be overriden for Clutter.Actor
-    GObject.Object.prototype._toString = GObject.Object.prototype.toString;
+    const {toString} = GObject.Object.prototype
     // Add method to determine if a GObject is finalized - needed to prevent accessing
     // objects that have been disposed in C code.
-    GObject.Object.prototype.is_finalized = function is_finalized() {
-        return this._toString().includes('FINALIZED');
+    window.isFinalized = function isFinalized(gObject) {
+        return toString.call(gObject).indexOf('FINALIZED') > -1;
     };
     // Override destroy so it checks if its finalized before calling the real destroy method.
     Clutter.Actor.prototype._destroy = Clutter.Actor.prototype.destroy;
     Clutter.Actor.prototype.destroy = function destroy() {
-        if (!this.is_finalized()) {
+        if (!isFinalized(this)) {
             this._destroy();
         }
     };
@@ -124,7 +124,7 @@ function init() {
 
     // Safe wrapper for theme inspection
     St.Widget.prototype.style_length = function(property) {
-        if (this.is_finalized() || !this.realized) return 0;
+        if (isFinalized(this) || !this.realized) return 0;
         if (!this.themeNode) {
             this.themeNode = this.peek_theme_node();
             this.connect('destroy', () => this.themeNode = null);
@@ -151,11 +151,11 @@ function init() {
         return Cinnamon.util_format_date(format, this.getTime());
     };
 
-    window.capitalize = function(string) {
+    window.capitalize = function capitalize(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    window.clamp = function(number, min, max) {
+    window.clamp = function clamp(number, min, max) {
         return Math.min(Math.max(number, min), max);
     };
 

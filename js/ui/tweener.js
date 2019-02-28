@@ -162,16 +162,16 @@ function addCaller(target, tweeningParameters) {
  *    Leave empty for no maximum.
  *
  *  - @onStartParams (array): A list of parameters (of any type) to be passed
- *    to the onStart function. 
+ *    to the onStart function.
  *
  *  - @onUpdateParams (array): A list of parameters (of any type) to be passed
  *    to the onUpdate function.
- *  
+ *
  *  - @onCompleteParams (array): A list of parameters (of any type) to be
- *    passed to the onComplete function. 
+ *    passed to the onComplete function.
  *
  *  - @onOverwriteParams (array): A list of parameters (of any type) to be
- *    passed to the onOverwrite function. 
+ *    passed to the onOverwrite function.
  *
  *  - @onStartScope (object): The object in which the onStart function will
  *    be executed. This is needed if you have some specialized code inside the
@@ -234,10 +234,10 @@ function _getTweenState(target) {
 }
 
 function _resetTweenState(target) {
-    if (!target || (target instanceof GObject.Object && target.is_finalized())) return;
+    if (!target || (target instanceof GObject.Object && isFinalized(target))) return;
     let state = target.__CinnamonTweenerState;
 
-    if (state && state.actor && !state.actor.is_finalized()) {
+    if (state && state.actor && !isFinalized(state.actor)) {
         if (state.destroyedId)
             state.actor.disconnect(state.destroyedId);
     }

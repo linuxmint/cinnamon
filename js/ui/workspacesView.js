@@ -217,7 +217,7 @@ WorkspacesView.prototype = {
                         });
                 }
                 Tweener.addTween(workspace.actor, params);
-            } else if (!workspace.actor.is_finalized()) {
+            } else if (!isFinalized(workspace.actor)) {
                 workspace.actor.set_position(x, 0);
                 if (w == 0)
                     this._updateVisibility();
@@ -233,7 +233,7 @@ WorkspacesView.prototype = {
             if (this._animating || this._scrolling) {
                 workspace.hideWindowsOverlays();
                 workspace.actor.show();
-            } else if (!workspace.actor.is_finalized()) {
+            } else if (!isFinalized(workspace.actor)) {
                 workspace.showWindowsOverlays();
                 workspace.actor.visible = (w == active);
             }

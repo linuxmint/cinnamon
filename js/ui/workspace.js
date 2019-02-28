@@ -838,7 +838,7 @@ WorkspaceMonitor.prototype = {
     },
 
     showWindowsOverlays: function() {
-        if (this.leavingOverview || this._windowOverlaysGroup.is_finalized())
+        if (this.leavingOverview || isFinalized(this._windowOverlaysGroup))
             return;
 
         this._windowOverlaysGroup.show();

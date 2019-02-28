@@ -260,7 +260,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
     }
 
     _insertStatusItem(role, icon) {
-        if (icon.is_finalized()) {
+        if (isFinalized(icon)) {
             return;
         }
         this.manager_container.insert_child_at_index(icon, 0);

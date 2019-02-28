@@ -820,7 +820,7 @@ var Switch = class Switch {
     }
 
     setToggleState(state) {
-        if (this.actor.is_finalized()) return;
+        if (isFinalized(this.actor)) return;
         this.actor.change_style_pseudo_class('checked', state);
         this.state = state;
     }
@@ -2182,7 +2182,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
      * Opens the popup menu
      */
     open(animate) {
-        if (this.isOpen || this.actor.is_finalized())
+        if (this.isOpen || isFinalized(this.actor))
             return;
 
         Main.popup_rendering_actor = this.actor;
@@ -2558,7 +2558,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
 
     _boxAllocate (actor, box, flags) {
         this.box.allocate(box, flags);
-        if (!this.animating && !this.sourceActor.is_finalized() && this.sourceActor.get_stage() != null) {
+        if (!this.animating && !isFinalized(this.sourceActor) && this.sourceActor.get_stage() != null) {
             let [xPos, yPos] = this._calculatePosition();
             this.actor.set_position(xPos, yPos);
         }
@@ -3541,7 +3541,7 @@ var PopupMenuManager = class PopupMenuManager {
     }
 
     _activeMenuContains(actor) {
-        return !actor.is_finalized()
+        return !isFinalized(actor)
                 && this._activeMenu != null
                 && (this._activeMenu.actor.contains(actor) ||
                     (this._activeMenu.sourceActor && this._activeMenu.sourceActor.contains(actor)));
@@ -3554,7 +3554,7 @@ var PopupMenuManager = class PopupMenuManager {
     _shouldBlockEvent(event) {
         let src = event.get_source();
 
-        if (src.is_finalized() || (this._activeMenu != null && this._activeMenu.actor.contains(src)))
+        if (isFinalized(src) || (this._activeMenu != null && this._activeMenu.actor.contains(src)))
             return false;
 
         return (this._menus.find(x => x.sourceActor &&

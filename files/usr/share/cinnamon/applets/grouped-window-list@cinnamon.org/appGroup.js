@@ -441,7 +441,7 @@ class AppGroup {
         if (this.labelVisible
             || !this.label
             || !this.state.isHorizontal
-            || this.label.is_finalized()
+            || isFinalized(this.label)
             || !this.label.realized) {
             return;
         }
@@ -474,7 +474,7 @@ class AppGroup {
     }
 
     hideLabel() {
-        if (!this.label || this.label.is_finalized() || !this.label.realized) return;
+        if (!this.label || isFinalized(this.label) || !this.label.realized) return;
 
         this.label.set_text('');
         this.labelVisible = false;
@@ -502,7 +502,7 @@ class AppGroup {
     }
 
     checkFocusStyle() {
-        if (this.actor.is_finalized()) return;
+        if (isFinalized(this.actor)) return;
 
         let focused = false;
         each(this.groupState.metaWindows, function(metaWindow) {
@@ -518,7 +518,7 @@ class AppGroup {
     }
 
     resetHoverStatus() {
-        if (this.actor.is_finalized()) return;
+        if (isFinalized(this.actor)) return;
         this.actor.remove_style_pseudo_class('hover');
     }
 
@@ -1019,7 +1019,7 @@ class AppGroup {
     }
 
     handleFavorite(changed) {
-        if (this.actor.is_finalized()) return;
+        if (isFinalized(this.actor)) return;
 
         if (changed) {
             setTimeout(() => this.listState.trigger('updateAppGroupIndexes', this.groupState.appId), 0);

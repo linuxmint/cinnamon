@@ -503,7 +503,7 @@ Keyboard.prototype = {
 
     shouldTakeEvent: function(event) {
         let actor = event.get_source();
-        return !actor.is_finalized()
+        return !isFinalized(actor)
             && (Main.layoutManager.keyboardBox.contains(actor)
                 || actor._extended_keys
                 || actor.extended_key);

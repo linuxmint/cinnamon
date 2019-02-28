@@ -207,7 +207,7 @@ Tooltip.prototype = {
     },
 
     hide: function() {
-        if (this._tooltip.is_finalized()) return;
+        if (isFinalized(this._tooltip)) return;
         this._tooltip.hide();
 
         this.visible = false;

@@ -1513,7 +1513,7 @@ PanelCorner.prototype = {
         // so the panel can easily check it.
         this.cornerRadius = cornerRadius;
 
-        if (this._box.is_finalized()) return;
+        if (isFinalized(this._box)) return;
         // ugly hack: force the panel to reset its clip region since we just added
         // to the total allocation after it has already clipped to its own
         // allocation
@@ -2062,11 +2062,11 @@ Panel.prototype = {
             }
         }
 
-        if (this.actor.is_finalized()) return;
+        if (isFinalized(this.actor)) return;
 
-        if (this._leftCorner && !this._leftCorner.actor.is_finalized())
+        if (this._leftCorner && !isFinalized(this._leftCorner.actor))
             this.actor.add_actor(this._leftCorner.actor);
-        if (this._rightCorner && !this._rightCorner.actor.is_finalized())
+        if (this._rightCorner && !isFinalized(this._rightCorner.actor))
             this.actor.add_actor(this._rightCorner.actor);
     },
 

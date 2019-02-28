@@ -115,7 +115,7 @@ function overrideGObject() {
     }
 
     GObject.Object.prototype.disconnect = function(id) {
-        if (this.is_finalized()) {
+        if (isFinalized(this)) {
             return true;
         }
         if (GObject.signal_handler_is_connected (this, id)) {

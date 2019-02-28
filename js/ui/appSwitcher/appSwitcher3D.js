@@ -33,7 +33,7 @@ function AppSwitcher3D() {
 
 AppSwitcher3D.prototype = {
     __proto__: AppSwitcher.AppSwitcher.prototype,
-    
+
     _init: function() {
         AppSwitcher.AppSwitcher.prototype._init.apply(this, arguments);
 
@@ -50,7 +50,7 @@ AppSwitcher3D.prototype = {
         this.actor.hide();
         this.previewActor = new St.Widget({ visible: true, reactive: true, });
         this.actor.add_actor(this.previewActor);
-        
+
         Main.uiGroup.add_actor(this.actor);
 
         this._setupModal();
@@ -58,7 +58,7 @@ AppSwitcher3D.prototype = {
 
     _show: function() {
         this._enableMonitorFix();
-        
+
         let monitor = this._activeMonitor;
         this.actor.set_position(monitor.x, monitor.y);
         this.actor.set_size(monitor.width, monitor.height);
@@ -88,10 +88,10 @@ AppSwitcher3D.prototype = {
 
         this._next();
     },
-    
+
     _hidePreviews: function(endOpacity) {
         let monitor = this._activeMonitor;
-        
+
         // preview windows
         let currentWorkspace = global.screen.get_active_workspace();
         for (let i = 0; i < this._previews.length; i++) {
@@ -124,10 +124,10 @@ AppSwitcher3D.prototype = {
             });
         }
     },
-    
+
     _hide: function() {
         this._hidePreviews(255);
-        
+
         // window title and icon
         if(this._windowTitle) {
             this._windowTitle.hide();
@@ -159,10 +159,10 @@ AppSwitcher3D.prototype = {
 
     _onWorkspaceSelected: function() {
         this._hidePreviews(0);
-        
+
         this._windows = AppSwitcher.getWindowsForBinding(this._binding);
         this._currentIndex = this._windows.indexOf(global.display.focus_window);
-        
+
         // create previews
         this._createList();
         this._next();
@@ -178,7 +178,7 @@ AppSwitcher3D.prototype = {
     _createList: function() {
         let monitor = this._activeMonitor;
         let currentWorkspace = global.screen.get_active_workspace();
-        
+
         this._previews = [];
 
         for (let i = 0; i < this._windows.length; i++) {
@@ -217,10 +217,10 @@ AppSwitcher3D.prototype = {
                 this.previewActor.add_actor(preview);
             }
         }
-        
+
         this._adaptClones();
     },
-    
+
     _adaptClones: function() {
     },
 
@@ -228,7 +228,7 @@ AppSwitcher3D.prototype = {
         this._currentIndex = this._previews.indexOf(actor);
         this._activateSelected();
     },
-    
+
     _setCurrentWindow: function(window) {
         let monitor = this._activeMonitor;
 
@@ -258,10 +258,10 @@ AppSwitcher3D.prototype = {
             time: ANIMATION_TIME,
             transition: TRANSITION_TYPE,
         });
-        
+
         let cx = Math.round((monitor.width + (ICON_SIZE * global.ui_scale) + (ICON_TITLE_SPACING * global.ui_scale)) / 2);
         let cy = Math.round(monitor.height * TITLE_POSITION);
-        
+
         this._windowTitle.x = cx - Math.round(this._windowTitle.get_width()/2);
         this._windowTitle.y = cy - Math.round(this._windowTitle.get_height()/2);
 
@@ -317,21 +317,21 @@ AppSwitcher3D.prototype = {
         this._applicationIconBox = null;
         this._previews = null;
     },
-    
+
     _enableMonitorFix: function() {
         if(global.screen.get_n_monitors() < 2)
             return;
-        
+
         this._monitorFix = true;
         this._oldWidth = global.stage.width;
         this._oldHeight = global.stage.height;
-        
+
         let width = 2 * (this._activeMonitor.x + this._activeMonitor.width/2);
         let height = 2 * (this._activeMonitor.y + this._activeMonitor.height/2);
-        
+
         global.stage.set_size(width, height);
     },
-    
+
     _disableMonitorFix: function() {
         if(this._monitorFix) {
             global.stage.set_size(this._oldWidth, this._oldHeight);

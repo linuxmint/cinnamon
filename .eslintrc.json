@@ -28,7 +28,8 @@
         "__filename": false,
         "__meta": false,
         "capitalize": false,
-        "clamp": false
+        "clamp": false,
+        "isFinalized": false
     },
     "rules": {
         "comma-dangle": 0,
