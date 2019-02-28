@@ -456,7 +456,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.signals.disconnectAllSignals();
         for (let i = 0, len = this.appLists.length; i < len; i++) {
             if (this.appLists[i]) {
-                this.appLists[i].destroy();
+                destroy(this.appLists[i]);
             }
         }
         this.settings.finalize();
@@ -831,7 +831,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             // an animation
             let fadeIn;
             if (this.state.dragPlaceholder) {
-                this.state.dragPlaceholder.actor.destroy();
+                destroy(this.state.dragPlaceholder.actor);
                 fadeIn = false;
             } else {
                 fadeIn = true;
@@ -944,7 +944,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         for (let i = 0; i < this.appLists.length; i++) {
             let workspaceIndex = this.appLists[i].metaWorkspace.index();
             if (workspaceIndex === -1) {
-                this.appLists[i].destroy();
+                destroy(this.appLists[i]);
                 this.appLists[i] = null;
                 removedLists.push(i);
             } else {

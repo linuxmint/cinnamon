@@ -172,7 +172,7 @@ class AppList {
 
     refreshList() {
         for (let i = 0, len = this.appList.length; i < len; i++) {
-            this.appList[i].destroy();
+            destroy(this.appList[i]);
             this.appList[i] = null;
         }
         this.appList = [];
@@ -400,11 +400,11 @@ class AppList {
     destroy() {
         this.signals.disconnectAllSignals();
         for (let i = 0, len = this.appList.length; i < len; i++) {
-            this.appList[i].destroy();
+            destroy(this.appList[i]);
         }
-        this.listState.destroy();
+        destroy(this.listState);
         this.manager = null;
-        this.actor.destroy();
+        destroy(this.actor);
         unref(this, RESERVE_KEYS);
     }
 }

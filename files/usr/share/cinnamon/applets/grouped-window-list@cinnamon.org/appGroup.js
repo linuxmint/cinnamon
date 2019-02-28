@@ -295,7 +295,7 @@ class AppGroup {
         let oldChild = this.iconBox.get_child();
         this.iconBox.set_child(icon);
 
-        if (oldChild) oldChild.destroy();
+        if (oldChild) destroy(oldChild);
     }
 
     setText(text) {
@@ -1113,14 +1113,14 @@ class AppGroup {
             if (this.rightClickMenu.isOpen) {
                 this.rightClickMenu.close();
             }
-            this.rightClickMenu.destroy();
+            destroy(this.rightClickMenu);
         }
-        if (this.hoverMenu) this.hoverMenu.destroy();
+        if (this.hoverMenu) destroy(this.hoverMenu);
         this.listState.trigger('removeChild', this.actor);
-        this.actor.destroy();
+        destroy(this.actor);
 
         if (!skipRefCleanup) {
-            this.groupState.destroy();
+            destroy(this.groupState);
             unref(this, RESERVE_KEYS);
         }
     }

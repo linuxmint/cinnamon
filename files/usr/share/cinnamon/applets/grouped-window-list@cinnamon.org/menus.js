@@ -852,7 +852,7 @@ class WindowThumbnail {
 
     _destroyOverlayPreview() {
         global.overlay_group.remove_child(this.state.overlayPreview);
-        this.state.overlayPreview.destroy();
+        destroy(this.state.overlayPreview);
         this.state.set({overlayPreview: null});
     }
 
@@ -863,9 +863,9 @@ class WindowThumbnail {
         this.state.disconnect(this.stateConnectId);
         this.groupState.disconnect(this.connectId);
         this.signals.disconnectAllSignals();
-        this.container.destroy();
-        this.bin.destroy();
-        this.actor.destroy();
+        destroy(this.container);
+        destroy(this.bin);
+        destroy(this.actor);
         unref(this, RESERVE_KEYS);
     }
 }
@@ -916,7 +916,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             removeThumbnailFromMenu: (win) => {
                 let index = findIndex(this.appThumbnails, (item) => item.metaWindow === win);
                 if (index > -1) {
-                    this.appThumbnails[index].destroy();
+                    destroy(this.appThumbnails[index]);
                     this.appThumbnails[index] = undefined;
                     this.appThumbnails.splice(index, 1);
                 }
@@ -1145,7 +1145,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
     destroyThumbnails() {
         this.box.destroy_children();
         for (let i = 0; i < this.appThumbnails.length; i++) {
-            this.appThumbnails[i].destroy();
+            destroy(this.appThumbnails[i]);
             this.appThumbnails[i] = undefined;
         }
         this.appThumbnails = [];

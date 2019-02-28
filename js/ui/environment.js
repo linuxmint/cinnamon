@@ -111,11 +111,11 @@ function init() {
     window.isFinalized = function isFinalized(gObject) {
         return toString.call(gObject).indexOf('FINALIZED') > -1;
     };
-    // Override destroy so it checks if its finalized before calling the real destroy method.
-    Clutter.Actor.prototype._destroy = Clutter.Actor.prototype.destroy;
-    Clutter.Actor.prototype.destroy = function destroy() {
-        if (!isFinalized(this)) {
-            this._destroy();
+    // External destroy helper that checks if the instance is finalized.
+    const _destroy = Clutter.Actor.prototype.destroy;
+    window.destroy = function destroy(actor) {
+        if (!isFinalized(actor)) {
+            _destroy.call(actor);
         }
     };
     Clutter.Actor.prototype.toString = function() {

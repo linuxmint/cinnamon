@@ -337,7 +337,7 @@ class Calendar {
         // Remove everything but the topBox and the weekday labels
         let children = this.actor.get_children();
         for (let i = this._firstDayIndex; i < children.length; i++)
-            children[i].destroy();
+            destroy(children[i]);
 
         // Start at the beginning of the week before the start of the month
         let beginDate = new Date(this._selectedDate);

@@ -30,7 +30,8 @@
         "capitalize": false,
         "clamp": false,
         "isFinalized": false,
-        "styleLength": false
+        "styleLength": false,
+        "destroy": false
     },
     "rules": {
         "comma-dangle": 0,
