@@ -261,7 +261,7 @@ class AppGroup {
     }
 
     updateIconBoxClip() {
-        let iconBottomClip = this.iconBox.style_length('app-icon-bottom-clip');
+        let iconBottomClip = styleLength(this.iconBox, 'app-icon-bottom-clip');
         let allocation = this.iconBox.allocation;
         if (iconBottomClip > 0) {
             this.iconBox.set_clip(
@@ -387,7 +387,7 @@ class AppGroup {
         } else {
             let offset = 0;
             if (this.state.orientation === St.Side.LEFT) {
-                offset += this.actor.style_length('border-left-width') * 2;
+                offset += styleLength(this.actor, 'border-left-width') * 2;
             }
             [childBox.x1, childBox.x2] = center(allocWidth + offset, naturalWidth);
         }

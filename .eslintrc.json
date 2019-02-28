@@ -29,7 +29,8 @@
         "__meta": false,
         "capitalize": false,
         "clamp": false,
-        "isFinalized": false
+        "isFinalized": false,
+        "styleLength": false
     },
     "rules": {
         "comma-dangle": 0,

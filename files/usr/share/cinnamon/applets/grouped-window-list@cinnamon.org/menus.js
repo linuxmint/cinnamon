@@ -775,8 +775,8 @@ class WindowThumbnail {
             thumbnailSize = thumbnailWidth;
         }
 
-        let padding = this.thumbnailActor.style_length('padding');
-        let margin = this.thumbnailActor.style_length('margin');
+        let padding = styleLength(this.thumbnailActor, 'padding');
+        let margin = styleLength(this.thumbnailActor, 'margin');
 
         let i = 0;
         while (((thumbnailSize + this.thumbnailPadding + padding + margin) * this.groupState.windowCount > monitorSize)

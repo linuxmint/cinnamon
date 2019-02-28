@@ -123,15 +123,14 @@ function init() {
     };
 
     // Safe wrapper for theme inspection
-    St.Widget.prototype.style_length = function(property) {
-        if (isFinalized(this) || !this.realized) return 0;
-        if (!this.themeNode) {
-            this.themeNode = this.peek_theme_node();
-            this.connect('destroy', () => this.themeNode = null);
+    window.styleLength = function styleLength(stWidget, property) {
+        if (isFinalized(stWidget) || !stWidget.realized) return 0;
+        if (!stWidget.themeNode) {
+            stWidget.themeNode = stWidget.peek_theme_node();
         }
-        if (!this.themeNode) return 0;
-        return this.themeNode.get_length(property);
-    };
+        if (!stWidget.themeNode) return 0;
+        return stWidget.themeNode.get_length(property);
+    }
 
     let origToString = Object.prototype.toString;
     Object.prototype.toString = function() {
