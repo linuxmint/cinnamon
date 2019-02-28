@@ -31,7 +31,8 @@
         "clamp": false,
         "isFinalized": false,
         "styleLength": false,
-        "destroy": false
+        "destroy": false,
+        "toDelegateString": false
     },
     "rules": {
         "comma-dangle": 0,

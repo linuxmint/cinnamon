@@ -16,6 +16,8 @@ const St = imports.gi.St;
 const Meta = imports.gi.Meta;
 const Overrides = imports.ui.overrides;
 
+const BRACKET_REPLACE_REGEX = /\]$/;
+
 // We can't import cinnamon JS modules yet, because they may have
 // variable initializations, etc, that depend on init() already having
 // been run.
@@ -132,17 +134,12 @@ function init() {
         return stWidget.themeNode.get_length(property);
     }
 
-    let origToString = Object.prototype.toString;
-    Object.prototype.toString = function() {
-        let base = origToString.call(this);
-        try {
-            if ('actor' in this && this.actor instanceof Clutter.Actor)
-                return base.replace(/\]$/, ' delegate for ' + this.actor.toString().substring(1));
-            else
-                return base;
-        } catch(e) {
-            return base;
+    window.toDelegateString = function toDelegateString(obj) {
+        let base = obj.toString();
+        if ('actor' in obj && obj.actor instanceof Clutter.Actor && !isFinalized(obj.actor)) {
+            return base.replace(BRACKET_REPLACE_REGEX, ' delegate for ' + obj.actor.toString().substring(1));
         }
+        return base;
     };
 
     // Work around https://bugzilla.mozilla.org/show_bug.cgi?id=508783
