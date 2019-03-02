@@ -583,14 +583,6 @@ def get_available_options(up_client):
     except:
         pass
 
-    # New versions of upower does not have get_can_suspend function
-    try:
-        can_suspend = can_suspend or up_client.get_can_suspend()
-        can_hibernate = can_hibernate or up_client.get_can_hibernate()
-        can_hybrid_sleep = can_hibernate or up_client.get_can_hybrid_sleep()
-    except:
-        pass
-
     def remove(options, item):
         for option in options:
             if option[0] == item:
