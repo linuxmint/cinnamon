@@ -3566,8 +3566,12 @@ var PopupMenuManager = class PopupMenuManager {
         if (!this.grabbed)
             return false;
 
-        if (Main.keyboard.shouldTakeEvent(event))
-            return Clutter.EVENT_PROPAGATE;
+        if (Main.keyboard.visible) {
+            const actor = event.get_source();
+            if (!isFinalized(actor) && Main.layoutManager.keyboardBox.contains(actor)) {
+                return Clutter.EVENT_PROPAGATE;
+            }
+        }
 
         if (this._owner.menuEventFilter &&
             this._owner.menuEventFilter(event))

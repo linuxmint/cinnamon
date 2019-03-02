@@ -201,6 +201,7 @@ Keyboard.prototype = {
     },
 
     init: function () {
+        this.visible = false;
         this._redraw();
     },
 
@@ -475,6 +476,7 @@ Keyboard.prototype = {
     },
 
     show: function () {
+        this.visible = true;
         let needs_redraw = this.monitorIndex != Main.layoutManager.focusIndex;
 
         if (!Main.layoutManager._keyboardVisible || needs_redraw)
@@ -484,6 +486,7 @@ Keyboard.prototype = {
     },
 
     hide: function () {
+        this.visible = false;
         Main.layoutManager.queueHideKeyboard();
     },
 
@@ -499,14 +502,6 @@ Keyboard.prototype = {
     _setLocation: function (x, y) {
         if (y >= 2 * this.actor.height)
             this._moveTemporarily();
-    },
-
-    shouldTakeEvent: function(event) {
-        let actor = event.get_source();
-        return !isFinalized(actor)
-            && (Main.layoutManager.keyboardBox.contains(actor)
-                || actor._extended_keys
-                || actor.extended_key);
     },
 
     // D-Bus methods
