@@ -6,6 +6,7 @@ Usage:  cinnamon-menu-editor
 """
 
 import sys
+from setproctitle import setproctitle
 
 sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')  # noqa
 from cme import MainWindow
@@ -24,4 +25,5 @@ def main():
 
 
 if __name__ == '__main__':
+    setproctitle("cinnamon-menu-editor")
     main()

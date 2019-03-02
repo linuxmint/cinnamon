@@ -6,6 +6,7 @@ from dbus.mainloop.glib import DBusGMainLoop
 import random
 import os, locale
 from xml.etree import ElementTree
+from setproctitle import setproctitle
 
 SLIDESHOW_DBUS_NAME = "org.Cinnamon.Slideshow"
 SLIDESHOW_DBUS_PATH = "/org/Cinnamon/Slideshow"
@@ -308,6 +309,7 @@ class CinnamonSlideshow(dbus.service.Object):
 ###############
 
 if __name__ == "__main__":
+    setproctitle("cinnamon-slideshow")
     DBusGMainLoop(set_as_default=True)
 
     sessionBus = dbus.SessionBus ()

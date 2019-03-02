@@ -1,96 +1,82 @@
-const Clutter = imports.gi.Clutter;
-const Meta = imports.gi.Meta;
+const {Gravity} = imports.gi.Clutter;
+const {Rectangle, WindowType} = imports.gi.Meta;
+const {layoutManager} = imports.ui.main;
+const {addTween, removeTweens} = imports.ui.tweener;
 
-const AppletManager = imports.ui.appletManager;
-const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
+class Effect {
+    constructor(endWindowEffect) {
+        this.endWindowEffect = endWindowEffect;
+    }
 
-function Effect(){
-    throw new TypeError("Trying to instantiate abstract class WindowEffects.Effect");
-}
-
-Effect.prototype = {
-    _init: function(wm){
-        //wm is the instance of windowManger.js
-        this.wm = wm;
-    },
-
-    _end: function(actor){
+    _end(actor) {
         actor.set_scale(1, 1);
         actor.opacity = actor.orig_opacity || 255;
-        actor.move_anchor_point_from_gravity(Clutter.Gravity.NORTH_WEST);
-    },
+        actor.move_anchor_point_from_gravity(Gravity.NORTH_WEST);
+    }
 
-    _fadeWindow: function(cinnamonwm, actor, opacity, time, transition){
-        Tweener.addTween(actor, {
-            opacity: opacity,
-            time: time,
+    _fadeWindow(cinnamonwm, actor, opacity, time, transition) {
+        addTween(actor, {
+            opacity,
+            time,
             min: 0,
             max: 255,
-            transition: transition,
-            onComplete: this.wm._endWindowEffect,
-            onCompleteScope: this.wm,
-            onCompleteParams: [cinnamonwm, this.name, actor]
+            transition,
+            onComplete: () => this.endWindowEffect(cinnamonwm, this.name, actor),
         });
-    },
+    }
 
-    _scaleWindow: function(cinnamonwm, actor, scale_x, scale_y, time, transition, keepAnchorPoint){
+    _scaleWindow(cinnamonwm, actor, scale_x, scale_y, time, transition, keepAnchorPoint) {
         if (!keepAnchorPoint)
-            actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);
+            actor.move_anchor_point_from_gravity(Gravity.CENTER);
 
-        Tweener.addTween(actor, {
-            scale_x: scale_x,
-            scale_y: scale_y,
-            time: time,
+        addTween(actor, {
+            scale_x,
+            scale_y,
+            time,
             min: 0,
-            transition: transition,
-            onComplete: this.wm._endWindowEffect,
-            onCompleteScope: this.wm,
-            onCompleteParams: [cinnamonwm, this.name, actor]
+            transition,
+            onComplete: () => this.endWindowEffect(cinnamonwm, this.name, actor),
         });
-    },
+    }
 
-    _moveWindow: function(cinnamonwm, actor, x, y, time, transition){
-        Tweener.addTween(actor, {
-            x: x,
-            y: y,
-            time: time,
-            transition: transition,
-            onComplete: this.wm._endWindowEffect,
-            onCompleteScope: this.wm,
-            onCompleteParams: [cinnamonwm, this.name, actor]
+    _moveWindow(cinnamonwm, actor, x, y, time, transition) {
+        addTween(actor, {
+            x,
+            y,
+            time,
+            transition,
+            onComplete: () => this.endWindowEffect(cinnamonwm, this.name, actor),
         });
     }
 };
 
-function Map(){
-    this._init.apply(this, arguments);
-}
+var Map = class Map extends Effect {
+    constructor() {
+        super(...arguments);
 
-Map.prototype = {
-    __proto__: Effect.prototype,
-    name: "map",
-    arrayName: "_mapping",
-    wmCompleteName: "completed_map",
+        this.name = 'map';
+        this.arrayName = '_mapping';
+        this.wmCompleteName = 'completed_map';
+    }
 
-    scale: function(cinnamonwm, actor, time, transition){
+    scale(cinnamonwm, actor, time, transition) {
         actor.set_scale(0, 0);
         this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
-    },
+    }
 
-    fade: function(cinnamonwm, actor, time, transition){
+    fade(cinnamonwm, actor, time, transition) {
         actor.opacity = 0;
         this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
-    },
+    }
 
-    blend: function(cinnamonwm, actor, time, transition){
+    blend(cinnamonwm, actor, time, transition) {
         actor.opacity = 0;
         actor.set_scale(1.5, 1.5);
         this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
         this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
-    },
+    }
 
-    move: function(cinnamonwm, actor, time, transition){
+    move(cinnamonwm, actor, time, transition) {
         let [width, height] = actor.get_allocation_box().get_size();
         let [xDest, yDest] = actor.get_transformed_position();
         xDest += width /= 2;
@@ -105,10 +91,10 @@ Map.prototype = {
 
         this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
-    },
+    }
 
-    flyUp: function(cinnamonwm, actor, time, transition){
-        //FIXME: somehow we need this line to get the correct position, without it will return [0, 0]
+    flyUp(cinnamonwm, actor, time, transition) {
+        // FIXME: somehow we need this line to get the correct position, without it will return [0, 0]
         actor.get_allocation_box().get_size();
         let [xDest, yDest] = actor.get_transformed_position();
         let ySrc = global.stage.get_height();
@@ -116,14 +102,14 @@ Map.prototype = {
         actor.set_position(xDest, ySrc);
 
         let dist = Math.abs(ySrc - yDest);
-        time *= dist / Main.layoutManager.primaryMonitor.height * 2; // The transition time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
+        time *= dist / layoutManager.primaryMonitor.height * 2; // The transition time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
 
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
 
-    },
+    }
 
-    flyDown: function(cinnamonwm, actor, time, transition){
-        //FIXME - see also flyUp
+    flyDown(cinnamonwm, actor, time, transition) {
+        // FIXME - see also flyUp
         actor.get_allocation_box().get_size();
         let [xDest, yDest] = actor.get_transformed_position();
         let ySrc = -actor.get_allocation_box().get_height();
@@ -131,20 +117,16 @@ Map.prototype = {
         actor.set_position(xDest, ySrc);
 
         let dist = Math.abs(ySrc - yDest);
-        time *= dist / Main.layoutManager.primaryMonitor.height * 2; // The time time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
+        time *= dist / layoutManager.primaryMonitor.height * 2; // The time time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
 
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
-    },
+    }
 
-    traditional: function(cinnamonwm, actor, time, transition) {
-        if (!actor._windowType) {
-            actor._windowType = actor.meta_window.get_window_type();
-        }
-
-        switch (actor._windowType) {
-            case Meta.WindowType.NORMAL:
-            case Meta.WindowType.MODAL_DIALOG:
-            case Meta.WindowType.DIALOG:
+    traditional(cinnamonwm, actor, time, transition) {
+        switch (actor.meta_window.window_type) {
+            case WindowType.NORMAL:
+            case WindowType.MODAL_DIALOG:
+            case WindowType.DIALOG:
                 actor.set_pivot_point(0, 0);
                 actor.scale_x = 0.94;
                 actor.scale_y = 0.94;
@@ -152,9 +134,9 @@ Map.prototype = {
                 this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
                 this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
                 break;
-            case Meta.WindowType.MENU:
-            case Meta.WindowType.DROPDOWN_MENU:
-            case Meta.WindowType.POPUP_MENU:
+            case WindowType.MENU:
+            case WindowType.DROPDOWN_MENU:
+            case WindowType.POPUP_MENU:
                 let [width, height] = actor.get_allocation_box().get_size();
                 let [destX, destY] = actor.get_transformed_position();
                 let [pointerX, pointerY] = global.get_pointer();
@@ -177,74 +159,69 @@ Map.prototype = {
     }
 }
 
-function Close(){
-    this._init.apply(this, arguments);
-}
+var Close = class Close extends Effect {
+    constructor() {
+        super(...arguments);
 
-Close.prototype = {
-    __proto__: Effect.prototype,
-    name: "close",
-    arrayName: "_destroying",
-    wmCompleteName: "completed_destroy",
+        this.name = 'close';
+        this.arrayName = '_destroying';
+        this.wmCompleteName = 'completed_destroy';
+    }
 
-    _end: function(actor){
+    _end(actor) {
         let parent = actor.get_meta_window().get_transient_for();
-        if(parent && actor._parentDestroyId){
+        if (parent && actor._parentDestroyId) {
             parent.disconnect(actor._parentDestroyId);
             actor._parentDestroyId = 0;
         }
-    },
+    }
 
-    scale: function(cinnamonwm, actor, time, transition){
+    scale(cinnamonwm, actor, time, transition) {
         this._scaleWindow(cinnamonwm, actor, 0, 0, time, transition);
-    },
+    }
 
-    fade: function(cinnamonwm, actor, time, transition){
-        Tweener.removeTweens(actor);
+    fade(cinnamonwm, actor, time, transition) {
+        removeTweens(actor);
         this._fadeWindow(cinnamonwm, actor, 0, time, transition);
-    },
+    }
 
-    blend: function(cinnamonwm, actor, time, transition){
+    blend(cinnamonwm, actor, time, transition) {
         this._fadeWindow(cinnamonwm, actor, 0, time, transition);
         this._scaleWindow(cinnamonwm, actor, 1.5, 1.5, time, transition);
-    },
+    }
 
-    move: function(cinnamonwm, actor, time, transition){
+    move(cinnamonwm, actor, time, transition) {
         let [xDest, yDest] = global.get_pointer();
 
         this._scaleWindow(cinnamonwm, actor, 0, 0, time, transition);
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
-    },
+    }
 
-    flyUp: function(cinnamonwm, actor, time, transition){
+    flyUp(cinnamonwm, actor, time, transition) {
         let xDest = actor.get_transformed_position()[0];
         let yDest = -actor.get_allocation_box().get_height();
 
         let dist = Math.abs(actor.get_transformed_position()[1] - yDest);
-        time *= dist / Main.layoutManager.primaryMonitor.height * 2; // The time time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
+        time *= dist / layoutManager.primaryMonitor.height * 2; // The time time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
 
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
-    },
+    }
 
-    flyDown: function(cinnamonwm, actor, time, transition){
+    flyDown(cinnamonwm, actor, time, transition) {
         let xDest = actor.get_transformed_position()[0];
         let yDest = global.stage.get_height();
 
         let dist = Math.abs(actor.get_transformed_position()[1] - yDest);
-        time *= dist / Main.layoutManager.primaryMonitor.height * 2; // The transition time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
+        time *= dist / layoutManager.primaryMonitor.height * 2; // The transition time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
 
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
-    },
+    }
 
-    traditional: function(cinnamonwm, actor, time, transition) {
-        if (!actor._windowType) {
-            actor._windowType = actor.meta_window.get_window_type();
-        }
-
-        switch (actor._windowType) {
-            case Meta.WindowType.NORMAL:
-            case Meta.WindowType.MODAL_DIALOG:
-            case Meta.WindowType.DIALOG:
+    traditional(cinnamonwm, actor, time, transition) {
+        switch (actor.meta_window.window_type) {
+            case WindowType.NORMAL:
+            case WindowType.MODAL_DIALOG:
+            case WindowType.DIALOG:
                 actor.set_pivot_point(0, 0);
                 this._scaleWindow(cinnamonwm, actor, 0.88, 0.88, time, transition);
                 this._fadeWindow(cinnamonwm, actor, 0, time, transition);
@@ -255,22 +232,21 @@ Close.prototype = {
     }
 }
 
-function Minimize(){
-    this._init.apply(this, arguments);
-}
+var Minimize = class Minimize extends Close {
+    constructor() {
+        super(...arguments);
 
-Minimize.prototype = {
-    __proto__: Close.prototype,
-    name: "minimize",
-    arrayName: "_minimizing",
-    wmCompleteName: "completed_minimize",
+        this.name = 'minimize';
+        this.arrayName = '_minimizing';
+        this.wmCompleteName = 'completed_minimize';
 
-    //use default _end method
-    _end: Effect.prototype._end,
+         // Use Effect's _end method
+        this._end = Effect.prototype._end;
+    }
 
-    traditional: function(cinnamonwm, actor, time, transition) {
+    traditional(cinnamonwm, actor, time, transition) {
         let success;
-        let geom = new Meta.Rectangle();
+        let geom = new Rectangle();
         success = actor.meta_window.get_icon_geometry(geom);
         if (success) {
             actor.set_scale(1, 1);
@@ -279,7 +255,7 @@ Minimize.prototype = {
             yDest = geom.y;
             xScale = geom.width / actor.width;
             yScale = geom.height / actor.height;
-            actor.get_meta_window()._cinnamonwm_has_origin = true;
+            actor.meta_window._cinnamonwm_has_origin = true;
             this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
             this._scaleWindow(cinnamonwm, actor, xScale, yScale, time, transition, true);
             this._fadeWindow(cinnamonwm, actor, 0, time, transition);
@@ -289,22 +265,21 @@ Minimize.prototype = {
     }
 }
 
-function Unminimize(){
-    this._init.apply(this, arguments);
-}
+// unminimizing is a 'map' effect but should use 'minimize' setting values
+var Unminimize = class Unminimize extends Effect {
+    constructor() {
+        super(...arguments);
 
-Unminimize.prototype = {
-    //unminimizing is a "map" effect but should use "minimize" setting values
-    __proto__: Effect.prototype,
-    name: "unminimize",
-    arrayName: "_mapping",
-    wmCompleteName: "completed_map",
+        this.name = 'unminimize';
+        this.arrayName = '_mapping';
+        this.wmCompleteName = 'completed_map';
 
-    _end: Map.prototype._end,
+        this._end = Map.prototype._end;
+    }
 
-    traditional: function(cinnamonwm, actor, time, transition) {
+    traditional(cinnamonwm, actor, time, transition) {
         let success;
-        let geom = new Meta.Rectangle();
+        let geom = new Rectangle();
         success = actor.meta_window.get_icon_geometry(geom);
         if (success) {
             actor.set_scale(0.1, 0.1);
@@ -317,27 +292,25 @@ Unminimize.prototype = {
             this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, true);
             this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
         } else {
-            throw "No origin found";
+            global.logWarning('windowEffects.Unminimize: No origin found.');
         }
     }
 }
 
-function Tile(){
-    this._init.apply(this, arguments);
-}
+var Tile = class Tile extends Effect {
+    constructor() {
+        super(...arguments);
 
-Tile.prototype = {
-    __proto__: Effect.prototype,
-    name: "tile",
-    arrayName: "_tiling",
-    wmCompleteName: "completed_tile",
+        this.name = 'tile';
+        this.arrayName = '_tiling';
+        this.wmCompleteName = 'completed_tile';
+    }
 
-    scale: function(cinnamonwm, actor, time, transition, args){
+    scale(cinnamonwm, actor, time, transition, args) {
         let [targetX, targetY, targetWidth, targetHeight] = args;
-        if(targetWidth == actor.width)
-            targetWidth -= 1;
-        if(targetHeight == actor.height)
-            targetHeight -= 1;
+
+        if (targetWidth === actor.width) targetWidth -= 1;
+        if (targetHeight === actor.height) targetHeight -= 1;
 
         let scale_x = targetWidth / actor.width;
         let scale_y = targetHeight / actor.height;
@@ -350,24 +323,23 @@ Tile.prototype = {
     }
 }
 
-function Maximize(){
-    this._init.apply(this, arguments);
+var Maximize = class Maximize extends Tile {
+    constructor() {
+        super(...arguments);
+
+        this.name = 'maximize';
+        this.arrayName = '_maximizing';
+        this.wmCompleteName = 'completed_maximize';
+    }
+
 }
 
-Maximize.prototype = {
-    __proto__: Tile.prototype,
-    name: "maximize",
-    arrayName: "_maximizing",
-    wmCompleteName: "completed_maximize",
-}
+var Unmaximize = class Unmaximize extends Tile {
+    constructor() {
+        super(...arguments);
 
-function Unmaximize(){
-    this._init.apply(this, arguments);
-}
-
-Unmaximize.prototype = {
-    __proto__: Tile.prototype,
-    name: "unmaximize",
-    arrayName: "_unmaximizing",
-    wmCompleteName: "completed_unmaximize"
+        this.name = 'unmaximize';
+        this.arrayName = '_unmaximizing';
+        this.wmCompleteName = 'completed_unmaximize';
+    }
 }

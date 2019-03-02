@@ -12,6 +12,7 @@ import urllib.request as urllib
 from functools import cmp_to_key
 import unicodedata
 import config
+from setproctitle import setproctitle
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -607,6 +608,7 @@ class MainWindow:
         Gtk.main_quit()
 
 if __name__ == "__main__":
+    setproctitle("cinnamon-settings")
     import signal
 
     ps = proxygsettings.get_proxy_settings()

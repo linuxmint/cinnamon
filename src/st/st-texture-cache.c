@@ -664,112 +664,6 @@ load_texture_async (StTextureCache       *cache,
     g_assert_not_reached ();
 }
 
-typedef struct {
-  StTextureCache *cache;
-  ClutterTexture *texture;
-  GObject *source;
-  guint notify_signal_id;
-  gboolean weakref_active;
-} StTextureCachePropertyBind;
-
-static void
-st_texture_cache_reset_texture (StTextureCachePropertyBind *bind,
-                                const char                 *propname)
-{
-  GdkPixbuf *pixbuf;
-  CoglTexture *texdata;
-
-  g_object_get (bind->source, propname, &pixbuf, NULL);
-
-  g_return_if_fail (pixbuf == NULL || GDK_IS_PIXBUF (pixbuf));
-
-  if (pixbuf != NULL)
-    {
-      texdata = pixbuf_to_cogl_texture (pixbuf);
-      g_object_unref (pixbuf);
-
-      if (texdata)
-        {
-          clutter_texture_set_cogl_texture (bind->texture, texdata);
-          cogl_object_unref (texdata);
-        }
-
-      clutter_actor_set_opacity (CLUTTER_ACTOR (bind->texture), 255);
-    }
-  else
-    clutter_actor_set_opacity (CLUTTER_ACTOR (bind->texture), 0);
-}
-
-static void
-st_texture_cache_on_pixbuf_notify (GObject           *object,
-                                   GParamSpec        *paramspec,
-                                   gpointer           data)
-{
-  StTextureCachePropertyBind *bind = data;
-  st_texture_cache_reset_texture (bind, paramspec->name);
-}
-
-static void
-st_texture_cache_bind_weak_notify (gpointer     data,
-                                   GObject     *source_location)
-{
-  StTextureCachePropertyBind *bind = data;
-  bind->weakref_active = FALSE;
-  g_signal_handler_disconnect (bind->source, bind->notify_signal_id);
-}
-
-static void
-st_texture_cache_free_bind (gpointer data)
-{
-  StTextureCachePropertyBind *bind = data;
-  if (bind->weakref_active)
-    g_object_weak_unref (G_OBJECT(bind->texture), st_texture_cache_bind_weak_notify, bind);
-  g_free (bind);
-}
-
-/**
- * st_texture_cache_bind_pixbuf_property:
- * @cache:
- * @object: A #GObject with a property @property_name of type #GdkPixbuf
- * @property_name: Name of a property
- *
- * Create a #ClutterTexture which tracks the #GdkPixbuf value of a GObject property
- * named by @property_name.  Unlike other methods in StTextureCache, the underlying
- * #CoglTexture is not shared by default with other invocations to this method.
- *
- * If the source object is destroyed, the texture will continue to show the last
- * value of the property.
- *
- * Return value: (transfer none): A new #ClutterActor
- */
-ClutterActor *
-st_texture_cache_bind_pixbuf_property (StTextureCache    *cache,
-                                       GObject           *object,
-                                       const char        *property_name)
-{
-  ClutterTexture *texture;
-  gchar *notify_key;
-  StTextureCachePropertyBind *bind;
-
-  texture = CLUTTER_TEXTURE (clutter_texture_new ());
-
-  bind = g_new0 (StTextureCachePropertyBind, 1);
-  bind->cache = cache;
-  bind->texture = texture;
-  bind->source = object;
-  g_object_weak_ref (G_OBJECT (texture), st_texture_cache_bind_weak_notify, bind);
-  bind->weakref_active = TRUE;
-
-  st_texture_cache_reset_texture (bind, property_name);
-
-  notify_key = g_strdup_printf ("notify::%s", property_name);
-  bind->notify_signal_id = g_signal_connect_data (object, notify_key, G_CALLBACK(st_texture_cache_on_pixbuf_notify),
-                                                  bind, (GClosureNotify)st_texture_cache_free_bind, 0);
-  g_free (notify_key);
-
-  return CLUTTER_ACTOR(texture);
-}
-
 /**
  * st_texture_cache_load: (skip)
  * @cache: A #StTextureCache
@@ -964,24 +858,35 @@ st_texture_cache_load_gicon (StTextureCache    *cache,
     return load_gicon_with_colors (cache, icon, size, cache->priv->scale, theme_node ? st_theme_node_get_icon_colors (theme_node) : NULL);
 }
 
-static ClutterActor *
-load_from_pixbuf (GdkPixbuf *pixbuf)
+/**
+ * st_texture_cache_load_from_pixbuf:
+ * @pixbuf: A #GdkPixbuf
+ * @size: int
+ *
+ * Converts a #GdkPixbuf into a #ClutterTexture.
+ *
+ * Return value: (transfer none): A new #ClutterActor
+ */
+ClutterActor *
+st_texture_cache_load_from_pixbuf (GdkPixbuf *pixbuf,
+                                   int        size)
 {
   ClutterTexture *texture;
   CoglTexture *texdata;
-  int width = gdk_pixbuf_get_width (pixbuf);
-  int height = gdk_pixbuf_get_height (pixbuf);
+  ClutterActor *actor;
 
   texture = create_default_texture ();
+  actor = CLUTTER_ACTOR (texture);
 
-  clutter_actor_set_size (CLUTTER_ACTOR (texture), width, height);
+  clutter_actor_set_size (actor, size, size);
 
   texdata = pixbuf_to_cogl_texture (pixbuf);
 
   set_texture_cogl_texture (texture, texdata);
 
   cogl_object_unref (texdata);
-  return CLUTTER_ACTOR (texture);
+
+  return actor;
 }
 
 static void
@@ -1069,7 +974,8 @@ on_sliced_image_loaded (GObject *source_object,
   pixbufs = g_task_propagate_pointer (task, NULL);
   for (list = pixbufs; list; list = list->next)
     {
-      ClutterActor *actor = load_from_pixbuf (GDK_PIXBUF (list->data));
+      GdkPixbuf *pixbuf = GDK_PIXBUF (list->data);
+      ClutterActor *actor = st_texture_cache_load_from_pixbuf (pixbuf, gdk_pixbuf_get_width (pixbuf));
       clutter_actor_hide (actor);
       clutter_actor_add_child (data->actor, actor);
     }
