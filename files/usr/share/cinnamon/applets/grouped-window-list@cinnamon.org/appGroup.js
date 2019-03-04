@@ -1113,9 +1113,9 @@ class AppGroup {
             if (this.rightClickMenu.isOpen) {
                 this.rightClickMenu.close();
             }
-            destroy(this.rightClickMenu);
+            this.rightClickMenu.destroy();
         }
-        if (this.hoverMenu) destroy(this.hoverMenu);
+        if (this.hoverMenu) this.hoverMenu.destroy();
         this.listState.trigger('removeChild', this.actor);
         destroy(this.actor);
 

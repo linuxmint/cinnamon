@@ -916,7 +916,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             removeThumbnailFromMenu: (win) => {
                 let index = findIndex(this.appThumbnails, (item) => item.metaWindow === win);
                 if (index > -1) {
-                    destroy(this.appThumbnails[index]);
+                    this.appThumbnails[index].destroy();
                     this.appThumbnails[index] = undefined;
                     this.appThumbnails.splice(index, 1);
                 }
