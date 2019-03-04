@@ -293,9 +293,9 @@ function timeify(orig_time) {
     let diff = Math.floor((now.getTime() - orig_time.getTime()) / 1000); // get diff in seconds
     let str;
     if (use_24h) {
-        str = orig_time.toLocaleFormat('%T');
+        str = toLocaleFormat(orig_time, '%T');
     } else {
-        str = orig_time.toLocaleFormat('%r');
+        str = toLocaleFormat(orig_time, '%r');
     }
     switch (true) {
         case (diff <= 15): {

@@ -32,7 +32,8 @@
         "isFinalized": false,
         "styleLength": false,
         "destroy": false,
-        "toDelegateString": false
+        "toDelegateString": false,
+        "toLocaleFormat": false
     },
     "rules": {
         "comma-dangle": 0,

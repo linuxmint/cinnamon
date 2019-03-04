@@ -12,6 +12,7 @@ const Gettext = imports.gettext;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Cinnamon = imports.gi.Cinnamon;
+const {util_format_date} = Cinnamon;
 const St = imports.gi.St;
 const Meta = imports.gi.Meta;
 const Overrides = imports.ui.overrides;
@@ -143,8 +144,8 @@ function init() {
     };
 
     // Work around https://bugzilla.mozilla.org/show_bug.cgi?id=508783
-    Date.prototype.toLocaleFormat = function(format) {
-        return Cinnamon.util_format_date(format, this.getTime());
+    window.toLocaleFormat = function toLocaleFormat(date, format) {
+        return util_format_date(format, date.getTime());
     };
 
     window.capitalize = function capitalize(string) {

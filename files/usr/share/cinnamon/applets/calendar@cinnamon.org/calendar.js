@@ -64,17 +64,17 @@ function _formatEventTime(event, clockFormat) {
         ret = C_("event list time", "All Day");
     } else {
         switch (clockFormat) {
-        case '24h':
-            /* Translators: Shown in calendar event list, if 24h format */
-            ret = event.date.toLocaleFormat(C_("event list time", "%H:%M"));
-            break;
+            case '24h':
+                /* Translators: Shown in calendar event list, if 24h format */
+                ret = toLocaleFormat(event.date, C_("event list time", "%H:%M"));
+                break;
 
-        default:
-            /* explicit fall-through */
-        case '12h':
-            /* Transators: Shown in calendar event list, if 12h format */
-            ret = event.date.toLocaleFormat(C_("event list time", "%l:%M %p"));
-            break;
+            default:
+                /* explicit fall-through */
+            case '12h':
+                /* Transators: Shown in calendar event list, if 12h format */
+                ret = toLocaleFormat(event.date, C_("event list time", "%l:%M %p"));
+                break;
         }
     }
     return ret;
@@ -95,13 +95,13 @@ function _getCalendarDayAbbreviation(dayNumber) {
     // We use 2014/03/02 (months are zero-based in JS) because it was a Sunday
 
     let abbreviations = [
-        new Date(2014, 2, 2).toLocaleFormat('%a'),
-        new Date(2014, 2, 3).toLocaleFormat('%a'),
-        new Date(2014, 2, 4).toLocaleFormat('%a'),
-        new Date(2014, 2, 5).toLocaleFormat('%a'),
-        new Date(2014, 2, 6).toLocaleFormat('%a'),
-        new Date(2014, 2, 7).toLocaleFormat('%a'),
-        new Date(2014, 2, 8).toLocaleFormat('%a')
+        toLocaleFormat(new Date(2014, 2, 2), '%a'),
+        toLocaleFormat(new Date(2014, 2, 3), '%a'),
+        toLocaleFormat(new Date(2014, 2, 4), '%a'),
+        toLocaleFormat(new Date(2014, 2, 5), '%a'),
+        toLocaleFormat(new Date(2014, 2, 6), '%a'),
+        toLocaleFormat(new Date(2014, 2, 7), '%a'),
+        toLocaleFormat(new Date(2014, 2, 8), '%a')
     ];
 
     return abbreviations[dayNumber];
@@ -332,7 +332,7 @@ class Calendar {
         let now = new Date();
 
         this._monthLabel.text = capitalize(this._selectedDate.toLocaleFormat('%OB'));
-        this._yearLabel.text = this._selectedDate.toLocaleFormat('%Y');
+        this._yearLabel.text = toLocaleFormat(this._selectedDate, '%Y');
 
         // Remove everything but the topBox and the weekday labels
         let children = this.actor.get_children();
@@ -387,7 +387,7 @@ class Calendar {
                            { row: row, col: offsetCols + (7 + iter.getDay() - this._weekStart) % 7 });
 
             if (this.show_week_numbers && iter.getDay() == 4) {
-                let label = new St.Label({ text: iter.toLocaleFormat('%V'),
+                let label = new St.Label({ text: toLocaleFormat(iter, '%V'),
                                            style_class: 'calendar-day-base calendar-week-number'});
                 this.actor.add(label,
                                { row: row, col: 0, y_align: St.Align.MIDDLE });
