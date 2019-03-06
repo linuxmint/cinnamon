@@ -169,7 +169,6 @@ window_backed_app_get_icon (CinnamonApp *app,
                             int          size)
 {
   MetaWindow *window = NULL;
-  ClutterActor *actor;
   GdkPixbuf *pixbuf;
   gint scale;
   CinnamonGlobal *global;
