@@ -991,6 +991,8 @@ update_scale_factor (GtkSettings *settings,
                      gpointer data)
 {
   guint scale = 1;
+  int xft_dpi;
+  GtkSettings *gtk_settings;
   CinnamonGlobal *global = CINNAMON_GLOBAL (data);
   ClutterStage *stage = CLUTTER_STAGE (global->stage);
   StThemeContext *context = st_theme_context_get_for_stage (stage);
@@ -1011,8 +1013,7 @@ update_scale_factor (GtkSettings *settings,
     g_settings_set_int (global->settings, "active-display-scale", (int)scale);
   }
 
-  GtkSettings *gtk_settings = gtk_settings_get_default ();
-  int xft_dpi;
+  gtk_settings = gtk_settings_get_default ();
 
   g_object_get (gtk_settings, "gtk-xft-dpi", &xft_dpi, NULL);
   g_object_set (clutter_settings_get_default (), "font-dpi", xft_dpi, NULL);

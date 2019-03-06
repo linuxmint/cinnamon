@@ -73,10 +73,12 @@ sort_infos_by_timestamp_descending (gconstpointer a,
 static void load_items (CinnamonDocSystem *self)
 {
   GList *items, *iter;
+  int i;
+
   self->priv->infos_by_timestamp = NULL;
   items = gtk_recent_manager_get_items (self->priv->manager);
   items = g_slist_sort (items, sort_infos_by_timestamp_descending);
-  int i = 0;
+  i = 0;
   for (iter = items; iter; iter = iter->next)
     {
       GtkRecentInfo *info = iter->data;
