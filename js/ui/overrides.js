@@ -13,7 +13,6 @@ function init() {
     overrideGio();
     overrideGObject();
     overrideMainloop();
-    overrideSignals();
 }
 
 function check_schema_and_init(obj, method, params) {
@@ -203,32 +202,4 @@ function installPolyfills(readOnlyError) {
         configurable: false,
         enumerable: false
     });
-}
-
-function overrideSignals() {
-    if (Signals._signalHandlerIsConnected != null) {
-        return;
-    }
-
-    function _signalHandlerIsConnected(id) {
-        if (!( '_signalConnections' in this))
-            return false;
-
-        for (let connection of this._signalConnections) {
-            if (connection.id == id) {
-                if (connection.disconnected)
-                    return false;
-                else
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    const originalAddSignalMethods = Signals.addSignalMethods;
-    Signals.addSignalMethods = function(proto) {
-        originalAddSignalMethods(proto);
-        Signals._addSignalMethod(proto, 'signalHandlerIsConnected', _signalHandlerIsConnected);
-    };
 }
