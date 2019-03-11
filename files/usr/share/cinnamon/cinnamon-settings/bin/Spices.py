@@ -774,7 +774,7 @@ class Spice_Harvester(GObject.Object):
         enabled_extensions = self.settings.get_strv(self.enabled_key)
         new_list = []
         for enabled_extension in enabled_extensions:
-            if uuid not in enabled_extension:
+            if enabled_extension.split(':')[3].strip('!') != uuid:
                 new_list.append(enabled_extension)
         self.settings.set_strv(self.enabled_key, new_list)
 
