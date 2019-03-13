@@ -446,7 +446,7 @@ class Spice_Harvester(GObject.Object):
             return False
 
         try:
-            return self.meta_map[uuid]["last-edited"] < self.index_cache[uuid]["last_edited"]
+            return int(self.meta_map[uuid]["last-edited"]) < self.index_cache[uuid]["last_edited"]
         except Exception as e:
             return False
 
