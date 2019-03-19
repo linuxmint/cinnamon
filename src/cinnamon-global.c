@@ -1050,22 +1050,25 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   g_signal_connect (global->stage, "notify::height",
                     G_CALLBACK (global_stage_notify_height), global);
 
-  clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_PRE_PAINT,
-                                         global_stage_before_paint,
-                                         NULL, NULL);
 
-  clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_POST_PAINT,
-                                         global_stage_after_paint,
-                                         NULL, NULL);
 
-  cinnamon_perf_log_define_event (cinnamon_perf_log_get_default(),
-                               "clutter.stagePaintStart",
-                               "Start of stage page repaint",
-                               "");
-  cinnamon_perf_log_define_event (cinnamon_perf_log_get_default(),
-                               "clutter.stagePaintDone",
-                               "End of stage page repaint",
-                               "");
+  if (g_getenv ("CINNAMON_PERF_OUTPUT") != NULL)
+    {
+      clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_PRE_PAINT,
+                                             global_stage_before_paint,
+                                             NULL, NULL);
+      clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_POST_PAINT,
+                                             global_stage_after_paint,
+                                             NULL, NULL);
+      cinnamon_perf_log_define_event (cinnamon_perf_log_get_default(),
+                                      "clutter.stagePaintStart",
+                                      "Start of stage page repaint",
+                                      "");
+      cinnamon_perf_log_define_event (cinnamon_perf_log_get_default(),
+                                      "clutter.stagePaintDone",
+                                      "End of stage page repaint",
+                                      "");
+    }
 
   g_signal_connect (global->meta_display, "notify::focus-window",
                     G_CALLBACK (focus_window_changed), global);
