@@ -77,7 +77,7 @@ function init(){
         global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
 
         deskletsLoaded = true;
-        enableMouseTracking(true);
+        updateMouseTracking();
         global.log(`DeskletManager started in ${new Date().getTime() - startTime} ms`);
     });
 }
@@ -86,7 +86,8 @@ function getDeskletDefinition(definition) {
     return queryCollection(definitions, definition);
 }
 
-function enableMouseTracking(enable) {
+function updateMouseTracking() {
+    let enable = definitions.length > 0;
     if (enable && !mouseTrackTimoutId) {
         mouseTrackTimoutId = Mainloop.timeout_add(500, checkMouseTracking);
     } else if (!enable && mouseTrackTimoutId) {
@@ -252,7 +253,7 @@ function _onEnabledDeskletsChanged() {
 
     // Make sure all desklet extensions are loaded.
     // Once loaded, the desklets will add themselves via finishExtensionLoad
-    initEnabledDesklets();
+    initEnabledDesklets().then(updateMouseTracking);
 }
 
 function _unloadDesklet(deskletDefinition, deleteConfig) {
