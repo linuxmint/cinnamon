@@ -541,10 +541,11 @@ class PlaceButton extends SimpleMenuItem {
 }
 
 class RecentContextMenuItem extends PopupMenu.PopupBaseMenuItem {
-    constructor(recentButton, label, is_default, callback) {
+    constructor(recentButton, label, is_default, cbParams, callback) {
         super({focusOnHover: false});
 
         this._recentButton = recentButton;
+        this._cbParams = cbParams;
         this._callback = callback;
         this.label = new St.Label({ text: label });
         this.addActor(this.label);
@@ -554,7 +555,7 @@ class RecentContextMenuItem extends PopupMenu.PopupBaseMenuItem {
     }
 
     activate (event) {
-        this._callback();
+        this._callback(...this._cbParams);
         return false;
     }
 }
@@ -609,15 +610,18 @@ class RecentButton extends SimpleMenuItem {
 
         let default_info = Gio.AppInfo.get_default_for_type(this.mimeType, !this.hasLocalPath(file));
 
+        let infoLaunchFunc = (info, file) => {
+            info.launch([file], null);
+            this.applet.toggleContextMenu(this);
+            this.applet.menu.close();
+        };
+
         if (default_info) {
             menuItem = new RecentContextMenuItem(this,
-                                                    default_info.get_display_name(),
-                                                    false,
-                                                    () => {
-                                                        default_info.launch([file], null, null);
-                                                        this.applet.toggleContextMenu(this);
-                                                        this.applet.menu.close();
-                                                    });
+                                                 default_info.get_display_name(),
+                                                 false,
+                                                 [default_info, file],
+                                                 infoLaunchFunc);
             menu.addMenuItem(menuItem);
         }
 
@@ -635,25 +639,23 @@ class RecentButton extends SimpleMenuItem {
                 continue;
 
             menuItem = new RecentContextMenuItem(this,
-                                                    info.get_display_name(),
-                                                    false,
-                                                    () => {
-                                                        info.launch([file], null, null);
-                                                        this.applet.toggleContextMenu(this);
-                                                        this.applet.menu.close();
-                                                    });
+                                                 info.get_display_name(),
+                                                 false,
+                                                 [info, file],
+                                                 infoLaunchFunc);
             menu.addMenuItem(menuItem);
         }
 
         if (GLib.find_program_in_path ("nemo-open-with") != null) {
             menuItem = new RecentContextMenuItem(this,
-                                                    _("Other application..."),
-                                                    false,
-                                                    () => {
-                                                        Util.spawnCommandLine("nemo-open-with " + this.uri);
-                                                        this.applet.toggleContextMenu(this);
-                                                        this.applet.menu.close();
-                                                    });
+                                                 _("Other application..."),
+                                                 false,
+                                                 [],
+                                                 () => {
+                                                     Util.spawnCommandLine("nemo-open-with " + this.uri);
+                                                     this.applet.toggleContextMenu(this);
+                                                     this.applet.menu.close();
+                                                 });
             menu.addMenuItem(menuItem);
         }
     }
