@@ -33,6 +33,9 @@ class Module:
             switch = GSettingsSwitch(_("Left handed (mouse buttons inverted)"), "org.cinnamon.settings-daemon.peripherals.mouse", "left-handed")
             settings.add_row(switch)
 
+            switch = GSettingsSwitch(_("Reverse scrolling direction"), "org.cinnamon.settings-daemon.peripherals.mouse", "natural-scroll")
+            settings.add_row(switch)
+            
             switch = GSettingsSwitch(_("Show position of pointer when the Control key is pressed"), "org.cinnamon.settings-daemon.peripherals.mouse", "locate-pointer")
             settings.add_row(switch)
 
