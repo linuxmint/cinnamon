@@ -105,6 +105,7 @@
         <listitem><code>type</code>: should be <code>soundfilechooser</code></listitem>
         <listitem><code>description</code>: String describing the setting</listitem>
         <listitem><code>default</code>: default icon path or icon name to use</listitem>
+        <listitem><code>event-sounds</code>: (optional) true or false, or leave off entirely. Unless this property is set to false, the file chooser will only allow wav and ogg/oga type files as these are the only types currently supported by cinnamon sound events. (New in Cinnamon 4.2)</listitem>
       </itemizedlist>
 
       <para>Provides a button which shows the currently selected file name and opens a file dialog when clicked. A preview button is also provided to allow the user to test the selected sound. Stores as a <code>string</code>.</para>
