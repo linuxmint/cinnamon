@@ -123,9 +123,44 @@ class List(SettingsWidget):
         types = []
         tv_columns = []
         for i in range(len(columns)):
-            types.append(VARIABLE_TYPE_MAP[columns[i]["type"]])
-            renderer = Gtk.CellRendererText()
-            column = Gtk.TreeViewColumn(columns[i]["title"], renderer, text=i)
+            column_def = columns[i]
+            types.append(VARIABLE_TYPE_MAP[column_def['type']])
+
+            has_option_map = 'options' in column_def and isinstance(column_def['options'], dict)
+            render_type = 'string' if has_option_map else column_def['type']
+
+            if render_type == 'boolean':
+                renderer = Gtk.CellRendererToggle()
+
+                def toggle_checkbox(renderer, path, column):
+                    self.model[path][column] = not self.model[path][column]
+                    self.list_changed()
+
+                renderer.connect('toggled', toggle_checkbox, i)
+                prop_name = 'active'
+            elif render_type == 'icon':
+                renderer = Gtk.CellRendererPixbuf()
+                prop_name = 'icon_name'
+            else:
+                renderer = Gtk.CellRendererText()
+                prop_name = 'text'
+
+            column = Gtk.TreeViewColumn(column_def['title'], renderer)
+
+            if has_option_map:
+                def map_func(col, rend, model, row_iter, options):
+                    value = model[row_iter][i]
+                    for key, val in options.items():
+                        if val == value:
+                            rend.set_property('text', key)
+
+                column.set_cell_data_func(renderer, map_func, column_def['options'])
+            else:
+                column.add_attribute(renderer, prop_name, i)
+
+            if 'align' in column_def:
+                renderer.set_alignment(column_def['align'], 0.5)
+
             column.set_resizable(True)
             self.content_widget.append_column(column)
         self.model = Gtk.ListStore(*types)
