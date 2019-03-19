@@ -21,7 +21,8 @@ JSON_SETTINGS_PROPERTIES_MAP = {
     "tooltip"       : "tooltip",
     "possible"      : "possible",
     "expand-width"  : "expand_width",
-    "columns"       : "columns"
+    "columns"       : "columns",
+    "event-sounds"  : "event_sounds"
 }
 
 OPERATIONS = ['<=', '>=', '<', '>', '!=', '=']
