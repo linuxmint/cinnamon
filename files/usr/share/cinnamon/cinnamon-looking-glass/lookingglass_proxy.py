@@ -8,72 +8,79 @@ LG_DBUS_PATH = "/org/Cinnamon/LookingGlass"
 
 
 class LookingGlassProxy:
-
     def __init__(self):
         self._signals = []
-        self._statusChangeCallbacks = []
+        self._status_change_callbacks = []
         self._proxy = None
-        Gio.bus_watch_name(Gio.BusType.SESSION, LG_DBUS_NAME, Gio.BusNameWatcherFlags.NONE, self._onConnect, self._onDisconnect)
+        Gio.bus_watch_name(Gio.BusType.SESSION,
+                           LG_DBUS_NAME,
+                           Gio.BusNameWatcherFlags.NONE,
+                           self.on_connect,
+                           self.on_disconnect)
 
-    def addStatusChangeCallback(self, callback):
-        self._statusChangeCallbacks.append(callback)
+    def add_status_change_callback(self, callback):
+        self._status_change_callbacks.append(callback)
 
-    def refreshStatus(self):
-        if self._proxy != None:
-            self._setStatus(True)
-        else:
-            self._setStatus(False)
+    def refresh_status(self):
+        self.set_status(self._proxy is not None)
 
-    def getIsReady(self):
-        return self._proxy != None
+    def get_is_ready(self):
+        return self._proxy is not None
 
     def connect(self, name, callback):
         self._signals.append((name, callback))
 
-    def _onSignal(self, proxy, sender_name, signal_name, params):
+    def on_signal(self, proxy, sender_name, signal_name, params):
         for name, callback in self._signals:
             if signal_name == name:
                 callback(*params)
 
-    def _setStatus(self, state):
-        for callback in self._statusChangeCallbacks:
+    def set_status(self, state):
+        for callback in self._status_change_callbacks:
             callback(state)
 
-    def _onConnect(self, connection, name, owner):
+    def on_connect(self, connection, name, owner):
         if self._proxy:
             return
-        self._initProxy()
+        self.init_proxy()
 
-    def _onDisconnect(self, connection, name):
+    def on_disconnect(self, connection, name):
         self._proxy = None
-        self._setStatus(False)
+        self.set_status(False)
 
-    def _initProxy(self):
+    def init_proxy(self):
         try:
-            self._proxy = Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
-                                                    LG_DBUS_NAME, LG_DBUS_PATH, LG_DBUS_NAME, None, self._onProxyReady, None)
-        except dbus.exceptions.DBusException as e:
-            print(e)
+            self._proxy = Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION,
+                                                    Gio.DBusProxyFlags.NONE,
+                                                    None,
+                                                    LG_DBUS_NAME,
+                                                    LG_DBUS_PATH,
+                                                    LG_DBUS_NAME,
+                                                    None,
+                                                    self.on_proxy_ready,
+                                                    None)
+        except dbus.exceptions.DBusException as exc:
+            print(exc)
             self._proxy = None
 
-    def _onProxyReady(self, object, result, data=None):
+    def on_proxy_ready(self, obj, result, data=None):
         self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
-        self._proxy.connect("g-signal", self._onSignal)
-        self._setStatus(True)
+        self._proxy.connect("g-signal", self.on_signal)
+        self.set_status(True)
 
 # Proxy Methods:
     def Eval(self, code):
         if self._proxy:
             try:
                 self._proxy.Eval('(s)', code)
-            except:
+            except Exception:
                 pass
 
     def GetResults(self):
         if self._proxy:
             try:
                 return self._proxy.GetResults('()')
-            except:
+            except Exception:
                 pass
         return (False, "")
 
@@ -81,14 +88,14 @@ class LookingGlassProxy:
         if self._proxy:
             try:
                 self._proxy.AddResult('(s)', code)
-            except:
+            except Exception:
                 pass
 
     def GetErrorStack(self):
         if self._proxy:
             try:
                 return self._proxy.GetErrorStack('()')
-            except:
+            except Exception:
                 pass
         return (False, "")
 
@@ -96,7 +103,7 @@ class LookingGlassProxy:
         if self._proxy:
             try:
                 return self._proxy.GetMemoryInfo('()')
-            except:
+            except Exception:
                 pass
         return (False, 0, {})
 
@@ -104,14 +111,14 @@ class LookingGlassProxy:
         if self._proxy:
             try:
                 self._proxy.FullGc('()')
-            except:
+            except Exception:
                 pass
 
     def Inspect(self, code):
         if self._proxy:
             try:
                 return self._proxy.Inspect('(s)', code)
-            except:
+            except Exception:
                 pass
         return (False, "")
 
@@ -119,7 +126,7 @@ class LookingGlassProxy:
         if self._proxy:
             try:
                 return self._proxy.GetLatestWindowList('()')
-            except:
+            except Exception:
                 pass
         return (False, "")
 
@@ -127,21 +134,21 @@ class LookingGlassProxy:
         if self._proxy:
             try:
                 self._proxy.StartInspector('()')
-            except:
+            except Exception:
                 pass
 
     def GetExtensionList(self):
         if self._proxy:
             try:
                 return self._proxy.GetExtensionList('()')
-            except:
+            except Exception:
                 pass
         return (False, "")
 
-    def ReloadExtension(self, uuid, xletType):
+    def ReloadExtension(self, uuid, xlet_type):
         if self._proxy:
             try:
-                return self._proxy.ReloadExtension('(ss)', uuid, xletType)
-            except:
+                return self._proxy.ReloadExtension('(ss)', uuid, xlet_type)
+            except Exception:
                 pass
         return (False, "")
