@@ -315,6 +315,7 @@
           <listitem><code>type</code>: the data type for the column</listitem>
           <listitem><code>default</code>: (optional) a default value for the column when a new row is being created. This will only be used to auto-populate the corresponding widget when it is first generated in the add row dialog. If this property is omitted, the default will be determined by the widget.</listitem>
           <listitem><code>options</code>: (optional) A list of acceptable values for that column. Either an array or an object with key value pairs may be used. If an object is given, the key is displayed as the text of the widget, and must be a string; the value must match the data type of the column (ie. string, integer, boolean, etc).</listitem>
+          <listitem><code>align</code>: (optional) A number between 0 and 1 indicating how the value should be aligned with respect to the column in which it is displayed. 0 aligns to the left of the cell, 1 to the right, and 0.5 in the center. (New in Cinnamon 4.2)</listitem>
         </itemizedlist>
       </para>
       <para>
