@@ -694,14 +694,7 @@ Chrome.prototype = {
     },
 
     _windowsRestacked: function() {
-        // Figure out where the pointer is in case we lost track of
-        // it during a grab.
-        global.sync_pointer();
-
-        let isPopupWindowVisible = global.top_window_group.get_children().some(isPopupMetaWindow);
-        let popupVisibilityChanged = this._isPopupWindowVisible !== isPopupWindowVisible;
-        this._isPopupWindowVisible = isPopupWindowVisible;
-        if (popupVisibilityChanged)
+        if (this._isPopupWindowVisible != global.top_window_group.get_children().some(isPopupMetaWindow))
             this._updateVisibility();
         else
             this._queueUpdateRegions();
@@ -715,7 +708,8 @@ Chrome.prototype = {
             this._updateRegionIdle = 0;
         }
 
-        let wantsInputRegion = !this._isPopupMenuVisible;
+        let isPopupMenuVisible = global.top_window_group.get_children().some(isPopupMetaWindow);
+        let wantsInputRegion = !isPopupMenuVisible;
 
         for (let i = 0; i < this._trackedActors.length; i++) {
             let actorData = this._trackedActors[i];
@@ -809,6 +803,7 @@ Chrome.prototype = {
         }
 
         global.set_stage_input_region(rects);
+        this._isPopupWindowVisible = isPopupMenuVisible;
 
         let screen = global.screen;
         for (let w = 0; w < screen.n_workspaces; w++) {

@@ -534,9 +534,6 @@ NotificationDaemon.prototype = {
     },
 
     _onFocusAppChanged: function() {
-        if (!this._sources.length)
-            return;
-
         let tracker = Cinnamon.WindowTracker.get_default();
         if (!tracker.focus_app)
             return;

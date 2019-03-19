@@ -73,42 +73,11 @@ Magnifier.prototype = {
         // Magnifier is a manager of ZoomRegions.
         this._zoomRegions = [];
 
+        this.enabled = false;
+
         this._appSettings = new Gio.Settings({ schema_id: APPLICATIONS_SCHEMA });
         this._settings = new Gio.Settings({ schema_id: MAGNIFIER_SCHEMA });
 
-        this._initialized = false;
-        this.update_mag_id = 0;
-        this.enabled = this._appSettings.get_boolean(SHOW_KEY);
-
-        this._appSettings.connect('changed::' + SHOW_KEY,
-            () => {
-                this.enabled = this._appSettings.get_boolean(SHOW_KEY);
-                let factor = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
-                if (this.enabled) {
-                    if (factor > 1.0)
-                        this.setActive(true);
-                    else
-                        this._initialize();
-                } else {
-                    if (this.isActive())
-                        this.setActive(false);
-                }
-            });
-
-        // Export to dbus.
-        magDBusService = new MagnifierDBus.CinnamonMagnifier(this.enabled);
-        magInputHandler = new MagnifierInputHandler(this);
-
-        let factor = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
-        if (this.enabled && factor > 1.0)
-            this.setActive(true);
-    },
-
-    _initialize: function() {
-        if (this._initialized)
-            return;
-
-        this._initialized = true;
         // Create small clutter tree for the magnified mouse.
         let xfixesCursor = Cinnamon.XFixesCursor.get_for_stage(global.stage);
         this._mouseSprite = new Clutter.Texture();
@@ -116,17 +85,37 @@ Magnifier.prototype = {
         this._cursorRoot = new Clutter.Group();
         this._cursorRoot.add_actor(this._mouseSprite);
 
-        [this.xMouse, this.yMouse, ] = global.get_pointer();
+        // Create the first ZoomRegion and initialize it according to the
+        // magnification settings.
+
+        let mask;
+        [this.xMouse, this.yMouse, mask] = global.get_pointer();
+
+        let aZoomRegion = new ZoomRegion(this, this._cursorRoot);
+        this._zoomRegions.push(aZoomRegion);
+        let activeAtLaunch = this._settingsInit(aZoomRegion);
+        aZoomRegion.scrollContentsTo(this.xMouse, this.yMouse);
 
         xfixesCursor.connect('cursor-change', Lang.bind(this, this._updateMouseSprite));
         this._xfixesCursor = xfixesCursor;
 
-        // Create the first ZoomRegion and initialize it according to the
-        // magnification settings.
-        let aZoomRegion = new ZoomRegion(this, this._cursorRoot);
-        this._zoomRegions.push(aZoomRegion);
-        aZoomRegion.scrollContentsTo(this.xMouse, this.yMouse);
-        this._settingsInit(aZoomRegion);
+        this._appSettings.connect('changed::' + SHOW_KEY,
+                                  Lang.bind(this, function() {
+            this.enabled = this._appSettings.get_boolean(SHOW_KEY);
+            let factor = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
+            this.setActive(this.enabled && factor > 1.0);
+        }));
+
+        this.enabled = this._appSettings.get_boolean(SHOW_KEY);
+
+        // Export to dbus.
+        magDBusService = new MagnifierDBus.CinnamonMagnifier(this.enabled);
+
+        this.setActive(this.enabled && activeAtLaunch);
+
+        magInputHandler = new MagnifierInputHandler(this);
+
+        this.update_mag_id = 0;
     },
 
     /**
@@ -134,7 +123,6 @@ Magnifier.prototype = {
      * Show the system mouse pointer.
      */
     showSystemCursor: function() {
-        this._initialize();
         this._xfixesCursor.show();
     },
 
@@ -143,7 +131,6 @@ Magnifier.prototype = {
      * Hide the system mouse pointer.
      */
     hideSystemCursor: function() {
-        this._initialize();
         this._xfixesCursor.hide();
     },
 
@@ -153,11 +140,6 @@ Magnifier.prototype = {
      * @activate:   Boolean to activate or de-activate the magnifier.
      */
     setActive: function(activate) {
-        if (!activate && !this._initialized)
-            return;
-
-        this._initialize();
-
         this._zoomRegions.forEach (function(zoomRegion, index, array) {
             zoomRegion.setActive(activate);
         });
@@ -191,8 +173,6 @@ Magnifier.prototype = {
      *                  of the magnified view.
      */
     setMagFactor: function(xMagFactor, yMagFactor) {
-        this._initialize();
-
         let zr = this.getZoomRegions()[0];
         zr.setMagFactor(xMagFactor, yMagFactor);
 
@@ -221,7 +201,6 @@ Magnifier.prototype = {
      * Turn on mouse tracking, if not already doing so.
      */
     startTrackingMouse: function() {
-        this._initialize();
         if (!this._mouseTrackingId)
             this._mouseTrackingId = Mainloop.timeout_add(
                 MOUSE_POLL_FREQUENCY,
@@ -255,8 +234,6 @@ Magnifier.prototype = {
      * @return      true.
      */
     scrollToMousePos: function() {
-        this._initialize();
-
         let [xMouse, yMouse, mask] = global.get_pointer();
 
         if (xMouse != this.xMouse || yMouse != this.yMouse) {
@@ -292,13 +269,11 @@ Magnifier.prototype = {
      * @return          The newly created ZoomRegion.
      */
     createZoomRegion: function(xMagFactor, yMagFactor, roi, viewPort) {
-        this._initialize();
-
         let zoomRegion = new ZoomRegion(this, this._cursorRoot);
         zoomRegion.setViewPort(viewPort);
 
         // We ignore the redundant width/height on the ROI
-        let fixedROI = Object.assign({}, roi);
+        let fixedROI = new Object(roi);
         fixedROI.width = viewPort.width / xMagFactor;
         fixedROI.height = viewPort.height / yMagFactor;
         zoomRegion.setROI(fixedROI);
@@ -314,8 +289,6 @@ Magnifier.prototype = {
      * @zoomRegion:     The zoomRegion to add.
      */
     addZoomRegion: function(zoomRegion) {
-        this._initialize();
-
         if(zoomRegion) {
             this._zoomRegions.push(zoomRegion);
             if (!this.isTrackingMouse())
@@ -337,9 +310,6 @@ Magnifier.prototype = {
      * Remove all the zoom regions from this Magnfier's ZoomRegion list.
      */
     clearAllZoomRegions: function() {
-        if (!this._initialized)
-            return;
-
         for (let i = 0; i < this._zoomRegions.length; i++)
             this._zoomRegions[i].setActive(false);
 
@@ -353,8 +323,6 @@ Magnifier.prototype = {
      * Add and show a cross hair centered on the magnified mouse.
      */
     addCrosshairs: function() {
-        this._initialize();
-
         if (!this._crossHairs)
             this._crossHairs = new Crosshairs();
 
@@ -399,11 +367,11 @@ Magnifier.prototype = {
      * @color:  The color as a string, e.g. '#ff0000ff' or 'red'.
      */
     setCrosshairsColor: function(color) {
+        /* return; code below crashes under latest cjs
         if (this._crossHairs) {
-            let [success, cc] = Clutter.Color.from_string(color);
-            if (success)
-                this._crossHairs.setColor(cc);
-        }
+            let clutterColor = Clutter.Color.from_string(color);
+            this._crossHairs.setColor(clutterColor);
+        } */
     },
 
     /**
@@ -511,14 +479,14 @@ Magnifier.prototype = {
      * Get whether the crosshairs are clipped by the mouse image.
      * @return:   Whether the crosshairs are clipped.
      */
-    getCrosshairsClip: function() {
+     getCrosshairsClip: function() {
         if (this._crossHairs) {
             let [clipWidth, clipHeight] = this._crossHairs.getClip();
             return (clipWidth > 0 && clipHeight > 0);
         }
         else
             return false;
-    },
+     },
 
     //// Private methods ////
 
@@ -606,7 +574,7 @@ Magnifier.prototype = {
         }));
 
         return ret > 1.0;
-    },
+   },
 
     _updateScreenPosition: function() {
         // Applies only to the first zoom region.
