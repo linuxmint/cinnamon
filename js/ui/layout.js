@@ -715,7 +715,7 @@ Chrome.prototype = {
             this._updateRegionIdle = 0;
         }
 
-        let wantsInputRegion = !this._isPopupMenuVisible;
+        let wantsInputRegion = !this._isPopupWindowVisible;
 
         for (let i = 0; i < this._trackedActors.length; i++) {
             let actorData = this._trackedActors[i];
