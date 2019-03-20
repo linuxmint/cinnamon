@@ -19,6 +19,7 @@ const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
 const DeskletManager = imports.ui.deskletManager;
 const Panel = imports.ui.panel;
+const {throttle} = imports.misc.util;
 
 const STARTUP_ANIMATION_TIME = 0.5;
 
@@ -39,6 +40,10 @@ Monitor.prototype = {
         return global.screen.get_monitor_in_fullscreen(this.index);
     }
 };
+
+const syncPointer = throttle(function() {
+    global.sync_pointer();
+}, 1000, false);
 
 /**
  * #LayoutManager
@@ -709,7 +714,7 @@ Chrome.prototype = {
 
         // Figure out where the pointer is in case we lost track of
         // it during a grab.
-        global.sync_pointer();
+        syncPointer();
     },
 
     updateRegions: function() {
