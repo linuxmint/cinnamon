@@ -171,7 +171,7 @@ AppSwitcher3D.prototype = {
     onPreviewDestroyed: function(metaWindow, metaWindowActor, preview) {
         if (metaWindow) metaWindow.actor = undefined;
         if (preview) preview.metaWindow = undefined;
-        if (!metaWindowActor || metaWindowActor.is_finalized()) return;
+        if (!metaWindowActor || isFinalized(metaWindowActor)) return;
         metaWindowActor.set_obscured(true);
     },
 

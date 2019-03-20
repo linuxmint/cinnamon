@@ -71,7 +71,7 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
         let actor = new Clutter.Clone(params);
         actor.connect('destroy', function() {
             const {metaWindowActor} = data;
-            if (!metaWindowActor || metaWindowActor.is_finalized()) return;
+            if (!metaWindowActor || isFinalized(metaWindowActor)) return;
             metaWindowActor.set_obscured(true);
         });
 
