@@ -52,6 +52,10 @@ Monitor.prototype = {
     }
 };
 
+function syncPointer() {
+    global.sync_pointer();
+}
+
 /**
  * #LayoutManager
  *
@@ -694,10 +698,6 @@ Chrome.prototype = {
     },
 
     _windowsRestacked: function() {
-        // Figure out where the pointer is in case we lost track of
-        // it during a grab.
-        global.sync_pointer();
-
         let isPopupWindowVisible = global.top_window_group.get_children().some(isPopupMetaWindow);
         let popupVisibilityChanged = this._isPopupWindowVisible !== isPopupWindowVisible;
         this._isPopupWindowVisible = isPopupWindowVisible;
@@ -705,6 +705,10 @@ Chrome.prototype = {
             this._updateVisibility();
         else
             this._queueUpdateRegions();
+
+        // Figure out where the pointer is in case we lost track of
+        // it during a grab.
+        Mainloop.idle_add_full(Mainloop.PRIORITY_LOW, syncPointer);
     },
 
     updateRegions: function() {
