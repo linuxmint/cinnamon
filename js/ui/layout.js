@@ -8,7 +8,6 @@ const Clutter = imports.gi.Clutter;
 const Cinnamon = imports.gi.Cinnamon;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Signals = imports.signals;
@@ -40,10 +39,6 @@ Monitor.prototype = {
         return global.screen.get_monitor_in_fullscreen(this.index);
     }
 };
-
-function syncPointer() {
-    global.sync_pointer();
-}
 
 /**
  * #LayoutManager
@@ -83,9 +78,9 @@ LayoutManager.prototype = {
 
         this._monitorsChanged();
 
-        global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEdgeFlipChanged));
-        global.settings.connect("changed::edge-flip-delay", Lang.bind(this, this._onEdgeFlipChanged));
-        global.screen.connect('monitors-changed', Lang.bind(this, this._monitorsChanged));
+        global.settings.connect("changed::enable-edge-flip", () => this._onEdgeFlipChanged());
+        global.settings.connect("changed::edge-flip-delay", () => this._onEdgeFlipChanged());
+        global.screen.connect('monitors-changed', () => this._monitorsChanged());
     },
 
     _onEdgeFlipChanged: function(){
@@ -237,16 +232,16 @@ LayoutManager.prototype = {
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: true });
         this._chrome.updateRegions();
 
-        this._keyboardHeightNotifyId = this.keyboardBox.connect('notify::height', Lang.bind(this, function () {
-            if (this.keyboardBox.y != 0) {
+        this._keyboardHeightNotifyId = this.keyboardBox.connect('notify::height', () => {
+            if (this.keyboardBox.y) {
                 this.keyboardBox.y = this.focusMonitor.y + this.focusMonitor.height - this.keyboardBox.height;
             }
-        }));
+        });
 
     },
 
     queueHideKeyboard: function() {
-        if (this.hideIdleId != 0) {
+        if (this.hideIdleId) {
             Mainloop.source_remove(this.hideIdleId);
             this.hideIdleId = 0;
         }
@@ -256,10 +251,10 @@ LayoutManager.prototype = {
             this._keyboardHeightNotifyId = 0;
         }
 
-        this.hideIdleId = Mainloop.idle_add(Lang.bind(this, this.hideKeyboard));
+        this.hideIdleId = Mainloop.idle_add(() => this.hideKeyboard());
     },
 
-    hideKeyboard: function (immediate) {
+    hideKeyboard: function () {
         if (Main.messageTray) Main.messageTray.hide();
 
         this.keyboardBox.hide();
@@ -430,25 +425,22 @@ Chrome.prototype = {
 
         this._trackedActors = [];
 
-        this._layoutManager.connect('monitors-changed',
-                                    Lang.bind(this, this._relayout));
-        global.screen.connect('restacked',
-                              Lang.bind(this, this._windowsRestacked));
-        global.screen.connect('in-fullscreen-changed', Lang.bind(this, this._updateVisibility));
-        global.window_manager.connect('switch-workspace', Lang.bind(this, this._queueUpdateRegions));
+        this._layoutManager.connect('monitors-changed', () => this._relayout());
+        global.screen.connect('restacked', () => {
+            Mainloop.idle_add_full(400, () => this._windowsRestacked());
+        });
+        global.screen.connect('in-fullscreen-changed', () => this._updateVisibility());
+        global.window_manager.connect('switch-workspace', () => this._queueUpdateRegions());
 
         // Need to update struts on new workspaces when they are added
-        global.screen.connect('notify::n-workspaces',
-                              Lang.bind(this, this._queueUpdateRegions));
+        global.screen.connect('notify::n-workspaces', () => this._queueUpdateRegions());
 
         this._relayout();
     },
 
     init: function() {
-        Main.overview.connect('showing',
-                              Lang.bind(this, this._overviewShowing));
-        Main.overview.connect('hidden',
-                              Lang.bind(this, this._overviewHidden));
+        Main.overview.connect('showing', () => this._overviewShowing());
+        Main.overview.connect('hidden', () => this._overviewHidden());
     },
 
     addActor: function(actor, params) {
@@ -524,12 +516,9 @@ Chrome.prototype = {
         actorData.actor = actor;
         if (actorData.addToWindowgroup) actorData.isToplevel = actor.get_parent() == global.window_group;
         else actorData.isToplevel = actor.get_parent() == Main.uiGroup;
-        actorData.visibleId = actor.connect('notify::visible',
-                                            Lang.bind(this, this._queueUpdateRegions));
-        actorData.allocationId = actor.connect('notify::allocation',
-                                               Lang.bind(this, this._queueUpdateRegions));
-        actorData.parentSetId = actor.connect('parent-set',
-                                              Lang.bind(this, this._actorReparented));
+        actorData.visibleId = actor.connect('notify::visible', () => this._queueUpdateRegions());
+        actorData.allocationId = actor.connect('notify::allocation', () => this._queueUpdateRegions());
+        actorData.parentSetId = actor.connect('parent-set', (a) => this._actorReparented(a));
         // Note that destroying actor will unset its parent, so we don't
         // need to connect to 'destroy' too.
 
@@ -552,7 +541,7 @@ Chrome.prototype = {
         this._queueUpdateRegions();
     },
 
-    _actorReparented: function(actor, oldParent) {
+    _actorReparented: function(actor) {
         let i = this._findActor(actor);
         if (i == -1)
             return;
@@ -671,8 +660,7 @@ Chrome.prototype = {
 
     _queueUpdateRegions: function() {
         if (!this._updateRegionIdle && !this._freezeUpdateCount)
-            this._updateRegionIdle = Mainloop.idle_add(Lang.bind(this, this.updateRegions),
-                                                       Meta.PRIORITY_BEFORE_REDRAW);
+            this._updateRegionIdle = Mainloop.idle_add_full(Mainloop.PRIORITY_HIGH, () => this.updateRegions());
     },
 
     freezeUpdateRegions: function() {
@@ -721,7 +709,7 @@ Chrome.prototype = {
 
         // Figure out where the pointer is in case we lost track of
         // it during a grab.
-        Mainloop.idle_add_full(Mainloop.PRIORITY_LOW, syncPointer);
+        global.sync_pointer();
     },
 
     updateRegions: function() {
