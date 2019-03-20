@@ -23,17 +23,6 @@ const Panel = imports.ui.panel;
 
 const STARTUP_ANIMATION_TIME = 0.5;
 
-function isPopupMetaWindow(actor) {
-    switch(actor.meta_window.get_window_type()) {
-    case Meta.WindowType.DROPDOWN_MENU:
-    case Meta.WindowType.POPUP_MENU:
-    case Meta.WindowType.COMBO:
-        return true;
-    default:
-        return false;
-    }
-}
-
 function Monitor(index, geometry) {
     this._init(index, geometry);
 }
@@ -698,13 +687,37 @@ Chrome.prototype = {
     },
 
     _windowsRestacked: function() {
-        let isPopupWindowVisible = global.top_window_group.get_children().some(isPopupMetaWindow);
-        let popupVisibilityChanged = this._isPopupWindowVisible !== isPopupWindowVisible;
-        this._isPopupWindowVisible = isPopupWindowVisible;
-        if (popupVisibilityChanged)
+        let isPopupWindowVisible = false;
+        let changed = false;
+
+        // This function can get called frequently enough that it might make sense
+        // to use signals, and manage an array instead of calling get_children().
+        const children = global.top_window_group.get_children();
+        const {_isPopupWindowVisible} = this;
+
+        for (let i = 0, len = children.length; i < len; i++) {
+            switch (children[i].meta_window.get_window_type()) {
+                case Meta.WindowType.DROPDOWN_MENU:
+                case Meta.WindowType.POPUP_MENU:
+                case Meta.WindowType.COMBO:
+                    isPopupWindowVisible = true;
+            }
+
+            if (_isPopupWindowVisible !== isPopupWindowVisible) {
+                changed = true;
+                break;
+            }
+
+            if (isPopupWindowVisible) break;
+        }
+
+        if (changed) {
             this._updateVisibility();
-        else
+        } else {
             this._queueUpdateRegions();
+        }
+
+        this._isPopupWindowVisible = isPopupWindowVisible;
 
         // Figure out where the pointer is in case we lost track of
         // it during a grab.
@@ -712,7 +725,7 @@ Chrome.prototype = {
     },
 
     updateRegions: function() {
-        let rects = [], struts = [], i;
+        let rects = [], struts = [];
 
         if (this._updateRegionIdle) {
             Mainloop.source_remove(this._updateRegionIdle);
