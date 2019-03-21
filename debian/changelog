@@ -1,3 +1,10 @@
+cinnamon (4.0.10) tessa; urgency=medium
+
+  [ Michael Webster ]
+  * cinnamon-desktop-editor.py: Check for item_path before modifying it.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 21 Mar 2019 16:45:49 +0000
+
 cinnamon (4.0.9) tessa; urgency=medium
 
   [ Michael Webster ]
