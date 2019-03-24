@@ -663,7 +663,7 @@ Chrome.prototype = {
 
     _queueUpdateRegions: function() {
         if (!this._updateRegionIdle && !this._freezeUpdateCount)
-            this._updateRegionIdle = Mainloop.idle_add_full(Mainloop.PRIORITY_HIGH, () => this.updateRegions());
+            this._updateRegionIdle = Mainloop.idle_add_full(-200, () => this.updateRegions());
     },
 
     freezeUpdateRegions: function() {
