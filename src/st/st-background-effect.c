@@ -201,12 +201,6 @@ st_paint_background_blur_effect (StBackgroundBlurEffect *self,
     return TRUE;
 }
 
-static gboolean
-st_background_blur_effect_pre_paint (ClutterEffect *effect)
-{
-  return TRUE;
-}
-
 static void
 st_background_blur_effect_paint_target (ClutterOffscreenEffect *effect)
 {
@@ -246,7 +240,6 @@ st_background_blur_effect_class_init (StBackgroundBlurEffectClass *klass)
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterOffscreenEffectClass *offscreen_class;
 
-  effect_class->pre_paint = st_background_blur_effect_pre_paint;
   gobject_class->dispose = st_background_blur_effect_dispose;
 
   offscreen_class = CLUTTER_OFFSCREEN_EFFECT_CLASS (klass);
@@ -291,13 +284,6 @@ st_background_blur_effect_new (void)
 {
   return g_object_new (ST_TYPE_BACKGROUND_BLUR_EFFECT,
                        NULL);
-}
-
-
-static gboolean
-st_background_bumpmap_effect_pre_paint (ClutterEffect *effect)
-{
-  return TRUE;
 }
 
 static void
@@ -523,7 +509,6 @@ st_background_bumpmap_effect_class_init (StBackgroundBumpmapEffectClass *klass)
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterOffscreenEffectClass *offscreen_class;
 
-  effect_class->pre_paint = st_background_bumpmap_effect_pre_paint;
   gobject_class->dispose = st_background_bumpmap_effect_dispose;
 
   offscreen_class = CLUTTER_OFFSCREEN_EFFECT_CLASS (klass);
