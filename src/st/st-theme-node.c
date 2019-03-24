@@ -1862,6 +1862,7 @@ _st_theme_node_ensure_background (StThemeNode *node)
   node->background_gradient_type = ST_GRADIENT_NONE;
   node->background_position_set = FALSE;
   node->background_size = ST_BACKGROUND_SIZE_AUTO;
+  node->background_blur = 0;
 
   ensure_properties (node);
 
@@ -2121,6 +2122,10 @@ _st_theme_node_ensure_background (StThemeNode *node)
       else if (strcmp (property_name, "-gradient-end") == 0)
         {
           get_color_from_term (node, decl->value, &node->background_gradient_end);
+        }
+      else if (strcmp (property_name, "-blur") == 0)
+        {
+          get_length_from_term_int (node, decl->value, FALSE, &node->background_blur);
         }
     }
 }

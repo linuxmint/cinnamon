@@ -27,6 +27,7 @@
 #include "st-border-image.h"
 #include "st-icon-colors.h"
 #include "st-shadow.h"
+#include "st-background-effect.h"
 
 G_BEGIN_DECLS
 
@@ -258,7 +259,9 @@ gboolean st_theme_node_paint_equal    (StThemeNode *node,
 void st_theme_node_paint (StThemeNode            *node,
                           CoglFramebuffer        *framebuffer,
                           const ClutterActorBox  *box,
-                          guint8                  paint_opacity);
+                          guint8                  paint_opacity,
+                          StBackgroundBlurEffect    *background_blur_effect,
+                          StBackgroundBumpmapEffect *background_bumpmap_effect);
 
 void st_theme_node_copy_cached_paint_state (StThemeNode *node,
                                             StThemeNode *other);
