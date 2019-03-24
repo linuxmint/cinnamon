@@ -991,6 +991,8 @@ update_scale_factor (GtkSettings *settings,
                      gpointer data)
 {
   guint scale = 1;
+  int xft_dpi;
+  GtkSettings *gtk_settings;
   CinnamonGlobal *global = CINNAMON_GLOBAL (data);
   ClutterStage *stage = CLUTTER_STAGE (global->stage);
   StThemeContext *context = st_theme_context_get_for_stage (stage);
@@ -1011,8 +1013,7 @@ update_scale_factor (GtkSettings *settings,
     g_settings_set_int (global->settings, "active-display-scale", (int)scale);
   }
 
-  GtkSettings *gtk_settings = gtk_settings_get_default ();
-  int xft_dpi;
+  gtk_settings = gtk_settings_get_default ();
 
   g_object_get (gtk_settings, "gtk-xft-dpi", &xft_dpi, NULL);
   g_object_set (clutter_settings_get_default (), "font-dpi", xft_dpi, NULL);
@@ -1049,22 +1050,25 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   g_signal_connect (global->stage, "notify::height",
                     G_CALLBACK (global_stage_notify_height), global);
 
-  clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_PRE_PAINT,
-                                         global_stage_before_paint,
-                                         NULL, NULL);
 
-  clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_POST_PAINT,
-                                         global_stage_after_paint,
-                                         NULL, NULL);
 
-  cinnamon_perf_log_define_event (cinnamon_perf_log_get_default(),
-                               "clutter.stagePaintStart",
-                               "Start of stage page repaint",
-                               "");
-  cinnamon_perf_log_define_event (cinnamon_perf_log_get_default(),
-                               "clutter.stagePaintDone",
-                               "End of stage page repaint",
-                               "");
+  if (g_getenv ("CINNAMON_PERF_OUTPUT") != NULL)
+    {
+      clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_PRE_PAINT,
+                                             global_stage_before_paint,
+                                             NULL, NULL);
+      clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_POST_PAINT,
+                                             global_stage_after_paint,
+                                             NULL, NULL);
+      cinnamon_perf_log_define_event (cinnamon_perf_log_get_default(),
+                                      "clutter.stagePaintStart",
+                                      "Start of stage page repaint",
+                                      "");
+      cinnamon_perf_log_define_event (cinnamon_perf_log_get_default(),
+                                      "clutter.stagePaintDone",
+                                      "End of stage page repaint",
+                                      "");
+    }
 
   g_signal_connect (global->meta_display, "notify::focus-window",
                     G_CALLBACK (focus_window_changed), global);

@@ -875,6 +875,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         super._init.call(this, groupState.trigger('getActor'), state.orientation, 0.5);
         this.state = state;
         this.groupState = groupState;
+        this.setCustomStyleClass("grouped-window-list-thumbnail-menu");
 
         this.stateConnectId = this.state.connect({
             updateThumbnailsStyle: () => {
@@ -936,7 +937,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                     this.interval = setInterval(() => {
                         let [x, y, mask] = global.get_pointer();
                         let draggedOverActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
-                        if (draggedOverActor instanceof Meta.ShapedTexture) {
+                        if (draggedOverActor instanceof Meta.WindowActor) {
                             this.groupState.set({fileDrag: false});
                             this.close(true);
                             return;
@@ -1034,6 +1035,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         } else {
             if (force || this.state.settings.onClickThumbs) this.addQueuedThumbnails();
             this.state.set({thumbnailMenuOpen: true});
+            each(this.appThumbnails, (thumb) => thumb.metaWindowActor.set_obscured(false));
             super.open(this.state.settings.animateThumbs);
         }
     }
@@ -1052,6 +1054,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
         if (this.isOpen) {
             this.state.set({thumbnailMenuOpen: false});
+            each(this.appThumbnails, (thumb) => thumb.metaWindowActor.set_obscured(true));
             if (!this.actor.is_finalized()) super.close(this.state.settings.animateThumbs);
         }
         for (let i = 0; i < this.appThumbnails.length; i++) {
@@ -1137,7 +1140,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.destroyThumbnails();
         }
         this.addWindowThumbnails(this.groupState.metaWindows);
-        this.setStyleOptions();
     }
 
     destroyThumbnails() {
@@ -1199,29 +1201,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
     }
 
-    setStyleOptions() {
-        if (this.willUnmount || !this.box) return;
-
-        // The styling cannot be set correctly unless the menu is closed. Fortunately this
-        // can be closed and reopened too quickly for the user to notice.
-        let {isOpen} = this;
-        if (isOpen) this.close(true);
-
-        this.box.show();
-        this.box.style = null;
-
-        let thumbnailTheme = this.box.peek_theme_node();
-        let padding = thumbnailTheme ? thumbnailTheme.get_horizontal_padding() : null;
-        let thumbnailPadding = padding && (padding > 1 && padding < 21) ? padding : 10;
-        this.box.style = `padding: ${thumbnailPadding / 2}px`;
-        let boxTheme = this.box.peek_theme_node();
-        padding = boxTheme ? boxTheme.get_vertical_padding() : null;
-        let boxPadding = padding && padding > 0 ? padding : 3;
-        this.box.style = `padding: ${boxPadding}px;`;
-
-        if (isOpen) this.open(true);
-    }
-
     setVerticalSetting() {
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
             this.box.vertical = this.groupState.verticalThumbs || this.state.settings.verticalThumbs;
@@ -1248,7 +1227,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                 this.appThumbnails[i].thumbnailActor.realize();
             }
         }
-        this.setStyleOptions();
     }
 
     destroy() {

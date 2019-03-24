@@ -145,6 +145,7 @@ class WindowPreview extends Tooltips.TooltipBase {
 
         this.thumbnailBin.set_child(this.thumbnail);
 
+        this.muffinWindow.set_obscured(false);
         this.actor.show();
         this._set_position();
 
@@ -159,6 +160,7 @@ class WindowPreview extends Tooltips.TooltipBase {
             this._sizeChangedId = null;
         }
         if (this.thumbnail) {
+            this.muffinWindow.set_obscured(true);
             this.thumbnailBin.set_child(null);
             this.thumbnail.destroy();
             this.thumbnail = null;
@@ -1096,7 +1098,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     _onWindowMonitorChanged(screen, metaWindow, monitor) {
-        if (!metaWindow.get_compositor_private().visible && !metaWindow.minimized) return;
+        const windowActor = metaWindow.get_compositor_private();
+        if (!windowActor || (!windowActor.visible && !metaWindow.minimized)) return;
         if (this._shouldAdd(metaWindow))
             this._addWindow(metaWindow, false);
         else

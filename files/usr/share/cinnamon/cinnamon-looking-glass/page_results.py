@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-import pageutils
 from gi.repository import Gtk
+import pageutils
 
 class ModulePage(pageutils.BaseListView):
     def __init__(self, parent):
@@ -11,62 +11,62 @@ class ModulePage(pageutils.BaseListView):
         self.parent = parent
         self.adjust = self.get_vadjustment()
 
-        column = self.createTextColumn(0, "ID")
-        column.set_cell_data_func(self.rendererText, self.cellDataFuncID)
-        self.createTextColumn(1, "Name")
-        self.createTextColumn(2, "Type")
-        self.createTextColumn(3, "Value")
-        self.treeView.set_tooltip_column(4)
+        column = self.create_text_column(0, "ID")
+        column.set_cell_data_func(self.renderer_text, self.cell_data_func_id)
+        self.create_text_column(1, "Name")
+        self.create_text_column(2, "Type")
+        self.create_text_column(3, "Value")
+        self.tree_view.set_tooltip_column(4)
 
-        self.treeView.connect("row-activated", self.onRowActivated)
+        self.tree_view.connect("row-activated", self.on_row_activated)
 
-        self.getUpdates()
-        lookingGlassProxy.connect("ResultUpdate", self.getUpdates)
-        lookingGlassProxy.connect("InspectorDone", self.onInspectorDone)
-        lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
+        self.get_updates()
+        self.parent.lg_proxy.connect("ResultUpdate", self.get_updates)
+        self.parent.lg_proxy.connect("InspectorDone", self.on_inspector_done)
+        self.parent.lg_proxy.add_status_change_callback(self.on_status_change)
 
         self._changed = False
-        self.treeView.connect("size-allocate", self.scrollToBottom)
+        self.tree_view.connect("size-allocate", self.scroll_to_bottom)
 
-    def scrollToBottom (self, widget, data):
+    def scroll_to_bottom(self, widget, data):
         if self._changed:
             self.adjust.set_value(self.adjust.get_upper() - self.adjust.get_page_size())
             self._changed = False
 
-    def cellDataFuncID(self, column, cell, model, iter, data=None):
-        cell.set_property("text", "r(%d)" %  model.get_value(iter, 0))
+    def cell_data_func_id(self, column, cell, model, tree_iter, data=None):
+        cell.set_property("text", "r(%d)" %  model.get_value(tree_iter, 0))
 
-    def onRowActivated(self, treeview, path, view_column):
-        treeIter = self.store.get_iter(path)
-        resultId = self.store.get_value(treeIter, 0)
-        name = self.store.get_value(treeIter, 1)
-        objType = self.store.get_value(treeIter, 2)
-        value = self.store.get_value(treeIter, 5)
+    def on_row_activated(self, treeview, path, view_column):
+        tree_iter = self.store.get_iter(path)
+        result_id = self.store.get_value(tree_iter, 0)
+        name = self.store.get_value(tree_iter, 1)
+        obj_type = self.store.get_value(tree_iter, 2)
+        value = self.store.get_value(tree_iter, 5)
 
-        melangeApp.pages["inspect"].inspectElement("r(%d)" % resultId, objType, name, value)
+        self.parent.pages["inspect"].inspect_element("r(%d)" % result_id, obj_type, name, value)
 
-    def onStatusChange(self, online):
+    def on_status_change(self, online):
         if online:
-            self.getUpdates()
+            self.get_updates()
 
-    def getUpdates(self):
+    def get_updates(self):
         self.store.clear()
-        success, data = lookingGlassProxy.GetResults()
+        success, data = self.parent.lg_proxy.GetResults()
         if success:
             try:
                 for item in data:
                     self.store.append([int(item["index"]),
                                        item["command"],
                                        item["type"],
-                                       pageutils.shortenValue(item["object"]),
+                                       pageutils.shorten_value(item["object"]),
                                        item["tooltip"],
                                        item["object"]])
                 self._changed = True
-                self.parent.activatePage("results")
-            except Exception as e:
-                print(e)
+                self.parent.activate_page("results")
+            except Exception as exc:
+                print(exc)
 
-    def onInspectorDone(self):
-        melangeApp.show()
-        melangeApp.activatePage("results")
-        self.getUpdates()
+    def on_inspector_done(self):
+        self.parent.show()
+        self.parent.activate_page("results")
+        self.get_updates()

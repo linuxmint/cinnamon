@@ -3,12 +3,12 @@
 from gi.repository import Gtk
 
 # truncate a string to single line 121 char max with ellipsis
-def shortenValue(value):
+def shorten_value(value):
     changed = False
-    truncPos = value.find("\n")
-    if truncPos >= 0:
+    trunc_pos = value.find("\n")
+    if trunc_pos >= 0:
         changed = True
-        value = value[:truncPos]
+        value = value[:trunc_pos]
 
     if len(value) > 120:
         changed = True
@@ -33,13 +33,13 @@ class ResultTextDialog(Gtk.Dialog):
         box.add(label)
         self.show_all()
 
-        self.connect("response", self.onResponse)
-        self.connect("close", self.onClose)
+        self.connect("response", self.on_response)
+        self.connect("close", self.on_close)
 
-    def onClose(self, data=None):
+    def on_close(self, data=None):
         self.destroy()
 
-    def onResponse(self, id, data=None):
+    def on_response(self, response_id, data=None):
         self.destroy()
 
 class BaseListView(Gtk.ScrolledWindow):
@@ -49,16 +49,16 @@ class BaseListView(Gtk.ScrolledWindow):
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
         self.store = store
-        self.treeView = Gtk.TreeView(self.store)
+        self.tree_view = Gtk.TreeView(self.store)
 
-        self.add(self.treeView)
-        self.rendererText = Gtk.CellRendererText()
+        self.add(self.tree_view)
+        self.renderer_text = Gtk.CellRendererText()
 
-    def createTextColumn(self, index, text):
-        column = Gtk.TreeViewColumn(text, self.rendererText, text=index)
+    def create_text_column(self, index, text):
+        column = Gtk.TreeViewColumn(text, self.renderer_text, text=index)
         column.set_sort_column_id(index)
         column.set_resizable(True)
-        self.treeView.append_column(column)
+        self.tree_view.append_column(column)
         return column
 
 class WindowAndActionBars(Gtk.Table):
@@ -72,11 +72,11 @@ class WindowAndActionBars(Gtk.Table):
         self.attach(self.left, 0, 1, 0, 1, 0, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
         self.attach(self.bottom, 0, 2, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0)
 
-    def addToLeftBar(self, widget, padding=0):
+    def add_to_left_bar(self, widget, padding=0):
         self.left.set_border_width(2)
         self.left.pack_start(widget, False, False, padding)
 
-    def addToBottomBar(self, widget, padding=0):
+    def add_to_bottom_bar(self, widget, padding=0):
         self.bottom.set_border_width(2)
         self.bottom.pack_start(widget, False, False, padding)
 

@@ -1132,9 +1132,8 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
                                  gint               size)
 {
   ClutterActor *texture;
-  CoglTexture *cogltexture;
   GIcon *themed;
-  char *cache_key, *symbolic_name;
+  char *symbolic_name;
 
   g_return_val_if_fail (!(icon_type == ST_ICON_SYMBOLIC && theme_node == NULL), NULL);
 

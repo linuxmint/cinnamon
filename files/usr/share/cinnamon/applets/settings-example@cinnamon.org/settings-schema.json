@@ -214,7 +214,7 @@
             {"id": "name", "title": "Name", "type": "string"},
             {"id": "resident", "title": "Resident", "type": "boolean"},
             {"id": "address", "title": "Address", "type": "string", "default": "none"},
-            {"id": "number", "title": "Id number", "type": "integer", "min": 0, "max": 100},
+            {"id": "number", "title": "Id number", "type": "integer", "align": 0.5, "min": 0, "max": 100},
             {"id": "icon", "title": "Icon", "type": "icon"},
             {"id": "key", "title": "Shortcut key", "type": "keybinding"},
             {"id": "file", "title": "File Path", "type": "file", "select-dir": false},

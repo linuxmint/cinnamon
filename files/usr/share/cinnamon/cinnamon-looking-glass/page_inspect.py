@@ -1,64 +1,66 @@
 #!/usr/bin/python3
 
-import pageutils
 from gi.repository import Gtk
+import pageutils
 
 class InspectView(pageutils.BaseListView):
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self, module):
+        self.module = module
         store = Gtk.ListStore(str, str, str, str, str)
         pageutils.BaseListView.__init__(self, store)
 
-        self.createTextColumn(0, "Name")
-        self.createTextColumn(1, "Type")
-        self.createTextColumn(2, "Value")
+        self.selected_path = None
+
+        self.create_text_column(0, "Name")
+        self.create_text_column(1, "Type")
+        self.create_text_column(2, "Value")
 
         self.popup = Gtk.Menu()
-        self.insertCommand = Gtk.MenuItem("Insert into command entry")
-        self.insertCommand.connect("activate", self.onInsertCommand)
-        self.popup.append(self.insertCommand)
+        self.insert_command = Gtk.MenuItem("Insert into command entry")
+        self.insert_command.connect("activate", self.on_insert_command)
+        self.popup.append(self.insert_command)
         self.popup.show_all()
 
-        self.treeView.connect("button-press-event", self.onButtonPressEvent)
-        self.treeView.connect("row-activated", self.onRowActivated)
+        self.tree_view.connect("button-press-event", self.on_button_press_event)
+        self.tree_view.connect("row-activated", self.on_row_activated)
 
-    def onButtonPressEvent(self, treeview, event):
+    def on_button_press_event(self, treeview, event):
         x = int(event.x)
         y = int(event.y)
         pthinfo = treeview.get_path_at_pos(x, y)
         if pthinfo is not None and event.button == 3:
             path, col, cellx, celly = pthinfo
-            self.selectedPath = path
+            self.selected_path = path
             treeview.grab_focus()
             treeview.set_cursor(path, col, 0)
-            self.popup.popup( None, None, None, None, event.button, event.time)
+            self.popup.popup(None, None, None, None, event.button, event.time)
             return True
 
-    def onInsertCommand(self, widget):
-        treeIter = self.store.get_iter(self.selectedPath)
-        objType = self.store.get_value(treeIter, 1)
-        objPath = self.store.get_value(treeIter, 4)
-        if objType == "function":
-            objPath += "()"
-        Gtk.Entry.do_insert_at_cursor(melangeApp.commandline, objPath)
-        melangeApp.commandline.grab_focus_without_selecting()
+    def on_insert_command(self, widget):
+        tree_iter = self.store.get_iter(self.selected_path)
+        obj_type = self.store.get_value(tree_iter, 1)
+        obj_path = self.store.get_value(tree_iter, 4)
+        if obj_type == "function":
+            obj_path += "()"
+        Gtk.Entry.do_insert_at_cursor(self.module.parent.command_line, obj_path)
+        self.module.parent.command_line.grab_focus_without_selecting()
 
-    def onRowActivated(self, treeview, path, view_column):
-        treeIter = self.store.get_iter(path)
-        name = self.store.get_value(treeIter, 0)
-        objType = self.store.get_value(treeIter, 1)
-        value = self.store.get_value(treeIter, 3)
-        path = self.store.get_value(treeIter, 4)
+    def on_row_activated(self, treeview, path, view_column):
+        tree_iter = self.store.get_iter(path)
+        name = self.store.get_value(tree_iter, 0)
+        obj_type = self.store.get_value(tree_iter, 1)
+        value = self.store.get_value(tree_iter, 3)
+        path = self.store.get_value(tree_iter, 4)
 
-        self.parent.updateInspector(path, objType, name, value, True)
+        self.module.update_inspector(path, obj_type, name, value, True)
 
-    def setInspectionData(self, path, data):
+    def set_inspection_data(self, path, data):
         self.store.clear()
         data.sort(key=lambda item: item["name"])
         for item in data:
             self.store.append([item["name"],
                                item["type"],
-                               pageutils.shortenValue(item["value"]),
+                               pageutils.shorten_value(item["value"]),
                                item["value"],
                                path + "['" + item["name"] + "']"])
 
@@ -70,92 +72,92 @@ class ModulePage(pageutils.WindowAndActionBars):
 
         self.back = pageutils.ImageButton("go-previous-symbolic")
         self.back.set_tooltip_text("Go back")
-        self.back.connect("clicked", self.onBackButton)
-        self.addToLeftBar(self.back, 1)
+        self.back.connect("clicked", self.on_back_button)
+        self.add_to_left_bar(self.back, 1)
 
         self.insert = pageutils.ImageButton("insert-object-symbolic")
         self.insert.set_tooltip_text("Insert into results")
         self.insert.set_sensitive(False)
-        self.insert.connect("clicked", self.onInsertButton)
-        self.addToLeftBar(self.insert, 1)
+        self.insert.connect("clicked", self.on_insert_button)
+        self.add_to_left_bar(self.insert, 1)
 
-        self.addToBottomBar(Gtk.Label("Path:"), 2)
-        self.pathLabel = Gtk.Label("<No selection done yet>")
-        self.addToBottomBar(self.pathLabel, 2)
+        self.add_to_bottom_bar(Gtk.Label("Path:"), 2)
+        self.path_label = Gtk.Label("<No selection done yet>")
+        self.add_to_bottom_bar(self.path_label, 2)
 
-        self.addToBottomBar(Gtk.Label("; Type:"), 2)
-        self.typeLabel = Gtk.Label("")
-        self.addToBottomBar(self.typeLabel, 2)
-        self.addToBottomBar(Gtk.Label("; Name:"), 2)
-        self.nameLabel = Gtk.Label("")
-        self.addToBottomBar(self.nameLabel, 2)
+        self.add_to_bottom_bar(Gtk.Label("; Type:"), 2)
+        self.type_label = Gtk.Label("")
+        self.add_to_bottom_bar(self.type_label, 2)
+        self.add_to_bottom_bar(Gtk.Label("; Name:"), 2)
+        self.name_label = Gtk.Label("")
+        self.add_to_bottom_bar(self.name_label, 2)
 
-        self.currentInspection = None
+        self.current_inspection = None
         self.stack = []
-        lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
+        self.parent.lg_proxy.add_status_change_callback(self.on_status_change)
 
-    def onStatusChange(self, online):
+    def on_status_change(self, online):
         if online:
             self.clear()
 
     def clear(self):
-        self.pathLabel.set_text("<No selection done yet>")
-        self.typeLabel.set_text("")
-        self.nameLabel.set_text("")
+        self.path_label.set_text("<No selection done yet>")
+        self.type_label.set_text("")
+        self.name_label.set_text("")
         self.view.store.clear()
 
-    def onInsertButton(self, widget):
+    def on_insert_button(self, widget):
         if len(self.stack) > 0:
-            path, objType, name, value = self.currentInspection
-            lookingGlassProxy.AddResult(path)
+            path, obj_type, name, value = self.current_inspection
+            self.parent.lg_proxy.AddResult(path)
 
-    def onBackButton(self, widget):
+    def on_back_button(self, widget):
         if len(self.stack) > 0:
-            self.popInspectionElement()
+            self.pop_inspection_element()
         else:
-            melangeApp.activatePage("results")
+            self.parent.activate_page("results")
 
 
-    def popInspectionElement(self):
+    def pop_inspection_element(self):
         if len(self.stack) > 0:
-            self.updateInspector(*self.stack.pop())
+            self.update_inspector(*self.stack.pop())
 
         sensitive = len(self.stack) > 0
         self.insert.set_sensitive(sensitive)
 
-    def pushInspectionElement(self):
-        if self.currentInspection is not None:
-            self.stack.append(self.currentInspection)
+    def push_inspection_element(self):
+        if self.current_inspection is not None:
+            self.stack.append(self.current_inspection)
             self.insert.set_sensitive(True)
 
-    def updateInspector(self, path, objType, name, value, pushToStack=False):
-        if objType in ("array", "object"):
-            if pushToStack:
-                self.pushInspectionElement()
+    def update_inspector(self, path, obj_type, name, value, push_to_stack=False):
+        if obj_type in ("array", "object"):
+            if push_to_stack:
+                self.push_inspection_element()
 
-            self.currentInspection = (path, objType, name, value)
+            self.current_inspection = (path, obj_type, name, value)
 
-            self.pathLabel.set_text(path)
-            self.typeLabel.set_text(objType)
-            self.nameLabel.set_text(name)
+            self.path_label.set_text(path)
+            self.type_label.set_text(obj_type)
+            self.name_label.set_text(name)
 
-            melangeApp.activatePage("inspect")
-            success, data = lookingGlassProxy.Inspect(path)
+            self.parent.activate_page("inspect")
+            success, data = self.parent.lg_proxy.Inspect(path)
             if success:
                 try:
-                    self.view.setInspectionData(path, data)
-                except Exception as e:
-                    print(e)
+                    self.view.set_inspection_data(path, data)
+                except Exception as exc:
+                    print(exc)
                     self.view.store.clear()
             else:
                 self.view.store.clear()
-        elif objType in ("undefined", "null"):
-            pageutils.ResultTextDialog("Value for '" + name + "'", "Value is <" + objType + ">")
+        elif obj_type in ("undefined", "null"):
+            pageutils.ResultTextDialog("Value for '" + name + "'", "Value is <" + obj_type + ">")
         else:
-            pageutils.ResultTextDialog("Value for " + objType + " '" + name + "'", value)
+            pageutils.ResultTextDialog("Value for " + obj_type + " '" + name + "'", value)
 
-    def inspectElement(self, path, objType, name, value):
+    def inspect_element(self, path, obj_type, name, value):
         del self.stack[:]
-        self.currentInspection = None
+        self.current_inspection = None
         self.insert.set_sensitive(False)
-        self.updateInspector(path, objType, name, value)
+        self.update_inspector(path, obj_type, name, value)
