@@ -739,10 +739,7 @@ Chrome.prototype = {
                 if (actorData.actor.maybeGet("_delegate") instanceof Panel.Panel
                     && actorData.actor._delegate.isHideable()) {
                     let m = this._monitors[actorData.actor._delegate.monitorIndex];
-                    if (m) {
-                        let mr = {x: m.x, y: m.y, width: m.width, height: m.height};
-                        [, rect] = rect.intersect(new Meta.Rectangle(mr));
-                    }
+                    if (m) [, rect] = rect.intersect(new Meta.Rectangle(m));
                 }
 
                 rects.push(rect);
