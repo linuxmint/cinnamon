@@ -41,10 +41,6 @@ Monitor.prototype = {
     }
 };
 
-const syncPointer = throttle(function() {
-    global.sync_pointer();
-}, 1000, false);
-
 /**
  * #LayoutManager
  *
@@ -691,7 +687,7 @@ Chrome.prototype = {
 
             /* Pointer only needs to be updated to account for tray icon popup windows, which
                will be reflected by the global.display.popup_window_visible return value. */
-            syncPointer();
+            Mainloop.idle_add_full(1000, () => global.sync_pointer());
         } else {
             this._queueUpdateRegions();
         }
