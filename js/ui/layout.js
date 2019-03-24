@@ -680,41 +680,19 @@ Chrome.prototype = {
     },
 
     _windowsRestacked: function() {
-        let isPopupWindowVisible = false;
-        let changed = false;
-
-        // This function can get called frequently enough that it might make sense
-        // to use signals, and manage an array instead of calling get_children().
-        const children = global.top_window_group.get_children();
         const {_isPopupWindowVisible} = this;
 
-        for (let i = 0, len = children.length; i < len; i++) {
-            switch (children[i].meta_window.get_window_type()) {
-                case Meta.WindowType.DROPDOWN_MENU:
-                case Meta.WindowType.POPUP_MENU:
-                case Meta.WindowType.COMBO:
-                    isPopupWindowVisible = true;
-            }
+        this._isPopupWindowVisible = global.display.popup_window_visible();
 
-            if (_isPopupWindowVisible !== isPopupWindowVisible) {
-                changed = true;
-                break;
-            }
-
-            if (isPopupWindowVisible) break;
-        }
-
-        if (changed) {
+        if (_isPopupWindowVisible != this._isPopupWindowVisible) {
             this._updateVisibility();
+
+            /* Pointer only needs to be updated to account for tray icon popup windows, which
+               will be reflected by the global.display.popup_window_visible return value. */
+            syncPointer();
         } else {
             this._queueUpdateRegions();
         }
-
-        this._isPopupWindowVisible = isPopupWindowVisible;
-
-        // Figure out where the pointer is in case we lost track of
-        // it during a grab.
-        syncPointer();
     },
 
     updateRegions: function() {
