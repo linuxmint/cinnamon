@@ -495,7 +495,7 @@ Chrome.prototype = {
     },
 
     _findActor: function(actor) {
-        for (let i = 0; i < this._trackedActors.length; i++) {
+        for (let i = 0, len = this._trackedActors.length; i < len; i++) {
             let actorData = this._trackedActors[i];
             if (actorData.actor == actor)
                 return i;
@@ -562,7 +562,7 @@ Chrome.prototype = {
     },
 
     _updateVisibility: function() {
-        for (let i = 0; i < this._trackedActors.length; i++) {
+        for (let i = 0, len = this._trackedActors.length; i < len; i++) {
             let actorData = this._trackedActors[i], visible;
             if (!actorData.isToplevel)
                 continue;
@@ -613,14 +613,16 @@ Chrome.prototype = {
         // First look at what monitor the center of the rectangle is at
         let cx = x + w/2;
         let cy = y + h/2;
-        for (let i = 0; i < this._monitors.length; i++) {
+        let len = this._monitors.length;
+
+        for (let i = 0; i < len; i++) {
             let monitor = this._monitors[i];
             if (cx >= monitor.x && cx < monitor.x + monitor.width &&
                 cy >= monitor.y && cy < monitor.y + monitor.height)
                 return [i, monitor];
         }
         // If the center is not on a monitor, return the first overlapping monitor
-        for (let i = 0; i < this._monitors.length; i++) {
+        for (let i = 0; i < len; i++) {
             let monitor = this._monitors[i];
             if (x + w > monitor.x && x < monitor.x + monitor.width &&
                 y + h > monitor.y && y < monitor.y + monitor.height)
@@ -705,7 +707,7 @@ Chrome.prototype = {
 
         let wantsInputRegion = !this._isPopupWindowVisible;
 
-        for (let i = 0; i < this._trackedActors.length; i++) {
+        for (let i = 0, len = this._trackedActors.length; i < len; i++) {
             let actorData = this._trackedActors[i];
             if (!(actorData.affectsInputRegion && wantsInputRegion) && !actorData.affectsStruts)
                 continue;
@@ -799,7 +801,7 @@ Chrome.prototype = {
         global.set_stage_input_region(rects);
 
         let screen = global.screen;
-        for (let w = 0; w < screen.n_workspaces; w++) {
+        for (let w = 0, len = screen.n_workspaces; w < len; w++) {
             let workspace = screen.get_workspace_by_index(w);
             workspace.set_builtin_struts(struts);
         }
