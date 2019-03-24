@@ -288,7 +288,7 @@ st_widget_dispose (GObject *gobject)
       g_object_unref (priv->background_blur_effect);
       priv->background_blur_effect = NULL;
     }
-      if (priv->background_bumpmap_effect)
+  if (priv->background_bumpmap_effect)
     {
       g_object_run_dispose (G_OBJECT (priv->background_bumpmap_effect));
       g_object_unref (priv->background_bumpmap_effect);
@@ -1598,7 +1598,7 @@ StThemeNode *new_theme_node = st_widget_get_theme_node (widget);
             {
               widget->priv->background_blur_effect = (StBackgroundBlurEffect *) st_background_blur_effect_new ();
               widget->priv->background_blur_effect->blur_size = new_theme_node->background_blur;
-              for (int i=0;i<4;i++)
+              for (int i=0; i<4; i++)
                 widget->priv->background_blur_effect->border_radius[i] = new_theme_node->border_radius[i];
             }
         }
@@ -1611,7 +1611,7 @@ StThemeNode *new_theme_node = st_widget_get_theme_node (widget);
               widget->priv->background_bumpmap_effect = (StBackgroundBumpmapEffect *) st_background_bumpmap_effect_new ();
               bumpmap_path = st_theme_node_get_background_bumpmap(new_theme_node);
               widget->priv->background_bumpmap_effect->bumpmap_path = strdup (bumpmap_path);
-              for (int i=0;i<4;i++)
+              for (int i=0; i<4; i++)
                 widget->priv->background_bumpmap_effect->border_radius[i] = new_theme_node->border_radius[i];
             }
         }
@@ -1695,7 +1695,7 @@ st_widget_ensure_style (StWidget *widget)
   g_return_if_fail (ST_IS_WIDGET (widget));
 
   if (widget->priv->is_style_dirty)
-      st_widget_recompute_style (widget, NULL);
+    st_widget_recompute_style (widget, NULL);
 }
 
 static StTextDirection default_direction = ST_TEXT_DIRECTION_LTR;
