@@ -972,6 +972,9 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   global->meta_display = meta_screen_get_display (global->meta_screen);
   global->xdisplay = meta_display_get_xdisplay (global->meta_display);
 
+  global->clutter_device = clutter_device_manager_get_core_device (clutter_device_manager_get_default (),
+                                                                   CLUTTER_POINTER_DEVICE);
+
   global->gdk_display = gdk_x11_lookup_xdisplay (global->xdisplay);
   global->gdk_screen = gdk_display_get_screen (global->gdk_display,
                                                meta_screen_get_screen_number (global->meta_screen));
@@ -1277,19 +1280,10 @@ void
 cinnamon_global_sync_pointer (CinnamonGlobal *global)
 {
   int x, y;
-  GdkDeviceManager *gmanager;
-  GdkDevice *gdevice;
-  GdkScreen *gscreen;
-  GdkModifierType mods;
+  unsigned int mask;
   ClutterMotionEvent event;
 
-  gmanager = gdk_display_get_device_manager (global->gdk_display);
-  gdevice = gdk_device_manager_get_client_pointer (gmanager);
-  gdk_device_get_position (gdevice, &gscreen, &x, &y);
-  gdk_device_get_state (gdevice,
-                        gdk_screen_get_root_window (gscreen),
-                        NULL,
-                        &mods);
+  meta_display_get_pointer (global->meta_display, &x, &y, &mask);
 
   event.type = CLUTTER_MOTION;
   event.time = cinnamon_global_get_current_time (global);
@@ -1301,10 +1295,9 @@ cinnamon_global_sync_pointer (CinnamonGlobal *global)
   event.stage = global->stage;
   event.x = x;
   event.y = y;
-  event.modifier_state = mods;
+  event.modifier_state = mask;
   event.axes = NULL;
-  event.device = clutter_device_manager_get_core_device (clutter_device_manager_get_default (),
-                                                         CLUTTER_POINTER_DEVICE);
+  event.device = global->clutter_device;
 
   /* Leaving event.source NULL will force clutter to look it up, which
    * will generate enter/leave events as a side effect, if they are
