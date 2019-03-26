@@ -230,26 +230,6 @@ function _initRecorder() {
     });
 }
 
-function _addXletDirectoriesToSearchPath() {
-    imports.searchPath.unshift(global.datadir);
-    imports.searchPath.unshift(global.userdatadir);
-    // Including the system data directory also includes unnecessary system utilities,
-    // so we are making sure they are removed.
-    let types = ['applets', 'desklets', 'extensions', 'search_providers'];
-    let importsCache = {};
-    for (let i = 0; i < types.length; i++) {
-        // Cache our existing xlet GJS importer objects
-        importsCache[types[i]] = imports[types[i]];
-    }
-    // Remove the two paths we added to the beginning of the array.
-    imports.searchPath.splice(0, 2);
-    for (let i = 0; i < types.length; i++) {
-        // Re-add cached xlet objects
-        imports[types[i]] = importsCache[types[i]];
-        importsCache[types[i]] = undefined;
-    }
-}
-
 function _initUserSession() {
     _initRecorder();
 
@@ -352,7 +332,7 @@ function start() {
     uiGroup = new Cinnamon.GenericContainer({ name: 'uiGroup' });
     uiGroup.set_allocation_callback(function (box, flags) {
         let children = uiGroup.get_children();
-        for (let i = 0; i < children.length; i++)
+        for (let i = 0, len = children.length; i < len; i++)
             children[i].allocate_preferred_size(flags);
     });
     uiGroup.set_preferred_width_callback(function(alloc) {
@@ -433,7 +413,6 @@ function start() {
     overview.init();
     expo.init();
 
-    _addXletDirectoriesToSearchPath();
     _initUserSession();
 
     // Provide the bus object for gnome-session to
@@ -450,8 +429,10 @@ function start() {
     let perfModuleName = GLib.getenv("CINNAMON_PERF_MODULE");
     if (perfModuleName) {
         let perfOutput = GLib.getenv("CINNAMON_PERF_OUTPUT");
-        let module = eval('imports.perf.' + perfModuleName + ';');
-        Scripting.runPerfScript(module, perfOutput);
+        Util.tryFn(function() {
+            Scripting.runPerfScript(imports.perf[perfModuleName], perfOutput);
+        });
+
     }
 
     wmSettings = new Gio.Settings({schema_id: "org.cinnamon.desktop.wm.preferences"})
@@ -955,7 +936,7 @@ function formatLogArgument(arg = '', recursion = 0, depth = 6) {
     }
     let isGObject = arg instanceof GObject.Object;
     let space = '';
-    for (let i = 0; i < recursion + 1; i++) {
+    for (let i = 0, len = recursion + 1; i < len; i++) {
         space += '    ';
     }
     if (typeof arg === 'object') {
@@ -983,7 +964,7 @@ function formatLogArgument(arg = '', recursion = 0, depth = 6) {
     // Functions, numbers, etc.
     } else if (typeof arg === 'function') {
         let array = arg.toString().split('\n');
-        for (let i = 0; i < array.length; i++) {
+        for (let i = 0, len = array.length; i < len; i++) {
             if (i === 0) continue;
             array[i] = space + array[i];
         }
@@ -1289,7 +1270,7 @@ function _stageEventHandler(actor, event) {
 }
 
 function _findModal(actor) {
-    for (let i = 0; i < modalActorFocusStack.length; i++) {
+    for (let i = 0, len = modalActorFocusStack.length; i < len; i++) {
         if (modalActorFocusStack[i].actor == actor)
             return i;
     }
@@ -1512,9 +1493,8 @@ function _runAllDeferredWork() {
 }
 
 function _runBeforeRedrawQueue() {
-    for (let i = 0; i < _beforeRedrawQueue.length; i++) {
-        let workId = _beforeRedrawQueue[i];
-        _runDeferredWork(workId);
+    for (let i = 0, len = _beforeRedrawQueue.length; i < len; i++) {
+        _runDeferredWork(_beforeRedrawQueue[i]);
     }
     _beforeRedrawQueue = [];
 }
@@ -1646,7 +1626,7 @@ function getTabList(workspaceOpt, screenOpt) {
                                        workspace);
     let registry = {}; // to avoid duplicates
 
-    for (let i = 0; i < allwindows.length; ++i) {
+    for (let i = 0, len = allwindows.length; i < len; ++i) {
         let window = allwindows[i];
         if (isInteresting(window)) {
             let seqno = window.get_stable_sequence();

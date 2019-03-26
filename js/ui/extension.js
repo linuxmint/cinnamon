@@ -563,7 +563,6 @@ function forgetExtension(extensionIndex, uuid, type, forgetMeta) {
 function reloadExtension(uuid, type) {
     if (getExtension(uuid)) {
         unloadExtension(uuid, type, false, true);
-        Main._addXletDirectoriesToSearchPath();
         loadExtension(uuid, type);
         return;
     }
