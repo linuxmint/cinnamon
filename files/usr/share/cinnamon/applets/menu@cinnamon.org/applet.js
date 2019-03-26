@@ -2647,8 +2647,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._fileFolderAccessActive = this.searchActive && this.searchFilesystem;
             this._clearAllSelections();
 
-	    clearTimeout(this.searchTimeout);
-            this.searchTimeout = setTimeout(function() {
+	    if (typeof this.searchTimeout !== "undefined") { 
+		clearTimeout(this.searchTimeout);
+            }
+
+            this.searchTimeout = setTimeout(() => {
                if (searchString.match(/([-+]?[0-9]*\.?[0-9]+[\/\+\-\*])+([-+]?[0-9]*\.?[0-9]+)/)) {
                  let result = String(eval(searchString));
                  let source = new MessageTray.SystemNotificationSource();
@@ -2660,7 +2663,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                  notification.setUrgency(MessageTray.Urgency.NORMAL);
                  source.notify(notification);
               }
-
+              this.searchTimeout = null;
             }, 500);
 
             if (this.searchActive) {
