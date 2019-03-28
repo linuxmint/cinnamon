@@ -428,7 +428,7 @@ Chrome.prototype = {
 
         this._layoutManager.connect('monitors-changed', () => this._relayout());
         global.screen.connect('restacked', () => {
-            Mainloop.idle_add_full(400, () => this._windowsRestacked());
+            Mainloop.idle_add_full(1000, () => this._windowsRestacked());
         });
         global.screen.connect('in-fullscreen-changed', () => this._updateVisibility());
         global.window_manager.connect('switch-workspace', () => this._queueUpdateRegions());
