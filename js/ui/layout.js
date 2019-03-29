@@ -427,7 +427,7 @@ Chrome.prototype = {
         this._trackedActors = [];
 
         this._layoutManager.connect('monitors-changed', () => this._relayout());
-        global.screen.connect('restacked', () => {
+        global.display.connect('notify::focus-window', () => {
             Mainloop.idle_add_full(1000, () => this._windowsRestacked());
         });
         global.screen.connect('in-fullscreen-changed', () => this._updateVisibility());
@@ -663,7 +663,7 @@ Chrome.prototype = {
 
     _queueUpdateRegions: function() {
         if (!this._updateRegionIdle && !this._freezeUpdateCount)
-            this._updateRegionIdle = Mainloop.idle_add_full(-200, () => this.updateRegions());
+            this._updateRegionIdle = Mainloop.idle_add(() => this.updateRegions(), Meta.PRIORITY_BEFORE_REDRAW);
     },
 
     freezeUpdateRegions: function() {
@@ -735,7 +735,7 @@ Chrome.prototype = {
                 if (actorData.actor.maybeGet("_delegate") instanceof Panel.Panel
                     && actorData.actor._delegate.isHideable()) {
                     let m = this._monitors[actorData.actor._delegate.monitorIndex];
-                    if (m) [, rect] = rect.intersect(new Meta.Rectangle(m));
+                    if (m) [, rect] = rect.intersect(m);
                 }
 
                 rects.push(rect);
