@@ -41,15 +41,14 @@ Monitor.prototype = {
     }
 };
 
-function intersect (src1, src2) {
-    let dest = {};
+function intersect (dest, src2) {
     let dest_x, dest_y;
     let dest_w, dest_h;
 
-    dest_x = Math.max(src1.x, src2.x);
-    dest_y = Math.max(src1.y, src2.y);
-    dest_w = Math.min(src1.x + src1.width, src2.x + src2.width) - dest_x;
-    dest_h = Math.min(src1.y + src1.height, src2.y + src2.height) - dest_y;
+    dest_x = Math.max(dest.x, src2.x);
+    dest_y = Math.max(dest.y, src2.y);
+    dest_w = Math.min(dest.x + dest.width, src2.x + src2.width) - dest_x;
+    dest_h = Math.min(dest.y + dest.height, src2.y + src2.height) - dest_y;
 
     if (dest_w > 0 && dest_h > 0) {
         dest.x = dest_x;
@@ -745,7 +744,7 @@ Chrome.prototype = {
         if (this.struts.length) this.updateStruts();
     },
 
-    updateRegions: function() {
+    updateRegions: function(updateNeeded = false) {
         let trackedActorsLength = this._trackedActors.length;
         let rects = [];
         let struts = [];
@@ -757,6 +756,10 @@ Chrome.prototype = {
         if (this._updateRegionIdle) {
             Mainloop.source_remove(this._updateRegionIdle);
             this._updateRegionIdle = 0;
+        }
+
+        if (updateNeeded) {
+            rectsChanged = strutsChanged = true;
         }
 
         for (; i < trackedActorsLength; i++) {
@@ -794,12 +797,12 @@ Chrome.prototype = {
                     if (m) rect = intersect(rect, m);
                 }
 
-                let refRect = findIndex(this.rects, function(rect) {
+                let refRect = findIndex(this.rects, function(r) {
                     return (
-                        rect.x === x &&
-                        rect.y === y &&
-                        rect.width === w &&
-                        rect.height === h
+                        r.x === rect.x &&
+                        r.y === rect.y &&
+                        r.width === rect.width &&
+                        r.height === rect.height
                     );
                 });
 
@@ -877,10 +880,7 @@ Chrome.prototype = {
                     strutsChanged = true;
                 }
 
-                struts.push({
-                    rect,
-                    side
-                });
+                struts.push({rect, side});
             }
         }
 
