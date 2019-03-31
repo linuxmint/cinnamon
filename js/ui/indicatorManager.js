@@ -915,7 +915,7 @@ Signals.addSignalMethods(XmlLessDBusProxy.prototype);
 var IndicatorActor = class IndicatorActor {
     constructor(indicator, size, orientation) {
         this.actor = new St.BoxLayout({
-            style_class: 'system-status-icon',
+            style_class: 'applet-icon',
             reactive: true,
             track_hover: true,
             // The systray use a layout manager, we need to fill the space of the actor
