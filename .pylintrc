@@ -3,7 +3,9 @@
 # A comma-separated list of package or module names from where C extensions may
 # be loaded. Extensions are loading into the active Python interpreter and may
 # run arbitrary code
-extension-pkg-whitelist=
+extension-pkg-whitelist=gi,
+                        pyinotify,
+                        setproctitle
 
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
@@ -128,7 +130,9 @@ disable=len-as-condition,
         next-method-defined,
         dict-items-not-iterating,
         dict-keys-not-iterating,
-        dict-values-not-iterating
+        dict-values-not-iterating,
+        unused-argument,
+        wrong-import-position
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -374,7 +378,11 @@ good-names=i,
            k,
            ex,
            Run,
-           _
+           _,
+           x,
+           y,
+           w,
+           h
 
 # Include a hint for the correct naming format with invalid-name
 include-naming-hint=no
@@ -445,7 +453,8 @@ spelling-store-unknown-words=no
 # List of method names used to declare (i.e. assign) instance attributes.
 defining-attr-methods=__init__,
                       __new__,
-                      setUp
+                      setUp,
+                      my_init
 
 # List of member names, which should be excluded from the protected access
 # warning.

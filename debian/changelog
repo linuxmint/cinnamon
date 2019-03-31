@@ -1,3 +1,168 @@
+cinnamon (4.0.10) unstable; urgency=medium
+
+  [ Michael Webster ]
+  * cinnamon-desktop-editor.py: Check for item_path before modifying it.
+
+  [ Jason Hicks ]
+  * IndicatorManager: Clean up (#8004)
+  * [Next] perf: Add a simple benchmark utility for prototype methods (#8081)
+  * Refactor spawnCommandLineAsync for stdout/stderr output (#8130)
+
+  [ NikoKrause ]
+  * Preferred Applications: Add entry for "PDF viewer" (#8133)
+
+  [ Jason Hicks ]
+  * recorder: Use clutter_stage_capture instead of cogl's read_pixels  (#8159)
+
+  [ Simon Brown ]
+  * st-entry: remove an explicit destroy (#8215)
+  * st-icon: remove unused size values (#8218)
+  * st-texture-cache: Use right event to detect file changes (#8219)
+
+  [ Jason Hicks ]
+  * gwl: Fix progress not fully resetting when the last window from a group is closed (#8160)
+
+  [ MTzukanov ]
+  * cs_keyboard.py:Fix category search in layout tab (#8184)
+
+  [ Mikhail Bodrov ]
+  * Use push instead of unshift for array (#8193)
+
+  [ Jason Hicks ]
+  * misc/util: Fix typo in tryFn function (#8201)
+
+  [ Simon Brown ]
+  * Default theme: document css used by symbolic icons (#8205)
+  * st-bin: Destroy child in ClutterActor:destroy vfunc (#8220)
+
+  [ Jason Hicks ]
+  * gwl: Fix incorrect window accounting in multi-workspace cases (#8192)
+
+  [ Stephen Collins ]
+  * Menu applet settings: move the favbox height setting (#8291)
+
+  [ Jason Hicks ]
+  * JsonSettingsWidgets: Fix TypeError (#8286)
+
+  [ Germán Franco ]
+  * Overview: don't close on key release just after opening from keyboard (#8249)
+  * settings.js: Add a method to get the default value from settings-schema (#8292)
+
+  [ Clement Lefebvre ]
+  * Backgrounds settings: Rework bg colors
+
+  [ Jason Hicks ]
+  * Use icon-changed signal
+  * runDialog: Always close on loss of key focus (#8306)
+  * gwl: Average the progress of all windows belonging to an app group button (#8161)
+  * gwl: Fix thumbnails not populating the menu when opened by click (#8302)
+  * gwl: Simplify AppList.prototype.windowAdded (#8148)
+
+  [ Simon Brown ]
+  * st-theme-node: fix text shadow 'none' to correctly draw no shadow (#8216)
+  * st-icon: create shadow pipeline only at paint (#8238)
+  * st-drawing-area: use pipeline_copy (#8241)
+
+  [ Clement Lefebvre ]
+  * Simplify DocSystem/DocInfo (#8278)
+  * Backport appsys changes (#8295)
+
+  [ James Ross ]
+  * Various menu improvements (#8297)
+
+  [ Clement Lefebvre ]
+  * Menu applet: Don't call recalc_height() in refreshFavs()
+
+  [ Jason Hicks ]
+  * st-cogl-wrapper: Get context from Clutter once (#8325)
+  * st-private: Remove redundant calculations (#8323)
+  * st-drawing-area: Call cogl_pipeline_new when needed (#8324)
+
+  [ Germán Franco ]
+  * Stop using deprecated bindProperty method (#8318)
+
+  [ Jason Hicks ]
+  * cinnamon-app: Fix function call in cinnamon_app_launch (#8336)
+
+  [ Clement Lefebvre ]
+  * Revert "Backport appsys changes (#8295)"
+  * Simplify Appsys (#8367)
+
+  [ Jason Hicks ]
+  * appsys: a couple changes for more optimal muffin usage (#8369)
+  * gwl: Fix icon-changed handler
+  * cinnamon-app: Get a fallback icon from Muffin for some window-backed apps (#8151)
+  * gwl: Fix the thumbnail menu not closing on leave after closing a window (#8376)
+
+  [ ghostslayer989 ]
+  * [ImgBot] Optimize images (#8379)
+
+  [ Jason Hicks ]
+  * cinnamon-app: Simplify icon retrieval for window-backed apps (#8370)
+  * windowManager: Cache settings, various clean up (#8290)
+
+  [ James Ross ]
+  * all/python: use setproctitle (#8403)
+
+  [ Clement Lefebvre ]
+  * WindowManager: Reduce the number of signal listeners (#8399)
+
+  [ Simon Brown ]
+  * gwl: apply style class to the thumbnail menu (#8096)
+
+  [ Jason Hicks ]
+  * window-list: Fix MetaWindowActor TypeError (#8445)
+
+  [ Simon Brown ]
+  * quiet some ISO C90 compile warnings (#8435)
+  * remove some unused variables (#8429)
+
+  [ Damien Simonin Feugas ]
+  * Slideshow applet: Show current file name in popupmenu (#8003)
+
+  [ Jason Hicks ]
+  * Replace MetaShapedTexture usage with MetaWindowActor (#8269)
+  * Add compatibility for the obscured window optimization in Muffin (#8300)
+
+  [ Stephen Collins ]
+  * Spices.py: fix a bug causing gwl to be removed when wl is disabled (#8309)
+
+  [ James Ross ]
+  * Menu applet: Various improvements (#8314)
+  * General optimizations (#8351)
+  * menu applet: fix last eslint warning (#8396)
+  * Melange/all: huge style refactor (#8447)
+
+  [ Mirko Girgenti ]
+  *  FIX: https://github.com/linuxmint/cinnamon-settings-daemon/issues/192 (#8145)
+
+  [ Simon Brown ]
+  * st-scroll-view: fix a couple of fall-through situations (#8431)
+
+  [ Stephen Collins ]
+  * Workspace switcher applet: various improvements to the graph style (#8352)
+
+  [ Jason Hicks ]
+  * cinnamon-global: Only setup paint callbacks for performance monitoring when enabled (#8337)
+
+  [ Stephen Collins ]
+  * xlet settings list widget: some fixes and improvements to the tree (#8311)
+  * sound chooser widget: add all mimetypes option and improve default (#8312)
+
+  [ Nicolai Weitkemper ]
+  * Add tooltip to window focus behaviour (#8247)
+
+  [ Jason Hicks ]
+  * st: Move allocation calls out of paint vfuncs (#8326)
+
+  [ Stephen Collins ]
+  * Spices.py: fix disabling of desklets and extensions (#8466)
+
+  [ James Ross ]
+  * layout.js: fix typo (#8468)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 28 Mar 2019 11:10:59 +0000
+
 cinnamon (4.0.9) tessa; urgency=medium
 
   [ Michael Webster ]

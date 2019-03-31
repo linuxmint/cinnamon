@@ -106,7 +106,6 @@ const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const Scripting = imports.ui.scripting;
 const CinnamonDBus = imports.ui.cinnamonDBus;
-const WindowManager = imports.ui.windowManager;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
 const XdndHandler = imports.ui.xdndHandler;
@@ -418,7 +417,7 @@ function start() {
 
     layoutManager._updateBoxes();
 
-    wm = new WindowManager.WindowManager();
+    wm = new imports.ui.windowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
@@ -465,7 +464,6 @@ function start() {
 
     global.screen.connect('window-entered-monitor', _windowEnteredMonitor);
     global.screen.connect('window-left-monitor', _windowLeftMonitor);
-    global.screen.connect('restacked', _windowsRestacked);
 
     global.display.connect('gl-video-memory-purged', loadTheme);
 
@@ -768,13 +766,6 @@ function _windowEnteredMonitor(metaScreen, monitorIndex, metaWin) {
     // might make that workspace non-empty
     if (monitorIndex == layoutManager.primaryIndex)
         _queueCheckWorkspaces();
-}
-
-function _windowsRestacked() {
-    // Figure out where the pointer is in case we lost track of
-    // it during a grab. (In particular, if a trayicon popup menu
-    // is dismissed, see if we need to close the message tray.)
-    global.sync_pointer();
 }
 
 function _queueCheckWorkspaces() {
@@ -1623,7 +1614,7 @@ function isInteresting(metaWindow) {
         return false;
 
     // Include any window the tracker finds interesting
-    if (tracker.is_window_interesting(metaWindow)) {
+    if (metaWindow.is_interesting()) {
         return true;
     }
 

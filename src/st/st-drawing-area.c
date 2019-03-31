@@ -87,11 +87,12 @@ st_drawing_area_paint (ClutterActor *self)
   width = (int)(0.5 + content_box.x2 - content_box.x1);
   height = (int)(0.5 + content_box.y2 - content_box.y1);
 
-  if (G_UNLIKELY (drawing_pipeline_template == NULL))
-      drawing_pipeline_template = cogl_pipeline_new (st_get_cogl_context());
-
   if (priv->pipeline == NULL)
+    {
+      if (G_UNLIKELY (drawing_pipeline_template == NULL))
+        drawing_pipeline_template = cogl_pipeline_new (st_get_cogl_context());
       priv->pipeline = cogl_pipeline_copy (drawing_pipeline_template);
+    }
 
   if (priv->texture != NULL &&
       (width != cogl_texture_get_width (priv->texture) ||

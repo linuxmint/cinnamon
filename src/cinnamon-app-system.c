@@ -43,13 +43,11 @@ struct _CinnamonAppSystemPrivate {
   GHashTable *startup_wm_class_to_app;
 
   GSList *known_vendor_prefixes;
-
-  GMenuTree *settings_tree;
-  GHashTable *setting_id_to_app;
 };
 
 static void cinnamon_app_system_finalize (GObject *object);
 static void on_apps_tree_changed_cb (GMenuTree *tree, gpointer user_data);
+CinnamonApp * lookup_heuristic_basename (CinnamonAppSystem *system, const char *name);
 gchar *strip_extension (gchar *wm_class);
 gboolean case_insensitive_search (const char *key,
                                   const char *value,
@@ -146,10 +144,8 @@ cinnamon_app_system_finalize (GObject *object)
   CinnamonAppSystemPrivate *priv = self->priv;
 
   g_object_unref (priv->apps_tree);
-  g_object_unref (priv->settings_tree);
   g_hash_table_destroy (priv->running_apps);
   g_hash_table_destroy (priv->id_to_app);
-  g_hash_table_destroy (priv->setting_id_to_app);
   g_hash_table_destroy (priv->startup_wm_class_to_app);
   g_slist_free_full (priv->known_vendor_prefixes, g_free);
   priv->known_vendor_prefixes = NULL;
@@ -318,12 +314,12 @@ get_flattened_entries_from_tree (GMenuTree *tree)
                                  (GDestroyNotify) gmenu_tree_item_unref);
 
   root = gmenu_tree_get_root_directory (tree);
-  
+
   if (root != NULL)
     get_flattened_entries_recurse (root, table);
 
   gmenu_tree_item_unref (root);
-  
+
   return table;
 }
 
@@ -368,9 +364,9 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
       GDesktopAppInfo *info;
       const char *startup_wm_class;
-      
+
       prefix = get_prefix_for_entry (entry);
-      
+
       if (prefix != NULL
           && !g_slist_find_custom (self->priv->known_vendor_prefixes, prefix,
                                    (GCompareFunc)g_strcmp0))
@@ -378,7 +374,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
                                                             prefix);
       else
         g_free (prefix);
-      
+
       app = g_hash_table_lookup (self->priv->id_to_app, id);
       if (app != NULL)
         {
@@ -418,11 +414,14 @@ on_apps_tree_changed_cb (GMenuTree *tree,
             g_hash_table_remove (self->priv->startup_wm_class_to_app, old_startup_wm_class);
         }
 
-      info = gmenu_tree_entry_get_app_info (entry);
-      startup_wm_class = g_desktop_app_info_get_startup_wm_class (info);
-      if (startup_wm_class)
-        g_hash_table_replace (self->priv->startup_wm_class_to_app,
-                              (char*)startup_wm_class, g_object_ref (app));
+      info = cinnamon_app_get_app_info (app);
+      if (info)
+        {
+          startup_wm_class = g_desktop_app_info_get_startup_wm_class (info);
+          if (startup_wm_class)
+            g_hash_table_replace (self->priv->startup_wm_class_to_app,
+                                  (char*)startup_wm_class, g_object_ref (app));
+        }
 
       if (old_entry)
         gmenu_tree_item_unref (old_entry);
@@ -435,11 +434,11 @@ on_apps_tree_changed_cb (GMenuTree *tree,
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
       const char *id = key;
-      
+
       if (!g_hash_table_lookup (new_apps, id))
         g_hash_table_iter_remove (&iter);
     }
-      
+
   g_hash_table_destroy (new_apps);
 
   g_signal_emit (self, signals[INSTALLED_CHANGED], 0);
@@ -454,26 +453,6 @@ GMenuTree *
 cinnamon_app_system_get_tree (CinnamonAppSystem *self)
 {
   return self->priv->apps_tree;
-}
-
-/**
- * cinnamon_app_system_lookup_setting:
- *
- * Returns: (transfer none): Application in gnomecc.menu, or %NULL if none
- * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
- * RETURNS NULL IF NOT FOUND IN STANDARD APPS
- *
- */
-CinnamonApp *
-cinnamon_app_system_lookup_setting (CinnamonAppSystem *self,
-                                 const char     *id)
-{
-  CinnamonApp *app;
-  /* Actually defer to the main app set if there's overlap */
-  app = cinnamon_app_system_lookup_app (self, id);
-  if (app != NULL)
-    return app;
-  return NULL;
 }
 
 /**
@@ -527,114 +506,18 @@ cinnamon_app_system_lookup_app (CinnamonAppSystem   *self,
 }
 
 /**
- * cinnamon_app_system_lookup_settings_app:
- *
- * Return value: (transfer none): The #CinnamonApp for id, or %NULL if none
- * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
- * RETURNS NULL
- *
- */
-CinnamonApp *
-cinnamon_app_system_lookup_settings_app (CinnamonAppSystem   *self,
-                             const char       *id)
-{
-  return NULL;
-}
-
-/**
- * cinnamon_app_system_lookup_app_by_tree_entry:
- * @system: a #CinnamonAppSystem
- * @entry: a #GMenuTreeEntry
- *
- * Find a #CinnamonApp corresponding to a #GMenuTreeEntry.
- *
- * Return value: (transfer none): The #CinnamonApp for @entry, or %NULL if none
- */
-CinnamonApp *
-cinnamon_app_system_lookup_app_by_tree_entry (CinnamonAppSystem  *self,
-                                           GMenuTreeEntry  *entry)
-{
-  /* If we looked up directly in ->entry_to_app, we'd lose the
-   * override of running apps.  Thus, indirect through the id.
-   */
-  return cinnamon_app_system_lookup_app (self, gmenu_tree_entry_get_desktop_file_id (entry));
-}
-
-
-/**
- * cinnamon_app_system_lookup_settings_app_by_tree_entry:
- *
- * Return value: (transfer none): The #CinnamonApp for @entry, or %NULL if none
- * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
- * RETURNS NULL
- *
- */
-CinnamonApp *
-cinnamon_app_system_lookup_settings_app_by_tree_entry (CinnamonAppSystem  *self,
-                                           GMenuTreeEntry  *entry)
-{
-  return NULL;
-}
-
-/**
- * cinnamon_app_system_lookup_app_for_path:
- * @system: a #CinnamonAppSystem
- * @desktop_path: (type utf8): UTF-8 encoded absolute file name
- *
- * Find or create a #CinnamonApp corresponding to a given absolute file
- * name which must be in the standard paths (XDG_DATA_DIRS).  For
- * files outside the datadirs, this function returns %NULL.
- *
- * Return value: (transfer none): The #CinnamonApp for id, or %NULL if none
- */
-CinnamonApp *
-cinnamon_app_system_lookup_app_for_path (CinnamonAppSystem   *system,
-                                      const char       *desktop_path)
-{
-  const char *basename;
-  const char *app_path;
-  CinnamonApp *app;
-
-  basename = g_strrstr (desktop_path, "/");
-  if (basename)
-    basename += 1;
-  else
-    basename = desktop_path;
-
-  app = cinnamon_app_system_lookup_app (system, basename);
-  if (!app)
-    return NULL;
-
-  app_path = gmenu_tree_entry_get_desktop_file_path (cinnamon_app_get_tree_entry (app));
-  if (strcmp (desktop_path, app_path) != 0)
-    return NULL;
-
-  return app;
-}
-
-/**
- * cinnamon_app_system_lookup_heuristic_basename:
- * @system: a #CinnamonAppSystem
- * @id: Probable application identifier
- *
  * Find a valid application corresponding to a given
  * heuristically determined application identifier
  * string, or %NULL if none.
- *
- * Returns: (transfer none): A #CinnamonApp for @name
  */
 CinnamonApp *
-cinnamon_app_system_lookup_heuristic_basename (CinnamonAppSystem *system,
+lookup_heuristic_basename (CinnamonAppSystem *system,
                                             const char     *name)
 {
   CinnamonApp *result;
   GSList *prefix;
 
   result = cinnamon_app_system_lookup_app (system, name);
-  if (result != NULL)
-    return result;
-
-  result = cinnamon_app_system_lookup_settings_app (system, name);
   if (result != NULL)
     return result;
 
@@ -666,7 +549,7 @@ strip_extension (gchar *wm_class)
 /**
  * cinnamon_app_system_lookup_desktop_wmclass:
  * @system: a #CinnamonAppSystem
- * @wmclass: (allow-none): A WM_CLASS value
+ * @wmclass: (nullable): A WM_CLASS value
  *
  * Find a valid application whose .desktop file, without the extension
  * and properly canonicalized, matches @wmclass.
@@ -695,7 +578,7 @@ cinnamon_app_system_lookup_desktop_wmclass (CinnamonAppSystem *system,
 
   desktop_file = g_strconcat (stripped_name, ".desktop", NULL);
 
-  app = cinnamon_app_system_lookup_heuristic_basename (system, desktop_file);
+  app = lookup_heuristic_basename (system, desktop_file);
 
   g_free (canonicalized);
   g_free (stripped_name);
@@ -707,7 +590,7 @@ cinnamon_app_system_lookup_desktop_wmclass (CinnamonAppSystem *system,
 /**
  * cinnamon_app_system_lookup_startup_wmclass:
  * @system: a #CinnamonAppSystem
- * @wmclass: (allow-none): A WM_CLASS value
+ * @wmclass: (nullable): A WM_CLASS value
  *
  * Find a valid application whose .desktop file contains a
  * StartupWMClass entry matching @wmclass.
@@ -741,7 +624,7 @@ cinnamon_app_system_get_all (CinnamonAppSystem  *self)
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
       CinnamonApp *app = value;
-      
+
       if (!g_desktop_app_info_get_nodisplay (cinnamon_app_get_app_info (app)))
         result = g_slist_prepend (result, app);
     }
@@ -776,8 +659,7 @@ _cinnamon_app_system_notify_app_state_changed (CinnamonAppSystem *self,
  * @self: A #CinnamonAppSystem
  *
  * Returns the set of applications which currently have at least one
- * open window in the given context.  The returned list will be sorted
- * by cinnamon_app_compare().
+ * open window in the given context.
  *
  * Returns: (element-type CinnamonApp) (transfer container): Active applications
  */
@@ -798,125 +680,5 @@ cinnamon_app_system_get_running (CinnamonAppSystem *self)
       ret = g_slist_prepend (ret, app);
     }
 
-  ret = g_slist_sort (ret, (GCompareFunc)cinnamon_app_compare);
-
   return ret;
-}
-
-/**
- * normalize_terms:
- * @terms: (element-type utf8): Input search terms
- *
- * Returns: (element-type utf8) (transfer full): Unicode-normalized and lowercased terms
- */
-static GSList *
-normalize_terms (GSList *terms)
-{
-  GSList *normalized_terms = NULL;
-  GSList *iter;
-  for (iter = terms; iter; iter = iter->next)
-    {
-      const char *term = iter->data;
-      normalized_terms = g_slist_prepend (normalized_terms, cinnamon_util_normalize_and_casefold (term));
-    }
-  return normalized_terms;
-}
-
-static GSList *
-search_tree (CinnamonAppSystem *self,
-             GSList         *terms,
-             GHashTable     *apps)
-{
-  GSList *prefix_results = NULL;
-  GSList *substring_results = NULL;
-  GSList *normalized_terms;
-  GHashTableIter iter;
-  gpointer key, value;
-
-  normalized_terms = normalize_terms (terms);
-
-  g_hash_table_iter_init (&iter, apps);
-  while (g_hash_table_iter_next (&iter, &key, &value))
-    {
-      CinnamonApp *app = value;
-
-      _cinnamon_app_do_match (app, normalized_terms,
-                           &prefix_results,
-                           &substring_results);
-    }
-  g_slist_free_full (normalized_terms, g_free);
-
-  return g_slist_concat (prefix_results, substring_results);
-}
-
-/**
- * cinnamon_app_system_initial_search:
- * @system: A #CinnamonAppSystem
- * @terms: (element-type utf8): List of terms, logical AND
- *
- * Search through applications for the given search terms.
- *
- * Returns: (transfer container) (element-type CinnamonApp): List of applications
- */
-GSList *
-cinnamon_app_system_initial_search (CinnamonAppSystem  *self,
-                                 GSList          *terms)
-{
-  return search_tree (self, terms, self->priv->id_to_app);
-}
-
-/**
- * cinnamon_app_system_subsearch:
- * @system: A #CinnamonAppSystem
- * @previous_results: (element-type CinnamonApp): List of previous results
- * @terms: (element-type utf8): List of terms, logical AND
- *
- * Search through a previous result set; for more information, see
- * js/ui/search.js.  Note the value of @prefs must be
- * the same as passed to cinnamon_app_system_initial_search().  Note that returned
- * strings are only valid until a return to the main loop.
- *
- * Returns: (transfer container) (element-type CinnamonApp): List of application identifiers
- */
-GSList *
-cinnamon_app_system_subsearch (CinnamonAppSystem   *system,
-                            GSList           *previous_results,
-                            GSList           *terms)
-{
-  GSList *iter;
-  GSList *prefix_results = NULL;
-  GSList *substring_results = NULL;
-  GSList *normalized_terms = normalize_terms (terms);
-
-  for (iter = previous_results; iter; iter = iter->next)
-    {
-      CinnamonApp *app = iter->data;
-      
-      _cinnamon_app_do_match (app, normalized_terms,
-                           &prefix_results,
-                           &substring_results);
-    }
-  g_slist_free_full (normalized_terms, g_free);
-
-  /* Note that a shorter term might have matched as a prefix, but
-     when extended only as a substring, so we have to redo the
-     sort rather than reusing the existing ordering */
-  return g_slist_concat (prefix_results, substring_results);
-}
-
-/**
- * cinnamon_app_system_search_settings:
- * @system: A #CinnamonAppSystem
- * @terms: (element-type utf8): List of terms, logical AND
- *
- * Search through settings for the given search terms.
- *
- * Returns: (transfer container) (element-type CinnamonApp): List of setting applications
- */
-GSList *
-cinnamon_app_system_search_settings (CinnamonAppSystem  *self,
-                                  GSList          *terms)
-{
-  GSList *null_list = NULL; /* if this is just a stub, let's at least do zero-init */
-  return null_list;
 }

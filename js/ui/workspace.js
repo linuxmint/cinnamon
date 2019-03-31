@@ -55,7 +55,7 @@ WindowClone.prototype = {
         this.origX = 0;
         this.origY = 0;
 
-        // The MetaShapedTexture that we clone has a size that includes
+        // The MetaWindowActor that we clone has a size that includes
         // the invisible border; this is inconvenient; rather than trying
         // to compensate all over the place we insert a ClutterGroup into
         // the hierarchy that is sized to only the visible portion.
@@ -889,7 +889,7 @@ WorkspaceMonitor.prototype = {
             else
                 this._updateEmptyPlaceholder();
         } else {
-            let animate = global.settings.get_boolean("desktop-effects");
+            let animate = Main.wm.settingsState['desktop-effects'];
             this.positionWindows(animate ? WindowPositionFlags.ANIMATE : 0);
         }
 
@@ -928,7 +928,7 @@ WorkspaceMonitor.prototype = {
 
         if (this.actor.get_stage()) {
             clone._is_new_window = true;
-            let animate = global.settings.get_boolean("desktop-effects");
+            let animate = Main.wm.settingsState['desktop-effects'];
             this.positionWindows(animate ? WindowPositionFlags.ANIMATE : 0);
         }
     },
@@ -967,7 +967,7 @@ WorkspaceMonitor.prototype = {
 
     // Animate the full-screen to Overview transition.
     zoomToOverview : function() {
-        let animate = global.settings.get_boolean("desktop-effects");
+        let animate = Main.wm.settingsState['desktop-effects'];
         // Position and scale the windows.
         if (Main.overview.animationInProgress && animate)
             this.positionWindows(WindowPositionFlags.ANIMATE | WindowPositionFlags.INITIAL);
@@ -991,7 +991,7 @@ WorkspaceMonitor.prototype = {
         if (this.metaWorkspace != null && this.metaWorkspace != currentWorkspace)
             return;
 
-        let animate = global.settings.get_boolean("desktop-effects");
+        let animate = Main.wm.settingsState['desktop-effects'];
         if (!animate)
             return;
 

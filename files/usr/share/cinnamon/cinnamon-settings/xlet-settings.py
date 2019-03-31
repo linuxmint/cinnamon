@@ -5,6 +5,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
 
 import sys
+from setproctitle import setproctitle
 import config
 sys.path.append(config.currentPath + "/bin")
 import gettext
@@ -488,6 +489,7 @@ class MainWindow(object):
         Gtk.main_quit()
 
 if __name__ == "__main__":
+    setproctitle("xlet-settings")
     import signal
     if len(sys.argv) < 3:
         print("Error: requres type and uuid")

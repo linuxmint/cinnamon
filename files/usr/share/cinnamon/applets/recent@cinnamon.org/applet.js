@@ -49,11 +49,11 @@ class CinnamonRecentApplet extends Applet.IconApplet {
         this.recentsScrollBox.add_actor(this.recentsBox);
         this.recentsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
 
-        this.RecentManager = new DocInfo.DocManager();
+        this.RecentManager = DocInfo.getDocManager();
         this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
 
         this._recentButtons = [];
-        this._display();
+        this._refreshRecents();
 
         this.recent_id = this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecents));
         this.settings_id = this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecents));
@@ -77,12 +77,9 @@ class CinnamonRecentApplet extends Applet.IconApplet {
         this.menu.toggle();
     }
 
-    _display() {
-        this._refreshRecents();
-    }
-
-    _launchFile(a, b, c, docinfo) {
-        docinfo.launch();
+    _launchFile(a, b, c, uri) {
+        this.menu.toggle();
+        Gio.app_info_launch_default_for_uri(uri, global.create_app_launch_context());
     }
 
     _clearAll() {
@@ -100,114 +97,38 @@ class CinnamonRecentApplet extends Applet.IconApplet {
     }
 
     _refreshRecents() {
-        if (this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
-            let new_recents = [];
-            let have_recents = false;
+        // Clean content
+        for (let i = 0; i < this._recentButtons.length; i ++) {
+            this._recentButtons[i].destroy();
+        }
+        this._recentButtons = [];
 
+        if (this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
             if (this.RecentManager._infosByTimestamp.length > 0) {
                 let id = 0;
                 while (id < this.RecentManager._infosByTimestamp.length) {
-                    let uri = this.RecentManager._infosByTimestamp[id].uri;
-
-                    let new_button = null;
-
-                    new_button = this._recentButtons.find(button => ((button.uri) && (button.uri == uri)));
-
-                    if (new_button == undefined) {
-                        let icon = this.RecentManager._infosByTimestamp[id].createIcon(22);
-                        let menuItem = new MyPopupMenuItem(icon, this.RecentManager._infosByTimestamp[id].name, uri, {});
-                        this.menu.addMenuItem(menuItem);
-                        menuItem.connect('activate', Lang.bind(this, this._launchFile, this.RecentManager._infosByTimestamp[id]));
-                        new_button = menuItem;
-                    }
-
-                    new_recents.push(new_button);
-
+                    let recent = this.RecentManager._infosByTimestamp[id];
+                    let button = new MyPopupMenuItem(recent.createIcon(22), recent.name, recent.uri, {});
+                    button.connect('activate', Lang.bind(this, this._launchFile, recent.uri));
+                    this._recentButtons.push(button);
+                    this.recentsBox.add_child(button.actor);
                     id++;
                 }
-
-                let recent_clear_button = null;
-
-                recent_clear_button = this._recentButtons.find(button => ((button.uri) && (button.uri == "clear")));
-
-                if (recent_clear_button == undefined) {
-                    let icon = new St.Icon({ icon_name: 'edit-clear', icon_type: St.IconType.SYMBOLIC, icon_size: 22 });
-                    let menuItem = new MyPopupMenuItem(icon, _("Clear list"), "clear", {});
-                    menuItem.connect('activate', Lang.bind(this, this._clearAll));
-
-                    recent_clear_button = menuItem;
-                }
-
-                have_recents = true;
-                new_recents.push(recent_clear_button);
+                let separator = new PopupMenu.PopupSeparatorMenuItem();
+                this._recentButtons.push(separator);
+                this.recentsBox.add_child(separator.actor);
+                let icon = new St.Icon({ icon_name: 'edit-clear', icon_type: St.IconType.SYMBOLIC, icon_size: 22 });
+                let clear_button = new MyPopupMenuItem(icon, _("Clear list"), "clear", {});
+                clear_button.connect('activate', Lang.bind(this, this._clearAll));
+                this._recentButtons.push(clear_button);
+                this.recentsBox.add_child(clear_button.actor);
             } else {
-                let no_recents_button = null;
-
-                no_recents_button = this._recentButtons.find(button => ((button.uri) && (button.uri == "no-recents")));
-
-                if (no_recents_button == undefined) {
-                    let menuItem = new MyPopupMenuItem(null, _("No recent documents"), "no-recents", {});
-
-                    no_recents_button = menuItem;
-                }
-
-                new_recents.push(no_recents_button);
+                let no_recents_button = new MyPopupMenuItem(null, _("No recent documents"), "no-recents", {});
+                this._recentButtons.push(no_recents_button);
+                this.recentsBox.add_child(no_recents_button.actor);
             }
-
-            let to_remove = [];
-
-            /* Remove no-longer-valid items */
-            for (let i = 0; i < this._recentButtons.length; i++) {
-                let button = this._recentButtons[i];
-
-                if (button.uri == "no-recents" && have_recents) {
-                    to_remove.push(button);
-                } else {
-                    if (new_recents.indexOf(button) == -1) {
-                        to_remove.push(button);
-                    }
-                }
-            }
-
-            if (to_remove.length > 0) {
-                for (let i in to_remove) {
-                    to_remove[i].destroy();
-                    this._recentButtons.splice(this._recentButtons.indexOf(to_remove[i]), 1);
-                }
-            }
-
-            to_remove = [];
-
-            /* Now, add new actors, shuffle existing actors */
-
-            let placeholder = this.recentsBox.get_first_child();
-
-            for (let i = 0; i < new_recents.length; i++) {
-                let actor = new_recents[i].actor;
-
-                let parent = actor.get_parent();
-                if (parent != null) {
-                    parent.remove_child(actor);
-                }
-
-                if (actor != placeholder) {
-                    this.recentsBox.insert_child_above(actor, placeholder);
-                } else {
-                    this.recentsBox.add_child(actor);
-                }
-
-                placeholder = actor;
-            }
-
-            this._recentButtons = new_recents;
-
             this.actor.show();
         } else {
-            for (let i = 0; i < this._recentButtons.length; i ++) {
-                this._recentButtons[i].destroy();
-            }
-
-            this._recentButtons = [];
             this.actor.hide();
         }
         this._on_panel_edit_mode_changed();

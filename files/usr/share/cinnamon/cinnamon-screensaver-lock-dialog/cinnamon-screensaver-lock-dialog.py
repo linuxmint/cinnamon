@@ -4,6 +4,7 @@ import os
 import subprocess
 import gettext
 import pwd
+from setproctitle import setproctitle
 
 import gi
 gi.require_version("Gtk", "3.0")
@@ -61,5 +62,6 @@ class MainWindow:
         Gtk.main_quit()
 
 if __name__ == "__main__":
+    setproctitle("cinnamon-screensaver-lock-dialog")
     MainWindow()
     Gtk.main()
