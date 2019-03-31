@@ -9,7 +9,6 @@
  */
 const Cairo = imports.cairo;
 const Clutter = imports.gi.Clutter;
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
@@ -293,9 +292,9 @@ PanelManager.prototype = {
 
         this.addPanelMode = false;
 
-        this._panelsEnabledId   = global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
-        this._panelEditModeId   = global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
-        this._monitorsChangedId = global.screen.connect("monitors-changed", Lang.bind(this, this._onMonitorsChanged));
+        this._panelsEnabledId   = global.settings.connect("changed::panels-enabled", () => this._onPanelsEnabledChanged());
+        this._panelEditModeId   = global.settings.connect("changed::panel-edit-mode", () => this._onPanelEditModeChanged());
+        this._monitorsChangedId = global.screen.connect("monitors-changed", () => this._onMonitorsChanged());
 
         this._addOsd  = new ModalDialog.InfoOSD(_("Select position of new panel. Esc to cancel."));
         this._moveOsd = new ModalDialog.InfoOSD(_("Select new position of panel. Esc to cancel."));
@@ -875,7 +874,8 @@ PanelManager.prototype = {
         if (panelProperties.length == 0) {
             let lastPanelRemovedDialog = new ModalDialog.ConfirmDialog(
                 _("You don't have any panels added.\nDo you want to open panel settings?"),
-                Lang.bind(this, function() { Util.spawnCommandLine("cinnamon-settings panel"); }));
+                () => Util.spawnCommandLine('cinnamon-settings panel')
+            );
             lastPanelRemovedDialog.open();
         }
     },
@@ -1034,7 +1034,7 @@ PanelManager.prototype = {
         if (this.addPanelMode || !this.canAdd)
             return;
 
-        this._showDummyPanels(Lang.bind(this, this.addPanel));
+        this._showDummyPanels((m, p) => this.addPanel(m, p));
         this._addOsd.show();
     },
 
@@ -1049,7 +1049,7 @@ PanelManager.prototype = {
             return;
 
         this.moveId = id;
-        this._showDummyPanels(Lang.bind(this, this.movePanel));
+        this._showDummyPanels((m, p) => this.movePanel(m, p));
         this._moveOsd.show();
     },
 
@@ -1085,12 +1085,11 @@ PanelManager.prototype = {
         }
 
         this.addPanelMode = true;
-        Main.keybindingManager.addHotKey('close-add-panel', 'Escape', Lang.bind(this, function() {
-            if (this.addPanelMode)
-                this._destroyDummyPanels();
-        }));
+        Main.keybindingManager.addHotKey('close-add-panel', 'Escape', () => {
+            if (this.addPanelMode) this._destroyDummyPanels();
+        });
 
-       return true;
+        return true;
     },
 
     // Set Main.panel so that applets that look for it don't break
@@ -1169,9 +1168,9 @@ PanelDummy.prototype = {
                 global.log("paneDummy - unrecognised panel position "+panelPosition);
         }
 
-        this.actor.connect('button-press-event', Lang.bind(this, this._onClicked));
-        this.actor.connect('enter-event', Lang.bind(this, this._onEnter));
-        this.actor.connect('leave-event', Lang.bind(this, this._onLeave));
+        this.actor.connect('button-press-event', () => this._onClicked());
+        this.actor.connect('enter-event', () => this._onEnter());
+        this.actor.connect('leave-event', () => this._onLeave());
     },
 
     _onClicked: function() {
@@ -1207,16 +1206,16 @@ function AnimatedIcon(name, size) {
 AnimatedIcon.prototype = {
     _init: function(name, size) {
         this.actor = new St.Bin({ visible: false });
-        this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-        this.actor.connect('notify::visible', Lang.bind(this, function() {
+        this.actor.connect('destroy', () => this._onDestroy());
+        this.actor.connect('notify::visible', () => {
             if (this.actor.visible) {
-                this._timeoutId = Mainloop.timeout_add(ANIMATED_ICON_UPDATE_TIMEOUT, Lang.bind(this, this._update));
+                this._timeoutId = Mainloop.timeout_add(ANIMATED_ICON_UPDATE_TIMEOUT, () => this._update());
             } else {
                 if (this._timeoutId)
                     Mainloop.source_remove(this._timeoutId);
                 this._timeoutId = 0;
             }
-        }));
+        });
 
         this._timeoutId = 0;
         this._i = 0;
@@ -1272,7 +1271,7 @@ PanelCorner.prototype = {
         this.actor = new St.DrawingArea({ style_class: 'panel-corner' });
 
         this.actor.set_style_changed_callback((n) => this._styleChanged(n));
-        this.actor.connect('repaint', Lang.bind(this, this._repaint));
+        this.actor.connect('repaint', () => this._repaint());
     },
 
     _repaint: function() {
@@ -1447,9 +1446,9 @@ SettingsLauncher.prototype = {
         PopupMenu.PopupIconMenuItem.prototype._init.call(this, label, icon, St.IconType.SYMBOLIC);
 
         this._keyword = keyword;
-        this.connect('activate', Lang.bind(this, function() {
+        this.connect('activate', () => {
             Util.spawnCommandLine("cinnamon-settings " + this._keyword);
-        }));
+        });
     },
 };
 
@@ -1480,52 +1479,50 @@ function populateSettingsMenu(menu, panelId) {
     let panelSettingsSection = new PopupMenu.PopupSubMenuMenuItem(_("Modify panel"));
 
     let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove panel"), "list-remove", St.IconType.SYMBOLIC);  // submenu item remove panel
-    menuItem.activate = Lang.bind(menu, function() {
+    menuItem.activate = function() {
         Main.panelManager.removePanel(panelId);
-    });
+    };
     panelSettingsSection.menu.addMenuItem(menuItem);
 
     menu.addPanelItem = new PopupMenu.PopupIconMenuItem(_("Add panel"), "list-add", St.IconType.SYMBOLIC); // submenu item add panel
-    menu.addPanelItem.activate = Lang.bind(menu, function() {
+    menu.addPanelItem.activate = function() {
         Main.panelManager.addPanelQuery();
-        this.close(true);
-    });
+        menu.close(true);
+    };
     panelSettingsSection.menu.addMenuItem(menu.addPanelItem);
 
     menu.movePanelItem = new PopupMenu.PopupIconMenuItem(_("Move panel"), "move", St.IconType.SYMBOLIC); // submenu item move panel
-    menu.movePanelItem.activate = Lang.bind(menu, function() {
-        Main.panelManager.movePanelQuery(this.panelId);
-        this.close(true);
-    });
+    menu.movePanelItem.activate = function() {
+        Main.panelManager.movePanelQuery(menu.panelId);
+        menu.close(true);
+    };
     panelSettingsSection.menu.addMenuItem(menu.movePanelItem);
 
     menu.copyAppletItem = new PopupMenu.PopupIconMenuItem(_("Copy applet configuration"), "edit-copy", St.IconType.SYMBOLIC);
-    menu.copyAppletItem.activate = Lang.bind(menu, function() {
-        AppletManager.copyAppletConfiguration(this.panelId);
-        this.close(true);
-    });
+    menu.copyAppletItem.activate = function() {
+        AppletManager.copyAppletConfiguration(menu.panelId);
+        menu.close(true);
+    };
     panelSettingsSection.menu.addMenuItem(menu.copyAppletItem);  // submenu item copy applet config
 
     menu.pasteAppletItem = new PopupMenu.PopupIconMenuItem(_("Paste applet configuration"), "edit-paste", St.IconType.SYMBOLIC);
-    menu.pasteAppletItem.activate = Lang.bind(menu, function() {
+    menu.pasteAppletItem.activate = function() {
         let dialog = new ModalDialog.ConfirmDialog(
-                _("Pasting applet configuration will remove all existing applets on this panel. Do you want to continue?") + "\n\n",
-                Lang.bind(this, function() {
-                    AppletManager.pasteAppletConfiguration(this.panelId);
-                }));
+            _("Pasting applet configuration will remove all existing applets on this panel. Do you want to continue?") + "\n\n",
+            () => AppletManager.pasteAppletConfiguration(menu.panelId)
+        );
         dialog.open();
-    });
+    };
     panelSettingsSection.menu.addMenuItem(menu.pasteAppletItem); // submenu item paste applet config
 
     menu.clearAppletItem = new PopupMenu.PopupIconMenuItem(_("Clear all applets"), "edit-clear-all", St.IconType.SYMBOLIC);
-    menu.clearAppletItem.activate = Lang.bind(menu, function() {
+    menu.clearAppletItem.activate = function() {
         let dialog = new ModalDialog.ConfirmDialog(
-                _("Are you sure you want to clear all applets on this panel?") + "\n\n",
-                Lang.bind(this, function() {
-                    AppletManager.clearAppletConfiguration(this.panelId);
-                }));
+            _("Are you sure you want to clear all applets on this panel?") + "\n\n",
+            () => AppletManager.clearAppletConfiguration(menu.panelId)
+        );
         dialog.open();
-    });
+    };
 
     panelSettingsSection.menu.addMenuItem(menu.clearAppletItem);  // submenu item clear all applets
 
@@ -1609,7 +1606,7 @@ PanelZoneDNDHandler.prototype = {
         this._origAppletCenters = null;
         this._origAppletPos = -1;
 
-        this._panelZone.connect('leave-event', Lang.bind(this, this._handleLeaveEvent));
+        this._panelZone.connect('leave-event', () => this._handleLeaveEvent());
     },
 
     handleDragOver: function(source, actor, x, y, time) {
@@ -1896,19 +1893,19 @@ Panel.prototype = {
         this._onPanelEditModeChanged();
         this._processPanelAutoHide();
 
-        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
+        this.actor.connect('button-press-event', (a, e) => this._onButtonPressEvent(a, e));
         this.actor.set_style_changed_callback((n) => this._moveResizePanel(null, null, n));
-        this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
-        this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
+        this.actor.connect('leave-event', () => this._leavePanel());
+        this.actor.connect('enter-event', () => this._enterPanel());
         this.actor.connect('queue-relayout', () => this._setPanelHeight());
 
-        this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
-        this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);
-        this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_ICON_SIZES, this._onPanelZoneIconSizesChanged, this);
-        this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged, this);
-        this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers, this);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, () => this._processPanelAutoHide());
+        this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, (v, k) => this._moveResizePanel(v, k));
+        this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_ICON_SIZES, (v, k) => this._onPanelZoneIconSizesChanged(v, k));
+        this._signalManager.connect(global.settings, "changed::panel-edit-mode", () => this._onPanelEditModeChanged());
+        this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", () => this._updatePanelBarriers());
 
-        this._signalManager.connect(this.themeSettings, "changed::symbolic-relative-size", this._onPanelZoneIconSizesChanged, this);
+        this._signalManager.connect(this.themeSettings, "changed::symbolic-relative-size", (v, k) => this._onPanelZoneIconSizesChanged(v, k));
 
         this._onPanelZoneIconSizesChanged();
     },
@@ -2198,7 +2195,7 @@ Panel.prototype = {
         if (this._dragShowId && this._dragShowId > 0)
             Mainloop.source_remove(this._dragShowId);
 
-        let leaveIfOut = Lang.bind(this, function() {
+        let leaveIfOut = () => {
             this._dragShowId = 0;
             let [x, y, whatever] = global.get_pointer();
             this.actor.sync_hover();
@@ -2210,7 +2207,7 @@ Panel.prototype = {
                 this._leavePanel();
                 return false;
             }
-        });  // end of bind
+        };  // end of bind
 
         this._dragShowId = Mainloop.timeout_add(500, leaveIfOut);
 
@@ -3319,10 +3316,10 @@ Panel.prototype = {
          * by the coming enter-event, and the panel remains open. */
         if (this._shouldShow) {
             let showDelay = this._getProperty(PANEL_SHOW_DELAY_KEY, "i");
-            this._showHideTimer = Mainloop.timeout_add(showDelay, Lang.bind(this, this._showPanel))
+            this._showHideTimer = Mainloop.timeout_add(showDelay, () => this._showPanel())
         } else {
             let hideDelay = this._getProperty(PANEL_HIDE_DELAY_KEY, "i");
-            this._showHideTimer = Mainloop.timeout_add(hideDelay, Lang.bind(this, this._hidePanel))
+            this._showHideTimer = Mainloop.timeout_add(hideDelay, () => this._hidePanel())
         }
     },
 
@@ -3414,9 +3411,7 @@ Panel.prototype = {
         }
 
         // setup onUpdate tween parameter to set the actor clip region during animation.
-        panelParams['onUpdateParams'] = [origPos];
-        panelParams['onUpdate'] =
-            Lang.bind(this, function(origPos) { this._setClipRegion(false, origPos); });
+        panelParams['onUpdate'] = () => this._setClipRegion(false, origPos);
 
         // setup boxes tween - fade in as panel slides
         let boxParams = { opacity: 255,
@@ -3479,17 +3474,14 @@ Panel.prototype = {
         }
 
         // setup onUpdate tween parameter to update the actor clip region during animation
-        panelParams['onUpdateParams'] = [destPos];
-        panelParams['onUpdate'] =
-            Lang.bind(this, function(destPos) { this._setClipRegion(true, destPos); });
+        panelParams['onUpdate'] = () => this._setClipRegion(true, destPos);
 
         // hide boxes after panel slides out
-        panelParams['onComplete'] =
-            Lang.bind(this, function() {
-               this._leftBox.hide();
-               this._centerBox.hide();
-               this._rightBox.hide();
-            });
+        panelParams['onComplete'] = () => {
+            this._leftBox.hide();
+            this._centerBox.hide();
+            this._rightBox.hide();
+        }
 
         // setup boxes tween - fade out as panel slides out
         let boxParams = { opacity: 0,

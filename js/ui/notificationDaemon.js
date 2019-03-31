@@ -3,7 +3,6 @@
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
@@ -113,8 +112,8 @@ NotificationDaemon.prototype = {
 
         this._expireTimer = 0;
 
-        Main.statusIconDispatcher.connect('message-icon-added', Lang.bind(this, this._onTrayIconAdded));
-        Main.statusIconDispatcher.connect('message-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
+        Main.statusIconDispatcher.connect('message-icon-added', (o, i) => this._onTrayIconAdded(i));
+        Main.statusIconDispatcher.connect('message-icon-removed', (o, i) => this._onTrayIconRemoved(i));
 
 // Settings
         this.settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
@@ -126,10 +125,8 @@ NotificationDaemon.prototype = {
         setting(this, this.settings, "boolean", "removeOld", "remove-old");
         setting(this, this.settings, "int", "timeout", "timeout");
 
-        Cinnamon.WindowTracker.get_default().connect('notify::focus-app',
-            Lang.bind(this, this._onFocusAppChanged));
-        Main.overview.connect('hidden',
-            Lang.bind(this, this._onFocusAppChanged));
+        Cinnamon.WindowTracker.get_default().connect('notify::focus-app', () => this._onFocusAppChanged());
+        Main.overview.connect('hidden', () => this._onFocusAppChanged());
     },
 
    // Create an icon for a notification from icon string/path.
@@ -234,12 +231,10 @@ NotificationDaemon.prototype = {
 
         if (!isForTransientNotification) {
             this._sources.push(source);
-            source.connect('destroy', Lang.bind(this,
-                function() {
-                    let index = this._sources.indexOf(source);
-                    if (index >= 0)
-                        this._sources.splice(index, 1);
-                }));
+            source.connect('destroy', () => {
+                let index = this._sources.indexOf(source);
+                if (index >= 0) this._sources.splice(index, 1);
+            });
         }
 
         if (Main.messageTray) Main.messageTray.add(source);
@@ -247,21 +242,27 @@ NotificationDaemon.prototype = {
     },
 
     _startExpire: function() {
-         if (this.removeOld && this._expireNotifications.length && !this._expireTimer) {
-            this._expireTimer = Mainloop.timeout_add_seconds(Math.max((this._expireNotifications[0].expires-Date.now())/1000, 1), Lang.bind(this, this._expireNotification));
+        if (this.removeOld && this._expireNotifications.length && !this._expireTimer) {
+            this._expireTimer = Mainloop.timeout_add_seconds(
+                Math.max((this._expireNotifications[0].expires - Date.now()) / 1000, 1),
+                () => this._expireNotification()
+            );
         }
     },
+
     _stopExpire: function() {
-         if (this._expireTimer == 0) {
+        if (this._expireTimer == 0) {
             return;
         }
-         Mainloop.source_remove(this._expireTimer);
-         this._expireTimer = 0;
+        Mainloop.source_remove(this._expireTimer);
+        this._expireTimer = 0;
     },
+
     _restartExpire: function() {
-         this._stopExpire();
-         this._startExpire();
+        this._stopExpire();
+        this._startExpire();
     },
+
     _expireNotification: function() {
         let ndata = this._expireNotifications[0];
 
@@ -366,7 +367,7 @@ NotificationDaemon.prototype = {
             return invocation.return_value(GLib.Variant.new('(u)', [id]));
         }
 
-        this._busProxy.GetConnectionUnixProcessIDRemote(sender, Lang.bind(this, function (result, excp) {
+        this._busProxy.GetConnectionUnixProcessIDRemote(sender, (result, excp) => {
             // The app may have updated or removed the notification
             ndata = this._notifications[id];
             if (!ndata)
@@ -390,12 +391,12 @@ NotificationDaemon.prototype = {
             // destroyed.
             if (!source.isTransient) {
                 this._senderToPid[sender] = pid;
-                source.connect('destroy', Lang.bind(this, function() {
+                source.connect('destroy', () => {
                     delete this._senderToPid[sender];
-                }));
+                });
             }
             this._notifyForSource(source, ndata);
-        }));
+        });
 
         return invocation.return_value(GLib.Variant.new('(u)', [id]));
     },
@@ -412,38 +413,34 @@ NotificationDaemon.prototype = {
                                                         { icon: iconActor,
                                                           bannerMarkup: true });
             ndata.notification = notification;
-            notification.connect('destroy', Lang.bind(this,
-                function(n, reason) {
-                    delete this._notifications[ndata.id];
-                    let notificationClosedReason;
-                    switch (reason) {
-                        case MessageTray.NotificationDestroyedReason.EXPIRED:
-                            notificationClosedReason = NotificationClosedReason.EXPIRED;
+            notification.connect('destroy', (n, reason) => {
+                delete this._notifications[ndata.id];
+                let notificationClosedReason;
+                switch (reason) {
+                    case MessageTray.NotificationDestroyedReason.EXPIRED:
+                        notificationClosedReason = NotificationClosedReason.EXPIRED;
+                        break;
+                    case MessageTray.NotificationDestroyedReason.DISMISSED:
+                        notificationClosedReason = NotificationClosedReason.DISMISSED;
+                        break;
+                    case MessageTray.NotificationDestroyedReason.SOURCE_CLOSED:
+                        notificationClosedReason = NotificationClosedReason.APP_CLOSED;
+                        break;
+                }
+                // Remove from expiring?
+                if (ndata.expires) {
+                    let notifications = this._expireNotifications;
+                    for (var i = 0, j = notifications.length; i < j; ++i) {
+                        if (notifications[i] == ndata) {
+                            notifications.splice(i, 1);
                             break;
-                        case MessageTray.NotificationDestroyedReason.DISMISSED:
-                            notificationClosedReason = NotificationClosedReason.DISMISSED;
-                            break;
-                        case MessageTray.NotificationDestroyedReason.SOURCE_CLOSED:
-                            notificationClosedReason = NotificationClosedReason.APP_CLOSED;
-                            break;
-                    }
-                    // Remove from expiring?
-                    if (ndata.expires) {
-                        let notifications = this._expireNotifications;
-                        for (var i = 0, j = notifications.length; i < j; ++i) {
-                            if (notifications[i] == ndata) {
-                                notifications.splice(i, 1);
-                                break;
-                             }
                         }
-                        this._restartExpire();
                     }
-                    this._emitNotificationClosed(ndata.id, notificationClosedReason);
-                }));
-            notification.connect('action-invoked', Lang.bind(this,
-                function(n, actionId) {
-                    this._emitActionInvoked(ndata.id, actionId);
-                }));
+                    this._restartExpire();
+                }
+                this._emitNotificationClosed(ndata.id, notificationClosedReason);
+            });
+            notification.connect('action-invoked', (n, actionId) => this._emitActionInvoked(ndata.id, actionId));
         } else {
             notification.update(summary, body, { icon: iconActor,
                                                  bannerMarkup: true,
@@ -472,10 +469,7 @@ NotificationDaemon.prototype = {
             notification.setUseActionIcons(hints.maybeGet('action-icons') == true);
             for (let i = 0; i < actions.length - 1; i += 2) {
                 if (actions[i] == 'default')
-                    notification.connect('clicked', Lang.bind(this,
-                        function() {
-                            this._emitActionInvoked(ndata.id, "default");
-                        }));
+                    notification.connect('clicked', () => this._emitActionInvoked(ndata.id, 'default'));
                 else
                     notification.addButton(actions[i], actions[i + 1]);
             }
@@ -564,8 +558,8 @@ NotificationDaemon.prototype = {
                                    GLib.Variant.new('(us)', [id, action]));
     },
 
-    _onTrayIconAdded: function(o, icon) {
-        let source = this._getSource(icon.title || icon.wm_class || _("Unknown"), icon.pid, null, null, icon);
+    _onTrayIconAdded: function(icon) {
+        this._getSource(icon.title || icon.wm_class || _("Unknown"), icon.pid, null, null, icon);
     },
 
     _onTrayIconRemoved: function(o, icon) {
@@ -589,10 +583,12 @@ Source.prototype = {
 
         this.pid = pid;
         if (sender)
-            this._nameWatcherId = Gio.DBus.session.watch_name(sender,
-                                                              Gio.BusNameWatcherFlags.NONE,
-                                                              null,
-                                                              Lang.bind(this, this._onNameVanished));
+            this._nameWatcherId = Gio.DBus.session.watch_name(
+                sender,
+                Gio.BusNameWatcherFlags.NONE,
+                null,
+                () => this._onNameVanished()
+            );
         else
             this._nameWatcherId = 0;
 
@@ -604,8 +600,8 @@ Source.prototype = {
 
         this.trayIcon = trayIcon;
         if (this.trayIcon) {
-           this._setSummaryIcon(this.trayIcon);
-           this.useNotificationIcon = false;
+            this._setSummaryIcon(this.trayIcon);
+            this.useNotificationIcon = false;
         }
     },
 
@@ -647,11 +643,10 @@ Source.prototype = {
         if (Main.overview.visible) {
             // We can't just connect to Main.overview's 'hidden' signal,
             // because it's emitted *before* it calls popModal()...
-            let id = global.connect('notify::stage-input-mode', Lang.bind(this,
-                function () {
-                    global.disconnect(id);
-                    this.trayIcon.click(event);
-                }));
+            let id = global.connect('notify::stage-input-mode', () => {
+                global.disconnect(id);
+                this.trayIcon.click(event);
+            });
             Main.overview.hide();
         } else {
             this.trayIcon.click(event);

@@ -493,12 +493,12 @@ function start() {
         // This helps to prevent us from running the animation
         // when the system is bogged down
         if (do_animation) {
-            let id = GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
+            GLib.idle_add(GLib.PRIORITY_LOW, function() {
                 if (do_login_sound)
                     soundManager.play_once_per_session('login');
                 layoutManager._startupAnimation();
                 return GLib.SOURCE_REMOVE;
-            }));
+            });
         } else {
             global.background_actor.show();
             setRunState(RunState.RUNNING);

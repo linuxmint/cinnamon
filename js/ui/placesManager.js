@@ -3,7 +3,6 @@
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Cinnamon = imports.gi.Cinnamon;
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Signals = imports.signals;
 const St = imports.gi.St;
@@ -107,12 +106,12 @@ PlaceDeviceInfo.prototype = {
             return;
 
         if (this._mount.can_eject())
-            this._mount.eject(0, null, Lang.bind(this, this._removeFinish));
+            this._mount.eject(0, null, (o, r) => this._removeFinish(o, r));
         else
-            this._mount.unmount(0, null, Lang.bind(this, this._removeFinish));
+            this._mount.unmount(0, null, (o, r) => this._removeFinish(o, r));
     },
 
-    _removeFinish: function(o, res, data) {
+    _removeFinish: function(o, res) {
         try {
             if (this._mount.can_eject())
                 this._mount.eject_finish(res);
@@ -127,7 +126,7 @@ PlaceDeviceInfo.prototype = {
                 notification.setTransient(true);
 
                 notification.addButton('system-undo', _("Retry"));
-                notification.connect('action-invoked', Lang.bind(this, this.remove));
+                notification.connect('action-invoked', () => this.remove());
                 source.notify(notification);
             }
         }
@@ -191,15 +190,15 @@ PlacesManager.prototype = {
         * Show devices, code more or less ported from nemo-places-sidebar.c
         */
         this._volumeMonitor = Gio.VolumeMonitor.get();
-        this._volumeMonitor.connect('volume-added', Lang.bind(this, this._onVolumeAdded));
-        this._volumeMonitor.connect('volume-removed',Lang.bind(this, this._onVolumeRemoved));
-        this._volumeMonitor.connect('volume-changed', Lang.bind(this, this._onVolumeChanged));
-        this._volumeMonitor.connect('mount-added', Lang.bind(this, this._onMountAdded));
-        this._volumeMonitor.connect('mount-removed', Lang.bind(this, this._onMountRemoved));
-        this._volumeMonitor.connect('mount-changed', Lang.bind(this, this._onMountChanged));
-        this._volumeMonitor.connect('drive-connected', Lang.bind(this, this._onDriveConnected));
-        this._volumeMonitor.connect('drive-disconnected', Lang.bind(this, this._onDriveDisconnected));
-        this._volumeMonitor.connect('drive-changed', Lang.bind(this, this._onDriveChanged));
+        this._volumeMonitor.connect('volume-added', () => this._onVolumeAdded());
+        this._volumeMonitor.connect('volume-removed', () => this._onVolumeRemoved());
+        this._volumeMonitor.connect('volume-changed', () => this._onVolumeChanged());
+        this._volumeMonitor.connect('mount-added', () => this._onMountAdded());
+        this._volumeMonitor.connect('mount-removed', () => this._onMountRemoved());
+        this._volumeMonitor.connect('mount-changed', () => this._onMountChanged());
+        this._volumeMonitor.connect('drive-connected', () => this._onDriveConnected());
+        this._volumeMonitor.connect('drive-disconnected', () => this._onDriveDisconnected());
+        this._volumeMonitor.connect('drive-changed', () => this._onDriveChanged());
 
         this._deviceUpdateAwaiting = false;
 
@@ -215,16 +214,16 @@ PlacesManager.prototype = {
 
         this.monitor = this._bookmarksFile.monitor_file(Gio.FileMonitorFlags.NONE, null);
         this._bookmarkTimeoutId = 0;
-        this.monitor.connect('changed', Lang.bind(this, function () {
+        this.monitor.connect('changed', () => {
             if (this._bookmarkTimeoutId > 0)
                 return;
             /* Defensive event compression */
-            this._bookmarkTimeoutId = Mainloop.timeout_add(100, Lang.bind(this, function () {
+            this._bookmarkTimeoutId = Mainloop.timeout_add(100, () => {
                 this._bookmarkTimeoutId = 0;
                 this._reloadBookmarks();
                 return false;
-            }));
-        }));
+            });
+        });
 
         this._reloadBookmarks();
     },
@@ -233,9 +232,9 @@ PlacesManager.prototype = {
     _updateDevicesAsync: function() {
         if (this._deviceUpdateAwaiting == false) {
             this._deviceUpdateAwaiting = true;
-            Mainloop.timeout_add(3000, Lang.bind(this, function () {
+            Mainloop.timeout_add(3000, () => {
                 this._updateDevices();
-            }));
+            });
         }
     },
 
@@ -363,8 +362,8 @@ PlacesManager.prototype = {
                 label = Cinnamon.util_get_label_for_uri(bookmark);
             if (label == null)
                 continue;
-            
-            let item; 
+
+            let item;
             if (file.query_exists(null)) {
                 let icon = Cinnamon.util_get_icon_for_uri(bookmark);
                 item = new PlaceInfo('bookmark:' + bookmark, label,
@@ -376,19 +375,19 @@ PlacesManager.prototype = {
                         });
             } else {
                 // Assume the bookmark is an unmounted network location
-                // try to mount and open by the default file manager 
-                let icon = Gio.ThemedIcon.new('network-workgroup');          
+                // try to mount and open by the default file manager
+                let icon = Gio.ThemedIcon.new('network-workgroup');
                 item = new PlaceInfo('bookmark:' + bookmark, label,
                         function(size) {
                             return new St.Icon({ gicon: icon, icon_size: size });
                         },
                         function(params) {
                             let fileapp = Gio.app_info_get_default_for_type('inode/directory', true);
-                            if (fileapp) {    
+                            if (fileapp) {
                                 fileapp.launch_uris([bookmark], _makeLaunchContext(params));
                             }
                         });
-            }                  
+            }
             this._bookmarks.push(item);
         }
 

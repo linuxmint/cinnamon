@@ -1,6 +1,3 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-
-const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 
 const Main = imports.ui.main;
@@ -11,12 +8,12 @@ function WindowAttentionHandler() {
 }
 
 WindowAttentionHandler.prototype = {
-    _init : function() {
+    _init: function() {
         this._tracker = Cinnamon.WindowTracker.get_default();
-        global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
+        global.display.connect('window-demands-attention', (d, w) => this._onWindowDemandsAttention(w));
     },
 
-    _onWindowDemandsAttention : function(display, window) {
+    _onWindowDemandsAttention: function(window) {
         // We don't want to show the notification when the window is already focused,
         // because this is rather pointless.
         // Some apps (like GIMP) do things like setting the urgency hint on the
@@ -76,25 +73,28 @@ Source.prototype = {
         this._setSummaryIcon(this.createNotificationIcon());
 
         this.signalIDs = [];
-        this.signalIDs.push(this._window.connect('notify::demands-attention', Lang.bind(this, function() { this.destroy(); })));
-        this.signalIDs.push(this._window.connect('focus', Lang.bind(this, function() { this.destroy(); })));
-        this.signalIDs.push(this._window.connect('unmanaged', Lang.bind(this, function() { this.destroy(); })));
+
+        const destroy = () => this.destroy();
+
+        this.signalIDs.push(this._window.connect('notify::demands-attention', destroy));
+        this.signalIDs.push(this._window.connect('focus', destroy));
+        this.signalIDs.push(this._window.connect('unmanaged', destroy));
 
         this.connect('destroy', Lang.bind(this, this._onDestroy));
     },
 
-    _onDestroy : function() {
-        for(let i = 0; i < this.signalIDs.length; i++) {
-           this._window.disconnect(this.signalIDs[i]);
+    _onDestroy: function() {
+        for (let i = 0, len = this.signalIDs.length; i < len; i++) {
+            this._window.disconnect(this.signalIDs[i]);
         }
         this.signalIDs = [];
     },
 
-    createNotificationIcon : function() {
+    createNotificationIcon: function() {
         return this._app.create_icon_texture_for_window(this.ICON_SIZE, this._window);
     },
 
-    open : function(notification) {
+    open: function() {
         Main.activateWindow(this._window);
         this.destroy();
     }

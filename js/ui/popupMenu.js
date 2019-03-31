@@ -4,7 +4,6 @@ const Cairo = imports.cairo;
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
 const Gtk = imports.gi.Gtk;
-const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
@@ -115,7 +114,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         this.actor.set_allocation_callback((b, f) => this._allocate(b, f))
         this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a))
         this.actor.set_preferred_height_callback((a) => this._getPreferredHeight(a));
-        this._signals.connect(this.actor, 'style-changed', Lang.bind(this, this._onStyleChanged));
+        this._signals.connect(this.actor, 'style-changed', (a) => this._onStyleChanged(a));
         this.actor._delegate = this;
 
         this._children = [];
@@ -133,14 +132,14 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
             this.actor.add_style_class_name(params.style_class);
 
         if (this._activatable) {
-            this._signals.connect(this.actor, 'button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
-            this._signals.connect(this.actor, 'key-press-event', Lang.bind(this, this._onKeyPressEvent));
+            this._signals.connect(this.actor, 'button-release-event', (a, e) => this._onButtonReleaseEvent(e));
+            this._signals.connect(this.actor, 'key-press-event', (a, e) => this._onKeyPressEvent(e));
         }
         if (params.reactive && params.hover)
-            this._signals.connect(this.actor, 'notify::hover', Lang.bind(this, this._onHoverChanged));
+            this._signals.connect(this.actor, 'notify::hover', (a) => this._onHoverChanged(a));
         if (params.reactive) {
-            this._signals.connect(this.actor, 'key-focus-in', Lang.bind(this, this._onKeyFocusIn));
-            this._signals.connect(this.actor, 'key-focus-out', Lang.bind(this, this._onKeyFocusOut));
+            this._signals.connect(this.actor, 'key-focus-in', () => this._onKeyFocusIn());
+            this._signals.connect(this.actor, 'key-focus-out', () => this._onKeyFocusOut());
         }
     }
 
@@ -148,12 +147,12 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         this._spacing = Math.round(actor.get_theme_node().get_length('spacing'));
     }
 
-    _onButtonReleaseEvent(actor, event) {
+    _onButtonReleaseEvent(event) {
         this.activate(event, false);
         return true;
     }
 
-    _onKeyPressEvent(actor, event) {
+    _onKeyPressEvent(event) {
         let symbol = event.get_key_symbol();
 
         if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
@@ -163,11 +162,11 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         return false;
     }
 
-    _onKeyFocusIn(actor) {
+    _onKeyFocusIn() {
         this.setActive(true);
     }
 
-    _onKeyFocusOut(actor) {
+    _onKeyFocusOut() {
         this.setActive(false);
     }
 
@@ -245,7 +244,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
                 return;
 
             this._dot = new St.DrawingArea({ style_class: 'popup-menu-item-dot' });
-            this._signals.connect(this._dot, 'repaint', Lang.bind(this, this._onRepaintDot));
+            this._signals.connect(this._dot, 'repaint', (a) => this._onRepaintDot(a));
             this.actor.add_actor(this._dot);
             this.actor.add_accessible_state (Atk.StateType.CHECKED);
         } else {
@@ -493,7 +492,7 @@ var PopupSeparatorMenuItem = class PopupSeparatorMenuItem extends PopupBaseMenuI
 
         this._drawingArea = new St.DrawingArea({ style_class: 'popup-separator-menu-item' });
         this.addActor(this._drawingArea, { span: -1, expand: true });
-        this._signals.connect(this._drawingArea, 'repaint', Lang.bind(this, this._onRepaint));
+        this._signals.connect(this._drawingArea, 'repaint', (a) => this._onRepaint(a));
     }
 
     _onRepaint(area) {
@@ -535,13 +534,12 @@ var PopupAlternatingMenuItem = class PopupAlternatingMenuItem extends PopupBaseM
         this.state = PopupAlternatingMenuItemState.DEFAULT;
         this.addActor(this.label);
 
-        this._signals.connect(this.actor, 'notify::mapped', Lang.bind(this, this._onMapped));
+        this._signals.connect(this.actor, 'notify::mapped', () => this._onMapped());
     }
 
     _onMapped() {
         if (this.actor.mapped) {
-            this._capturedEventId = global.stage.connect('captured-event',
-                                                         Lang.bind(this, this._onCapturedEvent));
+            this._capturedEventId = global.stage.connect('captured-event', (a, e) => this._onCapturedEvent(e));
             this._updateStateFromModifiers();
         } else {
             if (this._capturedEventId != 0) {
@@ -574,7 +572,7 @@ var PopupAlternatingMenuItem = class PopupAlternatingMenuItem extends PopupBaseM
         this._setState(state);
     }
 
-    _onCapturedEvent(actor, event) {
+    _onCapturedEvent(event) {
         if (event.type() != Clutter.EventType.KEY_PRESS &&
             event.type() != Clutter.EventType.KEY_RELEASE)
             return false;
@@ -618,7 +616,7 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
     _init(value) {
         super._init.call(this, { activate: false });
 
-        this._signals.connect(this.actor, 'key-press-event', Lang.bind(this, this._onKeyPressEvent));
+        this._signals.connect(this.actor, 'key-press-event', (a, e) => this._onKeyPressEvent(e));
 
         if (isNaN(value))
             // Avoid spreading NaNs around
@@ -627,9 +625,9 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
 
         this._slider = new St.DrawingArea({ style_class: 'popup-slider-menu-item', reactive: true });
         this.addActor(this._slider, { span: -1, expand: true });
-        this._signals.connect(this._slider, 'repaint', Lang.bind(this, this._sliderRepaint));
-        this._signals.connect(this.actor, 'button-press-event', Lang.bind(this, this._startDragging));
-        this._signals.connect(this.actor, 'scroll-event', Lang.bind(this, this._onScrollEvent));
+        this._signals.connect(this._slider, 'repaint', (a) => this._sliderRepaint(a));
+        this._signals.connect(this.actor, 'button-press-event', (a, e) => this._startDragging(e));
+        this._signals.connect(this.actor, 'scroll-event', (a, e) => this._onScrollEvent(e));
 
         this._releaseId = this._motionId = 0;
         this._dragging = false;
@@ -707,7 +705,7 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         cr.$dispose();
     }
 
-    _startDragging(actor, event) {
+    _startDragging(event) {
         if (this._dragging) // don't allow two drags at the same time
             return;
 
@@ -718,8 +716,8 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         // the event, but for some weird reason events are still delivered
         // outside the slider if using clutter_grab_pointer_for_device
         Clutter.grab_pointer(this._slider);
-        this._signals.connect(this._slider, 'button-release-event', Lang.bind(this, this._endDragging));
-        this._signals.connect(this._slider, 'motion-event', Lang.bind(this, this._motionEvent));
+        this._signals.connect(this._slider, 'button-release-event', () => this._endDragging());
+        this._signals.connect(this._slider, 'motion-event', (a, e) => this._motionEvent(e));
         let absX, absY;
         [absX, absY] = event.get_coords();
         this._moveHandle(absX, absY);
@@ -738,7 +736,7 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         return true;
     }
 
-    _onScrollEvent (actor, event) {
+    _onScrollEvent (event) {
         let direction = event.get_scroll_direction();
 
         if (direction == Clutter.ScrollDirection.DOWN) {
@@ -752,7 +750,7 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         this.emit('value-changed', this._value);
     }
 
-    _motionEvent(actor, event) {
+    _motionEvent(event) {
         let absX, absY;
         [absX, absY] = event.get_coords();
         this._moveHandle(absX, absY);
@@ -789,7 +787,7 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         this._mark_position = value;
     }
 
-    _onKeyPressEvent (actor, event) {
+    _onKeyPressEvent (event) {
         let key = event.get_key_symbol();
         if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
             let delta = key == Clutter.KEY_Right ? 0.1 : -0.1;
@@ -1323,30 +1321,21 @@ var PopupMenuAbstractItem = class PopupMenuAbstractItem {
                 this._updateVisible();
                 this._updateSensitive();
 
-                /*for (let signal in handlers) {
-                    this._internalSignalsHandlers.connect(this, signal, handlers[signal]);
-                }*/
                 this._connectAndSaveId(this, handlers, this._internalSignalsHandlers);
 
                 this._shellItemSignalsHandlers = this._connectAndSaveId(this.shellItem, {
-                    'activate':  Lang.bind(this, this._onActivate),
-                    'destroy' :  Lang.bind(this, this._onShellItemDestroyed)
+                    activate: () => this.handleEvent('clicked'),
+                    destroy: (s) => this._onShellItemDestroyed(s)
                 });
-                /*this._internalSignalsHandlers.connect(this.shellItem, 'activate', this._onActivate);
-                this._internalSignalsHandlers.connect(this.shellItem, 'destroy', this._onShellItemDestroyed);*/
 
                 if (this.shellItem.menu) {
-                    /*this._shellMenuSignalsHandlers = new SignalManager.SignalManager(this);
-                    this._shellMenuSignalsHandlers.connect(this.shellItem.menu, 'open-state-changed', this._onOpenStateChanged);
-                    this._shellMenuSignalsHandlers.connect(this.shellItem.menu, 'destroy', this._onShellMenuDestroyed);*/
                     this._shellMenuSignalsHandlers = this._connectAndSaveId(this.shellItem.menu, {
-                        'open-state-changed': Lang.bind(this, this._onOpenStateChanged),
-                        'destroy'           : Lang.bind(this, this._onShellMenuDestroyed)
+                        'open-state-changed': (m, o) => this._onOpenStateChanged(o),
+                        destroy: (s) => this._onShellMenuDestroyed(s)
                     });
                 } else {
-                    //this._internalSignalsHandlers.connect(this.shellItem, 'open-state-changed', this._onOpenStateChanged);
                     this._connectAndSaveId(this.shellItem, {
-                        'open-state-changed': Lang.bind(this, this._onOpenStateChanged),
+                        'open-state-changed': (m, o) => this._onOpenStateChanged(o),
                     }, this._shellItemSignalsHandlers);
                 }
             }
@@ -1559,11 +1548,7 @@ var PopupMenuAbstractItem = class PopupMenuAbstractItem {
         }
     }
 
-    _onActivate(shellItem, event, keepMenu) {
-        this.handleEvent("clicked");
-    }
-
-    _onOpenStateChanged(menu, open) {
+    _onOpenStateChanged(open) {
         if (open) {
             this.handleEvent("opened");
         } else {
@@ -1660,7 +1645,7 @@ var PopupMenuBase = class PopupMenuBase {
         } else {
             this.box = new St.BoxLayout({ vertical: true });
         }
-        this._signals.connect_after(this.box, 'queue-relayout', Lang.bind(this, this._menuQueueRelayout));
+        this._signals.connect_after(this.box, 'queue-relayout', () => this._menuQueueRelayout());
         this.length = 0;
 
         this.isOpen = false;
@@ -2110,7 +2095,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         this.actor = new St.Bin({ style_class: 'menu',
                                   important: true });
         this.actor._delegate = this;
-        this._signals.connect(this.actor, 'key-press-event', Lang.bind(this, this._onKeyPressEvent));
+        this._signals.connect(this.actor, 'key-press-event', (a, e) => this._onKeyPressEvent(e));
 
         this.setOrientation(orientation);
 
@@ -2195,7 +2180,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             global.menuStackLength = 0;
         global.menuStackLength += 1;
 
-        this._signals.connect(this.actor, "paint", Lang.bind(this, this.on_paint));
+        this._signals.connect(this.actor, 'paint', () => this.on_paint());
 
         /* If the sourceActor of our menu is located on a panel or from the panel itself, we want to position it just
            below the panel actors. This prevents some cases where the menu will otherwise partially overlap the panel
@@ -2557,7 +2542,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         }
     }
 
-    _onKeyPressEvent(actor, event) {
+    _onKeyPressEvent(event) {
         if (event.get_key_symbol() == Clutter.Escape) {
             this.close(true);
             return true;
@@ -2566,7 +2551,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         return false;
     }
 
-    on_paint(actor) {
+    on_paint() {
         if (this.paint_count < 2 || this.animating) {
             this.paint_count++;
             return;
@@ -2640,7 +2625,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
         this.actor.add_actor(this.box);
         this.actor._delegate = this;
         this.actor.clip_to_allocation = true;
-        this._signals.connect(this.actor, 'key-press-event', Lang.bind(this, this._onKeyPressEvent));
+        this._signals.connect(this.actor, 'key-press-event', (a, e) => this._onKeyPressEvent(e));
         this.actor.hide();
     }
 
@@ -2852,10 +2837,10 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
         }
 
         this.menu = new PopupSubMenu(this.actor, this._triangle);
-        this._signals.connect(this.menu, 'open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
+        this._signals.connect(this.menu, 'open-state-changed', (m, o) => this._subMenuOpenStateChanged(o));
     }
 
-    _subMenuOpenStateChanged(menu, open) {
+    _subMenuOpenStateChanged(open) {
         this.actor.change_style_pseudo_class('open', open);
     }
 
@@ -2894,13 +2879,13 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
                                            sourceActor, 'popup-combo-menu');
         this.actor = this.box;
         this.actor._delegate = this;
-        this._signals.connect(this.actor, 'key-press-event', Lang.bind(this, this._onKeyPressEvent));
-        this._signals.connect(this.actor, 'key-focus-in', Lang.bind(this, this._onKeyFocusIn));
+        this._signals.connect(this.actor, 'key-press-event', (a, e) => this._onKeyPressEvent(e));
+        this._signals.connect(this.actor, 'key-focus-in', () => this._onKeyFocusIn());
         this._activeItemPos = -1;
         global.focus_manager.add_group(this.actor);
     }
 
-    _onKeyPressEvent(actor, event) {
+    _onKeyPressEvent(event) {
         if (event.get_key_symbol() == Clutter.Escape) {
             this.close(true);
             return true;
@@ -2909,7 +2894,7 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
         return false;
     }
 
-    _onKeyFocusIn(actor) {
+    _onKeyFocusIn() {
         let items = this._getMenuItems();
         let activeItem = items[this._activeItemPos];
         activeItem.actor.grab_key_focus();
@@ -3001,7 +2986,7 @@ var PopupComboBoxMenuItem = class PopupComboBoxMenuItem extends PopupBaseMenuIte
         if (params.style_class)
             this._menu.actor.add_style_class_name(params.style_class);
 
-        this._signals.connect(this.actor, 'scroll-event', Lang.bind(this, this._onScrollEvent));
+        this._signals.connect(this.actor, 'scroll-event', (a, e) => this._onScrollEvent(e));
 
         this._activeItemPos = -1;
         this._items = [];
@@ -3021,7 +3006,7 @@ var PopupComboBoxMenuItem = class PopupComboBoxMenuItem extends PopupBaseMenuIte
         return null;
     }
 
-    _onScrollEvent(actor, event) {
+    _onScrollEvent(event) {
         if (this._activeItemPos == -1)
             return;
 
@@ -3183,12 +3168,12 @@ var PopupMenuFactory = class PopupMenuFactory {
         });
 
         factoryItem.setShellItem(shellItem, {
-            'child-added'   : Lang.bind(this, this._onChildAdded),
-            'child-moved'   : Lang.bind(this, this._onChildMoved)
+            'child-added': (f, c, p) => this._onChildAdded(f, c, p),
+            'child-moved': (f, c, o, n) => this._onChildMoved(f, c, o, n)
         });
         this._menuLikend.push(factoryItem);
         factoryItem.connectAndRemoveOnDestroy({
-            'destroy'           : Lang.bind(this, this._onDestroyMainMenu)
+            destroy: (f) => this._onDestroyMainMenu(f)
         });
     }
 
@@ -3209,9 +3194,9 @@ var PopupMenuFactory = class PopupMenuFactory {
 
         // Now, connect various events
         factoryItem.setShellItem(shellItem, {
-            'type-changed':       Lang.bind(this, this._onTypeChanged),
-            'child-added':        Lang.bind(this, this._onChildAdded),
-            'child-moved':        Lang.bind(this, this._onChildMoved)
+            'type-changed': (f) => this._onTypeChanged(f),
+            'child-added': (f, c, p) => this._onChildAdded(f, c, p),
+            'child-moved': (f, c, o, n) => this._onChildMoved(f, c, o, n)
         });
         return shellItem;
     }

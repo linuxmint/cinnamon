@@ -7,7 +7,6 @@
 
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
 const Signals = imports.signals;
@@ -316,11 +315,16 @@ class XletSettingsBase {
         }
 
         let info = {propertyName: applet_prop, data: user_data, bindObject: bindObject};
-        if (callback) info.callback = Lang.bind(bindObject, callback, user_data);
+        if (callback) {
+            callback.bind(bindObject);
+            info.callback = function() {
+                callback(user_data);
+            };
+        }
 
         let propDef = {
-            get: Lang.bind(this, this._getValue, key),
-            set: Lang.bind(this, this._setValue, key),
+            get: () => this._getValue(key),
+            set: (value) => this._setValue(value, key),
             enumerable: true,
             configurable: true
         }
@@ -333,7 +337,7 @@ class XletSettingsBase {
         if (this.settingsData[key].value != null
             && typeof(this.settingsData[key].value) === "object" && !this.settingsData[key].value.save) {
             info.isObject = true;
-            this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
+            this.settingsData[key].value.save = () => this._saveToFile();
         }
         return true;
     }
@@ -591,7 +595,7 @@ class XletSettingsBase {
                     for (let info of this.bindings[key]) {
                         // if the property had a save function, it is gone now and we need to re-add it
                         if (info.isObject && !json[key].value.save) {
-                            json[key].value.save = Lang.bind(this, this._saveToFile);
+                            json[key].value.save = () => this._saveToFile();
                         }
 
                         if (info.callback) info.callback(value);
@@ -689,7 +693,7 @@ class XletSettingsBase {
             this._saveToFile();
         }
 
-        if (!this.monitorId) this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
+        if (!this.monitorId) this.monitorId = this.monitor.connect("changed", () => this._checkSettings());
 
         return true;
     }
@@ -831,7 +835,7 @@ class XletSettingsBase {
         let out_file = Gio.BufferedOutputStream.new_sized(raw, 4096);
         Cinnamon.write_string_to_stream(out_file, rawData);
         out_file.close(null);
-        this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
+        this.monitorId = this.monitor.connect("changed", () => this._checkSettings());
     }
 
     _saveToFileAsync(rawData) {
@@ -840,7 +844,7 @@ class XletSettingsBase {
             this.monitorId = 0;
         }
         return writeFileAsync(this.file, rawData, () => {
-            this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
+            this.monitorId = this.monitor.connect("changed", () => this._checkSettings());
         });
     }
 

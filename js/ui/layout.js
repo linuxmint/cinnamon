@@ -204,14 +204,14 @@ LayoutManager.prototype = {
     _startupAnimation: function() {
         // Don't animate the strut
         this._chrome.freezeUpdateRegions();
-        Tweener.addTween(Main.uiGroup,
-                         { scale_x: 1,
-                           scale_y: 1,
-                           opacity: 255,
-                           time: STARTUP_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._startupAnimationComplete,
-                           onCompleteScope: this });
+        Tweener.addTween(Main.uiGroup, {
+            scale_x: 1,
+            scale_y: 1,
+            opacity: 255,
+            time: STARTUP_ANIMATION_TIME,
+            transition: 'easeOutQuad',
+            onComplete: () => this._startupAnimationComplete()
+        });
     },
 
     _startupAnimationComplete: function() {

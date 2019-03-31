@@ -253,7 +253,7 @@ function OpenSearchSystem() {
 OpenSearchSystem.prototype = {
     _init: function() {
         this._providers = [];
-        global.settings.connect('changed::' + DISABLED_OPEN_SEARCH_PROVIDERS_KEY, Lang.bind(this, this._refresh));
+        global.settings.connect('changed::' + DISABLED_OPEN_SEARCH_PROVIDERS_KEY, () => this._refresh());
         this._refresh();
     },
 
@@ -323,14 +323,14 @@ OpenSearchSystem.prototype = {
         this._providers = [];
         let names = global.settings.get_strv(DISABLED_OPEN_SEARCH_PROVIDERS_KEY);
         let file = Gio.file_new_for_path(global.datadir + '/search_providers');
-        FileUtils.listDirAsync(file, Lang.bind(this, function(files) {
+        FileUtils.listDirAsync(file, (files) => {
             for (let i = 0; i < files.length; i++) {
                 let name = files[i].get_name();
                 if (!names.includes(name)) {
                     this._addProvider(name);
                 }
             }
-        }));
+        });
     }
 }
 Signals.addSignalMethods(OpenSearchSystem.prototype);

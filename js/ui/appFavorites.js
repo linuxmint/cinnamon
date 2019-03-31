@@ -1,7 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Cinnamon = imports.gi.Cinnamon;
-const Lang = imports.lang;
 const Signals = imports.signals;
 
 function AppFavorites() {
@@ -13,7 +12,7 @@ AppFavorites.prototype = {
 
     _init: function() {
         this._favorites = {};
-        global.settings.connect('changed::' + this.FAVORITE_APPS_KEY, Lang.bind(this, this._onFavsChanged));
+        global.settings.connect('changed::' + this.FAVORITE_APPS_KEY, () => this._onFavsChanged());
         this._reload();
     },
 
@@ -72,7 +71,7 @@ AppFavorites.prototype = {
     },
 
     addFavoriteAtPos: function(appId, pos) {
-        this._addFavorite(appId, pos);                            
+        this._addFavorite(appId, pos);
     },
 
     addFavorite: function(appId) {
@@ -95,7 +94,7 @@ AppFavorites.prototype = {
 
     removeFavorite: function(appId) {
         let app = this._favorites[appId];
-        this._removeFavorite(appId);                    
+        this._removeFavorite(appId);
     }
 };
 Signals.addSignalMethods(AppFavorites.prototype);

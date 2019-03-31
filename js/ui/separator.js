@@ -1,7 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Cairo = imports.cairo;
-const Lang = imports.lang;
 const St = imports.gi.St;
 
 function Separator() {
@@ -11,7 +10,7 @@ function Separator() {
 Separator.prototype = {
     _init: function() {
         this.actor = new St.DrawingArea({ style_class: 'separator' });
-        this.actor.connect('repaint', Lang.bind(this, this._onRepaint));
+        this.actor.connect('repaint', (a) => this._onRepaint(a));
     },
 
     _onRepaint: function(area) {

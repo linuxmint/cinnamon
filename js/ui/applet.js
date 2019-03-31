@@ -1,5 +1,4 @@
 const St = imports.gi.St;
-const Lang = imports.lang;
 const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
 const GLib = imports.gi.GLib;
@@ -46,10 +45,8 @@ var AppletContextMenu = class AppletContextMenu extends PopupMenu.PopupMenu {
         super._init(launcher.actor, orientation);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
-        this.connect("open-state-changed", Lang.bind(this, this._onOpenStateChanged, launcher.actor));
-        launcher.connect("orientation-changed", Lang.bind(this, function(a, orientation) {
-            this.setArrowSide(orientation);
-        }));
+        this.connect('open-state-changed', (m, o) => this._onOpenStateChanged(m, o, launcher.actor));
+        launcher.connect('orientation-changed', (a, o) => this.setArrowSide(a, o));
     }
 
     _onOpenStateChanged(menu, open, sourceActor) {
@@ -80,10 +77,10 @@ var AppletPopupMenu = class AppletPopupMenu extends PopupMenu.PopupMenu {
         this.actor.hide();
         this.launcher = launcher;
         if (launcher instanceof Applet) {
-            this.connect("open-state-changed", Lang.bind(this, this._onOpenStateChanged, launcher));
-            launcher.connect("orientation-changed", Lang.bind(this, this._onOrientationChanged));
+            this.connect('open-state-changed', (m, o) => this._onOpenStateChanged(m, o, launcher));
+            launcher.connect('orientation-changed', (a, o) => this._onOrientationChanged(a, o));
         } else if (launcher._applet) {
-            launcher._applet.connect("orientation-changed", Lang.bind(this, this._onOrientationChanged));
+            launcher._applet.connect('orientation-changed', (a, o) => this._onOrientationChanged(a, o));
         }
     }
 
@@ -147,7 +144,7 @@ var Applet = class Applet {
         this.setOrientationInternal(orientation);
 
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);
-        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
+        this.actor.connect('button-press-event', (a, e) => this._onButtonPressEvent(a, e));
 
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._applet_context_menu = new AppletContextMenu(this, orientation);
@@ -176,9 +173,9 @@ var Applet = class Applet {
         this._meta = null;      // set by appletManager
         this._dragging = false;
         this._draggable = DND.makeDraggable(this.actor);
-        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
-        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+        this._draggable.connect('drag-begin', () => this._onDragBegin());
+        this._draggable.connect('drag-cancelled', () => this._onDragCancelled());
+        this._draggable.connect('drag-end', () => this._onDragEnd());
 
         this._applet_tooltip_text = "";
 
@@ -186,9 +183,7 @@ var Applet = class Applet {
         this.context_menu_separator = null;
 
         this._setAppletReactivity();
-        this._panelEditModeChangedId = global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
-            this._setAppletReactivity();
-        }));
+        this._panelEditModeChangedId = global.settings.connect('changed::panel-edit-mode', () => this._setAppletReactivity());
 
         // FIXME: Cinnamon should be providing a sandbox environment for extensions, and not depend on data passed
         // from the extension for basic state that we are already keeping track of in appletManager. Since applets
@@ -357,13 +352,13 @@ var Applet = class Applet {
 
     on_applet_added_to_panel_internal(userEnabled) {
         if (userEnabled) {
-            Mainloop.timeout_add(300, Lang.bind(this, function() {
+            Mainloop.timeout_add(300, () => {
                 let [x, y] = this.actor.get_transformed_position();
                 let [w, h] = this.actor.get_transformed_size();
                 let flashspot = new Flashspot.Flashspot({ x : x, y : y, width: w, height: h});
                 flashspot.fire();
                 return false;
-            }));
+            });
         }
 
         this._panelSizeChangeId = this.panel.connect('size-changed', () => this.on_panel_height_changed_internal());
@@ -554,20 +549,21 @@ var Applet = class Applet {
         let items = this._applet_context_menu._getMenuItems();
 
         if (this.context_menu_item_remove == null) {
-            this.context_menu_item_remove = new PopupMenu.PopupIconMenuItem(_("Remove '%s'")
-                .format(this._(this._meta.name)),
-                   "edit-delete",
-                   St.IconType.SYMBOLIC);
-            this.context_menu_item_remove.connect('activate', Lang.bind(this, function() {
+            this.context_menu_item_remove = new PopupMenu.PopupIconMenuItem(
+                _("Remove '%s'").format(this._(this._meta.name)),
+                "edit-delete",
+                St.IconType.SYMBOLIC
+            );
+            this.context_menu_item_remove.connect('activate', () => {
                 AppletManager._removeAppletFromPanel(this._uuid, this.instance_id);
-            }));
+            });
         }
 
         if (this.context_menu_item_about == null) {
             this.context_menu_item_about = new PopupMenu.PopupIconMenuItem(_("About..."),
                     "dialog-question",
                     St.IconType.SYMBOLIC);
-            this.context_menu_item_about.connect('activate', Lang.bind(this, this.openAbout));
+            this.context_menu_item_about.connect('activate', () => this.openAbout());
         }
 
         if (this.context_menu_separator == null && this._applet_context_menu._getMenuItems().length > 0) {
@@ -584,7 +580,7 @@ var Applet = class Applet {
                 this.context_menu_item_configure = new PopupMenu.PopupIconMenuItem(_("Configure..."),
                         "system-run",
                         St.IconType.SYMBOLIC);
-                this.context_menu_item_configure.connect('activate', Lang.bind(this, this.configureApplet));
+                this.context_menu_item_configure.connect('activate', () => this.configureApplet());
             }
             if (items.indexOf(this.context_menu_item_configure) == -1) {
                 this._applet_context_menu.addMenuItem(this.context_menu_item_configure);

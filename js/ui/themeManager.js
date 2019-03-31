@@ -4,7 +4,6 @@
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
-const Lang = imports.lang;
 const Main = imports.ui.main;
 const Signals = imports.signals;
 
@@ -18,10 +17,10 @@ function ThemeManager() {
 ThemeManager.prototype = {
     _init: function() {
         this._settings = new Gio.Settings({ schema_id: SETTINGS_SCHEMA });
-        this._changedId = this._settings.connect('changed::'+SETTINGS_KEY, Lang.bind(this, this._changeTheme));
+        this._changedId = this._settings.connect('changed::'+SETTINGS_KEY, () => this._changeTheme());
         this._changeTheme();
-    },    
-    
+    },
+
     _findTheme: function(themeName) {
         /* This follows the same order of precedence that Gtk uses for icon and widget themes. */
 
@@ -60,7 +59,7 @@ ThemeManager.prototype = {
             }
         }
         let _stylesheet = null;
-        let _themeName = this._settings.get_string(SETTINGS_KEY);        
+        let _themeName = this._settings.get_string(SETTINGS_KEY);
 
         if (_themeName) {
             this.themeDirectory = this._findTheme(_themeName);

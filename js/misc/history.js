@@ -1,6 +1,5 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Lang = imports.lang;
 const Signals = imports.signals;
 const Clutter = imports.gi.Clutter;
 const Params = imports.misc.params;
@@ -24,9 +23,7 @@ HistoryManager.prototype = {
         this._historyIndex = 0;
         if (this._key) {
             this._history = global.settings.get_strv(this._key);
-            global.settings.connect('changed::' + this._key,
-                                    Lang.bind(this, this._historyChanged));
-
+            global.settings.connect('changed::' + this._key, () => this._historyChanged());
         } else {
             this._history = [];
         }
@@ -34,8 +31,7 @@ HistoryManager.prototype = {
         this._entry = params.entry;
 
         if (this._entry) {
-            this._entry.connect('key-press-event', 
-                                Lang.bind(this, this._onEntryKeyPress));
+            this._entry.connect('key-press-event', (en, ev) => this._onEntryKeyPress(en, ev));
         }
 
         this._deduplicate = params.deduplicate;

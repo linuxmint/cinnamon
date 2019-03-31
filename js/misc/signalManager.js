@@ -1,8 +1,7 @@
 const GObject = imports.gi.GObject;
-const Lang = imports.lang;
 
 const _signalIsConnected = function(signal) {
-    let [sigName, obj, callback, id] = signal;
+    let [, obj, , id] = signal;
     if (!obj) {
         return false;
     }
@@ -23,7 +22,7 @@ const _signalIsConnected = function(signal) {
 
 const _disconnect = function(results) {
     for (let i = 0; i < results.length; i++) {
-        let [sigName, obj, callback, id] = results[i];
+        let [, obj, , id] = results[i];
         obj.disconnect(id);
     }
 };
@@ -111,7 +110,7 @@ var SignalManager = class SignalManager {
      *
      * For example, what you would normally write as
      * ```
-     * global.settings.connect("changed::foo", Lang.bind(this, this._bar))
+     * global.settings.connect("changed::foo", (argument) => this._bar(argument))
      * ```
      * would become
      * ```
@@ -127,18 +126,19 @@ var SignalManager = class SignalManager {
         if (!obj || (!force && this.isConnected(sigName, obj, callback)))
             return;
 
-        let id = bind ? obj[method](sigName, Lang.bind(bind, callback))
-            : obj[method](sigName, callback);
+        let id = bind ? obj[method](sigName, function() {
+            callback.apply(bind, arguments);
+        }) : obj[method](sigName, callback);
 
         this._storage.push([sigName, obj, callback, id]);
     }
 
-    connect() {
-        this._connect('connect', ...arguments);
+    connect(method, obj, sigName, callback, bind, force) {
+        this._connect('connect', method, obj, sigName, callback, bind, force);
     }
 
-    connect_after() {
-        this._connect('connect_after', ...arguments);
+    connect_after(method, obj, sigName, callback, bind, force) {
+        this._connect('connect_after', method, obj, sigName, callback, bind, force);
     }
 
     /**

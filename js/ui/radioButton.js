@@ -4,22 +4,19 @@ const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Signals = imports.signals;
 
-const Lang = imports.lang;
-
 function RadioButtonContainer() {
-   this._init();
+    this._init();
 }
 RadioButtonContainer.prototype = {
-    _init: function() {
+    _init: function () {
         this.actor = new Cinnamon.GenericContainer({ y_align: St.Align.MIDDLE });
         this.actor.set_allocation_callback((b, f) => this._allocate(b, f));
         this.actor.set_preferred_width_callback((a) => this._getPreferredWidth(a));
         this.actor.set_preferred_height_callback((a) => this._getPreferredHeight(a));
-        this.actor.connect('style-changed', Lang.bind(this,
-            function() {
-                let node = this.actor.get_theme_node();
-                this._spacing = node.get_length('spacing');
-            }));
+        this.actor.connect('style-changed', () => {
+            let node = this.actor.get_theme_node();
+            this._spacing = node.get_length('spacing');
+        });
         this.actor.request_mode = Clutter.RequestMode.HEIGHT_FOR_WIDTH;
 
         this._box = new St.Bin();
@@ -33,15 +30,15 @@ RadioButtonContainer.prototype = {
         this._spacing = 0;
     },
 
-    _getPreferredWidth: function(alloc) {
-        let {for_size} = alloc;
+    _getPreferredWidth: function (alloc) {
+        let { for_size } = alloc;
         let [minWidth, natWidth] = this._box.get_preferred_width(for_size);
 
         alloc.min_size = minWidth + this._spacing;
         alloc.natural_size = natWidth + this._spacing;
     },
 
-    _getPreferredHeight: function(alloc) {
+    _getPreferredHeight: function (alloc) {
         let [minBoxHeight, natBoxHeight] =
             this._box.get_preferred_height(-1);
         let [minLabelHeight, natLabelHeight] =
@@ -51,7 +48,7 @@ RadioButtonContainer.prototype = {
         alloc.natural_size = Math.max(natBoxHeight, 2 * natLabelHeight);
     },
 
-    _allocate: function(box, flags) {
+    _allocate: function (box, flags) {
         let availWidth = box.x2 - box.x1;
 
         let childBox = new Clutter.ActorBox();
@@ -78,14 +75,16 @@ function RadioBox(state) {
 }
 
 RadioBox.prototype = {
-    _init: function(state) {
-        this.actor = new St.Button({ style_class: 'radiobutton',
-                                     button_mask: St.ButtonMask.ONE,
-                                     toggle_mode: true,
-                                     can_focus: true,
-                                     x_fill: true,
-                                     y_fill: true,
-                                     y_align: St.Align.MIDDLE });
+    _init: function (state) {
+        this.actor = new St.Button({
+            style_class: 'radiobutton',
+            button_mask: St.ButtonMask.ONE,
+            toggle_mode: true,
+            can_focus: true,
+            x_fill: true,
+            y_fill: true,
+            y_align: St.Align.MIDDLE
+        });
 
         this.actor._delegate = this;
         this.actor.checked = state;
@@ -96,27 +95,27 @@ RadioBox.prototype = {
         this.actor.set_child(this._container);
     },
 
-    setToggleState: function(state) {
+    setToggleState: function (state) {
         this.actor.checked = state;
     },
 
-    toggle: function() {
+    toggle: function () {
         this.setToggleState(!this.actor.checked);
     },
 
-    destroy: function() {
+    destroy: function () {
         this.actor.destroy();
     }
 };
 
 function RadioButton(label) {
-   this._init(label);
+    this._init(label);
 }
 
 RadioButton.prototype = {
     __proto__: RadioBox.prototype,
 
-    _init: function(label) {
+    _init: function (label) {
         RadioBox.prototype._init.call(this, false);
         this._container.destroy();
         this._container = new RadioButtonContainer();
@@ -126,42 +125,39 @@ RadioButton.prototype = {
             this.setLabel(label);
     },
 
-    setLabel: function(label) {
+    setLabel: function (label) {
         this._container.label.set_text(label);
     },
 
-    getLabelActor: function() {
+    getLabelActor: function () {
         return this._container.label;
     }
 };
 
 function RadioButtonGroup() {
-   this._init();
+    this._init();
 }
 
 RadioButtonGroup.prototype = {
-   _init: function() {
-      this.actor = new St.BoxLayout({ vertical: true, width: 250 });
-      this._buttons = [];
-      this._activeId = null;
-   },
+    _init: function () {
+        this.actor = new St.BoxLayout({ vertical: true, width: 250 });
+        this._buttons = [];
+        this._activeId = null;
+    },
 
-   addButton: function(buttonId, label) {
-      this.radioButton = new RadioButton(label);
-      this.radioButton.actor.connect("clicked",
-         Lang.bind(this, function(actor) {
-            this.buttonClicked(actor, buttonId);
-         }));
+    addButton: function (buttonId, label) {
+        this.radioButton = new RadioButton(label);
+        this.radioButton.actor.connect('clicked', (a, b) => this.buttonClicked(b));
 
-      this._buttons.push({ id: buttonId, button: this.radioButton });
-      this.actor.add(this.radioButton.actor, { x_fill: true, y_fill: false, y_align: St.Align.MIDDLE });
-   },
+        this._buttons.push({ id: buttonId, button: this.radioButton });
+        this.actor.add(this.radioButton.actor, { x_fill: true, y_fill: false, y_align: St.Align.MIDDLE });
+    },
 
-   radioChanged: function(actor) {
+    radioChanged: function (actor) {
 
-   },
+    },
 
-   buttonClicked: function(actor, buttonId) {
+    buttonClicked: function (actor, buttonId) {
         for (const button of this._buttons) {
             if (buttonId !== button['id'] && button['button'].actor.checked) {
                 button['button'].actor.checked = false;
@@ -176,9 +172,9 @@ RadioButtonGroup.prototype = {
             this._activeId = buttonId;
             this.emit('radio-changed', this._activeId);
         }
-   },
+    },
 
-   setActive: function(buttonId) {
+    setActive: function (buttonId) {
         for (const button of this._buttons) {
             button['button'].actor.checked = buttonId === button['id'];
         }
@@ -187,10 +183,10 @@ RadioButtonGroup.prototype = {
             this._activeId = buttonId;
             this.emit('radio-changed', this._activeId);
         }
-   },
+    },
 
-   getActive: function() {
-      return this._activeId;
-   }
+    getActive: function () {
+        return this._activeId;
+    }
 }
 Signals.addSignalMethods(RadioButtonGroup.prototype);

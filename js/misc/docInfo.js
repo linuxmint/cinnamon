@@ -16,7 +16,6 @@
 
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
-const Lang = imports.lang;
 const Signals = imports.signals;
 const Gio = imports.gi.Gio;
 
@@ -64,7 +63,10 @@ DocManager.prototype = {
         this._docSystem = Cinnamon.DocSystem.get_default();
         this._infosByTimestamp = [];
         this._load();
-        this._docSystem.connect('changed', Lang.bind(this, this._reload));
+        this._docSystem.connect('changed', () => {
+            this._load();
+            this.emit('changed');
+        });
     },
 
     _load: function() {
@@ -78,11 +80,6 @@ DocManager.prototype = {
             i++;
         }
     },
-
-    _reload: function() {
-        this._load();
-        this.emit('changed');
-    }
 };
 
 Signals.addSignalMethods(DocManager.prototype);

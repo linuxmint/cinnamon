@@ -1,4 +1,3 @@
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 const Gio = imports.gi.Gio;
@@ -60,20 +59,20 @@ TooltipBase.prototype = {
     _init: function(item) {
         this.signals = new SignalManager.SignalManager(null);
 
-        this.signals.connect(global.stage, 'notify::key-focus', this._hide, this);
-        this.signals.connect(item, 'enter-event', this._onEnterEvent, this);
-        this.signals.connect(item, 'motion-event', this._onMotionEvent, this);
-        this.signals.connect(item, 'leave-event', this._hide, this);
-        this.signals.connect(item, 'button-press-event', this._hide, this);
-        this.signals.connect(item, 'button-release-event', this._hide, this);
-        this.signals.connect(item, 'destroy', this.destroy, this);
-        this.signals.connect(item, 'allocation-changed', function() {
+        const hide = () => this._hide();
+
+        this.signals.connect(global.stage, 'notify::key-focus', hide);
+        this.signals.connect(item, 'enter-event', (a, e) => this._onEnterEvent(a, e));
+        this.signals.connect(item, 'motion-event', (a, e) => this._onMotionEvent(a, e));
+        this.signals.connect(item, 'leave-event', hide);
+        this.signals.connect(item, 'button-press-event', hide);
+        this.signals.connect(item, 'button-release-event', hide);
+        this.signals.connect(item, 'destroy', () => this.destroy());
+        this.signals.connect(item, 'allocation-changed', () => {
             // An allocation change could mean that the actor has moved,
             // so hide, but wait until after the allocation cycle.
-            Mainloop.idle_add(Lang.bind(this, function() {
-                this._hide();
-            }));
-        }, this);
+            Mainloop.idle_add(hide);
+        });
 
         this._showTimer = null;
         this.visible = false;
@@ -94,16 +93,16 @@ TooltipBase.prototype = {
         }
 
         if (!this.visible) {
-            this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onShowTimerComplete));
+            this._showTimer = Mainloop.timeout_add(300, () => this._onShowTimerComplete());
             this.mousePosition = event.get_coords();
         } else {
-            this._hideTimer = Mainloop.timeout_add(500, Lang.bind(this, this._onHideTimerComplete));
+            this._hideTimer = Mainloop.timeout_add(500, () => this._onHideTimerComplete());
         }
     },
 
     _onEnterEvent: function(actor, event) {
         if (!this._showTimer) {
-            this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onShowTimerComplete));
+            this._showTimer = Mainloop.timeout_add(300, () => this._onShowTimerComplete());
             this.mousePosition = event.get_coords();
         }
     },
@@ -128,7 +127,7 @@ TooltipBase.prototype = {
         return false;
     },
 
-    _hide: function(actor, event) {
+    _hide: function() {
         if (this._showTimer) {
             Mainloop.source_remove(this._showTimer);
             this._showTimer = null;
@@ -287,12 +286,9 @@ PanelItemTooltip.prototype = {
         Tooltip.prototype._init.call(this, panelItem.actor, initTitle);
         this._panelItem = panelItem;
         this.orientation = orientation;
-        if (this._panelItem instanceof Applet.Applet) {
-            this._panelItem.connect("orientation-changed", Lang.bind(this, this._onOrientationChanged));
-        } else if (this._panelItem._applet) {
-            this._panelItem._applet.connect("orientation-changed",
-                Lang.bind(this, this._onOrientationChanged));
-        }
+
+        let obj = this._panelItem instanceof Applet.Applet ? this._panelItem : this._panelItem._applet;
+        if (obj) obj.connect('orientation-changed', (a, o) => this._onOrientationChanged(o));
     },
 
     show: function() {
@@ -347,7 +343,7 @@ PanelItemTooltip.prototype = {
         this.visible = true;
     },
 
-    _onOrientationChanged: function(a, orientation) {
+    _onOrientationChanged: function(orientation) {
         this.orientation = orientation;
     }
 };

@@ -1,7 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
-const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const DND = imports.ui.dnd;
@@ -26,13 +25,13 @@ XdndHandler.prototype = {
         // access it directly it has to connect to the stage's show
         // signal. (see comment in compositor.c:meta_compositor_manage_screen)
         global.stage.connect('show', function () {
-                                        global.init_xdnd();
-                                        return false;
-                                      });
+            global.init_xdnd();
+            return false;
+        });
 
-        global.connect('xdnd-enter', Lang.bind(this, this._onEnter));
-        global.connect('xdnd-position-changed', Lang.bind(this, this._onPositionChanged));
-        global.connect('xdnd-leave', Lang.bind(this, this._onLeave));
+        global.connect('xdnd-enter', () => this._onEnter());
+        global.connect('xdnd-position-changed', (o, x, y) => this._onPositionChanged(x, y));
+        global.connect('xdnd-leave', () => this._onLeave());
 
         this._windowGroupVisibilityHandlerId = 0;
     },
@@ -52,9 +51,8 @@ XdndHandler.prototype = {
     },
 
     _onEnter: function() {
-        this._windowGroupVisibilityHandlerId  =
-                global.window_group.connect('notify::visible',
-                    Lang.bind(this, this._onWindowGroupVisibilityChanged));
+        this._windowGroupVisibilityHandlerId =
+            global.window_group.connect('notify::visible', () => this._onWindowGroupVisibilityChanged());
 
         this.emit('drag-begin', global.get_current_time());
     },
@@ -88,12 +86,11 @@ XdndHandler.prototype = {
         }
     },
 
-    _onPositionChanged: function(obj, x, y) {
+    _onPositionChanged: function(x, y) {
         let pickedActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
 
         // Make sure that the cursor window is on top
-        if (this._cursorWindowClone)
-             this._cursorWindowClone.raise_top();
+        if (this._cursorWindowClone) this._cursorWindowClone.raise_top();
 
         let dragEvent = {
             x: x,
@@ -113,16 +110,11 @@ XdndHandler.prototype = {
         }
 
         while (pickedActor) {
-                if (pickedActor._delegate && pickedActor._delegate.handleDragOver) {
-                    let result = pickedActor._delegate.handleDragOver(this,
-                                                                      dragEvent.dragActor,
-                                                                      x,
-                                                                      y,
-                                                                      global.get_current_time());
-                    if (result != DND.DragMotionResult.CONTINUE)
-                        return;
-                }
-                pickedActor = pickedActor.get_parent();
+            if (pickedActor._delegate && pickedActor._delegate.handleDragOver) {
+                let result = pickedActor._delegate.handleDragOver(this, dragEvent.dragActor, x, y, global.get_current_time());
+                if (result != DND.DragMotionResult.CONTINUE) return;
+            }
+            pickedActor = pickedActor.get_parent();
         }
     }
 }

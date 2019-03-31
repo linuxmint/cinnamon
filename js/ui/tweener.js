@@ -2,7 +2,6 @@
 
 const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
@@ -384,10 +383,7 @@ ClutterFrameTicker.prototype = {
         this._timeline = new Clutter.Timeline({ duration: 1000*1000 });
         this._startTime = -1;
 
-        this._timeline.connect('new-frame', Lang.bind(this,
-            function(timeline, frame) {
-                this._onNewFrame(frame);
-            }));
+        this._timeline.connect('new-frame', (t, frame) => this._onNewFrame(frame));
 
         let perf_log = Cinnamon.PerfLog.get_default();
         perf_log.define_event("tweener.framePrepareStart",
@@ -408,10 +404,10 @@ ClutterFrameTicker.prototype = {
             this._startTime = this._timeline.get_elapsed_time();
 
         // currentTime is in milliseconds
-        let perf_log = Cinnamon.PerfLog.get_default();
-        perf_log.event("tweener.framePrepareStart");
+        //let perf_log = Cinnamon.PerfLog.get_default();
+        //perf_log.event("tweener.framePrepareStart");
         this.emit('prepare-frame');
-        perf_log.event("tweener.framePrepareDone");
+        //perf_log.event("tweener.framePrepareDone");
     },
 
     getTime : function() {
