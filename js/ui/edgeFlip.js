@@ -3,7 +3,6 @@ const Main = imports.ui.main;
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Mainloop = imports.mainloop;
-const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 
 function EdgeFlipper(side, func){
@@ -54,13 +53,13 @@ EdgeFlipper.prototype = {
                     }
                 }
             }
-            Mainloop.timeout_add(Math.max(this.delay, 200), Lang.bind(this, this._checkOver));
+            Mainloop.timeout_add(Math.max(this.delay, 200), () => this._checkOver());
         }
     },
 
     _onMouseEnter: function(){
         this.entered = true;
-        Mainloop.timeout_add(this.delay, Lang.bind(this, this._check));
+        Mainloop.timeout_add(this.delay, () => this._check());
     },
 
     _check: function(){

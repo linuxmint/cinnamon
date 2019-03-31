@@ -1,6 +1,3 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-
-const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
@@ -46,13 +43,13 @@ SoundManager.prototype = {
         this.file = {};
         this.settings = new Gio.Settings({ schema_id: 'org.cinnamon.sounds' });
         this.desktop_settings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.sound' });
-        this._cacheSettings();                
-        this._cacheDesktopSettings();   
-        this.settings.connect("changed", Lang.bind(this, this._cacheSettings));
-        this.desktop_settings.connect("changed", Lang.bind(this, this._cacheDesktopSettings));
-        Mainloop.timeout_add_seconds(10, Lang.bind(this, function() {
+        this._cacheSettings();
+        this._cacheDesktopSettings();
+        this.settings.connect('changed', () => this._cacheSettings());
+        this.desktop_settings.connect('changed', () => this._cacheDesktopSettings());
+        Mainloop.timeout_add_seconds(10, () => {
             this.startup_delay = false;
-        }));
+        });
 
         this.proxy = new proxy(Gio.DBus.session,
                                'org.cinnamon.SettingsDaemon.Sound',
@@ -60,9 +57,9 @@ SoundManager.prototype = {
 
         /* patch public methods into global to keep backward compatibility */
 
-        global.play_theme_sound = Lang.bind(this, this.playSound);
-        global.play_sound_file = Lang.bind(this, this.playSoundFile);
-        global.cancel_sound = Lang.bind(this, this.cancelSound);
+        global.play_theme_sound = (i, n) => this.playSound(i, n);
+        global.play_sound_file = (i, f) => this.playSoundFile(i, f);
+        global.cancel_sound = (i) => this.cancelSound(i);
     },
 
     _cacheSettings: function() {
@@ -70,7 +67,7 @@ SoundManager.prototype = {
             let key = this.keys[i];
             this.enabled[key] = this.settings.get_boolean(key + "-enabled");
             this.file[key] = this.settings.get_string(key + "-file");
-        }        
+        }
     },
 
     _cacheDesktopSettings: function() {
@@ -78,7 +75,7 @@ SoundManager.prototype = {
             let key = this.desktop_keys[i];
             this.enabled[key] = this.desktop_settings.get_boolean(key + "-sound-enabled");
             this.file[key] = this.desktop_settings.get_string(key + "-sound-file");
-        }        
+        }
     },
 
     play: function(sound) {

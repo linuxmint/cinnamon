@@ -74,13 +74,13 @@ Source.prototype = {
 
         this.signalIDs = [];
 
-        const destroy = () => this.destroy();
+        const destroy = () => this._onDestroy();
 
         this.signalIDs.push(this._window.connect('notify::demands-attention', destroy));
         this.signalIDs.push(this._window.connect('focus', destroy));
         this.signalIDs.push(this._window.connect('unmanaged', destroy));
 
-        this.connect('destroy', Lang.bind(this, this._onDestroy));
+        this.connect('destroy', destroy);
     },
 
     _onDestroy: function() {

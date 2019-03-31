@@ -2,7 +2,6 @@
 
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const Lang = imports.lang;
 
 const dbusIFace =
     '<node> \
@@ -24,7 +23,7 @@ SlideshowManager.prototype = {
     _init: function() {
         this.proxy = null;
         this._slideshowSettings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.background.slideshow" });
-        this._slideshowSettings.connect("changed::slideshow-enabled", Lang.bind(this, this._onSlideshowEnabledChanged));
+        this._slideshowSettings.connect('changed::slideshow-enabled', () => this._onSlideshowEnabledChanged());
 
         if (this._slideshowSettings.get_boolean("slideshow-enabled")) {
             this.begin();

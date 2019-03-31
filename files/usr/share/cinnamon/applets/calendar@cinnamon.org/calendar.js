@@ -2,7 +2,6 @@
 
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
-const Lang = imports.lang;
 const St = imports.gi.St;
 const Signals = imports.signals;
 const Pango = imports.gi.Pango;
@@ -146,7 +145,7 @@ class Calendar {
 
         settings.bindWithObject(this.state, "show-week-numbers", "show_week_numbers", this._onSettingsChange);
         this.desktop_settings = new Gio.Settings({ schema_id: DESKTOP_SCHEMA });
-        this.desktop_settings.connect("changed::" + FIRST_WEEKDAY_KEY, Lang.bind(this, this._onSettingsChange));
+        this.desktop_settings.connect("changed::" + FIRST_WEEKDAY_KEY, (o, k) => this._onSettingsChange(k));
 
         // Find the ordering for month/year in the calendar heading
 
@@ -171,13 +170,12 @@ class Calendar {
                                     style_class: 'calendar',
                                     reactive: true });
 
-        this.actor.connect('scroll-event',
-                           Lang.bind(this, this._onScroll));
+        this.actor.connect('scroll-event', (a, e) => this._onScroll(e));
 
         this._buildHeader ();
     }
 
-    _onSettingsChange(object, key, old_val, new_val) {
+    _onSettingsChange(key) {
         if (key == FIRST_WEEKDAY_KEY) this._weekStart = Cinnamon.util_get_week_start();
         this._buildHeader();
         this._update(false);
@@ -219,25 +217,25 @@ class Calendar {
 
         let back = new St.Button({ style_class: 'calendar-change-month-back' });
         this._topBoxMonth.add(back);
-        back.connect('clicked', Lang.bind(this, this._onPrevMonthButtonClicked));
+        back.connect('clicked', () => this._onPrevMonthButtonClicked());
 
         this._monthLabel = new St.Label({style_class: 'calendar-month-label'});
         this._topBoxMonth.add(this._monthLabel, { expand: true, x_fill: false, x_align: St.Align.MIDDLE });
 
         let forward = new St.Button({ style_class: 'calendar-change-month-forward' });
         this._topBoxMonth.add(forward);
-        forward.connect('clicked', Lang.bind(this, this._onNextMonthButtonClicked));
+        forward.connect('clicked', () => this._onNextMonthButtonClicked());
 
         back = new St.Button({style_class: 'calendar-change-month-back'});
         this._topBoxYear.add(back);
-        back.connect('clicked', Lang.bind(this, this._onPrevYearButtonClicked));
+        back.connect('clicked', () => this._onPrevYearButtonClicked());
 
         this._yearLabel = new St.Label({style_class: 'calendar-month-label'});
         this._topBoxYear.add(this._yearLabel, {expand: true, x_fill: false, x_align: St.Align.MIDDLE});
 
         forward = new St.Button({style_class: 'calendar-change-month-forward'});
         this._topBoxYear.add(forward);
-        forward.connect('clicked', Lang.bind(this, this._onNextYearButtonClicked));
+        forward.connect('clicked', () => this._onNextYearButtonClicked());
 
         // Add weekday labels...
         //
@@ -276,7 +274,7 @@ class Calendar {
         }
     }
 
-    _onScroll (actor, event) {
+    _onScroll (event) {
         switch (event.get_scroll_direction()) {
             case Clutter.ScrollDirection.UP:
             case Clutter.ScrollDirection.LEFT:
@@ -356,10 +354,10 @@ class Calendar {
             button.reactive = false;
 
             let iterStr = iter.toUTCString();
-            button.connect('clicked', Lang.bind(this, function() {
+            button.connect('clicked', () => {
                 let newlySelectedDate = new Date(iterStr);
                 this.setDate(newlySelectedDate, false);
-            }));
+            });
 
             let styleClass = 'calendar-day-base calendar-day';
             if (_isWorkDay(iter))
