@@ -294,7 +294,7 @@ cinnamon_app_get_name (CinnamonApp *app)
   else
     {
       MetaWindow *window = window_backed_app_get_window (app);
-      const char *name;
+      const char *name = NULL;
 
       if (window)
         name = meta_window_get_wm_class (window);
