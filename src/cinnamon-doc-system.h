@@ -32,6 +32,6 @@ GType cinnamon_doc_system_get_type (void) G_GNUC_CONST;
 
 CinnamonDocSystem* cinnamon_doc_system_get_default (void);
 
-GSList *cinnamon_doc_system_get_all (CinnamonDocSystem    *system);
+GList *cinnamon_doc_system_get_all (CinnamonDocSystem    *system);
 
 #endif /* __CINNAMON_DOC_SYSTEM_H__ */
