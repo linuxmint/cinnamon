@@ -12,6 +12,9 @@ const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
 const Signals = imports.signals;
 const Extension = imports.ui.extension;
+const {readJSONAsync, readFileAsync, writeFileAsync} = imports.misc.fileUtils;
+const {tryFn} = imports.misc.util;
+const ByteArray = imports.byteArray;
 
 /**
  * ENUM:BindingDirection
@@ -248,10 +251,6 @@ function has_required_fields(props, key) {
     return true;
 }
 
-function XletSettingsBase(bindObject, uuid, instanceId) {
-    this._init(bindObject, uuid, instanceId);
-}
-
 /**
  * #XletSettingsBase:
  * @short_description: Object for handling xlet settings updates
@@ -261,21 +260,26 @@ function XletSettingsBase(bindObject, uuid, instanceId) {
  * directly, but rather through one of the wrapper classes (#AppletSettings,
  * #DeskletSettings, or #ExtensionSettings)
  */
-XletSettingsBase.prototype = {
-    _init: function(bindObject, uuid, instanceId) {
+class XletSettingsBase {
+    constructor(bindObject, uuid, instanceId, asynchronous = false) {
         this.isReady = false;
         this.bindObject = bindObject;
         this.uuid = uuid;
+        this.async = asynchronous;
         if (this._get_is_multi_instance_xlet(this.uuid)) this.instanceId = instanceId;
         else this.instanceId = this.uuid;
         this.bindings = {};
+        this.settingsData = {};
+        this.promise = null;
 
-        if (!this._ensureSettingsFiles()) return;
+        if (asynchronous) this.promise = this._ensureSettingsFiles();
+        else if (this._ensureSettingsFiles()) this._register();
+    }
 
+    _register() {
         Main.settingsManager.register(this.uuid, this.instanceId, this);
-
         this.isReady = true;
-    },
+    }
 
     /**
      * bindWithObject:
@@ -293,7 +297,7 @@ XletSettingsBase.prototype = {
      *
      * Returns (boolean): Whether the bind was successful
      */
-    bindWithObject: function(bindObject, key, applet_prop, callback, user_data) {
+    bindWithObject(bindObject, key, applet_prop, callback, user_data) {
         if (!this.isReady) {
             settings_not_initialized_error(this.uuid);
             return false;
@@ -332,7 +336,7 @@ XletSettingsBase.prototype = {
             this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
         }
         return true;
-    },
+    }
 
     /**
      * bind:
@@ -346,9 +350,9 @@ XletSettingsBase.prototype = {
      *
      * Returns (boolean): Whether the bind was successful
      */
-    bind: function(key, applet_prop, callback, user_data) {
+    bind(key, applet_prop, callback, user_data) {
         return this.bindWithObject(this.bindObject, key, applet_prop, callback, user_data)
-    },
+    }
 
     /**
      * bindProperty:
@@ -365,9 +369,9 @@ XletSettingsBase.prototype = {
      *
      * Returns (boolean): Whether the bind was successful
      */
-    bindProperty: function(direction, key, applet_prop, callback, user_data) {
+    bindProperty(direction, key, applet_prop, callback, user_data) {
         return this.bind(key, applet_prop, callback, user_data);
-    },
+    }
 
     /**
      * unbindWithObject:
@@ -381,7 +385,7 @@ XletSettingsBase.prototype = {
      *
      * Returns (boolean): Whether the unbind was successful.
      */
-    unbindWithObject: function(bindObject, key) {
+    unbindWithObject(bindObject, key) {
         if ((key in this.bindings)) {
             for (let i in this.bindings[key]) {
                 let info = this.bindings[key][i];
@@ -394,7 +398,7 @@ XletSettingsBase.prototype = {
 
         binding_not_found_error(key, this.uuid);
         return false;
-    },
+    }
 
     /**
      * unbind:
@@ -406,7 +410,7 @@ XletSettingsBase.prototype = {
      *
      * Returns (boolean): Whether the unbind was successful.
      */
-    unbind: function(key) {
+    unbind(key) {
         if ((key in this.bindings)) {
             for (let i in this.bindings[key]) {
                 let info = this.bindings[key][i];
@@ -419,7 +423,7 @@ XletSettingsBase.prototype = {
 
         binding_not_found_error(key, this.uuid);
         return false;
-    },
+    }
 
     /**
      * unbindProperty:
@@ -431,9 +435,9 @@ XletSettingsBase.prototype = {
      *
      * Returns (boolean): Whether the unbind was successful.
      */
-    unbindProperty: function (key) {
+    unbindProperty(key) {
         this.unbind(key);
-    },
+    }
 
     /**
      * unbindAll:
@@ -443,7 +447,7 @@ XletSettingsBase.prototype = {
      *
      * Returns (boolean): Whether the unbind was successful.
      */
-    unbindAll: function (key) {
+    unbindAll(key) {
         if (!(key in this.bindings)) {
             binding_not_found_error(key, this.uuid);
             return false;
@@ -455,19 +459,19 @@ XletSettingsBase.prototype = {
         }
         delete this.bindings[key];
         return true;
-    },
+    }
 
-    _getValue: function(key) {
+    _getValue(key) {
         let value = this.settingsData[key].value;
         return value;
-    },
+    }
 
-    _setValue: function(value, key) {
+    _setValue(value, key) {
         if (this.settingsData[key].value != value || typeof(value) == "object") {
             this.settingsData[key].value = value;
             this._saveToFile();
         }
-    },
+    }
 
     /**
      * getValue:
@@ -477,13 +481,13 @@ XletSettingsBase.prototype = {
      *
      * Returns: The current value of the setting
      */
-    getValue: function(key) {
+    getValue(key) {
         if (key in this.settingsData) return this._getValue(key);
         else {
             key_not_found_error(key, this.uuid);
             return null;
         }
-    },
+    }
 
     /**
      * setValue:
@@ -492,13 +496,13 @@ XletSettingsBase.prototype = {
      *
      * Sets the value of the setting @key to @value.
      */
-    setValue: function(key, value) {
+    setValue(key, value) {
         if (!(key in this.settingsData)) {
             key_not_found_error(key, this.uuid);
             return;
         }
         this._setValue(value, key);
-    },
+    }
 
     /**
      * getDefaultValue:
@@ -508,14 +512,14 @@ XletSettingsBase.prototype = {
      *
      * Returns: The default value of the setting
      */
-    getDefaultValue: function(key) {
+    getDefaultValue(key) {
         if (key in this.settingsData) {
             return this.settingsData[key].default;
         } else {
             key_not_found_error(key, this.uuid);
             return null;
         }
-    },
+    }
 
     /**
      * getOptions:
@@ -526,7 +530,7 @@ XletSettingsBase.prototype = {
      * Returns: The currently stored options of the key (or undefined if the key does
      * not support options)
      */
-    getOptions: function (key) {
+    getOptions(key) {
         if (!(key in this.settingsData)) {
             key_not_found_error(key, this.uuid);
             return null;
@@ -538,7 +542,7 @@ XletSettingsBase.prototype = {
         }
 
         return this.settingsData[key].options;
-    },
+    }
 
     /**
      * setOptions:
@@ -548,7 +552,7 @@ XletSettingsBase.prototype = {
      * Sets the available options of @key to @options. An error is given if the setting
      * does not support options.
      */
-    setOptions: function (key, options) {
+    setOptions(key, options) {
         if (!(key in this.settingsData)) {
             key_not_found_error(key, this.uuid);
             return;
@@ -563,63 +567,60 @@ XletSettingsBase.prototype = {
             this.settingsData[key].options = options;
             this._saveToFile();
         }
-    },
+    }
 
-    _checkSettings: function() {
+    _checkSettings() {
         let oldSettings = this.settingsData;
-        try {
-            this.settingsData = this._loadFromFile();
-        } catch(e) {
-            // looks like we're getting a premature signal from the file monitor
-            // we should get another when the file is finished writing
-            return;
-        }
+        readJSONAsync(this.file).then((json) => {
+            if (this.finalized) return;
+            this.settingsData = json;
+            let changed = false;
 
-        let changed = false;
-        for (let key in this.settingsData) {
-            if (!this.settingsData[key]
-                || this.settingsData[key].value === undefined
-                || !oldSettings[key]
-                || oldSettings[key].value === undefined) continue;
+            for (let key in json) {
+                if (!json[key]
+                    || json[key].value === undefined
+                    || !oldSettings[key]
+                    || oldSettings[key].value === undefined) continue;
 
-            let oldValue = oldSettings[key].value;
-            let value = this.settingsData[key].value;
-            if (value == oldValue) continue;
+                let oldValue = oldSettings[key].value;
+                let value = json[key].value;
+                if (value == oldValue) continue;
 
-            changed = true;
-            if (key in this.bindings) {
-                for (let info of this.bindings[key]) {
-                    // if the property had a save function, it is gone now and we need to re-add it
-                    if (info.isObject && !this.settingsData[key].value.save) {
-                        this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
+                changed = true;
+                if (key in this.bindings) {
+                    for (let info of this.bindings[key]) {
+                        // if the property had a save function, it is gone now and we need to re-add it
+                        if (info.isObject && !json[key].value.save) {
+                            json[key].value.save = Lang.bind(this, this._saveToFile);
+                        }
+
+                        if (info.callback) info.callback(value);
                     }
-
-                    if (info.callback) info.callback(value);
                 }
+
+                /**
+                 * SIGNAL: changed::'key'
+                 * @key (string): The settings key who's value changed
+                 * @oldValue: The value of the key before the setting changed
+                 * @newValue: The value of the key after the setting changed
+                 *
+                 * Emitted when the value of the setting changes
+                 */
+                this.emit("changed::" + key, key, oldValue, value);
             }
 
             /**
-             * SIGNAL: changed::'key'
-             * @key (string): The settings key who's value changed
-             * @oldValue: The value of the key before the setting changed
-             * @newValue: The value of the key after the setting changed
+             * SIGNAL: settings-changed
              *
-             * Emitted when the value of the setting changes
+             * Emitted when any of the settings changes
              */
-            this.emit("changed::" + key, key, oldValue, value);
-        }
+            if (changed) {
+                this.emit("settings-changed");
+            }
+        });
+    }
 
-        /**
-         * SIGNAL: settings-changed
-         *
-         * Emitted when any of the settings changes
-         */
-        if (changed) {
-            this.emit("settings-changed");
-        }
-    },
-
-    _ensureSettingsFiles: function() {
+    _ensureSettingsFiles() {
         let configPath = [GLib.get_home_dir(), ".cinnamon", "configs", this.uuid].join("/");
         let configDir = Gio.file_new_for_path(configPath);
         if (!configDir.query_exists(null)) configDir.make_directory_with_parents(null);
@@ -628,6 +629,11 @@ XletSettingsBase.prototype = {
         let xletDir = Extension.getExtension(this.uuid).dir;
         let templateFile = xletDir.get_child("settings-schema.json");
 
+        if (this.async) return this.checkSchema(templateFile);
+        return this._ensureSettingsFilesSync(templateFile);
+    }
+
+    _ensureSettingsFilesSync(templateFile) {
         // If the settings have already been installed previously we need to check if the schema
         // has changed and if so, do an upgrade
         if (this.file.query_exists(null)) {
@@ -686,10 +692,64 @@ XletSettingsBase.prototype = {
         if (!this.monitorId) this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
 
         return true;
-    },
+    }
 
-    _doInstall: function(templateData) {
-        global.log("Installing settings for " + this.uuid);
+    checkSchema(templateFile) {
+        // If the settings have already been installed previously we need to check if the schema
+        // has changed and if so, do an upgrade
+        if (!this.file.query_exists(null)) {
+            // If the settings haven't already been installed, we need to do that now
+            if (!templateFile.query_exists(null)) {
+                throw new Error(`Unable to load settings for ${this.uuid}: settings-schema.json could not be found`);
+            }
+
+            return readFileAsync(templateFile).then((templateData) => {
+                if (!this._doInstall(templateData)) {
+                    throw new Error(`Unable to install settings for ${this.uuid}: there is a problem with settings-schema.json`);
+                }
+                return this._saveToFile();
+            })
+            .then(() => this._ensureSettingsFilesAsync(templateFile))
+            .catch((e) => global.logError(e));
+        }
+        return this._ensureSettingsFilesAsync(templateFile);
+    }
+
+    _ensureSettingsFilesAsync(templateFile) {
+        return readJSONAsync(this.file).then((json) => {
+            if (this.finalized) return;
+            this.settingsData = json;
+            // if this.settingsData is populated, all we need to do is check for a newer version of the schema and upgrade if we find one
+            // if not, it means either that an installation has not yet occurred, or something when wrong
+            // either way, we need to install
+            if (templateFile.query_exists(null)) return readFileAsync(templateFile);
+            // if settings-schema.json is missing, we can still load the settings from data, so we
+            // will merely skip the upgrade test
+            throw new Error(`Couldn't find file settings-schema.json for ${this.uuid}: skipping upgrade`);
+        }).then((templateData) => {
+            if (templateData) {
+                let checksum = global.get_md5_for_string(templateData);
+                if (checksum !== this.settingsData.__md5__) {
+                    this._doUpgrade(templateData, checksum);
+                    return this._saveToFile();
+                }
+            }
+        }).then(() => {
+            if (!this.monitorId) this.monitorId = this.monitor.connect('changed', () => this._checkSettings());
+            this._register();
+        }).catch((e) => {
+            global.logError(e);
+            if (this.settingsData) global.logWarning(`Upgrade failed for ${this.uuid}: falling back to previous settings`);
+            else {
+                global.logError(`Failed to parse file ${this.file.get_path()}. Attempting to rebuild the settings file for ${this.uuid}.`);
+                Main.notify(`Unfortunately the settings file for ${this.uuid} seems to be corrupted. Your settings have been reset to default.`);
+            }
+
+        });
+    }
+
+    _doInstall(templateData) {
+        global.log(`Installing settings for ${this.uuid}`);
         let checksum = global.get_md5_for_string(templateData);
         this.settingsData = JSON.parse(templateData);
         for (let key in this.settingsData) {
@@ -700,11 +760,11 @@ XletSettingsBase.prototype = {
         }
         this.settingsData.__md5__ = checksum;
 
-        global.log("Settings successfully installed for " + this.uuid);
+        global.log(`Settings successfully installed for ${this.uuid}`);
         return true;
-    },
+    }
 
-    _doUpgrade: function(templateData, checksum) {
+    _doUpgrade(templateData, checksum) {
         global.log("Upgrading settings for " + this.uuid);
         let newSettings = JSON.parse(templateData);
         for (let key in newSettings) {
@@ -726,15 +786,14 @@ XletSettingsBase.prototype = {
 
         this.settingsData = newSettings;
         global.log("Settings successfully upgraded for " + this.uuid);
-    },
+    }
 
-    _checkSanity: function(val, setting) {
+    _checkSanity(val, setting) {
         let found;
         switch (setting["type"]) {
             case "spinbutton":
             case "scale":
                 return (val < setting["max"] && val > setting["min"]);
-                break;
             case "combobox":
             case "radiogroup":
                 found = false;
@@ -745,36 +804,51 @@ XletSettingsBase.prototype = {
                     }
                 }
                 return found;
-                break;
             default:
                 return true;
-                break;
         }
-        return true;
-    },
+    }
 
-    _loadFromFile: function() {
+    _loadFromFile() {
         let rawData = Cinnamon.get_file_contents_utf8_sync(this.file.get_path());
         let json = JSON.parse(rawData);
 
         return json;
-    },
+    }
 
-    _saveToFile: function() {
-        if (this.monitorId) this.monitor.disconnect(this.monitorId);
+    _saveToFile() {
+        if (this.monitorId) {
+            this.monitor.disconnect(this.monitorId);
+            this.monitorId = 0;
+        }
         let rawData = JSON.stringify(this.settingsData, null, 4);
+        if (this.async) return this._saveToFileAsync(rawData);
+        else this._saveToFileSync(rawData);
+    }
+
+    _saveToFileSync(rawData) {
         let raw = this.file.replace(null, false, Gio.FileCreateFlags.NONE, null);
         let out_file = Gio.BufferedOutputStream.new_sized(raw, 4096);
         Cinnamon.write_string_to_stream(out_file, rawData);
         out_file.close(null);
         this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
-    },
+    }
+
+    _saveToFileAsync(rawData) {
+        if (this.monitorId) {
+            this.monitor.disconnect(this.monitorId);
+            this.monitorId = 0;
+        }
+        return writeFileAsync(this.file, rawData, () => {
+            this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
+        });
+    }
 
     // called by cinnamonDBus.js to when the setting is changed remotely. This is to expedite the
     // update due to settings changes, as the file monitor has a significant delay.
-    remoteUpdate: function(key, payload) {
+    remoteUpdate(key, payload) {
         this._checkSettings();
-    },
+    }
 
     /**
      * finalize:
@@ -782,7 +856,8 @@ XletSettingsBase.prototype = {
      * Removes all bindings and disconnects all signals. This function should be called prior
      * to deleting the object.
      */
-    finalize: function() {
+    finalize() {
+        this.finalized = true;
         Main.settingsManager.unregister(this.uuid, this.instanceId);
         for (let key in this.bindings) {
             this.unbindAll(key);
@@ -799,26 +874,20 @@ Signals.addSignalMethods(XletSettingsBase.prototype);
  *
  * Inherits: Settings.XletSettingsBase
  */
-function AppletSettings(xlet, uuid, instanceId) {
-    this._init(xlet, uuid, instanceId);
-}
-
-AppletSettings.prototype = {
-    __proto__: XletSettingsBase.prototype,
-
+var AppletSettings = class AppletSettings extends XletSettingsBase {
     /**
      * _init:
      * @xlet (Object): the object variables are binded to (usually `this`)
      * @uuid (string): uuid of the applet
      * @instanceId (int): instance id of the applet
      */
-    _init: function (xlet, uuid, instanceId) {
-        XletSettingsBase.prototype._init.call(this, xlet, uuid, instanceId, "Applet");
-    },
+    constructor(xlet, uuid, instanceId, asynchronous) {
+        super(xlet, uuid, instanceId, asynchronous);
+    }
 
-    _get_is_multi_instance_xlet: function(uuid) {
+    _get_is_multi_instance_xlet(uuid) {
         return Extension.get_max_instances(uuid) != 1;
-    },
+    }
 };
 
 /**
@@ -827,24 +896,18 @@ AppletSettings.prototype = {
  *
  * Inherits: Settings.XletSettingsBase
  */
-function DeskletSettings(xlet, uuid, instanceId) {
-    this._init(xlet, uuid, instanceId);
-}
-
-DeskletSettings.prototype = {
-    __proto__: XletSettingsBase.prototype,
-
+var DeskletSettings = class DeskletSettings extends XletSettingsBase {
     /**
      * _init:
      * @xlet (Object): the object variables are binded to (usually `this`)
      * @uuid (string): uuid of the desklet
      * @instanceId (int): instance id of the desklet
      */
-    _init: function (xlet, uuid, instanceId) {
-        XletSettingsBase.prototype._init.call(this, xlet, uuid, instanceId, "Desklet");
-    },
+    constructor(xlet, uuid, instanceId, asynchronous) {
+        super(xlet, uuid, instanceId, asynchronous);
+    }
 
-    _get_is_multi_instance_xlet: function(uuid) {
+    _get_is_multi_instance_xlet(uuid) {
         return Extension.get_max_instances(uuid) > 1;
     }
 };
@@ -855,43 +918,33 @@ DeskletSettings.prototype = {
  *
  * Inherits: Settings.XletSettingsBase
  */
-function ExtensionSettings(xlet, uuid) {
-    this._init(xlet, uuid);
-}
-
-ExtensionSettings.prototype = {
-    __proto__: XletSettingsBase.prototype,
-
+var ExtensionSettings = class ExtensionSettings extends XletSettingsBase {
     /**
      * _init:
      * @xlet (Object): the object variables are binded to (usually `this`)
      * @uuid (string): uuid of the extension
      */
-    _init: function (xlet, uuid) {
-        XletSettingsBase.prototype._init.call(this, xlet, uuid, null, "Extension");
-    },
+    constructor(xlet, uuid, asynchronous) {
+        super(xlet, uuid, null, asynchronous);
+    }
 
-    _get_is_multi_instance_xlet: function(uuid) {
+    _get_is_multi_instance_xlet(uuid) {
         return false;
     }
 };
 
-function SettingsManager() {
-    this._init();
-}
-
-SettingsManager.prototype = {
-    _init: function () {
+var SettingsManager = class SettingsManager {
+    constructor() {
         this.uuids = {};
-    },
+    }
 
-    register: function (uuid, instance_id, obj) {
+    register(uuid, instance_id, obj) {
         if (!(uuid in this.uuids))
             this.uuids[uuid] = {}
         this.uuids[uuid][instance_id] = obj;
-    },
+    }
 
-    unregister: function (uuid, instance_id) {
+    unregister(uuid, instance_id) {
         this.uuids[uuid][instance_id] = null;
     }
 };

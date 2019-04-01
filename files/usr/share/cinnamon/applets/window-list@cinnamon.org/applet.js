@@ -982,8 +982,11 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this._windows = [];
         this._monitorWatchList = [];
 
-        this.settings = new Settings.AppletSettings(this, "window-list@cinnamon.org", this.instance_id);
+        this.settings = new Settings.AppletSettings(this, 'window-list@cinnamon.org', this.instance_id, true);
+        this.settings.promise.then(() => this.settingsInit(orientation));
+    }
 
+    settingsInit(orientation) {
         this.settings.bind("show-all-workspaces", "showAllWorkspaces");
         this.settings.bind("enable-alerts", "enableAlerts", this._updateAttentionGrabber);
         this.settings.bind("enable-scrolling", "scrollable", this._onEnableScrollChanged);
@@ -1008,6 +1011,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
         this.on_orientation_changed(orientation);
         this._updateAttentionGrabber();
+        this._onPreviewChanged();
     }
 
     on_applet_added_to_panel(userEnabled) {

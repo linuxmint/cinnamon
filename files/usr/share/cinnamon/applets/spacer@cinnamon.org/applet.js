@@ -1,22 +1,25 @@
-const Applet = imports.ui.applet;
-const St = imports.gi.St;
-const Settings = imports.ui.settings;
+const {IconApplet} = imports.ui.applet;
+const {Bin, Side} = imports.gi.St;
+const {AppletSettings} = imports.ui.settings;
 
-class CinnamonSpacerApplet extends Applet.IconApplet {
+class CinnamonSpacerApplet extends IconApplet {
     constructor(metadata, orientation, panelHeight, instance_id) {
         super(orientation, panelHeight, instance_id);
         this.actor.track_hover = false;
 
-        this.bin = new St.Bin();
+        this.bin = new Bin();
         this.actor.add(this.bin);
 
-        this.settings = new Settings.AppletSettings(this, "spacer@cinnamon.org", this.instance_id);
+        this.state = {};
 
-        this.settings.bind("width", "width", this.width_changed);
+        this.settings = new AppletSettings(this.state, 'spacer@cinnamon.org', this.instance_id, true);
+        this.settings.promise.then(() => {
+            this.settings.bind('width', 'width', () => this.width_changed());
 
-        this.orientation = orientation;
+            this.orientation = orientation;
 
-        this.width_changed();
+            this.width_changed();
+        });
     }
 
     on_orientation_changed(neworientation) {
@@ -25,7 +28,7 @@ class CinnamonSpacerApplet extends Applet.IconApplet {
         if (this.bin) {
             this.bin.destroy();
 
-            this.bin = new St.Bin();
+            this.bin = new Bin();
             this.actor.add(this.bin);
 
             this.width_changed();
@@ -33,10 +36,10 @@ class CinnamonSpacerApplet extends Applet.IconApplet {
     }
 
     width_changed() {
-        if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM)
-            this.bin.width = this.width;
+        if (this.orientation == Side.TOP || this.orientation == Side.BOTTOM)
+            this.bin.width = this.state.width;
         else
-            this.bin.height = this.width;
+            this.bin.height = this.state.width;
     }
 
     on_applet_removed_from_panel() {

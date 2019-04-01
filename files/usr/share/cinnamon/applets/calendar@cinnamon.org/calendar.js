@@ -64,17 +64,17 @@ function _formatEventTime(event, clockFormat) {
         ret = C_("event list time", "All Day");
     } else {
         switch (clockFormat) {
-        case '24h':
-            /* Translators: Shown in calendar event list, if 24h format */
-            ret = event.date.toLocaleFormat(C_("event list time", "%H:%M"));
-            break;
+            case '24h':
+                /* Translators: Shown in calendar event list, if 24h format */
+                ret = event.date.toLocaleFormat(C_("event list time", "%H:%M"));
+                break;
 
-        default:
-            /* explicit fall-through */
-        case '12h':
-            /* Transators: Shown in calendar event list, if 12h format */
-            ret = event.date.toLocaleFormat(C_("event list time", "%l:%M %p"));
-            break;
+            default:
+                /* explicit fall-through */
+            case '12h':
+                /* Transators: Shown in calendar event list, if 12h format */
+                ret = event.date.toLocaleFormat(C_("event list time", "%l:%M %p"));
+                break;
         }
     }
     return ret;
@@ -141,9 +141,10 @@ class Calendar {
         this._weekStart = Cinnamon.util_get_week_start();
         this._weekdate = NaN;
         this._digitWidth = NaN;
-        this.settings = settings;
 
-        this.settings.bindWithObject(this, "show-week-numbers", "show_week_numbers", this._onSettingsChange);
+        this.state = {};
+
+        settings.bindWithObject(this.state, "show-week-numbers", "show_week_numbers", this._onSettingsChange);
         this.desktop_settings = new Gio.Settings({ schema_id: DESKTOP_SCHEMA });
         this.desktop_settings.connect("changed::" + FIRST_WEEKDAY_KEY, Lang.bind(this, this._onSettingsChange));
 
@@ -151,16 +152,16 @@ class Calendar {
 
         let var_name = 'calendar:MY';
         switch (Gettext_gtk30.gettext(var_name)) {
-        case 'calendar:MY':
-            this._headerMonthFirst = true;
-            break;
-        case 'calendar:YM':
-            this._headerMonthFirst = false;
-            break;
-        default:
-            log('Translation of "calendar:MY" in GTK+ is not correct');
-            this._headerMonthFirst = true;
-            break;
+            case 'calendar:MY':
+                this._headerMonthFirst = true;
+                break;
+            case 'calendar:YM':
+                this._headerMonthFirst = false;
+                break;
+            default:
+                log('Translation of "calendar:MY" in GTK+ is not correct');
+                this._headerMonthFirst = true;
+                break;
         }
 
         // Start off with the current date
@@ -195,7 +196,7 @@ class Calendar {
     }
 
     _buildHeader() {
-        let offsetCols = this.show_week_numbers ? 1 : 0;
+        let offsetCols = this.state.show_week_numbers ? 1 : 0;
         this.actor.destroy_all_children();
 
         // Top line of the calendar '<| September |> <| 2009 |>'
@@ -270,21 +271,21 @@ class Calendar {
     }
 
     _setWeekdateHeaderWidth() {
-        if (!isNaN(this._digitWidth) && this.show_week_numbers && this._weekdateHeader) {
+        if (!isNaN(this._digitWidth) && this.state.show_week_numbers && this._weekdateHeader) {
             this._weekdateHeader.set_width (this._digitWidth * WEEKDATE_HEADER_WIDTH_DIGITS);
         }
     }
 
     _onScroll (actor, event) {
         switch (event.get_scroll_direction()) {
-        case Clutter.ScrollDirection.UP:
-        case Clutter.ScrollDirection.LEFT:
-            this._onPrevMonthButtonClicked();
-            break;
-        case Clutter.ScrollDirection.DOWN:
-        case Clutter.ScrollDirection.RIGHT:
-            this._onNextMonthButtonClicked();
-            break;
+            case Clutter.ScrollDirection.UP:
+            case Clutter.ScrollDirection.LEFT:
+                this._onPrevMonthButtonClicked();
+                break;
+            case Clutter.ScrollDirection.DOWN:
+            case Clutter.ScrollDirection.RIGHT:
+                this._onNextMonthButtonClicked();
+                break;
         }
     }
 
@@ -382,11 +383,11 @@ class Calendar {
 
             button.style_class = styleClass;
 
-            let offsetCols = this.show_week_numbers ? 1 : 0;
+            let offsetCols = this.state.show_week_numbers ? 1 : 0;
             this.actor.add(button,
                            { row: row, col: offsetCols + (7 + iter.getDay() - this._weekStart) % 7 });
 
-            if (this.show_week_numbers && iter.getDay() == 4) {
+            if (this.state.show_week_numbers && iter.getDay() === 4) {
                 let label = new St.Label({ text: iter.toLocaleFormat('%V'),
                                            style_class: 'calendar-day-base calendar-week-number'});
                 this.actor.add(label,

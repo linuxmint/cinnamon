@@ -314,7 +314,11 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
         this.myactor = new St.BoxLayout({ style_class: 'panel-launchers',
                                           important: true });
 
-        this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
+        this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id, true);
+        this.settings.promise.then(() => this.settingsInit(metadata, orientation));
+    }
+
+    settingsInit(metadata, orientation) {
         this.settings.bind("launcherList", "launcherList", this._onSettingsChanged);
         this.settings.bind("allow-dragging", "allowDragging", this._updateLauncherDrag);
 
@@ -415,6 +419,10 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
     on_panel_icon_size_changed(size) {
         this.icon_size = size;
         this.reload();
+    }
+
+    on_applet_removed_from_panel() {
+        this.settings.finalize();
     }
 
     on_orientation_changed(neworientation) {
