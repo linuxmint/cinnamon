@@ -471,7 +471,14 @@ class Module:
         self.battery_label_size_group.add_widget(label_box)
         hbox.pack_start(label_box, False, False, 0)
 
-        if battery_level == UPowerGlib.DeviceLevel.NONE:
+        battery_level_detection = True
+        try:
+            UPowerGlib.DeviceLevel.FULL
+        except:
+            print("UPowerGlib doesn't support UPowerGlib.DeviceLevel.FULL, looks like an old version. Skipping battery level detection.")
+            battery_level_detection = False
+
+        if battery_level == UPowerGlib.DeviceLevel.NONE or not battery_level_detection:
             label = Gtk.Label()
             label.set_markup("%d%%" % int(percentage))
             label.set_size_request(30, -1)
