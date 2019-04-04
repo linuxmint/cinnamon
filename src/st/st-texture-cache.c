@@ -1019,9 +1019,10 @@ load_sliced_image (GTask        *result,
         {
           GdkPixbuf *pixbuf = gdk_pixbuf_new_subpixbuf (pix, x, y, data->grid_width, data->grid_height);
           g_assert (pixbuf != NULL);
-          res = g_list_append (res, pixbuf);
+          res = g_list_prepend (res, pixbuf);
         }
     }
+  res = g_list_reverse (res);
   /* We don't need the original pixbuf anymore, though the subpixbufs
      will hold a reference. */
   g_object_unref (pix);
