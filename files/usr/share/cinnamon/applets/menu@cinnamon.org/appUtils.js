@@ -74,12 +74,11 @@ function getApps() {
             let dir = iter.get_directory();
             if (dir.get_is_nodisplay())
                 continue;
-            if (loadDirectory(dir, dir, apps))
+            if (loadDirectory(dir, apps))
                 dirs.push(dir);
         }
     }
 
-    dirs.sort(dirSort);
     let sortedApps = Array.from(apps.entries()).sort(appSort);
 
     return [sortedApps, dirs];
@@ -87,7 +86,7 @@ function getApps() {
 
 // load all apps and their categories from a cmenu directory
 // into 'apps' Map
-function loadDirectory(dir, top_dir, apps) {
+function loadDirectory(dir, apps) {
     let iter = dir.iter();
     let has_entries = false;
     let nextType;
@@ -102,9 +101,7 @@ function loadDirectory(dir, top_dir, apps) {
             if (apps.has(app))
                 apps.get(app).push(dir.get_menu_id());
             else
-                apps.set(app, [top_dir.get_menu_id()]);
-        } else if (nextType == CMenu.TreeItemType.DIRECTORY) {
-            has_entries = loadDirectory(iter.get_directory(), top_dir, apps);
+                apps.set(app, [dir.get_menu_id()]);
         }
     }
     return has_entries;

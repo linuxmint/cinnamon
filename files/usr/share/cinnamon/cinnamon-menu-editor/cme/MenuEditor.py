@@ -126,12 +126,6 @@ class MenuEditor(object):
                 item = item_iter.get_directory()
             elif item_type == CMenu.TreeItemType.ENTRY:
                 item = item_iter.get_entry()
-            elif item_type == CMenu.TreeItemType.HEADER:
-                item = item_iter.get_header()
-            elif item_type == CMenu.TreeItemType.ALIAS:
-                item = item_iter.get_alias()
-            elif item_type == CMenu.TreeItemType.SEPARATOR:
-                item = item_iter.get_separator()
             if item:
                 contents.append(item)
             item_type = item_iter.next()
@@ -146,12 +140,6 @@ class MenuEditor(object):
                 item = item_iter.get_entry()
             elif item_type == CMenu.TreeItemType.DIRECTORY:
                 item = item_iter.get_directory()
-            elif item_type == CMenu.TreeItemType.HEADER:
-                item = item_iter.get_header()
-            elif item_type == CMenu.TreeItemType.ALIAS:
-                item = item_iter.get_alias()
-            elif item_type == CMenu.TreeItemType.SEPARATOR:
-                item = item_iter.get_separator()
             yield (item, self.isVisible(item))
             item_type = item_iter.next()
 

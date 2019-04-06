@@ -47,7 +47,7 @@ enum {
 static guint signals[LAST_SIGNAL] = { 0 };
 
 struct _CinnamonAppSystemPrivate {
-  GMenuTree *apps_tree;
+  CMenuTree *apps_tree;
 
   GHashTable *running_apps;
   GHashTable *id_to_app;
@@ -57,7 +57,7 @@ struct _CinnamonAppSystemPrivate {
 };
 
 static void cinnamon_app_system_finalize (GObject *object);
-static void on_apps_tree_changed_cb (GMenuTree *tree, gpointer user_data);
+static void on_apps_tree_changed_cb (CMenuTree *tree, gpointer user_data);
 CinnamonApp * lookup_heuristic_basename (CinnamonAppSystem *system, const char *name);
 gchar *strip_extension (gchar *wm_class);
 gboolean case_insensitive_search (const char *key,
@@ -142,7 +142,7 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
    * handle NODISPLAY semantics at a higher level or investigate them
    * case by case.
    */
-  priv->apps_tree = gmenu_tree_new ("cinnamon-applications.menu", GMENU_TREE_FLAGS_INCLUDE_NODISPLAY);
+  priv->apps_tree = cmenu_tree_new ("cinnamon-applications.menu", CMENU_TREE_FLAGS_INCLUDE_NODISPLAY);
   g_signal_connect (priv->apps_tree, "changed", G_CALLBACK (on_apps_tree_changed_cb), self);
 
   on_apps_tree_changed_cb (priv->apps_tree, self);
@@ -165,7 +165,7 @@ cinnamon_app_system_finalize (GObject *object)
 }
 
 static char *
-get_prefix_for_entry (GMenuTreeEntry *entry)
+get_prefix_for_entry (CMenuTreeEntry *entry)
 {
   char *prefix = NULL, *file_prefix = NULL;
   const char *id;
@@ -173,8 +173,8 @@ get_prefix_for_entry (GMenuTreeEntry *entry)
   char *name;
   int i = 0;
 
-  id = gmenu_tree_entry_get_desktop_file_id (entry);
-  file = g_file_new_for_path (gmenu_tree_entry_get_desktop_file_path (entry));
+  id = cmenu_tree_entry_get_desktop_file_id (entry);
+  file = g_file_new_for_path (cmenu_tree_entry_get_desktop_file_path (entry));
   name = g_file_get_basename (file);
 
   if (!name)
@@ -477,71 +477,71 @@ deduplicate_apps (GPtrArray   *app_array,
 }
 
 static void
-get_flattened_entries_recurse (GMenuTreeDirectory *dir,
+get_flattened_entries_recurse (CMenuTreeDirectory *dir,
                                GHashTable         *entry_set)
 {
-  GMenuTreeIter *iter = gmenu_tree_directory_iter (dir);
-  GMenuTreeItemType next_type;
+  CMenuTreeIter *iter = cmenu_tree_directory_iter (dir);
+  CMenuTreeItemType next_type;
 
-  while ((next_type = gmenu_tree_iter_next (iter)) != GMENU_TREE_ITEM_INVALID)
+  while ((next_type = cmenu_tree_iter_next (iter)) != CMENU_TREE_ITEM_INVALID)
     {
       gpointer item = NULL;
 
       switch (next_type)
         {
-        case GMENU_TREE_ITEM_ENTRY:
+        case CMENU_TREE_ITEM_ENTRY:
           {
-            GMenuTreeEntry *entry;
-            item = entry = gmenu_tree_iter_get_entry (iter);
+            CMenuTreeEntry *entry;
+            item = entry = cmenu_tree_iter_get_entry (iter);
             /* Key is owned by entry */
             g_hash_table_replace (entry_set,
-                                  (char*)gmenu_tree_entry_get_desktop_file_id (entry),
-                                  gmenu_tree_item_ref (entry));
+                                  (char*)cmenu_tree_entry_get_desktop_file_id (entry),
+                                  cmenu_tree_item_ref (entry));
           }
           break;
-        case GMENU_TREE_ITEM_DIRECTORY:
+        case CMENU_TREE_ITEM_DIRECTORY:
           {
-            item = gmenu_tree_iter_get_directory (iter);
-            get_flattened_entries_recurse ((GMenuTreeDirectory*)item, entry_set);
+            item = cmenu_tree_iter_get_directory (iter);
+            get_flattened_entries_recurse ((CMenuTreeDirectory*)item, entry_set);
           }
           break;
-        case GMENU_TREE_ITEM_INVALID:
-        case GMENU_TREE_ITEM_SEPARATOR:
-        case GMENU_TREE_ITEM_HEADER:
-        case GMENU_TREE_ITEM_ALIAS:
+        case CMENU_TREE_ITEM_INVALID:
+        case CMENU_TREE_ITEM_SEPARATOR:
+        case CMENU_TREE_ITEM_HEADER:
+        case CMENU_TREE_ITEM_ALIAS:
           break;
         default:
           break;
         }
       if (item != NULL)
-        gmenu_tree_item_unref (item);
+        cmenu_tree_item_unref (item);
     }
 
-  gmenu_tree_iter_unref (iter);
+  cmenu_tree_iter_unref (iter);
 }
 
 static GHashTable *
-get_flattened_entries_from_tree (GMenuTree *tree)
+get_flattened_entries_from_tree (CMenuTree *tree)
 {
   GHashTable *table;
-  GMenuTreeDirectory *root;
+  CMenuTreeDirectory *root;
 
   table = g_hash_table_new_full (g_str_hash, g_str_equal,
                                  (GDestroyNotify) NULL,
-                                 (GDestroyNotify) gmenu_tree_item_unref);
+                                 (GDestroyNotify) cmenu_tree_item_unref);
 
-  root = gmenu_tree_get_root_directory (tree);
+  root = cmenu_tree_get_root_directory (tree);
 
   if (root != NULL)
     get_flattened_entries_recurse (root, table);
 
-  gmenu_tree_item_unref (root);
+  cmenu_tree_item_unref (root);
 
   return table;
 }
 
 static void
-on_apps_tree_changed_cb (GMenuTree *tree,
+on_apps_tree_changed_cb (CMenuTree *tree,
                          gpointer   user_data)
 {
   CinnamonAppSystem *self = CINNAMON_APP_SYSTEM (user_data);
@@ -555,7 +555,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
   g_slist_free_full (self->priv->known_vendor_prefixes, g_free);
   self->priv->known_vendor_prefixes = NULL;
 
-  if (!gmenu_tree_load_sync (self->priv->apps_tree, &error))
+  if (!cmenu_tree_load_sync (self->priv->apps_tree, &error))
     {
       if (error)
         {
@@ -579,8 +579,8 @@ on_apps_tree_changed_cb (GMenuTree *tree,
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
       const char *id = key;
-      GMenuTreeEntry *entry = value;
-      GMenuTreeEntry *old_entry;
+      CMenuTreeEntry *entry = value;
+      CMenuTreeEntry *old_entry;
       char *prefix;
       CinnamonApp *app;
 
@@ -606,11 +606,11 @@ on_apps_tree_changed_cb (GMenuTree *tree,
            * the new data.
            */
           old_entry = cinnamon_app_get_tree_entry (app);
-          gmenu_tree_item_ref (old_entry);
+          cmenu_tree_item_ref (old_entry);
 
 #if DEBUG_APPSYS_RENAMING
           if (g_strcmp0 (_cinnamon_app_get_desktop_path (app),
-                         g_desktop_app_info_get_filename (gmenu_tree_entry_get_app_info (entry))) == 0)
+                         g_desktop_app_info_get_filename (cmenu_tree_entry_get_app_info (entry))) == 0)
             {
               DEBUG_RENAMING ("Existing match found for app: '%s'.  Source unchanged ('%s')\n",
                               _cinnamon_app_get_common_name (app),
@@ -646,7 +646,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
        * string is pointed to.
        */
       g_hash_table_replace (self->priv->id_to_app, (char*)id, app);
-      // if (!gmenu_tree_entry_get_is_nodisplay_recurse (entry))
+      // if (!cmenu_tree_entry_get_is_nodisplay_recurse (entry))
       //    g_hash_table_replace (self->priv->visible_id_to_app, (char*)id, app);
 
       if (old_entry)
@@ -654,7 +654,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
           GDesktopAppInfo *old_info;
           const gchar *old_startup_wm_class;
 
-          old_info = gmenu_tree_entry_get_app_info (old_entry);
+          old_info = cmenu_tree_entry_get_app_info (old_entry);
           old_startup_wm_class = g_desktop_app_info_get_startup_wm_class (old_info);
 
           if (old_startup_wm_class)
@@ -672,7 +672,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
       if (old_entry)
         {
-          gmenu_tree_item_unref (old_entry);
+          cmenu_tree_item_unref (old_entry);
         }
 
 
@@ -737,9 +737,9 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 /**
  * cinnamon_app_system_get_tree:
  *
- * Return Value: (transfer none): The #GMenuTree for apps
+ * Return Value: (transfer none): The #CMenuTree for apps
  */
-GMenuTree *
+CMenuTree *
 cinnamon_app_system_get_tree (CinnamonAppSystem *self)
 {
   return self->priv->apps_tree;

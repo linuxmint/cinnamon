@@ -37,7 +37,7 @@ typedef struct {
  * SECTION:cinnamon-app
  * @short_description: Object representing an application
  *
- * This object wraps a #GMenuTreeEntry, providing methods and signals
+ * This object wraps a #CMenuTreeEntry, providing methods and signals
  * primarily useful for running applications.
  */
 struct _CinnamonApp
@@ -50,7 +50,7 @@ struct _CinnamonApp
 
   CinnamonAppState state;
 
-  GMenuTreeEntry *entry; /* If NULL, this app is backed by one or more
+  CMenuTreeEntry *entry; /* If NULL, this app is backed by one or more
                           * MetaWindow.  For purposes of app title
                           * etc., we use the first window added,
                           * because it's most likely to be what we
@@ -109,7 +109,7 @@ const char *
 cinnamon_app_get_id (CinnamonApp *app)
 {
   if (app->entry)
-    return gmenu_tree_entry_get_desktop_file_id (app->entry);
+    return cmenu_tree_entry_get_desktop_file_id (app->entry);
   return app->window_id_string;
 }
 
@@ -789,7 +789,7 @@ _cinnamon_app_new_for_window (MetaWindow      *window)
 }
 
 CinnamonApp *
-_cinnamon_app_new (GMenuTreeEntry *info)
+_cinnamon_app_new (CMenuTreeEntry *info)
 {
   CinnamonApp *app;
 
@@ -802,9 +802,9 @@ _cinnamon_app_new (GMenuTreeEntry *info)
 
 void
 _cinnamon_app_set_entry (CinnamonApp       *app,
-                      GMenuTreeEntry *entry)
+                      CMenuTreeEntry *entry)
 {
-  g_clear_pointer (&app->entry, gmenu_tree_item_unref);
+  g_clear_pointer (&app->entry, cmenu_tree_item_unref);
   g_clear_object (&app->info);
 
   /* If our entry has changed, our name may have as well, so clear
@@ -812,11 +812,11 @@ _cinnamon_app_set_entry (CinnamonApp       *app,
   g_clear_pointer (&app->unique_name, g_free);
   app->hidden_as_duplicate = FALSE;
 
-  app->entry = gmenu_tree_item_ref (entry);
+  app->entry = cmenu_tree_item_ref (entry);
 
   if (entry != NULL)
     {
-      app->info = g_object_ref (gmenu_tree_entry_get_app_info (entry));
+      app->info = g_object_ref (cmenu_tree_entry_get_app_info (entry));
     }
 }
 
@@ -1151,9 +1151,9 @@ cinnamon_app_get_app_info (CinnamonApp *app)
  * cinnamon_app_get_tree_entry:
  * @app: a #CinnamonApp
  *
- * Returns: (transfer none): The #GMenuTreeEntry for this app, or %NULL if backed by a window
+ * Returns: (transfer none): The #CMenuTreeEntry for this app, or %NULL if backed by a window
  */
-GMenuTreeEntry *
+CMenuTreeEntry *
 cinnamon_app_get_tree_entry (CinnamonApp *app)
 {
   return app->entry;
@@ -1205,7 +1205,7 @@ cinnamon_app_dispose (GObject *object)
 
   if (app->entry)
     {
-      gmenu_tree_item_unref (app->entry);
+      cmenu_tree_item_unref (app->entry);
       app->entry = NULL;
     }
 

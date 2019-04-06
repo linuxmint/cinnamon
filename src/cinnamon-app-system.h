@@ -5,8 +5,8 @@
 #include <gio/gio.h>
 #include <clutter/clutter.h>
 #include <meta/window.h>
-#define GMENU_I_KNOW_THIS_IS_UNSTABLE
-#include <gmenu-tree.h>
+#define CMENU_I_KNOW_THIS_IS_UNSTABLE
+#include <cmenu-tree.h>
 
 #include "cinnamon-app.h"
 
@@ -39,7 +39,7 @@ struct _CinnamonAppSystemClass
 GType           cinnamon_app_system_get_type    (void) G_GNUC_CONST;
 CinnamonAppSystem *cinnamon_app_system_get_default (void);
 
-GMenuTree      *cinnamon_app_system_get_tree                     (CinnamonAppSystem *system);
+CMenuTree      *cinnamon_app_system_get_tree                     (CinnamonAppSystem *system);
 
 CinnamonApp       *cinnamon_app_system_lookup_app                   (CinnamonAppSystem  *system,
                                                                const char      *id);
