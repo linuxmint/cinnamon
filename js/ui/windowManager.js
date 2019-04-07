@@ -29,7 +29,7 @@ const {
     Maximize,
     Unmaximize
 } = imports.ui.windowEffects;
-const {each, filter, tryFn} = imports.misc.util;
+const {each, filter, tryFn, find, findIndex} = imports.misc.util;
 const Main = imports.ui.main;
 const {
     expo,
@@ -90,7 +90,7 @@ class WindowDimmer {
         actor.add_effect(this._brightnessEffect);
 
         this.actor = actor;
-        this._dimFactor = 0.0;
+        this.dimFactor = 0.0;
     }
 
     setEnabled(enabled) {
@@ -99,13 +99,9 @@ class WindowDimmer {
     }
 
     set dimFactor(factor) {
-        this._dimFactor = factor;
+        this.dimFactor = factor;
         this._desaturateEffect.set_factor(factor * DIM_DESATURATION);
         this._brightnessEffect.set_brightness(factor * DIM_BRIGHTNESS);
-    }
-
-    get dimFactor() {
-        return this._dimFactor;
     }
 };
 
@@ -453,6 +449,7 @@ var WindowManager = class WindowManager {
         this._tiling = [];
         this._mapping = [];
         this._destroying = [];
+        this.iconGeometries = [];
 
         const _endWindowEffect = (c, n, a) => this._endWindowEffect(c, n, a);
 
@@ -588,7 +585,8 @@ var WindowManager = class WindowManager {
 
     _startWindowEffect(cinnamonwm, name, actor, args, overwriteKey) {
         let effect = this.effects[name];
-        if (!this.settingsState['desktop-effects'] || !this._shouldAnimate(actor)) {
+        if (!this.settingsState['desktop-effects']
+            || !this._shouldAnimate(actor)) {
             cinnamonwm[effect.wmCompleteName](actor);
             return;
         }
@@ -604,33 +602,32 @@ var WindowManager = class WindowManager {
 
         let type = this.settingsState[`${key}-effect`];
 
-        // make sure to end a running effect
-        if (actor.current_effect_name) {
-            this._endWindowEffect(cinnamonwm, actor.current_effect_name, actor);
-        }
-        this[effect.arrayName].push(actor);
+        effect.setActor(actor);
+        this[effect.arrayName].push(effect.actor);
         actor.current_effect_name = name;
-        actor.orig_opacity = actor.opacity;
-        actor.show();
 
         if (effect[type]) {
             time = time / 1000;
             let transition = this.settingsState[`${key}-transition`];
-
-            effect[type](cinnamonwm, actor, time, transition, args);
-        } else if (!overwriteKey) // when not unminimizing, but the effect was not found, end it
+            effect.setActor(actor);
+            effect[type](cinnamonwm, time, transition, args);
+        } else if (!overwriteKey) {
+            // when not unminimizing, but the effect was not found, end it
             this._endWindowEffect(cinnamonwm, name, actor);
+        }
     }
 
     _endWindowEffect(cinnamonwm, name, actor) {
+        if (isFinalized(actor)) return;
+
         let effect = this.effects[name];
+        let currentEffects = this[effect.arrayName];
         // effect will be an instance of Effect
-        let idx = this[effect.arrayName].indexOf(actor);
+        let idx = currentEffects.indexOf(effect.actor);
         if (idx !== -1) {
-            this[effect.arrayName].splice(idx, 1);
-            removeTweens(actor);
-            delete actor.current_effect_name;
-            effect._end(actor);
+            currentEffects.splice(idx, 1);
+            removeTweens(effect.actor);
+            effect._end();
             cinnamonwm[effect.wmCompleteName](actor);
             panelManager.updatePanelsVisibility();
         }
@@ -763,9 +760,6 @@ var WindowManager = class WindowManager {
             soundManager.play('close');
         }
 
-        actor.orig_opacity = actor.opacity;
-        actor.orig_opacity = actor.opacity;
-
         if (meta_window.is_attached_dialog()) {
             let parent = meta_window.get_transient_for();
             this._checkDimming(parent, meta_window);
@@ -781,7 +775,7 @@ var WindowManager = class WindowManager {
             });
         }
 
-        if (meta_window.minimized) {
+        if (meta_window.minimized || isFinalized(actor)) {
             cinnamonwm.completed_destroy(actor);
             return;
         }

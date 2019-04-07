@@ -8,7 +8,7 @@ const DND = imports.ui.dnd;
 const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
 const {SignalManager} = imports.misc.signalManager;
-const {each, findIndex, unref} = imports.misc.util;
+const {each, findIndex, unref, getIconGeometry} = imports.misc.util;
 const {createStore} = imports.misc.state;
 
 const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
@@ -425,13 +425,11 @@ class AppGroup {
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation
         if (this.groupState.metaWindows.length > 0 && this.actor.realized) {
-            let rect = new Meta.Rectangle();
-            [rect.x, rect.y] = this.actor.get_transformed_position();
-            [rect.width, rect.height] = this.actor.get_transformed_size();
+            let iconGeometry = getIconGeometry(this.actor);
 
             each(this.groupState.metaWindows, (metaWindow) => {
                 if (metaWindow) {
-                    metaWindow.set_icon_geometry(rect);
+                    metaWindow.iconGeometry = iconGeometry;
                 }
             });
         }
@@ -854,6 +852,8 @@ class AppGroup {
             this.signals.connect(metaWindow, 'notify::gtk-application-id', (w) => this.onAppChange(w));
             this.signals.connect(metaWindow, 'notify::wm-class', (w) => this.onAppChange(w));
 
+            metaWindow.iconGeometry = getIconGeometry(this.actor);
+
             this.signals.connect(metaWindow, 'icon-changed', (w) => this.setIcon(w));
 
             if (metaWindow.progress !== undefined) {
@@ -893,6 +893,8 @@ class AppGroup {
         this.signals.disconnect('notify::appears-focused', metaWindow);
         this.signals.disconnect('notify::gtk-application-id', metaWindow);
         this.signals.disconnect('notify::wm-class', metaWindow);
+
+        metaWindow.iconGeometry = null;
 
         this.groupState.metaWindows.splice(refWindow, 1);
 

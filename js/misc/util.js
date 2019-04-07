@@ -709,3 +709,17 @@ function getGObjectPropertyValues(obj, r = 0) {
     }
     return jsRepresentation;
 }
+
+/**
+ * getIconGeometry:
+ * @actor (Clutter.Actor): Clutter actor to base icon position upon
+ *
+ * Returns (object): Rectangle values of the icon's position and size
+ */
+function getIconGeometry(actor) {
+    let x, y, width, height;
+    [x, y] = actor.get_transformed_position();
+    [width, height] = actor.get_transformed_size();
+
+    return {x, y, width, height};
+}
