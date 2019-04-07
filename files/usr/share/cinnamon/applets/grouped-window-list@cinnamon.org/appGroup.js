@@ -327,7 +327,7 @@ class AppGroup {
         this.actor.add_style_class_name('grouped-window-list-item-demands-attention');
         if (counter < 4) {
             setTimeout(() => {
-                if (this.actor && this.actor.has_style_class_name('grouped-window-list-item-demands-attention')) {
+                if (this.actor && !isFinalized(this.actor) && this.actor.has_style_class_name('grouped-window-list-item-demands-attention')) {
                     this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
                     this.actor.add_style_pseudo_class('active');
                 }

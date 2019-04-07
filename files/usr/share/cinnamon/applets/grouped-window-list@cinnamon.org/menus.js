@@ -1145,7 +1145,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
     destroyThumbnails() {
         this.box.destroy_children();
         for (let i = 0; i < this.appThumbnails.length; i++) {
-            destroy(this.appThumbnails[i]);
+            this.appThumbnails[i].destroy();
             this.appThumbnails[i] = undefined;
         }
         this.appThumbnails = [];
