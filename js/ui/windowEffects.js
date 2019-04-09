@@ -167,9 +167,9 @@ var Map = class Map extends Effect {
             case WindowType.MENU:
             case WindowType.DROPDOWN_MENU:
             case WindowType.POPUP_MENU:
-                let [width, height] = this.source.get_allocation_box().get_size();
-                let [destX, destY] = this.source.get_transformed_position();
-                let [pointerX, pointerY] = global.get_pointer();
+                let [, height] = this.source.get_allocation_box().get_size();
+                let [, destY] = this.source.get_transformed_position();
+                let [, pointerY] = global.get_pointer();
                 let top = destY + (height * 0.5);
 
                 if (pointerY < top)
@@ -268,6 +268,12 @@ var Minimize = class Minimize extends Close {
 
     traditional(cinnamonwm, time, transition) {
         let geom = this.source.meta_window.iconGeometry;
+
+        if (!geom) {
+            this.scale(cinnamonwm, time, transition); // fall-back effect
+            return;
+        }
+
         this.actor.set_scale(1, 1);
         let xDest, yDest, xScale, yScale;
         xDest = geom.x;
@@ -295,6 +301,8 @@ var Unminimize = class Unminimize extends Effect {
 
     traditional(cinnamonwm, time, transition) {
         let geom = this.source.meta_window.iconGeometry;
+
+        if (!geom) return;
 
         this.actor.set_scale(0.1, 0.1);
         this.actor.opacity = 0;
