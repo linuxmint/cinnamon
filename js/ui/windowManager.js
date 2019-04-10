@@ -602,6 +602,10 @@ var WindowManager = class WindowManager {
 
         let type = this.settingsState[`${key}-effect`];
 
+        each(this.effects, (effect, key) => {
+            if (effect.actor || effect.source) this._endWindowEffect(cinnamonwm, key, effect.source);
+        });
+
         effect.setActor(actor);
         this[effect.arrayName].push(effect.actor);
         actor.current_effect_name = name;
