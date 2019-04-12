@@ -240,6 +240,11 @@ var Close = class Close extends Effect {
     }
 
     traditional(cinnamonwm, time, transition) {
+        if (!this.source.meta_window) {
+            this._end();
+            return;
+        }
+
         switch (this.source.meta_window.window_type) {
             case WindowType.NORMAL:
             case WindowType.MODAL_DIALOG:
