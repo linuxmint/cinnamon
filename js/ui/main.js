@@ -459,6 +459,7 @@ function start() {
 
     wmSettings = new Gio.Settings({schema_id: "org.cinnamon.desktop.wm.preferences"})
     workspace_names = wmSettings.get_strv("workspace-names");
+    wmSettings.connect("changed::workspace-names", onWorkspaceNamesSettingChanged);
 
     global.screen.connect('notify::n-workspaces', _nWorkspacesChanged);
 
@@ -624,6 +625,19 @@ function getWorkspaceName(index) {
         wsName :
         _makeDefaultWorkspaceName(index);
 }
+
+/**
+ * updateWorkspacenames:
+ * 
+ * updates the workspace names if changed in the settings backend
+ * 
+ */
+function onWorkspaceNamesSettingChanged() {
+    workspace_names = wmSettings.get_strv("workspace-names");
+    _trimWorkspaceNames();
+}
+
+
 
 /**
  * hasDefaultWorkspaceName:
