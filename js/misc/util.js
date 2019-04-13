@@ -642,6 +642,25 @@ function unref(object, reserved = []) {
     }, 0);
 };
 
+// MIT © Petka Antonov, Benjamin Gruenbaum, John-David Dalton, Sindre Sorhus
+// https://github.com/sindresorhus/to-fast-properties
+let fastProto = null;
+const FastObject = function(o) {
+    if (fastProto !== null && typeof fastProto.property) {
+        const result = fastProto;
+        fastProto = FastObject.prototype = null;
+        return result;
+    }
+    fastProto = FastObject.prototype = o == null ? Object.create(null) : o;
+    return new FastObject;
+}
+FastObject();
+function toFastProperties(obj) {
+    each(obj, function(value) {
+        if (value && !Array.isArray(value)) FastObject(value);
+    });
+};
+
 const READWRITE = GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE;
 
 // Based on https://gist.github.com/ptomato/c4245c77d375022a43c5
