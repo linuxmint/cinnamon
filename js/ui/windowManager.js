@@ -444,7 +444,6 @@ class HudPreview {
 var WindowManager = class WindowManager {
     constructor() {
         this.iconGeometries = [];
-        this.minimized = [];
 
         this.effects = {
             map: new Map(),
