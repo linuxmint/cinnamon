@@ -851,7 +851,7 @@ cinnamon_perf_log_dump_events (CinnamonPerfLog   *perf_log,
       g_string_append (output, " }");
 
       if (escaped_description != event->description)
-        g_free (escaped_description);
+        free (escaped_description);
     }
 
   g_string_append (output, " ]");
@@ -915,7 +915,7 @@ replay_to_json (gint64      time,
                                    g_value_get_string (arg));
 
       if (escaped != arg_str)
-        g_free (escaped);
+        free (escaped);
     }
   else
     {

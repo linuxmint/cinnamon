@@ -175,7 +175,7 @@ st_icon_finalize (GObject *gobject)
 
   if (priv->icon_name)
     {
-      g_free (priv->icon_name);
+      free (priv->icon_name);
       priv->icon_name = NULL;
     }
 
@@ -552,7 +552,7 @@ st_icon_set_icon_name (StIcon      *icon,
   if (g_strcmp0 (priv->icon_name, icon_name) == 0)
     return;
 
-  g_free (priv->icon_name);
+  free (priv->icon_name);
   priv->icon_name = g_strdup (icon_name);
 
   if (priv->gicon)
@@ -652,7 +652,7 @@ st_icon_set_gicon (StIcon *icon, GIcon *gicon)
 
   if (icon->priv->icon_name)
     {
-      g_free (icon->priv->icon_name);
+      free (icon->priv->icon_name);
       icon->priv->icon_name = NULL;
       g_object_notify (G_OBJECT (icon), "icon-name");
     }

@@ -31,7 +31,7 @@
  * except for ask-password, as we don't want to handle that.
  *
  * Also, we need to workaround the fact that gjs doesn't support type
- * annotations for signals yet (so we can't effectively forward e.g. 
+ * annotations for signals yet (so we can't effectively forward e.g.
  * the GPid array to JS).
  * See https://bugzilla.gnome.org/show_bug.cgi?id=645978
  */
@@ -89,7 +89,7 @@ cinnamon_mount_operation_show_processes (GMountOperation *operation,
       self->priv->pids = NULL;
     }
 
-  g_free (self->priv->message);
+  free (self->priv->message);
   g_strfreev (self->priv->choices);
 
   /* save the parameters */
@@ -106,7 +106,7 @@ cinnamon_mount_operation_finalize (GObject *obj)
   CinnamonMountOperation *self = CINNAMON_MOUNT_OPERATION (obj);
 
   g_strfreev (self->priv->choices);
-  g_free (self->priv->message);
+  free (self->priv->message);
 
   if (self->priv->pids != NULL)
     {

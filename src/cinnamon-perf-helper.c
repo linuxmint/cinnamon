@@ -94,7 +94,7 @@ destroy_windows (void)
     {
       WindowInfo *info = l->data;
       gtk_widget_destroy (info->window);
-      g_free (info);
+      free (info);
     }
 
   g_list_free (our_windows);

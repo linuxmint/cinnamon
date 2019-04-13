@@ -46,7 +46,7 @@ st_border_image_finalize (GObject *object)
 {
   StBorderImage *image = ST_BORDER_IMAGE (object);
 
-  g_free (image->filename);
+  free (image->filename);
 
   G_OBJECT_CLASS (st_border_image_parent_class)->finalize (object);
 }
