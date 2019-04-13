@@ -443,24 +443,17 @@ class HudPreview {
 
 var WindowManager = class WindowManager {
     constructor() {
-        this._minimizing = [];
-        this._maximizing = [];
-        this._unmaximizing = [];
-        this._tiling = [];
-        this._mapping = [];
-        this._destroying = [];
         this.iconGeometries = [];
-
-        const _endWindowEffect = (c, n, a) => this._endWindowEffect(c, n, a);
+        this.minimized = [];
 
         this.effects = {
-            map: new Map(_endWindowEffect),
-            close: new Close(_endWindowEffect),
-            minimize: new Minimize(_endWindowEffect),
-            unminimize: new Unminimize(_endWindowEffect),
-            tile: new Tile(_endWindowEffect),
-            maximize: new Maximize(_endWindowEffect),
-            unmaximize: new Unmaximize(_endWindowEffect)
+            map: new Map(),
+            close: new Close(),
+            minimize: new Minimize(),
+            unminimize: new Unminimize(),
+            tile: new Tile(),
+            maximize: new Maximize(),
+            unmaximize: new Unmaximize()
         };
 
         this.settings = new Settings({schema_id: 'org.cinnamon.muffin'});
@@ -602,52 +595,33 @@ var WindowManager = class WindowManager {
 
         let type = this.settingsState[`${key}-effect`];
 
-        each(this.effects, (effect, key) => {
-            if (effect.actor || effect.source) this._endWindowEffect(cinnamonwm, key, effect.source);
+        if (effect.source) effect._end();
+
+        each(this.effects, (effect) => {
+            if (effect.actor === actor) effect._end();
         });
 
-        effect.setActor(actor);
-        this[effect.arrayName].push(effect.actor);
-        actor.current_effect_name = name;
-
         if (effect[type]) {
-            time = time / 1000;
-            let transition = this.settingsState[`${key}-transition`];
+            time /= 1000;
             effect.setActor(actor);
-            effect[type](cinnamonwm, time, transition, args);
-        } else if (!overwriteKey) {
-            // when not unminimizing, but the effect was not found, end it
-            this._endWindowEffect(cinnamonwm, name, actor);
+            effect[type](time, this.settingsState[`${key}-transition`], args);
+            return;
         }
-    }
 
-    _endWindowEffect(cinnamonwm, name, actor) {
-        if (isFinalized(actor)) return;
-
-        let effect = this.effects[name];
-        let currentEffects = this[effect.arrayName];
-        // effect will be an instance of Effect
-        let idx = currentEffects.indexOf(effect.actor);
-        if (idx !== -1) {
-            currentEffects.splice(idx, 1);
-            removeTweens(effect.actor);
-            effect._end();
-            cinnamonwm[effect.wmCompleteName](actor);
-            panelManager.updatePanelsVisibility();
-        }
+        cinnamonwm[effect.wmCompleteName](actor);
     }
 
     _killWindowEffects(cinnamonwm, actor) {
-        for (let i in this.effects) {
-            this._endWindowEffect(cinnamonwm, i, actor);
-        }
+        each(this.effects, (effect) => {
+            if (effect.source) effect._end();
+        });
     }
 
     _minimizeWindow(cinnamonwm, actor) {
         soundManager.play('minimize');
 
-        // reset all cached values in case "traditional" is no longer in effect
-        actor.meta_window._cinnamonwm_has_origin = false;
+        actor.needsUnminimize = true;
+
         this._startWindowEffect(cinnamonwm, "minimize", actor);
     }
 
@@ -747,14 +721,15 @@ var WindowManager = class WindowManager {
             this._checkDimming(meta_window.get_transient_for());
         }
 
-        if (meta_window._cinnamonwm_has_origin && meta_window._cinnamonwm_has_origin === true) {
+        if (actor.needsUnminimize) {
             soundManager.play('minimize');
             this._startWindowEffect(cinnamonwm, 'unminimize', actor, null, 'minimize');
             return;
         } else if (meta_window.window_type === WindowType.NORMAL) {
             soundManager.play('map');
         }
-        this._startWindowEffect(cinnamonwm, "map", actor);
+
+        this._startWindowEffect(cinnamonwm, 'map', actor);
     }
 
     _destroyWindow(cinnamonwm, actor) {
