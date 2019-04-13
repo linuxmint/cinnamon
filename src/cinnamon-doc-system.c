@@ -23,7 +23,7 @@ static guint signals[LAST_SIGNAL] = { 0 };
 
 struct _CinnamonDocSystemPrivate {
   GtkRecentManager *manager;
-  GList *infos_by_timestamp;
+  GSList *infos_by_timestamp;
 
   guint idle_recent_changed_id;
 };
@@ -45,7 +45,7 @@ static const int MAX_RECENT_ITEMS = 20;
  *
  * Returns: (transfer none) (element-type GtkRecentInfo): Cached recent file infos
  */
-GList *
+GSList *
 cinnamon_doc_system_get_all (CinnamonDocSystem    *self)
 {
   return self->priv->infos_by_timestamp;
@@ -72,25 +72,26 @@ sort_infos_by_timestamp_descending (gconstpointer a,
 
 static void load_items (CinnamonDocSystem *self)
 {
+  CinnamonDocSystemPrivate *priv = self->priv;
   GList *items, *iter;
   int i;
 
   self->priv->infos_by_timestamp = NULL;
-  items = gtk_recent_manager_get_items (self->priv->manager);
-  items = g_list_sort (items, sort_infos_by_timestamp_descending);
+  items = (GList*) g_slist_sort ((GSList*) gtk_recent_manager_get_items (priv->manager),
+                                 sort_infos_by_timestamp_descending);
   i = 0;
   for (iter = items; iter; iter = iter->next)
     {
       GtkRecentInfo *info = iter->data;
       if (i < MAX_RECENT_ITEMS) {
-        self->priv->infos_by_timestamp = g_list_prepend (self->priv->infos_by_timestamp, info);
+        priv->infos_by_timestamp = g_slist_prepend (priv->infos_by_timestamp, info);
       }
       else {
         gtk_recent_info_unref (info);
       }
       i++;
     }
-  self->priv->infos_by_timestamp = g_list_reverse(self->priv->infos_by_timestamp);
+  priv->infos_by_timestamp = g_slist_reverse (priv->infos_by_timestamp);
   g_list_free (items);
 }
 
@@ -99,7 +100,7 @@ idle_handle_recent_changed (gpointer data)
 {
   CinnamonDocSystem *self = CINNAMON_DOC_SYSTEM (data);
   self->priv->idle_recent_changed_id = 0;
-  g_list_free_full (self->priv->infos_by_timestamp, gtk_recent_info_unref);
+  g_slist_free_full (self->priv->infos_by_timestamp, (GDestroyNotify) gtk_recent_info_unref);
   load_items(self);
   g_signal_emit (self, signals[CHANGED], 0);
 
