@@ -360,7 +360,7 @@ st_button_finalize (GObject *gobject)
 {
   StButtonPrivate *priv = ST_BUTTON (gobject)->priv;
 
-  g_free (priv->text);
+  free (priv->text);
 
   G_OBJECT_CLASS (st_button_parent_class)->finalize (gobject);
 }
@@ -511,7 +511,7 @@ st_button_set_label (StButton    *button,
 
   priv = button->priv;
 
-  g_free (priv->text);
+  free (priv->text);
 
   if (text)
     priv->text = g_strdup (text);

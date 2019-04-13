@@ -96,8 +96,8 @@ setup_merge_dir_symlink(void)
         g_file_make_symbolic_link (sym_file, merge_path, NULL, NULL);
     }
 
-    g_free (merge_path);
-    g_free (sym_path);
+    free (merge_path);
+    free (sym_path);
     g_object_unref (merge_file);
     g_object_unref (sym_file);
 }
@@ -147,7 +147,7 @@ cinnamon_app_system_finalize (GObject *object)
   g_hash_table_destroy (priv->running_apps);
   g_hash_table_destroy (priv->id_to_app);
   g_hash_table_destroy (priv->startup_wm_class_to_app);
-  g_slist_free_full (priv->known_vendor_prefixes, g_free);
+  g_slist_free_full (priv->known_vendor_prefixes, free);
   priv->known_vendor_prefixes = NULL;
 
   G_OBJECT_CLASS (cinnamon_app_system_parent_class)->finalize (object);
@@ -208,31 +208,31 @@ get_prefix_for_entry (GMenuTreeEntry *entry)
 
           t_id[id_len - name_len] = '\0';
           t1 = g_strdup(t_id);
-          g_free (prefix);
-          g_free (t_id);
-          g_free (name);
+          free (prefix);
+          free (t_id);
+          free (name);
           name = g_strdup (id);
           prefix = t1;
 
           g_object_unref (file);
           file = parent;
-          g_free (pname);
-          g_free (file_prefix);
+          free (pname);
+          free (file_prefix);
           file_prefix = NULL;
           break;
         }
 
       t = g_strconcat (pname, "-", name, NULL);
-      g_free (name);
+      free (name);
       name = t;
 
       t = g_strconcat (pname, "-", prefix, NULL);
-      g_free (prefix);
+      free (prefix);
       prefix = t;
 
       g_object_unref (file);
       file = parent;
-      g_free (pname);
+      free (pname);
     }
 
   if (file)
@@ -240,22 +240,22 @@ get_prefix_for_entry (GMenuTreeEntry *entry)
 
   if (strcmp (name, id) == 0)
     {
-      g_free (name);
+      free (name);
       if (file_prefix && !prefix)
         return file_prefix;
       if (file_prefix)
         {
           char *t = g_strconcat (prefix, "-", file_prefix, NULL);
-          g_free (prefix);
-          g_free (file_prefix);
+          free (prefix);
+          free (file_prefix);
           prefix = t;
         }
       return prefix;
     }
 
-  g_free (name);
-  g_free (prefix);
-  g_free (file_prefix);
+  free (name);
+  free (prefix);
+  free (file_prefix);
   g_return_val_if_reached (NULL);
 }
 
@@ -335,7 +335,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
   g_assert (tree == self->priv->apps_tree);
 
-  g_slist_free_full (self->priv->known_vendor_prefixes, g_free);
+  g_slist_free_full (self->priv->known_vendor_prefixes, free);
   self->priv->known_vendor_prefixes = NULL;
 
   if (!gmenu_tree_load_sync (self->priv->apps_tree, &error))
@@ -373,7 +373,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
         self->priv->known_vendor_prefixes = g_slist_append (self->priv->known_vendor_prefixes,
                                                             prefix);
       else
-        g_free (prefix);
+        free (prefix);
 
       app = g_hash_table_lookup (self->priv->id_to_app, id);
       if (app != NULL)
@@ -525,7 +525,7 @@ lookup_heuristic_basename (CinnamonAppSystem *system,
     {
       char *tmpid = g_strconcat ((char*)prefix->data, name, NULL);
       result = cinnamon_app_system_lookup_app (system, tmpid);
-      g_free (tmpid);
+      free (tmpid);
       if (result != NULL)
         return result;
     }
@@ -580,9 +580,9 @@ cinnamon_app_system_lookup_desktop_wmclass (CinnamonAppSystem *system,
 
   app = lookup_heuristic_basename (system, desktop_file);
 
-  g_free (canonicalized);
-  g_free (stripped_name);
-  g_free (desktop_file);
+  free (canonicalized);
+  free (stripped_name);
+  free (desktop_file);
 
   return app;
 }

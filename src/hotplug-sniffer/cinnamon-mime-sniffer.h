@@ -24,6 +24,7 @@
 #ifndef __CINNAMON_MIME_SNIFFER_H__
 #define __CINNAMON_MIME_SNIFFER_H__
 
+#include <stdlib.h>
 #include <glib-object.h>
 #include <gio/gio.h>
 
