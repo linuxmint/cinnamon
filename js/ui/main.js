@@ -585,7 +585,7 @@ function _trimWorkspaceNames(index) {
 }
 
 function _makeDefaultWorkspaceName(index) {
-    return _("WORKSPACE") + " " + (index + 1).toString();
+    return _("Workspace") + " " + (index + 1).toString();
 }
 
 /**
