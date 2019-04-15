@@ -673,6 +673,10 @@ class Module:
                 image.thumbnail((96, 96), Image.ANTIALIAS)
                 face_path = os.path.join(user.get_home_dir(), ".face")
                 try:
+                    try:
+                        os.remove(face_path)
+                    except:
+                        pass
                     priv_helper.drop_privs(user)
                     image.save(face_path, "png")
                 finally:
@@ -709,9 +713,14 @@ class Module:
                 user = model[treeiter][INDEX_USER_OBJECT]
                 user.set_icon_file(path)
                 self.face_image.set_from_file(path)
+                face_path = os.path.join(user.get_home_dir(), ".face")
                 try:
+                    try:
+                        os.remove(face_path)
+                    except:
+                        pass
                     priv_helper.drop_privs(user)
-                    shutil.copy(path, os.path.join(user.get_home_dir(), ".face"))
+                    shutil.copy(path, face_path)
                 finally:
                     priv_helper.restore_privs()
                 model.set_value(treeiter, INDEX_USER_PICTURE, GdkPixbuf.Pixbuf.new_from_file_at_size(path, 48, 48))
