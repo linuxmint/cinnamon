@@ -31,9 +31,12 @@ class Effect {
     }
 
     _end() {
-        const {source} = this;
+        if (isFinalized(this.source)) {
+            this.actor = this.source = null;
+            return;
+        }
 
-        global.window_manager[this.wmCompleteName](source);
+        global.window_manager[this.wmCompleteName](this.source);
 
         global.overlay_group.remove_child(this.actor);
         removeTweens(this.actor);
