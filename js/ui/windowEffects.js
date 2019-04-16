@@ -31,7 +31,7 @@ class Effect {
     }
 
     _end() {
-        if (isFinalized(this.source)) {
+        if (this.source.is_finalized()) {
             this.actor = this.source = null;
             return;
         }
