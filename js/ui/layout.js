@@ -8,7 +8,6 @@ const Clutter = imports.gi.Clutter;
 const Cinnamon = imports.gi.Cinnamon;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Signals = imports.signals;
@@ -20,19 +19,9 @@ const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
 const DeskletManager = imports.ui.deskletManager;
 const Panel = imports.ui.panel;
+const {findIndex, map} = imports.misc.util;
 
 const STARTUP_ANIMATION_TIME = 0.5;
-
-function isPopupMetaWindow(actor) {
-    switch(actor.meta_window.get_window_type()) {
-    case Meta.WindowType.DROPDOWN_MENU:
-    case Meta.WindowType.POPUP_MENU:
-    case Meta.WindowType.COMBO:
-        return true;
-    default:
-        return false;
-    }
-}
 
 function Monitor(index, geometry) {
     this._init(index, geometry);
@@ -51,6 +40,29 @@ Monitor.prototype = {
         return global.screen.get_monitor_in_fullscreen(this.index);
     }
 };
+
+function intersect (dest, src2) {
+    let dest_x, dest_y;
+    let dest_w, dest_h;
+
+    dest_x = Math.max(dest.x, src2.x);
+    dest_y = Math.max(dest.y, src2.y);
+    dest_w = Math.min(dest.x + dest.width, src2.x + src2.width) - dest_x;
+    dest_h = Math.min(dest.y + dest.height, src2.y + src2.height) - dest_y;
+
+    if (dest_w > 0 && dest_h > 0) {
+        dest.x = dest_x;
+        dest.y = dest_y;
+        dest.width = dest_w;
+        dest.height = dest_h;
+        return dest;
+    }
+
+    dest.width = 0;
+    dest.height = 0;
+
+    return dest;
+}
 
 /**
  * #LayoutManager
@@ -90,9 +102,9 @@ LayoutManager.prototype = {
 
         this._monitorsChanged();
 
-        global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEdgeFlipChanged));
-        global.settings.connect("changed::edge-flip-delay", Lang.bind(this, this._onEdgeFlipChanged));
-        global.screen.connect('monitors-changed', Lang.bind(this, this._monitorsChanged));
+        global.settings.connect("changed::enable-edge-flip", () => this._onEdgeFlipChanged());
+        global.settings.connect("changed::edge-flip-delay", () => this._onEdgeFlipChanged());
+        global.screen.connect('monitors-changed', () => this._monitorsChanged());
     },
 
     _onEdgeFlipChanged: function(){
@@ -244,16 +256,16 @@ LayoutManager.prototype = {
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: true });
         this._chrome.updateRegions();
 
-        this._keyboardHeightNotifyId = this.keyboardBox.connect('notify::height', Lang.bind(this, function () {
-            if (this.keyboardBox.y != 0) {
+        this._keyboardHeightNotifyId = this.keyboardBox.connect('notify::height', () => {
+            if (this.keyboardBox.y) {
                 this.keyboardBox.y = this.focusMonitor.y + this.focusMonitor.height - this.keyboardBox.height;
             }
-        }));
+        });
 
     },
 
     queueHideKeyboard: function() {
-        if (this.hideIdleId != 0) {
+        if (this.hideIdleId) {
             Mainloop.source_remove(this.hideIdleId);
             this.hideIdleId = 0;
         }
@@ -263,10 +275,10 @@ LayoutManager.prototype = {
             this._keyboardHeightNotifyId = 0;
         }
 
-        this.hideIdleId = Mainloop.idle_add(Lang.bind(this, this.hideKeyboard));
+        this.hideIdleId = Mainloop.idle_add(() => this.hideKeyboard());
     },
 
-    hideKeyboard: function (immediate) {
+    hideKeyboard: function () {
         if (Main.messageTray) Main.messageTray.hide();
 
         this.keyboardBox.hide();
@@ -434,28 +446,26 @@ Chrome.prototype = {
         this._primaryIndex = -1;
         this._updateRegionIdle = 0;
         this._freezeUpdateCount = 0;
-
         this._trackedActors = [];
+        this.rects = [];
+        this.struts = [];
 
-        this._layoutManager.connect('monitors-changed',
-                                    Lang.bind(this, this._relayout));
-        global.screen.connect('restacked',
-                              Lang.bind(this, this._windowsRestacked));
-        global.screen.connect('in-fullscreen-changed', Lang.bind(this, this._updateVisibility));
-        global.window_manager.connect('switch-workspace', Lang.bind(this, this._queueUpdateRegions));
+        this._layoutManager.connect('monitors-changed', () => this._relayout());
+        global.display.connect('notify::focus-window', () => {
+            Mainloop.idle_add_full(1000, () => this._windowsRestacked());
+        });
+        global.screen.connect('in-fullscreen-changed', () => this._updateVisibility());
+        global.window_manager.connect('switch-workspace', () => this.onWorkspaceChanged());
 
         // Need to update struts on new workspaces when they are added
-        global.screen.connect('notify::n-workspaces',
-                              Lang.bind(this, this._queueUpdateRegions));
+        global.screen.connect('notify::n-workspaces', () => this.onWorkspaceChanged());
 
         this._relayout();
     },
 
     init: function() {
-        Main.overview.connect('showing',
-                              Lang.bind(this, this._overviewShowing));
-        Main.overview.connect('hidden',
-                              Lang.bind(this, this._overviewHidden));
+        Main.overview.connect('showing', () => this._overviewShowing());
+        Main.overview.connect('hidden', () => this._overviewHidden());
     },
 
     addActor: function(actor, params) {
@@ -505,7 +515,7 @@ Chrome.prototype = {
     },
 
     _findActor: function(actor) {
-        for (let i = 0; i < this._trackedActors.length; i++) {
+        for (let i = 0, len = this._trackedActors.length; i < len; i++) {
             let actorData = this._trackedActors[i];
             if (actorData.actor == actor)
                 return i;
@@ -531,12 +541,9 @@ Chrome.prototype = {
         actorData.actor = actor;
         if (actorData.addToWindowgroup) actorData.isToplevel = actor.get_parent() == global.window_group;
         else actorData.isToplevel = actor.get_parent() == Main.uiGroup;
-        actorData.visibleId = actor.connect('notify::visible',
-                                            Lang.bind(this, this._queueUpdateRegions));
-        actorData.allocationId = actor.connect('notify::allocation',
-                                               Lang.bind(this, this._queueUpdateRegions));
-        actorData.parentSetId = actor.connect('parent-set',
-                                              Lang.bind(this, this._actorReparented));
+        actorData.visibleId = actor.connect('notify::visible', () => this._queueUpdateRegions());
+        actorData.allocationId = actor.connect('notify::allocation', () => this._queueUpdateRegions());
+        actorData.parentSetId = actor.connect('parent-set', (a) => this._actorReparented(a));
         // Note that destroying actor will unset its parent, so we don't
         // need to connect to 'destroy' too.
 
@@ -559,7 +566,7 @@ Chrome.prototype = {
         this._queueUpdateRegions();
     },
 
-    _actorReparented: function(actor, oldParent) {
+    _actorReparented: function(actor) {
         let i = this._findActor(actor);
         if (i == -1)
             return;
@@ -575,7 +582,7 @@ Chrome.prototype = {
     },
 
     _updateVisibility: function() {
-        for (let i = 0; i < this._trackedActors.length; i++) {
+        for (let i = 0, len = this._trackedActors.length; i < len; i++) {
             let actorData = this._trackedActors[i], visible;
             if (!actorData.isToplevel)
                 continue;
@@ -626,14 +633,16 @@ Chrome.prototype = {
         // First look at what monitor the center of the rectangle is at
         let cx = x + w/2;
         let cy = y + h/2;
-        for (let i = 0; i < this._monitors.length; i++) {
+        let len = this._monitors.length;
+
+        for (let i = 0; i < len; i++) {
             let monitor = this._monitors[i];
             if (cx >= monitor.x && cx < monitor.x + monitor.width &&
                 cy >= monitor.y && cy < monitor.y + monitor.height)
                 return [i, monitor];
         }
         // If the center is not on a monitor, return the first overlapping monitor
-        for (let i = 0; i < this._monitors.length; i++) {
+        for (let i = 0; i < len; i++) {
             let monitor = this._monitors[i];
             if (x + w > monitor.x && x < monitor.x + monitor.width &&
                 y + h > monitor.y && y < monitor.y + monitor.height)
@@ -678,8 +687,7 @@ Chrome.prototype = {
 
     _queueUpdateRegions: function() {
         if (!this._updateRegionIdle && !this._freezeUpdateCount)
-            this._updateRegionIdle = Mainloop.idle_add(Lang.bind(this, this.updateRegions),
-                                                       Meta.PRIORITY_BEFORE_REDRAW);
+            this._updateRegionIdle = Mainloop.idle_add(() => this.updateRegions(), Meta.PRIORITY_BEFORE_REDRAW);
     },
 
     freezeUpdateRegions: function() {
@@ -694,30 +702,67 @@ Chrome.prototype = {
     },
 
     _windowsRestacked: function() {
-        // Figure out where the pointer is in case we lost track of
-        // it during a grab.
-        global.sync_pointer();
+        const {_isPopupWindowVisible} = this;
 
-        let isPopupWindowVisible = global.top_window_group.get_children().some(isPopupMetaWindow);
-        let popupVisibilityChanged = this._isPopupWindowVisible !== isPopupWindowVisible;
-        this._isPopupWindowVisible = isPopupWindowVisible;
-        if (popupVisibilityChanged)
+        this._isPopupWindowVisible = global.display.popup_window_visible();
+
+        if (_isPopupWindowVisible != this._isPopupWindowVisible) {
             this._updateVisibility();
-        else
+
+            /* Pointer only needs to be updated to account for tray icon popup windows, which
+               will be reflected by the global.display.popup_window_visible return value. */
+            Mainloop.idle_add_full(1000, () => global.sync_pointer());
+        } else {
             this._queueUpdateRegions();
+        }
     },
 
-    updateRegions: function() {
-        let rects = [], struts = [], i;
+    /* Avoid calling into C code unless we absolutely have to, including their
+       constructors - this improves CPU usage. updateRegions gets called too
+       much, and the net effect is more time spent context switching.*/
+    updateRects: function() {
+        global.set_stage_input_region(
+            map(this.rects, function(rect) {
+                return new Meta.Rectangle(rect);
+            })
+        );
+    },
+
+    updateStruts: function() {
+        global.screen.get_active_workspace().set_builtin_struts(
+            map(this.struts, function(strut) {
+                return new Meta.Strut({
+                    rect: new Meta.Rectangle(strut.rect),
+                    side: strut.side
+                })
+            })
+        );
+    },
+
+    onWorkspaceChanged: function() {
+        if (this.rects.length) this.updateRects();
+        if (this.struts.length) this.updateStruts();
+    },
+
+    updateRegions: function(updateNeeded = false) {
+        let trackedActorsLength = this._trackedActors.length;
+        let rects = [];
+        let struts = [];
+        let rectsChanged = false;
+        let strutsChanged = false;
+        let wantsInputRegion = !this._isPopupWindowVisible;
+        let i = 0;
 
         if (this._updateRegionIdle) {
             Mainloop.source_remove(this._updateRegionIdle);
             this._updateRegionIdle = 0;
         }
 
-        let wantsInputRegion = !this._isPopupWindowVisible;
+        if (updateNeeded) {
+            rectsChanged = strutsChanged = true;
+        }
 
-        for (let i = 0; i < this._trackedActors.length; i++) {
+        for (; i < trackedActorsLength; i++) {
             let actorData = this._trackedActors[i];
             if (!(actorData.affectsInputRegion && wantsInputRegion) && !actorData.affectsStruts)
                 continue;
@@ -742,17 +787,28 @@ Chrome.prototype = {
                 && actorData.actor.get_paint_visibility()
                 && !Main.uiGroup.get_skip_paint(actorData.actor)) {
 
-                let rect = new Meta.Rectangle({ x: x, y: y, width: w, height: h});
+                let rect = {x, y, width: w, height: h};
 
                 // special case for hideable panel actors:
                 // clip any off-monitor input region
                 if (actorData.actor.maybeGet("_delegate") instanceof Panel.Panel
                     && actorData.actor._delegate.isHideable()) {
                     let m = this._monitors[actorData.actor._delegate.monitorIndex];
-                    if (m) {
-                        let mr = {x: m.x, y: m.y, width: m.width, height: m.height};
-                        [, rect] = rect.intersect(new Meta.Rectangle(mr));
-                    }
+                    if (m) rect = intersect(rect, m);
+                }
+
+                let refRect = findIndex(this.rects, function(r) {
+                    return (
+                        r.x === rect.x &&
+                        r.y === rect.y &&
+                        r.width === rect.width &&
+                        r.height === rect.height
+                    );
+                });
+
+                /* Check if the rect exists, if so, set the parent scope's changed variable. */
+                if (refRect === -1) {
+                    rectsChanged = true;
                 }
 
                 rects.push(rect);
@@ -802,19 +858,38 @@ Chrome.prototype = {
                 else
                     continue;
 
-                let strutRect = new Meta.Rectangle({ x: x1, y: y1, width: x2 - x1, height: y2 - y1});
-                let strut = new Meta.Strut({ rect: strutRect, side: side });
-                struts.push(strut);
+                let rect = {
+                    x: x1,
+                    y: y1,
+                    width: x2 - x1,
+                    height: y2 - y1
+                };
+
+                /* Check if the strut exists, if so, set the parent scope's changed variable. */
+                let refStrut = findIndex(this.struts, function(strut) {
+                    return (
+                        rect.x === strut.rect.x &&
+                        rect.y === strut.rect.y &&
+                        rect.width === strut.rect.width &&
+                        rect.height === strut.rect.height &&
+                        strut.side === side
+                    )
+                });
+
+                if (refStrut === -1) {
+                    strutsChanged = true;
+                }
+
+                struts.push({rect, side});
             }
         }
 
-        global.set_stage_input_region(rects);
+        /* Cache the rects and struts for the next comparison. */
+        this.rects = rects;
+        this.struts = struts;
 
-        let screen = global.screen;
-        for (let w = 0; w < screen.n_workspaces; w++) {
-            let workspace = screen.get_workspace_by_index(w);
-            workspace.set_builtin_struts(struts);
-        }
+        if (rectsChanged) this.updateRects();
+        if (strutsChanged) this.updateStruts();
 
         return false;
     }
