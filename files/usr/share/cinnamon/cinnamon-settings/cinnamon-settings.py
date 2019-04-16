@@ -224,9 +224,6 @@ class MainWindow:
 
         self.stack_switcher = self.builder.get_object("stack_switcher")
 
-        m, n = self.button_back.get_preferred_width()
-        self.stack_switcher.set_margin_end(n)
-
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.set_placeholder_text(_("Search"))
         self.search_entry.connect("changed", self.onSearchTextChanged)
