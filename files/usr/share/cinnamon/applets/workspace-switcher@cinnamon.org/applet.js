@@ -130,6 +130,28 @@ class WorkspaceGraph extends WorkspaceButton {
         return (t2 < t1) ? 1 : -1;
     }
 
+    paintWindow(metaWindow, themeNode, cr) {
+        let windowBackgroundColor;
+        let windowBorderColor;
+
+        let scaled_rect = this.scale(metaWindow.get_outer_rect(), this.workspace_size);
+
+        if (metaWindow.has_focus()) {
+            windowBorderColor = themeNode.get_color('-active-window-border');
+            windowBackgroundColor = themeNode.get_color('-active-window-background');
+        } else {
+            windowBorderColor = themeNode.get_color('-inactive-window-border');
+            windowBackgroundColor = themeNode.get_color('-inactive-window-background');
+        }
+
+        Clutter.cairo_set_source_color(cr, windowBorderColor);
+        cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
+        cr.strokePreserve();
+
+        Clutter.cairo_set_source_color(cr, windowBackgroundColor);
+        cr.fill();
+    }
+
     onRepaint(area) {
         // we need to set the size of the drawing area the first time, but we can't get
         // accurate measurements until everything is added to the stage
@@ -137,6 +159,7 @@ class WorkspaceGraph extends WorkspaceButton {
 
         let graphThemeNode = this.graphArea.get_theme_node();
         let cr = area.get_context();
+        cr.setLineWidth(1);
 
         // construct a list with all windows
         let windows = this.workspace.list_windows();
@@ -145,36 +168,25 @@ class WorkspaceGraph extends WorkspaceButton {
             function(w) {
                 return !w.is_skip_taskbar() && !w.minimized;
             });
+
         windows.sort(this.sortWindowsByUserTime);
 
         if (windows.length) {
-            let windowBackgroundColor;
-            let windowBorderColor;
+            let focusWindow = null;
+
             for (let i = 0; i < windows.length; ++i) {
                 let metaWindow = windows[i];
-                let scaled_rect = this.scale(metaWindow.get_outer_rect(), this.workspace_size);
 
-                cr.setLineWidth(1);
                 if (metaWindow.has_focus()) {
-                    windowBorderColor = graphThemeNode.get_color('-active-window-border');
-                    Clutter.cairo_set_source_color(cr, windowBorderColor);
-                }
-                else {
-                    windowBorderColor = graphThemeNode.get_color('-inactive-window-border');
-                    Clutter.cairo_set_source_color(cr, windowBorderColor);
-                }
-                cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
-                cr.strokePreserve();
-                if (metaWindow.has_focus()) {
-                    windowBackgroundColor = graphThemeNode.get_color('-active-window-background');
-                    Clutter.cairo_set_source_color(cr, windowBackgroundColor);
-                }
-                else {
-                    windowBackgroundColor = graphThemeNode.get_color('-inactive-window-background');
-                    Clutter.cairo_set_source_color(cr, windowBackgroundColor);
+                    focusWindow = metaWindow;
+                    continue;
                 }
 
-                cr.fill();
+                this.paintWindow(metaWindow, graphThemeNode, cr);
+            }
+
+            if (focusWindow) {
+                this.paintWindow(focusWindow, graphThemeNode, cr);
             }
         }
 
@@ -393,7 +405,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             this.buttons[i].show();
         }
 
-        this.signals.disconnectAllSignals();
+        this.signals.disconnect("notify::focus-window");
         if (this.display_type == "visual" && !suppress_graph) {
             // In visual mode, keep track of window events to represent them
             this.signals.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
