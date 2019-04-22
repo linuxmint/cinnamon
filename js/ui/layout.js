@@ -454,7 +454,7 @@ Chrome.prototype = {
         global.display.connect('notify::focus-window', () => {
             Mainloop.idle_add_full(1000, () => this._windowsRestacked());
         });
-        global.screen.connect('in-fullscreen-changed', () => this._updateVisibility());
+        global.screen.connect('in-fullscreen-changed', () => this._updateVisibility(true));
         global.window_manager.connect('switch-workspace', () => this.onWorkspaceChanged());
 
         // Need to update struts on new workspaces when they are added
@@ -581,7 +581,7 @@ Chrome.prototype = {
         }
     },
 
-    _updateVisibility: function() {
+    _updateVisibility: function(updateNeeded = false) {
         for (let i = 0, len = this._trackedActors.length; i < len; i++) {
             let actorData = this._trackedActors[i], visible;
             if (!actorData.isToplevel)
@@ -609,7 +609,7 @@ Chrome.prototype = {
                 visible = true;
             Main.uiGroup.set_skip_paint(actorData.actor, !visible);
         }
-        this._queueUpdateRegions();
+        this._queueUpdateRegions(updateNeeded);
     },
 
     _overviewShowing: function() {
@@ -685,9 +685,9 @@ Chrome.prototype = {
         return this._primaryIndex; // Not on any monitor, pretend its on the primary
     },
 
-    _queueUpdateRegions: function() {
+    _queueUpdateRegions: function(updateNeeded = false) {
         if (!this._updateRegionIdle && !this._freezeUpdateCount)
-            this._updateRegionIdle = Mainloop.idle_add(() => this.updateRegions(), Meta.PRIORITY_BEFORE_REDRAW);
+            this._updateRegionIdle = Mainloop.idle_add(() => this.updateRegions(updateNeeded), Meta.PRIORITY_BEFORE_REDRAW);
     },
 
     freezeUpdateRegions: function() {
