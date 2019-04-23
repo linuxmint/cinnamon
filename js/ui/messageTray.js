@@ -1845,6 +1845,8 @@ MessageTray.prototype = {
         }
         this._notification = null;
         this._notificationRemoved = false;
+
+        Main.layoutManager._chrome.updateRegions(true);
     },
 
     _expandNotification: function(autoExpanding) {
