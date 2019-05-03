@@ -675,7 +675,7 @@ class Module:
                 try:
                     try:
                         os.remove(face_path)
-                    except:
+                    except OSError:
                         pass
                     priv_helper.drop_privs(user)
                     image.save(face_path, "png")
@@ -717,7 +717,7 @@ class Module:
                 try:
                     try:
                         os.remove(face_path)
-                    except:
+                    except OSError:
                         pass
                     priv_helper.drop_privs(user)
                     shutil.copy(path, face_path)
