@@ -30,7 +30,7 @@ const MAX_FAV_ICON_SIZE = 32;
 const CATEGORY_ICON_SIZE = 22;
 const APPLICATION_ICON_SIZE = 22;
 
-const INITIAL_BUTTON_LOAD = 30;
+const INITIAL_BUTTON_LOAD = 15;
 const NUM_SYSTEM_BUTTONS = 3;
 const MAX_BUTTON_WIDTH = "max-width: 20em;";
 
@@ -1143,7 +1143,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
             this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
 
-            Mainloop.idle_add(Lang.bind(this, this._initial_cat_selection, n));
+            Mainloop.idle_add(() => { this._displayButtons(-1) });
         } else {
             this.actor.remove_style_pseudo_class('active');
             if (this.searchActive) {
@@ -1158,13 +1158,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._clearAllSelections(true);
             this._scrollToButton(null, this.favoritesScrollBox);
             this.destroyVectorBox();
-        }
-    }
-
-    _initial_cat_selection (start_index) {
-        let n = this._applicationsButtons.length;
-        for (let i = start_index; i < n; i++) {
-            this._applicationsButtons[i].actor.show();
         }
     }
 
