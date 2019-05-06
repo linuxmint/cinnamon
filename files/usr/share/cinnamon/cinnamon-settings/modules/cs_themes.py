@@ -3,6 +3,8 @@
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
 
 from GSettingsWidgets import *
+from CinnamonGtkSettings import CssRange, CssOverrideSwitch, GtkSettingsSwitch, PreviewWidget, Gtk2ScrollbarSizeEditor
+from SettingsWidgets import LabelRow
 from ExtensionCore import DownloadSpicesPage
 from Spices import Spice_Harvester
 
@@ -89,6 +91,37 @@ class Module:
             widget = GSettingsSwitch(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons")
             settings.add_row(widget)
 
+            settings = page.add_section(_("Scrollbar behavior"))
+
+            switch = GtkSettingsSwitch(_("Warp sliders when clicking in a trough"), "gtk-primary-button-warps-slider")
+            settings.add_row(switch)
+
+            widget = GSettingsSwitch(_("Use overlay scroll bars"), "org.cinnamon.desktop.interface", "gtk-overlay-scrollbars")
+            settings.add_row(widget)
+
+            self.gtk2_scrollbar_editor = Gtk2ScrollbarSizeEditor(widget.get_scale_factor())
+
+            switch = CssOverrideSwitch(_("Override the current theme's scrollbar width"))
+            settings.add_row(switch)
+            self.scrollbar_switch = switch.content_widget
+
+            widget = CssRange(_("Scrollbar width"), "scrollbar slider", ["min-width", "min-height"], 5, 100, "px", None, switch)
+            settings.add_reveal_row(widget)
+            widget.sync_initial_switch_state()
+            self.scrollbar_css_range = widget.content_widget
+
+            switch.content_widget.connect("notify::active", self.on_css_override_active_changed)
+            widget.content_widget.connect("value-changed", self.on_range_slider_value_changed)
+
+            self.on_css_override_active_changed(switch)
+
+            widget = PreviewWidget()
+            settings.add_row(widget)
+
+            label_widget = LabelRow(_(
+"""Changes will take effect the next time you log in and may not affect all applications."""))
+            settings.add_row(label_widget)
+
             self.builder = self.sidePage.builder
 
             for path in [os.path.expanduser("~/.themes"), os.path.expanduser("~/.icons")]:
@@ -110,6 +143,16 @@ class Module:
                         print(e)
 
             self.refresh()
+
+    def on_css_override_active_changed(self, switch, pspec=None, data=None):
+        if self.scrollbar_switch.get_active():
+            self.gtk2_scrollbar_editor.set_size(self.scrollbar_css_range.get_value())
+        else:
+            self.gtk2_scrollbar_editor.set_size(0)
+
+    def on_range_slider_value_changed(self, widget, data=None):
+        if self.scrollbar_switch.get_active():
+            self.gtk2_scrollbar_editor.set_size(widget.get_value())
 
     def on_file_changed(self, file, other, event, data):
         self.refresh()
