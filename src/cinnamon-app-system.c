@@ -14,6 +14,17 @@
 #include "cinnamon-global.h"
 #include "cinnamon-util.h"
 
+// Set to 1 to enable debugging of the duplicate renaming stuff.
+#define DEBUG_APPSYS_RENAMING 0
+
+#if DEBUG_APPSYS_RENAMING
+#define DEBUG_RENAMING(format, ...) \
+  g_printerr ("DEBUG APPSYS_RENAMING: " format, ##__VA_ARGS__)
+#else
+#define DEBUG_RENAMING(format, ...) \
+  G_STMT_START { } G_STMT_END
+#endif
+
 /* Vendor prefixes are something that can be preprended to a .desktop
  * file name.  Undo this.
  */
@@ -259,6 +270,212 @@ get_prefix_for_entry (GMenuTreeEntry *entry)
   g_return_val_if_reached (NULL);
 }
 
+typedef struct
+{
+  GPtrArray *group;
+  const gchar *key;
+} RenameAppData;
+
+static gchar *
+capitalize (const gchar *name)
+{
+  gchar *first_letter_capped;
+  gchar *ret;
+
+  first_letter_capped = g_utf8_strup (name, 1);
+
+  ret = g_strconcat (first_letter_capped, (name + 1), NULL);
+
+  g_free (first_letter_capped);
+
+  return ret;
+}
+
+static gboolean
+apps_have_same_name_and_exec (CinnamonApp *app1,
+                              CinnamonApp *app2)
+{
+    const gchar *name1, *name2;
+    const gchar *exec1, *exec2;
+
+    name1 = cinnamon_app_get_name (app1);
+    name2 = cinnamon_app_get_name (app2);
+
+    if (g_strcmp0 (name1, name2) != 0)
+      {
+        return FALSE;
+      }
+
+    exec1 = _cinnamon_app_get_executable (app1);
+    exec2 = _cinnamon_app_get_executable (app2);
+
+    return g_strcmp0 (exec1, exec2) == 0;
+}
+
+static void
+rename_app (CinnamonApp *app,
+            gpointer     user_data,
+            gboolean     flatpak_iteration)
+{
+  RenameAppData *data;
+  const gchar *common_name;
+  gchar *unique_name, *basename, *dirname, *capitalized_exec;
+  guint i;
+
+  data = (RenameAppData *) user_data;
+
+  common_name = data->key;
+  dirname = g_path_get_dirname (_cinnamon_app_get_desktop_path (app));
+
+  if (_cinnamon_app_get_unique_name (app) != NULL)
+    {
+      DEBUG_RENAMING ("      Skipping rename of app at %s - it is already modified (%s)\n",
+                      cinnamon_app_get_id (app),
+                      _cinnamon_app_get_unique_name (app));
+
+      return;
+    }
+
+  if (g_strstr_len (dirname, -1, "flatpak"))
+    {
+      unique_name = g_strdup_printf ("%s (Flatpak)",
+                                     common_name);
+
+      DEBUG_RENAMING ("      Marking app at %s as a flatpak (%s)\n",
+                      cinnamon_app_get_id (app),
+                      unique_name);
+
+      _cinnamon_app_set_unique_name (app, unique_name);
+    }
+
+  g_free (dirname);
+
+  if (flatpak_iteration)
+    {
+      return;
+    }
+
+  basename = g_path_get_basename (_cinnamon_app_get_executable (app));
+
+  capitalized_exec = capitalize (basename);
+  g_free (basename);
+
+  if (g_strcmp0 (capitalized_exec, common_name) == 0)
+    {
+      DEBUG_RENAMING ("      Skipping rename of app at %s since its display name "
+                      "is the same as its executable name (%s)\n",
+                      cinnamon_app_get_id (app),
+                      common_name);
+
+      _cinnamon_app_set_unique_name (app, g_strdup (common_name));
+
+      g_free (capitalized_exec);
+
+      return;
+    }
+
+  unique_name = g_strdup_printf ("%s (%s)",
+                                 common_name,
+                                 capitalized_exec);
+
+  g_free (capitalized_exec);
+
+  DEBUG_RENAMING ("      Renaming app at '%s' from '%s' to '%s'\n",
+                  cinnamon_app_get_id (app),
+                  common_name,
+                  unique_name);
+
+  _cinnamon_app_set_unique_name (app, unique_name);
+
+  for (i = 0; i < data->group->len; i++)
+    {
+      CinnamonApp *other_app = g_ptr_array_index (data->group, i);
+
+      if (other_app == app)
+        {
+          continue;
+        }
+
+      if (apps_have_same_name_and_exec (app, other_app))
+        {
+          DEBUG_RENAMING ("        Hiding app at '%s' as functional duplicate to app at '%s'\n",
+                          cinnamon_app_get_id (app),
+                          cinnamon_app_get_id (other_app));
+
+          _cinnamon_app_set_hidden_as_duplicate (other_app, TRUE);
+        }
+    }
+}
+
+static gboolean
+still_has_names_duplicated (RenameAppData *data)
+{
+    guint i;
+    gboolean duplicated;
+    GHashTable *name_register;
+
+    name_register = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                           (GDestroyNotify) NULL,
+                                           (GDestroyNotify) NULL);
+
+    duplicated = FALSE;
+
+    for (i = 0; i < data->group->len; i++)
+      {
+        CinnamonApp *app = g_ptr_array_index (data->group, i);
+
+        if (!g_hash_table_add (name_register, (gpointer) cinnamon_app_get_name (app)))
+          {
+            duplicated = TRUE;
+            break;
+          }
+      }
+
+    g_hash_table_destroy (name_register);
+
+    return duplicated;
+}
+
+static void
+deduplicate_apps (GPtrArray   *app_array,
+                  gpointer    *key)
+{
+  RenameAppData data;
+  guint i;
+
+  DEBUG_RENAMING ("%d apps with conflicting names: '%s'.  Renaming.\n",
+                  app_array->len, (gchar *) key);
+
+  data.group = app_array;
+  data.key = (gchar *) key;
+
+  i = 0;
+
+  DEBUG_RENAMING (" - flatpak iteration\n");
+
+  while (i < app_array->len)
+    {
+      rename_app (g_ptr_array_index (app_array, i), &data, TRUE);
+
+      i++;
+    }
+
+  if (still_has_names_duplicated (&data))
+    {
+      i = 0;
+      DEBUG_RENAMING (" - still have duplicates, handling the rest\n");
+
+      while (i < app_array->len)
+        {
+          rename_app (g_ptr_array_index (app_array, i), &data, FALSE);
+
+          i++;
+        }
+    }
+
+  DEBUG_RENAMING ("Done renaming for '%s'\n\n", (gchar *) key);
+}
+
 static void
 get_flattened_entries_recurse (GMenuTreeDirectory *dir,
                                GHashTable         *entry_set)
@@ -329,7 +546,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 {
   CinnamonAppSystem *self = CINNAMON_APP_SYSTEM (user_data);
   GError *error = NULL;
-  GHashTable *new_apps;
+  GHashTable *new_apps, *display_names;
   GHashTableIter iter;
   gpointer key, value;
 
@@ -353,6 +570,11 @@ on_apps_tree_changed_cb (GMenuTree *tree,
     }
 
   new_apps = get_flattened_entries_from_tree (self->priv->apps_tree);
+
+  display_names = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                         (GDestroyNotify) g_free,
+                                         (GDestroyNotify) NULL);
+
   g_hash_table_iter_init (&iter, new_apps);
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
@@ -385,13 +607,38 @@ on_apps_tree_changed_cb (GMenuTree *tree,
            */
           old_entry = cinnamon_app_get_tree_entry (app);
           gmenu_tree_item_ref (old_entry);
+
+#if DEBUG_APPSYS_RENAMING
+          if (g_strcmp0 (_cinnamon_app_get_desktop_path (app),
+                         g_desktop_app_info_get_filename (gmenu_tree_entry_get_app_info (entry))) == 0)
+            {
+              DEBUG_RENAMING ("Existing match found for app: '%s'.  Source unchanged ('%s')\n",
+                              _cinnamon_app_get_common_name (app),
+                              _cinnamon_app_get_desktop_path (app));
+
+            }
+          else
+            {
+              DEBUG_RENAMING ("Existing match found for app: '%s'.  Source is changing from '%s' to '%s'\n",
+                              _cinnamon_app_get_common_name (app),
+                              _cinnamon_app_get_desktop_path (app),
+                              g_desktop_app_info_get_filename (gmenu_tree_entry_get_app_info (entry)));
+            }
+#endif
+
           _cinnamon_app_set_entry (app, entry);
+
           g_object_ref (app);  /* Extra ref, removed in _replace below */
         }
       else
         {
           old_entry = NULL;
           app = _cinnamon_app_new (entry);
+
+          DEBUG_RENAMING ("New app entry: '%s' with source '%s'\n",
+                          _cinnamon_app_get_common_name (app),
+                          _cinnamon_app_get_desktop_path (app));
+
         }
       /* Note that "id" is owned by app->entry.  Since we're always
        * setting a new entry, even if the app already exists in the
@@ -424,7 +671,38 @@ on_apps_tree_changed_cb (GMenuTree *tree,
         }
 
       if (old_entry)
-        gmenu_tree_item_unref (old_entry);
+        {
+          gmenu_tree_item_unref (old_entry);
+        }
+
+
+      if (!cinnamon_app_get_nodisplay (app))
+        {
+          GPtrArray *same_name_apps;
+          const char *common_name;
+
+          common_name = _cinnamon_app_get_common_name (app);
+
+          DEBUG_RENAMING ("Adding '%s' (at %s) to check for uniqueness\n",
+                          _cinnamon_app_get_common_name (app), id);
+
+          same_name_apps = g_hash_table_lookup (display_names, common_name);
+
+          if (same_name_apps == NULL)
+            {
+              same_name_apps = g_ptr_array_new_with_free_func ((GDestroyNotify) g_free);
+              g_hash_table_insert (display_names,
+                                   g_strdup (common_name),
+                                   same_name_apps);
+            }
+
+          g_ptr_array_add (same_name_apps, (gpointer) app);
+        }
+      else
+        {
+          DEBUG_RENAMING ("...Skipping '%s' (at %s): App is nodisplay\n",
+                          _cinnamon_app_get_common_name (app), id);
+        }
     }
   /* Now iterate over the apps again; we need to unreference any apps
    * which have been removed.  The JS code may still be holding a
@@ -439,7 +717,19 @@ on_apps_tree_changed_cb (GMenuTree *tree,
         g_hash_table_iter_remove (&iter);
     }
 
+  g_hash_table_iter_init (&iter, display_names);
+  while (g_hash_table_iter_next (&iter, &key, &value))
+    {
+      GPtrArray *array = (GPtrArray *) value;
+
+      if (array->len > 1)
+        {
+          deduplicate_apps (array, key);
+        }
+    }
+
   g_hash_table_destroy (new_apps);
+  g_hash_table_destroy (display_names);
 
   g_signal_emit (self, signals[INSTALLED_CHANGED], 0);
 }
@@ -505,7 +795,7 @@ cinnamon_app_system_lookup_app (CinnamonAppSystem   *self,
   return result;
 }
 
-/**
+/*
  * Find a valid application corresponding to a given
  * heuristically determined application identifier
  * string, or %NULL if none.

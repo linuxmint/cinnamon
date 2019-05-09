@@ -64,6 +64,9 @@ struct _CinnamonApp
   char *window_id_string;
 
   char *keywords;
+  char *unique_name;
+
+  gboolean hidden_as_duplicate;
 };
 
 G_DEFINE_TYPE (CinnamonApp, cinnamon_app, G_TYPE_OBJECT);
@@ -286,8 +289,8 @@ cinnamon_app_create_icon_texture_for_window (CinnamonApp   *app,
   return cinnamon_app_create_icon_texture (app, size);
 }
 
-const char *
-cinnamon_app_get_name (CinnamonApp *app)
+static const char *
+get_common_name (CinnamonApp *app)
 {
   if (app->entry)
     return g_app_info_get_name (G_APP_INFO (app->info));
@@ -304,6 +307,15 @@ cinnamon_app_get_name (CinnamonApp *app)
         name = _("Unknown");
       return name;
     }
+}
+
+const char *
+cinnamon_app_get_name (CinnamonApp *app)
+{
+  if (app->unique_name)
+    return app->unique_name;
+
+  return get_common_name (app);
 }
 
 const char *
@@ -347,6 +359,23 @@ cinnamon_app_get_keywords (CinnamonApp *app)
     app->keywords = ret;
 
     return ret;
+}
+
+gboolean
+cinnamon_app_get_nodisplay (CinnamonApp *app)
+{
+  if (app->hidden_as_duplicate)
+    {
+      return TRUE;
+    }
+
+  if (app->entry)
+    {
+      return g_desktop_app_info_get_nodisplay (app->info);
+      // return !g_app_info_should_show (G_APP_INFO (app->info));
+    }
+
+  return FALSE;
 }
 
 /**
@@ -775,13 +804,20 @@ void
 _cinnamon_app_set_entry (CinnamonApp       *app,
                       GMenuTreeEntry *entry)
 {
-  if (app->entry != NULL)
-    gmenu_tree_item_unref (app->entry);
-  entry = gmenu_tree_item_ref (entry);
+  g_clear_pointer (&app->entry, gmenu_tree_item_unref);
+  g_clear_object (&app->info);
 
-  if (entry && app->info == NULL)
-    app->info = g_object_ref (gmenu_tree_entry_get_app_info (entry));
-  app->entry = entry;
+  /* If our entry has changed, our name may have as well, so clear
+   * anything set by appsys while deduplicating desktop items. */
+  g_clear_pointer (&app->unique_name, g_free);
+  app->hidden_as_duplicate = FALSE;
+
+  app->entry = gmenu_tree_item_ref (entry);
+
+  if (entry != NULL)
+    {
+      app->info = g_object_ref (gmenu_tree_entry_get_app_info (entry));
+    }
 }
 
 static void
@@ -927,6 +963,59 @@ _cinnamon_app_handle_startup_sequence (CinnamonApp          *app,
       else /* application have > 1 .desktop file */
         cinnamon_app_state_transition (app, CINNAMON_APP_STATE_STOPPED);
     }
+}
+
+const char *
+_cinnamon_app_get_common_name (CinnamonApp *app)
+{
+  return get_common_name (app);
+}
+
+void
+_cinnamon_app_set_unique_name (CinnamonApp *app,
+                               gchar       *unique_name)
+{
+  if (app->unique_name)
+    {
+      g_free (app->unique_name);
+    }
+
+  app->unique_name = unique_name;
+}
+
+const char *
+_cinnamon_app_get_unique_name (CinnamonApp *app)
+{
+  return app->unique_name;
+}
+
+const char *
+_cinnamon_app_get_executable (CinnamonApp *app)
+{
+  if (app->entry)
+    {
+      return g_app_info_get_executable (G_APP_INFO (app->info));
+    }
+
+  return NULL;
+}
+
+const char *
+_cinnamon_app_get_desktop_path (CinnamonApp *app)
+{
+  if (app->entry)
+    {
+      return g_desktop_app_info_get_filename (app->info);
+    }
+
+  return NULL;
+}
+
+void
+_cinnamon_app_set_hidden_as_duplicate (CinnamonApp *app,
+                                     gboolean     hide)
+{
+  app->hidden_as_duplicate = hide;
 }
 
 /**
@@ -1130,6 +1219,7 @@ cinnamon_app_dispose (GObject *object)
     _cinnamon_app_remove_window (app, app->running_state->windows->data);
 
   g_clear_pointer (&app->keywords, g_free);
+  g_clear_pointer (&app->unique_name, g_free);
 
   G_OBJECT_CLASS(cinnamon_app_parent_class)->dispose (object);
 }
