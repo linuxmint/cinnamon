@@ -223,6 +223,7 @@ class SimpleButton extends WorkspaceButton {
         let label = new St.Label({ text: (index + 1).toString() });
         label.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
         this.actor.set_child(label);
+        this.shade(true);
     }
 
     activate(active) {
@@ -230,6 +231,28 @@ class SimpleButton extends WorkspaceButton {
             this.actor.add_style_pseudo_class('outlined');
         else
             this.actor.remove_style_pseudo_class('outlined');
+            this.update();
+    }
+	
+	shade(empty) {
+		if (empty)
+			this.actor.add_style_pseudo_class('shaded');
+		else
+			this.actor.remove_style_pseudo_class('shaded');
+	}
+	
+	update() {
+		let empty = true;
+        let windows = this.workspace.list_windows();
+        windows = windows.filter( Main.isInteresting );
+        windows = windows.filter(
+            function(w) {
+                return !w.is_skip_taskbar();
+            });
+		if (windows.length != 0) {
+		 	empty = false;
+		}
+		this.shade(empty);
     }
 }
 
