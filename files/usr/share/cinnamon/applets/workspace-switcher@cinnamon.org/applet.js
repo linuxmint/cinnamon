@@ -245,10 +245,6 @@ class SimpleButton extends WorkspaceButton {
         let empty = true;
         let windows = this.workspace.list_windows();
         windows = windows.filter( Main.isInteresting );
-        windows = windows.filter(
-            function(w) {
-                return !w.is_skip_taskbar();
-            });
 		if (windows.length != 0) {
 		 	empty = false;
 		}
