@@ -223,7 +223,7 @@ class SimpleButton extends WorkspaceButton {
         let label = new St.Label({ text: (index + 1).toString() });
         label.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
         this.actor.set_child(label);
-        this.shade(true);
+        this.update();
     }
 
     activate(active) {
@@ -242,7 +242,7 @@ class SimpleButton extends WorkspaceButton {
 	}
 	
 	update() {
-		let empty = true;
+        let empty = true;
         let windows = this.workspace.list_windows();
         windows = windows.filter( Main.isInteresting );
         windows = windows.filter(
