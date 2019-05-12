@@ -24,8 +24,9 @@ class Effect {
             y: source.y,
         });
 
-        global.overlay_group.add_child(this.actor);
-        global.overlay_group.set_child_above_sibling(this.actor, null);
+        global.window_group.insert_child_at_index(this.actor, global.window_group.get_children().indexOf(this.source));
+
+        this.onUpdate = () => global.window_group.set_child_above_sibling(this.actor, this.source);
 
         this.source = source;
     }
@@ -38,7 +39,7 @@ class Effect {
 
         global.window_manager[this.wmCompleteName](this.source);
 
-        global.overlay_group.remove_child(this.actor);
+        global.window_group.remove_child(this.actor);
         removeTweens(this.actor);
         this.actor.destroy()
 
@@ -54,6 +55,7 @@ class Effect {
             min: 0,
             max: 255,
             transition,
+            onUpdate: this.onUpdate,
             onComplete: () => this._end(),
         });
     }
@@ -68,6 +70,7 @@ class Effect {
             time,
             min: 0,
             transition,
+            onUpdate: this.onUpdate,
             onComplete: () => this._end(),
         });
     }
@@ -78,6 +81,7 @@ class Effect {
             y,
             time,
             transition,
+            onUpdate: this.onUpdate,
             onComplete: () => this._end(),
         });
     }
