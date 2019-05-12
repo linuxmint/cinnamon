@@ -229,26 +229,27 @@ class SimpleButton extends WorkspaceButton {
     activate(active) {
         if (active)
             this.actor.add_style_pseudo_class('outlined');
-        else
+        else {
             this.actor.remove_style_pseudo_class('outlined');
             this.update();
+        }
     }
 	
-	shade(empty) {
-		if (empty)
-			this.actor.add_style_pseudo_class('shaded');
-		else
-			this.actor.remove_style_pseudo_class('shaded');
+    shade(empty) {
+        if (empty)
+            this.actor.add_style_pseudo_class('shaded');
+        else
+            this.actor.remove_style_pseudo_class('shaded');
 	}
 	
-	update() {
+    update() {
         let empty = true;
         let windows = this.workspace.list_windows();
         windows = windows.filter( Main.isInteresting );
-		if (windows.length != 0) {
-		 	empty = false;
-		}
-		this.shade(empty);
+        if (windows.length !== 0) {
+            empty = false;
+        }
+        this.shade(empty);
     }
 }
 
