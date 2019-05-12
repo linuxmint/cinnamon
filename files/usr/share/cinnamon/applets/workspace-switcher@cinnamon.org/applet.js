@@ -240,7 +240,7 @@ class SimpleButton extends WorkspaceButton {
             this.actor.add_style_pseudo_class('shaded');
         else
             this.actor.remove_style_pseudo_class('shaded');
-	}
+            }
 	
     update() {
         let empty = true;
