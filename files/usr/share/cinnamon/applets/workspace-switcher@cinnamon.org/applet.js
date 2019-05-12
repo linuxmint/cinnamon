@@ -227,20 +227,23 @@ class SimpleButton extends WorkspaceButton {
     }
 
     activate(active) {
-        if (active)
+        if (active) {
             this.actor.add_style_pseudo_class('outlined');
+        }
         else {
             this.actor.remove_style_pseudo_class('outlined');
             this.update();
         }
     }
-	
+
     shade(empty) {
-        if (empty)
+        if (empty) {
             this.actor.add_style_pseudo_class('shaded');
-        else
+        }
+        else {
             this.actor.remove_style_pseudo_class('shaded');
-            }
+        }
+    }
 	
     update() {
         let empty = true;
