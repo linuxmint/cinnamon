@@ -226,56 +226,6 @@ def walk_directories(dirs, filter_func, return_directories=False):
         #logging.critical("Error parsing directories", exc_info=True)
     return valid
 
-class Section(Gtk.Box):
-    def __init__(self, name):
-        self.name = name
-        super(Section, self).__init__()
-        self.set_orientation(Gtk.Orientation.VERTICAL)
-        self.set_border_width(6)
-        self.set_spacing(6)
-        self.label = Gtk.Label()
-        self.label.set_markup("<b>%s</b>" % self.name)
-        hbox = Gtk.Box()
-        hbox.set_orientation(Gtk.Orientation.HORIZONTAL)
-        hbox.pack_start(self.label, False, False, 0)
-        self.pack_start(hbox, False, True, 0)
-
-    def add(self, widget):
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        box.set_margin_left(40)
-        box.set_margin_right(40)
-        box.pack_start(widget, False, True, 0)
-        self.pack_start(box, False, False, 0)
-
-    def add_expand(self, widget):
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        box.set_margin_left(40)
-        box.set_margin_right(40)
-        box.pack_start(widget, True, True, 0)
-        self.pack_start(box, False, False, 0)
-
-    def add_indented(self, widget):
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        box.set_margin_left(80)
-        box.set_margin_right(10)
-        box.pack_start(widget, False, True, 0)
-        self.pack_start(box, False, False, 0)
-
-    def add_indented_expand(self, widget):
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        box.set_margin_left(80)
-        box.set_margin_right(10)
-        box.pack_start(widget, True, True, 0)
-        self.pack_start(box, False, False, 0)
-
-class SectionBg(Gtk.Viewport):
-    def __init__(self):
-        Gtk.Viewport.__init__(self)
-        self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
-        style = self.get_style_context()
-        style.add_class("section-bg")
-        self.expand = True # Tells CS to give expand us to the whole window
-
 class SettingsStack(Gtk.Stack):
     def __init__(self):
         Gtk.Stack.__init__(self)
@@ -454,18 +404,6 @@ class SettingsLabel(Gtk.Label):
 
     def set_label_text(self, text):
         self.set_label(text)
-
-class IndentedHBox(Gtk.HBox):
-    def __init__(self):
-        super(IndentedHBox, self).__init__()
-        indent = Gtk.Label.new('\t')
-        self.pack_start(indent, False, False, 0)
-
-    def add(self, item):
-        self.pack_start(item, False, True, 0)
-
-    def add_expand(self, item):
-        self.pack_start(item, True, True, 0)
 
 class Switch(SettingsWidget):
     bind_prop = "active"
