@@ -1,6 +1,6 @@
 [Desktop Entry]
 Exec=dbus-send --print-reply --dest=org.Cinnamon /org/Cinnamon org.Cinnamon.ToggleKeyboard
-Icon=keyboard
+Icon=input-keyboard
 Terminal=false
 Type=Application
 Categories=Utility;
