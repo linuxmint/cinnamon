@@ -348,12 +348,12 @@ st_theme_node_lookup_corner (StThemeNode    *node,
   StCornerSpec corner;
   guint radius[4];
 
-  cache = st_texture_cache_get_default ();
-
   st_theme_node_reduce_border_radius (node, radius);
 
   if (radius[corner_id] == 0)
     return COGL_INVALID_HANDLE;
+
+  cache = st_texture_cache_get_default ();
 
   corner.radius = radius[corner_id];
   corner.color = node->background_color;
@@ -1943,12 +1943,12 @@ st_theme_node_paint_outline (StThemeNode           *node,
   ClutterColor outline_color, effective_outline;
   guint8 alpha;
 
-  width = box->x2 - box->x1;
-  height = box->y2 - box->y1;
-
   outline_width = st_theme_node_get_outline_width (node);
   if (outline_width == 0)
     return;
+
+  width = box->x2 - box->x1;
+  height = box->y2 - box->y1;
 
   st_theme_node_get_outline_color (node, &outline_color);
   over (&outline_color, &node->background_color, &effective_outline);
@@ -2007,12 +2007,13 @@ st_theme_node_paint (StThemeNode           *node,
   /* Some things take an ActorBox, some things just width/height */
   width = box->x2 - box->x1;
   height = box->y2 - box->y1;
-  allocation.x1 = allocation.y1 = 0;
-  allocation.x2 = width;
-  allocation.y2 = height;
 
   if (width <= 0 || height <= 0)
     return;
+
+  allocation.x1 = allocation.y1 = 0;
+  allocation.x2 = width;
+  allocation.y2 = height;
 
   if (node->alloc_width != width || node->alloc_height != height)
     st_theme_node_render_resources (node, width, height);

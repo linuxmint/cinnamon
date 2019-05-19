@@ -223,7 +223,7 @@ st_clipboard_x11_event_filter (XEvent          *xev,
   Atom actual_type;
   int actual_format, result;
   unsigned long nitems, bytes_after;
-  unsigned char *data = NULL;
+  unsigned char *data;
 
   if(xev->type != SelectionNotify)
     return CLUTTER_X11_FILTER_CONTINUE;
@@ -240,6 +240,8 @@ st_clipboard_x11_event_filter (XEvent          *xev,
       free (filter_data);
       return CLUTTER_X11_FILTER_REMOVE;
     }
+
+  data = NULL;
 
   clutter_x11_trap_x_errors ();
 
