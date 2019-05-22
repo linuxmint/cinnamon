@@ -50,6 +50,13 @@ class SoundBox(Gtk.Box):
     def __init__(self, title):
         Gtk.Box.__init__(self)
         self.set_orientation(Gtk.Orientation.VERTICAL)
+        self.set_spacing(5)
+
+        label = Gtk.Label()
+        label.set_markup("<b>%s</b>" % title)
+        label.set_xalign(0.0)
+        self.add(label)
+
         frame = Gtk.Frame()
         frame.set_shadow_type(Gtk.ShadowType.IN)
         frame_style = frame.get_style_context()
@@ -58,15 +65,6 @@ class SoundBox(Gtk.Box):
 
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         frame.add(main_box)
-
-        toolbar = Gtk.Toolbar.new()
-        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
-        label = Gtk.Label()
-        label.set_markup("<b>%s</b>" % title)
-        title_holder = Gtk.ToolItem()
-        title_holder.add(label)
-        toolbar.add(title_holder)
-        main_box.add(toolbar)
 
         scw = Gtk.ScrolledWindow()
         scw.expand = True
