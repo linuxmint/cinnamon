@@ -283,7 +283,7 @@ LayoutManager.prototype = {
 
         this.keyboardBox.hide();
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: false });
-        this._chrome.updateRegions();
+        this._chrome.updateRegions(true);
 
         this.hideIdleId = 0;
         return false;
