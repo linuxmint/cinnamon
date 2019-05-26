@@ -756,7 +756,7 @@ var WindowManager = class WindowManager {
             });
         }
 
-        if (meta_window.minimized || actor.is_finalized()) {
+        if (meta_window.minimized || isFinalized(actor)) {
             cinnamonwm.completed_destroy(actor);
             return;
         }
