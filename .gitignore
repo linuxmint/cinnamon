@@ -117,3 +117,17 @@ stamp-h1
 tests/Makefile
 tests/Makefile.in
 tests/run-test.sh
+/.vscode/
+/config.h.in~
+/debian/.debhelper/
+/debian/autoreconf.after
+/debian/autoreconf.before
+/debian/*.log
+/debian/*.substvars
+/debian/cinnamon-common/
+/debian/cinnamon-dbg/
+/debian/cinnamon-doc/
+/debian/cinnamon/
+/debian/files
+/debian/debhelper-build-stamp
+/debian/tmp/
