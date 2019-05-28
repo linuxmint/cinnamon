@@ -202,7 +202,9 @@ st_label_paint (ClutterActor *actor)
       float width, height;
 
       clutter_actor_get_allocation_box (priv->label, &allocation);
-      clutter_actor_box_get_size (&allocation, &width, &height);
+
+      width = allocation.x2 - allocation.x1;
+      height = allocation.y2 - allocation.y1;
 
       if (!priv->text_shadow_pipeline ||
           width != priv->shadow_width ||
