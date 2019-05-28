@@ -15,6 +15,7 @@ try:
     import dbus
     from PIL import Image
     import datetime
+    import proxygsettings
 except Exception as detail:
     print(detail)
     sys.exit(1)
@@ -385,7 +386,12 @@ class Spice_Harvester(GObject.Object):
         parsed_url = urlparse(url)
         host = parsed_url.netloc
         try:
-            connection = HTTPSConnection(host, timeout=15)
+            proxy = proxygsettings.get_proxy_settings()
+            if proxy and proxy.get('https'):
+                connection = HTTPSConnection(proxy.get('https'), timeout=15)
+                connection.set_tunnel(host)
+            else:
+                connection = HTTPSConnection(host, timeout=15)
             headers = { "Accept-Encoding": "identity", "Host": host, "User-Agent": "Python/3" }
             connection.request("GET", parsed_url.path, headers=headers)
             urlobj = connection.getresponse()
