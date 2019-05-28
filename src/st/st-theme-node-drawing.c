@@ -2046,6 +2046,7 @@ st_theme_node_paint (StThemeNode           *node,
   if (node->box_shadow_material)
     _st_paint_shadow_with_opacity (node->box_shadow,
                                    node->box_shadow_material,
+                                   fb,
                                    &allocation,
                                    paint_opacity);
 
@@ -2113,6 +2114,7 @@ st_theme_node_paint (StThemeNode           *node,
       if (node->background_shadow_material != COGL_INVALID_HANDLE)
         _st_paint_shadow_with_opacity (node->background_image_shadow,
                                        node->background_shadow_material,
+                                       fb,
                                        &background_box,
                                        paint_opacity);
 

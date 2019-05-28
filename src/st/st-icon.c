@@ -245,8 +245,10 @@ st_icon_paint (ClutterActor *actor)
         }
       if (priv->shadow_pipeline)
         {
+          CoglFramebuffer *fb = cogl_get_draw_framebuffer();
           _st_paint_shadow_with_opacity (priv->shadow_spec,
                                          priv->shadow_pipeline,
+                                         fb,
                                          priv->allocation,
                                          clutter_actor_get_paint_opacity (priv->icon_texture));
         }

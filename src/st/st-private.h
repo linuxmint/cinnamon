@@ -76,6 +76,7 @@ cairo_pattern_t * _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
 
 void _st_paint_shadow_with_opacity (StShadow        *shadow_spec,
                                     CoglPipeline    *shadow_pipeline,
+                                    CoglFramebuffer *fb,
                                     ClutterActorBox *box,
                                     guint8           paint_opacity);
 
