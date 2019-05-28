@@ -476,16 +476,21 @@ class MainWindow:
             ivw = iconview.get_window()
             iv_x, iv_y = ivw.get_position()
 
-            final_y = rect.y + (rect.height / 2) + cw_y + iv_y
+            final_y = rect.y + cw_y + iv_y
 
             adj = self.side_view_sw.get_vadjustment()
             page = adj.get_page_size()
             current_pos = adj.get_value()
 
-            if final_y > current_pos + page:
-                adj.set_value(iv_y + rect.y)
-            elif final_y < current_pos:
-                adj.set_value(iv_y + rect.y)
+            if (final_y > 0) and ((final_y + rect.height) < page):
+                return
+
+            if ((final_y + rect.height) > page):
+                adj.set_value(current_pos + final_y + rect.height - page + 10)
+            elif final_y < 0:
+                # We can just add a negative here (since final_y < 0), but it's less
+                # confusing to be explicit that we're decreasing current_pos.
+                adj.set_value(current_pos - abs(final_y) - 10)
 
     def on_selection_changed(self, widget, category):
         sel = widget.get_selected_items()
