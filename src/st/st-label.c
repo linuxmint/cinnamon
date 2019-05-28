@@ -208,12 +208,12 @@ st_label_paint (ClutterActor *actor)
           width != priv->shadow_width ||
           height != priv->shadow_height)
         {
-          g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
+          if (priv->text_shadow_pipeline)
+            cogl_object_unref (priv->text_shadow_pipeline);
 
           priv->shadow_width = width;
           priv->shadow_height = height;
           priv->text_shadow_pipeline = _st_create_shadow_pipeline_from_actor (shadow_spec, priv->label);
-
         }
 
       if (priv->text_shadow_pipeline != NULL)
