@@ -51,7 +51,9 @@ class Effect {
 
         if (this.source !== this.actor) {
             global.overlay_group.remove_child(this.actor);
-        } else if (!this.actor.is_finalized()) {
+        }
+
+        if (!this.actor.is_finalized()) {
             this.actor.destroy();
         }
 
