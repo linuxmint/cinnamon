@@ -15,17 +15,26 @@ class Effect {
 
     setActor(source) {
         this.originalOpacity = source.opacity;
-        this.actor = new Clone({
-            source,
-            reactive: false,
-            width: source.width,
-            height: source.height,
-            x: source.x,
-            y: source.y,
-        });
 
-        global.overlay_group.add_child(this.actor);
-        global.overlay_group.set_child_above_sibling(this.actor, null);
+        // For the close effect, use the actual MetaWindowActor instead of the clone
+        // because Clutter seems to have issues opacifying clones when the source is already destroyed.
+        if (this.name === 'close') {
+            source.show();
+            this.actor = source;
+        } else {
+            this.actor = new Clone({
+                source,
+                reactive: false,
+                width: source.width,
+                height: source.height,
+                x: source.x,
+                y: source.y,
+                opacity: this.originalOpacity
+            });
+
+            global.overlay_group.add_child(this.actor);
+            global.overlay_group.set_child_above_sibling(this.actor, null);
+        }
 
         this.source = source;
     }
@@ -38,9 +47,13 @@ class Effect {
 
         global.window_manager[this.wmCompleteName](this.source);
 
-        global.overlay_group.remove_child(this.actor);
         removeTweens(this.actor);
-        this.actor.destroy()
+
+        if (this.source !== this.actor) {
+            global.overlay_group.remove_child(this.actor);
+        } else if (!this.actor.is_finalized()) {
+            this.actor.destroy();
+        }
 
         panelManager.updatePanelsVisibility();
 
