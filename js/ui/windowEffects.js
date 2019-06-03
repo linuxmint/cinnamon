@@ -18,9 +18,16 @@ class Effect {
 
         // For the close effect, use the actual MetaWindowActor instead of the clone
         // because Clutter seems to have issues opacifying clones when the source is already destroyed.
-        if (this.name === 'close') {
+        if (this.name === 'close' || this.name === 'minimize') {
             source.show();
             this.actor = source;
+
+            this.originalX = source.x;
+            this.originalY = source.y;
+            this.originalScaleX = source.scale_x;
+            this.originalScaleY = source.scale_y;
+            this.originalWidth = source.width;
+            this.originalHeight = source.height;
         } else {
             this.actor = new Clone({
                 source,
@@ -51,10 +58,20 @@ class Effect {
 
         if (this.source !== this.actor) {
             global.overlay_group.remove_child(this.actor);
-        }
-
-        if (!this.actor.is_finalized()) {
             this.actor.destroy();
+        } else if (this.name === 'minimize') {
+            this.actor.hide();
+
+            // The properties of the MetaWindowActor have values from the last animation tween state.
+            // We need to restore the window to its original state, as muffin only handles Xorg state
+            // changes for these properties.
+            this.actor.opacity = this.originalOpacity;
+            this.actor.x = this.originalX;
+            this.actor.y = this.originalY;
+            this.actor.scale_x = this.originalScaleX;
+            this.actor.scale_y = this.originalScaleY;
+            this.actor.width = this.originalWidth;
+            this.actor.height = this.originalHeight;
         }
 
         panelManager.updatePanelsVisibility();
