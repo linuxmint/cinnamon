@@ -716,6 +716,9 @@ var WindowManager = class WindowManager {
 
     _mapWindow(cinnamonwm, actor) {
         let {meta_window} = actor;
+
+        if (!meta_window) return;
+
         if (meta_window.is_attached_dialog()) {
             this._checkDimming(meta_window.get_transient_for());
         }
