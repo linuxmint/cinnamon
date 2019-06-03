@@ -28,6 +28,7 @@
 #include "st-widget.h"
 #include "st-bin.h"
 #include "st-shadow.h"
+#include "st-theme-node-transition.h"
 
 G_BEGIN_DECLS
 
@@ -78,5 +79,42 @@ void _st_paint_shadow_with_opacity (StShadow        *shadow_spec,
                                     CoglPipeline    *shadow_pipeline,
                                     ClutterActorBox *box,
                                     guint8           paint_opacity);
+
+/*
+ * Forward declaration for sake of StWidgetChild
+ */
+struct _StWidgetPrivate
+{
+  StTheme      *theme;
+  StThemeNode  *theme_node;
+  gchar        *pseudo_class;
+  gchar        *style_class;
+  gchar        *inline_style;
+
+  StThemeNodeTransition *transition_animation;
+
+  guint      is_style_dirty : 1;
+  guint      draw_bg_color : 1;
+  guint      draw_border_internal : 1;
+  guint      track_hover : 1;
+  guint      hover : 1;
+  guint      can_focus : 1;
+  guint      important : 1;
+
+  StTextDirection   direction;
+
+  AtkObject *accessible;
+  AtkRole accessible_role;
+  AtkStateSet *local_state_set;
+
+  ClutterActor *label_actor;
+  gchar *accessible_name;
+
+  /* Even though Clutter has first_child/last_child properties,
+   * we need to keep track of the old first/last children so
+   * that we can remove the pseudo classes on them. */
+  StWidget *prev_last_child;
+  StWidget *prev_first_child;
+};
 
 #endif /* __ST_PRIVATE_H__ */
