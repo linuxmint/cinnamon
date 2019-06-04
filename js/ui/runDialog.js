@@ -194,6 +194,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
                                                      entry: this._entryText,
                                                      deduplicate: true });
         this._entryText.connect('key-press-event', Lang.bind(this, this._onKeyPress));
+        this._entryText.connect('key-focus-out', () => this.cancelAsyncCommand());
 
         this._updateCompletionTimer = 0;
     },
@@ -355,11 +356,6 @@ __proto__: ModalDialog.ModalDialog.prototype,
         this._entryText.set_selection(-1, orig.length);
     },
 
-    disconnectKeyFocusOut: function() {
-        this._entryText.disconnect(this.keyFocusOutId);
-        this.keyFocusOutId = 0;
-    },
-
     _run: function(input, inTerminal, callback) {
         input = input.trim();
         this._history.addItem(input);
@@ -383,10 +379,6 @@ __proto__: ModalDialog.ModalDialog.prototype,
         let path = null;
         let isHome = input.charAt(0) === '~';
         let isPath = input.charAt(0) == '/'
-
-        if (this.keyFocusOutId) this.disconnectKeyFocusOut();
-        this.keyFocusOutId = this._entryText.connect('key-focus-out', () => this.cancelAsyncCommand());
-
         if (isPath || isHome) {
             if (isPath) {
                 path = input;
@@ -462,10 +454,5 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
         ModalDialog.ModalDialog.prototype.open.call(this);
     },
-
-    close: function() {
-        if (this.keyFocusOutId) this.disconnectKeyFocusOut();
-        ModalDialog.ModalDialog.prototype.close.call(this);
-    }
 };
 Signals.addSignalMethods(RunDialog.prototype);
