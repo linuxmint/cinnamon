@@ -107,8 +107,6 @@ WindowClone.prototype = {
         this.actor.set_position(x, y);
         this.origX = x;
         this.origY = y;
-
-        this.realWindow.queue_redraw();
     },
 
     closeWindow: function() {
@@ -146,8 +144,6 @@ WindowClone.prototype = {
     },
 
     destroy: function () {
-        if (this.actor.is_finalized()) return;
-
         this.actor.destroy();
     },
 
