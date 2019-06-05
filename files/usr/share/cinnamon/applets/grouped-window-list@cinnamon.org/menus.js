@@ -1035,7 +1035,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         } else {
             if (force || this.state.settings.onClickThumbs) this.addQueuedThumbnails();
             this.state.set({thumbnailMenuOpen: true});
-            each(this.appThumbnails, (thumb) => thumb.metaWindowActor.set_obscured(false));
             super.open(this.state.settings.animateThumbs);
         }
     }
@@ -1054,7 +1053,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
         if (this.isOpen) {
             this.state.set({thumbnailMenuOpen: false});
-            each(this.appThumbnails, (thumb) => thumb.metaWindowActor.set_obscured(true));
             if (!this.actor.is_finalized()) super.close(this.state.settings.animateThumbs);
         }
         for (let i = 0; i < this.appThumbnails.length; i++) {
