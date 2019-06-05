@@ -15,33 +15,17 @@ class Effect {
 
     setActor(source) {
         this.originalOpacity = source.opacity;
+        this.actor = new Clone({
+            source,
+            reactive: false,
+            width: source.width,
+            height: source.height,
+            x: source.x,
+            y: source.y,
+        });
 
-        // For the close effect, use the actual MetaWindowActor instead of the clone
-        // because Clutter seems to have issues opacifying clones when the source is already destroyed.
-        if (this.name === 'close' || this.name === 'minimize') {
-            source.show();
-            this.actor = source;
-
-            this.originalX = source.x;
-            this.originalY = source.y;
-            this.originalScaleX = source.scale_x;
-            this.originalScaleY = source.scale_y;
-            this.originalWidth = source.width;
-            this.originalHeight = source.height;
-        } else {
-            this.actor = new Clone({
-                source,
-                reactive: false,
-                width: source.width,
-                height: source.height,
-                x: source.x,
-                y: source.y,
-                opacity: this.originalOpacity
-            });
-
-            global.overlay_group.add_child(this.actor);
-            global.overlay_group.set_child_above_sibling(this.actor, null);
-        }
+        global.overlay_group.add_child(this.actor);
+        global.overlay_group.set_child_above_sibling(this.actor, null);
 
         this.source = source;
     }
@@ -54,25 +38,9 @@ class Effect {
 
         global.window_manager[this.wmCompleteName](this.source);
 
+        global.overlay_group.remove_child(this.actor);
         removeTweens(this.actor);
-
-        if (this.source !== this.actor) {
-            global.overlay_group.remove_child(this.actor);
-            this.actor.destroy();
-        } else if (this.name === 'minimize') {
-            this.actor.hide();
-
-            // The properties of the MetaWindowActor have values from the last animation tween state.
-            // We need to restore the window to its original state, as muffin only handles Xorg state
-            // changes for these properties.
-            this.actor.opacity = this.originalOpacity;
-            this.actor.x = this.originalX;
-            this.actor.y = this.originalY;
-            this.actor.scale_x = this.originalScaleX;
-            this.actor.scale_y = this.originalScaleY;
-            this.actor.width = this.originalWidth;
-            this.actor.height = this.originalHeight;
-        }
+        this.actor.destroy()
 
         panelManager.updatePanelsVisibility();
 
