@@ -563,7 +563,7 @@ Chrome.prototype = {
         actor.disconnect(actorData.allocationId);
         actor.disconnect(actorData.parentSetId);
 
-        this._queueUpdateRegions(true);
+        this._queueUpdateRegions();
     },
 
     _actorReparented: function(actor) {
