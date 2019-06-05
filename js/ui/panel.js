@@ -508,8 +508,6 @@ PanelManager.prototype = {
             }
         }
         global.settings.set_strv("panels-enabled", list);
-
-        Main.layoutManager._chrome.updateRegions(true);
     },
 
     /**
@@ -2537,8 +2535,7 @@ Panel.prototype = {
         }
 
         this._updatePanelVisibility();
-        Main.layoutManager._chrome.modifyActorParams(this.actor, { affectsStruts: this._autohideSettings == "false"});
-        Main.layoutManager._chrome.updateRegions(true);
+        Main.layoutManager._chrome.modifyActorParams(this.actor, { affectsStruts: this._autohideSettings == "false" });
     },
     /**
      * _getScaledPanelHeight:
