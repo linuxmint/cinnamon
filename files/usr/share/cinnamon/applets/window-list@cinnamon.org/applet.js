@@ -61,7 +61,6 @@ const PopupMenu = imports.ui.popupMenu;
 const Settings = imports.ui.settings;
 const SignalManager = imports.misc.signalManager;
 const Tooltips = imports.ui.tooltips;
-const {getIconGeometry} = imports.misc.util;
 
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
@@ -606,7 +605,7 @@ class AppMenuButton {
         [rect.x, rect.y] = this.actor.get_transformed_position();
         [rect.width, rect.height] = this.actor.get_transformed_size();
 
-        this.metaWindow.iconGeometry = getIconGeometry(this.actor);
+        this.metaWindow.set_icon_geometry(rect);
     }
 
     _getPreferredWidth(actor, forHeight, alloc) {
@@ -1246,8 +1245,6 @@ class CinnamonWindowListApplet extends Applet.Applet {
         let appButton = new AppMenuButton(this, metaWindow, alert);
         this.manager_container.add_actor(appButton.actor);
 
-        metaWindow.iconGeometry = getIconGeometry(appButton.actor);
-
         this._windows.push(appButton);
 
         /* We want to make the AppMenuButtons look like they are ordered by
@@ -1268,9 +1265,6 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
     _removeWindow(metaWindow) {
         let i = this._windows.length;
-
-        metaWindow.iconGeometry = null;
-
         // Do an inverse loop because we might remove some elements
         while (i--) {
             if (this._windows[i].metaWindow == metaWindow) {
