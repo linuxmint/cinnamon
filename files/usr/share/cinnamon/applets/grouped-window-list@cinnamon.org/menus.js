@@ -937,7 +937,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                     this.interval = setInterval(() => {
                         let [x, y, mask] = global.get_pointer();
                         let draggedOverActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
-                        if (draggedOverActor instanceof Meta.WindowActor) {
+                        if (draggedOverActor instanceof Meta.ShapedTexture) {
                             this.groupState.set({fileDrag: false});
                             this.close(true);
                             return;
