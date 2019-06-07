@@ -29,7 +29,7 @@ const {
     Maximize,
     Unmaximize
 } = imports.ui.windowEffects;
-const {each, filter, tryFn, find, findIndex} = imports.misc.util;
+const {each, filter, tryFn} = imports.misc.util;
 const Main = imports.ui.main;
 const {
     expo,
@@ -90,7 +90,7 @@ class WindowDimmer {
         actor.add_effect(this._brightnessEffect);
 
         this.actor = actor;
-        this.dimFactor = 0.0;
+        this._dimFactor = 0.0;
     }
 
     setEnabled(enabled) {
@@ -99,9 +99,13 @@ class WindowDimmer {
     }
 
     set dimFactor(factor) {
-        this.dimFactor = factor;
+        this._dimFactor = factor;
         this._desaturateEffect.set_factor(factor * DIM_DESATURATION);
         this._brightnessEffect.set_brightness(factor * DIM_BRIGHTNESS);
+    }
+
+    get dimFactor() {
+        return this._dimFactor;
     }
 };
 
@@ -443,16 +447,23 @@ class HudPreview {
 
 var WindowManager = class WindowManager {
     constructor() {
-        this.iconGeometries = [];
+        this._minimizing = [];
+        this._maximizing = [];
+        this._unmaximizing = [];
+        this._tiling = [];
+        this._mapping = [];
+        this._destroying = [];
+
+        const _endWindowEffect = (c, n, a) => this._endWindowEffect(c, n, a);
 
         this.effects = {
-            map: new Map(),
-            close: new Close(),
-            minimize: new Minimize(),
-            unminimize: new Unminimize(),
-            tile: new Tile(),
-            maximize: new Maximize(),
-            unmaximize: new Unmaximize()
+            map: new Map(_endWindowEffect),
+            close: new Close(_endWindowEffect),
+            minimize: new Minimize(_endWindowEffect),
+            unminimize: new Unminimize(_endWindowEffect),
+            tile: new Tile(_endWindowEffect),
+            maximize: new Maximize(_endWindowEffect),
+            unmaximize: new Unmaximize(_endWindowEffect)
         };
 
         this.settings = new Settings({schema_id: 'org.cinnamon.muffin'});
@@ -577,8 +588,7 @@ var WindowManager = class WindowManager {
 
     _startWindowEffect(cinnamonwm, name, actor, args, overwriteKey) {
         let effect = this.effects[name];
-        if (!this.settingsState['desktop-effects']
-            || !this._shouldAnimate(actor)) {
+        if (!this.settingsState['desktop-effects'] || !this._shouldAnimate(actor)) {
             cinnamonwm[effect.wmCompleteName](actor);
             return;
         }
@@ -594,33 +604,49 @@ var WindowManager = class WindowManager {
 
         let type = this.settingsState[`${key}-effect`];
 
-        if (effect.source) effect._end();
-
-        each(this.effects, (effect) => {
-            if (effect.actor === actor) effect._end();
-        });
+        // make sure to end a running effect
+        if (actor.current_effect_name) {
+            this._endWindowEffect(cinnamonwm, actor.current_effect_name, actor);
+        }
+        this[effect.arrayName].push(actor);
+        actor.current_effect_name = name;
+        actor.orig_opacity = actor.opacity;
+        actor.show();
 
         if (effect[type]) {
-            time /= 1000;
-            effect.setActor(actor);
-            effect[type](time, this.settingsState[`${key}-transition`], args);
-            return;
-        }
+            time = time / 1000;
+            let transition = this.settingsState[`${key}-transition`];
 
-        cinnamonwm[effect.wmCompleteName](actor);
+            effect[type](cinnamonwm, actor, time, transition, args);
+        } else if (!overwriteKey) // when not unminimizing, but the effect was not found, end it
+            this._endWindowEffect(cinnamonwm, name, actor);
+    }
+
+    _endWindowEffect(cinnamonwm, name, actor) {
+        let effect = this.effects[name];
+        // effect will be an instance of Effect
+        let idx = this[effect.arrayName].indexOf(actor);
+        if (idx !== -1) {
+            this[effect.arrayName].splice(idx, 1);
+            removeTweens(actor);
+            delete actor.current_effect_name;
+            effect._end(actor);
+            cinnamonwm[effect.wmCompleteName](actor);
+            panelManager.updatePanelsVisibility();
+        }
     }
 
     _killWindowEffects(cinnamonwm, actor) {
-        each(this.effects, (effect) => {
-            if (effect.source) effect._end();
-        });
+        for (let i in this.effects) {
+            this._endWindowEffect(cinnamonwm, i, actor);
+        }
     }
 
     _minimizeWindow(cinnamonwm, actor) {
         soundManager.play('minimize');
 
-        actor.needsUnminimize = true;
-
+        // reset all cached values in case "traditional" is no longer in effect
+        actor.meta_window._cinnamonwm_has_origin = false;
         this._startWindowEffect(cinnamonwm, "minimize", actor);
     }
 
@@ -716,22 +742,18 @@ var WindowManager = class WindowManager {
 
     _mapWindow(cinnamonwm, actor) {
         let {meta_window} = actor;
-
-        if (!meta_window) return;
-
         if (meta_window.is_attached_dialog()) {
             this._checkDimming(meta_window.get_transient_for());
         }
 
-        if (actor.needsUnminimize) {
+        if (meta_window._cinnamonwm_has_origin && meta_window._cinnamonwm_has_origin === true) {
             soundManager.play('minimize');
             this._startWindowEffect(cinnamonwm, 'unminimize', actor, null, 'minimize');
             return;
         } else if (meta_window.window_type === WindowType.NORMAL) {
             soundManager.play('map');
         }
-
-        this._startWindowEffect(cinnamonwm, 'map', actor);
+        this._startWindowEffect(cinnamonwm, "map", actor);
     }
 
     _destroyWindow(cinnamonwm, actor) {
@@ -740,6 +762,9 @@ var WindowManager = class WindowManager {
         if (actor.meta_window.window_type === WindowType.NORMAL) {
             soundManager.play('close');
         }
+
+        actor.orig_opacity = actor.opacity;
+        actor.orig_opacity = actor.opacity;
 
         if (meta_window.is_attached_dialog()) {
             let parent = meta_window.get_transient_for();
@@ -756,7 +781,7 @@ var WindowManager = class WindowManager {
             });
         }
 
-        if (meta_window.minimized || actor.is_finalized()) {
+        if (meta_window.minimized) {
             cinnamonwm.completed_destroy(actor);
             return;
         }
