@@ -81,7 +81,17 @@ PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
                                libstartup-notification-1.0 >= $STARTUP_NOTIFICATION_MIN_VERSION
                                gobject-introspection-1.0 >= $GOBJECT_INTROSPECTION_MIN_VERSION
                                polkit-agent-1 >= $POLKIT_MIN_VERSION xfixes
-                               libnm atk-bridge-2.0)
+                               atk-bridge-2.0)
+
+AC_ARG_ENABLE(networkmanager,
+              AC_HELP_STRING([--disable-networkmanager],
+                             [Disable integration with NetworkManager and nm-applet]),,
+              enable_networkmanager=yes)
+if test "x$enable_networkmanager" = xyes; then
+  PKG_CHECK_MODULES(CINNAMON_NM_APPLET, libnm)
+fi
+
+AM_CONDITIONAL(HAVE_NETWORKMANAGER, [test x$enable_networkmanager = xyes])
 
 PKG_CHECK_MODULES(CINNAMON_PERF_HELPER, gtk+-3.0 gio-2.0)
 
@@ -198,5 +208,9 @@ AC_CONFIG_FILES([
   po/Makefile.in
   man/Makefile
   files/Makefile
+  files/etc/Makefile
+  files/usr/Makefile
+  files/usr/bin/Makefile
+  files/usr/share/Makefile
 ])
 AC_OUTPUT
