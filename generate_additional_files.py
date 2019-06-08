@@ -3,9 +3,7 @@
 import os
 import gettext
 import sys
-
-sys.path.append('/usr/lib/linuxmint/common')  # noqa
-import additionalfiles
+from mintcommon import additionalfiles
 
 DOMAIN = "cinnamon"
 PATH = "/usr/share/locale"
@@ -41,7 +39,7 @@ additionalfiles.generate(DOMAIN, PATH, "files/usr/share/applications/cinnamon-se
 
 prefix = """[Desktop Entry]
 Exec=dbus-send --print-reply --dest=org.Cinnamon /org/Cinnamon org.Cinnamon.ToggleKeyboard
-Icon=keyboard
+Icon=input-keyboard
 Terminal=false
 Type=Application
 Categories=Utility;
