@@ -188,8 +188,9 @@ st_icon_allocate (ClutterActor          *actor,
                     const ClutterActorBox *box,
                     ClutterAllocationFlags flags)
 {
-  StIconPrivate *priv = ST_ICON (actor)->priv;
-  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET(actor));
+  StIcon *self = ST_ICON (actor);
+  StIconPrivate *priv = self->priv;
+  StThemeNode *theme_node = st_widget_get_theme_node (self);
   ClutterActorBox content_box;
   float width, height;
 
