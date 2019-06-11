@@ -75,7 +75,7 @@ ensure_autoquit_on (void)
   if (g_getenv ("HOTPLUG_SNIFFER_PERSIST") != NULL)
     return;
 
-  autoquit_id =
+  autoquit_id = 
     g_timeout_add_seconds (AUTOQUIT_TIMEOUT,
                            autoquit_timeout_cb, NULL);
 }
@@ -144,7 +144,7 @@ handle_sniff_uri (InvocationData *data)
 
   ensure_autoquit_off ();
 
-  g_variant_get (data->parameters,
+  g_variant_get (data->parameters, 
                  "(&s)", &uri,
                  NULL);
   file = g_file_new_for_uri (uri);
@@ -300,7 +300,7 @@ print_debug (const gchar *format, ...)
   va_end (ap);
 
   g_print ("cinnamon-hotplug-sniffer[%d]: %s.%03d: %s\n", pid, timebuf, (gint) (now.tv_usec / 1000), s);
-  free (s);
+  g_free (s);
  out:
   ;
 }

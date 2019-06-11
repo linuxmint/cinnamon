@@ -65,8 +65,8 @@ on_screenshot_written (GObject *source,
 
   cairo_surface_destroy (screenshot_data->image);
   g_object_unref (screenshot_data->screenshot);
-  free (screenshot_data->filename);
-  free (screenshot_data);
+  g_free (screenshot_data->filename);
+  g_free (screenshot_data);
 }
 
 static void

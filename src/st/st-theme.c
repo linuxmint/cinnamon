@@ -110,7 +110,7 @@ static void
 st_theme_init (StTheme *theme)
 {
   theme->stylesheets_by_filename = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                          (GDestroyNotify)free, (GDestroyNotify)cr_stylesheet_unref);
+                                                          (GDestroyNotify)g_free, (GDestroyNotify)cr_stylesheet_unref);
   theme->filenames_by_stylesheet = g_hash_table_new (g_direct_hash, g_direct_equal);
 }
 
@@ -363,10 +363,10 @@ st_theme_finalize (GObject * object)
   g_hash_table_destroy (theme->stylesheets_by_filename);
   g_hash_table_destroy (theme->filenames_by_stylesheet);
 
-  free (theme->application_stylesheet);
-  free (theme->theme_stylesheet);
-  free (theme->default_stylesheet);
-  free (theme->fallback_stylesheet);
+  g_free (theme->application_stylesheet);
+  g_free (theme->theme_stylesheet);
+  g_free (theme->default_stylesheet);
+  g_free (theme->fallback_stylesheet);
 
   if (theme->cascade)
     {
@@ -393,7 +393,7 @@ st_theme_set_property (GObject      *object,
 
         if (path != theme->application_stylesheet)
           {
-            free (theme->application_stylesheet);
+            g_free (theme->application_stylesheet);
             theme->application_stylesheet = g_strdup (path);
           }
 
@@ -405,7 +405,7 @@ st_theme_set_property (GObject      *object,
 
         if (path != theme->theme_stylesheet)
           {
-            free (theme->theme_stylesheet);
+            g_free (theme->theme_stylesheet);
             theme->theme_stylesheet = g_strdup (path);
           }
 
@@ -417,7 +417,7 @@ st_theme_set_property (GObject      *object,
 
         if (path != theme->default_stylesheet)
           {
-            free (theme->default_stylesheet);
+            g_free (theme->default_stylesheet);
             theme->default_stylesheet = g_strdup (path);
           }
 
@@ -429,7 +429,7 @@ st_theme_set_property (GObject      *object,
 
         if (path != theme->fallback_stylesheet)
           {
-            free (theme->fallback_stylesheet);
+            g_free (theme->fallback_stylesheet);
             theme->fallback_stylesheet = g_strdup (path);
           }
 
@@ -928,7 +928,7 @@ add_matched_properties (StTheme      *a_this,
                   }
 
                 if (filename)
-                  free (filename);
+                  g_free (filename);
               }
 
             if (import_rule->sheet != (CRStyleSheet *) - 1)
@@ -1096,7 +1096,7 @@ _st_theme_resolve_url (StTheme      *theme,
 
   if ((scheme = g_uri_parse_scheme (url)))
     {
-      free (scheme);
+      g_free (scheme);
       resource = g_file_new_for_uri (url);
     }
   else if (base_stylesheet != NULL)
@@ -1117,7 +1117,7 @@ _st_theme_resolve_url (StTheme      *theme,
       resource = g_file_resolve_relative_path (stylesheet, url);
 
       g_object_unref (stylesheet);
-      free (dirname);
+      g_free (dirname);
     }
   else
     {

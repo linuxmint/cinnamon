@@ -2,7 +2,6 @@
 #ifndef __CINNAMON_APP_H__
 #define __CINNAMON_APP_H__
 
-#include <stdlib.h>
 #include <clutter/clutter.h>
 #include <gio/gio.h>
 #include <meta/window.h>

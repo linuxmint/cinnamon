@@ -152,7 +152,7 @@ cinnamon_util_get_file_display_name (GFile *file, gboolean use_fallback)
 
       basename = g_file_get_basename (file);
       ret = g_filename_display_name (basename);
-      free (basename);
+      g_free (basename);
     }
 
   return ret;
@@ -215,7 +215,7 @@ cinnamon_util_get_icon_for_uri_known_folders (const char *uri)
       == 0)
     icon = "user-desktop";
 
-  free (path);
+  g_free (path);
 
   return icon;
 }
@@ -299,8 +299,8 @@ cinnamon_util_get_label_for_uri (const char *text_uri)
        */
        label = g_strdup_printf (_("%1$s: %2$s"),
                                 root_display, displayname);
-       free (root_display);
-       free (displayname);
+       g_free (root_display);
+       g_free (displayname);
     }
 
   g_object_unref (root);
@@ -690,7 +690,7 @@ cinnamon_get_file_contents_utf8_sync (const char *path,
     return NULL;
   if (!g_utf8_validate (contents, len, NULL))
     {
-      free (contents);
+      g_free (contents);
       g_set_error (error,
                    G_IO_ERROR,
                    G_IO_ERROR_FAILED,
@@ -726,7 +726,7 @@ get_file_contents_utf8_thread (GTask        *task,
         return;
       }
 
-    g_task_return_pointer (task, contents, free);
+    g_task_return_pointer (task, contents, g_free);
 }
 
 static void
@@ -749,7 +749,7 @@ get_file_contents_utf8_task_finished (GObject      *source,
 
     (* data->callback) (contents, data->user_data);
 
-    g_clear_pointer (&contents, free);
+    g_clear_pointer (&contents, g_free);
     g_slice_free (CinnamonFileContentsCallbackData, data);
 }
 
@@ -790,7 +790,7 @@ cinnamon_get_file_contents_utf8         (const char                   *path,
                      get_file_contents_utf8_task_finished,
                      data);
 
-  g_task_set_task_data (task, async_path, (GDestroyNotify) free);
+  g_task_set_task_data (task, async_path, (GDestroyNotify) g_free);
   g_task_run_in_thread (task, get_file_contents_utf8_thread);
 
   g_object_unref (task);
@@ -905,26 +905,26 @@ cinnamon_parse_search_provider (const char    *data,
     return TRUE;
 
   if (*icon_data_uri)
-    free (*icon_data_uri);
+    g_free (*icon_data_uri);
   else
     g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED,
                  "search provider doesn't have icon");
 
   if (*name)
-    free (*name);
+    g_free (*name);
   else if (error && !*error)
     g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED,
                  "search provider doesn't have ShortName");
 
   if (*url)
-    free (*url);
+    g_free (*url);
   else if (error && !*error)
     g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED,
                  "search provider doesn't have template for url");
 
   if (*langs)
     {
-      g_list_foreach (*langs, (GFunc)free, NULL);
+      g_list_foreach (*langs, (GFunc)g_free, NULL);
       g_list_free (*langs);
     }
 
