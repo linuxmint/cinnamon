@@ -172,15 +172,15 @@ st_texture_cache_init (StTextureCache *self)
                     G_CALLBACK (on_icon_theme_changed), self);
 
   self->priv->keyed_cache = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                   free, cogl_object_unref);
+                                                   g_free, cogl_object_unref);
 
   self->priv->keyed_surface_cache = g_hash_table_new_full (g_str_hash,
                                                            g_str_equal,
-                                                           free,
+                                                           g_free,
                                                            (GDestroyNotify) cairo_surface_destroy);
 
   self->priv->outstanding_requests = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                            free, NULL);
+                                                            g_free, NULL);
   self->priv->file_monitors = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                      g_object_unref, g_object_unref);
 
@@ -323,15 +323,15 @@ texture_load_data_free (gpointer p)
         st_icon_colors_unref (data->colors);
     }
   else if (data->uri)
-    free (data->uri);
+    g_free (data->uri);
 
   if (data->key)
-    free (data->key);
+    g_free (data->key);
 
   if (data->textures)
     g_slist_free_full (data->textures, (GDestroyNotify) g_object_unref);
 
-  free (data);
+  g_free (data);
 }
 
 /**
@@ -467,7 +467,7 @@ impl_load_pixbuf_file (const char     *uri,
     }
 
   g_object_unref (file);
-  free (contents);
+  g_free (contents);
 
   return pixbuf;
 }
@@ -805,7 +805,7 @@ load_gicon_with_colors (StTextureCache    *cache,
       key = g_strdup_printf (CACHE_PREFIX_ICON "%s,size=%d,scale=%d",
                              gicon_string, size, scale);
     }
-  free (gicon_string);
+  g_free (gicon_string);
 
   texture = (ClutterActor *) create_default_texture ();
   clutter_actor_set_size (texture, size * scale, size * scale);
@@ -814,7 +814,7 @@ load_gicon_with_colors (StTextureCache    *cache,
     {
       /* If there's an outstanding request, we've just added ourselves to it */
       g_object_unref (info);
-      free (key);
+      g_free (key);
     }
   else
     {
@@ -906,15 +906,15 @@ file_changed_cb (GFileMonitor      *monitor,
 
   key = g_strconcat (CACHE_PREFIX_URI, uri, NULL);
   g_hash_table_remove (cache->priv->keyed_cache, key);
-  free (key);
+  g_free (key);
 
   key = g_strconcat (CACHE_PREFIX_URI_FOR_CAIRO, uri, NULL);
   g_hash_table_remove (cache->priv->keyed_surface_cache, key);
-  free (key);
+  g_free (key);
 
   g_signal_emit (cache, signals[TEXTURE_FILE_CHANGED], 0, uri);
 
-  free (uri);
+  g_free (uri);
 }
 
 static void
@@ -953,9 +953,9 @@ static void
 on_data_destroy (gpointer data)
 {
   AsyncImageData *d = (AsyncImageData *)data;
-  free (d->path);
+  g_free (d->path);
   g_object_unref (d->actor);
-  free (d);
+  g_free (d);
 }
 
 static void
@@ -1168,7 +1168,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
     case ST_ICON_SYMBOLIC:
       symbolic_name = symbolic_name_for_icon (name);
       themed = g_themed_icon_new (symbolic_name);
-      free (symbolic_name);
+      g_free (symbolic_name);
       texture = load_gicon_with_colors (cache, themed, size, cache->priv->scale,
                                         st_theme_node_get_icon_colors (theme_node));
       g_object_unref (themed);
@@ -1229,7 +1229,7 @@ st_texture_cache_load_uri_async (StTextureCache *cache,
   if (ensure_request (cache, key, policy, &request, texture))
     {
       /* If there's an outstanding request, we've just added ourselves to it */
-      free (key);
+      g_free (key);
     }
   else
     {
@@ -1297,7 +1297,7 @@ st_texture_cache_load_uri_sync_to_cogl_texture (StTextureCache *cache,
   ensure_monitor_for_uri (cache, uri);
 
 out:
-  free (key);
+  g_free (key);
   return texdata;
 }
 
@@ -1342,7 +1342,7 @@ st_texture_cache_load_uri_sync_to_cairo_surface (StTextureCache        *cache,
   ensure_monitor_for_uri (cache, uri);
 
 out:
-  free (key);
+  g_free (key);
   return surface;
 }
 
@@ -1413,7 +1413,7 @@ st_texture_cache_load_file_to_cogl_texture (StTextureCache *cache,
   texture = st_texture_cache_load_uri_sync_to_cogl_texture (cache, ST_TEXTURE_CACHE_POLICY_FOREVER,
                                                             uri, -1, -1, &error);
   g_object_unref (file);
-  free (uri);
+  g_free (uri);
 
   if (texture == NULL)
     {
@@ -1450,7 +1450,7 @@ st_texture_cache_load_file_to_cairo_surface (StTextureCache *cache,
   surface = st_texture_cache_load_uri_sync_to_cairo_surface (cache, ST_TEXTURE_CACHE_POLICY_FOREVER,
                                                              uri, -1, -1, &error);
   g_object_unref (file);
-  free (uri);
+  g_free (uri);
 
   if (surface == NULL)
     {
@@ -1527,7 +1527,7 @@ st_texture_cache_load_file_simple (StTextureCache *cache,
   texture = st_texture_cache_load_uri_sync (cache, ST_TEXTURE_CACHE_POLICY_FOREVER,
                                             uri, -1, -1, &error);
   g_object_unref (file);
-  free (uri);
+  g_free (uri);
   if (texture == NULL)
     {
       if (error)

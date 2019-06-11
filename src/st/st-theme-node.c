@@ -65,7 +65,7 @@ maybe_free_properties (StThemeNode *node)
 {
   if (node->properties)
     {
-      free (node->properties);
+      g_free (node->properties);
       node->properties = NULL;
       node->n_properties = 0;
     }
@@ -131,10 +131,10 @@ st_theme_node_finalize (GObject *object)
 {
   StThemeNode *node = ST_THEME_NODE (object);
 
-  free (node->element_id);
+  g_free (node->element_id);
   g_strfreev (node->element_classes);
   g_strfreev (node->pseudo_classes);
-  free (node->inline_style);
+  g_free (node->inline_style);
 
   maybe_free_properties (node);
 
@@ -163,7 +163,7 @@ st_theme_node_finalize (GObject *object)
     }
 
   if (node->background_image)
-    free (node->background_image);
+    g_free (node->background_image);
 
   _st_theme_node_free_drawing_state (node);
 
@@ -192,7 +192,7 @@ split_on_whitespace (const gchar *s)
       cur = strtok_r (NULL, " \t\f\r\n", &temp);
     }
 
-  free (l);
+  g_free (l);
   g_ptr_array_add (arr, NULL);
   return (GStrv) g_ptr_array_free (arr, FALSE);
 }
@@ -1834,7 +1834,7 @@ _st_theme_node_ensure_background (StThemeNode *node)
           CRTerm *term;
           /* background: property sets all terms to specified or default values */
           node->background_color = TRANSPARENT_COLOR;
-          free (node->background_image);
+          g_free (node->background_image);
           node->background_image = NULL;
           node->background_position_set = FALSE;
           node->background_size = ST_BACKGROUND_SIZE_AUTO;
@@ -1980,7 +1980,7 @@ _st_theme_node_ensure_background (StThemeNode *node)
               else
                 base_stylesheet = NULL;
 
-              free (node->background_image);
+              g_free (node->background_image);
               file = _st_theme_resolve_url (node->theme,
                                             base_stylesheet,
                                             decl->value->content.str->stryng->str);
@@ -1993,12 +1993,12 @@ _st_theme_node_ensure_background (StThemeNode *node)
             }
           else if (term_is_inherit (decl->value))
             {
-              free (node->background_image);
+              g_free (node->background_image);
               node->background_image = g_strdup (st_theme_node_get_background_image (node->parent_node));
             }
           else if (term_is_none (decl->value))
             {
-              free (node->background_image);
+              g_free (node->background_image);
               node->background_image = NULL;
             }
         }
@@ -2017,7 +2017,7 @@ _st_theme_node_ensure_background (StThemeNode *node)
               else
                 base_stylesheet = NULL;
 
-              free (node->background_bumpmap);
+              g_free (node->background_bumpmap);
               file = _st_theme_resolve_url (node->theme,
                                             base_stylesheet,
                                             decl->value->content.str->stryng->str);
@@ -2029,12 +2029,12 @@ _st_theme_node_ensure_background (StThemeNode *node)
             }
           else if (term_is_inherit (decl->value))
             {
-              free (node->background_bumpmap);
+              g_free (node->background_bumpmap);
               node->background_bumpmap = g_strdup (st_theme_node_get_background_bumpmap (node->parent_node));
             }
           else if (term_is_none(decl->value))
             {
-              free (node->background_bumpmap);
+              g_free (node->background_bumpmap);
             }
         }
       else if (strcmp (property_name, "-gradient-direction") == 0)
@@ -2795,7 +2795,7 @@ st_theme_node_get_font (StThemeNode *node)
   if (family)
     {
       pango_font_description_set_family (node->font_desc, family);
-      free (family);
+      g_free (family);
     }
 
   if (size_set)
@@ -2879,7 +2879,7 @@ st_theme_node_get_border_image (StThemeNode *node)
           int border_left;
 
           GFile *file;
-          char *filename = NULL;
+          char *filename;
 
           /* Support border-image: none; to suppress a previously specified border image */
           if (term_is_none (term))
@@ -2971,7 +2971,7 @@ st_theme_node_get_border_image (StThemeNode *node)
           node->border_image = st_border_image_new (filename,
                                                     border_top, border_right, border_bottom, border_left);
 
-          free (filename);
+          g_free (filename);
 
           return node->border_image;
         }

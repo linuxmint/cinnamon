@@ -156,7 +156,7 @@ st_im_text_preedit_changed_cb (GtkIMContext *context,
                                    preedit_attrs,
                                    cursor_pos);
 
-  free (preedit_str);
+  g_free (preedit_str);
   pango_attr_list_unref (preedit_attrs);
 }
 
