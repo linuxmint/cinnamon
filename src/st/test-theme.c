@@ -56,7 +56,7 @@ assert_font (StThemeNode *node,
       fail = TRUE;
     }
 
-  free (value);
+  g_free (value);
 }
 
 static char *
@@ -96,8 +96,8 @@ assert_text_decoration (StThemeNode     *node,
 	       test, node_description, es, vs);
       fail = TRUE;
 
-      free (es);
-      free (vs);
+      g_free (es);
+      g_free (vs);
     }
 }
 

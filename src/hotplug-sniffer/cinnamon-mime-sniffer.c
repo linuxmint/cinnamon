@@ -99,7 +99,7 @@ init_mimetypes (void)
       gchar **types;
       gint idx;
 
-      image_type_table = g_hash_table_new_full (g_str_hash, g_str_equal, free, NULL);
+      image_type_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
       video_type_table = g_hash_table_new (g_str_hash, g_str_equal);
       audio_type_table = g_hash_table_new (g_str_hash, g_str_equal);
       docs_type_table = g_hash_table_new (g_str_hash, g_str_equal);
@@ -269,7 +269,7 @@ deep_count_finish (DeepCountState *state)
 
   g_list_free_full (state->deep_count_subdirectories, g_object_unref);
 
-  free (state);
+  g_free (state);
 }
 
 static void

@@ -127,17 +127,17 @@ main(int argc, char **argv)
   stage = clutter_stage_get_default ();
   title = g_filename_display_basename (filename);
   clutter_stage_set_title (CLUTTER_STAGE (stage), title);
-  free (title);
+  g_free (title);
 
   /* evaluate the script */
   error = NULL;
   if (!gjs_context_eval (js_context, script, len,
                          filename, &code, &error)) {
-    free (script);
+    g_free (script);
     g_printerr ("%s\n", error->message);
     exit (1);
   }
 
-  free (script);
+  g_free (script);
   exit (code);
 }

@@ -31,8 +31,8 @@ cinnamon_tray_icon_finalize (GObject *object)
 {
   CinnamonTrayIcon *icon = CINNAMON_TRAY_ICON (object);
 
-  free (icon->priv->title);
-  free (icon->priv->wm_class);
+  g_free (icon->priv->title);
+  g_free (icon->priv->wm_class);
 
   G_OBJECT_CLASS (cinnamon_tray_icon_parent_class)->finalize (object);
 }

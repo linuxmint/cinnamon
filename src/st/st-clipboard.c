@@ -94,10 +94,10 @@ st_clipboard_finalize (GObject *object)
 {
   StClipboardPrivate *priv = ((StClipboard *) object)->priv;
 
-  free (priv->clipboard_text);
+  g_free (priv->clipboard_text);
   priv->clipboard_text = NULL;
 
-  free (priv->supported_targets);
+  g_free (priv->supported_targets);
   priv->supported_targets = NULL;
   priv->n_targets = 0;
 
@@ -237,7 +237,7 @@ st_clipboard_x11_event_filter (XEvent          *xev,
 
       clutter_x11_remove_filter ((ClutterX11FilterFunc) st_clipboard_x11_event_filter,
                                  filter_data);
-      free (filter_data);
+      g_free (filter_data);
       return CLUTTER_X11_FILTER_REMOVE;
     }
 
@@ -268,7 +268,7 @@ st_clipboard_x11_event_filter (XEvent          *xev,
                           ((ClutterX11FilterFunc) st_clipboard_x11_event_filter,
                           filter_data);
 
-  free (filter_data);
+  g_free (filter_data);
 
   if (data)
     XFree (data);
@@ -371,7 +371,7 @@ st_clipboard_set_text (StClipboard *clipboard,
   priv = clipboard->priv;
 
   /* make a copy of the text */
-  free (priv->clipboard_text);
+  g_free (priv->clipboard_text);
   priv->clipboard_text = g_strdup (text);
 
   /* tell X we own the clipboard selection */
