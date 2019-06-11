@@ -57,10 +57,11 @@ enum
 struct _StLabelPrivate
 {
   ClutterActor *label;
+  ClutterActorBox *allocation;
 
   gboolean orphan;
+  gboolean size_changed;
 
-  StShadow *shadow_spec;
   CoglPipeline  *text_shadow_pipeline;
   float         shadow_width;
   float         shadow_height;
@@ -117,11 +118,7 @@ st_label_get_property (GObject    *gobject,
 static void
 st_label_style_changed (StWidget *self)
 {
-  StLabelPrivate *priv = ((StLabel*) (self))->priv;
-
-  /* If the style is not dirty, return. This prevents a redraw. */
-  if (!self->priv->is_style_dirty)
-    return;
+  StLabelPrivate *priv = ST_LABEL(self)->priv;
 
   g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
 
@@ -171,18 +168,26 @@ st_label_allocate (ClutterActor          *actor,
                    const ClutterActorBox *box,
                    ClutterAllocationFlags flags)
 {
-  StLabelPrivate *priv = ((StLabel*) (actor))->priv;
-  StThemeNode *theme_node = st_widget_get_theme_node ((StWidget*) (actor));
+  StLabelPrivate *priv = ST_LABEL (actor)->priv;
+  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
   ClutterActorBox content_box;
+  float width, height;
 
   clutter_actor_set_allocation (actor, box, flags);
 
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
-  clutter_actor_allocate (priv->label, &content_box, flags);
+  clutter_actor_box_get_size (&content_box, &width, &height);
 
-  if (!priv->shadow_spec)
-    priv->shadow_spec = st_theme_node_get_text_shadow (theme_node);
+  if (width != priv->shadow_width || height != priv->shadow_height)
+    {
+      priv->shadow_width = width;
+      priv->shadow_height = height;
+      priv->size_changed = TRUE;
+      priv->allocation = &content_box;
+    }
+
+  clutter_actor_allocate (priv->label, &content_box, flags);
 }
 
 static void
@@ -198,37 +203,29 @@ st_label_dispose (GObject   *object)
 static void
 st_label_paint (ClutterActor *actor)
 {
-  StLabelPrivate *priv = ((StLabel*) (actor))->priv;
+  StLabelPrivate *priv = ST_LABEL (actor)->priv;
+  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
+  StShadow *shadow_spec = st_theme_node_get_text_shadow (theme_node);
 
-  st_widget_paint_background ((StWidget*) (actor));
+  st_widget_paint_background (ST_WIDGET (actor));
 
-  if (priv->shadow_spec)
+  if (shadow_spec)
     {
-      ClutterActorBox allocation;
-      float width, height;
-
-      clutter_actor_get_allocation_box (priv->label, &allocation);
-
-      width = allocation.x2 - allocation.x1;
-      height = allocation.y2 - allocation.y1;
-
-      if (!priv->text_shadow_pipeline ||
-          width != priv->shadow_width ||
-          height != priv->shadow_height)
+      if (priv->text_shadow_pipeline == NULL || priv->size_changed)
         {
-          if (priv->text_shadow_pipeline)
-            cogl_object_unref (priv->text_shadow_pipeline);
+          priv->size_changed = FALSE;
+          g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
 
-          priv->shadow_width = width;
-          priv->shadow_height = height;
-          priv->text_shadow_pipeline = _st_create_shadow_pipeline_from_actor (priv->shadow_spec, priv->label);
+          priv->text_shadow_pipeline = _st_create_shadow_pipeline_from_actor (shadow_spec, priv->label);
         }
 
-      if (priv->text_shadow_pipeline)
-        _st_paint_shadow_with_opacity (priv->shadow_spec,
-                                       priv->text_shadow_pipeline,
-                                       &allocation,
-                                       clutter_actor_get_paint_opacity (priv->label));
+      if (priv->text_shadow_pipeline != NULL)
+        {
+          _st_paint_shadow_with_opacity (shadow_spec,
+                                         priv->text_shadow_pipeline,
+                                         priv->allocation,
+                                         clutter_actor_get_paint_opacity (priv->label));
+        }
     }
 
   clutter_actor_paint (priv->label);
@@ -276,13 +273,15 @@ st_label_init (StLabel *label)
 
   label->priv = priv = st_label_get_instance_private (label);
 
-  label->priv->label = g_object_new (CLUTTER_TYPE_TEXT,
+  priv->label = g_object_new (CLUTTER_TYPE_TEXT,
                                      "ellipsize", PANGO_ELLIPSIZE_END,
                                      NULL);
-  label->priv->text_shadow_pipeline = NULL;
-  label->priv->shadow_width = -1.;
-  label->priv->shadow_height = -1.;
-  label->priv->orphan = FALSE;
+  priv->text_shadow_pipeline = NULL;
+  priv->shadow_width = -1.;
+  priv->shadow_height = -1.;
+  priv->orphan = FALSE;
+  priv->size_changed = TRUE;
+
 
   /* This will ensure our pointer gets cleared the moment the ClutterText becomes invalid */
   g_object_add_weak_pointer (G_OBJECT (label->priv->label), (gpointer) &label->priv->label);
