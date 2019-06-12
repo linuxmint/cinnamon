@@ -547,6 +547,7 @@ def get_available_options(up_client):
     can_hibernate = False
     can_hybrid_sleep = False
 
+    # Try logind first
     try:
         connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
         proxy = Gio.DBusProxy.new_sync(
@@ -564,11 +565,21 @@ def get_available_options(up_client):
     except:
         pass
 
-    # New versions of upower does not have get_can_suspend function
+    # Next try ConsoleKit
     try:
-        can_suspend = can_suspend or up_client.get_can_suspend()
-        can_hibernate = can_hibernate or up_client.get_can_hibernate()
-        can_hybrid_sleep = can_hibernate or up_client.get_can_hybrid_sleep()
+        connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+        proxy = Gio.DBusProxy.new_sync(
+            connection,
+            Gio.DBusProxyFlags.NONE,
+            None,
+            "org.freedesktop.ConsoleKit",
+            "/org/freedesktop/ConsoleKit/Manager",
+            "org.freedesktop.ConsoleKit.Manager",
+            None)
+
+        can_suspend = can_suspend or (proxy.CanSuspend() == "yes")
+        can_hibernate = can_hibernate or (proxy.CanHybridSleep() == "yes")
+        can_hybrid_sleep = can_hybrid_sleep or (proxy.CanHybridSleep() == "yes")
     except:
         pass
 
