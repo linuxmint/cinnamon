@@ -31,7 +31,6 @@ struct _CinnamonGlobal {
   GObject parent;
 
   ClutterStage *stage;
-  ClutterInputDevice *clutter_device;
   Window stage_xwindow;
   GdkWindow *stage_gdk_window;
 

@@ -588,7 +588,7 @@ recorder_record_frame (CinnamonRecorder *recorder,
   /* TODO: Capture more than the first framebuffer. */
   for (i = 1; i < n_captures; i++)
     cairo_surface_destroy (captures[i].image);
-  free (captures);
+  g_free (captures);
 
   buffer = gst_buffer_new();
   memory = gst_memory_new_wrapped (0, data, size, 0, size,
@@ -963,7 +963,7 @@ recorder_set_pipeline (CinnamonRecorder *recorder,
     cinnamon_recorder_close (recorder);
 
   if (recorder->pipeline_description)
-    free (recorder->pipeline_description);
+    g_free (recorder->pipeline_description);
 
   recorder->pipeline_description = g_strdup (pipeline);
 
@@ -982,7 +982,7 @@ recorder_set_filename (CinnamonRecorder *recorder,
     cinnamon_recorder_close (recorder);
 
   if (recorder->filename)
-    free (recorder->filename);
+    g_free (recorder->filename);
 
   recorder->filename = g_strdup (filename);
 
@@ -1212,7 +1212,7 @@ get_absolute_path (char *maybe_relative)
     {
       char *cwd = g_get_current_dir ();
       path = g_build_filename (cwd, maybe_relative, NULL);
-      free (cwd);
+      g_free (cwd);
     }
 
   return path;
@@ -1303,7 +1303,7 @@ recorder_open_outfile (CinnamonRecorder *recorder)
         {
           char *path = get_absolute_path (filename->str);
           g_printerr ("Recording to %s\n", path);
-          free (path);
+          g_free (path);
 
           g_string_free (filename, TRUE);
           goto out;
@@ -1435,7 +1435,7 @@ recorder_pipeline_free (RecorderPipeline *pipeline)
 
   g_clear_object (&pipeline->recorder);
 
-  free (pipeline);
+  g_free (pipeline);
 }
 
 /* Function gets called on pipeline-global events; we use it to
@@ -1552,7 +1552,7 @@ recorder_open_pipeline (CinnamonRecorder *recorder)
   pipeline->pipeline = gst_parse_launch_full (parsed_pipeline, NULL,
                                               GST_PARSE_FLAG_FATAL_ERRORS,
                                               &error);
-  free (parsed_pipeline);
+  g_free (parsed_pipeline);
 
   if (pipeline->pipeline == NULL)
     {
@@ -1841,7 +1841,7 @@ cinnamon_recorder_close (CinnamonRecorder *recorder)
 
   recorder->state = RECORDER_STATE_CLOSED;
   recorder->count = 0;
-  free (recorder->unique);
+  g_free (recorder->unique);
   recorder->unique = NULL;
 
   /* Release the refcount we took when we started recording */

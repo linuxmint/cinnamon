@@ -241,7 +241,7 @@ xfixes_cursor_reset_image (CinnamonXFixesCursor *xfixes_cursor)
                                                   cursor_data);
 
   if (free_cursor_data)
-    free (cursor_data);
+    g_free (cursor_data);
 
   if (sprite != COGL_INVALID_HANDLE)
     {

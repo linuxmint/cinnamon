@@ -60,7 +60,6 @@ struct _StLabelPrivate
 
   gboolean orphan;
 
-  StShadow *shadow_spec;
   CoglPipeline  *text_shadow_pipeline;
   float         shadow_width;
   float         shadow_height;
@@ -117,11 +116,7 @@ st_label_get_property (GObject    *gobject,
 static void
 st_label_style_changed (StWidget *self)
 {
-  StLabelPrivate *priv = ((StLabel*) (self))->priv;
-
-  /* If the style is not dirty, return. This prevents a redraw. */
-  if (!self->priv->is_style_dirty)
-    return;
+  StLabelPrivate *priv = ST_LABEL(self)->priv;
 
   g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
 
@@ -171,8 +166,8 @@ st_label_allocate (ClutterActor          *actor,
                    const ClutterActorBox *box,
                    ClutterAllocationFlags flags)
 {
-  StLabelPrivate *priv = ((StLabel*) (actor))->priv;
-  StThemeNode *theme_node = st_widget_get_theme_node ((StWidget*) (actor));
+  StLabelPrivate *priv = ST_LABEL (actor)->priv;
+  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
   ClutterActorBox content_box;
 
   clutter_actor_set_allocation (actor, box, flags);
@@ -180,9 +175,6 @@ st_label_allocate (ClutterActor          *actor,
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
   clutter_actor_allocate (priv->label, &content_box, flags);
-
-  if (!priv->shadow_spec)
-    priv->shadow_spec = st_theme_node_get_text_shadow (theme_node);
 }
 
 static void
@@ -198,36 +190,36 @@ st_label_dispose (GObject   *object)
 static void
 st_label_paint (ClutterActor *actor)
 {
-  StLabelPrivate *priv = ((StLabel*) (actor))->priv;
+  StLabelPrivate *priv = ST_LABEL (actor)->priv;
+  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
+  StShadow *shadow_spec = st_theme_node_get_text_shadow (theme_node);
 
-  st_widget_paint_background ((StWidget*) (actor));
+  st_widget_paint_background (ST_WIDGET (actor));
 
-  if (priv->shadow_spec)
+  if (shadow_spec)
     {
       ClutterActorBox allocation;
       float width, height;
 
       clutter_actor_get_allocation_box (priv->label, &allocation);
+      clutter_actor_box_get_size (&allocation, &width, &height);
 
-      width = allocation.x2 - allocation.x1;
-      height = allocation.y2 - allocation.y1;
-
-      if (!priv->text_shadow_pipeline ||
+      if (priv->text_shadow_pipeline == NULL ||
           width != priv->shadow_width ||
           height != priv->shadow_height)
         {
-          if (priv->text_shadow_pipeline)
-            cogl_object_unref (priv->text_shadow_pipeline);
+          g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
 
           priv->shadow_width = width;
           priv->shadow_height = height;
-          priv->text_shadow_pipeline = _st_create_shadow_pipeline_from_actor (priv->shadow_spec, priv->label);
+          priv->text_shadow_pipeline = _st_create_shadow_pipeline_from_actor (shadow_spec, priv->label);
+
         }
 
-      if (priv->text_shadow_pipeline)
+      if (priv->text_shadow_pipeline != NULL)
         {
           CoglFramebuffer *fb = cogl_get_draw_framebuffer();
-          _st_paint_shadow_with_opacity (priv->shadow_spec,
+          _st_paint_shadow_with_opacity (shadow_spec,
                                          priv->text_shadow_pipeline,
                                          fb,
                                          &allocation,

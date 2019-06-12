@@ -62,7 +62,7 @@ class Module:
         settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
 
         button = Button(_("Display a test notification"), self.send_test)
-        settings.add_row(button)
+        settings.add_reveal_row(button, "org.cinnamon.desktop.notifications", "display-notifications")
 
         settings = page.add_section(_("Media keys OSD"))
 

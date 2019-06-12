@@ -2324,8 +2324,6 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         if (!this.isOpen)
             return;
 
-        const isInChrome = Main.layoutManager._chrome._findActor(this.actor) > -1;
-
         this.isOpen = false;
         global.menuStackLength -= 1;
 
@@ -2361,8 +2359,6 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                     this.actor.hide();
                     this.actor.remove_clip();
                     this.actor.set_size(-1, -1);
-
-                    if (isInChrome) Main.layoutManager._chrome.updateRegions(true);
                 }
             }
 
@@ -2392,8 +2388,6 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         else {
             this.animating = false;
             this.actor.hide();
-
-            if (isInChrome) Main.layoutManager._chrome.updateRegions(true);
         }
         this.emit('open-state-changed', false);
     }

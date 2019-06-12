@@ -21,7 +21,6 @@
 #error "Only <st/st.h> can be included directly.h"
 #endif
 
-#include <stdlib.h>
 #include <glib-object.h>
 #include <clutter/clutter.h>
 #include <gtk/gtk.h>

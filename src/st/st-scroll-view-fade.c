@@ -465,7 +465,7 @@ st_scroll_view_fade_init (StScrollViewFade *self)
 
               g_warning (G_STRLOC ": Unable to compile the fade shader: %s",
                          log_buf);
-              free (log_buf);
+              g_free (log_buf);
 
               cogl_handle_unref (shader);
               shader = COGL_INVALID_HANDLE;
