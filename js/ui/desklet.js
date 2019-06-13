@@ -236,7 +236,17 @@ var Desklet = class Desklet {
         }
 
         this.context_menu_item_remove = new PopupMenu.PopupMenuItem(_("Remove this desklet"));
-        this.context_menu_item_remove.connect("activate", Lang.bind(this, this._onRemoveDesklet));
+        this.context_menu_item_remove.connect("activate", Lang.bind(this, function(actor, event) {
+            if (Clutter.ModifierType.CONTROL_MASK & Cinnamon.get_event_state(event)) {
+                this._onRemoveDesklet();
+            } else {
+                let dialog = new ModalDialog.ConfirmDialog(
+                    _("Are you sure you want to remove %s?").format(this._meta.name),
+                    () => this._onRemoveDesklet()
+                );
+                dialog.open();
+            }
+        }));
         this._menu.addMenuItem(this.context_menu_item_remove);
     }
 
