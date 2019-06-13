@@ -15,6 +15,7 @@ const Flashspot = imports.ui.flashspot;
 const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
 const Gettext = imports.gettext;
+const Cinnamon = imports.gi.Cinnamon;
 
 var AllowedLayout = {  // the panel layout that an applet is suitable for
     VERTICAL: 'vertical',
@@ -558,8 +559,16 @@ var Applet = class Applet {
                 .format(this._(this._meta.name)),
                    "edit-delete",
                    St.IconType.SYMBOLIC);
-            this.context_menu_item_remove.connect('activate', Lang.bind(this, function() {
-                AppletManager._removeAppletFromPanel(this._uuid, this.instance_id);
+            this.context_menu_item_remove.connect('activate', Lang.bind(this, function(actor, event) {
+                if (Clutter.ModifierType.CONTROL_MASK & Cinnamon.get_event_state(event)) {
+                    AppletManager._removeAppletFromPanel(this._uuid, this.instance_id);
+                } else {
+                    let dialog = new ModalDialog.ConfirmDialog(
+                        _("Are you sure you want to remove %s?").format(this._meta.name),
+                        () => AppletManager._removeAppletFromPanel(this._uuid, this.instance_id)
+                    );
+                    dialog.open();
+                }
             }));
         }
 
