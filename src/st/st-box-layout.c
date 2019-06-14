@@ -390,8 +390,7 @@ st_box_layout_paint (ClutterActor *actor)
   get_border_paint_offsets (self, &x, &y);
   if (x != 0 || y != 0)
     {
-      if (fb == NULL)
-        fb = cogl_get_draw_framebuffer();
+      fb = cogl_get_draw_framebuffer();
       cogl_framebuffer_push_matrix (fb);
       cogl_framebuffer_translate (fb, (int)x, (int)y, 0);
     }
