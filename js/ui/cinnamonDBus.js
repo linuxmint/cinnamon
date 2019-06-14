@@ -76,6 +76,7 @@ const CinnamonIface =
                 <arg type="s" direction="in" /> \
                 <arg type="s" direction="in" /> \
             </method> \
+            <method name="induceSegfault" /> \
             <method name="switchWorkspaceRight" /> \
             <method name="switchWorkspaceLeft" /> \
             <method name="switchWorkspaceUp" /> \
@@ -359,6 +360,10 @@ CinnamonDBus.prototype = {
             return;
         }
         Main.settingsManager.uuids[uuid][instance_id].remoteUpdate(key, payload);
+    },
+
+    induceSegfault: function() {
+        global.segfault();
     },
 
     switchWorkspaceLeft: function() {
