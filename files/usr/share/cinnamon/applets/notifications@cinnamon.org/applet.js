@@ -92,6 +92,8 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
 
         this._on_panel_edit_mode_changed();
+
+        this.menu.addSettingsAction(_("Notification Settings"), 'notifications');
     }
 
     _notification_added (mtray, notification) {	// Notification event handler.

@@ -290,11 +290,11 @@ st_widget_finalize (GObject *gobject)
 {
   StWidgetPrivate *priv = ST_WIDGET (gobject)->priv;
 
-  free (priv->style_class);
-  free (priv->pseudo_class);
+  g_free (priv->style_class);
+  g_free (priv->pseudo_class);
   g_object_unref (priv->local_state_set);
-  free (priv->accessible_name);
-  free (priv->inline_style);
+  g_free (priv->accessible_name);
+  g_free (priv->inline_style);
 
   G_OBJECT_CLASS (st_widget_parent_class)->finalize (gobject);
 }
@@ -592,7 +592,7 @@ st_widget_get_theme_node (StWidget *widget)
                                     priv->important);
 
       if (pseudo_class != direction_pseudo_class)
-        free (pseudo_class);
+        g_free (pseudo_class);
 
       priv->theme_node = g_object_ref (st_theme_context_intern_node (context,
                                                                      tmp_node));
@@ -1067,7 +1067,7 @@ set_class_list (gchar       **class_list,
 {
   if (g_strcmp0 (*class_list, new_class_list) != 0)
     {
-      free (*class_list);
+      g_free (*class_list);
       *class_list = g_strdup (new_class_list);
       return TRUE;
     }
@@ -1087,7 +1087,7 @@ add_class_name (gchar       **class_list,
         return FALSE;
 
       new_class_list = g_strdup_printf ("%s %s", *class_list, class_name);
-      free (*class_list);
+      g_free (*class_list);
       *class_list = new_class_list;
     }
   else
@@ -1108,7 +1108,7 @@ remove_class_name (gchar       **class_list,
 
   if (strcmp (*class_list, class_name) == 0)
     {
-      free (*class_list);
+      g_free (*class_list);
       *class_list = NULL;
       return TRUE;
     }
@@ -1128,7 +1128,7 @@ remove_class_name (gchar       **class_list,
 
   new_class_list = g_strdup_printf ("%.*s%s", (int)(match - *class_list),
                                     *class_list, end);
-  free (*class_list);
+  g_free (*class_list);
   *class_list = new_class_list;
 
   return TRUE;
@@ -1386,7 +1386,7 @@ st_widget_set_style (StWidget  *actor,
 
   if (g_strcmp0 (style, priv->inline_style))
     {
-      free (priv->inline_style);
+      g_free (priv->inline_style);
       priv->inline_style = g_strdup (style);
 
       st_widget_style_changed (actor);
@@ -2368,7 +2368,7 @@ st_widget_set_accessible_name (StWidget *widget,
   g_return_if_fail (ST_IS_WIDGET (widget));
 
   if (widget->priv->accessible_name != NULL)
-    free (widget->priv->accessible_name);
+    g_free (widget->priv->accessible_name);
 
   widget->priv->accessible_name = g_strdup (name);
   g_object_notify (G_OBJECT (widget), "accessible-name");

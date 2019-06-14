@@ -271,13 +271,13 @@ class SettingsPage(Gtk.Box):
         Gtk.Box.__init__(self)
         self.set_orientation(Gtk.Orientation.VERTICAL)
         self.set_spacing(15)
-        self.set_margin_left(80)
-        self.set_margin_right(80)
+        self.set_margin_start(80)
+        self.set_margin_end(80)
         self.set_margin_top(15)
         self.set_margin_bottom(15)
 
-    def add_section(self, title):
-        section = SettingsBox(title)
+    def add_section(self, title=None, subtitle=None):
+        section = SettingsBox(title, subtitle)
         self.pack_start(section, False, False, 0)
 
         return section
@@ -292,28 +292,42 @@ class SettingsPage(Gtk.Box):
 
         return section
 
-class SettingsBox(Gtk.Frame):
-    def __init__(self, title):
-        Gtk.Frame.__init__(self)
-        self.set_shadow_type(Gtk.ShadowType.IN)
-        frame_style = self.get_style_context()
-        frame_style.add_class("view")
+class SettingsBox(Gtk.Box):
+    def __init__(self, title=None, subtitle=None):
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        self.set_spacing(5)
+
+        if title or subtitle:
+            header_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            header_box.set_spacing(5)
+            self.add(header_box)
+
+            if title:
+                label = Gtk.Label()
+                label.set_markup("<b>%s</b>" % title)
+                label.set_xalign(0.0)
+                header_box.add(label)
+
+            if subtitle:
+                sub = Gtk.Label()
+                sub.set_text(subtitle)
+                sub.get_style_context().add_class("dim-label")
+                sub.set_xalign(0.0)
+                header_box.add(sub)
+
+        self.frame = Gtk.Frame()
+        self.frame.set_shadow_type(Gtk.ShadowType.IN)
+        frame_style = self.frame.get_style_context()
+        frame_style.add_class('view')
+
         self.size_group = Gtk.SizeGroup()
         self.size_group.set_mode(Gtk.SizeGroupMode.VERTICAL)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.add(self.box)
+        self.frame.add(self.box)
 
-        toolbar = Gtk.Toolbar.new()
-        toolbar_context = toolbar.get_style_context()
-        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
-
-        label = Gtk.Label()
-        label.set_markup("<b>%s</b>" % title)
-        title_holder = Gtk.ToolItem()
-        title_holder.add(label)
-        toolbar.add(title_holder)
-        self.box.add(toolbar)
+        self.list_box = Gtk.ListBox()
+        self.box.add(self.list_box)
 
         self.need_separator = False
 
@@ -330,6 +344,9 @@ class SettingsBox(Gtk.Frame):
         list_box.add(row)
         vbox.add(list_box)
         self.box.add(vbox)
+
+        if self.frame.get_parent() is None:
+            self.add(self.frame)
 
         self.need_separator = True
 
@@ -355,14 +372,22 @@ class SettingsBox(Gtk.Frame):
 
         return revealer
 
+    def add_note(self, text):
+        label = Gtk.Label()
+        label.set_xalign(0.0)
+        label.set_markup(text)
+        label.set_line_wrap(True)
+        self.add(label)
+        return label
+
 class SettingsWidget(Gtk.Box):
     def __init__(self, dep_key=None):
         Gtk.Box.__init__(self)
         self.set_orientation(Gtk.Orientation.HORIZONTAL)
         self.set_spacing(20)
         self.set_border_width(5)
-        self.set_margin_left(20)
-        self.set_margin_right(20)
+        self.set_margin_start(20)
+        self.set_margin_end(20)
 
         if dep_key:
             self.set_dep_key(dep_key)
@@ -382,8 +407,8 @@ class SettingsWidget(Gtk.Box):
 
     def fill_row(self):
         self.set_border_width(0)
-        self.set_margin_left(0)
-        self.set_margin_right(0)
+        self.set_margin_start(0)
+        self.set_margin_end(0)
 
     def get_settings(self, schema):
         global settings_objects
@@ -399,7 +424,7 @@ class SettingsLabel(Gtk.Label):
         if text:
             self.set_label(text)
 
-        self.set_alignment(0.0, 0.5)
+        self.set_xalign(0.0)
         self.set_line_wrap(True)
 
     def set_label_text(self, text):
@@ -568,10 +593,12 @@ class Range(SettingsWidget):
 
         self.min_label= Gtk.Label()
         self.max_label = Gtk.Label()
-        self.min_label.set_alignment(1.0, 0.75)
-        self.max_label.set_alignment(1.0, 0.75)
-        self.min_label.set_margin_right(6)
-        self.max_label.set_margin_left(6)
+        self.min_label.set_xalign(1.0)
+        self.min_label.set_yalign(0.75)
+        self.max_label.set_xalign(1.0)
+        self.max_label.set_yalign(0.75)
+        self.min_label.set_margin_start(6)
+        self.max_label.set_margin_end(6)
         self.min_label.set_markup("<i><small>%s</small></i>" % min_label)
         self.max_label.set_markup("<i><small>%s</small></i>" % max_label)
 

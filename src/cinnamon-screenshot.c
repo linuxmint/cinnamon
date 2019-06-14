@@ -7,7 +7,7 @@
 #include <meta/display.h>
 #include <meta/util.h>
 #include <meta/meta-plugin.h>
-#include <meta/meta-window-actor.h>
+#include <meta/meta-shaped-texture.h>
 
 #include "cinnamon-global.h"
 #include "cinnamon-screenshot.h"
@@ -65,8 +65,8 @@ on_screenshot_written (GObject *source,
 
   cairo_surface_destroy (screenshot_data->image);
   g_object_unref (screenshot_data->screenshot);
-  free (screenshot_data->filename);
-  free (screenshot_data);
+  g_free (screenshot_data->filename);
+  g_free (screenshot_data);
 }
 
 static void
@@ -104,7 +104,7 @@ do_grab_screenshot (_screenshot_data *screenshot_data,
 
   data = cairo_image_surface_get_data (screenshot_data->image);
   stride = cairo_image_surface_get_stride (screenshot_data->image);
-
+  
   stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, width);
 
   bitmap = cogl_bitmap_new_for_data (context,
@@ -369,6 +369,7 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
   MetaWindow *window = meta_display_get_focus_window (display);
   ClutterActor *window_actor;
   gfloat actor_x, actor_y;
+  MetaShapedTexture *stex;
   MetaRectangle rect;
   cairo_rectangle_int_t clip;
 
@@ -403,7 +404,8 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
   clip.width = screenshot_data->screenshot_area.width = rect.width;
   clip.height = screenshot_data->screenshot_area.height = rect.height;
 
-  screenshot_data->image = meta_window_actor_get_image (window_actor, &clip);
+  stex = META_SHAPED_TEXTURE (meta_window_actor_get_texture (META_WINDOW_ACTOR (window_actor)));
+  screenshot_data->image = meta_shaped_texture_get_image (stex, &clip);
 
   if (include_cursor)
     _draw_cursor_image (screenshot_data->image, screenshot_data->screenshot_area);

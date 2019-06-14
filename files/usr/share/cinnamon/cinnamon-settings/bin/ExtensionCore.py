@@ -379,23 +379,6 @@ class ManageSpicesPage(SettingsPage):
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         frame.add(main_box)
 
-        toolbar = Gtk.Toolbar.new()
-        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), 'cs-header')
-        label = Gtk.Label()
-        if self.collection_type == 'applet':
-            markup = GLib.markup_escape_text(_("Installed applets"))
-        elif self.collection_type == 'desklet':
-            markup = GLib.markup_escape_text(_("Installed desklets"))
-        elif self.collection_type == 'extension':
-            markup = GLib.markup_escape_text(_("Installed extensions"))
-        elif self.collection_type == 'theme':
-            markup = GLib.markup_escape_text(_("Installed themes"))
-        label.set_markup('<b>{}</b>'.format(markup))
-        title_holder = Gtk.ToolItem()
-        title_holder.add(label)
-        toolbar.add(title_holder)
-        main_box.add(toolbar)
-
         scw = Gtk.ScrolledWindow()
         scw.expand = True
         scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -751,23 +734,6 @@ class DownloadSpicesPage(SettingsPage):
 
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         frame.add(main_box)
-
-        toolbar = Gtk.Toolbar.new()
-        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), 'cs-header')
-        label = Gtk.Label()
-        if self.collection_type == 'applet':
-            markup = GLib.markup_escape_text(_("Available applets"))
-        elif self.collection_type == 'desklet':
-            markup = GLib.markup_escape_text(_("Available desklets"))
-        elif self.collection_type == 'extension':
-            markup = GLib.markup_escape_text(_("Available extensions"))
-        elif self.collection_type == 'theme':
-            markup = GLib.markup_escape_text(_("Available themes"))
-        label.set_markup('<b>{}</b>'.format(markup))
-        title_holder = Gtk.ToolItem()
-        title_holder.add(label)
-        toolbar.add(title_holder)
-        main_box.add(toolbar)
 
         scw = Gtk.ScrolledWindow()
         scw.expand = True

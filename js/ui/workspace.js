@@ -55,7 +55,7 @@ WindowClone.prototype = {
         this.origX = 0;
         this.origY = 0;
 
-        // The MetaWindowActor that we clone has a size that includes
+        // The MetaShapedTexture that we clone has a size that includes
         // the invisible border; this is inconvenient; rather than trying
         // to compensate all over the place we insert a ClutterGroup into
         // the hierarchy that is sized to only the visible portion.
@@ -107,6 +107,8 @@ WindowClone.prototype = {
         this.actor.set_position(x, y);
         this.origX = x;
         this.origY = y;
+
+        this.realWindow.queue_redraw();
     },
 
     closeWindow: function() {
@@ -144,6 +146,8 @@ WindowClone.prototype = {
     },
 
     destroy: function () {
+        if (this.actor.is_finalized()) return;
+
         this.actor.destroy();
     },
 

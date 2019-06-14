@@ -118,15 +118,15 @@ HotCorner.prototype = {
         global.window_manager.connect('tile', Lang.bind(this, this._tilePerformed));
 
         // Cache the three ripples instead of dynamically creating and destroying them.
-        this._ripple1 = new St.BoxLayout({
+        this._ripple1 = new St.Widget({
             style_class: 'ripple-box',
             opacity: 0
         });
-        this._ripple2 = new St.BoxLayout({
+        this._ripple2 = new St.Widget({
             style_class: 'ripple-box',
             opacity: 0
         });
-        this._ripple3 = new St.BoxLayout({
+        this._ripple3 = new St.Widget({
             style_class: 'ripple-box',
             opacity: 0
         });
