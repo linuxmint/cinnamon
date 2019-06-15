@@ -72,13 +72,13 @@ cinnamon_tray_icon_constructed (GObject *object)
   plug_xid = GDK_WINDOW_XID (icon_app_window);
 
   display = gtk_widget_get_display (GTK_WIDGET (icon->priv->socket));
-  gdk_error_trap_push ();
+  gdk_x11_display_error_trap_push (display);
   _NET_WM_PID = gdk_x11_get_xatom_by_name_for_display (display, "_NET_WM_PID");
   result = XGetWindowProperty (GDK_DISPLAY_XDISPLAY (display), plug_xid,
                                _NET_WM_PID, 0, G_MAXLONG, False, XA_CARDINAL,
                                &type, &format, &nitems,
                                &bytes_after, (guchar **)&val);
-  if (!gdk_error_trap_pop () &&
+  if (!gdk_x11_display_error_trap_pop (display) &&
       result == Success &&
       type == XA_CARDINAL &&
       nitems == 1)
