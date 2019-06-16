@@ -7,11 +7,11 @@ const Clutter = imports.gi.Clutter;
 function createWindowClone(metaWindow, width, height, withTransients, withPositions) {
   let clones = [];
   let textures = [];
-  
+
   if (!metaWindow) {
     return clones;
   }
-  
+
   let metaWindowActor = metaWindow.get_compositor_private();
   if (!metaWindowActor) {
     return clones;
@@ -19,7 +19,7 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
   let texture = metaWindowActor.get_texture();
   let [windowWidth, windowHeight] = metaWindowActor.get_size();
   let [maxWidth, maxHeight] = [windowWidth, windowHeight];
-  let [x, y] = metaWindowActor.get_position();
+  let {x, y} = metaWindow.get_input_rect();
   let [minX, minY] = [x, y];
   let [maxX, maxY] = [minX + windowWidth, minY + windowHeight];
   textures.push({t: texture, x: x, y: y, w: windowWidth, h: windowHeight});
@@ -28,7 +28,7 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
       let metaWindowActor = win.get_compositor_private();
       texture = metaWindowActor.get_texture();
       [windowWidth, windowHeight] = metaWindowActor.get_size();
-      [x, y] = metaWindowActor.get_position();
+      let { x, y } = win.get_input_rect();
       maxWidth = Math.max(maxWidth, windowWidth);
       maxHeight = Math.max(maxHeight, windowHeight);
       minX = Math.min(minX, x);
@@ -50,7 +50,7 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
   if (width || height) {
     scale = Math.min(scaleWidth, scaleHeight);
   }
-  
+
   for (let i = 0; i < textures.length; i++) {
     let data = textures[i];
     let [texture, texWidth, texHeight, x, y] = [data.t, data.w, data.h, data.x, data.y];
