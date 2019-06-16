@@ -271,21 +271,11 @@ function main(metadata, orientation, panel_height, instanceId) {
 }
 
 function stringify(count) {
-    let str;
-    switch (true) {
-        case (count == 0):
-            str = _("No notifications");
-            break;
-        case (count == 1):
-            str = count.toString() + _(" notification");
-            break;
-        case (count > 1):
-            str = count.toString() + _(" notifications");
-            break;
-        default:
-            str = "";
+    if (count === 0) {
+        return _("No notifications");
+    } else {
+        return ngettext("%d notification", "%d notifications", count).format(count);
     }
-    return str;
 }
 
 function timeify(orig_time) {
