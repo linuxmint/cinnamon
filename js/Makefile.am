@@ -67,7 +67,6 @@ nobase_dist_js_DATA = \
 	ui/placesManager.js  \
 	ui/popupMenu.js		\
 	ui/runDialog.js		\
-	ui/scripting.js		\
 	ui/separator.js 	\
 	ui/slider.js 		\
 	ui/soundManager.js  \
