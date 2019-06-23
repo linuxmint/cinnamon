@@ -5,8 +5,7 @@ import gettext
 import glob
 import sys
 
-sys.path.append('/usr/lib/linuxmint/common')  # noqa
-import additionalfiles
+from mintcommon import additionalfiles
 
 import traceback
 
