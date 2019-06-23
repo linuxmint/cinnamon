@@ -500,6 +500,13 @@ typedef enum {
 } GetFromTermResult;
 
 static gboolean
+term_is_symbolic (CRTerm *term)
+{
+    return (term->type == TERM_IDENT &&
+            g_str_has_prefix (term->content.str->stryng->str, "symbolic"));
+}
+
+static gboolean
 term_is_inherit (CRTerm *term)
 {
   return (term->type == TERM_IDENT &&
@@ -613,6 +620,37 @@ get_color_from_rgba_term (CRTerm       *term,
 }
 
 static GetFromTermResult
+get_color_from_symbolic_name (CRTerm       *term,
+                              StIconColors *icon_colors,
+                              ClutterColor *color)
+{
+  const gchar *substr = term->content.str->stryng->str + 8;
+
+  if (strcmp (substr, "") == 0)
+    {
+      *color = icon_colors->foreground;
+    }
+  else if (g_str_has_prefix (substr, "-warning"))
+    {
+      *color = icon_colors->warning;
+    }
+  else if (g_str_has_prefix (substr, "-error"))
+    {
+      *color = icon_colors->error;
+    }
+  else if (g_str_has_prefix (substr, "-success"))
+    {
+      *color = icon_colors->success;
+    }
+  else
+    {
+      return VALUE_NOT_FOUND;
+    }
+
+  return VALUE_FOUND;
+}
+
+static GetFromTermResult
 get_color_from_term (StThemeNode  *node,
                      CRTerm       *term,
                      ClutterColor *color)
@@ -627,6 +665,13 @@ get_color_from_term (StThemeNode  *node,
     {
       *color = TRANSPARENT_COLOR;
       return VALUE_FOUND;
+    }
+
+  if (term_is_symbolic (term))
+    {
+      return get_color_from_symbolic_name (term,
+                                           st_theme_node_get_icon_colors (node),
+                                           color);
     }
   /* rgba () colors - a CSS3 addition, are not supported by libcroco,
    * but they are parsed as a "function", so we can emulate the
