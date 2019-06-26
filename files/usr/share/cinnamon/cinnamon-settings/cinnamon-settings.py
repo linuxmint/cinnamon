@@ -371,7 +371,7 @@ class MainWindow:
             # unicode is default in Python 3
             pass
         text = unicodedata.normalize('NFD', text)
-        text = text.encode('ascii', 'ignore')
+        text = text.encode('utf-8', 'ignore')
         text = text.decode("utf-8")
         return str(text)
 
