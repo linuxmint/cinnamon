@@ -155,6 +155,37 @@ function trySpawnCommandLine(command_line) {
 
 /**
  * spawnCommandLineAsync:
+ * @command_line: a command line
+ * @callback (function): called on success
+ * @errback (function): called on error
+ *
+ * Runs @command_line in the background. If the process exits without
+ * error, a callback will be called, or an error callback will be
+ * called if one is provided.
+ */
+function spawnCommandLineAsync(command_line, callback, errback) {
+    let pid;
+
+    let [success, argv] = GLib.shell_parse_argv(command_line);
+    pid = trySpawn(argv, true);
+
+    GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, function(pid, status) {
+        GLib.spawn_close_pid(pid);
+
+        if (status !== 0) {
+            if (typeof errback === 'function') {
+                errback();
+            }
+        } else {
+            if (typeof callback === 'function') {
+                callback();
+            }
+        }
+    });
+}
+
+/**
+ * spawnCommandLineAsyncIO:
  * @command: a command
  * @callback (function): called on success or failure
  * @opts (object): options: argv, flags, input
@@ -164,7 +195,7 @@ function trySpawnCommandLine(command_line) {
  *
  * Returns (object): a Gio.Subprocess instance
  */
-function spawnCommandLineAsync(command, callback, opts = {}) {
+function spawnCommandLineAsyncIO(command, callback, opts = {}) {
     let {argv, flags, input} = opts;
     if (!input) input = null;
 
