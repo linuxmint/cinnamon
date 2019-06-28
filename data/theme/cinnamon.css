@@ -1557,6 +1557,10 @@ StScrollBar StButton#vhandle:hover {
     box-shadow: inset 0px 0px 8px 1px rgba(255,255,255, 0.7);
 }
 
+.workspace-button:shaded {
+    color: #13191c;
+}
+
 /* Controls the style when using the "Visual representation" option */
 .workspace-graph {
     padding: 3px;

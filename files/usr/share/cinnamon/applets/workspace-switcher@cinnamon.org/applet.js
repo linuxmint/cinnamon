@@ -223,13 +223,32 @@ class SimpleButton extends WorkspaceButton {
         let label = new St.Label({ text: (index + 1).toString() });
         label.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
         this.actor.set_child(label);
+        this.update();
     }
 
     activate(active) {
-        if (active)
+        if (active) {
             this.actor.add_style_pseudo_class('outlined');
-        else
+        }
+        else {
             this.actor.remove_style_pseudo_class('outlined');
+            this.update();
+        }
+    }
+
+    shade(used) {
+        if (!used) {
+            this.actor.add_style_pseudo_class('shaded');
+        }
+        else {
+            this.actor.remove_style_pseudo_class('shaded');
+        }
+    }
+    
+    update() {
+        let windows = this.workspace.list_windows();
+        let used = windows.some(Main.isInteresting);
+        this.shade(used);
     }
 }
 
