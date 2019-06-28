@@ -687,12 +687,12 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
 void
 _st_paint_shadow_with_opacity (StShadow        *shadow_spec,
                                CoglPipeline    *shadow_pipeline,
+                               CoglFramebuffer *fb,
                                ClutterActorBox *box,
                                guint8           paint_opacity)
 {
   ClutterActorBox shadow_box;
   CoglColor color;
-  CoglFramebuffer *fb = cogl_get_draw_framebuffer ();
   guint8 adjusted;
 
   g_return_if_fail (shadow_spec != NULL);
