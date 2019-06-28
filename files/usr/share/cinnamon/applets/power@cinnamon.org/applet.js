@@ -355,6 +355,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
             global.settings.connect('changed::device-aliases', Lang.bind(this, this._on_device_aliases_changed));
             this.settings.bind("labelinfo", "labelinfo", this._devicesChanged);
+            this.settings.bind("showmulti", "showmulti", this._devicesChanged);
 
             this._devicesChanged();
         }));
@@ -580,7 +581,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             // The menu is built. Below, we update the information present in the panel (icon, tooltip and label)
             this.set_applet_enabled(true);
             let panel_device = null;
-            if (this._primaryDevice != null) {
+            if (this._primaryDevice != null && (!this.showmulti || this._devices.length === 1)) {
                 this.showDeviceInPanel(this._primaryDevice);
             }
             else {
@@ -589,8 +590,34 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                 }
                 else if (this._devices.length > 1) {
                     // Show a summary
+                    let labelText = "";
+                    if (this.labelinfo !== "nothing") {
+                        for (let i = 0; i < this._devices.length; i++) {
+                            labelText += i + ': ';
+                            let [, , , , , percentage, , , seconds] = this._devices[i];
+                            if (this.labelinfo == "time" && seconds !== 0) {
+                                let time = Math.round(seconds / 60);
+                                let minutes = time % 60;
+                                let hours = Math.floor(time / 60);
+                                labelText += C_("time of battery remaining", "%d:%02d").format(hours, minutes);
+                            }
+                            else if (this.labelinfo == "percentage" || (this.labelinfo == "percentage_time" && seconds === 0)) {
+                                labelText += C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                            }
+                            else if (this.labelinfo == "percentage_time") {
+                                let time = Math.round(seconds / 60);
+                                let minutes = Math.floor(time % 60);
+                                let hours = Math.floor(time / 60);
+                                labelText += C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
+                                    C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
+                            }
+                            if (i !== this._devices.length - 1) {
+                                labelText += '  ';
+                            }
+                        }    
+                    }
                     this.set_applet_tooltip(devices_stats.join(", "));
-                    this.set_applet_label("");
+                    this.set_applet_label(labelText);
                     let icon = this._proxy.Icon;
                     if(icon) {
                         if (icon != this.panel_icon_name) {
