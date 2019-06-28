@@ -439,8 +439,8 @@ var AppIndicator = class AppIndicator {
         }
     }
 
-    getActor(size) {
-        return new IndicatorActor(this, size);
+    getActor(size, orientation) {
+        return new IndicatorActor(this, size, orientation);
     }
 
     //async because we may need to check the presence of a menubar object as well as the creation is async.
@@ -913,8 +913,9 @@ Signals.addSignalMethods(XmlLessDBusProxy.prototype);
  */
 
 var IndicatorActor = class IndicatorActor {
-    constructor(indicator, size) {
+    constructor(indicator, size, orientation) {
         this.actor = new St.BoxLayout({
+            style_class: 'applet-icon',
             reactive: true,
             track_hover: true,
             // The systray use a layout manager, we need to fill the space of the actor
@@ -924,7 +925,11 @@ var IndicatorActor = class IndicatorActor {
         });
 
         this.actor._delegate = this;
-
+        if (orientation == St.Side.LEFT || orientation == St.Side.RIGHT) {
+            this.actor.set_x_align(Clutter.ActorAlign.FILL);
+            this.actor.set_y_align(Clutter.ActorAlign.END);
+            this.actor.set_vertical(true);
+        }
         this.menu = null;
         this._menuSignal = 0;
         // FIXME: This could be in settings:
@@ -994,9 +999,11 @@ var IndicatorActor = class IndicatorActor {
     _updatedLabel() {
         if (this._indicator.label != null) {
             this._label.set_text(this._indicator.label);
+            this._label.show();
         } else {
             this._label.set_text("");
-            this.actor.remove_style_class_name('applet-box');
+            this._label.hide(); // blanking out a label is not enough, its presence may trigger
+                                // unwanted 'spacing' CSS.
         }
     }
 

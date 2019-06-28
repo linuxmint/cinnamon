@@ -108,12 +108,11 @@ class CinnamonSystrayApplet extends Applet.Applet {
         }
 
         this._shellIndicators = [];
-
     }
 
     _onIndicatorAdded(manager, appIndicator) {
         if (!(appIndicator.id in this._shellIndicators)) {
-            let indicatorActor = appIndicator.getActor(this.icon_size / global.ui_scale);
+            let indicatorActor = appIndicator.getActor(this.icon_size / global.ui_scale, this.orientation);
 
             this._shellIndicators.push({
                 id: appIndicator.id,
