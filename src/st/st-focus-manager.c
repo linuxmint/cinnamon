@@ -74,13 +74,16 @@ st_focus_manager_stage_event (ClutterActor *stage,
 			      ClutterEvent *event,
 			      gpointer      user_data)
 {
-  StFocusManager *manager = user_data;
+  StFocusManager *manager;
   GtkDirectionType direction;
-  gboolean wrap_around = FALSE;
+  gboolean wrap_around;
   ClutterActor *focused, *group;
 
   if (event->type != CLUTTER_KEY_PRESS)
     return FALSE;
+
+  manager = user_data;
+  wrap_around = FALSE;
 
   switch (event->key.keyval)
     {

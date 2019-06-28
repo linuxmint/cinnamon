@@ -483,7 +483,7 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
       ClutterActorBox box;
       CoglColor clear_color;
       float width, height;
-      CoglError *catch_error = NULL;
+      CoglError *catch_error;
 
       clutter_actor_get_allocation_box (actor, &box);
       clutter_actor_box_get_size (&box, &width, &height);
@@ -500,6 +500,7 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
 
       offscreen = cogl_offscreen_new_with_texture (buffer);
       fb = COGL_FRAMEBUFFER (offscreen);
+      catch_error = NULL;
 
       if (!cogl_framebuffer_allocate (fb, &catch_error))
         {

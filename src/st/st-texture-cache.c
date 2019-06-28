@@ -964,12 +964,15 @@ on_sliced_image_loaded (GObject *source_object,
                         gpointer user_data)
 {
   GList *list, *pixbufs;
-  GObject *cache = source_object;
-  AsyncImageData *data = (AsyncImageData *)user_data;
+  GObject *cache;
+  AsyncImageData *data;
   GTask *task = G_TASK (res);
 
   if (g_task_had_error (task))
     return;
+
+  cache = source_object;
+  data = (AsyncImageData *)user_data;
 
   pixbufs = g_task_propagate_pointer (task, NULL);
   for (list = pixbufs; list; list = list->next)
@@ -1313,15 +1316,15 @@ st_texture_cache_load_uri_sync_to_cairo_surface (StTextureCache        *cache,
   GdkPixbuf *pixbuf;
   char *key;
 
-  int width = available_width == -1 ? -1 : available_width * cache->priv->scale;
-  int height = available_height == -1 ? -1 : available_height * cache->priv->scale;
-
   key = g_strconcat (CACHE_PREFIX_URI_FOR_CAIRO, uri, NULL);
 
   surface = g_hash_table_lookup (cache->priv->keyed_surface_cache, key);
 
   if (surface == NULL)
     {
+      int width = available_width == -1 ? -1 : available_width * cache->priv->scale;
+      int height = available_height == -1 ? -1 : available_height * cache->priv->scale;
+
       pixbuf = impl_load_pixbuf_file (uri, width, height, error);
       if (!pixbuf)
         goto out;
