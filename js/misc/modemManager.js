@@ -252,7 +252,7 @@ const BroadbandModemCdmaInterface =
 
 const BroadbandModemCdmaProxy = Gio.DBusProxy.makeProxyWrapper(BroadbandModemCdmaInterface);
 
-const BroadbandModem = new Lang.Class({
+var BroadbandModem = new Lang.Class({
     Name: 'BroadbandModem',
 
     _init: function(path, capabilities) {
