@@ -39,6 +39,8 @@ const TIME_DELTA = 1500;
 
 const APPLETS_DROP_ANIMATION_TIME = 0.2;
 
+const PANEL_PEEK_TIME = 1500;
+
 const EDIT_MODE_MIN_BOX_SIZE = 25;
 const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48];
 
@@ -1942,6 +1944,7 @@ Panel.prototype = {
         this._bottomPanelBarrier = 0;
         this._shadowBox = null;
         this._panelZoneIconSizes = null;
+        this._peeking = false;
 
         this.themeSettings = new Gio.Settings({ schema_id: 'org.cinnamon.theme' });
 
@@ -2202,6 +2205,26 @@ Panel.prototype = {
         return;
     },
 
+
+    peekPanel: function() {
+        if (!this._hidden || this._peeking)
+            return;
+
+        if (this._showHideTimer > 0) {
+            Mainloop.source_remove(this._showHideTimer);
+            this._showHideTimer = 0;
+        }
+
+        this._peeking = true;
+        this._showPanel();
+
+        Mainloop.timeout_add(PANEL_PEEK_TIME, () => {
+            this._peeking = false;
+            this._updatePanelVisibility();
+            return false;
+        });
+    },
+
     /**
      * highlight:
      * @highlight (boolean): whether to turn on or off
@@ -2209,7 +2232,13 @@ Panel.prototype = {
      * Turns on/off the highlight of the panel
      */
     highlight: function(highlight) {
+        if (highlight == this.actor.has_style_pseudo_class('highlight'))
+            return;
+
         this.actor.change_style_pseudo_class('highlight', highlight);
+
+        if (highlight)
+            this.peekPanel();
     },
 
     /**
@@ -3335,62 +3364,63 @@ Panel.prototype = {
      * true = autohide, false = always show, intel = Intelligent
      */
     _updatePanelVisibility: function() {
-
-        switch (this._autohideSettings) {
-            case "false":
-                this._shouldShow = true;
-                break;
-            case "true":
-                this._shouldShow = this._mouseEntered;
-                break;
-            default:
-                if (this._mouseEntered || !global.display.focus_window ||
-                    global.display.focus_window.get_window_type() == Meta.WindowType.DESKTOP) {
+        if (this._panelEditMode || this._peeking)
+            this._shouldShow = true;
+        else {
+            switch (this._autohideSettings) {
+                case "false":
                     this._shouldShow = true;
                     break;
-                }
-
-                if (global.display.focus_window.get_monitor() != this.monitorIndex) {
-                    this._shouldShow = false;
+                case "true":
+                    this._shouldShow = this._mouseEntered;
                     break;
-                }
-                let x, y;
-
-                /* Calculate the x or y instead of getting it from the actor since the
-                 * actor might be hidden*/
-                switch (this.panelPosition) {
-                    case PanelLoc.top:
-                        y = this.monitor.y;
+                default:
+                    if (this._mouseEntered || !global.display.focus_window ||
+                        global.display.focus_window.get_window_type() == Meta.WindowType.DESKTOP) {
+                        this._shouldShow = true;
                         break;
-                    case PanelLoc.bottom:
-                        y = this.monitor.y + this.monitor.height - this.actor.height;
-                        break;
-                    case PanelLoc.left:
-                        x = this.monitor.x;
-                        break;
-                    case PanelLoc.right:
-                        x = this.monitor.x + this.monitor.width - this.actor.width;
-                        break;
-                    default:
-                        global.log("updatePanelVisibility - unrecognised panel position "+this.panelPosition);
-                }
+                    }
 
-                let a = this.actor;
-                let b = global.display.focus_window.get_compositor_private();
-                /* Magic to check whether the panel position overlaps with the
-                 * current focused window */
-                if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
-                    this._shouldShow = !(Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
-                                         Math.max(y, b.y) < Math.min(y + a.height, b.y + b.height));
-                } else {
-                    this._shouldShow = !(Math.max(x, b.x) < Math.min(x + a.width, b.x + b.width) &&
-                                         Math.max(a.y, b.y) < Math.min(a.y + a.height, b.y + b.height));
-                }
+                    if (global.display.focus_window.get_monitor() != this.monitorIndex) {
+                        this._shouldShow = false;
+                        break;
+                    }
+                    let x, y;
 
-        } // end of switch on autohidesettings
+                    /* Calculate the x or y instead of getting it from the actor since the
+                    * actor might be hidden*/
+                    switch (this.panelPosition) {
+                        case PanelLoc.top:
+                            y = this.monitor.y;
+                            break;
+                        case PanelLoc.bottom:
+                            y = this.monitor.y + this.monitor.height - this.actor.height;
+                            break;
+                        case PanelLoc.left:
+                            x = this.monitor.x;
+                            break;
+                        case PanelLoc.right:
+                            x = this.monitor.x + this.monitor.width - this.actor.width;
+                            break;
+                        default:
+                            global.log("updatePanelVisibility - unrecognised panel position "+this.panelPosition);
+                    }
 
-        if (this._panelEditMode)
-            this._shouldShow = true;
+                    let a = this.actor;
+                    let b = global.display.focus_window.get_compositor_private();
+                    /* Magic to check whether the panel position overlaps with the
+                    * current focused window */
+                    if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
+                        this._shouldShow = !(Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
+                                            Math.max(y, b.y) < Math.min(y + a.height, b.y + b.height));
+                    } else {
+                        this._shouldShow = !(Math.max(x, b.x) < Math.min(x + a.width, b.x + b.width) &&
+                                            Math.max(a.y, b.y) < Math.min(a.y + a.height, b.y + b.height));
+                    }
+
+            } // end of switch on autohidesettings
+        }
+
         this._queueShowHidePanel();
     },
 
