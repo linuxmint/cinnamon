@@ -676,7 +676,10 @@
       <default>0.67</default>
       <summary>Relative size of symbolic icons to the zone's icon size</summary>
     </key>
-
+    <key name="gtk-version-scrollbar-multiplier" type="d">
+      <default>1.5</default>
+      <summary>Relative size of the scrollbars between gtk3 and gtk2 - the set value is multiplied by this for the gtk2 value</summary>
+    </key>
   </schema>
 
   <schema id="org.cinnamon.keyboard" path="/org/cinnamon/keyboard/"

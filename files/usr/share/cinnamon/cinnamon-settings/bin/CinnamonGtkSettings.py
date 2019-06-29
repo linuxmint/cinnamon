@@ -1,30 +1,36 @@
 #!/usr/bin/python3
 
 import os.path
+import signal
+
+import tinycss
+from tinycss import tokenizer
 
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import GLib, Gtk
+from gi.repository import GLib, Gtk, Gio, GObject
 
-from  SettingsWidgets import SettingsWidget
+from  SettingsWidgets import SettingsWidget, Range, Switch
 
 SETTINGS_GROUP_NAME = "Settings"
 
-instance = None
+ini_instance = None
 
-def get_editor():
-    global instance
+def get_ini_editor():
+    global ini_instance
 
-    if instance == None:
-        instance = GtkSettingsEditor()
+    if ini_instance is None:
+        ini_instance = GtkSettingsEditor()
 
-    return instance
+    return ini_instance
 
 class GtkSettingsEditor:
     def __init__(self):
         self._path = os.path.join(GLib.get_user_config_dir(),
                                   "gtk-3.0",
                                   "settings.ini")
+
+        self.default_settings = Gtk.Settings()
     def _get_keyfile(self):
         keyfile = None
         try:
@@ -40,37 +46,450 @@ class GtkSettingsEditor:
         try:
             result = keyfile.get_boolean(SETTINGS_GROUP_NAME, key)
         except:
-            result = False
+            result = self.default_settings.get_property(key)
 
         return result
 
     def set_boolean(self, key, value):
-        print("set", value)
         keyfile = self._get_keyfile()
         keyfile.set_boolean(SETTINGS_GROUP_NAME, key, value)
 
         try:
             data = keyfile.to_data()
-            GLib.file_set_contents(self._path, data[0])
+            GLib.file_set_contents(self._path, bytes(data[0], encoding="utf8"))
         except:
             raise
 
-class GtkSettingsSwitch(SettingsWidget):
+class GtkSettingsSwitch(Switch):
     def __init__(self, markup, setting_name=None):
         self.setting_name = setting_name
-        super(GtkSettingsSwitch, self).__init__(dep_key=None)
+        super(GtkSettingsSwitch, self).__init__(markup)
 
-        self.content_widget = Gtk.Switch()
-        self.content_widget.set_valign(Gtk.Align.CENTER)
-        self.label = Gtk.Label()
-        self.label.set_markup(markup)
-        self.pack_start(self.label, False, False, 0)
-        self.pack_end(self.content_widget, False, False, 0)
-
-        self.settings = get_editor()
+        self.settings = get_ini_editor()
         self.content_widget.set_active(self.settings.get_boolean(self.setting_name))
+        self.content_widget.connect("notify::active", self.on_switch_active_changed)
 
-        self.content_widget.connect("notify::active", self.clicked)
-
-    def clicked(self, widget, data=None):
+    def on_switch_active_changed(self, switch, pspec, data=None):
         self.settings.set_boolean(self.setting_name, self.content_widget.get_active())
+
+css_instance = None
+
+def get_css_editor():
+    global css_instance
+
+    if css_instance is None:
+        css_instance = GtkCssEditor()
+
+    return css_instance
+
+class GtkCssEditor:
+    def __init__(self):
+        self._path = os.path.join(GLib.get_user_config_dir(),
+                                  "gtk-3.0",
+                                  "gtk.css")
+
+        self.parser = tinycss.make_parser()
+
+        try:
+            self.stylesheet = self.parser.parse_stylesheet_file(self._path)
+        except FileNotFoundError:
+            self.stylesheet = tinycss.css21.Stylesheet(rules=[], errors=[], encoding="utf-8")
+
+    def get_ruleset(self, selector_css):
+        """
+        Gets the current ruleset for selector_css,
+        If it isn't currently defined, returns an empty
+        one.
+        """
+        for rs in self.stylesheet.rules:
+            if rs.selector.as_css() == selector_css:
+                return rs
+
+        new_ruleset = tinycss.css21.RuleSet(tokenizer.tokenize_flat(selector_css), [], None, None)
+        self.stylesheet.rules.append(new_ruleset)
+
+        return new_ruleset
+
+    def get_declaration(self, selector, decl_name):
+        rs = self.get_ruleset(selector)
+
+        for declaration in rs.declarations:
+            if decl_name == declaration.name:
+                return declaration.value[0].value
+
+        return None
+
+    def set_declaration(self, selector, decl_name, value_as_str):
+        # Remove an existing declaration.. for some reason if they
+        # get modified, they become invalid (or I'm doing something wrong)
+        self.remove_declaration(selector, decl_name)
+
+        rs = self.get_ruleset(selector)
+
+        value_token = tokenizer.tokenize_flat(value_as_str)
+
+        # Make a new declaration, add it to the ruleset
+        new_decl = tinycss.css21.Declaration(decl_name, value_token, None, None, None)
+
+        rs.declarations.append(new_decl)
+
+    def remove_declaration(self, selector, decl_name):
+        rs = self.get_ruleset(selector)
+
+        if not rs:
+            return
+
+        for declaration in rs.declarations:
+            if decl_name == declaration.name:
+                rs.declarations.remove(declaration)
+
+                if len(rs.declarations) == 0:
+                    self.stylesheet.rules.remove(rs)
+
+                break
+
+    def save_stylesheet(self):
+        out = ""
+
+        for rs in self.stylesheet.rules:
+            out += rs.selector.as_css() + " {\n"
+
+            for decl in rs.declarations:
+                out += "    " + decl.name + ": " + decl.value.as_css() + ";\n"
+
+            out += "}\n"
+
+        with open(self._path, "w+") as f:
+            f.write(out)
+
+class CssOverrideSwitch(Switch):
+    def __init__(self, markup, setting_name=None):
+        self.setting_name = setting_name
+        super(CssOverrideSwitch, self).__init__(markup)
+
+        self.content_widget.set_active(False)
+
+class CssRange(Range):
+    def __init__(self, markup, selector, decl_names, mini, maxi, units="", tooltip="", switch_widget=None):
+        # we override get_range() on the SettingsWidget, these properties need to exist before super()
+        self.mini = mini
+        self.maxi = maxi
+
+        super(CssRange, self).__init__(markup, units=units, mini=mini, maxi=maxi, step=1, tooltip=tooltip)
+
+        self.units = units
+
+        self.timer = 0
+
+        self.switch_widget = switch_widget.content_widget
+        self.selector = selector
+        self.decl_names = decl_names
+
+    def sync_initial_switch_state(self):
+        editor = get_css_editor()
+
+        all_existing = True
+
+        for decl_name in self.decl_names:
+            if editor.get_declaration(self.selector, decl_name):
+                continue
+
+            all_existing = False
+            break
+
+        starting_value = 10
+
+        if all_existing:
+            starting_value = editor.get_declaration(self.selector, self.decl_names[0])
+
+            self.content_widget.set_value(starting_value)
+
+        self.switch_widget.set_active(all_existing)
+        self.switch_widget.connect("notify::active", self.on_switch_active_changed)
+
+        self.revealer.set_reveal_child(all_existing)
+
+    def on_switch_active_changed(self, switch, pspec, data=None):
+        active = switch.get_active()
+
+        if active:
+            # I'm not sure how we could get the current theme's scrollbar min-width, without
+            # parsing it with tinycss also - a bit overkill?  10 is pretty common...
+            self.revealer.set_reveal_child(True)
+            self.content_widget.set_value(10)
+        else:
+            for name in self.decl_names:
+                get_css_editor().remove_declaration(self.selector, name)
+
+            self.revealer.set_reveal_child(False)
+
+        get_css_editor().save_stylesheet()
+
+    def apply_later(self, *args):
+        def apply(self):
+            editor = get_css_editor()
+
+            for name in self.decl_names:
+                value_as_str = "%d%s" % (int(self.content_widget.get_value()), self.units)
+                editor.set_declaration(self.selector, name, value_as_str)
+
+            editor.save_stylesheet()
+            self.timer = 0
+
+        if self.timer > 0:
+            GLib.source_remove(self.timer)
+        self.timer = GLib.timeout_add(300, apply, self)
+
+    def get_range(self):
+        return [self.mini, self.maxi]
+
+class PreviewWidget(SettingsWidget):
+    def __init__(self):
+        super(PreviewWidget, self).__init__()
+
+        self.content_widget = Gtk.Socket()
+        self.content_widget.set_valign(Gtk.Align.CENTER)
+
+        # This matches the plug toplevel container, it keeps the PreviewWidget from
+        # resizing briefly when reloading the plug.
+        self.content_widget.set_size_request(-1, 100)
+        self.content_widget.connect("hierarchy-changed", self.on_widget_hierarchy_changed)
+        self.content_widget.connect("plug-removed", self.on_plug_removed)
+
+        self.file_monitor_delay = 0
+
+        self.interface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
+        self.update_overlay_state()
+
+        self.pack_start(self.content_widget, True, True, 0)
+
+        self.proc = None
+
+    def update_overlay_state(self):
+        if self.interface_settings.get_boolean("gtk-overlay-scrollbars"):
+            GLib.setenv("GTK_OVERLAY_SCROLLING", "1", True)
+        else:
+            GLib.setenv("GTK_OVERLAY_SCROLLING", "0", True)
+
+    def socket_is_anchored(self, socket):
+        toplevel = socket.get_toplevel()
+
+        is_toplevel = isinstance(toplevel, Gtk.Window)
+
+        return is_toplevel
+
+    def on_widget_hierarchy_changed(self, widget, previous_toplevel, data=None):
+        if not self.socket_is_anchored(self.content_widget):
+            self.kill_plug()
+            return
+
+        self.interface_settings.connect("changed::gtk-overlay-scrollbars", self.on_overlay_scrollbars_changed)
+        self.interface_settings.get_boolean("gtk-overlay-scrollbars")
+
+        path = os.path.join(GLib.get_user_config_dir(), "gtk-3.0")
+        file = Gio.File.new_for_path(path)
+
+        try:
+            self.config_monitor = file.monitor_directory(Gio.FileMonitorFlags.NONE, None)
+            self.config_monitor.connect("changed", self.on_config_dir_changed)
+        except GLib.Error as e:
+            print(e.message)
+
+        self.reload()
+
+    def on_plug_removed(self, socket, data=None):
+        return True
+
+    def on_overlay_scrollbars_changed(self, settings, key, data=None):
+        self.update_overlay_state()
+
+        self.reload()
+
+    def on_config_dir_changed(self, monitor, file, other, event_type, data=None):
+        if event_type != Gio.FileMonitorEvent.CHANGES_DONE_HINT:
+            return
+
+        if self.file_monitor_delay > 0:
+            GObject.source_remove(self.file_monitor_delay)
+
+        self.file_monitor_delay = GObject.timeout_add(100, self.on_file_monitor_delay_finished)
+
+    def on_file_monitor_delay_finished(self, data=None):
+        self.file_monitor_delay = 0
+        self.reload()
+
+        return False
+
+    def kill_plug(self):
+        if self.proc:
+            self.proc.send_signal(signal.SIGTERM)
+            self.proc = None
+
+    def reload(self):
+        self.kill_plug()
+
+        self.proc = Gio.Subprocess.new(['python3', '/usr/share/cinnamon/cinnamon-settings/bin/scrollbar-test-widget.py', str(self.content_widget.get_id())],
+                                       Gio.SubprocessFlags.NONE)
+
+class Gtk2ScrollbarSizeEditor:
+    def __init__(self, ui_scale):
+        self._path = os.path.join(GLib.get_home_dir(), ".gtkrc-2.0")
+        self._file = Gio.File.new_for_path(self._path)
+        self._settings = Gio.Settings(schema_id="org.cinnamon.theme")
+        self.ui_scale = ui_scale
+        self.timeout_id = 0
+        self.number_end = 0
+        self.style_prop_start = 0
+        self._contents = ""
+
+        try:
+            success, content_bytes, tag = self._file.load_contents(None)
+
+            self._contents = content_bytes.decode()
+        except GLib.Error as e:
+            if e.code == Gio.IOErrorEnum.NOT_FOUND:
+                pass
+            else:
+                print("Could not load ~/.gtkrc-2.0 file: %s" % e.message)
+
+        self.parse_contents()
+
+    def set_size(self, size):
+        if self.timeout_id > 0:
+            GLib.source_remove(self.timeout_id)
+
+        multiplier = self._settings.get_double("gtk-version-scrollbar-multiplier")
+        comped_value = int(size * multiplier * self.ui_scale)
+
+        self.timeout_id = GLib.timeout_add(300, self.on_set_size_timeout, comped_value)
+
+    def on_set_size_timeout(self, size):
+        c = self._contents
+
+        if size > 0:
+            style_prop = "GtkScrollbar::slider-width = %d" % size
+            final_contents = c[:self.style_prop_start] + style_prop + c[self.style_prop_start:]
+        else:
+            final_contents = self._contents
+
+        # print("saving changed: ", final_contents)
+
+        try:
+            self._file.replace_contents(final_contents.encode("utf-8"),
+                                        None,
+                                        False,
+                                        0,
+                                        None)
+        except GLib.Error as e:
+            print("Could not save .gtkrc-2.0 file: %s" % e.message)
+
+        self.timeout_id = 0
+        return False
+
+    def make_default_contents(self):
+        self._contents = """
+###############################################
+# Created by cinnamon-settings - please do not edit or reformat.
+#
+style "cs-scrollbar-style" {
+
+}
+
+class "GtkScrollbar" style "cs-scrollbar-style"
+###############################################
+"""
+        self.style_prop_start = 145
+
+    def check_preexisting_cs_modification(self):
+        marker = "cs-scrollbar-style"
+
+        c = self._contents
+
+        if marker in c:
+            i = c.index(marker) + len(marker)
+
+            while i < len(c):
+                if c[i] == "{":
+                    i += 1
+
+                    open_bracket = i
+
+                    while i < len(c):
+                        if c[i] == "}":
+                            close_bracket = i
+                            self._contents = c[:open_bracket] + "\n\n" + c[close_bracket:]
+                            self.style_prop_start = open_bracket + 1
+                            return True
+                        i += 1
+                i += 1
+
+        return False
+
+    def parse_contents(self):
+        if self.check_preexisting_cs_modification():
+            return
+
+        style_prop = "GtkScrollbar::slider-width"
+
+        if not self._contents:
+            self.make_default_contents()
+            return
+
+        c = self._contents
+
+        length = len(c)
+        i = 0
+        found = False
+
+        while i < length:
+            if c[i:].startswith(style_prop):
+                self.style_prop_start = i
+                found = True
+                break
+            i += 1
+
+        if not found:
+            self.make_default_contents()
+            return
+
+        i += len(style_prop)
+        found = False
+
+        while i < length:
+            if c[i] == "=":
+                found = True
+                break
+            i += 1
+
+        if not found:
+            self.make_default_contents()
+            return
+
+        i += 1
+        found = False
+
+        while i < length:
+            if c[i].isalpha():
+                break
+            if c[i].isspace():
+                i += 1
+                continue
+            if c[i].isdigit():
+                found = True
+                break
+
+        if not found:
+            self.make_default_contents()
+            return
+
+        i += 1
+
+        while i < length:
+            if c[i].isdigit():
+                i += 1
+                continue
+            else:
+                self.number_end = i
+                break
+
+        self._contents = c[:self.style_prop_start] + c[self.number_end:]

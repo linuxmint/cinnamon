@@ -430,6 +430,16 @@ class SettingsLabel(Gtk.Label):
     def set_label_text(self, text):
         self.set_label(text)
 
+class LabelRow(SettingsWidget):
+    def __init__(self, text=None, tooltip=None):
+        super(LabelRow, self).__init__()
+
+        self.label = SettingsLabel()
+        self.label.set_hexpand(True)
+        self.pack_start(self.label, False, False, 0)
+        self.label.set_markup(text)
+        self.set_tooltip_text(tooltip)
+
 class Switch(SettingsWidget):
     bind_prop = "active"
     bind_dir = Gio.SettingsBindFlags.DEFAULT
