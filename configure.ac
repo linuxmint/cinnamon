@@ -87,11 +87,14 @@ AC_ARG_ENABLE(networkmanager,
               AC_HELP_STRING([--disable-networkmanager],
                              [Disable integration with NetworkManager and nm-applet]),,
               enable_networkmanager=yes)
+HAVE_NETWORKMANAGER=false
 if test "x$enable_networkmanager" = xyes; then
   PKG_CHECK_MODULES(CINNAMON_NM_APPLET, libnm)
+  HAVE_NETWORKMANAGER=true
 fi
 
 AM_CONDITIONAL(HAVE_NETWORKMANAGER, [test x$enable_networkmanager = xyes])
+AC_SUBST([HAVE_NETWORKMANAGER], ["$HAVE_NETWORKMANAGER"])
 
 PKG_CHECK_MODULES(CINNAMON_PERF_HELPER, gtk+-3.0 gio-2.0)
 
@@ -208,9 +211,5 @@ AC_CONFIG_FILES([
   po/Makefile.in
   man/Makefile
   files/Makefile
-  files/etc/Makefile
-  files/usr/Makefile
-  files/usr/bin/Makefile
-  files/usr/share/Makefile
 ])
 AC_OUTPUT
