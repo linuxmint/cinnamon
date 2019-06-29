@@ -1,3 +1,184 @@
+cinnamon (4.2.0) tina; urgency=medium
+
+  [ NikoKrause ]
+  * Add printers applet (#8485)
+
+  [ Simon Brown ]
+  * cinnamon-app: initialise a variable (#8486)
+  * cinnamon-doc-system: tidyup of recents (#8487)
+  * st-texture-cache: use a slightly more efficient linked list method (#8488)
+
+  [ Eli Schwartz ]
+  * PIL: remove unnnecessary version check and code fork (#8496)
+
+  [ Jason Hicks ]
+  * Make the sync method configurable (#8481)
+  * cinnamon-doc-system: Switch back to GSList (#8502)
+
+  [ Simon Brown ]
+  * st-icon: quiet a build warning (#8501)
+
+  [ Jason Hicks ]
+  * Replace some GLib wrappers (#8443)
+  * Improve property access performance (#8245)
+  * Reduce public function invocation in C code for simple getters with no logic (#8395)
+  *  wm: Apply window effects to clones (#8497)
+  * layout: Misc. clean up (#8465)
+
+  [ JosephMcc ]
+  * cinnamon-settings-ui: Remove the hack to center the stack switcher (#8520)
+
+  [ Michael Webster ]
+  * workspace-switcher applet: Fix updating the focus window position and size at startup, and ensure the focus window starts out on top of the graph button.
+
+  [ Cobinja ]
+  * Fix: update the input regions when going fullscreen (#8523)
+
+  [ Jason ]
+  * runDialog: Fix run dialog not opening when cursor is hovering over a panel
+  * messageTray: Call updateRegions after notifications complete their effect
+
+  [ Clement Lefebvre ]
+  * SettingsWidgets: Remove obsolete classes
+
+  [ JosephMcc ]
+  * SettingsWidgets: Convert to use the new style used in xapps (#8577)
+
+  [ Michael Webster ]
+  * cinnamon-settings.py: Improve bring_selection_into_view  calculations.
+
+  [ Jason Hicks ]
+  * windowEffects: Fix opacity during the close effect, stacking during the minimize effect (#8596)
+  * layout: Ensure regions update after the keyboard is hidden (#8585)
+  * overview: Fix some thumbnails not appearing (#8594)
+  * st-label: Move St-specific shadow processing out of the paint vfunc (#8588)
+  * layoutManager: Always update regions when untracking an actor (#8601)
+
+  [ Clement Lefebvre ]
+  * window-list: Fix skip_taskbar call on metawindow
+  * Revert "runDialog: Fix run dialog not opening when cursor is hovering over a panel"
+  * Revert rect caching and obstructed windows optimizations (#8606)
+
+  [ dependabot[bot] ]
+  * build(deps): bump js-yaml from 3.12.0 to 3.13.1 (#8610)
+
+  [ Jason Hicks ]
+  * git ignore auto-generated files (#8586)
+  * issue template: Request info about daily builds PPA usage (#8605)
+  * Update vulnerable NPM dependencies (#8614)
+
+  [ Clement Lefebvre ]
+  * Change onscreen keyboard icon to input-keyboard
+
+  [ BeatLink ]
+  * Remove All Caps from default workspace naming (#8513)
+
+  [ dilinger ]
+  * cinnamon-settings-users.py: update symlink vulnerability fix (#8515)
+
+  [ claudiux ]
+  * Consider the "last-edited" field as integer even when enclosed in quotation marks. (#8459)
+
+  [ Cobinja ]
+  * Fix: update the input regions when going fullscreen (#8523)
+
+  [ Jason ]
+  * messageTray: Call updateRegions after notifications complete their effect
+
+  [ Jason Hicks ]
+  * layoutManager: Always update regions when untracking an actor
+
+  [ Clement Lefebvre ]
+  * Revert layout.js optimizations (#8624)
+
+  [ JosephMcc ]
+  * Revert some changes to fix icon and text shadow issues on the panel (#8630)
+
+  [ Clement Lefebvre ]
+  * Notifications: Small fixes
+
+  [ montagdude ]
+  * Use ConsoleKit instead of old upower for suspend/hibernate (cs_power.py) (#8438)
+
+  [ Stephen Collins ]
+  * Workspace switcher applet settings: add tooltip with informative note (#8524)
+
+  [ Jason Hicks ]
+  * overview: Fix some thumbnails not appearing (#8594)
+
+  [ Clement Lefebvre ]
+  * cinnamon2d: Remove CLUTTER_PAINT=disable-clipped-redraws
+
+  [ Odyseus ]
+  * Xlets removal confirmation dialogs (#8636)
+
+  [ Michael Webster ]
+  * Add a utility script for accessing cinnamon's dbus methods from a terminal (#8628)
+
+  [ Germán Franco ]
+  * Ripples: use St.Widget instead of St.BoxLayout (#8640)
+  * Fix misplaced windows in overview
+
+  [ Michael Webster ]
+  * st-theme-node.c: Allow parsing of 'symbolic' (and -warning, -error, and -success) as a color.
+  * spacer applet: Outline applet during panel edit mode to make spacers more apparent when arranging panel items.
+  * appsys: When processing apps in the menu tree, watch for and de- (#8550)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+  * l10n: Generate additional files
+
+  [ Michael Webster ]
+  * runDialog.js: Go back to using the original spawnCommandLineAsync, as well as the original code using it in runDialog.
+
+  [ Simon Brown ]
+  * modemManager: fix cjs warning (#8667)
+
+  [ James Ross ]
+  * "Peek" panel for 1.5 seconds when highlighted (#8659)
+
+  [ Germán Franco ]
+  * Notifications applet: proper i18n of plurals (#8645)
+
+  [ Simon Brown ]
+  * st: pass framebuffer parameter to avoid excess call to get_draw_framebuffer (#8590)
+
+  [ Gabriel Medina Pegoraro ]
+  * cinnamon-settings: Use global proxy settings when available (#8589)
+
+  [ Simon Brown ]
+  * st: Move processing after early returns where possible (#8576)
+
+  [ pwfrank ]
+  * Workspace switcher: shade labels of empty workspaces in simple button mode (#8555)
+
+  [ Sean Adams ]
+  * power@cinnamon.org: improved support for multiple batteries (#8400)
+
+  [ Simon Brown ]
+  * Systray: Indicator alignment fix (#8208)
+
+  [ claudiux ]
+  * Cinnamon Settings: Adding capability to open specific tab and choose sort type (#8333)
+
+  [ Clement Lefebvre ]
+  * Menu: Tune search results
+
+  [ LingMan ]
+  * Cinnamon Settings: Fix search for locales with a non-Latin character set (#8674)
+
+  [ Clement Lefebvre ]
+  * cinnamon-xlet-makepot: Switch to subprocess module
+
+  [ Michael Webster ]
+  * theme settings: Add capability to override some scrollbar-related Gtk settings. (#8547)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+  * Add files/usr/share/applications/cinnamon-settings-online-accounts.desktop
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 29 Jun 2019 15:38:01 +0200
+
 cinnamon (4.0.10) unstable; urgency=medium
 
   [ Michael Webster ]
