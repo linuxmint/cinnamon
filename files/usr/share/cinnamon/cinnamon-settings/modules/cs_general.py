@@ -44,7 +44,7 @@ class Module:
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            sync_method = [["none", _("None")], ["fallback", _("Fallback")], ["swap_throttling", _("Swap Throttling")], ["presentation_time", _("Presentation Time")]]
+            sync_method = [["none", _("None")], ["fallback", "Fallback"], ["swap_throttling", "Swap Throttling"], ["presentation_time", "Presentation Time"]]
             widget = GSettingsComboBox(_("VSync method"), "org.cinnamon.muffin", "sync-method", sync_method, size_group=size_group)
             settings.add_row(widget)
 

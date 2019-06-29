@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-29 15:35+0200\n"
+"POT-Creation-Date: 2019-06-29 16:10+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3556,18 +3556,6 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_general.py:43
 msgid "Compositor Options"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_general.py:47
-msgid "Fallback"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_general.py:47
-msgid "Swap Throttling"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_general.py:47
-msgid "Presentation Time"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_general.py:48
