@@ -473,15 +473,8 @@ class MainWindow:
             self.search_entry.set_text("")
 
     def strip_accents(self, text):
-        try:
-            text = unicode(text, 'utf-8')
-        except NameError:
-            # unicode is default in Python 3
-            pass
-        text = unicodedata.normalize('NFD', text)
-        text = text.encode('ascii', 'ignore')
-        text = text.decode("utf-8")
-        return str(text)
+        text = unicodedata.normalize('NFKD', text)
+        return ''.join([c for c in text if not unicodedata.combining(c)])
 
     def filter_visible_function(self, model, iter, user_data = None):
         sidePage = model.get_value(iter, 2)
