@@ -47,6 +47,20 @@ SLEEP_DELAY_OPTIONS = [
 
 (UP_ID, UP_VENDOR, UP_MODEL, UP_TYPE, UP_ICON, UP_PERCENTAGE, UP_STATE, UP_BATTERY_LEVEL, UP_SECONDS) = range(9)
 
+try:
+    UPowerGlib.DeviceLevel
+except AttributeError:
+    class DeviceLevel:
+        UNKNOWN = 1
+        NONE = 1
+        LOW = 3
+        CRITICAL = 4
+        NORMAL = 6
+        HIGH = 7
+        FULL = 9
+    UPowerGlib.DeviceLevel = DeviceLevel
+
+
 def get_timestring(time_seconds):
     minutes = int((time_seconds / 60.0) + 0.5)
 
