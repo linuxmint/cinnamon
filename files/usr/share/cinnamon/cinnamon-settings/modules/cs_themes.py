@@ -105,10 +105,11 @@ class Module:
             settings.add_row(switch)
             self.scrollbar_switch = switch.content_widget
 
-            widget = CssRange(_("Scrollbar width"), "scrollbar slider", ["min-width", "min-height"], 5, 100, "px", None, switch)
+            widget = CssRange(_("Scrollbar width"), "scrollbar slider", ["min-width", "min-height"], 2, 40, "px", None, switch)
             settings.add_reveal_row(widget)
             widget.sync_initial_switch_state()
             self.scrollbar_css_range = widget.content_widget
+            self.scrollbar_css_range.get_adjustment().set_page_increment(2.0)
 
             switch.content_widget.connect("notify::active", self.on_css_override_active_changed)
             widget.content_widget.connect("value-changed", self.on_range_slider_value_changed)
