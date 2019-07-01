@@ -676,11 +676,11 @@ class Module:
             return
 
         model = view.get_model()
-        newDevice = model.get_value(model.get_iter(selected[0]), 3)
-        id = getattr(self.controller, "lookup_"+type+"_id")(newDevice)
-        if id != None and id != getattr(self, type+"Id"):
-            getattr(self.controller, "change_"+type)(id)
-            self.profile.setDevice(id)
+        newDeviceId = model.get_value(model.get_iter(selected[0]), 3)
+        newDevice = getattr(self.controller, "lookup_"+type+"_id")(newDeviceId)
+        if newDevice != None and newDeviceId != getattr(self, type+"Id"):
+            getattr(self.controller, "change_"+type)(newDevice)
+            self.profile.setDevice(newDevice)
 
     def deviceAdded(self, c, id, type):
         device = getattr(self.controller, "lookup_"+type+"_id")(id)
