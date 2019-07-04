@@ -870,7 +870,6 @@ class AppGroup {
             // Set the initial button label as not all windows will get updated via signals initially.
             if (this.state.settings.titleDisplay > 1) {
                 this.onWindowTitleChanged(metaWindow);
-                this.state.trigger('updateThumbnailsStyle');
             }
             if (refWindow === -1) {
                 metaWindows.push(metaWindow);
