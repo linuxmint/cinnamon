@@ -877,13 +877,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         this.groupState = groupState;
         this.setCustomStyleClass("grouped-window-list-thumbnail-menu");
 
-        this.stateConnectId = this.state.connect({
-            updateThumbnailsStyle: () => {
-                if (this.groupState.metaWindows.length === 0) return;
-                this.setStyleOptions();
-            }
-        });
-
         this.connectId = this.groupState.connect({
             hoverMenuClose: () => {
                 this.shouldClose = true;
@@ -1219,10 +1212,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         for (let i = 0; i < this.appThumbnails.length; i++) {
             if (this.appThumbnails[i]) {
                 this.appThumbnails[i].refreshThumbnail();
-                // Make sure Clutter updates, otherwise setStyleOptions is called afterwards,
-                // and will be calculating styles from old actor values because it closes the menu
-                // to avoid incorrect padding values.
-                this.appThumbnails[i].thumbnailActor.realize();
             }
         }
     }
@@ -1245,7 +1234,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
         this.removeAll();
         super.destroy();
-        this.state.disconnect(this.stateConnectId);
         this.groupState.disconnect(this.connectId);
         unref(this, RESERVE_KEYS);
     }

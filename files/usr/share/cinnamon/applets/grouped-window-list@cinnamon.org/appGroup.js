@@ -870,7 +870,6 @@ class AppGroup {
             // Set the initial button label as not all windows will get updated via signals initially.
             if (this.state.settings.titleDisplay > 1) {
                 this.onWindowTitleChanged(metaWindow);
-                this.state.trigger('updateThumbnailsStyle');
             }
             if (refWindow === -1) {
                 metaWindows.push(metaWindow);
@@ -1011,8 +1010,6 @@ class AppGroup {
                 && this.groupState.appId.indexOf(global.display.focus_window.wm_class.toLowerCase()) === -1) {
                 this.hideLabel();
             }
-            // Re-orient the menu after the focus button expands
-            if (this.hoverMenu) this.hoverMenu.setStyleOptions(false);
         }
     }
 
