@@ -1218,10 +1218,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         for (let i = 0; i < this.appThumbnails.length; i++) {
             if (this.appThumbnails[i]) {
                 this.appThumbnails[i].refreshThumbnail();
-                // Make sure Clutter updates, otherwise setStyleOptions is called afterwards,
-                // and will be calculating styles from old actor values because it closes the menu
-                // to avoid incorrect padding values.
-                this.appThumbnails[i].thumbnailActor.realize();
             }
         }
     }
