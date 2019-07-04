@@ -93,7 +93,10 @@ class Module:
 
             settings = page.add_section(_("Scrollbar behavior"))
 
-            switch = GtkSettingsSwitch(_("Warp sliders when clicking in a trough"), "gtk-primary-button-warps-slider")
+            # Translators: The 'trough' is the part of the scrollbar that the 'handle'
+            # rides in.  This setting determines whether clicking in that trough somewhere
+            # jumps directly to the new position, or if it only scrolls towards it.
+            switch = GtkSettingsSwitch(_("Jump to position when clicking in a trough"), "gtk-primary-button-warps-slider")
             settings.add_row(switch)
 
             widget = GSettingsSwitch(_("Use overlay scroll bars"), "org.cinnamon.desktop.interface", "gtk-overlay-scrollbars")
