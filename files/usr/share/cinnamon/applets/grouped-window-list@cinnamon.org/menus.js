@@ -880,7 +880,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         this.stateConnectId = this.state.connect({
             updateThumbnailsStyle: () => {
                 if (this.groupState.metaWindows.length === 0) return;
-                this.setStyleOptions();
             }
         });
 

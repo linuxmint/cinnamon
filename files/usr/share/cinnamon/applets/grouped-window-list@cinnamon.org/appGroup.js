@@ -1011,8 +1011,6 @@ class AppGroup {
                 && this.groupState.appId.indexOf(global.display.focus_window.wm_class.toLowerCase()) === -1) {
                 this.hideLabel();
             }
-            // Re-orient the menu after the focus button expands
-            if (this.hoverMenu) this.hoverMenu.setStyleOptions(false);
         }
     }
 
