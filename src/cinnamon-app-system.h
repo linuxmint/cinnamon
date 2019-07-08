@@ -48,6 +48,10 @@ CinnamonApp       *cinnamon_app_system_lookup_startup_wmclass       (CinnamonApp
 CinnamonApp       *cinnamon_app_system_lookup_desktop_wmclass       (CinnamonAppSystem *system,
                                                                      const char     *wmclass);
 
+CinnamonApp       *cinnamon_app_system_lookup_startup_wmclass_for_flatpak_app (CinnamonAppSystem *system,
+                                                                               const char     *wmclass);
+CinnamonApp       *cinnamon_app_system_lookup_desktop_wmclass_for_flatpak_app (CinnamonAppSystem *system,
+                                                                               const char        *wmclass);
 
 GSList         *cinnamon_app_system_get_all                   (CinnamonAppSystem  *system);
 

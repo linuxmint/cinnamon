@@ -344,6 +344,66 @@ get_app_from_window_pid (CinnamonWindowTracker  *tracker,
   return result;
 }
 
+static CinnamonApp *
+get_app_for_flatpak_window (MetaWindow *window)
+{
+  CinnamonAppSystem *appsys;
+  CinnamonApp *app = NULL;
+  const char *wm_class;
+  const char *wm_instance;
+  gchar *info_filename;
+  GFile *file;
+  int pid = meta_window_get_client_pid (window);
+
+  g_return_val_if_fail (pid > 0, NULL);
+
+  info_filename = g_strdup_printf ("/proc/%u/root/.flatpak-info", pid);
+  file = g_file_new_for_path (info_filename);
+
+  if (!g_file_query_exists (file, NULL))
+    return NULL;
+
+  appsys = cinnamon_app_system_get_default ();
+
+  wm_instance = meta_window_get_wm_class_instance (window);
+  app = cinnamon_app_system_lookup_startup_wmclass_for_flatpak_app (appsys, wm_instance);
+  if (app != NULL)
+    return g_object_ref (app);
+
+  /* then try a match from WM_CLASS to StartupWMClass */
+  wm_class = meta_window_get_wm_class (window);
+  app = cinnamon_app_system_lookup_startup_wmclass_for_flatpak_app (appsys, wm_class);
+  if (app != NULL)
+    return g_object_ref (app);
+
+  /* then try a match from WM_CLASS (instance part) to .desktop */
+  app = cinnamon_app_system_lookup_desktop_wmclass_for_flatpak_app (appsys, wm_instance);
+  if (app != NULL)
+    return g_object_ref (app);
+
+  /* finally, try a match from WM_CLASS to .desktop */
+  app = cinnamon_app_system_lookup_desktop_wmclass_for_flatpak_app (appsys, wm_class);
+  if (app != NULL)
+    return g_object_ref (app);
+
+  return NULL;
+}
+
+static CinnamonApp *
+get_app_from_sandboxed_window (MetaWindow *window)
+{
+  CinnamonApp *result;
+
+  result = get_app_for_flatpak_window (window);
+
+  /*
+   * Reserved space for other sandbox types like e.g. snap
+   * that might become supported in the future
+  */
+
+  return result;
+}
+
 /**
  * get_app_for_window:
  *
@@ -376,6 +436,11 @@ get_app_for_window (CinnamonWindowTracker    *tracker,
 
   if (meta_window_is_remote (window))
     return _cinnamon_app_new_for_window (window);
+
+  /* Check if the window was launched from a sandboxed app, e.g. Flatpak */
+  result = get_app_from_sandboxed_window (window);
+  if (result != NULL)
+    return result;
 
   /* Check if the window has a GApplication ID attached; this is
    * canonical if it does

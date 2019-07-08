@@ -33,6 +33,11 @@ typedef enum {
   CINNAMON_APP_STATE_RUNNING
 } CinnamonAppState;
 
+typedef enum {
+  CINNAMON_APP_SANDBOX_TYPE_NONE =    0,
+  CINNAMON_APP_SANDBOX_TYPE_FLATPAK = 1 << 0
+} CinnamonAppSandboxType;
+
 GType cinnamon_app_get_type (void) G_GNUC_CONST;
 
 const char *cinnamon_app_get_id (CinnamonApp *app);
@@ -81,6 +86,10 @@ gboolean cinnamon_app_launch (CinnamonApp     *app,
                            int           workspace,
                            char        **startup_id,
                            GError      **error);
+
+CinnamonAppSandboxType cinnamon_app_get_sandbox_type (CinnamonApp *app);
+
+GList *cinnamon_app_get_flatpak_renamed_from (CinnamonApp *app);
 
 G_END_DECLS
 

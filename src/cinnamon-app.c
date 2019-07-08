@@ -67,6 +67,8 @@ struct _CinnamonApp
   char *unique_name;
 
   gboolean hidden_as_duplicate;
+  CinnamonAppSandboxType sandbox_type;
+  GList *flatpak_renamed_from;
 };
 
 G_DEFINE_TYPE (CinnamonApp, cinnamon_app, G_TYPE_OBJECT);
@@ -675,6 +677,18 @@ cinnamon_app_get_state (CinnamonApp *app)
   return app->state;
 }
 
+/**
+ * cinnamon_app_get_sandbox_type:
+ * @app: a #CinnamonApp
+ *
+ * Returns: Sanbox type of the application
+ */
+CinnamonAppSandboxType
+cinnamon_app_get_sandbox_type (CinnamonApp *app)
+{
+  return app->sandbox_type;
+}
+
 typedef struct {
   CinnamonApp *app;
   MetaWorkspace *active_workspace;
@@ -800,6 +814,38 @@ _cinnamon_app_new (GMenuTreeEntry *info)
   return app;
 }
 
+static void
+update_flatpak_info (CinnamonApp *app)
+{
+  gchar** flatpak_renamed_from = NULL;
+  gchar* tmp;
+  guint len, i;
+
+  g_list_free_full (app->flatpak_renamed_from, g_free);
+  app->flatpak_renamed_from = NULL;
+
+  if (app->info &&
+      (g_desktop_app_info_has_key (app->info, "X-Flatpak") ||
+       g_desktop_app_info_has_key (app->info, "X-Flatpak-RenamedFrom")))
+    {
+      app->sandbox_type = CINNAMON_APP_SANDBOX_TYPE_FLATPAK;
+      tmp = g_desktop_app_info_get_string (app->info, "X-Flatpak-RenamedFrom");
+      flatpak_renamed_from = g_strsplit (tmp, ";", -1);
+      len = g_strv_length (flatpak_renamed_from);
+
+      for (i = 0; i < len; i++)
+        {
+          app->flatpak_renamed_from = g_list_prepend (app->flatpak_renamed_from, flatpak_renamed_from[i]);
+        }
+      app->flatpak_renamed_from = g_list_reverse (app->flatpak_renamed_from);
+      g_free(tmp);
+    }
+  else
+    {
+      app->sandbox_type = CINNAMON_APP_SANDBOX_TYPE_NONE;
+    }
+}
+
 void
 _cinnamon_app_set_entry (CinnamonApp       *app,
                       GMenuTreeEntry *entry)
@@ -817,6 +863,7 @@ _cinnamon_app_set_entry (CinnamonApp       *app,
   if (entry != NULL)
     {
       app->info = g_object_ref (gmenu_tree_entry_get_app_info (entry));
+      update_flatpak_info (app);
     }
 }
 
@@ -1159,6 +1206,18 @@ cinnamon_app_get_tree_entry (CinnamonApp *app)
   return app->entry;
 }
 
+/**
+ * cinnamon_app_get_flatpak_renamed_from:
+ * @app: a #CinnamonApp
+ *
+ * Returns: (transfer none) (element-type utf8) (nullable): The #GList containing the value of "X-Flatpak-RenamedFrom" from its .desktop-file
+ */
+GList *
+cinnamon_app_get_flatpak_renamed_from (CinnamonApp *app)
+{
+  return app->flatpak_renamed_from;
+}
+
 static void
 create_running_state (CinnamonApp *app)
 {
@@ -1196,6 +1255,7 @@ cinnamon_app_init (CinnamonApp *self)
   self->state = CINNAMON_APP_STATE_STOPPED;
   self->keywords = NULL;
   self->global = cinnamon_global_get ();
+  self->flatpak_renamed_from = NULL;
 }
 
 static void
@@ -1230,6 +1290,7 @@ cinnamon_app_finalize (GObject *object)
   CinnamonApp *app = CINNAMON_APP (object);
 
   g_free (app->window_id_string);
+  g_list_free_full (app->flatpak_renamed_from, g_free);
 
   G_OBJECT_CLASS(cinnamon_app_parent_class)->finalize (object);
 }

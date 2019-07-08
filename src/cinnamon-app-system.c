@@ -52,6 +52,8 @@ struct _CinnamonAppSystemPrivate {
   GHashTable *running_apps;
   GHashTable *id_to_app;
   GHashTable *startup_wm_class_to_app;
+  GHashTable *desktop_filename_to_flatpak_app;
+  GHashTable *startup_wm_class_to_flatpak_app;
 
   GSList *known_vendor_prefixes;
 };
@@ -131,6 +133,14 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
                                                          NULL,
                                                          (GDestroyNotify)g_object_unref);
 
+  priv->startup_wm_class_to_flatpak_app = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                         NULL,
+                                                         (GDestroyNotify)g_object_unref);
+
+  priv->desktop_filename_to_flatpak_app = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                                 NULL,
+                                                                 (GDestroyNotify)g_object_unref);
+
 /* According to desktop spec, since our menu file is called 'cinnamon-applications', our
  * merged menu folders need to be called 'cinnamon-applications-merged'.  We'll setup the folder
  * 'applications-merged' if it doesn't exist yet, and a symlink pointing to it in the
@@ -158,6 +168,8 @@ cinnamon_app_system_finalize (GObject *object)
   g_hash_table_destroy (priv->running_apps);
   g_hash_table_destroy (priv->id_to_app);
   g_hash_table_destroy (priv->startup_wm_class_to_app);
+  g_hash_table_destroy (priv->desktop_filename_to_flatpak_app);
+  g_hash_table_destroy (priv->startup_wm_class_to_flatpak_app);
   g_slist_free_full (priv->known_vendor_prefixes, g_free);
   priv->known_vendor_prefixes = NULL;
 
@@ -581,6 +593,8 @@ on_apps_tree_changed_cb (GMenuTree *tree,
       const char *id = key;
       GMenuTreeEntry *entry = value;
       GMenuTreeEntry *old_entry;
+      GList *old_flatpak_renamed_from;
+      CinnamonAppSandboxType sandbox_type;
       char *prefix;
       CinnamonApp *app;
 
@@ -606,6 +620,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
            * the new data.
            */
           old_entry = cinnamon_app_get_tree_entry (app);
+          old_flatpak_renamed_from = g_list_copy (cinnamon_app_get_flatpak_renamed_from (app));
           gmenu_tree_item_ref (old_entry);
 
 #if DEBUG_APPSYS_RENAMING
@@ -633,6 +648,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
       else
         {
           old_entry = NULL;
+          old_flatpak_renamed_from = NULL;
           app = _cinnamon_app_new (entry);
 
           DEBUG_RENAMING ("New app entry: '%s' with source '%s'\n",
@@ -640,6 +656,9 @@ on_apps_tree_changed_cb (GMenuTree *tree,
                           _cinnamon_app_get_desktop_path (app));
 
         }
+
+      sandbox_type = cinnamon_app_get_sandbox_type (app);
+
       /* Note that "id" is owned by app->entry.  Since we're always
        * setting a new entry, even if the app already exists in the
        * hash table we need to replace the key so that the new id
@@ -658,7 +677,14 @@ on_apps_tree_changed_cb (GMenuTree *tree,
           old_startup_wm_class = g_desktop_app_info_get_startup_wm_class (old_info);
 
           if (old_startup_wm_class)
-            g_hash_table_remove (self->priv->startup_wm_class_to_app, old_startup_wm_class);
+          {
+            if (sandbox_type == CINNAMON_APP_SANDBOX_TYPE_NONE)
+              g_hash_table_remove (self->priv->startup_wm_class_to_app, old_startup_wm_class);
+            else if (sandbox_type == CINNAMON_APP_SANDBOX_TYPE_FLATPAK)
+              {
+                g_hash_table_remove (self->priv->startup_wm_class_to_flatpak_app, old_startup_wm_class);
+              }
+          }
         }
 
       info = cinnamon_app_get_app_info (app);
@@ -666,9 +692,47 @@ on_apps_tree_changed_cb (GMenuTree *tree,
         {
           startup_wm_class = g_desktop_app_info_get_startup_wm_class (info);
           if (startup_wm_class)
-            g_hash_table_replace (self->priv->startup_wm_class_to_app,
-                                  (char*)startup_wm_class, g_object_ref (app));
+            {
+              if (sandbox_type == CINNAMON_APP_SANDBOX_TYPE_NONE)
+              {
+                g_hash_table_replace (self->priv->startup_wm_class_to_app,
+                                     (char*)startup_wm_class, g_object_ref (app));
+              }
+              else if (sandbox_type == CINNAMON_APP_SANDBOX_TYPE_FLATPAK)
+              {
+                g_hash_table_replace (self->priv->startup_wm_class_to_flatpak_app,
+                                     (char*)startup_wm_class, g_object_ref (app));
+              }
+            }
         }
+
+      if (sandbox_type == CINNAMON_APP_SANDBOX_TYPE_FLATPAK)
+      {
+        GList *flatpak_renamed_from, *l;
+        GHashTableIter flatpakIter;
+        gpointer flatpakKey, flatpakValue;
+
+        flatpak_renamed_from = cinnamon_app_get_flatpak_renamed_from (app);
+        l = flatpak_renamed_from;
+        while (l)
+          {
+            g_hash_table_replace (self->priv->desktop_filename_to_flatpak_app,
+                                  (gchar*)(l->data), app);
+            l = l->next;
+          }
+
+        // unmap removed filenames
+        g_hash_table_iter_init(&flatpakIter, self->priv->desktop_filename_to_flatpak_app);
+        while (g_hash_table_iter_next (&flatpakIter, &flatpakKey, &flatpakValue))
+          {
+            if (flatpakValue == app && g_list_find (old_flatpak_renamed_from, flatpakKey))
+              {
+                g_hash_table_iter_remove (&flatpakIter);
+              }
+          }
+      }
+
+      g_list_free (old_flatpak_renamed_from);
 
       if (old_entry)
         {
@@ -878,6 +942,58 @@ cinnamon_app_system_lookup_desktop_wmclass (CinnamonAppSystem *system,
 }
 
 /**
+ * cinnamon_app_system_lookup_desktop_wmclass_for_flatpak_app:
+ * @system: a #CinnamonAppSystem
+ * @wmclass: (nullable): A WM_CLASS value
+ *
+ * Find a valid flatpak application whose renamed .desktop file matches @wmclass.
+ *
+ * Returns: (transfer none): A #CinnamonApp for @wmclass
+ */
+CinnamonApp *
+cinnamon_app_system_lookup_desktop_wmclass_for_flatpak_app (CinnamonAppSystem *system,
+                                                            const char        *wmclass)
+{
+  char *canonicalized;
+  char *desktop_file;
+  char *stripped_name;
+  CinnamonApp *app = NULL;
+  GHashTableIter iter;
+  gpointer key, value;
+
+  if (wmclass == NULL)
+    return NULL;
+
+  canonicalized = g_ascii_strdown (wmclass, -1);
+
+  stripped_name = strip_extension(canonicalized);
+
+  /* This handles "Fedora Eclipse", probably others.
+   * Note g_strdelimit is modify-in-place.
+   * Leaving it in here, just in case of other apps that it might apply,
+   * not only "Fedora Eclipse" */
+  g_strdelimit (stripped_name, " ", '-');
+
+  desktop_file = g_strconcat (stripped_name, ".desktop", NULL);
+
+  g_hash_table_iter_init (&iter, system->priv->desktop_filename_to_flatpak_app);
+  while (g_hash_table_iter_next (&iter, &key, &value))
+    {
+      if (g_strcmp0 ((gchar *)key, desktop_file) == 0)
+        {
+          app = (CinnamonApp *) value;
+          break;
+        }
+    }
+
+  g_free (canonicalized);
+  g_free (stripped_name);
+  g_free (desktop_file);
+
+  return app;
+}
+
+/**
  * cinnamon_app_system_lookup_startup_wmclass:
  * @system: a #CinnamonAppSystem
  * @wmclass: (nullable): A WM_CLASS value
@@ -895,6 +1011,26 @@ cinnamon_app_system_lookup_startup_wmclass (CinnamonAppSystem *system,
     return NULL;
 
   return g_hash_table_lookup (system->priv->startup_wm_class_to_app, wmclass);
+}
+
+/**
+ * cinnamon_app_system_lookup_startup_wmclass_for_flatpak_app:
+ * @system: a #CinnamonAppSystem
+ * @wmclass: (nullable): A WM_CLASS value
+ *
+ * Find a valid flatpak application whose .desktop file contains a
+ * StartupWMClass entry matching @wmclass.
+ *
+ * Returns: (transfer none): A #CinnamonApp for @wmclass
+ */
+CinnamonApp *
+cinnamon_app_system_lookup_startup_wmclass_for_flatpak_app (CinnamonAppSystem *system,
+                                                            const char     *wmclass)
+{
+  if (wmclass == NULL)
+    return NULL;
+
+  return g_hash_table_lookup (system->priv->startup_wm_class_to_flatpak_app, wmclass);
 }
 
 /**
