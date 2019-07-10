@@ -362,7 +362,9 @@ class Seeker extends Slider.Slider {
     }
 
     _setCanSeek(seek) {
-        if (seek && this._mediaServerPlayer.Rate === 1) {
+        let playback_rate = this._mediaServerPlayer.Rate;
+        // Hide seek for non-standard speeds except: 0 may mean paused, Audacious returns null
+        if (seek && (playback_rate === 1 || !playback_rate)) {
             this.canSeek = true;
             this.actor.show();
             this._updateTimer();
