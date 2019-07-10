@@ -1,3 +1,32 @@
+cinnamon (4.2.1) tina; urgency=medium
+
+  [ Clement Lefebvre ]
+  * l10n: Don't translate vsync methods
+
+  [ Michael Webster ]
+  * cs_themes: Set a more realistic lower and upper limits for the scrollbar size slider, and fix its page size to 2 (it defaulted to 10, which is too course).
+  * cs_power.py: Create UPower.DeviceLevel if it doesn't exist (needed for upower < 0.99.0).
+  * cs_themes.py: Reword scrollbar click behavior setting slightly.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Simon Brown ]
+  * grouped-window-list: setStyleOptions still getting called if labels on (#8689)
+
+  [ Clement Lefebvre ]
+  * Privacy settings: Add support for connectivity checking (#8693)
+  * l10n: Update POT
+  * Privacy settings: Specify GI version
+
+  [ Germán Franco ]
+  * sound applet: show seekbar for Audacious (#8696)
+
+  [ Noam ]
+  * Fixed checking whether device is already set. (#8679)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 10 Jul 2019 11:49:55 +0200
+
 cinnamon (4.2.0) tina; urgency=medium
 
   [ NikoKrause ]
