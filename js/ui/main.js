@@ -527,13 +527,18 @@ function start() {
 }
 
 function notifyCinnamon2d() {
-    let icon = new St.Icon({ icon_name: 'display',
+    let icon = new St.Icon({ icon_name: 'driver-manager',
                              icon_type: St.IconType.FULLCOLOR,
                              icon_size: 36 });
-    criticalNotify(_("Running in software rendering mode"),
-                   _("Cinnamon is currently running without video hardware acceleration and, as a result, you may observe much higher than normal CPU usage.\n\n") +
-                   _("There could be a problem with your drivers or some other issue.  For the best experience, it is recommended that you only use this mode for") +
-                   _(" troubleshooting purposes."), icon);
+    let notification = criticalNotify(_("Check your video drivers"),
+                   _("Your system is currently running without video hardware acceleration.") +
+                   "\n\n" +
+                   _("You may experience poor performance and high CPU usage.")
+                   , icon);
+    if (GLib.file_test("/usr/bin/cinnamon-driver-manager", GLib.FileTest.EXISTS)) {
+        notification.addButton("driver-manager", _("Launch Driver Manager"));
+        notification.connect("action-invoked", this.launchDriverManager);
+    }
 }
 
 function notifyXletStartupError() {
@@ -902,6 +907,11 @@ function criticalNotify(msg, details, icon) {
     notification.setTransient(false);
     notification.setUrgency(MessageTray.Urgency.CRITICAL);
     source.notify(notification);
+    return notification;
+}
+
+function launchDriverManager() {
+    Util.spawnCommandLineAsync("cinnamon-driver-manager", null, null);
 }
 
 /**
