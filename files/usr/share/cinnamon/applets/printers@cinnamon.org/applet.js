@@ -28,7 +28,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
         this.menuManager.addMenu(this.menu);
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
-        this.settings.bindProperty(Settings.BindingDirection.IN, 'show-icon', 'show_icon', this.update, null);
+        this.settings.bind('show-icon', 'show_icon', this.update);
 
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._on_panel_edit_mode_changed));
 
