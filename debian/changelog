@@ -1,3 +1,15 @@
+cinnamon (4.2.2) tina; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Main: Don't warn about 2D in live mode
+  * Main: Rephrase 2D warning and link to driver manager
+  * l10n: Update POT
+
+  [ Germán Franco ]
+  * Stop using deprecated function Settings.prototpe.bindProperty (#8705)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 11 Jul 2019 15:55:44 +0200
+
 cinnamon (4.2.1) tina; urgency=medium
 
   [ Clement Lefebvre ]
