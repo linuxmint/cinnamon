@@ -480,7 +480,12 @@ function start() {
         a11yHandler = new Accessibility.A11yHandler();
 
         if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
-            notifyCinnamon2d();
+            if (GLib.file_test("/proc/cmdline", GLib.FileTest.EXISTS)) {
+                content = Cinnamon.get_file_contents_utf8_sync("/proc/cmdline");
+                if (!content.match("boot=casper") && !content.match("boot=live")) {
+                    notifyCinnamon2d();
+                }
+            }
         }
 
         if (xlet_startup_error)
