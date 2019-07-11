@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-06 14:43+0200\n"
+"POT-Creation-Date: 2019-07-11 15:49+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -209,52 +209,48 @@ msgstr ""
 msgid "Loaded successfully"
 msgstr ""
 
-#: js/ui/main.js:528
-msgid "Running in software rendering mode"
+#: js/ui/main.js:533
+msgid "Check your video drivers"
 msgstr ""
 
-#: js/ui/main.js:529
-msgid ""
-"Cinnamon is currently running without video hardware acceleration and, as a result, you may observe much higher than normal CPU usage.\n"
-"\n"
+#: js/ui/main.js:534
+msgid "Your system is currently running without video hardware acceleration."
 msgstr ""
 
-#: js/ui/main.js:530
-msgid ""
-"There could be a problem with your drivers or some other issue.  For the "
-"best experience, it is recommended that you only use this mode for"
-msgstr ""
-
-#: js/ui/main.js:531
-msgid " troubleshooting purposes."
-msgstr ""
-
-#: js/ui/main.js:538
-msgid "Problems during Cinnamon startup"
+#: js/ui/main.js:536
+msgid "You may experience poor performance and high CPU usage."
 msgstr ""
 
 #: js/ui/main.js:539
+msgid "Launch Driver Manager"
+msgstr ""
+
+#: js/ui/main.js:548
+msgid "Problems during Cinnamon startup"
+msgstr ""
+
+#: js/ui/main.js:549
 msgid ""
 "Cinnamon started successfully, but one or more applets, desklets or extensions failed to load.\n"
 "\n"
 msgstr ""
 
-#: js/ui/main.js:540
+#: js/ui/main.js:550
 msgid ""
 "Check your system log and the Cinnamon LookingGlass log for any issues.  "
 msgstr ""
 
-#: js/ui/main.js:541
+#: js/ui/main.js:551
 msgid ""
 "You can disable the offending extension(s) in Cinnamon Settings to prevent "
 "this message from recurring.  "
 msgstr ""
 
-#: js/ui/main.js:542
+#: js/ui/main.js:552
 msgid "Please contact the developer."
 msgstr ""
 
-#: js/ui/main.js:588
+#: js/ui/main.js:598
 msgid "Workspace"
 msgstr ""
 
@@ -1359,118 +1355,118 @@ msgstr ""
 msgid "Stopped"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:513
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:515
 msgid "Open Player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:526
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:528
 msgid "Quit Player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:547
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:682
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:686
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:549
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:684
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:688
 msgid "Unknown Artist"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:548
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:693
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:550
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:695
 msgid "Unknown Album"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:549
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:698
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:551
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:700
 msgid "Unknown Title"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:570
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:572
 msgid "Previous"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:573
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:752
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:758
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:575
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:754
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:760
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:180
 msgid "Play"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:576
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:578
 msgid "Stop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:579
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:581
 msgid "Next"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:590
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:782
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:592
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:784
 msgid "Consecutive Playing"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:597
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:796
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:599
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:798
 msgid "No Shuffle"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:746
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:748
 msgid "Pause"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:784
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:786
 msgid "Repeat Single"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:786
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:788
 msgid "Repeat All"
 msgstr ""
 
 #. photoframe@cinnamon.org->settings-schema.json->shuffle->description
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:796
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:798
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:189
 msgid "Shuffle"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:983
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:985
 msgid "Mute output"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:984
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:986
 msgid "Mute input"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:990
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:992
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:607
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:613
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_startup.py:881
 msgid "Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:991
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:993
 msgid "Output device"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:998
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1000
 msgid "Microphone"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1000
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1002
 msgid "Input device"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1338
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1340
 msgid "Choose player controls"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1343
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1345
 msgid "Launch player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1349
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1436
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1351
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1438
 msgid "Volume"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1355
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1357
 msgid "Sound Settings"
 msgstr ""
 
@@ -5107,43 +5103,43 @@ msgstr ""
 msgid "Ask"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:18
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:19
 msgid "Cinnamon privacy settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:22
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:23
 msgid "privacy, recent, gtk, private"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:23
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:24
 msgid "Privacy"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:35
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:36
 msgid "Remember recently accessed files"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:39
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:40
 msgid "Recent files"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:41
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:42
 msgid "Never forget old files"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:46
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:47
 msgid "Number of days to remember old files"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:77
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:78
 msgid "Internet connectivity"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:78
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:79
 msgid "Check connectivity"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:82
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_privacy.py:83
 msgid ""
 "Check that network connections can reach the Internet. This makes it "
 "possible to detect captive portals, but also generates periodic network "
