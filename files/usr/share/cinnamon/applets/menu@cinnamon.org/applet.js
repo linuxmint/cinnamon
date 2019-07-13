@@ -886,8 +886,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
-        this.initial_load_done = false;
-
         this.set_applet_tooltip(_("Menu"));
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -946,7 +944,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._previousTreeSelectedActor = null;
         this._activeContainer = null;
         this._activeActor = null;
-        this.menuIsOpening = false;
         this._knownApps = new Set(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
         this._appsWereRefreshed = false;
         this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
@@ -1077,10 +1074,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._updateIconAndLabel();
     }
 
-    on_applet_added_to_panel () {
-        this.initial_load_done = true;
-    }
-
     on_applet_removed_from_panel () {
         Main.keybindingManager.removeHotKey("overlay-key-" + this.instance_id);
     }
@@ -1114,7 +1107,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _onOpenStateChanged(menu, open) {
         if (open) {
-            this.menuIsOpening = true;
             this.actor.add_style_pseudo_class('active');
             global.stage.set_key_focus(this.searchEntry);
             this._selectedItemIndex = null;
@@ -2534,43 +2526,39 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _onSearchTextChanged (se, prop) {
-        if (this.menuIsOpening) {
-            this.menuIsOpening = false;
+        let searchString = this.searchEntry.get_text();
+        let searchActive = !(searchString == '' || searchString == this.searchEntry.hint_text);
+        if (!this.searchActive && !searchActive)
             return;
-        } else {
-            let searchString = this.searchEntry.get_text();
-            if (searchString == '' && !this.searchActive)
-                return;
-            this.searchActive = searchString != '';
-            this._fileFolderAccessActive = this.searchActive && this.searchFilesystem;
-            this._clearAllSelections();
 
-            if (this.searchActive) {
-                this.searchEntry.set_secondary_icon(this._searchActiveIcon);
-                if (this._searchIconClickedId == 0) {
-                    this._searchIconClickedId = this.searchEntry.connect('secondary-icon-clicked',
-                        Lang.bind(this, function() {
-                            this.resetSearch();
-                            this._select_category(null);
-                        }));
-                }
-                this._setCategoriesButtonActive(false);
-                this.lastSelectedCategory = "search"
-                this._doSearch();
-            } else {
-                if (this._searchIconClickedId > 0)
-                    this.searchEntry.disconnect(this._searchIconClickedId);
-                this._searchIconClickedId = 0;
-                this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
-                this._previousSearchPattern = "";
-                this._setCategoriesButtonActive(true);
-                this._select_category(null);
-                this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
-                this._activeContainer = null;
-                this.selectedAppTitle.set_text("");
-                this.selectedAppDescription.set_text("");
+        this.searchActive = searchActive;
+        this._fileFolderAccessActive = searchActive && this.searchFilesystem;
+        this._clearAllSelections();
+
+        if (searchActive) {
+            this.searchEntry.set_secondary_icon(this._searchActiveIcon);
+            if (!this._searchIconClickedId) {
+                this._searchIconClickedId =
+                    this.searchEntry.connect('secondary-icon-clicked', () => {
+                        this.resetSearch();
+                        this._select_category(null);
+                    });
             }
-            return;
+            this._setCategoriesButtonActive(false);
+            this.lastSelectedCategory = "search"
+            this._doSearch();
+        } else {
+            if (this._searchIconClickedId > 0)
+                this.searchEntry.disconnect(this._searchIconClickedId);
+            this._searchIconClickedId = 0;
+            this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
+            this._previousSearchPattern = "";
+            this._setCategoriesButtonActive(true);
+            this._select_category(null);
+            this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
+            this._activeContainer = null;
+            this.selectedAppTitle.set_text("");
+            this.selectedAppDescription.set_text("");
         }
     }
 
