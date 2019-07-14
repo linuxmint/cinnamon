@@ -383,7 +383,7 @@ class TransientButton extends SimpleMenuItem {
     constructor(applet, pathOrCommand) {
         super(applet, { description: pathOrCommand,
                         styleClass: 'menu-application-button' });
-        if (pathOrCommand.charAt(0) == '~') {
+        if (pathOrCommand.startsWith('~')) {
             pathOrCommand = pathOrCommand.slice(1);
             pathOrCommand = GLib.get_home_dir() + pathOrCommand;
         }
@@ -891,8 +891,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
-        this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
-
         this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
 
         this.settings.bind("show-places", "showPlaces", this._refreshBelowApps);
@@ -1042,20 +1040,21 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this._clearDelayCallbacks();
 
-        if (this.activateOnHover) {
-            this._appletEnterEventId = this.actor.connect('enter-event', Lang.bind(this, function() {
-                if (this.hover_delay_ms > 0) {
-                    this._appletLeaveEventId = this.actor.connect('leave-event', Lang.bind(this, this._clearDelayCallbacks));
-                    this._appletHoverDelayId = Mainloop.timeout_add(this.hover_delay_ms,
-                        Lang.bind(this, function() {
-                            this.openMenu();
-                            this._clearDelayCallbacks();
-                        }));
-                } else {
-                    this.openMenu();
-                }
-            }));
-        }
+        if (!this.activateOnHover)
+            return;
+
+        this._appletEnterEventId = this.actor.connect('enter-event', () => {
+            if (this.hover_delay_ms > 0) {
+                this._appletLeaveEventId = this.actor.connect('leave-event', () => { this._clearDelayCallbacks });
+                this._appletHoverDelayId = Mainloop.timeout_add(this.hover_delay_ms,
+                    () => {
+                        this.openMenu();
+                        this._clearDelayCallbacks();
+                    });
+            } else {
+                this.openMenu();
+            }
+        });
     }
 
     _recalc_height() {
@@ -1085,24 +1084,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     on_applet_clicked(event) {
         this.menu.toggle_with_options(this.enableAnimation);
-    }
-
-    _onSourceKeyPress(actor, event) {
-        let symbol = event.get_key_symbol();
-
-        if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
-            this.menu.toggle();
-            return true;
-        } else if (symbol == Clutter.KEY_Escape && this.menu.isOpen) {
-            this.menu.close();
-            return true;
-        } else if (symbol == Clutter.KEY_Down) {
-            if (!this.menu.isOpen)
-                this.menu.toggle();
-            this.menu.actor.navigate_focus(this.actor, Gtk.DirectionType.DOWN, false);
-            return true;
-        } else
-            return false;
     }
 
     _onOpenStateChanged(menu, open) {
@@ -1730,7 +1711,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     // Parent directory for /usr/include/ is /usr/. So need to add fake name('a').
                     let text = this.searchEntry.get_text().concat('/a');
                     let prefix;
-                    if (text.lastIndexOf(' ') == -1)
+                    if (!text.includes(' '))
                         prefix = text;
                     else
                         prefix = text.substr(text.lastIndexOf(' ') + 1);
@@ -1741,7 +1722,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 if (symbol === Clutter.Tab) {
                     let text = actor.get_text();
                     let prefix;
-                    if (text.lastIndexOf(' ') == -1)
+                    if (!text.includes(' '))
                         prefix = text;
                     else
                         prefix = text.substr(text.lastIndexOf(' ') + 1);
@@ -2017,8 +1998,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _refreshRecent () {
-
-        for (let i = 0; i < this._recentButtons.length; i ++) {
+        for (let i = 0; i < this._recentButtons.length; i++) {
             this._recentButtons[i].destroy();
         }
 
@@ -2568,7 +2548,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             if (pattern) {
                 let name = names[id].name;
                 let lowerName = name.toLowerCase();
-                if (lowerName.indexOf(pattern) !== -1) res.push(names[id]);
+                if (lowerName.includes(pattern)) res.push(names[id]);
                 if (!exactMatch && lowerName === pattern) exactMatch = name;
             } else res.push(names[id]);
         }
@@ -2584,32 +2564,35 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _listApplications(pattern){
+        if (!pattern)
+            return [[], null];
+
         let res = [];
         let exactMatch = null;
-        if (pattern){
-            res = [];
-            let regexpPattern = new RegExp("\\b"+pattern);
+        let regexpPattern = new RegExp("\\b"+pattern);
+
+        for (let i in this._applicationsButtons) {
+            let app = this._applicationsButtons[i].app;
+            let latinisedLowerName = Util.latinise(app.get_name().toLowerCase());
+            if (latinisedLowerName.match(regexpPattern) !== null) {
+                res.push(app.get_id());
+                if (!exactMatch && latinisedLowerName === pattern)
+                    exactMatch = app.get_id();
+            }
+        }
+
+        if (!exactMatch) {
             for (let i in this._applicationsButtons) {
                 let app = this._applicationsButtons[i].app;
-                let latinisedLowerName = Util.latinise(app.get_name().toLowerCase());
-                if (latinisedLowerName.match(regexpPattern) !== null) {
+                if ((Util.latinise(app.get_name().toLowerCase()).split(' ').some(word => word.startsWith(pattern))) || // match on app name
+                    (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).split(';').some(keyword => keyword.startsWith(pattern))) || // match on keyword
+                    (app.get_description() && Util.latinise(app.get_description().toLowerCase()).split(' ').some(word => word.startsWith(pattern))) || // match on description
+                    (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).startsWith(pattern))) { // match on app ID
                     res.push(app.get_id());
-                    if (!exactMatch && latinisedLowerName === pattern)
-                        exactMatch = app.get_id();
-                }
-            }
-            if (!exactMatch) {
-                for (let i in this._applicationsButtons) {
-                    let app = this._applicationsButtons[i].app;
-                    if ((Util.latinise(app.get_name().toLowerCase()).split(' ').some(word => word.startsWith(pattern))) || // match on app name
-                       (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).split(';').some(keyword => keyword.startsWith(pattern))) || // match on keyword
-                       (app.get_description() && Util.latinise(app.get_description().toLowerCase()).split(' ').some(word => word.startsWith(pattern))) || // match on description
-                       (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).startsWith(pattern))) { // match on app ID
-                        res.push(app.get_id());
-                    }
                 }
             }
         }
+
         return [res, exactMatch];
     }
 
@@ -2644,7 +2627,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         let recentResults = [];
         for (let i = 0; i < this._recentButtons.length; i++) {
-            if (!(this._recentButtons[i] === this._recentClearButton) && this._recentButtons[i].name.toLowerCase().indexOf(pattern) != -1)
+            if (!(this._recentButtons[i] === this._recentClearButton) &&
+                this._recentButtons[i].name.toLowerCase().includes(pattern))
                 recentResults.push(this._recentButtons[i].name);
         }
 
@@ -2670,9 +2654,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.selectedAppDescription.set_text("");
         }
 
-        SearchProviderManager.launch_all(pattern, Lang.bind(this, function(provider, results){
-            try{
-                for (var i in results){
+        SearchProviderManager.launch_all(pattern, Lang.bind(this, function(provider, results) {
+            try {
+                for (var i in results) {
                     if (results[i].type != 'software')
                     {
                         let button = new SearchProviderResultButton(this, provider, results[i]);
@@ -2689,40 +2673,34 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         }
                     }
                 }
-            }catch(e){global.log(e);}
+            } catch(e) {
+                global.log(e);
+            }
         }));
 
         return false;
     }
 
     _getCompletion (text) {
-        if (text.indexOf('/') != -1) {
-            if (text.substr(text.length - 1) == '/') {
-                return '';
-            } else {
-                return this._pathCompleter.get_completion_suffix(text);
-            }
-        } else {
-            return false;
-        }
+        if (!text.includes('/') || text.endsWith('/'))
+            return '';
+        return this._pathCompleter.get_completion_suffix(text);
     }
 
     _getCompletions (text) {
-        if (text.indexOf('/') != -1) {
-            return this._pathCompleter.get_completions(text);
-        } else {
+        if (!text.includes('/'))
             return [];
-        }
+        return this._pathCompleter.get_completions(text);
     }
 
     _run (input) {
         this._commandError = false;
         if (input) {
             let path = null;
-            if (input.charAt(0) == '/') {
+            if (input.startsWith('/')) {
                 path = input;
             } else {
-                if (input.charAt(0) == '~')
+                if (input.startsWith('~'))
                     input = input.slice(1);
                 path = GLib.get_home_dir() + '/' + input;
             }
