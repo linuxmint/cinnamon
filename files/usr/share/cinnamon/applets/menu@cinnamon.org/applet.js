@@ -321,6 +321,7 @@ class GenericApplicationButton extends SimpleMenuItem {
         let desc = app.get_description() || "";
         super(applet, { name: app.get_name(),
                         description: desc.split("\n")[0],
+                        filename: app.get_app_info().get_filename(),
                         withMenu: withMenu,
                         styleClass: styleClass,
                         app: app });
@@ -366,7 +367,7 @@ class GenericApplicationButton extends SimpleMenuItem {
             menu.addMenuItem(menuItem);
         }
 
-        if (this.applet._canUninstallApps) {
+        if (this.applet._canUninstallApps && !["/var/lib/flatpak/","/var/lib/snapd/"].some(item => this.filename.includes(item))) {
             menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "edit-delete");
             menu.addMenuItem(menuItem);
         }
