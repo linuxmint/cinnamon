@@ -71,13 +71,10 @@ enum {
 static guint signals[LAST_SIGNAL] = { 0 };
 
 static void cinnamon_window_tracker_finalize (GObject *object);
-static void set_focus_app (CinnamonWindowTracker  *tracker,
-                           CinnamonApp            *new_focus_app);
+static void set_focus_app (CinnamonWindowTracker  *tracker, CinnamonApp *new_focus_app);
 static void on_focus_window_changed (MetaDisplay *display, GParamSpec *spec, CinnamonWindowTracker *tracker);
-
 static void track_window (CinnamonWindowTracker *tracker, MetaWindow *window);
-static void disassociate_window (CinnamonWindowTracker *tracker, MetaWindow *window);
-
+static void disconnect_window_signals (CinnamonWindowTracker *self, MetaWindow *window);
 
 static void
 cinnamon_window_tracker_get_property (GObject    *gobject,
@@ -446,11 +443,24 @@ update_focus_app (CinnamonWindowTracker *self)
 
 static void
 tracked_window_changed (CinnamonWindowTracker *self,
-                        MetaWindow         *window)
+                        MetaWindow            *window)
 {
   /* It's simplest to just treat this as a remove + add. */
-  disassociate_window (self, window);
+  CinnamonApp *app = g_hash_table_lookup (self->window_to_app, window);
+
+  g_object_ref (app);
+  g_hash_table_remove (self->window_to_app, window);
+
+  _cinnamon_app_remove_window(app, window);
+
+  g_object_unref (app);
+
+  disconnect_window_signals (self, window);
+
   track_window (self, window);
+
+  g_signal_emit (self, signals[TRACKED_WINDOWS_CHANGED], 0);
+
   /* also just recalculate the focused app, in case it was the focused
      window that changed */
   update_focus_app (self);
@@ -476,7 +486,7 @@ on_gtk_application_id_changed (MetaWindow  *window,
 
 static void
 track_window (CinnamonWindowTracker *self,
-              MetaWindow      *window)
+              MetaWindow            *window)
 {
   CinnamonApp *app;
 
@@ -494,122 +504,38 @@ track_window (CinnamonWindowTracker *self,
   g_signal_connect (window, "notify::gtk-application-id", G_CALLBACK (on_gtk_application_id_changed), self);
 
   _cinnamon_app_add_window (app, window);
+}
 
+static void
+disconnect_window_signals (CinnamonWindowTracker *self,
+                           MetaWindow            *window)
+{
+  g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_wm_class_changed), self);
+  g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_gtk_application_id_changed), self);
+}
+
+static void
+cinnamon_window_tracker_on_window_added (MetaScreen *screen,
+                                         MetaWindow *window,
+                                         gint        monitor_number,
+                                         gpointer    user_data)
+{
+  CinnamonWindowTracker *self = CINNAMON_WINDOW_TRACKER (user_data);
+  track_window (self, window);
   g_signal_emit (self, signals[TRACKED_WINDOWS_CHANGED], 0);
 }
 
 static void
-cinnamon_window_tracker_on_window_added (MetaWorkspace   *workspace,
-                                   MetaWindow      *window,
-                                   gpointer         user_data)
+cinnamon_window_tracker_on_window_removed (MetaScreen *screen,
+                                           MetaWindow *window,
+                                           gpointer    user_data)
 {
   CinnamonWindowTracker *self = CINNAMON_WINDOW_TRACKER (user_data);
-
-  track_window (self, window);
-}
-
-static void
-disassociate_window (CinnamonWindowTracker   *self,
-                     MetaWindow        *window)
-{
-  CinnamonApp *app;
-
-  app = g_hash_table_lookup (self->window_to_app, window);
-  if (!app)
+  if (!g_hash_table_remove (self->window_to_app, window))
     return;
 
-  g_object_ref (app);
-
-  g_hash_table_remove (self->window_to_app, window);
-
-  if (meta_window_is_interesting (window))
-    {
-      _cinnamon_app_remove_window (app, window);
-      g_signal_handlers_disconnect_by_func (window, G_CALLBACK(on_wm_class_changed), self);
-      g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_gtk_application_id_changed), self);
-    }
-
+  disconnect_window_signals (self, window);
   g_signal_emit (self, signals[TRACKED_WINDOWS_CHANGED], 0);
-
-  g_object_unref (app);
-}
-
-static void
-cinnamon_window_tracker_on_window_removed (MetaWorkspace   *workspace,
-                                     MetaWindow      *window,
-                                     gpointer         user_data)
-{
-  disassociate_window (CINNAMON_WINDOW_TRACKER (user_data), window);
-}
-
-static void
-load_initial_windows (CinnamonWindowTracker *tracker)
-{
-  GList *workspaces, *iter;
-  MetaScreen *screen = tracker->global->meta_screen;
-  workspaces = meta_screen_get_workspaces (screen);
-
-  for (iter = workspaces; iter; iter = iter->next)
-    {
-      MetaWorkspace *workspace = iter->data;
-      GList *windows = meta_workspace_list_windows (workspace);
-      GList *window_iter;
-
-      for (window_iter = windows; window_iter; window_iter = window_iter->next)
-        {
-          MetaWindow *window = window_iter->data;
-          track_window (tracker, window);
-        }
-
-      g_list_free (windows);
-    }
-}
-
-static void
-cinnamon_window_tracker_on_n_workspaces_changed (MetaScreen    *screen,
-                                           GParamSpec    *pspec,
-                                           gpointer       user_data)
-{
-  CinnamonWindowTracker *self = CINNAMON_WINDOW_TRACKER (user_data);
-  GList *workspaces, *iter;
-
-  workspaces = meta_screen_get_workspaces (screen);
-
-  for (iter = workspaces; iter; iter = iter->next)
-    {
-      MetaWorkspace *workspace = iter->data;
-
-      /* This pair of disconnect/connect is idempotent if we were
-       * already connected, while ensuring we get connected for
-       * new workspaces.
-       */
-      g_signal_handlers_disconnect_by_func (workspace,
-                                            cinnamon_window_tracker_on_window_added,
-                                            self);
-      g_signal_handlers_disconnect_by_func (workspace,
-                                            cinnamon_window_tracker_on_window_removed,
-                                            self);
-
-      g_signal_connect (workspace, "window-added",
-                        G_CALLBACK (cinnamon_window_tracker_on_window_added), self);
-      g_signal_connect (workspace, "window-removed",
-                        G_CALLBACK (cinnamon_window_tracker_on_window_removed), self);
-    }
-}
-
-static void
-init_window_tracking (CinnamonWindowTracker *self)
-{
-  MetaDisplay *display;
-  MetaScreen *screen = self->global->meta_screen;
-
-  g_signal_connect (screen, "notify::n-workspaces",
-                    G_CALLBACK (cinnamon_window_tracker_on_n_workspaces_changed), self);
-  display = meta_screen_get_display (screen);
-  g_signal_connect (display, "notify::focus-window",
-                    G_CALLBACK (on_focus_window_changed), self);
-
-  cinnamon_window_tracker_on_n_workspaces_changed (screen, NULL, self);
 }
 
 static void
@@ -630,6 +556,8 @@ static void
 cinnamon_window_tracker_init (CinnamonWindowTracker *self)
 {
   MetaScreen *screen;
+  MetaDisplay *display;
+  GSList *windows, *iter;
 
   self->global = cinnamon_global_get ();
 
@@ -639,12 +567,26 @@ cinnamon_window_tracker_init (CinnamonWindowTracker *self)
   self->launched_pid_to_app = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify) g_object_unref);
 
   screen = self->global->meta_screen;
+  display = self->global->meta_display;
 
+  // load initial windows
+  windows = meta_display_list_windows (display, META_LIST_DEFAULT);
+  for (iter = windows; iter; iter = iter->next)
+    {
+      MetaWindow *window = iter->data;
+      track_window (self, window);
+    }
+  g_slist_free (windows);
+
+  // connect signals
   g_signal_connect (G_OBJECT (screen), "startup-sequence-changed",
                     G_CALLBACK (on_startup_sequence_changed), self);
-
-  load_initial_windows (self);
-  init_window_tracking (self);
+  g_signal_connect (display, "notify::focus-window",
+                    G_CALLBACK (on_focus_window_changed), self);
+  g_signal_connect (screen, "window-added",
+                    G_CALLBACK (cinnamon_window_tracker_on_window_added), self);
+  g_signal_connect (screen, "window-removed",
+                    G_CALLBACK (cinnamon_window_tracker_on_window_removed), self);
 }
 
 static void
