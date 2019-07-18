@@ -573,7 +573,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
   display_names = g_hash_table_new_full (g_str_hash, g_str_equal,
                                          (GDestroyNotify) g_free,
-                                         (GDestroyNotify) NULL);
+                                         (GDestroyNotify) g_ptr_array_unref);
 
   g_hash_table_iter_init (&iter, new_apps);
   while (g_hash_table_iter_next (&iter, &key, &value))
@@ -690,7 +690,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
           if (same_name_apps == NULL)
             {
-              same_name_apps = g_ptr_array_new_with_free_func ((GDestroyNotify) g_free);
+              same_name_apps = g_ptr_array_new ();
               g_hash_table_insert (display_names,
                                    g_strdup (common_name),
                                    same_name_apps);
