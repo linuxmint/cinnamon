@@ -321,6 +321,7 @@ class GenericApplicationButton extends SimpleMenuItem {
         let desc = app.get_description() || "";
         super(applet, { name: app.get_name(),
                         description: desc.split("\n")[0],
+                        filename: app.get_app_info().get_filename(),
                         withMenu: withMenu,
                         styleClass: styleClass,
                         app: app });
@@ -348,6 +349,15 @@ class GenericApplicationButton extends SimpleMenuItem {
         this.applet.menu.close();
     }
 
+    shouldHideUninstall() {
+        for (let item of this.applet._nonUninstallable) {
+            global.log(item);
+            if (this.filename.includes(item)) {
+                return true;
+            }
+        }
+    }
+
     populateMenu(menu) {
         let menuItem;
         menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel", "list-add");
@@ -366,7 +376,7 @@ class GenericApplicationButton extends SimpleMenuItem {
             menu.addMenuItem(menuItem);
         }
 
-        if (this.applet._canUninstallApps) {
+        if (this.applet._canUninstallApps && !this.shouldHideUninstall()) {
             menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "edit-delete");
             menu.addMenuItem(menuItem);
         }
@@ -951,6 +961,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._knownApps = new Set(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
         this._appsWereRefreshed = false;
         this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
+        this._nonUninstallable = ["snapd", "mint", "cinnamon", "appimage"];
         this._isBumblebeeInstalled = GLib.file_test("/usr/bin/optirun", GLib.FileTest.EXISTS);
         this.RecentManager = DocInfo.getDocManager();
         this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
