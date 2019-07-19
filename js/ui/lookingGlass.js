@@ -7,6 +7,7 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Lang = imports.lang;
+const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Signals = imports.signals;
 const St = imports.gi.St;
@@ -131,83 +132,75 @@ function tryEval(js) {
     return out;
 }
 
-function WindowList() {
-    this._init();
-}
+class WindowList {
+    constructor(changedCallback) {
+        this.changedCallback = changedCallback;
+        this.nextId = 0;
+        this.windows = new Map(); // metaWindow -> lgInfo
+        this.idToWindow = {}; // lgInfo Id -> metaWindow
+        this._updateId = 0;
+        this._tracker = Cinnamon.WindowTracker.get_default();
 
-WindowList.prototype = {
-    _init : function () {
-        this.lastId = 0;
-        this.latestWindowList = [];
+        this._tracker.connect('tracked-windows-changed', () => {
+            if (this._updateId)
+                return;
+            this._updateId = Mainloop.idle_add(() => {
+                this._updateId = 0;
+                this._updateWindowList();
+            });
+        });
 
-        let tracker = Cinnamon.WindowTracker.get_default();
-        global.display.connect('window-created', Lang.bind(this, this._updateWindowList));
-        tracker.connect('tracked-windows-changed', Lang.bind(this, this._updateWindowList));
-    },
+        this._updateWindowList();
+    }
 
-    getWindowById: function(id) {
-        let windows = global.get_window_actors();
+    get latestWindowList() {
+        return Array.from(this.windows.values());
+    }
+
+    _updateWindowList() {
+        let changed = false;
+        let windows = global.display.list_windows(Meta.ListWindowsFlags.DEFAULT);
         for (let i = 0; i < windows.length; i++) {
-            let metaWindow = windows[i].metaWindow;
-            if (metaWindow._lgId === id)
-                return metaWindow;
-        }
-        return null;
-    },
-
-    _updateWindowList: function() {
-        let windows = global.get_window_actors();
-        let tracker = Cinnamon.WindowTracker.get_default();
-
-        let oldWindowList = this.latestWindowList;
-        this.latestWindowList = [];
-        for (let i = 0; i < windows.length; i++) {
-            let metaWindow = windows[i].metaWindow;
+            let window = windows[i];
 
             // only track "interesting" windows
-            if (!Main.isInteresting(metaWindow))
+            if (!Main.isInteresting(window))
                 continue;
 
-            // Avoid multiple connections
-            if (!metaWindow._lookingGlassManaged) {
-                metaWindow.connect('unmanaged', Lang.bind(this, this._updateWindowList));
-                metaWindow._lookingGlassManaged = true;
-
-                metaWindow._lgId = this.lastId;
-                this.lastId++;
+            // all lgInfo properties and values must be strings
+            let lgInfo = this.windows.get(window);
+            if (!lgInfo) {
+                changed = true;
+                lgInfo = { id: this.nextId++ + '' };
             }
 
-            let lgInfo = {
-                id: metaWindow._lgId.toString(),
-                title: metaWindow.title + '',
-                wmclass: metaWindow.get_wm_class() + '',
-                app: '' };
+            lgInfo.title = window.title + '';
+            lgInfo.wmclass = window.get_wm_class() + '';
 
-            let app = tracker.get_window_app(metaWindow);
-            if (app != null && !app.is_window_backed()) {
+            let app = this._tracker.get_window_app(window);
+            if (app && !app.is_window_backed()) {
                 lgInfo.app = app.get_id() + '';
             } else {
                 lgInfo.app = '<untracked>';
             }
 
-            this.latestWindowList.push(lgInfo);
+            this.windows.set(window, lgInfo);
+            this.idToWindow[lgInfo.id] = window;
         }
 
-        // Make sure the list changed before notifying listeneres
-        let changed = oldWindowList.length != this.latestWindowList.length;
-        if (!changed) {
-            for (let i = 0; i < oldWindowList.length; i++) {
-                if (oldWindowList[i].id != this.latestWindowList[i].id) {
-                    changed = true;
-                    break;
-                }
-            }
-        }
+        this.windows.forEach((lgInfo, window) => {
+            if (windows.includes(window))
+                return;
+
+            changed = true;
+            delete this.idToWindow[lgInfo.id];
+            this.windows.delete(window);
+        });
+
         if (changed)
-            Main.createLookingGlass().emitWindowListUpdate();
+            this.changedCallback();
     }
-};
-Signals.addSignalMethods(WindowList.prototype);
+}
 
 function addBorderPaintHook(actor) {
     let signalId = actor.connect_after('paint',
@@ -496,13 +489,14 @@ Melange.prototype = {
         this._results = [];
         this.rawResults = [];
 
-        this._windowList = new WindowList();
         this._history = new History.HistoryManager({ gsettingsKey: HISTORY_KEY });
 
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(lgIFace, this);
         this._dbusImpl.export(Gio.DBus.session, '/org/Cinnamon/LookingGlass');
 
         Gio.DBus.session.own_name('org.Cinnamon.LookingGlass', Gio.BusNameOwnerFlags.REPLACE, null, null);
+
+        this._windowList = new WindowList(() => this.emitWindowListUpdate());
     },
 
     _update_keybinding: function() {
@@ -563,16 +557,16 @@ Melange.prototype = {
     },
 
     getWindow: function(idx) {
-        return this._windowList.getWindowById(idx);
+        return this._windowList.idToWindow[idx];
     },
 
     getWindowApp: function(idx) {
-        let metaWindow = this._windowList.getWindowById(idx)
-        if (metaWindow) {
-            let tracker = Cinnamon.WindowTracker.get_default();
-            return tracker.get_window_app(metaWindow);
-        }
-        return null;
+        let metaWindow = this.getWindow(idx)
+        if (!metaWindow)
+            return null;
+
+        let tracker = Cinnamon.WindowTracker.get_default();
+        return tracker.get_window_app(metaWindow);
     },
 
     // DBus function
