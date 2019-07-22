@@ -551,7 +551,7 @@ class ManageSpicesPage(SettingsPage):
 
     def about(self, *args):
         row = self.list_box.get_selected_row()
-        self.spices.send_proxy_signal('OpenSpicesAbout', '(ss)', row.uuid, self.collection_type)
+        subprocess.Popen(['xlet-about-dialog', self.collection_type + 's', row.uuid])
 
     def load_extensions(self, *args):
         for row in self.extension_rows:

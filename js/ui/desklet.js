@@ -261,7 +261,7 @@ var Desklet = class Desklet {
     }
 
     openAbout() {
-        new ModalDialog.SpicesAboutDialog(this._meta, "desklets");
+        Util.spawnCommandLine("xlet-about-dialog desklets " + this._uuid);
     }
 
     configureDesklet() {

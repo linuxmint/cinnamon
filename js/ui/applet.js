@@ -628,7 +628,7 @@ var Applet = class Applet {
     }
 
     openAbout() {
-        new ModalDialog.SpicesAboutDialog(this._meta, "applets");
+        Util.spawnCommandLine("xlet-about-dialog applets " + this._uuid);
     }
 
     configureApplet() {
