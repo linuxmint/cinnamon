@@ -108,6 +108,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
         }
 
         this._shellIndicators = [];
+
     }
 
     _onIndicatorAdded(manager, appIndicator) {
