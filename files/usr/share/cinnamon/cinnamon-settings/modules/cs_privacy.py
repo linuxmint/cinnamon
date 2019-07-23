@@ -2,6 +2,7 @@
 
 nm_client = None
 try:
+    import gi
     gi.require_version('NM', '1.0')
     from gi.repository import NM
     nm_client = NM.Client.new(None)
