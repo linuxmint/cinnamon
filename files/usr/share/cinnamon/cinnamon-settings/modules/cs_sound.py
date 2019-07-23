@@ -68,6 +68,7 @@ class SoundBox(Gtk.Box):
 
         scw = Gtk.ScrolledWindow()
         scw.expand = True
+        scw.set_min_content_height (450)
         scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scw.set_shadow_type(Gtk.ShadowType.NONE)
         main_box.pack_start(scw, True, True, 0)
