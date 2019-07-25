@@ -1,3 +1,29 @@
+cinnamon (4.2.3) tina; urgency=medium
+
+  [ Clement Lefebvre ]
+  * l10n: Generate files
+
+  [ Michael Webster ]
+  * cinnamon-app-system.c: Fix a leak, nothing was freeing the GPtrArrays for collecting apps with duplicate names.  On the other hand, the arrays don't need to free their elements (CinnamonApps).
+
+  [ dependabot[bot] ]
+  * build(deps): bump lodash from 4.17.11 to 4.17.14 (#8713)
+
+  [ Clement Lefebvre ]
+  * Privacy settings: Add missing import
+  * Sound settings: Make the module slightly taller
+
+  [ James Ross ]
+  * menu applet: only update label on orientation change (#8731)
+
+  [ Clement Lefebvre ]
+  * Revert "IndicatorManager: Clean up (#8004)"
+
+  [ Michael Webster ]
+  * cinnamon-window-tracker: Add a window-app-changed signal to notify the window list when a window<->app association changes.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 25 Jul 2019 10:24:56 +0200
+
 cinnamon (4.2.2) tina; urgency=medium
 
   [ Clement Lefebvre ]
