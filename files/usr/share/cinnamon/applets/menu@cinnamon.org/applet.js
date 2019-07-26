@@ -2054,60 +2054,55 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this._recentButtons = [];
 
-        if (this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
-            if (this.recentButton == null) {
-                this.recentButton = new CategoryButton(this, 'recent', _('Recent Files'), 'folder-recent');
-                this._categoryButtons.push(this.recentButton);
-                this.categoriesBox.add_actor(this.recentButton.actor);
+        for (let i = 0; i < this._categoryButtons.length; i++) {
+            if (this._categoryButtons[i].categoryId === 'recent') {
+                this._categoryButtons[i].destroy();
+                this._categoryButtons.splice(i, 1);
+                this.recentButton = null;
+                break;
             }
+        }
 
-            /* Make sure the recent category is at the bottom (can happen when refreshing places
-             * or apps, since we don't destroy the recent category button each time we refresh recents,
-             * as it happens a lot) */
-            this.categoriesBox.set_child_above_sibling(this.recentButton.actor, null);
+        if (!this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY))
+            return;
 
-            if (this.RecentManager._infosByTimestamp.length > 0) {
-                this.noRecentDocuments = false;
+        this.recentButton = new CategoryButton(this, 'recent', _('Recent Files'), 'folder-recent');
+        this._categoryButtons.push(this.recentButton);
+        this.categoriesBox.add_actor(this.recentButton.actor);
 
-                Util.each(this.RecentManager._infosByTimestamp, (info) => {
-                    if (!info.name.startsWith(".")) {
-                        let button = new RecentButton(this, info);
-                        this._recentButtons.push(button);
-                        this.applicationsBox.add_actor(button.actor);
-                    }
-                });
-                let button = new SimpleMenuItem(this, { name: _("Clear list"),
-                                                        description: ("Clear all recent documents"),
-                                                        styleClass: 'menu-application-button' });
-                if (this.showApplicationIcons)
-                    button.addIcon(APPLICATION_ICON_SIZE, 'edit-clear', null, true);
-                button.addLabel("", 'menu-application-button-label');
-                button.label.clutter_text.set_markup(`<b>${button.name}</b>`);
-                button.activate = () => {
-                    this.menu.close();
-                    (new Gtk.RecentManager()).purge_items();
-                };
+        if (this.RecentManager._infosByTimestamp.length > 0) {
+            this.noRecentDocuments = false;
+
+            Util.each(this.RecentManager._infosByTimestamp, (info) => {
+                if (info.name.startsWith("."))
+                    return;
+                let button = new RecentButton(this, info);
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
-            } else {
-                this.noRecentDocuments = true;
-                let button = new SimpleMenuItem(this, { name: _("No recent documents"),
-                                                        styleClass: 'menu-application-button',
-                                                        reactive: false,
-                                                        activatable: false });
-                button.addLabel(button.name, 'menu-application-button-label');
-                this._recentButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
-            }
+            });
+
+            let button = new SimpleMenuItem(this, { name: _("Clear list"),
+                                                    description: ("Clear all recent documents"),
+                                                    styleClass: 'menu-application-button' });
+            if (this.showApplicationIcons)
+                button.addIcon(APPLICATION_ICON_SIZE, 'edit-clear', null, true);
+            button.addLabel("", 'menu-application-button-label');
+            button.label.clutter_text.set_markup(`<b>${button.name}</b>`);
+            button.activate = () => {
+                this.menu.close();
+                (new Gtk.RecentManager()).purge_items();
+            };
+            this._recentButtons.push(button);
+            this.applicationsBox.add_actor(button.actor);
         } else {
-            for (let i = 0; i < this._categoryButtons.length; i++) {
-                if (this._categoryButtons[i].categoryId === "recent") {
-                    this._categoryButtons[i].destroy();
-                    this._categoryButtons.splice(i, 1);
-                    this.recentButton = null;
-                    break;
-                }
-            }
+            this.noRecentDocuments = true;
+            let button = new SimpleMenuItem(this, { name: _("No recent documents"),
+                                                    styleClass: 'menu-application-button',
+                                                    reactive: false,
+                                                    activatable: false });
+            button.addLabel(button.name, 'menu-application-button-label');
+            this._recentButtons.push(button);
+            this.applicationsBox.add_actor(button.actor);
         }
 
         this._resizeApplicationsBox();
