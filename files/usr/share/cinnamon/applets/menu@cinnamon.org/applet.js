@@ -2079,8 +2079,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 let button = new SimpleMenuItem(this, { name: _("Clear list"),
                                                         description: ("Clear all recent documents"),
                                                         styleClass: 'menu-application-button' });
-                button.addIcon(APPLICATION_ICON_SIZE, 'edit-clear', null, true);
-                button.addLabel(button.name, 'menu-application-button-label');
+                if (this.showApplicationIcons)
+                    button.addIcon(APPLICATION_ICON_SIZE, 'edit-clear', null, true);
+                button.addLabel("", 'menu-application-button-label');
+                button.label.clutter_text.set_markup(`<b>${button.name}</b>`);
                 button.activate = () => {
                     this.menu.close();
                     (new Gtk.RecentManager()).purge_items();
