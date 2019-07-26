@@ -470,19 +470,22 @@ class TransientButton extends SimpleMenuItem {
 
         this.file = Gio.file_new_for_path(this.pathOrCommand);
 
-        try {
-            this.handler = this.file.query_default_handler(null);
-            let contentType = Gio.content_type_guess(this.pathOrCommand, null);
-            let themedIcon = Gio.content_type_get_icon(contentType[0]);
-            this.icon = new St.Icon({gicon: themedIcon, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR });
-        } catch (e) {
-            this.handler = null;
-            let iconName = this.isPath ? 'folder' : 'unknown';
-            this.icon = new St.Icon({icon_name: iconName, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-            // @todo Would be nice to indicate we don't have a handler for this file.
+        if (applet.showApplicationIcons) {
+            try {
+                this.handler = this.file.query_default_handler(null);
+                let contentType = Gio.content_type_guess(this.pathOrCommand, null);
+                let themedIcon = Gio.content_type_get_icon(contentType[0]);
+                this.icon = new St.Icon({gicon: themedIcon, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR });
+            } catch (e) {
+                this.handler = null;
+                let iconName = this.isPath ? 'folder' : 'unknown';
+                this.icon = new St.Icon({icon_name: iconName, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+                // @todo Would be nice to indicate we don't have a handler for this file.
+            }
+
+            this.addActor(this.icon);
         }
 
-        this.addActor(this.icon);
         this.addLabel(this.description, 'menu-application-button-label');
 
         this.isDraggableApp = false;
@@ -509,10 +512,10 @@ class ApplicationButton extends GenericApplicationButton {
         super(applet, app, 'app', true, 'menu-application-button');
         this.category = [];
 
-        if (applet.showApplicationIcons) {
-            this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
-            this.addActor(this.icon);
-        }
+        this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
+        this.addActor(this.icon);
+        if (!applet.showApplicationIcons)
+            this.icon.visible = false;
 
         this.addLabel(this.name, 'menu-application-button-label');
 
@@ -553,16 +556,19 @@ class SearchProviderResultButton extends SimpleMenuItem {
                         provider: provider,
                         result: result });
 
-        if (result.icon) {
-            this.icon = result.icon;
-        } else if (result.icon_app) {
-            this.icon = result.icon_app.create_icon_texture(APPLICATION_ICON_SIZE);
-        } else if (result.icon_filename) {
-            this.icon = new St.Icon({gicon: new Gio.FileIcon({file: Gio.file_new_for_path(result.icon_filename)}), icon_size: APPLICATION_ICON_SIZE});
+        if (applet.showApplicationIcons) {
+            if (result.icon) {
+                this.icon = result.icon;
+            } else if (result.icon_app) {
+                this.icon = result.icon_app.create_icon_texture(APPLICATION_ICON_SIZE);
+            } else if (result.icon_filename) {
+                this.icon = new St.Icon({gicon: new Gio.FileIcon({file: Gio.file_new_for_path(result.icon_filename)}), icon_size: APPLICATION_ICON_SIZE});
+            }
+
+            if (this.icon)
+                this.addActor(this.icon);
         }
 
-        if (this.icon)
-            this.addActor(this.icon);
         this.addLabel(result.label, 'menu-application-button-label');
     }
 
@@ -595,13 +601,15 @@ class PlaceButton extends SimpleMenuItem {
                         styleClass: 'menu-application-button',
                         place: place });
 
-        if (applet.showApplicationIcons) {
-            this.icon = place.iconFactory(APPLICATION_ICON_SIZE);
-            if (this.icon)
-                this.addActor(this.icon);
-            else
-                this.addIcon(APPLICATION_ICON_SIZE, 'folder');
-        }
+        this.icon = place.iconFactory(APPLICATION_ICON_SIZE);
+        if (this.icon)
+            this.addActor(this.icon);
+        else
+            this.addIcon(APPLICATION_ICON_SIZE, 'folder');
+
+        if (!applet.showApplicationIcons)
+            this.icon.visible = false;
+
         this.addLabel(this.name, 'menu-application-button-label');
     }
 
@@ -645,10 +653,11 @@ class RecentButton extends SimpleMenuItem {
                         uri: recent.uri,
                         uriDecoded: recent.uriDecoded });
 
-        if (applet.showApplicationIcons) {
-            this.icon = recent.createIcon(APPLICATION_ICON_SIZE);
-            this.addActor(this.icon);
-        }
+        this.icon = recent.createIcon(APPLICATION_ICON_SIZE);
+        this.addActor(this.icon);
+        if (!applet.showApplicationIcons)
+            this.icon.visible = false;
+
         this.addLabel(this.name, 'menu-application-button-label');
     }
 
@@ -740,12 +749,14 @@ class CategoryButton extends SimpleMenuItem {
                         styleClass: 'menu-category-button',
                         categoryId: categoryId });
         this.actor.accessible_role = Atk.Role.LIST_ITEM;
-        if (applet.showCategoryIcons) {
-            if (typeof icon === 'string')
-                this.addIcon(CATEGORY_ICON_SIZE, icon);
-            else if (icon)
-                this.addIcon(CATEGORY_ICON_SIZE, null, icon);
-        }
+
+        if (typeof icon === 'string')
+            this.addIcon(CATEGORY_ICON_SIZE, icon);
+        else if (icon)
+            this.addIcon(CATEGORY_ICON_SIZE, null, icon);
+
+        if (this.icon && !applet.showCategoryIcons)
+            this.icon.visible = false;
 
         this.addLabel(this.name, 'menu-category-button-label');
     }
@@ -985,8 +996,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("menu-icon", "menuIcon", this._updateIconAndLabel);
         this.settings.bind("menu-label", "menuLabel", this._updateIconAndLabel);
         this.settings.bind("overlay-key", "overlayKey", this._updateKeybinding);
-        this.settings.bind("show-category-icons", "showCategoryIcons", this._refreshAll);
-        this.settings.bind("show-application-icons", "showApplicationIcons", this._refreshAll);
+        this.settings.bind("show-category-icons", "showCategoryIcons", () => this._updateShowIcons(this.categoriesBox, this.showCategoryIcons));
+        this.settings.bind("show-application-icons", "showApplicationIcons", () => this._updateShowIcons(this.applicationsBox, this.showApplicationIcons));
         this.settings.bind("favbox-show", "favBoxShow", this._favboxtoggle);
         this.settings.bind("enable-animation", "enableAnimation", null);
         this.settings.bind("favbox-min-height", "favBoxMinHeight", this._recalc_height);
@@ -1049,6 +1060,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._refreshAll();
 
         this.set_show_label_in_vertical_panels(false);
+    }
+
+    _updateShowIcons(container, show) {
+        Util.each(container.get_children(), c => {
+            let b = c._delegate;
+            if (!(b instanceof SimpleMenuItem))
+                return;
+            if (b.icon)
+                b.icon.visible = show;
+        })
     }
 
     _updateKeybinding() {
@@ -2049,29 +2070,34 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this._placesButtons = [];
 
-        for (let i = 0; i < this._categoryButtons.length; i++) {
-            if (this._categoryButtons[i].categoryId === 'place') {
-                this._categoryButtons[i].destroy();
-                this._categoryButtons.splice(i, 1);
-                this.placesButton = null;
-                break;
+        if (!this.showPlaces) {
+            for (let i = 0; i < this._categoryButtons.length; i++) {
+                if (this._categoryButtons[i].categoryId === 'place') {
+                    this._categoryButtons[i].destroy();
+                    this._categoryButtons.splice(i, 1);
+                    this.placesButton = null;
+                    break;
+                }
             }
+            return;
         }
 
         // Now generate Places category and places buttons and add to the list
-        if (this.showPlaces) {
+        if (!this.placesButton) {
             this.placesButton = new CategoryButton(this, 'place', _('Places'),  'folder');
             this._categoryButtons.push(this.placesButton);
             this.categoriesBox.add_actor(this.placesButton.actor);
-
-            Util.each(Main.placesManager.getAllPlaces(), place => {
-                let button = new PlaceButton(this, place);
-                this._placesButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
-            });
         }
 
-        this._setCategoriesButtonActive(!this.searchActive);
+        // places is before recents, or last in list if recents is disabled
+        let sibling = this.recentButton ? this.recentButton.actor : null;
+        this.categoriesBox.set_child_above_sibling(this.placesButton.actor, sibling);
+
+        Util.each(Main.placesManager.getAllPlaces(), place => {
+            let button = new PlaceButton(this, place);
+            this._placesButtons.push(button);
+            this.applicationsBox.add_actor(button.actor);
+        });
 
         this._resizeApplicationsBox();
     }
@@ -2083,59 +2109,63 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this._recentButtons = [];
 
-        if (this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
-            if (this.recentButton == null) {
-                this.recentButton = new CategoryButton(this, 'recent', _('Recent Files'), 'folder-recent');
-                this._categoryButtons.push(this.recentButton);
-                this.categoriesBox.add_actor(this.recentButton.actor);
-            }
-
-            /* Make sure the recent category is at the bottom (can happen when refreshing places
-             * or apps, since we don't destroy the recent category button each time we refresh recents,
-             * as it happens a lot) */
-            this.categoriesBox.set_child_above_sibling(this.recentButton.actor, null);
-
-            let recents = this.RecentManager._infosByTimestamp.filter(info => !info.name.startsWith("."));
-            if (recents.length > 0) {
-                this.noRecentDocuments = false;
-
-                Util.each(recents, (info) => {
-                    let button = new RecentButton(this, info);
-                    this._recentButtons.push(button);
-                    this.applicationsBox.add_actor(button.actor);
-                });
-                let button = new SimpleMenuItem(this, { name: _("Clear list"),
-                                                        description: ("Clear all recent documents"),
-                                                        type: 'recent-clear',
-                                                        styleClass: 'menu-application-button' });
-                button.addIcon(APPLICATION_ICON_SIZE, 'edit-clear', null, true);
-                button.addLabel(button.name, 'menu-application-button-label');
-                button.activate = () => {
-                    this.menu.close();
-                    (new Gtk.RecentManager()).purge_items();
-                };
-                this._recentButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
-            } else {
-                this.noRecentDocuments = true;
-                let button = new SimpleMenuItem(this, { name: _("No recent documents"),
-                                                    type: 'no-recent',
-                                                        styleClass: 'menu-application-button',
-                                                        reactive: false,
-                                                        activatable: false });
-                button.addLabel(button.name, 'menu-application-button-label');
-                this._recentButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
-            }
-        } else {
+        if (!this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
             for (let i = 0; i < this._categoryButtons.length; i++) {
-                if (this._categoryButtons[i].categoryId === "recent") {
+                if (this._categoryButtons[i].categoryId === 'recent') {
                     this._categoryButtons[i].destroy();
                     this._categoryButtons.splice(i, 1);
                     this.recentButton = null;
                     break;
                 }
             }
+            return;
+        }
+
+        if (!this.recentButton) {
+            this.recentButton = new CategoryButton(this, 'recent', _('Recent Files'), 'folder-recent');
+            this._categoryButtons.push(this.recentButton);
+            this.categoriesBox.add_actor(this.recentButton.actor);
+        }
+
+        // recent is always last
+        this.categoriesBox.set_child_at_index(this.recentButton.actor, -1);
+
+        let recents = this.RecentManager._infosByTimestamp.filter(info => !info.name.startsWith("."));
+        if (recents.length > 0) {
+            this.noRecentDocuments = false;
+            Util.each(recents, (info) => {
+                let button = new RecentButton(this, info);
+                this._recentButtons.push(button);
+                this.applicationsBox.add_actor(button.actor);
+            });
+
+            let button = new SimpleMenuItem(this, { name: _("Clear list"),
+                                                    description: ("Clear all recent documents"),
+                                                        type: 'recent-clear',
+                                                    styleClass: 'menu-application-button' });
+            button.addIcon(APPLICATION_ICON_SIZE, 'edit-clear', null, true);
+            button.addLabel("", 'menu-application-button-label');
+            button.label.clutter_text.set_markup(`<b>${button.name}</b>`);
+            button.activate = () => {
+                this.menu.close();
+                (new Gtk.RecentManager()).purge_items();
+            };
+
+            if (!this.showApplicationIcons)
+                button.icon.visible = false;
+
+            this._recentButtons.push(button);
+            this.applicationsBox.add_actor(button.actor);
+        } else {
+            this.noRecentDocuments = true;
+            let button = new SimpleMenuItem(this, { name: _("No recent documents"),
+                                                    type: 'no-recent',
+                                                    styleClass: 'menu-application-button',
+                                                    reactive: false,
+                                                    activatable: false });
+            button.addLabel(button.name, 'menu-application-button-label');
+            this._recentButtons.push(button);
+            this.applicationsBox.add_actor(button.actor);
         }
 
         this._resizeApplicationsBox();
