@@ -192,7 +192,18 @@ class SimpleMenuItem {
         return Clutter.EVENT_PROPAGATE;
     }
 
-    addIcon(iconSize, iconName, gicon=null, symbolic=false) {
+    /**
+     * Adds an StIcon as the next child, acessible as `this.icon`.
+     *
+     * Either an icon name or gicon is required. Only one icon is supported by the
+     * base SimpleMenuItem.
+     *
+     * @param {number}  iconSize - The icon size in px.
+     * @param {string}  iconName - (optional) The icon name string.
+     * @param {object}  gicon    - (optional) A gicon.
+     * @param {boolean} symbolic - (optional) Whether the icon should be symbolic. Default: false.
+     */
+    addIcon(iconSize, iconName='', gicon=null, symbolic=false) {
         if (this.icon)
             return;
 
@@ -209,7 +220,26 @@ class SimpleMenuItem {
         this.actor.add_actor(this.icon);
     }
 
-    addLabel(label="", styleClass=null) {
+    /**
+     * Removes the icon previously added with addIcon()
+     */
+    removeIcon() {
+        if (!this.icon)
+            return;
+        this.icon.destroy();
+        this.icon = null;
+    }
+
+    /**
+     * Adds an StLabel as the next child, accessible as `this.label`.
+     *
+     * Only one label is supported by the base SimpleMenuItem prototype.
+     *
+     * @param {string} label      - (optional) An unformatted string. If markup is required, use
+     *                               native methods directly: `this.label.clutter_text.set_markup()`.
+     * @param {string} styleClass - (optional) A style class for the label.
+     */
+    addLabel(label='', styleClass=null) {
         if (this.label)
             return;
 
@@ -220,10 +250,30 @@ class SimpleMenuItem {
         this.actor.add_actor(this.label);
     }
 
+    /**
+     * Removes the label previously added with addLabel()
+     */
+    removeLabel() {
+        if (!this.label)
+            return;
+        this.label.destroy();
+        this.label = null;
+    }
+
+    /**
+     * Adds a ClutterActor as the next child.
+     *
+     * @param {ClutterActor} child
+     */
     addActor(child) {
         this.actor.add_actor(child);
     }
 
+    /**
+     * Removes a ClutterActor.
+     *
+     * @param {ClutterActor} child
+     */
     removeActor(child) {
         this.actor.remove_actor(child);
     }
