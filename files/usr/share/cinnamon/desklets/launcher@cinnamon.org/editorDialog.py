@@ -35,6 +35,7 @@ class EditorDialog:
                 self.launcher_type = "Custom Application"
 
         self.tree = Gtk.Builder()
+        self.tree.set_translation_domain('cinnamon') # let it translate!
         self.tree.add_from_file(EDITOR_DIALOG_UI_PATH)
 
         self.dialog = self.tree.get_object("dialog")
