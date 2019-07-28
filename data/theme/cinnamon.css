@@ -842,6 +842,7 @@ StScrollBar StButton#vhandle:hover {
 }
 .modal-dialog-button-box {
     spacing: 21px;
+    padding-top: 21px;
 }
 .modal-dialog-button {
     border-radius: 18px;
@@ -878,6 +879,7 @@ StScrollBar StButton#vhandle:hover {
 .run-dialog-label {
     font-size: 9pt;
     color: white;
+    padding-bottom: 15px;
 }
 .run-dialog-error-label {
     font-size: 9pt;
@@ -903,7 +905,7 @@ StScrollBar StButton#vhandle:hover {
     border-radius: 16px;
     padding-right: 21px;
     padding-left: 21px;
-    padding-bottom: 15px;
+    padding-bottom: 0;
     padding-top: 15px;
 }
 .lightbox {
