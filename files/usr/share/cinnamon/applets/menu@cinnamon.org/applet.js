@@ -1904,21 +1904,26 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     makeVectorBox(actor) {
         this.destroyVectorBox(actor);
         let vi = this._getVectorInfo();
-        if (!vi) {
+        if (!vi)
             return;
+
+        if (this.vectorBox) {
+            this.vectorBox.visible = true;
+        } else {
+            this.vectorBox = new St.Polygon({ debug: false,  reactive: true });
+
+            this.categoriesOverlayBox.add_actor(this.vectorBox);
+
+            this.vectorBox.connect("leave-event", Lang.bind(this, this.destroyVectorBox));
+            this.vectorBox.connect("motion-event", Lang.bind(this, this.maybeUpdateVectorBox));
         }
 
-        this.vectorBox = new St.Polygon({ debug: false,  reactive: true,
-                                          width: vi.w,   height:   vi.h,
-                                          ulc_x: vi.mx,  ulc_y:    vi.my,
-                                          llc_x: vi.mx,  llc_y:    vi.my,
-                                          urc_x: vi.w,   urc_y:    0,
-                                          lrc_x: vi.w,   lrc_y:    vi.h });
+        Object.assign(this.vectorBox, { width: vi.w,   height:   vi.h,
+                                        ulc_x: vi.mx,  ulc_y:    vi.my,
+                                        llc_x: vi.mx,  llc_y:    vi.my,
+                                        urc_x: vi.w,   urc_y:    0,
+                                        lrc_x: vi.w,   lrc_y:    vi.h });
 
-        this.categoriesOverlayBox.add_actor(this.vectorBox);
-
-        this.vectorBox.connect("leave-event", Lang.bind(this, this.destroyVectorBox));
-        this.vectorBox.connect("motion-event", Lang.bind(this, this.maybeUpdateVectorBox));
         this.actor_motion_id = actor.connect("motion-event", Lang.bind(this, this.maybeUpdateVectorBox));
         this.current_motion_actor = actor;
     }
@@ -1932,29 +1937,34 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     updateVectorBox(actor) {
-        if (this.vectorBox) {
-            let vi = this._getVectorInfo();
-            if (vi) {
-                this.vectorBox.ulc_x = vi.mx;
-                this.vectorBox.llc_x = vi.mx;
-                this.vectorBox.queue_repaint();
-            } else {
-                this.destroyVectorBox(actor);
-            }
+        if (!this.current_motion_actor)
+            return;
+        let vi = this._getVectorInfo();
+        if (vi) {
+            this.vectorBox.ulc_x = vi.mx;
+            this.vectorBox.llc_x = vi.mx;
+            this.vectorBox.queue_repaint();
+        } else {
+            this.destroyVectorBox(actor);
         }
         this.vector_update_loop = 0;
         return false;
     }
 
     destroyVectorBox(actor) {
-        if (this.vectorBox != null) {
-            this.vectorBox.destroy();
-            this.vectorBox = null;
+        if (!this.vectorBox)
+            return;
+
+        if (this.vector_update_loop) {
+            Mainloop.source_remove(this.vector_update_loop);
+            this.vector_update_loop = 0;
         }
+
         if (this.actor_motion_id > 0 && this.current_motion_actor != null) {
             this.current_motion_actor.disconnect(this.actor_motion_id);
             this.actor_motion_id = 0;
             this.current_motion_actor = null;
+            this.vectorBox.visible = false;
         }
     }
 
