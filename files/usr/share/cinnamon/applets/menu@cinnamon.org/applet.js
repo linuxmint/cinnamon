@@ -111,6 +111,22 @@ class VisibleChildIterator {
 }
 
 /**
+ * SimpleMenuItem type strings in use:
+ * -------------------------------------------------
+ * app              ApplicationButton
+ * category         CategoryButton
+ * fav              FavoritesButton
+ * no-recent        "No recent documents" button
+ * none             Default type
+ * place            PlaceButton
+ * recent           RecentsButton
+ * recent-clear     "Clear recent documents" button
+ * search-provider  SearchProviderResultButton
+ * system           SystemButton
+ * transient        TransientButton
+ */
+
+/**
  * SimpleMenuItem default parameters.
  */
 const SMI_DEFAULT_PARAMS = Object.freeze({
@@ -368,10 +384,11 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
 }
 
 class GenericApplicationButton extends SimpleMenuItem {
-    constructor(applet, app, withMenu=false, styleClass="") {
+    constructor(applet, app, type, withMenu=false, styleClass="") {
         let desc = app.get_description() || "";
         super(applet, { name: app.get_name(),
                         description: desc.split("\n")[0],
+                        type: type,
                         withMenu: withMenu,
                         styleClass: styleClass,
                         app: app });
@@ -432,6 +449,7 @@ class GenericApplicationButton extends SimpleMenuItem {
 class TransientButton extends SimpleMenuItem {
     constructor(applet, pathOrCommand) {
         super(applet, { description: pathOrCommand,
+                        type: 'transient',
                         styleClass: 'menu-application-button' });
         if (pathOrCommand.startsWith('~')) {
             pathOrCommand = pathOrCommand.slice(1);
@@ -488,7 +506,7 @@ class TransientButton extends SimpleMenuItem {
 
 class ApplicationButton extends GenericApplicationButton {
     constructor(applet, app) {
-        super(applet, app, true, 'menu-application-button');
+        super(applet, app, 'app', true, 'menu-application-button');
         this.category = [];
 
         if (applet.showApplicationIcons) {
@@ -530,6 +548,7 @@ class SearchProviderResultButton extends SimpleMenuItem {
     constructor(applet, provider, result) {
         super(applet, { name:result.label,
                         description: result.description,
+                        type: 'search-provider',
                         styleClass: 'menu-application-button',
                         provider: provider,
                         result: result });
@@ -572,6 +591,7 @@ class PlaceButton extends SimpleMenuItem {
 
         super(applet, { name: place.name,
                         description: selectedAppId,
+                        type: 'place',
                         styleClass: 'menu-application-button',
                         place: place });
 
@@ -618,6 +638,7 @@ class RecentButton extends SimpleMenuItem {
 
         super(applet, { name: recent.name,
                         description: selectedAppUri,
+                        type: 'recent',
                         styleClass: 'menu-application-button',
                         withMenu: true,
                         mimeType: recent.mimeType,
@@ -714,7 +735,8 @@ class RecentButton extends SimpleMenuItem {
 
 class CategoryButton extends SimpleMenuItem {
     constructor(applet, categoryId, label, icon) {
-        super(applet, { name: label || _("All Applications"), 
+        super(applet, { name: label || _("All Applications"),
+                        type: 'category',
                         styleClass: 'menu-category-button',
                         categoryId: categoryId });
         this.actor.accessible_role = Atk.Role.LIST_ITEM;
@@ -731,7 +753,7 @@ class CategoryButton extends SimpleMenuItem {
 
 class FavoritesButton extends GenericApplicationButton {
     constructor(applet, app) {
-        super(applet, app, false, 'menu-favorites-button');
+        super(applet, app, 'fav', false, 'menu-favorites-button');
         this.icon = app.create_icon_texture(getFavIconSize());
         this.addActor(this.icon);
 
@@ -766,7 +788,10 @@ class FavoritesButton extends GenericApplicationButton {
 
 class SystemButton extends SimpleMenuItem {
     constructor(applet, iconName, name, desc) {
-        super(applet, {name: name, description: desc, styleClass: 'menu-favorites-button' });
+        super(applet, { name: name,
+                        description: desc,
+                        type: 'system',
+                        styleClass: 'menu-favorites-button' });
         this.addIcon(getFavIconSize(), iconName);
     }
 }
@@ -2026,7 +2051,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._placesButtons = [];
 
         for (let i = 0; i < this._categoryButtons.length; i++) {
-            if (this._categoryButtons[i].categoryId === "places") {
+            if (this._categoryButtons[i].categoryId === 'place') {
                 this._categoryButtons[i].destroy();
                 this._categoryButtons.splice(i, 1);
                 this.placesButton = null;
@@ -2036,20 +2061,15 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         // Now generate Places category and places buttons and add to the list
         if (this.showPlaces) {
-            this.placesButton = new CategoryButton(this, 'places', _('Places'),  'folder');
+            this.placesButton = new CategoryButton(this, 'place', _('Places'),  'folder');
             this._categoryButtons.push(this.placesButton);
             this.categoriesBox.add_actor(this.placesButton.actor);
 
-            let bookmarks = this._listBookmarks()[0];
-            let devices = this._listDevices()[0];
-            let places = bookmarks.concat(devices);
-
-            for (let i = 0; i < places.length; i++) {
-                let place = places[i];
+            Util.each(Main.placesManager.getAllPlaces(), place => {
                 let button = new PlaceButton(this, place);
                 this._placesButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
-            }
+            });
         }
 
         this._setCategoriesButtonActive(!this.searchActive);
@@ -2087,6 +2107,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 });
                 let button = new SimpleMenuItem(this, { name: _("Clear list"),
                                                         description: ("Clear all recent documents"),
+                                                        type: 'recent-clear',
                                                         styleClass: 'menu-application-button' });
                 button.addIcon(APPLICATION_ICON_SIZE, 'edit-clear', null, true);
                 button.addLabel(button.name, 'menu-application-button-label');
@@ -2099,6 +2120,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             } else {
                 this.noRecentDocuments = true;
                 let button = new SimpleMenuItem(this, { name: _("No recent documents"),
+                                                    type: 'no-recent',
                                                         styleClass: 'menu-application-button',
                                                         reactive: false,
                                                         activatable: false });
@@ -2124,7 +2146,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         /* iterate in reverse, so multiple splices will not upset
          * the remaining elements */
         for (let i = this._categoryButtons.length - 1; i > -1; i--) {
-            if (this._categoryButtons[i].categoryId != 'places' &&
+            if (this._categoryButtons[i].categoryId != 'place' &&
                 this._categoryButtons[i].categoryId != 'recent') {
                 this._categoryButtons[i].destroy();
                 this._categoryButtons.splice(i, 1);
@@ -2449,23 +2471,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _select_category (name) {
-        if (name === this.lastSelectedCategory) {
+        if (name === this.lastSelectedCategory)
             return;
-        }
-
         this.lastSelectedCategory = name;
-
-        if (name === "places") {
-            this._displayButtons(null, -1);
-        } else if (name === "recent") {
-            this._displayButtons(null, null, -1);
-        } else if (name == null) {
-            this._displayButtons(-1);
-        } else {
-            // category id
-            this._displayButtons(name);
-        }
-
+        this._displayButtons(name || 'app');
         this.closeContextMenu(false);
     }
 
@@ -2490,48 +2499,44 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
 
-    _displayButtons(appCategory, places, recent, apps, autocompletes, exactMatch){
-        // destroy temporary buttons
-        Util.each(this._transientButtons, item => item.destroy());
+    /**
+     * Reset the ApplicationsBox to a specific category or list of buttons.
+     * @param {String} category     (optional) The button type or application category to be displayed.
+     * @param {Array} buttons       (optional) A list of existing buttons to show.
+     * @param {Array} autoCompletes (optional) A list of autocomplete strings to add buttons for and show.
+     */
+    _displayButtons(category, buttons=[], autoCompletes=[]){
+        /* We only operate on SimpleMenuItems here. If any other menu item types
+         * are added, they should be managed independently. */
+        Util.each(this.applicationsBox.get_children(), c => {
+            let b = c._delegate;
+            if (!(b instanceof SimpleMenuItem))
+                return;
+
+            // destroy temporary buttons
+            if (b.type === 'transient' || b.type === 'search-provider') {
+                b.destroy();
+                return;
+            }
+
+            if (category) {
+                c.visible = b.type.includes(category) || b.type === 'app' && b.category.includes(category);
+            } else {
+                c.visible = buttons.includes(b);
+            }
+        });
+
+        // reset temporary button storage
         this._transientButtons = [];
-        Util.each(this._searchProviderButtons, item => item.destroy());
         this._searchProviderButtons = [];
 
-        let selectedActor = null;
-        if (appCategory) {
-            Util.each(this._applicationsButtons, item => { item.actor.visible = appCategory === -1 || item.category.includes(appCategory) });
-        } else if (apps) {
-            Util.each(this._applicationsButtons, item => {
-                let appId = item.app.get_id();
-                item.actor.visible = apps.includes(appId);
-                if (appId === exactMatch)
-                    selectedActor = item.actor;
-            });
-        } else {
-            Util.each(this._applicationsButtons, item => { item.actor.visible = false });
-        }
-
-        if (places) {
-            Util.each(this._placesButtons, item => {
-                item.actor.visible =  places === -1 || places.includes(item.name)
-                if (!selectedActor && item.name === exactMatch)
-                    selectedActor = item.actor;
-            });
-        } else {
-            Util.each(this._placesButtons, item => { item.actor.visible = false });
-        }
-
-        Util.each(this._recentButtons, item => { item.actor.visible = recent == null ? false : recent === -1 || recent.includes(item.name) });
-
-        if (autocompletes) {
-            Util.each(autocompletes, item => {
+        if (autoCompletes) {
+            Util.each(autoCompletes, item => {
                 let button = new TransientButton(this, item);
                 this._transientButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
             });
         }
-
-        return selectedActor;
     }
 
     _setCategoriesButtonActive(active) {
@@ -2580,7 +2585,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this._searchIconClickedId =
                     this.searchEntry.connect('secondary-icon-clicked', () => {
                         this.resetSearch();
-                        this._select_category(null);
+                        this._select_category();
                     });
             }
             this._setCategoriesButtonActive(false);
@@ -2593,7 +2598,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
             this._previousSearchPattern = "";
             this._setCategoriesButtonActive(true);
-            this._select_category(null);
+            this._select_category();
             this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
             this._activeContainer = null;
             this.selectedAppTitle.set_text("");
@@ -2601,26 +2606,18 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
-    _matchNames(names, pattern){
+    _matchNames(buttons, pattern){
         let res = [];
         let exactMatch = null;
-        for (let id = 0; id < names.length; id++) {
-            if (pattern) {
-                let name = names[id].name;
-                let lowerName = name.toLowerCase();
-                if (lowerName.includes(pattern)) res.push(names[id]);
-                if (!exactMatch && lowerName === pattern) exactMatch = name;
-            } else res.push(names[id]);
+        for (let i = 0; i < buttons.length; i++) {
+            let name = buttons[i].name;
+            let lowerName = name.toLowerCase();
+            if (lowerName.includes(pattern))
+                res.push(buttons[i]);
+            if (!exactMatch && lowerName === pattern)
+                exactMatch = buttons[i];
         }
         return [res, exactMatch];
-    }
-
-    _listBookmarks(pattern){
-        return this._matchNames(Main.placesManager.getBookmarks(), pattern);
-    }
-
-    _listDevices(pattern){
-        return this._matchNames(Main.placesManager.getMounts(), pattern);
     }
 
     _listApplications(pattern){
@@ -2635,9 +2632,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             let app = this._applicationsButtons[i].app;
             let latinisedLowerName = Util.latinise(app.get_name().toLowerCase());
             if (latinisedLowerName.match(regexpPattern) !== null) {
-                res.push(app.get_id());
+                res.push(this._applicationsButtons[i]);
                 if (!exactMatch && latinisedLowerName === pattern)
-                    exactMatch = app.get_id();
+                    exactMatch = this._applicationsButtons[i];
             }
         }
 
@@ -2648,7 +2645,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).split(';').some(keyword => keyword.startsWith(pattern))) || // match on keyword
                     (app.get_description() && Util.latinise(app.get_description().toLowerCase()).split(' ').some(word => word.startsWith(pattern))) || // match on description
                     (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).startsWith(pattern))) { // match on app ID
-                    res.push(app.get_id());
+                    res.push(this._applicationsButtons[i]);
                 }
             }
         }
@@ -2668,29 +2665,15 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._previousTreeSelectedActor = null;
         this._previousSelectedActor = null;
 
-        let result = this._listApplications(pattern);
-        let appResults = result[0];
-        let exactMatch = result[1];
-        let placesResults = [];
+        let [buttons, exactMatch] = this._listApplications(pattern);
 
-        result = this._listBookmarks(pattern);
-        let bookmarks = result[0];
+        let result = this._matchNames(this._placesButtons, pattern);
+        buttons.concat(result[0]);
         exactMatch = exactMatch || result[1];
-        for (let i in bookmarks)
-            placesResults.push(bookmarks[i].name);
 
-        result = this._listDevices(pattern);
-        let devices = result[0];
+        result = this._matchNames(this._recentButtons, pattern);
+        buttons.concat(result[0]);
         exactMatch = exactMatch || result[1];
-        for (let i in devices)
-            placesResults.push(devices[i].name);
-
-        let recentResults = [];
-        for (let i = 0; i < this._recentButtons.length; i++) {
-            if (!(this._recentButtons[i] === this._recentClearButton) &&
-                this._recentButtons[i].name.toLowerCase().includes(pattern))
-                recentResults.push(this._recentButtons[i].name);
-        }
 
         var acResults = []; // search box autocompletion results
         if (this.searchFilesystem) {
@@ -2698,17 +2681,15 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             acResults = this._getCompletions(this.searchEntryText.get_text());
         }
 
-        let selectedActor = this._displayButtons(null, placesResults, recentResults, appResults, acResults, exactMatch);
+        this._displayButtons(null, buttons, acResults);
 
-        this.appBoxIter.reloadVisible();
-        if (this.appBoxIter.getNumVisibleChildren() > 0) {
-            let item_actor = selectedActor || this.appBoxIter.getFirstVisible();
+        if (buttons.length || acResults.length) {
+            this.appBoxIter.reloadVisible();
+            let item_actor = exactMatch ? exactMatch.actor : this.appBoxIter.getFirstVisible();
             this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
             this._activeContainer = this.applicationsBox;
             this._scrollToButton(item_actor._delegate);
-            if (item_actor && item_actor != this.searchEntry) {
-                this._buttonEnterEvent(item_actor._delegate);
-            }
+            this._buttonEnterEvent(item_actor._delegate);
         } else {
             this.selectedAppTitle.set_text("");
             this.selectedAppDescription.set_text("");
