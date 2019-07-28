@@ -1759,7 +1759,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     let favorites = AppFavorites.getAppFavorites().getFavorites();
                     let numFavorites = favorites.length;
                     AppFavorites.getAppFavorites().removeFavorite(item_actor._delegate.app.get_id());
-                    this.toggleContextMenu(item_actor._delegate)
                     if (this._selectedItemIndex == (numFavorites-1))
                         item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex-1);
                     else
