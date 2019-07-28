@@ -2570,10 +2570,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _onSearchTextChanged (se, prop) {
-        let searchString = this.searchEntry.get_text();
+        let searchString = this.searchEntry.get_text().trim();
         let searchActive = !(searchString == '' || searchString == this.searchEntry.hint_text);
         if (!this.searchActive && !searchActive)
             return;
+
+        if (searchString == this._previousSearchPattern)
+            return;
+        this._previousSearchPattern = searchString;
 
         this.searchActive = searchActive;
         this._fileFolderAccessActive = searchActive && this.searchFilesystem;
@@ -2590,7 +2594,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
             this._setCategoriesButtonActive(false);
             this.lastSelectedCategory = "search"
-            this._doSearch();
+
+            this._doSearch(searchString);
         } else {
             if (this._searchIconClickedId > 0)
                 this.searchEntry.disconnect(this._searchIconClickedId);
@@ -2653,12 +2658,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         return [res, exactMatch];
     }
 
-    _doSearch(){
+    _doSearch(rawPattern){
+        let pattern = Util.latinise(rawPattern.toLowerCase());
+
         this._searchTimeoutId = 0;
-        let pattern = this.searchEntryText.get_text().replace(/^\s+/g, '').replace(/\s+$/g, '').toLowerCase();
-        pattern = Util.latinise(pattern);
-        if (pattern==this._previousSearchPattern) return false;
-        this._previousSearchPattern = pattern;
         this._activeContainer = null;
         this._activeActor = null;
         this._selectedItemIndex = null;
@@ -2668,17 +2671,17 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let [buttons, exactMatch] = this._listApplications(pattern);
 
         let result = this._matchNames(this._placesButtons, pattern);
-        buttons.concat(result[0]);
+        buttons = buttons.concat(result[0]);
         exactMatch = exactMatch || result[1];
 
         result = this._matchNames(this._recentButtons, pattern);
-        buttons.concat(result[0]);
+        buttons = buttons.concat(result[0]);
         exactMatch = exactMatch || result[1];
 
         var acResults = []; // search box autocompletion results
         if (this.searchFilesystem) {
             // Don't use the pattern here, as filesystem is case sensitive
-            acResults = this._getCompletions(this.searchEntryText.get_text());
+            acResults = this._getCompletions(rawPattern);
         }
 
         this._displayButtons(null, buttons, acResults);
