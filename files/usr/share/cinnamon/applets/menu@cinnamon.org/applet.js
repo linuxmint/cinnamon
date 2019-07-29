@@ -470,19 +470,22 @@ class TransientButton extends SimpleMenuItem {
 
         this.file = Gio.file_new_for_path(this.pathOrCommand);
 
-        try {
-            this.handler = this.file.query_default_handler(null);
-            let contentType = Gio.content_type_guess(this.pathOrCommand, null);
-            let themedIcon = Gio.content_type_get_icon(contentType[0]);
-            this.icon = new St.Icon({gicon: themedIcon, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR });
-        } catch (e) {
-            this.handler = null;
-            let iconName = this.isPath ? 'folder' : 'unknown';
-            this.icon = new St.Icon({icon_name: iconName, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-            // @todo Would be nice to indicate we don't have a handler for this file.
+        if (applet.showApplicationIcons) {
+            try {
+                this.handler = this.file.query_default_handler(null);
+                let contentType = Gio.content_type_guess(this.pathOrCommand, null);
+                let themedIcon = Gio.content_type_get_icon(contentType[0]);
+                this.icon = new St.Icon({gicon: themedIcon, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR });
+            } catch (e) {
+                this.handler = null;
+                let iconName = this.isPath ? 'folder' : 'unknown';
+                this.icon = new St.Icon({icon_name: iconName, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+                // @todo Would be nice to indicate we don't have a handler for this file.
+            }
+
+            this.addActor(this.icon);
         }
 
-        this.addActor(this.icon);
         this.addLabel(this.description, 'menu-application-button-label');
 
         this.isDraggableApp = false;
@@ -553,16 +556,19 @@ class SearchProviderResultButton extends SimpleMenuItem {
                         provider: provider,
                         result: result });
 
-        if (result.icon) {
-            this.icon = result.icon;
-        } else if (result.icon_app) {
-            this.icon = result.icon_app.create_icon_texture(APPLICATION_ICON_SIZE);
-        } else if (result.icon_filename) {
-            this.icon = new St.Icon({gicon: new Gio.FileIcon({file: Gio.file_new_for_path(result.icon_filename)}), icon_size: APPLICATION_ICON_SIZE});
+        if (applet.showApplicationIcons) {
+            if (result.icon) {
+                this.icon = result.icon;
+            } else if (result.icon_app) {
+                this.icon = result.icon_app.create_icon_texture(APPLICATION_ICON_SIZE);
+            } else if (result.icon_filename) {
+                this.icon = new St.Icon({gicon: new Gio.FileIcon({file: Gio.file_new_for_path(result.icon_filename)}), icon_size: APPLICATION_ICON_SIZE});
+            }
+
+            if (this.icon)
+                this.addActor(this.icon);
         }
 
-        if (this.icon)
-            this.addActor(this.icon);
         this.addLabel(result.label, 'menu-application-button-label');
     }
 
