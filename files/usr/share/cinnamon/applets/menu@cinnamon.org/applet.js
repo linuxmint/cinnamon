@@ -1663,10 +1663,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                                 this.appBoxIter.getFirstVisible();
                             break;
                         case "top":
-                            item_actor = this.systemButtonsBox.getFirstVisible();
+                            item_actor = this.sysBoxIter.getFirstVisible();
                             break;
                         case "bottom":
-                            item_actor = this.systemButtonsBox.getLastVisible();
+                            item_actor = this.sysBoxIter.getLastVisible();
                             break;
                     }
                     break;
