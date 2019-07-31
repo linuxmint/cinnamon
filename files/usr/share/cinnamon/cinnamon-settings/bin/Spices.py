@@ -34,10 +34,10 @@ settings_dir = '%s/.cinnamon/configs/' % home
 
 URL_SPICES_HOME = "https://cinnamon-spices.linuxmint.com"
 URL_MAP = {
-    'applet': URL_SPICES_HOME + "/json/applets.json",
-    'theme': URL_SPICES_HOME + "/json/themes.json",
-    'desklet': URL_SPICES_HOME + "/json/desklets.json",
-    'extension': URL_SPICES_HOME + "/json/extensions.json"
+    'applet': URL_SPICES_HOME + "/json/applets.json?",
+    'theme': URL_SPICES_HOME + "/json/themes.json?",
+    'desklet': URL_SPICES_HOME + "/json/desklets.json?",
+    'extension': URL_SPICES_HOME + "/json/extensions.json?"
 }
 
 ABORT_NONE = 0
@@ -607,7 +607,7 @@ class Spice_Harvester(GObject.Object):
     def _install(self, job):
         uuid = job['uuid']
 
-        download_url = URL_SPICES_HOME + self.index_cache[uuid]['file']
+        download_url = URL_SPICES_HOME + self.index_cache[uuid]['file'] + "?"
         self.current_uuid = uuid
 
         fd, ziptempfile = tempfile.mkstemp()
