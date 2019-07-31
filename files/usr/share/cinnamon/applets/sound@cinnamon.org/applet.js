@@ -30,12 +30,13 @@ let x = _("Playing");
 x = _("Paused");
 x = _("Stopped");
 
-const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
-
 const ICON_SIZE = 28;
 
 const CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound";
 const MAXIMUM_VOLUME_KEY = "maximum-volume";
+
+const VOLUME_STEP_DIR = "org.cinnamon.desktop.keybindings.media-keys";
+const VOLUME_STEP_KEY = "volume-step";
 
 class ControlButton {
     constructor(icon, tooltip, callback, small = false) {
@@ -141,7 +142,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         } else {
             muted = false;
             //100% is magnetic:
-            if (volume != this.applet._volumeNorm && volume > this.applet._volumeNorm*(1-VOLUME_ADJUSTMENT_STEP/2) && volume < this.applet._volumeNorm*(1+VOLUME_ADJUSTMENT_STEP/2))
+            if (volume != this.applet._volumeNorm && volume > this.applet._volumeNorm*(1-this.applet._mediakeysStep/2) && volume < this.applet._volumeNorm*(1+this.applet._mediakeysStep/2))
                 volume = this.applet._volumeNorm;
         }
         this.stream.volume = volume;
@@ -158,10 +159,10 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         let direction = event.get_scroll_direction();
 
         if (direction == Clutter.ScrollDirection.DOWN) {
-            this._value = Math.max(0, this._value - VOLUME_ADJUSTMENT_STEP/this.applet._volumeMax*this.applet._volumeNorm);
+            this._value = Math.max(0, this._value - this.applet._mediakeysStep/this.applet._volumeMax*this.applet._volumeNorm);
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._value = Math.min(1, this._value + VOLUME_ADJUSTMENT_STEP/this.applet._volumeMax*this.applet._volumeNorm);
+            this._value = Math.min(1, this._value + this.applet._mediakeysStep/this.applet._volumeMax*this.applet._volumeNorm);
         }
 
         this._slider.queue_repaint();
@@ -171,7 +172,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
     _onKeyPressEvent(actor, event) {
         let key = event.get_key_symbol();
         if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
-            let delta = key == Clutter.KEY_Right ? VOLUME_ADJUSTMENT_STEP : -VOLUME_ADJUSTMENT_STEP;
+            let delta = key == Clutter.KEY_Right ? this.applet._mediakeysStep : -this.applet._mediakeysStep;
             this._value = Math.max(0, Math.min(this._value + delta/this.applet._volumeMax*this.applet._volumeNorm, 1));
             this._slider.queue_repaint();
             this.emit('value-changed', this._value);
@@ -187,7 +188,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         // visible_value: percentage of volume_norm (shown to the user)
         // these only differ for the output, and only when the user changes the maximum volume
         let volume = (!this.stream || this.stream.is_muted) ? 0 : this.stream.volume;
-        let value, visible_value, delta = VOLUME_ADJUSTMENT_STEP * this.applet._volumeMax / this.applet._volumeNorm;
+        let value, visible_value, delta = this.applet._mediakeysStep * this.applet._volumeMax / this.applet._volumeNorm;
 
         if (this.isOutputSink) {
             value = volume / this.applet._volumeMax;
@@ -965,6 +966,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._volumeMax = this._sound_settings.get_int(MAXIMUM_VOLUME_KEY) / 100 * this._control.get_vol_max_norm();
         this._volumeNorm = this._control.get_vol_max_norm();
 
+        this._mediakeysStep_settings = new Gio.Settings({ schema_id: VOLUME_STEP_DIR });
+        this._mediakeysStep = this._mediakeysStep_settings.get_int(VOLUME_STEP_KEY) / 100;
+
         this._streams = [];
         this._devices = [];
         this._recordingAppsNum = 0;
@@ -1093,22 +1097,22 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         if (direction == Clutter.ScrollDirection.DOWN) {
             let prev_muted = this._output.is_muted;
-            this._output.volume = Math.max(0, currentVolume - this._volumeNorm * VOLUME_ADJUSTMENT_STEP);
+            this._output.volume = Math.max(0, currentVolume - this._volumeNorm * this.applet._mediakeysStep);
             if (this._output.volume < 1) {
                 this._output.volume = 0;
                 if (!prev_muted)
                     this._output.change_is_muted(true);
             } else {
                 // 100% is magnetic:
-                if (this._output.volume!=this._volumeNorm && this._output.volume>this._volumeNorm*(1-VOLUME_ADJUSTMENT_STEP/2) && this._output.volume<this._volumeNorm*(1+VOLUME_ADJUSTMENT_STEP/2))
+                if (this._output.volume!=this._volumeNorm && this._output.volume>this._volumeNorm*(1-this.applet._mediakeysStep/2) && this._output.volume<this._volumeNorm*(1+this.applet._mediakeysStep/2))
                     this._output.volume=this._volumeNorm;
             }
             this._output.push_volume();
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeNorm * VOLUME_ADJUSTMENT_STEP);
+            this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeNorm * this.applet._mediakeysStep);
             // 100% is magnetic:
-            if (this._output.volume!=this._volumeNorm && this._output.volume>this._volumeNorm*(1-VOLUME_ADJUSTMENT_STEP/2) && this._output.volume<this._volumeNorm*(1+VOLUME_ADJUSTMENT_STEP/2))
+            if (this._output.volume!=this._volumeNorm && this._output.volume>this._volumeNorm*(1-this.applet._mediakeysStep/2) && this._output.volume<this._volumeNorm*(1+this.applet._mediakeysStep/2))
                 this._output.volume=this._volumeNorm;
             this._output.push_volume();
             this._output.change_is_muted(false);
