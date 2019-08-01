@@ -2070,29 +2070,34 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this._placesButtons = [];
 
-        for (let i = 0; i < this._categoryButtons.length; i++) {
-            if (this._categoryButtons[i].categoryId === 'place') {
-                this._categoryButtons[i].destroy();
-                this._categoryButtons.splice(i, 1);
-                this.placesButton = null;
-                break;
+        if (!this.showPlaces) {
+            for (let i = 0; i < this._categoryButtons.length; i++) {
+                if (this._categoryButtons[i].categoryId === 'place') {
+                    this._categoryButtons[i].destroy();
+                    this._categoryButtons.splice(i, 1);
+                    this.placesButton = null;
+                    break;
+                }
             }
+            return;
         }
 
         // Now generate Places category and places buttons and add to the list
-        if (this.showPlaces) {
+        if (!this.placesButton) {
             this.placesButton = new CategoryButton(this, 'place', _('Places'),  'folder');
             this._categoryButtons.push(this.placesButton);
             this.categoriesBox.add_actor(this.placesButton.actor);
-
-            Util.each(Main.placesManager.getAllPlaces(), place => {
-                let button = new PlaceButton(this, place);
-                this._placesButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
-            });
         }
 
-        this._setCategoriesButtonActive(!this.searchActive);
+        // places is before recents, or last in list if recents is disabled
+        let sibling = this.recentButton ? this.recentButton.actor : null;
+        this.categoriesBox.set_child_above_sibling(this.placesButton.actor, sibling);
+
+        Util.each(Main.placesManager.getAllPlaces(), place => {
+            let button = new PlaceButton(this, place);
+            this._placesButtons.push(button);
+            this.applicationsBox.add_actor(button.actor);
+        });
 
         this._resizeApplicationsBox();
     }
@@ -2104,25 +2109,29 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this._recentButtons = [];
 
-        for (let i = 0; i < this._categoryButtons.length; i++) {
-            if (this._categoryButtons[i].categoryId === 'recent') {
-                this._categoryButtons[i].destroy();
-                this._categoryButtons.splice(i, 1);
-                this.recentButton = null;
-                break;
+        if (!this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
+            for (let i = 0; i < this._categoryButtons.length; i++) {
+                if (this._categoryButtons[i].categoryId === 'recent') {
+                    this._categoryButtons[i].destroy();
+                    this._categoryButtons.splice(i, 1);
+                    this.recentButton = null;
+                    break;
+                }
             }
+            return;
         }
 
-        if (!this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY))
-            return;
+        if (!this.recentButton) {
+            this.recentButton = new CategoryButton(this, 'recent', _('Recent Files'), 'folder-recent');
+            this._categoryButtons.push(this.recentButton);
+            this.categoriesBox.add_actor(this.recentButton.actor);
+        }
 
-        this.recentButton = new CategoryButton(this, 'recent', _('Recent Files'), 'folder-recent');
-        this._categoryButtons.push(this.recentButton);
-        this.categoriesBox.add_actor(this.recentButton.actor);
+        // recent is always last
+        this.categoriesBox.set_child_at_index(this.recentButton.actor, -1);
 
         if (this.RecentManager._infosByTimestamp.length > 0) {
             this.noRecentDocuments = false;
-
             Util.each(this.RecentManager._infosByTimestamp, (info) => {
                 if (info.name.startsWith("."))
                     return;
