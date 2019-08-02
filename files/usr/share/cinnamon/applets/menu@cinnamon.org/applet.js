@@ -50,6 +50,15 @@ function getFavIconSize() {
     return Math.min(icon_size, MAX_FAV_ICON_SIZE);
 }
 
+const RefreshFlags = Object.freeze({
+    APP:    0b00001,
+    FAV:    0b00010,
+    PLACE:  0b00100,
+    RECENT: 0b01000,
+    SYSTEM: 0b10000
+});
+const REFRESH_ALL_MASK = 0b11111;
+
 /* VisibleChildIterator takes a container (boxlayout, etc.)
  * and creates an array of its visible children and their index
  * positions.  We can then work through that list without
@@ -979,7 +988,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
 
-        this.settings.bind("show-places", "showPlaces", this._refreshBelowApps);
+        this.settings.bind("show-places", "showPlaces", () => this.queueRefresh(RefreshFlags.PLACE));
 
         this._appletEnterEventId = 0;
         this._appletLeaveEventId = 0;
@@ -1038,26 +1047,25 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._activeContextMenuParent = null;
         this._activeContextMenuItem = null;
         this._display();
-        appsys.connect('installed-changed', Lang.bind(this, this.onAppSysChanged));
-        AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
-        Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshBelowApps));
-        this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecent));
-        this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, Lang.bind(this, this._refreshRecent));
+        appsys.connect('installed-changed', () => this.queueRefresh(RefreshFlags.APP | RefreshFlags.FAV));
+        AppFavorites.getAppFavorites().connect('changed', () => this.queueRefresh(RefreshFlags.FAV));
+        Main.placesManager.connect('places-updated', () => this.queueRefresh(RefreshFlags.PLACE));
+        this.RecentManager.connect('changed', () => this.queueRefresh(RefreshFlags.RECENT));
+        this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, () => this.queueRefresh(RefreshFlags.RECENT));
         this._fileFolderAccessActive = false;
         this._pathCompleter = new Gio.FilenameCompleter();
         this._pathCompleter.set_dirs_only(false);
         this.lastAcResults = [];
         this.settings.bind("search-filesystem", "searchFilesystem");
-        this.refreshing = false; // used as a flag to know if we're currently refreshing (so we don't do it more than once concurrently)
-
         this.contextMenu = null;
-
         this.lastSelectedCategory = null;
 
         // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
         // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
         // In that particular case we get no signal at all.
-        this._refreshAll();
+        this.refreshId = 0;
+        this.refreshMask = REFRESH_ALL_MASK;
+        this._doRefresh();
 
         this.set_show_label_in_vertical_panels(false);
     }
@@ -1079,32 +1087,45 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }));
     }
 
-    onAppSysChanged() {
-        if (this.refreshing == false) {
-            this.refreshing = true;
-            Mainloop.timeout_add_seconds(1, () => this._refreshAll());
-        }
+    queueRefresh(refreshFlags) {
+        if (!refreshFlags)
+            return;
+        this.refreshMask |= refreshFlags;
+        if (this.refreshId)
+            Mainloop.source_remove(this.refreshId);
+        this.refreshId = Mainloop.timeout_add(500, () => this._doRefresh(), Mainloop.PRIORITY_LOW);
     }
 
-    _refreshAll() {
-        try {
+    _doRefresh() {
+        this.refreshId = 0;
+        if (this.refreshMask === 0)
+            return;
+
+        let m = this.refreshMask;
+        if ((m & RefreshFlags.APP) === RefreshFlags.APP)
             this._refreshApps();
+        if ((m & RefreshFlags.FAV) === RefreshFlags.FAV)
             this._refreshFavs();
+        if ((m & RefreshFlags.SYSTEM) === RefreshFlags.SYSTEM)
             this._refreshSystemButtons();
+        if ((m & RefreshFlags.PLACE) === RefreshFlags.PLACE)
             this._refreshPlaces();
+        if ((m & RefreshFlags.RECENT) === RefreshFlags.RECENT)
             this._refreshRecent();
 
-            this._resizeApplicationsBox();
-        }
-        catch (exception) {
-            global.log(exception);
-        }
-        this.refreshing = false;
-    }
+        this.refreshMask = 0;
 
-    _refreshBelowApps() {
-        this._refreshPlaces();
-        this._refreshRecent();
+        // recent category is always last
+        if (this.recentButton)
+            this.categoriesBox.set_child_at_index(this.recentButton.actor, -1);
+
+        // places is before recents, or last in list if recents is disabled/not generated
+        if (this.placesButton) {
+            if (this.recentButton)
+                this.categoriesBox.set_child_below_sibling(this.placesButton.actor, this.recentButton.actor);
+            else
+                this.categoriesBox.set_child_at_index(this.placesButton.actor, -1);
+        }
 
         this._resizeApplicationsBox();
     }
@@ -2089,14 +2110,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.categoriesBox.add_actor(this.placesButton.actor);
         }
 
-        // places is before recents, or last in list if recents is disabled
-        let sibling = this.recentButton ? this.recentButton.actor : null;
-        this.categoriesBox.set_child_above_sibling(this.placesButton.actor, sibling);
-
+        // places go after the last applicationbutton
+        let sibling = this._applicationsButtons[this._applicationsButtons.length - 1].actor;
         Util.each(Main.placesManager.getAllPlaces(), place => {
             let button = new PlaceButton(this, place);
             this._placesButtons.push(button);
-            this.applicationsBox.add_actor(button.actor);
+            this.applicationsBox.insert_child_below(button.actor, sibling);
+            button.actor.visible = this.menu.isOpen;
+            sibling = button.actor;
         });
 
         this._resizeApplicationsBox();
@@ -2127,9 +2148,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.categoriesBox.add_actor(this.recentButton.actor);
         }
 
-        // recent is always last
-        this.categoriesBox.set_child_at_index(this.recentButton.actor, -1);
-
         let recents = this.RecentManager._infosByTimestamp.filter(info => !info.name.startsWith("."));
         if (recents.length > 0) {
             this.noRecentDocuments = false;
@@ -2137,6 +2155,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 let button = new RecentButton(this, info);
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
+                button.actor.visible = this.menu.isOpen;
             });
 
             let button = new SimpleMenuItem(this, { name: _("Clear list"),
@@ -2156,6 +2175,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
             this._recentButtons.push(button);
             this.applicationsBox.add_actor(button.actor);
+            button.actor.visible = this.menu.isOpen;
         } else {
             this.noRecentDocuments = true;
             let button = new SimpleMenuItem(this, { name: _("No recent documents"),
@@ -2166,6 +2186,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             button.addLabel(button.name, 'menu-application-button-label');
             this._recentButtons.push(button);
             this.applicationsBox.add_actor(button.actor);
+            button.actor.visible = this.menu.isOpen;
         }
 
         this._resizeApplicationsBox();
@@ -2175,19 +2196,22 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         /* iterate in reverse, so multiple splices will not upset
          * the remaining elements */
         for (let i = this._categoryButtons.length - 1; i > -1; i--) {
-            if (this._categoryButtons[i].categoryId != 'place' &&
-                this._categoryButtons[i].categoryId != 'recent') {
-                this._categoryButtons[i].destroy();
-                this._categoryButtons.splice(i, 1);
-            }
+            let b = this._categoryButtons[i];
+            if (b === this._allAppsCategoryButton ||
+                ['place', 'recent'].includes(b.categoryId))
+                continue;
+            this._categoryButtons[i].destroy();
+            this._categoryButtons.splice(i, 1);
         }
 
         this._applicationsButtons.forEach(button => button.destroy());
         this._applicationsButtons = [];
 
-        this._allAppsCategoryButton = new CategoryButton(this);
-        this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
-        this._categoryButtons.push(this._allAppsCategoryButton);
+        if (!this._allAppsCategoryButton) {
+            this._allAppsCategoryButton = new CategoryButton(this);
+            this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
+            this._categoryButtons.push(this._allAppsCategoryButton);
+        }
 
         // grab top level directories and all apps in them
         let [apps, dirs] = AppUtils.getApps();
@@ -2199,11 +2223,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.categoriesBox.add_actor(categoryButton.actor);
         });
 
-        // generate all app buttons and associate all categories
-        Util.each(apps, (a) => {
-            let app = a[0];
+        /* we add them in reverse at index 0 so they are always above places and
+         * recent buttons, and below */
+        for (let i = apps.length - 1; i > -1; i--) {
+            let app = apps[i][0];
             let button = new ApplicationButton(this, app);
-            button.category = a[1];
+            button.category = apps[i][1];
             let appKey = app.get_id() || `${app.get_name()}:${app.get_description()}`;
 
             // appsWereRefreshed if this is not initial load. on initial load every
@@ -2214,9 +2239,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this._knownApps.add(appKey);
 
             this._applicationsButtons.push(button);
-            this.applicationsBox.add_actor(button.actor);
-        });
+            this.applicationsBox.insert_child_at_index(button.actor, 0);
+            button.actor.visible = this.menu.isOpen;
+        }
 
+        // we expect this array to be in the same order as the child list
+        this._applicationsButtons.reverse();
         this._appsWereRefreshed = true;
     }
 
