@@ -15,6 +15,7 @@ try:
     import dbus
     from PIL import Image
     import datetime
+    import uuid as uuidlib
     import proxygsettings
 except Exception as detail:
     print(detail)
@@ -393,7 +394,7 @@ class Spice_Harvester(GObject.Object):
             else:
                 connection = HTTPSConnection(host, timeout=15)
             headers = { "Accept-Encoding": "identity", "Host": host, "User-Agent": "Python/3" }
-            connection.request("GET", parsed_url.path, headers=headers)
+            connection.request("GET", parsed_url.path + "?" + parsed_url.query, headers=headers)
             urlobj = connection.getresponse()
             assert urlobj.getcode() == 200
 
@@ -524,7 +525,7 @@ class Spice_Harvester(GObject.Object):
         self._push_job(job)
 
     def _download_cache(self, load_assets=True):
-        download_url = URL_MAP[self.collection_type]
+        download_url = URL_MAP[self.collection_type] + str(uuidlib.uuid4())
 
         filename = os.path.join(self.cache_folder, "index.json")
         if self._download(filename, download_url, binary=False) is None:
@@ -607,7 +608,7 @@ class Spice_Harvester(GObject.Object):
     def _install(self, job):
         uuid = job['uuid']
 
-        download_url = URL_SPICES_HOME + self.index_cache[uuid]['file'] + "?"
+        download_url = URL_SPICES_HOME + self.index_cache[uuid]['file'] + "?" + str(uuidlib.uuid4())
         self.current_uuid = uuid
 
         fd, ziptempfile = tempfile.mkstemp()
