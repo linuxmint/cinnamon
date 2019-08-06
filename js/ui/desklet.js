@@ -255,9 +255,9 @@ var Desklet = class Desklet {
 
         if (SPICESDEV === true && !(this._meta["path"].indexOf("/usr/") === 0)) {
             this.context_menu_spicesdev = new PopupMenu.PopupIconMenuItem(_("View source code of '%s'")
-                .format(this._meta.name),
-                   "folder-open",
-                   St.IconType.SYMBOLIC);
+            .format(this._meta.name),
+            "folder-open",
+            St.IconType.SYMBOLIC);
             this.context_menu_spicesdev.connect('activate', Lang.bind(this, this.viewSource));
             this._menu.addMenuItem(this.context_menu_spicesdev);
         }
