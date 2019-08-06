@@ -17,6 +17,9 @@ const Signals = imports.signals;
 const Gettext = imports.gettext;
 const Cinnamon = imports.gi.Cinnamon;
 
+var _spicesdev = Gio.file_new_for_path(GLib.get_home_dir() + "/.cinnamon/SPICESDEV");
+const SPICESDEV = _spicesdev.query_exists(null);
+
 var AllowedLayout = {  // the panel layout that an applet is suitable for
     VERTICAL: 'vertical',
     HORIZONTAL: 'horizontal',
@@ -185,6 +188,7 @@ var Applet = class Applet {
 
         this.context_menu_item_remove = null;
         this.context_menu_separator = null;
+        this.context_menu_spicesdev = null;
 
         this._setAppletReactivity();
         this._panelEditModeChangedId = global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
@@ -579,6 +583,14 @@ var Applet = class Applet {
             this.context_menu_item_about.connect('activate', Lang.bind(this, this.openAbout));
         }
 
+        if (this.context_menu_spicesdev === null && SPICESDEV === true && !(this._meta["path"].indexOf("/usr/") === 0)) {
+            this.context_menu_spicesdev = new PopupMenu.PopupIconMenuItem(_("View source code of '%s'")
+                .format(this._(this._meta.name)),
+                   "folder-open",
+                   St.IconType.SYMBOLIC);
+            this.context_menu_spicesdev.connect('activate', Lang.bind(this, this.viewSource));
+        }
+
         if (this.context_menu_separator == null && this._applet_context_menu._getMenuItems().length > 0) {
             this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
             this._applet_context_menu.addMenuItem(this.context_menu_separator);
@@ -602,6 +614,10 @@ var Applet = class Applet {
 
         if (items.indexOf(this.context_menu_item_remove) == -1) {
             this._applet_context_menu.addMenuItem(this.context_menu_item_remove);
+        }
+
+        if (this.context_menu_spicesdev !== null) {
+            this._applet_context_menu.addMenuItem(this.context_menu_spicesdev);
         }
     }
 
@@ -633,6 +649,10 @@ var Applet = class Applet {
 
     configureApplet() {
         Util.spawnCommandLine("xlet-settings applet " + this._uuid + " " + this.instance_id);
+    }
+
+    viewSource() {
+        Util.spawnCommandLine("xdg-open " + this._meta["path"]);
     }
 
     get _panelHeight() {

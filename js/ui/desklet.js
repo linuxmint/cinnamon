@@ -2,6 +2,7 @@
 const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
@@ -21,6 +22,9 @@ const Tweener = imports.ui.tweener;
 
 const RIGHT_PANEL_POPUP_ANIMATE_TIME = 0.5;
 const DESKLET_DESTROY_TIME = 0.5;
+
+var _spicesdev = Gio.file_new_for_path(GLib.get_home_dir() + "/.cinnamon/SPICESDEV");
+const SPICESDEV = _spicesdev.query_exists(null);
 
 /**
  * #Desklet
@@ -248,6 +252,15 @@ var Desklet = class Desklet {
             }
         }));
         this._menu.addMenuItem(this.context_menu_item_remove);
+
+        if (SPICESDEV === true && !(this._meta["path"].indexOf("/usr/") === 0)) {
+            this.context_menu_spicesdev = new PopupMenu.PopupIconMenuItem(_("View source code of '%s'")
+                .format(this._meta.name),
+                   "folder-open",
+                   St.IconType.SYMBOLIC);
+            this.context_menu_spicesdev.connect('activate', Lang.bind(this, this.viewSource));
+            this._menu.addMenuItem(this.context_menu_spicesdev);
+        }
     }
 
     /**
@@ -267,5 +280,11 @@ var Desklet = class Desklet {
     configureDesklet() {
         Util.spawnCommandLine("xlet-settings desklet " + this._uuid + " " + this.instance_id);
     }
+
+    viewSource() {
+        Util.spawnCommandLine("xdg-open " + this._meta["path"]);
+    }
+
+
 }
 Signals.addSignalMethods(Desklet.prototype);
