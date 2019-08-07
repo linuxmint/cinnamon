@@ -2048,9 +2048,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this.noRecentDocuments = false;
 
                 Util.each(this.RecentManager._infosByTimestamp, (info) => {
-                    let button = new RecentButton(this, info);
-                    this._recentButtons.push(button);
-                    this.applicationsBox.add_actor(button.actor);
+                    if (!info.name.startsWith(".")) {
+                        let button = new RecentButton(this, info);
+                        this._recentButtons.push(button);
+                        this.applicationsBox.add_actor(button.actor);
+                    }
                 });
                 let button = new SimpleMenuItem(this, { name: _("Clear list"),
                                                         description: ("Clear all recent documents"),
