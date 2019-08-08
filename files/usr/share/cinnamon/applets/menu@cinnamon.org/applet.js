@@ -2147,11 +2147,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.categoriesBox.add_actor(this.recentButton.actor);
         }
 
-        if (this.RecentManager._infosByTimestamp.length > 0) {
+        // don't show recent hidden files
+        let recents = this.RecentManager._infosByTimestamp.filter(info => !info.name.startsWith("."));
+        if (recents.length > 0) {
             this.noRecentDocuments = false;
-            Util.each(this.RecentManager._infosByTimestamp, (info) => {
-                if (info.name.startsWith("."))
-                    return;
+            Util.each(recents, (info) => {
                 let button = new RecentButton(this, info);
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
