@@ -30,7 +30,7 @@ class GtkSettingsEditor:
                                   "gtk-3.0",
                                   "settings.ini")
 
-        self.default_settings = Gtk.Settings()
+        self.default_settings = Gtk.Settings.get_default()
     def _get_keyfile(self):
         keyfile = None
         try:
