@@ -25,7 +25,7 @@
         "menu-layout" : {
             "type" : "section",
             "title" : "Layout and content",
-            "keys" : ["show-category-icons", "show-application-icons", "favbox-show", "favbox-min-height", "show-places", "menu-editor-button"]
+            "keys" : ["show-category-icons", "show-application-icons", "favbox-show", "favbox-min-height", "show-places", "show-recents", "menu-editor-button"]
         },
         "menu-behave" : {
             "type" : "section",
@@ -94,6 +94,12 @@
     "default" : true,
     "description": "Show bookmarks and places",
     "tooltip": "Choose whether or not to show bookmarks and places in the menu."
+ },
+ "show-recents" : {
+   "type" : "switch",
+   "default" : true,
+   "description": "Show recents",
+   "tooltip": "Choose whether or not to show recents in the menu."
  },
 "enable-autoscroll" : {
     "type" : "switch",
