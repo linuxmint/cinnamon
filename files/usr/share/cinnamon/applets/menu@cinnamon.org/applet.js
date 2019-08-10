@@ -989,6 +989,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
 
         this.settings.bind("show-places", "showPlaces", () => this.queueRefresh(RefreshFlags.PLACE));
+        this.settings.bind("show-recents", "showRecents", () => this.queueRefresh(RefreshFlags.RECENT));
 
         this._appletEnterEventId = 0;
         this._appletLeaveEventId = 0;
@@ -2130,7 +2131,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this._recentButtons = [];
 
-        if (!this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
+        if (!this.showRecents || !this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
             for (let i = 0; i < this._categoryButtons.length; i++) {
                 if (this._categoryButtons[i].categoryId === 'recent') {
                     this._categoryButtons[i].destroy();
