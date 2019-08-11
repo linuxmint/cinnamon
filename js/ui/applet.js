@@ -16,9 +16,7 @@ const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
 const Gettext = imports.gettext;
 const Cinnamon = imports.gi.Cinnamon;
-
-var _spicesdev = Gio.file_new_for_path(GLib.get_home_dir() + "/.cinnamon/SPICESDEV");
-const SPICESDEV = _spicesdev.query_exists(null);
+const Extension = imports.ui.extension;
 
 var AllowedLayout = {  // the panel layout that an applet is suitable for
     VERTICAL: 'vertical',
@@ -188,7 +186,8 @@ var Applet = class Applet {
 
         this.context_menu_item_remove = null;
         this.context_menu_separator = null;
-        this.context_menu_spicesdev = null;
+        this.context_menu_spicesdev_viewsource = null;
+        this.context_menu_spicesdev_reloadcode = null;
 
         this._setAppletReactivity();
         this._panelEditModeChangedId = global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
@@ -583,12 +582,20 @@ var Applet = class Applet {
             this.context_menu_item_about.connect('activate', Lang.bind(this, this.openAbout));
         }
 
-        if (this.context_menu_spicesdev === null && SPICESDEV === true && !(this._meta["path"].indexOf("/usr/") === 0)) {
-            this.context_menu_spicesdev = new PopupMenu.PopupIconMenuItem(_("View source code of '%s'")
+        if (this.context_menu_spicesdev_viewsource === null && this._get_spices_developer() === true && !(this._meta["path"].indexOf("/usr/") === 0)) {
+            this.context_menu_spicesdev_viewsource = new PopupMenu.PopupIconMenuItem(_("View source code of '%s'")
                 .format(this._(this._meta.name)),
                    "folder-open",
                    St.IconType.SYMBOLIC);
-            this.context_menu_spicesdev.connect('activate', Lang.bind(this, this.viewSource));
+            this.context_menu_spicesdev_viewsource.connect('activate', Lang.bind(this, this.viewSource));
+        }
+
+        if (this.context_menu_spicesdev_reloadcode === null && this._get_spices_developer() === true && !(this._meta["path"].indexOf("/usr/") === 0)) {
+            this.context_menu_spicesdev_reloadcode = new PopupMenu.PopupIconMenuItem(_("Reload code of '%s'")
+                .format(this._(this._meta.name)),
+                   "view-refresh-symbolic",
+                   St.IconType.SYMBOLIC);
+            this.context_menu_spicesdev_reloadcode.connect('activate', Lang.bind(this, this.reloadCode));
         }
 
         if (this.context_menu_separator == null && this._applet_context_menu._getMenuItems().length > 0) {
@@ -616,8 +623,12 @@ var Applet = class Applet {
             this._applet_context_menu.addMenuItem(this.context_menu_item_remove);
         }
 
-        if (this.context_menu_spicesdev !== null) {
-            this._applet_context_menu.addMenuItem(this.context_menu_spicesdev);
+        if (this.context_menu_spicesdev_viewsource !== null) {
+            this._applet_context_menu.addMenuItem(this.context_menu_spicesdev_viewsource);
+        }
+
+        if (this.context_menu_spicesdev_reloadcode !== null) {
+            this._applet_context_menu.addMenuItem(this.context_menu_spicesdev_reloadcode);
         }
     }
 
@@ -653,6 +664,23 @@ var Applet = class Applet {
 
     viewSource() {
         Util.spawnCommandLine("xdg-open " + this._meta["path"]);
+    }
+
+    reloadCode() {
+        Extension.reloadExtension(this._uuid, Extension.Type.APPLET);
+    }
+
+    /**
+     * _get_spices_developer:
+     *
+     * Returns the 'spices-developer' boolean value from global.settings.
+     */
+    _get_spices_developer() {
+        let _SETTINGS_SCHEMA='org.cinnamon';
+        let _SETTINGS_KEY = 'spices-developer';
+        let _interface_settings = new Gio.Settings({ schema_id: _SETTINGS_SCHEMA });
+        let ret = _interface_settings.get_boolean(_SETTINGS_KEY);
+        return ret
     }
 
     get _panelHeight() {

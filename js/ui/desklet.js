@@ -10,6 +10,7 @@ const Signals = imports.signals;
 const St = imports.gi.St;
 const Util = imports.misc.util;
 const Flashspot = imports.ui.flashspot;
+const Extension = imports.ui.extension;
 
 const DeskletManager = imports.ui.deskletManager;
 const DND = imports.ui.dnd;
@@ -22,9 +23,6 @@ const Tweener = imports.ui.tweener;
 
 const RIGHT_PANEL_POPUP_ANIMATE_TIME = 0.5;
 const DESKLET_DESTROY_TIME = 0.5;
-
-var _spicesdev = Gio.file_new_for_path(GLib.get_home_dir() + "/.cinnamon/SPICESDEV");
-const SPICESDEV = _spicesdev.query_exists(null);
 
 /**
  * #Desklet
@@ -253,13 +251,20 @@ var Desklet = class Desklet {
         }));
         this._menu.addMenuItem(this.context_menu_item_remove);
 
-        if (SPICESDEV === true && !(this._meta["path"].indexOf("/usr/") === 0)) {
-            this.context_menu_spicesdev = new PopupMenu.PopupIconMenuItem(_("View source code of '%s'")
+        if (this._get_spices_developer() === true && !(this._meta["path"].indexOf("/usr/") === 0)) {
+            this.context_menu_spicesdev_viewsource = new PopupMenu.PopupIconMenuItem(_("View source code of '%s'")
             .format(this._meta.name),
             "folder-open",
             St.IconType.SYMBOLIC);
-            this.context_menu_spicesdev.connect('activate', Lang.bind(this, this.viewSource));
-            this._menu.addMenuItem(this.context_menu_spicesdev);
+            this.context_menu_spicesdev_viewsource.connect('activate', Lang.bind(this, this.viewSource));
+            this._menu.addMenuItem(this.context_menu_spicesdev_viewsource);
+
+            this.context_menu_spicesdev_reloadcode = new PopupMenu.PopupIconMenuItem(_("Reload code of '%s'")
+            .format(this._meta.name),
+            "view-refresh-symbolic",
+            St.IconType.SYMBOLIC);
+            this.context_menu_spicesdev_reloadcode.connect('activate', Lang.bind(this, this.reloadCode));
+            this._menu.addMenuItem(this.context_menu_spicesdev_reloadcode);
         }
     }
 
@@ -283,6 +288,23 @@ var Desklet = class Desklet {
 
     viewSource() {
         Util.spawnCommandLine("xdg-open " + this._meta["path"]);
+    }
+
+    reloadCode() {
+        Extension.reloadExtension(this._uuid, Extension.Type.DESKLET);
+    }
+
+    /**
+     * _get_spices_developer:
+     *
+     * Returns the 'spices-developer' boolean value from global.settings.
+     */
+    _get_spices_developer() {
+        let _SETTINGS_SCHEMA='org.cinnamon';
+        let _SETTINGS_KEY = 'spices-developer';
+        let _interface_settings = new Gio.Settings({ schema_id: _SETTINGS_SCHEMA });
+        let ret = _interface_settings.get_boolean(_SETTINGS_KEY);
+        return ret
     }
 
 
