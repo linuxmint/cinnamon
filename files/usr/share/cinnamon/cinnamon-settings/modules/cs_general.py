@@ -66,3 +66,9 @@ class Module:
 
             switch = GSettingsSwitch(_("Enable support for indicators (Requires Cinnamon restart)"), "org.cinnamon", "enable-indicators")
             settings.add_row(switch)
+
+            settings = page.add_section(_("Developer Options"))
+
+            switch = GSettingsSwitch(_("I am a Cinnamon Spices Developer (Requires Cinnamon restart.)"), "org.cinnamon", "spices-developer")
+            switch.set_tooltip_text(_("If you develop Applets or Desklets for Cinnamon, this option adds two entries in their context menu, allowing you to view or reload their code."))
+            settings.add_row(switch)
