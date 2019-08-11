@@ -11,13 +11,22 @@
         using the Alt-F2 dialog.
       </_description>
     </key>
+    <key name="spices-developer" type="b">
+      <default>false</default>
+      <summary>
+        Enable internal tools/options useful for Cinnamon Spices developers (Requires Cinnamon restart)
+      </summary>
+      <description>
+        Adds entries in applets and desklets context menus, to view source and reload code.
+      </description>
+    </key>
     <key name="enabled-extensions" type="as">
       <default>[]</default>
       <_summary>Uuids of extensions to enable</_summary>
       <_description>
         Cinnamon extensions have a uuid property; this key lists extensions
         which should be loaded.  disabled-extensions overrides this setting for
-        extensions that appear in both lists. Append ! in front of uuid to 
+        extensions that appear in both lists. Append ! in front of uuid to
         override version check
       </_description>
     </key>
@@ -53,13 +62,13 @@
       <summary>The next applet id to give the next added applet</summary>
       <description>Do not change manually.</description>
     </key>
-    
+
     <key name="next-desklet-id" type="i">
       <default>0</default>
       <_summary>The next desklet id to give the next added desklet</_summary>
       <_description>Do not change manually.</_description>
     </key>
-    
+
     <key name="enabled-desklets" type="as">
       <default>[]</default>
       <_summary>Uuids of desklets to enable</_summary>
@@ -113,13 +122,13 @@
         Whether the panel autohides or not.
       </_description>
     </key>
-    
+
     <key name="panels-show-delay" type="as">
       <default>['1:0']</default>
       <summary>Duration of the delay before a hidden panel is shown</summary>
       <description>Duration of the delay (in milliseconds)</description>
     </key>
-    
+
     <key name="panels-hide-delay" type="as">
       <default>['1:0']</default>
       <summary>Duration of the delay before a shown panel is hidden</summary>
@@ -158,7 +167,7 @@
         Whether to enable desktop effects and window animations.
       </_description>
     </key>
-    
+
     <key name="desktop-effects-on-dialogs" type="b">
       <default>true</default>
       <_summary>Enable desktop effects on dialog boxes</_summary>
@@ -191,7 +200,7 @@
        An effect: scale, fade, traditional, none
       </_description>
     </key>
-    
+
      <key name="desktop-effects-close-transition" type="s">
       <default>"easeOutQuad"</default>
       <_summary>Transition used when closing windows</_summary>
@@ -199,15 +208,15 @@
        A Tweener transition
       </_description>
     </key>
-    
+
     <key type="i" name="desktop-effects-close-time">
       <default>120</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
-       Duration of the effect (in milliseconds)    
+       Duration of the effect (in milliseconds)
       </_description>
     </key>
-    
+
     <key type="s" name="desktop-effects-map-effect">
       <default>"traditional"</default>
       <_summary>Effect used when mapping windows</_summary>
@@ -215,7 +224,7 @@
        An effect: scale, fade, traditional, none
       </_description>
     </key>
-    
+
      <key name="desktop-effects-map-transition" type="s">
       <default>"easeOutQuad"</default>
       <_summary>Transition used when mapping windows</_summary>
@@ -223,16 +232,16 @@
        A Tweener transition
       </_description>
     </key>
-    
+
     <key type="i" name="desktop-effects-map-time">
       <default>100</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
-       Duration of the effect (in milliseconds)    
+       Duration of the effect (in milliseconds)
       </_description>
     </key>
-    
-    
+
+
     <key type="s" name="desktop-effects-minimize-effect">
       <default>"traditional"</default>
       <_summary>Effect used when minimizing windows</_summary>
@@ -240,7 +249,7 @@
        An effect: traditional, scale, fade, traditional, none
       </_description>
     </key>
-    
+
      <key name="desktop-effects-minimize-transition" type="s">
       <default>"easeInQuad"</default>
       <_summary>Transition used when minimizing windows</_summary>
@@ -248,15 +257,15 @@
        A Tweener transition
       </_description>
     </key>
-    
+
     <key type="i" name="desktop-effects-minimize-time">
       <default>160</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
-       Duration of the effect (in milliseconds)    
+       Duration of the effect (in milliseconds)
       </_description>
     </key>
-    
+
     <key type="s" name="desktop-effects-maximize-effect">
       <default>"none"</default>
       <_summary>Effect used when maximizing windows</_summary>
@@ -264,7 +273,7 @@
        An effect: none
       </_description>
     </key>
-    
+
      <key name="desktop-effects-maximize-transition" type="s">
       <default>"easeInExpo"</default>
       <_summary>Transition used when maximizing windows</_summary>
@@ -272,15 +281,15 @@
        A Tweener transition
       </_description>
     </key>
-    
+
     <key type="i" name="desktop-effects-maximize-time">
       <default>100</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
-       Duration of the effect (in milliseconds)    
+       Duration of the effect (in milliseconds)
       </_description>
     </key>
-    
+
     <key type="s" name="desktop-effects-unmaximize-effect">
       <default>"none"</default>
       <_summary>Effect used when unmaximizing windows</_summary>
@@ -288,7 +297,7 @@
        An effect: none
       </_description>
     </key>
-    
+
      <key name="desktop-effects-unmaximize-transition" type="s">
       <default>"easeNone"</default>
       <_summary>Transition used when unmaximizing windows</_summary>
@@ -296,12 +305,12 @@
        A Tweener transition
       </_description>
     </key>
-    
+
     <key type="i" name="desktop-effects-unmaximize-time">
       <default>100</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
-       Duration of the effect (in milliseconds)    
+       Duration of the effect (in milliseconds)
       </_description>
     </key>
 
@@ -312,7 +321,7 @@
        An effect: none
       </_description>
     </key>
-    
+
      <key name="desktop-effects-tile-transition" type="s">
       <default>"easeInQuad"</default>
       <_summary>Transition used when maximizing windows</_summary>
@@ -320,20 +329,20 @@
        A Tweener transition
       </_description>
     </key>
-    
+
     <key type="i" name="desktop-effects-tile-time">
       <default>100</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
-       Duration of the effect (in milliseconds)    
+       Duration of the effect (in milliseconds)
       </_description>
     </key>
-    
+
     <key type="b" name="startup-animation">
       <default>true</default>
       <_summary>Whether the startup animation is enabled</_summary>
       <_description>
-       Whether the startup animation is enabled   
+       Whether the startup animation is enabled
       </_description>
     </key>
 
@@ -351,7 +360,7 @@
        (Deprecated) Layout styles - pre-2.6
       </_description>
     </key>
-    
+
     <key name="date-format" type="s">
       <default>"YYYY-MM-DD"</default>
       <_summary>Date format</_summary>
@@ -403,7 +412,7 @@
         will be displayed in the favorites area.
       </_description>
     </key>
-    
+
     <key name="workspace-name-overrides" type="as">
       <default>['DEPRECATED']</default>
       <_summary>(Deprecated) List of non-default workspace names</_summary>
@@ -411,24 +420,24 @@
         (Deprecated) The user-set names of the workspaces. Deprecated since 2.6. Use org.cinnamon.desktop.wm.preferences workspace-names instead.
       </_description>
     </key>
-    
+
     <key type="i" name="workspace-osd-duration">
       <default>400</default>
       <_summary>Duration of Workspace OSD (in milliseconds)</_summary>
       <_description>
-       Duration of the OSD (in milliseconds)    
+       Duration of the OSD (in milliseconds)
       </_description>
     </key>
-    
+
     <key type="i" name="workspace-osd-x">
       <range min="5" max="95" />
       <default>50</default>
       <_summary>Workspace horizontal position (in percent of the monitor's width)</_summary>
       <_description>
-       Workspace horizontal position (in percent of the monitor's width)   
+       Workspace horizontal position (in percent of the monitor's width)
       </_description>
     </key>
-    
+
     <key type="i" name="workspace-osd-y">
       <range min="5" max="95" />
       <default>50</default>
@@ -437,7 +446,7 @@
        Workspace vertical position (in percent of the monitor's height)
       </_description>
     </key>
-    
+
     <key name="workspace-osd-visible" type="b">
       <default>true</default>
       <_summary>Enable or disable the workspace OSD</_summary>
@@ -489,7 +498,7 @@
       <_summary>Panel edit mode</_summary>
       <_description>A mode for the user to drag and drop applets and modify the look of the desktop</_description>
     </key>
-    
+
     <key type="b" name="panel-launchers-draggable">
       <default>true</default>
       <_summary>Obsolete</_summary>
@@ -502,7 +511,7 @@
        Controls the style of the ALT-tab window switcher. Can be any combination of "icons", "preview" and "thumbnails", separated by "+".
       </_description>
     </key>
-    
+
     <key type="b" name="alttab-switcher-enforce-primary-monitor">
       <default>false</default>
       <_summary>Enforce displaying the alt-tab switcher on the primary monitor instead of the active one</_summary>
@@ -586,7 +595,7 @@
       </_description>
     </key>
 
-    <child name="theme" schema="org.cinnamon.theme"/>   
+    <child name="theme" schema="org.cinnamon.theme"/>
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
     <child name="desklets" schema="org.cinnamon.desklets" />
@@ -784,27 +793,27 @@
   </schema>
 
   <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
-        gettext-domain="@GETTEXT_PACKAGE@">  
+        gettext-domain="@GETTEXT_PACKAGE@">
     <child name="launcher" schema="org.cinnamon.desklets.launcher" />
   </schema>
 
-  <schema id="org.cinnamon.sounds" path="/org/cinnamon/sounds/">  
-    
+  <schema id="org.cinnamon.sounds" path="/org/cinnamon/sounds/">
+
     <key name="switch-enabled" type="b">
       <default>false</default>
       <summary>Whether to play a sound when switching workspaces</summary>
       <description>
         Whether to play a sound when switching workspaces.
       </description>
-    </key> 
-   
+    </key>
+
     <key name="switch-file" type="s">
       <default>""</default>
       <summary>Which sound to play when switching workspaces</summary>
       <description>
         Which sound to play when switching workspaces.
       </description>
-    </key>      
+    </key>
 
     <key name="close-enabled" type="b">
       <default>false</default>
@@ -812,15 +821,15 @@
       <description>
         Whether to play a sound when closing windows.
       </description>
-    </key> 
-   
+    </key>
+
     <key name="close-file" type="s">
       <default>""</default>
       <summary>Which sound to play when closing windows</summary>
       <description>
         Which sound to play when closing windows.
       </description>
-    </key>      
+    </key>
 
     <key name="map-enabled" type="b">
       <default>false</default>
@@ -828,15 +837,15 @@
       <description>
         Whether to play a sound when mapping windows.
       </description>
-    </key> 
-   
+    </key>
+
     <key name="map-file" type="s">
       <default>""</default>
       <summary>Which sound to play when mapping windows</summary>
       <description>
         Which sound to play when mapping windows.
       </description>
-    </key>      
+    </key>
 
     <key name="minimize-enabled" type="b">
       <default>false</default>
@@ -844,15 +853,15 @@
       <description>
         Whether to play a sound when minimizing windows.
       </description>
-    </key> 
-   
+    </key>
+
     <key name="minimize-file" type="s">
       <default>""</default>
       <summary>Which sound to play when minimizing windows</summary>
       <description>
         Which sound to play when minimizing windows.
       </description>
-    </key>      
+    </key>
 
     <key name="maximize-enabled" type="b">
       <default>false</default>
@@ -860,15 +869,15 @@
       <description>
         Whether to play a sound when maximizing windows.
       </description>
-    </key> 
-   
+    </key>
+
     <key name="maximize-file" type="s">
       <default>""</default>
       <summary>Which sound to play when maximizing windows</summary>
       <description>
         Which sound to play when maximizing windows.
       </description>
-    </key>      
+    </key>
 
     <key name="unmaximize-enabled" type="b">
       <default>false</default>
@@ -876,15 +885,15 @@
       <description>
         Whether to play a sound when unmaximizing windows.
       </description>
-    </key> 
-   
+    </key>
+
     <key name="unmaximize-file" type="s">
       <default>""</default>
       <summary>Which sound to play when unmaximizing windows</summary>
       <description>
         Which sound to play when unmaximizing windows.
       </description>
-    </key>      
+    </key>
 
     <key name="tile-enabled" type="b">
       <default>false</default>
@@ -892,15 +901,15 @@
       <description>
         Whether to play a sound when tiling windows.
       </description>
-    </key> 
-   
+    </key>
+
     <key name="tile-file" type="s">
       <default>""</default>
       <summary>Which sound to play when tiling windows</summary>
       <description>
         Which sound to play when tiling windows.
       </description>
-    </key>      
+    </key>
 
     <key name="login-enabled" type="b">
       <default>false</default>
@@ -908,15 +917,15 @@
       <description>
         Whether to play a sound during login.
       </description>
-    </key> 
-   
+    </key>
+
     <key name="login-file" type="s">
       <default>""</default>
       <summary>Which sound to play when logging in</summary>
       <description>
         Which sound to play during login.
       </description>
-    </key> 
+    </key>
 
     <key name="logout-enabled" type="b">
       <default>false</default>
@@ -924,15 +933,15 @@
       <description>
         Whether to play a sound during logout.
       </description>
-    </key> 
-   
+    </key>
+
     <key name="logout-file" type="s">
       <default>""</default>
       <summary>Which sound to play when logging out</summary>
       <description>
         Which sound to play during logout.
       </description>
-    </key>          
+    </key>
 
     <key name="plug-enabled" type="b">
       <default>false</default>
@@ -940,15 +949,15 @@
       <description>
         Whether to play a sound when a device is plugged.
       </description>
-    </key> 
-   
+    </key>
+
     <key name="plug-file" type="s">
       <default>""</default>
       <summary>Which sound to play when a device is plugged</summary>
       <description>
         Which sound to play when a device is plugged.
       </description>
-    </key>     
+    </key>
 
     <key name="unplug-enabled" type="b">
       <default>false</default>
@@ -956,8 +965,8 @@
       <description>
         Whether to play a sound when a device is unplugged.
       </description>
-    </key> 
-   
+    </key>
+
     <key name="unplug-file" type="s">
       <default>""</default>
       <summary>Which sound to play when a device is plugged</summary>
@@ -972,15 +981,15 @@
       <description>
         Whether to play a sound when showing notifications.
       </description>
-    </key> 
-   
+    </key>
+
     <key name="notification-file" type="s">
       <default>""</default>
       <summary>Which sound to play when showing notifications</summary>
       <description>
         Which sound to play when showing notifications.
       </description>
-    </key>    
+    </key>
 
   </schema>
 
@@ -990,8 +999,8 @@
       <default>[]</default>
       <_summary>Desktop files of the applications to be shown on desktop</_summary>
       <_description>
-	The "launchers" desklet provides a method to show a launcher on the desktop
-	This list maps the desklet id to the desktop file of application.
+  The "launchers" desklet provides a method to show a launcher on the desktop
+  This list maps the desklet id to the desktop file of application.
       </_description>
     </key>
   </schema>
