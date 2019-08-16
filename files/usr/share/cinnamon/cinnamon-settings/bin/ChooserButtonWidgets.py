@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from __future__ import division
-from gi.repository import Gtk, GObject, GLib, GdkPixbuf
+from gi.repository import Gtk, GObject, GLib, Gdk, GdkPixbuf
 import cairo
 import tweenEquations
 import os
@@ -81,6 +81,7 @@ class PictureChooserButton(BaseChooserButton):
     def __init__ (self, num_cols=4, button_picture_size=24, menu_pictures_size=24, has_button_label=False, keep_square=False):
         super(PictureChooserButton, self).__init__(has_button_label)
         self.num_cols = num_cols
+        self.scale = self.get_scale_factor()
         self.button_picture_size = button_picture_size
         self.menu_pictures_size = menu_pictures_size
         self.keep_square = keep_square
@@ -93,9 +94,9 @@ class PictureChooserButton(BaseChooserButton):
 
         self.button_image.set_valign(Gtk.Align.CENTER)
         if self.keep_square:
-            self.button_image.set_size_request(button_picture_size, button_picture_size)
+            self.button_image.set_size_request(button_picture_size / self.scale, button_picture_size / self.scale)
         else:
-            self.button_image.set_size_request(-1, button_picture_size)
+            self.button_image.set_size_request(-1, button_picture_size / self.scale)
 
         self.connect_after("draw", self.on_draw)
 
@@ -149,22 +150,23 @@ class PictureChooserButton(BaseChooserButton):
 
                 if (self.keep_square and (h > self.button_picture_size or w > self.button_picture_size)):
                     try:
-                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, self.button_picture_size, self.button_picture_size)
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, self.button_picture_size * self.scale, self.button_picture_size * self.scale)
                     except GLib.Error as e:
                         message = "Could not scale pixbuf from '%s': %s" % (path, e.message)
                         error = True
                 elif h > self.button_picture_size:
                     try:
-                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, -1, self.button_picture_size)
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, -1, self.button_picture_size * self.scale)
                     except GLib.Error as e:
                         message = "Could not scale pixbuf from '%s': %s" % (path, e.message)
                         error = True
 
         if pixbuf:
-            self.button_image.set_from_pixbuf(pixbuf)
+            surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, self.scale)
+            self.button_image.set_from_surface(surface)
         else:
             print(message)
-            self.button_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")
+            self.set_picture_from_file("/usr/share/cinnamon/faces/user-generic.png")
 
     def set_button_label(self, label):
         self.button_label.set_markup(label)
@@ -189,35 +191,48 @@ class PictureChooserButton(BaseChooserButton):
         pixbuf = None
         if os.path.exists(path):
             try:
-                if self.menu_pictures_size is None:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
-                else:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(path, -1, self.menu_pictures_size, True)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
             except GLib.Error as e:
-                print('Caught GLib.Error exception: {}\npath: {}'.format(e, str(path)))
+                message = "Could not load pixbuf from '%s': %s" % (path, e.message)
+                error = True
 
-            if pixbuf is None:
-                return
+            if pixbuf != None:
+                h = pixbuf.get_height()
+                w = pixbuf.get_width()
 
-            image = Gtk.Image.new_from_pixbuf (pixbuf)
-            menuitem = Gtk.MenuItem()
-            if title is not None:
-                vbox = Gtk.VBox()
-                vbox.pack_start(image, False, False, 2)
-                label = Gtk.Label()
-                label.set_text(title)
-                vbox.pack_start(label, False, False, 2)
-                menuitem.add(vbox)
-            else:
-                menuitem.add(image)
-            if id is not None:
-                menuitem.connect('activate', self._on_picture_selected, path, callback, id)
-            else:
-                menuitem.connect('activate', self._on_picture_selected, path, callback)
-            self.menu.attach(menuitem, self.col, self.col+1, self.row, self.row+1)
-            self.col = (self.col+1) % self.num_cols
-            if (self.col == 0):
-                self.row = self.row + 1
+                try:
+                    if self.menu_pictures_size is None:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, w, h)
+                    else:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, -1, self.menu_pictures_size)
+                except GLib.Error as e:
+                    print('Caught GLib.Error exception: {}\npath: {}'.format(e, str(path)))
+
+                if pixbuf is None:
+                    return
+
+                surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, self.scale)
+                image = Gtk.Image()
+                image.set_size_request(self.menu_pictures_size / self.scale, self.menu_pictures_size / self.scale)
+                image.set_from_surface(surface)
+                menuitem = Gtk.MenuItem()
+                if title is not None:
+                    vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+                    vbox.add(image)
+                    label = Gtk.Label()
+                    label.set_text(title)
+                    vbox.add(label)
+                    menuitem.add(vbox)
+                else:
+                    menuitem.add(image)
+                if id is not None:
+                    menuitem.connect('activate', self._on_picture_selected, path, callback, id)
+                else:
+                    menuitem.connect('activate', self._on_picture_selected, path, callback)
+                self.menu.attach(menuitem, self.col, self.col+1, self.row, self.row+1)
+                self.col = (self.col+1) % self.num_cols
+                if (self.col == 0):
+                    self.row = self.row + 1
 
     def add_separator(self):
         self.row = self.row + 1
