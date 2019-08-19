@@ -2933,7 +2933,7 @@ st_theme_node_get_border_image (StThemeNode *node)
           int border_left;
 
           GFile *file;
-          char *filename;
+          char *filename = NULL;
 
           /* Support border-image: none; to suppress a previously specified border image */
           if (term_is_none (term))

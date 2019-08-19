@@ -796,22 +796,19 @@ global_stage_notify_height (GObject    *gobject,
   g_object_notify (G_OBJECT (global), "screen-height");
 }
 
-static gboolean
-global_stage_before_paint (CinnamonGlobal  *global)
+static void
+global_stage_before_paint (gpointer data)
 {
   cinnamon_perf_log_event (cinnamon_perf_log_get_default (),
                         "clutter.stagePaintStart");
 
-  return TRUE;
 }
 
-static gboolean
-global_stage_after_paint (CinnamonGlobal  *global)
+static void
+global_stage_after_paint (gpointer data)
 {
   cinnamon_perf_log_event (cinnamon_perf_log_get_default (),
                         "clutter.stagePaintDone");
-
-  return TRUE;
 }
 
 static void
@@ -991,10 +988,10 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   if (g_getenv ("CINNAMON_PERF_OUTPUT") != NULL)
     {
       clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_PRE_PAINT,
-                                             global_stage_before_paint,
+                                             (GSourceFunc) global_stage_before_paint,
                                              NULL, NULL);
       clutter_threads_add_repaint_func_full (CLUTTER_REPAINT_FLAGS_POST_PAINT,
-                                             global_stage_after_paint,
+                                             (GSourceFunc) global_stage_after_paint,
                                              NULL, NULL);
       cinnamon_perf_log_define_event (cinnamon_perf_log_get_default(),
                                       "clutter.stagePaintStart",

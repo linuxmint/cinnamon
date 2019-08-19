@@ -15,6 +15,7 @@
 #include <gdk/gdkx.h>
 #include <gio/gio.h>
 #include <girepository.h>
+#include <meta/main.h>
 #include <meta/display.h>
 #include <meta/util.h>
 
