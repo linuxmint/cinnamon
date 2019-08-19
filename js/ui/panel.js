@@ -1542,36 +1542,14 @@ SettingsLauncher.prototype = {
 };
 
 function populateSettingsMenu(menu, panelId) {
-
-    menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
-    menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
-        global.reexec_self();
-    });
-
-    menu.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
-        Main.createLookingGlass().open();
-    });
-
-    menu.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
-        let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to restore all settings to default?\n\n"),
-                function() {
-                    Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
-                    global.reexec_self();
-                });
-        confirm.open();
-    });
-
     menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
 
-    menu.addMenuItem(menu.troubleshootItem);
 
-    let panelSettingsSection = new PopupMenu.PopupSubMenuMenuItem(_("Modify panel"));
+    let panelSettingsSection = new PopupMenu.PopupSubMenuMenuItem(_("Panel settings"));
 
-    let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove panel"), "list-remove", St.IconType.SYMBOLIC);  // submenu item remove panel
-    menuItem.activate = Lang.bind(menu, function() {
-        Main.panelManager.removePanel(panelId);
-    });
-    panelSettingsSection.menu.addMenuItem(menuItem);
+    let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets panel" + panelId, "list-add");
+    panelSettingsSection.menu.addMenuItem(applet_settings_item);
+    panelSettingsSection.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
 
     menu.addPanelItem = new PopupMenu.PopupIconMenuItem(_("Add panel"), "list-add", St.IconType.SYMBOLIC); // submenu item add panel
     menu.addPanelItem.activate = Lang.bind(menu, function() {
@@ -1580,12 +1558,21 @@ function populateSettingsMenu(menu, panelId) {
     });
     panelSettingsSection.menu.addMenuItem(menu.addPanelItem);
 
+    let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove panel"), "list-remove", St.IconType.SYMBOLIC);  // submenu item remove panel
+    menuItem.activate = Lang.bind(menu, function() {
+        Main.panelManager.removePanel(panelId);
+    });
+    panelSettingsSection.menu.addMenuItem(menuItem);
+
     menu.movePanelItem = new PopupMenu.PopupIconMenuItem(_("Move panel"), "move", St.IconType.SYMBOLIC); // submenu item move panel
     menu.movePanelItem.activate = Lang.bind(menu, function() {
         Main.panelManager.movePanelQuery(this.panelId);
         this.close(true);
     });
     panelSettingsSection.menu.addMenuItem(menu.movePanelItem);
+
+    panelSettingsSection.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
+
 
     menu.copyAppletItem = new PopupMenu.PopupIconMenuItem(_("Copy applet configuration"), "edit-copy", St.IconType.SYMBOLIC);
     menu.copyAppletItem.activate = Lang.bind(menu, function() {
@@ -1619,8 +1606,6 @@ function populateSettingsMenu(menu, panelId) {
 
     menu.addMenuItem(panelSettingsSection);
 
-    menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
     // Panel Edit mode
     let editMode = global.settings.get_boolean("panel-edit-mode");
     let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel edit mode"), editMode);
@@ -1631,6 +1616,32 @@ function populateSettingsMenu(menu, panelId) {
     global.settings.connect('changed::panel-edit-mode', function() {
         panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
     });
+
+    let moreSettingsMenuItem = new SettingsLauncher(_("More…"), "panel " + panelId, "emblem-system");
+    panelSettingsSection.menu.addMenuItem(moreSettingsMenuItem);
+
+    menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
+
+    menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
+    menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
+        global.reexec_self();
+    });
+
+    menu.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
+        Main.createLookingGlass().open();
+    });
+
+    menu.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
+        let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to restore all settings to default?\n\n"),
+                function() {
+                    Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
+                    global.reexec_self();
+                });
+        confirm.open();
+    });
+
+    menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
+    menu.addMenuItem(menu.troubleshootItem);
 }
 
 function PanelContextMenu(launcher, orientation, panelId) {
@@ -1646,16 +1657,10 @@ PanelContextMenu.prototype = {
         this.actor.hide();
         this.panelId = panelId;
 
-        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets panel" + panelId, "list-add");
-        this.addMenuItem(applet_settings_item);
-
-        let menuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelId, "emblem-system");
-        this.addMenuItem(menuItem);
-
-        menuItem = new SettingsLauncher(_("Themes"), "themes", "applications-graphics");
-        this.addMenuItem(menuItem);
-
         let menuSetting = new SettingsLauncher(_("System Settings"), "", "preferences-system");
+        this.addMenuItem(menuSetting);
+
+        menuSetting = new SettingsLauncher(_("Themes"), "themes", "applications-graphics");
         this.addMenuItem(menuSetting);
 
         populateSettingsMenu(this, panelId);
