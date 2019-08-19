@@ -308,7 +308,7 @@ na_tray_child_get_title (NaTrayChild *child)
   utf8_string = gdk_x11_get_xatom_by_name_for_display (display, "UTF8_STRING");
   atom = gdk_x11_get_xatom_by_name_for_display (display, "_NET_WM_NAME");
 
-  gdk_error_trap_push ();
+  gdk_x11_display_error_trap_push (display);
 
   result = XGetWindowProperty (GDK_DISPLAY_XDISPLAY (display),
                                child->icon_window,
@@ -318,7 +318,7 @@ na_tray_child_get_title (NaTrayChild *child)
                                &type, &format, &nitems,
                                &bytes_after, (guchar **)&val);
   
-  if (gdk_error_trap_pop () || result != Success)
+  if (gdk_x11_display_error_trap_pop (display) || result != Success)
     return NULL;
 
   if (type != utf8_string ||
