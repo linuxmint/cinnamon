@@ -106,10 +106,6 @@ const CinnamonIface =
                 <arg type="b" direction="in" name="success" /> \
             </method> \
             <method name="ToggleKeyboard"/> \
-            <method name="OpenSpicesAbout"> \
-                <arg type="s" direction="in" name="uuid" /> \
-                <arg type="s" direction="in" name="type" /> \
-            </method> \
             <method name="GetMonitors"> \
                 <arg type="ai" direction="out" name="monitors" /> \
             </method> \
@@ -417,12 +413,6 @@ CinnamonDBus.prototype = {
 
     ToggleKeyboard: function() {
         Main.keyboard.toggle();
-    },
-
-    OpenSpicesAbout: function(uuid, type) {
-        Extension.getMetadata(uuid, Extension.Type[type.toUpperCase()]).then(function(metadata) {
-            new ModalDialog.SpicesAboutDialog(metadata, `${type}s`);
-        });
     },
 
     GetMonitors: function() {
