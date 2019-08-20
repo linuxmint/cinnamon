@@ -796,19 +796,22 @@ global_stage_notify_height (GObject    *gobject,
   g_object_notify (G_OBJECT (global), "screen-height");
 }
 
-static void
+static gboolean
 global_stage_before_paint (gpointer data)
 {
   cinnamon_perf_log_event (cinnamon_perf_log_get_default (),
                         "clutter.stagePaintStart");
 
+  return TRUE;
 }
 
-static void
+static gboolean
 global_stage_after_paint (gpointer data)
 {
   cinnamon_perf_log_event (cinnamon_perf_log_get_default (),
                         "clutter.stagePaintDone");
+
+  return TRUE;
 }
 
 static void
