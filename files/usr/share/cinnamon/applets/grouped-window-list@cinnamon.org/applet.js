@@ -360,6 +360,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'hover-peek-time-in', value: 'peekTimeIn', cb: null},
             {key: 'hover-peek-time-out', value: 'peekTimeOut', cb: null},
             {key: 'thumbnail-timeout', value: 'thumbTimeout', cb: null},
+            {key: 'thumbnail-close-timeout', value: 'thumbCloseTimeout', cb: null},
             {key: 'thumbnail-size', value: 'thumbSize', cb: this.updateThumbnailSize},
             {key: 'thumbnail-scroll-behavior', value: 'thumbnailScrollBehavior', cb: null},
             {key: 'sort-thumbnails', value: 'sortThumbs', cb: this.updateVerticalThumbnailState},

@@ -1003,7 +1003,9 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.set({thumbnailMenuEntered: false});
         }
 
-        setTimeout(() => this.close(), 50);
+        //setTimeout(() => this.close(), 50);
+        setTimeout(() => this.close(), this.state.settings.thumbCloseTimeout);
+
     }
 
     onKeyRelease(actor, event) {
