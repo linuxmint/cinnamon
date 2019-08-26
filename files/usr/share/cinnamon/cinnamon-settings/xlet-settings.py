@@ -237,7 +237,7 @@ class MainWindow(object):
         menu.append(separator)
         separator.show()
 
-        reload_option = Gtk.MenuItem(label=_("Restart %s") % self.uuid)
+        reload_option = Gtk.MenuItem(label=_("Reload %s") % self.uuid)
         menu.append(reload_option)
         reload_option.connect("activate", self.reload_xlet)
         reload_option.show()
