@@ -63,9 +63,7 @@ enum {
 
 enum {
   STARTUP_SEQUENCE_CHANGED,
-  TRACKED_WINDOWS_CHANGED,
   WINDOW_APP_CHANGED,
-
   LAST_SIGNAL
 };
 
@@ -121,12 +119,7 @@ cinnamon_window_tracker_class_init (CinnamonWindowTrackerClass *klass)
                                    0,
                                    NULL, NULL, NULL,
                                    G_TYPE_NONE, 1, CINNAMON_TYPE_STARTUP_SEQUENCE);
-  signals[TRACKED_WINDOWS_CHANGED] = g_signal_new ("tracked-windows-changed",
-                                                   CINNAMON_TYPE_WINDOW_TRACKER,
-                                                   G_SIGNAL_RUN_LAST,
-                                                   0,
-                                                   NULL, NULL, NULL,
-                                                   G_TYPE_NONE, 0);
+
   signals[WINDOW_APP_CHANGED] = g_signal_new ("window-app-changed",
                                               CINNAMON_TYPE_WINDOW_TRACKER,
                                               G_SIGNAL_RUN_LAST,
@@ -502,7 +495,6 @@ track_window (CinnamonWindowTracker *self,
 
   _cinnamon_app_add_window (app, window);
 
-  g_signal_emit (self, signals[TRACKED_WINDOWS_CHANGED], 0);
   g_signal_emit (self, signals[WINDOW_APP_CHANGED], 0, window);
 }
 
@@ -537,7 +529,6 @@ disassociate_window (CinnamonWindowTracker   *self,
       g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_gtk_application_id_changed), self);
     }
 
-  g_signal_emit (self, signals[TRACKED_WINDOWS_CHANGED], 0);
   g_signal_emit (self, signals[WINDOW_APP_CHANGED], 0, window);
 
   g_object_unref (app);
