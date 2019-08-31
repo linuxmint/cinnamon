@@ -433,6 +433,7 @@ Notification.prototype = {
         // 'transient' is a reserved keyword in JS, so we have to use an alternate variable name
         this.isTransient = false;
         this.expanded = false;
+        this.silent = false;
         this._destroyed = false;
         this._useActionIcons = false;
         this._customContent = false;
@@ -530,9 +531,11 @@ Notification.prototype = {
                                         titleMarkup: false,
                                         bannerMarkup: false,
                                         bodyMarkup: false,
+                                        silent: false,
                                         clear: false });
 
         this._customContent = params.customContent;
+        this.silent = params.silent;
 
         let oldFocus = global.stage.key_focus;
 
@@ -1690,7 +1693,9 @@ MessageTray.prototype = {
 
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');
         this._notificationBin.x = monitor.x + monitor.width - this._notification._table.width - margin - rightGap;
-        Main.soundManager.play('notification');
+        if (!this._notification.silent || this._notification.urgency >= Urgency.HIGH) {
+            Main.soundManager.play('notification');
+        }
         if (this._notification.urgency == Urgency.CRITICAL) {
             Main.layoutManager._chrome.modifyActorParams(this._notificationBin, { visibleInFullscreen: true });
         } else {

@@ -20,7 +20,7 @@ const AUTOCLEAR_BLACKLIST = ['chromium', 'firefox', 'google chrome'];
 let nextNotificationId = 1;
 
 // Should really be defined in Gio.js
-const BusIface = 
+const BusIface =
     '<node> \
         <interface name="org.freedesktop.DBus"> \
             <method name="GetConnectionUnixProcessID"> \
@@ -272,7 +272,7 @@ NotificationDaemon.prototype = {
         this._expireTimer = 0;
         return false;
     },
- 
+
     // Sends a notification to the notification daemon. Returns the id allocated to the notification.
     NotifyAsync: function(params, invocation) {
         let [appName, replacesId, icon, summary, body, actions, hints, timeout] = params;
@@ -308,6 +308,8 @@ NotificationDaemon.prototype = {
                 // early versions of the spec; 'icon_data' should only be used if 'image-path' is not available
                 hints['image-data'] = hints['icon_data'];
 
+        hints['suppress-sound'] = hints.maybeGet('suppress-sound') == true;
+
         let ndata = { appName: appName,
                       icon: icon,
                       summary: summary,
@@ -334,7 +336,7 @@ NotificationDaemon.prototype = {
         } else {    // Custom expiration.
              expires = ndata.expires = Date.now()+timeout;
         }
- 
+
         // Does this notification expire?
         if (expires != 0) {
             // Find place in the notification queue.
@@ -410,7 +412,8 @@ NotificationDaemon.prototype = {
         if (notification == null) {    // Create a new notification!
             notification = new MessageTray.Notification(source, summary, body,
                                                         { icon: iconActor,
-                                                          bannerMarkup: true });
+                                                          bannerMarkup: true,
+                                                          silent: hints['suppress-sound'] });
             ndata.notification = notification;
             notification.connect('destroy', Lang.bind(this,
                 function(n, reason) {
@@ -447,7 +450,8 @@ NotificationDaemon.prototype = {
         } else {
             notification.update(summary, body, { icon: iconActor,
                                                  bannerMarkup: true,
-                                                 clear: true });
+                                                 clear: true,
+                                                 silent: hints['suppress-sound'] });
         }
 
         // We only display a large image if an icon is also specified.
@@ -520,7 +524,7 @@ NotificationDaemon.prototype = {
             // 'icon-multi',
             'icon-static',
             'persistence',
-            // 'sound',
+            'sound',
         ];
     },
 
