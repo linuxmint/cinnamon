@@ -14,10 +14,10 @@ class XAppStatusIcon {
         this.applet = applet;
 
         this.tooltipText = "";
-        this.icon_size = applet.getPanelIconSize(St.IconType.FULLCOLOR) * global.ui_scale;
+        this.icon_size = applet.getPanelIconSize(St.IconType.FULLCOLOR);
 
         this.actor = new St.BoxLayout({
-            style_class: 'applet-icon',
+            style_class: 'applet-box',
             reactive: true,
             track_hover: true,
             // The systray use a layout manager, we need to fill the space of the actor
