@@ -142,7 +142,7 @@ WindowList.prototype = {
 
         let tracker = Cinnamon.WindowTracker.get_default();
         global.display.connect('window-created', Lang.bind(this, this._updateWindowList));
-        tracker.connect('tracked-windows-changed', Lang.bind(this, this._updateWindowList));
+        tracker.connect('window-app-changed', Lang.bind(this, this._updateWindowList));
     },
 
     getWindowById: function(id) {
