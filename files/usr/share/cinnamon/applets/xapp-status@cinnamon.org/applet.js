@@ -145,21 +145,22 @@ class XAppStatusIcon {
     }
 
     onButtonPressEvent(actor, event) {
-      if (event.get_button() == 3) {
-        return true;
+      let [x, y] = actor.get_transformed_position();
+      if (event.get_button() == 1) {
+          this.proxy.LeftClickRemote(x, y, event.get_time(), event.get_button());
+      }
+      else if (event.get_button() == 2) {
+          this.proxy.MiddleClickRemote(x, y, event.get_time(), event.get_button());
+      }
+      else if (event.get_button() == 3) {
+          return true;
       }
       return false;
     }
 
     onButtonReleaseEvent(actor, event) {
       let [x, y] = actor.get_transformed_position();
-      if (event.get_button() == 1) {
-        this.proxy.LeftClickRemote(x, y, event.get_time(), event.get_button());
-      }
-      else if (event.get_button() == 2) {
-          this.proxy.MiddleClickRemote(x, y, event.get_time(), event.get_button());
-      }
-      else if (event.get_button() == 3) {
+      if (event.get_button() == 3) {
           this.proxy.RightClickRemote(x, y, event.get_time(), event.get_button());
           return true;
       }
