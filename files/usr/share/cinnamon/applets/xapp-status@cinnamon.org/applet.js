@@ -5,14 +5,18 @@ const Clutter = imports.gi.Clutter;
 const Interfaces = imports.misc.interfaces;
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
+const SignalManager = imports.misc.signalManager;
+const Gtk = imports.gi.Gtk;
 
 class XAppStatusIcon {
-    constructor(applet, busname, owner) {
+
+    constructor(applet, busName, owner) {
 
         this.owner = owner;
-        this.busName = busname;
+        this.busName = busName;
         this.applet = applet;
 
+        this.iconName = null;
         this.tooltipText = "";
         this.icon_size = applet.getPanelIconSize(St.IconType.FULLCOLOR);
 
@@ -93,47 +97,59 @@ class XAppStatusIcon {
 
     setIconName(iconName) {
         if (iconName) {
-          if (iconName.match(/-symbolic$/)) {
-            this.icon.set_icon_type(St.IconType.SYMBOLIC);
-          }
-          else {
-            this.icon.set_icon_type(St.IconType.FULLCOLOR);
-          }
-          this.icon.set_icon_name(iconName);
-          this.icon.set_icon_size(this.icon_size);
-          this.icon.show();
+            if (iconName.match(/-symbolic$/)) {
+                this.icon.set_icon_type(St.IconType.SYMBOLIC);
+            }
+            else {
+                this.icon.set_icon_type(St.IconType.FULLCOLOR);
+            }
+            this.iconName = iconName;
+            this.icon.set_icon_name(iconName);
+            this.icon.set_icon_size(this.icon_size);
+            this.icon.show();
         }
         else {
-          this.icon.hide();
+            this.iconName = null;
+            this.icon.hide();
+        }
+    }
+
+    refreshIcon() {
+        // Called when the icon theme, or the panel size change..
+        this.icon_size = this.applet.getPanelIconSize(St.IconType.FULLCOLOR);
+        if (this.iconName) {
+            this.icon.set_icon_name(this.iconName);
+            this.icon.set_icon_size(this.icon_size);
+            this.icon.show();
         }
     }
 
     setTooltipText(tooltipText) {
-      if (tooltipText) {
-        this.tooltipText = tooltipText;
-      }
-      else {
-        this.tooltipText = "";
-      }
+        if (tooltipText) {
+            this.tooltipText = tooltipText;
+        }
+        else {
+            this.tooltipText = "";
+        }
     }
 
     setLabel(label) {
-      if (label) {
-        this.label.set_text(label);
-        this.label.show();
-      }
-      else {
-        this.label.hide();
-      }
+        if (label) {
+            this.label.set_text(label);
+            this.label.show();
+        }
+        else {
+            this.label.hide();
+        }
     }
 
     setVisible(visible) {
-      if (visible) {
-        this.actor.show();
-      }
-      else {
-        this.actor.hide();
-      }
+        if (visible) {
+            this.actor.show();
+        }
+        else {
+            this.actor.hide();
+        }
     }
 
     onEnterEvent(actor, event) {
@@ -145,27 +161,27 @@ class XAppStatusIcon {
     }
 
     onButtonPressEvent(actor, event) {
-      this.applet.set_applet_tooltip("");
-      let [x, y] = actor.get_transformed_position();
-      if (event.get_button() == 1) {
-          this.proxy.LeftClickRemote(x, y, event.get_time(), event.get_button());
-      }
-      else if (event.get_button() == 2) {
-          this.proxy.MiddleClickRemote(x, y, event.get_time(), event.get_button());
-      }
-      else if (event.get_button() == 3) {
-          return true;
-      }
-      return false;
+        this.applet.set_applet_tooltip("");
+        let [x, y] = actor.get_transformed_position();
+        if (event.get_button() == 1) {
+            this.proxy.LeftClickRemote(x, y, event.get_time(), event.get_button());
+        }
+        else if (event.get_button() == 2) {
+            this.proxy.MiddleClickRemote(x, y, event.get_time(), event.get_button());
+        }
+        else if (event.get_button() == 3) {
+            return true;
+        }
+        return false;
     }
 
     onButtonReleaseEvent(actor, event) {
-      let [x, y] = actor.get_transformed_position();
-      if (event.get_button() == 3) {
-          this.proxy.RightClickRemote(x, y, event.get_time(), event.get_button());
-          return true;
-      }
-      return false;
+        let [x, y] = actor.get_transformed_position();
+        if (event.get_button() == 3) {
+            this.proxy.RightClickRemote(x, y, event.get_time(), event.get_button());
+            return true;
+        }
+        return false;
     }
 
     destroy() {
@@ -243,6 +259,9 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
             ));
         }));
 
+        this.signalManager = new SignalManager.SignalManager(null);
+        this.signalManager.connect(Gtk.IconTheme.get_default(), 'changed', this.on_icon_theme_changed, this);
+
     }
 
     addStatusIcon(busName, owner) {
@@ -273,6 +292,25 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
             this.statusIcons[newOwner].owner = newOwner;
             delete this.statusIcons[oldOwner];
         }
+    }
+
+    refreshIcons() {
+        for (let owner in this.statusIcons) {
+            let icon = this.statusIcons[owner];
+            icon.refreshIcon();
+        }
+    }
+
+    on_panel_icon_size_changed(size) {
+        this.refreshIcons();
+    }
+
+    on_icon_theme_changed() {
+        this.refreshIcons();
+    }
+
+    on_applet_removed_from_panel() {
+        this.signalManager.disconnectAllSignals();
     }
 }
 
