@@ -20,26 +20,6 @@ class Module:
             page = SettingsPage()
             self.sidePage.add_widget(page)
 
-            settings = page.add_section(_("Desktop Scaling"))
-
-            ui_scales = [[0, _("Auto")], [1, _("Normal")], [2, _("Double (Hi-DPI)")]]
-            combo = GSettingsComboBox(_("User interface scaling:"), "org.cinnamon.desktop.interface", "scaling-factor", ui_scales, valtype=int)
-            settings.add_row(combo)
-
-            # Some applications hard code the GNOME path for HiDPI settings,
-            # which is stupid, but we'll be nice and supply them with the right
-            # values.
-            schema = Gio.SettingsSchemaSource.get_default().lookup("org.gnome.desktop.interface", False)
-            if schema is not None:
-                gnome_settings = Gio.Settings(schema="org.gnome.desktop.interface")
-
-                def on_changed(widget):
-                    tree_iter = widget.get_active_iter()
-                    if tree_iter is not None:
-                        gnome_settings["scaling-factor"] = combo.model[tree_iter][0]
-
-                combo.content_widget.connect('changed', on_changed)
-
             settings = page.add_section(_("Compositor Options"))
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
@@ -53,10 +33,6 @@ class Module:
             settings.add_row(switch)
 
             settings = page.add_section(_("Miscellaneous Options"))
-
-            switch = GSettingsSwitch(_("Disable automatic screen rotation"), "org.cinnamon.settings-daemon.peripherals.touchscreen", "orientation-lock")
-            switch.set_tooltip_text(_("Select this option to disable automatic screen rotation on hardware equipped with supported accelerometers."))
-            settings.add_row(switch)
 
             switch = GSettingsSwitch(_("Enable timer when logging out or shutting down"), "org.cinnamon.SessionManager", "quit-delay-toggle")
             settings.add_row(switch)

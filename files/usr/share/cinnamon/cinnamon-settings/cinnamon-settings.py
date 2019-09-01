@@ -70,7 +70,6 @@ CATEGORIES = [
 CONTROL_CENTER_MODULES = [
     #         Label                              Module ID                Icon                         Category      Keywords for filter
     [_("Network"),                          "network",            "cs-network",                 "hardware",      _("network, wireless, wifi, ethernet, broadband, internet")],
-    [_("Display"),                          "display",            "cs-display",                 "hardware",      _("display, screen, monitor, layout, resolution, dual, lcd")],
     [_("Color"),                            "color",              "cs-color",                   "hardware",      _("color, profile, display, printer, output")],
     [_("Graphics Tablet"),                  "wacom",              "cs-tablet",                  "hardware",      _("wacom, digitize, tablet, graphics, calibrate, stylus")]
 ]
@@ -101,6 +100,7 @@ TABS = {
     "backgrounds":      {"images": 0, "settings": 1},
     "default":          {"preferred": 0, "removable": 1},
     "desklets":         {"installed": 0, "more": 1, "download": 1, "general": 2},
+    "display":          {"layout": 0, "settings": 1},
     "effects":          {"effects": 0, "customize": 1},
     "extensions":       {"installed": 0, "more": 1, "download": 1},
     "keyboard":         {"typing": 0, "shortcuts": 1, "layouts": 2},
