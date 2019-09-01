@@ -161,6 +161,8 @@ class XAppStatusIcon {
     onButtonPressEvent(actor, event) {
         this.applet.set_applet_tooltip("");
         let [x, y] = actor.get_transformed_position();
+        x = Math.round(x / global.ui_scale);
+        y = Math.round(y / global.ui_scale);
         if (event.get_button() == 1) {
             this.proxy.LeftClickRemote(x, y, event.get_time(), event.get_button());
         }
@@ -175,6 +177,8 @@ class XAppStatusIcon {
 
     onButtonReleaseEvent(actor, event) {
         let [x, y] = actor.get_transformed_position();
+        x = Math.round(x / global.ui_scale);
+        y = Math.round(y / global.ui_scale);
         if (event.get_button() == 3) {
             this.proxy.RightClickRemote(x, y, event.get_time(), event.get_button());
             return true;
