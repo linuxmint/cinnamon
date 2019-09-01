@@ -145,6 +145,7 @@ class XAppStatusIcon {
     }
 
     onButtonPressEvent(actor, event) {
+      this.applet.set_applet_tooltip("");
       let [x, y] = actor.get_transformed_position();
       if (event.get_button() == 1) {
           this.proxy.LeftClickRemote(x, y, event.get_time(), event.get_button());
