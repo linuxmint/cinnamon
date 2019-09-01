@@ -18,7 +18,6 @@ class XAppStatusIcon {
 
         this.iconName = null;
         this.tooltipText = "";
-        this.icon_size = applet.getPanelIconSize(St.IconType.FULLCOLOR);
 
         this.actor = new St.BoxLayout({
             style_class: 'applet-box',
@@ -105,7 +104,7 @@ class XAppStatusIcon {
             }
             this.iconName = iconName;
             this.icon.set_icon_name(iconName);
-            this.icon.set_icon_size(this.icon_size);
+            this.icon.set_icon_size(this.applet.getPanelIconSize(this.icon.get_icon_type()));
             this.icon.show();
         }
         else {
@@ -116,10 +115,9 @@ class XAppStatusIcon {
 
     refreshIcon() {
         // Called when the icon theme, or the panel size change..
-        this.icon_size = this.applet.getPanelIconSize(St.IconType.FULLCOLOR);
         if (this.iconName) {
             this.icon.set_icon_name(this.iconName);
-            this.icon.set_icon_size(this.icon_size);
+            this.icon.set_icon_size(this.applet.getPanelIconSize(this.icon.get_icon_type()));
             this.icon.show();
         }
     }
