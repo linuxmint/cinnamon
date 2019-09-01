@@ -263,7 +263,7 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
 
         this.signalManager = new SignalManager.SignalManager(null);
         this.signalManager.connect(Gtk.IconTheme.get_default(), 'changed', this.on_icon_theme_changed, this);
-
+        this.signalManager.connect(global.settings, 'changed::panel-edit-mode', this.on_panel_edit_mode_changed, this);
     }
 
     addStatusIcon(busName, owner) {
@@ -313,6 +313,14 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
 
     on_applet_removed_from_panel() {
         this.signalManager.disconnectAllSignals();
+    }
+
+    on_panel_edit_mode_changed() {
+        let reactive = !global.settings.get_boolean('panel-edit-mode');
+        for (let owner in this.statusIcons) {
+            let icon = this.statusIcons[owner];
+            icon.actor.reactive = reactive;
+        }
     }
 }
 
