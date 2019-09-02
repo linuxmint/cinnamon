@@ -1,3 +1,4 @@
+const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Gio = imports.gi.Gio;
@@ -159,31 +160,49 @@ class XAppStatusIcon {
     }
 
     onButtonPressEvent(actor, event) {
-        this.applet.set_applet_tooltip("");
-        let [x, y] = actor.get_transformed_position();
-        x = Math.round(x / global.ui_scale);
-        y = Math.round(y / global.ui_scale);
-        if (event.get_button() == 1) {
-            this.proxy.LeftClickRemote(x, y, event.get_time(), event.get_button());
+        let allocation = Cinnamon.util_get_transformed_allocation(actor);
+        let x = Math.round(allocation.x1 / global.ui_scale);
+        let y = Math.round(allocation.y1 / global.ui_scale);
+        switch (this.applet.orientation) {
+            case St.Side.BOTTOM:
+                this.proxy.ButtonPressRemote(x, y, event.get_button(), event.get_time(), Gtk.PositionType.BOTTOM);
+                break;
+            case St.Side.TOP:
+                y = (allocation.y2 / global.ui_scale);
+                this.proxy.ButtonPressRemote(x, allocation.y2, event.get_button(), event.get_time(), Gtk.PositionType.TOP);
+                break;
+            case St.Side.LEFT:
+                x = (allocation.x2 / global.ui_scale);
+                this.proxy.ButtonPressRemote(x, y, event.get_button(), event.get_time(), Gtk.PositionType.LEFT);
+                break;
+            case St.Side.RIGHT:
+                this.proxy.ButtonPressRemote(x, y, event.get_button(), event.get_time(), Gtk.PositionType.RIGHT);
+                break;
         }
-        else if (event.get_button() == 2) {
-            this.proxy.MiddleClickRemote(x, y, event.get_time(), event.get_button());
-        }
-        else if (event.get_button() == 3) {
-            return true;
-        }
-        return false;
+        return true;
     }
 
     onButtonReleaseEvent(actor, event) {
-        let [x, y] = actor.get_transformed_position();
-        x = Math.round(x / global.ui_scale);
-        y = Math.round(y / global.ui_scale);
-        if (event.get_button() == 3) {
-            this.proxy.RightClickRemote(x, y, event.get_time(), event.get_button());
-            return true;
+        let allocation = Cinnamon.util_get_transformed_allocation(actor);
+        let x = Math.round(allocation.x1 / global.ui_scale);
+        let y = Math.round(allocation.y1 / global.ui_scale);
+        switch (this.applet.orientation) {
+            case St.Side.BOTTOM:
+                this.proxy.ButtonReleaseRemote(x, y, event.get_button(), event.get_time(), Gtk.PositionType.BOTTOM);
+                break;
+            case St.Side.TOP:
+                y = (allocation.y2 / global.ui_scale);
+                this.proxy.ButtonReleaseRemote(x, allocation.y2, event.get_button(), event.get_time(), Gtk.PositionType.TOP);
+                break;
+            case St.Side.LEFT:
+                x = (allocation.x2 / global.ui_scale);
+                this.proxy.ButtonReleaseRemote(x, y, event.get_button(), event.get_time(), Gtk.PositionType.LEFT);
+                break;
+            case St.Side.RIGHT:
+                this.proxy.ButtonReleaseRemote(x, y, event.get_button(), event.get_time(), Gtk.PositionType.RIGHT);
+                break;
         }
-        return false;
+        return true;
     }
 
     destroy() {
@@ -320,6 +339,15 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         for (let owner in this.statusIcons) {
             let icon = this.statusIcons[owner];
             icon.actor.reactive = reactive;
+        }
+    }
+
+    on_orientation_changed(newOrientation) {
+        this.orientation = newOrientation;
+        if (newOrientation == St.Side.TOP || newOrientation == St.Side.BOTTOM) {
+            this.manager.set_vertical(false);
+        } else {
+            this.manager.set_vertical(true);
         }
     }
 }

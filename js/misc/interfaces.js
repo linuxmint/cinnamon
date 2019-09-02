@@ -261,23 +261,19 @@ xml_with_owner['org.x.StatusIcon'] =
 [
     "<node> \
         <interface name='org.x.StatusIcon'> \
-        <method name='LeftClick'> \
+        <method name='ButtonPress'> \
             <arg name='x' direction='in' type='i'/> \
             <arg name='y' direction='in' type='i'/> \
-            <arg name='time' direction='in' type='i'/> \
             <arg name='button' direction='in' type='i'/> \
+            <arg name='time' direction='in' type='i'/> \
+            <arg name='panel_position' direction='in' type='i'/> \
         </method> \
-        <method name='MiddleClick'> \
+        <method name='ButtonRelease'> \
             <arg name='x' direction='in' type='i'/> \
             <arg name='y' direction='in' type='i'/> \
-            <arg name='time' direction='in' type='i'/> \
             <arg name='button' direction='in' type='i'/> \
-        </method> \
-        <method name='RightClick'> \
-            <arg name='x' direction='in' type='i'/> \
-            <arg name='y' direction='in' type='i'/> \
             <arg name='time' direction='in' type='i'/> \
-            <arg name='button' direction='in' type='i'/> \
+            <arg name='panel_position' direction='in' type='i'/> \
         </method> \
         <property type='s' name='Name' access='read'/> \
         <property type='s' name='IconName' access='read'/> \
