@@ -298,6 +298,9 @@ var Applet = class Applet {
             this._applet_tooltip_text = text;
             this._applet_tooltip.set_text(text);
         }
+        if (text === "") {
+            this._applet_tooltip.hide();
+        }
     }
 
     /**
