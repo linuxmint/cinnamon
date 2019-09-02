@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 # -*- coding=utf-8 -*-
 
 import os
@@ -7,7 +7,7 @@ import tempfile
 import shutil
 import sqlite3
 import json
-import urlparse
+import urllib.parse
 import subprocess
 
 FAVICON_CACHE_DIR = os.path.join(os.path.split(__file__)[0], "favicon_cache")
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         results = []
         domains_list = []
         for url, title in cur.fetchall():
-            url_parsed = urlparse.urlparse(url)
+            url_parsed = urllib.parse.urlparse(url)
             domain = url_parsed.scheme + '://' + url_parsed.netloc
             if not domain in domains_list:
                 domains_list.append(domain)
@@ -77,4 +77,4 @@ if __name__ == "__main__":
             if results[i]['domain'] in domains_to_favicons:
                 results[i]['icon_filename'] = domains_to_favicons[results[i]['domain']]
 
-        print json.dumps(results)
+        print(json.dumps(results))
