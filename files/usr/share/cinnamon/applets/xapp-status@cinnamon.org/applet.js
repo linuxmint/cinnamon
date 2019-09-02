@@ -160,6 +160,7 @@ class XAppStatusIcon {
     }
 
     onButtonPressEvent(actor, event) {
+        this.applet.set_applet_tooltip("");
         let allocation = Cinnamon.util_get_transformed_allocation(actor);
         let x = Math.round(allocation.x1 / global.ui_scale);
         let y = Math.round(allocation.y1 / global.ui_scale);
