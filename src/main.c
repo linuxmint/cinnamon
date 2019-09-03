@@ -318,7 +318,8 @@ main (int argc, char **argv)
                      muted_log_handler, NULL);
   g_log_set_handler ("Bluetooth", G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_MESSAGE,
                      muted_log_handler, NULL);
-
+  g_log_set_handler ("XApp", G_LOG_LEVEL_DEBUG,
+                     muted_log_handler, NULL);
   /* Initialize the global object */
   _cinnamon_global_init (NULL);
 

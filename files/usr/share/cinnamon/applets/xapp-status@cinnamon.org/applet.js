@@ -8,14 +8,14 @@ const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 const SignalManager = imports.misc.signalManager;
 const Gtk = imports.gi.Gtk;
+const XApp = imports.gi.XApp
 
 class XAppStatusIcon {
 
-    constructor(applet, busName, owner) {
-
-        this.owner = owner;
-        this.busName = busName;
+    constructor(applet, proxy) {
+        this.name = proxy.get_name();
         this.applet = applet;
+        this.proxy = proxy;
 
         this.iconName = null;
         this.tooltipText = "";
@@ -47,65 +47,56 @@ class XAppStatusIcon {
         this.actor.connect('enter-event', Lang.bind(this, this.onEnterEvent));
         this.actor.connect('leave-event', Lang.bind(this, this.onLeaveEvent));
 
-        Interfaces.getDBusProxyWithOwnerAsync("org.x.StatusIcon",
-                                              this.busName,
-                                              Lang.bind(this, function(proxy, error) {
-                                                  if (error) {
-                                                      global.logError(error);
-                                                  } else {
-                                                      this.proxy = proxy;
-                                                      this.on_dbus_acquired();
-                                                  }
+        this._proxy_prop_change_id = this.proxy.connect('g-properties-changed', Lang.bind(this, this.on_properties_changed))
 
-
-                                              }));
-
-        Interfaces.getDBusPropertiesAsync(this.busName,
-                                          "/org/x/StatusIcon",
-                                          Lang.bind(this, function(proxy, error) {
-                                              if (error) {
-                                                  global.logError(error);
-                                              } else {
-                                                  this.property_proxy = proxy;
-                                                  this.on_dbus_acquired();
-                                              }
-                                          }));
+        this.setIconName(proxy.icon_name);
+        this.setTooltipText(proxy.tooltip_text);
+        this.setLabel(proxy.label);
+        this.setVisible(proxy.visible);
     }
 
-    on_dbus_acquired() {
-        if (!this.property_proxy || !this.proxy)
-            return;
+    on_properties_changed(proxy, changed_props, invalidated_props) {
+        let prop_names = changed_props.deep_unpack();
 
-        global.log("Adding XAppStatusIcon: " + this.proxy.Name + " (" + this.busName + ")");
+        if ('IconName' in prop_names) {
+            this.setIconName(proxy.icon_name);
+        }
+        if ('TooltipText' in prop_names) {
+            this.setTooltipText(proxy.tooltip_text);
+        }
+        if ('Label' in prop_names) {
+            this.setLabel(proxy.label);
+        }
+        if ('Visible' in prop_names) {
+            this.setVisible(proxy.visible);
+        }
 
-        this.setIconName(this.proxy.IconName);
-        this.setTooltipText(this.proxy.TooltipText);
-        this.setLabel(this.proxy.Label);
-        this.setVisible(this.proxy.Visible);
-
-        this.propertyChangedId = this.property_proxy.connectSignal('PropertiesChanged', Lang.bind(this, function(proxy, sender, [iface, properties]) {
-            if (properties.IconName)
-                this.setIconName(properties.IconName.unpack());
-            if (properties.TooltipText)
-                this.setTooltipText(properties.TooltipText.unpack());
-            if (properties.Label)
-                this.setLabel(properties.Label.unpack());
-            if (properties.Visible)
-                this.setVisible(properties.Visible.unpack());
-        }));
+        return;
     }
 
     setIconName(iconName) {
         if (iconName) {
-            if (iconName.match(/-symbolic$/)) {
+            if (iconName.match(/-symbolic/)) {
                 this.icon.set_icon_type(St.IconType.SYMBOLIC);
             }
             else {
                 this.icon.set_icon_type(St.IconType.FULLCOLOR);
             }
+
             this.iconName = iconName;
-            this.icon.set_icon_name(iconName);
             this.icon.set_icon_size(this.applet.getPanelIconSize(this.icon.get_icon_type()));
+
+            if (iconName.includes("/")) {
+                let file = Gio.File.new_for_path(iconName);
+
+                let gicon = Gio.FileIcon.new(file);
+
+                this.icon.set_gicon(gicon);
+            }
+            else {
+                this.icon.set_icon_name(iconName);
+            }
+
             this.icon.show();
         }
         else {
@@ -166,18 +157,18 @@ class XAppStatusIcon {
         let y = Math.round(allocation.y1 / global.ui_scale);
         switch (this.applet.orientation) {
             case St.Side.BOTTOM:
-                this.proxy.ButtonPressRemote(x, y, event.get_button(), event.get_time(), Gtk.PositionType.BOTTOM);
+                this.proxy.call_button_press(x, y, event.get_button(), event.get_time(), Gtk.PositionType.BOTTOM, null, null);
                 break;
             case St.Side.TOP:
                 y = (allocation.y2 / global.ui_scale);
-                this.proxy.ButtonPressRemote(x, allocation.y2, event.get_button(), event.get_time(), Gtk.PositionType.TOP);
+                this.proxy.call_button_press(x, allocation.y2, event.get_button(), event.get_time(), Gtk.PositionType.TOP, null, null);
                 break;
             case St.Side.LEFT:
                 x = (allocation.x2 / global.ui_scale);
-                this.proxy.ButtonPressRemote(x, y, event.get_button(), event.get_time(), Gtk.PositionType.LEFT);
+                this.proxy.call_button_press(x, y, event.get_button(), event.get_time(), Gtk.PositionType.LEFT, null, null);
                 break;
             case St.Side.RIGHT:
-                this.proxy.ButtonPressRemote(x, y, event.get_button(), event.get_time(), Gtk.PositionType.RIGHT);
+                this.proxy.call_button_press(x, y, event.get_button(), event.get_time(), Gtk.PositionType.RIGHT, null, null);
                 break;
         }
         return true;
@@ -189,26 +180,26 @@ class XAppStatusIcon {
         let y = Math.round(allocation.y1 / global.ui_scale);
         switch (this.applet.orientation) {
             case St.Side.BOTTOM:
-                this.proxy.ButtonReleaseRemote(x, y, event.get_button(), event.get_time(), Gtk.PositionType.BOTTOM);
+                this.proxy.call_button_release(x, y, event.get_button(), event.get_time(), Gtk.PositionType.BOTTOM, null, null);
                 break;
             case St.Side.TOP:
                 y = (allocation.y2 / global.ui_scale);
-                this.proxy.ButtonReleaseRemote(x, allocation.y2, event.get_button(), event.get_time(), Gtk.PositionType.TOP);
+                this.proxy.call_button_release(x, allocation.y2, event.get_button(), event.get_time(), Gtk.PositionType.TOP, null, null);
                 break;
             case St.Side.LEFT:
                 x = (allocation.x2 / global.ui_scale);
-                this.proxy.ButtonReleaseRemote(x, y, event.get_button(), event.get_time(), Gtk.PositionType.LEFT);
+                this.proxy.call_button_release(x, y, event.get_button(), event.get_time(), Gtk.PositionType.LEFT, null, null);
                 break;
             case St.Side.RIGHT:
-                this.proxy.ButtonReleaseRemote(x, y, event.get_button(), event.get_time(), Gtk.PositionType.RIGHT);
+                this.proxy.call_button_release(x, y, event.get_button(), event.get_time(), Gtk.PositionType.RIGHT, null, null);
                 break;
         }
         return true;
     }
 
     destroy() {
-        if (this.property_proxy)
-            this.property_proxy.disconnectSignal(this.propertyChangedId);
+        this.proxy.disconnect(this._proxy_prop_change_id);
+        this._proxy_prop_change_id = 0;
     }
 }
 
@@ -239,81 +230,89 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
 
         this.statusIcons = {};
 
-        Gio.bus_own_name(Gio.BusType.SESSION,
-                         "org.x.StatusApplet.PID-" + global.get_pid(),
-                         Gio.BusNameOwnerFlags.NONE,
-                         null,
-                         null,
-                         null);
-
-        Interfaces.getDBusAsync(Lang.bind(this, function (proxy, error) {
-            this.dbus = proxy;
-
-            // Find all the XApp Status Icons on DBus
-            let name_regex = /^org\.x\.StatusIcon\./;
-            this.dbus.ListNamesRemote(Lang.bind(this,
-                function(names) {
-                    for (let n in names[0]) {
-                        let name = names[0][n];
-                        if (name_regex.test(name)) {
-                            this.dbus.GetNameOwnerRemote(name, Lang.bind(this,
-                                function(owner) {
-                                    this.addStatusIcon(name, owner);
-                                }
-                            ));
-                        }
-                    }
-                }
-            ));
-
-            // Listen on DBUS in case some of them go, or new ones appear
-            this.ownerChangedId = this.dbus.connectSignal('NameOwnerChanged', Lang.bind(this,
-                function(proxy, sender, [name, old_owner, new_owner]) {
-                    if (name_regex.test(name)) {
-                        if (new_owner && !old_owner)
-                            this.addStatusIcon(name, new_owner);
-                        else if (old_owner && !new_owner)
-                            this.removeStatusIcon(name, old_owner);
-                        else
-                            this.changeStatusIconOwner(name, old_owner, new_owner);
-                    }
-                }
-            ));
-        }));
+        /* This doesn't really work 100% because applets get reloaded and we end up losing this
+         * list. Not that big a deal in practice*/
+        this.ignoredProxies = {};
 
         this.signalManager = new SignalManager.SignalManager(null);
+
+        this.monitor = new XApp.StatusIconMonitor();
+        this.signalManager.connect(this.monitor, "icon-added", this.addStatusIcon, this);
+        this.signalManager.connect(this.monitor, "icon-removed", this.removeStatusIcon, this);
+
         this.signalManager.connect(Gtk.IconTheme.get_default(), 'changed', this.on_icon_theme_changed, this);
         this.signalManager.connect(global.settings, 'changed::panel-edit-mode', this.on_panel_edit_mode_changed, this);
+
+        this.signalManager.connect(Main.systrayManager, "changed", this.onSystrayRolesChanged, this);
     }
 
-    addStatusIcon(busName, owner) {
-        if (this.statusIcons[owner]) {
-            let prevName = this.statusIcons[owner].busName;
-            if (this._isInstance(busName) && !this._isInstance(prevName))
-                this.statusIcons[owner].busName = busName;
-            else
-                return;
-        } else if (owner) {
-            let statusIcon = new XAppStatusIcon(this, busName, owner);
-            this.manager_container.insert_child_at_index(statusIcon.actor, 0);
-            this.statusIcons[owner] = statusIcon;
+    onSystrayRolesChanged() {
+        let hiddenIcons = Main.systrayManager.getRoles();
+
+        for (let i in this.statusIcons) {
+            if (hiddenIcons.some(role => role === this.statusIcons[i].proxy.name)) {
+                global.log(`Hiding XAppStatusIcon: ${this.statusIcons[i].proxy.name} (${i})`);
+
+                let proxy = this.statusIcons[i].proxy;
+                this.ignoredProxies[proxy.get_name()] = proxy;
+
+                this.removeStatusIcon(this.monitor, this.statusIcons[i].proxy);
+            }
+        }
+
+        for (let i in this.ignoredProxies) {
+            if (!hiddenIcons.some(role => role === this.ignoredProxies[i].name)) {
+                let proxy = this.ignoredProxies[i];
+
+                delete this.ignoredProxies[i];
+
+                global.log(`Restoring hidden XAppStatusIcon: ${this.statusIcons[i].proxy.name} (${i})`);
+
+                this.addStatusIcon(this.monitor, proxy);
+            }
         }
     }
 
-    removeStatusIcon(busName, owner) {
-        if (this.statusIcons[owner] && this.statusIcons[owner].busName == busName) {
-            this.manager_container.remove_child(this.statusIcons[owner].actor);
-            this.statusIcons[owner].destroy();
-            delete this.statusIcons[owner];
+    addStatusIcon(monitor, icon_proxy) {
+        let proxy_name = icon_proxy.get_name();
+
+        if (this.statusIcons[proxy_name]) {
+            return;
         }
+
+        let hiddenIcons = Main.systrayManager.getRoles();
+
+        if (hiddenIcons.indexOf(icon_proxy.name) != -1 ) {
+            global.log(`Hiding XAppStatusIcon: ${icon_proxy.name} (${proxy_name})`);
+
+            this.ignoredProxies[proxy_name] = icon_proxy;
+            return;
+        }
+
+        global.log(`Adding XAppStatusIcon: ${icon_proxy.name} (${proxy_name})`);
+
+        let statusIcon = new XAppStatusIcon(this, icon_proxy);
+
+        this.manager_container.insert_child_at_index(statusIcon.actor, 0);
+        this.statusIcons[proxy_name] = statusIcon;
     }
 
-    changeStatusIconOwner(busName, oldOwner, newOwner) {
-        if (this.statusIcons[oldOwner] && busName == this.statusIcons[oldOwner].busName) {
-            this.statusIcons[newOwner] = this.statusIcons[oldOwner];
-            this.statusIcons[newOwner].owner = newOwner;
-            delete this.statusIcons[oldOwner];
+    removeStatusIcon(monitor, icon_proxy) {
+        let proxy_name = icon_proxy.get_name();
+
+        if (!this.statusIcons[proxy_name]) {
+            if (this.ignoredProxies[proxy_name]) {
+                delete this.ignoredProxies[proxy_name];
+            }
+
+            return;
         }
+
+        global.log(`Removing XAppStatusIcon: ${icon_proxy.name} (${proxy_name})`);
+
+        this.manager_container.remove_child(this.statusIcons[proxy_name].actor);
+        this.statusIcons[proxy_name].destroy();
+        delete this.statusIcons[proxy_name];
     }
 
     refreshIcons() {
@@ -333,6 +332,17 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
 
     on_applet_removed_from_panel() {
         this.signalManager.disconnectAllSignals();
+
+        for (let key in this.statusIcons) {
+            this.statusIcons[key].destroy();
+            delete this.statusIcons[key];
+        };
+
+        for (let key in this.ignoredProxies) {
+            delete this.ignoredProxies[key];
+        };
+
+        this.monitor = null;
     }
 
     on_panel_edit_mode_changed() {
