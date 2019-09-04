@@ -1,3 +1,63 @@
+cinnamon (4.3.0) UNRELEASED; urgency=medium
+
+  [ Steve M ]
+  * Stock theme - improve modal and run dialog layout (#8740)
+
+  [ Clement Lefebvre ]
+  * l10n: Update files
+  * menu: Don't show hidden files in recents
+
+  [ James Ross ]
+  * menu applet: if all recents are hidden act like there are none (#8780)
+  * menu applet: fix typo in system box nav fix (#8781)
+
+  [ Michael Webster ]
+  * CinnamonGtkSettings.py: Fix a runtime warning.
+
+  [ Clement Lefebvre ]
+  * Settings: Fix picture chooser in HiDPI
+
+  [ Simon Brown ]
+  * remove some error_trap deprecations (#8643)
+
+  [ Stephen Collins ]
+  * Change xlet about dialog to external python/gtk in it's own process (#8734)
+
+  [ James Ross ]
+  * Fix some compile warnings. (#8722)
+
+  [ Clement Lefebvre ]
+  * Window settings: Simply layout settings
+
+  [ Eric Larson ]
+  * Update cs_windows.py: Add setting for new window focus (#8798)
+
+  [ Clement Lefebvre ]
+  * Window settings: Rephrase new option and reorder focus stealing combo options
+
+  [ Michael Webster ]
+  * panel.js: Simplify the initial panel context menu. (#8803)
+
+  [ James Ross ]
+  * Partially revert "cinnamon-global.c: fix repaint function signatures"
+
+  [ Michael Webster ]
+  * cinnamon-window-tracker.c: remove 'tracked-windows-changed' signal.
+  * window-list@cinnamon.org: Restore async window-added signal handler.
+
+  [ Clement Lefebvre ]
+  * Add an XAppStatus applet (#8823)
+  * Applets: Hide tooltip when set to an empty string
+  * XappStatus applet: Hide tooltip on click events
+
+  [ Michael Webster ]
+  * search_provider.py: port search provider example to python3
+
+  [ Clement Lefebvre ]
+  * Fix cs_privacy in LMDE3
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 04 Sep 2019 10:49:36 +0100
+
 cinnamon (4.2.3) tina; urgency=medium
 
   [ Clement Lefebvre ]
