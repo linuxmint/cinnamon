@@ -6,8 +6,13 @@ try:
     gi.require_version('NM', '1.0')
     from gi.repository import NM
     nm_client = NM.Client.new(None)
+    # call connectivity_check_get_available to make
+    # sure it's available (it's new in libnm 1.10)
+    # if it's not, we catch the exception and set
+    # the client to None
+    nm_client.connectivity_check_get_available()
 except:
-    pass
+    nm_client = None
 
 from GSettingsWidgets import *
 
