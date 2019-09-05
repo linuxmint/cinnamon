@@ -16,7 +16,7 @@ if len(sys.argv) < 2:
     quit()
 
 pname = sys.argv[1]
-logfile = "%s/%s-%s.log" % (home, pname, datetime.datetime.now().strftime("%Y-%m-%d-%l:%M:%S"))
+logfile = "%s/%s-%s.log" % (home, pname, datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S"))
 
 runargs = ""
 
