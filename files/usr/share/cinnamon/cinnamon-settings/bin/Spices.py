@@ -167,7 +167,7 @@ class Spice_Harvester(GObject.Object):
 
         if self.themes:
             self.install_folder = '%s/.themes/' % (home)
-            self.spices_directories = (self.install_folder, '%s/.themes/' % (home))
+            self.spices_directories = (self.install_folder, )
         else:
             self.install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
             self.spices_directories = ('/usr/share/cinnamon/%ss/' % self.collection_type, self.install_folder)
