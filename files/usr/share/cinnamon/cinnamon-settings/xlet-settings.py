@@ -233,6 +233,15 @@ class MainWindow(object):
         reset_option.connect("activate", self.reset)
         reset_option.show()
 
+        separator = Gtk.SeparatorMenuItem()
+        menu.append(separator)
+        separator.show()
+
+        reload_option = Gtk.MenuItem(label=_("Reload %s") % self.uuid)
+        menu.append(reload_option)
+        reload_option.connect("activate", self.reload_xlet)
+        reload_option.show()
+
         self.menu_button.set_popup(menu)
 
         scw = Gtk.ScrolledWindow()
@@ -532,6 +541,10 @@ class MainWindow(object):
 
     def reset(self, *args):
         self.selected_instance["settings"].reset_to_defaults()
+
+    def reload_xlet(self, *args):
+        if proxy:
+            proxy.ReloadXlet('(ss)', self.uuid, self.type.upper())
 
     def quit(self, *args):
         if proxy:
