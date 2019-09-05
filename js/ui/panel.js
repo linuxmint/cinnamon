@@ -1660,7 +1660,7 @@ PanelContextMenu.prototype = {
 
         this.movePanelItem.setSensitive(Main.panelManager.canAdd);
         this.addPanelItem.setSensitive(Main.panelManager.canAdd);
-        this.pasteAppletItem.setSensitive(AppletManager.clipboard.length != 0);
+        // this.pasteAppletItem.setSensitive(AppletManager.clipboard.length != 0);
 
         let {definitions} = AppletManager;
         let nonEmpty = false;
@@ -1670,8 +1670,8 @@ PanelContextMenu.prototype = {
                 break;
             }
         }
-        this.copyAppletItem.setSensitive(nonEmpty);
-        this.clearAppletItem.setSensitive(nonEmpty);
+        //this.copyAppletItem.setSensitive(nonEmpty);
+        //this.clearAppletItem.setSensitive(nonEmpty);
     }
 }
 
