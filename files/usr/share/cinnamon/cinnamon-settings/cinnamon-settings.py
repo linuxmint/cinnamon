@@ -91,7 +91,7 @@ STANDALONE_MODULES = [
     [_("Package Management"),            "yumex-dnf",                           "cs-sources",         "admin",          _("update, install, repository, package, source, download")],
     [_("Users and Groups"),              "cinnamon-settings-users",             "cs-user-accounts",   "admin",          _("user, users, account, accounts, group, groups, password")],
     [_("Bluetooth"),                     "blueberry",                           "cs-bluetooth",       "hardware",       _("bluetooth, dongle, transfer, mobile")],
-    [_("Manage Services and Units"),     "systemd-manager-pkexec",              "cs-sources",         "admin",          _("systemd, units, services, systemctl, init")]
+    [_("Backup"),                        "pkexec timeshift-gtk",                "timeshift",          "admin",          _("backup, timeshift, files, copy, snapshots")]
 ]
 
 TABS = {
