@@ -92,7 +92,7 @@ STANDALONE_MODULES = [
     [_("Users and Groups"),              "cinnamon-settings-users",             "cs-user-accounts",   "admin",          _("user, users, account, accounts, group, groups, password")],
     [_("Bluetooth"),                     "blueberry",                           "cs-bluetooth",       "hardware",       _("bluetooth, dongle, transfer, mobile")],
     [_("Manage Services and Units"),     "systemd-manager-pkexec",              "cs-sources",         "admin",          _("systemd, units, services, systemctl, init")],
-    [_("Disks Management"),              "gnome-disks",                         "disks",              "hardware",          _("disk, disk, manage, hardware, management")]
+    [_("Disks Management"),              "gnome-disks",                         "disks",              "admin",          _("disk, disk, manage, hardware, management")]
 ]
 
 TABS = {
