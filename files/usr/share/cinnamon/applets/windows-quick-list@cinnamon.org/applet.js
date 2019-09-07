@@ -77,16 +77,22 @@ class CinnamonWindowsQuickListApplet extends Applet.IconApplet {
                     empty_menu = false;
                 }
 
+                const MAX_TITLE_LENGTH = 30;
+
                 for (let i = 0; i < windows.length; ++i) {
                     let metaWindow = windows[i];
-                    let item = new PopupMenu.PopupMenuItem(windows[i].get_title());
+                    let metaWindowTitle = metaWindow.get_title().padEnd(MAX_TITLE_LENGTH);
+                    if (metaWindowTitle.length > MAX_TITLE_LENGTH) {
+                        metaWindowTitle = metaWindowTitle.substring(0, MAX_TITLE_LENGTH);
+                    }
+                    let item = new PopupMenu.PopupMenuItem(metaWindowTitle);
                     item.connect(
                         'activate',
                         Lang.bind(this, function() {
                             this.activateWindow(metaWorkspace, metaWindow);
                         })
                     );
-                    item._window = windows[i];
+                    item._window = metaWindow;
                     let app = tracker.get_window_app(item._window);
                     item._icon = app.create_icon_texture_for_window(24, item._window);
                     item.addActor(item._icon, {align: St.Align.END});
@@ -117,11 +123,14 @@ class CinnamonWindowsQuickListApplet extends Applet.IconApplet {
     }
 
     on_applet_clicked(event) {
-        this.updateMenu();
-        if (!this._menu.isOpen) {
-            this._menu.toggle_with_options(false);
+        if (this._menu.isOpen) {
+            this.menu.close(false);
+            this._menu.close(false);
+        } else {
+            this.updateMenu();
+            this._menu.open(false);
+            this.menu.open(true);
         }
-        this.menu.toggle();
     }
 }
 
