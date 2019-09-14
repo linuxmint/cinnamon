@@ -443,6 +443,7 @@ class OtherTypeDialog(Gtk.Dialog):
         return True
 
     def getDescription(self, content_type):
+        description = None
         for d in other_defs:
             if content_type == d[DEF_CONTENT_TYPE]:
                 s = d[DEF_LABEL]
