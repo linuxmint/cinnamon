@@ -42,6 +42,9 @@ class XAppStatusIcon {
         this.actor.add_actor(this.icon);
         this.actor.add_actor(this.label);
 
+        this.show_label = this.applet.orientation == St.Side.TOP || this.applet.orientation == St.Side.BOTTOM;
+        this.label.visible = this.show_label;
+
         this.actor.connect('button-press-event', Lang.bind(this, this.onButtonPressEvent));
         this.actor.connect('button-release-event', Lang.bind(this, this.onButtonReleaseEvent));
         this.actor.connect('enter-event', Lang.bind(this, this.onEnterEvent));
@@ -124,7 +127,7 @@ class XAppStatusIcon {
     }
 
     setLabel(label) {
-        if (label) {
+        if (this.show_label && label) {
             this.label.set_text(label);
             this.label.show();
         }
