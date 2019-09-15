@@ -372,3 +372,17 @@ na_tray_icon_removed (NaTrayManager *na_manager, GtkWidget *socket,
     }
   g_hash_table_remove (manager->priv->icons, socket);
 }
+
+void
+cinnamon_tray_manager_set_orientation (CinnamonTrayManager *manager,
+                                       ClutterOrientation   orientation)
+{
+  if (orientation == CLUTTER_ORIENTATION_HORIZONTAL)
+    {
+      na_tray_manager_set_orientation (manager->priv->na_manager, GTK_ORIENTATION_HORIZONTAL);
+    }
+  else
+    {
+      na_tray_manager_set_orientation (manager->priv->na_manager, GTK_ORIENTATION_VERTICAL);
+    }
+}

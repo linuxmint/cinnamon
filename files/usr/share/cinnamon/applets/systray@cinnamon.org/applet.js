@@ -58,6 +58,9 @@ class CinnamonSystrayApplet extends Applet.Applet {
             manager = new Clutter.BoxLayout( { spacing: 4,
                                                orientation: Clutter.Orientation.VERTICAL });
         }
+
+        this.update_na_tray_orientation();
+
         this.manager = manager;
         this.manager_container = new Clutter.Actor( { layout_manager: manager } );
         this.actor.add_actor (this.manager_container);
@@ -173,6 +176,22 @@ class CinnamonSystrayApplet extends Applet.Applet {
             this.manager.set_vertical(false);
         } else {
             this.manager.set_vertical(true);
+        }
+
+        this.update_na_tray_orientation();
+    }
+
+    update_na_tray_orientation() {
+        switch (this.orientation) {
+            case St.Side.LEFT:
+            case St.Side.RIGHT:
+                Main.statusIconDispatcher.set_tray_orientation(Clutter.Orientation.VERTICAL);
+                break;
+            case St.Side.TOP:
+            case St.Side.BOTTOM:
+            default:
+                Main.statusIconDispatcher.set_tray_orientation(Clutter.Orientation.HORIZONTAL);
+                break;
         }
     }
 
