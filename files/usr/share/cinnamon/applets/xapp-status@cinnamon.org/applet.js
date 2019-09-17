@@ -331,6 +331,17 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         }
 
         icon_list.sort((a, b) => {
+            let asym = a.proxy.icon_name.includes("-symbolic");
+            let bsym = b.proxy.icon_name.includes("-symbolic");
+
+            if (asym && !bsym) {
+                return 1;
+            }
+
+            if (bsym && !asym) {
+                return -1;
+            }
+
             return GLib.utf8_collate(a.proxy.name, b.proxy.name);
         });
 
