@@ -8,7 +8,8 @@ const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 const SignalManager = imports.misc.signalManager;
 const Gtk = imports.gi.Gtk;
-const XApp = imports.gi.XApp
+const XApp = imports.gi.XApp;
+const GLib = imports.gi.GLib;
 
 class XAppStatusIcon {
 
@@ -298,6 +299,8 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
 
         this.manager_container.insert_child_at_index(statusIcon.actor, 0);
         this.statusIcons[proxy_name] = statusIcon;
+
+        this.sortIcons();
     }
 
     removeStatusIcon(monitor, icon_proxy) {
@@ -316,6 +319,26 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         this.manager_container.remove_child(this.statusIcons[proxy_name].actor);
         this.statusIcons[proxy_name].destroy();
         delete this.statusIcons[proxy_name];
+
+        this.sortIcons();
+    }
+
+    sortIcons() {
+        let icon_list = []
+
+        for (let i in this.statusIcons) {
+            icon_list.push(this.statusIcons[i]);
+        }
+
+        icon_list.sort((a, b) => {
+            return GLib.utf8_collate(a.proxy.name, b.proxy.name);
+        });
+
+        icon_list.reverse()
+
+        for (let icon of icon_list) {
+            this.manager_container.set_child_at_index(icon.actor, 0);
+        }
     }
 
     refreshIcons() {
