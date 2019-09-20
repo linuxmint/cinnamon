@@ -1,14 +1,14 @@
 #!/bin/bash
 
-intltool-extract --type=gettext/glade files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui
+find files/usr/share/cinnamon -name "*.ui" -exec intltool-extract --type=gettext/glade {} \;
 
-intltool-extract --type=gettext/glade files/usr/share/cinnamon/cinnamon-settings/cinnamon-online-accounts-info.ui
+xgettext --language=C --keyword=_ --keyword=N_ --output=cinnamon.pot src/*.c src/*/*.c
 
-xgettext --language=C --keyword=_ --keyword=N_ --output=cinnamon.pot src/*.c src/*/*.c files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui.h files/usr/share/cinnamon/cinnamon-settings/cinnamon-online-accounts-info.ui.h
+find files/usr/share/cinnamon -name "*.ui.h" -exec xgettext --language=C --keyword=_ --keyword=N_ --output=cinnamon.pot --join-existing {} \;
+
 xgettext --language=JavaScript --keyword=_ --keyword=N_ --output=cinnamon.pot --join-existing --from-code=UTF-8 js/*/*.js files/usr/share/cinnamon/*/*/*.js
 xgettext -c --language=Python --keyword=_ --output=cinnamon.pot --join-existing generate_additional_files.py files/usr/share/cinnamon/*/*.py files/usr/share/cinnamon/*/*/*.py files/usr/bin/cinnamon-launcher
 files/usr/bin/cinnamon-xlet-makepot -j -p -o cinnamon.pot files/usr/share/cinnamon/applets/
 files/usr/bin/cinnamon-xlet-makepot -j -p -o cinnamon.pot files/usr/share/cinnamon/desklets/
 
-rm -f files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui.h
-rm -f files/usr/share/cinnamon/cinnamon-settings/cinnamon-online-accounts-info.ui.h
+find files/usr/share/cinnamon -name "*.ui.h" -exec rm -f {} \;

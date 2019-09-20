@@ -254,6 +254,7 @@ class MainWindow:
     ''' Create the UI '''
     def __init__(self):
         self.builder = Gtk.Builder()
+        self.builder.set_translation_domain('cinnamon') # let it translate!
         self.builder.add_from_file(config.currentPath + "/cinnamon-settings.ui")
         self.window = XApp.GtkWindow(window_position=Gtk.WindowPosition.CENTER,
                                      default_width=800, default_height=600)

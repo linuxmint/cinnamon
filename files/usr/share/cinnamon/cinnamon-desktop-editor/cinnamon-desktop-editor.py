@@ -25,7 +25,7 @@ import JsonSettingsWidgets
 gettext.install("cinnamon", "/usr/share/locale")
 # i18n for menu item
 
-_ = gettext.gettext
+#_ = gettext.gettext # bug !!! _ is already defined by gettext.install!
 home = os.path.expanduser("~")
 PANEL_LAUNCHER_PATH = os.path.join(home, ".cinnamon", "panel-launchers")
 
@@ -59,6 +59,7 @@ class ItemEditor(object):
 
     def __init__(self, item_path=None, callback=None, destdir=None):
         self.builder = Gtk.Builder()
+        self.builder.set_translation_domain('cinnamon') # let it translate!
         self.builder.add_from_file(self.ui_file)
         self.callback = callback
         self.destdir = destdir
