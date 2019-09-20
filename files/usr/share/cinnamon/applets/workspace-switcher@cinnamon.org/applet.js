@@ -385,28 +385,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             this.buttons[i].destroy();
         }
 
-        // we're just doing a rough estimate here, but less than about 20px in either
-        // direction makes visual layout useless.
-        let suppress_graph = false;
-        if (this._panelHeight < 26) suppress_graph = true;
-        else {
-            let workspace_size = new Meta.Rectangle();
-            global.screen.get_workspace_by_index(0).get_work_area_all_monitors(workspace_size);
-            if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
-                let estHeight = (this._panelHeight - 6) / workspace_size.width * workspace_size.height;
-                if (estHeight < 20) {
-                    suppress_graph = true;
-                }
-            }
-            else {
-                let estWidth = (this._panelHeight - 6) / workspace_size.height * workspace_size.width;
-                if (estWidth < 20) {
-                    suppress_graph = true;
-                }
-            }
-        }
-
-        if (this.display_type == "visual" && !suppress_graph)
+        if (this.display_type == "visual")
             this.actor.set_style_class_name('workspace-graph');
         else
             this.actor.set_style_class_name('workspace-switcher');
@@ -415,7 +394,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
         this.buttons = [];
         for (let i = 0; i < global.screen.n_workspaces; ++i) {
-            if (this.display_type == "visual" && !suppress_graph)
+            if (this.display_type == "visual")
                 this.buttons[i] = new WorkspaceGraph(i, this);
             else
                 this.buttons[i] = new SimpleButton(i, this);
@@ -425,7 +404,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         }
 
         this.signals.disconnect("notify::focus-window");
-        if (this.display_type == "visual" && !suppress_graph) {
+        if (this.display_type == "visual") {
             // In visual mode, keep track of window events to represent them
             this.signals.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
             this._onFocusChanged();
