@@ -830,6 +830,10 @@ update_flatpak_info (CinnamonApp *app)
     {
       app->sandbox_type = CINNAMON_APP_SANDBOX_TYPE_FLATPAK;
       tmp = g_desktop_app_info_get_string (app->info, "X-Flatpak-RenamedFrom");
+      if (!tmp)
+      {
+        tmp = g_strdup ((char*) gmenu_tree_entry_get_desktop_file_id (app->entry));
+      }
       flatpak_renamed_from = g_strsplit (tmp, ";", -1);
       len = g_strv_length (flatpak_renamed_from);
 
