@@ -82,7 +82,6 @@ const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const GObject = imports.gi.GObject;
 const PointerTracker = imports.misc.pointerTracker;
-const Lang = imports.lang;
 
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
@@ -259,7 +258,7 @@ function _initUserSession() {
     indicatorManager = new IndicatorManager.IndicatorManager();
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
-       getRunDialog().open();
+        getRunDialog().open();
     });
 }
 
@@ -272,7 +271,7 @@ function do_shutdown_sequence() {
 function _reparentActor(actor, newParent) {
     let parent = actor.get_parent();
     if (parent)
-      parent.remove_actor(actor);
+        parent.remove_actor(actor);
     if(newParent)
         newParent.add_actor(actor);
 }
@@ -427,10 +426,6 @@ function start() {
 
     magnifier = new Magnifier.Magnifier();
 
-    Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
-
-    dynamicWorkspaces = false; // This should be configurable
-
     layoutManager.init();
     keyboard.init();
     overview.init();
@@ -460,14 +455,7 @@ function start() {
     wmSettings = new Gio.Settings({schema_id: "org.cinnamon.desktop.wm.preferences"})
     workspace_names = wmSettings.get_strv("workspace-names");
 
-    global.screen.connect('notify::n-workspaces', _nWorkspacesChanged);
-
-    global.screen.connect('window-entered-monitor', _windowEnteredMonitor);
-    global.screen.connect('window-left-monitor', _windowLeftMonitor);
-
     global.display.connect('gl-video-memory-purged', loadTheme);
-
-    _nWorkspacesChanged();
 
     Promise.all([
         AppletManager.init(),
@@ -481,7 +469,7 @@ function start() {
 
         if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
             if (GLib.file_test("/proc/cmdline", GLib.FileTest.EXISTS)) {
-                content = Cinnamon.get_file_contents_utf8_sync("/proc/cmdline");
+                let content = Cinnamon.get_file_contents_utf8_sync("/proc/cmdline");
                 if (!content.match("boot=casper") && !content.match("boot=live")) {
                     notifyCinnamon2d();
                 }
@@ -501,12 +489,12 @@ function start() {
         // This helps to prevent us from running the animation
         // when the system is bogged down
         if (do_animation) {
-            let id = GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
+            let id = GLib.idle_add(GLib.PRIORITY_LOW, () => {
                 if (do_login_sound)
                     soundManager.play_once_per_session('login');
                 layoutManager._startupAnimation();
                 return GLib.SOURCE_REMOVE;
-            }));
+            });
         } else {
             global.background_actor.show();
             setRunState(RunState.RUNNING);
@@ -530,11 +518,13 @@ function notifyCinnamon2d() {
     let icon = new St.Icon({ icon_name: 'driver-manager',
                              icon_type: St.IconType.FULLCOLOR,
                              icon_size: 36 });
-    let notification = criticalNotify(_("Check your video drivers"),
-                   _("Your system is currently running without video hardware acceleration.") +
-                   "\n\n" +
-                   _("You may experience poor performance and high CPU usage.")
-                   , icon);
+    let notification =
+        criticalNotify(_("Check your video drivers"),
+                       _("Your system is currently running without video hardware acceleration.") +
+                       "\n\n" +
+                       _("You may experience poor performance and high CPU usage."),
+                       icon);
+
     if (GLib.file_test("/usr/bin/cinnamon-driver-manager", GLib.FileTest.EXISTS)) {
         notification.addButton("driver-manager", _("Launch Driver Manager"));
         notification.connect("action-invoked", this.launchDriverManager);
@@ -585,12 +575,16 @@ function _fillWorkspaceNames(index) {
     }
 }
 
-function _trimWorkspaceNames(index) {
+function _shouldTrimWorkspace(i) {
+    return i >= 0 && (i >= global.screen.n_workspaces || !workspace_names[i].length);
+}
+
+function _trimWorkspaceNames() {
     // trim empty or out-of-bounds names from the end.
-    for (let i = workspace_names.length - 1;
-            i >= 0 && (i >= global.screen.n_workspaces || !workspace_names[i].length); --i)
-    {
+    let i = workspace_names.length - 1;
+    while (_shouldTrimWorkspace(i)) {
         workspace_names.pop();
+        i--;
     }
 }
 
@@ -648,18 +642,16 @@ function hasDefaultWorkspaceName(index) {
 }
 
 function _addWorkspace() {
-    if (dynamicWorkspaces)
-        return false;
     global.screen.append_new_workspace(false, global.get_current_time());
     return true;
 }
 
 function _removeWorkspace(workspace) {
-    if (global.screen.n_workspaces == 1 || dynamicWorkspaces)
+    if (global.screen.n_workspaces == 1)
         return false;
     let index = workspace.index();
     if (index < workspace_names.length) {
-        workspace_names.splice (index,1);
+        workspace_names.splice (index, 1);
     }
     _trimWorkspaceNames();
     wmSettings.set_strv("workspace-names", workspace_names);
@@ -690,147 +682,6 @@ function moveWindowToNewWorkspace(metaWindow, switchToNewWorkspace) {
         });
     }
     metaWindow.change_workspace_by_index(global.screen.n_workspaces, true, global.get_current_time());
-}
-
-function _checkWorkspaces() {
-    if (!dynamicWorkspaces)
-        return false;
-    let i;
-    let emptyWorkspaces = [];
-
-    for (let i = 0; i < _workspaces.length; i++) {
-        let lastRemoved = _workspaces[i]._lastRemovedWindow;
-        if (lastRemoved &&
-            (lastRemoved.get_window_type() == Meta.WindowType.SPLASHSCREEN ||
-             lastRemoved.get_window_type() == Meta.WindowType.DIALOG ||
-             lastRemoved.get_window_type() == Meta.WindowType.MODAL_DIALOG))
-                emptyWorkspaces[i] = false;
-        else
-            emptyWorkspaces[i] = true;
-    }
-
-    let windows = global.get_window_actors();
-    for (let i = 0; i < windows.length; i++) {
-        let win = windows[i];
-
-        if (win.get_meta_window().is_on_all_workspaces())
-            continue;
-
-        let workspaceIndex = win.get_workspace();
-        emptyWorkspaces[workspaceIndex] = false;
-    }
-
-    // If we don't have an empty workspace at the end, add one
-    if (!emptyWorkspaces[emptyWorkspaces.length -1]) {
-        global.screen.append_new_workspace(false, global.get_current_time());
-        emptyWorkspaces.push(false);
-    }
-
-    let activeWorkspaceIndex = global.screen.get_active_workspace_index();
-    let removingCurrentWorkspace = (emptyWorkspaces[activeWorkspaceIndex] &&
-                                    activeWorkspaceIndex < emptyWorkspaces.length - 1);
-    // Don't enter the overview when removing multiple empty workspaces at startup
-    let showOverview  = (removingCurrentWorkspace &&
-                         !emptyWorkspaces.every(function(x) { return x; }));
-
-    if (removingCurrentWorkspace) {
-        // "Merge" the empty workspace we are removing with the one at the end
-        wm.blockAnimations();
-    }
-
-    // Delete other empty workspaces; do it from the end to avoid index changes
-    for (let i = emptyWorkspaces.length - 2; i >= 0; i--) {
-        if (emptyWorkspaces[i])
-            global.screen.remove_workspace(_workspaces[i], global.get_current_time());
-    }
-
-    if (removingCurrentWorkspace) {
-        global.screen.get_workspace_by_index(global.screen.n_workspaces - 1).activate(global.get_current_time());
-        wm.unblockAnimations();
-    }
-
-    _checkWorkspacesId = 0;
-    return false;
-}
-
-function _windowRemoved(workspace, window) {
-    workspace._lastRemovedWindow = window;
-    _queueCheckWorkspaces();
-    Mainloop.timeout_add(LAST_WINDOW_GRACE_TIME, function() {
-        if (workspace._lastRemovedWindow == window) {
-            workspace._lastRemovedWindow = null;
-            _queueCheckWorkspaces();
-        }
-    });
-}
-
-function _windowLeftMonitor(metaScreen, monitorIndex, metaWin) {
-    // If the window left the primary monitor, that
-    // might make that workspace empty
-    if (monitorIndex == layoutManager.primaryIndex)
-        _queueCheckWorkspaces();
-}
-
-function _windowEnteredMonitor(metaScreen, monitorIndex, metaWin) {
-    // If the window entered the primary monitor, that
-    // might make that workspace non-empty
-    if (monitorIndex == layoutManager.primaryIndex)
-        _queueCheckWorkspaces();
-}
-
-function _queueCheckWorkspaces() {
-    if (!dynamicWorkspaces)
-        return false;
-    if (_checkWorkspacesId == 0)
-        _checkWorkspacesId = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
-    return true;
-}
-
-function _nWorkspacesChanged() {
-    if (!dynamicWorkspaces)
-        return false;
-
-    let oldNumWorkspaces = _workspaces.length;
-    let newNumWorkspaces = global.screen.n_workspaces;
-
-    if (oldNumWorkspaces == newNumWorkspaces)
-        return false;
-
-    let lostWorkspaces = [];
-    if (newNumWorkspaces > oldNumWorkspaces) {
-        // Assume workspaces are only added at the end
-        for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++)
-            _workspaces[w] = global.screen.get_workspace_by_index(w);
-
-        for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++) {
-            let workspace = _workspaces[w];
-            workspace._windowAddedId = workspace.connect('window-added', _queueCheckWorkspaces);
-            workspace._windowRemovedId = workspace.connect('window-removed', _windowRemoved);
-        }
-
-    } else {
-        // Assume workspaces are only removed sequentially
-        // (e.g. 2,3,4 - not 2,4,7)
-        let removedIndex;
-        let removedNum = oldNumWorkspaces - newNumWorkspaces;
-        for (let w = 0; w < oldNumWorkspaces; w++) {
-            let workspace = global.screen.get_workspace_by_index(w);
-            if (_workspaces[w] != workspace) {
-                removedIndex = w;
-                break;
-            }
-        }
-
-        let lostWorkspaces = _workspaces.splice(removedIndex, removedNum);
-        lostWorkspaces.forEach(function(workspace) {
-                                   workspace.disconnect(workspace._windowAddedId);
-                                   workspace.disconnect(workspace._windowRemovedId);
-                               });
-    }
-
-    _queueCheckWorkspaces();
-
-    return false;
 }
 
 /**
@@ -1284,12 +1135,12 @@ function _stageEventHandler(actor, event) {
     switch (action) {
         // left/right would effectively act as synonyms for up/down if we enabled them;
         // but that could be considered confusing; we also disable them in the main view.
-         case Meta.KeyBindingAction.WORKSPACE_LEFT:
-             wm.actionMoveWorkspaceLeft();
-             return true;
-         case Meta.KeyBindingAction.WORKSPACE_RIGHT:
-             wm.actionMoveWorkspaceRight();
-             return true;
+        case Meta.KeyBindingAction.WORKSPACE_LEFT:
+            wm.actionMoveWorkspaceLeft();
+            return true;
+        case Meta.KeyBindingAction.WORKSPACE_RIGHT:
+            wm.actionMoveWorkspaceRight();
+            return true;
         case Meta.KeyBindingAction.WORKSPACE_UP:
             overview.hide();
             expo.hide();
