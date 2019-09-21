@@ -4,6 +4,7 @@ const Lang = imports.lang;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
 const Main = imports.ui.main;
+const Pango = imports.gi.Pango;
 
 class CinnamonWindowsQuickListApplet extends Applet.IconApplet {
     constructor(metadata, orientation, panel_height, instance_id) {
@@ -77,15 +78,12 @@ class CinnamonWindowsQuickListApplet extends Applet.IconApplet {
                     empty_menu = false;
                 }
 
-                const MAX_TITLE_LENGTH = 30;
-
                 for (let i = 0; i < windows.length; ++i) {
                     let metaWindow = windows[i];
-                    let metaWindowTitle = metaWindow.get_title().padEnd(MAX_TITLE_LENGTH);
-                    if (metaWindowTitle.length > MAX_TITLE_LENGTH) {
-                        metaWindowTitle = metaWindowTitle.substring(0, MAX_TITLE_LENGTH);
-                    }
+                    let metaWindowTitle = metaWindow.get_title();
                     let item = new PopupMenu.PopupMenuItem(metaWindowTitle);
+                    item.label.set_style("max-width:30em;");
+                    item.label.ellipsize = Pango.EllipsizeMode.END;
                     item.connect(
                         'activate',
                         Lang.bind(this, function() {
