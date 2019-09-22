@@ -2689,7 +2689,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         let res = [];
         let exactMatch = null;
-        let regexpPattern = new RegExp("\\b"+pattern);
+        let regexpPattern = new RegExp("\\b" + Util.escapeRegExp(pattern));
 
         for (let i in this._applicationsButtons) {
             let app = this._applicationsButtons[i].app;
