@@ -282,19 +282,17 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
         // Pin/unpin, shortcut handling
         if (!isWindowBacked) {
-            if (this.state.settings.showPinned !== FavType.none) {
-                let label, icon;
-                if (this.groupState.isFavoriteApp) {
-                    label = _('Unpin from Panel');
-                    icon = 'unpin';
-                } else {
-                    label = _('Pin to Panel');
-                    icon = 'pin';
-                }
-                this.pinToggleItem = createMenuItem({label, icon});
-                this.signals.connect(this.pinToggleItem, 'activate', (...args) => this.toggleFavorite(...args));
-                this.addMenuItem(this.pinToggleItem);
+            let label, icon;
+            if (this.groupState.isFavoriteApp) {
+                label = _('Unpin from Panel');
+                icon = 'unpin';
+            } else {
+                label = _('Pin to Panel');
+                icon = 'pin';
             }
+            this.pinToggleItem = createMenuItem({label, icon});
+            this.signals.connect(this.pinToggleItem, 'activate', (...args) => this.toggleFavorite(...args));
+            this.addMenuItem(this.pinToggleItem);
             if (this.state.settings.autoStart) {
                 let label = this.groupState.autoStartIndex !== -1 ? _('Remove from Autostart') : _('Add to Autostart');
                 item = createMenuItem({label: label, icon: 'insert-object'});

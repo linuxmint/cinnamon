@@ -182,9 +182,6 @@ class AppList {
     }
 
     loadFavorites() {
-        if (!this.state.settings.showPinned) {
-            return;
-        }
         const favorites = this.state.trigger('getFavorites');
         const appSystem = this.state.trigger('getAppSystem');
         for (let i = 0; i < favorites.length; i++) {

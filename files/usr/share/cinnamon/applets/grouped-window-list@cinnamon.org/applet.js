@@ -343,7 +343,6 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     bindSettings() {
         let settingsProps = [
-            {key: 'show-pinned', value: 'showPinned', cb: this.refreshCurrentAppList},
             {key: 'show-alerts', value: 'showAlerts', cb: this.updateAttentionState},
             {key: 'group-apps', value: 'groupApps', cb: this.refreshCurrentAppList},
             {key: 'enable-app-button-dragging', value: 'enableDragging', cb: null},
