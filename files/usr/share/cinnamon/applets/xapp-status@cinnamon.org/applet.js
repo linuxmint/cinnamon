@@ -241,8 +241,8 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         this.signalManager = new SignalManager.SignalManager(null);
 
         this.monitor = new XApp.StatusIconMonitor();
-        this.signalManager.connect(this.monitor, "icon-added", this.addStatusIcon, this);
-        this.signalManager.connect(this.monitor, "icon-removed", this.removeStatusIcon, this);
+        this.signalManager.connect(this.monitor, "icon-added", this.onMonitorIconAdded, this);
+        this.signalManager.connect(this.monitor, "icon-removed", this.onMonitorIconRemoved, this);
 
         this.signalManager.connect(Gtk.IconTheme.get_default(), 'changed', this.on_icon_theme_changed, this);
         this.signalManager.connect(global.settings, 'changed::panel-edit-mode', this.on_panel_edit_mode_changed, this);
@@ -250,60 +250,25 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         this.signalManager.connect(Main.systrayManager, "changed", this.onSystrayRolesChanged, this);
     }
 
-    onSystrayRolesChanged() {
-        let hiddenIcons = Main.systrayManager.getRoles();
-
-        for (let i in this.statusIcons) {
-            if (hiddenIcons.some(role => role === this.statusIcons[i].proxy.name)) {
-                global.log(`Hiding XAppStatusIcon: ${this.statusIcons[i].proxy.name} (${i})`);
-
-                let proxy = this.statusIcons[i].proxy;
-                this.ignoredProxies[proxy.get_name()] = proxy;
-
-                this.removeStatusIcon(this.monitor, this.statusIcons[i].proxy);
-            }
-        }
-
-        for (let i in this.ignoredProxies) {
-            if (!hiddenIcons.some(role => role === this.ignoredProxies[i].name)) {
-                let proxy = this.ignoredProxies[i];
-
-                delete this.ignoredProxies[i];
-
-                global.log(`Restoring hidden XAppStatusIcon: ${this.statusIcons[i].proxy.name} (${i})`);
-
-                this.addStatusIcon(this.monitor, proxy);
-            }
-        }
-    }
-
-    addStatusIcon(monitor, icon_proxy) {
+    onMonitorIconAdded(monitor, icon_proxy) {
         let proxy_name = icon_proxy.get_name();
 
         if (this.statusIcons[proxy_name]) {
             return;
         }
 
-        let hiddenIcons = Main.systrayManager.getRoles();
+        if (this.shouldIgnoreStatusIcon(icon_proxy)) {
+            global.log(`Hiding XAppStatusIcon (we have an applet): ${icon_proxy.name} (${i})`);
+            this.ignoreStatusIcon(icon_proxy);
 
-        if (hiddenIcons.indexOf(icon_proxy.name) != -1 ) {
-            global.log(`Hiding XAppStatusIcon: ${icon_proxy.name} (${proxy_name})`);
-
-            this.ignoredProxies[proxy_name] = icon_proxy;
             return;
         }
 
         global.log(`Adding XAppStatusIcon: ${icon_proxy.name} (${proxy_name})`);
-
-        let statusIcon = new XAppStatusIcon(this, icon_proxy);
-
-        this.manager_container.insert_child_at_index(statusIcon.actor, 0);
-        this.statusIcons[proxy_name] = statusIcon;
-
-        this.sortIcons();
+        this.addStatusIcon(icon_proxy);
     }
 
-    removeStatusIcon(monitor, icon_proxy) {
+    onMonitorIconRemoved(monitor, icon_proxy) {
         let proxy_name = icon_proxy.get_name();
 
         if (!this.statusIcons[proxy_name]) {
@@ -315,12 +280,92 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         }
 
         global.log(`Removing XAppStatusIcon: ${icon_proxy.name} (${proxy_name})`);
+        this.removeStatusIcon(icon_proxy);
+    }
+
+    onSystrayRolesChanged() {
+        let hiddenIcons = Main.systrayManager.getRoles();
+
+        for (let i in this.statusIcons) {
+            let icon_proxy = this.statusIcons[i].proxy;
+
+            if (this.shouldIgnoreStatusIcon(icon_proxy)) {
+                global.log(`Hiding XAppStatusIcon (we have an applet): ${icon_proxy.name} (${i})`);
+                this.removeStatusIcon(icon_proxy);
+                this.ignoreStatusIcon(icon_proxy);
+            }
+        }
+
+        for (let i in this.ignoredProxies) {
+            let icon_proxy = this.ignoredProxies[i];
+
+            if (!this.shouldIgnoreStatusIcon(icon_proxy)) {
+                delete this.ignoredProxies[i];
+
+                global.log(`Restoring hidden XAppStatusIcon (native applet gone): ${icon_proxy.name} (${i})`);
+                this.addStatusIcon(icon_proxy);
+            }
+        }
+    }
+
+    addStatusIcon(icon_proxy) {
+        let proxy_name = icon_proxy.get_name();
+
+        let statusIcon = new XAppStatusIcon(this, icon_proxy);
+
+        this.manager_container.insert_child_at_index(statusIcon.actor, 0);
+        this.statusIcons[proxy_name] = statusIcon;
+
+        this.sortIcons();
+    }
+
+    removeStatusIcon(icon_proxy) {
+        let proxy_name = icon_proxy.get_name();
+
+        if (!this.statusIcons[proxy_name]) {
+            return;
+        }
 
         this.manager_container.remove_child(this.statusIcons[proxy_name].actor);
         this.statusIcons[proxy_name].destroy();
         delete this.statusIcons[proxy_name];
 
         this.sortIcons();
+    }
+
+    ignoreStatusIcon(icon_proxy) {
+        let proxy_name = icon_proxy.get_name();
+
+        if (this.ignoredProxies[proxy_name]) {
+            return;
+        }
+
+        this.ignoredProxies[proxy_name] = icon_proxy;
+    }
+
+    shouldIgnoreStatusIcon(icon_proxy) {
+        let hiddenIcons = Main.systrayManager.getRoles();
+
+        if (hiddenIcons.indexOf(icon_proxy.name) != -1 ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    _sortFunc(a, b) {
+        let asym = a.proxy.icon_name.includes("-symbolic");
+        let bsym = b.proxy.icon_name.includes("-symbolic");
+
+        if (asym && !bsym) {
+            return 1;
+        }
+
+        if (bsym && !asym) {
+            return -1;
+        }
+
+        return GLib.utf8_collate(a.proxy.name, b.proxy.name);
     }
 
     sortIcons() {
@@ -330,21 +375,7 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
             icon_list.push(this.statusIcons[i]);
         }
 
-        icon_list.sort((a, b) => {
-            let asym = a.proxy.icon_name.includes("-symbolic");
-            let bsym = b.proxy.icon_name.includes("-symbolic");
-
-            if (asym && !bsym) {
-                return 1;
-            }
-
-            if (bsym && !asym) {
-                return -1;
-            }
-
-            return GLib.utf8_collate(a.proxy.name, b.proxy.name);
-        });
-
+        icon_list.sort(this._sortFunc);
         icon_list.reverse()
 
         for (let icon of icon_list) {
