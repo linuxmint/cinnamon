@@ -355,7 +355,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'number-display', value: 'numDisplay', cb: this.updateWindowNumberState},
             {key: 'title-display', value: 'titleDisplay', cb: this.updateTitleDisplay},
             {key: 'scroll-behavior', value: 'scrollBehavior', cb: null},
-            {key: 'icon-spacing', value: 'iconSpacing', cb: this.updateSpacing},
             {key: 'show-recent', value: 'showRecent', cb: null},
             {key: 'autostart-menu-item', value: 'autoStart', cb: null},
             {key: 'launch-new-instance-menu-item', value: 'launchNewInstance', cb: null},
@@ -379,7 +378,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             return;
         }
         this.bindAppKeys();
-        this.updateSpacing();
         this.state.set({appletReady: true});
     }
 
@@ -575,12 +573,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             each(workspace.appList, (appGroup) => {
                 appGroup.setActorAttributes(iconSize);
             });
-        });
-    }
-
-    updateSpacing() {
-        each(this.appLists, (workspace) => {
-            workspace.updateSpacing();
         });
     }
 

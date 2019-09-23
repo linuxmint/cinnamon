@@ -39,7 +39,6 @@
       "keys": [
         "title-display",
         "launcher-animation-effect",
-        "icon-spacing",
         "number-display",
         "pinned-apps",
         "enable-app-button-dragging"
@@ -300,14 +299,5 @@
     "step": 1,
     "units": "percent",
     "description": "Window opacity"
-  },
-  "icon-spacing": {
-    "type": "spinbutton",
-    "default": 6,
-    "min": 0,
-    "max": 15,
-    "step": 1,
-    "units": "px",
-    "description": "Space between icons"
   }
 }

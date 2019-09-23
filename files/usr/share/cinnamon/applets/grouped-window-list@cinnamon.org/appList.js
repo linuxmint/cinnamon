@@ -150,12 +150,6 @@ class AppList {
         }, 2000)
     }
 
-    updateSpacing() {
-        each(this.appList, function(appGroup) {
-            appGroup.setMargin();
-        });
-    }
-
     // Gets a list of every app on the current workspace
     getSpecialApps() {
         this.specialApps = [];

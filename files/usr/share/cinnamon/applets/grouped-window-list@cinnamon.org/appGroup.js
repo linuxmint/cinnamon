@@ -257,7 +257,7 @@ class AppGroup {
     setMargin() {
         let direction = this.state.isHorizontal ? 'right' : 'bottom';
         let existingStyle = this.actor.style ? this.actor.style : '';
-        this.actor.style = existingStyle + 'margin-' + direction + ': ' + this.state.settings.iconSpacing + 'px;';
+        this.actor.style = existingStyle + 'margin-' + direction + ':6px;';
     }
 
     updateIconBoxClip() {
@@ -341,13 +341,12 @@ class AppGroup {
     getPreferredWidth(actor, forHeight, alloc) {
         let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(forHeight);
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
-        let {iconSpacing} = this.state.settings;
         // The label text starts in the center of the icon, so we should allocate the space
         // needed for the icon plus the space needed for(label - icon/2)
-        alloc.min_size = iconNaturalSize + iconSpacing;
+        alloc.min_size = iconNaturalSize + 6;
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
             let max = this.labelVisible && this.groupState.metaWindows.length > 0 ?
-                labelNaturalSize + iconNaturalSize + iconSpacing : 0;
+                labelNaturalSize + iconNaturalSize + 6 : 0;
             alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
@@ -366,7 +365,6 @@ class AppGroup {
         let allocHeight = box.y2 - box.y1;
         let childBox = new Clutter.ActorBox();
         let direction = this.actor.get_text_direction();
-        let {iconSpacing} = this.state.settings;
         let spacing = 0;
 
         // Set the icon to be left-justified (or right-justified) and centered vertically
@@ -378,7 +376,7 @@ class AppGroup {
 
         if (this.labelVisible && this.groupState.metaWindows.length > 0) {
             if (direction === Clutter.TextDirection.LTR) {
-                childBox.x1 = box.x1 + iconSpacing;
+                childBox.x1 = box.x1 + 6;
             } else {
                 childBox.x1 = Math.max(box.x1, box.x2 - naturalWidth);
             }
