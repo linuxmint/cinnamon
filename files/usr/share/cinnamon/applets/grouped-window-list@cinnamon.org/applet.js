@@ -326,7 +326,6 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     bindSettings() {
         let settingsProps = [
-            {key: 'show-alerts', value: 'showAlerts', cb: this.updateAttentionState},
             {key: 'group-apps', value: 'groupApps', cb: this.refreshCurrentAppList},
             {key: 'enable-app-button-dragging', value: 'enableDragging', cb: null},
             {key: 'launcher-animation-effect', value: 'launcherAnimationEffect', cb: null},
@@ -592,9 +591,6 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     updateAttentionState(display, window) {
-        if (!this.state.settings.showAlerts) {
-            return false;
-        }
         each(this.appLists, (workspace) => {
             workspace.updateAttentionState(display, window);
         });

@@ -42,7 +42,6 @@
         "icon-spacing",
         "number-display",
         "pinned-apps",
-        "show-alerts",
         "enable-app-button-dragging"
       ]
     },
@@ -145,11 +144,6 @@
     "type": "checkbox",
     "default": true,
     "description": "Group windows by application"
-  },
-  "show-alerts": {
-    "type": "checkbox",
-    "default": true,
-    "description": "Blink on app alerts"
   },
   "show-all-workspaces": {
     "type": "checkbox",
