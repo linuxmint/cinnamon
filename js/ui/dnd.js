@@ -755,23 +755,36 @@ GenericDragItemContainer.prototype = {
         this.actor.add_actor(this.child);
     },
 
-    animateIn: function() {
-        if (this.child == null)
+    animateIn: function(onCompleteFunc) {
+        if (!this.child) {
+            if (typeof(onCompleteFunc) === 'function')
+                onCompleteFunc();
             return;
+        }
 
         this.childScale = 0;
         this.childOpacity = 0;
-        Tweener.addTween(this,
-                         { childScale: 1.0,
-                           childOpacity: 255,
-                           time: DND_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         });
+
+        let params = { childScale: 1.0,
+                       childOpacity: 255,
+                       time: DND_ANIMATION_TIME,
+                       transition: 'easeOutQuad' };
+
+        if (typeof(onCompleteFunc) === 'function')
+            params.onComplete = onCompleteFunc;
+
+        Tweener.addTween(this, params);
     },
 
-    animateOutAndDestroy: function() {
-        if (this.child == null) {
+    animateOutAndDestroy: function(onCompleteFunc) {
+        let _onComplete = () => {
+            if (typeof(onCompleteFunc) === 'function')
+                onCompleteFunc();
             this.actor.destroy();
+        };
+
+        if (!this.child) {
+            _onComplete();
             return;
         }
 
@@ -782,10 +795,7 @@ GenericDragItemContainer.prototype = {
                            childOpacity: 0,
                            time: DND_ANIMATION_TIME,
                            transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this, function() {
-                               this.actor.destroy();
-                           })
-                         });
+                           onComplete: _onComplete });
     },
 
     set childScale(scale) {
