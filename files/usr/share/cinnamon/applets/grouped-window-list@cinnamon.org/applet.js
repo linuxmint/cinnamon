@@ -24,32 +24,20 @@ const {
 class PinnedFavs {
     constructor(params) {
         this.params = params;
-        this.favoriteSettingKey = 'favorite-apps';
         this.reload();
     }
 
     reload() {
         const {state, signals, settings} = this.params;
         const appSystem = state.trigger('getAppSystem');
-        if (signals.isConnected('changed::favorite-apps', global.settings)) {
-            signals.disconnect('changed::favorite-apps', global.settings);
-        }
         if (signals.isConnected('changed::pinned-apps', settings)) {
             signals.disconnect('changed::pinned-apps', settings);
         }
         let cb = () => this.onFavoritesChange();
-        if (state.settings.systemFavorites) {
-            signals.connect(global.settings, 'changed::favorite-apps',  cb);
-        } else {
-            signals.connect(settings, 'changed::pinned-apps', cb);
-        }
+        signals.connect(settings, 'changed::pinned-apps', cb);
         this._favorites = [];
         let ids = [];
-        if (state.settings.systemFavorites) {
-            ids = global.settings.get_strv(this.favoriteSettingKey);
-        } else {
-            ids = settings.getValue('pinned-apps');
-        }
+        ids = settings.getValue('pinned-apps');
         for (let i = 0, len = ids.length; i < len; i++) {
             let refFav = findIndex(this._favorites, (item) => item.id === ids[i]);
             if (refFav === -1) {
@@ -91,12 +79,7 @@ class PinnedFavs {
                 uniqueSet.add(this._favorites[i].id);
             }
         }
-
-        if (this.params.state.settings.systemFavorites) {
-            global.settings.set_strv(this.favoriteSettingKey, ids);
-        } else {
-            this.params.settings.setValue('pinned-apps', ids);
-        }
+        this.params.settings.setValue('pinned-apps', ids);
     }
 
     onFavoritesChange() {
@@ -378,7 +361,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'autostart-menu-item', value: 'autoStart', cb: null},
             {key: 'launch-new-instance-menu-item', value: 'launchNewInstance', cb: null},
             {key: 'monitor-move-all-windows', value: 'monitorMoveAllWindows', cb: null},
-            {key: 'system-favorites', value: 'systemFavorites', cb: this.updateFavorites},
             {key: 'show-all-workspaces', value: 'showAllWorkspaces', cb: this.refreshAllAppLists}
         ];
 

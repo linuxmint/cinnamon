@@ -30,7 +30,6 @@
         "scroll-behavior",
         "left-click-action",
         "middle-click-action",
-        "system-favorites",
         "show-all-workspaces"
       ]
     },
@@ -151,11 +150,6 @@
     "type": "checkbox",
     "default": true,
     "description": "Blink on app alerts"
-  },
-  "system-favorites": {
-    "type": "checkbox",
-    "default": false,
-    "description": "Pin system favorites"
   },
   "show-all-workspaces": {
     "type": "checkbox",
