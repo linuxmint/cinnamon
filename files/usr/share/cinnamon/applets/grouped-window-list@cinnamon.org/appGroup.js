@@ -669,11 +669,6 @@ class AppGroup {
         return this.actor;
     }
 
-    showOrderLabel(number) {
-        this.numberLabel.text = (number + 1).toString();
-        this.badge.show();
-    }
-
     launchNewInstance() {
         this.groupState.app.open_new_window(-1);
         this.animate();
@@ -783,33 +778,6 @@ class AppGroup {
 
         if (button === 3) return true;
         return false;
-    }
-
-    onAppKeyPress() {
-        if (this.groupState.isFavoriteApp && this.groupState.metaWindows.length === 0) {
-            this.launchNewInstance();
-        } else {
-            if (this.appKeyTimeout) {
-                clearTimeout(this.appKeyTimeout);
-                this.appKeyTimeout = 0;
-            }
-            if (this.groupState.metaWindows.length > 1) {
-                if (!this.hoverMenu) this.initThumbnailMenu();
-                this.hoverMenu.open(true);
-            } else {
-                this.listState.trigger('closeAllHoverMenus');
-            }
-            this.windowHandle();
-            this.appKeyTimeout = setTimeout(() => {
-                if (this.groupState.thumbnailMenuEntered) {
-                    clearTimeout(this.appKeyTimeout);
-                    this.appKeyTimeout = 0;
-                    return;
-                }
-                this.hoverMenu.close(true);
-                this.appKeyTimeout = 0;
-            }, this.state.settings.showAppsOrderTimeout);
-        }
     }
 
     windowHandle() {
