@@ -708,17 +708,16 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
       if (sandbox_type == CINNAMON_APP_SANDBOX_TYPE_FLATPAK)
       {
-        GList *flatpak_renamed_from, *l;
+        GList *flatpak_renamed_from;
         GHashTableIter flatpakIter;
         gpointer flatpakKey, flatpakValue;
 
         flatpak_renamed_from = cinnamon_app_get_flatpak_renamed_from (app);
-        l = flatpak_renamed_from;
-        while (l)
+        while (flatpak_renamed_from)
           {
             g_hash_table_replace (self->priv->desktop_filename_to_flatpak_app,
-                                  (gchar*)(l->data), app);
-            l = l->next;
+                                  (gchar*)(flatpak_renamed_from->data), g_object_ref (app));
+            flatpak_renamed_from = flatpak_renamed_from->next;
           }
 
         // unmap removed filenames
