@@ -94,6 +94,9 @@ class Module:
             switch = GSettingsSwitch(_("Tap to click"), "org.cinnamon.settings-daemon.peripherals.touchpad", "tap-to-click")
             settings.add_row(switch)
 
+            switch = GSettingsSwitch(_("Disable touchpad when a mouse is attached"), "org.cinnamon.settings-daemon.peripherals.touchpad", "disable-with-external-mouse")
+            settings.add_row(switch)
+
             switch = GSettingsSwitch(_("Disable touchpad while typing"), "org.cinnamon.settings-daemon.peripherals.touchpad", "disable-while-typing")
             settings.add_row(switch)
 
