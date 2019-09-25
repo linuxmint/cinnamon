@@ -61,6 +61,7 @@ struct _CinnamonAppSystemPrivate {
 static void cinnamon_app_system_finalize (GObject *object);
 static void on_apps_tree_changed_cb (GMenuTree *tree, gpointer user_data);
 CinnamonApp * lookup_heuristic_basename (CinnamonAppSystem *system, const char *name);
+CinnamonApp * lookup_heuristic_basename_for_flatpak_app (CinnamonAppSystem *system, const char *name);
 gchar *strip_extension (gchar *wm_class);
 gboolean case_insensitive_search (const char *key,
                                   const char *value,
@@ -886,6 +887,32 @@ lookup_heuristic_basename (CinnamonAppSystem *system,
   return NULL;
 }
 
+CinnamonApp *
+lookup_heuristic_basename_for_flatpak_app (CinnamonAppSystem *system,
+                                           const char        *name)
+{
+  CinnamonApp *result;
+  GSList *prefix;
+
+  result = cinnamon_app_system_lookup_app (system, name);
+  if (result != NULL)
+    return result;
+
+  for (prefix = system->priv->known_vendor_prefixes; prefix; prefix = g_slist_next (prefix))
+    {
+      char *tmpid = g_strconcat ((char*)prefix->data, name, NULL);
+      result = g_hash_table_lookup (system->priv->desktop_filename_to_flatpak_app, tmpid);
+      if (result == NULL) {
+        result = g_hash_table_find (system->priv->desktop_filename_to_flatpak_app, (GHRFunc) case_insensitive_search, (gpointer) tmpid);
+      }
+      g_free (tmpid);
+      if (result != NULL)
+        return result;
+    }
+
+  return NULL;
+}
+
 gchar *
 strip_extension (gchar *wm_class)
 {
@@ -957,8 +984,6 @@ cinnamon_app_system_lookup_desktop_wmclass_for_flatpak_app (CinnamonAppSystem *s
   char *desktop_file;
   char *stripped_name;
   CinnamonApp *app = NULL;
-  GHashTableIter iter;
-  gpointer key, value;
 
   if (wmclass == NULL)
     return NULL;
@@ -975,15 +1000,7 @@ cinnamon_app_system_lookup_desktop_wmclass_for_flatpak_app (CinnamonAppSystem *s
 
   desktop_file = g_strconcat (stripped_name, ".desktop", NULL);
 
-  g_hash_table_iter_init (&iter, system->priv->desktop_filename_to_flatpak_app);
-  while (g_hash_table_iter_next (&iter, &key, &value))
-    {
-      if (g_strcmp0 ((gchar *)key, desktop_file) == 0)
-        {
-          app = (CinnamonApp *) value;
-          break;
-        }
-    }
+  app = lookup_heuristic_basename_for_flatpak_app (system, desktop_file);
 
   g_free (canonicalized);
   g_free (stripped_name);
