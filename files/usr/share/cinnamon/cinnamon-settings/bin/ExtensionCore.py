@@ -1,22 +1,18 @@
 #!/usr/bin/python3
 
-import sys
 import os
 import re
-import json
-import cgi
 import subprocess
 import gettext
+from html import escape
+from html.entities import name2codepoint
 from html.parser import HTMLParser
-import html.entities as entities
-
-import dbus
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
+from gi.repository import Gtk, GdkPixbuf, GLib
 
-from SettingsWidgets import SidePage, SettingsStack, SettingsPage, SettingsWidget, SettingsLabel
-from Spices import Spice_Harvester, ThreadedTaskManager
+from SettingsWidgets import SettingsPage, SettingsWidget, SettingsLabel
+from Spices import ThreadedTaskManager
 
 home = os.path.expanduser('~')
 
@@ -34,6 +30,7 @@ UNSAFE_ITEMS = ['spawn_sync', 'spawn_command_line_sync', 'GTop', 'get_file_conte
 
 curr_ver = subprocess.check_output(['cinnamon', '--version']).decode("utf-8").splitlines()[0].split(' ')[1]
 
+
 def find_extension_subdir(directory):
     largest = ['0']
     curr_a = curr_ver.split('.')
@@ -47,18 +44,19 @@ def find_extension_subdir(directory):
 
         subdir_a = subdir.split(".")
 
-        if subdir_a < curr_a and largest < subdir_a:
+        if curr_a > subdir_a > largest:
             largest = subdir_a
 
     if len(largest) == 1:
         return directory
-    else:
-        return os.path.join(directory, ".".join(largest))
+    return os.path.join(directory, ".".join(largest))
+
 
 translations = {}
 
+
 def translate(uuid, string):
-    #check for a translation for this xlet
+    # check for a translation for this xlet
     if uuid not in translations:
         try:
             translations[uuid] = gettext.translation(uuid, home + '/.local/share/locale').gettext
@@ -68,7 +66,7 @@ def translate(uuid, string):
             except IOError:
                 translations[uuid] = None
 
-    #do not translate whitespaces
+    # do not translate whitespaces
     if not string.strip():
         return string
 
@@ -78,29 +76,30 @@ def translate(uuid, string):
             return result
     return _(string)
 
+
 def list_header_func(row, before, user_data):
     if before and not row.get_header():
         row.set_header(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
 
+
 def filter_row(row, entry):
     search_string = entry.get_text().lower()
-    if search_string in row.name.lower() or search_string in row.description.lower() or search_string.lower() in row.uuid.lower():
-        return True
-    else:
-        return False
+    return search_string in row.name.lower() or search_string in row.description.lower() or search_string.lower() in row.uuid.lower()
+
 
 def show_prompt(msg, window=None):
-    dialog = Gtk.MessageDialog(transient_for = window,
-                               destroy_with_parent = True,
-                               message_type = Gtk.MessageType.QUESTION,
-                               buttons = Gtk.ButtonsType.YES_NO)
+    dialog = Gtk.MessageDialog(transient_for=window,
+                               destroy_with_parent=True,
+                               message_type=Gtk.MessageType.QUESTION,
+                               buttons=Gtk.ButtonsType.YES_NO)
     dialog.set_default_size(400, 200)
-    esc = cgi.escape(msg)
+    esc = escape(msg)
     dialog.set_markup(esc)
     dialog.show_all()
     response = dialog.run()
     dialog.destroy()
     return response == Gtk.ResponseType.YES
+
 
 background_work_queue = ThreadedTaskManager(5)
 
@@ -113,16 +112,20 @@ class MyHTMLParser(HTMLParser):
     def handle_data(self, data):
         self.strings.append(data)
 
-    def handle_charref(self, number):
-        codepoint = int(number[1:], 16) if number[0] in ('x', 'X') else int(number)
+    def handle_charref(self, name):
+        codepoint = int(name[1:], 16) if name[0] in ('x', 'X') else int(name)
         self.strings.append(chr(codepoint))
 
     def handle_entityref(self, name):
-        codepoint = entities.name2codepoint[name]
+        codepoint = name2codepoint[name]
         self.strings.append(chr(codepoint))
 
     def get_text(self):
         return ''.join(self.strings)
+
+    def error(self, message):
+        print("ExtensionCore: HTML parsing error:", message)
+
 
 def sanitize_html(string):
     parser = MyHTMLParser()
@@ -157,11 +160,6 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         except (KeyError, ValueError):
             self.role = None
 
-        try:
-            last_edited = self.metadata['last-edited']
-        except (KeyError, ValueError):
-            last_edited = -1
-
         if 'multiversion' in self.metadata and self.metadata['multiversion']:
             self.metadata['path'] = find_extension_subdir(self.metadata['path'])
 
@@ -169,7 +167,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         # otherwise we check for "external-configuration-app" in metadata and settings-schema.json in settings
         self.has_config = False
         self.ext_config_app = None
-        if not 'hide-configuration' in self.metadata or self.metadata['hide-configuration'] != True:
+        if 'hide-configuration' not in self.metadata or not self.metadata['hide-configuration']:
             if 'external-configuration-app' in self.metadata:
                 self.ext_config_app = os.path.join(self.metadata['path'], self.metadata['external-configuration-app'])
 
@@ -203,7 +201,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
                 icon = None
 
         if icon is None:
-            icon = Gtk.Image.new_from_icon_name('cs-%ss' % (extension_type), 3)
+            icon = Gtk.Image.new_from_icon_name('cs-%ss' % extension_type, 3)
 
         grid.attach(icon, 0, 0, 1, 1)
 
@@ -248,11 +246,6 @@ class ManageSpicesRow(Gtk.ListBoxRow):
             elif self.extension_type == "extension":
                 self.add_status('locked', 'changes-prevent-symbolic', _("This is a system extension. It cannot be removed."))
 
-        try:
-            schema_filename = self.metadata['schema-file']
-        except (KeyError, ValueError):
-            schema_filename = ''
-
         if self.writable:
             self.scan_extension_for_danger(self.metadata['path'])
 
@@ -260,7 +253,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         try:
             self.version_supported = curr_ver in self.metadata['cinnamon-version'] or curr_ver.rsplit('.', 1)[0] in self.metadata['cinnamon-version']
         except (KeyError, ValueError):
-            self.version_supported = True # Don't check version if not specified.
+            self.version_supported = True  # Don't check version if not specified.
 
     def set_can_config(self, *args):
         if not self.has_config:
@@ -283,7 +276,6 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         self.status_box.pack_end(icon, False, False, 0)
         self.status_ids[status_id] = icon
         icon.set_tooltip_text(tooltip_text)
-        icon.show()
 
     def remove_status(self, status_id):
         if status_id not in self.status_ids:
@@ -345,6 +337,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
                 self.add_status('dangerous', 'dialog-warning-symbolic', _("This desklet contains function calls that could potentially cause Cinnamon to crash or freeze. If you are experiencing crashes or freezing, please try removing it."))
             elif self.extension_type == "extension":
                 self.add_status('dangerous', 'dialog-warning-symbolic', _("This extension contains function calls that could potentially cause Cinnamon to crash or freeze. If you are experiencing crashes or freezing, please try removing it."))
+
 
 class ManageSpicesPage(SettingsPage):
     def __init__(self, parent, collection_type, spices, window):
@@ -522,7 +515,7 @@ class ManageSpicesPage(SettingsPage):
     def remove_all_instances(self, *args):
         extension_row = self.list_box.get_selected_row()
 
-        if (extension_row.enabled > 1):
+        if extension_row.enabled > 1:
             msg = _("There are multiple instances enabled. Are you sure you want to remove all of them?")
             if not show_prompt(msg, self.window):
                 return
@@ -531,7 +524,7 @@ class ManageSpicesPage(SettingsPage):
 
     def uninstall_extension(self, *args):
         extension_row = self.list_box.get_selected_row()
-        if not show_prompt(_("Are you sure you want to completely remove %s?") % (extension_row.uuid), self.window):
+        if not show_prompt(_("Are you sure you want to completely remove %s?") % extension_row.uuid, self.window):
             return
         self.spices.disable_extension(extension_row.uuid)
 
@@ -546,8 +539,8 @@ class ManageSpicesPage(SettingsPage):
             msg = _("This will disable all active extensions. Are you sure you want to do this?")
         if show_prompt(msg, self.window):
             if self.collection_type != 'extension':
-                os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
-            os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
+                os.system('gsettings reset org.cinnamon next-%s-id' % self.collection_type)
+            os.system('gsettings reset org.cinnamon enabled-%ss' % self.collection_type)
 
     def about(self, *args):
         row = self.list_box.get_selected_row()
@@ -702,7 +695,7 @@ class DownloadSpicesPage(SettingsPage):
         self.top_box.pack_start(sort_label, False, False, 4)
 
         self.sort_combo = Gtk.ComboBox()
-        sort_types=Gtk.ListStore(str, str)
+        sort_types = Gtk.ListStore(str, str)
         self.sort_combo.set_model(sort_types)
         renderer_text = Gtk.CellRendererText()
         self.sort_combo.pack_start(renderer_text, True)
@@ -712,7 +705,7 @@ class DownloadSpicesPage(SettingsPage):
         sort_types.append(['score', _("Popularity")])
         sort_types.append(['date', _("Date")])
         sort_types.append(['installed', _("Installed")])
-        self.sort_combo.set_active(1) #Rating
+        self.sort_combo.set_active(1)  # Rating
         self.sort_combo.connect('changed', self.sort_changed)
         self.top_box.pack_start(self.sort_combo, False, False, 4)
 
@@ -860,7 +853,7 @@ class DownloadSpicesPage(SettingsPage):
 
     def uninstall(self, *args):
         extension_row = self.list_box.get_selected_row()
-        if not show_prompt(_("Are you sure you want to completely remove %s?") % (extension_row.uuid), self.window):
+        if not show_prompt(_("Are you sure you want to completely remove %s?") % extension_row.uuid, self.window):
             return
 
         self.spices.disable_extension(extension_row.uuid)
@@ -872,7 +865,7 @@ class DownloadSpicesPage(SettingsPage):
 
     def build_list(self, *args):
         spices_data = self.spices.get_cache()
-        if spices_data == None:
+        if not spices_data:
             return
 
         if len(self.extension_rows) > 0:
@@ -890,7 +883,7 @@ class DownloadSpicesPage(SettingsPage):
         updates_available = self.spices.get_n_updates()
         self.update_all_button.set_sensitive(updates_available)
         if updates_available > 0:
-            msg_text = _("Update all") + ' (' + ngettext("%d update available", "%d updates available", updates_available) % updates_available  + ')'
+            msg_text = _("Update all") + ' (' + ngettext("%d update available", "%d updates available", updates_available) % updates_available + ')'
         else:
             msg_text = _("No updates available")
         self.update_all_button.set_tooltip_text(msg_text)
