@@ -739,6 +739,9 @@ class DownloadSpicesPage(SettingsPage):
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         frame.add(main_box)
 
+        self.infobar_holder = Gtk.Frame(shadow_type=Gtk.ShadowType.NONE)
+        main_box.pack_start(self.infobar_holder, False, False, 0)
+
         scw = Gtk.ScrolledWindow()
         scw.expand = True
         scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -746,9 +749,6 @@ class DownloadSpicesPage(SettingsPage):
         main_box.pack_start(scw, True, True, 0)
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         scw.add(self.box)
-
-        self.infobar_holder = Gtk.Frame(shadow_type=Gtk.ShadowType.NONE)
-        self.box.add(self.infobar_holder)
 
         self.list_box = Gtk.ListBox()
         self.list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
@@ -929,8 +929,35 @@ class DownloadSpicesPage(SettingsPage):
     def on_page_shown(self, *args):
         if not self.spices.processing_jobs:
             if (not self.spices.has_cache) or self.spices.get_cache_age() > 7:
-                prompt = _("Your cache is out of date. Would you like to update it now?")
-                if show_prompt(prompt, self.window):
-                    self.spices.refresh_cache()
+                self.on_cache_outdated()
 
         self.search_entry.grab_focus()
+
+    def on_cache_outdated(self, *args):
+        infobar = self.infobar_holder.get_child()
+        if not infobar:
+            infobar = Gtk.InfoBar()
+            icon = Gtk.Image.new_from_icon_name("dialog-question-symbolic", Gtk.IconSize.LARGE_TOOLBAR)
+            label = Gtk.Label(_("Your cache is out of date. Would you like to update it now?"))
+            label.set_line_wrap(True)
+
+            infobar.set_message_type(Gtk.MessageType.QUESTION)
+            infobar.get_content_area().pack_start(icon, False, False, 12)
+            infobar.get_content_area().pack_start(label, False, False, 0)
+            infobar.add_button(_("Yes"), Gtk.ResponseType.YES)
+            infobar.add_button(_("No"), Gtk.ResponseType.NO)
+
+            infobar.connect('response', self._on_infobar_response)
+            self.infobar_holder.add(infobar)
+
+        self.infobar_holder.show_all()
+        infobar.set_revealed(True)
+
+    def _on_infobar_response(self, infobar: Gtk.InfoBar, response):
+        if response == Gtk.ResponseType.YES and not self.spices.processing_jobs:
+            self.spices.refresh_cache()
+            pass
+
+        infobar.set_revealed(False)
+        self.search_entry.grab_focus()
+
