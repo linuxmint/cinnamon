@@ -145,6 +145,7 @@ ARG_REWRITE = {
     'users':            'cinnamon-settings-users'
 }
 
+
 def print_timing(func):
     # decorate functions with @print_timing to output how long they take to run.
     def wrapper(*arg):
@@ -155,12 +156,13 @@ def print_timing(func):
         return res
     return wrapper
 
+
 def touch(fname, times=None):
-    with file(fname, 'a'):
+    with open(fname, 'a'):
         os.utime(fname, times)
 
-class MainWindow:
 
+class MainWindow:
     # Change pages
     def side_view_nav(self, side_view, path, cat):
         selected_items = side_view.get_selected_items()
@@ -178,14 +180,13 @@ class MainWindow:
 
     def go_to_sidepage(self, cat, path, user_action=True):
         iterator = self.store[cat].get_iter(path)
-        sidePage = self.store[cat].get_value(iterator,2)
+        sidePage = self.store[cat].get_value(iterator, 2)
         if not sidePage.is_standalone:
             if not user_action:
                 self.window.set_title(sidePage.name)
                 self.window.set_icon_name(sidePage.icon)
             sidePage.build()
             if sidePage.stack:
-                current_page = sidePage.stack.get_visible_child_name()
                 self.stack_switcher.set_stack(sidePage.stack)
                 l = sidePage.stack.get_children()
                 if len(l) > 0:
@@ -210,6 +211,7 @@ class MainWindow:
                     self.stack_switcher.set_opacity(0)
             else:
                 self.stack_switcher.set_opacity(0)
+
             if user_action:
                 self.main_stack.set_visible_child_name("content_box_page")
                 self.header_stack.set_visible_child_name("content_box")
@@ -252,10 +254,10 @@ class MainWindow:
             if key is not cat:
                 self.side_view[key].unselect_all()
 
-    ''' Create the UI '''
+    # Create the UI
     def __init__(self):
         self.builder = Gtk.Builder()
-        self.builder.set_translation_domain('cinnamon') # let it translate!
+        self.builder.set_translation_domain('cinnamon')  # let it translate!
         self.builder.add_from_file(config.currentPath + "/cinnamon-settings.ui")
         self.window = XApp.GtkWindow(window_position=Gtk.WindowPosition.CENTER,
                                      default_width=800, default_height=600)
@@ -326,9 +328,8 @@ class MainWindow:
         # sort the modules alphabetically according to the current locale
         localeStrKey = cmp_to_key(locale.strcoll)
         # Apply locale key to the field name of each side page.
-        sidePagesKey = lambda m : localeStrKey(m[0].name)
+        sidePagesKey = lambda m: localeStrKey(m[0].name)
         self.sidePages = sorted(self.unsortedSidePages, key=sidePagesKey)
-
 
         # create the backing stores for the side nav-view.
         sidePagesIters = {}
@@ -375,8 +376,8 @@ class MainWindow:
 
         self.calculate_bar_heights()
 
-        self.tab = 0 # open 'manage' tab by default
-        self.sort = 1 # sorted by 'score' by default
+        self.tab = 0  # open 'manage' tab by default
+        self.sort = 1  # sorted by 'score' by default
 
         # Select the first sidePage
         if len(sys.argv) > 1:
@@ -429,8 +430,7 @@ class MainWindow:
             if path:
                 self.go_to_sidepage(cat, path, user_action=False)
                 self.window.show()
-                if arg1 in ("mintlocale", "blueberry", "system-config-printer", \
-                            "mintlocale-im", "nvidia-settings"):
+                if arg1 in ("mintlocale", "blueberry", "system-config-printer", "mintlocale-im", "nvidia-settings"):
                     # These modules do not need to leave the System Settings window open,
                     # when selected by command line argument.
                     self.window.close()
@@ -626,7 +626,6 @@ class MainWindow:
     def on_keynav_failed(self, widget, direction, category):
         num_cats = len(CATEGORIES)
         current_idx = self.get_cur_cat_index(category)
-        new_cat = CATEGORIES[current_idx]
         ret = False
         dist = 1000
         sel = None
@@ -711,6 +710,7 @@ class MainWindow:
     def quit(self, *args):
         self.window.destroy()
         Gtk.main_quit()
+
 
 if __name__ == "__main__":
     setproctitle("cinnamon-settings")
