@@ -724,5 +724,5 @@ if __name__ == "__main__":
     urllib.install_opener(urllib.build_opener(proxy))
 
     window = MainWindow()
-    signal.signal(signal.SIGINT, window.quit)
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     Gtk.main()
