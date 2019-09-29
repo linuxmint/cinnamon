@@ -348,7 +348,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
 
 class ManageSpicesPage(SettingsPage):
     def __init__(self, parent, collection_type, spices, window):
-        super(ManageSpicesPage, self).__init__()
+        super().__init__()
         self.expand = True
         self.set_spacing(0)
         self.set_margin_top(5)
@@ -588,7 +588,7 @@ class ManageSpicesPage(SettingsPage):
 
 class DownloadSpicesRow(Gtk.ListBoxRow):
     def __init__(self, uuid, data, spices, size_groups):
-        super(DownloadSpicesRow, self).__init__()
+        super().__init__()
 
         self.uuid = uuid
         self.data = data
@@ -659,8 +659,6 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         if self.installed:
             self.add_status('installed', 'object-select-symbolic', _("Installed"))
 
-        self.show_all()
-
     def download(self, *args):
         self.spices.install(self.uuid)
 
@@ -672,7 +670,6 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         self.status_box.pack_end(icon, False, False, 0)
         self.status_ids[status_id] = icon
         icon.set_tooltip_text(tooltip_text)
-        icon.show()
 
     def remove_status(self, status_id):
         if status_id not in self.status_ids:
@@ -684,7 +681,7 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
 
 class DownloadSpicesPage(SettingsPage):
     def __init__(self, parent, collection_type, spices, window):
-        super(DownloadSpicesPage, self).__init__()
+        super().__init__()
         self.expand = True
         self.set_spacing(0)
         self.set_margin_top(5)
@@ -807,7 +804,6 @@ class DownloadSpicesPage(SettingsPage):
 
         self.spices.connect('cache-loaded', self.build_list)
         self.spices.connect('installed-changed', self.build_list)
-        self.build_list()
 
     def on_entry_refilter(self, widget, data=None):
         if self.search_entry.get_text() == '':
@@ -899,6 +895,7 @@ class DownloadSpicesPage(SettingsPage):
             msg_text = _("No updates available")
         self.update_all_button.set_tooltip_text(msg_text)
         self.refresh_button.set_sensitive(True)
+        self.list_box.show_all()
 
     def get_more_info(self, *args):
         extension_row = self.list_box.get_selected_row()
@@ -911,6 +908,9 @@ class DownloadSpicesPage(SettingsPage):
         GLib.idle_add(self.on_page_shown)
 
     def on_page_shown(self, *args):
+        if not self.extension_rows:
+            self.build_list()
+
         if not self.spices.processing_jobs:
             if (not self.spices.has_cache) or self.spices.get_cache_age() > 7:
                 self.on_cache_outdated()
