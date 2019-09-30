@@ -503,10 +503,10 @@ class AppMenuButton {
     destroy() {
         this._signals.disconnectAllSignals();
         this._tooltip.destroy();
-        if (this.rightClickMenu) {
+        if (!this.alert) {
             this.rightClickMenu.destroy();
+            this._menuManager.destroy();
         }
-        this._menuManager.destroy();
         this.actor.destroy();
     }
 
@@ -745,26 +745,26 @@ class AppMenuButton {
             return false;
 
         this._needsAttention = true;
-        let counter = 0;
-        this._flashButton(counter);
+        this._flashButton();
         return true;
     }
 
-    _flashButton(counter) {
+    _flashButton() {
         if (!this._needsAttention)
             return;
 
-        this.actor.add_style_class_name("window-list-item-demands-attention");
-        if (counter < 4) {
-            Mainloop.timeout_add(FLASH_INTERVAL, Lang.bind(this, function () {
-                if (this.actor.has_style_class_name("window-list-item-demands-attention")) {
-                    this.actor.remove_style_class_name("window-list-item-demands-attention");
-                }
-                Mainloop.timeout_add(FLASH_INTERVAL, Lang.bind(this, function () {
-                    this._flashButton(++counter);
-                }));
-            }));
-        }
+        let counter = 0;
+        let sc = "window-list-item-demands-attention";
+
+        Mainloop.timeout_add(FLASH_INTERVAL, () => {
+            if (this.actor.has_style_class_name(sc))
+                this.actor.remove_style_class_name(sc);
+            else
+                this.actor.add_style_class_name(sc);
+            let result = counter < 4;
+            counter++;
+            return result;
+        });
     }
 };
 
@@ -1002,7 +1002,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.signals.connect(global.window_manager, 'switch-workspace', this._refreshAllItems, this);
         this.signals.connect(Cinnamon.WindowTracker.get_default(), "window-app-changed", this._onWindowAppChanged, this);
 
-        this.actor.connect('style-changed', Lang.bind(this, this._updateSpacing));
+        this.signals.connect(this.actor, 'style-changed', Lang.bind(this, this._updateSpacing));
 
         global.settings.bind("panel-edit-mode", this.actor, "reactive", Gio.SettingsBindFlags.DEFAULT);
 
@@ -1017,6 +1017,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
     on_applet_removed_from_panel() {
         this.signals.disconnectAllSignals();
+        this.settings.finalize();
     }
 
     on_applet_instances_changed() {
