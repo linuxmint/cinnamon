@@ -1068,6 +1068,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     }
 
     _toggle_out_mute() {
+        if (!this._output)
+            return;
+
         if (this._output.is_muted) {
             this._output.change_is_muted(false);
             this.mute_out_switch.setToggleState(false);
@@ -1078,6 +1081,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     }
 
     _toggle_in_mute() {
+        if (!this._input)
+            return;
+
         if (this._input.is_muted) {
             this._input.change_is_muted(false);
             this.mute_in_switch.setToggleState(false);
