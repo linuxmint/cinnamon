@@ -1117,9 +1117,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             this._players[this._activePlayer]._mediaServerPlayer.PreviousRemote();
         } else if (buttonId === 9) {
             this._players[this._activePlayer]._mediaServerPlayer.NextRemote();
+        } else {
+            return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
         }
-
-        return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
+        return Clutter.EVENT_STOP;
     }
 
     setIcon(icon, source) {
