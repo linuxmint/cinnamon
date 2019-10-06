@@ -629,14 +629,14 @@ class Player extends PopupMenu.PopupMenuSection {
 
     _updateControls() {
         this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'CanGoNext', (value, error) => {
-            let canGoNext = true;
+            let canGoNext = false;
             if (!error)
                 canGoNext = value[0].unpack();
             this._nextButton.setEnabled(canGoNext);
         });
 
         this._prop.GetRemote(MEDIA_PLAYER_2_PLAYER_NAME, 'CanGoPrevious', (value, error) => {
-            let canGoPrevious = true;
+            let canGoPrevious = false;
             if (!error)
                 canGoPrevious = value[0].unpack();
             this._prevButton.setEnabled(canGoPrevious);
