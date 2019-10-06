@@ -626,9 +626,10 @@ class Player extends PopupMenu.PopupMenuSection {
         }));
 
         //get the desktop entry and pass it to the applet
-        this._prop.GetRemote(MEDIA_PLAYER_2_NAME, "DesktopEntry", Lang.bind(this, function(value) {
-            this._applet.passDesktopEntry(value[0].unpack());
-        }));
+        this._prop.GetRemote(MEDIA_PLAYER_2_NAME, "DesktopEntry", (result, error) => {
+            if (!error)
+                this._applet.passDesktopEntry(result[0].unpack());
+        });
     }
 
     _setName(status) {
@@ -924,7 +925,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                         if (name_regex.test(name)) {
                             this._dbus.GetNameOwnerRemote(name, Lang.bind(this,
                                 function(owner) {
-                                    this._addPlayer(name, owner);
+                                    this._addPlayer(name, owner[0]);
                                 }
                             ));
                         }
