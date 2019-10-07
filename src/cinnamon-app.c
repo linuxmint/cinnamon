@@ -818,7 +818,6 @@ static void
 update_flatpak_info (CinnamonApp *app)
 {
   gchar** flatpak_renamed_from = NULL;
-  gchar* tmp;
   guint len, i;
 
   g_list_free_full (app->flatpak_renamed_from, g_free);
@@ -828,6 +827,7 @@ update_flatpak_info (CinnamonApp *app)
       (g_desktop_app_info_has_key (app->info, "X-Flatpak") ||
        g_desktop_app_info_has_key (app->info, "X-Flatpak-RenamedFrom")))
     {
+      gchar* tmp;
       app->sandbox_type = CINNAMON_APP_SANDBOX_TYPE_FLATPAK;
       tmp = g_desktop_app_info_get_string (app->info, "X-Flatpak-RenamedFrom");
       if (!tmp)
