@@ -923,13 +923,20 @@ class IconChooser(SettingsWidget):
     bind_prop = "icon"
     bind_dir = Gio.SettingsBindFlags.DEFAULT
 
-    def __init__(self, label, expand_width=False, size_group=None, dep_key=None, tooltip=""):
+    def __init__(self, label, default_icon=None, custom=[], expand_width=False, size_group=None, dep_key=None, tooltip=""):
         super(IconChooser, self).__init__(dep_key=dep_key)
 
         self.label = SettingsLabel(label)
 
         self.content_widget = XApp.IconChooserButton()
         self.content_widget.set_icon_size(Gtk.IconSize.BUTTON)
+
+        dialog = self.content_widget.get_dialog()
+        if default_icon:
+            dialog.set_default_icon(default_icon)
+
+        for item in custom:
+            dialog.add_custom_category(item['name'], item['icons'])
 
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, expand_width, expand_width, 0)

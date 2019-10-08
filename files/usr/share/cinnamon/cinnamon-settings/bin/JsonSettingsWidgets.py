@@ -22,7 +22,9 @@ JSON_SETTINGS_PROPERTIES_MAP = {
     "possible"      : "possible",
     "expand-width"  : "expand_width",
     "columns"       : "columns",
-    "event-sounds"  : "event_sounds"
+    "event-sounds"  : "event_sounds",
+    "default_icon"  : "default_icon",
+    "custom"        : "custom"
 }
 
 OPERATIONS = ['<=', '>=', '<', '>', '!=', '=']
