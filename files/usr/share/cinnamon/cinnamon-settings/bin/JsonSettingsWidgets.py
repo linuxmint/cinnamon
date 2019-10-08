@@ -10,21 +10,22 @@ import operator
 CAN_BACKEND.append("List")
 
 JSON_SETTINGS_PROPERTIES_MAP = {
-    "description"     : "label",
-    "min"             : "mini",
-    "max"             : "maxi",
-    "step"            : "step",
-    "units"           : "units",
-    "show-value"      : "show_value",
-    "select-dir"      : "dir_select",
-    "height"          : "height",
-    "tooltip"         : "tooltip",
-    "possible"        : "possible",
-    "expand-width"    : "expand_width",
-    "columns"         : "columns",
-    "event-sounds"    : "event_sounds",
-    "default_icon"    : "default_icon",
-    "icon_categories" : "icon_categories"
+    "description"      : "label",
+    "min"              : "mini",
+    "max"              : "maxi",
+    "step"             : "step",
+    "units"            : "units",
+    "show-value"       : "show_value",
+    "select-dir"       : "dir_select",
+    "height"           : "height",
+    "tooltip"          : "tooltip",
+    "possible"         : "possible",
+    "expand-width"     : "expand_width",
+    "columns"          : "columns",
+    "event-sounds"     : "event_sounds",
+    "default_icon"     : "default_icon",
+    "icon_categories"  : "icon_categories",
+    "default_category" : "default_category"
 }
 
 OPERATIONS = ['<=', '>=', '<', '>', '!=', '=']
