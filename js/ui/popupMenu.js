@@ -2308,6 +2308,11 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             Tweener.addTween(this.actor, tweenParams);
         } else {
             this.animating = false;
+
+            let [xPos, yPos] = this._calculatePosition(); // should this be conditional on this._slidePosition being -1?
+            this.actor.x = xPos;
+            this.actor.y = yPos;
+
             this.actor.show();
         }
 
