@@ -33,19 +33,19 @@ elif os.path.exists("/usr/bin/tint2"):
 def confirm_restart():
     d = Gtk.Dialog(title=None, parent=None, flags=0)
     d.set_default_size(400,-1)
-    d.add_buttons(Gtk.STOCK_NO, Gtk.ResponseType.NO,
-                  Gtk.STOCK_YES, Gtk.ResponseType.YES)
+    d.add_buttons(_("No"),  Gtk.ResponseType.NO,
+                  _("Yes"), Gtk.ResponseType.YES)
     d.set_keep_above(True)
     d.set_position(Gtk.WindowPosition.CENTER)
     box = d.get_content_area()
-    c = Gtk.CheckButton(label="Disable local extensions")
+    c = Gtk.CheckButton(label=_("Disable local extensions"))
     label = Gtk.Label()
     label.set_line_wrap(True)
     label.set_markup("<span size='large'><b>%s</b></span>\n\n%s\n\n%s\n\n" %
             (
-                ("Cinnamon just crashed. You are currently running in Fallback Mode."),
-                ("Do you want to restart Cinnamon?"),
-                ("If you suspect the source of the crashes might be local extensions "
+                _("Cinnamon just crashed. You are currently running in Fallback Mode."),
+                _("Do you want to restart Cinnamon?"),
+                _("If you suspect the source of the crashes might be local extensions "
                  "or applets, you can disable all user supplied extensions using the checkbox below.")
             ))
     box.add(label)
