@@ -598,6 +598,8 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         self.score = data['score']
         self.timestamp = data['last_edited']
 
+        self.has_update = False
+
         self.status_ids = {}
 
         self.installed = self.spices.get_is_installed(uuid)
@@ -651,6 +653,7 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
             download_button.connect('clicked', self.download)
             download_button.set_tooltip_text(_("Install"))
         elif self.spices.get_has_update(uuid):
+            self.has_update = True
             download_button = Gtk.Button.new_from_icon_name('view-refresh-symbolic', 2)
             self.button_box.pack_start(download_button, False, False, 0)
             download_button.connect('clicked', self.download)
@@ -715,6 +718,7 @@ class DownloadSpicesPage(SettingsPage):
         sort_types.append(['score', _("Popularity")])
         sort_types.append(['date', _("Date")])
         sort_types.append(['installed', _("Installed")])
+        sort_types.append(['update', _("Update")])
         self.sort_combo.set_active(1) #Rating
         self.sort_combo.connect('changed', self.sort_changed)
         self.top_box.pack_start(self.sort_combo, False, False, 4)
@@ -844,6 +848,14 @@ class DownloadSpicesPage(SettingsPage):
             else:
                 return 1
 
+        def sort_update(row1, row2):
+            if row1.has_update == row2.has_update:
+                return 0
+            elif row1.has_update:
+                return -1
+            else:
+                return 1
+
         sort_type = self.sort_combo.get_active_id()
         if sort_type == 'name':
             self.list_box.set_sort_func(sort_name)
@@ -851,8 +863,10 @@ class DownloadSpicesPage(SettingsPage):
             self.list_box.set_sort_func(sort_score)
         elif sort_type == 'date':
             self.list_box.set_sort_func(sort_date)
-        else:
+        elif sort_type == 'installed':
             self.list_box.set_sort_func(sort_installed)
+        else:
+            self.list_box.set_sort_func(sort_update)
 
     def on_row_selected(self, list_box, row):
         if row is None:
