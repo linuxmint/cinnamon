@@ -850,6 +850,8 @@ class DownloadSpicesPage(SettingsPage):
 
         def sort_update(row1, row2):
             if row1.has_update == row2.has_update:
+                if not row1.has_update:
+                    return row2.timestamp - row1.timestamp
                 return 0
             elif row1.has_update:
                 return -1
