@@ -1951,3 +1951,42 @@ StScrollBar StButton#vhandle:hover {
 .systray {
     spacing: 5px;
 }
+
+.xapp-status-icon {
+    padding-left: 3px;
+    padding-right: 3px;
+    color: #ccc;
+    text-shadow: black 0px 0px 2px;
+    transition-duration: 200;
+}
+
+.xapp-status-icon:checked,
+.xapp-status-icon:hover {
+    color: #fff;
+}
+
+.xapp-status-icon.vertical {
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+.xapp-status-icon.vertical:hover {
+}
+.xapp-status-icon:highlight {
+    background-color: #aa5555;
+}
+
+.xapp-status-label {
+    padding-left: 5px;
+    font-weight: bold;
+    color: #ccc;
+}
+
+.xapp-status-icon:checked > .xapp-status-label,
+.xapp-status-icon:hover > .xapp-status-label {
+    color: #fff;
+    text-shadow: white 0px 0px 5px;
+}
+.xapp-status-icon.vertical:hover > .xapp-status-label {
+}
