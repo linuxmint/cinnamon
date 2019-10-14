@@ -22,7 +22,7 @@ class XAppStatusIcon {
         this.tooltipText = "";
 
         this.actor = new St.BoxLayout({
-            style_class: "xapp-status-icon",
+            style_class: "applet-box",
             reactive: true,
             track_hover: true,
             // The systray use a layout manager, we need to fill the space of the actor
