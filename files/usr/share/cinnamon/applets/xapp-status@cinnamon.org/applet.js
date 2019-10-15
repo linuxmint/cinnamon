@@ -35,7 +35,6 @@ class XAppStatusIcon {
 
         this.label = new St.Label({
             'y-align': St.Align.END,
-            style_class: "xapp-status-label"
         });
 
         this.actor.add_actor(this.icon);
