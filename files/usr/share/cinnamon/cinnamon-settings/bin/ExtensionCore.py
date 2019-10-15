@@ -718,7 +718,7 @@ class DownloadSpicesPage(SettingsPage):
         sort_types.append(['score', _("Popularity")])
         sort_types.append(['date', _("Date")])
         sort_types.append(['installed', _("Installed")])
-        sort_types.append(['update', _("Update")])
+        sort_types.append(['update', _("Upgradable")])
         self.sort_combo.set_active(1) #Rating
         self.sort_combo.connect('changed', self.sort_changed)
         self.top_box.pack_start(self.sort_combo, False, False, 4)
