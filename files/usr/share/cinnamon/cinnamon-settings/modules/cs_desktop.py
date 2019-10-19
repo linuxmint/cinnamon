@@ -5,7 +5,8 @@ from gi.repository import Gio
 import gi
 gi.require_version('Nemo', '3.0')
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 DESKTOP_SCHEMA = "org.nemo.desktop"
 LAYOUT_KEY = "desktop-layout"

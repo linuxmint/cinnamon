@@ -19,7 +19,9 @@ import gi
 gi.require_version('AccountsService', '1.0')
 from gi.repository import AccountsService, GLib
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from ChooserButtonWidgets import PictureChooserButton
+from xapp.GSettingsWidgets import *
 
 class PasswordError(Exception):
     '''Exception raised when an incorrect password is supplied.'''

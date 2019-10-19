@@ -7,7 +7,8 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import GLib, Gtk, Gdk
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 
 class Monitor:
@@ -42,7 +43,7 @@ class PanelSettingsPage(SettingsPage):
                 if item.split(":")[0] == panel_id:
                     return item.split(":")[1] != "false"
 
-        section = SettingsBox(_("Panel Visibility"))
+        section = SettingsSection(_("Panel Visibility"))
         self.add(section)
 
         self.size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
@@ -57,14 +58,14 @@ class PanelSettingsPage(SettingsPage):
         widget = PanelSpinButton(_("Hide delay"), "org.cinnamon", "panels-hide-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
         section.add_reveal_row(widget, "org.cinnamon", "panels-autohide", check_func=can_show)
 
-        section = SettingsBox(_("Customize"))
+        section = SettingsSection(_("Customize"))
         self.add(section)
 
         widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=60, show_value=True)
         widget.set_rounding(0)
         section.add_row(widget)
 
-        section = SettingsBox(_("Panel appearance"))
+        section = SettingsSection(_("Panel appearance"))
         self.add(section)
 
         zone_switcher = SettingsWidget()

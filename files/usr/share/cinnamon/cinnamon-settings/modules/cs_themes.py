@@ -1,10 +1,13 @@
 #!/usr/bin/python3
 
+import os
+
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
 
-from GSettingsWidgets import *
+from xapp.GSettingsWidgets import *
 from CinnamonGtkSettings import CssRange, CssOverrideSwitch, GtkSettingsSwitch, PreviewWidget, Gtk2ScrollbarSizeEditor
-from SettingsWidgets import LabelRow
+from SettingsWidgets import LabelRow, SidePage, walk_directories
+from ChooserButtonWidgets import PictureChooserButton
 from ExtensionCore import DownloadSpicesPage
 from Spices import Spice_Harvester
 
