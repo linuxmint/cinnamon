@@ -5,7 +5,8 @@ gi.require_version("Gtk", "3.0")
 gi.require_version('CDesktopEnums', '3.0')
 
 from gi.repository import Gtk, CDesktopEnums
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage, GSettingsDependencySwitch, DependencyCheckInstallButton, GSettingsSoundFileChooser
+from xapp.GSettingsWidgets import *
 
 DPI_FACTOR_LARGE         = 1.25
 DPI_FACTOR_NORMAL        = 1.0

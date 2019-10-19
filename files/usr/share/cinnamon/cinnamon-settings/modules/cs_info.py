@@ -7,7 +7,8 @@ import os
 import re
 import threading
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 
 def killProcess(process):

@@ -15,7 +15,8 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
 
-from SettingsWidgets import SidePage, SettingsStack, SettingsPage, SettingsWidget, SettingsLabel
+from xapp.SettingsWidgets import SettingsStack, SettingsPage, SettingsWidget, SettingsLabel
+from SettingsWidgets import SidePage
 from Spices import Spice_Harvester, ThreadedTaskManager
 
 home = os.path.expanduser('~')

@@ -14,7 +14,8 @@ try:
 except:
     nm_client = None
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy"
 GTK_RECENT_ENABLE_KEY = "remember-recent-files"

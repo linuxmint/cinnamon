@@ -5,7 +5,8 @@ gi.require_version('CinnamonDesktop', '3.0')
 gi.require_version('UPowerGlib', '1.0')
 from gi.repository import CinnamonDesktop, Gdk, UPowerGlib
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 POWER_BUTTON_OPTIONS = [
     ("blank", _("Lock the screen")),

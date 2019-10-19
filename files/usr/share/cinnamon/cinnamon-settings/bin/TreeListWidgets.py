@@ -3,7 +3,8 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-from SettingsWidgets import *
+from xapp.SettingsWidgets import *
+from SettingsWidgets import SoundFileChooser, Keybinding
 
 VARIABLE_TYPE_MAP = {
     "string"        :   str,

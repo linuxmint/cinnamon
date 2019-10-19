@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 
-from GSettingsWidgets import *
+import os
+
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 from gi.repository import *
 
 PREF_MEDIA_AUTORUN_NEVER = "autorun-never"
@@ -573,7 +576,7 @@ class Module:
             switch.fill_row()
             page.add(switch)
 
-            settings = SettingsBox(_("Removable media"))
+            settings = SettingsSection(_("Removable media"))
             switch.revealer.add(settings)
             page.pack_start(switch.revealer, False, False, 0)
 

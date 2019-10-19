@@ -9,7 +9,8 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, Pango
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 LOCK_DELAY_OPTIONS = [
     (0, _("Lock immediately")),
