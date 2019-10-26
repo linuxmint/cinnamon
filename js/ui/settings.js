@@ -653,7 +653,15 @@ XletSettingsBase.prototype = {
                 let overrideData = JSON.parse(overrideString);
 
                 for (let key in overrideData) {
-                    templateData[key] = overrideData[key];
+                    if ("override-props" in overrideData[key]) {
+                        for (let prop in overrideData[key]) {
+                            if (prop == "override-props") continue;
+                            templateData[key][prop] = overrideData[key][prop];
+                        }
+                    }
+                    else {
+                        templateData[key] = overrideData[key];
+                    }
                 }
             }
         } catch(e) {
