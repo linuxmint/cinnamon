@@ -31,15 +31,34 @@ elif os.path.exists("/usr/bin/tint2"):
 
 
 def confirm_restart():
-    d = Gtk.MessageDialog(parent=None, flags=0, message_type=Gtk.MessageType.WARNING, buttons=Gtk.ButtonsType.YES_NO)
+    d = Gtk.Dialog(title=None, parent=None, flags=0)
+    d.set_default_size(400,-1)
+    d.add_buttons(_("No"),  Gtk.ResponseType.NO,
+                  _("Yes"), Gtk.ResponseType.YES)
     d.set_keep_above(True)
-    d.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
-    d.set_markup("<span size='large'><b>%s</b></span>\n\n%s" % (_("Cinnamon just crashed. You are currently running in Fallback Mode."), _("Do you want to restart Cinnamon?")))
-    d.show_all()
+    d.set_position(Gtk.WindowPosition.CENTER)
+    box = d.get_content_area()
+    c = Gtk.CheckButton(label=_("Disable local extensions"))
+    label = Gtk.Label()
+    label.set_line_wrap(True)
+    label.set_markup("<span size='large'><b>%s</b></span>\n\n%s\n\n%s\n\n" %
+            (
+                _("Cinnamon just crashed. You are currently running in Fallback Mode."),
+                _("Do you want to restart Cinnamon?"),
+                _("If you suspect the source of the crashes might be local extensions "
+                 "or applets, you can disable all user supplied extensions using the checkbox below.")
+            ))
+    box.add(label)
+    box.add(c)
+    label.show_all()
+    c.show_all()
     resp = d.run()
     d.destroy()
-    return (resp == Gtk.ResponseType.YES)
-
+    if resp == Gtk.ResponseType.YES:
+        if c.get_active():
+            os.environ["CINNAMON_TROUBLESHOOT"] = "1"
+        return(True)
+    return(False)
 
 if __name__ == "__main__":
     setproctitle("cinnamon-launcher")
