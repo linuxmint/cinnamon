@@ -133,6 +133,8 @@ Possible choices are:
  - \fBdate\fP or \fB2\fP
 .br
  - \fBinstalled\fP or \fB3\fP
+.br
+ - \fBupdate\fP or \fB4\fP (upgradable Spices first, then acts as \fBdate\fP)
 
 .SH OPTIONS
 The following options are supported:
@@ -181,7 +183,7 @@ or
 $ \fBcinnamon-settings applets -t 1\fP
 
 .TP
-To open the download tab of a type of Spices (applets, desklets, extensions, themes), sorting them by 'name', 'score', 'date' or 'installed', use the '--sort=' or '-s' argument:
+To open the download tab of a type of Spices (applets, desklets, extensions, themes), sorting them by 'name', 'score', 'date', 'installed' or 'update', use the '--sort=' or '-s' argument:
 .br
 $ \fBcinnamon-settings TYPE --tab=download --sort=SORT\fP
 .br
@@ -191,7 +193,7 @@ $ \fBcinnamon-settings TYPE -t 1 -s SORT\fP
 .br
 where TYPE can be \fBapplets\fP, \fBdesklets\fP, \fBextensions\fP or \fBthemes\fP
 .br
-and SORT can be \fBname\fP (or \fB0\fP), \fBscore\fP (or \fB1\fP), \fBdate\fP (or \fB2\fP), \fBinstalled\fP (or \fB3\fP)
+and SORT can be \fBname\fP (or \fB0\fP), \fBscore\fP (or \fB1\fP), \fBdate\fP (or \fB2\fP), \fBinstalled\fP (or \fB3\fP), \fBupdate\fP (or \fB4\fP)
 
 Example:
 .br
@@ -201,4 +203,4 @@ $ \fBcinnamon-settings applets -t 1 -s date\fP
 .BR cinnamon-menu-editor (1)
 
 .SH "CONTRIBUTORS"
-Nicolas Bourdaud (nbourdau) and Claude Clerc (claudiux).
+Claude Clerc (claudiux) and Nicolas Bourdaud (nbourdau).
