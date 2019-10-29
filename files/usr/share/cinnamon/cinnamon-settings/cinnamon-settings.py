@@ -194,7 +194,7 @@ class MainWindow:
                         visible_child = sidePage.stack.get_visible_child()
                         if self.tab == 1 \
                         and hasattr(visible_child, 'sort_combo') \
-                        and self.sort in range(4):
+                        and self.sort in range(5):
                             visible_child.sort_combo.set_active(self.sort)
                             visible_child.sort_changed()
                     else:
@@ -395,7 +395,7 @@ class MainWindow:
             #   cinnamon-settings.py desklets -t 2
             # Please note that useless or wrong arguments are ignored.
             opts = []
-            sorts_literal = {"name":0, "score":1, "date":2, "installed":3}
+            sorts_literal = {"name":0, "score":1, "date":2, "installed":3, "update":4}
             tabs_literal = {"default":0}
             if arg1 in TABS.keys():
                 tabs_literal = TABS[arg1]
