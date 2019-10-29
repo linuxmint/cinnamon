@@ -78,6 +78,7 @@ Module options:
                                 'score' or 1 (by default)
                                 'date' or 2
                                 'installed' or 3
+                                'update' or 4
 Example:
     $ cinnamon-settings applets -t download -s date
 
