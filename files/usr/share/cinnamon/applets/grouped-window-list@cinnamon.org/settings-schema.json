@@ -147,7 +147,7 @@
   },
   "launcher-animation-effect": {
     "type": "combobox",
-    "default": 1,
+    "default": 3,
     "description": "Launcher animation",
     "options": {
       "None": 1,
