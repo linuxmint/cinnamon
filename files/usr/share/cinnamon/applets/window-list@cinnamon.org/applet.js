@@ -741,7 +741,7 @@ class AppMenuButton {
     }
 
     getAttention() {
-        if (this._needsAttention)
+        if (this._needsAttention || this._hasFocus())
             return false;
 
         this._needsAttention = true;
@@ -750,7 +750,7 @@ class AppMenuButton {
     }
 
     _flashButton() {
-        if (!this._needsAttention)
+        if (!this._needsAttention || this._hasFocus())
             return;
 
         let counter = 0;
