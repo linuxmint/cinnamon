@@ -57,6 +57,7 @@ struct _StTextureCachePrivate
 
 static void st_texture_cache_dispose (GObject *object);
 static void st_texture_cache_finalize (GObject *object);
+static void ensure_monitor_for_uri (StTextureCache *cache, const gchar    *uri);
 
 enum
 {
@@ -831,6 +832,13 @@ load_gicon_with_colors (StTextureCache    *cache,
       load_texture_async (cache, request);
     }
 
+  if (G_IS_FILE_ICON (icon))
+  {
+    GFile *file = g_file_icon_get_file (G_FILE_ICON (icon));
+    char *uri = g_file_get_uri (file);
+    ensure_monitor_for_uri (cache, uri);
+  }
+
   return CLUTTER_ACTOR (texture);
 }
 
@@ -897,24 +905,49 @@ file_changed_cb (GFileMonitor      *monitor,
                  gpointer           user_data)
 {
   StTextureCache *cache = user_data;
-  char *uri, *key;
+  char *uri, *path;
+
+  GHashTableIter iter;
+  gpointer key;
+  gpointer value;
+
+  gchar *path_prefixed;
+  gchar *uri_prefixed;
+  gchar *uri_for_cairo_prefixed;
 
   if (event_type != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT)
     return;
 
   uri = g_file_get_uri (file);
+  path = g_file_get_path (file);
 
-  key = g_strconcat (CACHE_PREFIX_URI, uri, NULL);
-  g_hash_table_remove (cache->priv->keyed_cache, key);
-  g_free (key);
+  path_prefixed = g_strconcat (CACHE_PREFIX_ICON, path, NULL);
+  uri_prefixed = g_strconcat (CACHE_PREFIX_URI, uri, NULL);
+  uri_for_cairo_prefixed = g_strconcat (CACHE_PREFIX_URI_FOR_CAIRO, uri, NULL);
 
-  key = g_strconcat (CACHE_PREFIX_URI_FOR_CAIRO, uri, NULL);
-  g_hash_table_remove (cache->priv->keyed_surface_cache, key);
-  g_free (key);
+  g_hash_table_iter_init (&iter, cache->priv->keyed_cache);
+  while (g_hash_table_iter_next (&iter, &key, &value))
+  {
+    const char *tmp = key;
+    if (g_str_has_prefix (tmp, path_prefixed))
+    {
+      g_hash_table_iter_remove (&iter);
+    }
+    if (g_strcmp0 (tmp, uri_prefixed) == 0)
+    {
+      g_hash_table_iter_remove (&iter);
+    }
+  }
+
+  g_hash_table_remove (cache->priv->keyed_surface_cache, uri_for_cairo_prefixed);
 
   g_signal_emit (cache, signals[TEXTURE_FILE_CHANGED], 0, uri);
 
+  g_free (path_prefixed);
+  g_free (uri_prefixed);
+  g_free (uri_for_cairo_prefixed);
   g_free (uri);
+  g_free (path);
 }
 
 static void
