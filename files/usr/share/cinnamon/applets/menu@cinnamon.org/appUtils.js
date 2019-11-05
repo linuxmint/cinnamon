@@ -72,6 +72,8 @@ function getApps() {
     while ((nextType = iter.next()) != CMenu.TreeItemType.INVALID) {
         if (nextType == CMenu.TreeItemType.DIRECTORY) {
             let dir = iter.get_directory();
+            if (dir.get_is_nodisplay())
+                continue;
             if (loadDirectory(dir, dir, apps))
                 dirs.push(dir);
         }
