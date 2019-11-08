@@ -280,7 +280,7 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         }
 
         if (this.shouldIgnoreStatusIcon(icon_proxy)) {
-            global.log(`Hiding XAppStatusIcon (we have an applet): ${icon_proxy.name} (${i})`);
+            global.log(`Hiding XAppStatusIcon (we have an applet): ${icon_proxy.name}`);
             this.ignoreStatusIcon(icon_proxy);
 
             return;
