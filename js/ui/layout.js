@@ -22,8 +22,6 @@ const DeskletManager = imports.ui.deskletManager;
 const Panel = imports.ui.panel;
 const StartupSplash = imports.ui.startupSplash;
 
-const STARTUP_ANIMATION_TIME = .5;
-
 function isPopupMetaWindow(actor) {
     switch(actor.meta_window.get_window_type()) {
     case Meta.WindowType.DROPDOWN_MENU:
