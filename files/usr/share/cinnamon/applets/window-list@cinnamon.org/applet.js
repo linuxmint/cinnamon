@@ -741,7 +741,7 @@ class AppMenuButton {
     }
 
     getAttention() {
-        if (this._needsAttention || this._hasFocus())
+        if (this._needsAttention)
             return false;
 
         this._needsAttention = true;
@@ -750,13 +750,16 @@ class AppMenuButton {
     }
 
     _flashButton() {
-        if (!this._needsAttention || this._hasFocus())
+        if (!this._needsAttention)
             return;
 
         let counter = 0;
         let sc = "window-list-item-demands-attention";
 
         Mainloop.timeout_add(FLASH_INTERVAL, () => {
+            if (!this._needsAttention)
+                return false;
+
             if (this.actor.has_style_class_name(sc))
                 this.actor.remove_style_class_name(sc);
             else
