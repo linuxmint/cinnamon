@@ -35,7 +35,7 @@ const ICON_SIZE = 28;
 const CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound";
 const MAXIMUM_VOLUME_KEY = "maximum-volume";
 
-const VOLUME_STEP_DIR = "org.cinnamon.desktop.keybindings.media-keys";
+const VOLUME_STEP_DIR = "org.cinnamon.desktop.sound";
 const VOLUME_STEP_KEY = "volume-step";
 
 class ControlButton {
