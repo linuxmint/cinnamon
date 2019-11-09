@@ -602,6 +602,14 @@
       </_description>
     </key>
 
+    <key name="startup-icon-name" type="s">
+      <default>""</default>
+      <_summary>The logo to use in the startup animation</_summary>
+      <_description>
+       An icon name or absolute path to an icon, which will be used in the startup animation.  If this is left empty, only a black screen will display.
+      </_description>
+    </key>
+
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
