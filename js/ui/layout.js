@@ -20,8 +20,9 @@ const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
 const DeskletManager = imports.ui.deskletManager;
 const Panel = imports.ui.panel;
+const StartupSplash = imports.ui.startupSplash;
 
-const STARTUP_ANIMATION_TIME = 0.5;
+const STARTUP_ANIMATION_TIME = .5;
 
 function isPopupMetaWindow(actor) {
     switch(actor.meta_window.get_window_type()) {
@@ -174,7 +175,7 @@ LayoutManager.prototype = {
         return Main.layoutManager.monitors[index];
     },
 
-    _prepareStartupAnimation: function() {
+    _prepareStartupSplash: function() {
         // During the initial transition, add a simple actor to block all events,
         // so they don't get delivered to X11 windows that have been transformed.
         this._coverPane = new Clutter.Actor({ opacity: 0,
@@ -189,37 +190,25 @@ LayoutManager.prototype = {
 
         this.keyboardBox.hide();
 
-        let monitor = this.primaryMonitor;
-        let x = monitor.x + monitor.width / 2.0;
-        let y = monitor.y + monitor.height / 2.0;
-
-        Main.uiGroup.set_pivot_point(x / global.screen_width,
-                                     y / global.screen_height);
-        Main.uiGroup.scale_x = Main.uiGroup.scale_y = 0.75;
-        Main.uiGroup.opacity = 0;
+        global.stage.hide_cursor();
         global.background_actor.show();
-        global.window_group.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+
+        this.startupSplash = new StartupSplash.StartupSplash(this.primaryMonitor, ()=>this._startupSplashComplete());
+        this.startupSplash.prepareSplash();
+
+        this._chrome.updateRegions();
     },
 
-    _startupAnimation: function() {
+    _doStartupSplash: function() {
         // Don't animate the strut
         this._chrome.freezeUpdateRegions();
-        Tweener.addTween(Main.uiGroup,
-                         { scale_x: 1,
-                           scale_y: 1,
-                           opacity: 255,
-                           time: STARTUP_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._startupAnimationComplete,
-                           onCompleteScope: this });
+        this.startupSplash.runSplash();
     },
 
-    _startupAnimationComplete: function() {
-        global.stage.no_clear_hint = true;
+    _startupSplashComplete: function() {
+        global.stage.show_cursor();
         this._coverPane.destroy();
         this._coverPane = null;
-
-        global.window_group.remove_clip();
         this._chrome.thawUpdateRegions();
 
         Main.setRunState(Main.RunState.RUNNING);

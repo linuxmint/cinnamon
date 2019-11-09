@@ -399,7 +399,7 @@ function start() {
                        !GLib.getenv('CINNAMON_2D');
 
     if (do_animation) {
-        layoutManager._prepareStartupAnimation();
+        layoutManager._prepareStartupSplash();
     }
 
     let pointerTracker = new PointerTracker.PointerTracker();
@@ -492,7 +492,7 @@ function start() {
             let id = GLib.idle_add(GLib.PRIORITY_LOW, () => {
                 if (do_login_sound)
                     soundManager.play_once_per_session('login');
-                layoutManager._startupAnimation();
+                layoutManager._doStartupSplash();
                 return GLib.SOURCE_REMOVE;
             });
         } else {

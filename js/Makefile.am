@@ -74,6 +74,7 @@ nobase_dist_js_DATA = \
 	ui/search.js		\
 	ui/settings.js		\
 	ui/slideshowManager.js  \
+	ui/startupSplash.js  \
 	ui/systray.js       \
 	ui/cinnamonDBus.js		\
 	ui/statusIconDispatcher.js	\
@@ -85,4 +86,6 @@ nobase_dist_js_DATA = \
 	ui/windowEffects.js	\
 	ui/workspace.js		\
 	ui/workspacesView.js	\
-	ui/xdndHandler.js
+	ui/xdndHandler.js \
+	splash/cinnamon/script.js \
+	splash/mint/script.js

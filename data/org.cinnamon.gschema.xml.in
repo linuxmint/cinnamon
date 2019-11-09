@@ -586,6 +586,14 @@
       </_description>
     </key>
 
+    <key name="startup-splash-name" type="s">
+      <default>"cinnamon"</default>
+      <_summary>The startup animation to use, if enabled</_summary>
+      <_description>
+       A custom startup splash screen can be installed to /usr/share/cinnamon/startup-splash.  This key specifies which subfolder should be used to load script.js within.
+      </_description>
+    </key>
+
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
