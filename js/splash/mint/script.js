@@ -47,7 +47,7 @@ Splash.prototype = {
 
     run: function() {
         Tweener.addTween(this.spinner,
-                         { time: 0.7,
+                         { time: 0.5,
                            transition: 'easeNone',
                            rotation_angle_z: 0,
                            onComplete: this._logo_fade,
@@ -56,7 +56,7 @@ Splash.prototype = {
 
     _logo_fade: function() {
         Tweener.addTween(this.spinner,
-                         { time: 0.7,
+                         { time: 0.5,
                            transition: 'easeInExpo',
                            opacity: 0,
                            onUpdate: ()=>{

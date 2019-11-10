@@ -4,7 +4,6 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const FileUtils = imports.misc.fileUtils;
 
-
 const SETTINGS_SCHEMA = 'org.cinnamon';
 const SETTINGS_KEY = 'startup-splash-name';
 
@@ -25,12 +24,14 @@ StartupSplash.prototype = {
 
     _loadScript: function() {
         let settings = new Gio.Settings({ schema_id: SETTINGS_SCHEMA });
+        let raw = settings.get_string(SETTINGS_KEY);
+        let moduleName = raw.replace(/[^\w-]|[_]/g, ""); // alpha-numeric and dash only
 
         try {
-            const LoadableModule = eval('imports.splash.' + settings.get_string(SETTINGS_KEY) + '.script;');
+            const LoadableModule = eval("imports.splash.%s.script;".format(moduleName));
             this.scriptObj = new LoadableModule.Splash(this.primaryMonitor, this.onCompleteFunc);
         } catch (e) {
-            global.logError("Could not load splash: " + e);
+            global.logError("Could not load splash named '%s': %s".format(moduleName, e));
 
             const FallbackModule = imports.splash.cinnamon.script;
             this.scriptObj = new FallbackModule.Splash(this.primaryMonitor, this.onCompleteFunc);
@@ -41,7 +42,7 @@ StartupSplash.prototype = {
         try {
             this.scriptObj.setup();
         } catch (e) {
-            global.logError("Could not prepare splash: " + e);
+            global.logError("Could not prepare splash: %s".format(e));
         }
     },
 
@@ -49,7 +50,7 @@ StartupSplash.prototype = {
         try {
             this.scriptObj.run();
         } catch (e) {
-            global.logError("Could not run splash: " + e);
+            global.logError("Could not run splash: %s".format(e));
         }
     }
 };
