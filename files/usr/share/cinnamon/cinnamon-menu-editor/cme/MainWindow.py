@@ -19,7 +19,7 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-gi.require_version('CMenu', '3.0')
+gi.require_version('CMenu', '4.0')
 from gi.repository import Gtk, GObject, Gio, GdkPixbuf, Gdk, CMenu, GLib
 import cgi
 import os
@@ -115,19 +115,6 @@ class MainWindow(object):
                     if isinstance (item[3], CMenu.TreeDirectory) and item[3].get_desktop_file_path() and update_type == CMenu.TreeItemType.DIRECTORY:
                         if os.path.split(item[3].get_desktop_file_path())[1] == item_id:
                             found = True
-                if isinstance(item[3], CMenu.TreeSeparator):
-                    if not isinstance(item_id, tuple):
-                        #we may not skip the increment via "continue"
-                        i += 1
-                        continue
-                    #separators have no id, have to find them manually
-                    #probably won't work with two separators together
-                    if (item_id[0] - 1,) == (i,):
-                        found = True
-                    elif (item_id[0] + 1,) == (i,):
-                        found = True
-                    elif (item_id[0],) == (i,):
-                        found = True
                 if found:
                     item_tree.get_selection().select_path((i,))
                     self.on_item_tree_cursor_changed(item_tree)
@@ -191,10 +178,7 @@ class MainWindow(object):
             cell.set_property("surface", wrapper.surface)
 
     def _cell_data_toggle_func(self, tree_column, renderer, model, treeiter, data=None):
-        if isinstance(model[treeiter][3], CMenu.TreeSeparator):
-            renderer.set_property('visible', False)
-        else:
-            renderer.set_property('visible', True)
+        renderer.set_property('visible', True)
 
     def loadMenus(self):
         self.menu_store.clear()
@@ -392,8 +376,6 @@ class MainWindow(object):
 
     def on_item_tree_show_toggled(self, cell, path):
         item = self.item_store[path][3]
-        if isinstance(item, CMenu.TreeSeparator):
-            return
         if self.item_store[path][0]:
             self.editor.setVisible(item, False)
         else:
@@ -411,10 +393,6 @@ class MainWindow(object):
         item = items[iter][3]
         self.tree.get_object('edit_delete').set_sensitive(True)
         self.tree.get_object('delete_button').set_sensitive(True)
-
-        can_edit = not isinstance(item, CMenu.TreeSeparator)
-        self.tree.get_object('edit_properties').set_sensitive(can_edit)
-        self.tree.get_object('properties_button').set_sensitive(can_edit)
 
         can_cut_copy = not isinstance(item, CMenu.TreeDirectory)
         self.tree.get_object('cut_button').set_sensitive(can_cut_copy)

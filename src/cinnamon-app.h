@@ -5,8 +5,8 @@
 #include <clutter/clutter.h>
 #include <gio/gio.h>
 #include <meta/window.h>
-#define GMENU_I_KNOW_THIS_IS_UNSTABLE
-#include <gmenu-tree.h>
+#define CMENU_I_KNOW_THIS_IS_UNSTABLE
+#include <cmenu-tree.h>
 
 G_BEGIN_DECLS
 
@@ -36,7 +36,7 @@ typedef enum {
 GType cinnamon_app_get_type (void) G_GNUC_CONST;
 
 const char *cinnamon_app_get_id (CinnamonApp *app);
-GMenuTreeEntry *cinnamon_app_get_tree_entry (CinnamonApp *app);
+CMenuTreeEntry *cinnamon_app_get_tree_entry (CinnamonApp *app);
 GDesktopAppInfo *cinnamon_app_get_app_info (CinnamonApp *app);
 ClutterActor *cinnamon_app_create_icon_texture (CinnamonApp *app,
                                                 int          size);
