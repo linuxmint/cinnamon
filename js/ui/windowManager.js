@@ -419,7 +419,7 @@ class HudPreview {
     }
 
     _onTileHudSettingsChanged() {
-        let scaleFactor = ThemeContext.get_for_stage(global.stage).scale_factor;
+        let scaleFactor = global.ui_scale;
         this._hudSize = this._tileHudSettings.get_int("tile-hud-threshold") * scaleFactor;
 
     }

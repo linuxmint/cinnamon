@@ -72,7 +72,7 @@ class WindowPreview extends Tooltips.TooltipBase {
     constructor(item, metaWindow, previewScale, showLabel) {
         super(item.actor);
         this._applet = item._applet;
-        this.uiScale = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+        this.uiScale = global.ui_scale;
         this.thumbScale = previewScale;
         this.muffinWindow = metaWindow.get_compositor_private();
         this._sizeChangedId = null;
