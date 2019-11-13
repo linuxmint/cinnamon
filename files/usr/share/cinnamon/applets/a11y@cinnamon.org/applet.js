@@ -20,6 +20,9 @@ const KEY_GTK_THEME      = 'gtk-theme';
 const KEY_ICON_THEME     = 'icon-theme';
 const KEY_TEXT_SCALING_FACTOR = 'text-scaling-factor';
 
+const WM_PREFERENCES_SCHEMA  = 'org.cinnamon.desktop.wm.preferences';
+const KEY_WM_THEME        = 'theme';
+
 const HIGH_CONTRAST_THEME = 'HighContrast';
 
 const Keymap = Gdk.Keymap.get_default();
@@ -158,23 +161,28 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
 
     _buildHCItem() {
         let settings = new Gio.Settings({ schema_id: DESKTOP_INTERFACE_SCHEMA });
+        let settingsWM = new Gio.Settings({ schema_id: WM_PREFERENCES_SCHEMA });
         let gtkTheme = settings.get_string(KEY_GTK_THEME);
         let iconTheme = settings.get_string(KEY_ICON_THEME);
+        let wmTheme = settingsWM.get_string(KEY_WM_THEME);
         let hasHC = (gtkTheme == HIGH_CONTRAST_THEME);
         let highContrast = this._buildItemExtended(
             _("High Contrast"),
             hasHC,
-            settings.is_writable(KEY_GTK_THEME) && settings.is_writable(KEY_ICON_THEME),
+            settings.is_writable(KEY_GTK_THEME) && settings.is_writable(KEY_ICON_THEME) && settingsWM.is_writable(KEY_WM_THEME),
             function (enabled) {
                 if (enabled) {
                     settings.set_string(KEY_GTK_THEME, HIGH_CONTRAST_THEME);
                     settings.set_string(KEY_ICON_THEME, HIGH_CONTRAST_THEME);
+                    settingsWM.set_string(KEY_WM_THEME, HIGH_CONTRAST_THEME);
                 } else if(!hasHC) {
                     settings.set_string(KEY_GTK_THEME, gtkTheme);
                     settings.set_string(KEY_ICON_THEME, iconTheme);
+                    settingsWM.set_string(KEY_WM_THEME, wmTheme);
                 } else {
                     settings.reset(KEY_GTK_THEME);
                     settings.reset(KEY_ICON_THEME);
+                    settingsWM.reset(KEY_WM_THEME);
                 }
             });
         settings.connect('changed::' + KEY_GTK_THEME, function() {
@@ -190,6 +198,11 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
             let value = settings.get_string(KEY_ICON_THEME);
             if (value != HIGH_CONTRAST_THEME)
                 iconTheme = value;
+        });
+        settingsWM.connect('changed::' + KEY_WM_THEME, function() {
+            let value = settingsWM.get_string(KEY_WM_THEME);
+            if (value != HIGH_CONTRAST_THEME)
+                wmTheme = value;
         });
         return highContrast;
     }
