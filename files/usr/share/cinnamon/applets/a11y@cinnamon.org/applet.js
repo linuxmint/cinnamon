@@ -4,6 +4,7 @@ const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 const Gdk = imports.gi.Gdk;
+const GLib = imports.gi.GLib;
 
 const A11Y_SCHEMA = 'org.cinnamon.desktop.a11y.keyboard';
 const KEY_STICKY_KEYS_ENABLED = 'stickykeys-enable';
@@ -54,9 +55,11 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
             let textZoom = this._buildFontItem();
             this.menu.addMenuItem(textZoom);
 
-            let screenReader = this._buildItem(_("Screen Reader"), APPLICATIONS_SCHEMA,
-                                                                  'screen-reader-enabled');
-            this.menu.addMenuItem(screenReader);
+            if (GLib.file_test("/usr/bin/orca", GLib.FileTest.EXISTS)) {
+                let screenReader = this._buildItem(_("Screen Reader"), APPLICATIONS_SCHEMA,
+                                                                      'screen-reader-enabled');
+                this.menu.addMenuItem(screenReader);
+            }
 
             let screenKeyboard = this._buildItem(_("Screen Keyboard"), APPLICATIONS_SCHEMA,
                                                                        'screen-keyboard-enabled');
