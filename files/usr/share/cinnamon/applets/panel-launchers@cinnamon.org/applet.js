@@ -1,6 +1,6 @@
 const Applet = imports.ui.applet;
 const AppletManager = imports.ui.appletManager;
-
+const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
@@ -114,6 +114,9 @@ class PanelAppLauncher extends DND.LauncherDraggable {
                                   x_fill: true,
                                   y_fill: true,
                                   track_hover: true });
+
+        this.actor.set_easing_mode(Clutter.AnimationMode.EASE_IN_QUAD);
+        this.actor.set_easing_duration(100);
 
         this.actor._delegate = this;
         this._signals.connect(this.actor, 'button-release-event', Lang.bind(this, this._onButtonRelease));
