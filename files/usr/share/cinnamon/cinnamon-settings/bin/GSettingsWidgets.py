@@ -129,7 +129,7 @@ class DependencyCheckInstallButton(Gtk.Box):
         self.progress_bar.set_show_text(True)
         self.progress_bar.set_text(self.checking_text)
 
-        self.install_warning = Gtk.Label(install_button_text)
+        self.install_warning = Gtk.Label(label=install_button_text, margin=5)
         frame = Gtk.Frame()
         frame.add(self.install_warning)
         frame.set_shadow_type(Gtk.ShadowType.OUT)
