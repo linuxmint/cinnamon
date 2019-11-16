@@ -910,7 +910,7 @@ class DownloadSpicesPage(SettingsPage):
         updates_available = self.spices.get_n_updates()
         self.update_all_button.set_sensitive(updates_available)
         if updates_available > 0:
-            msg_text = _("Update all") + ' (' + ngettext("%d update available", "%d updates available", updates_available) % updates_available  + ')'
+            msg_text = _("Update all") + ' (' + gettext.ngettext("%d update available", "%d updates available", updates_available) % updates_available  + ')'
         else:
             msg_text = _("No updates available")
         self.update_all_button.set_tooltip_text(msg_text)
