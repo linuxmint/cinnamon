@@ -486,7 +486,7 @@ class Module:
                         dialog.destroy()
                         if response == Gtk.ResponseType.YES:
                             keybinding.setBinding(keybinding.entries.index(entry), None)
-                        elif response == Gtk.ResponseType.NO:
+                        else:
                             return
         current_keybinding.setBinding(int(path), accel_string)
         self.onKeyBindingChanged(self.kb_tree)
@@ -589,7 +589,7 @@ class Module:
                 dialog.command_entry.set_text(keybinding.action)
                 dialog.show_all()
                 response = dialog.run()
-                if response == Gtk.ResponseType.CANCEL or response == Gtk.ResponseType.DELETE_EVENT:
+                if response != Gtk.ResponseType.OK:
                     dialog.destroy()
                     return
 
@@ -778,3 +778,4 @@ class AddCustomDialog(Gtk.Dialog):
     def onEntriesChanged(self, widget):
         ok_enabled = self.name_entry.get_text().strip() is not "" and self.command_entry.get_text().strip() is not ""
         self.set_response_sensitive(Gtk.ResponseType.OK, ok_enabled)
+        
