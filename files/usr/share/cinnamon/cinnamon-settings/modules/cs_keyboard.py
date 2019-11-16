@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from gi.repository import Gio, Gtk, GObject, Gdk
-import cgi
+import html
 import gettext
 
 import gi
@@ -480,7 +480,7 @@ class Module:
                         msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
                         msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
                         msg += _("Do you want to continue with this operation?")
-                        dialog.set_markup(msg % {'combination':cgi.escape(accel_label), 'old':cgi.escape(keybinding.label), 'new':cgi.escape(current_keybinding.label)})
+                        dialog.set_markup(msg % {'combination':html.escape(accel_label), 'old':html.escape(keybinding.label), 'new':html.escape(current_keybinding.label)})
                         dialog.show_all()
                         response = dialog.run()
                         dialog.destroy()

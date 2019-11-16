@@ -4,7 +4,7 @@ import sys
 import os
 import re
 import json
-import cgi
+import html
 import subprocess
 import gettext
 from html.parser import HTMLParser
@@ -95,7 +95,7 @@ def show_prompt(msg, window=None):
                                message_type = Gtk.MessageType.QUESTION,
                                buttons = Gtk.ButtonsType.YES_NO)
     dialog.set_default_size(400, 200)
-    esc = cgi.escape(msg)
+    esc = html.escape(msg)
     dialog.set_markup(esc)
     dialog.show_all()
     response = dialog.run()

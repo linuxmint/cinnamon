@@ -21,7 +21,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('CMenu', '3.0')
 from gi.repository import Gtk, GObject, Gio, GdkPixbuf, Gdk, CMenu, GLib
-import cgi
+import html
 import os
 import gettext
 import subprocess
@@ -209,7 +209,7 @@ class MainWindow(object):
 
     def loadMenu(self, iters, parent=None):
         for menu, show in self.editor.getMenus(parent):
-            name = cgi.escape(menu.get_name())
+            name = html.escape(menu.get_name())
             if not show:
                 name = "<small><i>%s</i></small>" % (name,)
 
@@ -230,7 +230,7 @@ class MainWindow(object):
             else:
                 assert False, 'should not be reached'
 
-            name = cgi.escape(name)
+            name = html.escape(name)
             if not show:
                 name = "<small><i>%s</i></small>" % (name,)
 

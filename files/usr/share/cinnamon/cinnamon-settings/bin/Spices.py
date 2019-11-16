@@ -8,7 +8,7 @@ try:
     import sys
     import zipfile
     import shutil
-    import cgi
+    import html
     import subprocess
     import threading
     import time
@@ -729,7 +729,7 @@ class Spice_Harvester(GObject.Object):
         markup = msg
         if detail is not None:
             markup += _("\n\nDetails:  %s") % (str(detail))
-        esc = cgi.escape(markup)
+        esc = html.escape(markup)
         dialog.set_markup(esc)
         dialog.show_all()
         response = dialog.run()
