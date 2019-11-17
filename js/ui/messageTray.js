@@ -1660,8 +1660,6 @@ MessageTray.prototype = {
     },
 
     _showNotification: function() {
-        this._notificationTimeoutId = 1; // this prevents a race condition with the messagetray wanting
-                                         // to hide a notification before it's done showing it, when updating from applet
         this._notification = this._notificationQueue.shift();
         if (this._notification.actor._parent_container) {
             this._notification.collapseCompleted();
