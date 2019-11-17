@@ -1103,8 +1103,6 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     _onWindowMonitorChanged(screen, metaWindow, monitor) {
-        const windowActor = metaWindow.get_compositor_private();
-        if (!windowActor || (!windowActor.visible && !metaWindow.minimized)) return;
         if (this._shouldAdd(metaWindow))
             this._addWindow(metaWindow, false);
         else
