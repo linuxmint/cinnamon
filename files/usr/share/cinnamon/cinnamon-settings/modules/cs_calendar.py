@@ -106,7 +106,10 @@ class Module:
         self.proxy_handler.set_ntp(active)
 
     def set_date_and_time(self, *args):
-        self.datetime = datetime.datetime.combine(self.date_chooser.get_date(), self.time_chooser.get_time()).astimezone()
+        unaware = datetime.datetime.combine(self.date_chooser.get_date(), self.time_chooser.get_time())
+        tz = pytz.timezone(self.zone)
+        self.datetime = tz.localize(unaware)
+
         seconds = int((self.datetime - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds())
         self.proxy_handler.set_time(seconds)
 
