@@ -122,6 +122,7 @@ Depends:
  gir1.2-meta-muffin-0.0,
  gvfs-bin,
  xdg-utils,
+ python3-xapp,
  ${misc:Depends},
  ${python3:Depends},
 Description: Cinnamon desktop (Common data files)
