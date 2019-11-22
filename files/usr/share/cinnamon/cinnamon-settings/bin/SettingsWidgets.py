@@ -511,14 +511,43 @@ class DateChooser(SettingsWidget):
 
     def on_date_changed(self, *args):
         date = self.content_widget.get_date()
-        self.set_value({"y": date[0], "m": date[1], "d": date[2]})
+        self.set_value({"y": date.year, "m": date.month, "d": date.day})
 
     def on_setting_changed(self, *args):
         date = self.get_value()
-        self.content_widget.set_date(date["y"], date["m"], date["d"])
+        self.content_widget.set_date((date["y"], date["m"], date["d"]))
 
     def connect_widget_handlers(self, *args):
         self.content_widget.connect("date-changed", self.on_date_changed)
+
+class TimeChooser(SettingsWidget):
+    bind_dir = None
+
+    def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
+        super(TimeChooser, self).__init__(dep_key=dep_key)
+
+        self.label = SettingsLabel(label)
+
+        self.content_widget = TimeChooserButton()
+
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
+
+        self.set_tooltip_text(tooltip)
+
+        if size_group:
+            self.add_to_size_group(size_group)
+
+    def on_time_changed(self, *args):
+        time = self.content_widget.get_time()
+        self.set_value({"h": time.hour, "m": time.minute, "s": time.second})
+
+    def on_setting_changed(self, *args):
+        time = self.get_value()
+        self.content_widget.set_time((time["h"], time["m"], time["s"]))
+
+    def connect_widget_handlers(self, *args):
+        self.content_widget.connect("time-changed", self.on_time_changed)
 
 class Keybinding(SettingsWidget):
     bind_dir = None
