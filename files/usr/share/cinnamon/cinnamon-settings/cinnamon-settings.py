@@ -27,7 +27,7 @@ import proxygsettings
 import SettingsWidgets
 
 # i18n
-gettext.install("cinnamon", "/usr/share/locale", names="ngettext")
+gettext.install("cinnamon", "/usr/share/locale", names=["ngettext"])
 
 # Standard setting pages... this can be expanded to include applet dirs maybe?
 mod_files = glob.glob(config.currentPath + "/modules/*.py")
