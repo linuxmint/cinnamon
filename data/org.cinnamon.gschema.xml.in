@@ -137,9 +137,25 @@
 
     <key type="s" name="panel-zone-icon-sizes">
       <default>'[{"panelId": 1, "left": 0, "center": 0, "right": 24}]'</default>
-      <_summary>Per-zone icon-size configuration</_summary>
+      <_summary>Per-zone fullcolor icon-size configuration</_summary>
       <_description>
-        Panel zone configuration objects for icon size.
+        Panel zone configuration objects for fullcolor icon size.
+      </_description>
+    </key>
+
+    <key type="s" name="panel-zone-symbolic-icon-sizes">
+      <default>'[{"panelId": 1, "left": 28, "center": 28, "right": 16}]'</default>
+      <_summary>Per-zone symbolic icon-size configuration</_summary>
+      <_description>
+        Panel zone configuration objects for symbolic icon size.  This is calculates size as a fraction of current color icon sizes
+      </_description>
+    </key>
+
+    <key type="s" name="panel-zone-text-sizes">
+      <default>'[{"panelId": 1, "left":0.0, "center":0.0, "right":0.0}]'</default>
+      <_summary>Per-zone text-size configuration, values in point</_summary>
+      <_description>
+        Panel zone configuration objects for text, values are expressed as points.  Setting to 0.0 will give control to the theme.
       </_description>
     </key>
 

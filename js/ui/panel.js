@@ -44,16 +44,36 @@ const PANEL_PEEK_TIME = 1500;
 const EDIT_MODE_MIN_BOX_SIZE = 25;
 const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48];
 
+/*** These are defaults for a new panel added */
+const DEFAULT_PANEL_VALUES = {"panels-autohide": "false",
+                        "panels-show-delay": "0",
+                        "panels-hide-delay": "0",
+                        "panels-height": "40"};
+
+const DEFAULT_FULLCOLOR_ICON_SIZE_VALUES = {"left":   0,
+                                            "center": 0,
+                                            "right":  0};
+
+const DEFAULT_SYMBOLIC_ICON_SIZE_VALUES = {"left":   28,
+                                           "center": 28,
+                                           "right":  28};
+const MIN_SYMBOLIC_SIZE_PX = 10;
+const MAX_SYMBOLIC_SIZE_PX = 50;
+
+const DEFAULT_TEXT_SIZE_VALUES = {"left":   0.0,
+                                  "center": 0.0,
+                                  "right":  0.0};
+const MIN_TEXT_SIZE_PTS = 6.0;
+const MAX_TEXT_SIZE_PTS = 12.0;
+/*** Defaults ***/
+
 const PANEL_AUTOHIDE_KEY = "panels-autohide";
 const PANEL_SHOW_DELAY_KEY = "panels-show-delay";
 const PANEL_HIDE_DELAY_KEY = "panels-hide-delay";
 const PANEL_HEIGHT_KEY = "panels-height";
 const PANEL_ZONE_ICON_SIZES = "panel-zone-icon-sizes";
-
-const DEFAULT_VALUES = {"panels-autohide": "false",
-                        "panels-show-delay": "0",
-                        "panels-hide-delay": "0",
-                        "panels-height": "40"};
+const PANEL_ZONE_SYMBOLIC_ICON_SIZES = "panel-zone-symbolic-icon-sizes";
+const PANEL_ZONE_TEXT_SIZES = "panel-zone-text-sizes";
 
 const Direction = {
     LEFT  : 0,
@@ -237,20 +257,6 @@ function toStandardIconSize(maxSize) {
     else if (maxSize < 48) return 32;
     // Panel icons reach 32 at most with the largest panel, also on hidpi
     return 48;
-}
-
-/**
- * getSymbolicIconSize:
- * @iconSize (integer): an icon size
- * @settings (Gio.Settings): the settings
- *
- * Gets the symbolic icon size for a given fullcolor icon size.
- *
- * Returns: an integer, the icon size
- */
-function getSymbolicIconSize(iconSize, settings) {
-    iconSize = Math.floor(iconSize);
-    return Math.floor(iconSize * settings.get_double("symbolic-relative-size"))
 }
 
 function setHeightForPanel(panel) {
@@ -530,14 +536,14 @@ PanelManager.prototype = {
 
         // Add default values
         outerLoop:
-        for (let key in DEFAULT_VALUES) {
+        for (let key in DEFAULT_PANEL_VALUES) {
             let settings = global.settings.get_strv(key);
             for (let j = 0; j < settings.length; j++){
                 if (settings[j].split(":")[0] == i){
                     continue outerLoop;
                 }
             }
-            settings.push(i + ":" + DEFAULT_VALUES[key]);
+            settings.push(i + ":" + DEFAULT_PANEL_VALUES[key]);
             global.settings.set_strv(key, settings);
         }
 
@@ -1939,7 +1945,7 @@ Panel.prototype = {
         this._topPanelBarrier = 0;
         this._bottomPanelBarrier = 0;
         this._shadowBox = null;
-        this._panelZoneIconSizes = null;
+        this._panelZoneSizes = this._createEmptyZoneSizes();
         this._peeking = false;
 
         this.themeSettings = new Gio.Settings({ schema_id: 'org.cinnamon.theme' });
@@ -1989,13 +1995,13 @@ Panel.prototype = {
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);
-        this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_ICON_SIZES, this._onPanelZoneIconSizesChanged, this);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_ICON_SIZES, this._onPanelZoneSizesChanged, this);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_SYMBOLIC_ICON_SIZES, this._onPanelZoneSizesChanged, this);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_TEXT_SIZES, this._onPanelZoneSizesChanged, this);
         this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged, this);
         this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers, this);
 
-        this._signalManager.connect(this.themeSettings, "changed::symbolic-relative-size", this._onPanelZoneIconSizesChanged, this);
-
-        this._onPanelZoneIconSizesChanged();
+        this._onPanelZoneSizesChanged();
     },
 
     drawCorners: function(drawcorner)
@@ -2265,7 +2271,7 @@ Panel.prototype = {
             }
         }
         if (!property) {
-            property = DEFAULT_VALUES[key];
+            property = DEFAULT_PANEL_VALUES[key];
             values.push(this.panelId + ":" + property);
             global.settings.set_strv(key, values);
         }
@@ -2871,98 +2877,145 @@ Panel.prototype = {
         this.height = height;
 
         // In case icon sizes are responding to panel height
-        this._onPanelZoneIconSizesChanged();
+        this._onPanelZoneSizesChanged();
 
         this.emit('size-changed', height);
     },
 
-    _onPanelZoneIconSizesChanged: function(value, key) {
+    _createEmptyZoneSizes: function() {
+        let typeStruct = {
+            "left" : 0,
+            "center" : 0,
+            "right" : 0
+        };
+
+        let sizes = {
+            "fullcolor" : typeStruct,
+            "symbolic" : typeStruct,
+            "text" : typeStruct
+        };
+
+        return sizes;
+    },
+
+    _onPanelZoneSizesChanged: function(value, key) {
         if (this._destroyed) return;
 
-        let panelZoneIconSizes = this._getJSONProperty(PANEL_ZONE_ICON_SIZES);
-
-        if (!panelZoneIconSizes) return;
-
         let changed = false;
-        let cached = this._panelZoneIconSizes;
+        let oldZoneSizes = this._panelZoneSizes;
 
-        Util.each(panelZoneIconSizes, (iconSizes, i) => {
-            if (iconSizes.panelId !== this.panelId) return;
+        let sizeSets = [
+            ["fullcolor", PANEL_ZONE_ICON_SIZES, (a,b,c,d) => this._clampPanelZoneColorIconSize(a,b,c,d), DEFAULT_FULLCOLOR_ICON_SIZE_VALUES],
+            ["symbolic", PANEL_ZONE_SYMBOLIC_ICON_SIZES, (a,b,c,d) => this._clampPanelZoneSymbolicIconSize(a,b,c,d), DEFAULT_SYMBOLIC_ICON_SIZE_VALUES],
+            ["text", PANEL_ZONE_TEXT_SIZES, (a,b,c,d) => this._clampPanelZoneTextSize(a,b,c,d), DEFAULT_TEXT_SIZE_VALUES]
+        ];
 
-            // Validate sizes
-            if (!VALID_ICON_SIZE_VALUES.includes(iconSizes.left)) {
-                iconSizes.left = toStandardIconSize(iconSizes.left);
-            }
-            if (!VALID_ICON_SIZE_VALUES.includes(iconSizes.center)) {
-                iconSizes.center = toStandardIconSize(iconSizes.center);
-            }
-            if (!VALID_ICON_SIZE_VALUES.includes(iconSizes.right)) {
-                iconSizes.right = toStandardIconSize(iconSizes.right);
-            }
-            if (cached && (iconSizes.left !== cached.left
-                || iconSizes.center !== cached.center
-                || iconSizes.right !== cached.right)) {
-                changed = true;
+        /* Iterate thru the sizeSets to get our sizes for all 3 types */
+        Util.each(sizeSets, (set, i) => {
+            let [typeString, settingKey, getSizeFunc, defaults] = set;
+
+            let settingsArray = this._getJSONProperty(settingKey);
+
+            /* Temporarily disconnect setting handler, so we don't trigger for our own update */
+            this._signalManager.disconnect("changed::" + settingKey);
+
+            /* If one of the sizing key contains nothing, reset them to default before continuing */
+            if (!settingsArray) {
+                log(`Panel zone size settings invalid, resetting org.cinnamon "${settingKey}"`);
+                global.settings.reset(settingKey);
+                settingsArray = this._getJSONProperty(settingKey);
             }
 
-            iconSizes.cache = {
-                left: {
-                    symbolic: this._calculatePanelZoneIconSize(iconSizes.left, true),
-                    fullColor: this._calculatePanelZoneIconSize(iconSizes.left, false),
-                },
-                center: {
-                    symbolic: this._calculatePanelZoneIconSize(iconSizes.center, true),
-                    fullColor: this._calculatePanelZoneIconSize(iconSizes.center, false),
-                },
-                right: {
-                    symbolic: this._calculatePanelZoneIconSize(iconSizes.right, true),
-                    fullColor: this._calculatePanelZoneIconSize(iconSizes.right, false),
+            let haveSettings = false;
+
+            /* Now, iterate thru the individual set's values (an individual setting key's array of panel sizes),
+             * then compute their display sizes and stick them in this._panelZoneSizes for the current type. */
+            Util.each(settingsArray, (sizes, i) => {
+                if (sizes.panelId !== this.panelId) return;
+
+                haveSettings = true;
+
+                sizes.left = getSizeFunc(sizes, typeString, "left", defaults);
+                sizes.center = getSizeFunc(sizes, typeString, "center", defaults);
+                sizes.right = getSizeFunc(sizes, typeString, "right", defaults);
+
+                let zoneCache = oldZoneSizes[typeString];
+
+                if (sizes.left !== zoneCache.left ||
+                    sizes.center !== zoneCache.center ||
+                    sizes.right !== zoneCache.right) {
+                    changed = true;
                 }
-            };
 
-            this._panelZoneIconSizes = iconSizes;
+                this._panelZoneSizes[typeString] = sizes;
+            });
+
+            /* If there are no settings for this panel (it's either new, or the settings key has been reset to defaults),
+             * generate default display values for adding to this._panelZoneSizes, as well as a default item to add to
+             * gsettings. */
+            if (!haveSettings) {
+                let panelHeight = this.height * global.ui_scale;
+
+                let defaultForCache = {
+                    "left": getSizeFunc(defaults, typeString, "left", null),
+                    "center": getSizeFunc(defaults, typeString, "center", null),
+                    "right": getSizeFunc(defaults, typeString, "right", null)
+                };
+
+                this._panelZoneSizes[typeString] = defaultForCache;
+
+                let defaultSet = defaults;
+
+                defaultSet["panelId"] = this.panelId;
+                settingsArray.push(defaultSet);
+                global.settings.set_string(settingKey, JSON.stringify(settingsArray));
+           }
+
+           this._signalManager.connect(global.settings, "changed::" + settingKey, this._onPanelZoneSizesChanged, this);
         });
 
-        if (!this._panelZoneIconSizes) {
-            let defaultSymbolicSize = this._calculatePanelZoneIconSize(0, true);
-            let defaultFullColorSize = this._calculatePanelZoneIconSize(0, false);
+        let zones = [
+            [this._leftBox, "left"],
+            [this._centerBox, "center"],
+            [this._rightBox, "right"]
+        ];
 
-            let defaultZoneConfig = {
-                panelId: this.panelId,
-                left: 0,
-                center: 0,
-                right: 0
-            };
+        Util.each(zones, (zone, i) => {
+            let [actor, zoneString] = zone;
 
-            panelZoneIconSizes.push(defaultZoneConfig);
-            global.settings.set_string(PANEL_ZONE_ICON_SIZES, JSON.stringify(panelZoneIconSizes));
+            let value = this._panelZoneSizes["text"][zoneString];
 
-            defaultZoneConfig.cache = {
-                left: {
-                    symbolic: defaultSymbolicSize,
-                    fullColor: defaultFullColorSize
-                },
-                center: {
-                    symbolic: defaultSymbolicSize,
-                    fullColor: defaultFullColorSize
-                },
-                right: {
-                    symbolic: defaultSymbolicSize,
-                    fullColor: defaultFullColorSize
-                }
-            };
-
-            this._panelZoneIconSizes = defaultZoneConfig;
-
-            global.log(`[Panel ${this.panelId}] Creating a new zone configuration`);
-        }
-
-        if (typeof key === 'string' && key.includes('symbolic-relative-size')) changed = true;
+            if (value > 0.0) {
+                actor.set_style("font-size: %.1fpt;".format(value));
+            } else {
+                actor.set_style(null);
+            }
+        });
 
         if (changed) this.emit('icon-size-changed');
     },
 
-    _calculatePanelZoneIconSize: function(iconSize, isSymbolic = false) {
+    _clampPanelZoneTextSize: function(panelZoneSizeSet, typeString, zoneString, defaults) {
+        let iconSize = panelZoneSizeSet.maybeGet(zoneString);
+
+        if (iconSize == undefined) {
+            iconSize = defaults[zoneString];
+        }
+
+        if (iconSize !== 0.0) {
+            return iconSize.clamp(MIN_TEXT_SIZE_PTS, MAX_TEXT_SIZE_PTS);
+        }
+
+        return iconSize;
+    },
+
+    _clampPanelZoneColorIconSize: function(panelZoneSizeSet, typeString, zoneString, defaults) {
+        let iconSize = panelZoneSizeSet.maybeGet(zoneString);
+
+        if (iconSize == undefined) {
+            iconSize = defaults[zoneString];
+        }
+
         let height = this.height / global.ui_scale;
 
         if (iconSize === -1) { // Legacy: Scale to panel size
@@ -2971,43 +3024,63 @@ Panel.prototype = {
             iconSize = toStandardIconSize(height);
         }
 
-        // Always re-adjust symbolics
-        if (isSymbolic) {
-            iconSize = getSymbolicIconSize(iconSize, this.themeSettings);
-        }
-
         return iconSize; // Always return a value above 0 or St will spam the log.
     },
 
+    _clampPanelZoneSymbolicIconSize: function(panelZoneSizeSet, typeString, zoneString, defaults) {
+        let iconSize = panelZoneSizeSet.maybeGet(zoneString);
+
+        if (iconSize == undefined) {
+            iconSize = defaults[zoneString];
+        }
+
+        let panelHeight = this.height / global.ui_scale;
+
+        let new_size = iconSize.clamp(MIN_SYMBOLIC_SIZE_PX, Math.min(MAX_SYMBOLIC_SIZE_PX, panelHeight));
+        return new_size;
+    },
+
     getPanelZoneIconSize: function(locationLabel, iconType) {
-        let zoneConfig = this._panelZoneIconSizes;
-        let symbolic = iconType === St.IconType.SYMBOLIC;
+        let zoneConfig = this._panelZoneSizes;
+        let typeString = "fullcolor";
 
-        if (!zoneConfig) {
-            global.logError(`[Panel ${this.panelId}] Unable to find zone configuration`);
-            return this._calculatePanelZoneIconSize(0, symbolic);
+        if (iconType == St.IconType.SYMBOLIC) {
+            typeString = "symbolic";
         }
 
-        if (symbolic) {
-            return zoneConfig.cache[locationLabel].symbolic;
-        }
-
-        return zoneConfig.cache[locationLabel].fullColor;
+        return this._panelZoneSizes[typeString][locationLabel];
     },
 
     _removeZoneIconSizes: function() {
-        let panelZoneIconSizes = this._getJSONProperty(PANEL_ZONE_ICON_SIZES);
-        let zoneIndex = Util.findIndex(panelZoneIconSizes, (obj) => {
-            return obj.panelId === this.panelId;
+        let sizeSets = [
+            ["fullcolor", PANEL_ZONE_ICON_SIZES],
+            ["symbolic", PANEL_ZONE_SYMBOLIC_ICON_SIZES],
+            ["text", PANEL_ZONE_TEXT_SIZES]
+        ];
+
+        Util.each(sizeSets, (set, i) => {
+            let [typeString, settingKey] = set;
+
+            let settingsArray = this._getJSONProperty(settingKey);
+
+            /* Temporarily disconnect setting handler, so we don't trigger for our own update */
+            this._signalManager.disconnect("changed::" + settingKey);
+
+            let zoneIndex = Util.findIndex(settingsArray, (obj) => {
+                return obj.panelId === this.panelId;
+            });
+
+            if (zoneIndex >= 0) {
+                settingsArray.splice(zoneIndex, 1);
+
+                this._panelZoneSizes = null;
+
+                global.settings.set_string(settingKey, JSON.stringify(settingsArray));
+
+                this._signalManager.connect(global.settings, "changed::" + settingKey, this._onPanelZoneSizesChanged, this);
+            }
         });
 
-        if (zoneIndex < 0) return;
-
-        panelZoneIconSizes.splice(zoneIndex, 1);
-
-        this._panelZoneIconSizes = null;
-
-        global.settings.set_string(PANEL_ZONE_ICON_SIZES, JSON.stringify(panelZoneIconSizes));
         global.log(`[Panel ${this.panelId}] Removing zone configuration`);
     },
 

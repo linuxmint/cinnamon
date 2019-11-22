@@ -26,16 +26,16 @@ class PanelSettingsPage(SettingsPage):
         self.panel_id = panel_id
         self.settings = settings
 
+        center_switcher_label = _("Center Zone")
+
         if position in ("top", "bottom"):
             dimension_text = _("Panel height:")
-            scale_dimension_text = _("Allow Cinnamon to scale panel text and icons according to the panel height")
-            left_zone_icon_size_text = _("Left panel zone icon size")
-            right_zone_icon_size_text = _("Right panel zone icon size")
+            left_switcher_label = _("Left Zone")
+            right_switcher_label = _("Right Zone")
         else:
             dimension_text = _("Panel width:")
-            scale_dimension_text = _("Allow Cinnamon to scale panel text and icons according to the panel width")
-            left_zone_icon_size_text = _("Top panel zone icon size")
-            right_zone_icon_size_text = _("Bottom panel zone icon size")
+            left_switcher_label = _("Top Zone")
+            right_switcher_label = _("Bottom Zone")
 
         def can_show(vlist, possible):
             for item in vlist:
@@ -45,10 +45,10 @@ class PanelSettingsPage(SettingsPage):
         section = SettingsBox(_("Panel Visibility"))
         self.add(section)
 
-        size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+        self.size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
         options = [["true", _("Auto hide panel")], ["false", _("Always show panel")], ["intel", _("Intelligently hide panel")]]
-        widget = PanelComboBox(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id, options, size_group=size_group)
+        widget = PanelComboBox(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id, options, size_group=self.size_group)
         section.add_row(widget)
 
         widget = PanelSpinButton(_("Show delay"), "org.cinnamon", "panels-show-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
@@ -64,7 +64,63 @@ class PanelSettingsPage(SettingsPage):
         widget.set_rounding(0)
         section.add_row(widget)
 
-        options = [
+        section = SettingsBox(_("Panel appearance"))
+        self.add(section)
+
+        zone_switcher = SettingsWidget()
+        zone_switcher.fill_row()
+
+        switcher_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, border_width=5)
+        zones_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+
+        stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT, transition_duration=150)
+        switcher = Gtk.StackSwitcher(stack=stack, halign=Gtk.Align.CENTER)
+
+        section.add_row(switcher_box)
+        switcher_box.get_parent().set_activatable(False)
+
+        switcher_box.pack_start(switcher, False, False, 0)
+        zones_box.pack_start(stack, False, False, 0)
+
+        zone_infos = [
+            [left_switcher_label, "left"],
+            [center_switcher_label, "center"],
+            [right_switcher_label, "right"]
+        ];
+
+        for [zone, label] in (["left", left_switcher_label],
+                              ["center", center_switcher_label],
+                              ["right", right_switcher_label]):
+            page = self.create_zone_page(zone)
+            page.show_all()
+
+            stack.add_titled(page, zone, label)
+
+        section.add_row(zones_box)
+        zones_box.get_parent().set_activatable(False)
+
+        stack.set_visible_child_name("left")
+
+        self.show_all()
+
+    def create_zone_page(self, zone):
+        zone_page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+        text_options = [
+            [0, _("Allow theme to determine font size")]
+        ]
+
+        points = 6.0
+        while points <= 12.0:
+            text_options.append([points, "%.1fpt" % points])
+            points += 0.5
+
+        widget = PanelJSONComboBox(_("Font size"),
+                                     "org.cinnamon", "panel-zone-text-sizes",
+                                     self.panel_id, zone, text_options, valtype=float, size_group=self.size_group)
+        zone_page.pack_start(widget, False, False, 0)
+
+        fullcolor_options = [
             [-1, _("Scale to panel size exactly")],
             [0, _("Scale to panel size optimally")],
             [16, '16px'],
@@ -74,16 +130,17 @@ class PanelSettingsPage(SettingsPage):
             [48, '48px']
         ]
 
-        widget = PanelJSONComboBox(left_zone_icon_size_text, "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'left', options, size_group=size_group)
-        section.add_row(widget)
+        widget = PanelJSONComboBox(_("Colored icon size"),
+                                   "org.cinnamon", "panel-zone-icon-sizes",
+                                   self.panel_id, zone, fullcolor_options, valtype=int, size_group=self.size_group)
+        zone_page.pack_start(widget, False, False, 0)
 
-        widget = PanelJSONComboBox(_("Center panel zone icon size"), "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'center', options, size_group=size_group)
-        section.add_row(widget)
+        widget = PanelJSONSpinButton(_("Symbolic icon size"),
+                                     "org.cinnamon", "panel-zone-symbolic-icon-sizes",
+                                     self.panel_id, zone, _("px"), 10, 50, 1, 0)
+        zone_page.pack_start(widget, False, False, 0)
 
-        widget = PanelJSONComboBox(right_zone_icon_size_text, "org.cinnamon", "panel-zone-icon-sizes", self.panel_id, 'right', options, size_group=size_group)
-        section.add_row(widget)
-
-        self.show_all()
+        return zone_page
 
 class Module:
     name = "panel"
@@ -135,15 +192,6 @@ class Module:
             page = SettingsPage()
             self.sidePage.add_widget(page)
             section = page.add_section(_("General Panel Options"))
-
-            widget = GSettingsRange(_("Symbolic icon size adjustment"),
-                                    "org.cinnamon.theme", "symbolic-relative-size",
-                                    _("Smaller"), _("Larger"),
-                                    0.4, 1.0, step=0.01, show_value=True)
-            widget.add_mark(0.67, Gtk.PositionType.TOP, None)
-            widget.set_rounding(2)
-
-            section.add_row(widget)
 
             buttons = SettingsWidget()
             self.add_panel_button = Gtk.Button(label=_("Add new panel"))
@@ -417,6 +465,51 @@ class PanelSpinButton(SpinButton, PanelWidgetBackend):
         if value != int(self.content_widget.get_value()):
             self.content_widget.set_value(value)
 
+class PanelJSONSpinButton(SpinButton, PanelWidgetBackend):
+    def __init__(self, label, schema, key, panel_id, zone, *args, **kwargs):
+        self.panel_id = panel_id
+        self.zone = zone
+        super(PanelJSONSpinButton, self).__init__(label, *args, **kwargs)
+
+        self.connect_to_settings(schema, key)
+
+    def get_range(self):
+        return
+
+    # We use integer directly here because that is all the panel currently uses.
+    # If that changes in the future, we will need to fix this.
+    def stringify(self, value):
+        return str(int(value))
+
+    def unstringify(self, value):
+        return int(value)
+
+    def on_setting_changed(self, *args):
+        self.content_widget.set_value(self.get_value())
+
+    def set_value(self, value):
+        vals = json.loads(self.settings[self.key])
+        for obj in vals:
+            if obj['panelId'] != int(self.panel_id):
+                continue
+            for key, val in obj.items():
+                if key == self.zone:
+                    obj[key] = int(value)
+                    break
+
+        self.settings[self.key] = json.dumps(vals)
+
+    def get_value(self):
+        vals = self.settings[self.key]
+        vals = json.loads(vals)
+        for obj in vals:
+            if obj['panelId'] != int(self.panel_id):
+                continue
+            for key, val in obj.items():
+                if key == self.zone:
+                    return int(val)
+        return 0 # prevent warnings if key is reset
+
 class PanelComboBox(ComboBox, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):
         self.panel_id = panel_id
@@ -451,7 +544,7 @@ class PanelJSONComboBox(ComboBox, PanelWidgetBackend):
                 continue
             for key, val in obj.items():
                 if key == self.zone:
-                    obj[key] = int(value)
+                    obj[key] = self.valtype(value)
                     break
 
         self.settings[self.key] = json.dumps(vals)
@@ -464,7 +557,7 @@ class PanelJSONComboBox(ComboBox, PanelWidgetBackend):
                 continue
             for key, val in obj.items():
                 if key == self.zone:
-                    return int(val)
+                    return self.valtype(val)
 
 class PanelRange(Range, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):
