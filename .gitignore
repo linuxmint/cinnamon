@@ -38,6 +38,9 @@ docs/reference/cinnamon-js/__pycache__/
 docs/reference/cinnamon-js/misc/
 docs/reference/cinnamon-js/ui/
 files/Makefile
+!files/Makefile.in
+files/usr/share/cinnamon-session/sessions/cinnamon.session
+files/usr/share/cinnamon-session/sessions/cinnamon2d.session
 gtk-doc.make
 js/Makefile
 js/Makefile.in
