@@ -1,3 +1,10 @@
+cinnamon (4.4.1) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * startup: Change the startup effect, and allow a logo icon name or path to be displayed based on a settings key.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 25 Nov 2019 16:22:07 +0000
+
 cinnamon (4.4.0) tricia; urgency=medium
 
   [ Steve M ]
