@@ -2500,8 +2500,6 @@ Panel.prototype = {
         if (event.get_button() == 3) {  // right click
             try {
                 let [x, y] = event.get_coords();
-                let xe = x;
-                let ye = y;
                 let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
 
                 // NB test on parent fails with centre aligned vertical box, but works for the test against the actor

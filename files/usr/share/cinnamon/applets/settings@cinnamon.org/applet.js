@@ -1,30 +1,42 @@
 const Applet = imports.ui.applet;
-const Panel = imports.ui.panel;
-const PopupMenu = imports.ui.popupMenu;
+const St = imports.gi.St;
 
 class CinnamonSettingsApplet extends Applet.IconApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
-        this.set_applet_icon_symbolic_name("go-up");
         this.set_applet_tooltip(_("Settings"));
-        this.menuManager = new PopupMenu.PopupMenuManager(this);
-        this._buildMenu(orientation);
+        this.on_orientation_changed(this._orientation);
     }
 
     on_applet_clicked(event) {
-        this.menu.toggle();
+        let horizontal = [St.Side.TOP, St.Side.BOTTOM].includes(this._orientation);
+        let [x, y] = event.get_coords();
+
+        this.panel._context_menu.shiftToPosition(horizontal ? x : y);
+        this.panel._context_menu.toggle();
     }
 
-    _buildMenu(orientation) {
-        this.menu = new Applet.AppletPopupMenu(this, orientation);
-        this.menuManager.addMenu(this.menu);
-        Panel.populateSettingsMenu(this.menu);
-    }
+    on_orientation_changed(neworientation) {
+        let icon_name;
 
-    on_orientation_changed(orientation) {
-        this.menu.destroy();
-        this._buildMenu(orientation);
+        switch (neworientation) {
+            case St.Side.LEFT:
+                icon_name = "go-next";
+                break;
+            case St.Side.RIGHT:
+                icon_name = "go-previous";
+                break;
+            case St.Side.TOP:
+                icon_name = "go-down";
+                break;
+            case St.Side.BOTTOM:
+            default:
+                icon_name = "go-up";
+                break;
+        }
+
+        this.set_applet_icon_symbolic_name(icon_name);
     }
 }
 
