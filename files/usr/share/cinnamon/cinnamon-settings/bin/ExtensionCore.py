@@ -11,8 +11,9 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
 
-from SettingsWidgets import SettingsPage, SettingsWidget, SettingsLabel
-from Spices import ThreadedTaskManager
+from xapp.SettingsWidgets import SettingsStack, SettingsPage, SettingsWidget, SettingsLabel
+from SettingsWidgets import SidePage
+from Spices import Spice_Harvester, ThreadedTaskManager
 
 home = os.path.expanduser('~')
 
@@ -93,6 +94,7 @@ def show_prompt(msg, window=None):
                                message_type=Gtk.MessageType.QUESTION,
                                buttons=Gtk.ButtonsType.YES_NO)
     dialog.set_default_size(400, 200)
+
     esc = escape(msg)
     dialog.set_markup(esc)
     dialog.show_all()
@@ -591,6 +593,8 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         self.score = data['score']
         self.timestamp = data['last_edited']
 
+        self.has_update = False
+
         self.status_ids = {}
 
         self.installed = self.spices.get_is_installed(uuid)
@@ -644,6 +648,7 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
             download_button.connect('clicked', self.download)
             download_button.set_tooltip_text(_("Install"))
         elif self.spices.get_has_update(uuid):
+            self.has_update = True
             download_button = Gtk.Button.new_from_icon_name('view-refresh-symbolic', 2)
             self.button_box.pack_start(download_button, False, False, 0)
             download_button.connect('clicked', self.download)
@@ -705,7 +710,8 @@ class DownloadSpicesPage(SettingsPage):
         sort_types.append(['score', _("Popularity")])
         sort_types.append(['date', _("Date")])
         sort_types.append(['installed', _("Installed")])
-        self.sort_combo.set_active(1)  # Rating
+        sort_types.append(['update', _("Upgradable")])
+        self.sort_combo.set_active(1) #Rating
         self.sort_combo.connect('changed', self.sort_changed)
         self.top_box.pack_start(self.sort_combo, False, False, 4)
 
@@ -833,6 +839,16 @@ class DownloadSpicesPage(SettingsPage):
             else:
                 return 1
 
+        def sort_update(row1, row2):
+            if row1.has_update == row2.has_update:
+                if not row1.has_update:
+                    return row2.timestamp - row1.timestamp
+                return 0
+            elif row1.has_update:
+                return -1
+            else:
+                return 1
+
         sort_type = self.sort_combo.get_active_id()
         if sort_type == 'name':
             self.list_box.set_sort_func(sort_name)
@@ -840,8 +856,10 @@ class DownloadSpicesPage(SettingsPage):
             self.list_box.set_sort_func(sort_score)
         elif sort_type == 'date':
             self.list_box.set_sort_func(sort_date)
-        else:
+        elif sort_type == 'installed':
             self.list_box.set_sort_func(sort_installed)
+        else:
+            self.list_box.set_sort_func(sort_update)
 
     def on_row_selected(self, list_box, row):
         if row is None:
@@ -907,7 +925,7 @@ class DownloadSpicesPage(SettingsPage):
         if not self.spices.processing_jobs:
             if (not self.spices.has_cache) or self.spices.get_cache_age() > 7:
                 self.on_cache_outdated()
-
+                
         self.search_entry.grab_focus()
 
     def on_cache_outdated(self, *args):
@@ -938,3 +956,30 @@ class DownloadSpicesPage(SettingsPage):
         infobar.set_revealed(False)
         self.search_entry.grab_focus()
 
+    def on_cache_outdated(self, *args):
+        infobar = self.infobar_holder.get_child()
+        if not infobar:
+            infobar = Gtk.InfoBar()
+            icon = Gtk.Image.new_from_icon_name("dialog-question-symbolic", Gtk.IconSize.LARGE_TOOLBAR)
+            label = Gtk.Label(_("Your cache is out of date. Would you like to update it now?"))
+            label.set_line_wrap(True)
+
+            infobar.set_message_type(Gtk.MessageType.QUESTION)
+            infobar.get_content_area().pack_start(icon, False, False, 12)
+            infobar.get_content_area().pack_start(label, False, False, 0)
+            infobar.add_button(_("Yes"), Gtk.ResponseType.YES)
+            infobar.add_button(_("No"), Gtk.ResponseType.NO)
+
+            infobar.connect('response', self._on_infobar_response)
+            self.infobar_holder.add(infobar)
+
+        self.infobar_holder.show_all()
+        infobar.set_revealed(True)
+
+    def _on_infobar_response(self, infobar: Gtk.InfoBar, response):
+        if response == Gtk.ResponseType.YES and not self.spices.processing_jobs:
+            self.spices.refresh_cache()
+            pass
+
+        infobar.set_revealed(False)
+        self.search_entry.grab_focus()

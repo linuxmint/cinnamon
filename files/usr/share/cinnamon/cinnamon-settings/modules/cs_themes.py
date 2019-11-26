@@ -1,10 +1,13 @@
 #!/usr/bin/python3
 
+import os
+
 from gi.repository.Gtk import SizeGroup, SizeGroupMode
 
-from GSettingsWidgets import *
+from xapp.GSettingsWidgets import *
 from CinnamonGtkSettings import CssRange, CssOverrideSwitch, GtkSettingsSwitch, PreviewWidget, Gtk2ScrollbarSizeEditor
-from SettingsWidgets import LabelRow
+from SettingsWidgets import LabelRow, SidePage, walk_directories
+from ChooserButtonWidgets import PictureChooserButton
 from ExtensionCore import DownloadSpicesPage
 from Spices import Spice_Harvester
 
@@ -189,15 +192,62 @@ class Module:
         if len(themes) > 0:
             inc = 1.0 / len(themes)
 
-        if path_suffix == "icons":
+        if path_suffix == 'icons':
+            cache_folder = GLib.get_user_cache_dir() + '/cs_themes/'
+            icon_cache_path = os.path.join(cache_folder, 'icons')
+
+            # Retrieve list of known themes/locations for faster loading (icon theme loading and lookup are very slow)
+            if os.path.exists(icon_cache_path):
+                read_path = icon_cache_path
+            else:
+                read_path = '/usr/share/cinnamon/cinnamon-settings/icons'
+
+            icon_paths = {}
+            with open(read_path, 'r') as cache_file:
+                for line in cache_file:
+                    theme_name, icon_path = line.strip().split(':')
+                    icon_paths[theme_name] = icon_path
+
+            dump = False
             for theme in themes:
-                icon_theme = Gtk.IconTheme()
-                icon_theme.set_custom_theme(theme)
-                folder = icon_theme.lookup_icon("folder", ICON_SIZE, Gtk.IconLookupFlags.FORCE_SVG)
-                if folder:
-                    path = folder.get_filename()
-                    chooser.add_picture(path, callback, title=theme, id=theme)
-                GLib.timeout_add(5, self.increment_progress, (chooser,inc))
+                theme_path = None
+
+                if theme in icon_paths:
+                    # loop through all possible locations until we find a match
+                    # (user folders should override system ones)
+                    for theme_folder in ICON_FOLDERS:
+                        possible_path = os.path.join(theme_folder, icon_paths[theme])
+                        if os.path.exists(possible_path):
+                            theme_path = possible_path
+                            break
+
+                if theme_path is None:
+                    icon_theme = Gtk.IconTheme()
+                    icon_theme.set_custom_theme(theme)
+                    folder = icon_theme.lookup_icon('folder', ICON_SIZE, Gtk.IconLookupFlags.FORCE_SVG)
+                    if folder:
+                        theme_path = folder.get_filename()
+
+                        # we need to get the relative path for storage
+                        for theme_folder in ICON_FOLDERS:
+                            if os.path.commonpath([theme_folder, theme_path]) == theme_folder:
+                                icon_paths[theme] = os.path.relpath(theme_path, start=theme_folder)
+                                break
+
+                    dump = True
+
+                if os.path.exists(theme_path):
+                    chooser.add_picture(theme_path, callback, title=theme, id=theme)
+                GLib.timeout_add(5, self.increment_progress, (chooser, inc))
+
+            if dump:
+                if not os.path.exists(cache_folder):
+                    os.mkdir(cache_folder)
+
+                with open(icon_cache_path, 'w') as cache_file:
+                    for theme_name, icon_path in icon_paths.items():
+                        cache_file.write('%s:%s\n' % (theme_name, icon_path))
+
         else:
             if path_suffix == "cinnamon":
                 chooser.add_picture("/usr/share/cinnamon/theme/thumbnail.png", callback, title="cinnamon", id="cinnamon")

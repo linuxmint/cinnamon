@@ -43,6 +43,20 @@ const _urlRegexp = new RegExp(
         ')' +
     ')', 'gi');
 
+
+/**
+ * escapeRegExp:
+ * @str: (String) a string to escape
+ *
+ * Escapes a string for use within a regular expression.
+ *
+ * Returns: (String) the escaped string
+ */
+function escapeRegExp(str) {
+    // from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
 /**
  * findUrls:
  * @str: string to find URLs in

@@ -572,10 +572,13 @@ function reloadExtension(uuid, type) {
 }
 
 function findExtensionDirectory(uuid, userDir, folder) {
-    let dirPath = `${userDir}/${uuid}`;
-    let dir = Gio.file_new_for_path(dirPath);
-    if (dir.query_file_type(Gio.FileQueryInfoFlags.NONE, null) === Gio.FileType.DIRECTORY) {
-        return dir;
+    let dir, dirPath;
+    if (!GLib.getenv('CINNAMON_TROUBLESHOOT')) {
+        dirPath = `${userDir}/${uuid}`;
+        dir = Gio.file_new_for_path(dirPath);
+        if (dir.query_file_type(Gio.FileQueryInfoFlags.NONE, null) === Gio.FileType.DIRECTORY) {
+            return dir;
+        }
     }
 
     let systemDataDirs = GLib.get_system_data_dirs();

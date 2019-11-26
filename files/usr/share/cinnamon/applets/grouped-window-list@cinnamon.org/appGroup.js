@@ -1023,7 +1023,7 @@ class AppGroup {
         });
     }
 
-    animate(step = 0) {
+    animate() {
         let effect = this.state.settings.launcherAnimationEffect;
 
         if (effect === 1) return;
@@ -1031,24 +1031,22 @@ class AppGroup {
             this.iconBox.set_z_rotation_from_gravity(0.0, Clutter.Gravity.CENTER);
             Tweener.addTween(this.iconBox, {
                 opacity: 70,
-                time: 1.0,
+                time: 0.2,
                 transition: 'linear',
                 onCompleteScope: this,
                 onComplete() {
                     Tweener.addTween(this.iconBox, {
                         opacity: 255,
-                        time: 0.5,
+                        time: 0.2,
                         transition: 'linear'
                     });
                 }
             });
         } else if (effect === 3) {
-            if (step >= 3) return;
-
             this.iconBox.set_pivot_point(0.5, 0.5);
             Tweener.addTween(this.iconBox, {
-                scale_x: 0.7,
-                scale_y: 0.7,
+                scale_x: 0.8,
+                scale_y: 0.8,
                 time: 0.2,
                 transition: 'easeOutQuad',
                 onComplete: () => {
@@ -1056,10 +1054,7 @@ class AppGroup {
                         scale_x: 1.0,
                         scale_y: 1.0,
                         time: 0.2,
-                        transition: 'easeOutQuad',
-                        onComplete: () => {
-                            this.animate(step + 1);
-                        }
+                        transition: 'easeOutQuad'
                     });
                 }
             });

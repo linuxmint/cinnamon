@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 from ChooserButtonWidgets import TweenChooserButton, EffectChooserButton
 
 EFFECT_SETS = {
@@ -60,7 +61,7 @@ SCHEMA = "org.cinnamon"
 DEP_PATH = "org.cinnamon/desktop-effects"
 KEY_TEMPLATE = "desktop-effects-%s-%s"
 
-class GSettingsTweenChooserButton(TweenChooserButton, CSGSettingsBackend):
+class GSettingsTweenChooserButton(TweenChooserButton, PXGSettingsBackend):
     def __init__(self, schema, key, dep_key):
         self.key = key
         self.bind_prop = "tween"
@@ -74,7 +75,7 @@ class GSettingsTweenChooserButton(TweenChooserButton, CSGSettingsBackend):
         super(GSettingsTweenChooserButton, self).__init__()
         self.bind_settings()
 
-class GSettingsEffectChooserButton(EffectChooserButton, CSGSettingsBackend):
+class GSettingsEffectChooserButton(EffectChooserButton, PXGSettingsBackend):
     def __init__(self, schema, key, dep_key, options):
         self.key = key
         self.bind_prop = "effect"
@@ -156,7 +157,7 @@ class Module:
             self.revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
             self.revealer.set_transition_duration(150)
             page.add(self.revealer)
-            settings = SettingsBox(_("Effect"))
+            settings = SettingsSection(_("Effect"))
             self.revealer.add(settings)
 
             self.size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)

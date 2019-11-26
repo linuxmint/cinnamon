@@ -31,7 +31,7 @@
     </key>
 
     <key name="enabled-applets" type="as">
-      <default>['panel1:left:0:menu@cinnamon.org', 'panel1:left:1:show-desktop@cinnamon.org', 'panel1:left:2:grouped-window-list@cinnamon.org', 'panel1:right:0:systray@cinnamon.org', 'panel1:right:1:xapp-status@cinnamon.org', 'panel1:right:2:notifications@cinnamon.org', 'panel1:right:3:printers@cinnamon.org', 'panel1:right:4:removable-drives@cinnamon.org', 'panel1:right:5:keyboard@cinnamon.org', 'panel1:right:6:bluetooth@cinnamon.org', 'panel1:right:7:network@cinnamon.org', 'panel1:right:8:sound@cinnamon.org', 'panel1:right:9:power@cinnamon.org', 'panel1:right:10:calendar@cinnamon.org']</default>
+      <default>['panel1:left:0:menu@cinnamon.org', 'panel1:left:1:show-desktop@cinnamon.org', 'panel1:left:2:grouped-window-list@cinnamon.org', 'panel1:right:0:systray@cinnamon.org', 'panel1:right:1:xapp-status@cinnamon.org', 'panel1:right:2:notifications@cinnamon.org', 'panel1:right:3:printers@cinnamon.org', 'panel1:right:4:removable-drives@cinnamon.org', 'panel1:right:5:keyboard@cinnamon.org', 'panel1:right:6:network@cinnamon.org', 'panel1:right:7:sound@cinnamon.org', 'panel1:right:8:power@cinnamon.org', 'panel1:right:9:calendar@cinnamon.org']</default>
       <_summary>Uuids of applets to enable</_summary>
       <_description>
         Cinnamon applets have a uuid property; this key lists applets
@@ -137,9 +137,25 @@
 
     <key type="s" name="panel-zone-icon-sizes">
       <default>'[{"panelId": 1, "left": 0, "center": 0, "right": 24}]'</default>
-      <_summary>Per-zone icon-size configuration</_summary>
+      <_summary>Per-zone fullcolor icon-size configuration</_summary>
       <_description>
-        Panel zone configuration objects for icon size.
+        Panel zone configuration objects for fullcolor icon size.
+      </_description>
+    </key>
+
+    <key type="s" name="panel-zone-symbolic-icon-sizes">
+      <default>'[{"panelId": 1, "left": 28, "center": 28, "right": 16}]'</default>
+      <_summary>Per-zone symbolic icon-size configuration</_summary>
+      <_description>
+        Panel zone configuration objects for symbolic icon size.  This is calculates size as a fraction of current color icon sizes
+      </_description>
+    </key>
+
+    <key type="s" name="panel-zone-text-sizes">
+      <default>'[{"panelId": 1, "left":0.0, "center":0.0, "right":0.0}]'</default>
+      <_summary>Per-zone text-size configuration, values in point</_summary>
+      <_description>
+        Panel zone configuration objects for text, values are expressed as points.  Setting to 0.0 will give control to the theme.
       </_description>
     </key>
 
@@ -583,6 +599,14 @@
       <_description>
       Allows setting of the default size of the media keys osd or disables it completely.
       Possible values are "small", "medium", "large", or "disabled".
+      </_description>
+    </key>
+
+    <key name="startup-icon-name" type="s">
+      <default>""</default>
+      <_summary>The logo to use in the startup animation</_summary>
+      <_description>
+       An icon name or absolute path to an icon, which will be used in the startup animation.  If this is left empty, only a black screen will display.
       </_description>
     </key>
 

@@ -2,7 +2,8 @@
 
 import sys
 from ExtensionCore import ManageSpicesPage, DownloadSpicesPage
-from SettingsWidgets import SidePage, SettingsStack
+from SettingsWidgets import SidePage
+from xapp.SettingsWidgets import SettingsStack
 from Spices import Spice_Harvester
 from gi.repository import GLib, Gtk, Gdk
 

@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
-from __future__ import division
-from gi.repository import Gtk, GObject, GLib, Gdk, GdkPixbuf
+from gi.repository import Gtk, GObject, GLib, Gdk, GdkPixbuf, Gio
 import cairo
 import tweenEquations
 import os
 import math
 import gettext
+import datetime
 gettext.install("cinnamon", "/usr/share/locale")
 
 TWEEN_SHAPES = ["Quad", "Cubic", "Quart", "Quint", "Sine", "Expo", "Circ", "Elastic", "Back", "Bounce"]
@@ -247,10 +247,16 @@ class DateChooserButton(Gtk.Button):
         'date-changed': (GObject.SignalFlags.RUN_FIRST, None, (int,int,int))
     }
 
-    def __init__(self):
+    def __init__(self, follow_current=False, date=None):
         super(DateChooserButton, self).__init__()
 
-        self.year, self.month, self.day = GLib.DateTime.new_now_local().get_ymd()
+        if not follow_current and date is not None:
+            self.set_date(date)
+        else:
+            self.set_date(datetime.date.today())
+
+        if follow_current:
+            GLib.timeout_add_seconds(1, self.update_date)
 
         self.connect("clicked", self.on_button_clicked)
 
@@ -262,20 +268,26 @@ class DateChooserButton(Gtk.Button):
                                           Gtk.STOCK_OK, Gtk.ResponseType.OK))
 
         content = self.dialog.get_content_area()
+        content.props.margin_start = 20
+        content.props.margin_end = 20
+        content.props.margin_top = 20
+        content.props.margin_bottom = 20
+        content.props.spacing = 15
+
+        today = Gtk.Button(label=_("Today"))
+        today.props.halign = Gtk.Align.CENTER
+        content.pack_start(today, False, False, 0)
 
         calendar = Gtk.Calendar()
         content.pack_start(calendar, True, True, 0)
-        calendar.select_month(self.month-1, self.year)
-        calendar.select_day(self.day)
+        calendar.select_month(self.date.month-1, self.date.year)
+        calendar.select_day(self.date.day)
 
         def select_today(*args):
-            date = GLib.DateTime.new_now_local().get_ymd()
-            calendar.select_month(date[1]-1, date[0])
-            calendar.select_day(date[2])
-
-        today = Gtk.Button(label=_("Today"))
+            date = datetime.date.today()
+            calendar.select_month(date.month - 1, date.year)
+            calendar.select_day(date.day)
         today.connect("clicked", select_today)
-        content.pack_start(today, False, False, 0)
 
         content.show_all()
 
@@ -283,22 +295,172 @@ class DateChooserButton(Gtk.Button):
 
         if response == Gtk.ResponseType.OK:
             date = calendar.get_date()
-            self.set_date(date[0], date[1]+1, date[2]) #calendar uses 0 based month
-            self.emit("date-changed", self.year, self.month, self.day)
+            self.set_date(datetime.date(date[0], date[1]+1, date[2])) # Gtk.Calendar uses 0 based month
+            self.emit("date-changed", self.date.year, self.date.month, self.date.day)
 
         self.dialog.destroy()
 
+    def update_date(self, *args):
+        self.set_date(datetime.date.today())
+        return True
+
     def get_date(self):
-        return self.year, self.month, self.day
+        return self.date
 
-    def set_date(self, year, month, day):
-        self.year = year
-        self.month = month
-        self.day = day
+    def set_date(self, date):
+        """Sets the date of the widget.
+        Date can be a date or datetime class from the datetime module or a (y,m,d) tuple.
+        """
+        if isinstance(date, datetime.date):
+            self.date = date
+        elif isinstance(date, datetime.datetime):
+            self.date = date.date()
+        elif isinstance(date, tuple):
+            self.date = datetime.date(*date)
+        else:
+            raise ValueError('Invalid date format. Date must be of type datetime.date, datetime.datetime, or a tuple of the form (year, month, day)')
 
-        date = GLib.DateTime.new_local(year, month, day, 1, 1, 1)
-        date_string = date.format(_("%B %e, %Y"))
+        date_string = self.date.strftime(_("%A %B %-e, %Y"))
         self.set_label(date_string)
+
+class TimeChooserButton(Gtk.Button):
+    __gsignals__ = {
+        'time-changed': (GObject.SignalFlags.RUN_FIRST, None, (int,int,int))
+    }
+
+    def __init__(self, follow_current=False, time=None, show_seconds='default'):
+        super(TimeChooserButton, self).__init__()
+
+        if show_seconds is 'default':
+            self.show_seconds_override_default = False
+        else:
+            self.show_seconds_override_default = True
+            if show_seconds is 'true':
+                self.show_seconds = True
+            elif show_seconds is 'false':
+                self.show_seconds = False
+            else:
+                raise ValueError('Invalid argument: show_seconds must be default, true, or false')
+
+        self.settings = Gio.Settings.new('org.cinnamon.desktop.interface')
+
+        if not follow_current and time is not None:
+            self.set_time(time)
+        else:
+            self.set_time(datetime.datetime.now().time())
+
+        if follow_current:
+            GLib.timeout_add_seconds(1, self.update_time)
+
+        self.connect('clicked', self.on_button_clicked)
+
+    def get_uses_seconds(self):
+        if self.show_seconds_override_default:
+            return self.show_seconds
+        else:
+            return self.settings.get_boolean('clock-show-seconds')
+
+    def on_button_clicked(self, *args):
+        dialog = TimeChooserDialog(self.time, self.get_toplevel(), self.get_uses_seconds(), self.settings.get_boolean('clock-use-24h'))
+
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            self.set_time(dialog.get_time())
+            self.emit("time-changed", self.time.hour, self.time.minute, self.time.second)
+
+        dialog.destroy()
+
+    def update_time(self, *args):
+        self.set_time(datetime.datetime.now().time())
+        return True
+
+    def get_time(self):
+        return self.time
+
+    def set_time(self, time):
+        """Sets the time of the widget.
+        Time can be a time or datetime class from the datetime module or a (h,m) or (h,m,s) tuple.
+        """
+        if isinstance(time, datetime.time):
+            self.time = time
+        elif isinstance(time, datetime.datetime):
+            self.time = time.time()
+        elif isinstance(time, tuple):
+            self.time = datetime.time(*time)
+        else:
+            raise ValueError('Invalid time format. Must be of type datetime.time, datetime.datetime, or a tuple of the form (hour, minute[, second])')
+
+        self.update_label()
+
+    def update_label(self):
+        if self.settings.get_boolean('clock-use-24h'):
+            if self.get_uses_seconds():
+                format_code = gettext.dgettext('cinnamon-desktop', '%R:%S')
+            else:
+                format_code = gettext.dgettext('cinnamon-desktop', '%R')
+        else:
+            if self.get_uses_seconds():
+                format_code = gettext.dgettext('cinnamon-desktop', '%l:%M:%S %p')
+            else:
+                format_code = gettext.dgettext('cinnamon-desktop', '%l:%M %p')
+        time_string = self.time.strftime(format_code)
+        self.set_label(time_string)
+
+class TimeChooserDialog(Gtk.Dialog):
+    def __init__(self, time, window, use_seconds, use24hour):
+        super(TimeChooserDialog, self).__init__(title = _("Select a time"),
+                                                transient_for = window,
+                                                flags = Gtk.DialogFlags.MODAL,
+                                                buttons = (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                                         Gtk.STOCK_OK, Gtk.ResponseType.OK))
+
+        self.time = {'hour': time.hour, 'minute': time.minute, 'second': time.second}
+        self.use_seconds = use_seconds
+        self.use24hour = use24hour
+        self.markup = lambda text: '<span weight="bold" size="xx-large">%s</span>' % text
+
+        content = self.get_content_area()
+
+        grid = Gtk.Grid(halign=Gtk.Align.CENTER)
+        content.pack_start(grid, False, False, 0)
+
+        grid.attach(Gtk.Label(self.markup(_("Hour")), use_markup=True), 0, 0, 1, 1)
+        grid.attach(Gtk.Label(self.markup(':'), use_markup=True), 1, 2, 1, 1)
+        grid.attach(Gtk.Label(self.markup(_("Minute")), use_markup=True), 2, 0, 1, 1)
+
+        unit_defs = [('hour', 0), ('minute', 2)]
+
+        if self.use_seconds:
+            grid.attach(Gtk.Label(self.markup(':'), use_markup=True), 3, 2, 1, 1)
+            grid.attach(Gtk.Label(self.markup(_("Second")), use_markup=True), 4, 0, 1, 1)
+            unit_defs.append(('second', 4))
+
+        self.labels = {}
+        for ttype, column in unit_defs:
+            self.labels[ttype] = Gtk.Label(self.markup(self.time[ttype]), use_markup=True)
+            grid.attach(self.labels[ttype], column, 2, 1, 1)
+
+            up_button = Gtk.Button.new_from_icon_name('pan-up-symbolic', 6)
+            down_button = Gtk.Button.new_from_icon_name('pan-down-symbolic', 6)
+            up_button.set_relief(2)
+            down_button.set_relief(2)
+            grid.attach(up_button, column, 1, 1, 1)
+            grid.attach(down_button, column, 3, 1, 1)
+            up_button.connect('clicked', self.shift_time, ttype, 1)
+            down_button.connect('clicked', self.shift_time, ttype, -1)
+
+        content.show_all()
+
+    def shift_time(self, button, ttype, offset):
+        self.time[ttype] += offset
+        self.time['hour'] = self.time['hour'] % 24
+        self.time['minute'] = self.time['minute'] % 60
+        self.time['second'] = self.time['second'] % 60
+        self.labels[ttype].set_label(self.markup(self.time[ttype]))
+
+    def get_time(self):
+        return datetime.time(self.time['hour'], self.time['minute'], self.time['second'])
 
 def draw_window(context, x, y, color, alpha = 1, scale = 1):
     if scale <= 0:

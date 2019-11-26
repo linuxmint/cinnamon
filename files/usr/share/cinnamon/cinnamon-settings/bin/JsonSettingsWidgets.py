@@ -1,28 +1,37 @@
 #!/usr/bin/python3
 
 from gi.repository import Gio, GObject
-from SettingsWidgets import *
+from xapp.SettingsWidgets import *
+from SettingsWidgets import SoundFileChooser, TweenChooser, EffectChooser, DateChooser, Keybinding
+from xapp.GSettingsWidgets import CAN_BACKEND as px_can_backend
+from SettingsWidgets import CAN_BACKEND as c_can_backend
 from TreeListWidgets import List
+import os
 import collections
 import json
 import operator
 
-CAN_BACKEND.append("List")
+can_backend = px_can_backend + c_can_backend
+can_backend.append('List')
 
 JSON_SETTINGS_PROPERTIES_MAP = {
-    "description"   : "label",
-    "min"           : "mini",
-    "max"           : "maxi",
-    "step"          : "step",
-    "units"         : "units",
-    "show-value"    : "show_value",
-    "select-dir"    : "dir_select",
-    "height"        : "height",
-    "tooltip"       : "tooltip",
-    "possible"      : "possible",
-    "expand-width"  : "expand_width",
-    "columns"       : "columns",
-    "event-sounds"  : "event_sounds"
+    "description"      : "label",
+    "min"              : "mini",
+    "max"              : "maxi",
+    "step"             : "step",
+    "units"            : "units",
+    "show-value"       : "show_value",
+    "select-dir"       : "dir_select",
+    "height"           : "height",
+    "tooltip"          : "tooltip",
+    "possible"         : "possible",
+    "expand-width"     : "expand_width",
+    "columns"          : "columns",
+    "event-sounds"     : "event_sounds",
+    "default_icon"     : "default_icon",
+    "icon_categories"  : "icon_categories",
+    "default_category" : "default_category",
+    "show-seconds"     : "show_seconds"
 }
 
 OPERATIONS = ['<=', '>=', '<', '>', '!=', '=']
@@ -312,5 +321,5 @@ def json_settings_factory(subclass):
 
     return NewClass
 
-for widget in CAN_BACKEND:
+for widget in can_backend:
     globals()["JSONSettings"+widget] = json_settings_factory(widget)

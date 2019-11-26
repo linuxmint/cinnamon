@@ -492,7 +492,7 @@ function start() {
             let id = GLib.idle_add(GLib.PRIORITY_LOW, () => {
                 if (do_login_sound)
                     soundManager.play_once_per_session('login');
-                layoutManager._startupAnimation();
+                layoutManager._doStartupAnimation();
                 return GLib.SOURCE_REMOVE;
             });
         } else {

@@ -4,6 +4,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
 
+import os
 import sys
 from setproctitle import setproctitle
 import config
@@ -43,6 +44,7 @@ XLET_SETTINGS_WIDGETS = {
     "tween"             :   "JSONSettingsTweenChooser",
     "effect"            :   "JSONSettingsEffectChooser",
     "datechooser"       :   "JSONSettingsDateChooser",
+    "timechooser"       :   "JSONSettingsTimeChooser",
     "keybinding"        :   "JSONSettingsKeybinding",
     "list"              :   "JSONSettingsList"
 }

@@ -18,6 +18,7 @@
 #include <meta/main.h>
 #include <meta/display.h>
 #include <meta/util.h>
+#include <meta/prefs.h>
 
 #include "cinnamon-enum-types.h"
 #include "cinnamon-global-private.h"

@@ -949,6 +949,8 @@ update_scale_factor (GtkSettings *settings,
     g_settings_set_int (global->settings, "active-display-scale", (int)scale);
   }
 
+  meta_prefs_set_ui_scale (global->ui_scale);
+
   gtk_settings = gtk_settings_get_default ();
 
   g_object_get (gtk_settings, "gtk-xft-dpi", &xft_dpi, NULL);

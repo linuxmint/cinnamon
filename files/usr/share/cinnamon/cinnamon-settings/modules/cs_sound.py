@@ -4,7 +4,8 @@ import gi
 gi.require_version('Cvc', '1.0')
 gi.require_version('Gtk', '3.0')
 from gi.repository import GLib, Gtk, Gdk, Cvc, GdkPixbuf, Gio
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage, GSettingsSoundFileChooser
+from xapp.GSettingsWidgets import *
 import dbus
 
 CINNAMON_SOUNDS = "org.cinnamon.sounds"
@@ -559,11 +560,11 @@ class Module:
 
         inputBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
         self.inputSelector = self.buildDeviceSelect("input", self.inputDeviceList)
-        deviceSection = SettingsBox("Device")
+        deviceSection = SettingsSection("Device")
         inputBox.pack_start(deviceSection, False, False, 0)
         deviceSection.add_row(self.inputSelector)
 
-        devSettings = SettingsBox(_("Device settings"))
+        devSettings = SettingsSection(_("Device settings"))
         inputBox.pack_start(devSettings, False, False, 0)
 
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)

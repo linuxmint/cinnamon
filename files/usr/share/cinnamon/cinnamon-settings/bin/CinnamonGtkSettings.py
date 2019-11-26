@@ -10,7 +10,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk, Gio, GObject
 
-from  SettingsWidgets import SettingsWidget, Range, Switch
+from xapp.SettingsWidgets import SettingsWidget, Range, Switch
 
 SETTINGS_GROUP_NAME = "Settings"
 

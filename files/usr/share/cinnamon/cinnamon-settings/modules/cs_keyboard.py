@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from gi.repository import Gio, Gtk, GObject, Gdk
-import cgi
+import html
 import gettext
 
 import gi
@@ -9,7 +9,8 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk, GObject, Gdk
 
 from KeybindingWidgets import CellRendererKeybinding
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
 
@@ -480,13 +481,13 @@ class Module:
                         msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
                         msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
                         msg += _("Do you want to continue with this operation?")
-                        dialog.set_markup(msg % {'combination':cgi.escape(accel_label), 'old':cgi.escape(keybinding.label), 'new':cgi.escape(current_keybinding.label)})
+                        dialog.set_markup(msg % {'combination':html.escape(accel_label), 'old':html.escape(keybinding.label), 'new':html.escape(current_keybinding.label)})
                         dialog.show_all()
                         response = dialog.run()
                         dialog.destroy()
                         if response == Gtk.ResponseType.YES:
                             keybinding.setBinding(keybinding.entries.index(entry), None)
-                        elif response == Gtk.ResponseType.NO:
+                        else:
                             return
         current_keybinding.setBinding(int(path), accel_string)
         self.onKeyBindingChanged(self.kb_tree)
@@ -589,7 +590,7 @@ class Module:
                 dialog.command_entry.set_text(keybinding.action)
                 dialog.show_all()
                 response = dialog.run()
-                if response == Gtk.ResponseType.CANCEL or response == Gtk.ResponseType.DELETE_EVENT:
+                if response != Gtk.ResponseType.OK:
                     dialog.destroy()
                     return
 
@@ -778,3 +779,4 @@ class AddCustomDialog(Gtk.Dialog):
     def onEntriesChanged(self, widget):
         ok_enabled = self.name_entry.get_text().strip() is not "" and self.command_entry.get_text().strip() is not ""
         self.set_response_sensitive(Gtk.ResponseType.OK, ok_enabled)
+        

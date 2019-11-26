@@ -4,7 +4,8 @@ import gi
 gi.require_version('Notify', '0.7')
 from gi.repository import GObject, Notify
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 content = """
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. \

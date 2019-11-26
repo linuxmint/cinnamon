@@ -47,8 +47,10 @@ struct _StIconPrivate
   ClutterActor *icon_texture;
   ClutterActor *pending_texture;
   guint         opacity_handler_id;
+  guint         texture_file_changed_id;
 
   GIcon        *gicon;
+  gchar        *file_uri;
   gchar        *icon_name;
   StIconType    icon_type;
   gint          prop_icon_size;  /* icon size set as property */
@@ -141,6 +143,12 @@ st_icon_dispose (GObject *gobject)
 {
   StIconPrivate *priv = ST_ICON (gobject)->priv;
 
+  if (priv->texture_file_changed_id > 0)
+    {
+      g_signal_handler_disconnect(st_texture_cache_get_default(), priv->texture_file_changed_id);
+      priv->texture_file_changed_id = 0;
+    }
+
   if (priv->icon_texture)
     {
       clutter_actor_destroy (priv->icon_texture);
@@ -153,6 +161,9 @@ st_icon_dispose (GObject *gobject)
       g_object_unref (priv->pending_texture);
       priv->pending_texture = NULL;
     }
+
+  g_free (priv->file_uri);
+  priv->file_uri = NULL;
 
   g_clear_object (&priv->gicon);
 
@@ -295,6 +306,8 @@ st_icon_init (StIcon *self)
   self->priv->shadow_pipeline = NULL;
 
   self->priv->icon_scale = 1;
+
+  self->priv->file_uri = NULL;
 }
 
 static void
@@ -341,6 +354,15 @@ on_pixbuf_changed (ClutterTexture *texture,
 {
   st_icon_clear_shadow_pipeline (icon);
   clutter_actor_queue_redraw (CLUTTER_ACTOR (icon));
+}
+
+static void
+on_texture_file_cb (StTextureCache *cache,
+                         char *uri,
+                         StIcon *icon)
+{
+  if (g_strcmp0 (uri, icon->priv->file_uri) == 0)
+    st_icon_update (icon);
 }
 
 static void
@@ -531,7 +553,14 @@ st_icon_set_icon_name (StIcon      *icon,
 
   if (priv->gicon)
     {
+      if (icon->priv->texture_file_changed_id > 0)
+      {
+        g_signal_handler_disconnect(st_texture_cache_get_default(), icon->priv->texture_file_changed_id);
+        icon->priv->texture_file_changed_id = 0;
+      }
       g_object_unref (priv->gicon);
+      g_free (icon->priv->file_uri);
+      icon->priv->file_uri = NULL;
       priv->gicon = NULL;
       g_object_notify (G_OBJECT (icon), "gicon");
     }
@@ -609,20 +638,36 @@ st_icon_get_gicon (StIcon *icon)
 void
 st_icon_set_gicon (StIcon *icon, GIcon *gicon)
 {
+  StTextureCache *cache = st_texture_cache_get_default();
   g_return_if_fail (ST_IS_ICON (icon));
   g_return_if_fail (G_IS_ICON (gicon));
 
   if (icon->priv->gicon == gicon) /* do nothing */
     return;
 
+  if (icon->priv->texture_file_changed_id > 0)
+  {
+    g_signal_handler_disconnect(cache, icon->priv->texture_file_changed_id);
+    icon->priv->texture_file_changed_id = 0;
+  }
+
   if (icon->priv->gicon)
     {
       g_object_unref (icon->priv->gicon);
       icon->priv->gicon = NULL;
+      g_free (icon->priv->file_uri);
+      icon->priv->file_uri = NULL;
     }
 
-  if (gicon)
+  if (gicon) {
     icon->priv->gicon = g_object_ref (gicon);
+    if (G_IS_FILE_ICON (gicon))
+    {
+      GFile *file = g_file_icon_get_file (G_FILE_ICON(gicon));
+      icon->priv->file_uri = g_file_get_uri (file);
+    }
+    icon->priv->texture_file_changed_id = g_signal_connect (cache, "texture-file-changed", G_CALLBACK (on_texture_file_cb), icon);
+  }
 
   if (icon->priv->icon_name)
     {
