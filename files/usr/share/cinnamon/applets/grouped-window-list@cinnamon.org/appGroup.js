@@ -78,7 +78,10 @@ class AppGroup {
             isFavoriteApp: () => this.handleFavorite(true),
             getActor: () => this.actor,
             launchNewInstance: () => this.launchNewInstance(),
-            checkFocusStyle: () => this.checkFocusStyle()
+            checkFocusStyle: () => this.checkFocusStyle(),
+            closeOtherThumbnailMenusNow: () => {
+                this.listState.trigger("closeAllHoverMenus", null, this, false);
+            }
         });
 
         this.signals = new SignalManager(null);

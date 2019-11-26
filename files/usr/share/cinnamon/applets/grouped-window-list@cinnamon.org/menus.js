@@ -478,23 +478,13 @@ class HoverMenuController extends PopupMenu.PopupMenuManager {
     constructor(actor, groupState) {
         super({actor}, false); // owner, shouldGrab
         this.groupState = groupState;
-        this.connectId = this.groupState.connect({
-            thumbnailMenuEntered: ({thumbnailMenuEntered}) => {
-                this.shouldGrab = thumbnailMenuEntered;
-                this._onMenuOpenState(this._menus[0], this._menus[0].isOpen);
-                this.groupState.trigger('checkFocusStyle');
-                if (!this.grabbed) return;
-                if (!thumbnailMenuEntered) this._ungrab();
-            }
-        });
     }
 
-    _onEventCapture() {
-        return false;
+    _onEventCapture(actor, event) {
+        return Clutter.EVENT_PROPAGATE;
     }
 
     destroy() {
-        this.groupState.disconnect(this.connectId);
         super.destroy();
     }
 }
@@ -951,6 +941,17 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         this.fullyRefreshThumbnails();
     }
 
+    startErodeTimer() {
+        this.state.erodingGroupState = this.groupState;
+        this.state.thumbnailErodeTimer = setTimeout(() => {
+            this.state.set({thumbnailMenuOpen: false});
+            // log("ERODE COMPLETE");
+            this.state.erodingGroupState = null;
+
+            this.close();
+        }, 300);
+    }
+
     addQueuedThumbnails() {
         if (this.queuedWindows.length === 0) return;
         each(this.queuedWindows, (win) => this.addThumbnail(win));
@@ -973,10 +974,23 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
 
         this.shouldClose = false;
+        // log("MENU ENTER");
 
         let timeout;
+        let animate = true;
         if (this.state.thumbnailMenuOpen) {
-            timeout = 50;
+            if (this.state.erodingGroupState === this.groupState) {
+                this.state.trigger("cancelErodeTimer");
+                // log("enter - same group, cancelling");
+                return;
+            } else {
+                this.state.trigger("cancelErodeTimer");
+
+                // log("not same group, closing other thumbs");
+                this.groupState.trigger("closeOtherThumbnailMenusNow");
+                timeout = 0;
+                animate = false;
+            }
         } else {
             timeout = this.state.settings.thumbTimeout;
         }
@@ -987,21 +1001,21 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.set({thumbnailMenuEntered: this.isOpen});
         }
 
-        setTimeout(() => this.open(), timeout);
+        setTimeout(() => this.open(false, animate), timeout);
     }
 
     onMenuLeave(actor) {
         if (this.state.menuOpen || this.state.panelEditMode) {
             return false;
         }
-
+        // log("MENU LEAVE");
         this.shouldClose = true;
 
         if (actor != null) {
             this.groupState.set({thumbnailMenuEntered: false});
         }
 
-        setTimeout(() => this.close(), 50);
+        this.startErodeTimer();
     }
 
     onKeyRelease(actor, event) {
@@ -1013,7 +1027,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         return true;
     }
 
-    open (force) {
+    open (force=false, animate=true) {
         if (!force && (!this.actor
           || this.willUnmount
           || this.isOpen
@@ -1026,11 +1040,12 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         } else {
             if (force || this.state.settings.onClickThumbs) this.addQueuedThumbnails();
             this.state.set({thumbnailMenuOpen: true});
-            super.open(this.state.settings.animateThumbs);
+            // log("super open animate " + animate);
+            super.open(this.state.settings.animateThumbs && animate);
         }
     }
 
-    close (force) {
+    close (force=false, animate=true) {
         if (!force && (!this.shouldClose
             || (!this.shouldClose && this.state.settings.onClickThumbs))
             || !this.groupState
@@ -1043,8 +1058,10 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.tooltip.hide();
         }
         if (this.isOpen) {
+            // log("super close animate " + animate);
+
             this.state.set({thumbnailMenuOpen: false});
-            if (!this.actor.is_finalized()) super.close(this.state.settings.animateThumbs);
+            if (!this.actor.is_finalized()) super.close(this.state.settings.animateThumbs && animate);
         }
         for (let i = 0; i < this.appThumbnails.length; i++) {
             this.appThumbnails[i].destroyOverlayPreview();

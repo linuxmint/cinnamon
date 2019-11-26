@@ -21,7 +21,7 @@ class AppList {
             getWorkspace: () => this.metaWorkspace,
             updateAppGroupIndexes: () => this.updateAppGroupIndexes(),
             closeAllRightClickMenus: (cb) => this.closeAllRightClickMenus(cb),
-            closeAllHoverMenus: (cb) => this.closeAllHoverMenus(cb),
+            closeAllHoverMenus: (cb, notThisGroup, animate) => this.closeAllHoverMenus(cb, notThisGroup, animate),
             windowAdded: (win) => this.windowAdded(this.metaWorkspace, win),
             windowRemoved: (win) => this.windowRemoved(this.metaWorkspace, win),
             removeChild: (actor) => {
@@ -75,12 +75,15 @@ class AppList {
         return windowCount;
     }
 
-    closeAllHoverMenus(cb) {
+    closeAllHoverMenus(cb=null, notThisGroup=null, animate=true) {
         for (let i = 0, len = this.appList.length; i < len; i++) {
+            if (this.appList[i] === notThisGroup) continue;
+
             let {hoverMenu, groupState} = this.appList[i];
             if (hoverMenu && hoverMenu.isOpen) {
                 groupState.set({thumbnailMenuEntered: false});
-                hoverMenu.close(true);
+                // log("close all hover");
+                hoverMenu.close(true, animate);
             }
         }
         if (typeof cb === 'function') cb();
