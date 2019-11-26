@@ -82,7 +82,6 @@ class AppList {
             let {hoverMenu, groupState} = this.appList[i];
             if (hoverMenu && hoverMenu.isOpen) {
                 groupState.set({thumbnailMenuEntered: false});
-                // log("close all hover");
                 hoverMenu.close(true, animate);
             }
         }

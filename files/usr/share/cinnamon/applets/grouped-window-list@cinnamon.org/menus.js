@@ -941,17 +941,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         this.fullyRefreshThumbnails();
     }
 
-    startErodeTimer() {
-        // log("start erode");
-        this.state.erodingGroupState = this.groupState;
-        this.state.thumbnailErodeTimer = setTimeout(() => {
-            // log("ERODE COMPLETE");
-            this.state.erodingGroupState = null;
-
-            this.close();
-        }, 300);
-    }
-
     addQueuedThumbnails() {
         if (this.queuedWindows.length === 0) return;
         each(this.queuedWindows, (win) => this.addThumbnail(win));
@@ -974,19 +963,29 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
 
         this.shouldClose = false;
-        // log("MENU ENTER");
 
         let timeout;
         let animate = true;
         if (this.state.thumbnailMenuOpen) {
             if (this.state.erodingGroupState === this.groupState) {
+                // We re-entered the current a)panel item or b) the item's thumbnail menu.
+                // Cancel the timer until we leave it once more.
                 this.state.trigger("cancelErodeTimer");
-                // log("enter - same group, cancelling");
                 return;
             } else {
-                this.state.trigger("cancelErodeTimer");
+                // pinned app with no windows, just restart the timer to allow
+                // traversal to the next group that has windows
+                if (this.groupState.metaWindows.length == 0) {
+                    this.state.trigger("startErodeTimer");
+                    return;
+                }
 
-                // log("not same group, closing other thumbs");
+                // or else we've moved from one panel item to another,
+                // cancel the timer, and close any open thumbnail menus
+                // immediately, without animation, to avoid overlapping
+                // during animation.  This is enter on the new item, so
+                // open the new thumbnail menu immediately without animating.
+                this.state.trigger("cancelErodeTimer");
                 this.groupState.trigger("closeOtherThumbnailMenusNow");
                 timeout = 0;
                 animate = false;
@@ -1008,14 +1007,18 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         if (this.state.menuOpen || this.state.panelEditMode) {
             return false;
         }
-        // log("MENU LEAVE");
+
         this.shouldClose = true;
 
         if (actor != null) {
             this.groupState.set({thumbnailMenuEntered: false});
         }
 
-        this.startErodeTimer();
+        // We've left either the panel item, or the thumbnail menu.
+        // Don't actually close yet, delay in case a new panel item
+        // is entered, or we were crossing some gap between panel and
+        // thumbnail menu.
+        this.state.trigger("startErodeTimer", this.groupState);
     }
 
     onKeyRelease(actor, event) {
