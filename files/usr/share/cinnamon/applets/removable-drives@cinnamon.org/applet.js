@@ -55,8 +55,8 @@ class CinnamonRemovableDrivesApplet extends Applet.IconApplet {
         this.menuManager.addMenu(this.menu);
 
         this._oldMounts = new Map();
-        this._oldLabels = new Array();
-        this._labels = new Array();
+        this._oldLabels = [];
+        this._labels = [];
         this._contentSection = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(this._contentSection);
 
@@ -89,7 +89,7 @@ class CinnamonRemovableDrivesApplet extends Applet.IconApplet {
     _update() {
         this._contentSection.removeAll();
 
-        this._labels = new Array();
+        this._labels = [];
         let mounts = Main.placesManager.getMounts();
         let any = false;
         let name;
@@ -127,7 +127,7 @@ class CinnamonRemovableDrivesApplet extends Applet.IconApplet {
                 notification.setTransient(true);
                 notification.setUrgency(MessageTray.Urgency.NORMAL);
                 source.notify(notification);
-                }
+            }
         }
         this._oldLabels = this._labels.slice();
         this.actor.visible = any;
