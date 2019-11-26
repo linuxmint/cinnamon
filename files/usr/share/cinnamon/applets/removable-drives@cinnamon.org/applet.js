@@ -9,6 +9,9 @@ const MessageTray = imports.ui.messageTray;
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
 const translated_id = (s1, s2) => {
+    if (s2 === "") {
+        return s1
+    }
     // In some languages, parentheses are replaced by other characters.
     return _("%s (%s)").format(s1, s2)
 }
@@ -19,7 +22,10 @@ class DriveMenuItem extends PopupMenu.PopupBaseMenuItem {
 
         this.place = place;
 
-        let unixDevice = place._mount.get_drive().get_identifier('unix-device');
+        let unixDevice = "";
+        if (place._mount.get_drive() !== null) {
+            unixDevice = place._mount.get_drive().get_identifier('unix-device');
+        }
         this.label = new St.Label({ text: translated_id(place.name, unixDevice) });
         this.addActor(this.label);
 
@@ -101,8 +107,12 @@ class CinnamonRemovableDrivesApplet extends Applet.IconApplet {
             if (mounts[i].isRemovable()) {
                 this._contentSection.addMenuItem(new DriveMenuItem(mounts[i]));
                 name = mounts[i].name.toString();
-                driveName = mounts[i]._mount.get_drive().get_name().toString();
-                unixDevice = mounts[i]._mount.get_drive().get_identifier('unix-device').toString();
+                driveName = name.toString();
+                unixDevice = "";
+                if (mounts[i]._mount.get_drive() !== null) {
+                    driveName = mounts[i]._mount.get_drive().get_name().toString();
+                    unixDevice = mounts[i]._mount.get_drive().get_identifier('unix-device').toString();
+                }
                 uId = translated_id(name, unixDevice);
                 this._labels.push(uId);
                 if (!this._oldMounts.has(uId)) {
