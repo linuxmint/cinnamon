@@ -942,9 +942,9 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
     }
 
     startErodeTimer() {
+        // log("start erode");
         this.state.erodingGroupState = this.groupState;
         this.state.thumbnailErodeTimer = setTimeout(() => {
-            this.state.set({thumbnailMenuOpen: false});
             // log("ERODE COMPLETE");
             this.state.erodingGroupState = null;
 
