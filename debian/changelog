@@ -1,3 +1,20 @@
+cinnamon (4.4.2) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * settings@cinnamon.org: Fix applet, Panel.populateSettingsMenu was removed during work on the panel menu.
+  * window-list@cinnamon.org: Don't fetch the metaWindow's actor until it's needed, it isn't always there initially.  This also allows recovery on subsequent attempts if null is returned once.
+
+  [ Stephen Collins ]
+  * SettingsWidgets.py: remove duplicate IconChooser widget
+
+  [ Clement Lefebvre ]
+  * cs_backgrounds: Use symbolic icons in sidebar
+
+  [ Stephen Collins ]
+  * GWL: fix focus stealing when the previews are showing (#8984)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 28 Nov 2019 20:07:50 +0000
+
 cinnamon (4.4.1) tricia; urgency=medium
 
   [ Michael Webster ]
