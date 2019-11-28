@@ -325,16 +325,16 @@ class Module:
                 if i.endswith(".xml"):
                     xml_path = os.path.join(properties_dir, i)
                     display_name = i.replace(".xml", "").replace("-", " ").replace("_", " ").split(" ")[-1].capitalize()
-                    icon = "cs-backgrounds"
+                    icon = "preferences-desktop-wallpaper-symbolic"
                     order = 10
                     # Special case for Linux Mint. We don't want to use 'start-here' here as it wouldn't work depending on the theme.
                     # Also, other distros should get equal treatment. If they define cinnamon-backgrounds and use their own distro name, we should add support for it.
                     if display_name == "Retro":
-                        icon = "cs-retro"
+                        icon = "document-open-recent-symbolic"
                         order = 20 # place retro bgs at the end
                     if display_name == "Linuxmint":
                         display_name = "Linux Mint"
-                        icon = "cs-linuxmint"
+                        icon = "linuxmint-logo-badge-symbolic"
                         order = 0
                     backgrounds.append([[False, icon, display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML], display_name, order])
 
@@ -352,13 +352,13 @@ class Module:
                 folder_path = line.strip("\n")
                 folder_name = folder_path.split("/")[-1]
                 if folder_path == self.xdg_pictures_directory:
-                    icon = "folder-pictures"
+                    icon = "folder-pictures-symbolic"
                 else:
-                    icon = "folder"
+                    icon = "folder-symbolic"
                 self.user_backgrounds.append([False, icon, folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
         else:
             # Add XDG PICTURE DIR
-            self.user_backgrounds.append([False, "folder-pictures", self.xdg_pictures_directory.split("/")[-1], self.xdg_pictures_directory, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
+            self.user_backgrounds.append([False, "folder-pictures-symbolic", self.xdg_pictures_directory.split("/")[-1], self.xdg_pictures_directory, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
             self.update_folder_list()
 
     def format_source(self, type, path):
@@ -445,9 +445,9 @@ class Module:
                     self.add_folder_dialog.hide()
                     return
             if folder_path == self.xdg_pictures_directory:
-                icon = "folder-pictures"
+                icon = "folder-pictures-symbolic"
             else:
-                icon = "folder"
+                icon = "folder-symbolic"
             self.user_backgrounds.append([False, icon, folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
             self.collection_store.append([False, icon, folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
             self.update_folder_list()
