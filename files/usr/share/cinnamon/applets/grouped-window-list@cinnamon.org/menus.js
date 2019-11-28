@@ -497,6 +497,21 @@ class HoverMenuController extends PopupMenu.PopupMenuManager {
         this.groupState.disconnect(this.connectId);
         super.destroy();
     }
+
+    _onMenuOpenState(menu, open) {
+        if (open) {
+            if (this._activeMenu && this._activeMenu.isChildMenu(menu)) {
+                this._menuStack.push(this._activeMenu);
+            }
+            this._activeMenu = menu;
+        } else {
+            if (this._menuStack.length > 0) {
+                this._activeMenu = this._menuStack.pop();
+                if (menu.sourceActor)
+                    this._didPop = true;
+            }
+        }
+    }
 }
 
 class WindowThumbnail {
