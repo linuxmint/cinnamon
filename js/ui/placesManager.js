@@ -14,6 +14,8 @@ const Params = imports.misc.params;
 const Search = imports.ui.search;
 const Util = imports.misc.util;
 
+const DEBUG = false;
+
 /**
  * Represents a place object, which is most normally a bookmark entry,
  * a mount/volume, or a special place like the Home Folder, Computer, and Network.
@@ -106,31 +108,127 @@ PlaceDeviceInfo.prototype = {
         if (!this.isRemovable())
             return;
 
-        if (this._mount.can_eject())
-            this._mount.eject(0, null, Lang.bind(this, this._removeFinish));
-        else
-            this._mount.unmount(0, null, Lang.bind(this, this._removeFinish));
+        let mountOp = new Gio.MountOperation(this._mount);
+        let drive = this._mount.get_drive();
+        let volume = this._mount.get_volume();
+
+        if (drive &&
+            drive.get_start_stop_type() == Gio.DriveStartStopType.SHUTDOWN &&
+            drive.can_stop()) {
+            drive.stop(0, mountOp, null, Lang.bind(this, this._stopFinish));
+        } else {
+            if (drive && drive.can_eject())
+                drive.eject_with_operation(0, mountOp, null, Lang.bind(this, this._ejectFinish, true));
+            else if (volume && volume.can_eject())
+                volume.eject_with_operation(0, mountOp, null, Lang.bind(this, this._ejectFinish, false));
+            else if (this._mount.can_eject())
+                this._mount.eject_with_operation(0, mountOp, null, Lang.bind(this, this._ejectFinish, false));
+            else if (this._mount.can_unmount())
+                this._mount.unmount_with_operation(0, mountOp, null, Lang.bind(this, this._removeFinish));
+        }
+    },
+
+    _sendNotification: function(msg1, msg2 = null, withButton = false) {
+        if (Main.messageTray) {
+            let source = new MessageTray.SystemNotificationSource();
+            Main.messageTray.add(source);
+            let notification = new MessageTray.Notification(source, msg1, msg2);
+            notification.setTransient(true);
+            if (withButton) {
+                notification.addButton('system-undo', _("Retry"));
+                notification.connect('action-invoked', Lang.bind(this, this.remove));
+            }
+            source.notify(notification);
+        } else {
+            if (msg2)
+                global.log(msg1 + ': ' + msg2);
+            else
+                global.log(msg1);
+        }
+    },
+
+    _stopFinish: function(drive, res) {
+        if (DEBUG) global.log("PlacesManager: **_stopFinish**");
+        let driveName = drive.get_name();  // Ex: USB Flash Drive
+        let unixDevice = drive.get_identifier('unix-device'); // Ex: /dev/sdc
+        let msg1 = _("%s (%s) has just been stopped.").format(driveName, this.name);
+        let msg2 = _("Device %s can be turned off, if necessary.").format(unixDevice);
+        let btn = false; // Show the 'Retry' button?
+        try {
+            drive.stop_finish(res);
+        } catch(e) {
+            btn = true;
+            msg1 = _("Unable to stop the drive %s (%s)").format(drive.get_name(), this.name);
+            msg2 = e.message;
+        }
+        if (DEBUG) global.log(msg1 + ": " + msg2);
+        this._sendNotification(msg1, msg2, btn);
+    },
+
+    _ejectFinish: function(source, res, is_drive) {
+        if (DEBUG) global.log("PlacesManager: **_ejectFinish**");
+        let msg1;
+        let msg2 = null;
+        let btn = false;
+
+        if (is_drive) {
+            let driveName = source.get_name();  // Ex: USB Flash Drive
+            let unixDevice = source.get_identifier('unix-device'); // Ex: /dev/sdc
+            msg1 = _("%s (%s) can be safely unplugged.").format(driveName, this.name);
+            msg2 = _("Device %s can be removed.").format(unixDevice);
+        } else {
+            msg1 = _("%s (%s) has just been ejected.").format(source.get_name(), this.name);
+        }
+        try {
+            source.eject_with_operation_finish(res);
+        } catch(e) {
+            btn = true;
+            msg1 = _("Unable to eject the drive %s (%s)").format(source.get_name(), this.name);
+            msg2 = e.message;
+        }
+        if (DEBUG) global.log(msg1 + ": " + msg2);
+        this._sendNotification(msg1, msg2, btn);
     },
 
     _removeFinish: function(o, res, data) {
-        try {
-            if (this._mount.can_eject())
-                this._mount.eject_finish(res);
-            else
-                this._mount.unmount_finish(res);
-        } catch (e) {
-            let message = _("Failed to unmount '%s'").format(o.get_name());
-            let source = new MessageTray.SystemNotificationSource();
-            if (Main.messageTray) {
-                Main.messageTray.add(source);
-                let notification = new MessageTray.Notification(source, message, null);
-                notification.setTransient(true);
+        if (DEBUG) global.log("PlacesManager: **_removeFinish**");
+        let msg1 = _("Succesfully unmounted %s (%s)").format(o.get_name(), this.name);
+        let msg2 = null;
+        let btn = false;
 
-                notification.addButton('system-undo', _("Retry"));
-                notification.connect('action-invoked', Lang.bind(this, this.remove));
-                source.notify(notification);
-            }
+        // 'this._mount.can_eject()' seems to be ever false. Thus, only the 'else' part will be used.
+        // If no issues are reported, these 19 lines of code commented below can be deleted.
+        //~ if (this._mount.can_eject()) {
+            //~ msg1 = _("%s (%s) can be safely unplugged").format(o.get_name(), this.name);
+            //~ msg2 = _("Device can be removed");
+            //~ try {
+                //~ this._mount.eject_with_operation_finish(res);
+            //~ } catch(e) {
+                //~ btn = true;
+                //~ msg1 = _("Failed to eject %s (%s)").format(o.get_name(), this.name);
+                //~ msg2 = e.message;
+            //~ }
+        //~ } else {
+            //~ try {
+                //~ this._mount.unmount_with_operation_finish(res);
+            //~ } catch(e) {
+                //~ btn = true;
+                //~ msg1 = _("Failed to unmount %s (%s)").format(o.get_name(), this.name);
+                //~ msg2 = e.message;
+            //~ }
+        //~ }
+        // <--Beginning of the code replacing the 19 lines above:
+        try {
+            this._mount.unmount_with_operation_finish(res);
+        } catch(e) {
+            btn = true;
+            msg1 = _("Failed to unmount %s (%s)").format(o.get_name(), this.name);
+            msg2 = e.message;
         }
+        // End of this code.-->
+
+        if (DEBUG) global.log(msg1 + ": " + msg2);
+        this._sendNotification(msg1, msg2, btn);
     }
 };
 
@@ -279,7 +377,7 @@ PlacesManager.prototype = {
 
     _updateDevices: function() {
         this._deviceUpdateAwaiting = false;
-        global.log("PlacesManager: Updating devices");
+        if (DEBUG) global.log("PlacesManager: Updating devices");
         this._mounts = [];
 
         /* first go through all connected drives */
@@ -363,8 +461,8 @@ PlacesManager.prototype = {
                 label = Cinnamon.util_get_label_for_uri(bookmark);
             if (label == null)
                 continue;
-            
-            let item; 
+
+            let item;
             if (file.query_exists(null)) {
                 let icon = Cinnamon.util_get_icon_for_uri(bookmark);
                 item = new PlaceInfo('bookmark:' + bookmark, label,
@@ -376,19 +474,19 @@ PlacesManager.prototype = {
                         });
             } else {
                 // Assume the bookmark is an unmounted network location
-                // try to mount and open by the default file manager 
-                let icon = Gio.ThemedIcon.new('network-workgroup');          
+                // try to mount and open by the default file manager
+                let icon = Gio.ThemedIcon.new('network-workgroup');
                 item = new PlaceInfo('bookmark:' + bookmark, label,
                         function(size) {
                             return new St.Icon({ gicon: icon, icon_size: size });
                         },
                         function(params) {
                             let fileapp = Gio.app_info_get_default_for_type('inode/directory', true);
-                            if (fileapp) {    
+                            if (fileapp) {
                                 fileapp.launch_uris([bookmark], _makeLaunchContext(params));
                             }
                         });
-            }                  
+            }
             this._bookmarks.push(item);
         }
 
