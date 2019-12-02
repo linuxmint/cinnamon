@@ -912,11 +912,10 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             },
             addThumbnailToMenu: (win) => {
                 if (this.isOpen) {
-                    this.close(true);
                     this.addThumbnail(win);
-                    this.open(true);
                     return;
                 }
+
                 this.queuedWindows.push(win);
             },
             removeThumbnailFromMenu: (win) => {

@@ -49,7 +49,6 @@ class AppList {
         this.lastFocusedApp = null;
 
         // Connect all the signals
-        this.signals.connect(this.metaWorkspace, 'window-added', (...args) => this.windowAdded(...args));
         this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
         this.on_orientation_changed(null, true);
     }

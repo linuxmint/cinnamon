@@ -316,6 +316,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.signals.connect(global.screen, 'window-skip-taskbar-changed', (...args) => this.onWindowSkipTaskbarChanged(...args));
         this.signals.connect(global.display, 'window-marked-urgent', (...args) => this.updateAttentionState(...args));
         this.signals.connect(global.display, 'window-demands-attention', (...args) => this.updateAttentionState(...args));
+        this.signals.connect(global.display, 'window-created', (...args) => this.onWindowCreated(...args));
         this.signals.connect(global.settings, 'changed::panel-edit-mode', (...args) => this.on_panel_edit_mode_changed(...args));
         this.signals.connect(Main.overview, 'showing', (...args) => this.onOverviewShow(...args));
         this.signals.connect(Main.overview, 'hiding', (...args) => this.onOverviewHide(...args));
@@ -534,6 +535,12 @@ class GroupedWindowListApplet extends Applet.Applet {
     updateAttentionState(display, window) {
         each(this.appLists, (workspace) => {
             workspace.updateAttentionState(display, window);
+        });
+    }
+
+    onWindowCreated(display, window) {
+        each(this.appLists, (workspace) => {
+            workspace.windowAdded(window.get_workspace(), window);
         });
     }
 
