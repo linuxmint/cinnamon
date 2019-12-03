@@ -402,6 +402,7 @@ class AutostartBox(Gtk.Box):
         self.list_box.set_header_func(list_header_func, None)
         self.list_box.connect("row-selected", self.on_row_selected)
         self.list_box.connect("row-activated", self.on_row_activated)
+        self.list_box.set_focus_vadjustment(scw.get_vadjustment())
         self.box.add(self.list_box)
 
         button_toolbar = Gtk.Toolbar.new()
@@ -560,6 +561,8 @@ class AutostartBox(Gtk.Box):
             self.add_row(row)
             row.show_all()
 
+            self.select_new_row(row)
+
     def on_add_app(self, popup):
         app_dialog = AppChooserDialog()
         app_dialog.set_transient_for(self.list_box.get_toplevel())
@@ -593,7 +596,20 @@ class AutostartBox(Gtk.Box):
             self.add_row(row)
             row.show_all()
 
+            self.select_new_row(row)
+
         app_dialog.destroy()
+
+    def select_new_row(self, row):
+        # try to make sure the grab_focus() runs later, after the row has been allocated
+        # and sorted, otherwise the grab won't work.
+        GLib.idle_add(self.on_row_added_idle, row, priority=GLib.PRIORITY_LOW)
+
+    def on_row_added_idle(self, row):
+        self.list_box.select_row(row)
+        row.grab_focus()
+
+        return GLib.SOURCE_REMOVE
 
     def find_free_basename(self, suggested_name):
         if suggested_name.endswith(".desktop"):
