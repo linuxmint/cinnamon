@@ -663,6 +663,10 @@ class AutostartRow(Gtk.ListBoxRow):
                 img = Gtk.Image.new_from_icon_name(DEFAULT_ICON, Gtk.IconSize.LARGE_TOOLBAR)
         else:
             img = Gtk.Image.new_from_icon_name(DEFAULT_ICON, Gtk.IconSize.LARGE_TOOLBAR)
+
+        valid, w, h = Gtk.icon_size_lookup(Gtk.IconSize.LARGE_TOOLBAR)
+        img.set_pixel_size(w)
+
         grid.attach(img, 0, 0, 1, 1)
 
         self.desc_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
