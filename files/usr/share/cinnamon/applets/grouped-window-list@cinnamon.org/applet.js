@@ -83,28 +83,8 @@ class PinnedFavs {
     }
 
     onFavoritesChange() {
-        let currentAppList = this.params.state.trigger('getCurrentAppList');
-        if (!this.params.state.settings.groupApps) {
-            setTimeout(() => currentAppList.refreshList(), 0);
-            return;
-        }
-        let oldFavoritesIds = [];
-        let newFavoritesIds = [];
-        for (let i = 0; i < this._favorites.length; i++) {
-            oldFavoritesIds.push(this._favorites[i].id);
-        }
         this.reload();
-        for (let i = 0; i < this._favorites.length; i++) {
-            newFavoritesIds.push(this._favorites[i].id);
-        }
-        for (let i = 0; i < oldFavoritesIds.length; i++) {
-            if (newFavoritesIds.indexOf(oldFavoritesIds[i]) < 0) {
-                this.triggerUpdate(oldFavoritesIds[i], false);
-            }
-        }
-        for (let i = 0; i < this._favorites.length; i++) {
-            this.triggerUpdate(newFavoritesIds[i], true);
-        }
+        this.params.state.trigger('refreshAllAppLists');
     }
 
     addFavorite(opts = {appId: null, app: null, pos: -1}) {
@@ -271,6 +251,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                 this.state.removingWindowFromWorkspaces = false;
             },
             refreshCurrentAppList: () => this.refreshCurrentAppList(),
+            refreshAllAppLists: () => this.refreshAllAppLists(),
             getCurrentAppList: () => this.getCurrentAppList(),
             clearDragPlaceholder: () => this.clearDragPlaceholder(),
             getAutoStartApps: () => this.getAutoStartApps(),
