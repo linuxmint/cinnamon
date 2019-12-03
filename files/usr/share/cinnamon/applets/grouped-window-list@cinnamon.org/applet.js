@@ -540,13 +540,16 @@ class GroupedWindowListApplet extends Applet.Applet {
             || this.state.lastTitleDisplay === TitleDisplay.None) {
             this.refreshCurrentAppList();
         }
-        let appList = this.getCurrentAppList().appList;
-        each(appList, (appGroup) => {
-            if (titleDisplay === TitleDisplay.Focused) {
-                appGroup.hideLabel(false);
-            }
-            appGroup.handleTitleDisplayChange();
+
+        each(this.appLists, (workspace) => {
+            each(workspace.appList, (appGroup) => {
+                if (titleDisplay === TitleDisplay.Focused) {
+                    appGroup.hideLabel(false);
+                }
+                appGroup.handleTitleDisplayChange();
+            });
         });
+
         this.state.set({lastTitleDisplay: titleDisplay});
     }
 
