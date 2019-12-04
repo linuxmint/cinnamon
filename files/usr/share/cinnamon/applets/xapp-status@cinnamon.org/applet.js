@@ -11,6 +11,9 @@ const Gtk = imports.gi.Gtk;
 const XApp = imports.gi.XApp;
 const GLib = imports.gi.GLib;
 
+const HORIZONTAL_STYLE = 'padding-left: 2px; padding-right: 2px; padding-top: 0; padding-bottom: 0';
+const VERTICAL_STYLE = 'padding-left: 0; padding-right: 0; padding-top: 2px; padding-bottom: 2px';
+
 class XAppStatusIcon {
 
     constructor(applet, proxy) {
@@ -204,11 +207,15 @@ class XAppStatusIcon {
     onButtonPressEvent(actor, event) {
         this.applet.set_applet_tooltip("");
 
+        if (event.get_button() == Clutter.BUTTON_SECONDARY && event.get_state() & Clutter.ModifierType.CONTROL_MASK) {
+            return Clutter.EVENT_PROPAGATE;
+        }
+
         let [x, y, o] = this.getEventPositionInfo(actor);
 
         this.proxy.call_button_press(x, y, event.get_button(), event.get_time(), o, null, null);
 
-        return true;
+        return Clutter.EVENT_STOP;
     }
 
     onButtonReleaseEvent(actor, event) {
@@ -216,7 +223,7 @@ class XAppStatusIcon {
 
         this.proxy.call_button_release(x, y, event.get_button(), event.get_time(), o, null, null);
 
-        return true;
+        return Clutter.EVENT_STOP;
     }
 
     destroy() {
@@ -236,16 +243,12 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         this.actor.remove_style_class_name('applet-box');
         this.actor.set_important(true);  // ensure we get class details from the default theme if not present
 
-        let manager;
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
-            manager = new Clutter.BoxLayout( { spacing: 0,
-                                               orientation: Clutter.Orientation.HORIZONTAL });
+            this.manager_container = new St.BoxLayout( { vertical: false, style: HORIZONTAL_STYLE });
         } else {
-            manager = new Clutter.BoxLayout( { spacing: 0,
-                                               orientation: Clutter.Orientation.VERTICAL });
+            this.manager_container = new St.BoxLayout( { vertical: true, style: VERTICAL_STYLE });
         }
-        this.manager = manager;
-        this.manager_container = new Clutter.Actor( { layout_manager: manager } );
+
         this.actor.add_actor (this.manager_container);
         this.manager_container.show();
 
@@ -445,10 +448,13 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
 
     on_orientation_changed(newOrientation) {
         this.orientation = newOrientation;
+
         if (newOrientation == St.Side.TOP || newOrientation == St.Side.BOTTOM) {
-            this.manager.set_vertical(false);
+            this.manager_container.vertical = false;
+            this.manager_container.style = HORIZONTAL_STYLE;
         } else {
-            this.manager.set_vertical(true);
+            this.manager_container.vertical = true;
+            this.manager_container.style = VERTICAL_STYLE;
         }
 
         this.refreshIcons();
