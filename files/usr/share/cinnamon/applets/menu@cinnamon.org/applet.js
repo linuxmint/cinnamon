@@ -2111,15 +2111,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.categoriesBox.add_actor(this.placesButton.actor);
         }
 
-        // places go after the last applicationbutton
+        // places go after applications. we add them in reverse starting below the last ApplicationButton
         let sibling = this._applicationsButtons[this._applicationsButtons.length - 1].actor;
-        Util.each(Main.placesManager.getAllPlaces(), place => {
-            let button = new PlaceButton(this, place);
+        let places = Main.placesManager.getAllPlaces();
+        for (let i = places.length - 1; i >= 0; i--) {
+            let button = new PlaceButton(this, places[i]);
             this._placesButtons.push(button);
             this.applicationsBox.insert_child_below(button.actor, sibling);
             button.actor.visible = this.menu.isOpen;
             sibling = button.actor;
-        });
+        }
 
         this._resizeApplicationsBox();
     }
