@@ -1,0 +1,6 @@
+[Cinnamon Session]
+Name=Cinnamon
+RequiredComponents=cinnamon;cinnamon-screensaver;nemo-autostart;@REQUIRED@cinnamon-killer-daemon;
+DesktopName=X-Cinnamon
+
+

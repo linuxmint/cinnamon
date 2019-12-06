@@ -2,13 +2,14 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
                "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
 [
+  <!ENTITY version SYSTEM "../version.xml">
   <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
 ]>
 <book id="index">
   <bookinfo>
     <title>Cinnamon St Reference Manual</title>
     <releaseinfo>
-      This document is for Cinnamon @VERSION@.
+      This document is for Cinnamon &version;.
     </releaseinfo>
   </bookinfo>
 
@@ -41,7 +42,6 @@
       <xi:include href="xml/st-theme.xml"/>
       <xi:include href="xml/st-theme-context.xml"/>
       <xi:include href="xml/st-theme-node.xml"/>
-      <xi:include href="xml/st-theme-node-transition.xml"/>
       <xi:include href="xml/st-texture-cache.xml"/>
     </chapter>
   </part>

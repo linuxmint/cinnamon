@@ -25,8 +25,8 @@
 #ifndef __ST_SCROLL_BAR_H__
 #define __ST_SCROLL_BAR_H__
 
-#include <st/st-adjustment.h>
-#include <st/st-widget.h>
+#include "st-adjustment.h"
+#include "st-widget.h"
 
 G_BEGIN_DECLS
 

@@ -25,7 +25,7 @@
 #ifndef _ST_BOX_LAYOUT_H
 #define _ST_BOX_LAYOUT_H
 
-#include <st/st-widget.h>
+#include "st-widget.h"
 
 G_BEGIN_DECLS
 
