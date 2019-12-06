@@ -26,7 +26,7 @@
 
 G_BEGIN_DECLS
 
-#include <st/st-widget.h>
+#include "st-widget.h"
 
 #define ST_TYPE_LABEL                (st_label_get_type ())
 #define ST_LABEL(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), ST_TYPE_LABEL, StLabel))

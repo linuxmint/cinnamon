@@ -44,7 +44,7 @@
 #include "st-texture-cache.h"
 #include "st-private.h"
 
-#include <st/st-widget-accessible.h>
+#include "st-widget-accessible.h"
 
 enum
 {

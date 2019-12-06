@@ -295,22 +295,16 @@ class JSEnum(JSThing):
         self.properties = []
         self.object = self
 
-SGML_FORMAT = '''\
+PART_FORMAT = '''\
 <?xml version='1.0'?>
 <!DOCTYPE book PUBLIC '-//OASIS//DTD DocBook XML V4.3//EN'
                'http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd'
 [
   <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
 ]>
-<book id='index'>
-  <bookinfo>
-    <title>Cinnamon Javascript Reference Manual</title>
-    <releaseinfo>
-      This document is for Cinnamon {version}.
-    </releaseinfo>
-  </bookinfo>
+<part label="imports.{title}">
   {chapters}
-</book>'''
+</part>'''
 
 SGML_CHAPTER_FORMAT = '''
 <chapter id="cinnamon-js-{prefix}-section">
@@ -321,7 +315,6 @@ SGML_CHAPTER_FORMAT = '''
 SGML_ENTRY_FORMAT = '<xi:include href="{directory}/{name}.xml"/>'
 
 FILE_FORMAT = '''\
-<?xml version='1.0'?>
 <!DOCTYPE refentry PUBLIC '-//OASIS//DTD DocBook XML V4.3//EN'
 'http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd'
 [
@@ -597,10 +590,8 @@ ENUMS_ITEM_ROW_FORMAT = '''
 </row>
 '''
 
-def write_sgml(files, version):
-    sgml = open('cinnamon-js-docs.sgml', 'w')
-
-    chapters = []
+def write_chapters_file(files):
+    chapters = {'ui': [], 'misc': []}
 
     for _file in files:
         if not _file.is_interesting() and len(_file.objects) == 0:
@@ -614,14 +605,14 @@ def write_sgml(files, version):
             directory = _file.directory,
             name = obj.name) for obj in _file.objects]
 
-        chapters.append(SGML_CHAPTER_FORMAT.format(
+        chapters[_file.directory].append(SGML_CHAPTER_FORMAT.format(
             prefix = _file.prefix,
             title = _file.imports,
             entries = "\n".join(entries)))
 
-    sgml.write(SGML_FORMAT.format(
-        version = version,
-        chapters = "\n".join(chapters)))
+    for directory, formatted_chapters in chapters.items():
+        with open(directory + '.xml', 'w') as part_file:
+            part_file.write(PART_FORMAT.format(title=directory, chapters="\n".join(formatted_chapters)))
 
 def create_file(obj):
     file_obj = open('{0}/{1}.xml'.format(obj.directory, obj.name), 'w', encoding="utf-8")

@@ -44,7 +44,7 @@
 #include "st-private.h"
 #include "st-widget.h"
 
-#include <st/st-widget-accessible.h>
+#include "st-widget-accessible.h"
 
 enum
 {

@@ -27,7 +27,7 @@
 
 G_BEGIN_DECLS
 
-#include <st/st-widget.h>
+#include "st-widget.h"
 #include <cally/cally.h>
 
 #define ST_TYPE_WIDGET_ACCESSIBLE st_widget_accessible_get_type ()

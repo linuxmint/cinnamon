@@ -30,9 +30,9 @@
 
 #include <glib-object.h>
 #include <gio/gio.h>
-#include <st/st-widget.h>
+#include "st-widget.h"
 
-#include <st/st-types.h>
+#include "st-types.h"
 
 G_BEGIN_DECLS
 

@@ -29,9 +29,9 @@
 #define __ST_WIDGET_H__
 
 #include <clutter/clutter.h>
-#include <st/st-types.h>
-#include <st/st-theme.h>
-#include <st/st-theme-node.h>
+#include "st-types.h"
+#include "st-theme.h"
+#include "st-theme-node.h"
 
 G_BEGIN_DECLS
 

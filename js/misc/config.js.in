@@ -6,5 +6,3 @@ var PACKAGE_NAME = '@PACKAGE_NAME@';
 var PACKAGE_VERSION = '@PACKAGE_VERSION@';
 /* The version of GJS we're linking to */
 var GJS_VERSION = '@GJS_VERSION@';
-/* The system TLS CA list */
-var CINNAMON_SYSTEM_CA_FILE = '@CINNAMON_SYSTEM_CA_FILE@';

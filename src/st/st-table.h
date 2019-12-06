@@ -24,8 +24,8 @@
 #ifndef __ST_TABLE_H__
 #define __ST_TABLE_H__
 
-#include <st/st-types.h>
-#include <st/st-widget.h>
+#include "st-types.h"
+#include "st-widget.h"
 
 G_BEGIN_DECLS
 

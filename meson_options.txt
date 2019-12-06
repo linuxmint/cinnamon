@@ -1,0 +1,20 @@
+option('docs',
+    type: 'boolean',
+    value: false,
+    description: 'Build the API references (requires gtk-doc)'
+)
+option('deprecated_warnings',
+    type: 'boolean',
+    value: false,
+    description: 'Show build warnings for deprecations'
+)
+option('build_recorder',
+    type: 'boolean',
+    value: true,
+    description: 'Build the cinnamon recorder into source'
+)
+option('disable_networkmanager',
+    type: 'boolean',
+    value: false,
+    description: 'Build without networkmanager'
+)

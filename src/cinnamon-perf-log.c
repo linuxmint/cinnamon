@@ -287,7 +287,7 @@ define_event (CinnamonPerfLog *perf_log,
  * cinnamon_perf_log_define_event:
  * @perf_log: a #CinnamonPerfLog
  * @name: name of the event. This should of the form
- *   '<namespace>.<specific eventf'>, for example
+ *   '<namespace>.<specific event>', for example
  *   'clutter.stagePaintDone'.
  * @description: human readable description of the event.
  * @signature: signature defining the arguments that event takes.
@@ -475,6 +475,7 @@ cinnamon_perf_log_event_s (CinnamonPerfLog *perf_log,
 
 /**
  * cinnamon_perf_log_define_statistic:
+ * @perf_log: a #CinnamonPerfLog
  * @name: name of the statistic and of the corresponding event.
  *  This should follow the same guidelines as for cinnamon_perf_log_define_event()
  * @description: human readable description of the statistic.
