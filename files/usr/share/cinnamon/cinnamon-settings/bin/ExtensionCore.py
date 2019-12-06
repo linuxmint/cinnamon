@@ -546,9 +546,10 @@ class ManageSpicesPage(SettingsPage):
         elif self.collection_type == 'extension':
             msg = _("This will disable all active extensions. Are you sure you want to do this?")
         if show_prompt(msg, self.window):
+            sett = Gio.Settings.new('org.cinnamon')
             if self.collection_type != 'extension':
-                os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
-            os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
+                sett.reset('next-%s-id' % self.collection_type)
+            sett.reset('enabled-%ss' % self.collection_type)
 
     def about(self, *args):
         row = self.list_box.get_selected_row()
