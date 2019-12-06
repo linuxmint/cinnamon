@@ -1,3 +1,39 @@
+cinnamon (4.4.3) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * grouped-window-list@cinnamon.org: Listen to MetaDisplay's window-created signal for adding new windows.
+  * grouped-window-list@cinnamon.org: Simplify updating when the pinned apps list changes.
+  * grouped-window-list@cinnamon-org: Apply title-display pref changes to all workspaces.
+  * cs_startup.py: Make certain that icons are the correct size - when an icon doesn't exist except as a larger size, it can sometimes ignore the GtkIconSize request.
+  * cs_startup.py: Scroll to and select the new row when an entry is added.
+  * cinnamon-settings: Use the 'gnome-disks' icon for the Disks utility.
+  * i18n: run generate_additional_files.py to update a couple of desktop file translations.
+
+  [ Ellis Hoag ]
+  * cinnamon-settings: Fix missing backgrounds issue (#8996)
+
+  [ Michael Webster ]
+  * xapp-status@cinnamon.org: Switch to a themeable container and give (#8997)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 04 Dec 2019 16:22:09 +0000
+
+cinnamon (4.4.2) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * settings@cinnamon.org: Fix applet, Panel.populateSettingsMenu was removed during work on the panel menu.
+  * window-list@cinnamon.org: Don't fetch the metaWindow's actor until it's needed, it isn't always there initially.  This also allows recovery on subsequent attempts if null is returned once.
+
+  [ Stephen Collins ]
+  * SettingsWidgets.py: remove duplicate IconChooser widget
+
+  [ Clement Lefebvre ]
+  * cs_backgrounds: Use symbolic icons in sidebar
+
+  [ Stephen Collins ]
+  * GWL: fix focus stealing when the previews are showing (#8984)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 28 Nov 2019 20:07:50 +0000
+
 cinnamon (4.4.1) tricia; urgency=medium
 
   [ Michael Webster ]

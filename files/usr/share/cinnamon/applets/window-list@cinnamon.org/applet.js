@@ -72,9 +72,11 @@ class WindowPreview extends Tooltips.TooltipBase {
     constructor(item, metaWindow, previewScale, showLabel) {
         super(item.actor);
         this._applet = item._applet;
+        this.metaWindow = metaWindow;
+        let x = this.windowActor;
         this.uiScale = global.ui_scale;
         this.thumbScale = previewScale;
-        this.muffinWindow = metaWindow.get_compositor_private();
+
         this._sizeChangedId = null;
         this.thumbnail = null;
 
@@ -94,6 +96,17 @@ class WindowPreview extends Tooltips.TooltipBase {
 
         this.thumbnailBin = new St.Bin();
         this.actor.add_actor(this.thumbnailBin);
+    }
+
+    get windowActor() {
+        let actor = this.metaWindow.get_compositor_private();
+
+        if (actor) {
+            return actor;
+        } else {
+            log("metaWindow has no actor!");
+            return null;
+        }
     }
 
     _onEnterEvent(actor, event) {
@@ -122,14 +135,20 @@ class WindowPreview extends Tooltips.TooltipBase {
         if (!this.actor || this._applet._menuOpen)
             return;
 
-        let windowTexture = this.muffinWindow.get_texture();
-        let [width, height] = this._getScaledTextureSize(windowTexture);
-
         if (this.thumbnail) {
             this.thumbnailBin.set_child(null);
             this.thumbnail.destroy();
             this.thumbnail = null;
         }
+
+        let windowTexture = this.windowActor.get_texture();
+
+        if (!windowTexture) {
+            this.actor.hide();
+            return;
+        }
+
+        let [width, height] = this._getScaledTextureSize(windowTexture);
 
         this.thumbnail = new Clutter.Clone({
             source: windowTexture,
@@ -137,7 +156,7 @@ class WindowPreview extends Tooltips.TooltipBase {
             height: height
         });
 
-        this._sizeChangedId = this.muffinWindow.connect('size-changed', () => {
+        this._sizeChangedId = this.windowActor.connect('size-changed', () => {
             let [width, height] = this._getScaledTextureSize(windowTexture);
             this.thumbnail.set_size(width, height);
             this._set_position();
@@ -155,7 +174,7 @@ class WindowPreview extends Tooltips.TooltipBase {
 
     hide() {
         if (this._sizeChangedId != null) {
-            this.muffinWindow.disconnect(this._sizeChangedId);
+            this.windowActor.disconnect(this._sizeChangedId);
             this._sizeChangedId = null;
         }
         if (this.thumbnail) {
@@ -212,7 +231,7 @@ class WindowPreview extends Tooltips.TooltipBase {
 
     _destroy() {
         if (this._sizeChangedId != null) {
-            this.muffinWindow.disconnect(this._sizeChangedId);
+            this.windowActor.disconnect(this._sizeChangedId);
             this.sizeChangedId = null;
         }
         if (this.thumbnail) {
@@ -224,7 +243,6 @@ class WindowPreview extends Tooltips.TooltipBase {
             this.actor.destroy();
             this.actor = null;
         }
-        this.muffinWindow = null;
     }
 }
 

@@ -201,6 +201,9 @@ __proto__: ModalDialog.ModalDialog.prototype,
     _onKeyPress: function (o, e) {
         let symbol = e.get_key_symbol();
         if (symbol == Clutter.Return || symbol == Clutter.KP_Enter) {
+            if (o.get_text().trim() == "") {
+                return false;
+            }
             this.popModal();
             if (Cinnamon.get_event_state(e) & Clutter.ModifierType.CONTROL_MASK)
                 this._run(o.get_text(), true);

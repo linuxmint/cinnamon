@@ -83,28 +83,8 @@ class PinnedFavs {
     }
 
     onFavoritesChange() {
-        let currentAppList = this.params.state.trigger('getCurrentAppList');
-        if (!this.params.state.settings.groupApps) {
-            setTimeout(() => currentAppList.refreshList(), 0);
-            return;
-        }
-        let oldFavoritesIds = [];
-        let newFavoritesIds = [];
-        for (let i = 0; i < this._favorites.length; i++) {
-            oldFavoritesIds.push(this._favorites[i].id);
-        }
         this.reload();
-        for (let i = 0; i < this._favorites.length; i++) {
-            newFavoritesIds.push(this._favorites[i].id);
-        }
-        for (let i = 0; i < oldFavoritesIds.length; i++) {
-            if (newFavoritesIds.indexOf(oldFavoritesIds[i]) < 0) {
-                this.triggerUpdate(oldFavoritesIds[i], false);
-            }
-        }
-        for (let i = 0; i < this._favorites.length; i++) {
-            this.triggerUpdate(newFavoritesIds[i], true);
-        }
+        this.params.state.trigger('refreshAllAppLists');
     }
 
     addFavorite(opts = {appId: null, app: null, pos: -1}) {
@@ -271,6 +251,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                 this.state.removingWindowFromWorkspaces = false;
             },
             refreshCurrentAppList: () => this.refreshCurrentAppList(),
+            refreshAllAppLists: () => this.refreshAllAppLists(),
             getCurrentAppList: () => this.getCurrentAppList(),
             clearDragPlaceholder: () => this.clearDragPlaceholder(),
             getAutoStartApps: () => this.getAutoStartApps(),
@@ -316,6 +297,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.signals.connect(global.screen, 'window-skip-taskbar-changed', (...args) => this.onWindowSkipTaskbarChanged(...args));
         this.signals.connect(global.display, 'window-marked-urgent', (...args) => this.updateAttentionState(...args));
         this.signals.connect(global.display, 'window-demands-attention', (...args) => this.updateAttentionState(...args));
+        this.signals.connect(global.display, 'window-created', (...args) => this.onWindowCreated(...args));
         this.signals.connect(global.settings, 'changed::panel-edit-mode', (...args) => this.on_panel_edit_mode_changed(...args));
         this.signals.connect(Main.overview, 'showing', (...args) => this.onOverviewShow(...args));
         this.signals.connect(Main.overview, 'hiding', (...args) => this.onOverviewHide(...args));
@@ -537,6 +519,12 @@ class GroupedWindowListApplet extends Applet.Applet {
         });
     }
 
+    onWindowCreated(display, window) {
+        each(this.appLists, (workspace) => {
+            workspace.windowAdded(window.get_workspace(), window);
+        });
+    }
+
     updateVerticalThumbnailState() {
         each(this.appLists, (workspace) => {
             each(workspace.appList, (appGroup) => {
@@ -552,13 +540,16 @@ class GroupedWindowListApplet extends Applet.Applet {
             || this.state.lastTitleDisplay === TitleDisplay.None) {
             this.refreshCurrentAppList();
         }
-        let appList = this.getCurrentAppList().appList;
-        each(appList, (appGroup) => {
-            if (titleDisplay === TitleDisplay.Focused) {
-                appGroup.hideLabel(false);
-            }
-            appGroup.handleTitleDisplayChange();
+
+        each(this.appLists, (workspace) => {
+            each(workspace.appList, (appGroup) => {
+                if (titleDisplay === TitleDisplay.Focused) {
+                    appGroup.hideLabel(false);
+                }
+                appGroup.handleTitleDisplayChange();
+            });
         });
+
         this.state.set({lastTitleDisplay: titleDisplay});
     }
 
