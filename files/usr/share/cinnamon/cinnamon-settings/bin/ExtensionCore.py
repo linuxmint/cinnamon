@@ -9,7 +9,7 @@ from html.entities import name2codepoint
 from html.parser import HTMLParser
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf, GLib
+from gi.repository import Gtk, GdkPixbuf, GLib, Gio
 
 from xapp.SettingsWidgets import SettingsStack, SettingsPage, SettingsWidget, SettingsLabel
 from SettingsWidgets import SidePage
@@ -540,9 +540,10 @@ class ManageSpicesPage(SettingsPage):
         elif self.collection_type == 'extension':
             msg = _("This will disable all active extensions. Are you sure you want to do this?")
         if show_prompt(msg, self.window):
+            sett = Gio.Settings.new('org.cinnamon')
             if self.collection_type != 'extension':
-                os.system('gsettings reset org.cinnamon next-%s-id' % self.collection_type)
-            os.system('gsettings reset org.cinnamon enabled-%ss' % self.collection_type)
+                sett.reset('next-%s-id' % self.collection_type)
+            sett.reset('enabled-%ss' % self.collection_type)
 
     def about(self, *args):
         row = self.list_box.get_selected_row()
@@ -925,7 +926,7 @@ class DownloadSpicesPage(SettingsPage):
         if not self.spices.processing_jobs:
             if (not self.spices.has_cache) or self.spices.get_cache_age() > 7:
                 self.on_cache_outdated()
-                
+
         self.search_entry.grab_focus()
 
     def on_cache_outdated(self, *args):
