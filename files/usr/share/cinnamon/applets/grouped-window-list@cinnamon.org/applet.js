@@ -210,10 +210,12 @@ class GroupedWindowListApplet extends Applet.Applet {
             lastCycled: -1,
             lastTitleDisplay: null,
             scrollActive: false,
+            thumbnailErodeTimer: 0,
             thumbnailMenuOpen: false,
             thumbnailCloseButtonOffset: global.ui_scale > 1 ? -10 : 0,
             addingWindowToWorkspaces: false,
             removingWindowFromWorkspaces: false,
+            erodingGroupState: null,
         });
 
         // key-function pairs of actions that can be triggered from the store's callback queue. This allows the
@@ -268,6 +270,35 @@ class GroupedWindowListApplet extends Applet.Applet {
             cycleWindows: (e, source) => this.handleScroll(e, source),
             openAbout: () => this.openAbout(),
             configureApplet: () => this.configureApplet(),
+            cancelErodeTimer: (clear=true) => {
+                if (this.state.thumbnailErodeTimer > 0) {
+                    clearTimeout(this.state.thumbnailErodeTimer);
+                }
+
+                this.state.thumbnailErodeTimer = 0;
+
+                if (clear) {
+                    this.state.erodingGroupState = null;
+                }
+            },
+            startErodeTimer: (groupState) => {
+                this.state.trigger("cancelErodeTimer", false);
+
+                if (groupState) {
+                    this.state.erodingGroupState = groupState;
+                }
+
+                this.state.thumbnailErodeTimer = setTimeout(() => {
+                    this.state.erodingGroupState = null;
+                    this.state.thumbnailErodeTimer = 0;
+
+                    let currentAppList = this.getCurrentAppList();
+
+                    each(currentAppList, () => {
+                        currentAppList.listState.trigger("closeAllHoverMenus");
+                    });
+                }, 300);
+            }
         });
 
         this.settings = new AppletSettings(this.state.settings, metadata.uuid, instance_id);

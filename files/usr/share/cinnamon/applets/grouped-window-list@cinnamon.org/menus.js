@@ -478,23 +478,13 @@ class HoverMenuController extends PopupMenu.PopupMenuManager {
     constructor(actor, groupState) {
         super({actor}, false); // owner, shouldGrab
         this.groupState = groupState;
-        this.connectId = this.groupState.connect({
-            thumbnailMenuEntered: ({thumbnailMenuEntered}) => {
-                this.shouldGrab = thumbnailMenuEntered;
-                this._onMenuOpenState(this._menus[0], this._menus[0].isOpen);
-                this.groupState.trigger('checkFocusStyle');
-                if (!this.grabbed) return;
-                if (!thumbnailMenuEntered) this._ungrab();
-            }
-        });
     }
 
-    _onEventCapture() {
-        return false;
+    _onEventCapture(actor, event) {
+        return Clutter.EVENT_PROPAGATE;
     }
 
     destroy() {
-        this.groupState.disconnect(this.connectId);
         super.destroy();
     }
 
@@ -989,8 +979,31 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         this.shouldClose = false;
 
         let timeout;
+        let animate = true;
         if (this.state.thumbnailMenuOpen) {
-            timeout = 50;
+            if (this.state.erodingGroupState === this.groupState) {
+                // We re-entered the current a)panel item or b) the item's thumbnail menu.
+                // Cancel the timer until we leave it once more.
+                this.state.trigger("cancelErodeTimer");
+                return;
+            } else {
+                // pinned app with no windows, just restart the timer to allow
+                // traversal to the next group that has windows
+                if (this.groupState.metaWindows.length == 0) {
+                    this.state.trigger("startErodeTimer");
+                    return;
+                }
+
+                // or else we've moved from one panel item to another,
+                // cancel the timer, and close any open thumbnail menus
+                // immediately, without animation, to avoid overlapping
+                // during animation.  This is enter on the new item, so
+                // open the new thumbnail menu immediately without animating.
+                this.state.trigger("cancelErodeTimer");
+                this.groupState.trigger("closeOtherThumbnailMenusNow");
+                timeout = 0;
+                animate = false;
+            }
         } else {
             timeout = this.state.settings.thumbTimeout;
         }
@@ -1001,7 +1014,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.set({thumbnailMenuEntered: this.isOpen});
         }
 
-        setTimeout(() => this.open(), timeout);
+        setTimeout(() => this.open(false, animate), timeout);
     }
 
     onMenuLeave(actor) {
@@ -1015,7 +1028,11 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.set({thumbnailMenuEntered: false});
         }
 
-        setTimeout(() => this.close(), 50);
+        // We've left either the panel item, or the thumbnail menu.
+        // Don't actually close yet, delay in case a new panel item
+        // is entered, or we were crossing some gap between panel and
+        // thumbnail menu.
+        this.state.trigger("startErodeTimer", this.groupState);
     }
 
     onKeyRelease(actor, event) {
@@ -1027,7 +1044,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         return true;
     }
 
-    open (force) {
+    open (force=false, animate=true) {
         if (!force && (!this.actor
           || this.willUnmount
           || this.isOpen
@@ -1040,11 +1057,12 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         } else {
             if (force || this.state.settings.onClickThumbs) this.addQueuedThumbnails();
             this.state.set({thumbnailMenuOpen: true});
-            super.open(this.state.settings.animateThumbs);
+            // log("super open animate " + animate);
+            super.open(this.state.settings.animateThumbs && animate);
         }
     }
 
-    close (force) {
+    close (force=false, animate=true) {
         if (!force && (!this.shouldClose
             || (!this.shouldClose && this.state.settings.onClickThumbs))
             || !this.groupState
@@ -1057,8 +1075,10 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.groupState.tooltip.hide();
         }
         if (this.isOpen) {
+            // log("super close animate " + animate);
+
             this.state.set({thumbnailMenuOpen: false});
-            if (!this.actor.is_finalized()) super.close(this.state.settings.animateThumbs);
+            if (!this.actor.is_finalized()) super.close(this.state.settings.animateThumbs && animate);
         }
         for (let i = 0; i < this.appThumbnails.length; i++) {
             this.appThumbnails[i].destroyOverlayPreview();
