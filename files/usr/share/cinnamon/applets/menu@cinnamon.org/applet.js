@@ -975,6 +975,23 @@ class FavoritesBox {
     }
 }
 
+/* This is so we can override the default key-press-event handler in PopupMenu.PopupMenu
+ * and prevent animation when the menu via Escape. */
+class Menu extends Applet.AppletPopupMenu {
+    constructor(launcher, orientation) {
+        super(launcher, orientation);
+    }
+
+    _onKeyPressEvent(actor, event) {
+        if (event.get_key_symbol() == Clutter.Escape) {
+            this.close(false);
+            return true;
+        }
+
+        return false;
+    }
+}
+
 class CinnamonMenuApplet extends Applet.TextIconApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
@@ -983,7 +1000,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.set_applet_tooltip(_("Menu"));
         this.menuManager = new PopupMenu.PopupMenuManager(this);
-        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menu = new Menu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
         this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
