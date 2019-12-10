@@ -68,11 +68,8 @@ class PanelAppLauncherMenu extends Applet.AppletPopupMenu {
         this._signals.connect(item, 'activate', Lang.bind(this._launcher.launchersBox, this._launcher.launchersBox.configureApplet));
         subMenu.menu.addMenuItem(item);
 
-        item = new PopupMenu.PopupIconMenuItem(_("Remove '%s'").format(_("Panel launchers")), "edit-delete", St.IconType.SYMBOLIC);
-        this._signals.connect(item, 'activate', Lang.bind(this, function() {
-            AppletManager._removeAppletFromPanel(this._launcher.launchersBox._uuid, this._launcher.launchersBox.instance_id);
-        }));
-        subMenu.menu.addMenuItem(item);
+        this.remove_item = new PopupMenu.PopupIconMenuItem(_("Remove '%s'").format(_("Panel launchers")), "edit-delete", St.IconType.SYMBOLIC);
+        subMenu.menu.addMenuItem(this.remove_item);
     }
 
     _onLaunchActivate(item, event) {
@@ -138,6 +135,8 @@ class PanelAppLauncher extends DND.LauncherDraggable {
 
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._menu = new PanelAppLauncherMenu(this, orientation);
+        this._signals.connect(this._menu.remove_item, 'activate', (actor, event) => launchersBox.confirmRemoveApplet(event));
+
         this._menuManager.addMenu(this._menu);
 
         let tooltipText = this.isCustom() ? appinfo.get_name() : app.get_name();

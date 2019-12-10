@@ -878,9 +878,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         subMenu.menu.addMenuItem(item);
 
         item = new PopupMenu.PopupIconMenuItem(_("Remove 'Window list'"), "edit-delete", St.IconType.SYMBOLIC);
-        this._signals.connect(item, 'activate', Lang.bind(this, function() {
-            AppletManager._removeAppletFromPanel(this._launcher._applet._uuid, this._launcher._applet.instance_id);
-        }));
+        this._signals.connect(item, 'activate', (actor, event) => this._launcher._applet.confirmRemoveApplet(event));
         subMenu.menu.addMenuItem(item);
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());

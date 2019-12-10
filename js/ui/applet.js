@@ -552,6 +552,18 @@ var Applet = class Applet {
         // Implemented byApplets
     }
 
+    confirmRemoveApplet (event) {
+        if (Clutter.ModifierType.CONTROL_MASK & Cinnamon.get_event_state(event)) {
+            AppletManager._removeAppletFromPanel(this._uuid, this.instance_id);
+        } else {
+            let dialog = new ModalDialog.ConfirmDialog(
+                _("Are you sure you want to remove %s?").format(this._meta.name),
+                () => AppletManager._removeAppletFromPanel(this._uuid, this.instance_id)
+            );
+            dialog.open();
+        }
+    }
+
     finalizeContextMenu () {
 
         // Add default context menus if we're in panel edit mode, ensure their removal if we're not
@@ -562,17 +574,7 @@ var Applet = class Applet {
                 .format(this._(this._meta.name)),
                    "edit-delete",
                    St.IconType.SYMBOLIC);
-            this.context_menu_item_remove.connect('activate', Lang.bind(this, function(actor, event) {
-                if (Clutter.ModifierType.CONTROL_MASK & Cinnamon.get_event_state(event)) {
-                    AppletManager._removeAppletFromPanel(this._uuid, this.instance_id);
-                } else {
-                    let dialog = new ModalDialog.ConfirmDialog(
-                        _("Are you sure you want to remove %s?").format(this._meta.name),
-                        () => AppletManager._removeAppletFromPanel(this._uuid, this.instance_id)
-                    );
-                    dialog.open();
-                }
-            }));
+            this.context_menu_item_remove.connect('activate', (actor, event) => this.confirmRemoveApplet(event));
         }
 
         if (this.context_menu_item_about == null) {
