@@ -1,3 +1,14 @@
+cinnamon (4.4.4) tricia; urgency=medium
+
+  [ James Ross ]
+  * menu-applet: fix order of places
+
+  [ Michael Webster ]
+  * cinnamonEntry.js: Fixes for the copy/paste popup.
+  * runDialog.js: Don't do anything if enter is pressed with an entry that is empty (or has only whitespace).
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 10 Dec 2019 10:17:37 +0000
+
 cinnamon (4.4.3) tricia; urgency=medium
 
   [ Michael Webster ]
