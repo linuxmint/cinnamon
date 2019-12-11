@@ -11,12 +11,12 @@ from gi.repository import Gio, Gtk, GObject, GLib, XApp
 
 from xapp.SettingsWidgets import SettingsWidget, SettingsLabel
 from xapp.GSettingsWidgets import PXGSettingsBackend
-from ChooserButtonWidgets import DateChooserButton, TweenChooserButton, EffectChooserButton
+from ChooserButtonWidgets import DateChooserButton, TweenChooserButton, EffectChooserButton, TimeChooserButton
 from KeybindingWidgets import ButtonKeybinding
 
 settings_objects = {}
 
-CAN_BACKEND = ["SoundFileChooser", "TweenChooser", "EffectChooser", "DateChooser", "Keybinding"]
+CAN_BACKEND = ["SoundFileChooser", "TweenChooser", "EffectChooser", "DateChooser", "TimeChooser", "Keybinding"]
 
 class BinFileMonitor(GObject.GObject):
     __gsignals__ = {
