@@ -35,6 +35,13 @@ const ALIASES_KEY = 'run-dialog-aliases';
 const DIALOG_GROW_TIME = 0.1;
 const MAX_COMPLETIONS = 40;
 
+const NAVIGATE_TYPE_NONE = 0;
+const NAVIGATE_TYPE_TAB = 1;
+const NAVIGATE_TYPE_ARROW = 2;
+
+const UP = 1;
+const DOWN = 2;
+
 const DEVEL_COMMANDS = { 'lg': x => Main.createLookingGlass().open(),
                          'r': x => global.reexec_self(),
                          'restart': x => global.reexec_self(),
@@ -190,10 +197,11 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
         this._errorBox.hide();
 
+        this._entryText.connect('key-press-event', Lang.bind(this, this._onKeyPress));
+
         this._history = new History.HistoryManager({ gsettingsKey: HISTORY_KEY,
                                                      entry: this._entryText,
                                                      deduplicate: true });
-        this._entryText.connect('key-press-event', Lang.bind(this, this._onKeyPress));
 
         this._updateCompletionTimer = 0;
      },
@@ -222,9 +230,20 @@ __proto__: ModalDialog.ModalDialog.prototype,
             return true;
         }
         if (symbol == Clutter.Tab) {
-            this._updateCompletions(true);
+            this._updateCompletions(NAVIGATE_TYPE_TAB);
             return true;
         }
+
+        if (this._completionBox.visible) {
+            if (symbol == Clutter.KEY_Up) {
+                this._updateCompletions(NAVIGATE_TYPE_ARROW, UP);
+                return true;
+            } else if (symbol == Clutter.KEY_Down) {
+                this._updateCompletions(NAVIGATE_TYPE_ARROW, DOWN);
+                return true;
+            }
+        }
+
         if (symbol == Clutter.BackSpace) {
             this._completionSelected = 0;
             this._completionBox.hide();
@@ -245,7 +264,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
     // There is different behaviour depending on whether this is called due to
     // pressing tab or other keys.
-    _updateCompletions: function(tab) {
+    _updateCompletions: function(nav_type=NAVIGATE_TYPE_NONE, direction=DOWN) {
         this._updateCompletionTimer = 0;
 
         let text = this._entryText.get_text();
@@ -259,7 +278,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
          * not perform completions, since completions will list all files in
          * /home/user/, which is unexpected.
          */
-        if (!tab && text.charAt(text.length - 1) == "/") {
+        if (!nav_type && text.charAt(text.length - 1) == "/") {
             this._completionBox.hide();
             this._oldText = "";
             return;
@@ -271,12 +290,22 @@ __proto__: ModalDialog.ModalDialog.prototype,
         /* If update is caused by user typing "tab" and no text has changed
          * since then, cycle through available completions.
          */
-        if (this._oldText == text && tab && this._completionBox.visible) {
-            this._completionSelected ++;
-            this._completionSelected %= this._completions.length;
-            this._showCompletions(text);
-            return;
+        if (this._oldText == text && nav_type && this._completionBox.visible) {
+            if ((nav_type == NAVIGATE_TYPE_ARROW && direction == DOWN) || nav_type == NAVIGATE_TYPE_TAB) {
+                this._completionSelected ++;
+                this._completionSelected %= this._completions.length;
+                this._showCompletions(text);
+                return;
+            } else { // nav_type was > 0 and not tab, and not down, so navigate UP.
+                if (this._completionSelected > 0) {
+                    this._completionSelected --;
+                }
+
+                this._showCompletions(text);
+                return;
+            }
         }
+
         this._oldText = text;
 
         let [postfix, completions] = completeCommand(text);
@@ -289,7 +318,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
          * possible completions. If there is no possible completion, then hide
          * completion box.
          */
-        if (postfix.length > 0 && tab) {
+        if (postfix.length > 0 && nav_type == NAVIGATE_TYPE_TAB) {
             this._entryText.set_text(text + postfix);
         } else if (completions.length > 0 &&
                 global.settings.get_boolean(SHOW_COMPLETIONS_KEY)) {
