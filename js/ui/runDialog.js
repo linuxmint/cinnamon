@@ -212,6 +212,20 @@ __proto__: ModalDialog.ModalDialog.prototype,
             if (o.get_text().trim() == "") {
                 return false;
             }
+
+            /* When enter is hit with completions open, if the current selection
+             * is a folder, open that folder immediately.  Otherwise, just close
+             * the completion box - the user can add an argument to the command
+             * they selected (there's already a space provided) */
+            if (this._completionBox.visible && !o.get_text().endsWith("/")) {
+                this._completionSelected = 0;
+                this._completionBox.hide();
+                this._entryText.set_selection_bound(-1);
+                this._entryText.set_cursor_position(-1);
+                this._oldText = "";
+                return true;
+            }
+
             this.popModal();
             if (Cinnamon.get_event_state(e) & Clutter.ModifierType.CONTROL_MASK)
                 this._run(o.get_text(), true);
