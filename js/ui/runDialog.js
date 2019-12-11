@@ -281,7 +281,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
     _updateCompletions: function(nav_type=NAVIGATE_TYPE_NONE, direction=DOWN) {
         this._updateCompletionTimer = 0;
 
-        let text = this._entryText.get_text();
+        let text = this._expandHome(this._entryText.get_text());
 
         /* If update is caused by user pressing key, and the user just finished
          * a directory path, don't provide new predictions. For example, the
@@ -345,6 +345,15 @@ __proto__: ModalDialog.ModalDialog.prototype,
         }
     },
 
+    _expandHome: function(text) {
+        if (text.charAt(0) == '~') {
+            text = text.slice(1);
+            return GLib.build_filenamev([GLib.get_home_dir(), text]);
+        }
+
+        return text;
+    },
+
     _showCompletions: function(orig) {
         /* Show a list of possible completions, and allow users to scroll
          * through them. The scrolling mechanism is done in _updateCompletions,
@@ -396,6 +405,8 @@ __proto__: ModalDialog.ModalDialog.prototype,
             return;
         }
 
+        input = this._expandHome(input);
+
         // Aliases is a list of strings of the form a:b, where an instance of
         // "a" is to be replaced with "b". Replacement is only performed on the
         // first word
@@ -422,10 +433,6 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
             if (input.charAt(0) == '/') {
                 path = input;
-            } else {
-                if (input.charAt(0) == '~')
-                    input = input.slice(1);
-                path = GLib.build_filenamev([GLib.get_home_dir(), input]);
             }
 
             if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
