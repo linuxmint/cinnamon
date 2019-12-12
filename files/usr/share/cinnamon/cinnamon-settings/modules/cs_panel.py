@@ -112,7 +112,7 @@ class PanelSettingsPage(SettingsPage):
         ]
 
         points = 6.0
-        while points <= 12.0:
+        while points <= 16.0:
             text_options.append([points, "%.1fpt" % points])
             points += 0.5
 

@@ -64,7 +64,7 @@ const DEFAULT_TEXT_SIZE_VALUES = {"left":   0.0,
                                   "center": 0.0,
                                   "right":  0.0};
 const MIN_TEXT_SIZE_PTS = 6.0;
-const MAX_TEXT_SIZE_PTS = 12.0;
+const MAX_TEXT_SIZE_PTS = 16.0;
 /*** Defaults ***/
 
 const PANEL_AUTOHIDE_KEY = "panels-autohide";
