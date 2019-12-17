@@ -49,6 +49,7 @@ class AppList {
         this.lastFocusedApp = null;
 
         // Connect all the signals
+        this.signals.connect(global.screen, 'window-workspace-changed', (...args) => this.windowWorkspaceChanged(...args));
         this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
         this.on_orientation_changed(null, true);
     }
@@ -172,6 +173,10 @@ class AppList {
             || metaWindow.get_workspace() === this.metaWorkspace)
         && !metaWindow.is_skip_taskbar()
         && this.state.monitorWatchList.indexOf(metaWindow.get_monitor()) > -1;
+    }
+
+    windowWorkspaceChanged(screen, metaWorkspace, metaWindow) {
+        this.windowAdded(metaWindow, metaWorkspace);
     }
 
     windowAdded(metaWorkspace, metaWindow, app, isFavoriteApp) {
