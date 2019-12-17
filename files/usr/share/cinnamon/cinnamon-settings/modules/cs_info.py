@@ -167,11 +167,30 @@ class Module:
 
             if os.path.exists("/usr/bin/upload-system-info"):
                 widget = SettingsWidget()
-                button = Gtk.Button(_("Upload system information"))
-                button.set_tooltip_text(_("No personal information included"))
-                button.connect("clicked", self.on_button_clicked)
+
+                spinner = Gtk.Spinner(visible=True)
+                button = Gtk.Button(label=_("Upload system information"),
+                                    tooltip_text=_("No personal information included"),
+                                    always_show_image=True,
+                                    image=spinner)
+                button.connect("clicked", self.on_button_clicked, spinner)
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
 
-    def on_button_clicked(self, button):
-        subprocess.Popen(["upload-system-info"])
+    def on_button_clicked(self, button, spinner):
+
+        try:
+            subproc = Gio.Subprocess.new(["upload-system-info"], Gio.SubprocessFlags.NONE)
+            subproc.wait_check_async(None, self.on_subprocess_complete, spinner)
+            spinner.start()
+        except GLib.Error as e:
+            print("upload-system-info failed to run: %s" % e.message)
+
+    def on_subprocess_complete(self, subproc, result, spinner):
+        spinner.stop()
+
+        try:
+            success = subproc.wait_check_finish(result)
+        except GLib.Error as e:
+            print("upload-system-info failed: %s" % e.message)
+
