@@ -706,6 +706,16 @@ class GroupedWindowListApplet extends Applet.Applet {
             }
         });
 
+        if (pos < this.pinnedFavorites._favorites.length && !source.groupState.isFavoriteApp) {
+            this.state.dragPlaceholderPos = pos;
+            return DND.DragMotionResult.NO_DROP;
+        }
+
+        if (pos > this.pinnedFavorites._favorites.length && source.groupState.isFavoriteApp) {
+            this.state.dragPlaceholderPos = pos;
+            return DND.DragMotionResult.NO_DROP;
+        }
+
         if (pos !== this.state.dragPlaceholderPos) {
             this.state.dragPlaceholderPos = pos;
 
@@ -771,6 +781,14 @@ class GroupedWindowListApplet extends Applet.Applet {
         let currentAppList = this.getCurrentAppList();
         let pos = this.state.dragPlaceholderPos;
         this.clearDragPlaceholder();
+
+        if (pos < this.pinnedFavorites._favorites.length && !source.groupState.isFavoriteApp) {
+            return false;
+        }
+
+        if (pos > this.pinnedFavorites._favorites.length && source.groupState.isFavoriteApp) {
+            return false;
+        }
 
         // For getting the fallback position, possibly dead code
         if (pos === -1) {
