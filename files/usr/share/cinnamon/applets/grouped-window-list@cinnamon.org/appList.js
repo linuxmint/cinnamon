@@ -136,6 +136,9 @@ class AppList {
 
             for (let i = 0; i < appWindows.length; i++) {
                 this.windowAdded(this.metaWorkspace, appWindows[i], app, true);
+                if (!this.state.settings.groupApps) {
+                    break;
+                }
             }
         }
     }

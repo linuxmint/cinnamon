@@ -806,7 +806,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                     pos
                 };
                 let refFav = findIndex(this.pinnedFavorites._favorites, (favorite) => favorite.id === source.groupState.appId);
-                if (refFav > -1) {
+                if (refFav > -1 && !source.groupState.transientFavorite) {
                     this.pinnedFavorites.moveFavoriteToPos(opts);
                 }
             }
