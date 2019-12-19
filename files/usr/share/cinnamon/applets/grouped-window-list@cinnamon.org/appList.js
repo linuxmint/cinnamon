@@ -242,6 +242,7 @@ class AppList {
                 listState: this.listState,
                 app,
                 isFavoriteApp,
+                transientFavorite,
                 metaWorkspace,
                 metaWindow,
                 appId
@@ -306,9 +307,9 @@ class AppList {
         });
 
         if (refApp > -1) {
-            this.appList[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp) => {
-
-                isFavoriteApp = isFavoriteApp && (this.state.settings.groupApps || this.getWindowCount(appId) === 0);
+            this.appList[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp, transientFavorite) => {
+                isFavoriteApp = isFavoriteApp && (this.state.settings.groupApps    ||
+                                                 (this.getWindowCount(appId) === 0 || !transientFavorite));
                 if (isFavoriteApp) {
                     this.appList[refApp].groupState.set({groupReady: false, lastFocused: null});
                     this.appList[refApp].actor.set_style_pseudo_class('closed');

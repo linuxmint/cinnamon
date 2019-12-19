@@ -282,7 +282,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         // Pin/unpin, shortcut handling
         if (!isWindowBacked) {
             let label, icon;
-            if (this.groupState.isFavoriteApp) {
+            if (this.groupState.isFavoriteApp || this.groupState.transientFavorite) {
                 label = _('Unpin from Panel');
                 icon = 'unpin';
             } else {
@@ -405,7 +405,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
     }
 
     toggleFavorite() {
-        if (this.groupState.isFavoriteApp) {
+        if (this.groupState.isFavoriteApp || this.groupState.transientFavorite) {
             this.state.trigger('removeFavorite', this.groupState.appId);
         } else if (!this.groupState.app.is_window_backed()) {
             this.state.trigger('addFavorite', {

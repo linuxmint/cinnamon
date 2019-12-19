@@ -63,6 +63,7 @@ class AppGroup {
             windowCount: params.metaWindows ? params.metaWindows.length : 0,
             lastFocused: params.metaWindow || null,
             isFavoriteApp: !params.metaWindow ? true : params.isFavoriteApp === true,
+            transientFavorite: params.transientFavorite === true,
             autoStartIndex: findIndex(this.state.autoStartApps, (app) => app.id === params.appId),
             willUnmount: false,
             tooltip: null,
@@ -878,7 +879,7 @@ class AppGroup {
                 if (this.hoverMenu && this.groupState.isFavoriteApp) {
                     this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
                 }
-                cb(this.groupState.appId, this.groupState.isFavoriteApp);
+                cb(this.groupState.appId, this.groupState.isFavoriteApp, this.groupState.transientFavorite);
             }
         }
     }
