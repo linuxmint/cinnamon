@@ -68,6 +68,7 @@ st_source_h =					\
 	st/st-scrollable.h			\
 	st/st-scroll-bar.h			\
 	st/st-scroll-view.h			\
+	st/st-settings.h            \
 	st/st-shadow.h				\
 	st/st-table.h				\
 	st/st-table-child.h			\
@@ -125,6 +126,7 @@ st_source_c =					\
 	st/st-scrollable.c			\
 	st/st-scroll-bar.c			\
 	st/st-scroll-view.c			\
+	st/st-settings.c            \
 	st/st-shadow.c				\
 	st/st-table.c				\
 	st/st-table-child.c			\

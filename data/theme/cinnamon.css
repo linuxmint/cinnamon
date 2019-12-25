@@ -3,7 +3,6 @@
  * ... contains a few cinnamon specific styles (rare occurrences)
  * ###################################################################*/
 stage {
-    font-family: sans, sans-serif;
 }
 .cinnamon-link {
     color: #0000ff;
