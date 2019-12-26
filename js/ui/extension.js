@@ -29,7 +29,6 @@ var knownCinnamon4Conflicts = [
     'turbonote@iksws.com.b',
     'vnstat@linuxmint.com',
     'netusagemonitor@pdcurtis',
-    'multicore-sys-monitor@ccadeptic23',
     // Desklets
     'netusage@30yavash.com',
     'simple-system-monitor@ariel'
