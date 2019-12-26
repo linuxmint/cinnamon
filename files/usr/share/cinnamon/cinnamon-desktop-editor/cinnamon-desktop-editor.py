@@ -194,7 +194,7 @@ class LauncherEditor(ItemEditor):
     def resync_validity(self, *args):
         name_text = self.builder.get_object('name-entry').get_text().strip()
         exec_text = self.builder.get_object('exec-entry').get_text().strip()
-        name_valid = name_text is not ""
+        name_valid = name_text != ""
         exec_valid = self.validate_exec_line(exec_text)
         self.sync_widgets(name_valid, exec_valid)
 
@@ -236,7 +236,7 @@ class DirectoryEditor(ItemEditor):
 
     def resync_validity(self, *args):
         name_text = self.builder.get_object('name-entry').get_text().strip()
-        valid = (name_text is not "")
+        valid = (name_text != "")
         self.builder.get_object('ok').set_sensitive(valid)
 
     def load(self):
@@ -281,7 +281,7 @@ class CinnamonLauncherEditor(ItemEditor):
     def resync_validity(self, *args):
         name_text = self.builder.get_object('name-entry').get_text().strip()
         exec_text = self.builder.get_object('exec-entry').get_text().strip()
-        name_valid = name_text is not ""
+        name_valid = name_text != ""
         exec_valid = self.validate_exec_line(exec_text)
         self.sync_widgets(name_valid, exec_valid)
 

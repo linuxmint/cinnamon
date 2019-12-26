@@ -239,7 +239,7 @@ class JSONSettingsRevealer(Gtk.Revealer):
                 break
 
         if self.key is None:
-            if key[:1] is '!':
+            if key[:1] == '!':
                 self.invert = True
                 self.key = key[1:]
             else:

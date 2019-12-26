@@ -419,7 +419,7 @@ class Module:
             categories, iter = tree.get_selection().get_selected()
             if iter:
                 category = categories[iter][2]
-                if category.int_name is not "custom":
+                if category.int_name != "custom":
                     for keybinding in category.keybindings:
                         self.kb_store.append((keybinding.label, keybinding))
                 else:
@@ -428,7 +428,7 @@ class Module:
 
     def loadCustoms(self):
         for category in self.main_store:
-            if category.int_name is "custom":
+            if category.int_name == "custom":
                 category.clear()
 
         parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
@@ -443,7 +443,7 @@ class Module:
                                          schema.get_strv("binding"))
             self.kb_store.append((custom_kb.label, custom_kb))
             for category in self.main_store:
-                if category.int_name is "custom":
+                if category.int_name == "custom":
                     category.add(custom_kb)
 
     def onKeyBindingChanged(self, tree):
@@ -453,7 +453,7 @@ class Module:
             if iter:
                 keybinding = keybindings[iter][1]
                 for entry in keybinding.entries:
-                    if entry is not "_invalid_":
+                    if entry != "_invalid_":
                         self.entry_store.append((entry,))
                 self.remove_custom_button.set_property('sensitive', isinstance(keybinding, CustomKeyBinding))
 
@@ -536,7 +536,7 @@ class Module:
         new_schema.set_strv("binding", ())
         i = 0
         for cat in self.cat_store:
-            if cat[2].int_name is "custom":
+            if cat[2].int_name == "custom":
                 self.cat_tree.set_cursor(str(i), self.cat_tree.get_column(0), False)
             i += 1
         i = 0
@@ -574,7 +574,7 @@ class Module:
 
         i = 0
         for cat in self.cat_store:
-            if cat[2].int_name is "custom":
+            if cat[2].int_name == "custom":
                 self.cat_tree.set_cursor(str(i), self.cat_tree.get_column(0), False)
             i += 1
 
@@ -600,7 +600,7 @@ class Module:
 
                 i = 0
                 for cat in self.cat_store:
-                    if cat[2].int_name is "custom":
+                    if cat[2].int_name == "custom":
                         self.cat_tree.set_cursor(str(i), self.cat_tree.get_column(0), False)
                     i += 1
                 i = 0
@@ -691,7 +691,7 @@ class KeyBinding():
     def writeSettings(self):
         array = []
         for entry in self.entries:
-            if entry is not "":
+            if entry != "":
                 array.append(entry)
         self.settings.set_strv(self.key, array)
 
@@ -731,7 +731,7 @@ class CustomKeyBinding():
 
         array = []
         for entry in self.entries:
-            if entry is not "":
+            if entry != "":
                 array.append(entry)
         settings.set_strv("binding", array)
 
@@ -777,6 +777,5 @@ class AddCustomDialog(Gtk.Dialog):
         self.command_entry.set_text(path)
 
     def onEntriesChanged(self, widget):
-        ok_enabled = self.name_entry.get_text().strip() is not "" and self.command_entry.get_text().strip() is not ""
+        ok_enabled = self.name_entry.get_text().strip() != "" and self.command_entry.get_text().strip() != ""
         self.set_response_sensitive(Gtk.ResponseType.OK, ok_enabled)
-        

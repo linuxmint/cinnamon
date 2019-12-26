@@ -331,13 +331,13 @@ class TimeChooserButton(Gtk.Button):
     def __init__(self, follow_current=False, time=None, show_seconds='default'):
         super(TimeChooserButton, self).__init__()
 
-        if show_seconds is 'default':
+        if show_seconds == 'default':
             self.show_seconds_override_default = False
         else:
             self.show_seconds_override_default = True
-            if show_seconds is 'true':
+            if show_seconds == 'true':
                 self.show_seconds = True
-            elif show_seconds is 'false':
+            elif show_seconds == 'false':
                 self.show_seconds = False
             else:
                 raise ValueError('Invalid argument: show_seconds must be default, true, or false')
