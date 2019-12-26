@@ -35,8 +35,10 @@ class Module:
             settings = page.add_section(_("Buttons"))
 
             button_options = []
-            button_options.append([":minimize,maximize,close", _("Traditional style (Right)")])
-            button_options.append(["close,minimize,maximize:", _("Mac style (Left)")])
+            button_options.append([":minimize,maximize,close", _("Right")])
+            button_options.append(["close,minimize,maximize:", _("Left")])
+            button_options.append([":close", _("Gnome")])
+            button_options.append(["close:minimize,maximize", _("Classic Mac")])
 
             widget = GSettingsComboBox(_("Buttons layout"), "org.cinnamon.desktop.wm.preferences", "button-layout", button_options, size_group=size_group)
             settings.add_row(widget)
