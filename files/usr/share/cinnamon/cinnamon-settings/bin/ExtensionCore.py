@@ -1,23 +1,19 @@
 #!/usr/bin/python3
 
-import sys
 import os
 import re
-import json
 import html
 import subprocess
 import gettext
 from html.parser import HTMLParser
 import html.entities as entities
 
-import dbus
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
+from gi.repository import Gio, Gtk, GdkPixbuf, GLib
 
-from xapp.SettingsWidgets import SettingsStack, SettingsPage, SettingsWidget, SettingsLabel
-from SettingsWidgets import SidePage
-from Spices import Spice_Harvester, ThreadedTaskManager
+from xapp.SettingsWidgets import SettingsPage, SettingsWidget, SettingsLabel
+from Spices import ThreadedTaskManager
 
 home = os.path.expanduser('~')
 
@@ -961,4 +957,3 @@ class DownloadSpicesPage(SettingsPage):
 
         infobar.set_revealed(False)
         self.search_entry.grab_focus()
-

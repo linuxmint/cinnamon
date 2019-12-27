@@ -20,12 +20,11 @@
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('CMenu', '3.0')
-from gi.repository import Gtk, GObject, Gio, GdkPixbuf, Gdk, CMenu, GLib
+from gi.repository import Gtk, GObject, Gdk, CMenu
 import html
 import os
 import gettext
 import subprocess
-import shutil
 
 from cme import config
 gettext.bindtextdomain(config.GETTEXT_PACKAGE, config.localedir)

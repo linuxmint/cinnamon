@@ -1,13 +1,10 @@
 #!/usr/bin/python3
 
-import os, json, subprocess, re
-from xml.etree import ElementTree
-import gettext
-import signal
+import subprocess
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GLib, Pango
+from gi.repository import Gtk
 
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *

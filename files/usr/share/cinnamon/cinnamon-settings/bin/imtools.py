@@ -18,7 +18,6 @@
 import os
 from io import StringIO
 from itertools import cycle
-from urllib.request import urlopen
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageEnhance
