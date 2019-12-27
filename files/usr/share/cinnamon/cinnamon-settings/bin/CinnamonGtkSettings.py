@@ -74,26 +74,73 @@ class GtkSettingsSwitch(Switch):
 
 css_instance = None
 
-def get_css_editor():
+def get_css_editor(selector=None):
     global css_instance
 
     if css_instance is None:
-        css_instance = GtkCssEditor()
+        css_instance = GtkCssEditor(selector)
 
     return css_instance
 
+class CSSSettingsException(Exception):
+    pass
+
 class GtkCssEditor:
-    def __init__(self):
+    def __init__(self, selector):
         self._path = os.path.join(GLib.get_user_config_dir(),
                                   "gtk-3.0",
                                   "gtk.css")
 
         self.parser = tinycss.make_parser()
+        self.selector = selector
+
+        self.rule_separator = "/***** %s - cinnamon-settings-generated - do not edit *****/" % self.selector
+        self.my_ruleset = None
+
+        file = Gio.File.new_for_path(self._path)
 
         try:
-            self.stylesheet = self.parser.parse_stylesheet_file(self._path)
-        except FileNotFoundError:
-            self.stylesheet = tinycss.css21.Stylesheet(rules=[], errors=[], encoding="utf-8")
+            success, content_bytes, tag = file.load_contents(None)
+
+            self._contents = content_bytes.decode()
+            self.stylesheet = self.parser.parse_stylesheet(self._contents)
+        except GLib.Error as e:
+            if e.code == Gio.IOErrorEnum.NOT_FOUND:
+                self._contents = ""
+                self.stylesheet = tinycss.css21.Stylesheet(rules=[], errors=[], encoding="utf-8")
+            else:
+                raise PermissionError("Could not load ~/.config/gtk-3.0/gtk.css file, check permissions")
+
+    def sanitize_contents(self):
+        in_lines = self._contents.split("\n")
+        out_lines = []
+        sof = True
+
+        selector_found = False
+        for line in in_lines:
+            if self.rule_separator in line:
+                break
+
+            if line == "" and sof:
+                continue
+
+            if line.strip().startswith(self.selector):
+                selector_found = True
+                continue
+
+            if not selector_found:
+                out_lines.append(line)
+                sof = False
+                continue
+
+            if "}" in line:
+                selector_found = False
+                continue
+
+        if line == "" and len(out_lines) > 0:
+            out_lines.pop()
+
+        self._contents = "\n".join(out_lines)
 
     def get_ruleset(self, selector_css):
         """
@@ -102,8 +149,11 @@ class GtkCssEditor:
         one.
         """
         for rs in self.stylesheet.rules:
-            if rs.selector.as_css() == selector_css:
-                return rs
+            try:
+                if rs.selector.as_css() == selector_css:
+                    return rs
+            except AttributeError:
+                continue
 
         new_ruleset = tinycss.css21.RuleSet(tokenizer.tokenize_flat(selector_css), [], None, None)
         self.stylesheet.rules.append(new_ruleset)
@@ -133,11 +183,15 @@ class GtkCssEditor:
 
         rs.declarations.append(new_decl)
 
+        self.my_ruleset = rs
+
     def remove_declaration(self, selector, decl_name):
         rs = self.get_ruleset(selector)
 
         if not rs:
             return
+
+        self.my_ruleset = None
 
         for declaration in rs.declarations:
             if decl_name == declaration.name:
@@ -149,18 +203,36 @@ class GtkCssEditor:
                 break
 
     def save_stylesheet(self):
+        self.sanitize_contents()
         out = ""
 
-        for rs in self.stylesheet.rules:
-            out += rs.selector.as_css() + " {\n"
+        lines = self._contents.split("\n")
+        for line in lines:
+            if self.rule_separator in line:
+                break
 
-            for decl in rs.declarations:
+            out += line + "\n"
+
+        if self.my_ruleset:
+            if line != "":
+                out += "\n"
+
+            out += self.rule_separator + "\n"
+
+            out += self.my_ruleset.selector.as_css() + " {\n"
+
+            for decl in self.my_ruleset.declarations:
                 out += "    " + decl.name + ": " + decl.value.as_css() + ";\n"
 
             out += "}\n"
 
-        with open(self._path, "w+") as f:
-            f.write(out)
+        self._contents = out
+
+        try:
+            with open(self._path, "w+") as f:
+                f.write(out)
+        except PermissionError as e:
+            print(e)
 
 class CssOverrideSwitch(Switch):
     def __init__(self, markup, setting_name=None):
@@ -186,7 +258,7 @@ class CssRange(Range):
         self.decl_names = decl_names
 
     def sync_initial_switch_state(self):
-        editor = get_css_editor()
+        editor = get_css_editor(self.selector)
 
         all_existing = True
 
@@ -217,6 +289,10 @@ class CssRange(Range):
             # parsing it with tinycss also - a bit overkill?  10 is pretty common...
             self.revealer.set_reveal_child(True)
             self.content_widget.set_value(10)
+
+            # set_value doesn't work if the switch was off at startup, the value won't be changing,
+            # so apply_later won't be called from SettingsWidgets.Range
+            self.apply_later()
         else:
             for name in self.decl_names:
                 get_css_editor().remove_declaration(self.selector, name)
@@ -228,14 +304,12 @@ class CssRange(Range):
     def apply_later(self, *args):
         def apply(self):
             editor = get_css_editor()
-
             for name in self.decl_names:
                 value_as_str = "%d%s" % (int(self.content_widget.get_value()), self.units)
                 editor.set_declaration(self.selector, name, value_as_str)
 
             editor.save_stylesheet()
             self.timer = 0
-
         if self.timer > 0:
             GLib.source_remove(self.timer)
         self.timer = GLib.timeout_add(300, apply, self)

@@ -115,7 +115,13 @@ class Module:
 
             widget = CssRange(_("Scrollbar width"), "scrollbar slider", ["min-width", "min-height"], 2, 40, "px", None, switch)
             settings.add_reveal_row(widget)
-            widget.sync_initial_switch_state()
+
+            try:
+                widget.sync_initial_switch_state()
+            except PermissionError as e:
+                print(e)
+                switch.set_sensitive(False)
+
             self.scrollbar_css_range = widget.content_widget
             self.scrollbar_css_range.get_adjustment().set_page_increment(2.0)
 
