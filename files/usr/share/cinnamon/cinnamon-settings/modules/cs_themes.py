@@ -2,7 +2,7 @@
 
 import os
 
-from gi.repository.Gtk import SizeGroup, SizeGroupMode
+from gi.repository import Gtk
 
 from xapp.GSettingsWidgets import *
 from CinnamonGtkSettings import CssRange, CssOverrideSwitch, GtkSettingsSwitch, PreviewWidget, Gtk2ScrollbarSizeEditor

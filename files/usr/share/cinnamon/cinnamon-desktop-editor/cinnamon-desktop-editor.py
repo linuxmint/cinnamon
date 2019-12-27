@@ -12,8 +12,7 @@ from setproctitle import setproctitle
 import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("CMenu", "3.0")
-gi.require_version("XApp", "1.0")
-from gi.repository import GLib, Gtk, Gio, CMenu, GdkPixbuf, XApp
+from gi.repository import GLib, Gtk, Gio, CMenu
 
 sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')
 from cme import util

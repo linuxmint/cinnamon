@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 try:
-    import gettext
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib
     import tempfile
     import os

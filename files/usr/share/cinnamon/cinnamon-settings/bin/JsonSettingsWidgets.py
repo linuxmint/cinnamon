@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 
-from gi.repository import Gio, GObject
+from gi.repository import Gio
 from xapp.SettingsWidgets import *
-from SettingsWidgets import SoundFileChooser, TweenChooser, EffectChooser, DateChooser, TimeChooser, Keybinding
 from xapp.GSettingsWidgets import CAN_BACKEND as px_can_backend
 from SettingsWidgets import CAN_BACKEND as c_can_backend
 from TreeListWidgets import List

@@ -2,9 +2,8 @@
 
 import gi
 gi.require_version("Gtk", "3.0")
-gi.require_version('CDesktopEnums', '3.0')
 
-from gi.repository import Gtk, CDesktopEnums
+from gi.repository import Gtk
 from SettingsWidgets import SidePage, GSettingsDependencySwitch, DependencyCheckInstallButton, GSettingsSoundFileChooser
 from xapp.GSettingsWidgets import *
 

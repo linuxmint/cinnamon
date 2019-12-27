@@ -1,12 +1,10 @@
 #!/usr/bin/python3
 
-import sys
 import os
 import imtools
 import gettext
 import _thread as thread
 import subprocess
-import tempfile
 import locale
 import time
 import hashlib
@@ -18,9 +16,8 @@ from xml.etree import ElementTree
 from PIL import Image
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
+from gi.repository import Gio, Gtk, Gdk, GdkPixbuf, Pango, GLib
 
-import config
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 

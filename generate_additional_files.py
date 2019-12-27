@@ -2,7 +2,6 @@
 
 import os
 import gettext
-import sys
 from mintcommon import additionalfiles
 
 DOMAIN = "cinnamon"

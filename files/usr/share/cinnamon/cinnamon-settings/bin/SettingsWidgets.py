@@ -6,8 +6,7 @@ import subprocess
 import dbus
 import gi
 gi.require_version('Gtk', '3.0')
-gi.require_version('CDesktopEnums', '3.0')
-from gi.repository import Gio, Gtk, GObject, GLib, XApp
+from gi.repository import Gio, Gtk, GObject, GLib
 
 from xapp.SettingsWidgets import SettingsWidget, SettingsLabel
 from xapp.GSettingsWidgets import PXGSettingsBackend

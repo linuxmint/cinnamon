@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 
 import gi
-gi.require_version('CinnamonDesktop', '3.0')
 gi.require_version('UPowerGlib', '1.0')
-from gi.repository import CinnamonDesktop, Gdk, UPowerGlib
+from gi.repository import UPowerGlib
 
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *

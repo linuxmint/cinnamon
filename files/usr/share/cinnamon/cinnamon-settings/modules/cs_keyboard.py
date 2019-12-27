@@ -1,12 +1,11 @@
 #!/usr/bin/python3
 
-from gi.repository import Gio, Gtk, GObject, Gdk
 import html
 import gettext
 
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gio, Gtk, GObject, Gdk
+from gi.repository import Gio, Gtk
 
 from KeybindingWidgets import CellRendererKeybinding
 from SettingsWidgets import SidePage

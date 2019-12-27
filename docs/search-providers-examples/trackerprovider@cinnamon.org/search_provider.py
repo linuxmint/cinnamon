@@ -1,6 +1,5 @@
 # -*- coding=utf-8 -*-
 
-import subprocess
 import sys
 import gettext
 import json
