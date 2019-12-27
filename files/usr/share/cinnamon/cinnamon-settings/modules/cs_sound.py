@@ -410,7 +410,6 @@ class Effect(GSettingsSoundFileChooser):
         sizeGroup.add_widget(self.content_widget)
 
         self.settings.bind(self.enabled_key, self.enabled_switch, "active", Gio.SettingsBindFlags.DEFAULT)
-        self.settings.bind(self.enabled_key, self.content_widget, "sensitive", Gio.SettingsBindFlags.DEFAULT)
 
 class SoundTest(Gtk.Dialog):
     def __init__(self, parent, stream):
