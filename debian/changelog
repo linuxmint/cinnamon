@@ -1,3 +1,22 @@
+cinnamon (4.4.6) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * grouped-window-list: Add listener for workspace changes that do not precede the MetaDisplay's 'window-created' signal.
+  * cs_info.py: Show a busy indicator on the Upload button while the upload-system-info script is running.
+  * runDialog.js: allow navigating completions using the arrow keys.
+  * runDialog.js: When the completion list is open and enter is hit, only execute the line immediately if the path is to a folder, otherwise close the completion list while leaving the last selected completion appended to the original entry contents.  This allows arguments to be added by the user.
+  * runDialog.js: Expand ~ to the home path when tabbing for completions, and when executing the command line, expand ~ always.
+  * cs_themes.py: Change how the gtk3 css override file is handled.
+  * issue template: Add a section to attach xlet configuration if relevant.
+
+  [ JosephMcc ]
+  * cs_sound.py: Allow previewing the sound even when disabled
+
+  [ Clement Lefebvre ]
+  * Revert "GWL: Remove hotkeys"
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 28 Dec 2019 12:01:06 +0000
+
 cinnamon (4.4.5) tricia; urgency=medium
 
   [ Michael Webster ]
