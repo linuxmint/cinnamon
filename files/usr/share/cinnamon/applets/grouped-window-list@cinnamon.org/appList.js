@@ -95,6 +95,61 @@ class AppList {
         if (typeof cb === 'function') cb();
     }
 
+    onAppKeyPress(number) {
+        if (!this.appList[number - 1]) return;
+        this.appList[number - 1].onAppKeyPress(number);
+    }
+
+    onNewAppKeyPress(number) {
+        if (number > this.appList.length) return;
+        this.appList[number - 1].launchNewInstance();
+    }
+
+    showAppsOrder() {
+        for (let i = 0, len = this.appList.length; i < len; i++) {
+            this.appList[i].showOrderLabel(i);
+        }
+        setTimeout(() => this.calcAllWindowNumbers(), this.state.settings.showAppsOrderTimeout);
+    }
+
+    cycleMenus(r = 0) {
+        if (r > this.appList.length) {
+            this.state.set({lastCycled: -1});
+            return;
+        }
+
+        let {lastCycled} = this.state;
+        this.lastCycledTime = Date.now();
+        this.closeAllHoverMenus();
+
+        if (lastCycled < 0) {
+            lastCycled = findIndex(this.appList, (app) => {
+                return app.groupState.appId === this.listState.lastFocusedApp;
+            });
+        }
+
+        if (lastCycled < 0 || lastCycled > this.appList.length - 1) lastCycled = 0;
+
+        this.appList[lastCycled].groupState.set({thumbnailMenuEntered: true});
+        if (!this.appList[lastCycled].hoverMenu) this.appList[lastCycled].initThumbnailMenu();
+        this.appList[lastCycled].hoverMenu.open(true);
+
+        lastCycled++;
+        this.state.set({lastCycled});
+
+        if (this.appList[lastCycled - 1].groupState.metaWindows.length === 0) {
+            this.cycleMenus(r + 1);
+        }
+
+
+        let lastCycledTime = this.lastCycledTime;
+        setTimeout(() => {
+            if (lastCycledTime === this.lastCycledTime) {
+                this.state.set({lastCycled: -1});
+            }
+        }, 2000)
+    }
+
     // Gets a list of every app on the current workspace
     getSpecialApps() {
         this.specialApps = [];
@@ -261,6 +316,12 @@ class AppList {
             } else if (refWindow === -1) {
                 initApp();
             }
+        }
+    }
+
+    calcAllWindowNumbers() {
+        for (let i = 0, len = this.appList.length; i < len; i++) {
+            this.appList[i].calcWindowNumber(this.appList[i].groupState.metaWindows);
         }
     }
 

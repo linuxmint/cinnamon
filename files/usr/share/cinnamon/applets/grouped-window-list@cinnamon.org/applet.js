@@ -315,6 +315,9 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'pinned-apps', value: 'pinnedApps', cb: null},
             {key: 'middle-click-action', value: 'middleClickAction', cb: null},
             {key: 'left-click-action', value: 'leftClickAction', cb: null},
+            {key: 'show-apps-order-hotkey', value: 'showAppsOrderHotkey', cb: this.bindAppKeys},
+            {key: 'show-apps-order-timeout', value: 'showAppsOrderTimeout', cb: null},
+            {key: 'cycleMenusHotkey', value: 'cycleMenusHotkey', cb: this.bindAppKeys},
             {key: 'enable-hover-peek', value: 'enablePeek', cb: null},
             {key: 'onclick-thumbnails', value: 'onClickThumbs', cb: null},
             {key: 'hover-peek-opacity', value: 'peekOpacity', cb: null},
@@ -357,6 +360,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         if (this.state.appletReady && this.state.panelEditMode) {
             return;
         }
+        this.bindAppKeys();
         this.state.set({appletReady: true});
     }
 
@@ -405,6 +409,7 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     on_applet_removed_from_panel() {
         this.state.set({willUnmount: true});
+        this.unbindAppKeys();
         this.signals.disconnectAllSignals();
         for (let i = 0, len = this.appLists.length; i < len; i++) {
             if (this.appLists[i]) {
@@ -433,6 +438,52 @@ class GroupedWindowListApplet extends Applet.Applet {
             appList.windowRemoved(metaWorkspace, metaWindow);
             appList.windowAdded(metaWorkspace, metaWindow);
         }
+    }
+
+    bindAppKeys() {
+        this.unbindAppKeys();
+
+        for (let i = 1; i < 10; i++) {
+            this.bindAppKey(i);
+        }
+        Main.keybindingManager.addHotKey('launch-show-apps-order', this.state.settings.showAppsOrderHotkey, () =>
+            this.showAppsOrder()
+        );
+        Main.keybindingManager.addHotKey('launch-cycle-menus', this.state.settings.cycleMenusHotkey, () =>
+            this.cycleMenus()
+        );
+    }
+
+    unbindAppKeys() {
+        for (let i = 1; i < 10; i++) {
+            Main.keybindingManager.removeHotKey('launch-app-key-' + i);
+            Main.keybindingManager.removeHotKey('launch-new-app-key-' + i);
+        }
+        Main.keybindingManager.removeHotKey('launch-show-apps-order');
+        Main.keybindingManager.removeHotKey('launch-cycle-menus');
+    }
+
+    bindAppKey(i) {
+        Main.keybindingManager.addHotKey('launch-app-key-' + i, '<Super>' + i, () => this.onAppKeyPress(i));
+        Main.keybindingManager.addHotKey('launch-new-app-key-' + i, '<Super><Shift>' + i, () =>
+            this.onNewAppKeyPress(i)
+        );
+    }
+
+    onAppKeyPress(number) {
+        this.getCurrentAppList().onAppKeyPress(number);
+    }
+
+    onNewAppKeyPress(number) {
+        this.getCurrentAppList().onNewAppKeyPress(number);
+    }
+
+    showAppsOrder() {
+        this.getCurrentAppList().showAppsOrder();
+    }
+
+    cycleMenus() {
+        this.getCurrentAppList().cycleMenus();
     }
 
     handleMonitorWindowsPrefsChange(value) {
