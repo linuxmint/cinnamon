@@ -34,13 +34,14 @@ class XAppStatusIcon {
             y_expand: true
         });
 
-        this.icon = new St.Icon();
+        this.icon_holder = new St.Bin();
+        this.iconSize = 20;
 
         this.label = new St.Label({
             'y-align': St.Align.END,
         });
 
-        this.actor.add_actor(this.icon);
+        this.actor.add_actor(this.icon_holder);
         this.actor.add_actor(this.label);
 
         this.actor.connect('button-press-event', Lang.bind(this, this.onButtonPressEvent));
@@ -99,33 +100,41 @@ class XAppStatusIcon {
 
     setIconName(iconName) {
         if (iconName) {
+            let type, icon;
+
             if (iconName.match(/symbolic/)) {
-                this.icon.set_icon_type(St.IconType.SYMBOLIC);
+                type = St.IconType.SYMBOLIC;
             }
             else {
-                this.icon.set_icon_type(St.IconType.FULLCOLOR);
+                type = St.IconType.FULLCOLOR;
             }
 
             this.iconName = iconName;
-            this.icon.set_icon_size(this.applet.getPanelIconSize(this.icon.get_icon_type()));
+            this.iconSize = this.applet.getPanelIconSize(type);
 
-            if (iconName.includes("/")) {
-                let file = Gio.File.new_for_path(iconName);
+            // for now, assume symbolic icons would always be square/suitable for an StIcon.
+            // TODO: Need to handle symbolic filenames also.
 
-                let gicon = Gio.FileIcon.new(file);
-
-                this.icon.set_gicon(gicon);
+            if (iconName.includes("/") && type != St.IconType.SYMBOLIC && !this.actor.vertical) {
+                St.TextureCache.get_default().load_image_from_file_async(iconName,
+                                                                         -1, this.iconSize,
+                                                                         (...args)=>this._onImageLoaded(...args));
+                return;
             }
             else {
-                this.icon.set_icon_name(iconName);
+                icon = new St.Icon( { "icon-type": type, "icon-size": this.iconSize, "icon-name": iconName });
             }
 
-            this.icon.show();
+            this.icon_holder.child = icon;
         }
         else {
             this.iconName = null;
-            this.icon.hide();
+            this.icon_holder.hide();
         }
+    }
+
+    _onImageLoaded(cache, actor, data=null) {
+        this.icon_holder.child = actor;
     }
 
     setTooltipText(tooltipText) {
