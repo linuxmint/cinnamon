@@ -73,11 +73,12 @@ class WindowPreview extends Tooltips.TooltipBase {
         super(item.actor);
         this._applet = item._applet;
         this.metaWindow = metaWindow;
+        this._windowActor = null;
         let x = this.windowActor;
         this.uiScale = global.ui_scale;
         this.thumbScale = previewScale;
 
-        this._sizeChangedId = null;
+        this._sizeChangedId = 0;
         this.thumbnail = null;
 
         this.actor = new St.BoxLayout({ vertical: true, style_class: "window-list-preview", important: true });
@@ -99,10 +100,14 @@ class WindowPreview extends Tooltips.TooltipBase {
     }
 
     get windowActor() {
-        let actor = this.metaWindow.get_compositor_private();
+        if (this._windowActor) {
+            return this._windowActor;
+        }
 
-        if (actor) {
-            return actor;
+        this._windowActor = this.metaWindow.get_compositor_private();
+
+        if (this._windowActor) {
+            return this._windowActor;
         } else {
             log("metaWindow has no actor!");
             return null;
@@ -173,9 +178,9 @@ class WindowPreview extends Tooltips.TooltipBase {
     }
 
     hide() {
-        if (this._sizeChangedId != null) {
+        if (this._sizeChangedId > 0) {
             this.windowActor.disconnect(this._sizeChangedId);
-            this._sizeChangedId = null;
+            this._sizeChangedId = 0;
         }
         if (this.thumbnail) {
             this.thumbnailBin.set_child(null);
@@ -230,9 +235,9 @@ class WindowPreview extends Tooltips.TooltipBase {
     }
 
     _destroy() {
-        if (this._sizeChangedId != null) {
-            this.windowActor.disconnect(this._sizeChangedId);
-            this.sizeChangedId = null;
+        if (this._sizeChangedId > 0) {
+            this._windowActor.disconnect(this._sizeChangedId);
+            this.sizeChangedId = 0;
         }
         if (this.thumbnail) {
             this.thumbnailBin.set_child(null);
@@ -240,6 +245,7 @@ class WindowPreview extends Tooltips.TooltipBase {
             this.thumbnail = null;
         }
         if (this.actor) {
+            Main.uiGroup.remove_actor(this.actor);
             this.actor.destroy();
             this.actor = null;
         }
