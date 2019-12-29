@@ -122,6 +122,25 @@ ClutterActor *st_texture_cache_load_file_simple (StTextureCache *cache,
                                                  const gchar    *file_path);
 
 /**
+ * StTextureCacheLoadImageCallback
+ * @cache: a #StTextureCache
+ * @actor: the actor containing the loaded image
+ * @gpointer: Callback data
+ *
+ * Callback from st_texture_cache_load_image_from_file_async
+ */
+typedef void (* StTextureCacheLoadImageCallback) (StTextureCache *cache,
+                                                  ClutterActor   *actor,
+                                                  gpointer        user_data);
+
+void st_texture_cache_load_image_from_file_async (StTextureCache                    *cache,
+                                                  const gchar                       *path,
+                                                  gint                               width,
+                                                  gint                               height,
+                                                  StTextureCacheLoadImageCallback    callback,
+                                                  gpointer                           user_data);
+
+/**
  * StTextureCacheLoader: (skip)
  * @cache: a #StTextureCache
  * @key: Unique identifier for this texture
