@@ -435,7 +435,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
                 path = input;
             }
 
-            if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
+            if (path && GLib.file_test(path, GLib.FileTest.EXISTS)) {
                 let file = Gio.file_new_for_path(path);
                 try {
                     Gio.app_info_launch_default_for_uri(file.get_uri(),
