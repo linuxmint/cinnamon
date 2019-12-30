@@ -242,6 +242,9 @@ class Module:
 
                     dump = True
 
+                if theme_path == None:
+                    continue;
+
                 if os.path.exists(theme_path):
                     chooser.add_picture(theme_path, callback, title=theme, id=theme)
                 GLib.timeout_add(5, self.increment_progress, (chooser, inc))
