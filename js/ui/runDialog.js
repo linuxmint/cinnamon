@@ -433,6 +433,8 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
             if (input.charAt(0) == '/') {
                 path = input;
+            } else {
+                path = GLib.build_filenamev([GLib.get_home_dir(), input]);
             }
 
             if (path && GLib.file_test(path, GLib.FileTest.EXISTS)) {
