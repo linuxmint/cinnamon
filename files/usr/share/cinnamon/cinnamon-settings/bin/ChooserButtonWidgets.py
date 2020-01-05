@@ -320,7 +320,15 @@ class DateChooserButton(Gtk.Button):
         else:
             raise ValueError('Invalid date format. Date must be of type datetime.date, datetime.datetime, or a tuple of the form (year, month, day)')
 
-        date_string = self.date.strftime(_("%A %B %-e, %Y"))
+        # Translators: This is the date which appears in the calendar
+        # applet, as a tooltip and as a title header inside the applet.
+        # The format uses the strftime syntax.
+        # %A, %B %-e, %Y is the American Date format (Saturday, January 4, 2020):
+        # %A is the name of the day, %B is the name of the month
+        # %-e is the non-padded day number, %Y is the year.
+        # for info on the strftime format visit: http://man7.org/linux/man-pages/man3/strftime.3.html
+        # for info on international date formats visit: http://www.localeplanet.com/compare/date-pattern.html?pat=FULL
+        date_string = self.date.strftime(_("%A, %B %-e, %Y"))
         self.set_label(date_string)
 
 class TimeChooserButton(Gtk.Button):
