@@ -1,3 +1,16 @@
+cinnamon (4.4.7) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * window-list applet: thumbnails - only fetch the window actor once, instead of each time it's used.
+  * cs_themes.py: theme_path is not guaranteed to be non-null so it needs to be checked before using os.path.exists() (which isn't null-safe).
+  * runDialog.js: Don't test a null string when attempting absolute path execution.
+  * runDialog.js: Restore implicit home folder location when the entry starts with neither a ~ or /.
+
+  [ Clement Lefebvre ]
+  * l10n: Adjust date format
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 06 Jan 2020 10:26:35 +0000
+
 cinnamon (4.4.6) tricia; urgency=medium
 
   [ Michael Webster ]
