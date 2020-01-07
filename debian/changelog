@@ -1,3 +1,9 @@
+cinnamon (4.4.8) tricia; urgency=medium
+
+  * Calendar applet: Fix clock format msgid
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 07 Jan 2020 09:41:42 +0000
+
 cinnamon (4.4.7) tricia; urgency=medium
 
   [ Michael Webster ]
