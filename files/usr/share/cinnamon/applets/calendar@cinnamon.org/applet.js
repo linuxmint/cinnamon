@@ -53,6 +53,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             this.settings = new Settings.AppletSettings(this, "calendar@cinnamon.org", this.instance_id);
 
             // Calendar
+            this.clock = new CinnamonDesktop.WallClock();
             this._calendar = new Calendar.Calendar(this.settings);
 
             this.menu.addActor(this._calendar.actor);
@@ -79,7 +80,6 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
                 this._onSettingsChanged();
             }));
 
-            this.clock = new CinnamonDesktop.WallClock();
             this.clock_notify_id = 0;
 
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
