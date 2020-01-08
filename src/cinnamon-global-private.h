@@ -71,6 +71,7 @@ struct _CinnamonGlobal {
   guint32 xdnd_timestamp;
   gint64 last_gc_end_time;
   guint ui_scale;
+  gboolean session_running;
 };
 
 void _cinnamon_global_init            (const char *first_property_name,

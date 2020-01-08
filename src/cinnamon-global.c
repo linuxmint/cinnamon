@@ -29,7 +29,8 @@ enum {
   PROP_IMAGEDIR,
   PROP_USERDATADIR,
   PROP_FOCUS_MANAGER,
-  PROP_UI_SCALE
+  PROP_UI_SCALE,
+  PROP_SESSION_RUNNING
 };
 
 /* Signals */
@@ -60,6 +61,9 @@ cinnamon_global_set_property(GObject         *object,
     {
     case PROP_STAGE_INPUT_MODE:
       cinnamon_global_set_stage_input_mode (global, g_value_get_enum (value));
+      break;
+    case PROP_SESSION_RUNNING:
+      global->session_running = g_value_get_boolean (value);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -143,6 +147,9 @@ cinnamon_global_get_property(GObject         *object,
       break;
     case PROP_UI_SCALE:
       g_value_set_uint (value, global->ui_scale);
+      break;
+    case PROP_SESSION_RUNNING:
+      g_value_set_boolean (value, global->session_running);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -414,6 +421,14 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                                       "Current UI Scale",
                                                       0, G_MAXUINT, 1,
                                                       G_PARAM_READABLE));
+
+  g_object_class_install_property (gobject_class,
+                                   PROP_SESSION_RUNNING,
+                                   g_param_spec_boolean ("session-running",
+                                                         "Session state",
+                                                         "If the session startup has already finished",
+                                                         FALSE,
+                                                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
 }
 
 /**
