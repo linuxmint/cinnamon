@@ -1528,3 +1528,9 @@ function getTabList(workspaceOpt, screenOpt) {
     }
     return windows;
 }
+
+function restartCinnamon() {
+    new OsdWindow.RestartOsd().show();
+
+    global.reexec_self();
+}

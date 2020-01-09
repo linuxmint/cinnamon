@@ -282,3 +282,30 @@ OsdWindowManager.prototype = {
             this._osdWindows[i].cancel();
     }
 };
+
+var RestartOsd = class RestartOsd {
+    constructor() {
+        let mon = Main.layoutManager.primaryMonitor;
+
+        let box_width = 250 * global.ui_scale;
+
+        this.actor = new St.BoxLayout({ style_class: 'osd-window',
+                                        vertical: true,
+                                        important: true,
+                                        x: mon.x + (mon.width / 2) - (box_width / 2),
+                                        y: mon.y + (mon.height / 2),
+                                        width: box_width });
+
+        this.label = new St.Label();
+        this.label.set_text(_("Restarting Cinnamon..."));
+        this.label.clutter_text.x_align = Clutter.ActorAlign.CENTER;
+
+        this.actor.add(this.label, { expand: true });
+
+        Main.uiGroup.add_child(this.actor);
+    }
+
+    show() {
+        this.actor.show();
+    }
+}
