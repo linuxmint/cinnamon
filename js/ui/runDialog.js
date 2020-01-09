@@ -43,8 +43,8 @@ const UP = 1;
 const DOWN = 2;
 
 const DEVEL_COMMANDS = { 'lg': x => Main.createLookingGlass().open(),
-                         'r': x => global.reexec_self(),
-                         'restart': x => global.reexec_self(),
+                         'r': x => Main.restartCinnamon(),
+                         'restart': x => Main.restartCinnamon(),
                          'debugexit': x => Meta.quit(Meta.ExitCode.ERROR),
                          'rt': x => Main.themeManager._changeTheme() };
 

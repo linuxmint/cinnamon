@@ -114,6 +114,7 @@ const Keybindings = imports.ui.keybindings;
 const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
+const ModalDialog = imports.ui.modalDialog;
 const {readOnlyError} = imports.ui.environment;
 const {installPolyfills} = imports.ui.overrides;
 
@@ -1527,4 +1528,10 @@ function getTabList(workspaceOpt, screenOpt) {
         }
     }
     return windows;
+}
+
+function restartCinnamon() {
+    new ModalDialog.InfoOSD(_("Restarting Cinnamon...")).show();
+
+    global.reexec_self();
 }
