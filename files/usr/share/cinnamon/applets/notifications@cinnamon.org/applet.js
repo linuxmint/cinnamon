@@ -10,6 +10,7 @@ const Urgency = imports.ui.messageTray.Urgency;
 const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
 const Settings = imports.ui.settings;
 const Gettext = imports.gettext.domain("cinnamon-applets");
+const Util = imports.misc.util;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
@@ -29,7 +30,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.menuManager = new PopupMenu.PopupMenuManager(this);
 
         // Lists
-        this.notifications = [];	// The list of notifications, in order from oldest to newest.
+        this.notifications = [];    // The list of notifications, in order from oldest to newest.
 
         // Events
         Main.messageTray.connect('notify-applet-update', Lang.bind(this, this._notification_added));
@@ -96,7 +97,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.menu.addSettingsAction(_("Notification Settings"), 'notifications');
     }
 
-    _notification_added (mtray, notification) {	// Notification event handler.
+    _notification_added (mtray, notification) { // Notification event handler.
         // Ignore transient notifications?
         if (this.ignoreTransientNotifications && notification.isTransient) {
             notification.destroy();
@@ -105,7 +106,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
-        if (existing_index != -1) {	// This notification is already listed.
+        if (existing_index != -1) { // This notification is already listed.
             if (notification._destroyed) {
                 this.notifications.splice(existing_index, 1);
             } else {
@@ -149,7 +150,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     update_list () {
         try {
             let count = this.notifications.length;
-            if (count > 0) {	// There are notifications.
+            if (count > 0) {    // There are notifications.
                 this.actor.show();
                 this.clear_action.actor.show();
                 this.set_applet_label(count.toString());
@@ -177,7 +178,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                         }
                         break;
                 }
-            } else {	// There are no notifications.
+            } else {    // There are no notifications.
                 this._blinking = false;
                 this.set_applet_label('');
                 this.set_applet_icon_symbolic_name("empty-notif");
@@ -206,7 +207,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.update_list();
     }
 
-    _show_hide_tray() {	// Show or hide the notification tray.
+    _show_hide_tray() { // Show or hide the notification tray.
         if (this.notifications.length || this.showEmptyTray) {
             this.actor.show();
         } else {
@@ -240,6 +241,10 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     on_applet_clicked(event) {
         this._update_timestamp();
         this.menu.toggle();
+    }
+
+    on_btn_open_system_settings_clicked() {
+        Util.spawnCommandLine("cinnamon-settings notifications");
     }
 
     _update_timestamp() {
