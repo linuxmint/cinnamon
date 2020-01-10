@@ -48,6 +48,10 @@ const DEVEL_COMMANDS = { 'lg': x => Main.createLookingGlass().open(),
                          'debugexit': x => Meta.quit(Meta.ExitCode.ERROR),
                          'rt': x => Main.themeManager._changeTheme() };
 
+/* The modal dialog parent class has a 100ms close animation.  Delay long enough for it
+ * to complete before doing something disruptive like restarting cinnamon */
+const DEVEL_COMMAND_DELAY =  parseInt(ModalDialog.OPEN_AND_CLOSE_TIME * 1000) + 10;
+
 /**
  * completeCommand:
  * @text (string): initial string to complete.
@@ -401,7 +405,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
         this._history.addItem(input);
         this._commandError = false;
         if (this._enableInternalCommands && input in DEVEL_COMMANDS) {
-            DEVEL_COMMANDS[input]();
+            Mainloop.timeout_add(DEVEL_COMMAND_DELAY, ()=>DEVEL_COMMANDS[input]());
             return;
         }
 
