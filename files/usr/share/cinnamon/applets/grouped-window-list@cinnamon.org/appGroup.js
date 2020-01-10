@@ -91,7 +91,7 @@ class AppGroup {
             name: 'appButton',
             style_class: 'grouped-window-list-item-box',
             important: true,
-            reactive: true,
+            reactive: !this.state.panelEditMode,
             can_focus: true,
             track_hover: true
         });
