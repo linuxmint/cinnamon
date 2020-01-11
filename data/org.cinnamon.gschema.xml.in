@@ -428,32 +428,6 @@
       </_description>
     </key>
     
-    <key type="i" name="workspace-osd-duration">
-      <default>400</default>
-      <_summary>Duration of Workspace OSD (in milliseconds)</_summary>
-      <_description>
-       Duration of the OSD (in milliseconds)    
-      </_description>
-    </key>
-    
-    <key type="i" name="workspace-osd-x">
-      <range min="5" max="95" />
-      <default>50</default>
-      <_summary>Workspace horizontal position (in percent of the monitor's width)</_summary>
-      <_description>
-       Workspace horizontal position (in percent of the monitor's width)   
-      </_description>
-    </key>
-    
-    <key type="i" name="workspace-osd-y">
-      <range min="5" max="95" />
-      <default>50</default>
-      <_summary>Workspace vertical position (in percent of the monitor's height)</_summary>
-      <_description>
-       Workspace vertical position (in percent of the monitor's height)
-      </_description>
-    </key>
-    
     <key name="workspace-osd-visible" type="b">
       <default>true</default>
       <_summary>Enable or disable the workspace OSD</_summary>
