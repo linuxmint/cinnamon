@@ -51,6 +51,7 @@ const DIM_TIME = 0.500;
 const DIM_DESATURATION = 0.6;
 const DIM_BRIGHTNESS = -0.2;
 const UNDIM_TIME = 0.250;
+const WORKSPACE_OSD_TIMEOUT = 0.4;
 
 /* edge zones for tiling/snapping identification
    copied from muffin/src/core/window-private.h
@@ -922,54 +923,38 @@ var WindowManager = class WindowManager {
         this._hideSnapOSD();
         this._hideWorkspaceOSD();
         if (global.settings.get_boolean('workspace-osd-visible')) {
-            let osd_x = global.settings.get_int('workspace-osd-x');
-            let osd_y = global.settings.get_int('workspace-osd-y');
-            let duration = global.settings.get_int('workspace-osd-duration') / 1000;
             let current_workspace_index = global.screen.get_active_workspace_index();
             if (this.settings.get_boolean('workspaces-only-on-primary')) {
-                this._showWorkspaceOSDOnMonitor(layoutManager.primaryMonitor, osd_x, osd_y, duration, current_workspace_index);
+                this._showWorkspaceOSDOnMonitor(layoutManager.primaryMonitor, current_workspace_index);
             }
             else {
                 let {monitors} = layoutManager;
                 for (let i = 0; i < monitors.length; i++) {
-                    this._showWorkspaceOSDOnMonitor(monitors[i], osd_x, osd_y, duration, current_workspace_index);
+                    this._showWorkspaceOSDOnMonitor(monitors[i], current_workspace_index);
                 }
             }
         }
     }
 
-    _showWorkspaceOSDOnMonitor(monitor, osd_x, osd_y, duration, current_workspace_index) {
-        let osd = new Label({style_class:'workspace-osd', important: true});
+    _showWorkspaceOSDOnMonitor(monitor, current_workspace_index) {
+        let osd = new InfoOSD();
+        osd.actor.add_style_class_name('workspace-osd');
         let effectsEnabled = this.settingsState['desktop-effects'];
         this._workspace_osd_array.push(osd);
-        osd.set_text(getWorkspaceName(current_workspace_index));
-        if (effectsEnabled) osd.set_opacity = 0;
-        layoutManager.addChrome(osd, { visibleInFullscreen: false, affectsInputRegion: false });
-        /*
-         * This aligns the osd edges to the minimum/maximum values from gsettings,
-         * if those are selected to be used. For values in between minimum/maximum,
-         * it shifts the osd by half of the percentage used of the overall space available
-         * for display (100% - (left and right 'padding')).
-         * The horizontal minimum/maximum values are 5% and 95%, resulting in 90% available for positioning
-         * If the user choses 50% as osd position, these calculations result the osd being centered onscreen
-         */
-        let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
-        let delta = (osd_x - minX) / (maxX - minX);
-        let x = monitor.x + Math.round((monitor.width * osd_x / 100) - (osd.width * delta));
-        delta = (osd_y - minY) / (maxY - minY);
-        let y = monitor.y + Math.round((monitor.height * osd_y / 100) - (osd.height * delta));
-        osd.set_position(x, y);
+        osd.addText(getWorkspaceName(current_workspace_index));
+        osd.show();
 
         if (effectsEnabled) {
+            osd.set_opacity = 0;
             addTween(osd, {
                 opacity: 255,
-                time: duration,
+                time: WORKSPACE_OSD_TIMEOUT,
                 transition: 'linear',
                 onComplete: () => this._hideWorkspaceOSD()
             });
             return;
         }
-        setTimeout(() => this._hideWorkspaceOSD(), duration * 1000);
+        setTimeout(() => this._hideWorkspaceOSD(), WORKSPACE_OSD_TIMEOUT * 1000);
     }
 
     _hideWorkspaceOSD() {
@@ -977,7 +962,6 @@ var WindowManager = class WindowManager {
             let osd = this._workspace_osd_array[i];
             if (osd != null) {
                 osd.hide();
-                layoutManager.removeChrome(osd);
                 osd.destroy();
             }
         }

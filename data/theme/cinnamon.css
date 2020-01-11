@@ -859,6 +859,12 @@ StScrollBar StButton#vhandle:hover {
     text-align: center;
 }
 
+.workspace-osd {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 3em;
+}
+
 /* ===================================================================
  * Run dialog
  * ===================================================================*/
@@ -1734,17 +1740,6 @@ StScrollBar StButton#vhandle:hover {
  * Clock Desklet (desklet.js)
  * ===================================================================*/
 .clock-desklet-label {
-}
-
-/* ===================================================================
- * Workspace OSD
- * ===================================================================*/
-
-.workspace-osd {
-    color: #ffffff;
-    text-shadow: black 5px 5px 5px;
-    font-weight: bold;
-    font-size: 4em;
 }
 
 .expo-workspaces-name-entry {
