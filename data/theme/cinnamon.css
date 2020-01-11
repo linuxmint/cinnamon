@@ -72,7 +72,6 @@ StScrollBar StButton#vhandle:hover {
     background-gradient-start: rgba(254,245,198,0.9);
     background-gradient-direction: vertical;
     color: #000000;
-    font-size: 8.5pt;
     font-weight: normal;
     text-align: center;
 }
@@ -121,7 +120,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .popup-menu {
     color: #ffffff;
-    font-size: 9.5pt;
     min-width: 100px;
 }
 .menu {
@@ -130,7 +128,6 @@ StScrollBar StButton#vhandle:hover {
     border-width: 2px;
     border-color: #a5a5a5;
     color: #ffffff;
-    font-size: 9.5pt;
     min-width: 100px;
 }
 .popup-menu-arrow {
@@ -164,7 +161,6 @@ StScrollBar StButton#vhandle:hover {
     background-color: rgba(0,0,0,0.9);
     padding: 1em 0em;
     color: #ffffff;
-    font-size: 10.5pt;
     border: 1px solid #5f5f5f;
     border-radius: 9px;
 }
@@ -249,7 +245,6 @@ StScrollBar StButton#vhandle:hover {
 #panel {
     color: #ffffff;
     background-color: #555555;
-    font-size: 8.5pt;
     font-weight: normal;
     height: 26px;
     width: 32px;
@@ -457,7 +452,6 @@ StScrollBar StButton#vhandle:hover {
     padding: .5em;
     spacing: .5em;
     -cinnamon-caption-spacing: 8px;
-    font-size: 10pt;
     color: #ccc;
     max-width: 20em;
 }
@@ -498,7 +492,6 @@ StScrollBar StButton#vhandle:hover {
     border-radius: 4px;
     padding: 3px;
     border: 1px rgba(0,0,0,0);
-    font-size: 7.5pt;
     color: white;
     transition-duration: 100;
     text-align: center;
@@ -553,7 +546,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .calendar-month-label {
     color: #cccccc;
-    font-size: 7.5pt;
     padding-bottom: 8px;
     padding-top: 8px;
     font-weight: bold;
@@ -590,12 +582,11 @@ StScrollBar StButton#vhandle:hover {
 }
 .datemenu-date-label {
     padding: .4em 1.75em;
-    font-size: 10.5pt;
+    font-size: 1.1em;
     color: #cccccc;
     font-weight: bold;
 }
 .calendar-day-base {
-    font-size: 7.5pt;
     text-align: center;
     width: 2.4em;
     height: 2.4em;
@@ -663,7 +654,6 @@ StScrollBar StButton#vhandle:hover {
  * Notifications
  * ===================================================================*/
 #notification {
-    font-size: 8.5pt;
     border-radius: 8px 8px 8px 8px;
     border: 2px solid #a5a5a5;
     background-gradient-direction: vertical;
@@ -758,7 +748,6 @@ StScrollBar StButton#vhandle:hover {
     border: 2px solid #a5a5a5;
     border-radius: 8px;
     padding: 20px;
-    font-size: 9pt;
     color: white;
     text-shadow: black 0px 0px 2px;
 }
@@ -829,7 +818,6 @@ StScrollBar StButton#vhandle:hover {
  * Modal dialogs
  * ===================================================================*/
 .modal-dialog {
-    font-size: 12pt;
     border-radius: 24px;
     background-color: rgba(85, 85, 85, 0.9);
     border: 2px solid #868686;
@@ -845,7 +833,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .modal-dialog-button {
     border-radius: 18px;
-    font-size: 11pt;
     color: white;
     margin-left: 10px;
     margin-right: 10px;
@@ -860,7 +847,7 @@ StScrollBar StButton#vhandle:hover {
 
 /* Info OSD popup */
 .info-osd {
-    font-size: 18pt;
+    font-size: 1.2em;
     border-radius: 24px;
     background-color: rgba(85, 85, 85, 0.9);
     border: 2px solid #868686;
@@ -876,12 +863,10 @@ StScrollBar StButton#vhandle:hover {
  * Run dialog
  * ===================================================================*/
 .run-dialog-label {
-    font-size: 9pt;
     color: white;
     padding-bottom: 15px;
 }
 .run-dialog-error-label {
-    font-size: 9pt;
     color: white;
 }
 .run-dialog-error-box {
@@ -890,10 +875,8 @@ StScrollBar StButton#vhandle:hover {
 }
 .run-dialog-completion-box {
     padding-left: 15px;
-    font-size: 10px;
 }
 .run-dialog-entry {
-    font-size: 10.5pt;
     font-weight: bold;
     width: 23em;
     color: white;
@@ -924,7 +907,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .show-processes-dialog-subject,
 .mount-question-dialog-subject {
-    font-size: 12pt;
     font-weight: bold;
     color: #666666;
     padding-top: 10px;
@@ -938,7 +920,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .show-processes-dialog-description,
 .mount-question-dialog-description {
-    font-size: 10pt;
     color: white;
     padding-left: 17px;
     width: 28em;
@@ -948,7 +929,6 @@ StScrollBar StButton#vhandle:hover {
     padding-right: 17px;
 }
 .show-processes-dialog-app-list {
-    font-size: 10pt;
     max-height: 200px;
     padding-top: 24px;
     padding-left: 49px;
@@ -977,7 +957,6 @@ StScrollBar StButton#vhandle:hover {
     padding-left: 17px;
 }
 .show-processes-dialog-app-list-item-name {
-    font-size: 10pt;
 }
 /* ===================================================================
  * Magnifier
@@ -1009,7 +988,7 @@ StScrollBar StButton#vhandle:hover {
     background-gradient-start: rgba(255,245,245,0.4);
     background-gradient-end: rgba(105,105,105,0.1);
     background-gradient-direction: vertical;
-    font-size: 14pt;
+    font-size: 1.2em;
     font-weight: bold;
     border-radius: 10px;
     border: 2px solid #a0a0a0;
@@ -1303,7 +1282,6 @@ StScrollBar StButton#vhandle:hover {
     background: rgba(80,80,80,0.8);
     border: 2px solid #a5a5a5;
     border-radius: 8px;
-    font-size: 9pt;
     color: white;
     text-shadow: black 0px 0px 2px;
     padding: 8px;
@@ -1320,7 +1298,6 @@ StScrollBar StButton#vhandle:hover {
 .grouped-window-list-number-label {
     z-index: 99;
     text-shadow: black 1px 0px 2px;
-    font-size: 10px;
     color:#fff;
     padding: 0;
 }
@@ -1741,7 +1718,6 @@ StScrollBar StButton#vhandle:hover {
 .desklet-header {
     border-radius-topleft: 12px;
     border-radius-topright: 12px;
-    font-size: 10.5pt;
     border: 2px solid #a5a5a5;
     border-bottom: 0px;
     background-color: rgba(80, 80, 80, 0.8);
@@ -1768,7 +1744,7 @@ StScrollBar StButton#vhandle:hover {
     color: #ffffff;
     text-shadow: black 5px 5px 5px;
     font-weight: bold;
-    font-size: 48pt;
+    font-size: 4em;
 }
 
 .expo-workspaces-name-entry {
@@ -1856,7 +1832,6 @@ StScrollBar StButton#vhandle:hover {
 
 .radiobutton StLabel {
     padding-top: 4px;
-    font-size: 0.9em;
     box-shadow: none;
 }
 
