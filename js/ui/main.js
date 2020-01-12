@@ -337,6 +337,7 @@ function start() {
 
     soundManager = new SoundManager.SoundManager();
 
+    /* note: This call will initialize St.TextureCache */
     themeManager = new ThemeManager.ThemeManager();
 
     settingsManager = new Settings.SettingsManager();

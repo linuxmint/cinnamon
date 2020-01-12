@@ -34,8 +34,6 @@
 #define CACHE_PREFIX_RAW_CHECKSUM "raw-checksum:"
 #define CACHE_PREFIX_COMPRESSED_CHECKSUM "compressed-checksum:"
 
-static int active_scale = 1;
-
 struct _StTextureCachePrivate
 {
   GtkIconTheme *icon_theme;
@@ -49,8 +47,6 @@ struct _StTextureCachePrivate
 
   /* File monitors to evict cache data on changes */
   GHashTable *file_monitors; /* char * -> GFileMonitor * */
-
-  GSettings *settings;
 
   double scale;
 };
@@ -150,15 +146,27 @@ on_icon_theme_changed (GtkIconTheme   *icon_theme,
 }
 
 static void
-update_scale_factor (GSettings *settings,
-                     gchar *key,
-                     gpointer data)
+update_scale_factor (gpointer data)
 {
   StTextureCache *cache = ST_TEXTURE_CACHE (data);
+  GdkScreen *screen;
+  guint new_scale;
+  GValue value = G_VALUE_INIT;
 
-  cache->priv->scale = g_settings_get_int (settings, key);
+  screen = gdk_screen_get_default ();
 
-  active_scale = cache->priv->scale;
+  g_value_init (&value, G_TYPE_UINT);
+  new_scale = cache->priv->scale;
+
+  if (gdk_screen_get_setting (screen, "gdk-window-scaling-factor", &value))
+    {
+      new_scale = g_value_get_uint (&value);
+    }
+
+  if (new_scale != cache->priv->scale)
+    {
+      cache->priv->scale = new_scale;
+    }
 
   on_icon_theme_changed (cache->priv->icon_theme, cache);
 }
@@ -185,12 +193,10 @@ st_texture_cache_init (StTextureCache *self)
   self->priv->file_monitors = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                      g_object_unref, g_object_unref);
 
-  self->priv->settings = g_settings_new ("org.cinnamon");
+  g_signal_connect_swapped (gtk_settings_get_default (), "notify::gtk-xft-dpi",
+                            G_CALLBACK (update_scale_factor), self);
 
-  g_signal_connect (self->priv->settings, "changed::active-display-scale",
-                    G_CALLBACK (update_scale_factor), self);
-
-  update_scale_factor (self->priv->settings, "active-display-scale", self);
+  update_scale_factor (self);
 }
 
 static void
@@ -206,13 +212,9 @@ st_texture_cache_dispose (GObject *object)
       self->priv->icon_theme = NULL;
     }
 
-  if (self->priv->settings)
-    {
-      g_signal_handlers_disconnect_by_func (self->priv->settings,
-                                            (gpointer) update_scale_factor, self);
-      g_object_unref (self->priv->settings);
-      self->priv->settings = NULL;
-    }
+  g_signal_handlers_disconnect_by_func (gtk_settings_get_default (),
+                                        (gpointer) update_scale_factor,
+                                        self);
 
   g_clear_pointer (&self->priv->keyed_cache, g_hash_table_destroy);
   g_clear_pointer (&self->priv->keyed_surface_cache, g_hash_table_destroy);
@@ -294,6 +296,7 @@ rgba_from_clutter (GdkRGBA      *rgba,
 typedef struct {
   int width;
   int height;
+  int scale;
 } Dimensions;
 
 /* This struct corresponds to a request for an texture.
@@ -310,6 +313,7 @@ typedef struct {
   GtkIconInfo *icon_info;
   StIconColors *colors;
   char *uri;
+  gint scale;
 } AsyncTextureLoadData;
 
 static void
@@ -370,8 +374,8 @@ on_image_size_prepared (GdkPixbufLoader *pixbuf_loader,
     final_height = scaled_height;
   }
 
-  final_width = (int)((double) final_width * active_scale);
-  final_height = (int)((double) final_height * active_scale);
+  final_width = (int)((double) final_width * available_dimensions->scale);
+  final_height = (int)((double) final_height * available_dimensions->scale);
   gdk_pixbuf_loader_set_size (pixbuf_loader, final_width, final_height);
 }
 
@@ -380,6 +384,7 @@ impl_load_pixbuf_data (const guchar   *data,
                        gsize           size,
                        int             available_width,
                        int             available_height,
+                       int             scale,
                        GError        **error)
 {
   GdkPixbufLoader *pixbuf_loader = NULL;
@@ -393,6 +398,7 @@ impl_load_pixbuf_data (const guchar   *data,
 
   available_dimensions.width = available_width;
   available_dimensions.height = available_height;
+  available_dimensions.scale = scale;
   g_signal_connect (pixbuf_loader, "size-prepared",
                     G_CALLBACK (on_image_size_prepared), &available_dimensions);
 
@@ -452,6 +458,7 @@ static GdkPixbuf *
 impl_load_pixbuf_file (const char     *uri,
                        int             available_width,
                        int             available_height,
+                       int             scale,
                        GError        **error)
 {
   GdkPixbuf *pixbuf = NULL;
@@ -464,6 +471,7 @@ impl_load_pixbuf_file (const char     *uri,
     {
       pixbuf = impl_load_pixbuf_data ((const guchar *) contents, size,
                                       available_width, available_height,
+                                      scale,
                                       error);
     }
 
@@ -486,7 +494,7 @@ load_pixbuf_thread (GTask        *result,
   g_assert (data != NULL);
   g_assert (data->uri != NULL);
 
-  pixbuf = impl_load_pixbuf_file (data->uri, data->width, data->height, &error);
+  pixbuf = impl_load_pixbuf_file (data->uri, data->width, data->height, data->scale, &error);
 
   if (error != NULL)
     g_task_return_error (result, error);
@@ -1420,6 +1428,7 @@ st_texture_cache_load_uri_async (StTextureCache *cache,
       request->policy = policy;
       request->width = width;
       request->height = height;
+      request->scale = cache->priv->scale;
 
       load_texture_async (cache, request);
     }
@@ -1453,6 +1462,7 @@ st_texture_cache_load_uri_sync_to_cogl_texture (StTextureCache *cache,
       pixbuf = impl_load_pixbuf_file (uri,
                                       width,
                                       height,
+                                      cache->priv->scale,
                                       error);
       if (!pixbuf)
         goto out;
@@ -1500,7 +1510,7 @@ st_texture_cache_load_uri_sync_to_cairo_surface (StTextureCache        *cache,
       int width = available_width == -1 ? -1 : available_width * cache->priv->scale;
       int height = available_height == -1 ? -1 : available_height * cache->priv->scale;
 
-      pixbuf = impl_load_pixbuf_file (uri, width, height, error);
+      pixbuf = impl_load_pixbuf_file (uri, width, height, cache->priv->scale, error);
       if (!pixbuf)
         goto out;
 

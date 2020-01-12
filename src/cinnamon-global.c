@@ -960,10 +960,6 @@ update_scale_factor (GtkSettings *settings,
     }
   }
 
-  if (g_settings_get_int (global->settings, "active-display-scale") != (int)scale) {
-    g_settings_set_int (global->settings, "active-display-scale", (int)scale);
-  }
-
   meta_prefs_set_ui_scale (global->ui_scale);
 
   gtk_settings = gtk_settings_get_default ();
