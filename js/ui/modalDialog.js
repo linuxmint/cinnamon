@@ -19,9 +19,10 @@ const Tweener = imports.ui.tweener;
 
 const Gettext = imports.gettext;
 
-const OPEN_AND_CLOSE_TIME = 0.1;
 const FADE_IN_BUTTONS_TIME = 0.33;
 const FADE_OUT_DIALOG_TIME = 1.0;
+
+var OPEN_AND_CLOSE_TIME = 0.1;
 
 var State = {
     OPENED: 0,
