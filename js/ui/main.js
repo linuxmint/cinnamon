@@ -1531,7 +1531,9 @@ function getTabList(workspaceOpt, screenOpt) {
 }
 
 function restartCinnamon() {
-    new ModalDialog.InfoOSD(_("Restarting Cinnamon...")).show();
+    let dialog = new ModalDialog.InfoOSD(_("Restarting Cinnamon..."));
+    dialog.actor.add_style_class_name('restart-osd');
+    dialog.show();
 
     global.reexec_self();
 }
