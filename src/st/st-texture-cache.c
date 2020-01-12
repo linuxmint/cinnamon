@@ -1239,8 +1239,8 @@ st_texture_cache_load_image_from_file_async (StTextureCache                  *ca
   GTask *result;
 
   data = g_new0 (ImageFromFileAsyncData, 1);
-  data->width = width;
-  data->height = height;
+  data->width = width == -1 ? -1 : width * cache->priv->scale;
+  data->height = height == -1 ? -1 : height * cache->priv->scale;
   data->path = g_strdup (path);
   data->load_callback = callback;
   data->load_callback_data = user_data;
