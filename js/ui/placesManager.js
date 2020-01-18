@@ -88,6 +88,10 @@ PlaceDeviceInfo.prototype = {
         this._lowerName = this.name.toLowerCase();
         this.id = 'mount:' + mount.get_root().get_uri();
         this.idDecoded = decodeURIComponent(this.id);
+
+        this.busyWaitId = 0;
+        this.destroySignalId = 0;
+        this.busyNotification = null;
     },
 
     iconFactory: function(size) {
@@ -105,6 +109,19 @@ PlaceDeviceInfo.prototype = {
     },
 
     remove: function() {
+        if (this.busyWaitId > 0) {
+            Mainloop.source_remove(this.busyWaitId);
+            this.busyWaitId = 0;
+        }
+
+        if (this.busyNotification != null) {
+            this.busyNotification.destroy();
+        }
+
+        this._tryRemove();
+    },
+
+    _tryRemove: function() {
         if (!this.isRemovable())
             return;
 
@@ -126,19 +143,40 @@ PlaceDeviceInfo.prototype = {
             else if (this._mount.can_unmount())
                 this._mount.unmount_with_operation(0, mountOp, null, Lang.bind(this, this._removeFinish));
         }
+
+        this.busyWaitId = 0;
+        return false;
     },
 
-    _sendNotification: function(msg1, msg2 = null, withButton = false) {
+    _sendNotification: function(msg1, msg2 = null, withButton = false, persistent = false) {
         if (Main.messageTray) {
+            if (persistent && this.busyNotification != null) {
+                return;
+            }
+
+            if (!persistent && this.busyNotification) {
+                this.busyNotification.destroy();
+                this.busyNotification = null;
+            }
+
             let source = new MessageTray.SystemNotificationSource();
             Main.messageTray.add(source);
             let notification = new MessageTray.Notification(source, msg1, msg2);
             notification.setTransient(true);
+            notification.setUrgency(persistent ? MessageTray.Urgency.CRITICAL : MessageTray.Urgency.NORMAL);
             if (withButton) {
                 notification.addButton('system-undo', _("Retry"));
-                notification.connect('action-invoked', Lang.bind(this, this.remove));
+                notification.connect('action-invoked', Lang.bind(this, this.remove()));
             }
             source.notify(notification);
+            if (persistent) {
+                this.busyNotification = notification;
+                this.destroySignalId = notification.connect("destroy", () => {
+                    this.busyNotification.disconnect(this.destroySignalId);
+                    this.busyNotification = null;
+                    this.destroySignalId = 0;
+                })
+            }
         } else {
             if (msg2)
                 global.log(msg1 + ': ' + msg2);
@@ -157,6 +195,14 @@ PlaceDeviceInfo.prototype = {
         try {
             drive.stop_finish(res);
         } catch(e) {
+            if (e.code == Gio.IOErrorEnum.BUSY) {
+                msg1 = _("Device %s is busy, please wait.".format(drive.get_name()));
+                msg2 = _("Do not disconnect or data loss may occur.");
+
+                this._sendNotification(msg1, msg2, false, true);
+                this.busyWaitId = Mainloop.timeout_add_seconds(2, ()=>this._tryRemove());
+                return;
+            }
             btn = true;
             msg1 = _("Unable to stop the drive %s (%s)").format(drive.get_name(), this.name);
             msg2 = e.message;
@@ -182,6 +228,14 @@ PlaceDeviceInfo.prototype = {
         try {
             source.eject_with_operation_finish(res);
         } catch(e) {
+            if (e.code == Gio.IOErrorEnum.BUSY) {
+                msg1 = _("Device %s is busy, please wait.".format(source.get_name()));
+                msg2 = _("Do not remove or data loss may occur.");
+
+                this._sendNotification(msg1, msg2, false, true);
+                this.busyWaitId = Mainloop.timeout_add_seconds(2, ()=>this._tryRemove());
+                return;
+            }
             btn = true;
             msg1 = _("Unable to eject the drive %s (%s)").format(source.get_name(), this.name);
             msg2 = e.message;
@@ -221,6 +275,14 @@ PlaceDeviceInfo.prototype = {
         try {
             this._mount.unmount_with_operation_finish(res);
         } catch(e) {
+            if (e.code == Gio.IOErrorEnum.BUSY) {
+                msg1 = _("Device %s is busy, please wait.".format(o.get_name()));
+                msg2 = _("Do not disconnect or data loss may occur.");
+
+                this._sendNotification(msg1, msg2, false, true);
+                this.busyWaitId = Mainloop.timeout_add_seconds(2, ()=>this._tryRemove());
+                return;
+            }
             btn = true;
             msg1 = _("Failed to unmount %s (%s)").format(o.get_name(), this.name);
             msg2 = e.message;
