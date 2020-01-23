@@ -750,7 +750,24 @@ class AppGroup {
                 return;
             }
             if (this.state.settings.leftClickAction === 3 && nWindows > 1) {
-                this.state.trigger('cycleWindows', null, this.actor._delegate);
+                let foundActive = false;
+                for (let i = 0, len = nWindows; i < len; i++) {
+                    if (
+                        this.groupState.lastFocused &&
+                        this.groupState.metaWindows[i] === this.groupState.lastFocused
+                    ) {
+                        if (this.groupState.metaWindows[i].appears_focused) {
+                            this.state.trigger("cycleWindows", null, this.actor._delegate);
+                        } else {
+                            handleMinimizeToggle(this.groupState.metaWindows[i]);
+                        }
+                        foundActive = true;
+                        break;
+                    }
+                }
+                if (!foundActive) {
+                    handleMinimizeToggle(this.groupState.metaWindows[0]);
+                }
                 return;
             }
             if (this.hoverMenu) this.hoverMenu.shouldOpen = false;
