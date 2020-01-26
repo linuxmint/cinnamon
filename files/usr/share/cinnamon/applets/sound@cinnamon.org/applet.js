@@ -834,11 +834,11 @@ class MediaPlayerLauncher extends PopupMenu.PopupBaseMenuItem {
         this.addActor(this.label);
         this._icon = app.create_icon_texture(ICON_SIZE);
         this.addActor(this._icon, { expand: false });
+        this.connect("activate", (event) => this._onActivate(event).get_time());
     }
 
-    //note: shadows base method and prevents "activate" emission
-    activate(event, keepMenu) {
-        this._app.activate_full(-1, event.get_time());
+    _onActivate(time) {
+        this._app.activate_full(-1, time);
     }
 }
 
