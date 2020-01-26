@@ -74,6 +74,7 @@ class CinnamonDBusCommand:
                         print("%s %s" % (entry.attrib["name"], arg_str))
 
         if list_methods:
+            print("\nNote: boolean arguments should be specified as 0 (false) and 1 (true)")
             print("\nAn example is:   cinnamon-dbus-command GetMonitorWorkRect 0\n")
             exit(1)
 

@@ -117,6 +117,9 @@ const CinnamonIface =
             <method name="GetRunState"> \
                <arg type="i" direction="out" name="state" /> \
             </method> \
+            <method name="RestartCinnamon"> \
+                <arg type="b" direction="in" name="show_osd" /> \
+            </method> \
             <signal name="RunStateChanged"/> \
         </interface> \
     </node>';
@@ -451,6 +454,10 @@ CinnamonDBus.prototype = {
 
     GetRunState: function() {
         return Main.runState;
+    },
+
+    RestartCinnamon: function(showOsd) {
+        Main.restartCinnamon(showOsd);
     },
 
     EmitRunStateChanged: function() {

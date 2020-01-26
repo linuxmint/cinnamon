@@ -1531,10 +1531,12 @@ function getTabList(workspaceOpt, screenOpt) {
     return windows;
 }
 
-function restartCinnamon() {
-    let dialog = new ModalDialog.InfoOSD(_("Restarting Cinnamon..."));
-    dialog.actor.add_style_class_name('restart-osd');
-    dialog.show();
+function restartCinnamon(showOsd = false) {
+    if (showOsd) {
+        let dialog = new ModalDialog.InfoOSD(_("Restarting Cinnamon..."));
+        dialog.actor.add_style_class_name('restart-osd');
+        dialog.show();
+    }
 
     global.reexec_self();
 }
