@@ -9,10 +9,11 @@ const PopupMenu = imports.ui.popupMenu;
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
 class DriveMenuItem extends PopupMenu.PopupBaseMenuItem {
-    constructor(place) {
+    constructor(place, applet) {
         super();
 
         this.place = place;
+        this.applet = applet;
 
         this.label = new St.Label({ text: place.name });
         this.addActor(this.label);
@@ -26,6 +27,7 @@ class DriveMenuItem extends PopupMenu.PopupBaseMenuItem {
     }
 
     _eject() {
+        this.applet.menu.toggle();
         this.place.remove();
     }
 
@@ -84,7 +86,7 @@ class CinnamonRemovableDrivesApplet extends Applet.IconApplet {
         let any = false;
         for (let i = 0; i < mounts.length; i++) {
             if (mounts[i].isRemovable()) {
-                this._contentSection.addMenuItem(new DriveMenuItem(mounts[i]));
+                this._contentSection.addMenuItem(new DriveMenuItem(mounts[i], this));
                 any = true;
             }
         }
