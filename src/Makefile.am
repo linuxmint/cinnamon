@@ -227,11 +227,6 @@ libcinnamon_libadd =		\
 	$(CINNAMON_LIBS)	\
 	libst-1.0.la       	\
 	libtray.la \
-	$(libdir)/muffin/libmuffin-clutter-0.so \
-	$(libdir)/muffin/libmuffin-cogl-0.so \
-	$(libdir)/muffin/libmuffin-cogl-pango-0.so \
-	$(libdir)/muffin/libmuffin-cogl-path-0.so \
-	$(MUFFIN_LIBS)
 	$(NULL)
 
 libcinnamon_la_LDFLAGS = $(WARN_LDFLAGS) -avoid-version -L$(libdir)/muffin
