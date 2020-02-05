@@ -39,7 +39,7 @@ Build-Depends:
  libxss-dev,
  python3:any,
 Standards-Version: 3.9.5
-Homepage: http://cinnamon.linuxmint.com
+Homepage: https://projects.linuxmint.com/cinnamon/
 
 Package: cinnamon
 Architecture: any
