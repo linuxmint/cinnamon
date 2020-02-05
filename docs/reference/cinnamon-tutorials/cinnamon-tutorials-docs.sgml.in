@@ -9,8 +9,6 @@
     <title>Cinnamon Tutorials</title>
     <releaseinfo>
       This document is for Cinnamon @VERSION@.
-
-      The latest version of this documentation can be found online at <ulink role="online-location" url="http://developer.linuxmint.com/reference/git/cinnamon-tutorials/">http://developer.linuxmint.com/reference/git/cinnamon-tutorials/</ulink>.
     </releaseinfo>
   </bookinfo>
   <part id="documentation">

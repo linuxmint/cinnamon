@@ -9,8 +9,6 @@
     <title>Cinnamon St Reference Manual</title>
     <releaseinfo>
       This document is for Cinnamon @VERSION@.
-
-      The latest version of this documentation can be found online at <ulink role="online-location" url="http://developer.linuxmint.com/reference/git/st/">http://developer.linuxmint.com/reference/git/st/</ulink>.
     </releaseinfo>
   </bookinfo>
 
