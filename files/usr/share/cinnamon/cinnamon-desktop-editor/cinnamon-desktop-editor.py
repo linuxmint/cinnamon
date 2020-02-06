@@ -39,11 +39,10 @@ def escape_space(string):
 
 def ask(msg):
     dialog = Gtk.MessageDialog(None,
-                               Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                               Gtk.DialogFlags.DESTROY_WITH_PARENT | Gtk.DialogFlags.MODAL,
                                Gtk.MessageType.QUESTION,
                                Gtk.ButtonsType.YES_NO,
                                None)
-    dialog.set_default_size(400, 200)
     dialog.set_markup(msg)
     dialog.show_all()
     response = dialog.run()
