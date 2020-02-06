@@ -705,6 +705,10 @@ class MainWindow:
         self.main_stack.set_visible_child_name("side_view_page")
         self.header_stack.set_visible_child_name("side_view")
         self.search_entry.grab_focus()
+
+        if self.current_sidepage.module and hasattr(self.current_sidepage.module, "on_navigate_out_of_module"):
+            self.current_sidepage.module.on_navigate_out_of_module()
+
         self.current_sidepage = None
 
     def quit(self, *args):
