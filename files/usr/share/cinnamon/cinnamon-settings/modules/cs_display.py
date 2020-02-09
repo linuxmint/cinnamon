@@ -25,7 +25,12 @@ class Module:
 
             try:
                 settings = page.add_section(_("Layout"))
+
                 widget = SettingsWidget()
+                widget.set_border_width(0)
+                widget.set_margin_start(0)
+                widget.set_margin_end(0)
+
                 content = self.sidePage.content_box.c_manager.get_c_widget("display")
                 widget.pack_start(content, True, True, 0)
 
