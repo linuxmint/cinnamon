@@ -95,7 +95,7 @@ class MainWindow(object):
         ##   -t <n> or --tab=<n>, where <n> is the tab index (starting at 0).
         ##   -i <id> or --id=<id>, where <id> is the id of the instance.
         ## Examples, supposing there are two instances of Cinnamenu@json applet, with ids '210' and
-        ## '235' (uncomment line 144 containing print("self.instance_info =", self.instance_info)
+        ## '235' (uncomment line 147 containing print("self.instance_info =", self.instance_info)
         ## to know all instances ids):
         ## (Please note that cinnamon-settings is the one offered in #8333)
         ## cinnamon-settings applets Cinnamenu@json         # opens first tab in first instance
@@ -358,6 +358,22 @@ class MainWindow(object):
         box.pack_start(page_stack, True, True, 0)
         self.stack_switcher.show()
         info["stack"] = page_stack
+
+        height = layout.get("height", 600)
+        if str(height).isdecimal():
+            height = max(int(height), 200) # 200 is the minimal height; maybe to adapt?
+        else:
+            height = 600
+
+        width = layout.get("width", 800)
+        if str(width).isdecimal():
+            width = max(int(width), 600) # 600 is the minimal width; maybe to adapt?
+        else:
+            width = 800
+
+        self.max_height = self.window.get_screen().height()
+        self.max_width = self.window.get_screen().width()
+        self.window.set_default_size(min(width, self.max_width), min(height, self.max_height))
 
         for page_key in layout["pages"]:
             page_def = layout[page_key]
