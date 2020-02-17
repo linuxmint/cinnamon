@@ -6,6 +6,7 @@ import shlex
 import os
 import re
 import threading
+import distro
 
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
@@ -105,7 +106,7 @@ def createSystemInfos():
         title = ' '.join(contents[:2]) or "Manjaro Linux"
         infos.append((_("Operating System"), title))
     else:
-        s = '%s (%s)' % (' '.join(platform.linux_distribution()), arch)
+        s = '%s (%s)' % (' '.join(distro.linux_distribution()), arch)
         # Normalize spacing in distribution name
         s = re.sub('\s{2,}', ' ', s)
         infos.append((_("Operating System"), s))
