@@ -50,7 +50,8 @@
       "keys": [
         "cycleMenusHotkey",
         "show-apps-order-hotkey",
-        "show-apps-order-timeout"
+        "show-apps-order-timeout",
+        "super-num-hotkeys"
       ]
     },
     "thumbnailsSection": {
@@ -182,6 +183,11 @@
     "step": 10,
     "units": "milliseconds",
     "description": "Duration of the apps order display on hotkey press"
+  },
+  "super-num-hotkeys": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Enable Super+<number> shortcut to switch/open apps"
   },
   "thumbnail-timeout": {
     "dependency": "!onclick-thumbnails",
