@@ -317,6 +317,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'left-click-action', value: 'leftClickAction', cb: null},
             {key: 'show-apps-order-hotkey', value: 'showAppsOrderHotkey', cb: this.bindAppKeys},
             {key: 'show-apps-order-timeout', value: 'showAppsOrderTimeout', cb: null},
+            {key: 'super-num-hotkeys', value: 'SuperNumHotkeys', cb: this.bindAppKeys},
             {key: 'cycleMenusHotkey', value: 'cycleMenusHotkey', cb: this.bindAppKeys},
             {key: 'enable-hover-peek', value: 'enablePeek', cb: null},
             {key: 'onclick-thumbnails', value: 'onClickThumbs', cb: null},
@@ -444,7 +445,10 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.unbindAppKeys();
 
         for (let i = 1; i < 10; i++) {
-            this.bindAppKey(i);
+            if (this.state.settings.SuperNumHotkeys) {
+                this.bindAppKey(i);
+            }
+            this.bindNewAppKey(i);
         }
         Main.keybindingManager.addHotKey('launch-show-apps-order', this.state.settings.showAppsOrderHotkey, () =>
             this.showAppsOrder()
@@ -465,6 +469,9 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     bindAppKey(i) {
         Main.keybindingManager.addHotKey('launch-app-key-' + i, '<Super>' + i, () => this.onAppKeyPress(i));
+    }
+
+    bindNewAppKey(i) {
         Main.keybindingManager.addHotKey('launch-new-app-key-' + i, '<Super><Shift>' + i, () =>
             this.onNewAppKeyPress(i)
         );
