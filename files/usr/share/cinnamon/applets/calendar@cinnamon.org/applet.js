@@ -64,7 +64,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
             this.menu.addMenuItem(item);
 
-            this._dateFormatFull = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A, %B %-e, %Y");
+            this.settings.bind("custom-date-format", "_dateFormatFull", this._onSettingsChanged);
 
             this.settings.bind("use-custom-format", "use_custom_format", this._onSettingsChanged);
             this.settings.bind("custom-format", "custom_format", this._onSettingsChanged);
