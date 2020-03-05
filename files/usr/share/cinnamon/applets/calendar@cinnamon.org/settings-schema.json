@@ -18,16 +18,20 @@
     "custom-format" : {
         "type" : "entry",
         "default" : "%A, %B %e, %H:%M",
-        "description" : "Date format",
+        "description" : "System tray label",
         "indent": true,
         "dependency" : "use-custom-format",
-        "tooltip" : "Set your custom format here."
+        "tooltip" : "Set here your custom format of the label in the system tray."
+    },
+    "custom-date-format" : {
+        "type" : "entry",
+        "default" : "%A %B %-e, %Y",
+        "description" : "Calendar label",
+        "tooltip" : "Set here your custom format of the date displayed in the calendar."
     },
     "format-button" : {
         "type" : "button",
         "description" : "Show information on date format syntax",
-        "indent": true,
-        "dependency" : "use-custom-format",
         "callback" : "on_custom_format_button_pressed",
         "tooltip" : "Click this button to know more about the syntax for date formats."
     }
