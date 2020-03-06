@@ -212,7 +212,6 @@ LayoutManager.prototype = {
     },
 
     showKeyboard: function () {
-        if (Main.messageTray) Main.messageTray.hide();
         if (this.hideIdleId > 0) {
             Mainloop.source_remove(this.hideIdleId);
             this.hideIdleId = 0;
@@ -253,8 +252,6 @@ LayoutManager.prototype = {
     },
 
     hideKeyboard: function (immediate) {
-        if (Main.messageTray) Main.messageTray.hide();
-
         this.keyboardBox.hide();
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: false });
         this._chrome.updateRegions();
