@@ -32,10 +32,6 @@ var LONGER_HIDE_TIMEOUT = 0.6;
 
 var MAX_SOURCE_TITLE_WIDTH = 180;
 
-// We delay hiding of the tray if the mouse is within MOUSE_LEFT_ACTOR_THRESHOLD
-// range from the point where it left the tray.
-var MOUSE_LEFT_ACTOR_THRESHOLD = 20;
-
 var State = {
     HIDDEN:  0,
     SHOWING: 1,
@@ -214,155 +210,6 @@ URLHighlighter.prototype = {
         return -1;
     }
 };
-
-function FocusGrabber() {
-    this._init();
-}
-
-FocusGrabber.prototype = {
-    _init: function() {
-        this.actor = null;
-
-        this._hasFocus = false;
-        // We use this._prevFocusedWindow and this._prevKeyFocusActor to return the
-        // focus where it previously belonged after a focus grab, unless the user
-        // has explicitly changed that.
-        this._prevFocusedWindow = null;
-        this._prevKeyFocusActor = null;
-
-        this._focusActorChangedId = 0;
-        this._stageInputModeChangedId = 0;
-        this._capturedEventId = 0;
-        this._togglingFocusGrabMode = false;
-
-        Main.overview.connect('showing', Lang.bind(this,
-            function() {
-                this._toggleFocusGrabMode();
-            }));
-        Main.overview.connect('hidden', Lang.bind(this,
-            function() {
-                this._toggleFocusGrabMode();
-            }));
-        Main.expo.connect('showing', Lang.bind(this,
-            function() {
-                this._toggleFocusGrabMode();
-            }));
-        Main.expo.connect('hidden', Lang.bind(this,
-            function() {
-                this._toggleFocusGrabMode();
-            }));
-    },
-
-    grabFocus: function(actor) {
-        if (this._hasFocus)
-            return;
-
-        this.actor = actor;
-
-        this._prevFocusedWindow = global.display.focus_window;
-        this._prevKeyFocusActor = global.stage.get_key_focus();
-
-        if (global.stage_input_mode == Cinnamon.StageInputMode.NONREACTIVE ||
-            global.stage_input_mode == Cinnamon.StageInputMode.NORMAL)
-            global.set_stage_input_mode(Cinnamon.StageInputMode.FOCUSED);
-
-        // Use captured-event to notice clicks outside the focused actor
-        // without consuming them.
-        this._capturedEventId = global.stage.connect('captured-event', Lang.bind(this, this._onCapturedEvent));
-
-        this._stageInputModeChangedId = global.connect('notify::stage-input-mode', Lang.bind(this, this._stageInputModeChanged));
-        this._focusActorChangedId = global.stage.connect('notify::key-focus', Lang.bind(this, this._focusActorChanged));
-
-        this._hasFocus = true;
-
-        this.actor.navigate_focus(null, Gtk.DirectionType.TAB_FORWARD, false);
-        this.emit('focus-grabbed');
-    },
-
-    _focusActorChanged: function() {
-        let focusedActor = global.stage.get_key_focus();
-        if (!focusedActor || !this.actor.contains(focusedActor)) {
-            this._prevKeyFocusActor = null;
-            this.ungrabFocus();
-        }
-    },
-
-    _stageInputModeChanged: function() {
-        this.ungrabFocus();
-    },
-
-    _onCapturedEvent: function(actor, event) {
-        let source = event.get_source();
-        switch (event.type()) {
-            case Clutter.EventType.BUTTON_PRESS:
-                if (!this.actor.contains(source) &&
-                    !Main.layoutManager.keyboardBox.contains(source))
-                    this.emit('button-pressed', source);
-                break;
-            case Clutter.EventType.KEY_PRESS:
-                let symbol = event.get_key_symbol();
-                if (symbol == Clutter.Escape) {
-                    this.emit('escape-pressed');
-                    return true;
-                }
-                break;
-        }
-
-        return false;
-    },
-
-    ungrabFocus: function() {
-        if (!this._hasFocus)
-            return;
-
-        if (this._focusActorChangedId > 0) {
-            global.stage.disconnect(this._focusActorChangedId);
-            this._focusActorChangedId = 0;
-        }
-
-        if (this._stageInputModeChangedId) {
-            global.disconnect(this._stageInputModeChangedId);
-            this._stageInputModeChangedId = 0;
-        }
-
-        if (this._capturedEventId > 0) {
-            global.stage.disconnect(this._capturedEventId);
-            this._capturedEventId = 0;
-        }
-
-        this._hasFocus = false;
-        this.emit('focus-ungrabbed');
-
-        if (this._prevFocusedWindow && !global.display.focus_window) {
-            global.display.set_input_focus_window(this._prevFocusedWindow, false, global.get_current_time());
-            this._prevFocusedWindow = null;
-        }
-        if (this._prevKeyFocusActor) {
-            global.stage.set_key_focus(this._prevKeyFocusActor);
-            this._prevKeyFocusActor = null;
-        } else {
-            // We don't want to keep any actor inside the previously focused actor focused.
-            let focusedActor = global.stage.get_key_focus();
-            if (focusedActor && this.actor.contains(focusedActor))
-                global.stage.set_key_focus(null);
-        }
-        if (!this._togglingFocusGrabMode)
-            this.actor = null;
-    },
-
-    // Because we grab focus differently in the overview
-    // and in the main view, we need to change how it is
-    // done when we move between the two.
-    _toggleFocusGrabMode: function() {
-        if (this._hasFocus) {
-            this._togglingFocusGrabMode = true;
-            this.ungrabFocus();
-            this.grabFocus(this.actor);
-            this._togglingFocusGrabMode = false;
-        }
-    }
-}
-Signals.addSignalMethods(FocusGrabber.prototype);
 
 // Notification:
 // @source: the notification's Source
@@ -1219,188 +1066,6 @@ Source.prototype = {
 };
 Signals.addSignalMethods(Source.prototype);
 
-function SummaryItem(source) {
-    this._init(source);
-}
-
-SummaryItem.prototype = {
-    _init: function(source) {
-        this.source = source;
-        this.source.connect('notification-added', Lang.bind(this, this._notificationAddedToSource));
-
-        this.actor = new St.Button({ style_class: 'summary-source-button',
-                                     y_fill: true,
-                                     reactive: true,
-                                     button_mask: St.ButtonMask.ONE | St.ButtonMask.TWO | St.ButtonMask.THREE,
-                                     track_hover: true });
-
-        this._sourceBox = new St.BoxLayout({ style_class: 'summary-source' });
-
-        this._sourceIcon = source.getSummaryIcon();
-        this._sourceTitleBin = new St.Bin({ y_align: St.Align.MIDDLE,
-                                            x_fill: true,
-                                            clip_to_allocation: true });
-        this._sourceTitle = new St.Label({ style_class: 'source-title',
-                                           text: source.title });
-        this._sourceTitle.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this._sourceTitleBin.child = this._sourceTitle;
-        this._sourceTitleBin.width = 0;
-
-        this.source.connect('title-changed',
-                            Lang.bind(this, function() {
-                                this._sourceTitle.text = source.title;
-                            }));
-
-        this._sourceBox.add(this._sourceIcon, { y_fill: false });
-        this._sourceBox.add(this._sourceTitleBin, { expand: true, y_fill: false });
-        this.actor.child = this._sourceBox;
-
-        this.notificationStackView = new St.ScrollView({ name: source.isChat ? '' : 'summary-notification-stack-scrollview',
-                                                         vscrollbar_policy: source.isChat ? Gtk.PolicyType.NEVER : Gtk.PolicyType.AUTOMATIC,
-                                                         hscrollbar_policy: Gtk.PolicyType.NEVER,
-                                                         style_class: 'vfade' });
-        this.notificationStack = new St.BoxLayout({ name: 'summary-notification-stack',
-                                                     vertical: true });
-        this.notificationStackView.add_actor(this.notificationStack);
-        this._stackedNotifications = [];
-
-        this._oldMaxScrollAdjustment = 0;
-
-        this.notificationStackView.vscroll.adjustment.connect('changed', Lang.bind(this, function(adjustment) {
-            let currentValue = adjustment.value + adjustment.page_size;
-            if (currentValue == this._oldMaxScrollAdjustment)
-                this.scrollTo(St.Side.BOTTOM);
-            this._oldMaxScrollAdjustment = adjustment.upper;
-        }));
-
-        this.rightClickMenu = new St.BoxLayout({ name: 'summary-right-click-menu',
-                                                 vertical: true });
-
-        let item;
-
-        item = new PopupMenu.PopupMenuItem(_("Open"));
-        item.connect('activate', Lang.bind(this, function() {
-            source.open();
-            this.emit('done-displaying-content');
-        }));
-        this.rightClickMenu.add(item.actor);
-
-        item = new PopupMenu.PopupMenuItem(_("Remove"));
-        item.connect('activate', Lang.bind(this, function() {
-            source.destroy();
-            this.emit('done-displaying-content');
-        }));
-        this.rightClickMenu.add(item.actor);
-
-        let focusManager = St.FocusManager.get_for_stage(global.stage);
-        focusManager.add_group(this.rightClickMenu);
-    },
-
-    // getTitleNaturalWidth, getTitleWidth, and setTitleWidth include
-    // the spacing between the icon and title (which is actually
-    // _sourceTitle's padding-left) as part of the width.
-
-    getTitleNaturalWidth: function() {
-        let [minWidth, naturalWidth] = this._sourceTitle.get_preferred_width(-1);
-
-        return Math.min(naturalWidth, MAX_SOURCE_TITLE_WIDTH);
-    },
-
-    getTitleWidth: function() {
-        return this._sourceTitleBin.width;
-    },
-
-    setTitleWidth: function(width) {
-        width = Math.round(width);
-        if (width != this._sourceTitleBin.width)
-            this._sourceTitleBin.width = width;
-    },
-
-    setEllipsization: function(mode) {
-        this._sourceTitle.clutter_text.ellipsize = mode;
-    },
-
-    prepareNotificationStackForShowing: function() {
-        if (this.notificationStack.get_n_children() > 0)
-            return;
-
-        for (let i = 0; i < this.source.notifications.length; i++) {
-            this._appendNotificationToStack(this.source.notifications[i]);
-        }
-    },
-
-    doneShowingNotificationStack: function() {
-        for (let i = 0; i < this._stackedNotifications.length; i++) {
-            let stackedNotification = this._stackedNotifications[i];
-            let notification = stackedNotification.notification;
-            notification.collapseCompleted();
-            notification.disconnect(stackedNotification.notificationExpandedId);
-            notification.disconnect(stackedNotification.notificationDoneDisplayingId);
-            notification.disconnect(stackedNotification.notificationDestroyedId);
-            if (notification.actor.get_parent() == this.notificationStack)
-                this.notificationStack.remove_actor(notification.actor);
-            notification.setIconVisible(true);
-        }
-        this._stackedNotifications = [];
-    },
-
-    _notificationAddedToSource: function(source, notification) {
-        if (this.notificationStack.mapped)
-            this._appendNotificationToStack(notification);
-    },
-
-    _appendNotificationToStack: function(notification) {
-        let stackedNotification = {};
-        stackedNotification.notification = notification;
-        stackedNotification.notificationExpandedId = notification.connect('expanded', Lang.bind(this, this._contentUpdated));
-        stackedNotification.notificationDoneDisplayingId = notification.connect('done-displaying', Lang.bind(this, this._notificationDoneDisplaying));
-        stackedNotification.notificationDestroyedId = notification.connect('destroy', Lang.bind(this, this._notificationDestroyed));
-        this._stackedNotifications.push(stackedNotification);
-        if (this.notificationStack.get_n_children() > 0)
-            notification.setIconVisible(false);
-        this.notificationStack.add(notification.actor);
-        notification.expand(false);
-    },
-
-    // scrollTo:
-    // @side: St.Side.TOP or St.Side.BOTTOM
-    //
-    // Scrolls the notifiction stack to the indicated edge
-    scrollTo: function(side) {
-        let adjustment = this.notificationStackView.vscroll.adjustment;
-        if (side == St.Side.TOP)
-            adjustment.value = adjustment.lower;
-        else if (side == St.Side.BOTTOM)
-            adjustment.value = adjustment.upper;
-    },
-
-    _contentUpdated: function() {
-        this.emit('content-updated');
-    },
-
-    _notificationDoneDisplaying: function() {
-        this.emit('done-displaying-content');
-    },
-
-    _notificationDestroyed: function(notification) {
-        for (let i = 0; i < this._stackedNotifications.length; i++) {
-            if (this._stackedNotifications[i].notification == notification) {
-                let stackedNotification = this._stackedNotifications[i];
-                notification.disconnect(stackedNotification.notificationExpandedId);
-                notification.disconnect(stackedNotification.notificationDoneDisplayingId);
-                notification.disconnect(stackedNotification.notificationDestroyedId);
-                this._stackedNotifications.splice(i, 1);
-                this._contentUpdated();
-                break;
-            }
-        }
-
-        if (this.notificationStack.get_n_children() > 0)
-            this.notificationStack.get_child_at_index(0)._delegate.setIconVisible(true);
-    }
-};
-Signals.addSignalMethods(SummaryItem.prototype);
-
 function MessageTray() {
     this._init();
 }
@@ -1423,33 +1088,15 @@ MessageTray.prototype = {
         this._notificationBin.hide();
         this._notificationQueue = [];
         this._notification = null;
-        this._notificationClickedId = 0;
 
-        this._pointerBarrier = 0;
-
-        this._focusGrabber = new FocusGrabber();
-        this._focusGrabber.connect('focus-ungrabbed', Lang.bind(this, this._unlock));
-        this._focusGrabber.connect('button-pressed', Lang.bind(this,
-           function(focusGrabber, source) {
-               this._focusGrabber.ungrabFocus();
-           }));
-        this._focusGrabber.connect('escape-pressed', Lang.bind(this, this._escapeTray));
-
-        this._trayState = State.HIDDEN;
         this._locked = false;
-        this._traySummoned = false;
-        this._useLongerTrayLeftTimeout = false;
-        this._trayLeftTimeoutId = 0;
         this._notificationState = State.HIDDEN;
         this._notificationTimeoutId = 0;
         this._notificationExpandedId = 0;
         this._notificationRemoved = false;
-        this._reNotifyAfterHideNotification = null;
 
         this._sources = [];
         Main.layoutManager.addChrome(this._notificationBin);
-
-        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._setSizePosition));
 
 		// Settings
         this.settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" })
@@ -1463,7 +1110,6 @@ MessageTray.prototype = {
         this.settings.connect("changed::bottom-notifications", () => {
             this.bottomPosition = this.settings.get_boolean("bottom-notifications");
         });
-        this._setSizePosition();
 
         let updateLockState = Lang.bind(this, function() {
             if (this._locked) {
@@ -1477,12 +1123,6 @@ MessageTray.prototype = {
         Main.overview.connect('hiding', updateLockState);
         Main.expo.connect('showing', updateLockState);
         Main.expo.connect('hiding', updateLockState);
-    },
-
-    _setSizePosition: function() {
-        //let monitor = Main.layoutManager.primaryMonitor;
-        //this._notificationBin.x = monitor.width - 500;
-        //this._notificationBin.width = monitor.width;
     },
 
     contains: function(source) {
@@ -1548,16 +1188,6 @@ MessageTray.prototype = {
         this._updateState();
     },
 
-    toggle: function() {
-        this._traySummoned = !this._traySummoned;
-        this._updateState();
-    },
-
-    hide: function() {
-        this._traySummoned = false;
-        this._updateState();
-    },
-
     _onNotify: function(source, notification) {
         if (this._notification == notification) {
             // If a notification that is being shown is updated, we update
@@ -1594,12 +1224,6 @@ MessageTray.prototype = {
         this._updateState();
     },
 
-    _escapeTray: function() {
-        this._unlock();
-        this._updateNotificationTimeout(0);
-        this._updateState();
-    },
-
     // All of the logic for what happens when occurs here; the various
     // event handlers merely update variables and
     // _updateState() figures out what (if anything) needs to be done
@@ -1608,7 +1232,6 @@ MessageTray.prototype = {
         // Notifications
         let notificationUrgent = this._notificationQueue.length > 0 && this._notificationQueue[0].urgency == Urgency.CRITICAL;
         let notificationsPending = this._notificationQueue.length > 0 && (!this._busy || notificationUrgent);
-        let notificationExpanded = this._notificationBin.y < 0;
 
         let notificationExpired = (this._notificationTimeoutId == 0 &&
                 !(this._notification && this._notification.urgency == Urgency.CRITICAL) &&
@@ -1665,8 +1288,7 @@ MessageTray.prototype = {
             this._notification.collapseCompleted();
             this._notification.actor._parent_container.remove_actor(this._notification.actor);
         }
-        this._notificationClickedId = this._notification.connect('done-displaying',
-                                                                 Lang.bind(this, this._escapeTray));
+
         this._notificationBin.child = this._notification.actor;
         this._notificationBin.opacity = 0;
 
@@ -1810,7 +1432,6 @@ MessageTray.prototype = {
     },
 
     _hideNotification: function() {
-        this._focusGrabber.ungrabFocus();
         if (this._notificationExpandedId) {
             this._notification.disconnect(this._notificationExpandedId);
             this._notificationExpandedId = 0;
@@ -1838,8 +1459,6 @@ MessageTray.prototype = {
         this._notificationBin.hide();
         this._notificationBin.child = null;
         this._notification.collapseCompleted();
-        this._notification.disconnect(this._notificationClickedId);
-        this._notificationClickedId = 0;
         let notification = this._notification;
         if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS) && !this._notificationRemoved) {
             this.emit('notify-applet-update', notification);
@@ -1852,10 +1471,6 @@ MessageTray.prototype = {
     },
 
     _expandNotification: function(autoExpanding) {
-        // Don't grab focus in notifications that are auto-expanded.
-        if (!autoExpanding)
-            this._focusGrabber.grabFocus(this._notification.actor);
-
         if (!this._notificationExpandedId)
             this._notificationExpandedId =
                 this._notification.connect('expanded',
@@ -1891,11 +1506,6 @@ MessageTray.prototype = {
 
    },
 
-    // We use this function to grab focus when the user moves the pointer
-    // to a notification with CRITICAL urgency that was already auto-expanded.
-    _ensureNotificationFocused: function() {
-        this._focusGrabber.grabFocus(this._notification.actor);
-    }
 };
 Signals.addSignalMethods(MessageTray.prototype);
 
