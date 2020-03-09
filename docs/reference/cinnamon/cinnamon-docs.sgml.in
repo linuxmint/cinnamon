@@ -43,7 +43,6 @@
     <xi:include href="xml/cinnamon-global.xml"/>
     <xi:include href="xml/cinnamon-wm.xml"/>
     <xi:include href="xml/cinnamon-util.xml"/>
-    <xi:include href="xml/cinnamon-mount-operation.xml"/>
   </chapter>
   <chapter id="object-tree">
     <title>Object Hierarchy</title>

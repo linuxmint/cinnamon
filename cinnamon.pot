@@ -263,10 +263,6 @@ msgstr ""
 msgid "Hide Text"
 msgstr ""
 
-#: js/ui/cinnamonMountOperation.js:286
-msgid "Wrong password, please try again"
-msgstr ""
-
 #: js/ui/desklet.js:238
 msgid "Remove this desklet"
 msgstr ""

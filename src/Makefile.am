@@ -95,7 +95,6 @@ cinnamon_public_headers_h =		\
 	cinnamon-generic-container.h	\
 	cinnamon-gtk-embed.h		\
 	cinnamon-global.h			\
-	cinnamon-mount-operation.h		\
 	cinnamon-perf-log.h		\
 	cinnamon-screenshot.h	\
 	cinnamon-slicer.h			\
@@ -124,7 +123,6 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-generic-container.c	\
 	cinnamon-gtk-embed.c		\
 	cinnamon-global.c			\
-	cinnamon-mount-operation.c		\
 	cinnamon-perf-log.c		\
 	cinnamon-screenshot.c		\
 	cinnamon-slicer.c			\
