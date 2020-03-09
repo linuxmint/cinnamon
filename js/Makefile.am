@@ -57,7 +57,6 @@ nobase_dist_js_DATA = \
 	ui/messageTray.js	\
 	ui/modalDialog.js	\
 	ui/cinnamonEntry.js	\
-	ui/cinnamonMountOperation.js \
 	ui/osdWindow.js \
 	ui/notificationDaemon.js \
 	ui/overview.js		\
