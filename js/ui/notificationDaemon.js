@@ -424,7 +424,7 @@ NotificationDaemon.prototype = {
         if (notification == null) {    // Create a new notification!
             notification = new MessageTray.Notification(source, summary, body,
                                                         { icon: iconActor,
-                                                          bannerMarkup: true,
+                                                          bodyMarkup: true,
                                                           silent: hints['suppress-sound'] });
             ndata.notification = notification;
             notification.connect('destroy', Lang.bind(this,
@@ -461,8 +461,7 @@ NotificationDaemon.prototype = {
                 }));
         } else {
             notification.update(summary, body, { icon: iconActor,
-                                                 bannerMarkup: true,
-                                                 clear: true,
+                                                 bodyMarkup: true,
                                                  silent: hints['suppress-sound'] });
         }
 
@@ -483,6 +482,8 @@ NotificationDaemon.prototype = {
         } else {
             notification.unsetImage();
         }
+
+        notification.clearButtons();
 
         if (actions.length) {
             notification.setUseActionIcons(hints.maybeGet('action-icons') == true);

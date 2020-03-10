@@ -130,7 +130,6 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             } else {
                 notification._inNotificationBin = true;
                 global.reparentActor(notification.actor, this._notificationbin);
-                notification.expand();
                 notification._timeLabel.show();
             }
             this.update_list();
@@ -142,26 +141,19 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         notification._inNotificationBin = true;
         this.notifications.push(notification);
         // Steal the notication panel.
-        notification.expand();
         this._notificationbin.add(notification.actor);
         notification.actor._parent_container = this._notificationbin;
         notification.actor.add_style_class_name('notification-applet-padding');
         // Register for destruction.
-        notification.connect('clicked', Lang.bind(this, this._item_clicked, false));
-        notification.connect('destroy', Lang.bind(this, this._item_clicked, true));
+        notification.connect('scrolling-changed', (notif, scrolling) => { this.menu.passEvents = scrolling });
+        notification.connect('destroy', () => {
+            let i = this.notifications.indexOf(notification);
+            if (i != -1)
+                this.notifications.splice(i, 1);
+            this.update_list();
+        });
         notification._timeLabel.show();
 
-        this.update_list();
-    }
-
-    _item_clicked(notification, destroyed) {
-        let i = this.notifications.indexOf(notification);
-        if (i != -1) {
-            this.notifications.splice(i, 1);
-            if (!destroyed) {
-                notification.destroy(NotificationDestroyedReason.DISMISSED);
-            }
-        }
         this.update_list();
     }
 
