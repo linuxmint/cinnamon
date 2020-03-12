@@ -82,6 +82,7 @@ class AppGroup {
         });
 
         this.signals = new SignalManager(null);
+        this.appKeyTimeout = 0;
 
         // TODO: This needs to be in state so it can be updated more reliably.
         this.labelVisible = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
@@ -806,7 +807,9 @@ class AppGroup {
                     this.appKeyTimeout = 0;
                     return;
                 }
-                this.hoverMenu.close(true);
+                if (this.hoverMenu) {
+                    this.hoverMenu.close(true);
+                }
                 this.appKeyTimeout = 0;
             }, this.state.settings.showAppsOrderTimeout);
         }
