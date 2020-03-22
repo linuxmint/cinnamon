@@ -6,6 +6,7 @@ import shlex
 import os
 import re
 import threading
+from json import loads
 import distro
 
 from SettingsWidgets import SidePage
@@ -56,16 +57,14 @@ def getGraphicsInfos():
 
 def getDiskSize():
     disksize = 0
-    moreThanOnce = 0
-    for line in getProcessOut(("df", "-l")):
-        if line.startswith("/dev/"):
-            moreThanOnce += 1
-            disksize += float(line.split()[1])
+    # include "name" column to get partitions grouped by block device
+    out = getProcessOut(("lsblk", "--json", "--output", "name,size", "--bytes"))
+    jsonobj = loads(''.join(out))
 
-    if (moreThanOnce > 1):
-        return disksize, True
-    else:
-        return disksize, False
+    for blk in jsonobj['blockdevices']:
+        disksize += int(blk['size'])
+
+    return disksize, (len(jsonobj['blockdevices']) > 1)
 
 
 def getProcInfos():
@@ -124,7 +123,7 @@ def createSystemInfos():
         diskText = _("Hard Drives")
     else:
         diskText = _("Hard Drive")
-    infos.append((diskText, '%.1f %s' % ((diskSize / (1000*1000)), _("GB"))))
+    infos.append((diskText, '%.1f %s' % ((diskSize / (1000*1000*1000)), _("GB"))))
 
     cards = getGraphicsInfos()
     for card in cards:
