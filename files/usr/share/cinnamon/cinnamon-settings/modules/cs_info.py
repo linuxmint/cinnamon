@@ -57,8 +57,7 @@ def getGraphicsInfos():
 
 def getDiskSize():
     disksize = 0
-    # include "name" column to get partitions grouped by block device
-    out = getProcessOut(("lsblk", "--json", "--output", "name,size", "--bytes"))
+    out = getProcessOut(("lsblk", "--json", "--output", "size", "--bytes", "--nodeps"))
     jsonobj = loads(''.join(out))
 
     for blk in jsonobj['blockdevices']:
@@ -107,7 +106,7 @@ def createSystemInfos():
     else:
         s = '%s (%s)' % (' '.join(distro.linux_distribution()), arch)
         # Normalize spacing in distribution name
-        s = re.sub('\s{2,}', ' ', s)
+        s = re.sub(r'\s{2,}', ' ', s)
         infos.append((_("Operating System"), s))
     if 'CINNAMON_VERSION' in os.environ:
         infos.append((_("Cinnamon Version"), os.environ['CINNAMON_VERSION']))
