@@ -18,7 +18,6 @@ shared: &shared
             name: Install dependencies
             command: |
                 wget https://github.com/linuxmint/xapps/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O xapps.tar.gz
-                wget https://github.com/linuxmint/cjs/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O cjs.tar.gz
                 wget https://github.com/linuxmint/cinnamon-translations/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O cinnamon-translations.tar.gz
                 wget https://github.com/linuxmint/cinnamon-desktop/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O cinnamon-desktop.tar.gz
                 wget https://github.com/linuxmint/cinnamon-menus/releases/download/master.${CIRCLE_JOB}/packages.tar.gz -O cinnamon-menus.tar.gz
