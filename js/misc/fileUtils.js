@@ -2,6 +2,7 @@
 
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const ByteArray = imports.byteArray;
 
 var importNames = [
     'mainloop',
@@ -90,7 +91,7 @@ function getUserDesktopDir() {
         try{
             let data = userdirsFile.load_contents(null);
             let dataDic = new Array();
-            let lines = data[1].toString().split("\n");
+            let lines = ByteArray.toString(data[1]).split("\n");
             for (var i in lines){
                 if (!lines[i] || lines[i][0]=="#") continue;
                 let line = lines[i].split("=", 2);
@@ -264,7 +265,7 @@ function requireModule(path, dir, meta, type, async = false, returnIndex = false
             path = `${dir}/${path}`;
         }
     }
-    let success, JS;
+    let success, JSbytes, JS;
     let file = Gio.File.new_for_commandline_arg(path);
     let fileLoadErrorMessage = '[requireModule] Unable to load file contents.';
     if (!file.query_exists(null)) {
@@ -272,19 +273,21 @@ function requireModule(path, dir, meta, type, async = false, returnIndex = false
     }
 
     if (!async) {
-        [success, JS] = file.load_contents(null);
+        [success, JSbytes] = file.load_contents(null);
         if (!success) {
             throw new Error(fileLoadErrorMessage);
         }
+        JS = ByteArray.toString(JSbytes);
         return createExports({path, dir, meta, type, file, size: JS.length, JS, returnIndex});
     }
     return new Promise(function(resolve, reject) {
         file.load_contents_async(null, function(object, result) {
             try {
-                [success, JS] = file.load_contents_finish(result);
+                [success, JSbytes] = file.load_contents_finish(result);
                 if (!success) {
                     throw new Error(fileLoadErrorMessage);
                 }
+                JS = ByteArray.toString(JSbytes);
                 resolve(createExports({path, dir, meta, type, file, size: JS.length, JS, returnIndex, reject}));
             } catch (e) {
                 reject(e);
