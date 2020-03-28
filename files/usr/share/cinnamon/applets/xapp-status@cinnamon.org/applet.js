@@ -35,7 +35,9 @@ class XAppStatusIcon {
         });
 
         this.icon_holder = new St.Bin();
-        this.iconSize = 20;
+        this.iconSize = this.applet.getPanelIconSize(St.IconType.FULLCOLOR);
+
+        this.proxy.icon_size = this.iconSize;
 
         this.label = new St.Label({
             'y-align': St.Align.END,
@@ -46,6 +48,7 @@ class XAppStatusIcon {
 
         this.actor.connect('button-press-event', Lang.bind(this, this.onButtonPressEvent));
         this.actor.connect('button-release-event', Lang.bind(this, this.onButtonReleaseEvent));
+        this.actor.connect('scroll-event', (...args) => this.onScrollEvent(...args));
         this.actor.connect('enter-event', Lang.bind(this, this.onEnterEvent));
         this.actor.connect('leave-event', Lang.bind(this, this.onLeaveEvent));
 
@@ -111,6 +114,7 @@ class XAppStatusIcon {
 
             this.iconName = iconName;
             this.iconSize = this.applet.getPanelIconSize(type);
+            this.proxy.icon_size = this.iconSize;
 
             // for now, assume symbolic icons would always be square/suitable for an StIcon.
             // TODO: Need to handle symbolic filenames also.
@@ -233,6 +237,31 @@ class XAppStatusIcon {
         this.proxy.call_button_release(x, y, event.get_button(), event.get_time(), o, null, null);
 
         return Clutter.EVENT_STOP;
+    }
+
+    onScrollEvent(actor, event) {
+        let direction = event.get_scroll_direction();
+
+        let x_dir = XApp.ScrollDirection.UP;
+        let delta = 0;
+
+        if (direction != Clutter.ScrollDirection.SMOOTH) {
+            if (direction == Clutter.ScrollDirection.UP) {
+                x_dir = XApp.ScrollDirection.UP;
+                delta = -1;
+            } else if (direction == Clutter.ScrollDirection.DOWN) {
+                x_dir = XApp.ScrollDirection.DOWN;
+                delta = 1;
+            } else if (direction == Clutter.ScrollDirection.LEFT) {
+                x_dir = XApp.ScrollDirection.LEFT;
+                delta = -1;
+            } else if (direction == Clutter.ScrollDirection.RIGHT) {
+                x_dir = XApp.ScrollDirection.RIGHT;
+                delta = 1;
+            }
+        }
+
+        this.proxy.call_scroll(delta, x_dir, event.get_time(), null, null);
     }
 
     destroy() {
