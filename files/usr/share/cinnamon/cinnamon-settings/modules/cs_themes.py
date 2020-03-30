@@ -40,6 +40,7 @@ class Module:
         self.window = None
         sidePage = SidePage(_("Themes"), self.icon, self.keywords, content_box, module=self)
         self.sidePage = sidePage
+        self.refreshing = False # flag to ensure we only refresh once at any given moment
 
     def on_module_selected(self):
         if not self.loaded:
@@ -170,7 +171,10 @@ class Module:
             self.gtk2_scrollbar_editor.set_size(widget.get_value())
 
     def on_file_changed(self, file, other, event, data):
-        self.refresh()
+        if self.refreshing:
+            return
+        self.refreshing = True
+        GLib.timeout_add_seconds(5, self.refresh)
 
     def refresh(self):
         choosers = []
@@ -190,6 +194,7 @@ class Module:
             callback = chooser[3]
             payload = (chooser_obj, path_suffix, themes, callback)
             self.refresh_chooser(payload)
+        self.refreshing = False
 
     def refresh_chooser(self, payload):
         (chooser, path_suffix, themes, callback) = payload
