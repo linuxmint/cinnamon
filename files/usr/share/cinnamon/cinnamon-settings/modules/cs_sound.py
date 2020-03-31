@@ -489,7 +489,7 @@ class Module:
     comment = _("Manage sound settings")
 
     def __init__(self, content_box):
-        keywords = _("sound, media, music, speakers, audio")
+        keywords = _("sound, media, music, speakers, audio, microphone, headphones")
         self.sidePage = SidePage(_("Sound"), "cs-sound", keywords, content_box, module=self)
         self.sound_settings = Gio.Settings(CINNAMON_DESKTOP_SOUNDS)
 
