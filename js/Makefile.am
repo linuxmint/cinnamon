@@ -35,7 +35,6 @@ nobase_dist_js_DATA = \
 	ui/checkBox.js		\
 	ui/radioButton.js	\
 	ui/dbusMenu.js		\
-	ui/indicatorManager.js	\
 	ui/desklet.js		\
 	ui/deskletManager.js	\
 	ui/dnd.js		\

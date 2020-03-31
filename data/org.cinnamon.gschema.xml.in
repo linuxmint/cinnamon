@@ -616,10 +616,7 @@
 
     <key name="enable-indicators" type="b">
       <default>false</default>
-      <_summary>Enable support for indicators</_summary>
-      <_description>
-        Whether to support indicators
-      </_description>
+      <_summary>not used</_summary>
     </key>
 
     <key type="as" name="demands-attention-ignored-wm-classes">

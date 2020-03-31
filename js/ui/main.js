@@ -9,7 +9,6 @@
  * @lookingGlass (LookingGlass.Melange): The looking glass object
  * @wm (WindowManager.WindowManager): The window manager
  * @messageTray (MessageTray.MessageTray): The mesesage tray
- * @indicatorManager (IndicatorManager.IndicatorManager): The indicator manager
  * @notificationDaemon (NotificationDaemon.NotificationDaemon): The notification daemon
  * @windowAttentionHandler (WindowAttentionHandler.WindowAttentionHandler): The window attention handler
  * @recorder (Cinnamon.Recorder): The recorder
@@ -92,7 +91,6 @@ const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
-const IndicatorManager = imports.ui.indicatorManager;
 const OsdWindow = imports.ui.osdWindow;
 const Overview = imports.ui.overview;
 const Expo = imports.ui.expo;
@@ -138,7 +136,6 @@ var lookingGlass = null;
 var wm = null;
 var a11yHandler = null;
 var messageTray = null;
-var indicatorManager = null;
 var notificationDaemon = null;
 var windowAttentionHandler = null;
 var recorder = null;
@@ -256,7 +253,6 @@ function _initUserSession() {
     global.screen.override_workspace_layout(Meta.ScreenCorner.TOPLEFT, false, 1, -1);
 
     systrayManager = new Systray.SystrayManager();
-    indicatorManager = new IndicatorManager.IndicatorManager();
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
         getRunDialog().open();
