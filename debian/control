@@ -34,9 +34,7 @@ Build-Depends:
  librsvg2-dev,
  libsoup2.4-dev,
  libstartup-notification0-dev (>= 0.11),
- libwnck-dev,
  libxfixes-dev (>= 1:5.0),
- libxss-dev,
  python3:any,
 Standards-Version: 3.9.5
 Homepage: https://projects.linuxmint.com/cinnamon/
@@ -71,7 +69,7 @@ Depends:
  gir1.2-upowerglib-1.0,
  gir1.2-xapp-1.0 (>= 1.0.4~),
  gkbd-capplet,
- gnome-icon-theme-symbolic,
+ adwaita-icon-theme,
  gsettings-desktop-schemas (>= 0.1.7),
  iso-flag-png,
  libcanberra-pulse,
