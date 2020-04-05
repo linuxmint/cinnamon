@@ -71,7 +71,8 @@ class AppGroup {
             verticalThumbs: false,
             groupReady: false,
             thumbnailMenuEntered: false,
-            fileDrag: false
+            fileDrag: false,
+            pressed: true
         });
 
         this.groupState.connect({
@@ -149,6 +150,7 @@ class AppGroup {
         this.groupState.set({tooltip: new Tooltips.PanelItemTooltip({actor: this.actor}, '', this.state.orientation)});
 
         this._draggable = new DND._Draggable(this.actor);
+        this._draggable.inhibit = !this.state.settings.enableDragging;
 
         this.signals.connect(this.actor, 'get-preferred-width', (...args) => this.getPreferredWidth(...args));
         this.signals.connect(this.actor, 'get-preferred-height', (...args) => this.getPreferredHeight(...args));
@@ -495,6 +497,8 @@ class AppGroup {
     }
 
     onLeave() {
+        this.groupState.pressed = false;
+
         if (this.state.panelEditMode) return false;
 
         if (this.hoverMenu) this.hoverMenu.onMenuLeave();
@@ -683,6 +687,10 @@ class AppGroup {
     onAppButtonRelease(actor, event) {
         this.state.trigger('clearDragPlaceholder');
 
+        if (!this.groupState.pressed) {
+            return;
+        }
+
         let button = event.get_button();
         let nWindows = this.groupState.metaWindows.length;
 
@@ -783,6 +791,8 @@ class AppGroup {
         let button = event.get_button();
 
         if (button === 3) return true;
+
+        this.groupState.pressed = true;
         return false;
     }
 
