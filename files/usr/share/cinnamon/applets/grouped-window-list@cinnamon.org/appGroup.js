@@ -789,10 +789,10 @@ class AppGroup {
 
     onAppButtonPress(actor, event) {
         let button = event.get_button();
+        this.groupState.pressed = true;
 
         if (button === 3) return true;
 
-        this.groupState.pressed = true;
         return false;
     }
 
