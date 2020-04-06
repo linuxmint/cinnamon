@@ -557,7 +557,7 @@ var Applet = class Applet {
             AppletManager._removeAppletFromPanel(this._uuid, this.instance_id);
         } else {
             let dialog = new ModalDialog.ConfirmDialog(
-                _("Are you sure you want to remove %s?").format(this._meta.name),
+                _("Are you sure you want to remove '%s'?").format(this._(this._meta.name)),
                 () => AppletManager._removeAppletFromPanel(this._uuid, this.instance_id)
             );
             dialog.open();
