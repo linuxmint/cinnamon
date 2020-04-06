@@ -17,6 +17,7 @@ const ModalDialog = imports.ui.modalDialog;
 const PopupMenu = imports.ui.popupMenu;
 const Tooltips = imports.ui.tooltips;
 const Tweener = imports.ui.tweener;
+const Gettext = imports.gettext;
 
 
 const RIGHT_PANEL_POPUP_ANIMATE_TIME = 0.5;
@@ -241,13 +242,25 @@ var Desklet = class Desklet {
                 this._onRemoveDesklet();
             } else {
                 let dialog = new ModalDialog.ConfirmDialog(
-                    _("Are you sure you want to remove %s?").format(this._meta.name),
+                    _("Are you sure you want to remove '%s'?").format(this._(this._meta.name)),
                     () => this._onRemoveDesklet()
                 );
                 dialog.open();
             }
         }));
         this._menu.addMenuItem(this.context_menu_item_remove);
+    }
+
+    // translation
+    _(str) {
+        // look into the text domain first
+        let translated = Gettext.dgettext(this._uuid, str);
+
+        // if it looks translated, return the translation of the domain
+        if (translated !== str)
+            return translated;
+        // else, use the default cinnamon domain
+        return _(str);
     }
 
     /**
