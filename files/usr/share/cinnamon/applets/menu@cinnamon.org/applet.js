@@ -2466,11 +2466,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.mainBox._delegate = null;
 
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
-
-        if (this.selectedAppBox.peek_theme_node() == null ||
-            this.selectedAppBox.get_theme_node().get_length('height') == 0)
-            this.selectedAppBox.set_height(30 * global.ui_scale);
-
         this.selectedAppTitle = new St.Label({ style_class: 'menu-selected-app-title', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppTitle);
         this.selectedAppDescription = new St.Label({ style_class: 'menu-selected-app-description', text: "" });
