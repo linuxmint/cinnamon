@@ -586,6 +586,10 @@ StScrollBar StButton#vhandle:hover {
     color: #cccccc;
     font-weight: bold;
 }
+.datemenu-time-label {
+  font-size: 200%;
+  padding-bottom: 0;
+}
 .calendar-day-base {
     text-align: center;
     width: 2.4em;
