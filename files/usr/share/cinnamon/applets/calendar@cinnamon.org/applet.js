@@ -45,6 +45,11 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             this._initContextMenu();
             this.menu.setCustomStyleClass('calendar-background');
 
+            // Time
+            this._time = new St.Label();
+            this._time.style_class = 'datemenu-date-label datemenu-time-label';
+            this.menu.addActor(this._time);
+
             // Date
             this._date = new St.Label();
             this._date.style_class = 'datemenu-date-label';
@@ -81,6 +86,8 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             }));
 
             this.clock_notify_id = 0;
+
+            this.clock.set_format_string("%X");
 
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
@@ -121,38 +128,33 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         let in_vertical_panel = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
 
         if (this.use_custom_format) {
-            if (!this.clock.set_format_string(this.custom_format)) {
+            if (!this.clock.get_clock_for_format(this.custom_format)) {
                 global.logError("Calendar applet: bad time format string - check your string.");
                 this.clock.set_format_string("~CLOCK FORMAT ERROR~ %l:%M %p");
             }
-        } else if (in_vertical_panel) {
+        } else {
             let use_24h = this.desktop_settings.get_boolean("clock-use-24h");
             let show_seconds = this.desktop_settings.get_boolean("clock-show-seconds");
 
             if (use_24h) {
-                if (show_seconds) {
-                    this.clock.set_format_string("%H%n%M%n%S");
-                } else {
-                    this.clock.set_format_string("%H%n%M%");
-                }
+                this._labelFormat = _("%H:%M");
             } else {
-                if (show_seconds) {
-                    this.clock.set_format_string("%l%n%M%n%S");
-                } else {
-                    this.clock.set_format_string("%l%n%M%");
-                }
+                this._labelFormat = _("%l:%M");
             }
-        } else {
-            this.clock.set_format_string(null);
+            if (show_seconds) {
+                this._labelFormat += _(":%S");
+            }
+            if (in_vertical_panel) {
+                this._labelFormat = this._labelFormat.replace(/:/g,"%n")
+            }
         }
     }
 
     _updateClockAndDate() {
-        let label_string = this.clock.get_clock();
+        let timeFormatted = this.clock.get_clock();
+        this._time.set_text(timeFormatted);
 
-        if (!this.use_custom_format) {
-            label_string = label_string.capitalize();
-        }
+        let label_string = this.clock.get_clock_for_format(this._labelFormat);
 
         this.set_applet_label(label_string);
 
