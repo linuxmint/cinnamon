@@ -145,7 +145,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
                 this._labelFormat += _(":%S");
             }
             if (in_vertical_panel) {
-                this._labelFormat = this._labelFormat.replace(/:/g,"%n")
+                this._labelFormat = this._labelFormat.replace(/:/g, "%n")
             }
         }
     }
