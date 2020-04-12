@@ -1231,6 +1231,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
             this.lastSelectedCategory = null;
 
+            this.selectedAppBox.set_height(-1); //unset previously set height
+            this.selectedAppBox.set_height(this.selectedAppBox.get_preferred_height(-1)[1]);
+
             let n = Math.min(this._applicationsButtons.length,
                              INITIAL_BUTTON_LOAD);
             for (let i = 0; i < n; i++) {
@@ -2466,11 +2469,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.mainBox._delegate = null;
 
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
-
-        if (this.selectedAppBox.peek_theme_node() == null ||
-            this.selectedAppBox.get_theme_node().get_length('height') == 0)
-            this.selectedAppBox.set_height(30 * global.ui_scale);
-
         this.selectedAppTitle = new St.Label({ style_class: 'menu-selected-app-title', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppTitle);
         this.selectedAppDescription = new St.Label({ style_class: 'menu-selected-app-description', text: "" });
