@@ -1,7 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
-const Lang = imports.lang;
 const St = imports.gi.St;
 
 const Util = imports.misc.util;
@@ -13,18 +12,14 @@ const Mainloop = imports.mainloop;
 const HOT_CORNER_ACTIVATION_TIMEOUT = 500; // Milliseconds
 const OVERVIEW_CORNERS_KEY = 'hotcorner-layout';
 
-function HotCornerManager() {
-    this._init();
-}
-
-HotCornerManager.prototype = {
-    _init: function() {
+var HotCornerManager = class {
+    constructor() {
         this.corners = [null, null, null, null];
         global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, () => this.update());
-        this.update()
-    },
+        this.update();
+    }
 
-    parseGSettings: function() {
+    parseGSettings() {
         let options = global.settings.get_strv(OVERVIEW_CORNERS_KEY);
         if (options.length != 4) {
             global.logError(_("Invalid overview options: Incorrect number of corners"));
@@ -51,14 +46,14 @@ HotCornerManager.prototype = {
                 this.corners[i] = null;
             }
         }
-    },
+    }
 
-    update: function() {
+    update() {
         this.parseGSettings();
         this.updatePosition(Main.layoutManager.primaryMonitor);
-    },
+    }
 
-    updatePosition: function(monitor) {
+    updatePosition(monitor) {
         let left   = monitor.x;
         let right  = monitor.x + monitor.width - 2;
         let top    = monitor.y;
@@ -88,13 +83,8 @@ HotCornerManager.prototype = {
 //
 // This class manages a "hot corner" that can toggle switching to
 // overview.
-function HotCorner() {
-    this._init();
-}
-
-HotCorner.prototype = {
-    _init: function() {
-
+class HotCorner {
+    constructor() {
         this.action = null; // The action to activate when hot corner is triggered
         this.hover_delay = 0; // Hover delay activation
         this.hover_delay_id = 0; // Hover delay timer ID
@@ -113,15 +103,15 @@ HotCorner.prototype = {
         // the hot corner can be triggered by clicking on it. This is
         // useful if the user wants to undo the effect of triggering
         // the hot corner once in the hot corner.
-        this.actor.connect('enter-event',
-            Lang.bind(this, this._onCornerEntered));
-        this.actor.connect('button-release-event',
-            Lang.bind(this, this._onCornerClicked));
-        this.actor.connect('leave-event',
-            Lang.bind(this, this._onCornerLeft));
+        this.actor.connect('enter-event', () => this._onCornerEntered());
+        this.actor.connect('button-release-event', () => this._onCornerClicked());
+        this.actor.connect('leave-event', () => this._onCornerLeft());
 
         this.tile_delay = false;
-        global.window_manager.connect('tile', Lang.bind(this, this._tilePerformed));
+        global.window_manager.connect('tile', () => {
+            this.tile_delay = true;
+            Mainloop.timeout_add(250, () => this.tile_delay = false);
+        });
 
         // Cache the three ripples instead of dynamically creating and destroying them.
         this._ripple1 = new St.Widget({
@@ -144,26 +134,16 @@ HotCorner.prototype = {
         this._ripple1.hide();
         this._ripple2.hide();
         this._ripple3.hide();
-    },
+    }
 
-    destroy: function() {
+    destroy() {
         this._ripple1.destroy();
         this._ripple2.destroy();
         this._ripple3.destroy();
         this.actor.destroy();
-    },
+    }
 
-    _tile_delay_cb: function() {
-        this.tile_delay = false;
-        return false;
-    },
-
-    _tilePerformed: function(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
-        this.tile_delay = true;
-        Mainloop.timeout_add(250, Lang.bind(this, this._tile_delay_cb));
-    },
-
-    _animRipple: function(ripple, delay, time, startScale, startOpacity, finalScale) {
+    _animRipple(ripple, delay, time, startScale, startOpacity, finalScale) {
         Tweener.removeTweens(ripple);
         // We draw a ripple by using a source image and animating it scaling
         // outwards and fading away. We want the ripples to move linearly
@@ -200,14 +180,14 @@ HotCorner.prototype = {
                 ripple.visible = false;
             }
         });
-    },
+    }
 
-    setProperties: function(properties) {
+    setProperties(properties) {
         this.action = properties[0];
         this.hover_delay = properties[2] ? Number(properties[2]) : 0;
-    },
+    }
 
-    rippleAnimation: function() {
+    rippleAnimation() {
         // Show three concentric ripples expanding outwards; the exact
         // parameters were found by trial and error, so don't look
         // for them to make perfect sense mathematically
@@ -220,9 +200,9 @@ HotCorner.prototype = {
         this._animRipple(this._ripple1, 0.0, 0.83, 0.25, 1.0, 1.5);
         this._animRipple(this._ripple2, 0.05, 1.0, 0.0, 0.7, 1.25);
         this._animRipple(this._ripple3, 0.35, 1.0, 0.0, 0.3, 1);
-    },
+    }
 
-    runAction: function(timestamp) {
+    runAction(timestamp) {
         switch (this.action) {
             case 'expo':
                 if (!Main.expo.animationInProgress)
@@ -238,9 +218,9 @@ HotCorner.prototype = {
             default:
                 Util.spawnCommandLine(this.action);
         }
-    },
+    }
 
-    _onCornerEntered: function() {
+    _onCornerEntered() {
         if (this.hover_delay_id > 0) {
             Mainloop.source_remove(this.hover_delay_id);
             this.hover_delay_id = 0;
@@ -264,9 +244,9 @@ HotCorner.prototype = {
         });
 
         return Clutter.EVENT_PROPAGATE;
-    },
+    }
 
-    _onCornerClicked: function() {
+    _onCornerClicked() {
         if (this.hover_delay_id > 0) {
             Mainloop.source_remove(this.hover_delay_id);
             this.hover_delay_id = 0;
@@ -279,18 +259,18 @@ HotCorner.prototype = {
         }
 
         return Clutter.EVENT_STOP;
-    },
+    }
 
-    _onCornerLeft: function(actor, event) {
+    _onCornerLeft() {
         if (this.hover_delay_id > 0) {
             Mainloop.source_remove(this.hover_delay_id);
             this.hover_delay_id = 0;
         }
         // Consume event
         return Clutter.EVENT_STOP;
-    },
+    }
 
-    shouldRunAction: function(timestamp, click) {
+    shouldRunAction(timestamp, click) {
         /* Expo and scale disable hot corners except theirs */
         if ((Main.expo.visible && this.action != 'expo') ||
             (Main.overview.visible && this.action != 'scale'))
