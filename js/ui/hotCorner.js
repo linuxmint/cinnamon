@@ -13,26 +13,15 @@ const Mainloop = imports.mainloop;
 const HOT_CORNER_ACTIVATION_TIMEOUT = 500; // Milliseconds
 const OVERVIEW_CORNERS_KEY = 'hotcorner-layout';
 
-// Map texts to boolean value
-const TF = [];
-TF['true'] = true;
-TF['false'] = false;
-
 function HotCornerManager() {
     this._init();
 }
 
 HotCornerManager.prototype = {
     _init: function() {
-        this.corners = [];
-        for (let i = 0; i < 4; i++) { // In order: top left; top right; bottom left; bottom right;
-            this.corners.push(new HotCorner());
-            Main.layoutManager.addChrome(this.corners[i].actor);
-        }
-        this.parseGSettings();
-        global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, Lang.bind(this, this.parseGSettings));
-
-        this.updatePosition(Main.layoutManager.primaryMonitor);
+        this.corners = [null, null, null, null];
+        global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, () => this.update());
+        this.update()
     },
 
     parseGSettings: function() {
@@ -42,17 +31,31 @@ HotCornerManager.prototype = {
             return false;
         }
 
+        // In order: top left; top right; bottom left; bottom right;
         for (let i = 0; i < 4; i++) {
             let elements = options[i].split(':');
-            if (elements.length > 3) {
-                // We've also split the command because it contained colons,
-                // so remove (splice), rejoin (join) and reinsert (unshift) it.
-                let cmd = elements.splice(0, elements.length-2).join(':');
-                elements.unshift(cmd);
+            if (elements[1] === 'true') {
+                if (elements.length > 3) {
+                    // We've also split the command because it contained colons,
+                    // so remove (splice), rejoin (join) and reinsert (unshift) it.
+                    let cmd = elements.splice(0, elements.length-2).join(':');
+                    elements.unshift(cmd);
+                }
+                if (!this.corners[i]) {
+                    this.corners[i] = new HotCorner();
+                    Main.layoutManager.addChrome(this.corners[i].actor);
+                }
+                this.corners[i].setProperties(elements);
+            } else if (this.corners[i]) {
+                this.corners[i].destroy();
+                this.corners[i] = null;
             }
-            this.corners[i].setProperties(elements);
         }
-        return true;
+    },
+
+    update: function() {
+        this.parseGSettings();
+        this.updatePosition(Main.layoutManager.primaryMonitor);
     },
 
     updatePosition: function(monitor) {
@@ -61,19 +64,23 @@ HotCornerManager.prototype = {
         let top    = monitor.y;
         let bottom = monitor.y + monitor.height - 2;
 
+        let fn = (i, x, y) => {
+            if (this.corners[i] !== null) {
+                this.corners[i].actor.set_position(x,y);
+            }
+        }
+
         // Top Left: 0
-        this.corners[0].actor.set_position(left, top);
+        fn(0, left, top);
 
         // Top Right: 1
-        this.corners[1].actor.set_position(right, top);
+        fn(1, right, top);
 
         // Bottom Left: 2
-        this.corners[2].actor.set_position(left, bottom);
+        fn(2, left, bottom);
 
         // Bottom Right: 3
-        this.corners[3].actor.set_position(right, bottom);
-
-        return true;
+        fn(3, right, bottom);
     }
 };
 
@@ -89,7 +96,6 @@ HotCorner.prototype = {
     _init: function() {
 
         this.action = null; // The action to activate when hot corner is triggered
-        this.hover = false; // Whether the hot corners responds to hover
         this.hover_delay = 0; // Hover delay activation
         this.hover_delay_id = 0; // Hover delay timer ID
         this._hoverActivationTime = 0; // Milliseconds
@@ -141,6 +147,9 @@ HotCorner.prototype = {
     },
 
     destroy: function() {
+        this._ripple1.destroy();
+        this._ripple2.destroy();
+        this._ripple3.destroy();
         this.actor.destroy();
     },
 
@@ -195,13 +204,7 @@ HotCorner.prototype = {
 
     setProperties: function(properties) {
         this.action = properties[0];
-        this.hover = TF[properties[1]];
         this.hover_delay = properties[2] ? Number(properties[2]) : 0;
-
-        if (this.hover)
-            this.actor.show();
-        else
-            this.actor.hide();
     },
 
     rippleAnimation: function() {
