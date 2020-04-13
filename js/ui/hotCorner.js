@@ -12,73 +12,6 @@ const Mainloop = imports.mainloop;
 const HOT_CORNER_ACTIVATION_TIMEOUT = 500; // Milliseconds
 const OVERVIEW_CORNERS_KEY = 'hotcorner-layout';
 
-var HotCornerManager = class {
-    constructor() {
-        this.corners = [null, null, null, null];
-        global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, () => this.update());
-        this.update();
-    }
-
-    parseGSettings() {
-        let options = global.settings.get_strv(OVERVIEW_CORNERS_KEY);
-        if (options.length != 4) {
-            global.logError(_("Invalid overview options: Incorrect number of corners"));
-            return false;
-        }
-
-        // In order: top left; top right; bottom left; bottom right;
-        for (let i = 0; i < 4; i++) {
-            let elements = options[i].split(':');
-            if (elements[1] === 'true') {
-                if (elements.length > 3) {
-                    // We've also split the command because it contained colons,
-                    // so remove (splice), rejoin (join) and reinsert (unshift) it.
-                    let cmd = elements.splice(0, elements.length-2).join(':');
-                    elements.unshift(cmd);
-                }
-                if (!this.corners[i]) {
-                    this.corners[i] = new HotCorner();
-                    Main.layoutManager.addChrome(this.corners[i].actor);
-                }
-                this.corners[i].setProperties(elements);
-            } else if (this.corners[i]) {
-                this.corners[i].destroy();
-                this.corners[i] = null;
-            }
-        }
-    }
-
-    update() {
-        this.parseGSettings();
-        this.updatePosition(Main.layoutManager.primaryMonitor);
-    }
-
-    updatePosition(monitor) {
-        let left   = monitor.x;
-        let right  = monitor.x + monitor.width - 2;
-        let top    = monitor.y;
-        let bottom = monitor.y + monitor.height - 2;
-
-        let fn = (i, x, y) => {
-            if (this.corners[i] !== null) {
-                this.corners[i].actor.set_position(x,y);
-            }
-        }
-
-        // Top Left: 0
-        fn(0, left, top);
-
-        // Top Right: 1
-        fn(1, right, top);
-
-        // Bottom Left: 2
-        fn(2, left, bottom);
-
-        // Bottom Right: 3
-        fn(3, right, bottom);
-    }
-};
-
 // HotCorner:
 //
 // This class manages a "hot corner" that can toggle switching to
@@ -285,5 +218,72 @@ class HotCorner {
             return false;
 
         return true;
+    }
+};
+
+var HotCornerManager = class {
+    constructor() {
+        this.corners = [null, null, null, null];
+        global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, () => this.update());
+        this.update();
+    }
+
+    parseGSettings() {
+        let options = global.settings.get_strv(OVERVIEW_CORNERS_KEY);
+        if (options.length != 4) {
+            global.logError(_("Invalid overview options: Incorrect number of corners"));
+            return false;
+        }
+
+        // In order: top left; top right; bottom left; bottom right;
+        for (let i = 0; i < 4; i++) {
+            let elements = options[i].split(':');
+            if (elements[1] === 'true') {
+                if (elements.length > 3) {
+                    // We've also split the command because it contained colons,
+                    // so remove (splice), rejoin (join) and reinsert (unshift) it.
+                    let cmd = elements.splice(0, elements.length-2).join(':');
+                    elements.unshift(cmd);
+                }
+                if (!this.corners[i]) {
+                    this.corners[i] = new HotCorner();
+                    Main.layoutManager.addChrome(this.corners[i].actor);
+                }
+                this.corners[i].setProperties(elements);
+            } else if (this.corners[i]) {
+                this.corners[i].destroy();
+                this.corners[i] = null;
+            }
+        }
+    }
+
+    update() {
+        this.parseGSettings();
+        this.updatePosition(Main.layoutManager.primaryMonitor);
+    }
+
+    updatePosition(monitor) {
+        let left   = monitor.x;
+        let right  = monitor.x + monitor.width - 2;
+        let top    = monitor.y;
+        let bottom = monitor.y + monitor.height - 2;
+
+        let fn = (i, x, y) => {
+            if (this.corners[i] !== null) {
+                this.corners[i].actor.set_position(x, y);
+            }
+        }
+
+        // Top Left: 0
+        fn(0, left, top);
+
+        // Top Right: 1
+        fn(1, right, top);
+
+        // Bottom Left: 2
+        fn(2, left, bottom);
+
+        // Bottom Right: 3
+        fn(3, right, bottom);
     }
 };
