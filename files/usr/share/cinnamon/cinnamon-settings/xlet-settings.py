@@ -247,7 +247,7 @@ class MainWindow(object):
         self.menu_button.set_popup(menu)
 
         scw = Gtk.ScrolledWindow()
-        scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
         main_box.pack_start(scw, True, True, 0)
         self.instance_stack = Gtk.Stack()
         scw.add(self.instance_stack)
@@ -260,7 +260,17 @@ class MainWindow(object):
                 self.window.set_icon_from_file(icon_path)
         self.window.set_title(translate(self.uuid, self.xlet_meta["name"]))
 
+        def check_sizing(widget, data=None):
+            minreq, natreq = self.window.get_preferred_size()
+            monitor = Gdk.Display.get_default().get_monitor_at_window(self.window.get_window())
+
+            height = monitor.get_workarea().height
+            if natreq.height > height - 100:
+                self.window.resize(800, 600)
+                scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+
         self.window.connect("destroy", self.quit)
+        self.window.connect("realize", check_sizing)
         self.prev_button.connect("clicked", self.previous_instance)
         self.next_button.connect("clicked", self.next_instance)
 
