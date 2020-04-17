@@ -801,7 +801,7 @@ msgid "Quit"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2334
-msgid "Shutdown the computer"
+msgid "Shut down the computer"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2393
