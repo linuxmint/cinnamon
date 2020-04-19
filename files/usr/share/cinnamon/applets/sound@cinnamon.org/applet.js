@@ -1309,15 +1309,15 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     }
 
     _showFixedElements() {
-        // The list to use when switching between active players
-        this._chooseActivePlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Choose player controls"));
-        this._chooseActivePlayerItem.actor.hide();
-        this.menu.addMenuItem(this._chooseActivePlayerItem);
-
         // The launch player list
         this._launchPlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Launch player"));
         this.menu.addMenuItem(this._launchPlayerItem);
         this._updateLaunchPlayer();
+        
+        // The list to use when switching between active players
+        this._chooseActivePlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Choose player controls"));
+        this._chooseActivePlayerItem.actor.hide();
+        this.menu.addMenuItem(this._chooseActivePlayerItem);
 
         //between these two separators will be the player MenuSection (position 3)
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -1356,7 +1356,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
     _updatePlayerMenuItems() {
         if (this.playerControl && this._activePlayer) {
-            this._launchPlayerItem.actor.hide();
+            this._launchPlayerItem.actor.show();
             this._chooseActivePlayerItem.actor.show();
 
             // Show a dot on the active player in the switching menu
@@ -1376,6 +1376,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 this._launchPlayerItem.actor.show();
             } else {
                 this._launchPlayerItem.actor.hide();
+                this._chooseActivePlayerItem.actor.hide();
             }
         }
     }
@@ -1387,7 +1388,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._activePlayer = player;
         if (this.playerControl && this._activePlayer != null) {
             let menuItem = this._players[player];
-            this.menu.addMenuItem(menuItem, 1);
+            this.menu.addMenuItem(menuItem, 2);
         }
 
         this._updatePlayerMenuItems();
