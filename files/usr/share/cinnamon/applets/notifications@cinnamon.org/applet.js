@@ -24,6 +24,9 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
         this.settings.bind("ignoreTransientNotifications", "ignoreTransientNotifications");
         this.settings.bind("showEmptyTray", "showEmptyTray", this._show_hide_tray);
+        this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
+        this.settings.bind("keyClear", "keyClear", this._setKeybinding);
+        this._setKeybinding();
 
         // Layout
         this._orientation = orientation;
@@ -39,6 +42,21 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         // States
         this._blinking = false;
         this._blink_toggle = false;
+    }
+    
+    _setKeybinding() {
+        Main.keybindingManager.addHotKey("notification-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
+        Main.keybindingManager.addHotKey("notification-clear-" + this.instance_id, this.keyClear, Lang.bind(this, this._clear_all));
+    }
+    
+    on_applet_removed_from_panel () {
+        Main.keybindingManager.removeHotKey("notification-open-" + this.instance_id);
+        Main.keybindingManager.removeHotKey("notification-clear-" + this.instance_id);
+    }
+    
+    _openMenu() {
+        this._update_timestamp();
+        this.menu.toggle();
     }
 
     _display() {
@@ -239,8 +257,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     }
 
     on_applet_clicked(event) {
-        this._update_timestamp();
-        this.menu.toggle();
+        this._openMenu();
     }
 
     on_btn_open_system_settings_clicked() {
