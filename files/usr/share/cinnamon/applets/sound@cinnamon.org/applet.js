@@ -1,4 +1,5 @@
 const Applet = imports.ui.applet;
+const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Interfaces = imports.misc.interfaces;
@@ -869,10 +870,13 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         this.settings.bind("_knownPlayers", "_knownPlayers");
         if (this.hideSystray) this.registerSystrayIcons();
+        
+        this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
+        this._setKeybinding();
 
         this.set_applet_icon_symbolic_name('audio-x-generic');
 
@@ -996,6 +1000,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         this._sound_settings.connect("changed::" + MAXIMUM_VOLUME_KEY, () => this._on_sound_settings_change());
     }
+    
+    _setKeybinding() {
+        Main.keybindingManager.addHotKey("sound-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
+    }
 
     _on_sound_settings_change () {
         this._volumeMax = this._sound_settings.get_int(MAXIMUM_VOLUME_KEY) / 100 * this._control.get_vol_max_norm();
@@ -1018,6 +1026,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel () {
+        Main.keybindingManager.removeHotKey("sound-open-" + this.instance_id);
         if (this.hideSystray)
             this.unregisterSystrayIcons();
         if (this._iconTimeoutId) {
@@ -1031,6 +1040,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     }
 
     on_applet_clicked(event) {
+        this._openMenu();
+    }
+    
+    _openMenu() {
         this.menu.toggle();
     }
 
