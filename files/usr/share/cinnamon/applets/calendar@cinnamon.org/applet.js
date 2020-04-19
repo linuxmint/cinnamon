@@ -187,7 +187,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     }
 
     on_applet_removed_from_panel() {
-		Main.keybindingManager.removeHotKey("calendar-open-" + this.instance_id);
+	Main.keybindingManager.removeHotKey("calendar-open-" + this.instance_id);
         if (this.clock_notify_id > 0) {
             this.clock.disconnect(this.clock_notify_id);
             this.clock_notify_id = 0;
