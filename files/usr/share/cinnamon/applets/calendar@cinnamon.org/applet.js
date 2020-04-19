@@ -9,6 +9,7 @@ const UPowerGlib = imports.gi.UPowerGlib;
 const Settings = imports.ui.settings;
 const Calendar = require('./calendar');
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
+const Main = imports.ui.main;
 
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
@@ -68,6 +69,8 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
             this.settings.bind("use-custom-format", "use_custom_format", this._onSettingsChanged);
             this.settings.bind("custom-format", "custom_format", this._onSettingsChanged);
+            this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
+            this._setKeybinding();
 
             /* FIXME: Add gobject properties to the WallClock class to allow easier access from
              * its clients, and possibly a separate signal to notify of updates to these properties
@@ -94,12 +97,20 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             global.logError(e);
         }
     }
+    
+    _setKeybinding() {
+        Main.keybindingManager.addHotKey("calendar-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
+    }
 
     _clockNotify(obj, pspec, data) {
         this._updateClockAndDate();
     }
 
     on_applet_clicked(event) {
+        this._openMenu();
+    }
+    
+    _openMenu() {
         this.menu.toggle();
     }
 
@@ -176,6 +187,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     }
 
     on_applet_removed_from_panel() {
+		Main.keybindingManager.removeHotKey("calendar-open-" + this.instance_id);
         if (this.clock_notify_id > 0) {
             this.clock.disconnect(this.clock_notify_id);
             this.clock_notify_id = 0;
