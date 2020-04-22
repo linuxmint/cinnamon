@@ -33,7 +33,7 @@
     },
     "section2": {
         "type": "section",
-        "description": "Keyboard shortcut"
+        "description": "Keyboard shortcuts"
     },
     "keyOpen": {
         "type": "keybinding",
