@@ -274,7 +274,8 @@ var Notification = class Notification {
         // the banner box is now just a simple vbox.
         // The first line should have the time, and the second the title.
         // Time only shown inside message tray.
-        this._bannerBox = new St.BoxLayout({ vertical: true });
+        this._bannerBox = new St.BoxLayout({ vertical: true,
+                                             style: "spacing: 4px" });
         this._table.add(this._bannerBox, { row: 0,
                                            col: 1,
                                            col_span: 2,
@@ -521,7 +522,9 @@ var Notification = class Notification {
 
         let button = new St.Button({ can_focus: true });
 
-        if (this._useActionIcons && Gtk.IconTheme.get_default().has_icon(id)) {
+        if (this._useActionIcons
+            && id.endsWith("-symbolic")
+            && Gtk.IconTheme.get_default().has_icon(id)) {
             button.add_style_class_name('notification-icon-button');
             button.child = new St.Icon({ icon_name: id });
         } else {
