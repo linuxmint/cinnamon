@@ -3,7 +3,10 @@
 import os.path
 import signal
 
-import tinycss2
+try:
+    import tinycss2
+except:
+    pass
 
 import gi
 gi.require_version("Gtk", "3.0")

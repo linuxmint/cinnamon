@@ -97,6 +97,12 @@ class Module:
             widget = GSettingsSwitch(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons")
             settings.add_row(widget)
 
+            try:
+                import tinycss2
+            except:
+                self.refresh()
+                return
+
             settings = page.add_section(_("Scrollbar behavior"))
 
             # Translators: The 'trough' is the part of the scrollbar that the 'handle'
