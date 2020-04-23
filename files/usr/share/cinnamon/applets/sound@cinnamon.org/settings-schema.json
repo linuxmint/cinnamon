@@ -15,6 +15,12 @@
         "dependency": "playerControl",
         "indent": true
     },
+    "keyOpen": {
+        "type": "keybinding",
+        "description": "Show menu",
+        "default": "<Shift><Super>s",
+        "tooltip" : "Set keybinding(s) to show the sound applet menu."
+    },
     "_knownPlayers": {
         "type": "generic",
         "default": ["banshee", "vlc", "rhythmbox"]
