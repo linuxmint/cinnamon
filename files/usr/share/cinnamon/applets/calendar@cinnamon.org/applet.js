@@ -128,17 +128,17 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         let show_seconds = this.desktop_settings.get_boolean("clock-show-seconds");
 
         if (use_24h) {
-           this.clock.set_format_string(_("%H:%M:%S"));
-           this._labelFormat = "%H:%M";
+            this.clock.set_format_string(_("%H:%M:%S"));
+            this._labelFormat = "%H:%M";
         } else {
-           this.clock.set_format_string(_("%l:%M:%S"));
-           this._labelFormat = "%l:%M";
+            this.clock.set_format_string(_("%l:%M:%S"));
+            this._labelFormat = "%l:%M";
         }
         if (show_seconds) {
-           this._labelFormat += ":%S";
+            this._labelFormat += ":%S";
         }
         if (in_vertical_panel) {
-           this._labelFormat = this._labelFormat.replace(/:/g,"%n");
+            this._labelFormat = this._labelFormat.replace(/:/g, "%n");
         }
         this._labelFormat = _(this._labelFormat);
 
