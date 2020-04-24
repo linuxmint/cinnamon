@@ -87,8 +87,6 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
             this.clock_notify_id = 0;
 
-            this.clock.set_format_string("%X");
-
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
             try {
@@ -126,6 +124,23 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
     _updateFormatString() {
         let in_vertical_panel = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
+        let use_24h = this.desktop_settings.get_boolean("clock-use-24h");
+        let show_seconds = this.desktop_settings.get_boolean("clock-show-seconds");
+
+        if (use_24h) {
+           this.clock.set_format_string(_("%H:%M:%S"));
+           this._labelFormat = "%H:%M";
+        } else {
+           this.clock.set_format_string(_("%l:%M:%S"));
+           this._labelFormat = "%l:%M";
+        }
+        if (show_seconds) {
+           this._labelFormat += ":%S";
+        }
+        if (in_vertical_panel) {
+           this._labelFormat = this._labelFormat.replace(/:/g,"%n")
+        }
+        this._labelFormat = _(this._labelFormat)
 
         if (this.use_custom_format) {
             if (!this.clock.get_clock_for_format(this.custom_format)) {
@@ -133,20 +148,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
                 this.clock.set_format_string("~CLOCK FORMAT ERROR~ %l:%M %p");
             }
         } else {
-            let use_24h = this.desktop_settings.get_boolean("clock-use-24h");
-            let show_seconds = this.desktop_settings.get_boolean("clock-show-seconds");
-
-            if (use_24h) {
-                this._labelFormat = _("%H:%M");
-            } else {
-                this._labelFormat = _("%l:%M");
-            }
-            if (show_seconds) {
-                this._labelFormat += _(":%S");
-            }
-            if (in_vertical_panel) {
-                this._labelFormat = this._labelFormat.replace(/:/g, "%n")
-            }
+            this._labelFormat = this.custom_format;
         }
     }
 
@@ -155,6 +157,9 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         this._time.set_text(timeFormatted);
 
         let label_string = this.clock.get_clock_for_format(this._labelFormat);
+        if (!this.use_custom_format) {
+            label_string = label_string.capitalize();
+        }
 
         this.set_applet_label(label_string);
 
