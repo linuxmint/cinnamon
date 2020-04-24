@@ -145,7 +145,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         if (this.use_custom_format) {
             if (!this.clock.get_clock_for_format(this.custom_format)) {
                 global.logError("Calendar applet: bad time format string - check your string.");
-                this.clock.set_format_string("~CLOCK FORMAT ERROR~ %l:%M %p");
+                this._labelFormat = "~CLOCK FORMAT ERROR~ %l:%M %p";
             } else {
                 this._labelFormat = this.custom_format;
             }
