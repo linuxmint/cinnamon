@@ -138,22 +138,23 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
            this._labelFormat += ":%S";
         }
         if (in_vertical_panel) {
-           this._labelFormat = this._labelFormat.replace(/:/g,"%n")
+           this._labelFormat = this._labelFormat.replace(/:/g,"%n");
         }
-        this._labelFormat = _(this._labelFormat)
+        this._labelFormat = _(this._labelFormat);
 
         if (this.use_custom_format) {
             if (!this.clock.get_clock_for_format(this.custom_format)) {
                 global.logError("Calendar applet: bad time format string - check your string.");
                 this.clock.set_format_string("~CLOCK FORMAT ERROR~ %l:%M %p");
+            } else {
+                this._labelFormat = this.custom_format;
             }
-        } else {
-            this._labelFormat = this.custom_format;
         }
     }
 
     _updateClockAndDate() {
         let timeFormatted = this.clock.get_clock();
+        timeFormatted = timeFormatted.capitalize();
         this._time.set_text(timeFormatted);
 
         let label_string = this.clock.get_clock_for_format(this._labelFormat);
