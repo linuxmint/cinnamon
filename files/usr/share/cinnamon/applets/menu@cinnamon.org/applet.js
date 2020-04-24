@@ -1021,6 +1021,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.settings.bind("menu-custom", "menuCustom", this._updateIconAndLabel);
         this.settings.bind("menu-icon", "menuIcon", this._updateIconAndLabel);
+        this.settings.bind("menu-icon-size", "menuIconSize", this._updateIconAndLabel);
         this.settings.bind("menu-label", "menuLabel", this._updateIconAndLabel);
         this.settings.bind("overlay-key", "overlayKey", this._updateKeybinding);
         this.settings.bind("show-category-icons", "showCategoryIcons", () => this._updateShowIcons(this.categoriesBox, this.showCategoryIcons));
@@ -1294,6 +1295,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     else
                         this.set_applet_icon_name(this.menuIcon);
                 }
+                this._applet_icon.set_icon_size(this.menuIconSize);
             } else {
                 let icon_name = global.settings.get_string('app-menu-icon-name');
                 if (icon_name.search("-symbolic") != -1) {

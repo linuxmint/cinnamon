@@ -15,7 +15,7 @@
         "panel-appear" : {
             "type" : "section",
             "title" : "Appearance",
-            "keys" : ["menu-custom", "menu-icon", "menu-label"]
+            "keys" : ["menu-custom", "menu-icon", "menu-icon-size", "menu-label"]
         },
         "panel-behave" : {
             "type" : "section",
@@ -50,6 +50,17 @@
     "description" : "Icon",
     "tooltip" : "Select an icon to show in the panel.",
     "default_icon" : "cinnamon-symbolic",
+    "dependency" : "menu-custom",
+    "indent" : true
+ },
+ "menu-icon-size" : {
+    "type": "spinbutton",
+    "default" : 32,
+    "min" : 16,
+    "max" : 96,
+    "step" : 1,
+    "units" : "px",
+    "description" : "Icon size",
     "dependency" : "menu-custom",
     "indent" : true
  },
