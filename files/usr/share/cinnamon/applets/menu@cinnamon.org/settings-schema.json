@@ -25,7 +25,7 @@
         "menu-layout" : {
             "type" : "section",
             "title" : "Layout and content",
-            "keys" : ["show-category-icons", "show-application-icons", "favbox-show", "favbox-min-height", "show-places", "show-recents", "menu-editor-button"]
+            "keys" : ["show-category-icons", "category-icon-size", "show-application-icons", "application-icon-size", "favbox-show", "fav-icon-size", "favbox-min-height", "show-places", "show-recents", "menu-editor-button"]
         },
         "menu-behave" : {
             "type" : "section",
@@ -89,17 +89,50 @@
     "description" : "Show category icons",
     "tooltip" : "Choose whether or not to show icons on categories."
  },
+ "category-icon-size" : {
+    "type": "spinbutton",
+    "default" : 22,
+    "min" : 16,
+    "max" : 48,
+    "step" : 1,
+    "units" : "px",
+    "description" : "Categories icon size",
+    "dependency" : "show-category-icons",
+    "indent" : true
+ },
  "show-application-icons" : {
     "type" : "switch",
     "default" : true,
     "description" : "Show application icons",
     "tooltip" : "Choose whether or not to show icons on applications."
  },
+ "application-icon-size" : {
+    "type": "spinbutton",
+    "default" : 22,
+    "min" : 16,
+    "max" : 48,
+    "step" : 1,
+    "units" : "px",
+    "description" : "Applications icon size",
+    "dependency" : "show-application-icons",
+    "indent" : true
+ },
  "favbox-show" : {
     "type" : "switch",
     "default" : true,
     "description" : "Show favorites and session buttons",
     "tooltip" : "Choose whether or not to show the left pane of the menu."
+ },
+ "fav-icon-size" : {
+    "type": "spinbutton",
+    "default" : 32,
+    "min" : 16,
+    "max" : 64,
+    "step" : 1,
+    "units" : "px",
+    "description" : "Favorites icon size",
+    "dependency" : "favbox-show",
+    "indent" : true
  },
  "show-places" : {
     "type" : "switch",
