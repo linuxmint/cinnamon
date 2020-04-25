@@ -25,10 +25,6 @@ const SearchProviderManager = imports.ui.searchProviderManager;
 const SignalManager = imports.misc.signalManager;
 const Params = imports.misc.params;
 
-const MAX_FAV_ICON_SIZE = 32;
-const CATEGORY_ICON_SIZE = 22;
-const APPLICATION_ICON_SIZE = 22;
-
 const INITIAL_BUTTON_LOAD = 30;
 const NUM_SYSTEM_BUTTONS = 3;
 const MAX_BUTTON_WIDTH = "max-width: 20em;";
@@ -41,14 +37,6 @@ const REMEMBER_RECENT_KEY = "remember-recent-files";
 const AppUtils = require('./appUtils');
 
 let appsys = Cinnamon.AppSystem.get_default();
-
-// the magic formula that determines the size of favorite and system buttons
-function getFavIconSize() {
-    let monitorHeight = Main.layoutManager.primaryMonitor.height;
-    let real_size = (0.7 * monitorHeight) / (global.settings.get_strv('favorite-apps').length + NUM_SYSTEM_BUTTONS);
-    let icon_size = 0.6 * real_size / global.ui_scale;
-    return Math.min(icon_size, MAX_FAV_ICON_SIZE);
-}
 
 const RefreshFlags = Object.freeze({
     APP:    0b00001,
@@ -484,11 +472,11 @@ class TransientButton extends SimpleMenuItem {
                 this.handler = this.file.query_default_handler(null);
                 let contentType = Gio.content_type_guess(this.pathOrCommand, null);
                 let themedIcon = Gio.content_type_get_icon(contentType[0]);
-                this.icon = new St.Icon({gicon: themedIcon, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR });
+                this.icon = new St.Icon({gicon: themedIcon, icon_size: applet.applicationIconSize, icon_type: St.IconType.FULLCOLOR });
             } catch (e) {
                 this.handler = null;
                 let iconName = this.isPath ? 'folder' : 'unknown';
-                this.icon = new St.Icon({icon_name: iconName, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+                this.icon = new St.Icon({icon_name: iconName, icon_size: applet.applicationIconSize, icon_type: St.IconType.FULLCOLOR});
                 // @todo Would be nice to indicate we don't have a handler for this file.
             }
 
@@ -521,7 +509,7 @@ class ApplicationButton extends GenericApplicationButton {
         super(applet, app, 'app', true, 'menu-application-button');
         this.category = [];
 
-        this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
+        this.icon = this.app.create_icon_texture(applet.applicationIconSize);
         this.addActor(this.icon);
         if (!applet.showApplicationIcons)
             this.icon.visible = false;
@@ -538,7 +526,7 @@ class ApplicationButton extends GenericApplicationButton {
     }
 
     getDragActor() {
-        return this.app.create_icon_texture(getFavIconSize());
+        return this.app.create_icon_texture(applet.favIconSize);
     }
 
     // Returns the original actor that should align with the actor
@@ -569,9 +557,9 @@ class SearchProviderResultButton extends SimpleMenuItem {
             if (result.icon) {
                 this.icon = result.icon;
             } else if (result.icon_app) {
-                this.icon = result.icon_app.create_icon_texture(APPLICATION_ICON_SIZE);
+                this.icon = result.icon_app.create_icon_texture(applet.applicationIconSize);
             } else if (result.icon_filename) {
-                this.icon = new St.Icon({gicon: new Gio.FileIcon({file: Gio.file_new_for_path(result.icon_filename)}), icon_size: APPLICATION_ICON_SIZE});
+                this.icon = new St.Icon({gicon: new Gio.FileIcon({file: Gio.file_new_for_path(result.icon_filename)}), icon_size: applet.applicationIconSize});
             }
 
             if (this.icon)
@@ -610,11 +598,11 @@ class PlaceButton extends SimpleMenuItem {
                         styleClass: 'menu-application-button',
                         place: place });
 
-        this.icon = place.iconFactory(APPLICATION_ICON_SIZE);
+        this.icon = place.iconFactory(applet.applicationIconSize);
         if (this.icon)
             this.addActor(this.icon);
         else
-            this.addIcon(APPLICATION_ICON_SIZE, 'folder');
+            this.addIcon(applet.applicationIconSize, 'folder');
 
         if (!applet.showApplicationIcons)
             this.icon.visible = false;
@@ -662,7 +650,7 @@ class RecentButton extends SimpleMenuItem {
                         uri: recent.uri,
                         uriDecoded: recent.uriDecoded });
 
-        this.icon = recent.createIcon(APPLICATION_ICON_SIZE);
+        this.icon = recent.createIcon(applet.applicationIconSize);
         this.addActor(this.icon);
         if (!applet.showApplicationIcons)
             this.icon.visible = false;
@@ -760,9 +748,9 @@ class CategoryButton extends SimpleMenuItem {
         this.actor.accessible_role = Atk.Role.LIST_ITEM;
 
         if (typeof icon === 'string')
-            this.addIcon(CATEGORY_ICON_SIZE, icon);
+            this.addIcon(applet.categoryIconSize, icon);
         else if (icon)
-            this.addIcon(CATEGORY_ICON_SIZE, null, icon);
+            this.addIcon(applet.categoryIconSize, null, icon);
 
         if (this.icon && !applet.showCategoryIcons)
             this.icon.visible = false;
@@ -774,7 +762,7 @@ class CategoryButton extends SimpleMenuItem {
 class FavoritesButton extends GenericApplicationButton {
     constructor(applet, app) {
         super(applet, app, 'fav', false, 'menu-favorites-button');
-        this.icon = app.create_icon_texture(getFavIconSize());
+        this.icon = app.create_icon_texture(applet.favIconSize);
         this.addActor(this.icon);
 
         this._draggable = DND.makeDraggable(this.actor);
@@ -812,7 +800,7 @@ class SystemButton extends SimpleMenuItem {
                         description: desc,
                         type: 'system',
                         styleClass: 'menu-favorites-button' });
-        this.addIcon(getFavIconSize(), iconName);
+        this.addIcon(applet.favIconSize, iconName);
     }
 }
 
@@ -1025,8 +1013,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("menu-label", "menuLabel", this._updateIconAndLabel);
         this.settings.bind("overlay-key", "overlayKey", this._updateKeybinding);
         this.settings.bind("show-category-icons", "showCategoryIcons", () => this._updateShowIcons(this.categoriesBox, this.showCategoryIcons));
+        this.settings.bind("category-icon-size", "categoryIconSize", () => this.queueRefresh(RefreshFlags.PLACE | RefreshFlags.RECENT | RefreshFlags.APP));
         this.settings.bind("show-application-icons", "showApplicationIcons", () => this._updateShowIcons(this.applicationsBox, this.showApplicationIcons));
+        this.settings.bind("application-icon-size", "applicationIconSize", () => this.queueRefresh(RefreshFlags.PLACE | RefreshFlags.RECENT | RefreshFlags.APP));
         this.settings.bind("favbox-show", "favBoxShow", this._favboxtoggle);
+        this.settings.bind("fav-icon-size", "favIconSize", () => this.queueRefresh(RefreshFlags.FAV | RefreshFlags.SYSTEM));
         this.settings.bind("enable-animation", "enableAnimation", null);
         this.settings.bind("favbox-min-height", "favBoxMinHeight", this._recalc_height);
 
@@ -2111,15 +2102,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this._placesButtons = [];
 
-        if (!this.showPlaces) {
-            for (let i = 0; i < this._categoryButtons.length; i++) {
-                if (this._categoryButtons[i].categoryId === 'place') {
-                    this._categoryButtons[i].destroy();
-                    this._categoryButtons.splice(i, 1);
-                    this.placesButton = null;
-                    break;
-                }
+        for (let i = 0; i < this._categoryButtons.length; i++) {
+            if (this._categoryButtons[i].categoryId === 'place') {
+                this._categoryButtons[i].destroy();
+                this._categoryButtons.splice(i, 1);
+                this.placesButton = null;
+                break;
             }
+        }
+        
+        if (!this.showPlaces) {
             return;
         }
 
@@ -2150,16 +2142,17 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         this._recentButtons = [];
-
-        if (!this.showRecents || !this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
-            for (let i = 0; i < this._categoryButtons.length; i++) {
-                if (this._categoryButtons[i].categoryId === 'recent') {
-                    this._categoryButtons[i].destroy();
-                    this._categoryButtons.splice(i, 1);
-                    this.recentButton = null;
-                    break;
-                }
+        
+        for (let i = 0; i < this._categoryButtons.length; i++) {
+            if (this._categoryButtons[i].categoryId === 'recent') {
+                this._categoryButtons[i].destroy();
+                this._categoryButtons.splice(i, 1);
+                this.recentButton = null;
+                break;
             }
+        }
+            
+        if (!this.showRecents || !this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
             return;
         }
 
@@ -2181,9 +2174,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
             let button = new SimpleMenuItem(this, { name: _("Clear list"),
                                                     description: ("Clear all recent documents"),
-                                                        type: 'recent-clear',
+                                                    type: 'recent-clear',
                                                     styleClass: 'menu-application-button' });
-            button.addIcon(APPLICATION_ICON_SIZE, 'edit-clear', null, true);
+            button.addIcon(22, 'edit-clear', null, true);
             button.addLabel("", 'menu-application-button-label');
             button.label.clutter_text.set_markup(`<b>${button.name}</b>`);
             button.activate = () => {
