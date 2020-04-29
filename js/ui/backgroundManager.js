@@ -4,13 +4,8 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 
-function BackgroundManager() {
-    this._init();
-}
-
-BackgroundManager.prototype = {
-
-    _init: function() {
+class BackgroundManager {
+    constructor() {
         let schema = Gio.SettingsSchemaSource.get_default();
         if (!schema.lookup("org.gnome.desktop.background", true))
             return
@@ -35,9 +30,9 @@ BackgroundManager.prototype = {
 
         this.picture_opacity = this._gnomeSettings.get_int("picture-opacity");
         this._gnomeSettings.connect("changed::picture-opacity", Lang.bind(this, this._onPictureOpacityChanged));
-    },
+    }
 
-    _onColorShadingTypeChanged: function(schema, key) {
+    _onColorShadingTypeChanged(schema, key) {
         let oldValue = this.color_shading_type
         let newValue = this._gnomeSettings.get_string(key);
         if (oldValue != newValue) {
@@ -48,9 +43,9 @@ BackgroundManager.prototype = {
             }
             this.color_shading_type = newValue;
         }
-    },
+    }
 
-    _onPictureOptionsChanged: function(schema, key) {
+    _onPictureOptionsChanged(schema, key) {
         let oldValue = this.picture_options
         let newValue = this._gnomeSettings.get_string(key);
         if (oldValue != newValue) {
@@ -61,9 +56,9 @@ BackgroundManager.prototype = {
             }
             this.picture_options = newValue;
         }
-    },
+    }
 
-    _onPictureURIChanged: function(schema, key) {
+    _onPictureURIChanged(schema, key) {
         let oldValue = this.picture_uri
         let newValue = this._gnomeSettings.get_string(key);
         if (oldValue != newValue) {
@@ -74,9 +69,9 @@ BackgroundManager.prototype = {
             }
             this.picture_uri = newValue;
         }
-    },
+    }
 
-    _onPrimaryColorChanged: function(schema, key) {
+    _onPrimaryColorChanged(schema, key) {
         let oldValue = this.primary_color
         let newValue = this._gnomeSettings.get_string(key);
         if (oldValue != newValue) {
@@ -87,9 +82,9 @@ BackgroundManager.prototype = {
             }
             this.primary_color = newValue;
         }
-    },
+    }
 
-    _onSecondaryColorChanged: function(schema, key) {
+    _onSecondaryColorChanged(schema, key) {
         let oldValue = this.secondary_color
         let newValue = this._gnomeSettings.get_string(key);
         if (oldValue != newValue) {
@@ -100,9 +95,9 @@ BackgroundManager.prototype = {
             }
             this.secondary_color = newValue;
         }
-    },
+    }
 
-    _onPictureOpacityChanged: function(schema, key) {
+    _onPictureOpacityChanged(schema, key) {
         let oldValue = this.picture_opacity
         let newValue = this._gnomeSettings.get_int(key);
         if (oldValue != newValue) {
@@ -114,5 +109,4 @@ BackgroundManager.prototype = {
             this.picture_opacity = newValue;
         }
     }
-
-};
+}
