@@ -580,20 +580,12 @@ class Player extends PopupMenu.PopupMenuSection {
         this.controls.add_actor(this._stopButton.getActor());
         this.controls.add_actor(this._nextButton.getActor());
         trackControls.set_child(this.controls);
-        if (this._mediaServerPlayer.LoopStatus) {
-            this._loopButton = new ControlButton("media-playlist-consecutive", _("Consecutive Playing"), () => this._toggleLoopStatus());
-            this._loopButton.actor.visible = this._applet.extendedPlayerControl;
-            this.controls.add_actor(this._loopButton.getActor());
 
-            this._setLoopStatus(this._mediaServerPlayer.LoopStatus);
-        }
-        if (this._mediaServerPlayer.Shuffle !== undefined) {
-            this._shuffleButton = new ControlButton("media-playlist-shuffle", _("No Shuffle"), () => this._toggleShuffle());
-            this._shuffleButton.actor.visible = this._applet.extendedPlayerControl;
-            this.controls.add_actor(this._shuffleButton.getActor());
+        this._loopButton = new ControlButton("media-playlist-consecutive", _("Consecutive Playing"), () => this._toggleLoopStatus());
+        this.controls.add_actor(this._loopButton.getActor());
 
-            this._setShuffle(this._mediaServerPlayer.Shuffle);
-        }
+        this._shuffleButton = new ControlButton("media-playlist-shuffle", _("No Shuffle"), () => this._toggleShuffle());
+        this.controls.add_actor(this._shuffleButton.getActor());
 
         // Position slider
         this._seeker = new Seeker(this._mediaServerPlayer, this._prop, this._name.toLowerCase());
@@ -616,6 +608,9 @@ class Player extends PopupMenu.PopupMenuSection {
             if (props.Shuffle)
                 this._setShuffle(props.Shuffle.unpack());
         });
+
+        this._setLoopStatus(this._mediaServerPlayer.LoopStatus);
+        this._setShuffle(this._mediaServerPlayer.Shuffle);
 
         //get the desktop entry and pass it to the applet
         this._prop.GetRemote(MEDIA_PLAYER_2_NAME, "DesktopEntry", (result, error) => {
@@ -768,6 +763,8 @@ class Player extends PopupMenu.PopupMenuSection {
     }
 
     _setLoopStatus(status) {
+        this._loopButton.actor.visible = this._applet.extendedPlayerControl && this._mediaServerPlayer.LoopStatus;
+
         if(status === "None")
             this._loopButton.setData("media-playlist-consecutive-symbolic", _("Consecutive Playing"));
         else if(status === "Track")
@@ -783,6 +780,8 @@ class Player extends PopupMenu.PopupMenuSection {
     }
 
     _setShuffle(status) {
+        this._shuffleButton.actor.visible = this._applet.extendedPlayerControl && this._mediaServerPlayer.Shuffle;
+
         this._shuffleButton.setData("media-playlist-shuffle", status? _("Shuffle") : _("No Shuffle"));
         this._shuffleButton.setActive(status);
     }
@@ -812,8 +811,8 @@ class Player extends PopupMenu.PopupMenuSection {
     }
 
     onSettingsChanged() {
-        this._loopButton.actor.visible = this._applet.extendedPlayerControl;
-        this._shuffleButton.actor.visible = this._applet.extendedPlayerControl;
+        this._loopButton.actor.visible = this._applet.extendedPlayerControl && this._mediaServerPlayer.LoopStatus;
+        this._shuffleButton.actor.visible = this._applet.extendedPlayerControl && this._mediaServerPlayer.Shuffle;
     }
 
     destroy() {
