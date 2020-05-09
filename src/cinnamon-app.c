@@ -1073,20 +1073,20 @@ _gather_pid_callback (GDesktopAppInfo   *gapp,
                                                app);
 }
 
-/**
- * cinnamon_app_launch:
- * @timestamp: Event timestamp, or 0 for current event timestamp
- * @uris: (element-type utf8): List of uris to pass to application
- * @workspace: Start on this workspace, or -1 for default
- * @startup_id: (out): Returned startup notification ID, or %NULL if none
- * @error: A #GError
- */
-gboolean
-cinnamon_app_launch (CinnamonApp     *app,
+static void
+apply_discrete_gpu_env (GAppLaunchContext *context)
+{
+  g_app_launch_context_setenv (context, "__NV_PRIME_RENDER_OFFLOAD", "1");
+  g_app_launch_context_setenv (context, "__GLX_VENDOR_LIBRARY_NAME", "nvidia");
+}
+
+static gboolean
+real_app_launch (CinnamonApp   *app,
                   guint         timestamp,
                   GList        *uris,
                   int           workspace,
                   char        **startup_id,
+                  gboolean      offload,
                   GError      **error)
 {
   GdkAppLaunchContext *context;
@@ -1124,6 +1124,12 @@ cinnamon_app_launch (CinnamonApp     *app,
   gdk_app_launch_context_set_timestamp (context, timestamp);
   gdk_app_launch_context_set_desktop (context, workspace);
 
+  if (offload)
+    {
+      apply_discrete_gpu_env (G_APP_LAUNCH_CONTEXT (context));
+      g_debug ("Offloading '%s' to discrete gpu.", cinnamon_app_get_name (app));
+    }
+
   ret = g_desktop_app_info_launch_uris_as_manager (app->info, uris,
                                                    G_APP_LAUNCH_CONTEXT (context),
                                                    G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
@@ -1133,6 +1139,58 @@ cinnamon_app_launch (CinnamonApp     *app,
   g_object_unref (context);
 
   return ret;
+}
+
+/**
+ * cinnamon_app_launch:
+ * @timestamp: Event timestamp, or 0 for current event timestamp
+ * @uris: (element-type utf8): List of uris to pass to application
+ * @workspace: Start on this workspace, or -1 for default
+ * @startup_id: (out): Returned startup notification ID, or %NULL if none
+ * @error: A #GError
+ */
+gboolean
+cinnamon_app_launch (CinnamonApp     *app,
+                     guint            timestamp,
+                     GList           *uris,
+                     int              workspace,
+                     char           **startup_id,
+                     GError         **error)
+{
+  return real_app_launch (app,
+                          timestamp,
+                          uris,
+                          workspace,
+                          startup_id,
+                          FALSE,
+                          error);
+}
+
+/**
+ * cinnamon_app_launch_offloaded:
+ * @timestamp: Event timestamp, or 0 for current event timestamp
+ * @uris: (element-type utf8): List of uris to pass to application
+ * @workspace: Start on this workspace, or -1 for default
+ * @startup_id: (out): Returned startup notification ID, or %NULL if none
+ * @error: A #GError
+ *
+ * Launch an application using the dedicated gpu (if available)
+ */
+gboolean
+cinnamon_app_launch_offloaded (CinnamonApp     *app,
+                               guint            timestamp,
+                               GList           *uris,
+                               int              workspace,
+                               char           **startup_id,
+                               GError         **error)
+{
+  return real_app_launch (app,
+                          timestamp,
+                          uris,
+                          workspace,
+                          startup_id,
+                          TRUE,
+                          error);
 }
 
 /**

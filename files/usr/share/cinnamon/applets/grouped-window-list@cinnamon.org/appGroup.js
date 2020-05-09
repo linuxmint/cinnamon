@@ -78,7 +78,7 @@ class AppGroup {
         this.groupState.connect({
             isFavoriteApp: () => this.handleFavorite(true),
             getActor: () => this.actor,
-            launchNewInstance: () => this.launchNewInstance(),
+            launchNewInstance: (...args) => this.launchNewInstance(...args),
             checkFocusStyle: () => this.checkFocusStyle()
         });
 
@@ -679,8 +679,17 @@ class AppGroup {
         this.badge.show();
     }
 
-    launchNewInstance() {
-        this.groupState.app.open_new_window(-1);
+    launchNewInstance(offload=false) {
+        if (offload) {
+            try {
+                this.groupState.app.launch_offloaded(0, [], -1);
+            } catch (e) {
+                logError(e, "Could not launch app with dedicated gpu: ");
+            }
+        } else {
+            this.groupState.app.open_new_window(-1);
+        }
+
         this.animate();
     }
 

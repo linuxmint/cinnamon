@@ -370,6 +370,13 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
             case "run_with_nvidia_gpu":
                 Util.spawnCommandLine("optirun gtk-launch " + this._appButton.app.get_id());
                 break;
+            case "offload_launch":
+                try {
+                    this._appButton.app.launch_offloaded(0, [], -1);
+                } catch (e) {
+                    logError(e, "Could not launch app with dedicated gpu: ");
+                }
+                break;
             default:
                 return true;
         }
@@ -415,6 +422,14 @@ class GenericApplicationButton extends SimpleMenuItem {
 
     populateMenu(menu) {
         let menuItem;
+        if (Main.gpu_offload_supported) {
+            menuItem = new ApplicationContextMenuItem(this, _("Run with NVIDIA GPU"), "offload_launch", "cpu");
+            menu.addMenuItem(menuItem);
+        } else if (this.applet._isBumblebeeInstalled) {
+            menuItem = new ApplicationContextMenuItem(this, _("Run with NVIDIA GPU"), "run_with_nvidia_gpu", "cpu");
+            menu.addMenuItem(menuItem);
+        }
+
         menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel", "list-add");
         menu.addMenuItem(menuItem);
 
@@ -433,11 +448,6 @@ class GenericApplicationButton extends SimpleMenuItem {
 
         if (this.applet._canUninstallApps) {
             menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "edit-delete");
-            menu.addMenuItem(menuItem);
-        }
-
-        if (this.applet._isBumblebeeInstalled) {
-            menuItem = new ApplicationContextMenuItem(this, _("Run with NVIDIA GPU"), "run_with_nvidia_gpu", "cpu");
             menu.addMenuItem(menuItem);
         }
     }

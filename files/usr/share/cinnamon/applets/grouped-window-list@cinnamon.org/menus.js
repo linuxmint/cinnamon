@@ -226,6 +226,15 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             }
         }
 
+        if (Main.gpu_offload_supported) {
+            item = createMenuItem({label: _("Run with NVIDIA GPU"), icon: 'cpu'});
+
+            this.signals.connect(item, 'activate', () => this.groupState.trigger('launchNewInstance', true));
+
+            this.addMenuItem(item);
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        }
+
         // Actions
         tryFn(() => {
             if (!this.groupState.appInfo) return;

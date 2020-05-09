@@ -6,6 +6,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const PopupMenu = imports.ui.popupMenu;
+const Main = imports.ui.main;
 const GLib = imports.gi.GLib;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
@@ -43,6 +44,12 @@ class PanelAppLauncherMenu extends Applet.AppletPopupMenu {
         this._signals.connect(item, 'activate', Lang.bind(this, this._onLaunchActivate));
         this.addMenuItem(item);
 
+        if (Main.gpu_offload_supported) {
+            let item = new PopupMenu.PopupIconMenuItem(_("Run with NVIDIA GPU"), "cpu", St.IconType.SYMBOLIC);
+            this._signals.connect(item, 'activate', Lang.bind(this, this._onLaunchOffloadedActivate));
+            this.addMenuItem(item);
+        }
+
         item = new PopupMenu.PopupIconMenuItem(_("Add"), "list-add", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this, this._onAddActivate));
         this.addMenuItem(item);
@@ -74,6 +81,10 @@ class PanelAppLauncherMenu extends Applet.AppletPopupMenu {
 
     _onLaunchActivate(item, event) {
         this._launcher.launch();
+    }
+
+    _onLaunchOffloadedActivate(item, event) {
+        this._launcher.launch(true);
     }
 
     _onRemoveActivate(item, event) {
@@ -219,12 +230,19 @@ class PanelAppLauncher extends DND.LauncherDraggable {
                          });
     }
 
-    launch() {
+    launch(offload=false) {
         if (this.isCustom()) {
             this.appinfo.launch([], null);
-        }
-        else {
-            this.app.open_new_window(-1);
+        } else {
+            if (offload) {
+                try {
+                    this.app.launch_offloaded(0, [], -1);
+                } catch (e) {
+                    logError(e, "Could not launch app with dedicated gpu: ");
+                }
+            } else {
+                this.app.open_new_window(-1);
+            }
         }
         this._animateIcon(0);
     }

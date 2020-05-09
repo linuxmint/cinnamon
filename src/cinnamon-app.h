@@ -82,6 +82,12 @@ gboolean cinnamon_app_launch (CinnamonApp     *app,
                            char        **startup_id,
                            GError      **error);
 
+gboolean cinnamon_app_launch_offloaded (CinnamonApp     *app,
+                           guint         timestamp,
+                           GList        *uris,
+                           int           workspace,
+                           char        **startup_id,
+                           GError      **error);
 G_END_DECLS
 
 #endif /* __CINNAMON_APP_H__ */

@@ -80,6 +80,7 @@ const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const GObject = imports.gi.GObject;
+const XApp = imports.gi.XApp;
 const PointerTracker = imports.misc.pointerTracker;
 
 const SoundManager = imports.ui.soundManager;
@@ -170,6 +171,8 @@ var software_rendering = false;
 var popup_rendering_actor = null;
 
 var xlet_startup_error = false;
+
+var gpu_offload_supported = false;
 
 var RunState = {
     INIT : 0,
@@ -455,6 +458,13 @@ function start() {
     workspace_names = wmSettings.get_strv("workspace-names");
 
     global.display.connect('gl-video-memory-purged', loadTheme);
+
+    try {
+        gpu_offload_supported = XApp.util_gpu_offload_supported()
+    } catch (e) {
+        global.logWarning("Could not check for gpu offload support - maybe xapps isn't up to date.");
+        gpu_offload_supported = false;
+    }
 
     Promise.all([
         AppletManager.init(),
