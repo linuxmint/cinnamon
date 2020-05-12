@@ -39,7 +39,7 @@ class Module:
             pass
         except AttributeError:
             pass
-        print(have_nemo)
+
         return have_nemo
 
     def on_module_selected(self):
