@@ -1,3 +1,183 @@
+cinnamon (4.6.0) ulyana; urgency=medium
+
+  [ Eli Schwartz ]
+  * python 3.8: fix all flake8 F632 errors
+
+  [ JosephMcc ]
+  * popupMenu.js: Use a simpler animation for open and close
+
+  [ claudiux ]
+  * Remove multicore-sys-monitor@ccadeptic23 of knownCinnamon4Conflicts list
+
+  [ Clement Lefebvre ]
+  * Calendar applet: Initiate this.clock a little sooner
+
+  [ zbouba ]
+  * Add 2-second lock delay option
+
+  [ okaestne ]
+  * ExtensionCore.py: use Gio library for resetting settings instead on os.system
+
+  [ Michael Webster ]
+  * ExtensionCore.py: Don't set a default size for the message dialog, just allow gtk to decide the proper size based on its content.
+  * main.js: Skip the startup animation unconditionally if cinnamon-session is already in the 'running' state (like it would be when restarting cinnamon).
+  * Show a popup when cinnamon restarts
+  * runDialog.js: Delay execution of dev commands until the run dialog has animated out.
+
+  [ Clement Lefebvre ]
+  * Packaging: Remove version on gnome-icon-theme dependency
+
+  [ JosephMcc ]
+  * St: Make the theme follow the default font
+  * cs_windows: Add a couple more button layout options
+  * cs_backgrounds.py: Remove "screenshot" from the keywords
+
+  [ Michael Webster ]
+  * st-texture-cache: Add an async image-loading method that provides a callback that supplies the actor, which has been explicitly made the same size as the loaded image.
+  * xapp status applet: Support irregularly-shaped images.
+  * grouped window list: When a new appgroup is added, sync its actor's reactivity to the current state of panel-edit-mode.  This prevents any windows added while panel edit mode is active from breaking DND.
+  * st-texture-cache.c: Account for ui scale in st_texture_cache_load_image_from_file_async.
+  * texture-cache: Stop using 'active-display-scale', remove setting key.
+
+  [ JosephMcc ]
+  * modalDialog: Quiet an ES6 warning
+  * theme: Remove all hardcoded font sizing
+  * restart-osd: Add an additional style class
+  * workspace-osd: Simplify and reuse the InfoOSD
+
+  [ claudiux ]
+  * notifications: add button in applet settings, to open system settings
+  * placesManager.js: Adapt messages to different cases of unmounting/ejection of volumes/drives/media.
+
+  [ Michael Webster ]
+  * placesManager.js: Display persistent message when attempting to remove a device and a busy error is received, then poll periodically and try again until it succeeds (or another io error occurs).
+  * cinnamonDBus.js: Add a method to restart cinnamon, with optional osd display.
+
+  [ Stephen Collins ]
+  * Sound applet: close the menu when a player is launched
+
+  [ Clement Lefebvre ]
+  * Update project URL
+  * Remove obsolete links
+
+  [ claudiux ]
+  * close the menu when the eject button is activated
+
+  [ Michael Webster ]
+  * cs_display: Remove the ui scale setting from the second page.
+  * cinnamon-settings: Fix hiding of the display panel's monitor labels when navigating back to the icon view.
+  * cinnamon-desktop-editor.py: Make the ask dialog modal, and let its size be determined by its content.
+
+  [ Đoàn Trần Công Danh ]
+  * Makefile.am: simplify libcinnamon's dependendies
+
+  [ Michael Webster ]
+  * notificationDaemon.js: Allow icon names via the "image-path" hint.
+
+  [ Malek ]
+  * python 3.8 compatibility fix for platform.linux_distribution()
+
+  [ JosephMcc ]
+  * cs_display: Remove the margins from the settings widget
+
+  [ Stephen Collins ]
+  * JsonSettingsWidgets: don't call callback on the widget that was changed
+
+  [ Michael Webster ]
+  * grouped-window-list: Fix some errors when using super-<num> for switching apps.
+
+  [ Artem Vasilyev ]
+  * Support disabling super+number in grouped-window-list applet
+
+  [ Clement Lefebvre ]
+  * cs_themes: Don't refresh on every filemonitor event
+
+  [ Michael Webster ]
+  * Add scroll support, and set the icon size hint for xapp-sn-watcher.
+  * Remove indicator support (fully supported in xapp status applet now).
+  * Update some dependencies for 20.04 base.
+  * grouped window list: Prevent button dragging from starting if dnd is disabled in the applet's settings.
+  * grouped window list: Record button press regardless of what we do with it.
+
+  [ okaestne ]
+  * cs_info: fix disk size calculation
+  * cs_info: optimize lsblk output
+
+  [ Lars Mueller ]
+  * cinnamon-util.c: Fix icon fetching for known folders
+
+  [ Kacper Paczos ]
+  * Added new keywords
+  * Remove 's' from headphone.
+
+  [ Nick Lowery ]
+  * Fix "shutdown" typos (#9243)
+
+  [ Simon Epskamp ]
+  * Change `cycle` to first focust last window when switching apps
+
+  [ NikoKrause ]
+  * Fix translation of "Remove xlet" dialog
+  * xlet-about-dialog: fix spices translations
+
+  [ James Ross ]
+  * hotCorner.js: only create corner actors when they are enabled
+  * hotCorner.js: modernize classes and bound callbacks
+  * hotCorner.js: fix codacy complaints
+
+  [ Michael Webster ]
+  * xlet-settings.py: Allow the settings window height to dynamically  increase to accomodate translations.
+
+  [ steve ]
+  * calendar@cinnamon.org - add keybinding to show calendar
+  * notifications@cinnamon.org - add keybindings to open menu and clear notifications
+  * sound@cinnamon.org - don't hide launch player item when another player is active
+
+  [ James Ross ]
+  * messageTray: remove unused/obsolete code
+  * all: remove CinnamonMountOperation
+  * notification system: notification UI reworks
+  * notifications: misc fixes
+
+  [ marguerite ]
+  * port tinycss to tinycss2
+
+  [ Michael Webster ]
+  * calendar applet: Change translatable string to match existing ones.
+  * Work around dependency problem with tinycss2 in mint 19.3.
+
+  [ Clement Lefebvre ]
+  * Menu applet: Introduce a custom icon size
+
+  [ steve ]
+  * sound@cinnamon.org - add keybinding to show applet menu
+  * sound@cinnamon.org - add settings-schema.json change for keybinding to open menu
+  * menu@cinnamon.org - allow end-user control of favorite, category and application icon sizes
+
+  [ Michael Webster ]
+  * sound applet: Always initialize the look and shuffle controls - the player may not initialize them until later.  The can be hidden/shown according to both the player capabilities and the setting.
+  * Support nvidia on-demand app launching in the menu, panel launcher, and gwl applets.
+  * grouped-window-list: Don't show the offload menu item if the app already has windows.
+
+  [ Eli Schwartz ]
+  * flake8: remove useless double or unneeded imports
+
+  [ Mihail Bodrov ]
+  * backgroundManager: refactor from prototype to es class
+
+  [ Garry Filakhtov ]
+  * Fixing gtk-doc build without cinnamon-recorder
+
+  [ Michael Webster ]
+  * cs_desktop.py: Remove stray print statement.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+  * l10n: Generate files
+  * l10n: Generate module files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 13 May 2020 14:11:56 +0100
+
 cinnamon (4.4.8) tricia; urgency=medium
 
   * Calendar applet: Fix clock format msgid
