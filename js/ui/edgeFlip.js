@@ -6,12 +6,8 @@ const Mainloop = imports.mainloop;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 
-function EdgeFlipper(side, func){
-    this._init(side, func);
-}
-
-EdgeFlipper.prototype = {
-    _init: function(side, func){
+class EdgeFlipper {
+    constructor(side, func) {
         this.side = side;
         this.func = func;
 
@@ -21,9 +17,9 @@ EdgeFlipper.prototype = {
         this.activated = false;
 
         this._checkOver();
-    },
+    }
 
-    _checkOver: function(){
+    _checkOver() {
         if (this.enabled) {
             let mask;
             [this.xMouse, this.yMouse, mask] = global.get_pointer();
@@ -56,22 +52,22 @@ EdgeFlipper.prototype = {
             }
             Mainloop.timeout_add(Math.max(this.delay, 200), Lang.bind(this, this._checkOver));
         }
-    },
+    }
 
-    _onMouseEnter: function(){
+    _onMouseEnter() {
         this.entered = true;
         Mainloop.timeout_add(this.delay, Lang.bind(this, this._check));
-    },
+    }
 
-    _check: function(){
+    _check() {
         if (this.entered && this.enabled && !this.activated){
             this.func();
             this.activated = true;
         }
-    },
+    }
 
-    _onMouseLeave: function(){
+    _onMouseLeave() {
         this.entered = false;
         this.activated = false;
     }
-};
+}
