@@ -7,7 +7,6 @@ import os
 import re
 import threading
 from json import loads
-import distro
 
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
@@ -104,6 +103,7 @@ def createSystemInfos():
         title = ' '.join(contents[:2]) or "Manjaro Linux"
         infos.append((_("Operating System"), title))
     else:
+        import distro
         s = '%s (%s)' % (' '.join(distro.linux_distribution()), arch)
         # Normalize spacing in distribution name
         s = re.sub(r'\s{2,}', ' ', s)
@@ -192,4 +192,3 @@ class Module:
             success = subproc.wait_check_finish(result)
         except GLib.Error as e:
             print("upload-system-info failed: %s" % e.message)
-
