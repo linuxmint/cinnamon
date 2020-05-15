@@ -229,7 +229,8 @@ Extension.prototype = {
             path: this.meta.path,
             uuid: uuid,
             userDir: type.userDir,
-            folder: type.folder
+            folder: type.folder,
+            force: force
         }).then((meta) => {
             // Timer needs to start after the first initial I/O, otherwise every applet shows as taking 1-2 seconds to load.
             // Maybe because of how promises are wired up in CJS?
@@ -560,9 +561,15 @@ function forgetExtension(extensionIndex, uuid, type, forgetMeta) {
  * Reloads an xlet. Useful when the source has changed.
  */
 function reloadExtension(uuid, type) {
-    if (getExtension(uuid)) {
+    let extension = getExtension(uuid);
+
+    if (extension) {
         unloadExtension(uuid, type, false, true);
         Main._addXletDirectoriesToSearchPath();
+
+        if (extension.meta.force_loaded) {
+            uuid = "!" + uuid;
+        }
         loadExtension(uuid, type);
         return;
     }
@@ -599,7 +606,7 @@ function getMetadata(uuid, type) {
     });
 }
 
-function loadMetaData({state, path, uuid, userDir, folder}) {
+function loadMetaData({state, path, uuid, userDir, folder, force}) {
     return new Promise((resolve, reject) => {
         let dir = findExtensionDirectory(uuid, userDir, folder);
         let meta;
@@ -624,6 +631,7 @@ function loadMetaData({state, path, uuid, userDir, folder}) {
             meta.state = oldState;
             meta.path = oldPath;
             meta.error = '';
+            meta.force_loaded = force;
             resolve(meta);
         });
     });
