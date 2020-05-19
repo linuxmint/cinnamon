@@ -185,6 +185,16 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         this._config.connect('config-changed', Lang.bind(this, this._syncConfig));
     }
 
+    _onButtonPressEvent(actor, event) {
+        // Cycle to the next layout
+        if(event.get_button() === 2) {
+            let selected_group = this._config.get_current_group();
+            let new_group = (selected_group + 1) % this._layoutItems.length;
+            this._config.set_current_group(new_group);
+        }
+        return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
+    }
+
     on_applet_clicked(event) {
         this.menu.toggle();
     }
