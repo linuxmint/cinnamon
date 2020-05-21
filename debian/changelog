@@ -1,3 +1,17 @@
+cinnamon (4.6.1) ulyana; urgency=medium
+
+  [ Leigh Scott ]
+  * Readd import, fixes #9305
+
+  [ Michael Webster ]
+  * applets: Fix force-loading of out-of-date applets.
+
+  [ Clement Lefebvre ]
+  * Keyboard applet: Cycle layouts on middle-click
+  * CI: Target Mint 20 and LMDE 4
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 21 May 2020 11:16:06 +0100
+
 cinnamon (4.6.0) ulyana; urgency=medium
 
   [ Eli Schwartz ]
