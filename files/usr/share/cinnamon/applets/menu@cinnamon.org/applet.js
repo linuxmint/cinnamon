@@ -536,7 +536,7 @@ class ApplicationButton extends GenericApplicationButton {
     }
 
     getDragActor() {
-        return this.app.create_icon_texture(applet.favIconSize);
+        return this.app.create_icon_texture(this.applet.favIconSize);
     }
 
     // Returns the original actor that should align with the actor
