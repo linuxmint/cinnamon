@@ -290,13 +290,19 @@ var Applet = class Applet {
     /**
      * set_applet_tooltip:
      * @text (string): the tooltip text to be set
+     * @use_markup (boolean): parse the text as markup if true
      *
      * Sets the tooltip of the applet
      */
-    set_applet_tooltip (text) {
+    set_applet_tooltip (text, use_markup=false) {
         if (text != this._applet_tooltip_text) {
             this._applet_tooltip_text = text;
-            this._applet_tooltip.set_text(text);
+
+            if (use_markup) {
+                this._applet_tooltip.set_markup(text);
+            } else {
+                this._applet_tooltip.set_text(text);
+            }
         }
         if (text === "") {
             this._applet_tooltip.hide();

@@ -176,11 +176,11 @@ class XAppStatusIcon {
     }
 
     onEnterEvent(actor, event) {
-        this.applet.set_applet_tooltip(this.tooltipText);
+        this.applet.set_applet_tooltip(this.tooltipText, true);
     }
 
     onLeaveEvent(actor, event) {
-        this.applet.set_applet_tooltip("");
+        this.applet.set_applet_tooltip("", true);
     }
 
     getEventPositionInfo(actor) {
