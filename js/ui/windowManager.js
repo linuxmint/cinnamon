@@ -939,33 +939,31 @@ var WindowManager = class WindowManager {
     _showWorkspaceOSDOnMonitor(monitor, current_workspace_index) {
         let osd = new InfoOSD();
         osd.actor.add_style_class_name('workspace-osd');
-        let effectsEnabled = this.settingsState['desktop-effects'];
         this._workspace_osd_array.push(osd);
         osd.addText(getWorkspaceName(current_workspace_index));
         osd.show();
 
-        if (effectsEnabled) {
-            osd.set_opacity = 0;
-            addTween(osd, {
-                opacity: 255,
-                time: WORKSPACE_OSD_TIMEOUT,
-                transition: 'linear',
-                onComplete: () => this._hideWorkspaceOSD()
-            });
-            return;
-        }
         setTimeout(() => this._hideWorkspaceOSD(), WORKSPACE_OSD_TIMEOUT * 1000);
     }
 
     _hideWorkspaceOSD() {
+        let effectsEnabled = this.settingsState['desktop-effects'];
+
         for (let i = 0; i < this._workspace_osd_array.length; i++) {
             let osd = this._workspace_osd_array[i];
             if (osd != null) {
-                osd.hide();
-                osd.destroy();
+                if (effectsEnabled) {
+                    osd.actor.opacity = 255;
+                    addTween(osd.actor, {
+                        opacity: 0,
+                        time: WORKSPACE_OSD_TIMEOUT,
+                        transition: 'linear',
+                        onComplete: () => osd.destroy()
+                    });
+                }
             }
         }
-        this._workspace_osd_array = []
+        this._workspace_osd_array = [];
     }
 
     _showSnapOSD(metaScreen, monitorIndex) {

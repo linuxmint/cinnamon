@@ -578,6 +578,7 @@ InfoOSD.prototype = {
      * Destroys the OSD
      */
     destroy: function() {
+        this.hide();
         Main.layoutManager.removeChrome(this.actor);
         this.actor.destroy();
     },
