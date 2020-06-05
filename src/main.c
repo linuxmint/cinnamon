@@ -10,7 +10,7 @@
 
 #include <clutter/clutter.h>
 #include <clutter/x11/clutter-x11.h>
-#include <dbus/dbus-glib.h>
+#include <dbus/dbus-shared.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>

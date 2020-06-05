@@ -18,7 +18,7 @@ Build-Depends:
  libcinnamon-menu-3-dev,
  libcjs-dev (>= 3.8),
  libcroco3-dev (>= 0.6.2),
- libdbus-glib-1-dev,
+ libdbus-1-dev,
  libgirepository1.0-dev (>= 1.29.15),
  libgl1-mesa-dev,
  libglib2.0-dev (>= 2.25.11),
