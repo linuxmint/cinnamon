@@ -61,12 +61,12 @@ shared: &shared
                 fi
 
 jobs:
-    "mint":
+    "mint20":
         <<: *shared
         docker:
             - image: linuxmintd/mint20-amd64
 
-    "lmde":
+    "lmde4":
         <<: *shared
         docker:
             - image: linuxmintd/lmde4-amd64
@@ -75,5 +75,5 @@ workflows:
     version: 2
     build:
         jobs:
-            - "mint"
-            - "lmde"
+            - "mint20"
+            - "lmde4"
