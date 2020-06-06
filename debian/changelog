@@ -1,3 +1,16 @@
+cinnamon (4.6.3) ulyana; urgency=medium
+
+  [ Michael Webster ]
+  * windowManager.js: Fix some runtime warnings, operate on the InfoOSD's actor, not the InfoOSD itself.
+
+  [ Mihail Bodrov ]
+  * edgeFlip: refactor from prototype to es class
+
+  [ Clement Lefebvre ]
+  * CI: Use explicit tags
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 06 Jun 2020 14:50:51 +0100
+
 cinnamon (4.6.2) ulyana; urgency=medium
 
   [ Eli Schwartz ]
