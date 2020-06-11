@@ -960,6 +960,8 @@ var WindowManager = class WindowManager {
                         transition: 'linear',
                         onComplete: () => osd.destroy()
                     });
+                } else {
+                    osd.destroy();
                 }
             }
         }
