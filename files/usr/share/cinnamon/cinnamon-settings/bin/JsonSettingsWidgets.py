@@ -150,7 +150,7 @@ class JSONSettingsHandler(object):
         raw_data = file.read()
         file.close()
         try:
-            settings = json.loads(raw_data, encoding=None, object_pairs_hook=collections.OrderedDict)
+            settings = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
         except:
             raise Exception("Failed to parse settings JSON data for file %s" % (self.filepath))
         return settings
