@@ -1286,6 +1286,32 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
+    // Override js/applet.js so _updateIconAndLabel doesn't have to fight with size changes
+    // from the panel configuration. This gets called any time set_applet_icon() variants are
+    // called.
+    _setStyle() {
+        let icon_type = this._applet_icon.get_icon_type();
+        let size;
+
+        if (this.menuCustom) {
+            size = Math.min(this.menuIconSize, this.panel.height);
+        } else {
+            size = this.getPanelIconSize(icon_type);
+        }
+
+        if (icon_type === St.IconType.FULLCOLOR) {
+            this._applet_icon.set_style_class_name('applet-icon');
+        } else {
+            this._applet_icon.set_style_class_name('system-status-icon');
+        }
+
+        this._applet_icon.set_icon_size(size);
+    }
+
+    on_panel_icon_size_changed() {
+        this._updateIconAndLabel();
+    }
+
     _updateIconAndLabel(){
         try {
             if (this.menuCustom) {
@@ -1302,7 +1328,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     else
                         this.set_applet_icon_name(this.menuIcon);
                 }
-                this._applet_icon.set_icon_size(this.menuIconSize);
             } else {
                 let icon_name = global.settings.get_string('app-menu-icon-name');
                 if (icon_name.search("-symbolic") != -1) {
