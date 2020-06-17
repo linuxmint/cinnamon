@@ -1,3 +1,23 @@
+cinnamon (4.6.4) ulyana; urgency=medium
+
+  [ fredcw ]
+  * Update applet.js
+
+  [ yparitcher ]
+  * Fix workspace OSD
+
+  [ Leigh Scott ]
+  * Remove encoding=None
+
+  [ Michael Webster ]
+  * menu@cinnamon.org: Fix interference between panel icon size handling and the menu applet's icon handling.
+
+  [ Clement Lefebvre ]
+  * Menu applet: Fix description for standard places
+  * Notification applet: Fix ngettext translations
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 17 Jun 2020 15:38:54 +0100
+
 cinnamon (4.6.3) ulyana; urgency=medium
 
   [ Michael Webster ]
