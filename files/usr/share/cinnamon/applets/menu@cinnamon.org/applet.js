@@ -602,6 +602,10 @@ class PlaceButton extends SimpleMenuItem {
         if (fileIndex !== -1)
             selectedAppId = selectedAppId.substr(fileIndex + 7);
 
+        if (selectedAppId === "home" || selectedAppId === "desktop" || selectedAppId === "connect") {
+        	selectedAppId = place.name
+        }
+
         super(applet, { name: place.name,
                         description: selectedAppId,
                         type: 'place',
