@@ -1,8 +1,5 @@
 #!/usr/bin/python3
 
-import gi
-gi.require_version('Nemo', '3.0')
-
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 
@@ -31,6 +28,9 @@ class Module:
         have_nemo = False
 
         try:
+            import gi
+            gi.require_version('Nemo', '3.0')
+
             from gi.repository import Nemo
 
             if Nemo.DesktopPreferences:
@@ -38,6 +38,8 @@ class Module:
         except ImportError:
             pass
         except AttributeError:
+            pass
+        except ValueError:
             pass
 
         return have_nemo
