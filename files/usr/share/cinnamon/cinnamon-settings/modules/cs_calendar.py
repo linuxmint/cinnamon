@@ -236,6 +236,9 @@ class TimeZoneSelector(SettingsWidget):
             self.region_map[region].append([city, _(city)])
 
     def set_timezone(self, timezone):
+        if timezone == "Etc/UTC":
+            return
+
         self.timezone = timezone
         region, city = timezone.split('/', maxsplit=1)
         self.region_combo.set_active_id(region)
