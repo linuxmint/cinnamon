@@ -308,11 +308,11 @@ function timeify(orig_time) {
             str += " (" + _("just now") + ")";
             break;
         } case (diff > 15 && diff <= 59): {
-            str += " (" + Gettext.ngettext("%d second ago", "%d seconds ago", diff).format(diff) + ")";
+            str += " (" + ngettext("%d second ago", "%d seconds ago", diff).format(diff) + ")";
             break;
         } case (diff > 59 && diff <= 3540): {
             let diff_minutes = Math.floor(diff / 60);
-            str += " (" + Gettext.ngettext("%d minute ago", "%d minutes ago", diff_minutes).format(diff_minutes) + ")";
+            str += " (" + ngettext("%d minute ago", "%d minutes ago", diff_minutes).format(diff_minutes) + ")";
             break;
         }
     }
