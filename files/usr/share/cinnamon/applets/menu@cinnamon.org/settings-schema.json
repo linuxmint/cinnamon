@@ -30,7 +30,7 @@
         "menu-behave" : {
             "type" : "section",
             "title" : "Behavior",
-            "keys" : ["enable-autoscroll", "search-filesystem"]
+            "keys" : ["enable-autoscroll", "search-filesystem", "force-show-panel"]
         }
     },
  "overlay-key" : {
@@ -157,6 +157,12 @@
     "default" : false,
     "description": "Enable filesystem path entry in search box",
     "tooltip": "Allows path entry in the menu search box."
+ },
+ "force-show-panel" : {
+    "type" : "switch",
+    "default" : false,
+    "description": "Force panel visible when opening the menu",
+    "tooltip": "Opening the menu will also show the main panel (which may be auto-hidden)."
  },
 "activate-on-hover" : {
     "type" : "switch",

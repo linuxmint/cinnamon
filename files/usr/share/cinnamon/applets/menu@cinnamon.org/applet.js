@@ -1083,6 +1083,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("search-filesystem", "searchFilesystem");
         this.contextMenu = null;
         this.lastSelectedCategory = null;
+        this.settings.bind("force-show-panel", "forceShowPanel");
 
         // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
         // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
@@ -1251,6 +1252,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
 
             Mainloop.idle_add(Lang.bind(this, this._initial_cat_selection, n));
+
+            if (this.forceShowPanel) {
+                this.panel.peekPanel();
+            }
         } else {
             this.actor.remove_style_pseudo_class('active');
             if (this.searchActive) {
