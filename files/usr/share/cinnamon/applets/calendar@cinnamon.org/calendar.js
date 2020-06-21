@@ -247,11 +247,16 @@ class Calendar {
         iter.setSeconds(0); // Leap second protection. Hah!
         iter.setHours(12);
         for (let i = 0; i < 7; i++) {
+            let styleClass = 'calendar-day-base calendar-day-heading';
+            if (_isWorkDay(iter))
+                styleClass += ' calendar-work-day';
+            else
+                styleClass += ' calendar-nonwork-day';
+
             // Could use iter.toLocaleFormat('%a') but that normally gives three characters
             // and we want, ideally, a single character for e.g. S M T W T F S
             let customDayAbbrev = _getCalendarDayAbbreviation(iter.getDay());
-            let label = new St.Label({ style_class: 'calendar-day-base calendar-day-heading',
-                                       text: customDayAbbrev });
+            let label = new St.Label({ style_class: styleClass, text: customDayAbbrev });
             this.actor.add(label,
                            { row: 1,
                              col: offsetCols + (7 + iter.getDay() - this._weekStart) % 7,
