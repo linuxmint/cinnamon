@@ -1,3 +1,28 @@
+cinnamon (4.6.5) ulyana; urgency=medium
+
+  [ Michael Webster ]
+  * cs_calendar.py: Don't try to set an invalid timezone on the tz selector.
+
+  [ Clement Lefebvre ]
+  * Users and groups: Add missing vendor info in polkit policy
+
+  [ Michael Webster ]
+  * cs_desktop.py: move gi.require call into the try/except block for importing nemo.
+
+  [ NikoKrause ]
+  * menu applet: add missing l10n string (#9377)
+
+  [ fredcw ]
+  * cinnamon theme: use em's instead of px's (#9370)
+
+  [ sidorsett ]
+  * Add (non)work-day style classes to the header (#9362)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 21 Jun 2020 13:40:45 +0100
+
 cinnamon (4.6.4) ulyana; urgency=medium
 
   [ fredcw ]
