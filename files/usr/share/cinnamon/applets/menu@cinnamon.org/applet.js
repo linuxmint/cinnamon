@@ -2218,7 +2218,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             });
 
             let button = new SimpleMenuItem(this, { name: _("Clear list"),
-                                                    description: ("Clear all recent documents"),
+                                                    description: _("Clear all recent documents"),
                                                     type: 'recent-clear',
                                                     styleClass: 'menu-application-button' });
             button.addIcon(22, 'edit-clear', null, true);
