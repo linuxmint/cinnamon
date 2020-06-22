@@ -46,7 +46,7 @@ def scan_json(dir, pot_path):
     for root, dirs, files in os.walk(dir):
         rel_root = os.path.relpath(root)
         for file in files:
-            if rel_root is '.':
+            if rel_root == '.':
                 rel_path = file
             else:
                 rel_path = os.path.join(rel_root, file)
@@ -153,7 +153,7 @@ def do_install(uuid, dir):
                 os.makedirs(lang_locale_dir, mode=0o755, exist_ok=True)
                 subprocess.call(["msgfmt", "-c", os.path.join(root, file), "-o", os.path.join(lang_locale_dir, '%s.mo' % uuid)])
                 files_installed += 1
-    if files_installed is 0:
+    if files_installed == 0:
         print('Nothing to install')
     else:
         print('installed %i files' % files_installed)
@@ -170,7 +170,7 @@ def do_remove(uuid):
                 os.remove(mo_file)
                 files_removed += 1
             remove_empty_folders(lang_locale_dir)
-    if files_removed is 0:
+    if files_removed == 0:
         print("Nothing to remove")
     else:
         print('removed %i files' % files_removed)
