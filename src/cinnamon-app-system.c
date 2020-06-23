@@ -494,6 +494,12 @@ get_flattened_entries_recurse (GMenuTreeDirectory *dir,
             GMenuTreeEntry *entry;
             item = entry = gmenu_tree_iter_get_entry (iter);
             /* Key is owned by entry */
+
+            if (gmenu_tree_entry_get_app_info (entry) == NULL)
+              {
+                break;
+              }
+
             g_hash_table_replace (entry_set,
                                   (char*)gmenu_tree_entry_get_desktop_file_id (entry),
                                   gmenu_tree_item_ref (entry));

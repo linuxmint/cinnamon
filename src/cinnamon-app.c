@@ -371,6 +371,7 @@ cinnamon_app_get_nodisplay (CinnamonApp *app)
 
   if (app->entry)
     {
+      g_return_val_if_fail (app->info != NULL, TRUE);
       return g_desktop_app_info_get_nodisplay (app->info);
       // return !g_app_info_should_show (G_APP_INFO (app->info));
     }
