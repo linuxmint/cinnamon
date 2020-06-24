@@ -1,3 +1,11 @@
+cinnamon (4.6.6) ulyana; urgency=medium
+
+  [ Michael Webster ]
+  * cs_keyboard.py: Reverse the custom keybinding path suffix each time a change occurs in the subfolders.
+  * cinnamon-app-system.c: Ignore apps in the menu tree that don't have an appinfo instance.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 24 Jun 2020 13:45:07 +0100
+
 cinnamon (4.6.5) ulyana; urgency=medium
 
   [ Michael Webster ]
