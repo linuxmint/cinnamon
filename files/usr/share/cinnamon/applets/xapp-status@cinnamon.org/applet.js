@@ -72,7 +72,9 @@ class XAppStatusIcon {
         if ('Visible' in prop_names) {
             this.setVisible(proxy.visible);
         }
-
+        if ('Name' in prop_names) {
+            this.applet.sortIcons();
+        }
         return;
     }
 
@@ -130,9 +132,9 @@ class XAppStatusIcon {
             }
             else {
                 icon = new St.Icon( { "icon-type": type, "icon-size": this.iconSize, "icon-name": iconName });
+                this.icon_holder.show();
+                this.icon_holder.child = icon;
             }
-
-            this.icon_holder.child = icon;
         }
         else {
             this.iconName = null;
@@ -142,6 +144,7 @@ class XAppStatusIcon {
 
     _onImageLoaded(cache, actor, data=null) {
         this.icon_holder.child = actor;
+        this.icon_holder.show();
     }
 
     setTooltipText(tooltipText) {
