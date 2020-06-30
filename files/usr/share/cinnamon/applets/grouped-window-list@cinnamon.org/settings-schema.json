@@ -41,7 +41,8 @@
         "launcher-animation-effect",
         "number-display",
         "pinned-apps",
-        "enable-app-button-dragging"
+        "enable-app-button-dragging",
+        "hide-indicator-on-unfocused-windows"
       ]
     },
     "hotKeysSection": {
@@ -154,6 +155,11 @@
     "type": "checkbox",
     "default": true,
     "description": "Enable app button dragging"
+  },
+  "hide-indicator-on-unfocused-windows": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Hide the open window indicator on unfocused windows"
   },
   "launcher-animation-effect": {
     "type": "combobox",

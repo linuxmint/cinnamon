@@ -205,7 +205,9 @@ class AppGroup {
     }
 
     on_orientation_changed(fromInit) {
-        this.actor.set_style_class_name('grouped-window-list-item-box');
+        let windowClass = this.state.settings.hideIndicatorUnfocused ? 'window-list-item-box' : 'grouped-window-list-item-box';
+        this.actor.set_style_class_name(windowClass);
+
         if (this.state.orientation === St.Side.TOP) {
             this.actor.add_style_class_name('top');
         } else if (this.state.orientation === St.Side.BOTTOM) {
@@ -589,7 +591,7 @@ class AppGroup {
         } else {
             this.actor.remove_style_pseudo_class('focus');
         }
-        if (metaWindows.length > 0) {
+        if (metaWindows.length > 0 && !this.state.settings.hideIndicatorUnfocused) {
             this.actor.add_style_pseudo_class('active');
         }
         this.resetHoverStatus();

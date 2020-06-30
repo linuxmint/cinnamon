@@ -311,6 +311,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         let settingsProps = [
             {key: 'group-apps', value: 'groupApps', cb: this.refreshCurrentAppList},
             {key: 'enable-app-button-dragging', value: 'enableDragging', cb: this.draggableSettingChanged},
+            {key: 'hide-indicator-on-unfocused-windows', value: 'hideIndicatorUnfocused', cb: null},
             {key: 'launcher-animation-effect', value: 'launcherAnimationEffect', cb: null},
             {key: 'pinned-apps', value: 'pinnedApps', cb: null},
             {key: 'middle-click-action', value: 'middleClickAction', cb: null},

@@ -6644,6 +6644,11 @@ msgstr ""
 msgid "Enable app button dragging"
 msgstr ""
 
+#. grouped-window-list@cinnamon.org->settings-schema.json->hide-indicator-on-unfocused-
+#. windows->description
+msgid "Hide the open window indicator on unfocused windows"
+msgstr ""
+
 #. grouped-window-list@cinnamon.org->settings-schema.json->launcher-animation-
 #. effect->description
 msgid "Launcher animation"
