@@ -339,8 +339,7 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
                         // so each one would have to be handled individually
                         //     else if (it's nautilus) { do this; }
                         //     else if (it's konqueror) { do that; }
-                        let last_slash = this._appButton.app.get_app_info().get_filename().lastIndexOf("/");
-                        let path = this._appButton.app.get_app_info().get_filename().substring(0, last_slash + 1)
+                        let path = GLib.path_get_dirname(this._appButton.app.get_app_info().get_filename());
                         fileapp.launch_uris([path], null);
                     }
                 }
