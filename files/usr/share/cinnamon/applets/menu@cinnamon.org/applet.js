@@ -327,6 +327,27 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
 
     activate (event) {
         switch (this._action) {
+            case "show_launcher_file":
+                let fileapp = Gio.app_info_get_default_for_type('inode/directory', true);
+                if (fileapp) {
+                    if (fileapp.get_id() == 'nemo.desktop') {
+                        Util.spawnCommandLine('nemo --no-desktop "' + this._appButton.app.get_app_info().get_filename() + '"');
+                    }
+                    else {
+                        // some file managers are capable of doing this and some are not
+                        // and they could each do it differently
+                        // so each one would have to be handled individually
+                        //     else if (it's nautilus) { do this; }
+                        //     else if (it's konqueror) { do that; }
+                        let last_slash = this._appButton.app.get_app_info().get_filename().lastIndexOf("/");
+                        let path = this._appButton.app.get_app_info().get_filename().substring(0, last_slash + 1)
+                        fileapp.launch_uris([path], null);
+                    }
+                }
+                else {
+                    global.log('no default for type inode/directory');
+                }
+                break;
             case "add_to_panel":
                 if (!Main.AppletManager.get_role_provider_exists(Main.AppletManager.Roles.PANEL_LAUNCHER)) {
                     let new_applet_id = global.settings.get_int("next-applet-id");
@@ -430,6 +451,8 @@ class GenericApplicationButton extends SimpleMenuItem {
             menu.addMenuItem(menuItem);
         }
 
+        menuItem = new ApplicationContextMenuItem(this, _("Show launcher file"), "show_launcher_file", "folder");
+        menu.addMenuItem(menuItem);
         menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel", "list-add");
         menu.addMenuItem(menuItem);
 
