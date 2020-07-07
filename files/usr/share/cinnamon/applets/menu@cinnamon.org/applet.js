@@ -331,7 +331,7 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
                 let fileapp = Gio.app_info_get_default_for_type('inode/directory', true);
                 if (fileapp) {
                     if (fileapp.get_id() == 'nemo.desktop') {
-                        Util.spawnCommandLine('nemo --no-desktop "' + this._appButton.app.get_app_info().get_filename() + '"');
+                        Util.spawnCommandLine('nemo "' + this._appButton.app.get_app_info().get_filename() + '"');
                     }
                     else {
                         // some file managers are capable of doing this and some are not
