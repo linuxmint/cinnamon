@@ -201,6 +201,26 @@ KEYBINDINGS = [
     [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast", "accessibility"]
 ]
 
+# keybindings.js listens for changes to 'custom-list'. Any time we create a shortcut
+# or add/remove individual keybindings, we need to cause this list to change.
+#
+# Unfortunately, at some point recently, simply 'touching' the setting without actually
+# modifying its contents stopped working (see CustomKeybinding.writeSettings), and
+# we must now do something more substantial, like reversing the list each time (the order
+# doesn't matter to the rest of this code).  In order for this to be reliable we need
+# to make sure we always end up with at least 2 entries in 'custom-list', since reversing
+# a list with one element won't do anything.
+DUMMY_CUSTOM_ENTRY = "__dummy__"
+
+def ensureCustomListIsValid(custom_list):
+    if len(custom_list) > 1:
+        return;
+
+    if DUMMY_CUSTOM_ENTRY in custom_list:
+        return;
+
+    custom_list.append(DUMMY_CUSTOM_ENTRY);
+
 class Module:
     comment = _("Manage keyboard settings and shortcuts")
     name = "keyboard"
@@ -434,6 +454,9 @@ class Module:
         custom_list = parent.get_strv("custom-list")
 
         for entry in custom_list:
+            if entry == DUMMY_CUSTOM_ENTRY:
+                continue
+
             custom_path = CUSTOM_KEYS_BASENAME+"/"+entry+"/"
             schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path)
             custom_kb = CustomKeyBinding(entry,
@@ -514,6 +537,9 @@ class Module:
         array = parent.get_strv("custom-list")
         num_array = []
         for entry in array:
+            if entry == DUMMY_CUSTOM_ENTRY:
+                continue
+
             num_array.append(int(entry.replace("custom", "")))
         num_array.sort()
 
@@ -526,6 +552,7 @@ class Module:
 
         new_str = "custom" + str(i)
         array.append(new_str)
+        ensureCustomListIsValid(array);
         parent.set_strv("custom-list", array)
 
         new_path = CUSTOM_KEYS_BASENAME + "/custom" + str(i) + "/"
@@ -569,6 +596,7 @@ class Module:
                     break
             if existing:
                 array.remove(keybinding.path)
+                ensureCustomListIsValid(array)
                 parent_settings.set_strv("custom-list", array)
 
         i = 0
@@ -642,7 +670,6 @@ class Module:
     def onResetToDefault(self, popup, keybinding):
         keybinding.resetDefaults()
         self.onKeyBindingChanged(self.kb_tree)
-
 
 class KeyBindingCategory():
     def __init__(self, label, int_name, parent, icon):
@@ -738,6 +765,7 @@ class CustomKeyBinding():
         parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
         custom_list = parent.get_strv("custom-list")
         custom_list.reverse()
+        ensureCustomListIsValid(custom_list);
         parent.set_strv("custom-list", custom_list)
 
 class AddCustomDialog(Gtk.Dialog):
