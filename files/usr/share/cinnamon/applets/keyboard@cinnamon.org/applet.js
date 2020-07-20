@@ -84,7 +84,7 @@ class EmblemedIcon {
     }
 
     set_icon_size(size) {
-        this.actor.width = this.actor.height = size;
+        this.actor.width = this.actor.height = size * global.ui_scale;
     }
 
     set_style_class_name(name) {
