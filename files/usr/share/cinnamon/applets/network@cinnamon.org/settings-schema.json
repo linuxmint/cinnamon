@@ -1,0 +1,12 @@
+{
+  "section1": {
+    "type": "section",
+    "description": "Menu"
+  },
+  "keyOpen": {
+    "type": "keybinding",
+    "description": "Show menu",
+    "default": "<Shift><Super>n",
+    "tooltip": "Set keybinding(s) to show the network applet menu."
+  }
+}

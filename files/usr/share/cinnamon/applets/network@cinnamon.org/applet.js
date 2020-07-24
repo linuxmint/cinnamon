@@ -11,6 +11,7 @@ const PopupMenu = imports.ui.popupMenu;
 const MessageTray = imports.ui.messageTray;
 const ModemManager = imports.misc.modemManager;
 const Util = imports.misc.util;
+const Settings = imports.ui.settings;
 
 const DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS = 10;
 const FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS = 2;
@@ -1671,11 +1672,19 @@ CinnamonNetworkApplet.prototype = {
             this._currentIconName = undefined;
             this._setIcon('network-offline');
 
+            this.settings = new Settings.AppletSettings(this, metadata.uuid, this.instance_id);
+            this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
+            this._setKeybinding();
+
             NM.Client.new_async(null, Lang.bind(this, this._clientGot));
         }
         catch (e) {
             global.logError(e);
         }
+    },
+
+    _setKeybinding() {
+        Main.keybindingManager.addHotKey("network-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
     },
 
     _clientGot: function(obj, result) {
@@ -1804,6 +1813,10 @@ CinnamonNetworkApplet.prototype = {
     },
 
     on_applet_clicked: function(event) {
+        this.menu.toggle();
+    },
+
+    _openMenu: function () {
         this.menu.toggle();
     },
 
@@ -2342,6 +2355,7 @@ CinnamonNetworkApplet.prototype = {
     on_applet_removed_from_panel: function() {
         Main.systrayManager.unregisterRole("network", this.metadata.uuid);
         Main.systrayManager.unregisterRole("nm-applet", this.metadata.uuid);
+        Main.keybindingManager.removeHotKey("network-open-" + this.instance_id);
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);
         }
