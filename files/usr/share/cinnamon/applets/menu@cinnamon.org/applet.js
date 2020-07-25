@@ -1242,7 +1242,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
              * height value is set in the .css style as get_preferred_height() returns this value in this case*/
             this.selectedAppBox.set_height(-1); //unset previously set height
             this.selectedAppBox.set_height(this.selectedAppBox.get_preferred_height(-1)[1]);
-            
+
             let n = Math.min(this._applicationsButtons.length,
                              INITIAL_BUTTON_LOAD);
             for (let i = 0; i < n; i++) {
@@ -2155,7 +2155,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 break;
             }
         }
-        
+
         if (!this.showPlaces) {
             return;
         }
@@ -2187,7 +2187,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         this._recentButtons = [];
-        
+
         for (let i = 0; i < this._categoryButtons.length; i++) {
             if (this._categoryButtons[i].categoryId === 'recent') {
                 this._categoryButtons[i].destroy();
@@ -2196,7 +2196,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 break;
             }
         }
-            
+
         if (!this.showRecents || !this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
             return;
         }
@@ -2757,9 +2757,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         if (!exactMatch) {
             for (let i in this._applicationsButtons) {
                 let app = this._applicationsButtons[i].app;
-                if ((Util.latinise(app.get_name().toLowerCase()).split(' ').some(word => word.startsWith(pattern))) || // match on app name
+                if ((Util.latinise(app.get_name().toLowerCase()).indexOf(pattern) > -1) || // match on app name
                     (app.get_keywords() && Util.latinise(app.get_keywords().toLowerCase()).split(';').some(keyword => keyword.startsWith(pattern))) || // match on keyword
-                    (app.get_description() && Util.latinise(app.get_description().toLowerCase()).split(' ').some(word => word.startsWith(pattern))) || // match on description
+                    (app.get_description() && Util.latinise(app.get_description().toLowerCase()).indexOf(pattern) > -1) || // match on description
                     (app.get_id() && Util.latinise(app.get_id().slice(0, -8).toLowerCase()).startsWith(pattern))) { // match on app ID
                     res.push(this._applicationsButtons[i]);
                 }
