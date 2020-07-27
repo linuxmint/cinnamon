@@ -209,6 +209,8 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         let percentage = Math.round(visible_value * 100) + "%";
 
         this.tooltip.set_text(this.tooltipText + percentage);
+        if (this._dragging)
+            this.tooltip.show();
         let iconName = this._volumeToIcon(value);
         if (this.app_icon == null) {
             this.icon.icon_name = iconName;
