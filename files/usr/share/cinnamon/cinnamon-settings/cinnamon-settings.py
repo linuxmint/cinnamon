@@ -423,7 +423,7 @@ class MainWindow:
             # can consider it as a standalone app and give it its own
             # group.
             wm_class = "cinnamon-settings %s" % arg1
-            self.window.set_wmclass(wm_class, wm_class)
+            self.window.set_role(wm_class)
             self.button_back.hide()
             (iter, cat) = sidePagesIters[arg1]
             path = self.store[cat].get_path(iter)
