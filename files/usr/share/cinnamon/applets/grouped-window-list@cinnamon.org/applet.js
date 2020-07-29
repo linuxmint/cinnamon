@@ -502,7 +502,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     handleMonitorWindowsPrefsChange(value) {
-        
+
     }
 
     updateMonitorWatchlist() {
@@ -762,15 +762,20 @@ class GroupedWindowListApplet extends Applet.Applet {
         let windowPos = children.indexOf(source.actor);
         let isForeign = typeof source.groupState === 'undefined';
 
-        let pos = 0;
+        let isVertical = appList.actor.height > appList.actor.width;
+        let axis = isVertical ? [y, 'y1'] : [x, 'x1'];
 
-        let isHorizontal = appList.actor.height > appList.actor.width;
-        let axis = isHorizontal ? [y, 'y1'] : [x, 'x1'];
-        each(children, (child, i) => {
-            if (axis[0] > children[i].get_allocation_box()[axis[1]] + children[i].width / 2) {
+        //calculating dragged item position by mesuring distances from panel items
+        let pos = 0, minDist = -1;
+        for(let i = 0; i < children.length; i++)
+        {
+            let dist = Math.abs(axis[0] - (children[i].get_allocation_box()[axis[1]] + children[i].width / 2));
+            if(dist < minDist || minDist == -1)
+            {
+                minDist = dist;
                 pos = i;
             }
-        });
+        }
 
         if (pos !== this.state.dragPlaceholderPos) {
             this.state.dragPlaceholderPos = pos;
