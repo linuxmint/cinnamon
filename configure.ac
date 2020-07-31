@@ -122,7 +122,7 @@ AC_CHECK_FUNCS(XFixesCreatePointerBarrier)
 CFLAGS=$saved_CFLAGS
 LIBS=$saved_LIBS
 
-PKG_CHECK_MODULES(ST, muffin-cogl-path-0 muffin-clutter-0 gtk+-3.0 libcroco-0.6 >= 0.6.2 cinnamon-desktop >= 2.4.0 x11)
+PKG_CHECK_MODULES(ST, muffin-cogl-path-0 muffin-clutter-0 gtk+-3.0 cinnamon-desktop >= 2.4.0 x11)
 PKG_CHECK_MODULES(GDMUSER, dbus-glib-1 gtk+-3.0)
 PKG_CHECK_MODULES(TRAY, muffin-clutter-0 gtk+-3.0)
 PKG_CHECK_MODULES(DESKTOP_SCHEMAS, cinnamon-desktop >= 2.4.0)

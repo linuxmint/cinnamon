@@ -96,11 +96,65 @@ BUILT_SOURCES += st.h
 CLEANFILES += stamp-st.h
 
 st_source_private_h =				\
+	st/croco/cr-additional-sel.h			\
+	st/croco/cr-attr-sel.h			\
+	st/croco/cr-cascade.h			\
+	st/croco/cr-declaration.h			\
+	st/croco/cr-doc-handler.h			\
+	st/croco/cr-enc-handler.h			\
+	st/croco/cr-fonts.h			\
+	st/croco/cr-input.h			\
+	st/croco/cr-num.h			\
+	st/croco/cr-om-parser.h			\
+	st/croco/cr-parser.h			\
+	st/croco/cr-parsing-location.h			\
+	st/croco/cr-prop-list.h			\
+	st/croco/cr-pseudo.h			\
+	st/croco/cr-rgb.h			\
+	st/croco/cr-selector.h			\
+	st/croco/cr-simple-sel.h			\
+	st/croco/cr-statement.h			\
+	st/croco/cr-string.h			\
+	st/croco/cr-stylesheet.h			\
+	st/croco/cr-term.h			\
+	st/croco/cr-tknzr.h			\
+	st/croco/cr-token.h			\
+	st/croco/cr-utils.h			\
+	st/croco/libcroco-config.h			\
+	st/croco/libcroco.h			\
 	st/st-private.h				\
 	st/st-table-private.h			\
 	st/st-theme-private.h			\
 	st/st-theme-node-private.h		\
 	st/st-theme-node-transition.h
+
+# please, keep this sorted alphabetically
+croco_source_c =					\
+	st/croco/cr-additional-sel.c			\
+	st/croco/cr-attr-sel.c			\
+	st/croco/cr-cascade.c			\
+	st/croco/cr-declaration.c			\
+	st/croco/cr-doc-handler.c			\
+	st/croco/cr-enc-handler.c			\
+	st/croco/cr-fonts.c			\
+	st/croco/cr-input.c			\
+	st/croco/cr-num.c			\
+	st/croco/cr-om-parser.c			\
+	st/croco/cr-parser.c			\
+	st/croco/cr-parsing-location.c			\
+	st/croco/cr-prop-list.c			\
+	st/croco/cr-pseudo.c			\
+	st/croco/cr-rgb.c			\
+	st/croco/cr-selector.c			\
+	st/croco/cr-simple-sel.c			\
+	st/croco/cr-statement.c			\
+	st/croco/cr-string.c			\
+	st/croco/cr-stylesheet.c			\
+	st/croco/cr-term.c			\
+	st/croco/cr-tknzr.c			\
+	st/croco/cr-token.c			\
+	st/croco/cr-utils.c				\
+	$(NULL)
 
 # please, keep this sorted alphabetically
 st_source_c =					\
@@ -148,6 +202,7 @@ noinst_LTLIBRARIES += libst-1.0.la
 
 libst_1_0_la_LIBADD = -lm $(ST_LIBS)
 libst_1_0_la_SOURCES =				\
+	$(croco_source_c)				\
 	$(st_source_c)					\
 	$(st_non_gir_sources)			\
 	$(st_source_private_h)			\
