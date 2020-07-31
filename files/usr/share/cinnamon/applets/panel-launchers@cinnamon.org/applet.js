@@ -390,6 +390,10 @@ class LaunchersBox {
         let boxSize = vertical ? this.actor.height : this.actor.width;
         let mPos = vertical ? y : x;
         let children = this.actor.get_children();
+
+        if(!vertical && St.Widget.get_default_direction () === St.TextDirection.RTL) //in RTL the dropIndex should be reversed
+            mPos = boxSize - mPos;
+
         let dropIndex = Math.round(mPos / boxSize * children.length);
 
         // -1 is end, 0 is start
