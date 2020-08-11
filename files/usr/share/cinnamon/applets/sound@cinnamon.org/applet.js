@@ -1361,7 +1361,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 let menuItem = new MediaPlayerLauncher(playerApp, this._launchPlayerItem.menu);
                 this._launchPlayerItem.menu.addMenuItem(menuItem);
             }
-        } else {
+        }
+
+        if (!this.playerControl || !availablePlayers.length) {
             this._launchPlayerItem.actor.hide();
         }
     }
