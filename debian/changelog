@@ -1,3 +1,17 @@
+cinnamon (4.6.7) ulyana; urgency=medium
+
+  [ Michael Webster ]
+  * xapp-status@cinnamon.org: Fix visibility for items when an icon is set after having it explicitly un-set.
+  * keybindings: revisit #9375, keybindings not updating.
+
+  [ Vincent Vermeulen ]
+  * Correct Disks icon in System Settings
+
+  [ Michael Webster ]
+  * keyboard applet: Account for the ui scale when adjusting the flag icon size.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 11 Aug 2020 12:38:07 +0100
+
 cinnamon (4.6.6) ulyana; urgency=medium
 
   [ Michael Webster ]
