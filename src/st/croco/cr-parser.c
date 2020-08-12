@@ -136,6 +136,8 @@ struct _CRParserPriv {
 
 #define CHARS_TAB_SIZE 12
 
+#define RECURSIVE_CALLERS_LIMIT 100
+
 /**
  * IS_NUM:
  *@a_char: the char to test.
@@ -343,9 +345,11 @@ static enum CRStatus cr_parser_parse_selector_core (CRParser * a_this);
 
 static enum CRStatus cr_parser_parse_declaration_core (CRParser * a_this);
 
-static enum CRStatus cr_parser_parse_any_core (CRParser * a_this);
+static enum CRStatus cr_parser_parse_any_core (CRParser * a_this,
+                                               guint      n_calls);
 
-static enum CRStatus cr_parser_parse_block_core (CRParser * a_this);
+static enum CRStatus cr_parser_parse_block_core (CRParser * a_this,
+                                                 guint      n_calls);
 
 static enum CRStatus cr_parser_parse_value_core (CRParser * a_this);
 
@@ -783,7 +787,7 @@ cr_parser_parse_atrule_core (CRParser * a_this)
         cr_parser_try_to_skip_spaces_and_comments (a_this);
 
         do {
-                status = cr_parser_parse_any_core (a_this);
+                status = cr_parser_parse_any_core (a_this, 0);
         } while (status == CR_OK);
 
         status = cr_tknzr_get_next_token (PRIVATE (a_this)->tknzr,
@@ -794,7 +798,7 @@ cr_parser_parse_atrule_core (CRParser * a_this)
                 cr_tknzr_unget_token (PRIVATE (a_this)->tknzr, 
                                       token);
                 token = NULL;
-                status = cr_parser_parse_block_core (a_this);
+                status = cr_parser_parse_block_core (a_this, 0);
                 CHECK_PARSING_STATUS (status,
                                       FALSE);
                 goto done;
@@ -929,11 +933,11 @@ cr_parser_parse_selector_core (CRParser * a_this)
 
         RECORD_INITIAL_POS (a_this, &init_pos);
 
-        status = cr_parser_parse_any_core (a_this);
+        status = cr_parser_parse_any_core (a_this, 0);
         CHECK_PARSING_STATUS (status, FALSE);
 
         do {
-                status = cr_parser_parse_any_core (a_this);
+                status = cr_parser_parse_any_core (a_this, 0);
 
         } while (status == CR_OK);
 
@@ -955,16 +959,21 @@ cr_parser_parse_selector_core (CRParser * a_this)
  *in chapter 4.1 of the css2 spec.
  *block ::= '{' S* [ any | block | ATKEYWORD S* | ';' ]* '}' S*;
  *@param a_this the current instance of #CRParser.
+ *@param n_calls used to limit recursion depth
  *FIXME: code this function.
  */
 static enum CRStatus
-cr_parser_parse_block_core (CRParser * a_this)
+cr_parser_parse_block_core (CRParser * a_this,
+                            guint      n_calls)
 {
         CRToken *token = NULL;
         CRInputPos init_pos;
         enum CRStatus status = CR_ERROR;
 
         g_return_val_if_fail (a_this && PRIVATE (a_this), CR_BAD_PARAM_ERROR);
+
+        if (n_calls > RECURSIVE_CALLERS_LIMIT)
+                return CR_ERROR;
 
         RECORD_INITIAL_POS (a_this, &init_pos);
 
@@ -995,13 +1004,13 @@ cr_parser_parse_block_core (CRParser * a_this)
         } else if (token->type == CBO_TK) {
                 cr_tknzr_unget_token (PRIVATE (a_this)->tknzr, token);
                 token = NULL;
-                status = cr_parser_parse_block_core (a_this);
+                status = cr_parser_parse_block_core (a_this, n_calls + 1);
                 CHECK_PARSING_STATUS (status, FALSE);
                 goto parse_block_content;
         } else {
                 cr_tknzr_unget_token (PRIVATE (a_this)->tknzr, token);
                 token = NULL;
-                status = cr_parser_parse_any_core (a_this);
+                status = cr_parser_parse_any_core (a_this, n_calls + 1);
                 CHECK_PARSING_STATUS (status, FALSE);
                 goto parse_block_content;
         }
@@ -1108,7 +1117,7 @@ cr_parser_parse_value_core (CRParser * a_this)
                 status = cr_tknzr_unget_token (PRIVATE (a_this)->tknzr,
                                                token);
                 token = NULL;
-                status = cr_parser_parse_block_core (a_this);
+                status = cr_parser_parse_block_core (a_this, 0);
                 CHECK_PARSING_STATUS (status, FALSE);
                 ref++;
                 goto continue_parsing;
@@ -1122,7 +1131,7 @@ cr_parser_parse_value_core (CRParser * a_this)
                 status = cr_tknzr_unget_token (PRIVATE (a_this)->tknzr,
                                                token);
                 token = NULL;
-                status = cr_parser_parse_any_core (a_this);
+                status = cr_parser_parse_any_core (a_this, 0);
                 if (status == CR_OK) {
                         ref++;
                         goto continue_parsing;
@@ -1161,10 +1170,12 @@ cr_parser_parse_value_core (CRParser * a_this)
  *        | FUNCTION | DASHMATCH | '(' any* ')' | '[' any* ']' ] S*;
  *
  *@param a_this the current instance of #CRParser.
+ *@param n_calls used to limit recursion depth
  *@return CR_OK upon successfull completion, an error code otherwise.
  */
 static enum CRStatus
-cr_parser_parse_any_core (CRParser * a_this)
+cr_parser_parse_any_core (CRParser * a_this,
+                          guint      n_calls)
 {
         CRToken *token1 = NULL,
                 *token2 = NULL;
@@ -1172,6 +1183,9 @@ cr_parser_parse_any_core (CRParser * a_this)
         enum CRStatus status = CR_ERROR;
 
         g_return_val_if_fail (a_this, CR_BAD_PARAM_ERROR);
+
+        if (n_calls > RECURSIVE_CALLERS_LIMIT)
+                return CR_ERROR;
 
         RECORD_INITIAL_POS (a_this, &init_pos);
 
@@ -1211,7 +1225,7 @@ cr_parser_parse_any_core (CRParser * a_this)
                  *We consider parameter as being an "any*" production.
                  */
                 do {
-                        status = cr_parser_parse_any_core (a_this);
+                        status = cr_parser_parse_any_core (a_this, n_calls + 1);
                 } while (status == CR_OK);
 
                 ENSURE_PARSING_COND (status == CR_PARSING_ERROR);
@@ -1236,7 +1250,7 @@ cr_parser_parse_any_core (CRParser * a_this)
                 }
 
                 do {
-                        status = cr_parser_parse_any_core (a_this);
+                        status = cr_parser_parse_any_core (a_this, n_calls + 1);
                 } while (status == CR_OK);
 
                 ENSURE_PARSING_COND (status == CR_PARSING_ERROR);
@@ -1264,7 +1278,7 @@ cr_parser_parse_any_core (CRParser * a_this)
                 }
 
                 do {
-                        status = cr_parser_parse_any_core (a_this);
+                        status = cr_parser_parse_any_core (a_this, n_calls + 1);
                 } while (status == CR_OK);
 
                 ENSURE_PARSING_COND (status == CR_PARSING_ERROR);
