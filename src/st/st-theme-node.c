@@ -658,10 +658,14 @@ get_color_from_term (StThemeNode  *node,
   CRRgb rgb;
   enum CRStatus status;
 
+  if (term_is_inherit (term))
+    {
+      return VALUE_INHERIT;
+    }
   /* Since libcroco doesn't know about rgba colors, it can't handle
    * the transparent keyword
    */
-  if (term_is_transparent (term))
+  else if (term_is_transparent (term))
     {
       *color = TRANSPARENT_COLOR;
       return VALUE_FOUND;
@@ -689,9 +693,6 @@ get_color_from_term (StThemeNode  *node,
   status = cr_rgb_set_from_term (&rgb, term);
   if (status != CR_OK)
     return VALUE_NOT_FOUND;
-
-  if (rgb.inherit)
-    return VALUE_INHERIT;
 
   if (rgb.is_percentage)
     cr_rgb_compute_from_percentage (&rgb);
