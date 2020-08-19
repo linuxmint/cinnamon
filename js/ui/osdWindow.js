@@ -110,6 +110,10 @@ OsdWindow.prototype = {
 
         this._level = new LevelBar();
         this.actor.add(this._level.actor);
+        
+        this._label = new St.Label();
+        this._label.style = 'font-size: 1.2em; text-align: center;'
+        this.actor.add(this._label);
 
         this._hideTimeoutId = 0;
         this._reset();
@@ -126,7 +130,9 @@ OsdWindow.prototype = {
 
     setLevel: function(level) {
         this._level.actor.visible = (level != undefined);
+        this._label.set_text("N/A");
         if (level != undefined) {
+            this._label.set_text(String(level) + " %");
             if (this.actor.visible)
                 Tweener.addTween(this._level,
                                  { level: level,
