@@ -130,7 +130,7 @@ OsdWindow.prototype = {
 
     setLevel: function(level) {
         this._level.actor.visible = (level != undefined);
-        this._label.set_text("N/A");
+        this._label.set_text("");
         if (level != undefined) {
             this._label.set_text(String(level) + " %");
             if (this.actor.visible)
