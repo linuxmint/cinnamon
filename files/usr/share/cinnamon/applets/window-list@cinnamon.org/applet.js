@@ -109,7 +109,7 @@ class WindowPreview extends Tooltips.TooltipBase {
         if (this._windowActor) {
             return this._windowActor;
         } else {
-            log("metaWindow has no actor!");
+            global.log("metaWindow has no actor!");
             return null;
         }
     }
@@ -521,7 +521,21 @@ class AppMenuButton {
             title = "||"+ title;
         }
 
-        this._label.set_text(title);
+        let prefix = "";
+        if(this._applet.useHotkeys && this._applet.displayWinNumbers) {
+            let active_workspace = global.screen.get_active_workspace();
+            if (active_workspace) {
+                let windows = active_workspace.list_windows();
+                if (windows) {
+                    let index = windows.reverse().indexOf(this.metaWindow);
+                    if (index > 0) {
+                        prefix = "[" + index + "] ";
+                    }
+                }
+            }
+        }
+
+        this._label.set_text(prefix + title);
     }
 
     destroy() {
@@ -1014,10 +1028,17 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("reverse-scrolling", "reverseScroll");
         this.settings.bind("left-click-minimize", "leftClickMinimize");
         this.settings.bind("middle-click-close", "middleClickClose");
+
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
         this.settings.bind("window-preview-show-label", "showLabel", this._onPreviewChanged);
         this.settings.bind("window-preview-scale", "previewScale", this._onPreviewChanged);
+
+        this.settings.bind("use-hotkeys", "useHotkeys");
+        this.settings.bind("display-win-numbers", "displayWinNumbers");
+        for (let k = 1; k <= 10; k++) {
+            this.settings.bind(`hotkey-win-${k}`, `hotkeyWin${k}`);
+        }
 
         this.signals.connect(global.screen, 'window-added', this._onWindowAddedAsync, this);
         this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged, this);
@@ -1033,6 +1054,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
         this.on_orientation_changed(orientation);
         this._updateAttentionGrabber();
+
+        this.enableHotkeys();
     }
 
     on_applet_added_to_panel(userEnabled) {
@@ -1041,6 +1064,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     on_applet_removed_from_panel() {
+        this.disableHotkeys();
         this.signals.disconnectAllSignals();
         this.settings.finalize();
     }
@@ -1203,18 +1227,21 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
         /* The above calculates the visibility if it were the normal
          * AppMenuButton. If this is actually a temporary AppMenuButton for
-         * urgent windows on other workspaces, it is shown iff the normal
+         * urgent windows on other workspaces, it is shown if the normal
          * one isn't shown! */
         if (window.alert)
             window.actor.visible = !window.actor.visible;
 
-        if (window.actor.visible)
+        if (window.actor.visible) {
             window.setIcon();
+            window.setDisplayTitle();
+        }
     }
 
     _refreshAllItems() {
         for (let window of this._windows) {
             this._refreshItem(window);
+            window.setDisplayTitle();
         }
     }
 
@@ -1391,6 +1418,46 @@ class CinnamonWindowListApplet extends Applet.Applet {
         if (this._tooltipErodeTimer) {
             Mainloop.source_remove(this._tooltipErodeTimer);
             this._tooltipErodeTimer = null;
+        }
+    }
+
+    enableHotkeys() {
+        this.disableHotkeys();
+
+        if(this.useHotkeys) {
+            Main.keybindingManager.addHotKey("winlistToggleWinNumbers", this.hotkeyToggleWinNumbers, this.toggleWinNumbers);
+
+            for(let k = 1; k <= 10; k++) {
+                try {
+                    let [ hk1, hk2 ] = this[`hotkeyWin${k}`].split("::");
+                    if(hk1) {
+                        Main.keybindingManager.addHotKey(`winlistSwitchToWin${k}`, hk1, () => this.switchToWinNum(k));
+                    }
+                    if(hk2) {
+                        Main.keybindingManager.addHotKey(`winlistSwitchToWin${k + 10}`, hk2, () => this.switchToWinNum(k + 10));
+                    }
+                } catch(err) {
+                    this.useHotkeys = false;
+                }
+            }
+        }
+    }
+
+    disableHotkeys() {
+        Main.keybindingManager.removeHotKey("winlistToggleWinNumbers");
+
+        for(let k = 1; k <= 20; k++) {
+            Main.keybindingManager.removeHotKey(`winlistSwitchToWin${k}`);
+        }
+    }
+
+    switchToWinNum(window_num) {
+        let active_workspace = global.screen.get_active_workspace();
+        if(active_workspace) {
+            let windows = active_workspace.list_windows();
+            if(windows.length > window_num) {
+                windows.reverse()[window_num].activate(global.get_current_time());
+            }
         }
     }
 }

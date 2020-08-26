@@ -65,5 +65,69 @@
           "Largest": 1.5
       },
       "dependency": "window-preview"
+  },
+  "section3": {
+    "type": "section",
+    "description": "Windows switch hotkeys"
+  },
+  "use-hotkeys" : {
+    "type" : "checkbox",
+    "default" : false,
+    "description": "Use Hotkeys to quick switch between windows"
+  },
+  "display-win-numbers": {
+    "type" : "checkbox",
+    "default" : true,
+    "description": "Show window numbers in titles"
+  },
+  "hotkey-win-1": {
+    "type" : "keybinding",
+    "default" : "<Super>1::<Shift><Super>1",
+    "description" : "Window 1 / Window 11"
+  },
+  "hotkey-win-2": {
+    "type" : "keybinding",
+    "default" : "<Super>2::<Shift><Super>2",
+    "description" : "Window 2 / Window 12"
+  },
+  "hotkey-win-3": {
+    "type" : "keybinding",
+    "default" : "<Super>3::<Shift><Super>3",
+    "description" : "Window 3 / Window 13"
+  },
+  "hotkey-win-4": {
+    "type" : "keybinding",
+    "default" : "<Super>4::<Shift><Super>4",
+    "description" : "Window 4 / Window 14"
+  },
+  "hotkey-win-5": {
+    "type" : "keybinding",
+    "default" : "<Super>5::<Shift><Super>5",
+    "description" : "Window 5 / Window 15"
+  },
+  "hotkey-win-6": {
+    "type" : "keybinding",
+    "default" : "<Super>6::<Shift><Super>6",
+    "description" : "Window 6 / Window 16"
+  },
+  "hotkey-win-7": {
+    "type" : "keybinding",
+    "default" : "<Super>7::<Shift><Super>7",
+    "description" : "Window 7 / Window 17"
+  },
+  "hotkey-win-8": {
+    "type" : "keybinding",
+    "default" : "<Super>8::<Shift><Super>8",
+    "description" : "Window 8 / Window 18"
+  },
+  "hotkey-win-9": {
+    "type" : "keybinding",
+    "default" : "<Super>9::<Shift><Super>9",
+    "description" : "Window 9 / Window 19"
+  },
+  "hotkey-win-10": {
+    "type" : "keybinding",
+    "default" : "<Super>0::<Shift><Super>0",
+    "description" : "Window 10 / Window 20"
   }
 }
