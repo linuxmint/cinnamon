@@ -2047,14 +2047,15 @@ CinnamonNetworkApplet.prototype = {
                 } else
                     a._primaryDevice = this._devices.vpn.device;
 
-                if (a._primaryDevice)
-                    a._primaryDevice.setActiveConnection(a);
-
                 if (a.state == NM.ActiveConnectionState.ACTIVATED &&
                     a._primaryDevice && a._primaryDevice._notification) {
                         a._primaryDevice._notification.destroy();
                         a._primaryDevice._notification = null;
                 }
+            }
+
+            if (a._primaryDevice) {
+                a._primaryDevice.setActiveConnection(a);
             }
         }
 
