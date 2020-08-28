@@ -109,7 +109,7 @@ class WindowPreview extends Tooltips.TooltipBase {
         if (this._windowActor) {
             return this._windowActor;
         } else {
-            log("metaWindow has no actor!");
+            global.log("metaWindow has no actor!");
             return null;
         }
     }
@@ -260,6 +260,7 @@ class AppMenuButton {
             reactive: true,
             can_focus: true,
             track_hover: true });
+        this.actor.metaWindow = metaWindow;
 
         this._applet = applet;
         this.metaWindow = metaWindow;
@@ -521,7 +522,24 @@ class AppMenuButton {
             title = "||"+ title;
         }
 
-        this._label.set_text(title);
+        let prefix = "";
+        if(this._applet.displayWinNumbers) {
+            let button_actors_list = this._applet.manager_container.get_children();
+            let index = 0;
+            if (button_actors_list) {
+                for(let app_button_actor of button_actors_list) {
+                    if(app_button_actor.visible) {
+                        index++;
+                    }
+                    if(app_button_actor == this.actor) {
+                        prefix = "[" + index + "] ";
+                        break;
+                    }
+                }
+            }
+        }
+
+        this._label.set_text(prefix + title);
     }
 
     destroy() {
@@ -718,6 +736,10 @@ class AppMenuButton {
             }
 
             this._label.allocate(childBox, flags);
+        }
+
+        if (this._applet.displayWinNumbers) {
+            this._applet._reTitleItems();
         }
 
         if (!this.progressOverlay.visible) {
@@ -1014,10 +1036,17 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("reverse-scrolling", "reverseScroll");
         this.settings.bind("left-click-minimize", "leftClickMinimize");
         this.settings.bind("middle-click-close", "middleClickClose");
+
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
         this.settings.bind("window-preview-show-label", "showLabel", this._onPreviewChanged);
         this.settings.bind("window-preview-scale", "previewScale", this._onPreviewChanged);
+        this.settings.bind("display-win-numbers", "displayWinNumbers", this._reTitleItems);
+
+        this.settings.bind("use-hotkeys", "useHotkeys", this.enableHotkeys);
+        for (let k = 1; k <= 10; k++) {
+            this.settings.bind(`hotkey-win-${k}`, `hotkeyWin_${k}`, this.enableHotkeys);
+        }
 
         this.signals.connect(global.screen, 'window-added', this._onWindowAddedAsync, this);
         this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged, this);
@@ -1033,6 +1062,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
         this.on_orientation_changed(orientation);
         this._updateAttentionGrabber();
+
+        this.enableHotkeys();
     }
 
     on_applet_added_to_panel(userEnabled) {
@@ -1041,6 +1072,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     on_applet_removed_from_panel() {
+        this.disableHotkeys();
         this.signals.disconnectAllSignals();
         this.settings.finalize();
     }
@@ -1143,6 +1175,9 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
     _onWindowWorkspaceChanged(screen, metaWindow, metaWorkspace) {
         this._refreshItemByMetaWindow(metaWindow);
+        if (this.displayWinNumbers) {
+            this._reTitleItems();
+        }
     }
 
     _onWindowAppChanged(tracker, metaWindow) {
@@ -1297,6 +1332,9 @@ class CinnamonWindowListApplet extends Applet.Applet {
                 }
             }
         }
+        if (this.displayWinNumbers) {
+            this._reTitleItems();
+        }
     }
 
     _removeWindow(metaWindow) {
@@ -1307,6 +1345,9 @@ class CinnamonWindowListApplet extends Applet.Applet {
                 this._windows[i].destroy();
                 this._windows.splice(i, 1);
             }
+        }
+        if (this.displayWinNumbers) {
+            this._reTitleItems();
         }
     }
 
@@ -1353,7 +1394,6 @@ class CinnamonWindowListApplet extends Applet.Applet {
             this.manager_container.set_child_at_index(this._dragPlaceholder.actor,
                                                          this._dragPlaceholderPos);
         }
-
         return DND.DragMotionResult.MOVE_DROP;
     }
 
@@ -1391,6 +1431,48 @@ class CinnamonWindowListApplet extends Applet.Applet {
         if (this._tooltipErodeTimer) {
             Mainloop.source_remove(this._tooltipErodeTimer);
             this._tooltipErodeTimer = null;
+        }
+    }
+
+    enableHotkeys() {
+        this.disableHotkeys();
+
+        if (this.useHotkeys) {
+            for (let k = 1; k <= 10; k++) {
+                try {
+                    let [ hk1, hk2 ] = this[`hotkeyWin_${k}`].split("::");
+                    if (hk1) {
+                        Main.keybindingManager.addHotKey(`winlistSwitchToWin_${k}`, hk1, () => this.switchToWinNum(k));
+                    }
+                    if (hk2) {
+                        Main.keybindingManager.addHotKey(`winlistSwitchToWin_${k + 10}`, hk2, () => this.switchToWinNum(k + 10));
+                    }
+                } catch(err) {
+                    this.useHotkeys = false;
+                }
+            }
+        }
+    }
+
+    disableHotkeys() {
+        for (let k = 1; k <= 20; k++) {
+            Main.keybindingManager.removeHotKey(`winlistSwitchToWin_${k}`);
+        }
+    }
+
+    switchToWinNum(window_num) {
+        let button_actors_list = this.manager_container.get_children();
+        if (button_actors_list && button_actors_list.length >= window_num) {
+            let index = 0;
+            for (let app_button_actor of button_actors_list) {
+                if (app_button_actor.visible) {
+                    index++;
+                }
+                if (index == window_num) {
+                    app_button_actor.metaWindow.activate(global.get_current_time());
+                    break;
+                }
+            }
         }
     }
 }
