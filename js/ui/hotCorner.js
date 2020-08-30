@@ -55,11 +55,14 @@ HotCornerManager.prototype = {
         return true;
     },
 
-    updatePosition: function(monitor) {
-        let left   = monitor.x;
-        let right  = monitor.x + monitor.width - 2;
-        let top    = monitor.y;
-        let bottom = monitor.y + monitor.height - 2;
+    updatePosition: function(...monitors) {
+        let left=0, right=0, top=0, bottom=0;
+        for (var monitor of monitors) {
+            left   = Math.min(left,   monitor.x);
+            right  = Math.max(right,  monitor.x + monitor.width - 2);
+            top    = Math.min(top,    monitor.y);
+            bottom = Math.max(bottom, monitor.y + monitor.height - 2);
+        }
 
         // Top Left: 0
         this.corners[0].actor.set_position(left, top);
