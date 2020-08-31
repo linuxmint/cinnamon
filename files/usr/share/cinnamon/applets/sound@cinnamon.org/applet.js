@@ -168,6 +168,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         }
 
         this._slider.queue_repaint();
+        this.tooltip.show();
         this.emit('value-changed', this._value);
     }
 
@@ -1109,6 +1110,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 this._players[this._activePlayer]._mediaServerPlayer.NextRemote();
             }
         }
+
+        this.tooltip.show();
 
         this._notifyVolumeChange(this._output);
     }
