@@ -318,6 +318,7 @@
         <listitem><code>description</code>: (optional) String to describe the setting</listitem>
         <listitem><code>columns</code>: Array of objects specifying the columns in the list widget</listitem>
         <listitem><code>default</code>: default value</listitem>
+        <listitem><code>show-buttons</code>: (optional) Whether to show the action buttons below the list (<code>true</code> by default)</listitem>
       </itemizedlist>
 
       <para>
