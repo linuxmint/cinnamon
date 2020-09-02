@@ -75,7 +75,7 @@ STARTUP_NOTIFICATION_MIN_VERSION=0.11
 
 # Collect more than 20 libraries for a prize!
 PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
-                               gio-unix-2.0 dbus-glib-1 libxml-2.0
+                               gio-unix-2.0 dbus-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                libmuffin >= $MUFFIN_MIN_VERSION
                                cjs-1.0 >= $GJS_MIN_VERSION
@@ -123,9 +123,7 @@ CFLAGS=$saved_CFLAGS
 LIBS=$saved_LIBS
 
 PKG_CHECK_MODULES(ST, muffin-cogl-path-0 muffin-clutter-0 gtk+-3.0 cinnamon-desktop >= 2.4.0 x11)
-PKG_CHECK_MODULES(GDMUSER, dbus-glib-1 gtk+-3.0)
 PKG_CHECK_MODULES(TRAY, muffin-clutter-0 gtk+-3.0)
-PKG_CHECK_MODULES(DESKTOP_SCHEMAS, cinnamon-desktop >= 2.4.0)
 
 MUFFIN_GIR_DIR=`$PKG_CONFIG --variable=girdir libmuffin`
 MUFFIN_TYPELIB_DIR=`$PKG_CONFIG --variable=typelibdir libmuffin`
