@@ -118,9 +118,7 @@ class XAppStatusIcon {
             this.iconSize = this.applet.getPanelIconSize(type);
             this.proxy.icon_size = this.iconSize;
 
-            // for now, assume symbolic icons would always be square/suitable for an StIcon.
-            // TODO: Need to handle symbolic filenames also.
-
+            // Assume symbolic icons would always be square/suitable for an StIcon.
             if (iconName.includes("/") && type != St.IconType.SYMBOLIC) {
                 St.TextureCache.get_default().load_image_from_file_async(iconName,
                                                                          /* If top/bottom panel, allow the image to expand horizontally,
@@ -319,10 +317,17 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         this.signalManager.connect(this.panel, "icon-size-changed", this.icon_size_changed, this);
     }
 
-    onMonitorIconAdded(monitor, icon_proxy) {
+    getKey(icon_proxy) {
         let proxy_name = icon_proxy.get_name();
+        let proxy_path = icon_proxy.get_object_path()
 
-        if (this.statusIcons[proxy_name]) {
+        return proxy_name + proxy_path;
+    }
+
+    onMonitorIconAdded(monitor, icon_proxy) {
+        let key = this.getKey(icon_proxy);
+
+        if (this.statusIcons[key]) {
             return;
         }
 
@@ -333,22 +338,22 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
             return;
         }
 
-        global.log(`Adding XAppStatusIcon: ${icon_proxy.name} (${proxy_name})`);
+        global.log(`Adding XAppStatusIcon: ${icon_proxy.name} (${key})`);
         this.addStatusIcon(icon_proxy);
     }
 
     onMonitorIconRemoved(monitor, icon_proxy) {
-        let proxy_name = icon_proxy.get_name();
+        let key = this.getKey(icon_proxy);
 
-        if (!this.statusIcons[proxy_name]) {
-            if (this.ignoredProxies[proxy_name]) {
-                delete this.ignoredProxies[proxy_name];
+        if (!this.statusIcons[key]) {
+            if (this.ignoredProxies[key]) {
+                delete this.ignoredProxies[key];
             }
 
             return;
         }
 
-        global.log(`Removing XAppStatusIcon: ${icon_proxy.name} (${proxy_name})`);
+        global.log(`Removing XAppStatusIcon: ${icon_proxy.name} (${key})`);
         this.removeStatusIcon(icon_proxy);
     }
 
@@ -378,44 +383,45 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
     }
 
     addStatusIcon(icon_proxy) {
-        let proxy_name = icon_proxy.get_name();
-
+        let key = this.getKey(icon_proxy);
         let statusIcon = new XAppStatusIcon(this, icon_proxy);
 
         this.manager_container.insert_child_at_index(statusIcon.actor, 0);
-        this.statusIcons[proxy_name] = statusIcon;
+        this.statusIcons[key] = statusIcon;
 
         this.sortIcons();
     }
 
     removeStatusIcon(icon_proxy) {
-        let proxy_name = icon_proxy.get_name();
+        let key = this.getKey(icon_proxy);
 
-        if (!this.statusIcons[proxy_name]) {
+        if (!this.statusIcons[key]) {
             return;
         }
 
-        this.manager_container.remove_child(this.statusIcons[proxy_name].actor);
-        this.statusIcons[proxy_name].destroy();
-        delete this.statusIcons[proxy_name];
+        this.manager_container.remove_child(this.statusIcons[key].actor);
+        this.statusIcons[key].destroy();
+        delete this.statusIcons[key];
 
         this.sortIcons();
     }
 
     ignoreStatusIcon(icon_proxy) {
-        let proxy_name = icon_proxy.get_name();
+        let key = this.getKey(icon_proxy);
 
-        if (this.ignoredProxies[proxy_name]) {
+        if (this.ignoredProxies[key]) {
             return;
         }
 
-        this.ignoredProxies[proxy_name] = icon_proxy;
+        this.ignoredProxies[key] = icon_proxy;
     }
 
     shouldIgnoreStatusIcon(icon_proxy) {
         let hiddenIcons = Main.systrayManager.getRoles();
 
-        if (hiddenIcons.indexOf(icon_proxy.name) != -1 ) {
+        let name = icon_proxy.name;
+
+        if (hiddenIcons.indexOf(name) != -1 ) {
             return true;
         }
 
@@ -434,7 +440,8 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
             return -1;
         }
 
-        return GLib.utf8_collate(a.proxy.name, b.proxy.name);
+        return GLib.utf8_collate(a.proxy.name.replace("org.x.StatusIcon.", "").toLowerCase(),
+                                 b.proxy.name.replace("org.x.StatusIcon.", "").toLowerCase());
     }
 
     sortIcons() {
