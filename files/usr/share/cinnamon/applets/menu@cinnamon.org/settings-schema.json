@@ -20,7 +20,7 @@
         "panel-behave" : {
             "type" : "section",
             "title" : "Behavior",
-            "keys" : ["overlay-key", "activate-on-hover", "hover-delay", "enable-animation"]
+            "keys" : ["overlay-key", "activate-on-hover", "hover-delay", "force-show-panel", "enable-animation"]
         },
         "menu-layout" : {
             "type" : "section",
@@ -30,7 +30,7 @@
         "menu-behave" : {
             "type" : "section",
             "title" : "Behavior",
-            "keys" : ["enable-autoscroll", "search-filesystem", "force-show-panel"]
+            "keys" : ["enable-autoscroll", "search-filesystem"]
         }
     },
  "overlay-key" : {
@@ -160,7 +160,7 @@
  },
  "force-show-panel" : {
     "type" : "switch",
-    "default" : false,
+    "default" : true,
     "description": "Force panel visible when opening the menu",
     "tooltip": "Opening the menu will also show the main panel (which may be auto-hidden)."
  },
