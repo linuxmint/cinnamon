@@ -580,6 +580,15 @@ function createApplet(extension, appletDefinition, panel = null) {
         // so we don't need to pass it to the constructor anymore, but would
         // require a compatibility clean-up effort.
         applet = module.main(extension.meta, orientation, panel.height, applet_id);
+
+        //set applet style class
+        let metadata = extension.meta;
+        let appletClass = '';
+        if(typeof metadata === 'object' && metadata !== null && typeof metadata.uuid === 'string'){
+            appletClass = metadata.uuid.toLowerCase().replace(/([^a-z0-9]+)/gi, '-')+'-applet';
+        }
+        applet._setStyleClass('applet-box'+appletClass);
+
     } catch (e) {
         Extension.logError(`Failed to evaluate 'main' function on applet: ${uuid}/${applet_id}`, uuid, e);
         return null;

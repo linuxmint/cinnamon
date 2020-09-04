@@ -200,7 +200,9 @@ var Applet = class Applet {
             setTimeout(() => this._getPanelInfo(), 0);
         }
     }
-
+    _setStyleClass(className){
+        this.actor.style_class = className;
+    }
     _getPanelInfo(instance_id) {
         if (!instance_id) instance_id = this.instance_id;
         let appletDefinition = AppletManager.getAppletDefinition({applet_id: instance_id});
