@@ -118,7 +118,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
         try {
             let hiddenIcons = Main.systrayManager.getRoles();
 
-            if (hiddenIcons.indexOf(role) != -1 ) {
+            if (hiddenIcons.indexOf(role.toLowerCase()) != -1 ) {
                 // We've got an applet for that
                 global.log("Hiding systray: " + role);
                 return;
