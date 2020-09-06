@@ -419,7 +419,7 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
     shouldIgnoreStatusIcon(icon_proxy) {
         let hiddenIcons = Main.systrayManager.getRoles();
 
-        let name = icon_proxy.name;
+        let name = icon_proxy.name.toLowerCase();
 
         if (hiddenIcons.indexOf(name) != -1 ) {
             return true;
