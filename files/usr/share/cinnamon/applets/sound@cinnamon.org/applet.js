@@ -209,6 +209,8 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         let percentage = Math.round(visible_value * 100) + "%";
 
         this.tooltip.set_text(this.tooltipText + percentage);
+        if (this._dragging)
+            this.tooltip.show();
         let iconName = this._volumeToIcon(value);
         if (this.app_icon == null) {
             this.icon.icon_name = iconName;
@@ -834,11 +836,12 @@ class MediaPlayerLauncher extends PopupMenu.PopupBaseMenuItem {
         this.addActor(this.label);
         this._icon = app.create_icon_texture(ICON_SIZE);
         this.addActor(this._icon, { expand: false });
-        this.connect("activate", (event) => this._onActivate(event).get_time());
+        this.connect("activate", (event) => this._onActivate(event));
     }
 
-    _onActivate(time) {
-        this._app.activate_full(-1, time);
+    _onActivate(event) {
+        let _time = event.time;
+        this._app.activate_full(-1, _time);
     }
 }
 
