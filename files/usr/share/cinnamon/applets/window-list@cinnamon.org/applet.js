@@ -109,7 +109,7 @@ class WindowPreview extends Tooltips.TooltipBase {
         if (this._windowActor) {
             return this._windowActor;
         } else {
-            log("metaWindow has no actor!");
+            global.log("[window-list] metaWindow has no actor!");
             return null;
         }
     }
@@ -260,6 +260,7 @@ class AppMenuButton {
             reactive: true,
             can_focus: true,
             track_hover: true });
+        this.actor.metaWindow = metaWindow;
 
         this._applet = applet;
         this.metaWindow = metaWindow;
@@ -521,6 +522,16 @@ class AppMenuButton {
             title = "||"+ title;
         }
 
+        if (this._applet.displayWinNumbers) {
+            let button_actors_list = this._applet.manager_container.get_children();
+            if (button_actors_list) {
+                button_actors_list = button_actors_list.filter(function(a) { return a.visible; } );
+                let i = button_actors_list.indexOf(this.actor);
+                if (i >= 0)
+                    title = `[${i + 1}] ${title}`;
+            }
+        }
+
         this._label.set_text(title);
     }
 
@@ -718,6 +729,10 @@ class AppMenuButton {
             }
 
             this._label.allocate(childBox, flags);
+        }
+
+        if (this._applet.displayWinNumbers) {
+            this._applet._reTitleItems();
         }
 
         if (!this.progressOverlay.visible) {
@@ -1014,10 +1029,17 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("reverse-scrolling", "reverseScroll");
         this.settings.bind("left-click-minimize", "leftClickMinimize");
         this.settings.bind("middle-click-close", "middleClickClose");
+
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
         this.settings.bind("window-preview-show-label", "showLabel", this._onPreviewChanged);
         this.settings.bind("window-preview-scale", "previewScale", this._onPreviewChanged);
+        this.settings.bind("display-win-numbers", "displayWinNumbers", this._reTitleItems);
+
+        this.settings.bind("use-hotkeys", "useHotkeys", this.enableHotkeys);
+        for (let i = 1; i <= 10; i++) {
+            this.settings.bind(`hotkey-win-${i}`, `hotkeyWin_${i}`, this.enableHotkeys);
+        }
 
         this.signals.connect(global.screen, 'window-added', this._onWindowAddedAsync, this);
         this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged, this);
@@ -1033,6 +1055,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
         this.on_orientation_changed(orientation);
         this._updateAttentionGrabber();
+
+        this.enableHotkeys();
     }
 
     on_applet_added_to_panel(userEnabled) {
@@ -1041,6 +1065,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     on_applet_removed_from_panel() {
+        this.disableHotkeys();
         this.signals.disconnectAllSignals();
         this.settings.finalize();
     }
@@ -1143,6 +1168,10 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
     _onWindowWorkspaceChanged(screen, metaWindow, metaWorkspace) {
         this._refreshItemByMetaWindow(metaWindow);
+
+        if (this.displayWinNumbers) {
+            this._reTitleItems();
+        }
     }
 
     _onWindowAppChanged(tracker, metaWindow) {
@@ -1297,6 +1326,10 @@ class CinnamonWindowListApplet extends Applet.Applet {
                 }
             }
         }
+
+        if (this.displayWinNumbers) {
+            this._reTitleItems();
+        }
     }
 
     _removeWindow(metaWindow) {
@@ -1307,6 +1340,10 @@ class CinnamonWindowListApplet extends Applet.Applet {
                 this._windows[i].destroy();
                 this._windows.splice(i, 1);
             }
+        }
+
+        if (this.displayWinNumbers) {
+            this._reTitleItems();
         }
     }
 
@@ -1353,7 +1390,6 @@ class CinnamonWindowListApplet extends Applet.Applet {
             this.manager_container.set_child_at_index(this._dragPlaceholder.actor,
                                                          this._dragPlaceholderPos);
         }
-
         return DND.DragMotionResult.MOVE_DROP;
     }
 
@@ -1391,6 +1427,43 @@ class CinnamonWindowListApplet extends Applet.Applet {
         if (this._tooltipErodeTimer) {
             Mainloop.source_remove(this._tooltipErodeTimer);
             this._tooltipErodeTimer = null;
+        }
+    }
+
+    enableHotkeys() {
+        this.disableHotkeys();
+
+        if (this.useHotkeys) {
+            for (let i = 1; i <= 10; i++) {
+                try {
+                    let [hk_1st_ten, hk_2nd_ten] = this[`hotkeyWin_${i}`].split("::");
+                    if (hk_1st_ten) {
+                        Main.keybindingManager.addHotKey(`winlistSwitchToWin_${i}`, hk_1st_ten, () => this.switchToWinNum(i));
+                    }
+                    if (hk_2nd_ten) {
+                        Main.keybindingManager.addHotKey(`winlistSwitchToWin_${i + 10}`, hk_2nd_ten, () => this.switchToWinNum(i + 10));
+                    }
+                } catch(err) {
+                    this.useHotkeys = false;
+                    global.log(`[window-list] exception at hotkeys registration: ${err.message}`);
+                }
+            }
+        }
+    }
+
+    disableHotkeys() {
+        for (let i = 1; i <= 20; i++) {
+            Main.keybindingManager.removeHotKey(`winlistSwitchToWin_${i}`);
+        }
+    }
+
+    switchToWinNum(window_num) {
+        let button_actors_list = this.manager_container.get_children();
+        if (button_actors_list) {
+            button_actors_list = button_actors_list.filter(function(a) { return a.visible; });
+            if (window_num >= 1 && window_num <= button_actors_list.length) {
+                button_actors_list[window_num - 1].metaWindow.activate(global.get_current_time());
+            }
         }
     }
 }
