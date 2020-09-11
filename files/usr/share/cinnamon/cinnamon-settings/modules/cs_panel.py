@@ -463,7 +463,7 @@ class PanelSpinButton(SpinButton, PanelWidgetBackend):
 
     def on_setting_changed(self, *args):
         value = self.get_value()
-        if value != int(self.content_widget.get_value()):
+        if value is not None and value != int(self.content_widget.get_value()):
             self.content_widget.set_value(value)
 
 class PanelJSONSpinButton(SpinButton, PanelWidgetBackend):
