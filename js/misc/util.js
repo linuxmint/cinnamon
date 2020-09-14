@@ -365,7 +365,7 @@ const _LATINISE_REGEX = {
     IJ: /\u0132/g,
     J: /[\u012E\u0134]/g,
     K: /\u0136/g,
-    L: /[\u0139\u013B\u013D\u0130F\u0141]/g,
+    L: /[\u0139\u013B\u013D\u013F\u0141]/g,
     N: /[\xD1\u0143\u0145\u0147\u014A]/g,
     O: /[\xD2-\xD6\xD8\u014C\u014E\u0150]/g,
     OE: /\u0152/g,
