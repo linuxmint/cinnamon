@@ -1295,13 +1295,13 @@ WindowContextMenu.prototype = {
 
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
-        if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
+        if (symbol === Clutter.KEY_space || symbol === Clutter.KEY_Return) {
             this.menu.toggle();
             return true;
-        } else if (symbol == Clutter.KEY_Escape && this.menu.isOpen) {
+        } else if (symbol === Clutter.KEY_Escape && this.menu.isOpen) {
             this.menu.close();
             return true;
-        } else if (symbol == Clutter.KEY_Down) {
+        } else if (symbol === Clutter.KEY_Down) {
             if (!this.menu.isOpen)
                 this.menu.toggle();
             this.menu.actor.navigate_focus(this.actor, Gtk.DirectionType.DOWN, false);

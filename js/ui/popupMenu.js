@@ -157,7 +157,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
     _onKeyPressEvent(actor, event) {
         let symbol = event.get_key_symbol();
 
-        if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
+        if (symbol === Clutter.KEY_space || symbol === Clutter.KEY_Return) {
             this.activate(event);
             return true;
         }
@@ -581,7 +581,7 @@ var PopupAlternatingMenuItem = class PopupAlternatingMenuItem extends PopupBaseM
 
         let key = event.get_key_symbol();
 
-        if (key == Clutter.KEY_Alt_L || key == Clutter.KEY_Alt_R)
+        if (key === Clutter.KEY_Alt_L || key === Clutter.KEY_Alt_R)
             this._updateStateFromModifiers();
 
         return false;
@@ -791,8 +791,8 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
 
     _onKeyPressEvent (actor, event) {
         let key = event.get_key_symbol();
-        if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
-            let delta = key == Clutter.KEY_Right ? 0.1 : -0.1;
+        if (key === Clutter.KEY_Right || key === Clutter.KEY_Left) {
+            let delta = key === Clutter.KEY_Right ? 0.1 : -0.1;
             this._value = Math.max(0, Math.min(this._value + delta, 1));
             this._slider.queue_repaint();
             this.emit('value-changed', this._value);
@@ -2565,7 +2565,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
     }
 
     _onKeyPressEvent(actor, event) {
-        if (event.get_key_symbol() == Clutter.KEY_Escape) {
+        if (event.get_key_symbol() === Clutter.KEY_Escape) {
             this.close(true);
             return true;
         }
@@ -2793,7 +2793,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
     _onKeyPressEvent(actor, event) {
         // Move focus back to parent menu if the user types Left.
 
-        if (this.isOpen && event.get_key_symbol() == Clutter.KEY_Left) {
+        if (this.isOpen && event.get_key_symbol() === Clutter.KEY_Left) {
             this.sourceActor._delegate.setActive(true);
             this.close(true);
             return true;
@@ -2874,11 +2874,11 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
     _onKeyPressEvent(actor, event) {
         let symbol = event.get_key_symbol();
 
-        if (symbol == Clutter.KEY_Right) {
+        if (symbol === Clutter.KEY_Right) {
             this.menu.open(true);
             this.menu.actor.navigate_focus(null, Gtk.DirectionType.DOWN, false);
             return true;
-        } else if (symbol == Clutter.KEY_Left && this.menu.isOpen) {
+        } else if (symbol === Clutter.KEY_Left && this.menu.isOpen) {
             this.menu.close();
             return true;
         }
@@ -2908,7 +2908,7 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
     }
 
     _onKeyPressEvent(actor, event) {
-        if (event.get_key_symbol() == Clutter.KEY_Escape) {
+        if (event.get_key_symbol() === Clutter.KEY_Escape) {
             this.close(true);
             return true;
         }
