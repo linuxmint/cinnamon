@@ -208,7 +208,7 @@ var _Draggable = new Lang.Class({
         // dragging and ignore all other key presses.
         } else if (event.type() == Clutter.EventType.KEY_PRESS && this._dragInProgress) {
             let symbol = event.get_key_symbol();
-            if (symbol == Clutter.Escape) {
+            if (symbol == Clutter.KEY_Escape) {
                 this._cancelDrag(event.get_time());
                 return true;
             }

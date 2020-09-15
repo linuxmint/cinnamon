@@ -2565,7 +2565,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
     }
 
     _onKeyPressEvent(actor, event) {
-        if (event.get_key_symbol() == Clutter.Escape) {
+        if (event.get_key_symbol() == Clutter.KEY_Escape) {
             this.close(true);
             return true;
         }
@@ -2908,7 +2908,7 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
     }
 
     _onKeyPressEvent(actor, event) {
-        if (event.get_key_symbol() == Clutter.Escape) {
+        if (event.get_key_symbol() == Clutter.KEY_Escape) {
             this.close(true);
             return true;
         }

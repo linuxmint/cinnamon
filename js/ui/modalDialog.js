@@ -157,12 +157,12 @@ ModalDialog.prototype = {
      *     {
      *         label: _("Cancel"),
      *         action: Lang.bind(this, this.callback),
-     *         key: Clutter.Escape
+     *         key: Clutter.KEY_Escape
      *     },
      *     {
      *         label: _("OK"),
      *         action: Lang.bind(this, this.destroy),
-     *         key: Clutter.Return
+     *         key: Clutter.KEY_Return
      *     }
      * ]);
      * ```
@@ -243,7 +243,7 @@ ModalDialog.prototype = {
         let modifiers = Cinnamon.get_event_state(keyPressEvent);
         let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
         let symbol = keyPressEvent.get_key_symbol();
-        if (symbol === Clutter.Escape && !(modifiers & ctrlAltMask)) {
+        if (symbol === Clutter.KEY_Escape && !(modifiers & ctrlAltMask)) {
             this.close();
             return;
         }

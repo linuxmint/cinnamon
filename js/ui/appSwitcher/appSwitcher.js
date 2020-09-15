@@ -257,46 +257,46 @@ AppSwitcher.prototype = {
 
         // Switch workspace
         if (modifiers & Clutter.ModifierType.CONTROL_MASK &&
-           (symbol === Clutter.Right || symbol === Clutter.Left)) {
+           (symbol === Clutter.KEY_Right || symbol === Clutter.KEY_Left)) {
             if (this._switchWorkspace(symbol))
                 return true;
         }
 
         // Extra keys
         switch (symbol) {
-            case Clutter.Escape:
+            case Clutter.KEY_Escape:
                 // Esc -> Close switcher
                 this.destroy();
                 return true;
 
-            case Clutter.Return:
+            case Clutter.KEY_Return:
                 // Enter -> Select active window
                 this._activateSelected();
                 return true;
 
-            case Clutter.d:
-            case Clutter.D:
+            case Clutter.KEY_d:
+            case Clutter.KEY_D:
                 // D -> Show desktop
                 this._showDesktop();
                 return true;
 
-            case Clutter.q:
-            case Clutter.Q:
+            case Clutter.KEY_q:
+            case Clutter.KEY_Q:
                 // Q -> Close window
                 this._windows[this._currentIndex].delete(global.get_current_time());
                 this._checkDestroyedTimeoutId = Mainloop.timeout_add(CHECK_DESTROYED_TIMEOUT,
                         Lang.bind(this, this._checkDestroyed, this._windows[this._currentIndex]));
                 return true;
 
-            case Clutter.Right:
-            case Clutter.Down:
+            case Clutter.KEY_Right:
+            case Clutter.KEY_Down:
                 // Right/Down -> navigate to next preview
                 if(this._checkSwitchTime())
                     this._next();
                 return true;
 
-            case Clutter.Left:
-            case Clutter.Up:
+            case Clutter.KEY_Left:
+            case Clutter.KEY_Up:
                 // Left/Up -> navigate to previous preview
                 if(this._checkSwitchTime())
                     this._previous();
@@ -373,9 +373,9 @@ AppSwitcher.prototype = {
 
         let current = global.screen.get_active_workspace_index();
 
-        if (direction === Clutter.Left)
+        if (direction === Clutter.KEY_Left)
             Main.wm.actionMoveWorkspaceLeft();
-        else if (direction === Clutter.Right)
+        else if (direction === Clutter.KEY_Right)
             Main.wm.actionMoveWorkspaceRight();
         else
             return false;
