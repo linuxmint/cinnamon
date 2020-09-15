@@ -93,10 +93,10 @@ HistoryManager.prototype = {
 
     _onEntryKeyPress: function(entry, event) {
         let symbol = event.get_key_symbol();
-        if (symbol == Clutter.KEY_Up) {
+        if (symbol === Clutter.KEY_Up) {
             this.prevItem(entry.get_text());
             return true;
-        } else if (symbol == Clutter.KEY_Down) {
+        } else if (symbol === Clutter.KEY_Down) {
             this.nextItem(entry.get_text());
             return true;
         }

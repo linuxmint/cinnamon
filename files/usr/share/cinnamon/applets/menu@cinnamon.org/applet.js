@@ -1011,7 +1011,7 @@ class Menu extends Applet.AppletPopupMenu {
     }
 
     _onKeyPressEvent(actor, event) {
-        if (event.get_key_symbol() == Clutter.KEY_Escape) {
+        if (event.get_key_symbol() === Clutter.KEY_Escape) {
             this.close(false);
             return true;
         }

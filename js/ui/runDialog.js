@@ -212,7 +212,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
     _onKeyPress: function (o, e) {
         let symbol = e.get_key_symbol();
-        if (symbol == Clutter.KEY_Return || symbol == Clutter.KEY_KP_Enter) {
+        if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) {
             if (o.get_text().trim() == "") {
                 return false;
             }
@@ -243,26 +243,26 @@ __proto__: ModalDialog.ModalDialog.prototype,
             }
             return true;
         }
-        if (symbol == Clutter.KEY_Escape || symbol == Clutter.KEY_Super_L || symbol == Clutter.KEY_Super_R) {
+        if (symbol === Clutter.KEY_Escape || symbol === Clutter.KEY_Super_L || symbol === Clutter.KEY_Super_R) {
             this.close();
             return true;
         }
-        if (symbol == Clutter.KEY_Tab) {
+        if (symbol === Clutter.KEY_Tab) {
             this._updateCompletions(NAVIGATE_TYPE_TAB);
             return true;
         }
 
         if (this._completionBox.visible) {
-            if (symbol == Clutter.KEY_Up) {
+            if (symbol === Clutter.KEY_Up) {
                 this._updateCompletions(NAVIGATE_TYPE_ARROW, UP);
                 return true;
-            } else if (symbol == Clutter.KEY_Down) {
+            } else if (symbol === Clutter.KEY_Down) {
                 this._updateCompletions(NAVIGATE_TYPE_ARROW, DOWN);
                 return true;
             }
         }
 
-        if (symbol == Clutter.KEY_BackSpace) {
+        if (symbol === Clutter.KEY_BackSpace) {
             this._completionSelected = 0;
             this._completionBox.hide();
             this._oldText = "";

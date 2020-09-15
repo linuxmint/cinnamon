@@ -174,8 +174,8 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
 
     _onKeyPressEvent(actor, event) {
         let key = event.get_key_symbol();
-        if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
-            let delta = key == Clutter.KEY_Right ? VOLUME_ADJUSTMENT_STEP : -VOLUME_ADJUSTMENT_STEP;
+        if (key === Clutter.KEY_Right || key === Clutter.KEY_Left) {
+            let delta = key === Clutter.KEY_Right ? VOLUME_ADJUSTMENT_STEP : -VOLUME_ADJUSTMENT_STEP;
             this._value = Math.max(0, Math.min(this._value + delta/this.applet._volumeMax*this.applet._volumeNorm, 1));
             this._slider.queue_repaint();
             this.emit('value-changed', this._value);
