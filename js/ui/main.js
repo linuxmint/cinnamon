@@ -1129,7 +1129,7 @@ function _stageEventHandler(actor, event) {
         return false;
 
     // This isn't a Meta.KeyBindingAction yet
-    if (symbol == Clutter.Super_L || symbol == Clutter.Super_R) {
+    if (symbol == Clutter.KEY_Super_L || symbol == Clutter.KEY_Super_R) {
         if (expo.visible) {
             expo.hide();
             return true;

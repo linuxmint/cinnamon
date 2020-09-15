@@ -1385,15 +1385,15 @@ Workspace.prototype = {
         // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
         let action = global.display.get_keybinding_action(keycode, modifiers);
 
-        if ((symbol === Clutter.ISO_Left_Tab || symbol === Clutter.Tab)  && !(modifiers & ctrlAltMask)) {
-            let increment = symbol === Clutter.ISO_Left_Tab ? -1 : 1;
+        if ((symbol === Clutter.KEY_ISO_Left_Tab || symbol === Clutter.KEY_Tab)  && !(modifiers & ctrlAltMask)) {
+            let increment = symbol === Clutter.KEY_ISO_Left_Tab ? -1 : 1;
             this.selectNextNonEmptyMonitor(this.currentMonitorIndex, increment);
             return true;
         }
 
         let activeMonitor = this._monitors[this.currentMonitorIndex];
 
-        if ((symbol === Clutter.m  || symbol === Clutter.M || symbol === Clutter.KEY_space) &&
+        if ((symbol === Clutter.KEY_m  || symbol === Clutter.KEY_M || symbol === Clutter.KEY_space) &&
             (modifiers & Clutter.ModifierType.MOD1_MASK) && !(modifiers & Clutter.ModifierType.CONTROL_MASK))
         {
             activeMonitor.showMenuForSelectedWindow();
@@ -1401,17 +1401,17 @@ Workspace.prototype = {
         }
 
         if (action === Meta.KeyBindingAction.CLOSE ||
-            symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            symbol === Clutter.KEY_w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             activeMonitor.closeSelectedWindow();
             return true;
         }
 
-        if ((symbol === Clutter.m || symbol === Clutter.M) && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+        if ((symbol === Clutter.KEY_m || symbol === Clutter.KEY_M) && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             activeMonitor.moveSelectedWindowToNextMonitor();
             return true;
         }
 
-        if (symbol === Clutter.Return || symbol === Clutter.KEY_space || symbol === Clutter.KP_Enter) {
+        if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_space || symbol === Clutter.KEY_KP_Enter) {
             if (activeMonitor.activateSelectedWindow()) {
                 return true;
             }

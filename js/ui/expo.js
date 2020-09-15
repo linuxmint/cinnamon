@@ -124,16 +124,16 @@ Expo.prototype = {
                         return true;
                     }
                     let symbol = event.get_key_symbol();
-                    if (symbol === Clutter.plus || symbol === Clutter.Insert) {
+                    if (symbol === Clutter.KEY_plus || symbol === Clutter.KEY_Insert) {
                         this._workspaceOperationPending = true;
                     }
                     let modifiers = Cinnamon.get_event_state(event);
-                    if ((symbol === Clutter.Delete && (modifiers & ctrlAltMask) !== ctrlAltMask)
-                        || symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK)
+                    if ((symbol === Clutter.KEY_Delete && (modifiers & ctrlAltMask) !== ctrlAltMask)
+                        || symbol === Clutter.KEY_w && modifiers & Clutter.ModifierType.CONTROL_MASK)
                     {
                         this._workspaceOperationPending = true;
                     }
-                    if (symbol === Clutter.Escape) {
+                    if (symbol === Clutter.KEY_Escape) {
                         if (!this._workspaceOperationPending) {
                             this.hide();
                         }
@@ -147,7 +147,7 @@ Expo.prototype = {
             Lang.bind(this, function(actor, event) {
                 if (this._shown) {
                     let symbol = event.get_key_symbol();
-                    if (symbol === Clutter.plus || symbol === Clutter.Insert) {
+                    if (symbol === Clutter.KEY_plus || symbol === Clutter.KEY_Insert) {
                         if (this._workspaceOperationPending) {
                             this._workspaceOperationPending = false;
                             Main._addWorkspace();
@@ -155,8 +155,8 @@ Expo.prototype = {
                         return true;
                     }
                     let modifiers = Cinnamon.get_event_state(event);
-                    if ((symbol === Clutter.Delete && (modifiers & ctrlAltMask) !== ctrlAltMask)
-                        || symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK)
+                    if ((symbol === Clutter.KEY_Delete && (modifiers & ctrlAltMask) !== ctrlAltMask)
+                        || symbol === Clutter.KEY_w && modifiers & Clutter.ModifierType.CONTROL_MASK)
                     {
                         if (this._workspaceOperationPending) {
                             this._workspaceOperationPending = false;

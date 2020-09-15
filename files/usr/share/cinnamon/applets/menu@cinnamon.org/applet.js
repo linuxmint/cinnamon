@@ -209,7 +209,7 @@ class SimpleMenuItem {
         if (this.activate &&
             (symbol === Clutter.KEY_space ||
              symbol === Clutter.KEY_Return ||
-             symbol === Clutter.KP_Enter)) {
+             symbol === Clutter.KEY_KP_Enter)) {
             this.activate();
             return Clutter.EVENT_STOP;
         }
@@ -1011,7 +1011,7 @@ class Menu extends Applet.AppletPopupMenu {
     }
 
     _onKeyPressEvent(actor, event) {
-        if (event.get_key_symbol() == Clutter.Escape) {
+        if (event.get_key_symbol() == Clutter.KEY_Escape) {
             this.close(false);
             return true;
         }
@@ -1442,8 +1442,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _navigateContextMenu(button, symbol, ctrlKey) {
-        if (symbol === Clutter.KEY_Menu || symbol === Clutter.Escape ||
-            (ctrlKey && (symbol === Clutter.KEY_Return || symbol === Clutter.KP_Enter))) {
+        if (symbol === Clutter.KEY_Menu || symbol === Clutter.KEY_Escape ||
+            (ctrlKey && (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter))) {
             this.toggleContextMenu(button);
             return;
         }
@@ -1473,7 +1473,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         if (!this._activeContextMenuItem) {
-            if (symbol === Clutter.KEY_Return || symbol === Clutter.KP_Enter) {
+            if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) {
                 button.activate();
             } else {
                 this._activeContextMenuItem = menuItems[goUp ? menuItemsLength - 1 : minIndex];
@@ -1481,7 +1481,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
             return;
         } else if (this._activeContextMenuItem &&
-            (symbol === Clutter.KEY_Return || symbol === Clutter.KP_Enter)) {
+            (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter)) {
             this._activeContextMenuItem.activate();
             this._activeContextMenuItem = null;
             return;
@@ -1538,17 +1538,17 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 case Clutter.KEY_Up:
                 case Clutter.KEY_Down:
                 case Clutter.KEY_Return:
-                case Clutter.KP_Enter:
+                case Clutter.KEY_KP_Enter:
                 case Clutter.KEY_Menu:
                 case Clutter.KEY_Page_Up:
                 case Clutter.KEY_Page_Down:
-                case Clutter.Escape:
+                case Clutter.KEY_Escape:
                     this._navigateContextMenu(this._activeContextMenuParent, symbol, ctrlKey);
                     break;
                 case Clutter.KEY_Right:
                 case Clutter.KEY_Left:
-                case Clutter.Tab:
-                case Clutter.ISO_Left_Tab:
+                case Clutter.KEY_Tab:
+                case Clutter.KEY_ISO_Left_Tab:
                     continueNavigation = true;
                     break;
             }
@@ -1594,13 +1594,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             (this._activeContainer === this.categoriesBox || this._activeContainer === null))
                     whichWay = "none";
                 break;
-            case Clutter.Tab:
+            case Clutter.KEY_Tab:
                 if (!this.searchActive)
                     whichWay = "right";
                 else
                     navigationKey = false;
                 break;
-            case Clutter.ISO_Left_Tab:
+            case Clutter.KEY_ISO_Left_Tab:
                 if (!this.searchActive)
                     whichWay = "left";
                 else
@@ -1858,7 +1858,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 return false;
             index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
         } else {
-            if ((this._activeContainer && this._activeContainer !== this.categoriesBox) && (symbol === Clutter.KEY_Return || symbol === Clutter.KP_Enter)) {
+            if ((this._activeContainer && this._activeContainer !== this.categoriesBox) && (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter)) {
                 if (!ctrlKey) {
                     item_actor = this._activeContainer.get_child_at_index(this._selectedItemIndex);
                     item_actor._delegate.activate();
@@ -1871,7 +1871,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 item_actor = this.applicationsBox.get_child_at_index(this._selectedItemIndex);
                 this.toggleContextMenu(item_actor._delegate);
                 return true;
-            } else if (!this.searchActive && this._activeContainer === this.favoritesBox && symbol === Clutter.Delete) {
+            } else if (!this.searchActive && this._activeContainer === this.favoritesBox && symbol === Clutter.KEY_Delete) {
                 item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex);
                 if (item_actor._delegate instanceof FavoritesButton) {
                     let favorites = AppFavorites.getAppFavorites().getFavorites();
@@ -1902,18 +1902,18 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 appFavorites.moveFavoriteToPos(id, favPos);
                 item_actor = this.favoritesBox.get_child_at_index(favPos);
                 this._scrollToButton(item_actor._delegate, this.favoritesScrollBox);
-            } else if (this.searchFilesystem && (this._fileFolderAccessActive || symbol === Clutter.slash)) {
-                if (symbol === Clutter.Return || symbol === Clutter.KP_Enter) {
+            } else if (this.searchFilesystem && (this._fileFolderAccessActive || symbol === Clutter.KEY_slash)) {
+                if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) {
                     if (this._run(this.searchEntry.get_text())) {
                         this.menu.close();
                     }
                     return true;
                 }
-                if (symbol === Clutter.Escape) {
+                if (symbol === Clutter.KEY_Escape) {
                     this.searchEntry.set_text('');
                     this._fileFolderAccessActive = false;
                 }
-                if (symbol === Clutter.slash) {
+                if (symbol === Clutter.KEY_slash) {
                     // Need preload data before get completion. GFilenameCompleter load content of parent directory.
                     // Parent directory for /usr/include/ is /usr/. So need to add fake name('a').
                     let text = this.searchEntry.get_text().concat('/a');
@@ -1926,7 +1926,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
                     return false;
                 }
-                if (symbol === Clutter.Tab) {
+                if (symbol === Clutter.KEY_Tab) {
                     let text = actor.get_text();
                     let prefix;
                     if (!text.includes(' '))
@@ -1942,11 +1942,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     }
                     return true;
                 }
-                if (symbol === Clutter.ISO_Left_Tab) {
+                if (symbol === Clutter.KEY_ISO_Left_Tab) {
                     return true;
                 }
                 return false;
-            } else if (symbol === Clutter.Tab || symbol === Clutter.ISO_Left_Tab) {
+            } else if (symbol === Clutter.KEY_Tab || symbol === Clutter.KEY_ISO_Left_Tab) {
                 return true;
             } else {
                 return false;

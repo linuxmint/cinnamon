@@ -128,9 +128,9 @@ WorkspacesView.prototype = {
         let symbol = event.get_key_symbol();
 
         switch (symbol) {
-            case Clutter.Escape:
-            case Clutter.Super_L:
-            case Clutter.Super_R:
+            case Clutter.KEY_Escape:
+            case Clutter.KEY_Super_L:
+            case Clutter.KEY_Super_R:
                 Main.overview.hide();
                 return true;
             default:
