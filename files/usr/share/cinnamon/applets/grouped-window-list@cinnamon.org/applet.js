@@ -676,78 +676,81 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     handleScroll(e, sourceFromAppGroup) {
-        if ((this.state.settings.scrollBehavior === 1 && this.state.settings.leftClickAction !== 3)
-            || (e && sourceFromAppGroup && !this.state.settings.thumbnailScrollBehavior)) {
-            return;
-        }
+        if( (this.state.settings.thumbnailScrollBehavior) || 
+            (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior !== 3
+             && !e && sourceFromAppGroup)  ||
+            (this.state.settings.leftClickAction !== 3 && this.state.settings.scrollBehavior === 3               
+                        && e && !sourceFromAppGroup)  || 
+            (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior === 3)) {
 
-        this.state.set({scrollActive: true});
+            this.state.set({scrollActive: true});
 
-        let isAppScroll = this.state.settings.scrollBehavior === 2;
-        let direction, source;
+            let isAppScroll = this.state.settings.scrollBehavior === 2;
+            let direction, source;
 
-        if (sourceFromAppGroup) {
-            isAppScroll = false;
-            direction = e ? e.get_scroll_direction() : 1;
-            source = sourceFromAppGroup;
-        } else {
-            direction = e.get_scroll_direction();
-            source = e.get_source()._delegate;
-        }
-        let lastFocusedApp, z, count
-
-        if (isAppScroll) {
-            lastFocusedApp = this.appLists[this.state.currentWs].listState.lastFocusedApp;
-            if (!lastFocusedApp) {
-                lastFocusedApp = this.appLists[this.state.currentWs].appList[0].groupState.appId
-            }
-            let focusedIndex = findIndex(this.appLists[this.state.currentWs].appList, function(appGroup) {
-                return appGroup.groupState.metaWindows.length > 0 && appGroup.groupState.appId === lastFocusedApp;
-            });
-            z = direction === 0 ? focusedIndex - 1 : focusedIndex + 1;
-            count = this.appLists[this.state.currentWs].appList.length - 1;
-        } else {
-            if (!source.groupState || source.groupState.metaWindows.length < 1) {
-                return;
-            }
-            let focusedIndex = findIndex(source.groupState.metaWindows, function(metaWindow) {
-                return metaWindow === source.groupState.lastFocused;
-            });
-            z = direction === 0 ? focusedIndex - 1 : focusedIndex + 1;
-            count = source.groupState.metaWindows.length - 1;
-        }
-
-        let limit = count * 2;
-
-        while ((isAppScroll
-            && (!this.appLists[this.state.currentWs].appList[z]
-                || !this.appLists[this.state.currentWs].appList[z].groupState.lastFocused))
-            || (!isAppScroll &&
-                (!source.groupState.metaWindows[z]
-                    || source.groupState.metaWindows[z] === source.groupState.lastFocused))) {
-            limit--;
-            if (direction === 0) {
-                z -= 1;
+            if (sourceFromAppGroup) {
+                isAppScroll = false;
+                direction = e ? e.get_scroll_direction() : 1;
+                source = sourceFromAppGroup;
             } else {
-                z += 1;
+                direction = e.get_scroll_direction();
+                source = e.get_source()._delegate;
             }
-            if (limit < 0) {
-                if (count === 0) {
+            let lastFocusedApp, z, count
+
+            if (isAppScroll) {
+                lastFocusedApp = this.appLists[this.state.currentWs].listState.lastFocusedApp;
+                if (!lastFocusedApp) {
+                    lastFocusedApp = this.applists[this.state.currentWs].applist[0].groupState.appId
+                }
+                let focusedIndex = findIndex(this.applists[this.state.currentws].appList, function(appgroup) {
+                    return appGroup.groupState.metaWindows.length > 0 && appGroup.groupState.appId === lastFocusedApp;
+                });
+                z = direction === 0 ? focusedIndex - 1 : focusedIndex + 1;
+                count = this.appLists[this.state.currentWs].appList.length - 1;
+            } else {
+                if (!source.groupState || source.groupState.metaWindows.length < 1) {
+                    return;
+                }
+                let focusedIndex = findIndex(source.groupState.metaWindows, function(metaWindow) {
+                    return metaWindow === source.groupState.lastFocused;
+                });
+                z = direction === 0 ? focusedIndex - 1 : focusedIndex + 1;
+                count = source.groupState.metaWindows.length - 1;
+            }
+
+            let limit = count * 2;
+
+            while ((isAppScroll
+                && (!this.appLists[this.state.currentWs].appList[z]
+                    || !this.appLists[this.state.currentWs].appList[z].groupState.lastFocused))
+                || (!isAppScroll &&
+                    (!source.groupState.metaWindows[z]
+                        || source.groupState.metaWindows[z] === source.groupState.lastFocused))) {
+                limit--;
+                if (direction === 0) {
+                    z -= 1;
+                } else {
+                    z += 1;
+                }
+                if (limit < 0) {
+                    if (count === 0) {
+                        z = 0;
+                    }
+                    break;
+                } else if (z < 0) {
+                    z = count;
+                } else if (z > count) {
                     z = 0;
                 }
-                break;
-            } else if (z < 0) {
-                z = count;
-            } else if (z > count) {
-                z = 0;
             }
-        }
 
-        let _window = isAppScroll ?
-            this.appLists[this.state.currentWs].appList[z].groupState.lastFocused
-            : source.groupState.metaWindows[z];
-        Main.activateWindow(_window, global.get_current_time());
-        setTimeout(() => this.state.set({scrollActive: false}, 4000));
+            let _window = isAppScroll ?
+                this.appLists[this.state.currentWs].appList[z].groupState.lastFocused
+                : source.groupState.metaWindows[z];
+            Main.activateWindow(_window, global.get_current_time());
+            setTimeout(() => this.state.set({scrollActive: false}, 4000));
+        }
     }
 
     handleDragOver(source, actor, x, y) {
