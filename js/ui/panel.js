@@ -1712,6 +1712,7 @@ PanelZoneDNDHandler.prototype = {
 
         let vertical_panel = this._panelZone.get_parent()._delegate.is_vertical;
         let children = this._panelZone.get_children();
+        let horizontal_rtl = St.Widget.get_default_direction () === St.TextDirection.RTL && !vertical_panel;
 
         if (this._origAppletCenters == null) {
             this._origAppletCenters = [];
@@ -1730,25 +1731,23 @@ PanelZoneDNDHandler.prototype = {
 
                 this._origAppletCenters.push(center);
             }
+
+            if(horizontal_rtl) {
+                this._origAppletCenters.reverse();
+            }
         }
 
-        let pos = 0;
-        let i = 0;
+        let dragPos = vertical_panel ? y : x;
+        let pos = 0, i = 0;
 
-        while (i < this._origAppletCenters.length) {
-            if (vertical_panel) {
-                if (y > (this._origAppletCenters[i])) {
-                    pos = ++i;
-                } else {
-                    break;
-                }
-            } else {
-                if (x > (this._origAppletCenters[i])) {
-                    pos = ++i;
-                } else {
-                    break;
-                }
-            }
+        while (i < this._origAppletCenters.length && dragPos > this._origAppletCenters[i]) {
+            i++;
+        }
+
+        if(horizontal_rtl) {
+            pos = this._origAppletCenters.length - i;
+        } else {
+            pos = i;
         }
 
         if (pos != this._dragPlaceholderPos) {
@@ -2832,7 +2831,6 @@ Panel.prototype = {
     },
 
     _set_vertical_panel_style: function() {
-
         this._leftBox.add_style_class_name('vertical');
         this._leftBox.set_vertical(true);
         this._leftBox.set_x_align(Clutter.ActorAlign.FILL);
@@ -2850,11 +2848,9 @@ Panel.prototype = {
     },
 
     _set_horizontal_panel_style: function() {
-        let rtl = this.actor.get_direction() === St.TextDirection.RTL;
-
         this._leftBox.remove_style_class_name('vertical');
         this._leftBox.set_vertical(false);
-        this._leftBox.set_x_align(rtl ? Clutter.ActorAlign.END : Clutter.ActorAlign.START);
+        this._leftBox.set_x_align(Clutter.ActorAlign.START);
         this._leftBox.set_y_align(Clutter.ActorAlign.FILL);
 
         this._centerBox.remove_style_class_name('vertical');
@@ -2864,7 +2860,7 @@ Panel.prototype = {
 
         this._rightBox.remove_style_class_name('vertical');
         this._rightBox.set_vertical(false);
-        this._rightBox.set_x_align(rtl ? Clutter.ActorAlign.START : Clutter.ActorAlign.END);
+        this._rightBox.set_x_align(Clutter.ActorAlign.END);
         this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
     },
 
