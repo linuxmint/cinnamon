@@ -142,7 +142,7 @@ class Module:
 
         section = power_page.add_section(_("Power Options"))
 
-        lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep = get_available_options(self.up_client)
+        lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep, can_hibernate = get_available_options(self.up_client)
 
         size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -187,9 +187,16 @@ class Module:
             section.add_row(GSettingsComboBox(_("When the battery is critically low"), CSD_SCHEMA, "critical-battery-action", critical_options, size_group=size_group))
 
         if can_suspend and can_hybrid_sleep:
-            switch = GSettingsSwitch(_("Enable Hybrid Sleep"), CSM_SCHEMA, "prefer-hybrid-sleep")
-            switch.set_tooltip_text(_("Replaces Suspend with Hybrid Sleep"))
-            section.add_row(switch)
+            self.hybrid_switch = GSettingsSwitch(_("Enable Hybrid Sleep"), CSM_SCHEMA, "prefer-hybrid-sleep")
+            self.hybrid_switch.set_tooltip_text(_("Replaces Suspend with Hybrid Sleep"))
+            self.hybrid_switch.content_widget.connect("notify::active", self.on_hybrid_toggled)
+            section.add_row(self.hybrid_switch)
+
+        if can_suspend and can_hibernate:
+            self.sth_switch = GSettingsSwitch(_("Enable Hibernate after suspend"), CSM_SCHEMA, "suspend-then-hibernate")
+            self.sth_switch.set_tooltip_text(_("First suspend the machine and hibernate it after a certain amount of time."))
+            self.sth_switch.content_widget.connect("notify::active", self.on_sth_toggled)
+            section.add_row(self.sth_switch)
 
         # Batteries
 
@@ -255,6 +262,16 @@ class Module:
             else:
                 section = page.add_section(_("Keyboard backlight"))
                 section.add_row(BrightnessSlider(section, proxy, _("Backlight brightness")))
+
+    def on_sth_toggled(self, widget, gparam):
+        active = widget.get_active()
+        if active and hasattr(self, "hybrid_switch"):
+            self.hybrid_switch.set_value(False)
+
+    def on_hybrid_toggled(self, widget, gparam):
+        active = widget.get_active()
+        if active and hasattr(self, "sth_switch"):
+            self.sth_switch.set_value(False)
 
     def build_battery_page(self, *args):
 
@@ -634,7 +651,7 @@ def get_available_options(up_client):
         for options in lid_options, button_power_options, critical_options:
             remove(options, "hibernate")
 
-    return lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep
+    return lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep, can_hibernate
 
 class BrightnessSlider(SettingsWidget):
     step = 5
