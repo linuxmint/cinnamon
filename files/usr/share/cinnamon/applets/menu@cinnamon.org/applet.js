@@ -2807,7 +2807,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _matchNames(buttons, pattern){
         let ret = [];
-        let regexpPattern = new RegExp("\\b" + Util.escapeRegExp(pattern));
+        let regexpPattern = new RegExp("(?:^|\\s|;|,|.)" + Util.escapeRegExp(pattern));
 
         for (let i = 0; i < buttons.length; i++) {
             if (buttons[i].type == "recent-clear") {
@@ -2830,7 +2830,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             return [];
 
         let apps = [];
-        let regexpPattern = new RegExp("\\b" + Util.escapeRegExp(pattern));
+        let regexpPattern = new RegExp("(?:^|\\s|;|,|.)" + Util.escapeRegExp(pattern));
 
         for (let i in this._applicationsButtons) {
             let button = this._applicationsButtons[i];
