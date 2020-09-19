@@ -340,11 +340,10 @@ class AppList {
     windowRemoved(metaWorkspace, metaWindow) {
         if (!this.state) return;
 
-        if ((metaWindow.is_on_all_workspaces() || this.state.settings.showAllWorkspaces)
-            && !this.state.removingWindowFromWorkspaces) {
+        if (this.state.settings.showAllWorkspaces || !this.state.removingWindowFromWorkspaces) {
             // Abort the remove if the window is just changing workspaces, window
             // should always remain indexed on all workspaces while its mapped.
-            if (!metaWindow.showing_on_its_workspace()) return;
+            if (metaWindow.has_focus()) return;
             this.state.removingWindowFromWorkspaces = true;
             this.state.trigger('removeWindowFromAllWorkspaces', metaWindow);
             return;
