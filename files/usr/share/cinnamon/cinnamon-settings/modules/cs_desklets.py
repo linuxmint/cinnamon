@@ -73,8 +73,8 @@ class ManageDeskletsPage(ManageSpicesPage):
     directories = [("%s/.local/share/cinnamon/desklets") % GLib.get_home_dir(), "/usr/share/cinnamon/desklets"]
     collection_type = "desklet"
     installed_page_title = _("Installed desklets")
-    instance_button_text = _("Add")
-    remove_button_text = _("Remove")
+    instance_button_text = _("Enable")
+    remove_button_text = _("Disable")
     uninstall_button_text = _("Uninstall")
     restore_button_text = _("Remove all")
 

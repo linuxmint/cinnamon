@@ -51,8 +51,8 @@ class ManageAppletsPage(ManageSpicesPage):
     directories = [("%s/.local/share/cinnamon/applets") % GLib.get_home_dir(), "/usr/share/cinnamon/applets"]
     collection_type = "applet"
     installed_page_title = _("Installed applets")
-    instance_button_text = _("Add")
-    remove_button_text = _("Remove")
+    instance_button_text = _("Enable")
+    remove_button_text = _("Disable")
     uninstall_button_text = _("Uninstall")
     restore_button_text = _("Reset all")
 
