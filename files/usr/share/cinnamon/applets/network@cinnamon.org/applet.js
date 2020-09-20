@@ -1614,19 +1614,10 @@ NMDeviceWireless.prototype = {
         if (!this._shouldShowConnectionList())
             return;
 
-        if(this._activeConnection) {
-            this._createActiveConnectionItem();
-            this.section.addMenuItem(this._activeConnectionItem);
-        }
-
-        let activeOffset = this._activeConnectionItem ? 1 : 0;
-
         for(let j = 0; j < this._networks.length; j++) {
             let apObj = this._networks[j];
-            if (apObj == this._activeNetwork)
-                continue;
 
-            this._createNetworkItem(apObj, j + activeOffset);
+            this._createNetworkItem(apObj, j);
         }
     },
 };
