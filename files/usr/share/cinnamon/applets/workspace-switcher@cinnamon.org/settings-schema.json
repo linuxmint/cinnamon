@@ -8,5 +8,11 @@
             "A visual representation of the workspaces": "visual",
             "Simple buttons": "buttons"
         }
+    },
+    "reverse-scrolling": {
+        "type": "switch",
+        "default": false,
+        "description": "Reverse scrolling direction",
+        "tooltip": "Reverse the direction of the scroll in the workspace list."
     }
 }
