@@ -1302,6 +1302,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _initial_cat_selection (start_index) {
+        if(this.lastSelectedCategory !== null) //if a category is already selected
+            return;
         let n = this._applicationsButtons.length;
         for (let i = start_index; i < n; i++) {
             this._applicationsButtons[i].actor.show();
