@@ -2810,7 +2810,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let regexpPattern = new RegExp(Util.escapeRegExp(pattern));
 
         for (let i = 0; i < buttons.length; i++) {
-            if (buttons[i].type == "recent-clear") {
+            if (buttons[i].type == "recent-clear" || buttons[i].type == "no-recent") {
                 continue;
             }
             let res = buttons[i].searchStrings[0].match(regexpPattern);
