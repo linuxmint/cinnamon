@@ -79,7 +79,7 @@ def translate(uuid, string):
 
         try:
             result = result.decode("utf-8")
-        except:
+        except (AttributeError, UnicodeDecodeError):
             result = result
 
         if result != string:
@@ -111,7 +111,7 @@ class MainWindow(object):
         opts = []
         try:
             instance_id = int(instance_id[0])
-        except:
+        except (TypeError, ValueError, IndexError):
             instance_id = None
             try:
                 if len(sys.argv) > 3:
@@ -159,7 +159,7 @@ class MainWindow(object):
         except dbus.exceptions.DBusException as e:
             print(e)
 
-    def _on_proxy_ready (self, object, result, data=None):
+    def _on_proxy_ready (self, obj, result, data=None):
         global proxy
         proxy = Gio.DBusProxy.new_for_bus_finish(result)
 
@@ -261,7 +261,7 @@ class MainWindow(object):
         self.window.set_title(translate(self.uuid, self.xlet_meta["name"]))
 
         def check_sizing(widget, data=None):
-            minreq, natreq = self.window.get_preferred_size()
+            natreq = self.window.get_preferred_size()[1]
             monitor = Gdk.Display.get_default().get_monitor_at_window(self.window.get_window())
 
             height = monitor.get_workarea().height
@@ -296,7 +296,8 @@ class MainWindow(object):
             if multi_instance:
                 try:
                     int(instance_id)
-                except:
+                except (TypeError, ValueError):
+                    traceback.print_exc()
                     continue # multi-instance should have file names of the form [instance-id].json
 
                 instance_exists = False
@@ -328,8 +329,8 @@ class MainWindow(object):
                         if key in ("description", "tooltip", "units"):
                             try:
                                 settings_map[setting][key] = translate(self.uuid, settings_map[setting][key])
-                            except:
-                                pass
+                            except (KeyError, ValueError):
+                                traceback.print_exc()
                         elif key in "options":
                             new_opt_data = collections.OrderedDict()
                             opt_data = settings_map[setting][key]
@@ -375,8 +376,8 @@ class MainWindow(object):
                 page = self.create_custom_widget(page_def, info['settings'])
                 if page is None:
                     continue
-                elif not isinstance(widget, SettingsPage):
-                    print('widget is not of type SettingsPage')
+                elif not isinstance(page, SettingsPage):
+                    print('page is not of type SettingsPage')
                     continue
             else:
                 page = SettingsPage()
@@ -468,7 +469,7 @@ class MainWindow(object):
                 spec.loader.exec_module(module)
                 self.custom_modules[file_name] = module
 
-        except Exception as e:
+        except KeyError:
             traceback.print_exc()
             print('problem loading custom widget')
             return None
@@ -507,8 +508,8 @@ class MainWindow(object):
             index +=1
         self.set_instance(self.instance_info[index])
 
-    def unpack_args(self, props):
-        args = {}
+    # def unpack_args(self, args):
+    #    args = {}
 
     def backup(self, *args):
         dialog = Gtk.FileChooserDialog(_("Select or enter file to export to"),
@@ -576,6 +577,6 @@ if __name__ == "__main__":
         print("Error: Invalid xlet type %s", sys.argv[1])
         quit()
     uuid = sys.argv[2]
-    window = MainWindow(xlet_type, *sys.argv[2:])
+    window = MainWindow(xlet_type, uuid, *sys.argv[3:])
     signal.signal(signal.SIGINT, window.quit)
     Gtk.main()
