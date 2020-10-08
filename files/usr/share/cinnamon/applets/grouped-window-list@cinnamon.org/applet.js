@@ -288,6 +288,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         Gettext.bindtextdomain(metadata.uuid, GLib.get_home_dir() + '/.local/share/locale');
 
         this.getAutoStartApps();
+        this.onSwitchWorkspace = throttle(this.onSwitchWorkspace, 35, false); //Note: causes a 35ms delay in execution
         this.signals.connect(this.actor, 'scroll-event', (c, e) => this.handleScroll(e));
         this.signals.connect(global, 'scale-changed', (...args) => this.onUIScaleChange(...args));
         this.signals.connect(global.window_manager, 'switch-workspace', (...args) => this.onSwitchWorkspace(...args));
