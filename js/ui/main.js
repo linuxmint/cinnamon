@@ -327,7 +327,7 @@ function start() {
     // The stage is always covered so Clutter doesn't need to clear it; however
     // the color is used as the default contents for the Muffin root background
     // actor so set it anyways.
-    global.stage.color = DEFAULT_BACKGROUND_COLOR;
+    global.stage.background_color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
 
     Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");

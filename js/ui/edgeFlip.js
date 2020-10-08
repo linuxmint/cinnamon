@@ -6,7 +6,7 @@ const Mainloop = imports.mainloop;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 
-class EdgeFlipper {
+var EdgeFlipper = class {
     constructor(side, func) {
         this.side = side;
         this.func = func;
@@ -70,4 +70,4 @@ class EdgeFlipper {
         this.entered = false;
         this.activated = false;
     }
-}
+};
