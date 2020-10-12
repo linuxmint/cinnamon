@@ -255,9 +255,13 @@ class MainWindow(object):
         if "icon" in self.xlet_meta:
             self.window.set_icon_name(self.xlet_meta["icon"])
         else:
-            icon_path = os.path.join(self.xlet_dir, "icon.png")
+            icon_path = os.path.join(self.xlet_dir, "icon.svg")
             if os.path.exists(icon_path):
                 self.window.set_icon_from_file(icon_path)
+            else:
+                icon_path = os.path.join(self.xlet_dir, "icon.png")
+                if os.path.exists(icon_path):
+                    self.window.set_icon_from_file(icon_path)
         self.window.set_title(translate(self.uuid, self.xlet_meta["name"]))
 
         def check_sizing(widget, data=None):
