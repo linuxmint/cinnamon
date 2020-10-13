@@ -1858,7 +1858,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 return false;
             index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
         } else {
-            if ((this._activeContainer && this._activeContainer !== this.categoriesBox) && (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter)) {
+            if ((this._activeContainer && this._activeContainer !== this.categoriesBox) &&
+                (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter)) {
                 if (!ctrlKey) {
                     item_actor = this._activeContainer.get_child_at_index(this._selectedItemIndex);
                     item_actor._delegate.activate();

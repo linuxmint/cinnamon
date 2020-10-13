@@ -207,7 +207,8 @@ st_button_key_press (ClutterActor    *actor,
   if (button->priv->button_mask & ST_BUTTON_ONE)
     {
       if (event->keyval == CLUTTER_KEY_space ||
-          event->keyval == CLUTTER_KEY_Return)
+          event->keyval == CLUTTER_KEY_Return ||
+          event->keyval == CLUTTER_KEY_KP_Enter)
         {
           st_button_press (button, ST_BUTTON_ONE);
           return TRUE;
@@ -226,7 +227,8 @@ st_button_key_release (ClutterActor    *actor,
   if (button->priv->button_mask & ST_BUTTON_ONE)
     {
       if (event->keyval == CLUTTER_KEY_space ||
-          event->keyval == CLUTTER_KEY_Return)
+          event->keyval == CLUTTER_KEY_Return ||
+          event->keyval == CLUTTER_KEY_KP_Enter)
         {
           gboolean is_click;
 
