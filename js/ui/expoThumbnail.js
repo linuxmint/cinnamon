@@ -484,7 +484,9 @@ ExpoWorkspaceThumbnail.prototype = {
     onTitleKeyPressEvent: function(actor, event) {
         this.undoTitleEdit = false;
         let symbol = event.get_key_symbol();
-        if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_Escape) {
+        if (symbol === Clutter.KEY_Return ||
+            symbol === Clutter.KEY_KP_Enter ||
+            symbol === Clutter.KEY_Escape) {
             if (symbol === Clutter.KEY_Escape) {
                 this.undoTitleEdit = true;
             }
@@ -1135,8 +1137,9 @@ ExpoThumbnailsBox.prototype = {
         let modifiers = Cinnamon.get_event_state(event);
         let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
         let symbol = event.get_key_symbol();
-        if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_space 
-            || symbol === Clutter.KEY_KP_Enter)
+        if (symbol === Clutter.KEY_Return ||
+            symbol === Clutter.KEY_KP_Enter ||
+            symbol === Clutter.KEY_space)
         {
             this.activateSelectedWorkspace();
             return true;

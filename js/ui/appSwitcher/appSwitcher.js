@@ -270,6 +270,7 @@ AppSwitcher.prototype = {
                 return true;
 
             case Clutter.KEY_Return:
+            case Clutter.KEY_KP_Enter:
                 // Enter -> Select active window
                 this._activateSelected();
                 return true;
