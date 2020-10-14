@@ -449,7 +449,11 @@ class AppGroup {
             return;
         }
 
-        let width = MAX_BUTTON_WIDTH * global.ui_scale;
+        let iconNaturalSize = this.iconBox.get_preferred_width(forHeight);
+        let labelNaturalSize = this.label.get_preferred_width(forHeight);
+
+        let width = Math.min(iconNaturalSize + labelNaturalSize, 
+                                MAX_BUTTON_WIDTH * global.ui_scale);
 
         this.labelVisible = true;
         if (this.label.text == null) {
@@ -480,9 +484,6 @@ class AppGroup {
         if (!this.label || this.label.is_finalized() || !this.label.realized) return;
 
         this.label.set_text('');
-        this.labelVisible = false;
-        this.label.width = 1;
-        this.label.hide();
     }
 
     onEnter() {
