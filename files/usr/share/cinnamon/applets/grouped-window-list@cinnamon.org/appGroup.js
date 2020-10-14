@@ -449,8 +449,8 @@ class AppGroup {
             return;
         }
 
-        let iconNaturalSize = this.iconBox.get_preferred_width(forHeight);
-        let labelNaturalSize = this.label.get_preferred_width(forHeight);
+        let iconNaturalSize = this.iconBox.get_preferred_width();
+        let labelNaturalSize = this.label.get_preferred_width();
 
         let width = Math.min(iconNaturalSize + labelNaturalSize, 
                                 MAX_BUTTON_WIDTH * global.ui_scale);
