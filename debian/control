@@ -118,7 +118,6 @@ Depends:
  gettext,
  gir1.2-cinnamondesktop-3.0,
  gir1.2-meta-muffin-0.0,
- gvfs-bin,
  gir1.2-timezonemap-1.0,
  xdg-utils,
  python3-xapp,
