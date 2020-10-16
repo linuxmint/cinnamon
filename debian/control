@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Linux Mint <root@linuxmint.com>
 Build-Depends:
  meson,
- debhelper (>= 10),
+ debhelper (>= 11.1~),
  dh-python,
  dpkg-dev (>= 1.16.1~),
  gir1.2-json-1.0,
