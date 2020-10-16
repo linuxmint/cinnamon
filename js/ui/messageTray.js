@@ -134,7 +134,7 @@ URLHighlighter.prototype = {
                     return true;
                 } catch (e) {
                     // TODO: remove this after gnome 3 release
-                    Util.spawn(['gvfs-open', url]);
+                    Util.spawn(['gio', 'open', url]);
                     return true;
                 }
             }
