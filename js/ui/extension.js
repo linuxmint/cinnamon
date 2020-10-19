@@ -244,22 +244,19 @@ Extension.prototype = {
                 this.validateMetaData();
             }
 
-            if (this.meta.multiversion) {
-                return findExtensionSubdirectory(this.dir).then((dir) => {
-                    this.dir = dir;
-                    this.meta.path = this.dir.get_path();
+            return findExtensionSubdirectory(this.dir).then((dir) => {
+                this.dir = dir;
+                this.meta.path = this.dir.get_path();
 
-                    // If an xlet has known usage of imports.gi.NMClient, we require them to have a
-                    // 4.0 directory. It is the only way to assume they are patched for Cinnamon 4 from here.
-                    if (isPotentialNMClientConflict && this.meta.path.indexOf(`/4.0`) === -1) {
-                        throw new Error(`Found unpatched usage of imports.gi.NMClient for ${this.lowerType} ${uuid}`);
-                    }
+                // If an xlet has known usage of imports.gi.NMClient, we require them to have a
+                // 4.0 directory. It is the only way to assume they are patched for Cinnamon 4 from here.
+                if (isPotentialNMClientConflict && this.meta.path.indexOf(`/4.0`) === -1) {
+                    throw new Error(`Found unpatched usage of imports.gi.NMClient for ${this.lowerType} ${uuid}`);
+                }
 
-                    return finishLoad();
-                });
-            } else if (isPotentialNMClientConflict) {
-                throw new Error(`Found un-versioned ${this.lowerType} ${uuid} with known usage of imports.gi.NMClient`);
-            }
+                return finishLoad();
+            });
+
             return finishLoad();
         }).then((moduleIndex) => {
             if (moduleIndex == null) {

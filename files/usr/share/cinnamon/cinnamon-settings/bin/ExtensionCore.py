@@ -158,8 +158,8 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         except (KeyError, ValueError):
             last_edited = -1
 
-        if 'multiversion' in self.metadata and self.metadata['multiversion']:
-            self.metadata['path'] = find_extension_subdir(self.metadata['path'])
+        # Check for the right version subdir (if the spice is multi-versioned, it won't necessarily be in its root directory)
+        self.metadata['path'] = find_extension_subdir(self.metadata['path'])
 
         # "hide-configuration": true in metadata trumps all
         # otherwise we check for "external-configuration-app" in metadata and settings-schema.json in settings

@@ -19,14 +19,8 @@
     Here extension versioning comes to the rescue. As of Cinnamon 2.6, it is possible to ship different versions of your extension for different versions of Cinnamon. Here "extension" will refer to all extensions, applets and desklets.
   </para>
 
-  <para> To enable extension versioning, extensions have to add the line</para>
-  <informalexample>
-    <programlisting>
-      "multiversion": true
-    </programlisting>
-  </informalexample>
   <para>
-    in <code>metadata.json</code>. The different versions should be put in different subdirectories. For example, the version for 2.6 should be put in <code>extension@uuid/2.6/</code>. The contents in <code>2.6/</code> should be exactly what you will normally put in <code>extension@uuid/</code>, apart from <code>metadata.json</code>, which should always be put in the parent directory, ie. <code>extension@uuid/</code>.
+    The different versions should be put in different subdirectories. For example, the version for 2.6 should be put in <code>extension@uuid/2.6/</code>. The contents in <code>2.6/</code> should be exactly what you will normally put in <code>extension@uuid/</code>, apart from <code>metadata.json</code>, which should always be put in the parent directory, ie. <code>extension@uuid/</code>.
   </para>
 
   <para>
