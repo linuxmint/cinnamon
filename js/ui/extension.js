@@ -1,5 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+const ByteArray = imports.byteArray;
+
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
@@ -621,7 +623,7 @@ function loadMetaData({state, path, uuid, userDir, folder, force}) {
                     reject();
                     return;
                 }
-                meta = JSON.parse(json);
+                meta = JSON.parse(ByteArray.toString(json));
             } catch (e) {
                 logError(`Failed to load/parse metadata.json`, uuid, e);
                 meta = createMetaDummy(uuid, oldPath, State.ERROR);

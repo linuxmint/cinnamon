@@ -4,7 +4,7 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 
-class BackgroundManager {
+var BackgroundManager = class {
     constructor() {
         let schema = Gio.SettingsSchemaSource.get_default();
         if (!schema.lookup("org.gnome.desktop.background", true))
@@ -109,4 +109,4 @@ class BackgroundManager {
             this.picture_opacity = newValue;
         }
     }
-}
+};

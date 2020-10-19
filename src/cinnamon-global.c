@@ -199,6 +199,7 @@ cinnamon_global_init (CinnamonGlobal *global)
     cinnamon_js = JSDIR;
   search_path = g_strsplit (cinnamon_js, ":", -1);
   global->js_context = g_object_new (GJS_TYPE_CONTEXT,
+                                     "profiler-sigusr2", true,
                                      "search-path", search_path,
                                      NULL);
 
