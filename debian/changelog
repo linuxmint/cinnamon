@@ -1,3 +1,117 @@
+cinnamon (4.7.0) UNRELEASED; urgency=medium
+
+  [ miniskipper ]
+  * implement suspend-then-hibernate (issue #237)
+
+  [ ronyalaluf ]
+  * fix #2519
+
+  [ ronyala ]
+  * fix RTL bug in panel-edit-mode
+  * fix bug when dragging windows in RTL
+  * fix dragging launchers in RTL
+  * change round to floor in position calculation
+
+  [ Eli Schwartz ]
+  * remove build dependency on dbus-glib
+  * configure.ac: remove pkg-config module checks which are never used
+
+  [ Chase Wright ]
+  * Add Percentage Label to OSD for Volume Control (#9532)
+
+  [ Leigh Scott ]
+  * Bundle libcroco
+  * cr-rgb: remove handling of "inherit" and "transparent"
+  * Fix always-true condition
+  * croco: Remove duplicated conditions
+  * libcroco: Limit recursion in block and any productions CVE-2020-12825)
+  * Handle "color: inherit" directly in get_color_from_term(), not in libcroco
+
+  [ Michael Webster ]
+  * network applet: Make sure there's always a menu item for the active connection.
+  * xapp status applet: Store icons using a unique key based on the icon name and object path.
+  * xapp applet: Go back to using icon 'name' property, not the constructed key, to do applet role checking.
+
+  [ Unknown ]
+  * menu applet: Added option to display panel when the menu is opened
+
+  [ Michael Webster ]
+  * menu applet: Default new 'force show panel' preference to true, move it to the panel behavior group.
+
+  [ Helmut Stult ]
+  * Update cinnamon-xlet-makepot
+
+  [ Stephen Collins ]
+  * systray manager: make all role comparisons lower case
+
+  [ Ammako ]
+  * Fix linuxmint#6243
+
+  [ claudiux ]
+  * [sound@cinnamon.org] Update applet.js - Fixes #9283 (#9490)
+
+  [ Kimimaru ]
+  * Display volume tooltip while scrolling with the mouse for sound@cinnamon.org
+
+  [ Lars Mueller ]
+  * js/misc/utils.js Fix latinise()
+
+  [ Michael Webster ]
+  * menu@cinnamon.org: Allow items to be re-ordered to better reflect the search outcome.
+
+  [ claudiux ]
+  * Update cs_panel.py: Fixes #9487
+  * Add show-buttons option to the TreeList Widgets, align titles as contents and update doc
+
+  [ NikoKrause ]
+  * menu applet: search for words inbetween
+
+  [ Michael Webster ]
+  * cinnamon-menu-editor: refactor ui file layout, add button to open a selected item's desktop file.
+
+  [ NikoKrause ]
+  * menu applet: fix broken search, if no recent documents
+
+  [ ronyalaluf ]
+  * fix issue #9546
+
+  [ Bomdia ]
+  * add applet uuid formatted as style class name
+
+  [ Mirko Girgenti ]
+  * Fix Typo
+
+  [ icarter09 ]
+  * Fix for issue9229
+
+  [ Michael Webster ]
+  * Revert "add applet uuid formatted as style class name"
+  * js/ui/scripting.js: Refactor invalid catch statement (not allowed with mozjs78).
+
+  [ ronyalaluf ]
+  * Fixed applet not responding to fast workspace switches. due to the 100ms throttle, the applet shows the wrong window list for current workspace if more than 1 switch happens in a 100ms timespan (for example, when switching from workspace 1 to 3 very fast).
+  * update throttle, see #9606; fix #9567
+
+  [ claudiux ]
+  * Update xlet-settings.py: Code debug
+
+  [ Contribucious ]
+  * Clutter.KeyName -> Clutter.KEY_KeyName
+  * " == Clutter.KEY_" -> " === Clutter.KEY_"
+  * workspace-switcher applet: Standardization
+  * workspace-switcher applet: New option: "Reverse scrolling direction"
+
+  [ Michael Webster ]
+  * windows-quick-list applet: Support scrolling, place the icons before the labels to be more consistent with the rest of cinnamon.
+
+  [ Stephen Collins ]
+  * Port to meson
+
+  [ Michael Webster ]
+  * Port to mozjs78 (#9624)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 19 Oct 2020 11:15:00 +0100
+
 cinnamon (4.6.7) ulyana; urgency=medium
 
   [ Michael Webster ]
