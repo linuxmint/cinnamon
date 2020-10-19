@@ -111,7 +111,6 @@ install_subdir(
 config_js_conf = configuration_data()
 config_js_conf.set('PACKAGE_NAME', meson.project_name().to_lower())
 config_js_conf.set('PACKAGE_VERSION', version)
-config_js_conf.set('GJS_VERSION', version)
 
 configure_file(
     input: 'js/misc/config.js.in',
