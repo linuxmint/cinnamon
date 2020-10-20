@@ -75,7 +75,7 @@
  "favbox-min-height" : {
     "type": "spinbutton",
     "default" : 300,
-    "min" : 50,
+    "min" : 200,
     "max" : 1000,
     "step" : 10,
     "units" : "px",
