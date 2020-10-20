@@ -30,6 +30,9 @@ ROW_SIZE = 32
 UNSAFE_ITEMS = ['spawn_sync', 'spawn_command_line_sync', 'GTop', 'get_file_contents_utf8_sync']
 
 curr_ver = subprocess.check_output(['cinnamon', '--version']).decode("utf-8").splitlines()[0].split(' ')[1]
+curr_ver_elements = curr_ver.split(".")
+curr_ver_major = int(curr_ver_elements[0])
+curr_ver_minor = int(curr_ver_elements[1])
 
 def find_extension_subdir(directory):
     largest = ['0']
@@ -252,11 +255,30 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         if self.writable:
             self.scan_extension_for_danger(self.metadata['path'])
 
-        self.version_supported = False
+        self.version_supported = self.is_compatible_with_cinnamon_version()
+
+    def is_compatible_with_cinnamon_version(self):
         try:
-            self.version_supported = curr_ver in self.metadata['cinnamon-version'] or curr_ver.rsplit('.', 1)[0] in self.metadata['cinnamon-version']
-        except (KeyError, ValueError):
-            self.version_supported = True # Don't check version if not specified.
+            # Treat "cinnamon-version" as a list of minimum required versions
+            # if any version in there is lower than our Cinnamon version, then the spice is compatible.
+            for version in self.metadata['cinnamon-version']:
+                elements = version.split(".")
+                major = int(elements[0])
+                minor = int(elements[1])
+                if curr_ver_major > major or (curr_ver_major == major and curr_ver_minor >= minor):
+                    # The version is OK, check that we can find the right .js file in the appropriate subdir
+                    path = os.path.join(self.metadata['path'], self.extension_type + ".js")
+                    if os.path.exists(path):
+                        return True
+                    else:
+                        print ("The %s %s is not properly structured. Path not found: '%s'" % (self.uuid, self.extension_type, path))
+                        return False
+                    return True
+            print ("The %s %s is not compatible with this version of Cinnamon." % (self.uuid, self.extension_type))
+            return False
+        except:
+            # If cinnamon-version is not specified or if the version check goes wrong, assume compatibility
+            return True
 
     def set_can_config(self, *args):
         if not self.has_config:
