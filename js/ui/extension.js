@@ -423,11 +423,11 @@ Extension.prototype = {
 
 /**
 * versionCheck:
-* @required: an array of versions we're compatible with
+* @required: an array of minimum versions we're compatible with
 * @current: the version we have
 *
 * Check if a component is compatible for an extension.
-* @required is an array, and at least one version must match.
+* @required is an array, and at least one version must be lower than the current version.
 * @current must be in the format <major>.<minor>.<point>.<micro>
 * <micro> is always ignored
 * <point> is ignored if not specified (so you can target the whole release)
@@ -436,15 +436,15 @@ Extension.prototype = {
 */
 function versionCheck(required, current) {
     let currentArray = current.split('.');
-    let major = currentArray[0];
-    let minor = currentArray[1];
-    let point = currentArray[2];
+    let currentMajor = parseInt(currentArray[0]);
+    let currentMinor = parseInt(currentArray[1]);
     for (let i = 0; i < required.length; i++) {
         let requiredArray = required[i].split('.');
-        if (requiredArray[0] == major &&
-            requiredArray[1] == minor &&
-            (requiredArray[2] === undefined || requiredArray[2] == point))
+        requiredMajor = parseInt(requiredArray[0]);
+        requiredMinor = parseInt(requiredArray[1]);
+        if (currentMajor > requiredMajor || (currentMajor == requiredMajor  && currentMinor >= requiredMinor)) {
             return true;
+        }
     }
     return false;
 }
