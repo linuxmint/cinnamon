@@ -623,7 +623,7 @@ class PlaceButton extends SimpleMenuItem {
             selectedAppId = selectedAppId.substr(fileIndex + 7);
 
         if (selectedAppId === "home" || selectedAppId === "desktop" || selectedAppId === "connect") {
-        	selectedAppId = place.name
+            selectedAppId = place.name
         }
 
         super(applet, { name: place.name,
@@ -1349,8 +1349,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                                (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
 
         this.applicationsScrollBox.style = "height: "+scrollBoxHeight / global.ui_scale +"px;";
+        this.categoriesScrollBox.style = "height: "+scrollBoxHeight / global.ui_scale +"px;";
         let monitor = Main.layoutManager.monitors[this.panel.monitorIndex];
-        let minSize = Math.max(this.favBoxMinHeight * global.ui_scale, this.categoriesBox.height - this.systemButtonsBox.height);
+        let minSize = this.favBoxMinHeight * global.ui_scale;
         let maxSize = monitor.height - (this.systemButtonsBox.height * 2);
         let size = Math.min(minSize, maxSize);
         this.favoritesScrollBox.set_height(size);
@@ -1411,8 +1412,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._previousTreeSelectedActor = null;
             this._previousSelectedActor = null;
             this.closeContextMenu(false);
+            this._previousVisibleIndex = null;
 
             this._clearAllSelections(true);
+            this._scrollToButton(null, this.applicationsScrollBox);
+            this._scrollToButton(null, this.categoriesScrollBox);
             this._scrollToButton(null, this.favoritesScrollBox);
             this.destroyVectorBox();
         }
@@ -1734,13 +1738,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         case "up":
                             this._activeContainer = this.categoriesBox;
                             item_actor = this.catBoxIter.getLastVisible();
-                            this._scrollToButton();
+                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
                             break;
                         case "down":
                             this._activeContainer = this.categoriesBox;
                             item_actor = this.catBoxIter.getFirstVisible();
                             item_actor = this.catBoxIter.getNextVisible(item_actor);
-                            this._scrollToButton();
+                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
                             break;
                         case "right":
                             this._activeContainer = this.applicationsBox;
@@ -1760,12 +1764,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         case "top":
                             this._activeContainer = this.categoriesBox;
                             item_actor = this.catBoxIter.getFirstVisible();
-                            this._scrollToButton();
+                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
                             break;
                         case "bottom":
                             this._activeContainer = this.categoriesBox;
                             item_actor = this.catBoxIter.getLastVisible();
-                            this._scrollToButton();
+                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
                             break;
                     }
                     break;
@@ -1775,13 +1779,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                             this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getPrevVisible(this._activeActor);
-                            this._scrollToButton();
+                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
                             break;
                         case "down":
                             this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                             this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getNextVisible(this._activeActor);
-                            this._scrollToButton();
+                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
                             break;
                         case "right":
                             if ((this.categoriesBox.get_child_at_index(index))._delegate.categoryId === "recent" &&
@@ -1819,13 +1823,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                             this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getFirstVisible();
-                            this._scrollToButton();
+                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
                             break;
                         case "bottom":
                             this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                             this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getLastVisible();
-                            this._scrollToButton();
+                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
                             break;
                     }
                     break;
@@ -2640,7 +2644,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box',
                                                 vertical: true,
                                                 accessible_role: Atk.Role.LIST });
-        this.categoriesOverlayBox.add_actor(this.categoriesBox);
+        this.categoriesScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
+        this.categoriesOverlayBox.add_actor(this.categoriesScrollBox);
 
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
         this.favoritesScrollBox = new St.ScrollView({
@@ -2670,10 +2675,22 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             this.menu.passEvents = false;
                         }));
 
+        let vscrollCat = this.categoriesScrollBox.get_vscroll_bar();
+        vscrollCat.connect('scroll-start',
+                        Lang.bind(this, function() {
+                            this.menu.passEvents = true;
+                        }));
+        vscrollCat.connect('scroll-stop',
+                        Lang.bind(this, function() {
+                            this.menu.passEvents = false;
+                        }));
+
         this.applicationsBox = new St.BoxLayout({ style_class: 'menu-applications-inner-box', vertical:true });
         this.applicationsBox.add_style_class_name('menu-applications-box'); //this is to support old themes
         this.applicationsScrollBox.add_actor(this.applicationsBox);
+        this.categoriesScrollBox.add_actor(this.categoriesBox);
         this.applicationsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        this.categoriesScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         this.categoriesApplicationsBox.actor.add_actor(this.categoriesOverlayBox);
         this.categoriesApplicationsBox.actor.add_actor(this.applicationsScrollBox);
 
@@ -2727,15 +2744,18 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                      this.a11y_mag_settings.get_double("mag-factor") > 1.0;
         if (mag_on) {
             this.applicationsScrollBox.style_class = "menu-applications-scrollbox";
+            this.categoriesScrollBox.style_class = "menu-applications-scrollbox";
             this.favoritesScrollBox.style_class = "menu-favorites-scrollbox";
         } else {
             this.applicationsScrollBox.style_class = "vfade menu-applications-scrollbox";
+            this.categoriesScrollBox.style_class = "vfade menu-applications-scrollbox";
             this.favoritesScrollBox.style_class = "vfade menu-favorites-scrollbox";
         }
     }
 
     _update_autoscroll() {
         this.applicationsScrollBox.set_auto_scrolling(this.autoscroll_enabled);
+        this.categoriesScrollBox.set_auto_scrolling(this.autoscroll_enabled);
         this.favoritesScrollBox.set_auto_scrolling(this.autoscroll_enabled);
     }
 
