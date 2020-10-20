@@ -101,6 +101,17 @@ def show_prompt(msg, window=None):
     dialog.destroy()
     return response == Gtk.ResponseType.YES
 
+def show_message(msg, window=None):
+    dialog = Gtk.MessageDialog(transient_for = window,
+                               destroy_with_parent = True,
+                               message_type = Gtk.MessageType.ERROR,
+                               buttons = Gtk.ButtonsType.OK)
+    esc = html.escape(msg)
+    dialog.set_markup(esc)
+    dialog.show_all()
+    dialog.run()
+    dialog.destroy()
+
 background_work_queue = ThreadedTaskManager(5)
 
 
@@ -527,10 +538,8 @@ class ManageSpicesPage(SettingsPage):
 
     def enable_extension(self, uuid, name, version_check = True):
         if not version_check:
-            if not show_prompt(_("Extension %s is not compatible with current version of cinnamon. Using it may break your system. Load anyway?") % uuid, self.window):
-                return
-            else:
-                uuid = '!' + uuid
+            show_message(_("Extension %s is not compatible with your version of Cinnamon.") % uuid, self.window)
+            return
 
         self.enable(uuid)
 
