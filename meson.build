@@ -62,7 +62,7 @@ python = find_program('python3')
 # generate config.h
 cinnamon_conf = configuration_data()
 cinnamon_conf.set_quoted('VERSION', version)
-cinnamon_conf.set_quoted('GETTEXT_PACKAGE', meson.project_name())
+cinnamon_conf.set_quoted('GETTEXT_PACKAGE', meson.project_name().to_lower())
 
 config_h_file = configure_file(
     output : 'config.h',
@@ -111,7 +111,7 @@ install_subdir(
 config_js_conf = configuration_data()
 config_js_conf.set('PACKAGE_NAME', meson.project_name().to_lower())
 config_js_conf.set('PACKAGE_VERSION', version)
-config_js_conf.set('GJS_VERSION', version)
+config_js_conf.set('GJS_VERSION', cjs.version())
 
 configure_file(
     input: 'js/misc/config.js.in',
