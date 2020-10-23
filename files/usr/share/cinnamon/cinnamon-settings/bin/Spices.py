@@ -15,6 +15,7 @@ try:
     from PIL import Image
     import datetime
     import proxygsettings
+    import time
 except Exception as detail:
     print(detail)
     sys.exit(1)
@@ -357,6 +358,9 @@ class Spice_Harvester(GObject.Object):
             self._directory_changed()
 
     def _download(self, out_file, url, binary=True):
+        timestamp = round(time.time())
+        url = "%s?time=%d" % (url, timestamp)
+        print("Downloading from %s" % url)
         try:
             open_args = 'wb' if binary else 'w'
             with open(out_file, open_args) as outfd:
