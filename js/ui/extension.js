@@ -244,22 +244,19 @@ Extension.prototype = {
                 this.validateMetaData();
             }
 
-            if (this.meta.multiversion) {
-                return findExtensionSubdirectory(this.dir).then((dir) => {
-                    this.dir = dir;
-                    this.meta.path = this.dir.get_path();
+            return findExtensionSubdirectory(this.dir).then((dir) => {
+                this.dir = dir;
+                this.meta.path = this.dir.get_path();
 
-                    // If an xlet has known usage of imports.gi.NMClient, we require them to have a
-                    // 4.0 directory. It is the only way to assume they are patched for Cinnamon 4 from here.
-                    if (isPotentialNMClientConflict && this.meta.path.indexOf(`/4.0`) === -1) {
-                        throw new Error(`Found unpatched usage of imports.gi.NMClient for ${this.lowerType} ${uuid}`);
-                    }
+                // If an xlet has known usage of imports.gi.NMClient, we require them to have a
+                // 4.0 directory. It is the only way to assume they are patched for Cinnamon 4 from here.
+                if (isPotentialNMClientConflict && this.meta.path.indexOf(`/4.0`) === -1) {
+                    throw new Error(`Found unpatched usage of imports.gi.NMClient for ${this.lowerType} ${uuid}`);
+                }
 
-                    return finishLoad();
-                });
-            } else if (isPotentialNMClientConflict) {
-                throw new Error(`Found un-versioned ${this.lowerType} ${uuid} with known usage of imports.gi.NMClient`);
-            }
+                return finishLoad();
+            });
+
             return finishLoad();
         }).then((moduleIndex) => {
             if (moduleIndex == null) {
@@ -319,12 +316,9 @@ Extension.prototype = {
             throw logError(`uuid "${this.meta.uuid}" from metadata.json does not match directory name.`, this.uuid);
         }
 
-        // If cinnamon or js version are set, check them
+        // If cinnamon versions are set check them
         if ('cinnamon-version' in this.meta && !versionCheck(this.meta['cinnamon-version'], Config.PACKAGE_VERSION)) {
             throw logError('Extension is not compatible with current Cinnamon version', this.uuid, null, State.OUT_OF_DATE);
-        }
-        if ('js-version' in this.meta && !versionCheck(this.meta['js-version'], Config.GJS_VERSION)) {
-            throw logError('Extension is not compatible with current GJS version', this.uuid, null, State.OUT_OF_DATE);
         }
 
         // If a role is set, make sure it's a valid one
@@ -429,11 +423,11 @@ Extension.prototype = {
 
 /**
 * versionCheck:
-* @required: an array of versions we're compatible with
+* @required: an array of minimum versions we're compatible with
 * @current: the version we have
 *
 * Check if a component is compatible for an extension.
-* @required is an array, and at least one version must match.
+* @required is an array, and at least one version must be lower than the current version.
 * @current must be in the format <major>.<minor>.<point>.<micro>
 * <micro> is always ignored
 * <point> is ignored if not specified (so you can target the whole release)
@@ -442,15 +436,15 @@ Extension.prototype = {
 */
 function versionCheck(required, current) {
     let currentArray = current.split('.');
-    let major = currentArray[0];
-    let minor = currentArray[1];
-    let point = currentArray[2];
+    let currentMajor = parseInt(currentArray[0]);
+    let currentMinor = parseInt(currentArray[1]);
     for (let i = 0; i < required.length; i++) {
         let requiredArray = required[i].split('.');
-        if (requiredArray[0] == major &&
-            requiredArray[1] == minor &&
-            (requiredArray[2] === undefined || requiredArray[2] == point))
+        requiredMajor = parseInt(requiredArray[0]);
+        requiredMinor = parseInt(requiredArray[1]);
+        if (currentMajor > requiredMajor || (currentMajor == requiredMajor  && currentMinor >= requiredMinor)) {
             return true;
+        }
     }
     return false;
 }
