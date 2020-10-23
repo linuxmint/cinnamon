@@ -1130,7 +1130,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             } else {
                 index = this.appThumbnails.length - 1;
             }
-        } else if (symbol === Clutter.KEY_Return && entered) {
+        } else if ((symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) && entered) {
             this.appThumbnails[i].connectToWindow(null, 1);
         } else if (symbol === closeArg) {
             this.appThumbnails[i].onLeave();

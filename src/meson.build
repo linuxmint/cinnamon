@@ -116,6 +116,7 @@ endif
 libcinnamon = library(
     'cinnamon',
     [cinnamon_sources, non_gir, tray_sources],
+    c_args: '-DG_LOG_DOMAIN="notification_area"',
     include_directories: [include_root, include_directories('st', 'tray')],
     install_rpath: join_paths(prefix, pkglibdir),
     dependencies: libcinnamon_deps,

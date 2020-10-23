@@ -62,7 +62,7 @@ python = find_program('python3')
 # generate config.h
 cinnamon_conf = configuration_data()
 cinnamon_conf.set_quoted('VERSION', version)
-cinnamon_conf.set_quoted('GETTEXT_PACKAGE', meson.project_name())
+cinnamon_conf.set_quoted('GETTEXT_PACKAGE', meson.project_name().to_lower())
 
 config_h_file = configure_file(
     output : 'config.h',

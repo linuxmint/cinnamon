@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Linux Mint <root@linuxmint.com>
 Build-Depends:
  meson,
- debhelper (>= 10),
+ debhelper-compat (= 12),
  dh-python,
  dpkg-dev (>= 1.16.1~),
  gir1.2-json-1.0,
@@ -118,7 +118,6 @@ Depends:
  gettext,
  gir1.2-cinnamondesktop-3.0,
  gir1.2-meta-muffin-0.0,
- gvfs-bin,
  gir1.2-timezonemap-1.0,
  xdg-utils,
  python3-xapp,

@@ -173,7 +173,10 @@ libst_deps = [
 libst = library(
     'st',
     st_sources,
-    c_args: '-DST_H_INSIDE',
+    c_args: [
+        '-DST_H_INSIDE',
+        '-DG_LOG_DOMAIN="St"'
+    ],
     build_rpath: muffinlibdir,
     install_rpath: muffinlibdir,
     include_directories: include_root,

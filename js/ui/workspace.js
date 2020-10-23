@@ -1295,7 +1295,9 @@ WindowContextMenu.prototype = {
 
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
-        if (symbol === Clutter.KEY_space || symbol === Clutter.KEY_Return) {
+        if (symbol === Clutter.KEY_space ||
+            symbol === Clutter.KEY_Return ||
+            symbol === Clutter.KEY_KP_Enter) {
             this.menu.toggle();
             return true;
         } else if (symbol === Clutter.KEY_Escape && this.menu.isOpen) {
@@ -1411,7 +1413,9 @@ Workspace.prototype = {
             return true;
         }
 
-        if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_space || symbol === Clutter.KEY_KP_Enter) {
+        if (symbol === Clutter.KEY_Return ||
+            symbol === Clutter.KEY_KP_Enter ||
+            symbol === Clutter.KEY_space) {
             if (activeMonitor.activateSelectedWindow()) {
                 return true;
             }
