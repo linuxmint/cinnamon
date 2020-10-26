@@ -134,6 +134,12 @@
     "dependency" : "favbox-show",
     "indent" : true
  },
+ "show-favorites" : {
+   "type" : "switch",
+   "default" : true,
+   "description": "Show favorites",
+   "tooltip": "Choose whether or not to show favorite files in the menu."
+ },
  "show-places" : {
     "type" : "switch",
     "default" : true,
