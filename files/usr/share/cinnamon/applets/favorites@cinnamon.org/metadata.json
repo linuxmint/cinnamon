@@ -1,0 +1,7 @@
+{
+ "uuid": "favorites@cinnamon.org",
+ "name": "Favorite documents",
+ "description": "Access your favorite documents",
+ "icon": "semi-starred",
+ "max-instances": -1
+}
