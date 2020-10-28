@@ -586,7 +586,7 @@ function createApplet(extension, appletDefinition, panel = null) {
     }
 
     //add applet style class uuid if we have one
-    _add_applet_style_class_uuid(applet,extension.meta)
+    _add_applet_style_class_uuid(applet, extension.meta)
 
     applet._uuid = extension.uuid;
     applet._meta = extension.meta;
@@ -601,7 +601,7 @@ function createApplet(extension, appletDefinition, panel = null) {
     return applet;
 }
 
-function _add_applet_style_class_uuid(applet,metadata){
+function _add_applet_style_class_uuid(applet, metadata){
     const appletClass = _generate_applet_style_class_uuid(metadata)
     if(appletClass !== ''){
         applet._addStyleClass(appletClass);
