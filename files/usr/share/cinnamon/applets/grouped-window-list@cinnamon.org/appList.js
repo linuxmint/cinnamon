@@ -383,6 +383,7 @@ class AppList {
                 this.appList[refApp].destroy(true);
                 this.appList[refApp] = undefined;
                 this.appList.splice(refApp, 1);
+                this.refreshList();
             });
         }
     }
