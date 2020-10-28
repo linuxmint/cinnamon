@@ -201,6 +201,10 @@ var Applet = class Applet {
         }
     }
 
+    _addStyleClass(className){
+        this.actor.add_style_class_name(className);
+    }
+
     _getPanelInfo(instance_id) {
         if (!instance_id) instance_id = this.instance_id;
         let appletDefinition = AppletManager.getAppletDefinition({applet_id: instance_id});

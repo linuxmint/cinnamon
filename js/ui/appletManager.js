@@ -585,6 +585,9 @@ function createApplet(extension, appletDefinition, panel = null) {
         return null;
     }
 
+    //add applet style class uuid if we have one
+    _add_applet_style_class_uuid(applet,extension.meta)
+
     applet._uuid = extension.uuid;
     applet._meta = extension.meta;
     applet.instance_id = applet_id;
@@ -596,6 +599,23 @@ function createApplet(extension, appletDefinition, panel = null) {
     applet.finalizeContextMenu();
 
     return applet;
+}
+
+function _add_applet_style_class_uuid(applet,metadata){
+    const appletClass = _generate_applet_style_class_uuid(metadata)
+    if(appletClass !== ''){
+        applet._addStyleClass(appletClass);
+        return true
+    }
+    return false
+}
+
+function _generate_applet_style_class_uuid(metadata){
+    if(typeof metadata === 'object' && metadata !== null && typeof metadata.uuid === 'string'){
+        return metadata.uuid.toLowerCase().replace(/([^a-z0-9]+)/gi, '-')+'-applet';
+    }else{
+        return ''
+    }
 }
 
 function _removeAppletFromPanel(uuid, applet_id) {
