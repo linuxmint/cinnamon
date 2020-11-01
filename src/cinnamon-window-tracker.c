@@ -407,6 +407,85 @@ get_app_from_window_pid (CinnamonWindowTracker  *tracker,
   return result;
 }
 
+static CinnamonApp *
+get_app_for_flatpak_window (MetaWindow *window)
+{
+  CinnamonAppSystem *appsys;
+  CinnamonApp *app = NULL;
+  CinnamonApp *result = NULL;
+  gchar *info_filename;
+  GFile *file;
+  int pid = meta_window_get_client_pid (window);
+
+  g_return_val_if_fail (pid > 0, NULL);
+
+  info_filename = g_strdup_printf ("/proc/%u/root/.flatpak-info", pid);
+  file = g_file_new_for_path (info_filename);
+
+  if (g_file_query_exists (file, NULL)) {
+    gchar *wm_class;
+    gchar *wm_instance;
+    GKeyFile *keyfile;
+
+    appsys = cinnamon_app_system_get_default ();
+
+    keyfile = g_key_file_new ();
+    if (g_key_file_load_from_file (keyfile, info_filename, G_KEY_FILE_NONE, NULL))
+    {
+      gchar *app_id;
+      app_id = g_key_file_get_string (keyfile, "Application", "name", NULL);
+      app = cinnamon_app_system_lookup_flatpak_app_id (appsys, app_id);
+
+      if (app != NULL) {
+        result = g_object_ref (app);
+      }
+    }
+    g_key_file_unref (keyfile);
+
+    wm_instance = g_strconcat(meta_window_get_wm_class_instance (window), GMENU_DESKTOPAPPINFO_FLATPAK_SUFFIX, NULL);
+    wm_class = g_strconcat(meta_window_get_wm_class (window), GMENU_DESKTOPAPPINFO_FLATPAK_SUFFIX, NULL);
+
+    if (result == NULL) {
+      app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_instance);
+      if (app != NULL) {
+        result = g_object_ref (app);
+      }
+    }
+
+    /* then try a match from WM_CLASS to StartupWMClass */
+    if (result == NULL) {
+      app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_class);
+      if (app != NULL) {
+        result = g_object_ref (app);
+      }
+    }
+
+    /* then try a match from WM_CLASS (instance part) to .desktop */
+    if (result == NULL) {
+      app = cinnamon_app_system_lookup_desktop_wmclass (appsys, wm_instance);
+      if (app != NULL) {
+        result = g_object_ref (app);
+      }
+    }
+
+    /* finally, try a match from WM_CLASS to .desktop */
+    if (result == NULL) {
+      app = cinnamon_app_system_lookup_desktop_wmclass (appsys, wm_class);
+      if (app != NULL) {
+        result = g_object_ref (app);
+      }
+    }
+
+    g_free (wm_instance);
+    g_free (wm_class);
+  }
+
+  g_free (info_filename);
+  g_object_unref(file);
+
+  return result;
+}
+
 /**
  * get_app_for_window:
  *
@@ -439,6 +518,11 @@ get_app_for_window (CinnamonWindowTracker    *tracker,
 
   if (meta_window_is_remote (window))
     return _cinnamon_app_new_for_window (window);
+
+  /* Check if the window was launched from a sandboxed app, e.g. Flatpak */
+  result = get_app_for_flatpak_window (window);
+  if (result != NULL)
+    return result;
 
   /* Check if the window has a GApplication ID attached; this is
    * canonical if it does

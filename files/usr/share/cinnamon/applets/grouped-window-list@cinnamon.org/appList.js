@@ -155,27 +155,12 @@ class AppList {
         }
     }
 
-    // Gets a list of every app on the current workspace
-    getSpecialApps() {
-        this.specialApps = [];
-        let apps = Gio.app_info_get_all();
-
-        for (let i = 0, len = apps.length; i < len; i++) {
-            let wmClass = apps[i].get_startup_wm_class();
-            if (wmClass) {
-                let id = apps[i].get_id();
-                this.specialApps.push({id, wmClass});
-            }
-        }
-    }
-
     refreshList() {
         for (let i = 0, len = this.appList.length; i < len; i++) {
             this.appList[i].destroy();
             this.appList[i] = null;
         }
         this.appList = [];
-        this.getSpecialApps();
         this.loadFavorites();
         this.refreshApps();
     }
@@ -255,13 +240,7 @@ class AppList {
         // If it does, then we don't need to do anything.  If not, we need to
         // create an app group.
         if (!app) {
-            app = this.state.trigger('getAppFromWMClass', this.specialApps, metaWindow);
-        }
-        if (!app) {
-            let tracker = this.state.trigger('getTracker');
-            if (tracker) {
-                app = tracker.get_window_app(metaWindow);
-            }
+            app = this.state.trigger('getAppFromWindow', metaWindow);
         }
         if (!app
             || (!isFavoriteApp
