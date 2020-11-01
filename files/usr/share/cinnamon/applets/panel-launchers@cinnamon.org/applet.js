@@ -3,6 +3,7 @@ const AppletManager = imports.ui.appletManager;
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
+const CMenu = imports.gi.CMenu;
 const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const PopupMenu = imports.ui.popupMenu;
@@ -578,7 +579,7 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
         let app = appSys.lookup_app(path);
         let appinfo = null;
         if (!app) {
-            appinfo = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+path);
+            appinfo = CMenu.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+path);
             if (!appinfo) {
                 global.logWarning(`Failed to add launcher from path: ${path}`);
                 return null;

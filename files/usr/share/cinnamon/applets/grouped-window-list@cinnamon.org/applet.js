@@ -222,7 +222,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             getPanelIconSize: () => this.getPanelIconSize(),
             getPanelMonitor: () => this.panel ? Main.layoutManager.monitors[this.panel.monitorIndex] : null,
             getAppSystem: () => Cinnamon.AppSystem.get_default(),
-            getAppFromWMClass: (specialApps, metaWindow) => this.getAppFromWMClass(specialApps, metaWindow),
+            getAppFromWindow: (metaWindow) => this.getAppFromWindow(metaWindow),
             getTracker: () => this.tracker,
             addWindowToAllWorkspaces: (win, app, isFavoriteApp) => {
                 each(this.appLists, function(appList) {
@@ -615,20 +615,19 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.state.set({lastTitleDisplay: titleDisplay});
     }
 
-    getAppFromWMClass(specialApps, metaWindow) {
-        let startupClass = (wmClass) => {
-            let app = null;
-            for (let i = 0, len = specialApps.length; i < len; i++) {
-                if (specialApps[i].wmClass === wmClass) {
-                    app = this.appSystem.lookup_app(specialApps[i].id);
-                    if (app) {
-                        app.wmClass = wmClass;
-                    }
-                }
-            }
-            return app;
-        };
-        return startupClass(metaWindow.get_wm_class_instance());
+    getAppFromWindow(metaWindow) {
+        let tracker = this.state.trigger('getTracker');
+        if (!tracker) {
+          return null;
+        }
+        let app = tracker.get_window_app(metaWindow);
+        if (!app) {
+          app = tracker.get_app_from_pid(metaWindow.get_pid());
+        }
+        if (!app) {
+          app = tracker.get_app_from_pid(metaWindow.get_client_pid());
+        }
+        return app;
     }
 
     getCurrentAppList() {

@@ -7,6 +7,7 @@
 #include <meta/window.h>
 #define GMENU_I_KNOW_THIS_IS_UNSTABLE
 #include <gmenu-tree.h>
+#include <gmenu-desktopappinfo.h>
 
 G_BEGIN_DECLS
 
@@ -37,7 +38,7 @@ GType cinnamon_app_get_type (void) G_GNUC_CONST;
 
 const char *cinnamon_app_get_id (CinnamonApp *app);
 GMenuTreeEntry *cinnamon_app_get_tree_entry (CinnamonApp *app);
-GDesktopAppInfo *cinnamon_app_get_app_info (CinnamonApp *app);
+GMenuDesktopAppInfo *cinnamon_app_get_app_info (CinnamonApp *app);
 ClutterActor *cinnamon_app_create_icon_texture (CinnamonApp *app,
                                                 int          size);
 ClutterActor *cinnamon_app_create_icon_texture_for_window (CinnamonApp   *app,
@@ -88,6 +89,10 @@ gboolean cinnamon_app_launch_offloaded (CinnamonApp     *app,
                            int           workspace,
                            char        **startup_id,
                            GError      **error);
+
+gboolean cinnamon_app_get_is_flatpak (CinnamonApp *app);
+const char * cinnamon_app_get_flatpak_app_id (CinnamonApp *app);
+
 G_END_DECLS
 
 #endif /* __CINNAMON_APP_H__ */

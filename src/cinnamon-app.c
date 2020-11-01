@@ -6,6 +6,9 @@
 
 #include <glib/gi18n-lib.h>
 
+#define GMENU_I_KNOW_THIS_IS_UNSTABLE
+#include <gmenu-desktopappinfo.h>
+
 #include <meta/display.h>
 
 #include "cinnamon-app-private.h"
@@ -57,7 +60,7 @@ struct _CinnamonApp
                           * want (e.g. it will be of TYPE_NORMAL from
                           * the way cinnamon-window-tracker.c works).
                           */
-  GDesktopAppInfo *info;
+  GMenuDesktopAppInfo *info;
 
   CinnamonAppRunningState *running_state;
 
@@ -67,6 +70,7 @@ struct _CinnamonApp
   char *unique_name;
 
   gboolean hidden_as_duplicate;
+  gboolean is_flatpak;
 };
 
 G_DEFINE_TYPE (CinnamonApp, cinnamon_app, G_TYPE_OBJECT);
@@ -108,9 +112,21 @@ cinnamon_app_get_property (GObject    *gobject,
 const char *
 cinnamon_app_get_id (CinnamonApp *app)
 {
-  if (app->entry)
-    return gmenu_tree_entry_get_desktop_file_id (app->entry);
+  if (app->info)
+  {
+    return g_app_info_get_id (G_APP_INFO (app->info));
+  }
   return app->window_id_string;
+}
+
+const char *
+cinnamon_app_get_flatpak_app_id (CinnamonApp *app)
+{
+  if (app->info)
+  {
+    return gmenu_desktopappinfo_get_flatpak_app_id (app->info);
+  }
+  return NULL;
 }
 
 static MetaWindow *
@@ -339,7 +355,7 @@ cinnamon_app_get_keywords (CinnamonApp *app)
     return app->keywords;
 
   if (app->info)
-    keywords = g_desktop_app_info_get_keywords (app->info);
+    keywords = gmenu_desktopappinfo_get_keywords (app->info);
   else
     keywords = NULL;
 
@@ -372,7 +388,7 @@ cinnamon_app_get_nodisplay (CinnamonApp *app)
   if (app->entry)
     {
       g_return_val_if_fail (app->info != NULL, TRUE);
-      return g_desktop_app_info_get_nodisplay (app->info);
+      return gmenu_desktopappinfo_get_nodisplay (app->info);
       // return !g_app_info_should_show (G_APP_INFO (app->info));
     }
 
@@ -652,9 +668,9 @@ cinnamon_app_can_open_new_window (CinnamonApp *app)
     return FALSE;
 
   /* If the app is explicitly telling us, then we know for sure */
-  if (g_desktop_app_info_has_key (G_DESKTOP_APP_INFO (app->info),
+  if (gmenu_desktopappinfo_has_key (GMENU_DESKTOPAPPINFO (app->info),
                                   "X-GNOME-SingleWindow"))
-    return !g_desktop_app_info_get_boolean (G_DESKTOP_APP_INFO (app->info),
+    return !gmenu_desktopappinfo_get_boolean (GMENU_DESKTOPAPPINFO (app->info),
                                             "X-GNOME-SingleWindow");
 
   /* In all other cases, we don't have a reliable source of information
@@ -674,6 +690,18 @@ CinnamonAppState
 cinnamon_app_get_state (CinnamonApp *app)
 {
   return app->state;
+}
+
+/**
+ * cinnamon_app_get_is_flatpak:
+ * @app: a #CinnamonApp
+ *
+ * Returns: TRUE if #app is a flatpak app, FALSE if not
+ */
+gboolean
+cinnamon_app_get_is_flatpak (CinnamonApp *app)
+{
+  return app->is_flatpak;
 }
 
 typedef struct {
@@ -818,6 +846,7 @@ _cinnamon_app_set_entry (CinnamonApp       *app,
   if (entry != NULL)
     {
       app->info = g_object_ref (gmenu_tree_entry_get_app_info (entry));
+      app->is_flatpak = app->info && gmenu_desktopappinfo_get_is_flatpak (app->info);
     }
 }
 
@@ -1006,7 +1035,7 @@ _cinnamon_app_get_desktop_path (CinnamonApp *app)
 {
   if (app->entry)
     {
-      return g_desktop_app_info_get_filename (app->info);
+      return gmenu_desktopappinfo_get_filename (app->info);
     }
 
   return NULL;
@@ -1131,7 +1160,7 @@ real_app_launch (CinnamonApp   *app,
       g_debug ("Offloading '%s' to discrete gpu.", cinnamon_app_get_name (app));
     }
 
-  ret = g_desktop_app_info_launch_uris_as_manager (app->info, uris,
+  ret = gmenu_desktopappinfo_launch_uris_as_manager (app->info, uris,
                                                    G_APP_LAUNCH_CONTEXT (context),
                                                    G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
                                                    NULL, NULL,
@@ -1198,9 +1227,9 @@ cinnamon_app_launch_offloaded (CinnamonApp     *app,
  * cinnamon_app_get_app_info:
  * @app: a #CinnamonApp
  *
- * Returns: (transfer none): The #GDesktopAppInfo for this app, or %NULL if backed by a window
+ * Returns: (transfer none): The #GMenuDesktopAppInfo for this app, or %NULL if backed by a window
  */
-GDesktopAppInfo *
+GMenuDesktopAppInfo *
 cinnamon_app_get_app_info (CinnamonApp *app)
 {
   return app->info;
