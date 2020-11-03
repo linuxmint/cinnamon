@@ -644,6 +644,7 @@ class AppGroup {
     handleDragOver(source, actor, x, y, time) {
         if (!this.state.settings.enableDragging
             || source instanceof AppGroup
+            || typeof source.groupState === 'undefined'
             || this.state.panelEditMode) {
             return DND.DragMotionResult.CONTINUE;
         }
@@ -661,7 +662,7 @@ class AppGroup {
                 this.hoverMenu.open(true);
             }
         }
-        return true;
+        return DND.DragMotionResult.CONTINUE;
     }
 
     getDragActor() {
