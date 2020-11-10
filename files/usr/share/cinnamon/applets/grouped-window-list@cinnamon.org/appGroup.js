@@ -643,8 +643,7 @@ class AppGroup {
 
     handleDragOver(source, actor, x, y, time) {
         if (!this.state.settings.enableDragging
-            || source instanceof AppGroup
-            || typeof source.groupState === 'undefined'
+            || actor.name != "xdnd-proxy-actor"
             || this.state.panelEditMode) {
             return DND.DragMotionResult.CONTINUE;
         }
