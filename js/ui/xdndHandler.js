@@ -17,7 +17,7 @@ XdndHandler.prototype = {
         this._cursorWindowClone = null;
 
         // Used as a drag actor in case we don't have a cursor window clone
-        this._dummy = new Clutter.Rectangle({ width: 1, height: 1, opacity: 0 });
+        this._dummy = new Clutter.Rectangle({ width: 1, height: 1, opacity: 0, name: 'xdnd-proxy-actor' });
         global.stage.add_actor(this._dummy);
         this._dummy.hide();
 
