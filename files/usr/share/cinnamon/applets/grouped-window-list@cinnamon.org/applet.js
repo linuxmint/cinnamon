@@ -14,6 +14,7 @@ const {SignalManager} = imports.misc.signalManager;
 const {each, find, findIndex, filter, throttle, unref, trySpawnCommandLine} = imports.misc.util;
 const {createStore} = imports.misc.state;
 
+const AppGroup = require('./appGroup');
 const AppList = require('./appList');
 const {
   RESERVE_KEYS,
@@ -750,12 +751,11 @@ class GroupedWindowListApplet extends Applet.Applet {
     handleDragOver(source, actor, x, y) {
         if (!this.state.settings.enableDragging || this.state.panelEditMode)
             return DND.DragMotionResult.NO_DROP;
-
-        if (!source.actor) return DND.DragMotionResult.CONTINUE;
+        if(actor.name === 'xdnd-proxy-actor')
+            return DND.DragMotionResult.CONTINUE;
 
         let appList = this.appLists[this.state.currentWs];
-
-        let isForeign = typeof source.groupState === 'undefined';
+        let isForeign = !(source instanceof AppGroup);
         let rtl_horizontal = this.state.isHorizontal
             && St.Widget.get_default_direction () === St.TextDirection.RTL;
 
@@ -824,7 +824,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         let pos = this.state.pos;
         this.clearDragPlaceholder();
 
-        if (typeof source.groupState === 'undefined') { //handle adding new launchers
+        if (!(source instanceof AppGroup)) { //handle adding new launchers
             let appId = source.isDraggableApp ? source.get_app_id() : source.getId();
             if (appId) {
                 this.acceptNewLauncher(appId, pos);
