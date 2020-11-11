@@ -6,7 +6,7 @@ const Params = imports.misc.params;
 
 const Lang = imports.lang;
 
-class CheckBoxContainer {
+var CheckBoxContainer = class {
     constructor() {
         this.actor = new Cinnamon.GenericContainer({ y_align: St.Align.MIDDLE });
         this.actor.connect('get-preferred-width',
@@ -92,7 +92,7 @@ class CheckBoxContainer {
     }
 }
 
-class CheckBoxBase {
+var CheckBoxBase = class {
     constructor(checkedState, params) {
         this._params = { style_class: 'check-box',
                          button_mask: St.ButtonMask.ONE,
@@ -124,7 +124,7 @@ class CheckBoxBase {
     }
 }
 
-class CheckButton extends CheckBoxBase {
+var CheckButton = class extends CheckBoxBase {
     constructor(checkedState, params) {
         super(checkedState, params);
         this.checkmark = new St.Bin();
@@ -132,7 +132,7 @@ class CheckButton extends CheckBoxBase {
     }
 }
 
-class CheckBox extends CheckBoxBase {
+var CheckBox = class extends CheckBoxBase {
     constructor(label, params, checkedState) {
         super(checkedState, params);
 
