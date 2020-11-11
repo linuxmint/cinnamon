@@ -14,6 +14,7 @@ const {SignalManager} = imports.misc.signalManager;
 const {each, find, findIndex, filter, throttle, unref, trySpawnCommandLine} = imports.misc.util;
 const {createStore} = imports.misc.state;
 
+const AppGroup = require('./appGroup');
 const AppList = require('./appList');
 const {
   RESERVE_KEYS,
@@ -99,9 +100,7 @@ class PinnedFavs {
         if (!opts.app) {
             return false;
         }
-        if (!opts.pos) {
-            opts.pos = -1;
-        }
+
         let newFavorite = {
             id: opts.appId,
             app: opts.app
@@ -159,11 +158,7 @@ class PinnedFavs {
                 return favorite.id === opts.appId;
             });
         }
-        let newIndex = opts.pos;
-        if (oldIndex > -1 && newIndex > oldIndex) {
-            newIndex = newIndex - 1;
-        }
-        this._favorites.splice(newIndex, 0, this._favorites.splice(oldIndex, 1)[0]);
+        this._favorites.splice(opts.pos, 0, this._favorites.splice(oldIndex, 1)[0]);
         this._favorites = filter(this._favorites, function(favorite) {
             return favorite && favorite.app != null;
         });
@@ -199,9 +194,9 @@ class GroupedWindowListApplet extends Applet.Applet {
             currentWs: global.screen.get_active_workspace_index(),
             panelEditMode: global.settings.get_boolean('panel-edit-mode'),
             menuOpen: false,
+            posList: null,
             dragPlaceholder: null,
-            dragPlaceholderPos: -1,
-            animatingPlaceholdersCount: 0,
+            pos: -1,
             appletReady: false,
             willUnmount: false,
             settings: {},
@@ -754,75 +749,68 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     handleDragOver(source, actor, x, y) {
-        if (!this.state.settings.enableDragging || this.state.panelEditMode) {
+        if (!this.state.settings.enableDragging || this.state.panelEditMode)
             return DND.DragMotionResult.NO_DROP;
-        }
-
-        if (!source.actor) return DND.DragMotionResult.CONTINUE;
+        if(actor.name === 'xdnd-proxy-actor')
+            return DND.DragMotionResult.CONTINUE;
 
         let appList = this.appLists[this.state.currentWs];
-        let children = appList.actor.get_children();
-        let windowPos = children.indexOf(source.actor);
-        let isForeign = typeof source.groupState === 'undefined';
+        let isForeign = !(source instanceof AppGroup);
+        let rtl_horizontal = this.state.isHorizontal
+            && St.Widget.get_default_direction () === St.TextDirection.RTL;
 
-        let isVertical = appList.actor.height > appList.actor.width;
-        let axis = isVertical ? [y, 'y1'] : [x, 'x1'];
+        let axis = this.state.isHorizontal ? [x, 'x2'] : [y, 'y2'];
+        if(rtl_horizontal)
+            axis[0] = this.actor.width - axis[0];
 
-        //calculating dragged item position by mesuring distances from panel items
-        let pos = 0, minDist = -1;
-        for(let i = 0; i < children.length; i++)
-        {
-            let dist = Math.abs(axis[0] - (children[i].get_allocation_box()[axis[1]] + children[i].width / 2));
-            if(dist < minDist || minDist == -1)
-            {
-                minDist = dist;
-                pos = i;
+        if(this.state.posList === null){ //save initial positions
+            let children = appList.actor.get_children();
+            this.state.posList = [];
+            for(let i = 0; i < children.length; i++){
+                let childPos;
+                if(rtl_horizontal)
+                    childPos = this.actor.width - children[i].get_allocation_box()['x1'];
+                else
+                    childPos = children[i].get_allocation_box()[axis[1]]
+                this.state.posList.push(childPos);
             }
         }
 
-        if (pos !== this.state.dragPlaceholderPos) {
-            this.state.dragPlaceholderPos = pos;
+        //get current position
+        let pos = 0;
+        while(pos < this.state.posList.length && axis[0] > this.state.posList[pos])
+            pos++;
 
-            // Don't allow positioning before or after self
-            if (windowPos !== -1 && pos === windowPos) {
-                if (this.state.dragPlaceholder) {
-                    this.state.dragPlaceholder.animateOutAndDestroy();
-                    this.state.animatingPlaceholdersCount++;
-                    this.state.dragPlaceholder.actor.connect('destroy', () => this.state.animatingPlaceholdersCount--);
+        //keep pinned and unpinned items separate
+        if((isForeign && pos > this.pinnedFavorites._favorites.length) ||
+            (!isForeign && source.groupState.isFavoriteApp && pos >= this.pinnedFavorites._favorites.length) ||
+            (!isForeign && !source.groupState.isFavoriteApp && pos < this.pinnedFavorites._favorites.length))
+            return DND.DragMotionResult.NO_DROP;
+
+        if (pos !== this.state.pos) {
+            this.state.pos = pos;
+
+            if(isForeign) {
+                if (this.state.dragPlaceholder)
+                    appList.actor.set_child_at_index(this.state.dragPlaceholder.actor, pos);
+                else {
+                    let iconSize = this.getPanelIconSize() * global.ui_scale;
+                    this.state.dragPlaceholder = new DND.GenericDragPlaceholderItem();
+                    this.state.dragPlaceholder.child.width = iconSize;
+                    this.state.dragPlaceholder.child.height = iconSize;
+                    appList.actor.insert_child_at_index(
+                        this.state.dragPlaceholder.actor,
+                        this.state.pos
+                    );
+                    this.state.dragPlaceholder.animateIn();
                 }
-                this.state.dragPlaceholder = null;
-
-                return DND.DragMotionResult.CONTINUE;
             }
-
-            // If the placeholder already exists, we just move
-            // it, but if we are adding it, expand its size in
-            // an animation
-            let fadeIn;
-            if (this.state.dragPlaceholder) {
-                this.state.dragPlaceholder.actor.destroy();
-                fadeIn = false;
-            } else {
-                fadeIn = true;
-            }
-
-            let iconSize = this.getPanelIconSize();
-            this.state.dragPlaceholder = new DND.GenericDragPlaceholderItem();
-            this.state.dragPlaceholder.child.width = iconSize;
-            this.state.dragPlaceholder.child.height = iconSize;
-
-            // For menu items, don't insert actors at specific indices,
-            // they will get attached to the end of the list anyway.
-            if (!isForeign) {
-                appList.actor.insert_child_at_index(
-                    this.state.dragPlaceholder.actor,
-                    this.state.dragPlaceholderPos
-                );
-            }
-
-            if (fadeIn) this.state.dragPlaceholder.animateIn();
+            else
+                appList.actor.set_child_at_index(source.actor, pos);
         }
 
+        if(isForeign)
+            return DND.DragMotionResult.COPY_DROP;
         return DND.DragMotionResult.MOVE_DROP;
     }
 
@@ -830,47 +818,28 @@ class GroupedWindowListApplet extends Applet.Applet {
     // DND, so we can kill the _delegate reference. Long term, a PR to Cinnamon should be opened fixing circular
     // object reference structures for the applet and desklet classes.
     acceptDrop(source, actor, x) {
-        if (!this.state.settings.enableDragging || this.state.panelEditMode) {
+        if (!this.state.settings.enableDragging || this.state.panelEditMode)
             return false;
-        }
-        if (typeof source.groupState === 'undefined') {
+
+        let pos = this.state.pos;
+        this.clearDragPlaceholder();
+
+        if (!(source instanceof AppGroup)) { //handle adding new launchers
             let appId = source.isDraggableApp ? source.get_app_id() : source.getId();
             if (appId) {
-                this.acceptNewLauncher(appId);
+                this.acceptNewLauncher(appId, pos);
                 return true;
             }
             return false;
         }
 
-        let currentAppList = this.getCurrentAppList();
-        let pos = this.state.dragPlaceholderPos;
-        this.clearDragPlaceholder();
-
-        // For getting the fallback position, possibly dead code
-        if (pos === -1) {
-            let children = currentAppList.actor.get_children();
-            let _pos = 0;
-            for (let i = 0, len = children.length; i < len; i++) {
-                if (x > children[i].get_allocation_box().x1 + children[i].width / 2) {
-                    _pos = i;
-                }
-            }
-            if (_pos !== this.state.dragPlaceholderPos) {
-                pos = _pos;
-            }
-        }
-
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
-            // Move the button
-            currentAppList.actor.set_child_at_index(source.actor, pos);
-            currentAppList.updateAppGroupIndexes();
             // Refresh the group's thumbnails so hoverMenu is aware of the position change
             // In the case of dragging a group that has a delay before Cinnamon can grab its
             // thumbnail texture, e.g., LibreOffice, defer the refresh.
             if (source.groupState.metaWindows.length > 0) {
                 setTimeout(() => source.groupState.trigger('windowCount'), 0);
             }
-
 
             // Handle favoriting if pin on drag is enabled
             if (!source.groupState.app.is_window_backed()) {
@@ -891,16 +860,25 @@ class GroupedWindowListApplet extends Applet.Applet {
         return true;
     }
 
-    clearDragPlaceholder() {
-        if (this.state.dragPlaceholder) {
-            this.state.dragPlaceholder.animateOutAndDestroy();
+    clearDragPlaceholder(animate = false) {
+        this.state.posList = null;
+        this.state.pos = -1;
+        if(this.state.dragPlaceholder)
+        {
+            if(animate)
+                this.state.dragPlaceholder.animateOutAndDestroy();
+            else
+                this.state.dragPlaceholder.actor.destroy();
             this.state.dragPlaceholder = null;
-            this.state.dragPlaceholderPos = -1;
         }
     }
 
-    acceptNewLauncher(path) {
-        this.pinnedFavorites.addFavorite({appId: path, pos: -1});
+    handleDragOut() {
+        this.clearDragPlaceholder(true);
+    }
+
+    acceptNewLauncher(path, pos = -1) {
+        this.pinnedFavorites.addFavorite({appId: path, pos: pos});
         // Need to determine why the favorites setting signal doesn't emit outside the applet actions
         this.updateFavorites();
     }

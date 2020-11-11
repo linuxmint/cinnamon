@@ -997,7 +997,7 @@ PanelManager.prototype = {
                 }
             } else if (this.panelsMeta[i][0] >= monitorCount) { // Monitor of the panel went missing.  Meta is [monitor,panel] array
                 if (this.panels[i]) {
-                    this.panels[i].destroy();
+                    this.panels[i].destroy(false); // destroy panel, but don't remove icon size settings
                     delete this.panels[i];
                     this.panelCount -= 1;
                 }
@@ -2177,15 +2177,20 @@ Panel.prototype = {
 
     /**
      * destroy:
+     * @removeIconSizes (boolean): (optional) whether to remove zone icon size settings. Default value is true.
      *
      * Destroys the panel
      */
-    destroy: function() {
+    destroy: function(removeIconSizes = true) {
         if (this._destroyed) return;
         this._destroyed = true;    // set this early so that any routines triggered during
                                    // the destroy process can test it
 
-        this._removeZoneIconSizes();
+        if (removeIconSizes) this._removeZoneIconSizes();
+        // remove icon size settings if requested
+        // settings should be removed except when panel is destroyed due to monitor change
+        // this prevents settings from being reset every time a monitor is disconnected
+
         this._clearPanelBarriers();
         AppletManager.unloadAppletsOnPanel(this.panelId);
         this._context_menu.close();

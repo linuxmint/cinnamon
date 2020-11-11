@@ -644,7 +644,7 @@ class AppGroup {
 
     handleDragOver(source, actor, x, y, time) {
         if (!this.state.settings.enableDragging
-            || source instanceof AppGroup
+            || actor.name != "xdnd-proxy-actor"
             || this.state.panelEditMode) {
             return DND.DragMotionResult.CONTINUE;
         }
@@ -662,7 +662,7 @@ class AppGroup {
                 this.hoverMenu.open(true);
             }
         }
-        return true;
+        return DND.DragMotionResult.CONTINUE;
     }
 
     getDragActor() {
