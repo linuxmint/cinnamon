@@ -10,6 +10,7 @@ const constants = {
     BUTTON_BOX_ANIMATION_TIME: 0.15,
     MAX_BUTTON_WIDTH: 150, // Pixels
     FLASH_INTERVAL: 500,
+    FLASH_MAX_COUNT: 4,
     RESERVE_KEYS: ['willUnmount'],
     ICON_NAMES: {
         area_shot: 'screenshot-area',
