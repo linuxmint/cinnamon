@@ -133,8 +133,8 @@ class CheckButton extends CheckBoxBase {
 }
 
 class CheckBox extends CheckBoxBase {
-    constructor(checkedState, params) {
-        super(label, params, checkedState);
+    constructor(label, params, checkedState) {
+        super(checkedState, params);
 
         this._container = new CheckBoxContainer();
         this.actor.set_child(this._container.actor);
