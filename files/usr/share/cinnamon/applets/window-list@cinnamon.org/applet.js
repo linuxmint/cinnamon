@@ -64,6 +64,7 @@ const Tooltips = imports.ui.tooltips;
 
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
+const FLASH_MAX_COUNT = 4;
 
 const WINDOW_PREVIEW_WIDTH = 200;
 const WINDOW_PREVIEW_HEIGHT = 150;
@@ -788,9 +789,8 @@ class AppMenuButton {
                 this.actor.remove_style_class_name(sc);
             else
                 this.actor.add_style_class_name(sc);
-            let result = counter < 4;
-            counter++;
-            return result;
+
+            return counter++ < FLASH_MAX_COUNT;
         });
     }
 };
