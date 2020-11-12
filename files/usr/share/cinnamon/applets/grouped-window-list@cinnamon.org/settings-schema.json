@@ -5,7 +5,7 @@
     "generalPage": {
       "type" : "page",
       "title" : "General",
-      "sections": ["generalSection", "hotKeysSection"]
+      "sections": ["generalSection", "attentionSection", "hotKeysSection"]
     },
     "panelPage": {
       "type" : "page",
@@ -31,6 +31,15 @@
         "left-click-action",
         "middle-click-action",
         "show-all-workspaces"
+      ]
+    },
+    "attentionSection": {
+      "type" : "section",
+      "title" : "Attention flash",
+      "keys": [
+        "attention-flash-delay",
+        "attention-flash-count",
+        "attention-keep-flashing"
       ]
     },
     "appButtonsSection": {
@@ -149,6 +158,28 @@
     "type": "checkbox",
     "default": false,
     "description": "Show windows from all workspaces"
+  },
+  "attention-flash-delay": {
+    "type": "spinbutton",
+    "default": 500,
+    "min": 1,
+    "max": 10000000,
+    "step": 1,
+    "unit": "milliseconds",
+    "description": "Time between flashes when demanding attention"
+  },
+  "attention-flash-count": {
+    "type": "spinbutton",
+    "default": 4,
+    "min": 1,
+    "max": 10000000,
+    "step": 1,
+    "description": "Amount of times an item should flash when demanding attention"
+  },
+  "attention-keep-flashing": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Keep flashing infinitely when demanding attention"
   },
   "enable-app-button-dragging": {
     "type": "checkbox",

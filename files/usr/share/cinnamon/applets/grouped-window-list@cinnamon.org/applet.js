@@ -338,7 +338,10 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'autostart-menu-item', value: 'autoStart', cb: null},
             {key: 'launch-new-instance-menu-item', value: 'launchNewInstance', cb: null},
             {key: 'monitor-move-all-windows', value: 'monitorMoveAllWindows', cb: null},
-            {key: 'show-all-workspaces', value: 'showAllWorkspaces', cb: this.refreshAllAppLists}
+            {key: 'show-all-workspaces', value: 'showAllWorkspaces', cb: this.refreshAllAppLists},
+            {key: 'attention-flash-delay', value: 'attentionFlashDelay', cb: null},
+            {key: 'attention-flash-count', value: 'attentionFlashCount', cb: null},
+            {key: 'attention-keep-flashing', value: 'attentionKeepFlashing', cb: null}
         ];
 
         for (let i = 0, len = settingsProps.length; i < len; i++) {
@@ -671,11 +674,11 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     handleScroll(e, sourceFromAppGroup) {
-        if( (this.state.settings.thumbnailScrollBehavior) || 
+        if( (this.state.settings.thumbnailScrollBehavior) ||
             (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior !== 3
              && !e && sourceFromAppGroup)  ||
-            (this.state.settings.leftClickAction !== 3 && this.state.settings.scrollBehavior === 3               
-                        && e && !sourceFromAppGroup)  || 
+            (this.state.settings.leftClickAction !== 3 && this.state.settings.scrollBehavior === 3
+                        && e && !sourceFromAppGroup)  ||
             (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior === 3)) {
 
             this.state.set({scrollActive: true});

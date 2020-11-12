@@ -329,7 +329,12 @@ class AppGroup {
 
         this.actor.remove_style_pseudo_class('active');
         this.actor.add_style_class_name('grouped-window-list-item-demands-attention');
-        if (counter < FLASH_MAX_COUNT) {
+
+        const delay = this.state.settings.attentionFlashDelay || FLASH_INTERVAL;
+        const maxCount = this.state.settings.attentionFlashCount || FLASH_MAX_COUNT;
+        const keepFlashing = this.state.settings.attentionKeepFlashing;
+
+        if (keepFlashing || counter < maxCount) {
             setTimeout(() => {
                 if (this.actor && this.actor.has_style_class_name('grouped-window-list-item-demands-attention')) {
                     this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
@@ -337,8 +342,8 @@ class AppGroup {
                 }
                 setTimeout(() => {
                     this.flashButton(++counter);
-                }, FLASH_INTERVAL);
-            }, FLASH_INTERVAL);
+                }, delay);
+            }, delay);
         }
     }
 
