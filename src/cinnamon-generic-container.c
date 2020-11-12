@@ -273,7 +273,7 @@ cinnamon_generic_container_get_paint_volume (ClutterActor *self,
         {
           const ClutterPaintVolume *child_volume;
 
-          if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+          if (!clutter_actor_is_visible (child))
             continue;
 
           if (cinnamon_generic_container_get_skip_paint (CINNAMON_GENERIC_CONTAINER  (self), child))
