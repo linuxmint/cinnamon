@@ -611,7 +611,7 @@ function _addAppletStyleClassUuid(applet, metadata){
 }
 
 function _generateAppletStyleClassUuid(metadata){
-    if(typeof metadata === 'object' && metadata !== null && typeof metadata.uuid === 'string'){
+    if(typeof metadata === 'object' && metadata !== null && typeof metadata.uuid === 'string' && metadata.uuid.trim() !== ''){
         return metadata.uuid.toLowerCase().replace(/([^a-z0-9]+)/gi, '-')+'-applet';
     }else{
         return ''
