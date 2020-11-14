@@ -176,6 +176,7 @@ KEYBINDINGS = [
     [_("Volume mute"), MEDIA_KEYS_SCHEMA, "volume-mute", "media"],
     [_("Volume down"), MEDIA_KEYS_SCHEMA, "volume-down", "media"],
     [_("Volume up"), MEDIA_KEYS_SCHEMA, "volume-up", "media"],
+    [_("Mic mute"), MEDIA_KEYS_SCHEMA, "mic-mute", "media"],
     [_("Launch media player"), MEDIA_KEYS_SCHEMA, "media", "media"],
     [_("Play"), MEDIA_KEYS_SCHEMA, "play", "media"],
     [_("Pause playback"), MEDIA_KEYS_SCHEMA, "pause", "media"],
