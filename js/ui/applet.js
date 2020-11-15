@@ -642,8 +642,8 @@ var Applet = class Applet {
         Util.spawnCommandLine("xlet-about-dialog applets " + this._uuid);
     }
 
-    configureApplet() {
-        Util.spawnCommandLine("xlet-settings applet " + this._uuid + " " + this.instance_id);
+    configureApplet(tab=0) {
+        Util.spawnCommandLine("xlet-settings applet " + this._uuid + " -i " + this.instance_id + " -t " + tab);
     }
 
     get _panelHeight() {
