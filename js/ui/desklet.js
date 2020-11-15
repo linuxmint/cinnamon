@@ -277,8 +277,8 @@ var Desklet = class Desklet {
         Util.spawnCommandLine("xlet-about-dialog desklets " + this._uuid);
     }
 
-    configureDesklet() {
-        Util.spawnCommandLine("xlet-settings desklet " + this._uuid + " " + this.instance_id);
+    configureDesklet(tab=0) {
+        Util.spawnCommandLine("xlet-settings desklet " + this._uuid + " -i " + this.instance_id + " -t " + tab);
     }
 }
 Signals.addSignalMethods(Desklet.prototype);
