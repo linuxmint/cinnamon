@@ -17,7 +17,7 @@ import subprocess
 import PIL
 import gi
 gi.require_version('AccountsService', '1.0')
-from gi.repository import AccountsService, GLib
+from gi.repository import AccountsService, GLib, GdkPixbuf
 
 from SettingsWidgets import SidePage
 from ChooserButtonWidgets import PictureChooserButton
