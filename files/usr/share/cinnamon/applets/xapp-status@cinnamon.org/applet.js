@@ -26,7 +26,7 @@ class XAppStatusIcon {
 
         this.actor = new St.BoxLayout({
             style_class: "applet-box",
-            reactive: true,
+            reactive: !global.settings.get_boolean('panel-edit-mode'),
             track_hover: true,
             // The systray use a layout manager, we need to fill the space of the actor
             // or otherwise the menu will be displayed inside the panel.
