@@ -47,7 +47,7 @@ const RefreshFlags = Object.freeze({
     RECENT:   0b010000,
     SYSTEM:   0b100000
 });
-const REFRESH_ALL_MASK = 0b11111;
+const REFRESH_ALL_MASK = 0b111111;
 
 const NO_MATCH = 99999;
 const APP_MATCH_ADDERS = [
