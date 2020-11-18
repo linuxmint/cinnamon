@@ -130,24 +130,29 @@ class AppList {
 
         if (lastCycled < 0 || lastCycled > this.appList.length - 1) lastCycled = 0;
 
-        this.appList[lastCycled].groupState.set({thumbnailMenuEntered: true});
-        if (!this.appList[lastCycled].hoverMenu) this.appList[lastCycled].initThumbnailMenu();
-        this.appList[lastCycled].hoverMenu.open(true);
+        let openHoverMenu = this.appList[lastCycled].groupState.metaWindows.length !== 0
+
+        if(openHoverMenu)
+        {
+            this.appList[lastCycled].groupState.set({thumbnailMenuEntered: true});
+            if (!this.appList[lastCycled].hoverMenu) this.appList[lastCycled].initThumbnailMenu();
+            this.appList[lastCycled].hoverMenu.open(true);
+        }
 
         lastCycled++;
         this.state.set({lastCycled});
 
-        if (this.appList[lastCycled - 1].groupState.metaWindows.length === 0) {
+        if (!openHoverMenu)
             this.cycleMenus(r + 1);
+        else
+        {
+            let lastCycledTime = this.lastCycledTime;
+            setTimeout(() => {
+                if (lastCycledTime === this.lastCycledTime) {
+                    this.state.set({lastCycled: -1});
+                }
+            }, 2000)
         }
-
-
-        let lastCycledTime = this.lastCycledTime;
-        setTimeout(() => {
-            if (lastCycledTime === this.lastCycledTime) {
-                this.state.set({lastCycled: -1});
-            }
-        }, 2000)
     }
 
     // Gets a list of every app on the current workspace
