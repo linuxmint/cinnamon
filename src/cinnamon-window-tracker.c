@@ -274,7 +274,7 @@ get_app_from_window_wmclass (MetaWindow  *window)
   app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_class);
   if (app != NULL)
     return g_object_ref (app);
-g_printerr ("inst: %s, class: %s\n", wm_instance, wm_class);
+
   /* then try a match from WM_CLASS (instance part) to .desktop */
   app = cinnamon_app_system_lookup_desktop_wmclass (appsys, wm_instance);
   if (app != NULL)
