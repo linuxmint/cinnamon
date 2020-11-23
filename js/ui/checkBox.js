@@ -6,12 +6,8 @@ const Params = imports.misc.params;
 
 const Lang = imports.lang;
 
-function CheckBoxContainer() {
-   this._init();
-}
-
-CheckBoxContainer.prototype = {
-    _init: function() {
+var CheckBoxContainer = class {
+    constructor() {
         this.actor = new Cinnamon.GenericContainer({ y_align: St.Align.MIDDLE });
         this.actor.connect('get-preferred-width',
                            Lang.bind(this, this._getPreferredWidth));
@@ -35,9 +31,9 @@ CheckBoxContainer.prototype = {
         this.actor.add_actor(this.label);
 
         this._spacing = 0;
-    },
+    }
 
-    _getPreferredWidth: function(actor, forHeight, alloc) {
+    _getPreferredWidth(actor, forHeight, alloc) {
         let node = this.actor.get_theme_node();
         forHeight = node.adjust_for_height(forHeight);
 
@@ -55,9 +51,9 @@ CheckBoxContainer.prototype = {
 
         alloc.min_size = min;
         alloc.natural_size = nat;
-    },
+    }
 
-    _getPreferredHeight: function(actor, forWidth, alloc) {
+    _getPreferredHeight(actor, forWidth, alloc) {
         let [minBoxHeight, natBoxHeight] =
             this._box.get_preferred_height(-1);
         let [minLabelHeight, natLabelHeight] =
@@ -65,9 +61,9 @@ CheckBoxContainer.prototype = {
 
         alloc.min_size = Math.max(minBoxHeight, minLabelHeight);
         alloc.natural_size = Math.max(natBoxHeight, natLabelHeight);
-    },
+    }
 
-    _allocate: function(actor, box, flags) {
+    _allocate(actor, box, flags) {
         let availWidth = box.x2 - box.x1;
         let availHeight = box.y2 - box.y1;
 
@@ -94,14 +90,10 @@ CheckBoxContainer.prototype = {
         childBox.y2 = childBox.y1 + natLabelHeight;
         this.label.allocate(childBox, flags);
     }
-};
-
-function CheckBoxBase() {
-    this._init.apply(this, arguments);
 }
 
-CheckBoxBase.prototype = {
-    _init: function(checkedState, params) {
+var CheckBoxBase = class {
+    constructor(checkedState, params) {
         this._params = { style_class: 'check-box',
                          button_mask: St.ButtonMask.ONE,
                          toggle_mode: true,
@@ -117,56 +109,45 @@ CheckBoxBase.prototype = {
         this.actor = new St.Button(this._params);
         this.actor._delegate = this;
         this.actor.checked = checkedState;
-    },
+    }
 
-    setToggleState: function(checkedState) {
+    setToggleState(checkedState) {
         this.actor.checked = checkedState;
-    },
+    }
 
-    toggle: function() {
+    toggle() {
         this.setToggleState(!this.actor.checked);
-    },
+    }
 
-    destroy: function() {
+    destroy() {
         this.actor.destroy();
     }
-};
-
-function CheckButton() {
-    this._init.apply(this, arguments);
 }
 
-CheckButton.prototype = {
-    __proto__: CheckBoxBase.prototype,
-
-    _init: function(checkedState, params) {
-        CheckBoxBase.prototype._init.call(this, checkedState, params);
+var CheckButton = class extends CheckBoxBase {
+    constructor(checkedState, params) {
+        super(checkedState, params);
         this.checkmark = new St.Bin();
         this.actor.set_child(this.checkmark);
-    },
-};
-
-function CheckBox() {
-    this._init.apply(this, arguments);
+    }
 }
 
-CheckBox.prototype = {
-    __proto__: CheckBoxBase.prototype,
+var CheckBox = class extends CheckBoxBase {
+    constructor(label, params, checkedState) {
+        super(checkedState, params);
 
-    _init: function(label, params, checkedState) {
-        CheckBoxBase.prototype._init.call(this, checkedState, params);
         this._container = new CheckBoxContainer();
         this.actor.set_child(this._container.actor);
 
         if (label)
             this.setLabel(label);
-    },
+    }
 
-    setLabel: function(label) {
+    setLabel(label) {
         this._container.label.set_text(label);
-    },
+    }
 
-    getLabelActor: function() {
+    getLabelActor() {
         return this._container.label;
     }
-};
+}
