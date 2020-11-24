@@ -218,10 +218,12 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     }
 
     _show_hide_tray() { // Show or hide the notification tray.
-        if (this.notifications.length || this.showEmptyTray) {
-            this.actor.show();
-        } else {
-            this.actor.hide();
+        if(!global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
+            if (this.notifications.length || this.showEmptyTray) {
+                this.actor.show();
+            } else {
+                this.actor.hide();
+            }
         }
     }
 
