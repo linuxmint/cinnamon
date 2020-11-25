@@ -1660,7 +1660,7 @@ PanelContextMenu.prototype = {
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
         menu.addMenuItem(menu.troubleshootItem);
 
-        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "preferences-system"));
+        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "preferences-desktop"));
     },
 
     open: function(animate) {

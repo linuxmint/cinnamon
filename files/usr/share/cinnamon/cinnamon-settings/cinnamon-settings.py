@@ -694,7 +694,7 @@ class MainWindow:
 
     def back_to_icon_view(self, widget):
         self.window.set_title(_("System Settings"))
-        self.window.set_icon_name("preferences-system")
+        self.window.set_icon_name("preferences-desktop")
         self.window.resize(WIN_WIDTH, WIN_HEIGHT)
         children = self.content_box.get_children()
         for child in children:

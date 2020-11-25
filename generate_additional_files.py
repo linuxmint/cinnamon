@@ -12,7 +12,7 @@ gettext.install(DOMAIN, PATH)
 
 prefix = """[Desktop Entry]
 Exec=cinnamon-settings
-Icon=preferences-system
+Icon=preferences-desktop
 Terminal=false
 Type=Application
 Categories=Settings;
