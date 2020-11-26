@@ -20,9 +20,9 @@ pkgdatadir = join_paths(datadir, meson.project_name().to_lower())
 po_dir = join_paths(meson.source_root(), 'po')
 
 # dependencies
-cjs = dependency('cjs-1.0', version: '>= 4.7.0')
+cjs = dependency('cjs-1.0', version: '>= 4.8.0')
 clutter = dependency('muffin-clutter-0')
-cmenu = dependency('libcinnamon-menu-3.0')
+cmenu = dependency('libcinnamon-menu-3.0', version: '>= 4.8.0')
 cogl = dependency('muffin-cogl-0')
 cogl_path = dependency('muffin-cogl-path-0')
 dbus = dependency('dbus-1')
