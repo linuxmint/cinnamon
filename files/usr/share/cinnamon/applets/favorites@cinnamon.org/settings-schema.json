@@ -6,7 +6,7 @@
  "show-full-uri": {
     "type": "switch",
     "default" : false,
-    "description" : "Display full path or uri in list"
+    "description" : "Display full paths in the list"
  }
 }
 
