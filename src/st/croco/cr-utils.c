@@ -439,8 +439,7 @@ cr_utils_read_char_from_utf8_buf (const guchar * a_in,
          */
         guint32 c = 0;
 
-        g_return_val_if_fail (a_in && a_out && a_out
-                              && a_consumed, CR_BAD_PARAM_ERROR);
+        g_return_val_if_fail (a_in && a_out && a_consumed, CR_BAD_PARAM_ERROR);
 
         if (a_in_len < 1) {
                 status = CR_OK;
