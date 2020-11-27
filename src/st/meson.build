@@ -134,10 +134,11 @@ st_gir_sources = [
     st_headers,
 ]
 
-st_gir_sources += gnome.mkenums_simple(
+st_enum_types = gnome.mkenums_simple(
     'st-enum-types',
     sources: st_headers,
 )
+st_gir_sources += st_enum_types
 
 st_sources = [
     st_gir_sources,
