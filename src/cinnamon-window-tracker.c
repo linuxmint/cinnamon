@@ -193,12 +193,6 @@ is_browser_app (MetaWindow  *window,
         return FALSE;
     }
 
-    // If the WM_ROLE is browser, it's a web-app.
-    if (g_strcmp0 (meta_window_get_role (window), "browser") == 0)
-    {
-        return TRUE;
-    }
-
     // If the two strings differ, and one has browser in it, then assume it's a web app.
     if (g_strstr_len (lower_instance, -1, "browser") || g_strstr_len (lower_class, -1, "browser"))
     {
