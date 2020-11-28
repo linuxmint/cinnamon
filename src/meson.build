@@ -84,7 +84,6 @@ libcinnamon_deps = [
     gio_unix,
     gl,
     gtk,
-    libnm,
     muffin,
     pango,
     polkit,
@@ -94,6 +93,12 @@ libcinnamon_deps = [
     xfixes,
     xml,
 ]
+
+if not get_option('disable_networkmanager')
+    libcinnamon_deps += [
+        libnm,
+    ]
+endif
 
 non_gir = []
 if get_option('build_recorder')
