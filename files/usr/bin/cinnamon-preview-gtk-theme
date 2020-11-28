@@ -9,8 +9,8 @@ import sys
 from setproctitle import setproctitle
 
 import gi
-gi.require_version("Gtk", "3.0")  # noqa
 from gi.repository import Gtk
+gi.require_version("Gtk", "3.0")  # noqa
 
 if __name__ == '__main__':
     setproctitle("cinnamon-preview-gtk-theme")

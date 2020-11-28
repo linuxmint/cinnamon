@@ -17,26 +17,28 @@
 #   License along with this library; if not, write to the Free Software
 #   Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335  USA
 
-import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('CMenu', '3.0')
-from gi.repository import Gtk, GObject, Gdk, CMenu
 import html
 import os
 import gettext
 import subprocess
-
+from cme.MenuEditor import MenuEditor
 from cme import config
+from cme import util
+
+import gi
+from gi.repository import Gtk, GObject, Gdk, CMenu
+gi.require_version('Gtk', '3.0')
+gi.require_version('CMenu', '3.0')
+
 gettext.bindtextdomain(config.GETTEXT_PACKAGE, config.localedir)
 gettext.textdomain(config.GETTEXT_PACKAGE)
 
 _ = gettext.gettext
-from cme.MenuEditor import MenuEditor
-from cme import util
+
 
 class MainWindow(object):
     timer = None
-    #hack to make editing menu properties work
+    # hack to make editing menu properties work
     edit_pool = []
 
     def __init__(self, datadir, version):
@@ -119,30 +121,30 @@ class MainWindow(object):
                 menu_id = menus[iter][3].get_menu_id()
             update_menus = True
         self.loadMenus()
-        #find current menu in new tree
+        # find current menu in new tree
         if update_menus:
             menu_tree.get_model().foreach(self.findMenu, menu_id)
             menus, iter = menu_tree.get_selection().get_selected()
             if iter:
                 self.on_menu_tree_cursor_changed(menu_tree)
-        #find current item in new list
+        # find current item in new list
         if update_items:
             i = 0
             for item in item_tree.get_model():
                 found = False
                 if update_type != CMenu.TreeItemType.SEPARATOR:
-                    if isinstance (item[3], CMenu.TreeEntry) and item[3].get_desktop_file_id() == item_id:
+                    if isinstance(item[3], CMenu.TreeEntry) and item[3].get_desktop_file_id() == item_id:
                         found = True
-                    if isinstance (item[3], CMenu.TreeDirectory) and item[3].get_desktop_file_path() and update_type == CMenu.TreeItemType.DIRECTORY:
+                    if isinstance(item[3], CMenu.TreeDirectory) and item[3].get_desktop_file_path() and update_type == CMenu.TreeItemType.DIRECTORY:
                         if os.path.split(item[3].get_desktop_file_path())[1] == item_id:
                             found = True
                 if isinstance(item[3], CMenu.TreeSeparator):
                     if not isinstance(item_id, tuple):
-                        #we may not skip the increment via "continue"
+                        # we may not skip the increment via "continue"
                         i += 1
                         continue
-                    #separators have no id, have to find them manually
-                    #probably won't work with two separators together
+                    # separators have no id, have to find them manually
+                    # probably won't work with two separators together
                     if (item_id[0] - 1,) == (i,):
                         found = True
                     elif (item_id[0] + 1,) == (i,):
@@ -171,7 +173,7 @@ class MainWindow(object):
             return True
 
     def setupMenuTree(self):
-        self.menu_store = Gtk.TreeStore(object, str, bool, object) # bool is unused, just a placeholder
+        self.menu_store = Gtk.TreeStore(object, str, bool, object)  # bool is unused, just a placeholder
         menus = self.tree.get_object('menu_tree')                            # so object is the same index for
         column = Gtk.TreeViewColumn(_("Name"))                               # the menu tree and item tree
         column.set_spacing(4)
@@ -191,7 +193,7 @@ class MainWindow(object):
         cell.connect('toggled', self.on_item_tree_show_toggled)
         column.pack_start(cell, True)
         column.add_attribute(cell, 'active', 0)
-        #hide toggle for separators
+        # hide toggle for separators
         column.set_cell_data_func(cell, self._cell_data_toggle_func)
         items.append_column(column)
         column = Gtk.TreeViewColumn(_("Item"))
@@ -219,7 +221,7 @@ class MainWindow(object):
 
     def loadMenus(self):
         self.menu_store.clear()
-        self.loadMenu({ None: None })
+        self.loadMenu({None: None})
 
         menu_tree = self.tree.get_object('menu_tree')
         menu_tree.set_model(self.menu_store)
@@ -257,8 +259,8 @@ class MainWindow(object):
 
             self.item_store.append((show, icon, name, item))
 
-    #this is a little timeout callback to insert new items after
-    #gnome-desktop-item-edit has finished running
+    # this is a little timeout callback to insert new items after
+    # gnome-desktop-item-edit has finished running
     def waitForNewItemProcess(self, process, parent_id, file_path):
         if process.poll() is not None:
             if os.path.isfile(file_path):
@@ -273,7 +275,7 @@ class MainWindow(object):
             return False
         return True
 
-    #this callback keeps you from editing the same item twice
+    # this callback keeps you from editing the same item twice
     def waitForEditProcess(self, process, file_path):
         if process.poll() is not None:
             self.edit_pool.remove(file_path)
@@ -401,7 +403,7 @@ class MainWindow(object):
 
         index = menus.get_path(iter).get_indices()[menus.get_path(iter).get_depth() - 1]
         parent_iter = menus.iter_parent(iter)
-        count =  menus.iter_n_children(parent_iter)
+        count = menus.iter_n_children(parent_iter)
         can_go_up = index > 0 and isinstance(menu, CMenu.TreeDirectory)
         can_go_down = index < count - 1 and isinstance(menu, CMenu.TreeDirectory)
         self.last_tree = "menu_tree"
@@ -468,7 +470,7 @@ class MainWindow(object):
     def on_item_tree_popup_menu(self, item_tree, event=None):
         model, iter = item_tree.get_selection().get_selected()
         if event:
-            #don't show if it's not the right mouse button
+            # don't show if it's not the right mouse button
             if event.button != 3:
                 return
             button = event.button
@@ -485,13 +487,13 @@ class MainWindow(object):
             item_tree.grab_focus()
             item_tree.set_cursor(path, item_tree.get_columns()[0], 0)
         self.popup_menu.popup(None, None, None, None, button, event_time)
-        #without this shift-f10 won't work
+        # without this shift-f10 won't work
         return True
 
     def on_menu_tree_popup_menu(self, menu_tree, event=None):
         model, iter = menu_tree.get_selection().get_selected()
         if event:
-            #don't show if it's not the right mouse button
+            # don't show if it's not the right mouse button
             if event.button != 3:
                 return
             button = event.button
@@ -509,7 +511,7 @@ class MainWindow(object):
             menu_tree.set_cursor(path, menu_tree.get_columns()[0], 0)
         popup = self.tree.get_object('edit_menu')
         popup.popup(None, None, None, None, button, event_time)
-        #without this shift-f10 won't work
+        # without this shift-f10 won't work
         return True
 
     def on_item_tree_key_press_event(self, item_tree, event):

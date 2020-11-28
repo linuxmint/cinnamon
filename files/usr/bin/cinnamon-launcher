@@ -9,8 +9,8 @@ import gettext
 from setproctitle import setproctitle
 
 import gi
-gi.require_version('Gtk', '3.0')  # noqa
 from gi.repository import Gtk
+gi.require_version('Gtk', '3.0')  # noqa
 
 FALLBACK_COMMAND = "metacity"
 FALLBACK_ARGS = ("--replace",)
@@ -53,8 +53,9 @@ def confirm_restart():
     if resp == Gtk.ResponseType.YES:
         if checkbutton.get_active():
             os.environ["CINNAMON_TROUBLESHOOT"] = "1"
-        return(True)
-    return(False)
+        return True
+    return False
+
 
 if __name__ == "__main__":
     setproctitle("cinnamon-launcher")

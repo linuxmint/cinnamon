@@ -82,7 +82,7 @@ class LookingGlassProxy:
                 return self._proxy.GetResults('()')
             except Exception:
                 pass
-        return (False, "")
+        return False, ""
 
     def AddResult(self, code):
         if self._proxy:
@@ -97,7 +97,7 @@ class LookingGlassProxy:
                 return self._proxy.GetErrorStack('()')
             except Exception:
                 pass
-        return (False, "")
+        return False, ""
 
     def GetMemoryInfo(self):
         if self._proxy:
@@ -105,7 +105,7 @@ class LookingGlassProxy:
                 return self._proxy.GetMemoryInfo('()')
             except Exception:
                 pass
-        return (False, 0, {})
+        return False, 0, {}
 
     def FullGc(self):
         if self._proxy:
@@ -120,7 +120,7 @@ class LookingGlassProxy:
                 return self._proxy.Inspect('(s)', code)
             except Exception:
                 pass
-        return (False, "")
+        return False, ""
 
     def GetLatestWindowList(self):
         if self._proxy:
@@ -128,7 +128,7 @@ class LookingGlassProxy:
                 return self._proxy.GetLatestWindowList('()')
             except Exception:
                 pass
-        return (False, "")
+        return False, ""
 
     def StartInspector(self):
         if self._proxy:
@@ -143,7 +143,7 @@ class LookingGlassProxy:
                 return self._proxy.GetExtensionList('()')
             except Exception:
                 pass
-        return (False, "")
+        return False, ""
 
     def ReloadExtension(self, uuid, xlet_type):
         if self._proxy:
@@ -151,4 +151,4 @@ class LookingGlassProxy:
                 return self._proxy.ReloadExtension('(ss)', uuid, xlet_type)
             except Exception:
                 pass
-        return (False, "")
+        return False, ""

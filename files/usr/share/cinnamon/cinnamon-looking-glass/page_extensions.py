@@ -4,6 +4,7 @@ import os
 from gi.repository import Gtk, Gdk
 import pageutils
 
+
 class ModulePage(pageutils.BaseListView):
     def __init__(self, parent):
         store = Gtk.ListStore(str, str, str, str, str, str, str, bool, str)

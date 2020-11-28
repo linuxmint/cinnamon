@@ -6,10 +6,10 @@ Usage:  cinnamon-menu-editor
 """
 
 import sys
+from cme import MainWindow
 from setproctitle import setproctitle
 
 sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')  # noqa
-from cme import MainWindow
 
 
 def main():

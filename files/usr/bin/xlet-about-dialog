@@ -6,8 +6,8 @@ import json
 import gettext
 import datetime
 import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf
+gi.require_version('Gtk', '3.0')
 
 usage = """
 usage : xlet-about-dialog applets/desklets/extensions uuid
@@ -16,6 +16,7 @@ usage : xlet-about-dialog applets/desklets/extensions uuid
 gettext.install('cinnamon', '/usr/share/locale')
 
 home = os.path.expanduser('~')
+
 
 class AboutDialog(Gtk.AboutDialog):
     def __init__(self, metadata, stype):
@@ -69,7 +70,6 @@ class AboutDialog(Gtk.AboutDialog):
                 self.set_logo_icon_name('cs-%s' % self.metadata['type'])
         self.set_default_icon_name('cs-%s' % self.metadata['type'])
 
-
     def _(self, msg):
         gettext.bindtextdomain(self.metadata['uuid'], home + '/.local/share/locale')
         translation = gettext.dgettext(self.metadata['uuid'], msg)
@@ -89,9 +89,10 @@ class AboutDialog(Gtk.AboutDialog):
                         return index_cache[self.metadata['uuid']]['spices-id']
             return None
         except Exception as e:
-            print('Failed to load/parse index.json');
+            print('Failed to load/parse index.json')
             print(e)
             return None
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:

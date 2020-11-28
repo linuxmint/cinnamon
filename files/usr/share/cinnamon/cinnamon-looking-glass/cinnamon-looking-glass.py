@@ -20,17 +20,18 @@ import dbus.service
 from dbus.mainloop.glib import DBusGMainLoop
 import pyinotify
 import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, GObject, Gdk, GLib
 from setproctitle import setproctitle
-
 import pageutils
 from lookingglass_proxy import LookingGlassProxy
+
+gi.require_version('Gtk', '3.0')
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 MELANGE_DBUS_NAME = "org.Cinnamon.Melange"
 MELANGE_DBUS_PATH = "/org/Cinnamon/Melange"
+
 
 class MenuButton(Gtk.Button):
     def __init__(self, text):
@@ -56,6 +57,7 @@ class MenuButton(Gtk.Button):
                 y + (extents.height-h)-(extents.width-w)//2 + allocation.y,
                 allocation.width,
                 allocation.height)
+
 
 class CommandLine(Gtk.Entry):
     def __init__(self, exec_cb):
@@ -215,6 +217,7 @@ class NewLogDialog(Gtk.Dialog):
 
         return result
 
+
 class FileWatchHandler(pyinotify.ProcessEvent):
     def my_init(self, view):
         self.view = view
@@ -230,6 +233,7 @@ class FileWatchHandler(pyinotify.ProcessEvent):
 
     def process_IN_MODIFY(self, event):
         self.view.get_updates()
+
 
 class FileWatcherView(Gtk.ScrolledWindow):
     def __init__(self, filename):
@@ -280,15 +284,17 @@ class FileWatcherView(Gtk.ScrolledWindow):
             self.update_id = GLib.timeout_add(500, self.update)
 
     def update(self):
-        self.changed = 2 # on_size_changed will be called twice, but only the second time is final
+        self.changed = 2  # on_size_changed will be called twice, but only the second time is final
         self.textbuffer.set_text(open(self.filename, 'r').read())
         self.update_id = 0
         return False
+
 
 class ClosableTabLabel(Gtk.Box):
     __gsignals__ = {
         "close-clicked": (GObject.SignalFlags.RUN_FIRST, GObject.TYPE_NONE, ()),
     }
+
     def __init__(self, label_text):
         Gtk.Box.__init__(self)
         self.set_orientation(Gtk.Orientation.HORIZONTAL)
@@ -308,6 +314,7 @@ class ClosableTabLabel(Gtk.Box):
 
     def button_clicked(self, button, data=None):
         self.emit("close-clicked")
+
 
 class MelangeApp(dbus.service.Object):
     def __init__(self):
@@ -566,6 +573,7 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
         page = self.notebook.page_num(self.pages[module_name])
         self.notebook.set_current_page(page)
 
+
 def main():
     setproctitle("cinnamon-looking-glass")
     DBusGMainLoop(set_as_default=True)
@@ -587,6 +595,7 @@ def main():
         app.show()
 
     Gtk.main()
+
 
 if __name__ == "__main__":
     main()

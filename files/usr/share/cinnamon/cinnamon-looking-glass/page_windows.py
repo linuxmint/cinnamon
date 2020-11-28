@@ -3,6 +3,7 @@
 from gi.repository import Gtk
 import pageutils
 
+
 class ModulePage(pageutils.BaseListView):
     def __init__(self, parent):
         store = Gtk.ListStore(int, str, str, str)
@@ -39,7 +40,7 @@ class ModulePage(pageutils.BaseListView):
 
     def cell_data_func_id(self, column, cell, model, tree_iter, data=None):
         value = model.get_value(tree_iter, 0)
-        cell.set_property("text", "w(%d) / a(%d)" %  (value, value))
+        cell.set_property("text", "w(%d) / a(%d)" % (value, value))
 
     def on_row_activated(self, treeview, path, view_column):
         tree_iter = self.store.get_iter(path)

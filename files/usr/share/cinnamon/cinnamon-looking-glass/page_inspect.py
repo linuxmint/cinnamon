@@ -3,6 +3,7 @@
 from gi.repository import Gtk
 import pageutils
 
+
 class InspectView(pageutils.BaseListView):
     def __init__(self, module):
         self.module = module
@@ -64,6 +65,7 @@ class InspectView(pageutils.BaseListView):
                                item["value"],
                                path + "['" + item["name"] + "']"])
 
+
 class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self, parent):
         self.view = InspectView(self)
@@ -116,7 +118,6 @@ class ModulePage(pageutils.WindowAndActionBars):
             self.pop_inspection_element()
         else:
             self.parent.activate_page("results")
-
 
     def pop_inspection_element(self):
         if len(self.stack) > 0:

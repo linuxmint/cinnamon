@@ -9,10 +9,10 @@ import syslog
 from setproctitle import setproctitle
 
 import gi
+from gi.repository import Gtk, Gio
+from gi.repository import Keybinder
 gi.require_version('Keybinder', '3.0')  # noqa
 gi.require_version('Gtk', '3.0')  # noqa
-from gi.repository import Keybinder
-from gi.repository import Gtk, Gio
 
 SETTINGS_SCHEMA = 'org.cinnamon.desktop.keybindings.media-keys'
 SETTINGS_KEY = 'restart-cinnamon'
@@ -28,7 +28,7 @@ class KillerDaemon:
         self.settings.connect('changed::' + SETTINGS_KEY, self.apply_bindings)
 
     def apply_bindings(self, settings=None, key=None):
-        # Ubind the previous bindings
+        # Unbind the previous bindings
         try:
             if self.bindings is not None:
                 for binding in self.bindings:

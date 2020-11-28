@@ -4,13 +4,15 @@ import datetime
 from gi.repository import Gtk
 import pageutils
 
-class LogEntry():
+
+class LogEntry:
     def __init__(self, category, time, message):
         self.category = category
         self.time = int(time)
         self.timestr = datetime.datetime.fromtimestamp(self.time).strftime("%Y-%m-%dT%H:%M:%SZ")
         self.message = message
         self.formatted_text = "%s t=%s %s\n" % (category, self.timestr, message)
+
 
 class LogView(Gtk.ScrolledWindow):
     def __init__(self, proxy):
@@ -52,9 +54,9 @@ class LogView(Gtk.ScrolledWindow):
                                                 invisible_set=True)
         }
 
-        #todo: load all enabled types from gsettings
-        #self.enabled_types = {'info': False, 'warning': False, 'error': False, 'trace': False }
-        #for key in data:
+        # todo: load all enabled types from gsettings
+        # self.enabled_types = {'info': False, 'warning': False, 'error': False, 'trace': False }
+        # for key in data:
         #    self.enabled_types[key] = True
         self.get_updates()
         self.proxy.connect("LogUpdate", self.get_updates)
@@ -116,6 +118,7 @@ class LogView(Gtk.ScrolledWindow):
                     self.textview.scroll_to_mark(self.scroll_mark, 0, True, 1, 1)
             except Exception as exc:
                 print(exc)
+
 
 class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self, parent):

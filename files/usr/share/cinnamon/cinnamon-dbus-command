@@ -8,11 +8,13 @@ from xml.etree import ElementTree
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+
 class MethodArg:
     def __init__(self, method, arg_index, arg_type):
         self.method = method
         self.arg_index = arg_index
         self.arg_type = arg_type
+
 
 class CinnamonDBusCommand:
     def __init__(self, mainloop):
@@ -149,6 +151,7 @@ class CinnamonDBusCommand:
                 return arg
 
         return None
+
 
 if __name__ == "__main__":
     ml = GLib.MainLoop.new(None, True)

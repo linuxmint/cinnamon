@@ -25,6 +25,7 @@ from gi.repository import Gtk, GdkPixbuf, CMenu, GLib, Gdk
 DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
 KEY_FILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS | GLib.KeyFileFlags.KEEP_TRANSLATIONS
 
+
 def fillKeyFile(keyfile, items):
     for key, item in items.items():
         if item is None:
@@ -37,8 +38,10 @@ def fillKeyFile(keyfile, items):
         elif isinstance(item, Sequence):
             keyfile.set_string_list(DESKTOP_GROUP, key, item)
 
+
 def getNameFromKeyFile(keyfile):
     return keyfile.get_string(DESKTOP_GROUP, "Name")
+
 
 def getUniqueFileId(name, extension):
     while 1:
@@ -53,12 +56,14 @@ def getUniqueFileId(name, extension):
                 break
     return filename
 
+
 def getUniqueRedoFile(filepath):
     while 1:
         new_filepath = filepath + '.redo-' + str(uuid.uuid1())
         if not os.path.isfile(new_filepath):
             break
     return new_filepath
+
 
 def getUniqueUndoFile(filepath):
     filename, extension = os.path.split(filepath)[1].rsplit('.', 1)
@@ -74,6 +79,7 @@ def getUniqueUndoFile(filepath):
             break
     return new_filepath
 
+
 def getItemPath(file_id):
     for path in GLib.get_system_data_dirs():
         file_path = os.path.join(path, 'applications', file_id)
@@ -81,11 +87,13 @@ def getItemPath(file_id):
             return file_path
     return None
 
+
 def getUserItemPath():
     item_dir = os.path.join(GLib.get_user_data_dir(), 'applications')
     if not os.path.isdir(item_dir):
         os.makedirs(item_dir)
     return item_dir
+
 
 def getDirectoryPath(file_id):
     for path in GLib.get_system_data_dirs():
@@ -94,17 +102,20 @@ def getDirectoryPath(file_id):
             return file_path
     return None
 
+
 def getUserDirectoryPath():
     menu_dir = os.path.join(GLib.get_user_data_dir(), 'desktop-directories')
     if not os.path.isdir(menu_dir):
         os.makedirs(menu_dir)
     return menu_dir
 
+
 def getUserMenuPath():
     menu_dir = os.path.join(GLib.get_user_config_dir(), 'menus')
     if not os.path.isdir(menu_dir):
         os.makedirs(menu_dir)
     return menu_dir
+
 
 def getSystemMenuPath(file_id):
     for path in GLib.get_system_config_dirs():
@@ -113,17 +124,20 @@ def getSystemMenuPath(file_id):
             return file_path
     return None
 
+
 def getUserMenuXml(tree):
     system_file = getSystemMenuPath(os.path.basename(tree.get_canonical_menu_path()))
     name = tree.get_root_directory().get_menu_id()
     menu_xml = "<!DOCTYPE Menu PUBLIC '-//freedesktop//DTD Menu 1.0//EN' 'http://standards.freedesktop.org/menu-spec/menu-1.0.dtd'>\n"
     menu_xml += "<Menu>\n  <Name>" + name + "</Name>\n  "
-    menu_xml += "<MergeFile type=\"parent\">" + system_file +    "</MergeFile>\n</Menu>\n"
+    menu_xml += "<MergeFile type=\"parent\">" + system_file + "</MergeFile>\n</Menu>\n"
     return menu_xml
+
 
 class SurfaceWrapper:
     def __init__(self, surface):
         self.surface = surface
+
 
 def getIcon(item, widget):
     wrapper = SurfaceWrapper(None)
@@ -156,8 +170,9 @@ def getIcon(item, widget):
     if pixbuf.get_width() != size or pixbuf.get_height() != size:
         pixbuf = pixbuf.scale_simple(size, size, GdkPixbuf.InterpType.HYPER)
 
-    wrapper.surface = Gdk.cairo_surface_create_from_pixbuf (pixbuf, widget.get_scale_factor(), widget.get_window())
+    wrapper.surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, widget.get_scale_factor(), widget.get_window())
     return wrapper
+
 
 def removeWhitespaceNodes(node):
     remove_list = []
@@ -171,9 +186,11 @@ def removeWhitespaceNodes(node):
     for node in remove_list:
         node.parentNode.removeChild(node)
 
+
 def menuSortKey(node):
     prefCats = ["administration", "preferences"]
     key = node.get_menu_id().lower()
     name = node.get_name().lower()
-    if key in prefCats: name = "zzzz" + name # Hack for prefCats to be sorted at the end
+    if key in prefCats:
+        name = "zzzz" + name  # Hack for prefCats to be sorted at the end
     return name

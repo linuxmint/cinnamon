@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 
 from gi.repository import Gio, GLib
-import dbus, dbus.service, dbus.glib
+import dbus
+from dbus import service, glib
 from dbus.mainloop.glib import DBusGMainLoop
 import random
-import os, locale
+import os
+import locale
 from xml.etree import ElementTree
 from setproctitle import setproctitle
 
@@ -13,6 +15,7 @@ SLIDESHOW_DBUS_PATH = "/org/Cinnamon/Slideshow"
 
 BACKGROUND_COLLECTION_TYPE_DIRECTORY = "directory"
 BACKGROUND_COLLECTION_TYPE_XML = "xml"
+
 
 class CinnamonSlideshow(dbus.service.Object):
     def __init__(self):
@@ -50,7 +53,7 @@ class CinnamonSlideshow(dbus.service.Object):
         ml.quit()
 
     @dbus.service.method(SLIDESHOW_DBUS_NAME, in_signature='', out_signature='')
-    def getNextImage(self):
+    def get_next_image(self):
         if self.update_id > 0:
             GLib.source_remove(self.update_id)
             self.update_id = 0
@@ -68,7 +71,7 @@ class CinnamonSlideshow(dbus.service.Object):
 
     def format_source(self, type, path):
         # returns 'type://path'
-        return ("%s://%s" % (type, path))
+        return "%s://%s" % (type, path)
 
     def load_settings(self):
         self.random_order = self.slideshow_settings.get_boolean("random-order")
@@ -129,15 +132,15 @@ class CinnamonSlideshow(dbus.service.Object):
 
     def ensure_file_is_image(self, file_list):
         for item in file_list:
-            file_type = item.get_file_type();
+            file_type = item.get_file_type()
             if file_type is not Gio.FileType.DIRECTORY:
-                file_contents = item.get_content_type();
+                file_contents = item.get_content_type()
                 if file_contents.startswith("image"):
                     self.add_image_to_playlist(self.collection_path + "/" + item.get_name())
 
     def add_image_to_playlist(self, file_path):
         image = Gio.file_new_for_path(file_path)
-        image_uri = image.get_uri();
+        image_uri = image.get_uri()
         self.image_playlist.append(image_uri)
         if self.collection_type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
             self.image_playlist.sort()
@@ -166,7 +169,7 @@ class CinnamonSlideshow(dbus.service.Object):
     def on_monitored_folder_changed(self, monitor, file1, file2, event_type):
         try:
             if event_type == Gio.FileMonitorEvent.DELETED:
-                file_uri = file1.get_uri();
+                file_uri = file1.get_uri()
                 if self.image_playlist.count(file_uri) > 0:
                     index_to_remove = self.image_playlist.index(file_uri)
                     del self.image_playlist[index_to_remove]
@@ -179,7 +182,7 @@ class CinnamonSlideshow(dbus.service.Object):
                 file_info = file1.query_info("standard::type,standard::content-type", Gio.FileQueryInfoFlags.NONE, None)
                 file_type = file_info.get_file_type()
                 if file_type is not Gio.FileType.DIRECTORY:
-                    file_contents = file_info.get_content_type();
+                    file_contents = file_info.get_content_type()
                     if file_contents.startswith("image"):
                         self.add_image_to_playlist(file_path)
         except:
@@ -250,69 +253,69 @@ class CinnamonSlideshow(dbus.service.Object):
         self.used_image_playlist = []
 
 
-########### TAKEN FROM CS_BACKGROUND
-    def splitLocaleCode(self, localeCode):
-        loc = localeCode.partition("_")
+# TAKEN FROM CS_BACKGROUND
+    def split_locale_code(self, locale_code):
+        loc = locale_code.partition("_")
         loc = (loc[0], loc[2])
         return loc
 
-    def getLocalWallpaperName(self, names, loc):
+    def get_local_wallpaper_name(self, names, loc):
         result = ""
-        mainLocFound = False
+        main_loc_found = False
         for wp in names:
-            wpLoc = wp[0]
-            wpName = wp[1]
-            if wpLoc == ("", ""):
-                if not mainLocFound:
-                    result = wpName
-            elif wpLoc[0] == loc[0]:
-                if wpLoc[1] == loc[1]:
-                    return wpName
-                elif wpLoc[1] == "":
-                    result = wpName
-                    mainLocFound = True
+            wp_loc = wp[0]
+            wp_name = wp[1]
+            if wp_loc == ("", ""):
+                if not main_loc_found:
+                    result = wp_name
+            elif wp_loc[0] == loc[0]:
+                if wp_loc[1] == loc[1]:
+                    return wp_name
+                elif wp_loc[1] == "":
+                    result = wp_name
+                    main_loc_found = True
         return result
 
     def parse_xml_backgrounds_list(self, filename):
         try:
-            locAttrName = "{http://www.w3.org/XML/1998/namespace}lang"
-            loc = self.splitLocaleCode(locale.getdefaultlocale()[0])
+            loc_attr_name = "{http://www.w3.org/XML/1998/namespace}lang"
+            loc = self.split_locale_code(locale.getdefaultlocale()[0])
             res = []
-            subLocaleFound = False
+            sub_locale_found = False
             f = open(filename)
-            rootNode = ElementTree.fromstring(f.read())
+            root_node = ElementTree.fromstring(f.read())
             f.close()
-            if rootNode.tag == "wallpapers":
-                for wallpaperNode in rootNode:
+            if root_node.tag == "wallpapers":
+                for wallpaperNode in root_node:
                     if wallpaperNode.tag == "wallpaper" and wallpaperNode.get("deleted") != "true":
-                        wallpaperData = {"metadataFile": filename}
+                        wallpaper_data = {"metadataFile": filename}
                         names = []
                         for prop in wallpaperNode:
                             if type(prop.tag) == str:
                                 if prop.tag != "name":
-                                    wallpaperData[prop.tag] = prop.text
+                                    wallpaper_data[prop.tag] = prop.text
                                 else:
-                                    propAttr = prop.attrib
-                                    wpName = prop.text
-                                    locName = self.splitLocaleCode(propAttr.get(locAttrName)) if locAttrName in propAttr else ("", "")
-                                    names.append((locName, wpName))
-                        wallpaperData["name"] = self.getLocalWallpaperName(names, loc)
+                                    prop_attr = prop.attrib
+                                    wp_name = prop.text
+                                    loc_name = self.split_locale_code(prop_attr.get(loc_attr_name)) if loc_attr_name in prop_attr else ("", "")
+                                    names.append((loc_name, wp_name))
+                        wallpaper_data["name"] = self.get_local_wallpaper_name(names, loc)
 
-                        if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
-                            if wallpaperData["name"] == "":
-                                wallpaperData["name"] = os.path.basename(wallpaperData["filename"])
-                            res.append(wallpaperData)
+                        if "filename" in wallpaper_data and wallpaper_data["filename"] != "" and os.path.exists(wallpaper_data["filename"]) and os.access(wallpaper_data["filename"], os.R_OK):
+                            if wallpaper_data["name"] == "":
+                                wallpaper_data["name"] = os.path.basename(wallpaper_data["filename"])
+                            res.append(wallpaper_data)
             return res
         except Exception as detail:
             print(detail)
             return []
-###############
+
 
 if __name__ == "__main__":
     setproctitle("cinnamon-slideshow")
     DBusGMainLoop(set_as_default=True)
 
-    sessionBus = dbus.SessionBus ()
+    sessionBus = dbus.SessionBus()
     request = sessionBus.request_name(SLIDESHOW_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
     if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
         slideshow = CinnamonSlideshow()

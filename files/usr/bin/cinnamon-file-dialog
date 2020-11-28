@@ -8,10 +8,11 @@ Usage:
 """
 
 import sys
+from gi.repository import Gtk
+from typing import Any, Tuple
+
 from setproctitle import setproctitle
 setproctitle("cinnamon-file-dialog")
-
-from gi.repository import Gtk
 
 cancelButton = (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
 typeArg = int(sys.argv[1])
@@ -27,7 +28,7 @@ elif fdType == 1:
 elif fdType == 2:
     msg = "Save"
     action = Gtk.FileChooserAction.SAVE
-    okButton = (Gtk.STOCK_SAVE, Gtk.ResponseType.OK)
+    okButton: Tuple[Any, Any] = (Gtk.STOCK_SAVE, Gtk.ResponseType.OK)
 
 buttons = cancelButton + okButton
 filechooserdialog = Gtk.FileChooserDialog(title=msg, action=action, buttons=buttons)
