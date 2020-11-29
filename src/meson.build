@@ -158,7 +158,7 @@ executable(
         '-DLOCALEDIR="@0@"'.format(join_paths(prefix, datadir, 'locale')),
         '-DCINNAMON_PKGLIBDIR="@0@"'.format(join_paths(prefix, pkglibdir)),
     ],
-    install_rpath: join_paths(prefix, pkglibdir),
+    install_rpath: ':'.join([join_paths(prefix, pkglibdir), muffinlibdir]),
     include_directories: include_root,
     dependencies: cinnamon_dep,
     install: true,
