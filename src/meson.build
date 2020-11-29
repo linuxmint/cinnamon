@@ -137,7 +137,7 @@ executable(
     include_directories: include_root,
     dependencies: [config_h, gtk],
     install: true,
-    install_dir: pkglibdir,
+    install_dir: libexecdir,
 )
 
 js_tester = executable(
