@@ -425,7 +425,7 @@ class StreamMenuSection extends PopupMenu.PopupMenuSection {
         }
 
         // Trim stream name
-        if(name.length > 16) {
+        if(name.length > 20) {
             name = name.substring(0, 16) + "... ";
         }
 
