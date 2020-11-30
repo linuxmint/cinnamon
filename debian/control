@@ -19,7 +19,7 @@ Build-Depends:
  libdbus-1-dev,
  libgirepository1.0-dev (>= 1.29.15),
  libgl1-mesa-dev,
- libglib2.0-dev (>= 2.25.11),
+ libglib2.0-dev (>= 2.52),
  libgstreamer1.0-dev,
  libgtk-3-dev (>= 3.9.12),
  libgudev-1.0-dev,

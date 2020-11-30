@@ -34,7 +34,7 @@ atk = dependency('atk-bridge-2.0')
 gio = dependency('gio-2.0', version: '>= 2.36.0')
 gio_unix = dependency('gio-unix-2.0')
 gl = dependency('gl')
-glib_version = '2.36.0'
+glib_version = '2.52.0'
 glib = dependency('glib-2.0', version: '>= ' + glib_version)
 gstreamer = dependency('gstreamer-1.0')
 gstreamer_base = dependency('gstreamer-base-1.0')
