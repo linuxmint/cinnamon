@@ -120,7 +120,6 @@ class AppList {
 
         let {lastCycled} = this.state;
         this.lastCycledTime = Date.now();
-        this.closeAllHoverMenus();
 
         if (lastCycled < 0) {
             lastCycled = findIndex(this.appList, (app) => {
@@ -128,30 +127,35 @@ class AppList {
             });
         }
 
-        if (lastCycled < 0 || lastCycled > this.appList.length - 1) lastCycled = 0;
-
-        let openHoverMenu = this.appList[lastCycled].groupState.metaWindows.length !== 0
-
-        if(openHoverMenu)
-        {
-            this.appList[lastCycled].groupState.set({thumbnailMenuEntered: true});
-            if (!this.appList[lastCycled].hoverMenu) this.appList[lastCycled].initThumbnailMenu();
-            this.appList[lastCycled].hoverMenu.open(true);
+        if (lastCycled < 0 || lastCycled > this.appList.length - 1) {
+            lastCycled = 0;
         }
+
+        let refApp = this.appList[lastCycled];
 
         lastCycled++;
         this.state.set({lastCycled});
 
-        if (!openHoverMenu)
-            this.cycleMenus(r + 1);
-        else
-        {
+        if (refApp.groupState.metaWindows.length !== 0) { // open hoverMenu if app has windows
+            this.closeAllHoverMenus()
+
+            refApp.groupState.set({thumbnailMenuEntered: true});
+            if (!refApp.hoverMenu) {
+                refApp.initThumbnailMenu();
+            }
+            refApp.hoverMenu.open(true);
+
             let lastCycledTime = this.lastCycledTime;
             setTimeout(() => {
                 if (lastCycledTime === this.lastCycledTime) {
+                    if (refApp.hoverMenu.shouldClose) { // do not close hoverMenu if user is using it
+                        refApp.hoverMenu.close();
+                    }
                     this.state.set({lastCycled: -1});
                 }
             }, 2000)
+        } else {
+            this.cycleMenus(r + 1);
         }
     }
 
