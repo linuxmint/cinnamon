@@ -256,8 +256,6 @@ Extension.prototype = {
 
                 return finishLoad();
             });
-
-            return finishLoad();
         }).then((moduleIndex) => {
             if (moduleIndex == null) {
                 throw new Error(`Could not find module index: ${moduleIndex}`);
