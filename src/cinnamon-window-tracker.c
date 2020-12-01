@@ -156,6 +156,7 @@ is_browser_app (MetaWindow  *window,
                 const gchar *wm_instance,
                 const gchar *wm_class)
 {
+    g_return_val_if_fail (wm_instance != NULL && wm_class != NULL, FALSE);
     /* This is to catch browser-based app windows that are spawned
      * windows (such as from clicking an extension - LINE is a test
      * case). Another case seems to be web-apps (maybe any chromium-based
@@ -258,13 +259,17 @@ get_app_from_window_wmclass (MetaWindow  *window)
   */
 
   /* first try a match from WM_CLASS (instance part) to StartupWMClass */
+
   wm_instance = meta_window_get_wm_class_instance (window);
+  wm_class = meta_window_get_wm_class (window);
+
+  // g_printerr ("get_app_from_window_wmclass: wm_instance: %s, wm_class: %s\n", wm_instance, wm_class);
+
   app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_instance);
   if (app != NULL)
     return g_object_ref (app);
 
   /* then try a match from WM_CLASS to StartupWMClass */
-  wm_class = meta_window_get_wm_class (window);
   app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_class);
   if (app != NULL)
     return g_object_ref (app);
