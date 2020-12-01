@@ -500,34 +500,20 @@ class Player extends PopupMenu.PopupMenuSection {
         mainBox.addActor(this.vertBox, { expand: false });
 
         // Player info
-        let playerBox = new St.BoxLayout();
+        this._playerBox = new St.BoxLayout();
         this.playerIcon = new St.Icon({icon_type: St.IconType.SYMBOLIC, style_class: "popup-menu-icon"});
         this.playerLabel = new St.Label({ y_expand: true, y_align: Clutter.ActorAlign.CENTER, x_expand: true });
-        playerBox.add_actor(this.playerIcon);
-        playerBox.add_actor(this.playerLabel);
+        this._playerBox.add_actor(this.playerIcon);
+        this._playerBox.add_actor(this.playerLabel);
 
         if (this._mediaServer.CanRaise) {
-            let btn = new ControlButton("go-up", _("Open Player"), () => {
-                if (this._name.toLowerCase() === "spotify") {
-                    // Spotify isn't able to raise via Dbus once its main UI is closed
-                    Util.spawn(['spotify']);
-                }
-                else {
-                    this._mediaServer.RaiseRemote();
-                }
-                this._applet.menu.close();
-            }, true);
-            playerBox.add_actor(btn.actor);
+            this._showCanRaise();
         }
         if (this._mediaServer.CanQuit) {
-            let btn = new ControlButton("window-close", _("Quit Player"), () => {
-                this._mediaServer.QuitRemote();
-                this._applet.menu.close();
-            }, true);
-            playerBox.add_actor(btn.actor);
+            this._showCanQuit();
         }
 
-        this.vertBox.add_actor(playerBox);
+        this.vertBox.add_actor(this._playerBox);
 
         // Cover Box (art + track info)
         this._trackCover = new St.Bin({x_align: St.Align.MIDDLE});
@@ -610,16 +596,49 @@ class Player extends PopupMenu.PopupMenuSection {
                 this._setLoopStatus(props.LoopStatus.unpack());
             if (props.Shuffle)
                 this._setShuffle(props.Shuffle.unpack());
+            if (props.Identity) {
+                this._name = props.Identity.unpack();
+                this._applet._updatePlayerMenuItems();
+            }
+            if (props.CanRaise) {
+                this._showCanRaise();
+            }
+            if (props.CanQuit) {
+                this._showCanQuit();
+            }
+            if (props.DesktopEntry) {
+                this._applet.passDesktopEntry(props.DesktopEntry.unpack());
+            }
         });
 
         this._setLoopStatus(this._mediaServerPlayer.LoopStatus);
         this._setShuffle(this._mediaServerPlayer.Shuffle);
 
-        //get the desktop entry and pass it to the applet
-        this._prop.GetRemote(MEDIA_PLAYER_2_NAME, "DesktopEntry", (result, error) => {
-            if (!error)
-                this._applet.passDesktopEntry(result[0].unpack());
-        });
+        if (this._mediaServer.DesktopEntry) {
+            this._applet.passDesktopEntry(this._mediaServer.DesktopEntry);
+        }
+    }
+
+    _showCanRaise() {
+        let btn = new ControlButton("go-up", _("Open Player"), () => {
+            if (this._name.toLowerCase() === "spotify") {
+                // Spotify isn't able to raise via Dbus once its main UI is closed
+                Util.spawn(['spotify']);
+            }
+            else {
+                this._mediaServer.RaiseRemote();
+            }
+            this._applet.menu.close();
+        }, true);
+        this._playerBox.add_actor(btn.actor);
+    }
+
+    _showCanQuit() {
+        let btn = new ControlButton("window-close", _("Quit Player"), () => {
+            this._mediaServer.QuitRemote();
+            this._applet.menu.close();
+        }, true);
+        this._playerBox.add_actor(btn.actor);
     }
 
     _setName(status) {
