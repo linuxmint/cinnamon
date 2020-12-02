@@ -152,29 +152,20 @@ cinnamon_window_tracker_is_window_interesting (CinnamonWindowTracker *tracker, M
 }
 
 static gboolean
-is_browser_app (MetaWindow  *window,
-                const gchar *wm_instance,
-                const gchar *wm_class)
+is_window_only_browser_app (MetaWindow  *window,
+                            const gchar *wm_instance,
+                            const gchar *wm_class)
 {
-    g_return_val_if_fail (wm_instance != NULL && wm_class != NULL, FALSE);
+    if (wm_instance == NULL || wm_class == NULL)
+    {
+        return FALSE;
+    }
+
     /* This is to catch browser-based app windows that are spawned
      * windows (such as from clicking an extension - LINE is a test
-     * case). Another case seems to be web-apps (maybe any chromium-based
-     * browsers) - the --class argument is ignored with a shared profile.
-     *
-     * In this case the browser icon ends up being used due to cinnamon
-     * matching 'chromium-browser' in the wm_class/instance before
-     * falling back to using the window-supplied pixmap.
-     *
-     * Here we try to identify these cases and force Cinnamon to use
-     * the window icon before falling back to existing app matching.
-     *
-     * The icon will likely be inferior and scaled, but it's better
-     * ignoring the intended icon altogether.
-     */
+     * case). There's no desktop file but we don't want to use the
+     * browser icon and the window has a pixmap to use. */
 
-    // This is probably overkill but it's murky whether we'd ever get
-    // something other than utf-8, and g_strdown is broken.
     g_autofree gchar *utf8_instance = NULL;
     g_autofree gchar *utf8_class = NULL;
     g_autofree gchar *lower_instance = NULL;
@@ -186,9 +177,8 @@ is_browser_app (MetaWindow  *window,
     lower_instance = g_utf8_casefold (utf8_instance, -1);
     lower_class = g_utf8_casefold (utf8_class, -1);
 
-    // If the instance and instance are the same ["chromium-browser", "Chromium-browser"]
-    // then this is a normal app, and we treat is as one. Gtk programs also set these
-    // identically (though you can change them, it's discouraged).
+    // If the instance and instance are the same ["chromium-browser", "Chromium-browser"],
+    // don't consider it special.
     if (g_strcmp0 (lower_instance, lower_class) == 0)
     {
         return FALSE;
@@ -258,18 +248,20 @@ get_app_from_window_wmclass (MetaWindow  *window)
      class are the same except for case and there is no StartupWMClass at all.
   */
 
-  /* first try a match from WM_CLASS (instance part) to StartupWMClass */
-
+#if 0
   wm_instance = meta_window_get_wm_class_instance (window);
   wm_class = meta_window_get_wm_class (window);
+  g_printerr ("get_app_from_window_wmclass: wm_instance: %s, wm_class: %s\n", wm_instance, wm_class);
+#endif
 
-  // g_printerr ("get_app_from_window_wmclass: wm_instance: %s, wm_class: %s\n", wm_instance, wm_class);
-
+  /* first try a match from WM_CLASS (instance part) to StartupWMClass */
+  wm_instance = meta_window_get_wm_class_instance (window);
   app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_instance);
   if (app != NULL)
     return g_object_ref (app);
 
   /* then try a match from WM_CLASS to StartupWMClass */
+  wm_class = meta_window_get_wm_class (window);
   app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_class);
   if (app != NULL)
     return g_object_ref (app);
@@ -279,8 +271,10 @@ get_app_from_window_wmclass (MetaWindow  *window)
   if (app != NULL)
     return g_object_ref (app);
 
-  if (is_browser_app (window, wm_instance, wm_class))
+  /* figure out if it's a browser app without a desktop file. */
+  if (is_window_only_browser_app (window, wm_instance, wm_class))
   {
+    // Force it to use the window pixmap.
     return NULL;
   }
 
