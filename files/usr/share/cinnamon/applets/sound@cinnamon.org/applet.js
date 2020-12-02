@@ -1129,7 +1129,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             }
         }
 
-        this.tooltip.show();
+        this._applet_tooltip.show();
 
         this._notifyVolumeChange(this._output);
     }
