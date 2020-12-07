@@ -8,8 +8,8 @@ import os, locale
 from xml.etree import ElementTree
 from setproctitle import setproctitle
 
-SLIDESHOW_DBUS_NAME = "org.Cinnamon.Slideshow"
-SLIDESHOW_DBUS_PATH = "/org/Cinnamon/Slideshow"
+SLIDESHOW_DBUS_NAME = "org.cinnamon.slideshow"
+SLIDESHOW_DBUS_PATH = "/org/cinnamon/slideshow"
 
 BACKGROUND_COLLECTION_TYPE_DIRECTORY = "directory"
 BACKGROUND_COLLECTION_TYPE_XML = "xml"
