@@ -2426,7 +2426,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         if (!this.favoriteDocsButton) {
-            this.favoriteDocsButton = new CategoryButton(this, 'favorite', _('Favorites'), 'xapp-user-favorites');
+            this.favoriteDocsButton = new CategoryButton(this, 'favorites', _('Favorites'), 'xapp-user-favorites');
             this._categoryButtons.push(this.favoriteDocsButton);
             this.categoriesBox.add_actor(this.favoriteDocsButton.actor);
         }
