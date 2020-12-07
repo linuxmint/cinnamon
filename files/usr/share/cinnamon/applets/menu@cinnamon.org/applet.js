@@ -2411,7 +2411,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._favoriteDocButtons = [];
 
         for (let i = 0; i < this._categoryButtons.length; i++) {
-            if (this._categoryButtons[i].categoryId === 'favorites') {
+            if (this._categoryButtons[i].categoryId === 'favorite') {
                 this._categoryButtons[i].destroy();
                 this._categoryButtons.splice(i, 1);
                 this.favoriteDocsButton = null;
@@ -2426,7 +2426,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         if (!this.favoriteDocsButton) {
-            this.favoriteDocsButton = new CategoryButton(this, 'favorites', _('Favorites'), 'xapp-user-favorites');
+            this.favoriteDocsButton = new CategoryButton(this, 'favorite', _('Favorites'), 'xapp-user-favorites');
             this._categoryButtons.push(this.favoriteDocsButton);
             this.categoriesBox.add_actor(this.favoriteDocsButton.actor);
         }
