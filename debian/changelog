@@ -1,3 +1,52 @@
+cinnamon (4.8.1) ulyssa; urgency=medium
+
+  [ Michael Webster ]
+  * cr-utils.c: Fix copy/paste error.
+  * debian/control: add cinnamon-desktop-dev back into the build deps.
+  * cinnamon-window-tracker.c: Remove window role check when identifying chromium web apps.
+
+  [ Eli Schwartz ]
+  * meson: fix order-only dependency on generated headers
+
+  [ Leigh Scott ]
+  * Add muffin rpath to cinnamon executable
+  * Add libexecdir to meson
+
+  [ JosephMcc ]
+  * meson: Fix build when network manager is disabled
+
+  [ ronyalaluf ]
+  * Grouped-Window-List: fix hoverMenu stuck after menu cycle (fix #9067); Continuation of PR #9710
+
+  [ Michael Webster ]
+  * build: bump minimum version of glib.
+
+  [ brownsr ]
+  * extension.js: remove superfluous line causing warnings
+
+  [ claudiux ]
+  * Display entire stream name when its length <= 20 characters
+
+  [ Michael Webster ]
+  * sound applet: Listen for changes to certain properties on the org.mpris.MediaPlayer2 interface.
+  * cinnamon-window-tracker.c: Skip the browser-app check if wm_instance and wm_class are NULL.
+  * cinnamon-window-tracker.c: Revert unnecessary change in previous commit, do a better job explaining the desktop-less webapp check.
+  * src/meson.build: Fix log domain for cinnamon.
+  * sound applet: Fix displaying the tooltip when mouse-scrolling to change the volume.
+
+  [ nkreer ]
+  * Include shift as magnifier shortcut
+
+  [ NikoKrause ]
+  * menu-applet: change favorites category icon
+
+  [ Michael Webster ]
+  * favorites applet: Use correct favorites icon.
+  * favorites applet: Hide on panel if there aren't any favorites, fix stuck visibility of the favorites category in the menu applet.
+  * menu applet: Follow-up to previous commit, the categoryId for favorites is actually 'favorite' for 'an individual favorite', so we should look for that, not the plural.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 08 Dec 2020 10:37:58 +0000
+
 cinnamon (4.8.0) ulyssa; urgency=medium
 
   [ miniskipper ]
