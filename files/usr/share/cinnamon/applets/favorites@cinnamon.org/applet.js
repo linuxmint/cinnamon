@@ -38,19 +38,6 @@ class FavoriteMenuItem extends PopupMenu.PopupBaseMenuItem {
     }
 };
 
-class NoFavoriteMenuItem extends PopupMenu.PopupBaseMenuItem {
-    constructor() {
-        super({});
-        this.box = new St.BoxLayout({ style_class: 'popup-combobox-item' });
-
-        let label = new St.Label({ text: _("No favorites"), y_align: Clutter.ActorAlign.CENTER });
-
-        this.box.add(label);
-        this.addActor(this.box);
-        this.box.reactive = false;
-    }
-};
-
 class CinnamonFavoriteApplet extends Applet.IconApplet {
     constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
@@ -84,18 +71,20 @@ class CinnamonFavoriteApplet extends Applet.IconApplet {
         this._refreshFavorites();
 
         this.favorites_id = this.favorites.connect('changed', ()=>this._refreshFavorites());
+
+        global.settings.connect('changed::panel-edit-mode', ()=>this._on_panel_edit_mode_changed());
     }
 
     settings_changed() {
         this._refreshFavorites();
     }
 
-    on_panel_edit_mode_changed() {
+    _on_panel_edit_mode_changed() {
         let reactive = !global.settings.get_boolean('panel-edit-mode');
-        this.actor.visible = reactive && this.favorites.get_n_favorites() > 0;
+        this.actor.visible = global.settings.get_boolean('panel-edit-mode') || this.favorites.get_n_favorites() > 0;
     }
 
-    on_applet_removed_from_panel () {
+    on_applet_removed_from_panel() {
         if (this.favorites_id > 0) {
             this.favorites.disconnect(this.favorites_id);
             this.favorites_id = 0;
@@ -155,7 +144,7 @@ class CinnamonFavoriteApplet extends Applet.IconApplet {
             this.favoritesScrollBox.set_height(400 * global.ui_scale);
         }
 
-        this.on_panel_edit_mode_changed();
+        this._on_panel_edit_mode_changed();
     }
 }
 
