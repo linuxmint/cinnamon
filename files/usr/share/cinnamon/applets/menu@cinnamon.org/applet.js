@@ -1284,16 +1284,17 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.refreshMask = 0;
 
-        // recent category is always last
-        if (this.recentButton)
-            this.categoriesBox.set_child_at_index(this.recentButton.actor, -1);
+        // Repack the three special categories at the bottom of the category list.
+        if (this.favoriteDocsButton) {
+            this.categoriesBox.set_child_at_index(this.favoriteDocsButton.actor, -1);
+        }
 
-        // places is before recents, or last in list if recents is disabled/not generated
         if (this.placesButton) {
-            if (this.recentButton)
-                this.categoriesBox.set_child_below_sibling(this.placesButton.actor, this.recentButton.actor);
-            else
-                this.categoriesBox.set_child_at_index(this.placesButton.actor, -1);
+            this.categoriesBox.set_child_at_index(this.placesButton.actor, -1);
+        }
+
+        if (this.recentButton) {
+            this.categoriesBox.set_child_at_index(this.recentButton.actor, -1);
         }
 
         this._resizeApplicationsBox();
@@ -2447,7 +2448,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         for (let i = this._categoryButtons.length - 1; i > -1; i--) {
             let b = this._categoryButtons[i];
             if (b === this._allAppsCategoryButton ||
-                ['place', 'recent'].includes(b.categoryId))
+                ['place', 'recent', 'favorite'].includes(b.categoryId))
                 continue;
             this._categoryButtons[i].destroy();
             this._categoryButtons.splice(i, 1);
