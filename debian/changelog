@@ -1,3 +1,10 @@
+cinnamon (4.8.2) ulyssa; urgency=medium
+
+  * Favorites applet: Fix papercuts
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 08 Dec 2020 12:56:15 +0000
+
 cinnamon (4.8.1) ulyssa; urgency=medium
 
   [ Michael Webster ]
