@@ -66,18 +66,25 @@ def getDiskSize():
 
 
 def getProcInfos():
+    # For some platforms, 'model name' will no longer take effect.
+    # We can try our best to detect it, but if all attempts failed just leave it to be "Unknown".
+    # Source: https://github.com/dylanaraps/neofetch/blob/6dd85d67fc0d4ede9248f2df31b2cd554cca6c2f/neofetch#L2163
+    cpudetect = ("model name", "Hardware", "Processor", "cpu model", "chip type", "cpu type")
     infos = [
-        ("/proc/cpuinfo", [("cpu_name", "model name"), ("cpu_siblings", "siblings"), ("cpu_cores", "cpu cores")]),
-        ("/proc/meminfo", [("mem_total", "MemTotal")])
+        ("/proc/cpuinfo", [("cpu_name", cpudetect), ("cpu_siblings", ("siblings",)), ("cpu_cores", ("cpu cores",))]),
+        ("/proc/meminfo", [("mem_total", ("MemTotal",))])
     ]
 
     result = {}
     for (proc, pairs) in infos:
         for line in getProcessOut(("cat", proc)):
             for (key, start) in pairs:
-                if line.startswith(start):
-                    result[key] = line.split(':', 1)[1].strip()
-                    break
+                for item in start:
+                    if line.startswith(item):
+                        result[key] = line.split(':', 1)[1].strip()
+                        break
+                if key not in result:
+                    result[key] = "Unknown"
     return result
 
 
