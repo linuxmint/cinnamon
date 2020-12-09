@@ -60,7 +60,7 @@ def getDiskSize():
         out = getProcessOut(("lsblk", "--json", "--output", "size", "--bytes", "--nodeps"))
         jsonobj = loads(''.join(out))
     except Exception:
-        return _("Unknwon Capacity"), False
+        return _("Unknown size"), False
 
     for blk in jsonobj['blockdevices']:
         disksize += int(blk['size'])
@@ -89,7 +89,7 @@ def getProcInfos():
     if "cpu_name" not in result:
         result["cpu_name"] = _("Unknown CPU")
     if "mem_total" not in result:
-        result["mem_total"] = _("Unknown Capacity")
+        result["mem_total"] = _("Unknown size")
     return result
 
 

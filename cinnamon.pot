@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-08 12:33+0000\n"
+"POT-Creation-Date: 2020-12-09 12:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -703,7 +703,7 @@ msgid "Grouped window list"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:177
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2317
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2318
 msgid "Places"
 msgstr ""
 
@@ -856,36 +856,36 @@ msgstr ""
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2357
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2358
 msgid "Recent Files"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2372
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2373
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:121
 msgid "Clear list"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2373
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2374
 msgid "Clear all recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2551
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2552
 msgid "Logout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2552
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2553
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2563
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2564
 msgid "Quit"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2564
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2565
 msgid "Shut down the computer"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2623
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2624
 msgid "Type to search..."
 msgstr ""
 
@@ -3833,71 +3833,80 @@ msgstr ""
 msgid "Activation delay (ms)"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:96
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:100
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:104
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:110
-msgid "Operating System"
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:63
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:92
+msgid "Unknown size"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:112
-msgid "Cinnamon Version"
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:90
+msgid "Unknown CPU"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:113
-msgid "Linux Kernel"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:114
-msgid "Processor"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:116
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:118
-msgid "Memory"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:116
-msgid "GiB"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:122
-msgid "Hard Drives"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:124
-msgid "Hard Drive"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:125
-msgid "GB"
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:117
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:121
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:127
+msgid "Operating System"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:129
-msgid "Graphics Card"
+msgid "Cinnamon Version"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:137
-msgid "Display system information"
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:130
+msgid "Linux Kernel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:140
-msgid "system, information, details, graphic, sound, kernel, version"
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:131
+msgid "Processor"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:133
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:135
+msgid "Memory"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:133
+msgid "GiB"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:139
+msgid "Hard Drives"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:141
+msgid "Hard Drive"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:143
+msgid "GB"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:148
+msgid "Graphics Card"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:156
+msgid "Display system information"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:159
+msgid "system, information, details, graphic, sound, kernel, version"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:160
 msgid "System Info"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:153
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:172
 msgid "System info"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:171
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:190
 msgid "Upload system information"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:172
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:191
 msgid "No personal information included"
 msgstr ""
 
