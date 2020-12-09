@@ -94,12 +94,6 @@ libcinnamon_deps = [
     xml,
 ]
 
-if not get_option('disable_networkmanager')
-    libcinnamon_deps += [
-        libnm,
-    ]
-endif
-
 non_gir = []
 if get_option('build_recorder')
     cinnamon_sources += [
