@@ -49,7 +49,8 @@ xml = dependency('libxml-2.0')
 
 has_nm = not get_option('disable_networkmanager')
 if has_nm
-    libnm = dependency('libnm')
+    # only ever used in *.js via gi import
+    dependency('libnm')
 endif
 
 # on some systems we need to find the math lib to make sure it builds
