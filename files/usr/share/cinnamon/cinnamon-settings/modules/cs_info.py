@@ -56,8 +56,11 @@ def getGraphicsInfos():
 
 def getDiskSize():
     disksize = 0
-    out = getProcessOut(("lsblk", "--json", "--output", "size", "--bytes", "--nodeps"))
-    jsonobj = loads(''.join(out))
+    try:
+        out = getProcessOut(("lsblk", "--json", "--output", "size", "--bytes", "--nodeps"))
+        jsonobj = loads(''.join(out))
+    except Exception:
+        return _("Unknwon Capacity"), False
 
     for blk in jsonobj['blockdevices']:
         disksize += int(blk['size'])
@@ -66,18 +69,27 @@ def getDiskSize():
 
 
 def getProcInfos():
+    # For some platforms, 'model name' will no longer take effect.
+    # We can try our best to detect it, but if all attempts failed just leave it to be "Unknown".
+    # Source: https://github.com/dylanaraps/neofetch/blob/6dd85d67fc0d4ede9248f2df31b2cd554cca6c2f/neofetch#L2163
+    cpudetect = ("model name", "Hardware", "Processor", "cpu model", "chip type", "cpu type")
     infos = [
-        ("/proc/cpuinfo", [("cpu_name", "model name"), ("cpu_siblings", "siblings"), ("cpu_cores", "cpu cores")]),
-        ("/proc/meminfo", [("mem_total", "MemTotal")])
+        ("/proc/cpuinfo", [("cpu_name", cpudetect), ("cpu_siblings", ("siblings",)), ("cpu_cores", ("cpu cores",))]),
+        ("/proc/meminfo", [("mem_total", ("MemTotal",))])
     ]
 
     result = {}
     for (proc, pairs) in infos:
         for line in getProcessOut(("cat", proc)):
             for (key, start) in pairs:
-                if line.startswith(start):
-                    result[key] = line.split(':', 1)[1].strip()
-                    break
+                for item in start:
+                    if line.startswith(item):
+                        result[key] = line.split(':', 1)[1].strip()
+                        break
+    if "cpu_name" not in result:
+        result["cpu_name"] = _("Unknown CPU")
+    if "mem_total" not in result:
+        result["mem_total"] = _("Unknown Capacity")
     return result
 
 
@@ -85,7 +97,12 @@ def createSystemInfos():
     procInfos = getProcInfos()
     infos = []
     arch = platform.machine().replace("_", "-")
-    (memsize, memunit) = procInfos['mem_total'].split(" ")
+    try:
+        (memsize, memunit) = procInfos['mem_total'].split(" ")
+        memsize = float(memsize)
+    except ValueError:
+        memsize = procInfos['mem_total']
+        memunit = ""
     processorName = procInfos['cpu_name'].replace("(R)", "\u00A9").replace("(TM)", "\u2122")
     if 'cpu_cores' in procInfos:
         processorName = processorName + " \u00D7 " + procInfos['cpu_cores']
@@ -122,8 +139,10 @@ def createSystemInfos():
         diskText = _("Hard Drives")
     else:
         diskText = _("Hard Drive")
-    infos.append((diskText, '%.1f %s' % ((diskSize / (1000*1000*1000)), _("GB"))))
-
+    try:
+        infos.append((diskText, '%.1f %s' % ((diskSize / (1000*1000*1000)), _("GB"))))
+    except:
+        infos.append((diskText, diskSize))
     cards = getGraphicsInfos()
     for card in cards:
         infos.append((_("Graphics Card"), cards[card]))
