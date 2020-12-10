@@ -697,7 +697,6 @@ XletSettingsBase.prototype = {
                 // Some users with a little bit of know-how may be able to fix the file if it's not too corrupted. Is it worth it to give an option to skip this step?
                 global.logError(e);
                 global.logError("Failed to parse file "+this.file.get_path()+". Attempting to rebuild the settings file for "+this.uuid+".");
-                Main.notify("Unfortunately the settings file for "+this.uuid+" seems to be corrupted. Your settings have been reset to default.");
             }
         }
 
