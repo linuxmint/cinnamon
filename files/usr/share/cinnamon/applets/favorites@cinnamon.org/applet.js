@@ -65,7 +65,7 @@ class CinnamonFavoriteApplet extends Applet.IconApplet {
 
         this.settings.bind("show-full-uri", "_show_full_uri", this.settings_changed);
 
-        this.favorites = new XApp.Favorites();
+        this.favorites = XApp.Favorites.get_default();
 
         this._favoriteButtons = [];
         this._refreshFavorites();
