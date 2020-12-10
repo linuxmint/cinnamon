@@ -134,8 +134,30 @@ class Module:
             else:
                 self.zoom_stack.set_visible_child_name("screen")
 
-            crosshair = GSettingsSwitch(_("Enable crosshair"), "org.cinnamon.desktop.a11y.magnifier", "show-cross-hairs")
-            settings.add_reveal_row(crosshair, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
+            widget = GSettingsSwitch(_("Enable crosshair"), "org.cinnamon.desktop.a11y.magnifier", "show-cross-hairs")
+            settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
+
+            self.zoom_stack.add_named(widget, "crosshair")
+
+            spin = GSettingsSpinButton(_("Crosshair opacity"), "org.cinnamon.desktop.a11y.magnifier", "cross-hairs-opacity", None, 0.0, 1.0, step=0.1)
+            settings.add_reveal_row(spin, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
+
+            spin = GSettingsSpinButton(_("Crosshair thickness"), "org.cinnamon.desktop.a11y.magnifier", "cross-hairs-thickness", None, 1, 50, step=1)
+            settings.add_reveal_row(spin, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
+
+            crosshair_color_options = [["#ff0000", _("Red")],
+                                       ["#00ff00", _("Green")],
+                                       ["#0000ff", _("Blue")],
+                                       ["#ffff00", _("Yellow")],
+                                       ["#ff6700", _("Orange")],
+                                       ["#ff00ff", _("Pink")],
+                                       ["#a020f0", _("Purple")],
+                                       ["#ffffff", _("White")],
+                                       ["#000000", _("Black")]]
+            widget = GSettingsComboBox(_("Crosshair color"), "org.cinnamon.desktop.a11y.magnifier", "cross-hairs-color", crosshair_color_options)
+            settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
+
+            self.zoom_stack.add_named(widget, "crosshair-color"
 
 #### Keyboard
 
