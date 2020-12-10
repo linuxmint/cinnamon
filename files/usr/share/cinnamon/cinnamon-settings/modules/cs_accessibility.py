@@ -84,7 +84,7 @@ class Module:
             spin = GSettingsSpinButton(_("Magnification"), "org.cinnamon.desktop.a11y.magnifier", "mag-factor", None, 1.0, 15.0, step=0.5)
             settings.add_reveal_row(spin, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
 
-            zoom_key_options = [["", _("Disabled")], ["<Alt>", "<Alt>"],["<Super>", "<Super>"],["<Control>", "<Control>"], ["<Shift>", "<Shift>"]]
+            zoom_key_options = [["", _("Disabled")], ["<Alt>", "<Alt>"],["<Super>", "<Super>"],["<Control>", "<Control>"], ["<Shift_L>", "<Shift_L>"], ["<Shift_R>", "<Shift_R>"]]
             widget = GSettingsComboBox(_("Mouse wheel modifier"), "org.cinnamon.desktop.wm.preferences", "mouse-button-zoom-modifier", zoom_key_options)
             widget.set_tooltip_text(_("While this modifier is pressed, mouse scrolling will increase or decrease zoom."))
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
@@ -133,6 +133,9 @@ class Module:
                 self.zoom_stack.set_visible_child_name("shape")
             else:
                 self.zoom_stack.set_visible_child_name("screen")
+
+            crosshair = GSettingsSwitch(_("Enable crosshair"), "org.cinnamon.desktop.a11y.magnifier", "show-cross-hairs")
+            settings.add_reveal_row(crosshair, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
 
 #### Keyboard
 
