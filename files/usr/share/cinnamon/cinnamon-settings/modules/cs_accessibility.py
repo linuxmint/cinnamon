@@ -84,7 +84,7 @@ class Module:
             spin = GSettingsSpinButton(_("Magnification"), "org.cinnamon.desktop.a11y.magnifier", "mag-factor", None, 1.0, 15.0, step=0.5)
             settings.add_reveal_row(spin, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
 
-            zoom_key_options = [["", _("Disabled")], ["<Alt>", "<Alt>"],["<Super>", "<Super>"],["<Control>", "<Control>"], ["<Shift_L>", "<Shift_L>"], ["<Shift_R>", "<Shift_R>"]]
+            zoom_key_options = [["", _("Disabled")], ["<Alt>", "<Alt>"],["<Super>", "<Super>"],["<Control>", "<Control>"], ["<Shift>", "<Shift>"]]
             widget = GSettingsComboBox(_("Mouse wheel modifier"), "org.cinnamon.desktop.wm.preferences", "mouse-button-zoom-modifier", zoom_key_options)
             widget.set_tooltip_text(_("While this modifier is pressed, mouse scrolling will increase or decrease zoom."))
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
@@ -137,8 +137,6 @@ class Module:
             widget = GSettingsSwitch(_("Enable crosshair"), "org.cinnamon.desktop.a11y.magnifier", "show-cross-hairs")
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
 
-            self.zoom_stack.add_named(widget, "crosshair")
-
             spin = GSettingsSpinButton(_("Crosshair opacity"), "org.cinnamon.desktop.a11y.magnifier", "cross-hairs-opacity", None, 0.0, 1.0, step=0.1)
             settings.add_reveal_row(spin, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
 
@@ -156,8 +154,6 @@ class Module:
                                        ["#000000", _("Black")]]
             widget = GSettingsComboBox(_("Crosshair color"), "org.cinnamon.desktop.a11y.magnifier", "cross-hairs-color", crosshair_color_options)
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
-
-            self.zoom_stack.add_named(widget, "crosshair-color"
 
 #### Keyboard
 
