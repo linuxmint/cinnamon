@@ -1,3 +1,24 @@
+cinnamon (4.8.3) ulyssa; urgency=medium
+
+  [ Michael Webster ]
+  * menu applet: Don't destroy the favorite category when rebuilding the application list.
+
+  [ Cinhi Young ]
+  * cs_info: fix crash caused by missing key under getProcInfo (#9755)
+
+  [ Eli Schwartz ]
+  * Proper fix for builds with networkmanager disabled. (#9757)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+  * Don't show a notification when a spice settings file is corrupt.
+
+  [ Michael Webster ]
+  * favorites applet: remove debug line.
+  * favorites applet: Use the global XAppFavorites instance.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 13 Dec 2020 12:15:19 +0000
+
 cinnamon (4.8.2) ulyssa; urgency=medium
 
   * Favorites applet: Fix papercuts
