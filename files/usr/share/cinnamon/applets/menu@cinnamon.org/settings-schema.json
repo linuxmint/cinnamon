@@ -25,7 +25,7 @@
         "menu-layout" : {
             "type" : "section",
             "title" : "Layout and content",
-            "keys" : ["show-category-icons", "category-icon-size", "show-application-icons", "application-icon-size", "favbox-show", "fav-icon-size", "favbox-min-height", "show-places", "show-recents", "menu-editor-button"]
+            "keys" : ["show-category-icons", "category-icon-size", "show-application-icons", "application-icon-size", "favbox-show", "fav-icon-size", "show-places", "show-recents", "menu-editor-button"]
         },
         "menu-behave" : {
             "type" : "section",
@@ -71,17 +71,6 @@
     "tooltip" : "Enter custom text to show in the panel.",
     "dependency" : "menu-custom",
     "indent": true
- },
- "favbox-min-height" : {
-    "type": "spinbutton",
-    "default" : 300,
-    "min" : 200,
-    "max" : 1000,
-    "step" : 10,
-    "units" : "px",
-    "dependency" : "favbox-show",
-    "description" : "Minimum height of the favorites section",
-    "tooltip" : "The minimum size allocated for the favorites section (this has an impact on the overall height of the menu)."
  },
  "show-category-icons" : {
     "type" : "switch",
@@ -198,5 +187,14 @@
     "description" : "Open the menu editor",
     "callback" : "_launch_editor",
     "tooltip" : "Press this button to customize your menu entries."
+ },
+  "popup-width" : {
+    "type" : "generic",
+    "default" : 650
+ },
+  "popup-height" : {
+    "type" : "generic",
+    "default" : 650
  }
+
 }
