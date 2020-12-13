@@ -466,6 +466,13 @@ XletSettingsBase.prototype = {
 
     _getValue: function(key) {
         let value = this.settingsData[key].value;
+
+        if (value === undefined) {
+            global.logWarning(`No value field in setting '${key}' for ${this.uuid}. Using default value.`);
+
+            value = this.settingsData[key].default;
+        }
+
         return value;
     },
 
