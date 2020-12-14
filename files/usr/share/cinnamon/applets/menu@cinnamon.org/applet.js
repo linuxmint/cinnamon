@@ -1146,14 +1146,15 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.menuManager.addMenu(this.menu);
 
         this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
+        this.settings.bind("popup-width", "popup_width");
+        this.settings.bind("popup-height", "popup_height");
+
+        this._size_sanity_checked = false;
         this._resizer = new Applet.PopupResizeHandler(this,
                                                       this.menu.actor,
                                                       POPUP_MIN_WIDTH, POPUP_MAX_WIDTH,
                                                       POPUP_MIN_HEIGHT, POPUP_MAX_HEIGHT,
                                                       (w,h) => this._onBoxResized(w,h));
-
-        this.settings.bind("popup-width", "popup_width");
-        this.settings.bind("popup-height", "popup_height");
 
         this.settings.bind("show-favorites", "showFavorites", () => this.queueRefresh(RefreshFlags.FAV_DOC));
         this.settings.bind("show-places", "showPlaces", () => this.queueRefresh(RefreshFlags.PLACE));
@@ -1252,8 +1253,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _onBoxResized(width, height) {
-        this.popup_width = width;
-        this.popup_height = height;
+        this.popup_width = width / global.ui_scale;
+        this.popup_height = height / global.ui_scale;
         this._recalc_height()
     }
 
@@ -1316,8 +1317,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         if (this.recentButton) {
             this.categoriesBox.set_child_at_index(this.recentButton.actor, -1);
         }
-
-        this._onBoxResized(this.popup_width, this.popup_height);
     }
 
     openMenu() {
@@ -1365,11 +1364,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _recalc_height() {
-        this.menu.actor.set_height(this.popup_height);
-        this.menu.actor.set_width(this.popup_width);
+        this.menu.actor.set_height(this.popup_height * global.ui_scale);
+        this.menu.actor.set_width(this.popup_width * global.ui_scale);
 
-        this.main_container.natural_height = (this.popup_height);
-        this.main_container.natural_width = (this.popup_width);
+        this.main_container.natural_height = (this.popup_height * global.ui_scale);
+        this.main_container.natural_width = (this.popup_width * global.ui_scale);
 
         this.menu.actor.queue_relayout();
     }
@@ -1389,6 +1388,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     on_orientation_changed (orientation) {
         this._updateIconAndLabel();
+        this._size_sanity_checked = false;
     }
 
     on_applet_removed_from_panel () {
@@ -1427,8 +1427,22 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this.panel.peekPanel();
             }
 
-            this._onBoxResized(this.popup_width, this.popup_height);
+            if (!this._size_sanity_checked) {
+                this._size_sanity_checked = true;
 
+                // Accurate workarea isn't available during setup or even on_applet_added_to_panel()
+                let monitor = Main.layoutManager.currentMonitor;
+                let ws = global.screen.get_active_workspace();
+                let area = ws.get_work_area_for_monitor(monitor.index);
+
+                let max_allowed_height = area.height - 25;
+                this._resizer.hmax = max_allowed_height;
+
+                this.popup_height = this.popup_height.clamp(POPUP_MIN_HEIGHT, max_allowed_height / global.ui_scale);
+                this.popup_width = this.popup_width.clamp(POPUP_MIN_WIDTH, POPUP_MAX_WIDTH);
+
+                this._recalc_height()
+            }
         } else {
             this.actor.remove_style_pseudo_class('active');
             if (this.searchActive) {
@@ -2361,7 +2375,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             button.actor.visible = this.menu.isOpen;
             sibling = button.actor;
         }
-        this._onBoxResized(this.popup_width, this.popup_height);
     }
 
     _refreshRecent () {
@@ -2430,8 +2443,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.applicationsBox.add_actor(button.actor);
             button.actor.visible = this.menu.isOpen;
         }
-
-        this._onBoxResized(this.popup_width, this.popup_height);
     }
 
     _refreshFavDocs() {
@@ -2468,8 +2479,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.applicationsBox.add_actor(button.actor);
             button.actor.visible = this.menu.isOpen;
         });
-
-        this._onBoxResized(this.popup_width, this.popup_height);
     }
 
     _refreshApps() {
@@ -2634,8 +2643,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.vector_update_loop = null;
         this.current_motion_actor = null;
 
-        this.menu.actor.width = this.popup_width;
-        this.menu.actor.height = this.popup_height;
+        this.menu.actor.width = this.popup_width * global.ui_scale;
+        this.menu.actor.height = this.popup_height * global.ui_scale;
 
         let section = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(section);

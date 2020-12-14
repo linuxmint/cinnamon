@@ -61,7 +61,6 @@ var AppletContextMenu = class AppletContextMenu extends PopupMenu.PopupMenu {
     }
 }
 
-
 const ZONE_SIZE = 10;
 
 const NOT_DRAGGABLE = 0;
@@ -83,10 +82,10 @@ var PopupResizeHandler = class PopupResizeHandler {
     _init(applet, actor, wmin, wmax, hmin, hmax, resized_callback) {
         this.applet = applet;
         this.actor = actor;
-        this.wmin = wmin;
-        this.wmax = wmax;
-        this.hmin = hmin;
-        this.hmax = hmax
+        this.wmin = wmin * global.ui_scale;
+        this.wmax = wmax * global.ui_scale;
+        this.hmin = hmin * global.ui_scale;
+        this.hmax = hmax * global.ui_scale;
         this.callback = resized_callback;
 
         // TODO: automatically handle storing the user size, maybe having it become part of the enabled-applets
@@ -112,6 +111,7 @@ var PopupResizeHandler = class PopupResizeHandler {
 
         this.drag_start_pos = null;
         this.drag_start_size = null;
+        this.scaled_zone_size = ZONE_SIZE * global.ui_scale;
 
         this.edges = { top:    0,
                        bottom: 0,
@@ -123,9 +123,10 @@ var PopupResizeHandler = class PopupResizeHandler {
     }
 
     _drag_begin(time) {
-        this.start_drag()
-
+        this.scaled_zone_size = ZONE_SIZE * global.ui_scale;
         this._collect_work_area_edges();
+
+        this.start_drag()
     }
 
     _drag_cancel(time) {
@@ -300,7 +301,7 @@ var PopupResizeHandler = class PopupResizeHandler {
             return false;
         }
 
-        return y <= this.actor.y + ZONE_SIZE &&
+        return y <= this.actor.y + this.scaled_zone_size &&
                y >= this.actor.y;
     }
 
@@ -309,7 +310,7 @@ var PopupResizeHandler = class PopupResizeHandler {
             return false;
         }
 
-        return y >= this.actor.y + this.actor.height - ZONE_SIZE &&
+        return y >= this.actor.y + this.actor.height - this.scaled_zone_size &&
                y <= this.actor.y + this.actor.height;
     }
 
@@ -318,7 +319,7 @@ var PopupResizeHandler = class PopupResizeHandler {
             return false;
         }
 
-        return x <= this.actor.x + ZONE_SIZE &&
+        return x <= this.actor.x + this.scaled_zone_size &&
                x >= this.actor.x;
     }
 
@@ -327,7 +328,7 @@ var PopupResizeHandler = class PopupResizeHandler {
             return false;
         }
 
-        return x >= this.actor.x + this.actor.width - ZONE_SIZE &&
+        return x >= this.actor.x + this.actor.width - this.scaled_zone_size &&
                x <= this.actor.x + this.actor.width;
     }
 }
