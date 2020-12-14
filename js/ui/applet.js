@@ -290,6 +290,7 @@ var PopupResizeHandler = class PopupResizeHandler {
         this.callback(this.actor.width, this.actor.height);
         this.actor.queue_relayout()
 
+        this._current_resize_direction = NOT_DRAGGABLE;
         this.drag_start_position = null;
         this.drag_start_size = null;
         this.active = false;
