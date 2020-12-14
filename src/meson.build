@@ -54,10 +54,12 @@ cinnamon_sources = [
     cinnamon_headers,
 ]
 
-cinnamon_sources += gnome.mkenums_simple(
+cinnamon_enum_types = gnome.mkenums_simple(
     'cinnamon-enum-types',
     sources: cinnamon_headers,
 )
+
+cinnamon_sources += cinnamon_enum_types
 
 tray_headers = [
     'tray/na-tray-child.h',
