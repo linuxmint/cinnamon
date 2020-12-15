@@ -77,6 +77,15 @@ const RECENT_PLACES_ADDER = 4000;
  * want to use it.
  */
 
+function calc_angle(x, y) {
+    if (x == 0 || y == 0) {
+        return 0;
+    }
+
+    let r = Math.atan2(y, x) * (180 / Math.PI);
+    return r;
+}
+
 class VisibleChildIterator {
     constructor(container) {
         this.container = container;
@@ -910,6 +919,8 @@ class CategoryButton extends SimpleMenuItem {
             this.icon.visible = false;
 
         this.addLabel(this.name, 'menu-category-button-label');
+
+        this.actor_motion_id = this.actor.connect("motion-event", Lang.bind(applet, this.applet._categoryMotionEvent));
     }
 }
 
@@ -1455,11 +1466,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.closeContextMenu(false);
             this._previousVisibleIndex = null;
 
+            this._disableVectorMask();
             this._clearAllSelections(true);
             this._scrollToButton(null, this.applicationsScrollBox);
             this._scrollToButton(null, this.categoriesScrollBox);
             this._scrollToButton(null, this.favoritesScrollBox);
-            this.destroyVectorBox();
         }
     }
 
@@ -2163,7 +2174,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             button.isHovered = true;
             this._clearPrevCatSelection(button.actor);
             this._select_category(button.categoryId);
-            this.makeVectorBox(button.actor);
         } else {
             this._previousVisibleIndex = parent._vis_iter.getVisibleIndex(button.actor);
 
@@ -2235,106 +2245,199 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
-    /*
-     * The vectorBox overlays the the categoriesBox to aid in navigation from categories to apps
-     * by preventing misselections. It is set to the same size as the categoriesOverlayBox and
-     * categoriesBox.
-     *
-     * The actor is a quadrilateral that we turn into a triangle by setting the A and B vertices to
-     * the same position. The size and origin of the vectorBox are calculated in _getVectorInfo().
-     * Using those properties, the bounding box is sized as (w, h) and the triangle is defined as
-     * follows:
+     /* Category Box
      *   _____
-     *  |    /|D
-     *  |   / |     AB: (mx, my)
-     *  | A/  |      C: (w, h)
-     *  | B\  |      D: (w, 0)
-     *  |   \ |
-     *  |____\|C
+     *  |    /|T
+     *  |   / |
+     *  |  /__|__________pointer Y
+     *  | |\  |
+     *  | | \ |
+     *  |_|__\|B
+     *    |
+     *    |
+     *    |pointer X
      */
 
-    _getVectorInfo() {
+    /*
+     * The vector mask activates on any motion from a category button. At this point, all
+     * category buttons are made non-reactive.
+     *
+     * The starting point and two corners of the category box are taken, and two angles are
+     * calculated to intersect with the right box corners. If a movement is within those two
+     * angles, the current position is made the last position and used on the next interval.
+     *
+     * In this manner the left vertex of the triangle follows the mouse and category-switching
+     * is disabled as long as the pointer stays in bounds.
+     *
+     * If the poll interval is made too large, category switching will become sluggish. Polling
+     * stops when there is no movement.
+     */
+
+    static DEBUG_VMASK = false;
+    static VECTOR_VERTEX_COLOR = Clutter.Color.from_string("white")[1];
+
+    static POLL_INTERVAL = 20;
+    static MIN_MOVEMENT = 2; // Movement smaller than this disables the mask.
+
+    _getNewVectorInfo() {
         let [mx, my, mask] = global.get_pointer();
         let [bx, by] = this.categoriesScrollBox.get_transformed_position();
+
+        // The allocation is the only thing that works here - the 'height'
+        // property (and natural height) are the size of the entire scrollable
+        // area (the inner categoriesBox), which is weird...
         let alloc = this.categoriesScrollBox.get_allocation_box();
         let bw = alloc.x2 - alloc.x1;
         let bh = alloc.y2 - alloc.y1;
 
-        if (mx < 0 || mx > bx + bw || my < 0 || my > by + bh) {
-            return null;
+        let x_dist = bx + bw - mx;
+        let y_dist = my - by;
+
+        // Calculate their angle from 3 o'clock.
+        let top_angle = calc_angle(x_dist, y_dist);
+        y_dist -= bh;
+        let bottom_angle = calc_angle(x_dist, y_dist);
+
+        let debug_actor = null;
+
+        if (CinnamonMenuApplet.DEBUG_VMASK) {
+            debug_actor = new St.Polygon({ 
+                ulc_x: mx,        ulc_y: my,
+                llc_x: mx,        llc_y: my,
+                urc_x: bx + bw,   urc_y: by,
+                lrc_x: bx + bw,   lrc_y: by + bh,
+                debug: true
+            });
+
+            global.stage.add_actor(debug_actor);
         }
 
-        return { mx: mx,
-                 my: my,
-                 bx: bx,
-                 by: by,
-                 bw: bw,
-                 bh: bh };
+        return {
+            start_x: mx,
+            start_y: my,
+            bx: bx,
+            by1: by,
+            by2: by + bh,
+            bw: bw,
+            bh: bh,
+            top_angle: top_angle,
+            bottom_angle: bottom_angle,
+            debug_actor: debug_actor
+        };
     }
 
-    makeVectorBox(actor) {
-        this.destroyVectorBox(actor);
-        let vi = this._getVectorInfo();
-        if (!vi)
-            return;
+    _updateVectorInfo(mx, my) {
+        let bx = this.vector_mask_info.bx;
+        let by = this.vector_mask_info.by1;
+        let bw = this.vector_mask_info.bw;
+        let bh = this.vector_mask_info.bh;
 
-        if (this.vectorBox) {
-            this.vectorBox.visible = true;
-        } else {
-            this.vectorBox = new St.Polygon({ debug: false,  reactive: true });
-            global.stage.add_actor(this.vectorBox);
+        let x_dist = bx + bw - mx;
+        let y_dist = my - by;
 
-            this.vectorBox.connect("leave-event", Lang.bind(this, this.destroyVectorBox));
-            this.vectorBox.connect("motion-event", Lang.bind(this, this.maybeUpdateVectorBox));
+        // Calculate their angle from 3 o'clock.
+        let top_angle = calc_angle(x_dist, y_dist);
+        y_dist -= bh;
+
+        let bottom_angle = calc_angle(x_dist, y_dist);
+
+        // Padding moves the saved x position slightly left, this makes the mask
+        // more forgiving of random small movement when starting to choose an
+        // app button.
+        this.vector_mask_info.start_x = mx;
+        this.vector_mask_info.start_y = my;
+        this.vector_mask_info.top_angle = top_angle;
+        this.vector_mask_info.bottom_angle = bottom_angle;
+
+        if (CinnamonMenuApplet.DEBUG_VMASK) {
+            this.vector_mask_info.debug_actor.ulc_x = mx;
+            this.vector_mask_info.debug_actor.llc_x = mx;
+            this.vector_mask_info.debug_actor.ulc_y = my;
+            this.vector_mask_info.debug_actor.llc_y = my;
+        }
+    }
+
+    _keepMaskActive() {
+        let ret = false;
+        let ignored = false;
+        let angle = 0;
+
+        let [mx, my, mask] = global.get_pointer();
+
+        // Check for out of range entirely.
+        if (mx >= this.vector_mask_info.bx + this.vector_mask_info.bw ||
+            my < this.vector_mask_info.by1 ||
+            my > this.vector_mask_info.by2) {
+            return false;
         }
 
-        Object.assign(this.vectorBox, { width: vi.bw,           height:   vi.bh,
-                                        ulc_x: vi.mx,           ulc_y:    vi.my,
-                                        llc_x: vi.mx,           llc_y:    vi.my,
-                                        urc_x: vi.bx + vi.bw,   urc_y:    vi.by,
-                                        lrc_x: vi.bx + vi.bw,   lrc_y:    vi.by + vi.bh });
+        let x_dist = mx - this.vector_mask_info.start_x;
+        let y_dist = this.vector_mask_info.start_y - my;
 
-        this.actor_motion_id = actor.connect("motion-event", Lang.bind(this, this.maybeUpdateVectorBox));
-        this.current_motion_actor = actor;
+        if (Math.abs(Math.hypot(x_dist, y_dist)) < CinnamonMenuApplet.MIN_MOVEMENT) {
+            return false;;
+        }
+
+        angle = calc_angle(x_dist, y_dist);
+
+        ret = angle <= this.vector_mask_info.top_angle &&
+              angle >= this.vector_mask_info.bottom_angle;
+
+        this._updateVectorInfo(mx, my);
+
+        if (CinnamonMenuApplet.DEBUG_VMASK) {
+            log(`${this.vector_mask_info.top_angle} <---${angle}---> ${this.vector_mask_info.bottom_angle} - Continue? ${ret}`);
+        }
+
+        return ret;
     }
 
-    maybeUpdateVectorBox() {
-        if (this.vector_update_loop) {
+    _enableVectorMask(actor) {
+        this._disableVectorMask();
+
+        this.vector_mask_info = this._getNewVectorInfo(actor);
+
+        // While the mask is active, disable category buttons.
+        this._setCategoryButtonsReactive(false);
+
+        this.vector_update_loop = Mainloop.timeout_add(CinnamonMenuApplet.POLL_INTERVAL, Lang.bind(this, this._maskPollTimeout));
+    }
+
+    _maskPollTimeout() {
+        if (this._keepMaskActive()) {
+            return GLib.SOURCE_CONTINUE;
+        }
+
+        this._disableVectorMask();
+        return GLib.SOURCE_REMOVE;
+    }
+
+    _categoryMotionEvent(actor, event) {
+        // Always keep the mask engaged - motion-events on the category buttons
+        // trigger this.
+
+        if (this.vector_update_loop == 0) {
+            this._enableVectorMask(actor);
+        }
+
+        return Clutter.EVENT_PROPAGATE;
+    }
+
+    _disableVectorMask() {
+        if (this.vector_update_loop > 0) {
+            this._setCategoryButtonsReactive(true);
             Mainloop.source_remove(this.vector_update_loop);
             this.vector_update_loop = 0;
+
+            if (CinnamonMenuApplet.DEBUG_VMASK) {
+                this.vector_mask_info.debug_actor.destroy();
+            }
         }
-        this.vector_update_loop = Mainloop.timeout_add(50, Lang.bind(this, this.updateVectorBox));
     }
 
-    updateVectorBox(actor) {
-        if (!this.current_motion_actor)
-            return;
-        let vi = this._getVectorInfo();
-        if (vi) {
-            this.vectorBox.ulc_x = vi.mx;
-            this.vectorBox.llc_x = vi.mx;
-            this.vectorBox.queue_repaint();
-        } else {
-            this.destroyVectorBox(actor);
-        }
-        this.vector_update_loop = 0;
-        return false;
-    }
-
-    destroyVectorBox(actor) {
-        if (!this.vectorBox)
-            return;
-
-        if (this.vector_update_loop) {
-            Mainloop.source_remove(this.vector_update_loop);
-            this.vector_update_loop = 0;
-        }
-
-        if (this.actor_motion_id > 0 && this.current_motion_actor != null) {
-            this.current_motion_actor.disconnect(this.actor_motion_id);
-            this.actor_motion_id = 0;
-            this.current_motion_actor = null;
-            this.vectorBox.visible = false;
+    _setCategoryButtonsReactive(active) {
+        for (let i = 0; i < this._categoryButtons.length; i++) {
+            this._categoryButtons[i].actor.reactive = active;
         }
     }
 
@@ -2640,7 +2743,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._activeActor = null;
         this.vectorBox = null;
         this.actor_motion_id = 0;
-        this.vector_update_loop = null;
+        this.vector_update_loop = 0;
         this.current_motion_actor = null;
 
         this.menu.actor.width = this.popup_width * global.ui_scale;
