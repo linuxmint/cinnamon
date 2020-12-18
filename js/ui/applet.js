@@ -79,6 +79,7 @@ var PopupResizeHandler = class PopupResizeHandler {
         return this._init.apply(this, arguments);
     }
 
+    /* min/max values are ui-unscaled (1x) values, the remainder of this uses absolute sizes. */
     _init(applet, actor, wmin, wmax, hmin, hmax, resized_callback) {
         this.applet = applet;
         this.actor = actor;
@@ -118,6 +119,7 @@ var PopupResizeHandler = class PopupResizeHandler {
                        left:   0,
                        right:  0 };
 
+        this.margin_storage = Clutter.Margin.new();
         this.poll_timer_id = 0;
         this.active = false;
     }
@@ -125,6 +127,12 @@ var PopupResizeHandler = class PopupResizeHandler {
     _drag_begin(time) {
         this.scaled_zone_size = ZONE_SIZE * global.ui_scale;
         this._collect_work_area_edges();
+        this.margin_storage = this.actor.get_margin();
+
+        this.actor.margin_left = 0;
+        this.actor.margin_right = 0;
+        this.actor.margin_top = 0;
+        this.actor.margin_bottom = 0;
 
         this.start_drag()
     }
@@ -143,10 +151,10 @@ var PopupResizeHandler = class PopupResizeHandler {
         let ws = global.screen.get_active_workspace();
         let area = ws.get_work_area_for_monitor(monitor.index);
 
-        this.edges.top = area.y;
-        this.edges.bottom = area.y + area.height;
-        this.edges.left = area.x;
-        this.edges.right = area.x + area.width;
+        this.edges.top = area.y + this.actor.margin_top;
+        this.edges.bottom = area.y + area.height - this.actor.margin_bottom;
+        this.edges.left = area.x + this.actor.margin_left;
+        this.edges.right = area.x + area.width - this.actor.margin_right;
 
         // log(`top: ${this.edges.top}, bottom: ${this.edges.bottom} left: ${this.edges.left} right: ${this.edges.right}`);
     }
@@ -164,6 +172,7 @@ var PopupResizeHandler = class PopupResizeHandler {
 
         let l, r, t, b = false;
         let cursor = 0;
+        this._current_resize_direction = NOT_DRAGGABLE;
 
         let x, y;
         [x, y] = event.get_coords();
@@ -179,6 +188,7 @@ var PopupResizeHandler = class PopupResizeHandler {
             cursor = Cinnamon.Cursor.RESIZE_BOTTOM;
             this._current_resize_direction |= BOTTOM_EDGE_DRAGGABLE;
         }
+
         if (this.in_left_resize_zone (x, y) && this.actor.x > this.edges.left) {
             l = true;
             cursor = Cinnamon.Cursor.RESIZE_LEFT;
@@ -223,42 +233,66 @@ var PopupResizeHandler = class PopupResizeHandler {
         let [s, p] = mouse.get_coords(null);
         let x = p.x;
         let y = p.y;
-        // this.hmin = this.actor.get_preferred_height(-1)[0];
-        if (this._current_resize_direction & LEFT_EDGE_DRAGGABLE) {
+
+        let new_x = this.actor.x;
+        let new_y = this.actor.y;
+        let new_w = this.actor.width;
+        let new_h = this.actor.height;
+
+        if ((this._current_resize_direction & LEFT_EDGE_DRAGGABLE) !== 0) {
             let start_x = this.drag_start_position[X];
             let start_w = this.drag_start_size[W];
-
             let diff = start_x - x;
-            this.actor.x = start_x - diff;
-            this.actor.width = (start_w + diff).clamp(this.wmin, this.wmax);
+
+            if (diff != 0) {
+                new_w = (start_w + diff).clamp(this.wmin, this.wmax);
+            }
         }
         else
-        if (this._current_resize_direction & RIGHT_EDGE_DRAGGABLE) {
+        if ((this._current_resize_direction & RIGHT_EDGE_DRAGGABLE) !== 0) {
             let start_x = this.drag_start_position[X];
             let start_w = this.drag_start_size[W];
-
             let diff = x - start_x;
-            this.actor.width = (start_w + diff).clamp(this.wmin, this.wmax);
+
+            if (diff != 0) {
+                new_w = (start_w + diff).clamp(this.wmin, this.wmax);
+            }
         }
 
-        if (this._current_resize_direction & TOP_EDGE_DRAGGABLE) {
+        if ((this._current_resize_direction & TOP_EDGE_DRAGGABLE) !== 0) {
             let start_y = this.drag_start_position[Y];
             let start_h = this.drag_start_size[H];
-
             let diff = start_y - y;
-            this.actor.y = start_y - diff;
-            this.actor.height = (start_h + diff).clamp(this.hmin, this.hmax);
+
+            if (diff != 0) {
+                new_h = (start_h + diff).clamp(this.hmin, this.hmax);
+            }
         }
         else
-        if (this._current_resize_direction & BOTTOM_EDGE_DRAGGABLE) {
+        if ((this._current_resize_direction & BOTTOM_EDGE_DRAGGABLE) !== 0) {
             let start_y = this.drag_start_position[Y];
             let start_h= this.drag_start_size[H];
-
             let diff = y - start_y;
-            this.actor.height = (start_h + diff).clamp(this.hmin, this.hmax);
+
+            if (diff != 0) {
+                new_h = (start_h + diff).clamp(this.hmin, this.hmax);
+            }
         }
 
-        this.callback(this.actor.width, this.actor.height);
+        if (new_w != this.actor.width || new_h != this.actor.height) {
+            let final_w = -1;
+            let final_h = -1;
+
+            if (new_w != this.actor.width) {
+                final_w = new_w;
+            }
+            if (new_h != this.actor.height) {
+                final_h = new_h;
+            }
+            // log(`changed: ${this.actor.x}, ${this.actor.y}-> ${new_x}, ${new_y} - ${this.actor.width}x${this.actor.height} -> ${new_w}x${new_h}`);
+            this.callback(final_w, final_h);
+        }
+
         return GLib.SOURCE_CONTINUE;
     }
 
@@ -276,7 +310,8 @@ var PopupResizeHandler = class PopupResizeHandler {
         let [s, p] = mouse.get_coords(null);
 
         this.drag_start_position = [p.x, p.y];
-        this.drag_start_size = [this.actor.width, this.actor.height];
+        this.drag_start_size = [this.actor.width,
+                                this.actor.height];
 
         this.poll_timer_id = Mainloop.timeout_add(15, Lang.bind(this, this._poll_timeout));
     }
@@ -287,6 +322,7 @@ var PopupResizeHandler = class PopupResizeHandler {
             this.poll_timer_id = 0;
         }
 
+        this.actor.set_margin(this.margin_storage);
         this.callback(this.actor.width, this.actor.height);
         this.actor.queue_relayout()
 

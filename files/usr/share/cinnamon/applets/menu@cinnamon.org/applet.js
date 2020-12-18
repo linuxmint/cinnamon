@@ -11,6 +11,7 @@ const AppFavorites = imports.ui.appFavorites;
 const Gtk = imports.gi.Gtk;
 const Atk = imports.gi.Atk;
 const Gio = imports.gi.Gio;
+const GObject = imports.gi.GObject
 const XApp = imports.gi.XApp;
 const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
@@ -1161,11 +1162,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("popup-height", "popup_height");
 
         this._size_sanity_checked = false;
+        this._save_size_source_id = 0;
         this._resizer = new Applet.PopupResizeHandler(this,
                                                       this.menu.actor,
                                                       POPUP_MIN_WIDTH, POPUP_MAX_WIDTH,
                                                       POPUP_MIN_HEIGHT, POPUP_MAX_HEIGHT,
-                                                      (w,h) => this._onBoxResized(w,h));
+                                                      (w, h) => this._onBoxResized(w, h));
+        this._scaled_width = this.popup_width * global.ui_scale;
+        this._scaled_height = this.popup_height * global.ui_scale;
 
         this.settings.bind("show-favorites", "showFavorites", () => this.queueRefresh(RefreshFlags.FAV_DOC));
         this.settings.bind("show-places", "showPlaces", () => this.queueRefresh(RefreshFlags.PLACE));
@@ -1263,10 +1267,37 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.set_show_label_in_vertical_panels(false);
     }
 
+    _saveSizeTimeout() {
+        this._save_size_source_id = 0;
+
+        this._recalc_height(this._scaled_width, this._scaled_height);
+        this.popup_width = this._scaled_width / global.ui_scale;
+        this.popup_height = this._scaled_height / global.ui_scale;
+
+        return GLib.SOURCE_REMOVE
+    }
+
+    _queueSaveSizes() {
+        if (this._save_size_source_id > 0) {
+            Mainloop.source_remove(this._save_size_source_id);
+            this._save_size_source_id = 0;
+        }
+
+        this._save_size_source_id = Mainloop.timeout_add(200, Lang.bind(this, this._saveSizeTimeout));
+    }
+
     _onBoxResized(width, height) {
-        this.popup_width = width / global.ui_scale;
-        this.popup_height = height / global.ui_scale;
-        this._recalc_height()
+        if (width != -1) {
+            // log(`resize w    ${this.popup_width} >> ${width}`);
+            this._scaled_width = width;
+        }
+        if (height != -1) {
+            // log(`resize h    ${this.popup_height} >> ${height}`);
+            this._scaled_height = height;
+        }
+
+        this._queueSaveSizes();
+        this._recalc_height(this._scaled_width, this._scaled_height);
     }
 
     _updateShowIcons(container, show) {
@@ -1374,12 +1405,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         });
     }
 
-    _recalc_height() {
-        this.menu.actor.set_height(this.popup_height * global.ui_scale);
-        this.menu.actor.set_width(this.popup_width * global.ui_scale);
+    _recalc_height(width, height) {
+        this.menu.actor.set_width(width);
+        this.menu.actor.set_height(height);
 
-        this.main_container.natural_height = (this.popup_height * global.ui_scale);
-        this.main_container.natural_width = (this.popup_width * global.ui_scale);
+        this.main_container.natural_width = width;
+        this.main_container.natural_height = height;
 
         this.menu.actor.queue_relayout();
     }
@@ -1449,11 +1480,20 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 let max_allowed_height = area.height - 25;
                 this._resizer.hmax = max_allowed_height;
 
-                this.popup_height = this.popup_height.clamp(POPUP_MIN_HEIGHT, max_allowed_height / global.ui_scale);
                 this.popup_width = this.popup_width.clamp(POPUP_MIN_WIDTH, POPUP_MAX_WIDTH);
+                this.popup_height = this.popup_height.clamp(POPUP_MIN_HEIGHT, max_allowed_height / global.ui_scale);
 
-                this._recalc_height()
+                this._scaled_width = this.popup_width * global.ui_scale;
+                this._scaled_height = this.popup_height * global.ui_scale;
+
+                this._recalc_height(this._scaled_width, this._scaled_height);
             }
+
+            // keep for debugging resizing
+            // this.menu.actor.connect("notify::width", Lang.bind(this, this.size_changed));
+            // this.menu.actor.connect("notify::height", Lang.bind(this, this.size_changed));
+            // this.menu.actor.connect("notify::x", Lang.bind(this, this.size_changed));
+            // this.menu.actor.connect("notify::y", Lang.bind(this, this.size_changed));
         } else {
             this.actor.remove_style_pseudo_class('active');
             if (this.searchActive) {
@@ -1471,7 +1511,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._scrollToButton(null, this.applicationsScrollBox);
             this._scrollToButton(null, this.categoriesScrollBox);
             this._scrollToButton(null, this.favoritesScrollBox);
+
+            GObject.signal_handlers_disconnect_matched(this.menu.actor, {func: this.size_changed} );
         }
+    }
+
+    size_changed(...args) {
+        log(`geo changed: ${this.menu.actor.x}, ${this.menu.actor.y} - ${this.menu.actor.width}x${this.menu.actor.height}`);
     }
 
     _initial_cat_selection (start_index) {
@@ -2746,8 +2792,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.vector_update_loop = 0;
         this.current_motion_actor = null;
 
-        this.menu.actor.width = this.popup_width * global.ui_scale;
-        this.menu.actor.height = this.popup_height * global.ui_scale;
+        this.menu.actor.width = this._scaled_width;
+        this.menu.actor.height = this._scaled_height;
 
         let section = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(section);
@@ -2880,10 +2926,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.applicationsScrollBox.set_auto_scrolling(this.autoscroll_enabled);
         this.categoriesScrollBox.set_auto_scrolling(this.autoscroll_enabled);
         this.favoritesScrollBox.set_auto_scrolling(this.autoscroll_enabled);
-    }
-
-    _on_allocation_changed(box, flags, data) {
-        this._recalc_height();
     }
 
     _clearAllSelections(hide_apps) {
