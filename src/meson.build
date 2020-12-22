@@ -142,7 +142,7 @@ executable(
 
 js_tester = executable(
     'run-js-test',
-    'run-js-test.c',
+    ['run-js-test.c', cinnamon_enum_types[1]],
     c_args: [
         '-DCINNAMON_PKGLIBDIR="@0@"'.format(join_paths(prefix, pkglibdir)),
     ],
@@ -153,7 +153,7 @@ js_tester = executable(
 
 executable(
     'cinnamon',
-    'main.c',
+    ['main.c', cinnamon_enum_types[1]],
     c_args: [
         '-DLOCALEDIR="@0@"'.format(join_paths(prefix, datadir, 'locale')),
         '-DCINNAMON_PKGLIBDIR="@0@"'.format(join_paths(prefix, pkglibdir)),
