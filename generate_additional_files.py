@@ -38,7 +38,7 @@ additionalfiles.generate(DOMAIN, PATH, "files/usr/share/applications/cinnamon-se
 
 prefix = """[Desktop Entry]
 Exec=dbus-send --print-reply --dest=org.Cinnamon /org/Cinnamon org.Cinnamon.ToggleKeyboard
-Icon=input-keyboard
+Icon=cinnamon-virtual-keyboard
 Terminal=false
 Type=Application
 Categories=Utility;
