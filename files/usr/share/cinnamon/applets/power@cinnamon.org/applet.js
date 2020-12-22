@@ -471,7 +471,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             let time = Math.round(seconds / 60);
             let minutes = time % 60;
             let hours = Math.floor(time / 60);
-            labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+            labelText = C_("time of battery remaining", "%d:%02d").format(hours, minutes);
         }
         else if (this.labelinfo == "percentage" || (this.labelinfo == "percentage_time" && seconds == 0)) {
             labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
@@ -481,7 +481,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             let minutes = Math.floor(time % 60);
             let hours = Math.floor(time / 60);
             labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
-                C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
+                C_("time of battery remaining", "%d:%02d").format(hours, minutes) + ")";
         }
         this.set_applet_label(labelText);
 
@@ -609,7 +609,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                                 let minutes = Math.floor(time % 60);
                                 let hours = Math.floor(time / 60);
                                 labelText += C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
-                                    C_("time of battery remaining", "%d:%02d").format(hours,minutes) + ")";
+                                    C_("time of battery remaining", "%d:%02d").format(hours, minutes) + ")";
                             }
                             if (i !== this._devices.length - 1) {
                                 labelText += '  ';
