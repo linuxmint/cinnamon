@@ -119,13 +119,32 @@ cinnamon_app_get_id (CinnamonApp *app)
   return app->window_id_string;
 }
 
-const char *
+char *
 cinnamon_app_get_flatpak_app_id (CinnamonApp *app)
 {
   if (app->info)
   {
-    return gmenu_desktopappinfo_get_flatpak_app_id (app->info);
+    gchar *id;
+
+    id = g_strdup (gmenu_desktopappinfo_get_flatpak_app_id (app->info));
+
+    if (id != NULL)
+    {
+        return id;
+    }
+    else
+    {
+        const gchar *desktop_file = cinnamon_app_get_id (app);
+
+        gchar **split = g_strsplit (desktop_file, ".desktop", -1);
+        id = g_strdup (split[0]);
+        g_strfreev (split);
+
+        return id;
+    }
   }
+
+  // This should never occur
   return NULL;
 }
 

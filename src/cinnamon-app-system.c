@@ -135,7 +135,7 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
                                                          (GDestroyNotify)g_object_unref);
 
   priv->flatpak_id_to_app = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                         NULL,
+                                                         g_free,
                                                          (GDestroyNotify)g_object_unref);
 /* According to desktop spec, since our menu file is called 'cinnamon-applications', our
  * merged menu folders need to be called 'cinnamon-applications-merged'.  We'll setup the folder
@@ -659,7 +659,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
       if (cinnamon_app_get_is_flatpak (app))
       {
-        g_hash_table_replace (self->priv->flatpak_id_to_app, (char*)cinnamon_app_get_flatpak_app_id (app), g_object_ref (app));
+        g_hash_table_replace (self->priv->flatpak_id_to_app, cinnamon_app_get_flatpak_app_id (app), g_object_ref (app));
       }
       // if (!gmenu_tree_entry_get_is_nodisplay_recurse (entry))
       //    g_hash_table_replace (self->priv->visible_id_to_app, (char*)id, app);

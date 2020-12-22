@@ -91,7 +91,7 @@ gboolean cinnamon_app_launch_offloaded (CinnamonApp     *app,
                            GError      **error);
 
 gboolean cinnamon_app_get_is_flatpak (CinnamonApp *app);
-const char * cinnamon_app_get_flatpak_app_id (CinnamonApp *app);
+char * cinnamon_app_get_flatpak_app_id (CinnamonApp *app);
 
 G_END_DECLS
 
