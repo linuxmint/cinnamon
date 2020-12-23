@@ -1,3 +1,22 @@
+cinnamon (4.8.4) ulyssa; urgency=medium
+
+  [ Michael Webster ]
+  * js/ui/settings.js: Return the default value of a setting if no 'value' field exists.
+
+  [ Lars Mueller ]
+  * meson: fix order-only dependency on generated headers for cinnamon-enum-types-h
+
+  [ Michael Webster ]
+  * cinnamon-app.c: Never return NULL for the flatpak app id.
+
+  [ Clement Lefebvre ]
+  * Icons: Add cinnamon-virtual-keyboard.svg
+
+  [ Michael Webster ]
+  * src/meson.build: Include the generated enum header in the other build targets that use libcinnamon.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 23 Dec 2020 13:27:59 +0000
+
 cinnamon (4.8.3) ulyssa; urgency=medium
 
   [ Michael Webster ]
