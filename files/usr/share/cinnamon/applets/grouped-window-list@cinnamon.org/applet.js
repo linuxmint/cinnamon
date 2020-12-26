@@ -670,7 +670,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     handleScroll(e, sourceFromAppGroup) {
-        if( (this.state.settings.thumbnailScrollBehavior) || 
+        if( (this.state.settings.thumbnailScrollBehavior) || (this.state.settings.scrollBehavior === 2) ||
             (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior !== 3
              && !e && sourceFromAppGroup)  ||
             (this.state.settings.leftClickAction !== 3 && this.state.settings.scrollBehavior === 3               
@@ -695,9 +695,9 @@ class GroupedWindowListApplet extends Applet.Applet {
             if (isAppScroll) {
                 lastFocusedApp = this.appLists[this.state.currentWs].listState.lastFocusedApp;
                 if (!lastFocusedApp) {
-                    lastFocusedApp = this.applists[this.state.currentWs].applist[0].groupState.appId
+                    lastFocusedApp = this.appLists[this.state.currentWs].appList[0].groupState.appId
                 }
-                let focusedIndex = findIndex(this.applists[this.state.currentws].appList, function(appgroup) {
+                let focusedIndex = findIndex(this.appLists[this.state.currentWs].appList, function(appGroup) {
                     return appGroup.groupState.metaWindows.length > 0 && appGroup.groupState.appId === lastFocusedApp;
                 });
                 z = direction === 0 ? focusedIndex - 1 : focusedIndex + 1;
