@@ -520,15 +520,8 @@ class Module:
             level_box.pack_start(level_bar, True, True, 0)
             hbox.pack_start(level_box, True, True, 0)
         else:
-            status_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-            status_icon = Gtk.Image.new_from_icon_name(self.bat_level_to_icon(battery_level), Gtk.IconSize.BUTTON)
-            status_icon.set_size_request(30, -1)
-
-            status_box.pack_start(status_icon, False, False, 15)
-
             status_label = Gtk.Label(self.bat_level_to_label(battery_level))
-            status_box.pack_end(status_label, False, False, 0)
-            hbox.pack_start(status_box, True, True, 0)
+            hbox.pack_end(status_label, False, False, 0)
 
         vbox.pack_start(hbox, False, False, 0)
 
@@ -542,16 +535,6 @@ class Module:
         widget.pack_start(vbox, True, True, 0)
 
         return widget
-
-    def bat_level_to_icon(self, level):
-        if level in (UPowerGlib.DeviceLevel.FULL, UPowerGlib.DeviceLevel.HIGH):
-            return "battery-full-symbolic"
-        elif level == UPowerGlib.DeviceLevel.NORMAL:
-            return "battery-good-symbolic"
-        elif level == UPowerGlib.DeviceLevel.LOW:
-            return "battery-low-symbolic"
-        elif level == UPowerGlib.DeviceLevel.CRITICAL:
-            return "battery-caution-symbolic"
 
     def bat_level_to_label(self, level):
         if level == UPowerGlib.DeviceLevel.FULL:
