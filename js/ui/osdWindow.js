@@ -12,7 +12,7 @@ const LEVEL_ANIMATION_TIME = 0.1;
 const FADE_TIME = 0.1;
 const HIDE_TIMEOUT = 1500;
 
-const OSD_SIZE = 110;
+const OSD_SIZE = 100;
 
 function convertGdkIndex(monitorIndex) {
     let screen = Gdk.Screen.get_default();
@@ -218,7 +218,7 @@ OsdWindow.prototype = {
                 this._osdBaseSize = null;
                 break;
             case "small":
-                this._sizeMultiplier = 0.7;
+                this._sizeMultiplier = 0.6;
                 this._osdBaseSize = Math.floor(OSD_SIZE * this._sizeMultiplier);
                 break;
             case "large":
@@ -226,7 +226,7 @@ OsdWindow.prototype = {
                 this._osdBaseSize = OSD_SIZE;
                 break;
             default:
-                this._sizeMultiplier = 0.85;
+                this._sizeMultiplier = 0.8;
                 this._osdBaseSize = Math.floor(OSD_SIZE * this._sizeMultiplier);
         }
 
