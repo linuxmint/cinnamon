@@ -36,8 +36,6 @@ gio_unix = dependency('gio-unix-2.0')
 gl = dependency('gl')
 glib_version = '2.52.0'
 glib = dependency('glib-2.0', version: '>= ' + glib_version)
-gstreamer = dependency('gstreamer-1.0')
-gstreamer_base = dependency('gstreamer-base-1.0')
 gtk = dependency('gtk+-3.0', version: '>= 3.12.0')
 muffin = dependency('libmuffin', version: '>= 4.0.3')
 muffinlibdir = muffin.get_pkgconfig_variable('typelibdir')
@@ -51,6 +49,14 @@ has_nm = not get_option('disable_networkmanager')
 if has_nm
     # only ever used in *.js via gi import
     dependency('libnm')
+endif
+
+if get_option('build_recorder')
+	gstreamer = dependency('gstreamer-1.0')
+	gstreamer_base = dependency('gstreamer-base-1.0')
+else
+	gstreamer = dependency('', required: false)
+	gstreamer_base = dependency('', required: false)
 endif
 
 # on some systems we need to find the math lib to make sure it builds
