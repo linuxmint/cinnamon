@@ -129,10 +129,10 @@ OsdWindow.prototype = {
     },
 
     setLevel: function(level) {
-        this._level.actor.visible = (level != undefined);
-        this._label.set_text("");
         if (level != undefined) {
             this._label.set_text(String(level) + " %");
+            this._label.visible = this._level.actor.visible = true;
+
             if (this.actor.visible)
                 Tweener.addTween(this._level,
                                  { level: level,
@@ -140,6 +140,9 @@ OsdWindow.prototype = {
                                    transition: 'easeOutQuad' });
             else
                 this._level.level = level;
+        } else {
+            this._label.set_text("");
+            this._label.visible = this._level.actor.visible = false;
         }
     },
 
@@ -191,7 +194,7 @@ OsdWindow.prototype = {
 
     _reset: function() {
         this.actor.hide();
-        this.setLevel(null);
+        this.setLevel();
     },
 
     _monitorsChanged: function() {
