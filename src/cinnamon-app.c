@@ -112,10 +112,8 @@ cinnamon_app_get_property (GObject    *gobject,
 const char *
 cinnamon_app_get_id (CinnamonApp *app)
 {
-  if (app->info)
-  {
-    return g_app_info_get_id (G_APP_INFO (app->info));
-  }
+  if (app->entry)
+    return gmenu_tree_entry_get_desktop_file_id (app->entry);
   return app->window_id_string;
 }
 
