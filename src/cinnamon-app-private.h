@@ -12,7 +12,7 @@ G_BEGIN_DECLS
 
 CinnamonApp* _cinnamon_app_new_for_window (MetaWindow *window);
 
-CinnamonApp* _cinnamon_app_new (GMenuTreeEntry *entry);
+CinnamonApp* _cinnamon_app_new (GMenuTreeEntry *entry, const gchar *lookup_id);
 
 void _cinnamon_app_set_entry (CinnamonApp *app, GMenuTreeEntry *entry);
 

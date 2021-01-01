@@ -68,6 +68,7 @@ struct _CinnamonApp
 
   char *keywords;
   char *unique_name;
+  char *lookup_id;
 
   gboolean hidden_as_duplicate;
   gboolean is_flatpak;
@@ -114,7 +115,7 @@ cinnamon_app_get_id (CinnamonApp *app)
 {
   if (app->info)
   {
-    return g_app_info_get_id (G_APP_INFO (app->info));
+    return app->lookup_id;
   }
   return app->window_id_string;
 }
@@ -837,11 +838,14 @@ _cinnamon_app_new_for_window (MetaWindow      *window)
 }
 
 CinnamonApp *
-_cinnamon_app_new (GMenuTreeEntry *info)
+_cinnamon_app_new (GMenuTreeEntry *info,
+                   const gchar    *lookup_id)
 {
   CinnamonApp *app;
 
   app = g_object_new (CINNAMON_TYPE_APP, NULL);
+
+  app->lookup_id = g_strdup (lookup_id);
 
   _cinnamon_app_set_entry (app, info);
 
@@ -1337,6 +1341,7 @@ cinnamon_app_finalize (GObject *object)
   CinnamonApp *app = CINNAMON_APP (object);
 
   g_free (app->window_id_string);
+  g_free (app->lookup_id);
 
   G_OBJECT_CLASS(cinnamon_app_parent_class)->finalize (object);
 }

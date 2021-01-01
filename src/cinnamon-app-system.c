@@ -643,7 +643,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
       else
         {
           old_entry = NULL;
-          app = _cinnamon_app_new (entry);
+          app = _cinnamon_app_new (entry, id);
 
           DEBUG_RENAMING ("New app entry: '%s' with source '%s'\n",
                           _cinnamon_app_get_common_name (app),
