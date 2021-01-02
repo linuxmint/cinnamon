@@ -253,7 +253,7 @@
     "title" : "3rd section",
     "sections" : ["setting5", "setting6"]
   },
-  "section1" : {
+  "section4" : {
     "type" : "section",
     "title" : "4th section",
     "sections" : ["setting7", "setting8"]
@@ -454,14 +454,21 @@
     <title>Accessing the settings window from command-line</title>
 
     <para>
-      You can access the settings with the following command:
+      You can access the settings with one of the following commands:
     </para>
     <informalexample>
       <programlisting>
 xlet-settings &lt;type&gt; &lt;uuid&gt; &lt;instanceid&gt;</programlisting>
     </informalexample>
+    <informalexample>
+      <programlisting>
+xlet-settings &lt;type&gt; &lt;uuid&gt; -i &lt;instanceid&gt; -t &lt;tabnumber&gt;</programlisting>
+    </informalexample>
     <para>
-      Where <code>type</code> is <code>applet</code>, <code>desklet</code> or <code>extension</code> depending on what type it is. The <code>instanceid</code> is optional.
+      Where <code>type</code> is <code>applet</code>, <code>desklet</code> or <code>extension</code> depending on what type it is. The <code>instanceid</code> is optional. The <code>tabnumber</code> is optional and designates the tab (or page) you want to access; the tabs are numbered from <code>0</code> to <code>number of tabs - 1</code>. 
+    </para>
+    <para>
+      The second command is new in Cinnamon 4.2.
     </para>
   </sect2>
 </chapter>
