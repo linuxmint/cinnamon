@@ -1,3 +1,34 @@
+cinnamon (4.8.5) ulyssa; urgency=medium
+
+  [ icarter09 ]
+  * Adds Cycle Apps functionality back
+
+  [ JosephMcc ]
+  * cs_power.py: Remove a status icon
+
+  [ Joshua Peisach ]
+  * Power applet: Use spaces after commas.
+
+  [ forever-and-a-day ]
+  * New ICON_NAMES Entries for Tilix terminal actions
+
+  [ Michael Webster ]
+  * osdWindow.js: Hide the level label as well as the level itself when not used.
+
+  [ Lars Mueller ]
+  * Fix for desktop files in subfolders: use the desktop id generated in cinnamon-menus
+
+  [ Dan Dascalescu ]
+  * Github issue template: Simplify path to .xsession-errors (#9788)
+
+  [ claudiux ]
+  * Docs: Update xlet-settings-ref.xml (#9813)
+
+  [ NikoKrause ]
+  * removable-drives applet: use drive-removable-media icon (#9818)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 02 Jan 2021 18:23:24 +0000
+
 cinnamon (4.8.4) ulyssa; urgency=medium
 
   [ Michael Webster ]
