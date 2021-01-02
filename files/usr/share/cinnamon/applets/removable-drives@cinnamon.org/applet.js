@@ -41,7 +41,7 @@ class CinnamonRemovableDrivesApplet extends Applet.IconApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
-        this.set_applet_icon_symbolic_name("drive-harddisk");
+        this.set_applet_icon_symbolic_name("drive-removable-media");
         this.set_applet_tooltip(_("Removable drives"));
 
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
