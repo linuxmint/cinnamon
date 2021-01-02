@@ -307,6 +307,7 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         this.signalManager.connect(this.monitor, "icon-removed", this.onMonitorIconRemoved, this);
 
         this.signalManager.connect(Gtk.IconTheme.get_default(), 'changed', this.on_icon_theme_changed, this);
+        this.signalManager.connect(global, 'scale-changed', this.on_scale_changed, this);
         this.signalManager.connect(global.settings, 'changed::panel-edit-mode', this.on_panel_edit_mode_changed, this);
 
         this.signalManager.connect(Main.systrayManager, "changed", this.onSystrayRolesChanged, this);
@@ -471,6 +472,10 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
     }
 
     on_icon_theme_changed() {
+        this.refreshIcons();
+    }
+
+    on_scale_changed() {
         this.refreshIcons();
     }
 

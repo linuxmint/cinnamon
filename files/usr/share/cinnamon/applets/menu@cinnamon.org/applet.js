@@ -1175,6 +1175,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._updateKeybinding();
 
         Main.themeManager.connect("theme-set", Lang.bind(this, this._updateIconAndLabel));
+        global.connect('scale-changed', () => this.queueRefresh(REFRESH_ALL_MASK));
+
         this._updateIconAndLabel();
 
         this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
