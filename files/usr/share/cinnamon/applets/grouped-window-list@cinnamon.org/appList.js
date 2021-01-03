@@ -50,6 +50,8 @@ class AppList {
 
         // Connect all the signals
         this.signals.connect(global.screen, 'window-workspace-changed', (...args) => this.windowWorkspaceChanged(...args));
+        // ugly hack: forces applet to refresh the list of all removed app instances in all workspaces
+        this.signals.connect(global.screen, 'window-removed', (...args) => this.windowRemoved(...args));        
         this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
         this.on_orientation_changed(null, true);
     }
