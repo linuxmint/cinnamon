@@ -503,10 +503,44 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         if (device_type == UPDeviceType.BATTERY) {
             if (percentage > 20) {
                 this._applet_icon.set_style_class_name('system-status-icon');
+                // This code has to be cleaned up. It's a temp solution to #9823
+                if (percentage <= 90) {
+                  this.panel_icon_name = 'battery-level-90';
+                  this.set_applet_icon_symbolic_name('battery-level-90');
+                } else if (percentage <= 80) {
+                  this.panel_icon_name = 'battery-level-80';
+                  this.set_applet_icon_symbolic_name('battery-level-80');
+                } else if (percentage <= 70) {
+                  this.panel_icon_name = 'battery-level-70';
+                  this.set_applet_icon_symbolic_name('battery-level-70');
+                } else if (percentage <= 60) {
+                  this.panel_icon_name = 'battery-level-60';
+                  this.set_applet_icon_symbolic_name('battery-level-60');
+                } else if (percentage <= 50) {
+                  this.panel_icon_name = 'battery-level-50';
+                  this.set_applet_icon_symbolic_name('battery-level-50');
+                } else if (percentage <= 40) {
+                  this.panel_icon_name = 'battery-level-40';
+                  this.set_applet_icon_symbolic_name('battery-level-40');
+                } else if (percentage <= 30) {
+                  this.panel_icon_name = 'battery-level-30';
+                  this.set_applet_icon_symbolic_name('battery-level-30');
+                }
             } else if (percentage > 5) {
                 this._applet_icon.set_style_class_name('system-status-icon warning');
+                if (percentage <= 20) {
+                  this.panel_icon_name = 'battery-level-20';
+                  this.set_applet_icon_symbolic_name('battery-level-20');
+                } else if (percentage <= 10) {
+                  this.panel_icon_name = 'battery-level-10';
+                  this.set_applet_icon_symbolic_name('battery-level-10');
+                }
             } else {
                 this._applet_icon.set_style_class_name('system-status-icon error');
+                // Basically if the battery is less than 5%, show it as none.
+                // Should show urgency to the user to charge.
+                this.panel_icon_name = 'battery-level-0';
+                this.set_applet_icon_symbolic_name('battery-level-0');
             }
         } else {
             this._applet_icon.set_style_class_name ('system-status-icon');
@@ -614,7 +648,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                             if (i !== this._devices.length - 1) {
                                 labelText += '  ';
                             }
-                        }    
+                        }
                     }
                     this.set_applet_tooltip(devices_stats.join(", "));
                     this.set_applet_label(labelText);
