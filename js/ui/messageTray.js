@@ -1011,7 +1011,6 @@ MessageTray.prototype = {
     _showNotification: function() {
         this._notification = this._notificationQueue.shift();
         if (this._notification.actor._parent_container) {
-            this._notification.collapseCompleted();
             this._notification.actor._parent_container.remove_actor(this._notification.actor);
         }
 
