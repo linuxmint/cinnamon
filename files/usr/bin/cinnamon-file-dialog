@@ -11,6 +11,8 @@ import sys
 from setproctitle import setproctitle
 setproctitle("cinnamon-file-dialog")
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 cancelButton = (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
