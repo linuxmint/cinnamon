@@ -10,7 +10,6 @@ try:
     import html
     import subprocess
     import threading
-    import time
     import dbus
     from PIL import Image
     import datetime
@@ -393,7 +392,8 @@ class Spice_Harvester(GObject.Object):
             else:
                 connection = HTTPSConnection(host, timeout=15)
             headers = { "Accept-Encoding": "identity", "Host": host, "User-Agent": "Python/3" }
-            connection.request("GET", parsed_url.path, headers=headers)
+            full_path = "%s?%s" % (parsed_url.path, parsed_url.query)
+            connection.request("GET", full_path, headers=headers)
             urlobj = connection.getresponse()
             assert urlobj.getcode() == 200
 
