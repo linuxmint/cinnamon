@@ -1,3 +1,19 @@
+cinnamon (4.8.6) ulyssa; urgency=medium
+
+  [ Fabio Fantoni ]
+  * Remove executable from xapp-status applet files (#9820)
+
+  [ Michael Webster ]
+  * messageTray.js: Remove call to nonexistant method.
+
+  [ Clement Lefebvre ]
+  * spices: Fix URL timestamp not being used
+
+  [ Joshua Peisach ]
+  * cinnamon-file-dialog: Import GTK properly (#9843)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 13 Jan 2021 14:22:09 +0000
+
 cinnamon (4.8.5) ulyssa; urgency=medium
 
   [ icarter09 ]
