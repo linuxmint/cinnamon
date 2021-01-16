@@ -50,7 +50,10 @@ class AppList {
 
         // Connect all the signals
         this.signals.connect(global.screen, 'window-workspace-changed', (...args) => this.windowWorkspaceChanged(...args));
+        // Ugly change: refresh the removed app instances from all workspaces
+        this.signals.connect(global.screen, 'window-removed', (...args) => this.windowRemoved(...args));
         this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
+        this.signals.connect(global.window_manager, 'switch-workspace' , (...args) => this.reloadList(...args));
         this.on_orientation_changed(null, true);
     }
 
@@ -156,6 +159,14 @@ class AppList {
             }, 2000)
         } else {
             this.cycleMenus(r + 1);
+        }
+    }
+
+    reloadList() {
+        let windows;
+        windows = this.metaWorkspace.list_windows();
+        for (let i = 0, len = windows.length; i < len; i++) {
+            this.windowAdded(this.metaWorkspace, windows[i]);
         }
     }
 
@@ -328,11 +339,15 @@ class AppList {
     windowRemoved(metaWorkspace, metaWindow) {
         if (!this.state) return;
 
-        if ((metaWindow.is_on_all_workspaces() || this.state.settings.showAllWorkspaces)
+        if ((metaWindow.is_on_all_workspaces() || this.state.settings.showAllWorkspaces
+            || !this.state.settings.showAllWorkspaces)
             && !this.state.removingWindowFromWorkspaces) {
             // Abort the remove if the window is just changing workspaces, window
             // should always remain indexed on all workspaces while its mapped.
             // if (!metaWindow.showing_on_its_workspace()) return;
+            if ((this.state.settings.showAllWorkspaces) && (metaWindow.has_focus()
+            && global.screen.get_active_workspace_index()
+            !== metaWorkspace.index())) return;
             this.state.removingWindowFromWorkspaces = true;
             this.state.trigger('removeWindowFromAllWorkspaces', metaWindow);
             return;
