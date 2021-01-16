@@ -194,9 +194,12 @@ class GroupedWindowListApplet extends Applet.Applet {
             currentWs: global.screen.get_active_workspace_index(),
             panelEditMode: global.settings.get_boolean('panel-edit-mode'),
             menuOpen: false,
-            posList: null,
-            dragPlaceholder: null,
-            pos: -1,
+            dragging: {
+                posList: null,
+                dragPlaceholder: null,
+                pos: -1,
+                isForeign: null,
+            },
             appletReady: false,
             willUnmount: false,
             settings: {},
@@ -248,7 +251,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             refreshCurrentAppList: () => this.refreshCurrentAppList(),
             refreshAllAppLists: () => this.refreshAllAppLists(),
             getCurrentAppList: () => this.getCurrentAppList(),
-            clearDragPlaceholder: () => this.clearDragPlaceholder(),
+            moveLauncher: (source) => this.moveLauncher(source),
             getAutoStartApps: () => this.getAutoStartApps(),
             getRecentItems: () =>
                 Gtk.RecentManager.get_default()
@@ -754,7 +757,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             return DND.DragMotionResult.CONTINUE;
 
         let appList = this.appLists[this.state.currentWs];
-        let isForeign = !(source instanceof AppGroup);
         let rtl_horizontal = this.state.isHorizontal
             && St.Widget.get_default_direction () === St.TextDirection.RTL;
 
@@ -762,53 +764,56 @@ class GroupedWindowListApplet extends Applet.Applet {
         if(rtl_horizontal)
             axis[0] = this.actor.width - axis[0];
 
-        if(this.state.posList === null){ //save initial positions
+        // save data on drag start
+        if(this.state.dragging.posList === null){
+            this.state.dragging.isForeign = !(source instanceof AppGroup);
             let children = appList.actor.get_children();
-            this.state.posList = [];
+            this.state.dragging.posList = [];
             for(let i = 0; i < children.length; i++){
                 let childPos;
                 if(rtl_horizontal)
                     childPos = this.actor.width - children[i].get_allocation_box()['x1'];
                 else
-                    childPos = children[i].get_allocation_box()[axis[1]]
-                this.state.posList.push(childPos);
+                    childPos = children[i].get_allocation_box()[axis[1]];
+                this.state.dragging.posList.push(childPos);
             }
         }
 
-        //get current position
+        // get current position
         let pos = 0;
-        while(pos < this.state.posList.length && axis[0] > this.state.posList[pos])
+        while(pos < this.state.dragging.posList.length && axis[0] > this.state.dragging.posList[pos])
             pos++;
 
-        //keep pinned and unpinned items separate
-        if((isForeign && pos > this.pinnedFavorites._favorites.length) ||
-            (!isForeign && source.groupState.isFavoriteApp && pos >= this.pinnedFavorites._favorites.length) ||
-            (!isForeign && !source.groupState.isFavoriteApp && pos < this.pinnedFavorites._favorites.length))
+        // keep pinned and unpinned items separate
+        if((this.state.dragging.isForeign && pos > this.pinnedFavorites._favorites.length) ||
+            (!this.state.dragging.isForeign && source.groupState.isFavoriteApp && pos >= this.pinnedFavorites._favorites.length) ||
+            (!this.state.dragging.isForeign && !source.groupState.isFavoriteApp && pos < this.pinnedFavorites._favorites.length))
             return DND.DragMotionResult.NO_DROP;
 
-        if (pos !== this.state.pos) {
-            this.state.pos = pos;
+        // handle position change
+        if (pos !== this.state.dragging.pos) {
+            this.state.dragging.pos = pos;
 
-            if(isForeign) {
-                if (this.state.dragPlaceholder)
-                    appList.actor.set_child_at_index(this.state.dragPlaceholder.actor, pos);
+            if(this.state.dragging.isForeign) {
+                if (this.state.dragging.dragPlaceholder)
+                    appList.actor.set_child_at_index(this.state.dragging.dragPlaceholder.actor, pos);
                 else {
                     let iconSize = this.getPanelIconSize() * global.ui_scale;
-                    this.state.dragPlaceholder = new DND.GenericDragPlaceholderItem();
-                    this.state.dragPlaceholder.child.width = iconSize;
-                    this.state.dragPlaceholder.child.height = iconSize;
+                    this.state.dragging.dragPlaceholder = new DND.GenericDragPlaceholderItem();
+                    this.state.dragging.dragPlaceholder.child.width = iconSize;
+                    this.state.dragging.dragPlaceholder.child.height = iconSize;
                     appList.actor.insert_child_at_index(
-                        this.state.dragPlaceholder.actor,
-                        this.state.pos
+                        this.state.dragging.dragPlaceholder.actor,
+                        this.state.dragging.pos
                     );
-                    this.state.dragPlaceholder.animateIn();
+                    this.state.dragging.dragPlaceholder.animateIn();
                 }
             }
             else
                 appList.actor.set_child_at_index(source.actor, pos);
         }
 
-        if(isForeign)
+        if(this.state.dragging.isForeign)
             return DND.DragMotionResult.COPY_DROP;
         return DND.DragMotionResult.MOVE_DROP;
     }
@@ -816,14 +821,16 @@ class GroupedWindowListApplet extends Applet.Applet {
     // TODO: Figure out exactly which properties on this applet constructor the Cinnamon APIs needs for all modes of
     // DND, so we can kill the _delegate reference. Long term, a PR to Cinnamon should be opened fixing circular
     // object reference structures for the applet and desklet classes.
-    acceptDrop(source, actor, x) {
+    acceptDrop(source, actor) {
         if (!this.state.settings.enableDragging || this.state.panelEditMode)
             return false;
 
-        let pos = this.state.pos;
-        this.clearDragPlaceholder();
+        // add new launcher
+        if (this.state.dragging.isForeign) {
+            let pos = this.state.dragging.pos;
+            this.clearDragPlaceholder();
+            this.clearDragParameters();
 
-        if (!(source instanceof AppGroup)) { //handle adding new launchers
             let appId = source.isDraggableApp ? source.get_app_id() : source.getId();
             if (appId) {
                 this.acceptNewLauncher(appId, pos);
@@ -832,7 +839,45 @@ class GroupedWindowListApplet extends Applet.Applet {
             return false;
         }
 
+        // move existing launcher
+        return this.moveLauncher(source);
+    }
+
+    clearDragParameters() {
+        this.state.dragging.isForeign = null;
+        this.state.dragging.posList = null;
+        this.state.dragging.pos = -1;
+    }
+
+    clearDragPlaceholder(animate = false) {
+        if(this.state.dragging.dragPlaceholder) {
+            if(animate)
+                this.state.dragging.dragPlaceholder.animateOutAndDestroy();
+            else
+                this.state.dragging.dragPlaceholder.actor.destroy();
+            this.state.dragging.dragPlaceholder = null;
+        }
+    }
+
+    handleDragOut() {
+        if(this.state.dragging.isForeign) {
+            this.clearDragPlaceholder(true);
+            this.clearDragParameters();
+        }
+    }
+
+    acceptNewLauncher(path, pos = -1) {
+        this.pinnedFavorites.addFavorite({appId: path, pos: pos});
+        // Need to determine why the favorites setting signal doesn't emit outside the applet actions
+        this.updateFavorites();
+    }
+
+    moveLauncher(source) {
+        let pos = this.state.dragging.pos;
+        this.clearDragParameters();
+
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
+            this.getCurrentAppList().updateAppGroupIndexes();
             // Refresh the group's thumbnails so hoverMenu is aware of the position change
             // In the case of dragging a group that has a delay before Cinnamon can grab its
             // thumbnail texture, e.g., LibreOffice, defer the refresh.
@@ -857,29 +902,6 @@ class GroupedWindowListApplet extends Applet.Applet {
         });
 
         return true;
-    }
-
-    clearDragPlaceholder(animate = false) {
-        this.state.posList = null;
-        this.state.pos = -1;
-        if(this.state.dragPlaceholder)
-        {
-            if(animate)
-                this.state.dragPlaceholder.animateOutAndDestroy();
-            else
-                this.state.dragPlaceholder.actor.destroy();
-            this.state.dragPlaceholder = null;
-        }
-    }
-
-    handleDragOut() {
-        this.clearDragPlaceholder(true);
-    }
-
-    acceptNewLauncher(path, pos = -1) {
-        this.pinnedFavorites.addFavorite({appId: path, pos: pos});
-        // Need to determine why the favorites setting signal doesn't emit outside the applet actions
-        this.updateFavorites();
     }
 
     onWorkspaceRemoved(metaScreen, index) {
