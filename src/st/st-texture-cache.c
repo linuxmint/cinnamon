@@ -1210,6 +1210,7 @@ load_image_from_file_thread (GTask        *task,
   if (error)
     {
       g_task_return_error (task, error);
+      return;
     }
 
   g_task_return_pointer (task, pixbuf, g_object_unref);
