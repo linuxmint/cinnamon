@@ -784,7 +784,7 @@ class RecentButton extends SimpleMenuItem {
 class FavoriteButton extends SimpleMenuItem {
     constructor(applet, favoriteInfo) {
         super(applet, { name: favoriteInfo.display_name,
-                        description: favoriteInfo.uri,
+                        description: decodeURIComponent(favoriteInfo.uri),
                         type: 'favorite',
                         styleClass: 'menu-application-button',
                         withMenu: true,
