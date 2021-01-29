@@ -517,6 +517,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this._devices = [];
         this._primaryDevice = null;
+        this._primaryDeviceId = null;
 
         if (!this._proxy)
             return;
@@ -534,127 +535,128 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                 let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = device
                 this._primaryDeviceId = device_id;
             }
-        }));
 
-        // Scan battery devices
-        this._proxy.GetDevicesRemote(Lang.bind(this, function(result, error) {
-            this._deviceItems.forEach(function(i) { i.destroy(); });
-            this._deviceItems = [];
-            let devices_stats = [];
+            // Scan battery devices
+            this._proxy.GetDevicesRemote(Lang.bind(this, function(result, error) {
+                this._deviceItems.forEach(function(i) { i.destroy(); });
+                this._deviceItems = [];
+                let devices_stats = [];
 
-            if (!error) {
-                let devices = result[0];
-                let position = 0;
-                for (let i = 0; i < devices.length; i++) {
-                    let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = devices[i];
+                if (!error) {
+                    let devices = result[0];
+                    let position = 0;
+                    for (let i = 0; i < devices.length; i++) {
+                        let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = devices[i];
 
-                    // Ignore AC_POWER devices
-                    if (device_type == UPDeviceType.AC_POWER)
-                        continue;
+                        // Ignore AC_POWER devices
+                        if (device_type == UPDeviceType.AC_POWER)
+                            continue;
 
-                    // Ignore devices which state is unknown
-                    if (state == UPDeviceState.UNKNOWN)
-                        continue;
+                        // Ignore devices which state is unknown
+                        if (state == UPDeviceState.UNKNOWN)
+                            continue;
 
-                    let stats = "%s (%d%%)".format(deviceTypeToString(device_type), percentage);
-                    devices_stats.push(stats);
-                    this._devices.push(devices[i]);
+                        let stats = "%s (%d%%)".format(deviceTypeToString(device_type), percentage);
+                        devices_stats.push(stats);
+                        this._devices.push(devices[i]);
 
-                    if (this._primaryDeviceId == null || this._primaryDeviceId == device_id) {
-                        // Info for the primary battery (either the primary device, or any battery device if there is no primary device)
-                        if (device_type == UPDeviceType.BATTERY && this._primaryDevice == null) {
-                            this._primaryDevice = devices[i];
+                        if (this._primaryDeviceId == null || this._primaryDeviceId == device_id) {
+                            // Info for the primary battery (either the primary device, or any battery device if there is no primary device)
+                            if (device_type == UPDeviceType.BATTERY && this._primaryDevice == null) {
+                                this._primaryDevice = devices[i];
+                            }
                         }
-                    }
 
-                    let status = this._getDeviceStatus(devices[i]);
-                    let item = new DeviceItem (devices[i], status, this.aliases);
-                    this.menu.addMenuItem(item, position);
-                    this._deviceItems.push(item);
-                    position++;
-                }
-            }
-            else {
-                global.log(error);
-            }
-
-            // The menu is built. Below, we update the information present in the panel (icon, tooltip and label)
-            this.set_applet_enabled(true);
-            let panel_device = null;
-            if (this._primaryDevice != null && (!this.showmulti || this._devices.length === 1)) {
-                this.showDeviceInPanel(this._primaryDevice);
-            }
-            else {
-                if (this._devices.length == 1) {
-                    this.showDeviceInPanel(this._devices[0]);
-                }
-                else if (this._devices.length > 1) {
-                    // Show a summary
-                    let labelText = "";
-                    if (this.labelinfo !== "nothing") {
-                        for (let i = 0; i < this._devices.length; i++) {
-                            labelText += i + ': ';
-                            let [, , , , , percentage, , , seconds] = this._devices[i];
-                            if (this.labelinfo == "time" && seconds !== 0) {
-                                let time = Math.round(seconds / 60);
-                                let minutes = time % 60;
-                                let hours = Math.floor(time / 60);
-                                labelText += C_("time of battery remaining", "%d:%02d").format(hours, minutes);
-                            }
-                            else if (this.labelinfo == "percentage" || (this.labelinfo == "percentage_time" && seconds === 0)) {
-                                labelText += C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
-                            }
-                            else if (this.labelinfo == "percentage_time") {
-                                let time = Math.round(seconds / 60);
-                                let minutes = Math.floor(time % 60);
-                                let hours = Math.floor(time / 60);
-                                labelText += C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
-                                    C_("time of battery remaining", "%d:%02d").format(hours, minutes) + ")";
-                            }
-                            if (i !== this._devices.length - 1) {
-                                labelText += '  ';
-                            }
-                        }    
-                    }
-                    this.set_applet_tooltip(devices_stats.join(", "));
-                    this.set_applet_label(labelText);
-                    let icon = this._proxy.Icon;
-                    if(icon) {
-                        if (icon != this.panel_icon_name) {
-                            this.panel_icon_name = icon;
-                            this.set_applet_icon_symbolic_name('battery-full');
-                            let gicon = Gio.icon_new_for_string(icon);
-                            this._applet_icon.gicon = gicon;
-                        }
-                    }
-                    else {
-                        if (this.panel_icon_name != 'battery-full') {
-                            this.panel_icon_name = 'battery-full';
-                            this.set_applet_icon_symbolic_name('battery-full');
-                        }
+                        let status = this._getDeviceStatus(devices[i]);
+                        let item = new DeviceItem (devices[i], status, this.aliases);
+                        this.menu.addMenuItem(item, position);
+                        this._deviceItems.push(item);
+                        position++;
                     }
                 }
                 else {
-                    // If there are no battery devices, show brightness info or disable the applet
-                    this.set_applet_label("");
-                    if (this.brightness.actor.visible) {
-                        // Show the brightness info
-                        this.set_applet_tooltip(_("Brightness"));
-                        this.panel_icon_name = 'display-brightness';
-                        this.set_applet_icon_symbolic_name('display-brightness');
+                    global.log(error);
+                }
+
+                // The menu is built. Below, we update the information present in the panel (icon, tooltip and label)
+                this.set_applet_enabled(true);
+                let panel_device = null;
+                if (this._primaryDevice != null && (!this.showmulti || this._devices.length === 1)) {
+                    this.showDeviceInPanel(this._primaryDevice);
+                }
+                else {
+                    if (this._devices.length == 1) {
+                        this.showDeviceInPanel(this._devices[0]);
                     }
-                    else if (this.keyboard.actor.visible) {
-                        // Show the brightness info
-                        this.set_applet_tooltip(_("Keyboard backlight"));
-                        this.panel_icon_name = 'keyboard-brightness';
-                        this.set_applet_icon_symbolic_name('keyboard-brightness');
+                    else if (this._devices.length > 1) {
+                        // Show a summary
+                        let labelText = "";
+                        if (this.labelinfo !== "nothing") {
+                            for (let i = 0; i < this._devices.length; i++) {
+                                labelText += i + ': ';
+                                let [, , , , , percentage, , battery_level, seconds] = this._devices[i];
+                                if (this.labelinfo == "time" && seconds !== 0) {
+                                    let time = Math.round(seconds / 60);
+                                    let minutes = time % 60;
+                                    let hours = Math.floor(time / 60);
+                                    labelText += C_("time of battery remaining", "%d:%02d").format(hours, minutes);
+                                }
+                                else if (this.labelinfo == "percentage" || (this.labelinfo == "percentage_time" && seconds === 0)) {
+                                    labelText += C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                                }
+                                else if (this.labelinfo == "percentage_time") {
+                                    let time = Math.round(seconds / 60);
+                                    let minutes = Math.floor(time % 60);
+                                    let hours = Math.floor(time / 60);
+                                    labelText += C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
+                                        C_("time of battery remaining", "%d:%02d").format(hours, minutes) + ")";
+                                }
+                                if (i !== this._devices.length - 1) {
+                                    labelText += '  ';
+                                }
+                            }    
+                        }
+
+                        this.set_applet_tooltip(devices_stats.join(", "));
+                        this.set_applet_label(labelText);
+                        let icon = this._proxy.Icon;
+                        if(icon) {
+                            if (icon != this.panel_icon_name) {
+                                this.panel_icon_name = icon;
+                                this.set_applet_icon_symbolic_name('battery-full');
+                                let gicon = Gio.icon_new_for_string(icon);
+                                this._applet_icon.gicon = gicon;
+                            }
+                        }
+                        else {
+                            if (this.panel_icon_name != 'battery-full') {
+                                this.panel_icon_name = 'battery-full';
+                                this.set_applet_icon_symbolic_name('battery-full');
+                            }
+                        }
                     }
                     else {
-                        // Disable the applet
-                        this.set_applet_enabled(false);
+                        // If there are no battery devices, show brightness info or disable the applet
+                        this.set_applet_label("");
+                        if (this.brightness.actor.visible) {
+                            // Show the brightness info
+                            this.set_applet_tooltip(_("Brightness"));
+                            this.panel_icon_name = 'display-brightness';
+                            this.set_applet_icon_symbolic_name('display-brightness');
+                        }
+                        else if (this.keyboard.actor.visible) {
+                            // Show the brightness info
+                            this.set_applet_tooltip(_("Keyboard backlight"));
+                            this.panel_icon_name = 'keyboard-brightness';
+                            this.set_applet_icon_symbolic_name('keyboard-brightness');
+                        }
+                        else {
+                            // Disable the applet
+                            this.set_applet_enabled(false);
+                        }
                     }
                 }
-            }
+            }));
         }));
     }
 
