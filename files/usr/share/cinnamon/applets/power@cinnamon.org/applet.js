@@ -541,6 +541,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                 this._deviceItems.forEach(function(i) { i.destroy(); });
                 this._deviceItems = [];
                 let devices_stats = [];
+                let pct_support_count = 0;
 
                 if (!error) {
                     let devices = result[0];
@@ -555,6 +556,10 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         // Ignore devices which state is unknown
                         if (state == UPDeviceState.UNKNOWN)
                             continue;
+
+                        if (battery_level != UPDeviceLevel.NONE) {
+                            pct_support_count++;
+                        }
 
                         let stats = "%s (%d%%)".format(deviceTypeToString(device_type), percentage);
                         devices_stats.push(stats);
@@ -581,7 +586,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                 // The menu is built. Below, we update the information present in the panel (icon, tooltip and label)
                 this.set_applet_enabled(true);
                 let panel_device = null;
-                if (this._primaryDevice != null && (!this.showmulti || this._devices.length === 1)) {
+                if (this._primaryDevice != null && (!this.showmulti || this._devices.length === 1 || pct_support_count == 1)) {
                     this.showDeviceInPanel(this._primaryDevice);
                 }
                 else {
