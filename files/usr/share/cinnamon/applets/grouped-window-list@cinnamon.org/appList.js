@@ -356,22 +356,43 @@ class AppList {
 
         if (refApp > -1) {
             this.appList[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp) => {
-
-                isFavoriteApp = isFavoriteApp && (this.state.settings.groupApps || this.getWindowCount(appId) === 0);
                 if (isFavoriteApp) {
-                    this.appList[refApp].groupState.set({groupReady: false, lastFocused: null});
-                    this.appList[refApp].actor.set_style_pseudo_class('closed');
-                    this.appList[refApp].actor.remove_style_class_name('grouped-window-list-item-demands-attention');
-                    this.appList[refApp].setActiveStatus(false);
-                    if (this.state.settings.titleDisplay > 1) {
-                        this.appList[refApp].hideLabel();
+                    if (this.state.settings.groupApps || this.getWindowCount(appId) === 0) {
+                        this.appList[refApp].groupState.set({groupReady: false, lastFocused: null});
+                        this.appList[refApp].actor.set_style_pseudo_class('closed');
+                        this.appList[refApp].actor.remove_style_class_name('grouped-window-list-item-demands-attention');
+                        this.appList[refApp].setActiveStatus(false);
+                        if (this.state.settings.titleDisplay > 1) {
+                            this.appList[refApp].hideLabel();
+                        }
+                    } else {
+                        // pinned app closed in ungrouped-windows mode and another instance of app already exists in appList
+                        // move other instance to original apps' position
+
+                        let refAppId = this.appList[refApp].groupState.appId;
+
+                        this.appList[refApp].destroy(true);
+                        this.appList[refApp] = undefined;
+                        this.appList.splice(refApp, 1);
+
+                        let otherApp = findIndex(this.appList, (appGroup) => appGroup.groupState.appId === refAppId);
+                        let otherAppObject = this.appList[otherApp]
+
+                        // in edge case when multiple apps of the same program are favorited, do not move other app
+                        if(!otherAppObject.groupState.isFavoriteApp) {
+                            this.appList.splice(otherApp, 1);
+                            this.actor.set_child_at_index(otherAppObject.actor, refApp);
+                            this.appList.splice(refApp, 0, otherAppObject);
+
+                            // change previously unpinned app status to pinned
+                            otherAppObject.groupState.isFavoriteApp = true;
+                        }
                     }
-                    return;
+                } else {
+                    this.appList[refApp].destroy(true);
+                    this.appList[refApp] = undefined;
+                    this.appList.splice(refApp, 1);
                 }
-                this.appList[refApp].destroy(true);
-                this.appList[refApp] = undefined;
-                this.appList.splice(refApp, 1);
-                this.refreshList();
             });
         }
     }
