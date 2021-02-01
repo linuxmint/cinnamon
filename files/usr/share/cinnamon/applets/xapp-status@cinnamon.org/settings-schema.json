@@ -1,0 +1,15 @@
+{
+    "header-settings": {
+        "type": "header",
+        "description": "General Settings"
+    },
+    "nr-rows-or-columns": {
+        "type": "spinbutton",
+        "default": 1,
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "description": "Number Rows or Columns",
+        "tooltip": "Number of rows or columns in the status indicator display"
+    }
+}

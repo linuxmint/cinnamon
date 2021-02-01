@@ -10,9 +10,7 @@ const SignalManager = imports.misc.signalManager;
 const Gtk = imports.gi.Gtk;
 const XApp = imports.gi.XApp;
 const GLib = imports.gi.GLib;
-
-const HORIZONTAL_STYLE = 'padding-left: 2px; padding-right: 2px; padding-top: 0; padding-bottom: 0';
-const VERTICAL_STYLE = 'padding-left: 0; padding-right: 0; padding-top: 2px; padding-bottom: 2px';
+const Settings = imports.ui.settings;
 
 class XAppStatusIcon {
 
@@ -33,10 +31,8 @@ class XAppStatusIcon {
             x_expand: true,
             y_expand: true
         });
-
         this.icon_holder = new St.Bin();
-        this.iconSize = this.applet.getPanelIconSize(St.IconType.FULLCOLOR);
-
+        this.iconSize = this.applet.getXappIconSize(St.IconType.FULLCOLOR)
         this.proxy.icon_size = this.iconSize;
 
         this.label = new St.Label({
@@ -101,6 +97,7 @@ class XAppStatusIcon {
                 this.actor.add_style_class_name("vertical");
                 break;
         }
+        this.applet.sortIcons()
     }
 
     setIconName(iconName) {
@@ -115,7 +112,7 @@ class XAppStatusIcon {
             }
 
             this.iconName = iconName;
-            this.iconSize = this.applet.getPanelIconSize(type);
+            this.iconSize = this.applet.getXappIconSize(type)
             this.proxy.icon_size = this.iconSize;
 
             // Assume symbolic icons would always be square/suitable for an StIcon.
@@ -123,7 +120,7 @@ class XAppStatusIcon {
                 St.TextureCache.get_default().load_image_from_file_async(iconName,
                                                                          /* If top/bottom panel, allow the image to expand horizontally,
                                                                           * otherwise, restrict it to a square (but keep aspect ratio.) */
-                                                                         this.actor.vertical ? this.iconSize : -1,
+                                                                         (this.actor.vertical || this.applet.nrRowsOrColumns > 1) ? this.iconSize : -1,
                                                                          this.iconSize,
                                                                          (...args)=>this._onImageLoaded(...args));
                 return;
@@ -275,23 +272,25 @@ class XAppStatusIcon {
 }
 
 class CinnamonXAppStatusApplet extends Applet.Applet {
-    constructor(orientation, panel_height, instance_id) {
+    constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
-
-        this.orientation = orientation;
+        this._set_orientation(orientation)
+        this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
+        this.settings.bindProperty(Settings.BindingDirection.IN,
+                                   "nr-rows-or-columns", "nrRowsOrColumns",
+                                   this.updateGeometry, null);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         this.actor.remove_style_class_name('applet-box');
         this.actor.set_important(true);  // ensure we get class details from the default theme if not present
 
-        if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
-            this.manager_container = new St.BoxLayout( { vertical: false, style: HORIZONTAL_STYLE });
-        } else {
-            this.manager_container = new St.BoxLayout( { vertical: true, style: VERTICAL_STYLE });
-        }
-
-        this.actor.add_actor (this.manager_container);
+        this.manager_container = new St.Table({
+            homogeneous: false,
+            reactive: true,
+            style_class: "xapp-status",
+        })
+        this.actor.add_actor(this.manager_container);
         this.manager_container.show();
 
         this.statusIcons = {};
@@ -315,6 +314,27 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
          * of the icon size matches the last type used by the applet.  Since this applet can contain both
          * types, listen to the panel signal directly, so we always receive the update. */
         this.signalManager.connect(this.panel, "icon-size-changed", this.icon_size_changed, this);
+    }
+
+    getXappIconSize(type) {
+        let icon_size = this.getPanelIconSize(type)
+        let n = this.nrRowsOrColumns
+        let c = this.manager_container
+        let row_spacing = c.get_theme_node().get_length("spacing-rows")
+        let column_spacing = c.get_theme_node().get_length("spacing-columns")
+        let alloc = c.get_allocation_box()
+        let content_box = c.get_theme_node().get_content_box(alloc)
+        let avail_space = this.is_horiz
+            ? content_box.get_height()
+            : content_box.get_width();
+        let h = avail_space - Math.max(row_spacing, column_spacing) * (n - 1)
+        let natural_size = Math.max(0, Math.trunc(h / n))
+        return Math.min(natural_size, icon_size)
+    }
+
+    updateGeometry() {
+        this.refreshIcons()
+        this.sortIcons()
     }
 
     getKey(icon_proxy) {
@@ -385,10 +405,7 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
     addStatusIcon(icon_proxy) {
         let key = this.getKey(icon_proxy);
         let statusIcon = new XAppStatusIcon(this, icon_proxy);
-
-        this.manager_container.insert_child_at_index(statusIcon.actor, 0);
         this.statusIcons[key] = statusIcon;
-
         this.sortIcons();
     }
 
@@ -398,11 +415,8 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         if (!this.statusIcons[key]) {
             return;
         }
-
-        this.manager_container.remove_child(this.statusIcons[key].actor);
         this.statusIcons[key].destroy();
         delete this.statusIcons[key];
-
         this.sortIcons();
     }
 
@@ -446,16 +460,34 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
 
     sortIcons() {
         let icon_list = []
-
         for (let i in this.statusIcons) {
-            icon_list.push(this.statusIcons[i]);
+            icon_list.push(this.statusIcons[i])
         }
 
-        icon_list.sort(this._sortFunc);
+        icon_list.sort(this._sortFunc)
         icon_list.reverse()
-
+        let nr_rows_or_columns = this.nrRowsOrColumns
+        this.manager_container.remove_all_children()
+        let i = 0
         for (let icon of icon_list) {
-            this.manager_container.set_child_at_index(icon.actor, 0);
+            let x = i % nr_rows_or_columns
+            let y = Math.trunc(i / nr_rows_or_columns)
+            if (!this.is_horiz) {
+                [y, x] = [x, y]
+            }
+            this.manager_container.add(icon.actor, {row: x, col: y})
+            // Now that the icon is in the stage, see if it has zero
+            // width or height.  If it does, it's not a visible icon
+            // and we should remove it from the grid.  It was illegal
+            // until we added the icon just now to ask the icon for
+            // its width.
+            let st_icon = icon.icon_holder.child
+            if ((st_icon === null || st_icon.size.width === 0 || st_icon.size.height === 0)
+                && !(icon.label.visible && icon.label.text !== "")) {
+                this.manager_container.remove_child(icon.actor)
+                continue
+            }
+            ++i
         }
     }
 
@@ -497,21 +529,23 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         }
     }
 
-    on_orientation_changed(newOrientation) {
-        this.orientation = newOrientation;
-
-        if (newOrientation == St.Side.TOP || newOrientation == St.Side.BOTTOM) {
-            this.manager_container.vertical = false;
-            this.manager_container.style = HORIZONTAL_STYLE;
+    _set_orientation(orientation) {
+        this.orientation = orientation
+        this.is_horiz = orientation == St.Side.TOP || orientation == St.Side.BOTTOM
+        if (this.is_horiz) {
+            this.actor.remove_style_class_name("vertical")
         } else {
-            this.manager_container.vertical = true;
-            this.manager_container.style = VERTICAL_STYLE;
+            this.actor.add_style_class_name("vertical")
         }
+    }
 
+    on_orientation_changed(orientation) {
+        this._set_orientation(orientation)
         this.refreshIcons();
+        this.sortIcons()
     }
 }
 
 function main(metadata, orientation, panel_height, instance_id) {
-    return new CinnamonXAppStatusApplet(orientation, panel_height, instance_id);
+    return new CinnamonXAppStatusApplet(metadata, orientation, panel_height, instance_id);
 }
