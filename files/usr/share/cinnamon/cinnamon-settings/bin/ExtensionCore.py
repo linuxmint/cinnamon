@@ -220,15 +220,24 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         desc_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         desc_box.props.hexpand = True
         desc_box.props.halign = Gtk.Align.START
+        desc_box.set_spacing(1)
+
         name_label = Gtk.Label()
         name_markup = GLib.markup_escape_text(self.name)
         name_label.set_markup('<b>{}</b>'.format(name_markup))
         name_label.props.xalign = 0.0
         desc_box.add(name_label)
 
+        uuid_label = Gtk.Label()
+        uuid_markup = GLib.markup_escape_text(self.uuid)
+        uuid_label.set_markup('<small><i>{}</i></small>'.format(uuid_markup))
+        uuid_label.props.xalign = 0.0
+        desc_box.add(uuid_label)
+
         description_label = SettingsLabel()
         description_markup = GLib.markup_escape_text(sanitize_html(self.description))
         description_label.set_markup('<small>{}</small>'.format(description_markup))
+        description_label.set_margin_top(2)
         desc_box.add(description_label)
 
         grid.attach_next_to(desc_box, icon, Gtk.PositionType.RIGHT, 1, 1)
@@ -642,6 +651,8 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         desc_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         desc_box.set_hexpand(True)
         desc_box.set_halign(Gtk.Align.FILL)
+        desc_box.set_spacing(1)
+
         name_label = Gtk.Label()
         name_markup = GLib.markup_escape_text(self.name)
         name_label.set_markup('<b>{}</b>'.format(name_markup))
@@ -649,9 +660,16 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         name_label.set_halign(Gtk.Align.START)
         desc_box.pack_start(name_label, False, False, 0)
 
+        uuid_label = Gtk.Label()
+        uuid_markup = GLib.markup_escape_text(self.uuid)
+        uuid_label.set_markup('<small><i>{}</i></small>'.format(uuid_markup))
+        uuid_label.props.xalign = 0.0
+        desc_box.add(uuid_label)
+
         description_label = SettingsLabel()
         description_markup = GLib.markup_escape_text(sanitize_html(self.description))
         description_label.set_markup('<small>{}</small>'.format(description_markup))
+        description_label.set_margin_top(2)
         desc_box.pack_start(description_label, False, False, 0)
 
         widget.pack_start(desc_box, True, True, 0)
