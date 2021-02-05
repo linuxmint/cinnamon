@@ -155,6 +155,8 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         self.name = translate(self.metadata['uuid'], self.metadata['name'])
         self.description = translate(self.metadata['uuid'], self.metadata['description'])
 
+        icon_path = os.path.join(self.metadata['path'], 'icon.png')
+
         try:
             self.max_instances = int(self.metadata['max-instances'])
             if self.max_instances < -1:
@@ -205,9 +207,9 @@ class ManageSpicesRow(Gtk.ListBoxRow):
             if Gtk.IconTheme.get_default().has_icon(icon_name):
                 icon = Gtk.Image.new_from_icon_name(icon_name, 3)
 
-        if icon is None and os.path.exists('%s/icon.png' % self.metadata['path']):
+        if icon is None and os.path.exists(icon_path):
             try:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale('%s/icon.png' % self.metadata['path'], 24, 24, True)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(icon_path, 24, 24, True)
                 icon = Gtk.Image.new_from_pixbuf(pixbuf)
             except:
                 icon = None
