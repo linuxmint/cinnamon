@@ -207,7 +207,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
             if Gtk.IconTheme.get_default().has_icon(icon_name):
                 icon = Gtk.Image.new_from_icon_name(icon_name, 3)
 
-        if icon is None and os.path.exists(icon_path):
+        if os.path.exists(icon_path):
             try:
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(icon_path, 24, 24, True)
                 icon = Gtk.Image.new_from_pixbuf(pixbuf)
