@@ -2,6 +2,6 @@
  "uuid": "separator@cinnamon.org",
  "name": "Separator",
  "description": "A separator icon which can be added multiple times",
- "icon": "list-remove",
+ "icon": "cs-applets",
  "max-instances": -1
 }
