@@ -226,6 +226,11 @@ class ManageSpicesRow(Gtk.ListBoxRow):
 
         grid.attach(icon, 0, 0, 1, 1)
 
+        author = ""
+        if 'author' in metadata:
+            if metadata['author'].lower() != "none" and metadata['author'].lower() != "unknown":
+                author = _(" by %s") % metadata['author']
+
         desc_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         desc_box.props.hexpand = True
         desc_box.props.halign = Gtk.Align.START
@@ -233,7 +238,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
 
         name_label = Gtk.Label()
         name_markup = GLib.markup_escape_text(self.name)
-        name_label.set_markup('<b>{}</b>'.format(name_markup))
+        name_label.set_markup('<b>{}</b><small>{}</small>'.format(name_markup, author))
         name_label.props.xalign = 0.0
         desc_box.add(name_label)
 
@@ -670,9 +675,14 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         desc_box.set_halign(Gtk.Align.FILL)
         desc_box.set_spacing(1)
 
+        author = ""
+        if 'author_user' in data:
+            if data['author_user'].lower() != "none" and data['author_user'].lower() != "unknown":
+                author = _(" by %s") % data['author_user']
+
         name_label = Gtk.Label()
         name_markup = GLib.markup_escape_text(self.name)
-        name_label.set_markup('<b>{}</b>'.format(name_markup))
+        name_label.set_markup('<b>{}</b><small>{}</small>'.format(name_markup, author))
         name_label.set_hexpand(True)
         name_label.set_halign(Gtk.Align.START)
         desc_box.pack_start(name_label, False, False, 0)
