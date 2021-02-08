@@ -91,10 +91,10 @@ def list_header_func(row, before, user_data):
 
 def filter_row(row, entry):
     search_string = entry.get_text().lower()
-    if search_string in row.name.lower() or search_string in row.description.lower() or search_string.lower() in row.uuid.lower():
-        return True
-    else:
-        return False
+    for row_part in [row.name, row.description, row.uuid, row.author]:
+        if search_string.lower() in row_part.lower():
+            return True
+    return False
 
 def show_prompt(msg, window=None):
     dialog = Gtk.MessageDialog(transient_for = window,
@@ -162,6 +162,11 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         self.name = translate(self.metadata['uuid'], self.metadata['name'])
         self.description = translate(self.metadata['uuid'], self.metadata['description'])
 
+        self.author = ""
+        if 'author' in metadata:
+            if metadata['author'].lower() != "none" and metadata['author'].lower() != "unknown":
+                self.author = metadata['author']
+
         icon_path = os.path.join(self.metadata['path'], 'icon.png')
 
         try:
@@ -226,11 +231,6 @@ class ManageSpicesRow(Gtk.ListBoxRow):
 
         grid.attach(icon, 0, 0, 1, 1)
 
-        author = ""
-        if 'author' in metadata:
-            if metadata['author'].lower() != "none" and metadata['author'].lower() != "unknown":
-                author = _(" by %s") % metadata['author']
-
         desc_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         desc_box.props.hexpand = True
         desc_box.props.halign = Gtk.Align.START
@@ -238,7 +238,11 @@ class ManageSpicesRow(Gtk.ListBoxRow):
 
         name_label = Gtk.Label()
         name_markup = GLib.markup_escape_text(self.name)
-        name_label.set_markup('<b>{}</b><small>{}</small>'.format(name_markup, author))
+        if self.author == "":
+            name_label.set_markup('<b>{}</b>'.format(name_markup))
+        else:
+            by_author = _("by %s") % self.author
+            name_label.set_markup('<b>{}</b><small> {}</small>'.format(name_markup, by_author))
         name_label.props.xalign = 0.0
         desc_box.add(name_label)
 
@@ -649,6 +653,11 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         self.score = data['score']
         self.timestamp = data['last_edited']
 
+        self.author = ""
+        if 'author_user' in data:
+            if data['author_user'].lower() != "none" and data['author_user'].lower() != "unknown":
+                self.author = data['author_user']
+
         if 'translations' in data.keys():
             key = 'name_%s' % LANGUAGE_CODE
             if key in data['translations'].keys():
@@ -675,14 +684,13 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         desc_box.set_halign(Gtk.Align.FILL)
         desc_box.set_spacing(1)
 
-        author = ""
-        if 'author_user' in data:
-            if data['author_user'].lower() != "none" and data['author_user'].lower() != "unknown":
-                author = _(" by %s") % data['author_user']
-
         name_label = Gtk.Label()
         name_markup = GLib.markup_escape_text(self.name)
-        name_label.set_markup('<b>{}</b><small>{}</small>'.format(name_markup, author))
+        if self.author == "":
+            name_label.set_markup('<b>{}</b>'.format(name_markup))
+        else:
+            by_author = _("by %s") % self.author
+            name_label.set_markup('<b>{}</b><small> {}</small>'.format(name_markup, by_author))
         name_label.set_hexpand(True)
         name_label.set_halign(Gtk.Align.START)
         desc_box.pack_start(name_label, False, False, 0)
