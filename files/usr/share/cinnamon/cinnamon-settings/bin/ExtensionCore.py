@@ -7,6 +7,7 @@ import subprocess
 import gettext
 from html.parser import HTMLParser
 import html.entities as entities
+import locale
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -33,6 +34,12 @@ curr_ver = subprocess.check_output(['cinnamon', '--version']).decode("utf-8").sp
 curr_ver_elements = curr_ver.split(".")
 curr_ver_major = int(curr_ver_elements[0])
 curr_ver_minor = int(curr_ver_elements[1])
+
+LANGUAGE_CODE = "C"
+try:
+    LANGUAGE_CODE = locale.getlocale()[0].split("_")[0]
+except:
+    pass
 
 def find_extension_subdir(directory):
     largest = ['0']
@@ -636,6 +643,14 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         self.description = data['description']
         self.score = data['score']
         self.timestamp = data['last_edited']
+
+        if 'translations' in data.keys():
+            key = 'name_%s' % LANGUAGE_CODE
+            if key in data['translations'].keys():
+                self.name = data['translations'][key]
+            key = 'description_%s' % LANGUAGE_CODE
+            if key in data['translations'].keys():
+                self.description = data['translations'][key]
 
         self.has_update = False
 
