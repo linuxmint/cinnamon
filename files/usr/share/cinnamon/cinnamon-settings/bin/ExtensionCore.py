@@ -149,7 +149,7 @@ def sanitize_html(string):
 
 
 class ManageSpicesRow(Gtk.ListBoxRow):
-    def __init__(self, extension_type, metadata, size_group):
+    def __init__(self, extension_type, metadata, size_groups):
         super(ManageSpicesRow, self).__init__()
         self.extension_type = extension_type
         self.metadata = metadata
@@ -213,6 +213,21 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         grid.set_column_spacing(15)
         widget.pack_start(grid, True, True, 0)
 
+        enabled_box = Gtk.Box()
+        enabled_box.set_spacing(4)
+        size_groups[0].add_widget(enabled_box)
+        self.enabled_image = Gtk.Image.new_from_icon_name('object-select-symbolic', 2)
+        if self.extension_type == "applet":
+            self.enabled_image.set_tooltip_text(_("This applet is currently enabled"))
+        elif self.extension_type == "desklet":
+            self.enabled_image.set_tooltip_text(_("This desklet is currently enabled"))
+        elif self.extension_type == "extension":
+            self.enabled_image.set_tooltip_text(_("This extension is currently enabled"))
+        self.enabled_image.set_no_show_all(True)
+        enabled_box.pack_end(self.enabled_image, False, False, 0)
+        enabled_box.show()
+        grid.attach(enabled_box, 0, 0, 1, 1)
+
         icon = None
         if 'icon' in self.metadata:
             icon_name = self.metadata['icon']
@@ -229,7 +244,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         if icon is None:
             icon = Gtk.Image.new_from_icon_name('cs-%ss' % (extension_type), 3)
 
-        grid.attach(icon, 0, 0, 1, 1)
+        grid.attach_next_to(icon, enabled_box, Gtk.PositionType.RIGHT, 1, 1)
 
         desc_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         desc_box.props.hexpand = True
@@ -263,11 +278,12 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         self.status_box = Gtk.Box()
         self.status_box.set_spacing(4)
         grid.attach_next_to(self.status_box, desc_box, Gtk.PositionType.RIGHT, 1, 1)
+        size_groups[1].add_widget(self.status_box)
 
         self.button_box = Gtk.Box()
         self.button_box.set_valign(Gtk.Align.CENTER)
         grid.attach_next_to(self.button_box, self.status_box, Gtk.PositionType.RIGHT, 1, 1)
-        size_group.add_widget(self.button_box)
+        size_groups[2].add_widget(self.button_box)
 
         if self.has_config:
             config_icon = Gtk.Image.new_from_icon_name('system-run-symbolic', 2)
@@ -352,14 +368,9 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         self.enabled = enabled
 
         if self.enabled:
-            if self.extension_type == "applet":
-                self.add_status('enabled', 'object-select-symbolic', _("This applet is currently enabled"))
-            elif self.extension_type == "desklet":
-                self.add_status('enabled', 'object-select-symbolic', _("This desklet is currently enabled"))
-            elif self.extension_type == "extension":
-                self.add_status('enabled', 'object-select-symbolic', _("This extension is currently enabled"))
+            self.enabled_image.show()
         else:
-            self.remove_status('enabled')
+            self.enabled_image.hide()
         if self.has_config:
             self.config_button.set_sensitive(enabled)
 
@@ -614,10 +625,11 @@ class ManageSpicesPage(SettingsPage):
 
         self.extension_rows = []
 
-        size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+        size_groups = [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for i in range(3)]
+
         for uuid, metadata in self.spices.get_installed().items():
             try:
-                extension_row = ManageSpicesRow(self.collection_type, metadata, size_group)
+                extension_row = ManageSpicesRow(self.collection_type, metadata, size_groups)
                 self.list_box.add(extension_row)
                 self.extension_rows.append(extension_row)
                 extension_row.set_enabled(self.spices.get_enabled(uuid))
@@ -676,6 +688,19 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         widget.set_spacing(15)
         self.add(widget)
 
+        installed_box = Gtk.Box()
+        installed_box.set_spacing(4)
+        widget.pack_start(installed_box, False, False, 0)
+        size_groups[0].add_widget(installed_box)
+        installed_image = Gtk.Image.new_from_icon_name('object-select-symbolic', 2)
+        installed_box.pack_end(installed_image, False, False, 0)
+        installed_image.set_tooltip_text(_("Installed"))
+        installed_image.set_no_show_all(True)
+        if self.installed:
+            installed_image.show()
+        else:
+            installed_image.hide()
+
         icon = spices.get_icon(uuid)
         widget.pack_start(icon, False, False, 0)
 
@@ -715,18 +740,18 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         score_label = Gtk.Label(self.score)
         score_box.pack_start(score_label, False, False, 5)
         widget.pack_start(score_box, False, False, 0)
-        size_groups[0].add_widget(score_box)
+        size_groups[1].add_widget(score_box)
 
         self.status_box = Gtk.Box()
         self.status_box.set_spacing(4)
         widget.pack_start(self.status_box, False, False, 0)
-        size_groups[1].add_widget(self.status_box)
+        size_groups[2].add_widget(self.status_box)
 
         self.button_box = Gtk.Box()
         self.button_box.set_valign(Gtk.Align.CENTER)
         self.button_box.set_baseline_position(Gtk.BaselinePosition.CENTER)
         widget.pack_start(self.button_box, False, False, 0)
-        size_groups[2].add_widget(self.button_box)
+        size_groups[3].add_widget(self.button_box)
 
         if not self.installed:
             download_button = Gtk.Button.new_from_icon_name('go-down-symbolic', 2)
@@ -739,9 +764,6 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
             self.button_box.pack_start(download_button, False, False, 0)
             download_button.connect('clicked', self.download)
             download_button.set_tooltip_text(_("Update"))
-
-        if self.installed:
-            self.add_status('installed', 'object-select-symbolic', _("Installed"))
 
     def download(self, *args):
         self.spices.install(self.uuid)
@@ -977,7 +999,7 @@ class DownloadSpicesPage(SettingsPage):
                 row.destroy()
             self.extension_rows = []
 
-        size_groups = [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for i in range(3)]
+        size_groups = [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for i in range(4)]
 
         for uuid, data in spices_data.items():
             row = DownloadSpicesRow(uuid, data, self.spices, size_groups)
