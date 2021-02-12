@@ -125,9 +125,9 @@ class Launcher():
                 if not process.is_running():
                     break
                 memory = ((process.memory_full_info().rss - process.memory_full_info().shared) / 1024 ** 2)
-                print("Checking memory... %d" % memory)
                 if memory > limit:
                     print ("Memory threshold reached: %d" % memory)
+                    self.log_kill(memory, limit, delay)
                     self.killed = True
                     process.kill()
                     break
@@ -136,9 +136,14 @@ class Launcher():
         Gtk.main_quit()
         os.execvp(sys.argv[0], (sys.argv[0], "--replace"))
 
+    def log_kill(self, memory, limit, delay):
+        directory = os.path.expanduser("~/.cinnamon")
+        string = "%s - Usage: %d MB - Limit: %d MB - Freq: %s sec" % (time.strftime("%Y.%m.%d %H:%M:%S"), memory, limit, delay)
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+        with open(os.path.join(directory, "restarts.log"), "a") as log_file:
+            print(string, file=log_file)
+
 if __name__ == "__main__":
     setproctitle("cinnamon-launcher")
     Launcher()
-
-# make it log kills
-# let people see logs
