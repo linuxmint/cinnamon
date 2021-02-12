@@ -46,32 +46,6 @@ def idle_function(func):
         GObject.idle_add(func, *args)
     return wrapper
 
-def confirm_restart():
-    d = Gtk.MessageDialog(title=None, parent=None, flags=0, message_type=Gtk.MessageType.WARNING)
-    d.add_buttons(_("No"),  Gtk.ResponseType.NO,
-                  _("Yes"), Gtk.ResponseType.YES)
-    d.set_keep_above(True)
-    d.set_position(Gtk.WindowPosition.CENTER)
-    d.set_title(_("Cinnamon just crashed"))
-    box = d.get_content_area()
-    checkbutton = Gtk.CheckButton(label=_("Disable downloaded applets, desklets and extensions"))
-    d.set_markup("<span size='large'><b>%s</b></span>\n\n%s\n\n%s\n\n" %
-            (
-                _("You are currently running in fallback mode."),
-                _("If you suspect the source of the crash is a local extension, applet or desklet, you can disable downloaded add-ons using the checkbox below."),
-                _("Do you want to restart Cinnamon?"),
-            ))
-    box.set_border_width(20)
-    box.add(checkbutton)
-    checkbutton.show_all()
-    resp = d.run()
-    d.destroy()
-    if resp == Gtk.ResponseType.YES:
-        if checkbutton.get_active():
-            os.environ["CINNAMON_TROUBLESHOOT"] = "1"
-        return(True)
-    return(False)
-
 class Launcher():
 
     def __init__(self):
@@ -107,7 +81,7 @@ class Launcher():
                     # Start the fallback window manager
                     os.execvp(FALLBACK_COMMAND, (FALLBACK_COMMAND,) + FALLBACK_ARGS)
                 else:
-                    if confirm_restart():
+                    if self.confirm_restart():
                         # Kill the fallback panel
                         os.system("killall %s" % panel_process_name)
                         # Restart Cinnamon
@@ -143,6 +117,33 @@ class Launcher():
             os.mkdir(directory)
         with open(os.path.join(directory, "restarts.log"), "a") as log_file:
             print(string, file=log_file)
+
+    @idle_function
+    def confirm_restart(self):
+        d = Gtk.MessageDialog(title=None, parent=None, flags=0, message_type=Gtk.MessageType.WARNING)
+        d.add_buttons(_("No"),  Gtk.ResponseType.NO,
+                      _("Yes"), Gtk.ResponseType.YES)
+        d.set_keep_above(True)
+        d.set_position(Gtk.WindowPosition.CENTER)
+        d.set_title(_("Cinnamon just crashed"))
+        box = d.get_content_area()
+        checkbutton = Gtk.CheckButton(label=_("Disable downloaded applets, desklets and extensions"))
+        d.set_markup("<span size='large'><b>%s</b></span>\n\n%s\n\n%s\n\n" %
+                (
+                    _("You are currently running in fallback mode."),
+                    _("If you suspect the source of the crash is a local extension, applet or desklet, you can disable downloaded add-ons using the checkbox below."),
+                    _("Do you want to restart Cinnamon?"),
+                ))
+        box.set_border_width(20)
+        box.add(checkbutton)
+        checkbutton.show_all()
+        resp = d.run()
+        d.destroy()
+        if resp == Gtk.ResponseType.YES:
+            if checkbutton.get_active():
+                os.environ["CINNAMON_TROUBLESHOOT"] = "1"
+            return(True)
+        return(False)
 
 if __name__ == "__main__":
     setproctitle("cinnamon-launcher")
