@@ -42,7 +42,6 @@ class CinnamonWindowsQuickListApplet extends Applet.IconApplet {
 
         this.scrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START });
         this.scrollBox.set_auto_scrolling(true);
-        this.scrollBox.set_height(400);
         this.mainContainer.add(this.scrollBox);
 
         this.windowsBox = new St.BoxLayout({ vertical:true });
