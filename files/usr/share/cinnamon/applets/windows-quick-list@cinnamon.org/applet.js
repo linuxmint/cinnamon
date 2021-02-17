@@ -11,7 +11,7 @@ const Clutter = imports.gi.Clutter;
 class WindowMenuItem extends PopupMenu.PopupBaseMenuItem {
     constructor(icon, label, params) {
         super(params);
-        this.box = new St.BoxLayout({ style_class: 'popup-combobox-item' });
+        this.box = new St.BoxLayout({ style_class: 'popup-combobox-item', style: 'padding: 0px;' });
         this.icon = icon;
 
         if (icon) {
