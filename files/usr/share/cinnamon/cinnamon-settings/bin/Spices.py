@@ -161,7 +161,6 @@ class Spice_Harvester(GObject.Object):
         else:
             self.settings = Gio.Settings.new('org.cinnamon')
             self.enabled_key = 'enabled-%ss' % self.collection_type
-        self.settings.connect('changed::%s' % self.enabled_key, self._update_status)
 
         if self.themes:
             self.install_folder = '%s/.themes/' % (home)
@@ -169,6 +168,9 @@ class Spice_Harvester(GObject.Object):
         else:
             self.install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
             self.spices_directories = ('/usr/share/cinnamon/%ss/' % self.collection_type, self.install_folder)
+            self.settings.connect('changed::%s' % self.enabled_key, self._update_status)
+
+        self._update_status()
 
         self._load_metadata()
 
@@ -212,6 +214,9 @@ class Spice_Harvester(GObject.Object):
             if self._proxy.GetRunState() == 2:
                 self.send_deferred_proxy_calls()
                 return
+
+        if signal_name == "XletsLoadedComplete":
+            self._update_status()
 
         for name, callback in self._proxy_signals:
             if signal_name == name:
