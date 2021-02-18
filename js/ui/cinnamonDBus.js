@@ -121,6 +121,7 @@ const CinnamonIface =
                 <arg type="b" direction="in" name="show_osd" /> \
             </method> \
             <signal name="RunStateChanged"/> \
+            <signal name="XletsLoadedComplete"/> \
         </interface> \
     </node>';
 
@@ -466,6 +467,10 @@ CinnamonDBus.prototype = {
 
     EmitMonitorsChanged: function() {
         this._dbusImpl.emit_signal('MonitorsChanged', null);
+    },
+
+    EmitXletsLoadedComplete: function() {
+        this._dbusImpl.emit_signal('XletsLoadedComplete', null);
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION
