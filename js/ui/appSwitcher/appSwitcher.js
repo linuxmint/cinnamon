@@ -131,7 +131,7 @@ AppSwitcher.prototype = {
             this._haveModal = Main.pushModal(this.actor, global.get_current_time(), Meta.ModalOptions.POINTER_ALREADY_GRABBED);
         }
         if (!this._haveModal)
-            this._activateSelected();
+            this._failedGrabAction();
         else {
             // Initially disable hover so we ignore the enter-event if
             // the switcher appears underneath the current pointer location
@@ -149,7 +149,7 @@ AppSwitcher.prototype = {
             // selection.)
             let [x, y, mods] = global.get_pointer();
             if (!(mods & this._modifierMask)) {
-                this._activateSelected();
+                this._failedGrabAction();
                 return false;
             }
 
@@ -339,6 +339,12 @@ AppSwitcher.prototype = {
         }
 
         return true;
+    },
+
+    _failedGrabAction: function() {
+        if (!["coverflow", "timeline"].includes(global.settings.get_string('alttab-switcher-style'))) {
+            this._keyReleaseEvent(null, null);
+        }
     },
 
     // allow navigating by mouse-wheel scrolling
