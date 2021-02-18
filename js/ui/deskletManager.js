@@ -44,6 +44,7 @@ function initEnabledDesklets() {
         promises.push(Extension.loadExtension(definitions[i].uuid, Extension.Type.DESKLET))
     }
     return Promise.all(promises).then(function() {
+        Main.cinnamonDBusService.EmitXletsLoadedComplete();
         promises = [];
     });
 }
