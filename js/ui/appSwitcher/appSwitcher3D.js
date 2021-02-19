@@ -95,6 +95,12 @@ AppSwitcher3D.prototype = {
 
             if (i != this._currentIndex)
                 preview.lower_bottom();
+
+            if (compositor == null) {
+                preview.destroy();
+                continue;
+            }
+
             let rotation_vertex_x = 0.0;
             if (preview.get_anchor_point_gravity() == Clutter.Gravity.EAST) {
                 rotation_vertex_x = preview.width / 2;
@@ -120,7 +126,11 @@ AppSwitcher3D.prototype = {
     },
     
     _hide: function() {
-        this._hidePreviews(255);
+        try {
+            this._hidePreviews(255);
+        } catch (e) {
+            global.logError(e);
+        }
         
         // window title and icon
         if(this._windowTitle) {
