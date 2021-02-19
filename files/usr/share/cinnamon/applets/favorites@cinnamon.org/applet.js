@@ -11,7 +11,7 @@ const Settings = imports.ui.settings;
 class FavoriteMenuItem extends PopupMenu.PopupBaseMenuItem {
     constructor(info, show_full_uri, params) {
         super(params);
-        this.box = new St.BoxLayout({ style_class: 'popup-combobox-item' });
+        this.box = new St.BoxLayout({ style_class: 'popup-combobox-item', style: 'padding: 0px;' });
         this.info = info;
 
         let icon = St.TextureCache.get_default().load_gicon(null, Gio.content_type_get_icon(info.cached_mimetype), 24);
@@ -135,13 +135,6 @@ class CinnamonFavoriteApplet extends Applet.IconApplet {
                 this._favoriteButtons.push(button);
                 this.favoritesBox.add_child(button.actor);
             }
-        }
-
-        // Can't set a max height so limit it based on the number of favorites.
-        if (infos.length < 10) {
-            this.favoritesScrollBox.set_height(-1);
-        } else {
-            this.favoritesScrollBox.set_height(400 * global.ui_scale);
         }
 
         this._on_panel_edit_mode_changed();
