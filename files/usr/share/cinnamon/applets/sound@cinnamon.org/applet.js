@@ -1253,17 +1253,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 tooltips.push(this.player._name + " - " + _(this.player._playerStatus));
             }
             if (this.tooltipShowArtist) {
-<<<<<<< HEAD
                 tooltips.push(this.player._artist);
             }
             if (this.tooltipShowTitle) {
                 tooltips.push(this.player._title);
-=======
-                tooltips.push(this.player._artist);
-            }
-            if (this.tooltipShowTitle) {
-                tooltips.push(this.player._title);
->>>>>>> ff72891b23bc922b79c9357908e26d89d894f480
             }
         }
         if (tooltips.length == 0) {
