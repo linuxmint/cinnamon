@@ -891,8 +891,13 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         this.settings.bind("_knownPlayers", "_knownPlayers");
         if (this.hideSystray) this.registerSystrayIcons();
-        
+
         this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
+
+        this.settings.bind("tooltipShowVolume", "tooltipShowVolume", this.on_settings_changed);
+        this.settings.bind("tooltipShowPlayer", "tooltipShowPlayer", this.on_settings_changed);
+        this.settings.bind("tooltipShowArtist", "tooltipShowArtist", this.on_settings_changed);
+        this.settings.bind("tooltipShowTitle", "tooltipShowTitle", this.on_settings_changed);
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -1021,7 +1026,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         this._sound_settings.connect("changed::" + MAXIMUM_VOLUME_KEY, () => this._on_sound_settings_change());
     }
-    
+
     _setKeybinding() {
         Main.keybindingManager.addHotKey("sound-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
     }
@@ -1063,7 +1068,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     on_applet_clicked(event) {
         this._openMenu();
     }
-    
+
     _openMenu() {
         this.menu.toggle();
     }
@@ -1230,10 +1235,34 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     }
 
     setAppletTextIcon(player, icon) {
+        this.player = player;
         if (player && player._owner != this._activePlayer)
             return;
         this.setAppletIcon(player, icon);
         this.setAppletText(player);
+        this.setAppletTooltip();
+    }
+
+    setAppletTooltip() {
+        let tooltips = [];
+        if (this.tooltipShowVolume) {
+            tooltips.push(_("Volume") + ": " + this.volume);
+        }
+        if (this.player && this.player._owner == this._activePlayer) {
+            if (this.tooltipShowPlayer) {
+                tooltips.push(this.player._name + " - " + _(this.player._playerStatus));
+            }
+            if (this.tooltipShowArtist) {
+                tooltips.push(this.player._artist);
+            }
+            if (this.tooltipShowTitle) {
+                tooltips.push(this.player._title);
+            }
+        }
+        if (tooltips.length == 0) {
+            tooltips.push(_("A Cinnamon applet to control sound and music"));
+        }
+        this.set_applet_tooltip(tooltips.join("\n"));
     }
 
     _isInstance(busName) {
@@ -1349,7 +1378,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._launchPlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Launch player"));
         this.menu.addMenuItem(this._launchPlayerItem);
         this._updateLaunchPlayer();
-        
+
         // The list to use when switching between active players
         this._chooseActivePlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Choose player controls"));
         this._chooseActivePlayerItem.actor.hide();
@@ -1447,7 +1476,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     _outputValuesChanged(actor, iconName, percentage) {
         this.setIcon(iconName, "output");
         this.mute_out_switch.setIconSymbolicName(iconName);
-        this.set_applet_tooltip(_("Volume") + ": " + percentage);
+        this.volume = percentage;
+        this.setAppletTooltip();
     }
 
     _inputValuesChanged(actor, iconName) {
