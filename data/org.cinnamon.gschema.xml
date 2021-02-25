@@ -524,9 +524,9 @@
 
     <key name="prevent-focus-stealing" type="b">
       <default>false</default>
-      <summary>Prevents windows that request user attention from stealing focus</summary>
+      <summary>[unused] Prevents windows that request user attention from stealing focus</summary>
       <description>
-        When enabled, even if a window requires attention, it is not activated.
+        This setting is no longer used.
       </description>
     </key>
 
@@ -620,7 +620,7 @@
     </key>
 
     <key type="as" name="demands-attention-ignored-wm-classes">
-      <default>["skype", "viber", "quassel", "retroshare", "psi-plus", "kadu", "pidgin"]</default>
+      <default>[]</default>
       <summary>WM class names to skip processing for in windowAttentionHandler.js</summary>
     </key>
 

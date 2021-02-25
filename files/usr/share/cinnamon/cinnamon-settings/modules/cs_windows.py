@@ -91,9 +91,6 @@ class Module:
             widget = GSettingsSwitch(_("Bring windows which require attention to the current workspace"), "org.cinnamon", "bring-windows-to-current-workspace")
             settings.add_row(widget)
 
-            widget = GSettingsSwitch(_("Prevent windows which require attention from stealing focus"), "org.cinnamon", "prevent-focus-stealing")
-            settings.add_row(widget)
-
             stealing_options = [["smart", _("Smart")], ["strict", _("Strict")]]
             widget = GSettingsComboBox(_("Focus mode for new windows"), "org.cinnamon.desktop.wm.preferences", "focus-new-windows", stealing_options)
             widget.set_tooltip_text(_("This option provides additional control over how newly created windows get focus. It has two possible values; 'smart' applies the user's normal focus mode, and 'strict' results in windows started from a terminal not being given focus."))
