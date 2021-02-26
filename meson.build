@@ -71,6 +71,11 @@ cinnamon_conf = configuration_data()
 cinnamon_conf.set_quoted('VERSION', version)
 cinnamon_conf.set_quoted('GETTEXT_PACKAGE', meson.project_name().to_lower())
 
+have_xfixes = cc.has_function('XFixesCreatePointerBarrier', dependencies: xfixes)
+if have_xfixes
+    cinnamon_conf.set10('HAVE_XFIXESCREATEPOINTERBARRIER', true)
+endif
+
 config_h_file = configure_file(
     output : 'config.h',
     configuration : cinnamon_conf
