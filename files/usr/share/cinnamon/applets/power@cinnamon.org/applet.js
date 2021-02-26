@@ -120,6 +120,11 @@ function deviceToIcon(type, icon) {
     }
 }
 
+function reportsPreciseLevels(battery_level)
+{
+    return battery_level == UPDeviceLevel.NONE;
+}
+
 class DeviceItem extends PopupMenu.PopupBaseMenuItem {
     constructor(device, status, aliases) {
         super({reactive: false});
@@ -557,7 +562,8 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         if (state == UPDeviceState.UNKNOWN)
                             continue;
 
-                        if (battery_level != UPDeviceLevel.NONE) {
+                        if (reportsPreciseLevels(battery_level)) {
+                            // Devices that give accurate % charge will return this for battery level.
                             pct_support_count++;
                         }
 
@@ -586,20 +592,38 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                 // The menu is built. Below, we update the information present in the panel (icon, tooltip and label)
                 this.set_applet_enabled(true);
                 let panel_device = null;
-                if (this._primaryDevice != null && (!this.showmulti || this._devices.length === 1 || pct_support_count == 1)) {
+
+                // Things should only ever be in the panel if they provide accurate reporting (percentages), otherwise
+                // they're probably not likely to drain quickly enough to merit showing except on demand, in the popup menu.
+
+                // One or more devices, one is a real battery, and multi-device is disabled
+                if (this._primaryDevice != null && (!this.showmulti || (this._devices.length === 1) && pct_support_count === 1)) {
                     this.showDeviceInPanel(this._primaryDevice);
                 }
                 else {
-                    if (this._devices.length == 1) {
+                    // One device, not marked primary, but has accurate reporting (not sure this will ever happen).
+                    if (this._devices.length === 1 && pct_support_count === 1) {
                         this.showDeviceInPanel(this._devices[0]);
                     }
                     else if (this._devices.length > 1) {
                         // Show a summary
                         let labelText = "";
                         if (this.labelinfo !== "nothing") {
+                            let num = 0;
+
                             for (let i = 0; i < this._devices.length; i++) {
-                                labelText += i + ': ';
                                 let [, , , , , percentage, , battery_level, seconds] = this._devices[i];
+
+                                // Skip devices without accurate reporting
+                                if (!reportsPreciseLevels(battery_level)) {
+                                    continue;
+                                }
+
+                                // Only number them if we'll have multiple items
+                                if (pct_support_count > 1) {
+                                    labelText += (num++) + ': ';
+                                }
+
                                 if (this.labelinfo == "time" && seconds !== 0) {
                                     let time = Math.round(seconds / 60);
                                     let minutes = time % 60;
@@ -616,10 +640,12 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                                     labelText += C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) + " (" +
                                         C_("time of battery remaining", "%d:%02d").format(hours, minutes) + ")";
                                 }
-                                if (i !== this._devices.length - 1) {
+
+                                // Only add a gap if we have remaining valid devices to show.
+                                if (num < pct_support_count) {
                                     labelText += '  ';
                                 }
-                            }    
+                            }
                         }
 
                         this.set_applet_tooltip(devices_stats.join(", "));
