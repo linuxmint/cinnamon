@@ -8,7 +8,7 @@ from xapp.GSettingsWidgets import *
 from CinnamonGtkSettings import CssRange, CssOverrideSwitch, GtkSettingsSwitch, PreviewWidget, Gtk2ScrollbarSizeEditor
 from SettingsWidgets import LabelRow, SidePage, walk_directories
 from ChooserButtonWidgets import PictureChooserButton
-from ExtensionCore import DownloadSpicesPage
+from ExtensionCore import DownloadSpicesPage, install_from_file
 from Spices import Spice_Harvester
 
 import glob
@@ -81,10 +81,16 @@ class Module:
             settings.add_row(widget)
 
             widget = self.make_group(_("Desktop"), self.cinnamon_chooser)
+            self.install_button = Gtk.Button.new_from_icon_name("system-software-install-symbolic", Gtk.IconSize.MENU)
+            self.install_button.set_valign(Gtk.Align.CENTER)
+            self.install_button.set_tooltip_text(_("Manually Install from File"))
+            self.install_button.connect('clicked', lambda *a: install_from_file(self.spices))
+            widget.pack_start(self.install_button, False, False, 0)
+
             settings.add_row(widget)
 
             page = DownloadSpicesPage(self, 'theme', self.spices, self.window)
-            self.sidePage.stack.add_titled(page, 'download', _("Add/Remove"))
+            self.sidePage.stack.add_titled(page, 'install', _("Install"))
 
             page = SettingsPage()
             self.sidePage.stack.add_titled(page, "options", _("Settings"))

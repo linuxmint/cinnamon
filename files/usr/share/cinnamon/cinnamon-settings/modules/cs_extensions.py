@@ -45,7 +45,7 @@ class ExtensionViewSidePage(SidePage):
         self.stack.add_titled(manage_extensions_page, "installed", _("Manage"))
 
         download_extensions_page = DownloadSpicesPage(self, self.collection_type, self.spices, window)
-        self.stack.add_titled(download_extensions_page, "more", _("Download"))
+        self.stack.add_titled(download_extensions_page, "install", _("Install"))
 
 class ManageExtensionsPage(ManageSpicesPage):
     directories = ['/usr/share/cinnamon/extensions', ("%s/.local/share/cinnamon/extensions") % GLib.get_home_dir()]

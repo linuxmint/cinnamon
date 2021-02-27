@@ -600,8 +600,8 @@ class Spice_Harvester(GObject.Object):
         return basename.replace("jpg", "png").replace("JPG", "png").replace("PNG", "png")
 
     def install(self, uuid):
-        """ downloads and installs the given extension"""
-        job = {'uuid': uuid, 'func': self._install, 'callback': self._install_finished}
+        """ downloads and installs the given extension from the spices website"""
+        job = {'uuid': uuid, 'func': self._install, 'callback': self._install_finished, 'from-spices': True}
         job['progress_text'] = _("Installing %s") % uuid
         self._push_job(job)
 
@@ -612,19 +612,13 @@ class Spice_Harvester(GObject.Object):
         self.current_uuid = uuid
 
         fd, ziptempfile = tempfile.mkstemp()
+        job['file'] = ziptempfile
 
         if self._download(ziptempfile, download_url) is None:
             return
 
         try:
-            zip = zipfile.ZipFile(ziptempfile)
-
-            tempfolder = tempfile.mkdtemp()
-            zip.extractall(tempfolder)
-
-            uuidfolder = os.path.join(tempfolder, uuid)
-
-            self.install_from_folder(uuidfolder, uuid, True)
+            self._install_from_zip(job)
         except Exception as detail:
             if not self.abort_download:
                 self.errorMessage(_("An error occurred during the installation of %s. Please report this incident to its developer.") % uuid, str(detail))
@@ -636,25 +630,50 @@ class Spice_Harvester(GObject.Object):
         except Exception:
             pass
 
-    def install_from_folder(self, folder, uuid, from_spices=False):
+    def install_from_zip(self, file):
+        """ installs an extension from the given zip file"""
+        job = {'file': file, 'func': self._install_from_zip, 'callback': self._install_finished, 'from-spices': False}
+        job['progress_text'] = _("Installing %s") % file
+        self._push_job(job)
+
+    def _install_from_zip(self, job):
+        zip_file = zipfile.ZipFile(job['file'])
+
+        tempfolder = tempfile.mkdtemp()
+        zip_file.extractall(tempfolder)
+
+        if 'uuid' not in job:
+            job['uuid'] = os.listdir(tempfolder)[0]
+
+        job['folder'] = os.path.join(tempfolder, job['uuid'])
+
+        self._install_from_folder(job)
+
+    def install_from_folder(self, folder, uuid):
+        """ installs an extension directly from the folder"""
+        job = {'folder': folder, 'uuid': uuid, 'func': self._install_from_folder, 'callback': self._install_finished, 'from-spices': False}
+        job['progress_text'] = _("Installing from %s") % folder
+        self._push_job(job)
+
+    def _install_from_folder(self, job):
         """ installs a spice from a specified folder"""
-        contents = os.listdir(folder)
+        contents = os.listdir(job['folder'])
 
         if not self.themes:
             # Install spice localization files, if any
             if 'po' in contents:
-                po_dir = os.path.join(folder, 'po')
+                po_dir = os.path.join(job['folder'], 'po')
                 for file in os.listdir(po_dir):
                     if file.endswith('.po'):
                         lang = file.split(".")[0]
                         locale_dir = os.path.join(locale_inst, lang, 'LC_MESSAGES')
                         os.makedirs(locale_dir, mode=0o755, exist_ok=True)
-                        subprocess.call(['msgfmt', '-c', os.path.join(po_dir, file), '-o', os.path.join(locale_dir, '%s.mo' % uuid)])
+                        subprocess.call(['msgfmt', '-c', os.path.join(po_dir, file), '-o', os.path.join(locale_dir, '%s.mo' % job['uuid'])])
 
-        dest = os.path.join(self.install_folder, uuid)
+        dest = os.path.join(self.install_folder, job['uuid'])
         if os.path.exists(dest):
             shutil.rmtree(dest)
-        shutil.copytree(folder, dest)
+        shutil.copytree(job['folder'], dest)
 
         if not self.themes:
             # ensure proper file permissions
@@ -671,8 +690,8 @@ class Spice_Harvester(GObject.Object):
             file.close()
             md = json.loads(raw_meta)
 
-        if from_spices and uuid in self.index_cache:
-            md['last-edited'] = self.index_cache[uuid]['last_edited']
+        if job['from-spices'] and job['uuid'] in self.index_cache:
+            md['last-edited'] = self.index_cache[job['uuid']]['last_edited']
         else:
             md['last-edited'] = int(datetime.datetime.utcnow().timestamp())
 

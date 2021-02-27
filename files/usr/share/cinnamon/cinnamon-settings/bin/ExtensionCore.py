@@ -147,6 +147,32 @@ def sanitize_html(string):
     text = parser.get_text()
     return text.strip('\n ').strip('\n').replace('\n', ' ').replace('  ', ' ').replace('\\', '')
 
+def install_from_file(spices):
+    if spices.collection_type == 'applet':
+        title = _("Install Applet")
+    elif spices.collection_type == 'desklet':
+        title = _("Install Desklet")
+    elif spices.collection_type == 'extension':
+        title = _("Install Extension")
+    elif spices.collection_type == 'theme':
+        title = _("Install Theme")
+
+    buttons = (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+    file_dialog = Gtk.FileChooserDialog(transient_for=spices.window, title=title, buttons=buttons)
+
+    file_filter = Gtk.FileFilter()
+    file_filter.set_name('.zip')
+    file_filter.add_mime_type('application/zip')
+    file_dialog.add_filter(file_filter)
+
+    response = file_dialog.run()
+
+    if response == Gtk.ResponseType.OK:
+        file = file_dialog.get_filename()
+        spices.install_from_zip(file)
+
+    file_dialog.destroy()
+
 
 class ManageSpicesRow(Gtk.ListBoxRow):
     def __init__(self, extension_type, metadata, size_groups):
@@ -822,6 +848,12 @@ class DownloadSpicesPage(SettingsPage):
         self.sort_combo.set_active(1) #Rating
         self.sort_combo.connect('changed', self.sort_changed)
         self.top_box.pack_start(self.sort_combo, False, False, 4)
+
+        self.install_button = Gtk.Button(label=_("Install From File"))
+        self.install_button.set_size_request(50, -1)
+        self.install_button.set_tooltip_text(_("Manually install from a zip file"))
+        self.top_box.set_center_widget(self.install_button)
+        self.install_button.connect('clicked', lambda *a: install_from_file(self.spices))
 
         self.search_entry = Gtk.Entry()
         self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find-symbolic')

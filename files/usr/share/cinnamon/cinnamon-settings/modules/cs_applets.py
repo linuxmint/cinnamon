@@ -45,7 +45,7 @@ class AppletsViewSidePage(SidePage):
         self.stack.add_titled(manage_extensions_page, "installed", _("Manage"))
 
         download_applets_page = DownloadSpicesPage(self, self.collection_type, self.spices, window)
-        self.stack.add_titled(download_applets_page, "more", _("Download"))
+        self.stack.add_titled(download_applets_page, "install", _("Install"))
 
 class ManageAppletsPage(ManageSpicesPage):
     directories = [("%s/.local/share/cinnamon/applets") % GLib.get_home_dir(), "/usr/share/cinnamon/applets"]
