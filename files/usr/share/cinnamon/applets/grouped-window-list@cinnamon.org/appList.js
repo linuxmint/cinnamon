@@ -386,7 +386,8 @@ class AppList {
                 this.appList[refApp].destroy(true);
                 this.appList[refApp] = undefined;
                 this.appList.splice(refApp, 1);
-                this.refreshList();
+                if (!this.appList[refApp].actor.remove_style_class_name('grouped-window-list-item-demands-attention')){
+                    this.refreshList();} return;
             });
         }
     }
