@@ -45,7 +45,7 @@ def scan_json(dir, pot_path):
 
     for root, dirs, files in os.walk(dir):
         rel_root = os.path.relpath(root)
-        for file in files:
+        for file in sorted(files):
             if rel_root == '.':
                 rel_path = file
             else:
@@ -146,7 +146,7 @@ def do_install(uuid, dir):
     podir = os.path.join(dir, "po")
     files_installed = 0
     for root, subFolders, files in os.walk(podir):
-        for file in files:
+        for file in sorted(files):
             locale_name, ext = os.path.splitext(file)
             if ext == '.po':
                 lang_locale_dir = os.path.join(LOCALE_DIR, locale_name, 'LC_MESSAGES')
@@ -240,7 +240,7 @@ def scan_xlet():
         js_files = []
         for root, dirs, files in os.walk(dir):
             rel_root = os.path.relpath(root)
-            js_files += [os.path.join(rel_root, file) for file in files if file.endswith('.js')]
+            js_files += [os.path.join(rel_root, file) for file in sorted(files) if file.endswith('.js')]
         if len(js_files) == 0:
             print('none found')
         else:
@@ -262,7 +262,7 @@ def scan_xlet():
         py_files = []
         for root, dirs, files in os.walk(dir):
             rel_root = os.path.relpath(root)
-            py_files += [os.path.join(rel_root, file) for file in files if file.endswith('.py')]
+            py_files += [os.path.join(rel_root, file) for file in sorted(files) if file.endswith('.py')]
         if len(py_files) == 0:
             print('none found')
         else:
