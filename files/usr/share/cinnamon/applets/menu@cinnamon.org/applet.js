@@ -58,6 +58,10 @@ const APP_MATCH_ADDERS = [
 ];
 const RECENT_PLACES_ADDER = 4000;
 
+function strip(str) {
+    return str.replace(/[^A-Za-z0-9]/g, "");
+}
+
 /* VisibleChildIterator takes a container (boxlayout, etc.)
  * and creates an array of its visible children and their index
  * positions.  We can then work through that list without
@@ -544,10 +548,10 @@ class ApplicationButton extends GenericApplicationButton {
         this.isDraggableApp = true;
 
         this.searchStrings = [
-            Util.latinise(app.get_name().toLowerCase()),
-            app.get_keywords() ? Util.latinise(app.get_keywords().toLowerCase()) : "",
-            app.get_description() ? Util.latinise(app.get_description().toLowerCase()) : "",
-            app.get_id() ? Util.latinise(app.get_id().toLowerCase()) : ""
+            strip(Util.latinise(app.get_name().toLowerCase())),
+            app.get_keywords() ? strip(Util.latinise(app.get_keywords().toLowerCase())) : "",
+            app.get_description() ? strip(Util.latinise(app.get_description().toLowerCase())) : "",
+            app.get_id() ? strip(Util.latinise(app.get_id().toLowerCase())) : ""
         ];
     }
 
@@ -644,7 +648,7 @@ class PlaceButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            Util.latinise(place.name.toLowerCase())
+            strip(Util.latinise(place.name.toLowerCase()))
         ];
     }
 
@@ -696,7 +700,7 @@ class RecentButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            Util.latinise(recent.name.toLowerCase())
+            strip(Util.latinise(recent.name.toLowerCase()))
         ];
     }
 
@@ -804,7 +808,7 @@ class FavoriteButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            Util.latinise(favoriteInfo.display_name.toLowerCase())
+            strip(Util.latinise(favoriteInfo.display_name.toLowerCase()))
         ];
     }
 
@@ -3013,7 +3017,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _doSearch(rawPattern){
-        let pattern = Util.latinise(rawPattern.toLowerCase());
+        let pattern = strip(Util.latinise(rawPattern.toLowerCase()));
 
         this._searchTimeoutId = 0;
         this._activeContainer = null;
