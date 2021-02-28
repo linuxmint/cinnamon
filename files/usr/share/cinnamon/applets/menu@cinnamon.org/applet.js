@@ -50,13 +50,12 @@ const RefreshFlags = Object.freeze({
 const REFRESH_ALL_MASK = 0b111111;
 
 const NO_MATCH = 99999;
-const APP_MATCH_ADDERS = [
+const MATCH_ADDERS = [
     0, // name
     1000, // keywords
     2000, // desc
     3000 // id
 ];
-const RECENT_PLACES_ADDER = 4000;
 
 function strip(str) {
     return str.replace(/[^A-Za-z0-9]/g, "");
@@ -2981,7 +2980,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
             let res = buttons[i].searchStrings[0].match(regexpPattern);
             if (res) {
-                buttons[i].matchIndex = res.index + RECENT_PLACES_ADDER;
+                buttons[i].matchIndex = res.index;
                 ret.push(buttons[i]);
             } else {
                 buttons[i].matchIndex = NO_MATCH;
@@ -3004,7 +3003,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             for (let j = 0; j < button.searchStrings.length; j++) {
                 let res = button.searchStrings[j].match(regexpPattern);
                 if (res) {
-                    button.matchIndex = res.index + APP_MATCH_ADDERS[j];
+                    button.matchIndex = res.index + MATCH_ADDERS[j];
                     apps.push(button);
                     break;
                 } else {
