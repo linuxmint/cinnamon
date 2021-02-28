@@ -76,6 +76,25 @@ if have_xfixes
     cinnamon_conf.set10('HAVE_XFIXESCREATEPOINTERBARRIER', true)
 endif
 
+have_mallinfo = cc.has_function('mallinfo', prefix: '#include <malloc.h>')
+if have_mallinfo
+    cinnamon_conf.set10('HAVE_MALLINFO', true)
+endif
+
+langinfo_test = '''
+#include <langinfo.h>
+int main () {
+    nl_langinfo(_NL_TIME_FIRST_WEEKDAY);
+}
+'''
+have_nl_time_first_weekday = cc.compiles(
+    langinfo_test,
+    name : 'langinfo _NL_TIME_FIRST_WEEKDAY check')
+
+if have_nl_time_first_weekday
+    cinnamon_conf.set10('HAVE__NL_TIME_FIRST_WEEKDAY', true)
+endif
+
 config_h_file = configure_file(
     output : 'config.h',
     configuration : cinnamon_conf
