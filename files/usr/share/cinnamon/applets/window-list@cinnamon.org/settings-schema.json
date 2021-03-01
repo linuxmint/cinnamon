@@ -65,5 +65,9 @@
           "Largest": 1.5
       },
       "dependency": "window-preview"
+  },
+  "last-window-order": {
+      "type": "generic",
+      "default": ""
   }
 }
