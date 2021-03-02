@@ -76,3 +76,6 @@ if __name__ == "__main__":
                     os.system("killall %s" % panel_process_name)
                     # Restart Cinnamon
                     os.execvp(sys.argv[0], (sys.argv[0], "--replace"))
+
+
+test pr change
