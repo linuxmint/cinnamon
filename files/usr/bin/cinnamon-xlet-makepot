@@ -5,6 +5,8 @@ import json
 import subprocess
 import collections
 import argparse
+from datetime import datetime
+import pytz
 
 LOCALE_DIR = os.path.join(os.path.expanduser('~'), '.local/share/locale')
 
@@ -31,7 +33,7 @@ except Exception:
 Module "polib" not available.
 
 You will need to install this module using your distribution's package manager
-(in debian-based syatems "apt-get install python3-polib")
+(in debian-based systems "apt-get install python3-polib")
 """)
     quit()
 
@@ -40,12 +42,31 @@ def scan_json(dir, pot_path):
     append = os.path.exists(pot_path)
     if append:
         pot_file = polib.pofile(pot_path)
+        pot_file.metadata['Content-Type'] = 'text/plain; charset=UTF-8'
     else:
         pot_file = polib.POFile()
+        pot_file.header = 'SOME DESCRIPTIVE TITLE.\n' \
+                          'Copyright (C) YEAR THE PACKAGE\'S COPYRIGHT HOLDER\n' \
+                          'This file is distributed under the same license as the PACKAGE package.\n' \
+                          'FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n' \
+                          '\n' \
+                          ', fuzzy'
+        pot_file.metadata = {
+            'Project-Id-Version': 'PACKAGE VERSION',
+            'Report-Msgid-Bugs-To': '',
+            'POT-Creation-Date': '%s' % datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M%z"),
+            'PO-Revision-Date': 'YEAR-MO-DA HO:MI+ZONE',
+            'Last-Translator': 'FULL NAME <EMAIL@ADDRESS>',
+            'Language-Team': 'LANGUAGE <LL@li.org>',
+            'Language': '',
+            'MIME-Version': '1.0',
+            'Content-Type': 'text/plain; charset=UTF-8',
+            'Content-Transfer-Encoding': '8bit',
+        }
 
     for root, dirs, files in os.walk(dir):
         rel_root = os.path.relpath(root)
-        for file in files:
+        for file in sorted(files):
             if rel_root == '.':
                 rel_path = file
             else:
@@ -130,7 +151,7 @@ def remove_empty_folders(path):
     # remove empty subfolders
     files = os.listdir(path)
     if len(files):
-        for f in files:
+        for f in sorted(files):
             fullpath = os.path.join(path, f)
             if os.path.isdir(fullpath):
                 remove_empty_folders(fullpath)
@@ -146,7 +167,7 @@ def do_install(uuid, dir):
     podir = os.path.join(dir, "po")
     files_installed = 0
     for root, subFolders, files in os.walk(podir):
-        for file in files:
+        for file in sorted(files):
             locale_name, ext = os.path.splitext(file)
             if ext == '.po':
                 lang_locale_dir = os.path.join(LOCALE_DIR, locale_name, 'LC_MESSAGES')
@@ -234,13 +255,16 @@ def scan_xlet():
     os.makedirs(os.path.dirname(pot_path), mode=0o755, exist_ok=True)
 
     pot_exists = False
+    if os.path.exists(pot_path):
+        os.remove(pot_path)
+    
     if args.js:
         print("Scanning JavaScript files...")
 
         js_files = []
         for root, dirs, files in os.walk(dir):
             rel_root = os.path.relpath(root)
-            js_files += [os.path.join(rel_root, file) for file in files if file.endswith('.js')]
+            js_files += [os.path.join(rel_root, file) for file in sorted(files) if file.endswith('.js')]
         if len(js_files) == 0:
             print('none found')
         else:
@@ -262,7 +286,7 @@ def scan_xlet():
         py_files = []
         for root, dirs, files in os.walk(dir):
             rel_root = os.path.relpath(root)
-            py_files += [os.path.join(rel_root, file) for file in files if file.endswith('.py')]
+            py_files += [os.path.join(rel_root, file) for file in sorted(files) if file.endswith('.py')]
         if len(py_files) == 0:
             print('none found')
         else:
