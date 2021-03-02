@@ -69,23 +69,24 @@ def scan_json(dir, pot_path):
 
 def extract_settings_strings(data, dir, pot_file, parent=""):
     for key in data.keys():
-        if key in ("description", "tooltip", "units", "title"):
-            comment = "%s->%s->%s" % (dir, parent, key)
-            save_entry(data[key], comment, pot_file)
-        elif key in "options":
-            opt_data = data[key]
-            for option in opt_data.keys():
-                if opt_data[option] == "custom":
-                    continue
+        if parent != "":
+            if key in ("description", "tooltip", "units", "title"):
                 comment = "%s->%s->%s" % (dir, parent, key)
-                save_entry(option, comment, pot_file)
-        elif key == "columns":
-            columns = data[key]
-            for i, col in enumerate(columns):
-                for col_key in col:
-                    if col_key in ("title", "units"):
-                        comment = "%s->%s->columns->%s" % (dir, parent, col_key)
-                        save_entry(col[col_key], comment, pot_file)
+                save_entry(data[key], comment, pot_file)
+            elif key in "options":
+                opt_data = data[key]
+                for option in opt_data.keys():
+                    if opt_data[option] == "custom":
+                        continue
+                    comment = "%s->%s->%s" % (dir, parent, key)
+                    save_entry(option, comment, pot_file)
+            elif key == "columns":
+                columns = data[key]
+                for i, col in enumerate(columns):
+                    for col_key in col:
+                        if col_key in ("title", "units"):
+                            comment = "%s->%s->columns->%s" % (dir, parent, col_key)
+                            save_entry(col[col_key], comment, pot_file)
         try:
             extract_settings_strings(data[key], dir, pot_file, key)
         except AttributeError:
@@ -109,6 +110,10 @@ def extract_metadata_strings(data, dir, pot_file):
 
 
 def save_entry(msgid, comment, pot_file):
+    if not isinstance(msgid, str):
+        print("Warning: expected string and got %s of type %s instead" % (str(msgid), type(msgid)))
+        return
+
     if not msgid.strip():
         return
 
