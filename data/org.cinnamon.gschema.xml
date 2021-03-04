@@ -589,6 +589,7 @@
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
     <child name="desklets" schema="org.cinnamon.desklets" />
     <child name="sounds" schema="org.cinnamon.sounds" />
+    <child name="launcher" schema="org.cinnamon.launcher" />
 
     <key name="enable-vfade" type="b">
       <default>true</default>
@@ -1007,6 +1008,28 @@
   </schema>
 
   <schema id="org.cinnamon.invalid-schema" path="/org/cinnamon/invalid-schema/">
+  </schema>
+
+  <schema id="org.cinnamon.launcher" path="/org/cinnamon/launcher/">
+
+    <key name="memory-limit-enabled" type="b">
+      <default>true</default>
+      <summary>Whether to restart Cinnamon when it reachs the memory limit</summary>
+      <description></description>
+    </key>
+
+    <key name="memory-limit" type="i">
+      <default>2048</default>
+      <summary>Memory limit (in MB)</summary>
+      <description></description>
+    </key>
+
+    <key name="check-frequency" type="i">
+      <default>300</default>
+      <summary>Time between each checks (in seconds)</summary>
+      <description></description>
+    </key>
+
   </schema>
 
 </schemalist>

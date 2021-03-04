@@ -5,12 +5,14 @@
 
 import os
 import sys
+import time
 import gettext
 from setproctitle import setproctitle
-
+import psutil
+import threading
 import gi
 gi.require_version('Gtk', '3.0')  # noqa
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject, Gio
 
 FALLBACK_COMMAND = "metacity"
 FALLBACK_ARGS = ("--replace",)
@@ -29,50 +31,120 @@ elif os.path.exists("/usr/bin/tint2"):
     panel_process_name = "tint2"
     panel_cmd = "killall tint2; tint2 &"
 
+# Used as a decorator to run things in the background
+def async_function(func):
+    def wrapper(*args, **kwargs):
+        thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+        thread.daemon = True
+        thread.start()
+        return thread
+    return wrapper
 
-def confirm_restart():
-    d = Gtk.MessageDialog(title=None, parent=None, flags=0, message_type=Gtk.MessageType.WARNING)
-    d.add_buttons(_("No"),  Gtk.ResponseType.NO,
-                  _("Yes"), Gtk.ResponseType.YES)
-    d.set_keep_above(True)
-    d.set_position(Gtk.WindowPosition.CENTER)
-    d.set_title(_("Cinnamon just crashed"))
-    box = d.get_content_area()
-    checkbutton = Gtk.CheckButton(label=_("Disable downloaded applets, desklets and extensions"))
-    d.set_markup("<span size='large'><b>%s</b></span>\n\n%s\n\n%s\n\n" %
-            (
-                _("You are currently running in fallback mode."),
-                _("If you suspect the source of the crash is a local extension, applet or desklet, you can disable downloaded add-ons using the checkbox below."),
-                _("Do you want to restart Cinnamon?"),
-            ))
-    box.set_border_width(20)
-    box.add(checkbutton)
-    checkbutton.show_all()
-    resp = d.run()
-    d.destroy()
-    if resp == Gtk.ResponseType.YES:
-        if checkbutton.get_active():
-            os.environ["CINNAMON_TROUBLESHOOT"] = "1"
-        return(True)
-    return(False)
+# Used as a decorator to run things in the main loop, from another thread
+def idle_function(func):
+    def wrapper(*args):
+        GObject.idle_add(func, *args)
+    return wrapper
+
+class Launcher():
+
+    def __init__(self):
+        self.cinnamon_pid = os.fork()
+        if self.cinnamon_pid == 0:
+            os.execvp("cinnamon", ("cinnamon", "--replace", ) + tuple(sys.argv[1:]))
+        else:
+            self.settings = Gio.Settings(schema="org.cinnamon.launcher")
+            self.settings.connect("changed::memory-limit-enabled", self.on_settings_changed)
+            self.killed = False
+            if self.settings.get_boolean("memory-limit-enabled"):
+                print("Cinnamon memory limit enabled: %d MB" % self.settings.get_int("memory-limit"))
+                self.monitor_memory()
+                self.wait_for_process()
+            Gtk.main()
+
+    def on_settings_changed(self, settings, key):
+        print("Memory profiler status changed, restarting Cinnamon.")
+        self.restart_cinnamon()
+
+    @async_function
+    def wait_for_process(self):
+        exit_status = os.waitpid(self.cinnamon_pid, 0)[1]
+        if exit_status != 0:
+            if self.killed:
+                # Restart Cinnamon
+                self.restart_cinnamon()
+            else:
+                if os.fork() == 0:
+                    # Start the fallback panel
+                    if panel_cmd is not None:
+                        os.system(panel_cmd)
+                    # Start the fallback window manager
+                    os.execvp(FALLBACK_COMMAND, (FALLBACK_COMMAND,) + FALLBACK_ARGS)
+                else:
+                    if self.confirm_restart():
+                        # Kill the fallback panel
+                        os.system("killall %s" % panel_process_name)
+                        # Restart Cinnamon
+                        self.restart_cinnamon()
+        Gtk.main_quit()
+
+    @async_function
+    def monitor_memory(self):
+        if psutil.pid_exists(self.cinnamon_pid):
+            process = psutil.Process(self.cinnamon_pid)
+            while True:
+                delay = self.settings.get_int("check-frequency")
+                limit = self.settings.get_int("memory-limit")
+                time.sleep(delay)
+                if not process.is_running():
+                    break
+                memory = ((process.memory_full_info().rss - process.memory_full_info().shared) / 1024 ** 2)
+                if memory > limit:
+                    print ("Memory threshold reached: %d" % memory)
+                    self.log_kill(memory, limit, delay)
+                    self.killed = True
+                    process.kill()
+                    break
+
+    def restart_cinnamon(self):
+        Gtk.main_quit()
+        os.execvp(sys.argv[0], (sys.argv[0], "--replace"))
+
+    def log_kill(self, memory, limit, delay):
+        directory = os.path.expanduser("~/.cinnamon")
+        string = "%s - Usage: %d MB - Limit: %d MB - Freq: %s sec" % (time.strftime("%Y.%m.%d %H:%M:%S"), memory, limit, delay)
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+        with open(os.path.join(directory, "restarts.log"), "a") as log_file:
+            print(string, file=log_file)
+
+    @idle_function
+    def confirm_restart(self):
+        d = Gtk.MessageDialog(title=None, parent=None, flags=0, message_type=Gtk.MessageType.WARNING)
+        d.add_buttons(_("No"),  Gtk.ResponseType.NO,
+                      _("Yes"), Gtk.ResponseType.YES)
+        d.set_keep_above(True)
+        d.set_position(Gtk.WindowPosition.CENTER)
+        d.set_title(_("Cinnamon just crashed"))
+        box = d.get_content_area()
+        checkbutton = Gtk.CheckButton(label=_("Disable downloaded applets, desklets and extensions"))
+        d.set_markup("<span size='large'><b>%s</b></span>\n\n%s\n\n%s\n\n" %
+                (
+                    _("You are currently running in fallback mode."),
+                    _("If you suspect the source of the crash is a local extension, applet or desklet, you can disable downloaded add-ons using the checkbox below."),
+                    _("Do you want to restart Cinnamon?"),
+                ))
+        box.set_border_width(20)
+        box.add(checkbutton)
+        checkbutton.show_all()
+        resp = d.run()
+        d.destroy()
+        if resp == Gtk.ResponseType.YES:
+            if checkbutton.get_active():
+                os.environ["CINNAMON_TROUBLESHOOT"] = "1"
+            return(True)
+        return(False)
 
 if __name__ == "__main__":
     setproctitle("cinnamon-launcher")
-    cinnamon_pid = os.fork()
-    if cinnamon_pid == 0:
-        os.execvp("cinnamon", ("cinnamon", "--replace", ) + tuple(sys.argv[1:]))
-    else:
-        exit_status = os.waitpid(cinnamon_pid, 0)[1]
-        if exit_status != 0:
-            if os.fork() == 0:
-                # Start the fallback panel
-                if panel_cmd is not None:
-                    os.system(panel_cmd)
-                # Start the fallback window manager
-                os.execvp(FALLBACK_COMMAND, (FALLBACK_COMMAND,) + FALLBACK_ARGS)
-            else:
-                if confirm_restart():
-                    # Kill the fallback panel
-                    os.system("killall %s" % panel_process_name)
-                    # Restart Cinnamon
-                    os.execvp(sys.argv[0], (sys.argv[0], "--replace"))
+    Launcher()
