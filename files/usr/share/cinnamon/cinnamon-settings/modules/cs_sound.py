@@ -6,7 +6,6 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Cvc, GdkPixbuf, Gio
 from SettingsWidgets import SidePage, GSettingsSoundFileChooser
 from xapp.GSettingsWidgets import *
-import dbus
 
 CINNAMON_SOUNDS = "org.cinnamon.sounds"
 CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound"
@@ -469,10 +468,20 @@ class SoundTest(Gtk.Dialog):
         else:
             sound = "audio-channel-"+position[1]
 
-        session_bus = dbus.SessionBus()
-        sound_dbus = session_bus.get_object("org.cinnamon.SettingsDaemon.Sound", "/org/cinnamon/SettingsDaemon/Sound")
-        play = sound_dbus.get_dbus_method('PlaySoundWithChannel', 'org.cinnamon.SettingsDaemon.Sound')
-        play(0, sound, position[1])
+        try:
+            connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+
+            connection.call_sync("org.cinnamon.SettingsDaemon.Sound",
+                                 "/org/cinnamon/SettingsDaemon/Sound",
+                                 "org.cinnamon.SettingsDaemon.Sound",
+                                 "PlaySoundWithChannel",
+                                 GLib.Variant("(uss)", (0, sound, position[1])),
+                                 None,
+                                 Gio.DBusCallFlags.NONE,
+                                 2000,
+                                 None)
+        except GLib.Error as e:
+            print("Could not play test sound: %s" % e.message)
 
     def setPositionHideState(self):
         map = self.stream.get_channel_map()

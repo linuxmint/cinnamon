@@ -3,7 +3,6 @@
 import os
 import subprocess
 
-import dbus
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, GObject, GLib
@@ -367,8 +366,8 @@ class SoundFileChooser(SettingsWidget):
                                       '/org/cinnamon/SettingsDaemon/Sound',
                                       'org.cinnamon.SettingsDaemon.Sound',
                                       None, self._on_proxy_ready, None)
-        except dbus.exceptions.DBusException as e:
-            print(e)
+        except GLib.Error as e:
+            print(e.message)
             self._proxy = None
             self.play_button.set_sensitive(False)
 

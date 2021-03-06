@@ -10,7 +10,6 @@ try:
     import html
     import subprocess
     import threading
-    import dbus
     from PIL import Image
     import datetime
     import proxygsettings
@@ -190,8 +189,8 @@ class Spice_Harvester(GObject.Object):
         try:
             Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
                                       'org.Cinnamon', '/org/Cinnamon', 'org.Cinnamon', None, self._on_proxy_ready, None)
-        except dbus.exceptions.DBusException as e:
-            print(e)
+        except GLib.Error as e:
+            print(e.message)
 
     def _on_proxy_ready (self, object, result, data=None):
         try:

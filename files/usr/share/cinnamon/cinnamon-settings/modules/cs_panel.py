@@ -2,7 +2,6 @@
 
 import sys
 import json
-import dbus
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
@@ -215,8 +214,8 @@ class Module:
             try:
                 Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
                                           "org.Cinnamon", "/org/Cinnamon", "org.Cinnamon", None, self._on_proxy_ready, None)
-            except dbus.exceptions.DBusException as e:
-                print(e)
+            except GLib.Error as e:
+                print(e.message)
                 self.proxy = None
 
         self.on_panel_list_changed()
