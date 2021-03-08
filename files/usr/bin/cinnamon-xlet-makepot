@@ -5,6 +5,8 @@ import json
 import subprocess
 import collections
 import argparse
+from datetime import datetime
+import pytz
 
 LOCALE_DIR = os.path.join(os.path.expanduser('~'), '.local/share/locale')
 
@@ -31,7 +33,7 @@ except Exception:
 Module "polib" not available.
 
 You will need to install this module using your distribution's package manager
-(in debian-based syatems "apt-get install python3-polib")
+(in debian-based systems "apt-get install python3-polib")
 """)
     quit()
 
@@ -40,8 +42,27 @@ def scan_json(dir, pot_path):
     append = os.path.exists(pot_path)
     if append:
         pot_file = polib.pofile(pot_path)
+        pot_file.metadata['Content-Type'] = 'text/plain; charset=UTF-8'
     else:
         pot_file = polib.POFile()
+        pot_file.header = 'SOME DESCRIPTIVE TITLE.\n' \
+                          'Copyright (C) YEAR THE PACKAGE\'S COPYRIGHT HOLDER\n' \
+                          'This file is distributed under the same license as the PACKAGE package.\n' \
+                          'FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n' \
+                          '\n' \
+                          ', fuzzy'
+        pot_file.metadata = {
+            'Project-Id-Version': 'PACKAGE VERSION',
+            'Report-Msgid-Bugs-To': '',
+            'POT-Creation-Date': '%s' % datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M%z"),
+            'PO-Revision-Date': 'YEAR-MO-DA HO:MI+ZONE',
+            'Last-Translator': 'FULL NAME <EMAIL@ADDRESS>',
+            'Language-Team': 'LANGUAGE <LL@li.org>',
+            'Language': '',
+            'MIME-Version': '1.0',
+            'Content-Type': 'text/plain; charset=UTF-8',
+            'Content-Transfer-Encoding': '8bit',
+        }
 
     for root, dirs, files in os.walk(dir):
         rel_root = os.path.relpath(root)
@@ -239,6 +260,9 @@ def scan_xlet():
     os.makedirs(os.path.dirname(pot_path), mode=0o755, exist_ok=True)
 
     pot_exists = False
+    if os.path.exists(pot_path):
+        os.remove(pot_path)
+    
     if args.js:
         print("Scanning JavaScript files...")
 
