@@ -162,7 +162,6 @@ class AppGroup {
         this.signals.connect(this.actor, 'button-press-event', (...args) => this.onAppButtonPress(...args));
         this.signals.connect(this._draggable, 'drag-begin', (...args) => this.onDragBegin(...args));
         this.signals.connect(this._draggable, 'drag-cancelled', (...args) => this.onDragCancelled(...args));
-        this.signals.connect(this._draggable, 'drag-end', (...args) => this.onDragEnd(...args));
 
         this.calcWindowNumber();
         this.on_orientation_changed(true);
@@ -626,20 +625,13 @@ class AppGroup {
             this._draggable._overrideX = Math.round(x);
             this._draggable._overrideY = null;
         }
+
+        if (this.rightClickMenu) this.rightClickMenu.close(false);
         if (this.hoverMenu) this.groupState.trigger('hoverMenuClose');
     }
 
-    onDragEnd() {
-        if (this.rightClickMenu) this.rightClickMenu.close(false);
-        if (this.hoverMenu) this.hoverMenu.close(false);
-        this.listState.trigger('updateAppGroupIndexes', this.groupState.appId);
-        this.state.trigger('clearDragPlaceholder');
-    }
-
     onDragCancelled() {
-        if (this.rightClickMenu) this.rightClickMenu.close(false);
-        if (this.hoverMenu) this.hoverMenu.close(false);
-        this.state.trigger('clearDragPlaceholder');
+        this.state.trigger('moveLauncher', this);
     }
 
     handleDragOver(source, actor, x, y, time) {
@@ -695,8 +687,6 @@ class AppGroup {
     }
 
     onAppButtonRelease(actor, event) {
-        this.state.trigger('clearDragPlaceholder');
-
         if (!this.groupState.pressed) {
             return;
         }
