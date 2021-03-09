@@ -392,6 +392,15 @@ class NewUserDialog(Gtk.Dialog):
         except Exception as detail:
             print(detail)
 
+    def user_exists(self, user_name):
+        users = AccountsService.UserManager.get_default().list_users()
+
+        for user in users:
+            if user.get_user_name() == user_name:
+                return True
+
+        return False
+
     def _on_info_changed(self, widget):
         fullname = self.realname_entry.get_text()
         username = self.username_entry.get_text()
@@ -399,6 +408,10 @@ class NewUserDialog(Gtk.Dialog):
         if re.search('[^a-z0-9_.-]', username):
             self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "dialog-warning-symbolic")
             self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Invalid username"))
+            valid = False
+        elif self.user_exists(username):
+            self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "dialog-warning-symbolic")
+            self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("A user with the name '" + username + "' already exists."))
             valid = False
         else:
             self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
