@@ -32,6 +32,8 @@ var LONGER_HIDE_TIMEOUT = 0.6;
 const NOTIFICATION_IMAGE_SIZE = 125;
 const NOTIFICATION_IMAGE_OPACITY = 230; // 0 - 255
 
+const MAX_NOTIF_LEN = 225;
+
 var State = {
     HIDDEN:  0,
     SHOWING: 1,
@@ -166,7 +168,11 @@ URLHighlighter.prototype = {
     },
 
     setMarkup: function(text, allowMarkup) {
-        text = text ? _fixMarkup(text, allowMarkup) : '';
+		if (text.length > MAX_NOTIF_LEN) {
+			text = text.substring(0, MAX_NOTIF_LEN) + "...";
+		}
+		
+		text = text ? _fixMarkup(text, allowMarkup) : '';
         this._text = text;
 
         this.actor.clutter_text.set_markup(text);
