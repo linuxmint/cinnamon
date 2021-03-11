@@ -411,7 +411,7 @@ class NewUserDialog(Gtk.Dialog):
             valid = False
         elif self.user_exists(username):
             self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "dialog-warning-symbolic")
-            self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("A user with the name '" + username + "' already exists."))
+            self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("A user with the name '%s' already exists.") % username)
             valid = False
         else:
             self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
