@@ -689,6 +689,8 @@ class Player extends PopupMenu.PopupMenuSection {
                 default:
                     this._artist = _("Unknown Artist");
             }
+            // make sure artist isn't empty
+            if (!this._artist) this._artist = _("Unknown Artist");
         }
         else
             this._artist = _("Unknown Artist");
