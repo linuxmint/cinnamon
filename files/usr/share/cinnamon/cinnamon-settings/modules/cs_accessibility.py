@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import subprocess
 import gi
 gi.require_version("Gtk", "3.0")
 
@@ -73,6 +74,12 @@ class Module:
                                                ["orca"],
                                                ["gnome-orca"])
             settings.add_row(switch)
+
+            def config_orca(button):
+                subprocess.Popen(['orca', '--setup'])
+
+            button = Button(_("Configure screen reader"), config_orca)
+            settings.add_reveal_row(button, "org.cinnamon.desktop.a11y.applications", "screen-reader-enabled")
 
 # Desktop Zoom
 

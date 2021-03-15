@@ -271,6 +271,8 @@ st_button_enter (ClutterActor         *actor,
         st_button_release (button, button->priv->grabbed, 0);
     }
 
+  st_widget_add_accessible_state (ST_WIDGET (button), ATK_STATE_FOCUSED);
+
   return ret;
 }
 
@@ -290,6 +292,8 @@ st_button_leave (ClutterActor         *actor,
       else
         st_button_release (button, button->priv->grabbed, 0);
     }
+
+  st_widget_remove_accessible_state (ST_WIDGET (button), ATK_STATE_FOCUSED);
 
   return ret;
 }
@@ -535,6 +539,7 @@ st_button_set_label (StButton    *button,
                             "use-markup", TRUE,
                             NULL);
       st_bin_set_child (ST_BIN (button), label);
+      st_widget_set_accessible_name (ST_WIDGET (button), text);
     }
 
   /* Fake a style change so that we reset the style properties on the label */

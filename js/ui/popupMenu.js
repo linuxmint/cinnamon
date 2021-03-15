@@ -840,6 +840,8 @@ var PopupSwitchMenuItem = class PopupSwitchMenuItem extends PopupBaseMenuItem {
         this.label = new St.Label({ text: text });
         this._statusLabel = new St.Label({ text: '', style_class: 'popup-inactive-menu-item' });
 
+        this.actor.label_actor = this.label;
+
         this._switch = new Switch(active);
 
         this.addActor(this.label);
@@ -896,6 +898,8 @@ var PopupSwitchIconMenuItem = class PopupSwitchIconMenuItem extends PopupBaseMen
 
         this.label = new St.Label({ text: text });
         this._statusLabel = new St.Label({ text: '', style_class: 'popup-inactive-menu-item' });
+
+        this.actor.label_actor = this.label;
 
         this._icon = new St.Icon({ style_class: 'popup-menu-icon',
             icon_name: iconName,
@@ -990,6 +994,7 @@ var PopupIconMenuItem = class PopupIconMenuItem extends PopupBaseMenuItem {
         super._init.call(this, params);
 
         this.label = new St.Label({text: text});
+        this.actor.label_actor = this.label;
         this._icon = new St.Icon({ style_class: 'popup-menu-icon',
             icon_name: iconName,
             icon_type: iconType});
@@ -1026,6 +1031,7 @@ var PopupImageMenuItem = class PopupImageMenuItem extends PopupBaseMenuItem {
         super._init.call(this, params);
 
         this.label = new St.Label({ text: text });
+        this.actor.label_actor = this.label;
         this.addActor(this.label);
         this._icon = new St.Icon({ style_class: 'popup-menu-icon' });
         this.addActor(this._icon, { align: St.Align.END });
@@ -1055,6 +1061,7 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
         this._displayIcon = false;
 
         this.label = new St.Label({ text: text });
+        this.actor.label_actor = this.label;
         this._accel = new St.Label({ x_align: St.Align.END });
         this._ornament = new St.Bin();
         this._icon = new St.Icon({ style_class: 'popup-menu-icon', icon_type: St.IconType.FULLCOLOR });
