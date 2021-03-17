@@ -754,3 +754,31 @@ function getGObjectPropertyValues(obj, r = 0) {
     }
     return jsRepresentation;
 }
+
+function version_exceeds(version, min_version) {
+    let our_version = version.split(".");
+    let cmp_version = min_version.split(".");
+    let i;
+
+    for (i = 0; i < our_version.length && i < cmp_version.length; i++) {
+        let our_part = parseInt(our_version[i]);
+        let cmp_part = parseInt(cmp_version[i]);
+
+        if (isNaN(our_part) || isNaN(cmp_part)) {
+            return false;
+        }
+
+        if (our_part < cmp_part) {
+            return false;
+        } else
+        if (our_part > cmp_part) {
+            return true;
+        }
+    }
+
+    if (our_version.length < cmp_version.length) {
+        return false;
+    } else {
+        return true;
+    }
+}
