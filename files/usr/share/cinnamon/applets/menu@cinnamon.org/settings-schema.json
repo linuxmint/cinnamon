@@ -52,8 +52,7 @@
     "description" : "Icon",
     "tooltip" : "Select an icon to show in the panel.",
     "default_icon" : "cinnamon-symbolic",
-    "dependency" : "menu-custom",
-    "indent" : true
+    "dependency" : "menu-custom"
  },
  "menu-icon-size" : {
     "type": "spinbutton",
@@ -63,16 +62,14 @@
     "step" : 1,
     "units" : "px",
     "description" : "Icon size",
-    "dependency" : "menu-custom",
-    "indent" : true
+    "dependency" : "menu-custom"
  },
  "menu-label" : {
     "type" : "entry",
     "default" : "Menu",
     "description" : "Text",
     "tooltip" : "Enter custom text to show in the panel.",
-    "dependency" : "menu-custom",
-    "indent": true
+    "dependency" : "menu-custom"
  },
  "restrict-menu-height" : {
     "type": "switch",
@@ -104,8 +101,7 @@
     "step" : 1,
     "units" : "px",
     "description" : "Categories icon size",
-    "dependency" : "show-category-icons",
-    "indent" : true
+    "dependency" : "show-category-icons"
  },
  "show-application-icons" : {
     "type" : "switch",
@@ -121,8 +117,7 @@
     "step" : 1,
     "units" : "px",
     "description" : "Applications icon size",
-    "dependency" : "show-application-icons",
-    "indent" : true
+    "dependency" : "show-application-icons"
  },
  "favbox-show" : {
     "type" : "switch",
@@ -138,8 +133,7 @@
     "step" : 1,
     "units" : "px",
     "description" : "Favorites icon size",
-    "dependency" : "favbox-show",
-    "indent" : true
+    "dependency" : "favbox-show"
  },
  "show-favorites" : {
    "type" : "switch",

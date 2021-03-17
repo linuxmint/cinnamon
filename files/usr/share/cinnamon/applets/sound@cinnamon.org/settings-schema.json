@@ -12,8 +12,7 @@
         "type": "switch",
         "default": false,
         "description": "Show Loop and Shuffle controls",
-        "dependency": "playerControl",
-        "indent": true
+        "dependency": "playerControl"
     },
     "keyOpen": {
         "type": "keybinding",
@@ -43,8 +42,7 @@
         "units": "characters",
         "step": 1,
         "description": "Limit song information to",
-        "dependency": "showtrack",
-        "indent": true
+        "dependency": "showtrack"
     },
     "middleClickAction": {
         "type": "combobox",

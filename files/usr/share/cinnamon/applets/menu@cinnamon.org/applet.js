@@ -2748,7 +2748,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._activeActor = null;
         this.actor_motion_id = 0;
         this.vector_update_loop = 0;
-
+        this.foobar = 0;
         let section = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(section);
 
