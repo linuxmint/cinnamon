@@ -1,5 +1,6 @@
 const Applet = imports.ui.applet;
 const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const GObject = imports.gi.GObject;
 const Lang = imports.lang;
 const NM = imports.gi.NM;
@@ -42,6 +43,23 @@ const NM80211ApSecurityFlags = NM['80211ApSecurityFlags'];
 // number of wireless networks that should be visible
 // (the remaining are placed into More...)
 const NUM_VISIBLE_NETWORKS = 5;
+
+var NMIface = '\
+<node> \
+  <interface name="org.freedesktop.NetworkManager"> \
+    <method name="CheckConnectivity"> \
+      <arg type="u" name="connectivity" direction="out"/> \
+    </method> \
+  </interface> \
+</node>';
+
+var NMProxy = Gio.DBusProxy.makeProxyWrapper(NMIface);
+function NMDBus(initCallback, cancellable) {
+    return new NMProxy(Gio.DBus.system,
+                       'org.freedesktop.NetworkManager',
+                       '/org/freedesktop/NetworkManager',
+                       initCallback, cancellable);
+}
 
 // shared between NMNetworkMenuItem and NMDeviceWWAN
 function signalToIcon(value) {
@@ -258,7 +276,7 @@ NMWirelessSectionTitleMenuItem.prototype = {
 
     activate: function(event) {
         PopupMenu.PopupSwitchMenuItem.prototype.activate.call(this, event);
-		log(this._setEnabledFunc);
+
         this._client[this._setEnabledFunc](this._switch.state);
 
         if (!this._device) {
@@ -1690,6 +1708,15 @@ CinnamonNetworkApplet.prototype = {
     _clientGot: function(obj, result) {
         try {
             this._client = NM.Client.new_finish(result);
+            this._v1_28_0 = Util.version_exceeds(this._client.get_version(), "1.28.0");
+
+            this._nm_proxy = null;
+
+            if (!this._v1_28_0) {
+                new NMDBus(Lang.bind(this, function(proxy, error) {
+                    this._nm_proxy = proxy;
+                }));
+            }
 
             this._statusSection = new PopupMenu.PopupMenuSection();
             this._statusItem = new PopupMenu.PopupMenuItem('', { style_class: 'popup-inactive-menu-item', reactive: false });
@@ -1757,7 +1784,9 @@ CinnamonNetworkApplet.prototype = {
             this.menu.connect("open-state-changed", Lang.bind(this, this._onMenuOpenStateChanged));
 
             this._periodicTimeoutId = 0;
-            this._updateFrequencySeconds = DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS;
+            this._updateFrequencySeconds = 0;
+            this._checkingConnectivity = false;
+            this._lastConnectivityState = NM.ConnectivityState.UNKNOWN;
 
             this._activeConnections = [ ];
             this._connections = [ ];
@@ -2239,6 +2268,8 @@ CinnamonNetworkApplet.prototype = {
                 }
             } else {
                 let dev;
+                let limited_conn = this._client.get_connectivity() !== NM.ConnectivityState.FULL;
+
                 switch (mc._section) {
                 case NMConnectionCategory.WIRELESS:
                     dev = mc._primaryDevice;
@@ -2253,16 +2284,27 @@ CinnamonNetworkApplet.prototype = {
                             this._setIcon('network-wireless-connected');
                             this.set_applet_tooltip(_("Connected to the wireless network"));
                         } else {
-                            this._setIcon('network-wireless-signal-' + signalToIcon(ap.strength));
-                            this.set_applet_tooltip(_("Wireless connection") + ": " + ssidToLabel(ap.get_ssid()) + " ("+ ap.strength +"%)");
+                            if (limited_conn) {
+                                this._setIcon('network-wireless-no-route');
+                                this.set_applet_tooltip(_("Wireless connection") + ": " + ssidToLabel(ap.get_ssid()) + " " + _("(Limited connectivity)"));
+                            } else {
+                                this._setIcon('network-wireless-signal-' + signalToIcon(ap.strength));
+                                this.set_applet_tooltip(_("Wireless connection") + ": " + ssidToLabel(ap.get_ssid()) + " ("+ ap.strength +"%)");
+                            }
                         }
                     } else {
                         log('Active connection with no primary device?');
                     }
                     break;
                 case NMConnectionCategory.WIRED:
-                    this._setIcon('network-wired');
-                    this.set_applet_tooltip(_("Connected to the wired network"));
+                    if (limited_conn) {
+                        this._setIcon('network-wired-no-route');
+                        this.set_applet_tooltip(_("Connected to the wired network") + " " + _("(Limited connectivity)"));
+
+                    } else {
+                        this._setIcon('network-wired');
+                        this.set_applet_tooltip(_("Connected to the wired network"));
+                    }
                     break;
                 case NMConnectionCategory.WWAN:
                     dev = mc._primaryDevice;
@@ -2277,10 +2319,18 @@ CinnamonNetworkApplet.prototype = {
                         break;
                     }
 
-                    this._setIcon('network-cellular-signal-' + signalToIcon(dev.mobileDevice.signal_quality));
-                    this.set_applet_tooltip(_("Connected to the cellular network"));
+                    if (limited_conn) {
+                        this._setIcon('network-cellular-no-route');
+                        this.set_applet_tooltip(_("Connected to the cellular network") + " " + _("(Limited connectivity)"));
+                    } else {
+                        this._setIcon('network-cellular-signal-' + signalToIcon(dev.mobileDevice.signal_quality));
+                        this.set_applet_tooltip(_("Connected to the cellular network"));
+                    }
+
                     break;
                 case NMConnectionCategory.VPN:
+                    // Should we indicate limited connectivity for VPNs like we do above? What if the connection is to
+                    // a local machine? Need to test.
                     this._setIcon('network-vpn');
                     this.set_applet_tooltip(_("Connected to the VPN"));
                     break;
@@ -2306,6 +2356,19 @@ CinnamonNetworkApplet.prototype = {
 
     _periodicUpdateIcon: function() {
         let new_delay = this._updateIcon();
+        this._lastConnectivityState = this._client.get_connectivity();
+
+        if (!this._checkingConnectivity) {
+            // https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/issues/476
+            if (this._v1_28_0) {
+                this._checkingConnectivity = true;
+                this._client.check_connectivity_async(null, Lang.bind(this, this._connectivityCheckCallback));
+            } else
+            if (this._nm_proxy != null) {
+                this._checkingConnectivity = true;
+                this._nm_proxy.CheckConnectivityRemote(Lang.bind(this, this._proxyConnectivityCheckCallback));
+            }
+        }
 
         if (this._updateFrequencySeconds != new_delay) {
             this._restartPeriodicUpdateTimer(new_delay);
@@ -2314,6 +2377,30 @@ CinnamonNetworkApplet.prototype = {
         }
 
         return GLib.SOURCE_REMOVE;
+    },
+
+    _proxyConnectivityCheckCallback(new_state) {
+        if (new_state !== this._lastConnectivityState) {
+            this._updateIcon();
+        }
+
+        this._checkingConnectivity = false;
+    },
+
+    _connectivityCheckCallback(source, result) {
+        let new_state = NM.ConnectivityState.UNKNOWN;
+
+        try {
+            new_state = source.check_connectivity_finish(result);
+        } catch (e) {
+            log(e);
+        }
+
+        if (new_state !== this._lastConnectivityState) {
+            this._updateIcon();
+        }
+
+        this._checkingConnectivity = false;
     },
 
     _restartPeriodicUpdateTimer: function(new_delay) {
