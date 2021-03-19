@@ -211,6 +211,7 @@ class AutostartApp():
             self.app = os.path.join(self.system_position, self.basename)
             os.remove(old_app)
             self.key_file = GLib.KeyFile.new()
+            self.user_position = None
             if self.key_file.load_from_file(self.app, KEYFILE_FLAGS):
                 self.load()
             self.save_done_success()
@@ -225,7 +226,8 @@ class AutostartApp():
                 key_file.load_from_file(os.path.join(self.system_position, self.basename), KEYFILE_FLAGS)
             else:
                 key_file.load_from_file(self.path, KEYFILE_FLAGS)
-        except:
+        except Exception as e:
+            print("Problem creating user keyfile: %s" % e)
             key_file.set_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_TYPE, "Application")
             key_file.set_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_EXEC, "/bin/false")
 
