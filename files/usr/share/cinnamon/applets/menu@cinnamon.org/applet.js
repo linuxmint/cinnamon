@@ -1372,6 +1372,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _recalc_sizes() {
         this.main_container.natural_height = 0;
         this.main_container.natural_height_set = false;
+        this.selectedAppBox.natural_width_set = false;
+        this.selectedAppBox.minimum_width_set = false;
 
         if (this.restrictMenuHeight) {
             this.main_container.natural_height = this.menuHeight * global.ui_scale;
@@ -1383,6 +1385,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._update_scroll_policy(this.categoriesBox, this.categoriesScrollBox);
 
         this._resizeApplicationsBox();
+        this.selectedAppBox.width = this.selectedAppBox.width;
 
         this._size_dirty = false;
     }
@@ -1399,12 +1402,19 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _resizeApplicationsBox() {
-        let width = -1;
+        let widths = [];
+
         Util.each(this.applicationsBox.get_children(), c => {
             let [min, nat] = c.get_preferred_width(-1.0);
-            if (nat > width)
-                width = nat;
+            widths.push(nat);
         });
+
+        widths.sort((a, b) => a - b);
+
+        // discard the highest ~5% of widths then use the highest remaining value
+        let n_trimmed = Math.round(widths.length * .05);
+        let width = widths[widths.length - n_trimmed];
+
         this.applicationsBox.set_width(width + 42); // The answer to life...
     }
 
