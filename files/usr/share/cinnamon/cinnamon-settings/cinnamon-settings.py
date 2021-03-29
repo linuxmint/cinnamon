@@ -88,6 +88,7 @@ STANDALONE_MODULES = [
     [_("Software Sources"),              "pkexec mintsources",                  "cs-sources",            "admin",          _("ppa, repository, package, source, download")],
     [_("Package Management"),            "dnfdragora",                          "cs-sources",            "admin",          _("update, install, repository, package, source, download")],
     [_("Package Management"),            "yumex-dnf",                           "cs-sources",            "admin",          _("update, install, repository, package, source, download")],
+    [_("Software & Updates"),            "software-properties-gtk",             "software-properties-gtk", "admin",        _("update, install, repository, package, source, download")],
     [_("Users and Groups"),              "cinnamon-settings-users",             "cs-user-accounts",      "admin",          _("user, users, account, accounts, group, groups, password")],
     [_("Bluetooth"),                     "blueberry",                           "cs-bluetooth",          "hardware",       _("bluetooth, dongle, transfer, mobile")],
     [_("Blueman"),                       "blueman-manager",                     "cs-bluetooth",          "hardware",       _("bluetooth, dongle, transfer, mobile")],
