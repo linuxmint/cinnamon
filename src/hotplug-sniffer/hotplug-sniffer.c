@@ -276,7 +276,7 @@ print_debug (const gchar *format, ...)
   GTimeVal now;
   time_t now_t;
   struct tm broken_down;
-  static volatile gsize once_init_value = 0;
+  static size_t once_init_value = 0;
   static gboolean show_debug = FALSE;
   static guint pid = 0;
 
