@@ -132,14 +132,12 @@ A11yHandler.prototype = {
 
         switch (key) {
             case CAPS:
-                icon = Gio.ThemedIcon.new_from_names(state ?
-                    ["caps-lock-symbolic", "cinnamon-caps-lock-symbolic"] :
-                    ["caps-lock-off-symbolic", "cinnamon-caps-lock-off-symbolic"]);
+                icon = Gio.ThemedIcon.new(state ? "cinnamon-caps-lock-symbolic" :
+                                                  "cinnamon-caps-lock-off-symbolic");
                 break;
             case NUM:
-                icon = Gio.ThemedIcon.new_from_names(state ?
-                    ["num-lock-symbolic", "cinnamon-num-lock-symbolic"] :
-                    ["num-lock-off-symbolic", "cinnamon-num-lock-off-symbolic"])
+                icon = Gio.ThemedIcon.new(state ? "cinnamon-num-lock-symbolic" :
+                                                  "cinnamon-num-lock-off-symbolic");
                 break;
         }
 
