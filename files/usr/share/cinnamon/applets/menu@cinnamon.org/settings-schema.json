@@ -1,38 +1,38 @@
 {
     "layout" : {
         "type" : "layout",
-        "pages" : ["panel", "menu"],
-        "panel" : {
+        "pages" : ["behavior", "appearance"],
+        "behavior" : {
             "type" : "page",
-            "title" : "Panel",
-            "sections" : ["panel-appear", "panel-behave"]
+            "title" : "Behavior",
+            "sections" : ["panel-behave", "menu-behave"]
         },
-        "menu" : {
+        "appearance" : {
             "type" : "page",
-            "title" : "Menu",
-            "sections" : ["menu-layout", "menu-behave"]
-        },
-        "panel-appear" : {
-            "type" : "section",
             "title" : "Appearance",
-            "keys" : ["menu-custom", "menu-icon", "menu-icon-size", "menu-label"]
+            "sections" : ["panel-appear", "menu-layout"]
         },
         "panel-behave" : {
             "type" : "section",
-            "title" : "Behavior",
+            "title" : "Panel",
             "keys" : ["overlay-key", "activate-on-hover", "hover-delay", "force-show-panel", "enable-animation"]
-        },
-        "menu-layout" : {
-            "type" : "section",
-            "title" : "Layout and content",
-            "keys" : ["restrict-menu-height", "menu-height", "show-category-icons",
-                      "category-icon-size", "show-application-icons", "application-icon-size",
-                      "favbox-show", "fav-icon-size", "show-places", "show-recents", "menu-editor-button"]
         },
         "menu-behave" : {
             "type" : "section",
-            "title" : "Behavior",
-            "keys" : ["enable-autoscroll", "search-filesystem"]
+            "title" : "Menu",
+            "keys" : ["category-hover", "enable-autoscroll", "search-filesystem", "show-places", "show-recents", "menu-editor-button"]
+        },
+        "panel-appear" : {
+            "type" : "section",
+            "title" : "Panel",
+            "keys" : ["menu-custom", "menu-icon", "menu-icon-size", "menu-label"]
+        },
+        "menu-layout" : {
+            "type" : "section",
+            "title" : "Menu",
+            "keys" : ["restrict-menu-height", "menu-height", "show-category-icons",
+                      "category-icon-size", "show-application-icons", "application-icon-size",
+                      "favbox-show", "fav-icon-size"]
         }
     },
  "overlay-key" : {
@@ -152,6 +152,12 @@
    "default" : true,
    "description": "Show recents",
    "tooltip": "Choose whether or not to show recents in the menu."
+ },
+"category-hover" : {
+    "type" : "switch",
+    "default" : true,
+    "description": "Switch categories by hovering them",
+    "tooltip": "Choose whether or not to switch categories by hovering over them."
  },
 "enable-autoscroll" : {
     "type" : "switch",
