@@ -284,9 +284,11 @@ AppSwitcher.prototype = {
             case Clutter.KEY_q:
             case Clutter.KEY_Q:
                 // Q -> Close window
-                this._windows[this._currentIndex].delete(global.get_current_time());
-                this._checkDestroyedTimeoutId = Mainloop.timeout_add(CHECK_DESTROYED_TIMEOUT,
-                        Lang.bind(this, this._checkDestroyed, this._windows[this._currentIndex]));
+                if (global.settings.get_boolean("alttab-close-with-q") ?? true) {
+                    this._windows[this._currentIndex].delete(global.get_current_time());
+                    this._checkDestroyedTimeoutId = Mainloop.timeout_add(CHECK_DESTROYED_TIMEOUT,
+                            Lang.bind(this, this._checkDestroyed, this._windows[this._currentIndex]));
+                }
                 return true;
 
             case Clutter.KEY_Right:

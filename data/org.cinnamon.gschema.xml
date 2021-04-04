@@ -513,6 +513,11 @@
       <default>false</default>
       <summary>Show all windows from all workspaces</summary>
     </key>
+    
+    <key type="b" name="alttab-close-with-q">
+      <default>true</default>
+      <summary>Close the selected window with Q</summary>
+    </key>
 
     <key name="bring-windows-to-current-workspace" type="b">
       <default>false</default>

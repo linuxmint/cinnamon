@@ -149,3 +149,6 @@ class Module:
 
             widget = GSettingsSwitch(_("Show windows from all workspaces"), "org.cinnamon", "alttab-switcher-show-all-workspaces")
             settings.add_row(widget)
+            
+            widget = GSettingsSwitch(_("Close the selected window with Q"), "org.cinnamon", "alttab-close-with-q")
+            settings.add_row(widget)
