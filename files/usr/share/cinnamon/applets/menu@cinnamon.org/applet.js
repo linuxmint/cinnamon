@@ -908,7 +908,7 @@ class FavoriteButton extends SimpleMenuItem {
 
 class CategoryButton extends SimpleMenuItem {
     constructor(applet, categoryId, label, icon) {
-        super(applet, { name: label || _("All Applications"),
+        super(applet, { name: label,
                         type: 'category',
                         styleClass: 'menu-category-button',
                         categoryId: categoryId });
@@ -924,7 +924,17 @@ class CategoryButton extends SimpleMenuItem {
 
         this.addLabel(this.name, 'menu-category-button-label');
 
-        this.actor_motion_id = this.actor.connect("motion-event", Lang.bind(applet, this.applet._categoryMotionEvent));
+        if(this.applet.categoryHover)
+            this.actor_motion_id = this.actor.connect("motion-event", Lang.bind(applet, this.applet._categoryMotionEvent));
+    }
+
+    activate() {
+        if(this.applet.searchActive)
+            return;
+
+        this.applet._clearPrevCatSelection(this.actor);
+        this.applet._select_category(this.categoryId);
+        this.actor.style_class = "menu-category-button-selected";
     }
 }
 
@@ -1188,6 +1198,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("show-category-icons", "showCategoryIcons", () => this._updateShowIcons(this.categoriesBox, this.showCategoryIcons));
         this.settings.bind("category-icon-size", "categoryIconSize", () => this.queueRefresh(RefreshFlags.PLACE | RefreshFlags.RECENT | RefreshFlags.APP));
         this.settings.bind("show-application-icons", "showApplicationIcons", () => this._updateShowIcons(this.applicationsBox, this.showApplicationIcons));
+        this.settings.bind("category-hover", "categoryHover", this._updateCategoryHover);
         this.settings.bind("application-icon-size", "applicationIconSize", () => this.queueRefresh(RefreshFlags.PLACE | RefreshFlags.RECENT | RefreshFlags.APP));
         this.settings.bind("favbox-show", "favBoxShow", this._favboxtoggle);
         this.settings.bind("fav-icon-size", "favIconSize", () => this.queueRefresh(RefreshFlags.FAV_APP | RefreshFlags.SYSTEM));
@@ -1277,6 +1288,18 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             if (!Main.overview.visible && !Main.expo.visible)
                 this.menu.toggle_with_options(this.enableAnimation);
         }));
+    }
+
+    _updateCategoryHover() {
+        this.categoriesBox.get_children().forEach(child => {
+            if (child._delegate.actor_motion_id > 0) {
+                child.disconnect(child._delegate.actor_motion_id);
+                child._delegate.actor_motion_id = 0;
+            }
+
+            if (this.categoryHover)
+                child._delegate.actor_motion_id = child.connect("motion-event", Lang.bind(this, this._categoryMotionEvent));
+        }, this);
     }
 
     queueRefresh(refreshFlags) {
@@ -2160,10 +2183,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._previousTreeSelectedActor = this._activeActor;
             this._previousSelectedActor = null;
         }
-        if (this._previousTreeSelectedActor && this._activeContainer !== this.categoriesBox &&
-                parent !== this._activeContainer && button !== this._previousTreeSelectedActor && !this.searchActive) {
-            this._previousTreeSelectedActor.style_class = "menu-category-button";
-        }
         if (parent != this._activeContainer && parent._vis_iter) {
             parent._vis_iter.reloadVisible();
         }
@@ -2174,7 +2193,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
         if (parent === this.categoriesBox && !this.searchActive) {
             this._previousSelectedActor = _maybePreviousActor;
-            this._clearPrevCatSelection();
+        //  this._clearPrevCatSelection(); // seems redundant with line 2212, and conflicted with category highlight in click mode
         }
         this._activeContainer = parent;
         this._activeActor = button.actor;
@@ -2187,9 +2206,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         if (button instanceof CategoryButton) {
             if (this.searchActive)
                 return;
+
             button.isHovered = true;
-            this._clearPrevCatSelection(button.actor);
-            this._select_category(button.categoryId);
+            if (this.categoryHover) {
+                this._clearPrevCatSelection(button.actor);
+                this._select_category(button.categoryId);
+            }
         } else {
             this._previousVisibleIndex = parent._vis_iter.getVisibleIndex(button.actor);
 
@@ -2219,6 +2241,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 }
             }
             button.isHovered = false;
+
+            // unhighlight button if it doesn't correspond to the current category. only happens in click mode
+            if(button.categoryId != this.lastSelectedCategory && !this.searchActive)
+                button.actor.style_class = "menu-category-button";
         } else {
             this._previousSelectedActor = button.actor;
             this.selectedAppTitle.set_text("");
@@ -2246,8 +2272,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _clearPrevCatSelection(actor) {
         if (this._previousTreeSelectedActor && this._previousTreeSelectedActor != actor) {
-            this._previousTreeSelectedActor.style_class = "menu-category-button";
-
             if (this._previousTreeSelectedActor._delegate) {
                 this._buttonLeaveEvent(this._previousTreeSelectedActor._delegate);
             }
@@ -2256,9 +2280,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this._previousVisibleIndex = null;
                 this._previousTreeSelectedActor = actor;
             }
-        } else {
-            this.categoriesBox.get_children().forEach(child => child.style_class = "menu-category-button");
         }
+
+        // always clear all highlights (needed for click mode)
+        this.categoriesBox.get_children().forEach(child => child.style_class = "menu-category-button");
     }
 
      /* Category Box
@@ -2317,7 +2342,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let debug_actor = null;
 
         if (CinnamonMenuApplet.DEBUG_VMASK) {
-            debug_actor = new St.Polygon({ 
+            debug_actor = new St.Polygon({
                 ulc_x: mx,        ulc_y: my,
                 llc_x: mx,        llc_y: my,
                 urc_x: bx + bw,   urc_y: by,
@@ -2471,7 +2496,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 break;
             }
         }
-        
+
         if (!this.showPlaces) {
             return;
         }
@@ -2501,7 +2526,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         this._recentButtons = [];
-        
+
         for (let i = 0; i < this._categoryButtons.length; i++) {
             if (this._categoryButtons[i].categoryId === 'recent') {
                 this._categoryButtons[i].destroy();
@@ -2510,7 +2535,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 break;
             }
         }
-            
+
         if (!this.showRecents || !this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
             return;
         }
@@ -2615,7 +2640,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._applicationsButtons = [];
 
         if (!this._allAppsCategoryButton) {
-            this._allAppsCategoryButton = new CategoryButton(this);
+            this._allAppsCategoryButton = new CategoryButton(this, null, _("All Applications"), null);
             this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
             this._categoryButtons.push(this._allAppsCategoryButton);
         }
