@@ -37,6 +37,17 @@ class UpdateManager():
             updates += self.get_updates_of_type(spice_type)
         return updates
 
+    def get_dummy_updates(self):
+        updates = []
+        updates.append(Update("hwmonitor@sylfurd", SPICE_TYPE_APPLET))
+        updates.append(Update("qredshift@quintao", SPICE_TYPE_APPLET))
+        updates.append(Update("redshift@marvel4u", SPICE_TYPE_APPLET))
+        updates.append(Update("sysmonitor@orcus", SPICE_TYPE_APPLET))
+        updates.append(Update("weather@mockturtl", SPICE_TYPE_APPLET))
+        updates.append(Update("bbcwx@oak-wood.co.uk", SPICE_TYPE_APPLET))
+        updates.append(Update("soundBox@scollins", SPICE_TYPE_DESKLET))
+        return updates
+
     def get_updates_of_type(self, spice_type):
         updates = []
         harvester = self.harvesters[spice_type]
@@ -52,4 +63,5 @@ class UpdateManager():
     def upgrade_uuid(self, uuid, spice_type):
         harvester = self.harvesters[spice_type]
         harvester.install(uuid)
+
 
