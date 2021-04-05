@@ -145,10 +145,9 @@ on_icon_theme_changed (GtkIconTheme   *icon_theme,
   g_signal_emit (cache, signals[ICON_THEME_CHANGED], 0);
 }
 
-static void
-update_scale_factor (gpointer data)
+void
+st_texture_cache_update_scale_factor (StTextureCache *cache)
 {
-  StTextureCache *cache = ST_TEXTURE_CACHE (data);
   GdkScreen *screen;
   guint new_scale;
   GValue value = G_VALUE_INIT;
@@ -166,9 +165,8 @@ update_scale_factor (gpointer data)
   if (new_scale != cache->priv->scale)
     {
       cache->priv->scale = new_scale;
+      on_icon_theme_changed (cache->priv->icon_theme, cache);
     }
-
-  on_icon_theme_changed (cache->priv->icon_theme, cache);
 }
 
 static void
@@ -193,10 +191,7 @@ st_texture_cache_init (StTextureCache *self)
   self->priv->file_monitors = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                      g_object_unref, g_object_unref);
 
-  g_signal_connect_swapped (gtk_settings_get_default (), "notify::gtk-xft-dpi",
-                            G_CALLBACK (update_scale_factor), self);
-
-  update_scale_factor (self);
+  st_texture_cache_update_scale_factor (self);
 }
 
 static void
@@ -211,10 +206,6 @@ st_texture_cache_dispose (GObject *object)
                                             self);
       self->priv->icon_theme = NULL;
     }
-
-  g_signal_handlers_disconnect_by_func (gtk_settings_get_default (),
-                                        (gpointer) update_scale_factor,
-                                        self);
 
   g_clear_pointer (&self->priv->keyed_cache, g_hash_table_destroy);
   g_clear_pointer (&self->priv->keyed_surface_cache, g_hash_table_destroy);

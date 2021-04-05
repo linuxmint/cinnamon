@@ -957,6 +957,7 @@ update_scale_factor (GtkSettings *settings,
 
     if (scale != global->ui_scale) {
         global->ui_scale = scale;
+        st_texture_cache_update_scale_factor (st_texture_cache_get_default ());
         g_signal_emit_by_name (global, "scale-changed");
     }
   }
@@ -970,6 +971,24 @@ update_scale_factor (GtkSettings *settings,
 
    /* Make sure gdk scaling stays disabled */
   gdk_x11_display_set_window_scale (gdk_display_get_default (), 1);
+}
+
+static void
+connect_to_primary_monitor (gpointer data,
+                            GObject *old)
+{
+    CinnamonGlobal *global = CINNAMON_GLOBAL (data);
+
+    if (the_object == NULL)
+    {
+        return;
+    }
+
+    GdkMonitor *primary;
+
+    primary = gdk_display_get_primary_monitor (global->gdk_display);
+    g_signal_connect (primary, "notify::scale-factor", G_CALLBACK (update_scale_factor), global);
+    g_object_weak_ref (G_OBJECT (primary), (GWeakNotify) connect_to_primary_monitor, global);
 }
 
 void
@@ -1027,6 +1046,8 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
 
   g_signal_connect (gtk_settings_get_default (), "notify::gtk-xft-dpi",
                     G_CALLBACK (update_scale_factor), global);
+
+  connect_to_primary_monitor (global, 0);
 
   gdk_event_handler_set (gnome_cinnamon_gdk_event_handler, global->stage, NULL);
 
