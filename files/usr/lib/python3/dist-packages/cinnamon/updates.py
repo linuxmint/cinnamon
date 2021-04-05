@@ -23,6 +23,14 @@ class Update():
     def __init__(self, uuid, spice_type):
         self.uuid = uuid
         self.spice_type = spice_type
+        self.new_version = "234"
+        self.old_version = "121"
+        self.size = 12124
+        self.name = "Some name"
+        self.description = "Some description"
+        self.commit_id = "123123asd123"
+        self.commit_msg = "blah blah"
+        self.link = "https://cinnamon-spices.linuxmint.com/applets/view/322"
 
 class UpdateManager():
 
