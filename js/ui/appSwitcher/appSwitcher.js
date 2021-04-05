@@ -9,7 +9,6 @@ const Mainloop = imports.mainloop;
 const Main = imports.ui.main;
 const Cinnamon = imports.gi.Cinnamon;
 
-const CHECK_DESTROYED_TIMEOUT = 100;
 const DISABLE_HOVER_TIMEOUT = 500; // milliseconds
 
 function sortWindowsByUserTime(win1, win2) {
@@ -107,7 +106,6 @@ AppSwitcher.prototype = {
         this._haveModal = false;
         this._destroyed = false;
         this._motionTimeoutId = 0;
-        this._checkDestroyedTimeoutId = 0;
         this._currentIndex = this._windows.indexOf(global.display.focus_window);
         if (this._currentIndex < 0) {
             this._currentIndex = 0;
@@ -281,14 +279,6 @@ AppSwitcher.prototype = {
                 this._showDesktop();
                 return true;
 
-            case Clutter.KEY_q:
-            case Clutter.KEY_Q:
-                // Q -> Close window
-                this._windows[this._currentIndex].delete(global.get_current_time());
-                this._checkDestroyedTimeoutId = Mainloop.timeout_add(CHECK_DESTROYED_TIMEOUT,
-                        Lang.bind(this, this._checkDestroyed, this._windows[this._currentIndex]));
-                return true;
-
             case Clutter.KEY_Right:
             case Clutter.KEY_Down:
                 // Right/Down -> navigate to next preview
@@ -399,11 +389,6 @@ AppSwitcher.prototype = {
         this._removeDestroyedWindow(actor.meta_window);
     },
 
-    _checkDestroyed: function(window) {
-        this._checkDestroyedTimeoutId = 0;
-        this._removeDestroyedWindow(window);
-    },
-
     _removeDestroyedWindow: function(window) {
         for (let i in this._windows) {
             if (window == this._windows[i]) {
@@ -462,10 +447,6 @@ AppSwitcher.prototype = {
         if (this._motionTimeoutId != 0) {
             Mainloop.source_remove(this._motionTimeoutId);
             this._motionTimeoutId = 0;
-        }
-        if (this._checkDestroyedTimeoutId != 0) {
-            Mainloop.source_remove(this._checkDestroyedTimeoutId);
-            this._checkDestroyedTimeoutId = 0;
         }
 
         this._windowManager.disconnect(this._dcid);
