@@ -31,12 +31,11 @@ home = os.path.expanduser("~")
 locale_inst = '%s/.local/share/locale' % home
 settings_dir = '%s/.cinnamon/configs/' % home
 
-class Update():
+class SpiceUpdate():
     def __init__(self, spice_type, uuid, index_node, meta_node):
         self.uuid = uuid
         self.spice_type = spice_type
-
-        ikeys = index_node.keys()
+        self.package_names = []
 
         self.author = ""
         try:
@@ -56,8 +55,11 @@ class Update():
         except:
             self.description = index_node["name"]
 
-        self.old_version = meta_node["version"]
-        self.new_version = "new version" #index_node["version"]
+        try:
+            self.old_version = meta_node["version"]
+        except:
+            self.old_version = "n/a"
+        self.new_version = "" #index_node["version"]
 
         self.commit_id = "gh id"
         self.commit_msg = "gh msg"
@@ -163,7 +165,7 @@ class Harvester():
 
         for uuid in self.index_cache.keys():
             if uuid in self.meta_map.keys() and self._spice_has_update(uuid):
-                update = Update(self.spice_type, uuid, self.index_cache[uuid], self.meta_map[uuid])
+                update = SpiceUpdate(self.spice_type, uuid, self.index_cache[uuid], self.meta_map[uuid])
                 self.updates.append(update)
 
         return self.updates

@@ -10,7 +10,7 @@ gi.require_version('Gtk', '3.0')
 gettext.install("cinnamon", "/usr/share/locale", names=["ngettext"])
 
 from . import _harvester
-from ._harvester import Update
+from ._harvester import SpiceUpdate
 
 SPICE_TYPE_APPLET = "applet"
 SPICE_TYPE_DESKLET = "desklet"
