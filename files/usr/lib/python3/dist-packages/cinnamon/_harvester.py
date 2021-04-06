@@ -33,15 +33,9 @@ settings_dir = '%s/.cinnamon/configs/' % home
 
 class SpiceUpdate():
     def __init__(self, spice_type, uuid, index_node, meta_node):
-        # For Mintupdate compatibility with apt update objects #####
-        self.type = "spice"
-        ## FIXME: Get the real commit sha so we accomodate mintupdate's ignore list
-        self.source_packages = ["%s=aabbccdd" % uuid]
-        ##
 
         self.uuid = uuid
         self.spice_type = spice_type
-        self.package_names = []
 
         self.author = ""
         try:
