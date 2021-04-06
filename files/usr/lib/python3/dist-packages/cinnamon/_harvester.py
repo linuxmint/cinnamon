@@ -53,7 +53,7 @@ class SpiceUpdate():
         try:
             self.description = index_node["translations"]["description_%s" % LANGUAGE_CODE]
         except:
-            self.description = index_node["name"]
+            self.description = index_node["description"]
 
         try:
             self.old_version = meta_node["version"]
