@@ -33,6 +33,12 @@ settings_dir = '%s/.cinnamon/configs/' % home
 
 class SpiceUpdate():
     def __init__(self, spice_type, uuid, index_node, meta_node):
+        # For Mintupdate compatibility with apt update objects #####
+        self.type = "spice"
+        ## FIXME: Get the real commit sha so we accomodate mintupdate's ignore list
+        self.source_packages = ["%s=aabbccdd" % uuid]
+        ##
+
         self.uuid = uuid
         self.spice_type = spice_type
         self.package_names = []
@@ -59,9 +65,9 @@ class SpiceUpdate():
             self.old_version = meta_node["version"]
         except:
             self.old_version = "n/a"
-        self.new_version = "" #index_node["version"]
+        self.new_version = "aabbccdd" #index_node["version"] or commit sha
 
-        self.commit_id = "gh id"
+        self.commit_id = "aabbccdd"
         self.commit_msg = "gh msg"
 
         self.link = "%s/%ss/view/%s" % (URL_SPICES_HOME, spice_type, index_node["spices-id"])
@@ -111,7 +117,7 @@ class Harvester():
         r = requests.get(url, params={ "time" : round(time.time()) })
 
         if r.status_code != requests.codes.ok:
-            print("fucked")
+            print("Can't download spices json")
 
         with open(self.index_file, "w") as f:
             f.write(r.text)
@@ -140,7 +146,7 @@ class Harvester():
                         print(detail)
                         print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
             except FileNotFoundError:
-                print("%s does not exist! Creating it now." % directory)
+                # print("%s does not exist! Creating it now." % directory)
                 subprocess.call(["mkdir", "-p", directory])
 
     def _load_cache(self):
