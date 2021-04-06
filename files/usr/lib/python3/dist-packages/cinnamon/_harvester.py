@@ -56,16 +56,20 @@ class SpiceUpdate():
             self.description = index_node["description"]
 
         try:
-            self.old_version = meta_node["version"]
+            self.old_version = datetime.datetime.fromtimestamp(meta_node["last-edited"]).strftime("%Y.%m.%d")
         except:
-            self.old_version = "n/a"
-        self.new_version = "aabbccdd" #index_node["version"] or commit sha
+            self.old_version = ""
 
-        self.commit_id = "aabbccdd"
-        self.commit_msg = "gh msg"
+        try:
+            self.new_version = datetime.datetime.fromtimestamp(index_node["last_edited"]).strftime("%Y.%m.%d")
+        except:
+            self.new_version = ""
+
+        self.commit_id = index_node['last_commit']
+        self.commit_msg = index_node['last_commit_subject']
 
         self.link = "%s/%ss/view/%s" % (URL_SPICES_HOME, spice_type, index_node["spices-id"])
-        self.size = 0
+        self.size = index_node['file_size']
 
 class Harvester():
     def __init__(self, spice_type):
