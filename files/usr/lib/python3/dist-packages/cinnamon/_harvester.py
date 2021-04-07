@@ -30,6 +30,8 @@ URL_MAP = {
 home = os.path.expanduser("~")
 locale_inst = '%s/.local/share/locale' % home
 settings_dir = '%s/.cinnamon/configs/' % home
+logfile = '%s/.cinnamon/updates.log' % home
+
 
 class SpiceUpdate():
     def __init__(self, spice_type, uuid, index_node, meta_node):
@@ -181,6 +183,8 @@ class Harvester():
             return False
 
     def _install_by_uuid(self, uuid):
+        action = "upgrade" if uuid in self.meta_map.keys() else "install"
+
         try:
             item = self.index_cache[uuid]
         except KeyError:
@@ -206,7 +210,10 @@ class Harvester():
 
             with tempfile.TemporaryDirectory() as d:
                 zip.extractall(d)
-                self._install_from_folder(os.path.join(d, uuid), uuid)
+                self._install_from_folder(os.path.join(d, uuid), uuid, from_spices=True)
+                self.write_to_log(uuid, action)
+
+                self._load_metadata()
         except Exception as e:
             print("couldn't install", e)
 
@@ -250,4 +257,26 @@ class Harvester():
 
         with open(meta_path, "w+") as f:
             json.dump(md, f, indent=4)
+
+    def write_to_log(self, uuid, action):
+        new_version = "<none>"
+        old_verison = "<none>"
+
+        try:
+            remote_item = self.index_cache[uuid]
+            new_version = datetime.datetime.fromtimestamp(remote_item["last_edited"]).strftime("%Y.%m.%d")
+        except KeyError:
+            if action in ("upgrade", "install"):
+                print("Upgrading %s with no local metadata - something's wrong" % uuid)
+
+        try:
+            local_item = self.meta_map[uuid]
+            old_version = datetime.datetime.fromtimestamp(local_item["last-edited"]).strftime("%Y.%m.%d")
+        except KeyError:
+            if action in ("upgrade", "remove"):
+                print("Upgrading or removing %s with no local metadata - something's wrong" % uuid)
+
+        with open(logfile, "a+") as f:
+            log_timestamp = datetime.datetime.now().strftime("%F %T")
+            f.write("%s %s %s %s %s\n" % (log_timestamp, action, uuid, old_version, new_version))
 
