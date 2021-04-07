@@ -11,6 +11,8 @@ import zipfile
 import shutil
 import datetime
 
+from . import logger
+
 LANGUAGE_CODE = "C"
 try:
     LANGUAGE_CODE = locale.getlocale()[0].split("_")[0]
@@ -30,8 +32,8 @@ URL_MAP = {
 home = os.path.expanduser("~")
 locale_inst = '%s/.local/share/locale' % home
 settings_dir = '%s/.cinnamon/configs/' % home
-logfile = '%s/.cinnamon/updates.log' % home
 
+activity_logger = logger.ActivityLogger()
 
 class SpiceUpdate():
     def __init__(self, spice_type, uuid, index_node, meta_node):
@@ -276,7 +278,6 @@ class Harvester():
             if action in ("upgrade", "remove"):
                 print("Upgrading or removing %s with no local metadata - something's wrong" % uuid)
 
-        with open(logfile, "a+") as f:
-            log_timestamp = datetime.datetime.now().strftime("%F %T")
-            f.write("%s %s %s %s %s\n" % (log_timestamp, action, uuid, old_version, new_version))
+        log_timestamp = datetime.datetime.now().strftime("%F %T")
+        activity_logger.log("%s %s %s %s %s %s" % (log_timestamp, self.spice_type, action, uuid, old_version, new_version))
 
