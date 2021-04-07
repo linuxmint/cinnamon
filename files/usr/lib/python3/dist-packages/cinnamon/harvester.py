@@ -97,12 +97,12 @@ class Harvester():
             self.install_folder = os.path.join(home, ".local/share/cinnamon", "%ss" % self.spice_type)
             self.spices_directories = ("/usr/share/cinnamon/%ss" % self.spice_type,
                                        self.install_folder)
+        self._load_cache()
+        self._load_metadata()
 
     def refresh(self):
         self._update_local_json()
         self._update_local_thumbs()
-        self._load_cache()
-        self._load_metadata()
 
     def get_updates(self):
         return self._generate_update_list()
@@ -111,6 +111,7 @@ class Harvester():
         self._install_by_uuid(uuid)
 
     def _update_local_json(self):
+        print("harvester: Downloading new list of available %ss" % self.spice_type)
         url = URL_MAP[self.spice_type]
 
         t = round(time.time())
@@ -129,6 +130,7 @@ class Harvester():
         # TODO
 
     def _load_metadata(self):
+        print("harvester: Loading metadata on installed %ss" % self.spice_type)
         self.meta_map = {}
 
         for directory in self.spices_directories:
@@ -152,6 +154,7 @@ class Harvester():
                 subprocess.call(["mkdir", "-p", directory])
 
     def _load_cache(self):
+        print("harvester: Loading local %s cache" % self.spice_type)
         self.index_cache = {}
 
         try:
@@ -169,6 +172,8 @@ class Harvester():
             print(e)
 
     def _generate_update_list(self):
+        print("harvester: Generating list of updated %ss" % self.spice_type)
+
         self.updates = []
 
         for uuid in self.index_cache.keys():

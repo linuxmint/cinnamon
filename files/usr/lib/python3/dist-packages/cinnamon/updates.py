@@ -9,8 +9,8 @@ gi.require_version('Gtk', '3.0')
 
 gettext.install("cinnamon", "/usr/share/locale", names=["ngettext"])
 
-from . import _harvester
-from ._harvester import SpiceUpdate
+from . import harvester
+from .harvester import SpiceUpdate
 
 SPICE_TYPE_APPLET = "applet"
 SPICE_TYPE_DESKLET = "desklet"
@@ -22,13 +22,17 @@ class UpdateManager():
     def __init__(self):
         self.harvesters = {}
         for spice_type in SPICE_TYPES:
-            self.harvesters[spice_type] = _harvester.Harvester(spice_type)
+            self.harvesters[spice_type] = harvester.Harvester(spice_type)
 
     def get_updates(self):
         updates = []
         for spice_type in SPICE_TYPES:
             updates += self.get_updates_of_type(spice_type)
         return updates
+
+    def refresh_cache(self):
+        for spice_type in SPICE_TYPES:
+            self.harvesters[spice_type].refresh()
 
     def get_dummy_updates(self):
         updates = []
@@ -43,7 +47,6 @@ class UpdateManager():
 
     def get_updates_of_type(self, spice_type):
         harvester = self.harvesters[spice_type]
-        harvester.refresh()
         return harvester.get_updates()
 
     def upgrade(self, update):
