@@ -10,7 +10,6 @@ logfile = '%s/.cinnamon/harvester.log' % os.path.expanduser("~")
 class ActivityLogger():
     def __init__(self):
         self.queue = queue.SimpleQueue()
-        print("logger start")
         self.thread = threading.Thread(target=self.write_to_file_thread, daemon=True)
         self.thread.start()
 
@@ -19,9 +18,6 @@ class ActivityLogger():
 
     def write_to_file_thread(self):
         while True:
-            print("1")
             entry = self.queue.get()
-            print("2")
             with open(logfile, "a+") as f:
-                print("WRITE")
                 f.write("%s\n" % entry)
