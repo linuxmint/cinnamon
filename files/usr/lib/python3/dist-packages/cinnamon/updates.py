@@ -30,20 +30,13 @@ class UpdateManager():
             updates += self.get_updates_of_type(spice_type)
         return updates
 
-    def refresh_cache(self):
+    def refresh_all_caches(self):
         for spice_type in SPICE_TYPES:
-            self.harvesters[spice_type].refresh()
+            self.refresh_cache_for_type(spice_type)
 
-    def get_dummy_updates(self):
-        updates = []
-        updates.append(Update("hwmonitor@sylfurd", SPICE_TYPE_APPLET))
-        updates.append(Update("qredshift@quintao", SPICE_TYPE_APPLET))
-        updates.append(Update("redshift@marvel4u", SPICE_TYPE_APPLET))
-        updates.append(Update("sysmonitor@orcus", SPICE_TYPE_APPLET))
-        updates.append(Update("weather@mockturtl", SPICE_TYPE_APPLET))
-        updates.append(Update("bbcwx@oak-wood.co.uk", SPICE_TYPE_APPLET))
-        updates.append(Update("soundBox@scollins", SPICE_TYPE_DESKLET))
-        return updates
+    def refresh_cache_for_type(self, spice_type):
+        harvester = self.harvesters[spice_type]
+        return harvester.refresh()
 
     def get_updates_of_type(self, spice_type):
         harvester = self.harvesters[spice_type]
