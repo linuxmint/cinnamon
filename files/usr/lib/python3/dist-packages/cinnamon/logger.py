@@ -19,5 +19,5 @@ class ActivityLogger():
     def write_to_file_thread(self):
         while True:
             entry = self.queue.get()
-            with open(logfile, "a+") as f:
+            with open(logfile, "a") as f:
                 f.write("%s\n" % entry)

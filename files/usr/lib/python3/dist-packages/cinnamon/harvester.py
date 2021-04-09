@@ -10,8 +10,20 @@ import tempfile
 import zipfile
 import shutil
 import datetime
+import copy
+from pathlib import Path
+import threading
+from concurrent.futures import ThreadPoolExecutor
+from PIL import Image
+
+from gi.repository import Gdk, Gtk
 
 from . import logger
+
+DEBUG = False
+def debug(msg):
+    if DEBUG:
+        print(msg)
 
 LANGUAGE_CODE = "C"
 try:
@@ -75,6 +87,24 @@ class SpiceUpdate():
         self.link = "%s/%ss/view/%s" % (URL_SPICES_HOME, spice_type, index_node["spices-id"])
         self.size = index_node['file_size']
 
+class SpicePathSet():
+    def __init__(self, cache_item, spice_type):
+        cache_folder = Path('%s/.cinnamon/spices.cache/%s/' % (home, spice_type))
+
+        is_theme = spice_type == "theme"
+
+        if is_theme:
+            thumb_rel_path = Path(cache_item["screenshot"])
+            self.thumb_basename = thumb_rel_path.name
+            self.thumb_download_url = URL_SPICES_HOME + thumb_rel_path.as_posix()
+        else:
+            thumb_rel_path = Path(cache_item["icon"])
+            self.thumb_basename = thumb_rel_path.name
+            self.thumb_download_url = URL_SPICES_HOME + thumb_rel_path.as_posix()
+
+        self.thumb_local_path = cache_folder.joinpath(self.thumb_basename)
+        self.zip_download_url = URL_SPICES_HOME + cache_item['file']
+
 class Harvester():
     def __init__(self, spice_type):
         self.spice_type = spice_type
@@ -84,8 +114,11 @@ class Harvester():
         self.has_cache = False
         self.updates = []
         self.meta_map = {}
+        self.index_cache = {}
+        self.cache_lock = threading.Lock()
 
-        self.cache_folder = '%s/.cinnamon/spices.cache/%ss/' % (home, self.spice_type)
+        self.cache_folder = '%s/.cinnamon/spices.cache/%s/' % (home, self.spice_type)
+
         self.index_file = os.path.join(self.cache_folder, "index.json")
 
         os.makedirs(self.cache_folder, mode=0o755, exist_ok=True)
@@ -104,6 +137,9 @@ class Harvester():
         self._update_local_json()
         self._update_local_thumbs()
 
+        self._load_metadata()
+        self._clean_old_thumbs()
+
     def get_updates(self):
         return self._generate_update_list()
 
@@ -111,26 +147,50 @@ class Harvester():
         self._install_by_uuid(uuid)
 
     def _update_local_json(self):
-        print("harvester: Downloading new list of available %ss" % self.spice_type)
+        debug("harvester: Downloading new list of available %ss" % self.spice_type)
         url = URL_MAP[self.spice_type]
 
-        t = round(time.time())
-        print("Downloading from %s" % url)
+        debug("Downloading from %s" % url)
         # TODO: proxies
         r = requests.get(url, params={ "time" : round(time.time()) })
 
         if r.status_code != requests.codes.ok:
-            print("Can't download spices json")
+            debug("Can't download spices json")
+            return
 
         with open(self.index_file, "w") as f:
             f.write(r.text)
 
+        self._load_cache()
+
     def _update_local_thumbs(self):
-        pass
-        # TODO
+        # This uses threads for the downloads, but this function blocks until
+        # all are downloaded.
+        with ThreadPoolExecutor(max_workers=10) as tpe:
+            def thumb_job(uuid, item):
+                self._download_thumb(uuid, item)
+
+            with self.cache_lock:
+                for uuid, item in self.index_cache.items():
+                    debug("Submitting thumb_job for %s" % uuid)
+                    tpe.submit(thumb_job, copy.copy(uuid), copy.deepcopy(item))
+
+    def _download_thumb(self, uuid, item):
+        paths = SpicePathSet(item, spice_type=self.spice_type)
+        if (not os.path.isfile(paths.thumb_local_path)) or self._is_bad_image(paths.thumb_local_path) or self._spice_has_update(uuid):
+            debug("Downloading thumbnail for %s: %s" % (uuid, paths.thumb_download_url))
+
+            r = requests.get(paths.thumb_download_url, params={ "time" : round(time.time()) })
+
+            if r.status_code != requests.codes.ok:
+                debug("Can't download thumbnail for %s: %s" % (uuid, r.status_code))
+                return
+
+            with open(paths.thumb_local_path, "wb") as f:
+                f.write(r.content)
 
     def _load_metadata(self):
-        print("harvester: Loading metadata on installed %ss" % self.spice_type)
+        debug("harvester: Loading metadata on installed %ss" % self.spice_type)
         self.meta_map = {}
 
         for directory in self.spices_directories:
@@ -147,14 +207,14 @@ class Harvester():
                             metadata['writable'] = os.access(subdirectory, os.W_OK)
                             self.meta_map[uuid] = metadata
                     except Exception as detail:
-                        print(detail)
-                        print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
+                        debug(detail)
+                        debug("Skipping %s: there was a problem trying to read metadata.json" % uuid)
             except FileNotFoundError:
-                # print("%s does not exist! Creating it now." % directory)
+                # debug("%s does not exist! Creating it now." % directory)
                 subprocess.call(["mkdir", "-p", directory])
 
     def _load_cache(self):
-        print("harvester: Loading local %s cache" % self.spice_type)
+        debug("harvester: Loading local %s cache" % self.spice_type)
         self.index_cache = {}
 
         try:
@@ -169,10 +229,10 @@ class Harvester():
                 os.remove(self.index_file)
             except:
                 pass
-            print(e)
+            debug(e)
 
     def _generate_update_list(self):
-        print("harvester: Generating list of updated %ss" % self.spice_type)
+        debug("harvester: Generating list of updated %ss" % self.spice_type)
 
         self.updates = []
 
@@ -195,15 +255,14 @@ class Harvester():
         try:
             item = self.index_cache[uuid]
         except KeyError:
-            print("Can't install %s - it doesn't seem to exist on the server" % uuid)
+            debug("Can't install %s - it doesn't seem to exist on the server" % uuid)
             return
 
-        download_url = URL_SPICES_HOME + self.index_cache[uuid]['file']
-
-        r = requests.get(download_url, params={ "time" : round(time.time()) })
+        paths = SpicePathSet(item, spice_type=self.spice_type)
+        r = requests.get(paths.zip_download_url, params={ "time" : round(time.time()) })
 
         if r.status_code != requests.codes.ok:
-            print("couldn't download")
+            debug("couldn't download")
             return
 
         try:
@@ -222,7 +281,7 @@ class Harvester():
 
                 self._load_metadata()
         except Exception as e:
-            print("couldn't install", e)
+            debug("couldn't install", e)
 
     def _install_from_folder(self, folder, uuid, from_spices=False):
         contents = os.listdir(folder)
@@ -274,15 +333,62 @@ class Harvester():
             new_version = datetime.datetime.fromtimestamp(remote_item["last_edited"]).strftime("%Y.%m.%d")
         except KeyError:
             if action in ("upgrade", "install"):
-                print("Upgrading %s with no local metadata - something's wrong" % uuid)
+                debug("Upgrading %s with no local metadata - something's wrong" % uuid)
 
         try:
             local_item = self.meta_map[uuid]
             old_version = datetime.datetime.fromtimestamp(local_item["last-edited"]).strftime("%Y.%m.%d")
         except KeyError:
             if action in ("upgrade", "remove"):
-                print("Upgrading or removing %s with no local metadata - something's wrong" % uuid)
+                debug("Upgrading or removing %s with no local metadata - something's wrong" % uuid)
 
         log_timestamp = datetime.datetime.now().strftime("%F %T")
         activity_logger.log("%s %s %s %s %s %s" % (log_timestamp, self.spice_type, action, uuid, old_version, new_version))
 
+    def get_icon_surface(self, uuid, ui_scale):
+        """ gets the icon  for a given uuid"""
+        try:
+            pixbuf = None
+
+            paths = SpicePathSet(self.index_cache[uuid], spice_type=self.spice_type)
+
+            if self.themes:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(paths.thumb_local_path, 100 * ui_scale, -1, True)
+            else:
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(paths.thumb_local_path, 24 * ui_scale, 24 * ui_scale, True)
+
+            if pixbuf == None:
+                raise Exception
+
+            surf = Gdk.cairo_surface_create_from_pixbuf(pixbuf, ui_scale, None)
+            return Gtk.Image.new_from_surface (surf)
+        except Exception as e:
+            debug("There was an error processing one of the images. Try refreshing the cache.")
+            return Gtk.Image.new_from_icon_name('image-missing', Gtk.IconSize.LARGE_TOOLBAR)
+
+    def _is_bad_image(self, path):
+        try:
+            Image.open(path)
+        except IOError as detail:
+            return True
+        return False
+
+    def _clean_old_thumbs(self):
+        # Cleanup obsolete thumbs
+        flist = os.listdir(self.cache_folder)
+
+        for item in self.index_cache.values():
+            paths = SpicePathSet(item, spice_type=self.spice_type)
+            try:
+                flist.remove(paths.thumb_basename)
+            except ValueError:
+                pass
+
+        for f in flist:
+            if f == "index.json":
+                continue
+            try:
+                debug("removing old thumb", f)
+                os.remove(os.path.join(self.cache_folder, f))
+            except:
+                pass
