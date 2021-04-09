@@ -189,6 +189,7 @@ libst = library(
 st_dep = declare_dependency(
     include_directories: include_directories('.', 'croco'),
     dependencies: libst_deps,
+    sources: st_enum_types[1],
     link_with: libst,
     link_args: ['-Wl,-Bsymbolic', '-Wl,-z,relro', '-Wl,-z,now'],
 )
