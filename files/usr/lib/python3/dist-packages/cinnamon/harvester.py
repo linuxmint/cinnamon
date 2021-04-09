@@ -16,6 +16,9 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from PIL import Image
 
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gdk', '3.0')
 from gi.repository import Gdk, Gtk
 
 from . import logger
@@ -211,7 +214,10 @@ class Harvester():
                         debug("Skipping %s: there was a problem trying to read metadata.json" % uuid)
             except FileNotFoundError:
                 # debug("%s does not exist! Creating it now." % directory)
-                subprocess.call(["mkdir", "-p", directory])
+                try:
+                    os.makedirs(directory, mode=0o755, exist_ok=True)
+                except Exception:
+                    pass
 
     def _load_cache(self):
         debug("harvester: Loading local %s cache" % self.spice_type)
