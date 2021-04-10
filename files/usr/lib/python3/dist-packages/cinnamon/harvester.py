@@ -22,6 +22,7 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gdk, Gtk
 
 from . import logger
+from . import proxygsettings
 
 DEBUG = False
 def debug(msg):
@@ -133,10 +134,17 @@ class Harvester():
             self.install_folder = os.path.join(home, ".local/share/cinnamon", "%ss" % self.spice_type)
             self.spices_directories = ("/usr/share/cinnamon/%ss" % self.spice_type,
                                        self.install_folder)
+
         self._load_cache()
         self._load_metadata()
 
     def refresh(self):
+        self.proxy_info = {}
+        try:
+            self.proxy_info = proxygsettings.get_proxy_settings()
+        except:
+            pass
+
         self._update_local_json()
         self._update_local_thumbs()
 
@@ -154,8 +162,8 @@ class Harvester():
         url = URL_MAP[self.spice_type]
 
         debug("Downloading from %s" % url)
-        # TODO: proxies
-        r = requests.get(url, params={ "time" : round(time.time()) })
+
+        r = requests.get(url, proxies=self.proxy_info, params={ "time" : round(time.time()) })
 
         if r.status_code != requests.codes.ok:
             debug("Can't download spices json")
@@ -183,7 +191,7 @@ class Harvester():
         if (not os.path.isfile(paths.thumb_local_path)) or self._is_bad_image(paths.thumb_local_path) or self._spice_has_update(uuid):
             debug("Downloading thumbnail for %s: %s" % (uuid, paths.thumb_download_url))
 
-            r = requests.get(paths.thumb_download_url, params={ "time" : round(time.time()) })
+            r = requests.get(paths.thumb_download_url, proxies=self.proxy_info, params={ "time" : round(time.time()) })
 
             if r.status_code != requests.codes.ok:
                 debug("Can't download thumbnail for %s: %s" % (uuid, r.status_code))
@@ -265,7 +273,7 @@ class Harvester():
             return
 
         paths = SpicePathSet(item, spice_type=self.spice_type)
-        r = requests.get(paths.zip_download_url, params={ "time" : round(time.time()) })
+        r = requests.get(paths.zip_download_url, proxies=self.proxy_info, params={ "time" : round(time.time()) })
 
         if r.status_code != requests.codes.ok:
             debug("couldn't download")
