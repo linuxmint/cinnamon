@@ -1197,7 +1197,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this._updateKeybinding();
 
-        Main.themeManager.connect("theme-set", Lang.bind(this, this._updateIconAndLabel));
+        Main.themeManager.connect("theme-set", Lang.bind(this, this._theme_set));
         this._updateIconAndLabel();
 
         this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
@@ -1403,10 +1403,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _resizeApplicationsBox() {
         let widths = [];
-
         Util.each(this.applicationsBox.get_children(), c => {
-            let [min, nat] = c.get_preferred_width(-1.0);
-            widths.push(nat);
+            // This is absurd... but using get_preferred_width doesn't seem work in some
+            // themes. See mint-y vs mint-x.
+            let layout = c._delegate.label.clutter_text.get_layout();
+            let icon_width = c._delegate.icon ? c._delegate.icon.icon_size : 0;
+            let [w, h] = layout.get_pixel_size();
+            widths.push(w + icon_width);
         });
 
         widths.sort((a, b) => a - b);
@@ -1529,6 +1532,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     on_panel_icon_size_changed() {
+        this._updateIconAndLabel();
+    }
+
+    _theme_set() {
+        this._size_dirty = true;
         this._updateIconAndLabel();
     }
 
