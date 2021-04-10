@@ -7,18 +7,19 @@ import json
 
 class UpdateSpices():
     def __init__(self):
-        parser = argparse.ArgumentParser(description='Cinnamon Spice Updater')
+        parser = argparse.ArgumentParser(description='Cinnamon Spice Updater',
+                                         epilog="spice-type should be 'applet', 'desklet', 'extension' or 'theme'.")
         parser.add_argument("--update-all", dest="update_all", action="store_const", const=True,
                             help="Update all spices to their latest versions.")
 
         choices = ["applet", "desklet", "extension", "theme"]
 
         ex_group = parser.add_mutually_exclusive_group()
-        ex_group.add_argument("--update", dest="update_spice_type", action="store", choices=choices,
+        ex_group.add_argument("--update", dest="update_spice_type", action="store", choices=choices, metavar="<spice-type>",
                             help="Update all spices of a given type")
-        ex_group.add_argument("--list-simple", dest="list_simple_spice_type", action="store", choices=choices,
+        ex_group.add_argument("--list-simple", dest="list_simple_spice_type", action="store", choices=choices, metavar="<spice-type>",
                             help="Simple list of UUIDs (or theme names) with available updates, for a given type")
-        ex_group.add_argument("--list-json", dest="list_json_spice_type", action="store", choices=choices,
+        ex_group.add_argument("--list-json", dest="list_json_spice_type", action="store", choices=choices, metavar="<spice-type>",
                             help="Prints complete information on updates for spices of a given type, formatted as json.")
         args = parser.parse_args()
 
