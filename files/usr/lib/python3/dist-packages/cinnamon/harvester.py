@@ -144,13 +144,13 @@ class Harvester():
         self._load_cache()
         self._load_metadata()
 
-    def refresh(self):
         self.proxy_info = {}
         try:
             self.proxy_info = proxygsettings.get_proxy_settings()
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
+    def refresh(self):
         self._update_local_json()
         self._update_local_thumbs()
 
