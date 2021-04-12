@@ -161,9 +161,8 @@ class Harvester():
         debug("harvester: Downloading new list of available %ss" % self.spice_type)
         url = URL_MAP[self.spice_type]
 
-        debug("Downloading from %s" % url)
-
         r = requests.get(url, proxies=self.proxy_info, params={ "time" : round(time.time()) })
+        debug("Downloading from %s" % r.request.url)
 
         if r.status_code != requests.codes.ok:
             debug("Can't download spices json")
