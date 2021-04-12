@@ -25,6 +25,8 @@ from . import logger
 from . import proxygsettings
 
 DEBUG = False
+if os.getenv("DEBUG") != None:
+    DEBUG = True
 def debug(msg):
     if DEBUG:
         print(msg)
