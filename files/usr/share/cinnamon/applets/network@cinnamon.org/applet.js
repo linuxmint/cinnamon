@@ -2268,7 +2268,7 @@ CinnamonNetworkApplet.prototype = {
                 }
             } else {
                 let dev;
-                let limited_conn = this._client.get_connectivity() !== NM.ConnectivityState.FULL;
+                let limited_conn = this._correctStateForTunnel(this._client.get_connectivity()) !== NM.ConnectivityState.FULL;
 
                 switch (mc._section) {
                 case NMConnectionCategory.WIRELESS:
@@ -2379,8 +2379,28 @@ CinnamonNetworkApplet.prototype = {
         return GLib.SOURCE_REMOVE;
     },
 
+    _correctStateForTunnel(state) {
+        if (state !== NM.ConnectivityState.LIMITED) {
+            return state;
+        }
+
+        // if our primary connection state is 'limited', check if there's a tunnel
+        // connection active, and assume 'full' if so - this prevents reporting limited
+        // connectivity when something like PIA vpn is active. This could end up reporting
+        // a full connection when there isn't one, depending on what the tunnel is for,
+        // but NM doesn't seem to provide any way to discern a relationship between a virtual
+        // device (tunnel) and the physical device in use. The physical device is always returned
+        // as the primary.
+
+        if (this._activeConnections.some(con => con.get_connection_type() === "tun")) {
+            return NM.ConnectivityState.FULL;
+        }
+    },
+
     _proxyConnectivityCheckCallback(new_state) {
-        if (new_state !== this._lastConnectivityState) {
+        let state = this._correctStateForTunnel(new_state[0]);
+
+        if (state !== this._lastConnectivityState) {
             this._updateIcon();
         }
 
@@ -2396,7 +2416,9 @@ CinnamonNetworkApplet.prototype = {
             log(e);
         }
 
-        if (new_state !== this._lastConnectivityState) {
+        let state = this._correctStateForTunnel(new_state);
+
+        if (state !== this._lastConnectivityState) {
             this._updateIcon();
         }
 
