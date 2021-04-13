@@ -24,9 +24,8 @@
 
     <key name="extension-cache-updated" type="i">
       <default>0</default>
-      <summary>Timestamp of last cache refresh</summary>
+      <summary>[not used - obsolete]</summary>
       <description>
-        The timestamp of the last time the index cache was updated from the spices website
       </description>
     </key>
 
@@ -42,9 +41,8 @@
 
     <key name="applet-cache-updated" type="i">
       <default>0</default>
-      <summary>Timestamp of last cache refresh</summary>
+      <summary>[not used - obsolete]</summary>
       <description>
-        The timestamp of the last time the index cache was updated from the spices website
       </description>
     </key>
 
@@ -71,9 +69,8 @@
 
     <key name="desklet-cache-updated" type="i">
       <default>0</default>
-      <summary>Timestamp of last cache refresh</summary>
+      <summary>[not used - obsolete]</summary>
       <description>
-        The timestamp of the last time the index cache was updated from the spices website
       </description>
     </key>
 
@@ -655,9 +652,8 @@
 
     <key name="theme-cache-updated" type="i">
       <default>0</default>
-      <summary>Timestamp of last cache refresh</summary>
+      <summary>[not used - obsolete]</summary>
       <description>
-        The timestamp of the last time the index cache was updated from the spices website
       </description>
     </key>
 
