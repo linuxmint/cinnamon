@@ -800,6 +800,8 @@ class DownloadSpicesPage(SettingsPage):
         self.extension_rows = []
         self._signals = []
 
+        self.initial_refresh_done = False
+
         self.top_box = Gtk.Box()
         self.pack_start(self.top_box, False, False, 10)
 
@@ -1030,36 +1032,8 @@ class DownloadSpicesPage(SettingsPage):
         if not self.extension_rows:
             self.build_list()
 
-        if not self.spices.processing_jobs:
-            if (not self.spices.has_cache) or self.spices.get_cache_age() > 7:
-                self.on_cache_outdated()
-
-        self.search_entry.grab_focus()
-
-    def on_cache_outdated(self, *args):
-        infobar = self.infobar_holder.get_child()
-        if not infobar:
-            infobar = Gtk.InfoBar()
-            icon = Gtk.Image.new_from_icon_name("dialog-question-symbolic", Gtk.IconSize.LARGE_TOOLBAR)
-            label = Gtk.Label(_("Your cache is out of date. Would you like to update it now?"))
-            label.set_line_wrap(True)
-
-            infobar.set_message_type(Gtk.MessageType.QUESTION)
-            infobar.get_content_area().pack_start(icon, False, False, 12)
-            infobar.get_content_area().pack_start(label, False, False, 0)
-            infobar.add_button(_("Yes"), Gtk.ResponseType.YES)
-            infobar.add_button(_("No"), Gtk.ResponseType.NO)
-
-            infobar.connect('response', self._on_infobar_response)
-            self.infobar_holder.add(infobar)
-
-        self.infobar_holder.show_all()
-        infobar.set_revealed(True)
-
-    def _on_infobar_response(self, infobar: Gtk.InfoBar, response):
-        if response == Gtk.ResponseType.YES and not self.spices.processing_jobs:
+        if (not self.initial_refresh_done) and (not self.spices.processing_jobs):
+            self.initial_refresh_done = True
             self.spices.refresh_cache()
-            pass
 
-        infobar.set_revealed(False)
         self.search_entry.grab_focus()
