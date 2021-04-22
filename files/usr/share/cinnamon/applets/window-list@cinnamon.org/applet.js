@@ -946,6 +946,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             });
         }
         this.addMenuItem(item);
+        item.setSensitive(mw.can_maximize())
 
         item = new PopupMenu.PopupIconMenuItem(_("Close"), "edit-delete", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', function() {

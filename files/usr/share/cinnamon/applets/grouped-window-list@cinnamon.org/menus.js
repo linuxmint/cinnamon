@@ -352,6 +352,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 });
             }
             this.addMenuItem(item);
+            item.setSensitive(this.groupState.lastFocused.can_maximize());
 
             if (this.groupState.metaWindows && this.groupState.metaWindows.length > 1) {
                 // Close others
