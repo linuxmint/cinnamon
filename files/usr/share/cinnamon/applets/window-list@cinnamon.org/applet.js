@@ -1387,6 +1387,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this._dragPlaceholderPos = -1;
         let minDist = -1;
         for(let i = 0; i < children.length; i++) {
+            if (!children[i].visible)
+                continue;
             let dist = Math.abs(axis[0] - (children[i].get_allocation_box()[axis[1]] + children[i].width / 2));
             if(dist < minDist || minDist == -1) {
                 minDist = dist;
