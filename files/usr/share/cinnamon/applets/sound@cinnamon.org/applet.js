@@ -896,8 +896,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         this.settings.bind("tooltipShowVolume", "tooltipShowVolume", this.on_settings_changed);
         this.settings.bind("tooltipShowPlayer", "tooltipShowPlayer", this.on_settings_changed);
-        this.settings.bind("tooltipShowArtist", "tooltipShowArtist", this.on_settings_changed);
-        this.settings.bind("tooltipShowTitle", "tooltipShowTitle", this.on_settings_changed);
+        this.settings.bind("tooltipShowArtistTitle", "tooltipShowArtistTitle", this.on_settings_changed);
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -1252,11 +1251,13 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             if (this.tooltipShowPlayer) {
                 tooltips.push(this.player._name + " - " + _(this.player._playerStatus));
             }
-            if (this.tooltipShowArtist) {
-                tooltips.push(this.player._artist);
-            }
-            if (this.tooltipShowTitle) {
-                tooltips.push(this.player._title);
+            if (this.tooltipShowArtistTitle) {
+                if (this.player._artist != _("Unknown Artist")) {
+                    tooltips.push(this.player._artist);
+                }
+                if (this._title != _("Unknown Title")) {
+                    tooltips.push(this.player._title);
+                }
             }
         }
         if (tooltips.length == 0) {

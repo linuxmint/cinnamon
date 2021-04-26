@@ -94,14 +94,9 @@
         "default": true,
         "description": "Show player in tooltip"
     },
-    "tooltipShowArtist": {
+    "tooltipShowArtistTitle": {
         "type": "switch",
         "default": true,
-        "description": "Show song artist in tooltip"
-    },
-    "tooltipShowTitle": {
-        "type": "switch",
-        "default": true,
-        "description": "Show song title in tooltip"
+        "description": "Show song artist/title in tooltip"
     }
 }
