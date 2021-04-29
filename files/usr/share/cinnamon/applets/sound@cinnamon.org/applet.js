@@ -1260,9 +1260,6 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 }
             }
         }
-        if (tooltips.length == 0) {
-            tooltips.push(_("A Cinnamon applet to control sound and music"));
-        }
         this.set_applet_tooltip(tooltips.join("\n"));
     }
 

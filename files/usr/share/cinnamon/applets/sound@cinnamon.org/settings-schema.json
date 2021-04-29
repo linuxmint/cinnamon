@@ -91,12 +91,12 @@
     },
     "tooltipShowPlayer": {
         "type": "switch",
-        "default": true,
+        "default": false,
         "description": "Show player in tooltip"
     },
     "tooltipShowArtistTitle": {
         "type": "switch",
-        "default": true,
-        "description": "Show song artist/title in tooltip"
+        "default": false,
+        "description": "Show song artist and title in tooltip"
     }
 }
