@@ -77,5 +77,24 @@
         "type" : "switch",
         "description" : "Hide system tray icons for compatible players",
         "default": true
+    },
+    "section3": {
+        "type": "section",
+        "description" : "Tooltip"
+    },
+    "tooltipShowVolume": {
+        "type": "switch",
+        "default": true,
+        "description": "Show volume in tooltip"
+    },
+    "tooltipShowPlayer": {
+        "type": "switch",
+        "default": false,
+        "description": "Show player in tooltip"
+    },
+    "tooltipShowArtistTitle": {
+        "type": "switch",
+        "default": false,
+        "description": "Show song artist and title in tooltip"
     }
 }
