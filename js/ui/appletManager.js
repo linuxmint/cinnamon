@@ -43,7 +43,6 @@ function initEnabledApplets() {
         promises.push(Extension.loadExtension(definitions[i].uuid, Extension.Type.APPLET))
     }
     return Promise.all(promises).then(function() {
-        Main.cinnamonDBusService.EmitXletsLoadedComplete();
         promises = [];
     });
 }
