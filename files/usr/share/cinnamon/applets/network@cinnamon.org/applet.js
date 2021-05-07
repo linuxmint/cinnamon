@@ -40,9 +40,10 @@ const NM80211Mode = NM['80211Mode'];
 const NM80211ApFlags = NM['80211ApFlags'];
 const NM80211ApSecurityFlags = NM['80211ApSecurityFlags'];
 
-// number of wireless networks that should be visible
-// (the remaining are placed into More...)
-const NUM_VISIBLE_NETWORKS = 5;
+const APPLET_SETTINGS = {
+    num_visible_networks: 5,
+    hide_other_networks_when_connected: false
+};
 
 var NMIface = '\
 <node> \
@@ -595,6 +596,8 @@ NMDevice.prototype = {
         if (this._activeConnection) {
             this._createActiveConnectionItem();
             this.section.addMenuItem(this._activeConnectionItem);
+            if (APPLET_SETTINGS.hide_other_networks_when_connected)
+                return;
         }
         if (this._connections.length > 0) {
             let activeOffset = this._activeConnectionItem ? 1 : 0;
@@ -606,7 +609,7 @@ NMDevice.prototype = {
                     continue;
                 obj.item = this._createConnectionItem(obj);
 
-                if (j + activeOffset >= NUM_VISIBLE_NETWORKS) {
+                if (j + activeOffset >= APPLET_SETTINGS.num_visible_networks) {
                     if (!this._overflowItem) {
                         this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More"));
                         this.section.addMenuItem(this._overflowItem);
@@ -1384,7 +1387,7 @@ NMDeviceWireless.prototype = {
                         // clear the cycle, and allow the construction of the new item
                         item._apObj.item = null;
 
-                        this._createNetworkItem(item._apObj, NUM_VISIBLE_NETWORKS-1);
+                        this._createNetworkItem(item._apObj, APPLET_SETTINGS.num_visible_networks-1);
                     } else {
                         log('The more... menu was existing and empty! This should not happen');
                     }
@@ -1616,7 +1619,10 @@ NMDeviceWireless.prototype = {
         }
         apObj.item._apObj = apObj;
 
-        if (position < NUM_VISIBLE_NETWORKS) {
+        if (this._activeConnectionItem && APPLET_SETTINGS.hide_other_networks_when_connected)
+            return;
+
+        if (position < APPLET_SETTINGS.num_visible_networks) {
             apObj.isMore = false;
             this.section.addMenuItem(apObj.item, position);
         } else {
@@ -1624,7 +1630,7 @@ NMDeviceWireless.prototype = {
                 this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More"));
                 this.section.addMenuItem(this._overflowItem);
             }
-            this._overflowItem.menu.addMenuItem(apObj.item, position - NUM_VISIBLE_NETWORKS);
+            this._overflowItem.menu.addMenuItem(apObj.item, position - APPLET_SETTINGS.num_visible_networks);
             apObj.isMore = true;
         }
     },
@@ -1636,6 +1642,8 @@ NMDeviceWireless.prototype = {
         if(this._activeConnection) {
             this._createActiveConnectionItem();
             this.section.addMenuItem(this._activeConnectionItem);
+            if (APPLET_SETTINGS.hide_other_networks_when_connected)
+                return;
         }
 
         let activeOffset = this._activeConnectionItem ? 1 : 0;
@@ -1692,6 +1700,10 @@ CinnamonNetworkApplet.prototype = {
 
             this.settings = new Settings.AppletSettings(this, metadata.uuid, this.instance_id);
             this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
+            this.settings.bind("num-visible-networks", "num_visible_networks");
+            this.settings.bind("hide-other-networks-when-connected", "hide_other_networks_when_connected");
+            APPLET_SETTINGS.num_visible_networks = this.num_visible_networks;
+            APPLET_SETTINGS.hide_other_networks_when_connected = this.hide_other_networks_when_connected;
             this._setKeybinding();
 
             NM.Client.new_async(null, Lang.bind(this, this._clientGot));
