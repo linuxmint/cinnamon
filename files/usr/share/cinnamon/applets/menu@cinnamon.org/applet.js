@@ -64,7 +64,7 @@ const MATCH_ADDERS = [
 ];
 
 function strip(str) {
-    return str.replace(/[^A-Za-z0-9]/g, "");
+    return str.replace(/[^\p{L}\p{N}]/gu, "");
 }
 
 /* VisibleChildIterator takes a container (boxlayout, etc.)
