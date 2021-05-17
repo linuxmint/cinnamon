@@ -227,13 +227,14 @@ class TimeZoneSelector(SettingsWidget):
         for tz in pytz.common_timezones:
             try:
                 region, city = tz.split('/', maxsplit=1)
+                city_display_name = city.replace("_"," ")
             except:
                 continue
 
             if region not in self.region_map:
                 self.region_map[region] = Gtk.ListStore(str, str)
                 self.region_list.append([region, _(region)])
-            self.region_map[region].append([city, _(city)])
+            self.region_map[region].append([city, _(city_display_name)])
 
     def set_timezone(self, timezone):
         if timezone == "Etc/UTC":
