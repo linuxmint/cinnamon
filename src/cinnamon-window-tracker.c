@@ -422,27 +422,13 @@ get_app_for_flatpak_window (MetaWindow *window)
 
     appsys = cinnamon_app_system_get_default ();
 
-    keyfile = g_key_file_new ();
-    if (g_key_file_load_from_file (keyfile, info_filename, G_KEY_FILE_NONE, NULL))
-    {
-      gchar *app_id;
-      app_id = g_key_file_get_string (keyfile, "Application", "name", NULL);
-      app = cinnamon_app_system_lookup_flatpak_app_id (appsys, app_id);
-
-      if (app != NULL) {
-        result = g_object_ref (app);
-      }
-    }
-    g_key_file_unref (keyfile);
-
     wm_instance = g_strconcat(meta_window_get_wm_class_instance (window), GMENU_DESKTOPAPPINFO_FLATPAK_SUFFIX, NULL);
     wm_class = g_strconcat(meta_window_get_wm_class (window), GMENU_DESKTOPAPPINFO_FLATPAK_SUFFIX, NULL);
 
-    if (result == NULL) {
-      app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_instance);
-      if (app != NULL) {
-        result = g_object_ref (app);
-      }
+    // First, try a match WM_INSTANCE to StartupWMClass
+    app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_instance);
+    if (app != NULL) {
+      result = g_object_ref (app);
     }
 
     /* then try a match from WM_CLASS to StartupWMClass */
@@ -471,6 +457,21 @@ get_app_for_flatpak_window (MetaWindow *window)
 
     g_free (wm_instance);
     g_free (wm_class);
+
+    // Finally, try to match it against the .flatpak-info entry "Application"
+    if (result == NULL) {
+      keyfile = g_key_file_new ();
+      if (g_key_file_load_from_file (keyfile, info_filename, G_KEY_FILE_NONE, NULL)) {
+        gchar *app_id;
+        app_id = g_key_file_get_string (keyfile, "Application", "name", NULL);
+        app = cinnamon_app_system_lookup_flatpak_app_id (appsys, app_id);
+
+        if (app != NULL) {
+          result = g_object_ref (app);
+        }
+      }
+      g_key_file_unref (keyfile);
+    }
   }
 
   g_free (info_filename);
