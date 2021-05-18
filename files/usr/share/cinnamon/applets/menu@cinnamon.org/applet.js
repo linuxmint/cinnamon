@@ -3197,13 +3197,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let buttons = this._listApplications(pattern);
 
         let result = this._matchNames(this._favoriteDocButtons, pattern);
-        buttons = buttons.concat(result);
+        buttons = [...buttons, ...result];
 
         result = this._matchNames(this._placesButtons, pattern);
-        buttons = buttons.concat(result);
+        buttons = [...buttons, ...result];
 
         result = this._matchNames(this._recentButtons, pattern);
-        buttons = buttons.concat(result);
+        buttons = [...buttons, ...result];
 
         var acResults = []; // search box autocompletion results
         if (this.searchFilesystem) {

@@ -1033,7 +1033,7 @@ function _logInfo(msg) {
         // Convert arguments to an array, add 'info' to the beginning of it. Invoke _log with apply so
         // unlimited arguments can be passed to it.
         let args = Array.prototype.slice.call(arguments);
-        _log.apply(this, ['info'].concat(args));
+        _log.apply(this, ['info', ...args]);
     }
 }
 

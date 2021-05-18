@@ -1444,7 +1444,7 @@ var PopupMenuAbstractItem = class PopupMenuAbstractItem {
 
     getChildrenIds() {
         // Clone it!
-        return this._childrenIds.concat();
+        return this._childrenIds.slice();
     }
 
     getChildren() {
