@@ -117,13 +117,8 @@ const BusClientProxy = Gio.DBusProxy.makeProxyWrapper(DBusMenuIface);
  * #PropertyStore:
  * @short_description: A Class to saves menu property values and handles type checking and defaults.
  */
-function PropertyStore() {
-    this._init.apply(this, arguments);
-}
-
-PropertyStore.prototype = {
-
-    _init: function(initProperties) {
+var PropertyStore = class {
+    constructor(initProperties) {
         this._props = {};
 
         if (initProperties) {
@@ -131,30 +126,30 @@ PropertyStore.prototype = {
                 this.set(i, initProperties[i]);
             }
         }
-    },
+    }
 
-    set: function(name, value) {
+    set(name, value) {
         if (name in MandatedTypes && value && value.is_of_type && !value.is_of_type(MandatedTypes[name]))
             global.logWarning("Cannot set property " + name + ": type mismatch!");
         else if (value)
             this._props[name] = value;
         else
             delete this._props[name];
-    },
+    }
 
-    get: function(name) {
+    get(name) {
         if (name in this._props)
             return this._props[name];
         else if (name in DefaultValues)
             return DefaultValues[name];
         else
             return null;
-    },
+    }
 
     // FIXME: This apparently be complex, and the same are handled better
     // in the original extension. The problem is the icons, the we can not
     // compare as a simple variant because is not. There are another way?
-    compareNew: function(name, newValue) {
+    compareNew(name, newValue) {
         if (!(name in MandatedTypes))
             return true; 
         if (newValue && newValue.is_of_type && !newValue.is_of_type(MandatedTypes[name]))
@@ -183,53 +178,47 @@ PropertyStore.prototype = {
                 return true;
         }
         return false;
-    },
+    }
 
-    getString: function(propName) {
+    getString(propName) {
         let prop = this.getVariant(propName);
         return prop ? prop.get_string()[0] : null;
-    },
+    }
 
-    getVariant: function(propName) {
+    getVariant(propName) {
         return this.get(propName);
-    },
+    }
 
-    getBool: function(propName) {
+    getBool(propName) {
         let prop  = this.getVariant(propName);
         return prop ? prop.get_boolean() : false;
-    },
+    }
 
-    getInt: function(propName) {
+    getInt(propName) {
         let prop = this.getVariant(propName);
         return prop ? prop.get_int32() : 0;
-    },
+    }
 
-    setVariant: function(prop, value) {
+    setVariant(prop, value) {
         if (this.compareNew(prop, value)) {
             this.set(prop, value);
             return true;
         }
         return false;
     }
-};
+}
+
 
 /**
  * #DbusMenuItem:
  * @short_description: Represents a single Dbus menu item.
  */
-function DbusMenuItem() {
-    this._init.apply(this, arguments);
-}
+var DbusMenuItem = class extends PopupMenu.PopupMenuAbstractItem {
+    constructor(id, childrenIds, properties, client) {
+        super(id, childrenIds, this._createParameters(properties, client));
+    }
 
-DbusMenuItem.prototype = {
-    __proto__: PopupMenu.PopupMenuAbstractItem.prototype,
-
-    // Will steal the properties object
-    _init: function(id, childrenIds, properties, client) {
-        PopupMenu.PopupMenuAbstractItem.prototype._init.call(this, id, childrenIds, this._createParameters(properties, client));
-    },
-
-    updatePropertiesAsVariant: function(properties) {
+    updatePropertiesAsVariant(properties) {
         let propStore = new PropertyStore(properties);
         if ("label" in properties)
             this.setLabel(propStore.getString("label").replace(/_([^_])/, "$1"));
@@ -255,21 +244,21 @@ DbusMenuItem.prototype = {
             this.setAction(propStore.getString("action"));
         if ("param-type" in properties)
             this.setParamType(propStore.getVariant("param-type"));
-    },
+    }
 
-    getItemById: function(id) {
+    getItemById(id) {
         return this._client.getItem(id);
-    },
+    }
 
-    handleEvent: function(event, params) {
+    handleEvent(event, params) {
         if (event in PopupMenu.FactoryEventTypes) {
             this._client.sendEvent(this._id, event, params, 0);
         }
-    },
+    }
 
     // FIXME We really don't need the PropertyStore object, and some private function
     // could make a clean on our "unsave" variants.
-    _createParameters: function(properties, client) {
+    _createParameters(properties, client) {
         this._client = client;
         let propStore = new PropertyStore(properties);
         let params = {};
@@ -298,17 +287,17 @@ DbusMenuItem.prototype = {
         if ("param-type" in properties)
             params.paramType = propStore.getVariant("param-type");
         return params;
-    },
+    }
 
-    _getAccel: function(accel_name) {
+    _getAccel(accel_name) {
         if (accel_name) {
             [key, mods] = Gtk.accelerator_parse(accel_name);
             return Gtk.accelerator_get_label(key, mods);
         }
         return null;
-    },
+    }
 
-    _getShortcut: function(accel) {
+    _getShortcut(accel) {
         if (accel) {
             let keyArray = accel.deep_unpack();
             if (keyArray && keyArray[0]) {
@@ -334,10 +323,10 @@ DbusMenuItem.prototype = {
             }
         }
         return null;
-    },
+    }
 
     //FIXME: We need to convert more keys to Gtk?
-    _kdeToGtkKey: function(key) {
+    _kdeToGtkKey(key) {
         let keyLower = key.toLowerCase();
         if (keyLower == "pgup")
             return "Page_Up";
@@ -358,9 +347,9 @@ DbusMenuItem.prototype = {
         else if (keyLower == "media play")
             return "XF86AudioPlay";
         return key;
-    },
+    }
 
-    _getFactoryType: function(child_display, child_type) {
+    _getFactoryType(child_display, child_type) {
         if ((child_display) || (child_type)) {
             if ((child_display == "rootmenu")||(this._id && this._id == this._client.getRootId()))
                 return PopupMenu.FactoryClassTypes.RootMenuClass;
@@ -373,9 +362,9 @@ DbusMenuItem.prototype = {
             return PopupMenu.FactoryClassTypes.MenuItemClass;
         }
         return null;
-    },
+    }
 
-    _getGdkIcon: function(value) {
+    _getGdkIcon(value) {
         try {
             if (value) {
                 let data = value.get_data_as_bytes()
@@ -386,27 +375,22 @@ DbusMenuItem.prototype = {
             global.log("Error loading icon: " + e.message);
         }
         return null;
-    },
+    }
 
-    destroy: function() {
+    destroy() {
         if (this._client) {
             PopupMenu.PopupMenuAbstractItem.prototype.destroy.call(this);
             this._client = null;
         }
     }
-};
+}
 
 /**
  * #DBusClient:
  * @short_description: The client does the heavy lifting of actually reading layouts and distributing events.
  */
-function DBusClient() {
-    this._init.apply(this, arguments);
-}
-
-DBusClient.prototype = {
-
-    _init: function(busName, busPath) {
+var DBusClient = class {
+    constructor(busName, busPath) {
         this._busName = busName;
         this._busPath = busPath;
         this._idLayoutUpdate = 0;
@@ -425,36 +409,36 @@ DBusClient.prototype = {
             { 'children-display': GLib.Variant.new_string('rootmenu'), 'visible': GLib.Variant.new_boolean(false) }, this);
 
         this._startMainProxy();
-    },
+    }
 
-    getShellMenu: function() {
+    getShellMenu() {
         return this._shellMenu;
-    },
+    }
 
-    setShellMenu: function(shellMenu) {
+    setShellMenu(shellMenu) {
         this._shellMenu = shellMenu;
-    },
+    }
 
-    getRoot: function() {
+    getRoot() {
         if (this._items)
             return this._items[this.getRootId()];
         return null;
-    },
+    }
 
-    getRootId: function() {
+    getRootId() {
         return 0;
-    },
+    }
 
-    getItem: function(id) {
+    getItem(id) {
         if ((this._items)&&(id in this._items))
             return this._items[id];
 
         global.logWarning("trying to retrieve item for non-existing id "+id+" !?");
         return null;
-    },
+    }
 
     // We don't need to cache and burst-send that since it will not happen that frequently
-    sendAboutToShow: function(id) {
+    sendAboutToShow(id) {
         if (this._proxyMenu) {
             this._proxyMenu.AboutToShowRemote(id, Lang.bind(this, function(result, error) {
                 if (error)
@@ -463,9 +447,9 @@ DBusClient.prototype = {
                     this._requestLayoutUpdate();
             }));
         }
-    },
+    }
 
-    sendEvent: function(id, event, params, timestamp) {
+    sendEvent(id, event, params, timestamp) {
         if (this._proxyMenu) {
             if (!params)
                 params = GLib.Variant.new_int32(0);
@@ -474,23 +458,23 @@ DBusClient.prototype = {
             if (event == PopupMenu.FactoryEventTypes.opened)
                 this.sendAboutToShow(id);
         }
-    },
+    }
 
-    _startMainProxy: function() {
+    _startMainProxy() {
         this._proxyMenu = new BusClientProxy(Gio.DBus.session, this._busName, this._busPath,
             Lang.bind(this, this._clientReady));
-    },
+    }
 
-    _requestLayoutUpdate: function() {
+    _requestLayoutUpdate() {
         if (this._idLayoutUpdate != 0)
             this._idLayoutUpdate = 0;
         if (this._flagLayoutUpdateInProgress)
             this._flagLayoutUpdateRequired = true;
         else
             this._beginLayoutUpdate();
-    },
+    }
 
-    _requestProperties: function(id) {
+    _requestProperties(id) {
         // If we don't have any requests queued, we'll need to add one
         if (this._propertiesRequestedFor.length < 1)
             GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, Lang.bind(this, this._beginRequestProperties));
@@ -498,18 +482,18 @@ DBusClient.prototype = {
         if (this._propertiesRequestedFor.filter(function(e) { return e === id; }).length == 0)
             this._propertiesRequestedFor.push(id);
 
-    },
+    }
 
-    _beginRequestProperties: function() {
+    _beginRequestProperties() {
         if (this._proxyMenu) {
             this._proxyMenu.GetGroupPropertiesRemote(this._propertiesRequestedFor, [],
                 Lang.bind(this, this._endRequestProperties));
             this._propertiesRequestedFor = [];
         }
         return false;
-    },
+    }
 
-    _endRequestProperties: function(result, error) {
+    _endRequestProperties(result, error) {
         if (error) {
             global.logWarning("Could not retrieve properties: " + error);
         } else if (this._items) {
@@ -521,11 +505,11 @@ DBusClient.prototype = {
                 this._items[id].updatePropertiesAsVariant(properties);
             }, this);
         }
-    },
+    }
 
     // Traverses the list of cached menu items and removes everyone that is not in the list
     // so we don't keep alive unused items
-    _gcItems: function() {
+    _gcItems() {
         if (this._items) {
             let tag = new Date().getTime();
 
@@ -540,11 +524,11 @@ DBusClient.prototype = {
                 if (this._items[id]._dbusClientGcTag != tag)
                     delete this._items[id];
         }
-    },
+    }
 
     // The original implementation will only request partial layouts if somehow possible
     // we try to save us from multiple kinds of race conditions by always requesting a full layout
-    _beginLayoutUpdate: function() {
+    _beginLayoutUpdate() {
         // We only read the type property, because if the type changes after reading all properties,
         // the view would have to replace the item completely which we try to avoid
         if (this._proxyMenu) {
@@ -553,9 +537,9 @@ DBusClient.prototype = {
         }
         this._flagLayoutUpdateRequired = false;
 
-    },
+    }
 
-    _endLayoutUpdate: function(result, error) {
+    _endLayoutUpdate(result, error) {
         if (error) {
             global.logWarning("While reading menu layout: " + error);
             return;
@@ -570,9 +554,9 @@ DBusClient.prototype = {
             this._beginLayoutUpdate();
         else
             this._flagLayoutUpdateInProgress = false;
-    },
+    }
 
-    _doLayoutUpdate: function(item) {
+    _doLayoutUpdate(item) {
         let [ id, properties, children ] = item;
         if (this._items) {
             let childrenUnpacked = children.map(function(child) { return child.deep_unpack(); });
@@ -618,9 +602,9 @@ DBusClient.prototype = {
             }
         }
         return id;
-    },
+    }
 
-    _clientReady: function(result, error) {
+    _clientReady(result, error) {
         if (error) {
             //FIXME: show message to the user?
             global.logWarning("Could not initialize menu proxy: " + error);
@@ -633,16 +617,16 @@ DBusClient.prototype = {
             this._proxyMenu.connectSignal("LayoutUpdated", Lang.bind(this, this._onLayoutUpdated));
             this._proxyMenu.connectSignal("ItemsPropertiesUpdated", Lang.bind(this, this._onPropertiesUpdated));
         }
-    },
+    }
 
-    _onLayoutUpdated: function(proxy, sender, items) {
+    _onLayoutUpdated(proxy, sender, items) {
         if (this._idLayoutUpdate == 0) {
             this._idLayoutUpdate = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE,
                 Lang.bind(this, this._requestLayoutUpdate));
         }
-    },
+    }
 
-    _onPropertiesUpdated: function(proxy, name, [changed, removed]) {
+    _onPropertiesUpdated(proxy, name, [changed, removed]) {
         if (this._items) {
             changed.forEach(function([id, properties]) {
                 if (!(id in this._items))
@@ -661,9 +645,9 @@ DBusClient.prototype = {
                 this._items[id].updatePropertiesAsVariant(properties);
             }, this);
         }
-    },
+    }
 
-    destroy: function() {
+    destroy() {
         if (this._proxyMenu) {
             Signals._disconnectAll.apply(this._proxyMenu);
             this._proxyMenu = null;
@@ -672,4 +656,5 @@ DBusClient.prototype = {
             this._items = null;
         }
     }
-};
+}
+
