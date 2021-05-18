@@ -1206,7 +1206,8 @@ WindowContextMenu.prototype = {
             monitorItems.push(new PopupMenu.PopupSeparatorMenuItem());
         }
 
-        let items = monitorItems.concat([
+        let items = [
+            ...monitorItems,
             itemMoveToNewWorkspace,
             this.itemOnAllWorkspaces,
             this.itemMoveToLeftWorkspace,
@@ -1215,7 +1216,7 @@ WindowContextMenu.prototype = {
             this.itemMinimizeWindow,
             this.itemMaximizeWindow,
             this.itemCloseWindow
-        ]);
+        ];
         (orientation == St.Side.BOTTOM ? items : items.reverse()).forEach(item => {
             this.addMenuItem(item);
         });

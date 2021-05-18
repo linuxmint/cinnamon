@@ -563,7 +563,7 @@ PlacesManager.prototype = {
     },
 
     getAllPlaces: function () {
-        return this.getDefaultPlaces().concat(this.getBookmarks(), this.getMounts());
+        return [...this.getDefaultPlaces(), ...this.getBookmarks(), ...this.getMounts()];
     },
 
     getDefaultPlaces: function () {
@@ -665,7 +665,7 @@ PlaceSearchProvider.prototype = {
         prefixResults.sort(this._compareResultMeta);
         multipleSubstringResults.sort(this._compareResultMeta);
         substringResults.sort(this._compareResultMeta);
-        return multiplePrefixResults.concat(prefixResults.concat(multipleSubstringResults.concat(substringResults)));
+        return [...multiplePrefixResults, ...prefixResults, ...multipleSubstringResults, ...substringResults];
     },
 
     getInitialResultSet: function(terms) {

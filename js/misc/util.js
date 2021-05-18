@@ -106,7 +106,7 @@ var subprocess_callbacks = {};
 function spawn_async(args, callback) {
     subprocess_id++;
     subprocess_callbacks[subprocess_id] = callback;
-    spawn(new Array("cinnamon-subprocess-wrapper", subprocess_id.toString()).concat(args));
+    spawn(["cinnamon-subprocess-wrapper", subprocess_id.toString(), ...args]);
 }
 
 /**
@@ -734,7 +734,7 @@ function getGObjectPropertyValues(obj, r = 0) {
     let baseInfo = repository.find_by_gtype(obj.constructor.$gtype);
     let propertyNames = [];
     for (let info = baseInfo; info !== null; info = Gir.object_info_get_parent(info)) {
-        propertyNames = propertyNames.concat(_getWritablePropertyNamesForObjectInfo(info));
+        propertyNames = [...propertyNames, ..._getWritablePropertyNamesForObjectInfo(info)];
     }
     if (r > 0 && propertyNames.length === 0) {
         return obj.toString();

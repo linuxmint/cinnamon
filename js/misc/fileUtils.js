@@ -41,7 +41,7 @@ function listDirAsync(file, callback) {
         function onNextFileComplete(obj, res) {
             let files = obj.next_files_finish(res);
             if (files.length) {
-                allFiles = allFiles.concat(files);
+                allFiles = [...allFiles, ...files];
                 enumerator.next_files_async(100, GLib.PRIORITY_LOW, null, onNextFileComplete);
             } else {
                 enumerator.close(null);
