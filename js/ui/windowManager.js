@@ -480,7 +480,7 @@ var WindowManager = class WindowManager {
         this.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
 
         each(this.effects, (value, key) => {
-            if (key === 'unmaximize' || key === 'unminimize') return;
+            if (key === 'unminimize') return;
             each(SETTINGS_EFFECTS_TYPES, (item) => {
                 let [name, type] = item;
                 let property = `desktop-effects-${key}-${name}`;
