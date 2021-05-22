@@ -550,6 +550,8 @@ DeskletContainer.prototype = {
                 if (global.settings.get_boolean(DESKLET_SNAP_KEY)){
                     elements[2] = this._dragPlaceholder.x
                     elements[3] = this._dragPlaceholder.y;
+                    actor.set_x(this._dragPlaceholder.x);
+                    actor.set_y(this._dragPlaceholder.y);
                 }
                 definition = elements.join(":");
                 enabledDesklets[i] = definition;
