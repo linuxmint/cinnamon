@@ -1,38 +1,38 @@
 {
     "layout" : {
         "type" : "layout",
-        "pages" : ["behavior", "appearance"],
-        "behavior" : {
+        "pages" : ["panel", "menu"],
+        "panel" : {
             "type" : "page",
-            "title" : "Behavior",
-            "sections" : ["panel-behave", "menu-behave"]
-        },
-        "appearance" : {
-            "type" : "page",
-            "title" : "Appearance",
-            "sections" : ["panel-appear", "menu-layout"]
-        },
-        "panel-behave" : {
-            "type" : "section",
             "title" : "Panel",
-            "keys" : ["overlay-key", "activate-on-hover", "hover-delay", "force-show-panel", "enable-animation"]
+            "sections" : ["panel-appear", "panel-behave"]
         },
-        "menu-behave" : {
-            "type" : "section",
+        "menu" : {
+            "type" : "page",
             "title" : "Menu",
-            "keys" : ["category-hover", "enable-autoscroll", "search-filesystem", "show-places", "show-recents", "menu-editor-button"]
+            "sections" : ["menu-layout", "menu-behave"]
         },
         "panel-appear" : {
             "type" : "section",
-            "title" : "Panel",
+            "title" : "Appearance",
             "keys" : ["menu-custom", "menu-icon", "menu-icon-size", "menu-label"]
+        },
+        "panel-behave" : {
+            "type" : "section",
+            "title" : "Behavior",
+            "keys" : ["overlay-key", "activate-on-hover", "hover-delay", "force-show-panel", "enable-animation"]
         },
         "menu-layout" : {
             "type" : "section",
-            "title" : "Menu",
+            "title" : "Layout and content",
             "keys" : ["restrict-menu-height", "menu-height", "show-category-icons",
                       "category-icon-size", "show-application-icons", "application-icon-size",
-                      "favbox-show", "fav-icon-size"]
+                      "favbox-show", "fav-icon-size", "show-places", "show-recents", "menu-editor-button"]
+        },
+        "menu-behave" : {
+            "type" : "section",
+            "title" : "Behavior",
+            "keys" : ["category-hover", "enable-autoscroll", "search-filesystem"]
         }
     },
  "overlay-key" : {
@@ -153,11 +153,11 @@
    "description": "Show recents",
    "tooltip": "Choose whether or not to show recents in the menu."
  },
-"category-hover" : {
+ "category-hover" : {
     "type" : "switch",
     "default" : true,
-    "description": "Switch categories by hovering them",
-    "tooltip": "Choose whether or not to switch categories by hovering over them."
+    "description": "Change categories on hover",
+    "tooltip": "Choose whether or not to change categories by hovering."
  },
 "enable-autoscroll" : {
     "type" : "switch",
