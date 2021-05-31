@@ -38,6 +38,9 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
 
 const HISTORY_KEY = 'looking-glass-history';
 
+// these properties throw an error even trying to use typeof on them
+const KEY_BLACKLIST = ['get_abs_allocation_vertices', 'get_allocation_vertices'];
+
 /* fake types for special cases:
  *  -"array": objects that pass Array.isArray() and should only show enumerable properties
  *  -"boxedproto": boxed prototypes throw an error on property access
@@ -114,8 +117,12 @@ function getObjKeysInfo(obj) {
 
 
     return Array.from(keys).map((k) => {
-        let [t, v] = getObjInfo(obj[k]);
-        return { name: k.toString(), type: t, value: v, shortValue: "" };
+        if (!KEY_BLACKLIST.includes(k)) {
+            let [t, v] = getObjInfo(obj[k]);
+            return { name: k.toString(), type: t, value: v, shortValue: "" };
+        } else {
+            return { name: k.toString(), type: '[inacessible]', value: '[inacessible]', shortValue: "" }; 
+        }
     });
 }
 
