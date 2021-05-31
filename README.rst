@@ -8,7 +8,7 @@ Contributing
 ============
 Cinnamon is on GitHub at https://github.com/linuxmint/cinnamon.
 
-Note that some issue may not be with Cinnamon itself. For a list of related components,
+Note that some issues may not be with Cinnamon itself. For a list of related components,
 please see https://projects.linuxmint.com/cinnamon/.
 
 
