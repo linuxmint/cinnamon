@@ -25,6 +25,7 @@ Build-Depends:
  libgudev-1.0-dev,
  libjson-glib-dev (>= 0.13.2),
  libmuffin0 (>= 3.8),
+ libmuffin-dev (>= 3.8),
  libnm-dev (>= 1.6) [linux-any],
  libnma-dev [linux-any],
  libpolkit-agent-1-dev (>= 0.100),
