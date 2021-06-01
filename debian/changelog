@@ -1,3 +1,10 @@
+cinnamon (5.0.1) uma; urgency=medium
+
+  [ Leigh Scott ]
+  * Use new screensaver name for required components
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 01 Jun 2021 14:11:59 +0100
+
 cinnamon (5.0.0) uma; urgency=medium
 
   [ José Gadelha ]
