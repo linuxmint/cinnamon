@@ -2268,7 +2268,8 @@ CinnamonNetworkApplet.prototype = {
                 }
             } else {
                 let dev;
-                let limited_conn = this._correctStateForTunnel(this._client.get_connectivity()) !== NM.ConnectivityState.FULL;
+                let limited_conn = false;
+                // let limited_conn = this._correctStateForTunnel(this._client.get_connectivity()) !== NM.ConnectivityState.FULL;
 
                 switch (mc._section) {
                 case NMConnectionCategory.WIRELESS:
@@ -2358,17 +2359,23 @@ CinnamonNetworkApplet.prototype = {
         let new_delay = this._updateIcon();
         this._lastConnectivityState = this._client.get_connectivity();
 
-        if (!this._checkingConnectivity) {
-            // https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/issues/476
-            if (this._v1_28_0) {
-                this._checkingConnectivity = true;
-                this._client.check_connectivity_async(null, Lang.bind(this, this._connectivityCheckCallback));
-            } else
-            if (this._nm_proxy != null) {
-                this._checkingConnectivity = true;
-                this._nm_proxy.CheckConnectivityRemote(Lang.bind(this, this._proxyConnectivityCheckCallback));
-            }
-        }
+        // TODO: This can be unreliable with multiple interfaces, and libnm
+        // can be flaky with its connectivity state - on one machine of mine,
+        // I observed regular switching between full and limited connectivity,
+        // when no noticeable change in my actual ability to reach the internet.
+        // We might re-implement to be independent of libnm. For now just disable it.
+        //
+        // if (!this._checkingConnectivity) {
+        //     // https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/issues/476
+        //     if (this._v1_28_0) {
+        //         this._checkingConnectivity = true;
+        //         this._client.check_connectivity_async(null, Lang.bind(this, this._connectivityCheckCallback));
+        //     } else
+        //     if (this._nm_proxy != null) {
+        //         this._checkingConnectivity = true;
+        //         this._nm_proxy.CheckConnectivityRemote(Lang.bind(this, this._proxyConnectivityCheckCallback));
+        //     }
+        // }
 
         if (this._updateFrequencySeconds != new_delay) {
             this._restartPeriodicUpdateTimer(new_delay);
