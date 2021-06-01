@@ -262,14 +262,14 @@ function requireModule(path, dir, meta, type, async = false, returnIndex = false
     if (path[0] === '.' || path[0] !== '/') {
         path = path.replace(/\.\//g, '');
         if (dir) {
-            path = `${dir}/${path}`;
+            path = dir + "/" + path;
         }
     }
     let success, JSbytes, JS;
     let file = Gio.File.new_for_commandline_arg(path);
     let fileLoadErrorMessage = '[requireModule] Unable to load file contents.';
     if (!file.query_exists(null)) {
-        throw new Error(`[requireModule] Path does not exist.\n${path}`);
+        throw new Error("[requireModule] Path does not exist.\n" + path);
     }
 
     if (!async) {

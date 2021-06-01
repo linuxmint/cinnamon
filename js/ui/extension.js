@@ -277,12 +277,12 @@ Extension.prototype = {
             this.finalize();
             Main.cinnamonDBusService.EmitXletAddedComplete(true, uuid);
         }).catch((e) => {
-            /* Silently fail to load xlets that aren't actually installed -
-               but no error, since the user can't do anything about it anyhow
-               (short of editing gsettings).  Silent failure is consistent with
-               other reactions in Cinnamon to missing items (e.g. panel launchers
-               just don't show up if their program isn't installed, but we don't
-               remove them or anything) */
+             // Silently fail to load xlets that aren't actually installed -
+             //   but no error, since the user can't do anything about it anyhow
+             //   (short of editing gsettings).  Silent failure is consistent with
+             //   other reactions in Cinnamon to missing items (e.g. panel launchers
+             //   just don't show up if their program isn't installed, but we don't
+             //   remove them or anything)
             Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
             Main.xlet_startup_error = true;
             forgetExtension(uuid, type);
@@ -421,7 +421,7 @@ Extension.prototype = {
 
 /**
 * versionCheck:
-* @required: an array of minimum versions we're compatible with
+* @required: an array of minimum versions we are compatible with
 * @current: the version we have
 *
 * Check if a component is compatible for an extension.
