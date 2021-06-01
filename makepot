@@ -8,7 +8,7 @@ find files/usr/share/cinnamon -name "*.ui.h" -exec xgettext --language=C --keywo
 
 xgettext --language=JavaScript --keyword=_ --keyword=N_ --output=cinnamon.pot --join-existing --from-code=UTF-8 js/*/*.js files/usr/share/cinnamon/*/*/*.js
 xgettext -c --language=Python --keyword=_ --output=cinnamon.pot --join-existing generate_additional_files.py files/usr/share/cinnamon/*/*.py files/usr/share/cinnamon/*/*/*.py files/usr/bin/cinnamon-launcher files/usr/bin/xlet-about-dialog
-files/usr/bin/cinnamon-xlet-makepot -j -p -o cinnamon.pot files/usr/share/cinnamon/applets/
-files/usr/bin/cinnamon-xlet-makepot -j -p -o cinnamon.pot files/usr/share/cinnamon/desklets/
+files/usr/bin/cinnamon-xlet-makepot -j -p -m -o cinnamon.pot files/usr/share/cinnamon/applets/
+files/usr/bin/cinnamon-xlet-makepot -j -p -m -o cinnamon.pot files/usr/share/cinnamon/desklets/
 
 find files/usr/share/cinnamon -name "*.ui.h" -exec rm -f {} \;
