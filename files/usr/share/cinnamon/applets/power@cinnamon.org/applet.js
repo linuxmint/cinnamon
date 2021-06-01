@@ -505,17 +505,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             }
         }
 
-        if (device_type == UPDeviceType.BATTERY) {
-            if (percentage < 10) {
-                this._applet_icon.set_style_class_name('system-status-icon error');
-            } else if (percentage < 20) {
-                this._applet_icon.set_style_class_name('system-status-icon warning');
-            } else {
-                this._applet_icon.set_style_class_name('system-status-icon');
-            }
-        } else {
-            this._applet_icon.set_style_class_name ('system-status-icon');
-        }
+        this._applet_icon.set_style_class_name ('system-status-icon');
     }
 
     _devicesChanged() {
