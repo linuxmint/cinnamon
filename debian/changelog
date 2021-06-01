@@ -1,3 +1,185 @@
+cinnamon (5.0.0) uma; urgency=medium
+
+  [ José Gadelha ]
+  * GWL-fixes: move window to another workspace
+
+  [ Michael Webster ]
+  * st-texture-cache.c: Don't return from a GTask twice.
+  * menu applet: Decode favorite uris used for display.
+  * src/meson.build: Include st enum header file to executable sources as well.
+  * power applet: Fix _devicesChanged so that calls to csd-power are handled sequentially.
+  * power applet: When 'always show all batteries' is enabled, only display devices that will have a valid percentage.
+
+  [ JosephMcc ]
+  * cs_startup: Improve ellipsizing of description labels
+
+  [ Sparky Bluefang ]
+  * build: gstreamer only used by recorder, so make it conditional.
+
+  [ Clement Lefebvre ]
+  * Spices: Show UUID in management/download tabs (#9911)
+
+  [ Stephen Collins ]
+  * cinnamon-settings xlets: ignore multiversion when looking for an icon (#9908)
+
+  [ Clement Lefebvre ]
+  * Applets: Fix some of the icons
+  * Spices: Prefer icon.png over metadata
+  * Desklets: Fix icons
+  * Spices: Translate download tab content
+  * Spices: Show the author
+  * Spices: Add search by author
+  * Spices: Improve layout
+
+  [ Michael Webster ]
+  * appSwitcher.js: If the initial grab fails, or the modifier key is released before pushModal (as explained in the old bug mentioned in the comments), still perform a single switch, rather than doing nothing at all.
+
+  [ Ivan Koveshnikov ]
+  * windows-quick-list applet: avoid fixed popup size
+  *  windows-quick-list applet: remove extra padding
+  * favorites applet: remove extra padding and avoid setting constant height
+
+  [ Michael Webster ]
+  * appSwitcher3D.js: Don't fail completely if the window actor is gone when removing previews.
+  * Remove windowAttentionHandler and some associated items - this will be handled in muffin.
+  * power applet: Adjust warning and critical levels to match the correctly colored icons in the set.
+  * power applet: Fix handling of the panel info display to filter out non-percentage devices when multi-device is enabled.
+  * meson.build: Re-enable build with pointer barriers support.
+  * menu applet: Only count alpha-numeric characters in search matching.
+  * menu applet: sort all search result types equally.
+  * power applet: Fix icon style class logic.
+  * meson.build: Restore some more missing config definitions from pre-meson builds.
+  * window list: Keep track of window positions in the list so the order can be restored between restarts.
+
+  [ ronyalaluf ]
+  * Grouped-Window-List: fix list refreshing when closing a window (4c1aa69) Fix #9802, fix #9845, fix #9900
+
+  [ Michael Webster ]
+  * Move cinnamon-dbus-command into /usr/bin.
+
+  [ Attila Greguss ]
+  * Fix cinnamon-xlet-makepot so it always gives the same output on every system (#9956)
+
+  [ Stephen Collins ]
+  * cinnamon-xlet-makepot: ignore keywords if they're used as settings keys (#9939)
+
+  [ Clement Lefebvre ]
+  * Add a memory limit mechanism to Cinnamon (#9923)
+
+  [ Michael Webster ]
+  * Eliminate use of python-dbus in most places.
+  * accessibility: Rename caps and numlock indicators to be cinnamon- specific so they're acceptable in the hicolor theme, change the OSD handler to use icons with these as fallback names.
+
+  [ NikoKrause ]
+  * cinnamon-xlet-makepot: Add header and metadata to .pot file (#9964)
+
+  [ ronyala ]
+  *  Grouped-Window-List: Fix finishing a launcher move outside of applet area not saving changes; misc cleanup (#9858)
+
+  [ Joshua Peisach ]
+  * cinnamon-settings-users: Check if user exists before user creation.
+
+  [ Michael Webster ]
+  * cinnamon-settings-users.py: Fix new string for localization.
+  * util.js: Add a version comparison function.
+  * network applet: Perform a periodic connectivity check to indicate on the panel when there is no internet (global) access.
+  * a11y: Fix screen reader for popupMenu.js classes and the StButton class.
+
+  [ NikoKrause ]
+  * menu applet: use scrollbox for categories
+
+  [ Michael Webster ]
+  * menu applet: Refactor layout to allow allocation and scrollbar behavior to occur 'naturally' for both favorites and categories.
+  * xlets: remove unused "indent" setting properties.
+  * cs_startup.py: Don't write an invalid override desktop file the second time it's created in the same process.
+  * menu applet: Limit the width of the menu and keep the selected app box from expanding when long text is displayed.
+
+  [ Hezkore ]
+  * fix empty artist in sound applet
+
+  [ JosephMcc ]
+  * cs_windows: Fix the button layout when placing icons on the right
+
+  [ Michael Webster ]
+  * accessibility.js: Only use cinnamon-specific icons for caps- and num-lock indicators.
+
+  [ Philipp Keck ]
+  * Remove window-close action on Alt-Tab Q shortcut (#10031)
+
+  [ Michael Webster ]
+  * cinnamon-dbus-command: make executable.
+  * menu applet: Use a different method of calculating the application box's width.
+  * network applet: Report full connectivity when a tunnel connection is active, even if the primary device only reports 'limited'.
+
+  [ Clement Lefebvre ]
+  * Provide python3 and CLI interfaces to manage Cinnamon spice updates (#10032)
+
+  [ Tobias Kortkamp ]
+  * Attempt to fix parallel build
+
+  [ Michael Webster ]
+  * window list applets: Disable the maximize menu item if the window has resizing disabled.
+
+  [ icarter09 ]
+  * Issue 9097. Removes signal connect. Adds signal to be emitted when applets, desklets, and extensions are finished loading.
+
+  [ Michael Webster ]
+  * Revert "Issue 9097. Removes signal connect. Adds signal to be emitted when applets, desklets, and extensions are finished loading."
+
+  [ David Schaefer ]
+  * fix window-list drag+drop for windows from other desktops
+
+  [ sphh ]
+  * Add additional information to the sound@cinnamon.org applet tooltip (#9954)
+
+  [ Joshua Peisach ]
+  * hotplug-sniffer: drop volatile
+
+  [ Michael Webster ]
+  * menu applet: Use unicode categories to find whitespace and separators.
+
+  [ icarter09 ]
+  * Issue 9097. Removes signal connect. Adds signal to be emitted when applets, desklets, and extensions are finished loading.
+
+  [ Lurux ]
+  * Implement optional "switch categories by clicking" in menu applet
+  * Update settings shema with new "switch categories by hovering" toggle
+
+  [ Lars Mueller ]
+  * Fix a flatpak window mismatch
+
+  [ Mikhail Bodrov ]
+  * Use spread operator instead of concat
+
+  [ Michael Webster ]
+  * Revert new layout introduced in 146083fcfab8fd.
+
+  [ Albert Pool ]
+  * Display spaces instead of underscores in time zone selector
+
+  [ José Gadelha ]
+  * Fix scale effect on unmaximizing windows
+
+  [ icarter09 ]
+  * Issue 10089. Cancels escaped drag on desklets
+
+  [ hacker1024 ]
+  * Change "some issue" to "some issues" in the README
+
+  [ icarter09 ]
+  * Issue 9834. Desklets snap functionality works as expected
+
+  [ Mikhail Bodrov ]
+  * Refactor dbusMenu to es class
+
+  [ Clement Lefebvre ]
+  * l10n: Generate files
+  * l10n: don't delete pot file in cinnamon-xlet-makepot when run from makepot
+  * l10n: Fix makepot error
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 01 Jun 2021 11:41:24 +0100
+
 cinnamon (4.8.6) ulyssa; urgency=medium
 
   [ Fabio Fantoni ]
