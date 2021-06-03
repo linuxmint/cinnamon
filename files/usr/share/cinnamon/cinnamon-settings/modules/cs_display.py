@@ -10,7 +10,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("display, screen, monitor, layout, resolution, dual, lcd")
-        self.sidePage = SidePage(_("Display"), "cs-display", keywords, content_box, module=self)
+        self.sidePage = SidePage(_("Display"), "cs-display", keywords, content_box, 570, module=self)
         self.display_c_widget = None
 
     def on_module_selected(self):
@@ -46,6 +46,10 @@ class Module:
 
             switch = GSettingsSwitch(_("Disable automatic screen rotation"), "org.cinnamon.settings-daemon.peripherals.touchscreen", "orientation-lock")
             switch.set_tooltip_text(_("Select this option to disable automatic screen rotation on hardware equipped with supported accelerometers."))
+            settings.add_row(switch)
+
+            switch = GSettingsSwitch(_("Enable fractional scaling controls (experimental)"), "org.cinnamon.control-center.display", "show-fractional-scaling-controls")
+            switch.set_tooltip_text(_("Select this option to display additional layout controls for per-monitor scaling."))
             settings.add_row(switch)
 
     def on_navigate_out_of_module(self):
