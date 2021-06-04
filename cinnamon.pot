@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-01 11:39+0100\n"
+"POT-Creation-Date: 2021-06-04 12:22+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1063,37 +1063,37 @@ msgstr ""
 msgid "Connecting to the network..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2285
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2286
 msgid "Connected to the wireless network"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2289
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2292
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2290
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2293
 msgid "Wireless connection"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2289
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2302
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2324
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2290
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2303
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2325
 msgid "(Limited connectivity)"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2302
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2306
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2303
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2307
 msgid "Connected to the wired network"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2318
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2324
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2327
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2319
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2325
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2328
 msgid "Connected to the cellular network"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2335
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2336
 msgid "Connected to the VPN"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2341
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2342
 msgid "Connected to the network"
 msgstr ""
 
@@ -1233,13 +1233,13 @@ msgid "Computer"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:342
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:674
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:664
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:237
 msgid "Brightness"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:343
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:680
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:670
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:263
 msgid "Keyboard backlight"
 msgstr ""
@@ -3505,6 +3505,16 @@ msgstr ""
 msgid ""
 "Select this option to disable automatic screen rotation on hardware equipped"
 " with supported accelerometers."
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_display.py:51
+msgid "Enable fractional scaling controls (experimental)"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_display.py:52
+msgid ""
+"Select this option to display additional layout controls for per-monitor "
+"scaling."
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_effects.py:48
