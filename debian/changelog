@@ -1,3 +1,15 @@
+cinnamon (5.0.2) uma; urgency=medium
+
+  [ Michael Webster ]
+  * power applet: Don't add a cinnamon style class to critical and warning battery icons on top of the color the icons already have.
+  * network applet: Disable connectivity check, it is too unreliable.
+  * cs_display.py: Add new setting to control visibility of fractional scaling controls.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 04 Jun 2021 12:22:26 +0100
+
 cinnamon (5.0.1) uma; urgency=medium
 
   [ Leigh Scott ]
