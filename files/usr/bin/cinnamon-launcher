@@ -12,7 +12,7 @@ import psutil
 import threading
 import gi
 gi.require_version('Gtk', '3.0')  # noqa
-from gi.repository import Gtk, GObject, Gio
+from gi.repository import Gtk, GLib, Gio
 
 FALLBACK_COMMAND = "metacity"
 FALLBACK_ARGS = ("--replace",)
@@ -43,7 +43,7 @@ def async_function(func):
 # Used as a decorator to run things in the main loop, from another thread
 def idle_function(func):
     def wrapper(*args):
-        GObject.idle_add(func, *args)
+        GLib.idle_add(func, *args)
     return wrapper
 
 class Launcher():
@@ -81,11 +81,8 @@ class Launcher():
                     # Start the fallback window manager
                     os.execvp(FALLBACK_COMMAND, (FALLBACK_COMMAND,) + FALLBACK_ARGS)
                 else:
-                    if self.confirm_restart():
-                        # Kill the fallback panel
-                        os.system("killall %s" % panel_process_name)
-                        # Restart Cinnamon
-                        self.restart_cinnamon()
+                    self.confirm_restart()
+ 
         Gtk.main_quit()
 
     @async_function
@@ -142,8 +139,8 @@ class Launcher():
         if resp == Gtk.ResponseType.YES:
             if checkbutton.get_active():
                 os.environ["CINNAMON_TROUBLESHOOT"] = "1"
-            return(True)
-        return(False)
+            os.system("killall %s" % panel_process_name)
+            self.restart_cinnamon()
 
 if __name__ == "__main__":
     setproctitle("cinnamon-launcher")
