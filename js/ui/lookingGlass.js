@@ -11,6 +11,7 @@ const Meta = imports.gi.Meta;
 const Signals = imports.signals;
 const St = imports.gi.St;
 const System = imports.system;
+const Mainloop = imports.mainloop;
 
 const Extension = imports.ui.extension;
 const History = imports.misc.history;
@@ -35,6 +36,11 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
                     'const a = Lang.bind(Main.lookingGlass, Main.lookingGlass.getWindowApp); '+
                     'const w = Lang.bind(Main.lookingGlass, Main.lookingGlass.getWindow); '+
                     'const r = Lang.bind(Main.lookingGlass, Main.lookingGlass.getResult); ';
+
+/* delay/aggregation period for window list updates. without a delay, the window
+ * still exists in the get_window_actor() immediately after 'MetaWindow::unmanaged',
+ * even if called through an idle source. */
+const WL_UPDATE_DELAY = 200;
 
 const HISTORY_KEY = 'looking-glass-history';
 
@@ -146,10 +152,11 @@ WindowList.prototype = {
     _init : function () {
         this.lastId = 0;
         this.latestWindowList = [];
+        this.delayedUpdateId = 0;
 
         let tracker = Cinnamon.WindowTracker.get_default();
-        global.display.connect('window-created', Lang.bind(this, this._updateWindowList));
-        tracker.connect('window-app-changed', Lang.bind(this, this._updateWindowList));
+        global.display.connect('window-created', () => { this._queueDelayedUpdate() });
+        tracker.connect('window-app-changed', () => { this._queueDelayedUpdate() });
     },
 
     getWindowById: function(id) {
@@ -160,6 +167,17 @@ WindowList.prototype = {
                 return metaWindow;
         }
         return null;
+    },
+
+    _queueDelayedUpdate: function() {
+        if (this.delayedUpdateId)
+            Mainloop.source_remove(this.delayedUpdateId);
+
+        this.delayedUpdateId = Mainloop.timeout_add(WL_UPDATE_DELAY, () => {
+            this.delayedUpdateId = 0;
+            this._updateWindowList();
+            return false;
+        });
     },
 
     _updateWindowList: function() {
@@ -177,7 +195,7 @@ WindowList.prototype = {
 
             // Avoid multiple connections
             if (!metaWindow._lookingGlassManaged) {
-                metaWindow.connect('unmanaged', Lang.bind(this, this._updateWindowList));
+                metaWindow.connect('unmanaged', () => { this._queueDelayedUpdate() });
                 metaWindow._lookingGlassManaged = true;
 
                 metaWindow._lgId = this.lastId;
