@@ -20,6 +20,7 @@ except Exception as detail:
 
 from http.client import HTTPSConnection
 from urllib.parse import urlparse
+from base64 import b64encode
 
 try:
     import json
@@ -392,7 +393,14 @@ class Spice_Harvester(GObject.Object):
             proxy = proxygsettings.get_proxy_settings()
             if proxy and proxy.get('https'):
                 connection = HTTPSConnection(proxy.get('https'), timeout=15)
-                connection.set_tunnel(host)
+                if proxy and proxy.get('http'):
+                    proxy_url = urlparse("//" + proxy.get('http'))
+                    if proxy_url.username and proxy_url.password:
+                        proxy_auth = '%s:%s' % (proxy_url.username, proxy_url.password)
+                        headers = {"Proxy-Authorization": "Basic " + str(b64encode(proxy_auth.encode())).replace("b'", "").replace("'", "")}
+                    else:
+                        headers = dict()                
+                connection.set_tunnel(host, headers=headers)
             else:
                 connection = HTTPSConnection(host, timeout=15)
             headers = { "Accept-Encoding": "identity", "Host": host, "User-Agent": "Python/3" }
