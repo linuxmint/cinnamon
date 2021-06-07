@@ -18,3 +18,9 @@ option('disable_networkmanager',
     value: false,
     description: 'Build without networkmanager'
 )
+option('py3modules_dir',
+    type : 'string',
+    value : '',
+    description: 'Where to install python3 modules'
+)
+
