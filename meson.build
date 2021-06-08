@@ -178,4 +178,5 @@ install_subdir(
     strip_directory: true,
 )
 
+subdir('python3')
 subdir('install-scripts')
