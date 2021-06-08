@@ -397,7 +397,7 @@ class Spice_Harvester(GObject.Object):
                     proxy_url = urlparse("//" + proxy.get('http'))
                     if proxy_url.username and proxy_url.password:
                         proxy_auth = '%s:%s' % (proxy_url.username, proxy_url.password)
-                        headers = {"Proxy-Authorization": "Basic " + str(b64encode(proxy_auth.encode())).replace("b'", "").replace("'", "")}
+                        headers = {"Proxy-Authorization": 'Basic %s' % (b64encode(proxy_auth.encode()).decode())}
                     else:
                         headers = dict()                
                 connection.set_tunnel(host, headers=headers)
