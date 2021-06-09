@@ -3185,7 +3185,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _doSearch(rawPattern){
-        let pattern = strip(Util.latinise(rawPattern.toLowerCase()));
+        let lowerPattern = Util.latinise(rawPattern.toLowerCase());
+        let pattern = strip(lowerPattern);
 
         this._searchTimeoutId = 0;
         this._activeContainer = null;
@@ -3225,7 +3226,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.selectedAppDescription.set_text("");
         }
 
-        SearchProviderManager.launch_all(pattern, Lang.bind(this, function(provider, results) {
+        SearchProviderManager.launch_all(lowerPattern, Lang.bind(this, function(provider, results) {
             try {
                 for (var i in results) {
                     if (results[i].type != 'software')
