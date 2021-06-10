@@ -1700,11 +1700,11 @@ CinnamonNetworkApplet.prototype = {
 
             this.settings = new Settings.AppletSettings(this, metadata.uuid, this.instance_id);
             this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
-            this.settings.bind("num-visible-networks", "num_visible_networks");
-            this.settings.bind("hide-other-networks-when-connected", "hide_other_networks_when_connected");
-            APPLET_SETTINGS.num_visible_networks = this.num_visible_networks;
-            APPLET_SETTINGS.hide_other_networks_when_connected = this.hide_other_networks_when_connected;
+            this.settings.bind("num-visible-networks", this._setNumVisibleNetworks);
+            this.settings.bind("hide-other-networks-when-connected", this._setHideOtherNetworksWhenConnected);
             this._setKeybinding();
+            this._setNumVisibleNetworks();
+            this._setHideOtherNetworksWhenConnected();
 
             NM.Client.new_async(null, Lang.bind(this, this._clientGot));
         }
@@ -1716,6 +1716,15 @@ CinnamonNetworkApplet.prototype = {
     _setKeybinding() {
         Main.keybindingManager.addHotKey("network-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
     },
+
+    _setNumVisibleNetworks() {
+        APPLET_SETTINGS.num_visible_networks = this.num_visible_networks;
+    },
+
+    _setHideOtherNetworksWhenConnected() {
+        APPLET_SETTINGS.hide_other_networks_when_connected = this.hide_other_networks_when_connected;
+    },
+
 
     _clientGot: function(obj, result) {
         try {
