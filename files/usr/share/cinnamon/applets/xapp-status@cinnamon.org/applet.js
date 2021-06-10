@@ -152,6 +152,8 @@ class XAppStatusIcon {
         else {
             this.tooltipText = "";
         }
+
+        this.applet.set_applet_tooltip(this.tooltipText, true);
     }
 
     setLabel(label) {
