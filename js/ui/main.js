@@ -1322,23 +1322,15 @@ function getRunDialog() {
  * and switching out of the overview if it's currently active
  */
 function activateWindow(window, time, workspaceNum) {
-    let activeWorkspaceNum = global.screen.get_active_workspace_index();
-    let windowWorkspaceNum = (workspaceNum !== undefined) ? workspaceNum : window.get_workspace().index();
-
     if (!time)
         time = global.get_current_time();
 
-    if (windowWorkspaceNum != activeWorkspaceNum) {
-        let workspace = global.screen.get_workspace_by_index(windowWorkspaceNum);
-        workspace.activate_with_focus(window, time);
-    } else {
-        window.activate(time);
-        Mainloop.idle_add(function() {
-            window.foreach_transient(function(win) {
-                win.activate(time);
-            });
+    window.activate(time);
+    Mainloop.idle_add(function() {
+        window.foreach_transient(function(win) {
+            win.activate(time);
         });
-    }
+    });
 
     overview.hide();
     expo.hide();
