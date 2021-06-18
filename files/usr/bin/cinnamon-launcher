@@ -59,7 +59,7 @@ class Launcher():
             if self.settings.get_boolean("memory-limit-enabled"):
                 print("Cinnamon memory limit enabled: %d MB" % self.settings.get_int("memory-limit"))
                 self.monitor_memory()
-                self.wait_for_process()
+            self.wait_for_process()
             Gtk.main()
 
     def on_settings_changed(self, settings, key):
