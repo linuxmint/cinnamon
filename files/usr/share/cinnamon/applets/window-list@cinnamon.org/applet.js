@@ -264,7 +264,7 @@ class AppMenuButton {
 
         this._applet = applet;
         this.metaWindow = metaWindow;
-        this.alert = alert;
+        this.alert = alert || metaWindow.is_demanding_attention() || metaWindow.is_urgent();
         this.labelVisible = false;
         this._signals = new SignalManager.SignalManager();
         this.xid = metaWindow.get_xwindow();
