@@ -10,6 +10,7 @@
  * @wm (WindowManager.WindowManager): The window manager
  * @messageTray (MessageTray.MessageTray): The mesesage tray
  * @notificationDaemon (NotificationDaemon.NotificationDaemon): The notification daemon
+ * @windowAttentionHandler (WindowAttentionHandler.WindowAttentionHandler): The window attention handle
  * @recorder (Cinnamon.Recorder): The recorder
  * @cinnamonDBusService (CinnamonDBus.Cinnamon): The cinnamon dbus object
  * @modalCount (int): The number of modals "pushed"
@@ -100,6 +101,7 @@ const RunDialog = imports.ui.runDialog;
 const Layout = imports.ui.layout;
 const LookingGlass = imports.ui.lookingGlass;
 const NotificationDaemon = imports.ui.notificationDaemon;
+const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const CinnamonDBus = imports.ui.cinnamonDBus;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
@@ -135,6 +137,7 @@ var wm = null;
 var a11yHandler = null;
 var messageTray = null;
 var notificationDaemon = null;
+var windowAttentionHandler = null;
 var recorder = null;
 var cinnamonDBusService = null;
 var modalCount = 0;
@@ -418,6 +421,7 @@ function start() {
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
+    windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
     placesManager = new PlacesManager.PlacesManager();
 
     magnifier = new Magnifier.Magnifier();
