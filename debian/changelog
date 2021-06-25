@@ -1,3 +1,35 @@
+cinnamon (5.0.3) uma; urgency=medium
+
+  [ Michael Webster ]
+  * meson: Make install dir of the python spice modules configurable.
+  * menu applet: Don't strip the search pattern before sending it to custom search providers.
+
+  [ Stephen Collins ]
+  * xapp status applet: update the tooltip text immediately (#10130)
+
+  [ itzexor ]
+  * lookingGlass.js: work around actor property access error
+  * lookingGlass.js: delay and aggregate window tracker updates
+  * lookingGlass.js: modernizations and cleanups
+
+  [ Peter ]
+  * Add basic proxy auth for spices manager
+  * Update Spices.py
+
+  [ Michael Webster ]
+  * main.js: Simplify activateWindow and let muffin handle workspace activation.
+
+  [ itzexor ]
+  * cinnamon-killer-daemon: user cinnamon-launcher instead
+  * cinnamon-launcher: fix fallback recovery code
+
+  [ Michael Webster ]
+  * cinnamon-launcher: Show restart confirmation even if memory limiting is disabled.
+  * Restore the window attention handler, but with a reversed role.
+  * window-list applet: Don't rely on muffin signals for marking new windows as urgent.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 25 Jun 2021 16:57:58 +0100
+
 cinnamon (5.0.2) uma; urgency=medium
 
   [ Michael Webster ]
