@@ -318,11 +318,14 @@ on_request_cancelled (GCancellable *cancellable,
                       gpointer      user_data)
 {
   AuthRequest *request = user_data;
+  guint id;
+
   /* post-pone to idle to handle GCancellable deadlock in
    *
    *  https://bugzilla.gnome.org/show_bug.cgi?id=642968
    */
-  g_idle_add (handle_cancelled_in_idle, request);
+  id = g_idle_add (handle_cancelled_in_idle, request);
+  g_source_set_name_by_id (id, "[cinnamon] handle_cancelled_in_idle");
 }
 
 static void maybe_process_next_request (CinnamonPolkitAuthenticationAgent *agent);
