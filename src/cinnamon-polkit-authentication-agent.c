@@ -108,11 +108,18 @@ cinnamon_polkit_authentication_agent_init (CinnamonPolkitAuthenticationAgent *ag
                                                       &error);
   if (subject == NULL)
     {
-      g_warning ("Error getting session for the process we are in: %s (%s %d)",
-                 error->message,
-                 g_quark_to_string (error->domain),
-                 error->code);
-      g_error_free (error);
+      if (error) /* polkit version 104 and older don't properly set error on failure */
+        {
+          g_warning ("Error getting session for the process we are in: %s (%s %d)",
+                     error->message,
+                     g_quark_to_string (error->domain),
+                     error->code);
+          g_error_free (error);
+        }
+      else
+        {
+          g_warning ("Error getting session for the process we are in");
+        }
       goto out;
     }
 
