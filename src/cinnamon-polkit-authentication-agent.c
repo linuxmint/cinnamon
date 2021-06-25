@@ -10,8 +10,6 @@
 
 #include <pwd.h>
 
-#include "cinnamon-marshal.h"
-
 #define POLKIT_AGENT_I_KNOW_API_IS_SUBJECT_TO_CHANGE
 #include <polkitagent/polkitagent.h>
 #include "cinnamon-polkit-authentication-agent.h"
@@ -173,7 +171,7 @@ cinnamon_polkit_authentication_agent_class_init (CinnamonPolkitAuthenticationAge
                   0,    /* class_offset */
                   NULL, /* accumulator */
                   NULL, /* accumulator data */
-                  _cinnamon_marshal_VOID__STRING_STRING_STRING_STRING_BOXED,
+                  NULL, /* marshaller */
                   G_TYPE_NONE,
                   5,
                   G_TYPE_STRING,
@@ -189,7 +187,7 @@ cinnamon_polkit_authentication_agent_class_init (CinnamonPolkitAuthenticationAge
                   0,    /* class_offset */
                   NULL, /* accumulator */
                   NULL, /* accumulator data */
-                  g_cclosure_marshal_VOID__VOID,
+                  NULL, /* marshaller */
                   G_TYPE_NONE,
                   0);
 }
