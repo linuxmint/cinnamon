@@ -115,6 +115,7 @@ c_args = [
     '-DCINNAMON_DATADIR="@0@"'.format(join_paths(prefix, pkgdatadir)),
     '-DJSDIR="@0@/js"'.format(join_paths(prefix, pkgdatadir)),
     '-DMUFFIN_TYPELIB_DIR="@0@"'.format(muffinlibdir),
+    '-DPOLKIT_AGENT_I_KNOW_API_IS_SUBJECT_TO_CHANGE',
 ]
 
 if not get_option('deprecated_warnings')
