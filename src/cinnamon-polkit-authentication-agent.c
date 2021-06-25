@@ -230,6 +230,7 @@ auth_request_free (AuthRequest *request)
   g_free (request->message);
   g_free (request->icon_name);
   g_object_unref (request->details);
+  g_free (request->cookie);
   g_list_foreach (request->identities, (GFunc) g_object_unref, NULL);
   g_list_free (request->identities);
   g_object_unref (request->simple);
