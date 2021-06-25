@@ -89,6 +89,7 @@ const SlideshowManager = imports.ui.slideshowManager;
 var AppletManager = imports.ui.appletManager;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const DeskletManager = imports.ui.deskletManager;
+const PolkitAuthenticationAgent = imports.ui.polkitAuthenticationAgent;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
@@ -437,6 +438,9 @@ function start() {
     // Provide the bus object for gnome-session to
     // initiate logouts.
     //EndSessionDialog.init();
+
+    // Attempt to become a PolicyKit authentication agent
+    PolkitAuthenticationAgent.init()
 
     _startDate = new Date();
 
