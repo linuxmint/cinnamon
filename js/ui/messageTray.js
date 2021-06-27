@@ -824,16 +824,16 @@ MessageTray.prototype = {
         this._sources = [];
         Main.layoutManager.addChrome(this._notificationBin);
 
-		// Settings
+        // Settings
         this.settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" })
-		function setting(self, source, camelCase, dashed) {
-			function updater() { self[camelCase] = source.get_boolean(dashed); }
-			source.connect('changed::'+dashed, updater);
-			updater();
-		}
-		setting(this, this.settings, "_notificationsEnabled", "display-notifications");
+        function setting(self, source, camelCase, dashed) {
+            function updater() { self[camelCase] = source.get_boolean(dashed); }
+            source.connect('changed::'+dashed, updater);
+            updater();
+        }
+        setting(this, this.settings, "_notificationsEnabled", "display-notifications");
         this.bottomPosition = this.settings.get_boolean("bottom-notifications");
-	setting(this, this.settings, "_nonCriticalDisplayFullscreen", "display-noncritical-in-fullscreen");
+        setting(this, this.settings, "_nonCriticalDisplayFullscreen", "display-noncritical-in-fullscreen");
         this.settings.connect("changed::bottom-notifications", () => {
             this.bottomPosition = this.settings.get_boolean("bottom-notifications");
         });
@@ -1015,7 +1015,7 @@ MessageTray.prototype = {
             this._notification.actor._parent_container.remove_actor(this._notification.actor);
         }
 
-	let canShowNonCriticalInFullscreen = this._nonCriticalDisplayFullscreen;
+    let canShowNonCriticalInFullscreen = this._nonCriticalDisplayFullscreen;
 
         this._notificationBin.child = this._notification.actor;
         this._notificationBin.opacity = 0;
