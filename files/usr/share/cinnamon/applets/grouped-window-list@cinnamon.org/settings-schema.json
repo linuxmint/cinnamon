@@ -167,7 +167,7 @@
   },
   "cycleMenusHotkey": {
     "type": "keybinding",
-    "default": "<Super>space",
+    "default": "",
     "description": "Global hotkey for cycling through thumbnail menus"
   },
   "show-apps-order-hotkey": {
