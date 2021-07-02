@@ -1,3 +1,9 @@
+cinnamon (5.0.4) uma; urgency=medium
+
+  * GWL: Remove Super+space shortcut
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 02 Jul 2021 16:18:53 +0100
+
 cinnamon (5.0.3) uma; urgency=medium
 
   [ Michael Webster ]
