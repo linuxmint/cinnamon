@@ -170,13 +170,13 @@ AuthenticationDialog.prototype = {
         messageBox.add(this._nullMessageLabel);
         this._nullMessageLabel.show();
 
-        this._cancelButton = this.addButton({ label: _("Cancel"),
-                                              action: Lang.bind(this, this.cancel),
-                                              key: Clutter.Escape });
-        this._okButton = this.addButton({ label:  _("Authenticate"),
-                                          action: Lang.bind(this, this._onAuthenticateButtonPressed),
-                                          default: true },
-                                        { expand: true, x_fill: false, x_align: St.Align.END });
+        this.setButtons([{ label: _("Cancel"),
+                           action: Lang.bind(this, this.cancel),
+                           key:    Clutter.Escape
+                         },
+                         { label:  _("Authenticate"),
+                           action: Lang.bind(this, this._onAuthenticateButtonPressed)
+                         }]);
 
         this._doneEmitted = false;
 
@@ -224,17 +224,8 @@ AuthenticationDialog.prototype = {
         }
     },
 
-    _updateSensitivity: function(sensitive) {
-        this._passwordEntry.reactive = sensitive;
-        this._passwordEntry.clutter_text.editable = sensitive;
-
-        this._okButton.can_focus = sensitive;
-        this._okButton.reactive = sensitive;
-    },
-
     _onEntryActivate: function() {
         let response = this._passwordEntry.get_text();
-        this._updateSensitivity(false);
         this._session.response(response);
         // When the user responds, dismiss already shown info and
         // error texts (if any)
@@ -288,7 +279,6 @@ AuthenticationDialog.prototype = {
         this._passwordBox.show();
         this._passwordEntry.set_text('');
         this._passwordEntry.grab_key_focus();
-        this._updateSensitivity(true);
         this._ensureOpen();
     },
 
