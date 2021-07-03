@@ -94,7 +94,7 @@ AuthenticationDialog.prototype = {
         let userName = userNames[0];
 
         this._user = AccountsService.UserManager.get_default().get_user(userName);
-        let userRealName = this._user.get_real_name()
+        let userRealName = this._user.get_real_name();
         this._userLoadedId = this._user.connect('notify::is_loaded',
                                                 Lang.bind(this, this._onUserChanged));
         this._userChangedId = this._user.connect('changed',
@@ -378,7 +378,7 @@ AuthenticationAgent.prototype = {
         this._currentDialog = null;
         this._isCompleting = false;
 
-        this._native.complete(dismissed)
+        this._native.complete(dismissed);
     },
 
     _completeRequest: function(keepVisible, wasDismissed) {
@@ -399,7 +399,7 @@ AuthenticationAgent.prototype = {
             this._reallyCompleteRequest(wasDismissed);
         }
     }
-}
+};
 
 function init() {
     let agent = new AuthenticationAgent();
