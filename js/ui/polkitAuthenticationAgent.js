@@ -67,7 +67,7 @@ AuthenticationDialog.prototype = {
         let messageBox = new St.BoxLayout({ style_class: 'polkit-dialog-message-layout',
                                             vertical: true });
         mainContentBox.add(messageBox,
-                           { y_align: St.Align.START });
+                           { expand: true, y_align: St.Align.START });
 
         this._subjectLabel = new St.Label({ style_class: 'polkit-dialog-headline',
                                             text: _("Authentication Required") });
