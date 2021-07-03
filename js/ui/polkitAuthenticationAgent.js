@@ -309,7 +309,7 @@ AuthenticationDialog.prototype = {
     },
 
     _onUserChanged: function() {
-        if (this._user.is_loaded) {
+        if (this._user.is_loaded && this._userAvatar) {
             if (this._userIcon) {
                 let iconFileName = this._user.get_icon_file();
                 let iconFile = Gio.file_new_for_path(iconFileName);
