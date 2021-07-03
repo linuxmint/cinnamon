@@ -264,7 +264,7 @@ AuthenticationDialog.prototype = {
                  * requested authentication was not gained; this can happen
                  * because of an authentication error (like invalid password),
                  * for instance. */
-                this._errorMessageLabel.set_text(_("Sorry, that didn\'t work. Please try again."));
+                this._errorMessageLabel.set_text(_("Sorry, that didn't work. Please try again."));
                 this._errorMessageLabel.show();
                 this._infoMessageLabel.hide();
                 this._nullMessageLabel.hide();
