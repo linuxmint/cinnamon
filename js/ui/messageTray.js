@@ -1015,7 +1015,7 @@ MessageTray.prototype = {
             this._notification.actor._parent_container.remove_actor(this._notification.actor);
         }
 
-    let canShowNonCriticalInFullscreen = this._nonCriticalDisplayFullscreen;
+        let canShowNonCriticalInFullscreen = this._nonCriticalDisplayFullscreen;
 
         this._notificationBin.child = this._notification.actor;
         this._notificationBin.opacity = 0;
