@@ -623,7 +623,7 @@
     </key>
 
     <key type="as" name="demands-attention-passthru-wm-classes">
-      <default>['gnome-screenshot', 'lxterminal', 'xfce4-terminal']</default>
+      <default>['gnome-screenshot', 'lxterminal', 'xfce4-terminal', 'firefox']</default>
       <summary>WM class names to always give focus to in windowAttentionHandler.js</summary>
     </key>
     <key name="app-menu-icon-name" type="s">
