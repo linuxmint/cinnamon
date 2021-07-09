@@ -254,7 +254,7 @@ class WindowPreview extends Tooltips.TooltipBase {
 }
 
 class AppMenuButton {
-    constructor(applet, metaWindow, alert) {
+    constructor(applet, metaWindow, transient) {
         this.actor = new Cinnamon.GenericContainer({
             name: 'appMenu',
             style_class: 'window-list-item-box',
@@ -264,7 +264,8 @@ class AppMenuButton {
 
         this._applet = applet;
         this.metaWindow = metaWindow;
-        this.alert = alert || metaWindow.is_demanding_attention() || metaWindow.is_urgent();
+        this.transient = transient;
+        let initially_urgent = transient || metaWindow.is_demanding_attention() || metaWindow.is_urgent();
         this.labelVisible = false;
         this._signals = new SignalManager.SignalManager();
         this.xid = metaWindow.get_xwindow();
@@ -336,7 +337,7 @@ class AppMenuButton {
 
         this.onPreviewChanged();
 
-        if (!this.alert) {
+        if (!this.transient) {
             this._menuManager = new PopupMenu.PopupMenuManager(this);
             this.rightClickMenu = new AppMenuButtonRightClickMenu(this, this.metaWindow, this._applet.orientation);
             this._menuManager.addMenu(this.rightClickMenu);
@@ -360,7 +361,7 @@ class AppMenuButton {
         this.onFocus();
         this.setIcon();
 
-        if (this.alert)
+        if (initially_urgent)
             this.getAttention();
 
         this._signals.connect(this.metaWindow, 'notify::title', this.setDisplayTitle, this);
@@ -529,7 +530,7 @@ class AppMenuButton {
     destroy() {
         this._signals.disconnectAllSignals();
         this._tooltip.destroy();
-        if (!this.alert) {
+        if (!this.transient) {
             this.rightClickMenu.destroy();
             this._menuManager.destroy();
         }
@@ -561,7 +562,7 @@ class AppMenuButton {
             this.actor.remove_style_class_name("window-list-item-demands-attention-top");
             this._needsAttention = false;
 
-            if (this.alert) {
+            if (this.transient) {
                 this.destroy();
                 this._windows.splice(this._windows.indexOf(this), 1);
             }
@@ -572,7 +573,7 @@ class AppMenuButton {
 
     _onButtonRelease(actor, event) {
         this._tooltip.hide();
-        if (this.alert) {
+        if (this.transient) {
             if (event.get_button() == 1)
                 this._toggleWindow(false);
             return false;
@@ -591,7 +592,7 @@ class AppMenuButton {
 
     _onButtonPress(actor, event) {
         this._tooltip.hide();
-        if (!this.alert && event.get_button() == 3) {
+        if (!this.transient && event.get_button() == 3) {
             this.rightClickMenu.mouseEvent = event;
             this.rightClickMenu.toggle();
 
@@ -1208,7 +1209,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
          * AppMenuButton. If this is actually a temporary AppMenuButton for
          * urgent windows on other workspaces, it is shown iff the normal
          * one isn't shown! */
-        if (window.alert)
+        if (window.transient)
             window.actor.visible = !window.actor.visible;
 
         if (window.actor.visible)
@@ -1280,13 +1281,13 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this._applySavedOrder();
     }
 
-    _addWindow(metaWindow, alert) {
+    _addWindow(metaWindow, transient) {
         for (let window of this._windows)
             if (window.metaWindow == metaWindow &&
-                window.alert == alert)
+                window.transient == transient)
                 return;
 
-        let appButton = new AppMenuButton(this, metaWindow, alert);
+        let appButton = new AppMenuButton(this, metaWindow, transient);
         this.manager_container.add_actor(appButton.actor);
 
         this._windows.push(appButton);
@@ -1295,7 +1296,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
          * workspace. So if we add an AppMenuButton for a window in another
          * workspace, put it in the right position. It is at the end by
          * default, so move it to the start if needed */
-        if (alert) {
+        if (transient) {
             if (metaWindow.get_workspace().index() < global.screen.get_active_workspace_index())
                 this.manager_container.set_child_at_index(appButton.actor, 0);
         } else {
