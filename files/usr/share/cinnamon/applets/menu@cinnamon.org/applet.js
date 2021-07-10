@@ -39,11 +39,7 @@ const AppUtils = require('./appUtils');
 
 let appsys = Cinnamon.AppSystem.get_default();
 
-// The defaults are in settings-schema.json.
-const POPUP_MIN_WIDTH = 500;
-const POPUP_MAX_WIDTH = 800;
-const POPUP_MIN_HEIGHT = 400;
-const POPUP_MAX_HEIGHT = 950;
+const MAX_BUTTON_WIDTH = "max-width: 20em;";
 
 const RefreshFlags = Object.freeze({
     APP:      0b000001,
@@ -186,6 +182,7 @@ class SimpleMenuItem {
         this._signals = new SignalManager.SignalManager();
 
         this.actor = new St.BoxLayout({ style_class: params.styleClass,
+                                        style: MAX_BUTTON_WIDTH,
                                         reactive: params.reactive,
                                         accessible_role: Atk.Role.MENU_ITEM });
 
@@ -1425,22 +1422,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _resizeApplicationsBox() {
-        let widths = [];
+        let width = -1;
         Util.each(this.applicationsBox.get_children(), c => {
-            // This is absurd... but using get_preferred_width doesn't seem work in some
-            // themes. See mint-y vs mint-x.
-            let layout = c._delegate.label.clutter_text.get_layout();
-            let icon_width = c._delegate.icon ? c._delegate.icon.icon_size : 0;
-            let [w, h] = layout.get_pixel_size();
-            widths.push(w + icon_width);
+            let [min, nat] = c.get_preferred_width(-1.0);
+            if (nat > width)
+                width = nat;
         });
-
-        widths.sort((a, b) => a - b);
-
-        // discard the highest ~5% of widths then use the highest remaining value
-        let n_trimmed = Math.round(widths.length * .05);
-        let width = widths[widths.length - n_trimmed];
-
         this.applicationsBox.set_width(width + 42); // The answer to life...
     }
 
