@@ -824,15 +824,16 @@ MessageTray.prototype = {
         this._sources = [];
         Main.layoutManager.addChrome(this._notificationBin);
 
-		// Settings
+        // Settings
         this.settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" })
-		function setting(self, source, camelCase, dashed) {
-			function updater() { self[camelCase] = source.get_boolean(dashed); }
-			source.connect('changed::'+dashed, updater);
-			updater();
-		}
-		setting(this, this.settings, "_notificationsEnabled", "display-notifications");
+        function setting(self, source, camelCase, dashed) {
+            function updater() { self[camelCase] = source.get_boolean(dashed); }
+            source.connect('changed::'+dashed, updater);
+            updater();
+        }
+        setting(this, this.settings, "_notificationsEnabled", "display-notifications");
         this.bottomPosition = this.settings.get_boolean("bottom-notifications");
+        setting(this, this.settings, "_nonCriticalDisplayFullscreen", "display-noncritical-in-fullscreen");
         this.settings.connect("changed::bottom-notifications", () => {
             this.bottomPosition = this.settings.get_boolean("bottom-notifications");
         });
@@ -1014,6 +1015,8 @@ MessageTray.prototype = {
             this._notification.actor._parent_container.remove_actor(this._notification.actor);
         }
 
+        let canShowNonCriticalInFullscreen = this._nonCriticalDisplayFullscreen;
+
         this._notificationBin.child = this._notification.actor;
         this._notificationBin.opacity = 0;
 
@@ -1041,10 +1044,10 @@ MessageTray.prototype = {
         if (!this._notification.silent || this._notification.urgency >= Urgency.HIGH) {
             Main.soundManager.play('notification');
         }
-        if (this._notification.urgency == Urgency.CRITICAL) {
+        if (this._notification.urgency == Urgency.CRITICAL || canShowNonCriticalInFullscreen) {
             Main.layoutManager._chrome.modifyActorParams(this._notificationBin, { visibleInFullscreen: true });
         } else {
-            Main.layoutManager._chrome.modifyActorParams(this._notificationBin, { visibleInFullscreen: false });
+            Main.layoutManager._chrome.modifyActorParams(this._notificationBin, { visibleInFullscreen: true });
         }
         this._notificationBin.show();
 
