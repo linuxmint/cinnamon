@@ -1,5 +1,6 @@
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
+const Main = imports.ui.main;
 const {SignalManager} = imports.misc.signalManager;
 const {each, filter, findIndex, find, unref} = imports.misc.util;
 const {createStore} = imports.misc.state;
@@ -232,6 +233,7 @@ class AppList {
             || metaWindow.is_on_all_workspaces()
             || metaWindow.get_workspace() === this.metaWorkspace)
         && !metaWindow.is_skip_taskbar()
+        && Main.isInteresting(metaWindow)
         && this.state.monitorWatchList.indexOf(metaWindow.get_monitor()) > -1;
     }
 
