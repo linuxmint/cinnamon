@@ -1047,7 +1047,7 @@ MessageTray.prototype = {
         if (this._notification.urgency == Urgency.CRITICAL || canShowNonCriticalInFullscreen) {
             Main.layoutManager._chrome.modifyActorParams(this._notificationBin, { visibleInFullscreen: true });
         } else {
-            Main.layoutManager._chrome.modifyActorParams(this._notificationBin, { visibleInFullscreen: true });
+            Main.layoutManager._chrome.modifyActorParams(this._notificationBin, { visibleInFullscreen: false });
         }
         this._notificationBin.show();
 
