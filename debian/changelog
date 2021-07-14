@@ -1,3 +1,16 @@
+cinnamon (5.0.5) uma; urgency=medium
+
+  [ Michael Webster ]
+  * util.js: Remove long parenthesized text in network device labels.
+  * org.cinnamon.gschema.xml: Add lxterminal and xfce4-terminal to focus passthru list.
+  * org.cinnamon.gschema.xml: Add firefox to focus passthru list.
+  * window list applet: Track urgent/demanding attention separately from other-workspace transience during initial window item creation.
+  * menu applet: Restore a max button width constraint, and the old width calculations for the application box.
+  * menu applet: Fix the fallback sort method for search results.
+  * org.cinnamon.gschema.xml: Add libreoffice to focus passthru list.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 14 Jul 2021 15:23:16 +0100
+
 cinnamon (5.0.4) uma; urgency=medium
 
   * GWL: Remove Super+space shortcut
