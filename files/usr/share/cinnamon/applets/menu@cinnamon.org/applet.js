@@ -3032,7 +3032,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     return 1;
                 }
 
-                return ba.searchStrings[0] < bb.searchStrings[0];
+                return ba.name.localeCompare(bb.name);
             });
 
             for (let i = 0; i < buttons.length; i++) {
