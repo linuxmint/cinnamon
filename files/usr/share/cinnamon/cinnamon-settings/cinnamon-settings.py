@@ -3,6 +3,9 @@
 import getopt
 import sys
 
+from bin import util
+util.strip_syspath_locals()
+
 import os
 import glob
 import gettext
