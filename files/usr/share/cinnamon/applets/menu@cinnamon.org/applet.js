@@ -2510,7 +2510,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             let button = new PlaceButton(this, places[i]);
             this._placesButtons.push(button);
             this.applicationsBox.insert_child_below(button.actor, sibling);
-            button.actor.visible = this.menu.isOpen;
+            button.actor.visible = this.lastSelectedCategory === "place" || !this.menu.isOpen;
             sibling = button.actor;
         }
     }
@@ -2548,7 +2548,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 let button = new RecentButton(this, info);
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
-                button.actor.visible = this.menu.isOpen;
+                button.actor.visible = this.lastSelectedCategory === "recent" || !this.menu.isOpen;
+                button.actor.visible = !this.menu.isOpen;
             });
 
             let button = new SimpleMenuItem(this, { name: _("Clear list"),
@@ -2568,7 +2569,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
             this._recentButtons.push(button);
             this.applicationsBox.add_actor(button.actor);
-            button.actor.visible = this.menu.isOpen;
+            button.actor.visible = this.lastSelectedCategory === "recent" || !this.menu.isOpen;
         } else {
             this.noRecentDocuments = true;
             let button = new SimpleMenuItem(this, { name: _("No recent documents"),
@@ -2579,7 +2580,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             button.addLabel(button.name, 'menu-application-button-label');
             this._recentButtons.push(button);
             this.applicationsBox.add_actor(button.actor);
-            button.actor.visible = this.menu.isOpen;
+            button.actor.visible = this.lastSelectedCategory === "recent" || !this.menu.isOpen;
         }
     }
 
@@ -2615,7 +2616,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             let button = new FavoriteButton(this, info);
             this._favoriteDocButtons.push(button);
             this.applicationsBox.add_actor(button.actor);
-            button.actor.visible = this.menu.isOpen;
+            button.actor.visible = this.lastSelectedCategory === "favorite" || !this.menu.isOpen;
         });
     }
 
@@ -2667,7 +2668,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
             this._applicationsButtons.push(button);
             this.applicationsBox.insert_child_at_index(button.actor, 0);
-            button.actor.visible = this.menu.isOpen;
+            button.actor.visible = this.lastSelectedCategory === button.category ||
+                                   this.lastSelectedCategory == null ||
+                                   !this.menu.isOpen;
         }
 
         // we expect this array to be in the same order as the child list
