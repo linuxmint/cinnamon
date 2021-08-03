@@ -49,4 +49,5 @@ class UpdateManager():
         harvester = self.harvesters[spice_type]
         harvester.install(uuid)
 
-
+    def spice_is_enabled(self, update):
+        return self.harvesters[update.spice_type].get_enabled(update.uuid) > 0

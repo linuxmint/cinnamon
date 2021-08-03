@@ -19,7 +19,8 @@ from PIL import Image
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
-from gi.repository import Gdk, Gtk
+gi.require_version('Gio', '2.0')
+from gi.repository import Gdk, Gtk, Gio
 
 from . import logger
 from . import proxygsettings
@@ -38,13 +39,29 @@ except:
     pass
 
 URL_GITHUB_SPICES = "https://cinnamon-spices.linuxmint.com"
-
 URL_SPICES_HOME = "https://cinnamon-spices.linuxmint.com"
-URL_MAP = {
-    'applet': URL_SPICES_HOME + "/json/applets.json",
-    'theme': URL_SPICES_HOME + "/json/themes.json",
-    'desklet': URL_SPICES_HOME + "/json/desklets.json",
-    'extension': URL_SPICES_HOME + "/json/extensions.json"
+
+SPICE_MAP = {
+    "applet": {
+        "url": URL_SPICES_HOME + "/json/applets.json",
+        "enabled-schema": "org.cinnamon",
+        "enabled-key": "enabled-applets"
+    },
+    "desklet": {
+        "url": URL_SPICES_HOME + "/json/desklets.json",
+        "enabled-schema": "org.cinnamon",
+        "enabled-key": "enabled-desklets"
+    },
+    "extension": {
+        "url": URL_SPICES_HOME + "/json/extensions.json",
+        "enabled-schema": "org.cinnamon",
+        "enabled-key": "enabled-extensions"
+    },
+    "theme": {
+        "url": URL_SPICES_HOME + "/json/themes.json",
+        "enabled-schema": "org.cinnamon.theme",
+        "enabled-key": "name"
+    }
 }
 
 TIMEOUT_DOWNLOAD_JSON = 120
@@ -163,9 +180,27 @@ class Harvester():
     def install(self, uuid):
         self._install_by_uuid(uuid)
 
+    def get_enabled(self, uuid):
+        settings = Gio.Settings(schema_id=SPICE_MAP[self.spice_type]["enabled-schema"])
+
+        enabled_count = 0
+        enabled_list = []
+
+        if self.themes:
+            enabled_list = [settings.get_string(SPICE_MAP[self.spice_type]["enabled-key"])]
+        else:
+            enabled_list = settings.get_strv(SPICE_MAP[self.spice_type]["enabled-key"])
+
+        for item in enabled_list:
+            item = item.replace("!", "")
+            if uuid in item.split(":"):
+                enabled_count += 1
+
+        return enabled_count
+
     def _update_local_json(self):
         debug("harvester: Downloading new list of available %ss" % self.spice_type)
-        url = URL_MAP[self.spice_type]
+        url = SPICE_MAP[self.spice_type]["url"]
 
         r = requests.get(url, timeout=TIMEOUT_DOWNLOAD_JSON, proxies=self.proxy_info, params={ "time" : round(time.time()) })
         debug("Downloading from %s" % r.request.url)
