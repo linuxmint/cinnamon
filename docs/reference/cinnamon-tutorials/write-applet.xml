@@ -12,7 +12,7 @@
     <para>In this tutorial, we will go through the process of creating a simple applet to learn about the Applet API. Here we will create a Force Quit applet.</para>
 
     <para>
-      For those who are unfamiliar with “force-quitting”: When a window becomes unresponsive and doesn’t want to close, the most efficient way to force it to close is to kill its process. You could use the “<code>ps</code>” command to find its process ID and kill it with the “<code>kill</code>” command. Or alternatively you could run the “<code>xkill</code>” command, and simply click on the window you want to kill. And that’s exactly what our “Force Quit” applet is going to do... after you click on it, your mouse cursor will change into a window killer, which you’ll target at the window you want to get rid of :)
+      For those who are unfamiliar with “force-quitting”: When a window becomes unresponsive and doesn't want to close, the most efficient way to force it to close is to kill its process. You could use the “<code>ps</code>” command to find its process ID and kill it with the “<code>kill</code>” command. Or alternatively you could run the “<code>xkill</code>” command, and simply click on the window you want to kill. And that's exactly what our “Force Quit” applet is going to do... after you click on it, your mouse cursor will change into a window killer, which you’ll target at the window you want to get rid of :)
     </para>
 
   </sect2>
