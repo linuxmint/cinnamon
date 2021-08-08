@@ -68,14 +68,14 @@
   <sect2>
     <title>Using the settings in your applet</title>
     <para>
-      Now that you have your settings defined in settings-schema.json, you will need to set up your applet to use them. The first thing you will need to do is import the settings library. To do so, sipmly place the following line with the other imports at the beginning of your file:
+      Now that you have your settings defined in settings-schema.json, you will need to set up your applet to use them. The first thing you will need to do is import the settings library. To do so, simply place the following line with the other imports at the beginning of your file:
     </para>
     <informalexample>
       <programlisting>
 const Settings = imports.ui.settings;</programlisting>
     </informalexample>
     <para>
-      Now you will need to initialize the settings provider. It is recommended that you do this early in the <code>_init</code> function of your applet, since you can’t use any of the settings until the provider is initialized. We do this by using the AppletSettings class as follows:
+      Now you will need to initialize the settings provider. It is recommended that you do this early in the <code>_init</code> function of your applet, since you can't use any of the settings until the provider is initialized. We do this by using the AppletSettings class as follows:
     </para>
     <informalexample>
       <programlisting>
