@@ -17,7 +17,7 @@ if __name__ == "__main__":
         result = subprocess.check_output(sys.argv[2:])
         success = True
     except Exception:
-        result = ""
+        result = b''
         success = False
 
     try:
