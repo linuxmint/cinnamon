@@ -209,6 +209,7 @@ st_gir = gnome.generate_gir(
     dependencies: libst_deps,
     identifier_prefix: 'St',
     symbol_prefix: 'st',
+    export_packages: 'st',
     includes: st_gir_includes,
     install: true,
     install_dir_typelib: pkglibdir,

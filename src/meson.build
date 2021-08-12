@@ -183,6 +183,7 @@ cinnamon_gir = gnome.generate_gir(
     dependencies: libcinnamon_deps,
     identifier_prefix: 'Cinnamon',
     symbol_prefix: 'cinnamon',
+    export_packages: 'cinnamon',
     includes: cinnamon_gir_includes,
     install: true,
     install_dir_typelib: pkglibdir,
