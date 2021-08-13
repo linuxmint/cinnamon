@@ -837,6 +837,13 @@ StScrollBar StButton#vhandle:hover {
     padding: 3px 31px 4px;
 }
 
+.confirm-dialog-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5em;
+    padding-bottom: 12px;
+}
+
 /* Info OSD popup */
 .info-osd {
     font-size: 1.2em;

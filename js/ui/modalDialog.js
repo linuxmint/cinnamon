@@ -449,6 +449,9 @@ ConfirmDialog.prototype = {
      */
     _init: function(label, callback){
         ModalDialog.prototype._init.call(this);
+        this.contentLayout.add(new St.Label({ text:        _("Confirm"),
+                                              style_class: 'confirm-dialog-title',
+                                              important:   true }));
         this.contentLayout.add(new St.Label({text: label}));
         this.callback = callback;
 
