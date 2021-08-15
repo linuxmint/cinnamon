@@ -74,7 +74,7 @@ class ControlButton {
     }
 
     setEnabled(status) {
-        this.button.change_style_pseudo_class("disabled", !status);
+        this.button.change_style_pseudo_class("insensitive", !status);
         this.button.can_focus = status;
         this.button.reactive = status;
     }
