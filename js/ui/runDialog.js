@@ -3,6 +3,7 @@
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Pango = imports.gi.Pango;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
@@ -164,9 +165,11 @@ __proto__: ModalDialog.ModalDialog.prototype,
         global.display.connect('restart', () => this.close());
 
         let label = new St.Label({ style_class: 'run-dialog-label',
-                                   text: _("Please enter a command:") });
+                                   text: _("Enter a command") });
 
-        this.contentLayout.add(label, { y_align: St.Align.START });
+        this.contentLayout.set_width(350);
+
+        this.contentLayout.add(label, { x_align: St.Align.MIDDLE });
 
         let entry = new St.Entry({ style_class: 'run-dialog-entry' });
         CinnamonEntry.addContextMenu(entry);
@@ -182,24 +185,15 @@ __proto__: ModalDialog.ModalDialog.prototype,
         this.contentLayout.add(this._completionBox);
         this._completionSelected = 0;
 
-        this._errorBox = new St.BoxLayout({ style_class: 'run-dialog-error-box' });
+        let defaultDescriptionText = _("Press ESC to close");
 
-        this.contentLayout.add(this._errorBox, { expand: true });
-
-        let errorIcon = new St.Icon({ icon_name: 'dialog-error', icon_size: 24, style_class: 'run-dialog-error-icon' });
-
-        this._errorBox.add(errorIcon, { y_align: St.Align.MIDDLE });
+        this._descriptionLabel = new St.Label({ style_class: 'run-dialog-description',
+                                                text:        defaultDescriptionText });
+        this._descriptionLabel.clutter_text.line_wrap = true;
+        this._descriptionLabel.clutter_text.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
+        this.contentLayout.add(this._descriptionLabel, { y_align: St.Align.MIDDLE });
 
         this._commandError = false;
-
-        this._errorMessage = new St.Label({ style_class: 'run-dialog-error-label' });
-        this._errorMessage.clutter_text.line_wrap = true;
-
-        this._errorBox.add(this._errorMessage, { expand: true,
-                                                 y_align: St.Align.MIDDLE,
-                                                 y_fill: false });
-
-        this._errorBox.hide();
 
         this._entryText.connect('key-press-event', Lang.bind(this, this._onKeyPress));
 
@@ -463,28 +457,14 @@ __proto__: ModalDialog.ModalDialog.prototype,
     _showError : function(message) {
         this._commandError = true;
 
-        this._errorMessage.set_text(message.trim());
-
-        if (!this._errorBox.visible) {
-            let [errorBoxMinHeight, errorBoxNaturalHeight] = this._errorBox.get_preferred_height(-1);
-
-            let parentActor = this._errorBox.get_parent();
-            Tweener.addTween(parentActor,
-                             { height: parentActor.height + errorBoxNaturalHeight,
-                               time: DIALOG_GROW_TIME,
-                               transition: 'easeOutQuad',
-                               onComplete: Lang.bind(this,
-                                                     function() {
-                                                         parentActor.set_height(-1);
-                                                         this._errorBox.show();
-                                                     })
-                             });
-        }
+        this._descriptionLabel.set_text(message.trim());
+        this._descriptionLabel.add_style_class_name('error');
     },
 
     open: function() {
         this._history.lastItem();
-        this._errorBox.hide();
+        this._descriptionLabel.set_text(_("Press ESC to close"));
+        this._descriptionLabel.remove_style_class_name('error');
         this._entryText.set_text('');
         this._completionBox.hide();
         this._commandError = false;
