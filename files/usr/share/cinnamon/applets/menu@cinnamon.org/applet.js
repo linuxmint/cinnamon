@@ -2558,8 +2558,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                                                     type: 'recent-clear',
                                                     styleClass: 'menu-application-button' });
             button.addIcon(22, 'edit-clear', null, true);
-            button.addLabel("", 'menu-application-button-label');
-            button.label.clutter_text.set_markup("<b>"+button.name+"</b>");
+            button.addLabel(button.name, 'menu-application-button-label');
+            button.label.set_style('font-weight: bold;');
             button.activate = () => {
                 this.menu.close();
                 (new Gtk.RecentManager()).purge_items();
