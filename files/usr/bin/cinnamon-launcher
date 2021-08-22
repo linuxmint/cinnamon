@@ -82,8 +82,8 @@ class Launcher():
                     os.execvp(FALLBACK_COMMAND, (FALLBACK_COMMAND,) + FALLBACK_ARGS)
                 else:
                     self.confirm_restart()
- 
-        Gtk.main_quit()
+        else:
+            Gtk.main_quit()
 
     @async_function
     def monitor_memory(self):
@@ -104,7 +104,6 @@ class Launcher():
                     break
 
     def restart_cinnamon(self):
-        Gtk.main_quit()
         os.execvp(sys.argv[0], (sys.argv[0], "--replace"))
 
     def log_kill(self, memory, limit, delay):
