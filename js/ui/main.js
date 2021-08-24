@@ -1320,14 +1320,24 @@ function getRunDialog() {
  * activateWindow:
  * @window (Meta.Window): the Meta.Window to activate
  * @time (int): (optional) current event time
- * @workspaceNum (int): (optional) window's workspace number
+ * @workspaceNum (int): (optional) workspace number to switch to
  *
- * Activates @window, switching to its workspace first if necessary,
- * and switching out of the overview if it's currently active
+ * Activates @window, switching to workspaceNum first if provided,
+ * and switching out of the overview if it's currently active. If
+ * no workspace is provided, workspace-related behavior during
+ * activation will be handled in muffin.
  */
 function activateWindow(window, time, workspaceNum) {
+    let activeWorkspaceNum = global.screen.get_active_workspace_index();
+
     if (!time)
         time = global.get_current_time();
+
+    if (workspaceNum && activeWorkspaceNum != workspaceNum) {
+        let workspace = global.screen.get_workspace_by_index(workspaceNum);
+        workspace.activate_with_focus(window, time);
+        return;
+    }
 
     window.activate(time);
     Mainloop.idle_add(function() {
