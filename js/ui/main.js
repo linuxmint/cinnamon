@@ -1333,7 +1333,7 @@ function activateWindow(window, time, workspaceNum) {
     if (!time)
         time = global.get_current_time();
 
-    if (workspaceNum && activeWorkspaceNum != workspaceNum) {
+    if ((workspaceNum !== undefined) && activeWorkspaceNum !== workspaceNum) {
         let workspace = global.screen.get_workspace_by_index(workspaceNum);
         workspace.activate_with_focus(window, time);
         return;
