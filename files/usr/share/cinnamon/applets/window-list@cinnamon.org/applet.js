@@ -1382,7 +1382,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
             return DND.DragMotionResult.NO_DROP;
 
         let children = this.manager_container.get_children();
-        let isVertical = this.manager_container.height > this.manager_container.width;
+        let isVertical = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
         let axis = isVertical ? [y, 'y1'] : [x, 'x1'];
 
         this._dragPlaceholderPos = -1;
@@ -1390,7 +1390,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
         for(let i = 0; i < children.length; i++) {
             if (!children[i].visible)
                 continue;
-            let dist = Math.abs(axis[0] - (children[i].get_allocation_box()[axis[1]] + children[i].width / 2));
+            let dim = isVertical ? children[i].height : children[i].width;
+            let dist = Math.abs(axis[0] - (children[i].get_allocation_box()[axis[1]] + dim / 2));
             if(dist < minDist || minDist == -1) {
                 minDist = dist;
                 this._dragPlaceholderPos = i;
