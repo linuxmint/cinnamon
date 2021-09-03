@@ -148,8 +148,6 @@ cinnamon_dbus_init (gboolean  replace,
                             "org.gnome.Panel", TRUE,
   /* ...and the org.gnome.Magnifier service. */
                             MAGNIFIER_DBUS_SERVICE, FALSE,
-  /* ...and the org.freedesktop.Notifications service. */
-                            "org.freedesktop.Notifications", FALSE,
                             NULL);
   /* ...and the on-screen keyboard service */
   cinnamon_dbus_acquire_name (bus,

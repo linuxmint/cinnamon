@@ -158,6 +158,42 @@ cinnamon_global_get_property(GObject         *object,
 }
 
 static void
+failed_to_own_notifications (GDBusConnection *connection,
+                             const gchar     *name,
+                             gpointer         user_data)
+{
+    CinnamonGlobal *global = CINNAMON_GLOBAL (user_data);
+
+    g_message ("Tried to become the session notification handler but failed. "
+               "Maybe some other process is handling it.");
+}
+
+static void
+setup_notifications_service (CinnamonGlobal *global)
+{
+  guint owner_id;
+  gboolean disabled;
+
+  /* notify-osd allows itself to be replaced as the notification handler. dunst does not,
+     nor does cinnamon. If we attempt to own and fail, cinnamon is still 'on deck' to take
+     over if the existing handler disappears - our owner_id is still valid. */
+
+  disabled = g_settings_get_boolean (global->settings, "allow-other-notification-handlers");
+
+  if (disabled)
+  {
+    return;
+  }
+
+  owner_id = g_bus_own_name (G_BUS_TYPE_SESSION,
+                             "org.freedesktop.Notifications",
+                             G_BUS_NAME_OWNER_FLAGS_REPLACE,
+                             NULL, NULL,
+                             (GBusNameLostCallback) failed_to_own_notifications,
+                             global, NULL);
+}
+
+static void
 cinnamon_global_init (CinnamonGlobal *global)
 {
   const char *datadir = g_getenv ("CINNAMON_DATADIR");
@@ -187,6 +223,8 @@ cinnamon_global_init (CinnamonGlobal *global)
 
   global->settings = g_settings_new ("org.cinnamon");
 
+  setup_notifications_service (global);
+
   global->ui_scale = 1;
 
   global->grab_notifier = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
@@ -214,7 +252,6 @@ cinnamon_global_finalize (GObject *object)
 
   gtk_widget_destroy (GTK_WIDGET (global->grab_notifier));
   g_object_unref (global->settings);
-  g_object_unref (global->interface_settings);
 
   the_object = NULL;
 

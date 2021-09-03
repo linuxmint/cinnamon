@@ -581,6 +581,11 @@
       </description>
     </key>
 
+    <key type="b" name="allow-other-notification-handlers">
+      <default>false</default>
+      <summary>If true, Cinnamon will no longer attempt to be the session notification handler.</summary>
+    </key>
+
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
