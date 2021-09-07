@@ -26,6 +26,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.settings.bind("showEmptyTray", "showEmptyTray", this._show_hide_tray);
         this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
         this.settings.bind("keyClear", "keyClear", this._setKeybinding);
+        this.settings.bind("hideNotificationCount", "hideNotificationCount", this.update_list);
         this._setKeybinding();
 
         // Layout
@@ -196,6 +197,10 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                 if (!this.showEmptyTray) {
                     this.actor.hide();
                 }
+            }
+            if (this.hideNotificationCount) {  // Don't show notification count
+                this.set_applet_label('');
+                this.clear_action.actor.hide();
             }
             this.menu_label.label.set_text(stringify(count));
             this._notificationbin.queue_relayout();
