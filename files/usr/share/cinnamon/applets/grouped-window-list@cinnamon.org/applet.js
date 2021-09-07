@@ -223,6 +223,11 @@ class GroupedWindowListApplet extends Applet.Applet {
             getPanel: () => (this.panel ? this.panel : null),
             getPanelHeight: () => this._panelHeight,
             getPanelIconSize: () => this.getPanelIconSize(),
+
+            //TODO: FIXME: redefinition below is very dirty, but i don't know how to do this properly
+            getPanelIconSize: () => this.getPanelIconSize() * 
+                (this.state.settings.scalingFactor ? (this.state.settings.scalingFactor / 100) : 1),
+                
             getPanelMonitor: () => this.panel ? Main.layoutManager.monitors[this.panel.monitorIndex] : null,
             getAppSystem: () => Cinnamon.AppSystem.get_default(),
             getAppFromWindow: (metaWindow) => this.getAppFromWindow(metaWindow),

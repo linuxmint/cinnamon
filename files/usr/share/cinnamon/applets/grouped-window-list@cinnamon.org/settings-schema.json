@@ -41,7 +41,8 @@
         "launcher-animation-effect",
         "number-display",
         "pinned-apps",
-        "enable-app-button-dragging"
+        "enable-app-button-dragging",
+        "app-button-scaling-factor"
       ]
     },
     "hotKeysSection": {
@@ -139,6 +140,15 @@
   "pinned-apps": {
     "type": "generic",
     "default": ["firefox.desktop", "org.gnome.Terminal.desktop", "nemo.desktop"]
+  },
+  "app-button-scaling-factor": {
+    "type": "spinbutton",
+    "default": 100,
+    "min": 20,
+    "max": 200,
+    "step": 1,
+    "units": "percent",
+    "description": "App button icon scaling factor"
   },
   "group-apps": {
     "type": "checkbox",
