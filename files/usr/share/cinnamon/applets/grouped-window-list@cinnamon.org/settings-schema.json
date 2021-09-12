@@ -85,7 +85,6 @@
       "keys": [
         "show-recent",
         "autostart-menu-item",
-        "launch-new-instance-menu-item",
         "monitor-move-all-windows"
       ]
     }
@@ -255,12 +254,6 @@
     "type": "checkbox",
     "default": false,
     "description": "Show autostart option"
-  },
-  "launch-new-instance-menu-item": {
-    "type": "checkbox",
-    "default": true,
-    "description": "Show new window option",
-    "tooltip": "Shows the \"New Window\" option in an app's context menu if it doesn't already have one from the app's own action menu items."
   },
   "monitor-move-all-windows": {
     "type": "checkbox",
