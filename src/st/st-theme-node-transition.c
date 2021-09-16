@@ -314,10 +314,9 @@ setup_framebuffers (StThemeNodeTransition *transition,
                                  priv->offscreen_box.x2,
                                  priv->offscreen_box.y2, 0.0, 1.0);
 
-  st_theme_node_paint (priv->old_theme_node, priv->old_offscreen, allocation, 255);
+  st_theme_node_paint (priv->old_theme_node, priv->old_offscreen, allocation, 255, NULL, NULL);
 
-  st_theme_node_paint (priv->new_theme_node, priv->new_offscreen, allocation, 255);
-
+  st_theme_node_paint (priv->new_theme_node, priv->new_offscreen, allocation, 255, NULL, NULL);
   return TRUE;
 }
 
