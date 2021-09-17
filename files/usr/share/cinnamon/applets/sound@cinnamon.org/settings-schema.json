@@ -37,7 +37,7 @@
     "hideUnknownArtist": {
         "type": "switch",
         "default": false,
-        "description": "Hide Unknown Artist on panel label",
+        "description": "Hide Unknown Artist on the panel",
         "dependency": "showtrack"
     },
     "truncatetext": {
