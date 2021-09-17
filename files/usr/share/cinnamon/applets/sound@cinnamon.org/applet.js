@@ -875,6 +875,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this.metadata = metadata;
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
         this.settings.bind("showtrack", "showtrack", this.on_settings_changed);
+        this.settings.bind("hideUnknownArtist", "hideUnknownArtist", this.on_settings_changed);
         this.settings.bind("middleClickAction", "middleClickAction");
         this.settings.bind("horizontalScroll", "horizontalScroll")
         this.settings.bind("showalbum", "showalbum", this.on_settings_changed);
@@ -1227,7 +1228,12 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     setAppletText(player) {
         let title_text = "";
         if (this.showtrack && player && player._playerStatus == 'Playing') {
-            title_text = player._title + ' - ' + player._artist;
+            if (this.hideUnknownArtist && player._artist == "Unknown Artist") {
+                title_text = player._title;
+            }
+            else {
+                title_text = player._title + ' - ' + player._artist;
+            }
             if (this.truncatetext < title_text.length) {
                 title_text = title_text.substr(0, this.truncatetext) + "...";
             }
