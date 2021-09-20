@@ -645,37 +645,6 @@ Source.prototype = {
         this.notify(notification);
     },
 
-    handleSummaryClick: function() {
-        if (!this.trayIcon)
-            return false;
-
-        let event = Clutter.get_current_event();
-        if (event.type() != Clutter.EventType.BUTTON_RELEASE)
-            return false;
-
-        // Left clicks are passed through only where there aren't unacknowledged
-        // notifications, so it possible to open them in summary mode; right
-        // clicks are always forwarded, as the right click menu is not useful for
-        // tray icons
-        if (event.get_button() == 1 &&
-            this.notifications.length > 0)
-            return false;
-
-        if (Main.overview.visible) {
-            // We can't just connect to Main.overview's 'hidden' signal,
-            // because it's emitted *before* it calls popModal()...
-            let id = global.connect('notify::stage-input-mode', Lang.bind(this,
-                function () {
-                    global.disconnect(id);
-                    this.trayIcon.click(event);
-                }));
-            Main.overview.hide();
-        } else {
-            this.trayIcon.click(event);
-        }
-        return true;
-    },
-
     _getApp: function() {
         let app;
 

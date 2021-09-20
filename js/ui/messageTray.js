@@ -620,77 +620,15 @@ Source.prototype = {
     _init: function(title) {
         this.title = title;
 
-        this.actor = new Cinnamon.GenericContainer();
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
-        this.actor.connect('destroy', Lang.bind(this,
-            function() {
-                this._actorDestroyed = true;
-            }));
+        this.actor = new St.Bin({ x_fill: true,
+                                  y_fill: true });
+        this.actor.connect('destroy', () => { this._actorDestroyed = true });
         this._actorDestroyed = false;
-
-        this._counterLabel = new St.Label();
-        this._counterBin = new St.Bin({ style_class: 'summary-source-counter',
-                                        child: this._counterLabel });
-        this._counterBin.hide();
-
-        this._iconBin = new St.Bin({ x_fill: true,
-                                     y_fill: true });
-
-        this.actor.add_actor(this._iconBin);
-        this.actor.add_actor(this._counterBin);
 
         this.isTransient = false;
         this.isChat = false;
 
         this.notifications = [];
-    },
-
-    _getPreferredWidth: function (actor, forHeight, alloc) {
-        let [min, nat] = this._iconBin.get_preferred_width(forHeight);
-        alloc.min_size = min; alloc.nat_size = nat;
-    },
-
-    _getPreferredHeight: function (actor, forWidth, alloc) {
-        let [min, nat] = this._iconBin.get_preferred_height(forWidth);
-        alloc.min_size = min; alloc.nat_size = nat;
-    },
-
-    _allocate: function(actor, box, flags) {
-        // the iconBin should fill our entire box
-        this._iconBin.allocate(box, flags);
-
-        let childBox = new Clutter.ActorBox();
-
-        let [minWidth, minHeight, naturalWidth, naturalHeight] = this._counterBin.get_preferred_size();
-        let direction = this.actor.get_direction();
-
-        if (direction == St.TextDirection.LTR) {
-            // allocate on the right in LTR
-            childBox.x1 = box.x2 - naturalWidth;
-            childBox.x2 = box.x2;
-        } else {
-            // allocate on the left in RTL
-            childBox.x1 = 0;
-            childBox.x2 = naturalWidth;
-        }
-
-        childBox.y1 = box.y2 - naturalHeight;
-        childBox.y2 = box.y2;
-
-        this._counterBin.allocate(childBox, flags);
-    },
-
-    _setCount: function(count, visible) {
-        if (isNaN(parseInt(count)))
-            throw new Error("Invalid notification count: " + count);
-
-        if (this._actorDestroyed)
-            return;
-
-        this._counterBin.visible = visible;
-        this._counterLabel.set_text(count.toString());
     },
 
     _updateCount: function() {
@@ -699,16 +637,10 @@ Source.prototype = {
             let oldestNotif = this.notifications.shift();
             oldestNotif.destroy();
         }
-        this._setCount(count, count > 1);
     },
 
     setTransient: function(isTransient) {
         this.isTransient = isTransient;
-    },
-
-    setTitle: function(newTitle) {
-        this.title = newTitle;
-        this.emit('title-changed');
     },
 
     // Called to create a new icon actor (of size this.ICON_SIZE).
@@ -730,19 +662,16 @@ Source.prototype = {
             this.emit('notification-added', notification);
         }
 
-        notification.connect('clicked', Lang.bind(this, this.open));
-        notification.connect('destroy', Lang.bind(this,
-            function () {
-                let index = this.notifications.indexOf(notification);
-                if (index < 0)
-                    return;
+        notification.connect('clicked', () => { this.open() });
+        notification.connect('destroy', () => {
+            let index = this.notifications.indexOf(notification);
+            if (index < 0)
+                return;
 
-                this.notifications.splice(index, 1);
-                if (this.notifications.length == 0)
-                    this._lastNotificationRemoved();
-
-                this._updateCount();
-            }));
+            this.notifications.splice(index, 1);
+            if (this.notifications.length == 0)
+                this._lastNotificationRemoved();
+        });
 
         this._updateCount();
     },
@@ -756,21 +685,13 @@ Source.prototype = {
         this.emit('destroy', reason);
     },
 
-    // A subclass can redefine this to "steal" clicks from the
-    // summaryitem; Use Clutter.get_current_event() to get the
-    // details, return true to prevent the default handling from
-    // ocurring.
-    handleSummaryClick: function() {
-        return false;
-    },
-
     //// Protected methods ////
 
     // The subclass must call this at least once to set the summary icon.
     _setSummaryIcon: function(icon) {
-        if (this._iconBin.child)
-            this._iconBin.child.destroy();
-        this._iconBin.child = icon;
+        if (this.actor.child)
+            this.actor.child.destroy();
+        this.actor.child = icon;
     },
 
     // Default implementation is to do nothing, but subclasses can override
@@ -781,8 +702,6 @@ Source.prototype = {
         for (let i = this.notifications.length - 1; i >= 0; i--)
             if (!this.notifications[i].resident)
                 this.notifications[i].destroy();
-
-        this._updateCount();
     },
 
     // Default implementation is to destroy this source, but subclasses can override
