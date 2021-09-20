@@ -3186,26 +3186,28 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._previousTreeSelectedActor = null;
         this._previousSelectedActor = null;
 
-        let buttons = this._listApplications(pattern);
+        var acResultButtons = []; // search box autocompletion results
+        var buttons = []
 
-        let result = this._matchNames(this._favoriteDocButtons, pattern);
-        buttons = [...buttons, ...result];
-
-        result = this._matchNames(this._placesButtons, pattern);
-        buttons = [...buttons, ...result];
-
-        result = this._matchNames(this._recentButtons, pattern);
-        buttons = [...buttons, ...result];
-
-        var acResults = []; // search box autocompletion results
-        if (this.searchFilesystem) {
+        if (this.searchFilesystem && ["~", "/"].includes(rawPattern[0])) {
             // Don't use the pattern here, as filesystem is case sensitive
-            acResults = this._getCompletions(rawPattern);
+            acResultButtons = this._getCompletions(rawPattern);
+        } else {
+            buttons = this._listApplications(pattern);
+
+            let result = this._matchNames(this._favoriteDocButtons, pattern);
+            buttons = [...buttons, ...result];
+
+            result = this._matchNames(this._placesButtons, pattern);
+            buttons = [...buttons, ...result];
+
+            result = this._matchNames(this._recentButtons, pattern);
+            buttons = [...buttons, ...result];
         }
 
-        this._displayButtons(null, buttons, acResults);
+        this._displayButtons(null, buttons, acResultButtons);
 
-        if (buttons.length || acResults.length) {
+        if (buttons.length || acResultButtons.length) {
             this.appBoxIter.reloadVisible();
             let item_actor = this.appBoxIter.getFirstVisible();
             this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
