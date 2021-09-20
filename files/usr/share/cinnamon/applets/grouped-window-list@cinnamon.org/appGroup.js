@@ -732,7 +732,7 @@ class AppGroup {
                 } else {
                     this.hoverMenu.open();
                 }
-                if (this.state.overlayPreview) {
+                if (this.state.lastOverlayPreview) {
                     this.hoverMenu.appThumbnails[0].destroyOverlayPreview();
                     this.hoverMenu.close(true);
                 }
