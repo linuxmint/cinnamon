@@ -41,16 +41,8 @@ class EmblemedIcon {
         let true_width = surf.getWidth() * factor;
         let true_height = surf.getHeight() * factor;
 
-        let y_offset = 0;
-        let x_offset = 0;
-
-        if (surf.getWidth() >= surf.getHeight()) {
-            x_offset = 0;
-            y_offset = ((h * (1 / factor)) - surf.getHeight()) / 2;
-        } else {
-            x_offset = ((w * (1 / factor)) - surf.getWidth()) / 2;
-            y_offset = 0;
-        }
+        const x_offset = ((w * (1 / factor)) - surf.getWidth()) / 2;
+        const y_offset = ((h * (1 / factor)) - surf.getHeight()) / 2;
 
         let true_x_offset = (w - true_width) / 2;
         let true_y_offset = (h - true_height) / 2;
