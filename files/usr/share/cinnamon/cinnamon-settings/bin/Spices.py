@@ -14,13 +14,10 @@ try:
     import datetime
     import proxygsettings
     import time
+    import requests
 except Exception as detail:
     print(detail)
     sys.exit(1)
-
-from http.client import HTTPSConnection
-from urllib.parse import urlparse
-from base64 import b64encode
 
 try:
     import json
@@ -387,34 +384,17 @@ class Spice_Harvester(GObject.Object):
         #interrupted.
         count = 0
         blockSize = 1024 * 8
-        parsed_url = urlparse(url)
-        host = parsed_url.netloc
+        proxy_info = proxygsettings.get_proxy_settings()
+
         try:
-            proxy = proxygsettings.get_proxy_settings()
-            if proxy and proxy.get('https'):
-                connection = HTTPSConnection(proxy.get('https'), timeout=15)
-                if proxy and proxy.get('http'):
-                    proxy_url = urlparse("//" + proxy.get('http'))
-                    if proxy_url.username and proxy_url.password:
-                        proxy_auth = '%s:%s' % (proxy_url.username, proxy_url.password)
-                        headers = {"Proxy-Authorization": 'Basic %s' % (b64encode(proxy_auth.encode()).decode())}
-                    else:
-                        headers = dict()                
-                connection.set_tunnel(host, headers=headers)
-            else:
-                connection = HTTPSConnection(host, timeout=15)
-            headers = { "Accept-Encoding": "identity", "Host": host, "User-Agent": "Python/3" }
-            full_path = "%s?%s" % (parsed_url.path, parsed_url.query)
-            connection.request("GET", full_path, headers=headers)
-            urlobj = connection.getresponse()
-            assert urlobj.getcode() == 200
+            response = requests.get(url, proxies=proxy_info, stream=True, timeout=15)
+            assert response.ok
 
-            totalSize = int(urlobj.info()['content-length'])
+            totalSize = int(response.headers.get('content-length'))
 
-            while not self._is_aborted():
-                data = urlobj.read(blockSize)
+            for data in response.iter_content(chunk_size=blockSize):
                 count += 1
-                if not data:
+                if self._is_aborted():
                     break
                 if not binary:
                     data = data.decode("utf-8")
