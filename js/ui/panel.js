@@ -1593,7 +1593,7 @@ PanelContextMenu.prototype = {
 
         let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove"), "list-remove", St.IconType.SYMBOLIC);  // submenu item remove panel
         menuItem.activate = Lang.bind(menu, function() {
-            let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to remove this panel?\n\n"),
+            let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to remove this panel?"),
                     function() {
                         Main.panelManager.removePanel(panelId);
                     });
