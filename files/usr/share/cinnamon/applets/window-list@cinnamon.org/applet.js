@@ -739,7 +739,7 @@ class AppMenuButton {
     }
 
     updateLabelVisible() {
-        if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM) {
+        if (this._applet.showLabelPanel) {
             this._label.show();
             this.labelVisible = true;
         } else {
@@ -1018,6 +1018,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("left-click-minimize", "leftClickMinimize");
         this.settings.bind("middle-click-close", "middleClickClose");
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
+        this.settings.bind("panel-show-label", "showLabelPanel", this._updateLabels);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
         this.settings.bind("window-preview-show-label", "showLabel", this._onPreviewChanged);
         this.settings.bind("window-preview-scale", "previewScale", this._onPreviewChanged);
@@ -1226,6 +1227,11 @@ class CinnamonWindowListApplet extends Applet.Applet {
         for (let window of this._windows) {
             window.setDisplayTitle();
         }
+    }
+    
+    _updateLabels() {
+        for (let window of this._windows)
+            window.updateLabelVisible();
     }
 
     _updateWatchedMonitors() {
