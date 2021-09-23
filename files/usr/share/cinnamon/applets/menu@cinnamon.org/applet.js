@@ -2637,7 +2637,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._applicationsButtons = [];
 
         if (!this._allAppsCategoryButton) {
-            this._allAppsCategoryButton = new CategoryButton(this, null, _("All Applications"), null);
+            this._allAppsCategoryButton = new CategoryButton(this, null, _("All Applications"), "cinnamon-applications-all");
             this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
             this._categoryButtons.push(this._allAppsCategoryButton);
         }
