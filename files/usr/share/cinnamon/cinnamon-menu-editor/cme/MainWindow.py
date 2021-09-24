@@ -319,6 +319,20 @@ class MainWindow(object):
         elif isinstance(item, CMenu.TreeSeparator):
             self.editor.deleteSeparator(item)
 
+        # keep the selection active
+        # TODO: also keep the scroll position
+        self.select_next_or_previous(selection)
+
+    def select_next_or_previous(self, selection):
+        """Select the next or previous item"""
+        items, iter = selection.get_selected()
+        if items[iter]:
+            iter_next = self.item_store.iter_next(iter)
+            iter_prev = self.item_store.iter_previous(iter)
+            item = iter_next if iter_next else iter_prev
+            selection.select_iter(item)
+            return item
+
     def on_edit_properties_activate(self, menu):
         item_tree = self.tree.get_object(self.last_tree)
         items, iter = item_tree.get_selection().get_selected()
