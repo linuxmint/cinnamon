@@ -2799,7 +2799,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.searchBox = new St.BoxLayout({ style_class: 'menu-search-box', vertical: false });
         this.searchEntry = new St.Entry({ name: 'menu-search-entry',
-                                     hint_text: _("Type to search..."),
                                      track_hover: true,
                                      can_focus: true });
         this.searchBox.add(this.searchEntry, { x_align: St.Align.START, y_align: St.Align.MIDDLE, expand: true});
@@ -3090,7 +3089,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _onSearchTextChanged (se, prop) {
         let searchString = this.searchEntry.get_text().trim();
-        let searchActive = !(searchString == '' || searchString == this.searchEntry.hint_text);
+        let searchActive = !(searchString == '');
         if (!this.searchActive && !searchActive)
             return;
 
