@@ -528,13 +528,9 @@ cinnamon_util_format_date (const char *format,
                         gint64      time_ms)
 {
   GDateTime *datetime;
-  GTimeVal tv;
   char *result;
 
-  tv.tv_sec = time_ms / 1000;
-  tv.tv_usec = (time_ms % 1000) * 1000;
-
-  datetime = g_date_time_new_from_timeval_local (&tv);
+  datetime = g_date_time_new_from_unix_local (time_ms / 1000);
   if (!datetime) /* time_ms is out of range of GDateTime */
     return g_strdup ("");
 

@@ -126,11 +126,7 @@ G_DEFINE_TYPE(CinnamonPerfLog, cinnamon_perf_log, G_TYPE_OBJECT);
 static gint64
 get_time (void)
 {
-  GTimeVal timeval;
-
-  g_get_current_time (&timeval);
-
-  return timeval.tv_sec * G_GINT64_CONSTANT(1000000) + timeval.tv_usec;
+  return g_get_monotonic_time ();
 }
 
 static void
