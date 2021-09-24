@@ -1,0 +1,15 @@
+.xapp-status {
+  spacing-rows: 1px;
+  spacing-columns: 1px;
+  padding-top: 0px;
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-bottom: 0px;
+}
+
+.vertical > .xapp-status {
+  padding-top: 2px;
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-bottom: 2px;
+}
