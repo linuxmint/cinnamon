@@ -93,7 +93,8 @@ ModalDialog.prototype = {
 
         if (!this._cinnamonReactive) {
             this._lightbox = new Lightbox.Lightbox(this._group,
-                                                   { inhibitEvents: true });
+                                                   { inhibitEvents: true,
+                                                     radialEffect: true });
             this._lightbox.highlight(this._backgroundBin);
 
             let stack = new Cinnamon.Stack();
