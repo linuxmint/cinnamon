@@ -75,6 +75,13 @@ const PANEL_ZONE_ICON_SIZES = "panel-zone-icon-sizes";
 const PANEL_ZONE_SYMBOLIC_ICON_SIZES = "panel-zone-symbolic-icon-sizes";
 const PANEL_ZONE_TEXT_SIZES = "panel-zone-text-sizes";
 
+/*** List of system monitor apps that can be displayed on right click of panel "COMMAND-NAME": "COMMAND/LOCATION" */
+const SYSTEM_MONITOR_APPS = {"gnome-system-monitor": "/usr/bin/gnome-system-monitor",
+                             "mate-system-monitor": "/usr/bin/mate-system-monitor",
+                             "xfce4-taskmanager": "/usr/bin/xfce4-taskmanager",
+                             "lxtask": "/usr/bin/lxtask"
+                             };
+
 const Direction = {
     LEFT  : 0,
     RIGHT : 1
@@ -1530,19 +1537,19 @@ PanelCorner.prototype = {
     }
 }; // end of panel corner
 
-function SettingsLauncher(label, keyword, icon) {
-    this._init(label, keyword, icon);
+function SettingsLauncher(label, keyword, icon, command) {
+    this._init(label, keyword, icon, command);
 }
 
 SettingsLauncher.prototype = {
     __proto__: PopupMenu.PopupIconMenuItem.prototype,
 
-    _init: function (label, keyword, icon) {
+    _init: function (label, keyword, icon, command) {
         PopupMenu.PopupIconMenuItem.prototype._init.call(this, label, icon, St.IconType.SYMBOLIC);
 
         this._keyword = keyword;
         this.connect('activate', Lang.bind(this, function() {
-            Util.spawnCommandLine("cinnamon-settings " + this._keyword);
+            Util.spawnCommandLine(command + this._keyword);
         }));
     },
 };
@@ -1560,10 +1567,10 @@ PanelContextMenu.prototype = {
         this.actor.hide();
         this.panelId = panelId;
 
-        let moreSettingsMenuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelId, "emblem-system");
+        let moreSettingsMenuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelId, "emblem-system", "cinnamon-settings ");
         this.addMenuItem(moreSettingsMenuItem);
 
-        let applet_settings_item = new SettingsLauncher(_("Applets"), "applets panel" + panelId, "application-x-addon");
+        let applet_settings_item = new SettingsLauncher(_("Applets"), "applets panel" + panelId, "application-x-addon", "cinnamon-settings ");
         this.addMenuItem(applet_settings_item);
 
         let menu = this;
@@ -1664,7 +1671,17 @@ PanelContextMenu.prototype = {
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
         menu.addMenuItem(menu.troubleshootItem);
 
-        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "preferences-desktop"));
+        menu.addMenuItem(new SettingsLauncher(_("System Settings"), "", "preferences-desktop", "cinnamon-settings "));
+
+        // finds a valid system monitor/task manager app from the dict SYSTEM_MONITOR_APPS and adds the first valid one to the menu
+        for (var key in SYSTEM_MONITOR_APPS) {
+            let file = Gio.file_new_for_path(SYSTEM_MONITOR_APPS[key]);
+            if (file.query_exists(null)) {
+                menu.addMenuItem(new SettingsLauncher(_("System Monitor"), "", "utilities-system-monitor", key));
+                break;
+            }
+        }
+        
     },
 
     open: function(animate) {
