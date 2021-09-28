@@ -375,6 +375,9 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
                     return false;
                 });
                 break;
+            case "edit_item":
+                Util.spawnCommandLine("cinnamon-desktop-editor -mlauncher -o " + this._appButton.app.get_app_info().get_filename());
+                break;
             case "add_to_desktop":
                 let file = Gio.file_new_for_path(this._appButton.app.get_app_info().get_filename());
                 let destFile = Gio.file_new_for_path(USER_DESKTOP_PATH+"/"+file.get_basename());
@@ -458,6 +461,9 @@ class GenericApplicationButton extends SimpleMenuItem {
         }
 
         menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel", "list-add");
+        menu.addMenuItem(menuItem);
+
+        menuItem = new ApplicationContextMenuItem(this, _("Edit"), "edit_item", "document-properties");
         menu.addMenuItem(menuItem);
 
         if (USER_DESKTOP_PATH){
