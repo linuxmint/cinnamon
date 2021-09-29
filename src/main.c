@@ -26,7 +26,7 @@
 #include "cinnamon-perf-log.h"
 #include "st.h"
 
-extern GType gnome_cinnamon_plugin_get_type (void);
+extern GType cinnamon_plugin_get_type (void);
 
 #define CINNAMON_DBUS_SERVICE "org.Cinnamon"
 #define MAGNIFIER_DBUS_SERVICE "org.gnome.Magnifier"
@@ -332,7 +332,7 @@ main (int argc, char **argv)
 
   g_option_context_free (ctx);
 
-  meta_plugin_manager_set_plugin_type (gnome_cinnamon_plugin_get_type ());
+  meta_plugin_manager_set_plugin_type (cinnamon_plugin_get_type ());
 
   /* Prevent meta_init() from causing gtk to load gail and at-bridge */
   g_setenv ("NO_GAIL", "1", TRUE);
@@ -360,6 +360,15 @@ main (int argc, char **argv)
   cinnamon_perf_log_init ();
 
   g_irepository_prepend_search_path (CINNAMON_PKGLIBDIR);
+  g_irepository_prepend_search_path (MUFFIN_TYPELIB_DIR);
+
+  /* We need to explicitly add the directories where the private libraries are
+   * installed to the GIR's library path, so that they can be found at runtime
+   * when linking using DT_RUNPATH (instead of DT_RPATH), which is the default
+   * for some linkers (e.g. gold) and in some distros (e.g. Debian).
+   */
+  g_irepository_prepend_library_path (CINNAMON_PKGLIBDIR);
+  g_irepository_prepend_library_path (MUFFIN_TYPELIB_DIR);
 
   /* Disable debug spew from various libraries */
   g_log_set_handler ("Cvc", G_LOG_LEVEL_DEBUG,

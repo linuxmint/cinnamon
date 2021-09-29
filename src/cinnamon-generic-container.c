@@ -122,12 +122,13 @@ cinnamon_generic_container_get_preferred_height (ClutterActor *actor,
 }
 
 static void
-cinnamon_generic_container_paint (ClutterActor  *actor)
+cinnamon_generic_container_paint (ClutterActor  *actor,
+                                  ClutterPaintContext *paint_context)
 {
   CinnamonGenericContainer *self = (CinnamonGenericContainer*) actor;
   ClutterActor *child;
 
-  st_widget_paint_background (ST_WIDGET (actor));
+  st_widget_paint_background (ST_WIDGET (actor), paint_context);
 
   for (child = clutter_actor_get_first_child (actor);
        child != NULL;
@@ -136,18 +137,18 @@ cinnamon_generic_container_paint (ClutterActor  *actor)
       if (g_hash_table_lookup (self->priv->skip_paint, child))
         continue;
 
-      clutter_actor_paint (child);
+      clutter_actor_paint (child, paint_context);
     }
 }
 
 static void
 cinnamon_generic_container_pick (ClutterActor        *actor,
-                              const ClutterColor  *color)
+                                 ClutterPickContext  *pick_context)
 {
   CinnamonGenericContainer *self = (CinnamonGenericContainer*) actor;
   ClutterActor *child;
 
-  CLUTTER_ACTOR_CLASS (cinnamon_generic_container_parent_class)->pick (actor, color);
+  CLUTTER_ACTOR_CLASS (cinnamon_generic_container_parent_class)->pick (actor, pick_context);
 
   for (child = clutter_actor_get_first_child (actor);
        child != NULL;
@@ -156,7 +157,7 @@ cinnamon_generic_container_pick (ClutterActor        *actor,
       if (g_hash_table_lookup (self->priv->skip_paint, child))
         continue;
 
-      clutter_actor_paint (child);
+      clutter_actor_pick (child, pick_context);
     }
 }
 
@@ -242,7 +243,7 @@ cinnamon_generic_container_get_paint_volume (ClutterActor *self,
 {
   ClutterActorBox paint_box, alloc_box;
   StThemeNode *theme_node;
-  ClutterVertex origin;
+  graphene_point3d_t origin;
 
   /* Setting the paint volume does not make sense when we don't have any allocation */
   if (!clutter_actor_has_allocation (self))

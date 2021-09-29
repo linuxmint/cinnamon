@@ -16,7 +16,6 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 override_dh_auto_configure:
 	dh_auto_configure -- \
 		--libexecdir=/usr/libexec/cinnamon \
-		-D docs=true \
 		-D deprecated_warnings=false \
 		-D py3modules_dir=/usr/lib/python3/dist-packages
 

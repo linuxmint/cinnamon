@@ -365,7 +365,7 @@ st_widget_allocate (ClutterActor          *actor,
  * painting children.
  */
 void
-st_widget_paint_background (StWidget *widget)
+st_widget_paint_background (StWidget *widget, ClutterPaintContext *paint_context)
 {
   StThemeNode *theme_node;
   ClutterActorBox allocation;
@@ -380,9 +380,13 @@ st_widget_paint_background (StWidget *widget)
   if (widget->priv->transition_animation)
     st_theme_node_transition_paint (widget->priv->transition_animation,
                                     &allocation,
+                                    paint_context,
                                     opacity);
   else
-    st_theme_node_paint (theme_node, cogl_get_draw_framebuffer (), &allocation, opacity);
+    {
+      CoglFramebuffer *fb = clutter_paint_context_get_framebuffer (paint_context);
+      st_theme_node_paint (theme_node, fb, &allocation, opacity);
+    }
 
   // ClutterEffect *effect = clutter_actor_get_effect (actor, "background-effect");
 
@@ -401,12 +405,12 @@ st_widget_paint_background (StWidget *widget)
 }
 
  static void
-st_widget_paint (ClutterActor *actor)
+st_widget_paint (ClutterActor *actor, ClutterPaintContext *paint_context)
 {
-  st_widget_paint_background (ST_WIDGET (actor));
+  st_widget_paint_background (ST_WIDGET (actor), paint_context);
 
   /* Chain up so we paint children. */
-  CLUTTER_ACTOR_CLASS (st_widget_parent_class)->paint (actor);
+  CLUTTER_ACTOR_CLASS (st_widget_parent_class)->paint (actor, paint_context);
 }
 
 static void
@@ -706,7 +710,7 @@ st_widget_get_paint_volume (ClutterActor *self, ClutterPaintVolume *volume)
   ClutterActorBox paint_box, alloc_box;
   StThemeNode *theme_node;
   StWidgetPrivate *priv;
-  ClutterVertex origin;
+  graphene_point3d_t origin;
 
   /* Setting the paint volume does not make sense when we don't have any allocation */
   if (!clutter_actor_has_allocation (self))
@@ -1762,14 +1766,12 @@ st_widget_set_hover (StWidget *widget,
 void
 st_widget_sync_hover (StWidget *widget)
 {
-  ClutterDeviceManager *device_manager;
-  ClutterInputDevice *pointer;
   ClutterActor *pointer_actor;
 
   if (widget->priv->track_hover) {
-    device_manager = clutter_device_manager_get_default ();
-    pointer = clutter_device_manager_get_core_device (device_manager,
-                                                      CLUTTER_POINTER_DEVICE);
+    ClutterSeat *seat = clutter_backend_get_default_seat (clutter_get_default_backend ());
+    ClutterInputDevice *pointer = clutter_seat_get_pointer (seat);
+
     pointer_actor = clutter_input_device_get_pointer_actor (pointer);
     if (pointer_actor)
       st_widget_set_hover (widget, clutter_actor_contains (CLUTTER_ACTOR (widget), pointer_actor));

@@ -77,7 +77,7 @@ cinnamon_xfixes_cursor_finalize (GObject  *object)
   xfixes_cursor_show (xfixes_cursor);
   xfixes_cursor_set_stage (xfixes_cursor, NULL);
   if (xfixes_cursor->cursor_sprite != NULL)
-    cogl_handle_unref (xfixes_cursor->cursor_sprite);
+    cogl_object_unref (xfixes_cursor->cursor_sprite);
 
   G_OBJECT_CLASS (cinnamon_xfixes_cursor_parent_class)->finalize (object);
 }
@@ -196,7 +196,7 @@ static void
 xfixes_cursor_reset_image (CinnamonXFixesCursor *xfixes_cursor)
 {
   XFixesCursorImage *cursor_image;
-  CoglHandle sprite = COGL_INVALID_HANDLE;
+  CoglHandle sprite = NULL;
   guint8 *cursor_data;
   gboolean free_cursor_data;
 
@@ -243,10 +243,10 @@ xfixes_cursor_reset_image (CinnamonXFixesCursor *xfixes_cursor)
   if (free_cursor_data)
     g_free (cursor_data);
 
-  if (sprite != COGL_INVALID_HANDLE)
+  if (sprite != NULL)
     {
       if (xfixes_cursor->cursor_sprite != NULL)
-        cogl_handle_unref (xfixes_cursor->cursor_sprite);
+        cogl_object_unref (xfixes_cursor->cursor_sprite);
 
       xfixes_cursor->cursor_sprite = sprite;
       xfixes_cursor->cursor_hot_x = cursor_image->xhot;

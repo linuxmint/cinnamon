@@ -13,9 +13,8 @@
 #include <meta/group.h>
 #include <meta/util.h>
 #include <meta/window.h>
-
-#define SN_API_NOT_YET_FROZEN 1
-#include <libsn/sn.h>
+#include <meta/meta-workspace-manager.h>
+#include <meta/meta-startup-notification.h>
 
 #include "cinnamon-window-tracker-private.h"
 #include "cinnamon-app-private.h"
@@ -76,7 +75,7 @@ static void on_focus_window_changed (MetaDisplay *display, GParamSpec *spec, Cin
 
 static void track_window (CinnamonWindowTracker *tracker, MetaWindow *window);
 static void disassociate_window (CinnamonWindowTracker *tracker, MetaWindow *window);
-
+CinnamonApp *meta_startup_sequence_get_app (MetaStartupSequence *sequence);
 
 static void
 cinnamon_window_tracker_get_property (GObject    *gobject,
@@ -114,12 +113,11 @@ cinnamon_window_tracker_class_init (CinnamonWindowTrackerClass *klass)
                                                         G_PARAM_READABLE));
 
   signals[STARTUP_SEQUENCE_CHANGED] = g_signal_new ("startup-sequence-changed",
-                                   CINNAMON_TYPE_WINDOW_TRACKER,
-                                   G_SIGNAL_RUN_LAST,
-                                   0,
-                                   NULL, NULL, NULL,
-                                   G_TYPE_NONE, 1, CINNAMON_TYPE_STARTUP_SEQUENCE);
-
+                                                    CINNAMON_TYPE_WINDOW_TRACKER,
+                                                    G_SIGNAL_RUN_LAST,
+                                                    0,
+                                                    NULL, NULL, NULL,
+                                                    G_TYPE_NONE, 1, META_TYPE_STARTUP_SEQUENCE);
   signals[WINDOW_APP_CHANGED] = g_signal_new ("window-app-changed",
                                               CINNAMON_TYPE_WINDOW_TRACKER,
                                               G_SIGNAL_RUN_LAST,
@@ -148,7 +146,44 @@ cinnamon_window_tracker_class_init (CinnamonWindowTrackerClass *klass)
 gboolean
 cinnamon_window_tracker_is_window_interesting (CinnamonWindowTracker *tracker, MetaWindow *window)
 {
-  return meta_window_is_interesting (window);
+    MetaWindowType type;
+
+    type = meta_window_get_window_type (window);
+
+    if (meta_window_is_override_redirect (window)
+      || meta_window_is_skip_taskbar (window))
+    return FALSE;
+
+  switch (type)
+    {
+      /* Definitely ignore these. */
+      case META_WINDOW_DESKTOP:
+      case META_WINDOW_DOCK:
+      case META_WINDOW_SPLASHSCREEN:
+      /* Should have already been handled by override_redirect above,
+       * but explicitly list here so we get the "unhandled enum"
+       * warning if in the future anything is added.*/
+      case META_WINDOW_DROPDOWN_MENU:
+      case META_WINDOW_POPUP_MENU:
+      case META_WINDOW_TOOLTIP:
+      case META_WINDOW_NOTIFICATION:
+      case META_WINDOW_COMBO:
+      case META_WINDOW_DND:
+      case META_WINDOW_OVERRIDE_OTHER:
+        return FALSE;
+      case META_WINDOW_NORMAL:
+      case META_WINDOW_DIALOG:
+      case META_WINDOW_MODAL_DIALOG:
+      case META_WINDOW_MENU:
+      case META_WINDOW_TOOLBAR:
+      case META_WINDOW_UTILITY:
+        break;
+      default:
+        g_warning ("cinnamon_window_tracker_is_window_interesting: default reached");
+      break;
+    }
+
+  return TRUE;
 }
 
 static gboolean
@@ -408,7 +443,9 @@ get_app_for_flatpak_window (MetaWindow *window)
   CinnamonApp *result = NULL;
   gchar *info_filename;
   GFile *file;
-  int pid = meta_window_get_client_pid (window);
+  // FIXME
+  // int pid = meta_window_get_client_pid (window);
+  int pid = meta_window_get_pid (window);
 
   g_return_val_if_fail (pid > 0, NULL);
 
@@ -545,12 +582,12 @@ get_app_for_window (CinnamonWindowTracker    *tracker,
       sequences = cinnamon_window_tracker_get_startup_sequences (tracker);
       for (iter = sequences; iter; iter = iter->next)
         {
-          CinnamonStartupSequence *sequence = iter->data;
-          const char *id = cinnamon_startup_sequence_get_id (sequence);
+          MetaStartupSequence *sequence = iter->data;
+          const char *id = meta_startup_sequence_get_id (sequence);
           if (strcmp (id, startup_id) != 0)
             continue;
 
-          result = cinnamon_startup_sequence_get_app (sequence);
+          result = meta_startup_sequence_get_app (sequence);
           if (result)
             {
               result = g_object_ref (result);
@@ -621,7 +658,7 @@ track_window (CinnamonWindowTracker *self,
 {
   CinnamonApp *app;
 
-  if (!meta_window_is_interesting (window))
+  if (!cinnamon_window_tracker_is_window_interesting (self, window))
     return;
 
   app = get_app_for_window (self, window);
@@ -663,7 +700,7 @@ disassociate_window (CinnamonWindowTracker   *self,
 
   g_hash_table_remove (self->window_to_app, window);
 
-  if (meta_window_is_interesting (window))
+  if (cinnamon_window_tracker_is_window_interesting (self, window))
     {
       _cinnamon_app_remove_window (app, window);
       g_signal_handlers_disconnect_by_func (window, G_CALLBACK(on_wm_class_changed), self);
@@ -683,16 +720,19 @@ cinnamon_window_tracker_on_window_removed (MetaWorkspace   *workspace,
   disassociate_window (CINNAMON_WINDOW_TRACKER (user_data), window);
 }
 
-static void
+void
 load_initial_windows (CinnamonWindowTracker *tracker)
 {
-  GList *workspaces, *iter;
-  MetaScreen *screen = tracker->global->meta_screen;
-  workspaces = meta_screen_get_workspaces (screen);
+  MetaDisplay *display = cinnamon_global_get_display (cinnamon_global_get ());
+  MetaWorkspaceManager *workspace_manager =
+    meta_display_get_workspace_manager (display);
+  GList *workspaces;
+  GList *l;
 
-  for (iter = workspaces; iter; iter = iter->next)
+  workspaces = meta_workspace_manager_get_workspaces (workspace_manager);
+  for (l = workspaces; l; l = l->next)
     {
-      MetaWorkspace *workspace = iter->data;
+      MetaWorkspace *workspace = l->data;
       GList *windows = meta_workspace_list_windows (workspace);
       GList *window_iter;
 
@@ -707,18 +747,18 @@ load_initial_windows (CinnamonWindowTracker *tracker)
 }
 
 static void
-cinnamon_window_tracker_on_n_workspaces_changed (MetaScreen    *screen,
-                                           GParamSpec    *pspec,
-                                           gpointer       user_data)
+cinnamon_window_tracker_on_n_workspaces_changed (MetaWorkspaceManager *workspace_manager,
+                                              GParamSpec           *pspec,
+                                              gpointer              user_data)
 {
   CinnamonWindowTracker *self = CINNAMON_WINDOW_TRACKER (user_data);
-  GList *workspaces, *iter;
+  GList *workspaces;
+  GList *l;
 
-  workspaces = meta_screen_get_workspaces (screen);
-
-  for (iter = workspaces; iter; iter = iter->next)
+  workspaces = meta_workspace_manager_get_workspaces (workspace_manager);
+  for (l = workspaces; l; l = l->next)
     {
-      MetaWorkspace *workspace = iter->data;
+      MetaWorkspace *workspace = l->data;
 
       /* This pair of disconnect/connect is idempotent if we were
        * already connected, while ensuring we get connected for
@@ -741,26 +781,24 @@ cinnamon_window_tracker_on_n_workspaces_changed (MetaScreen    *screen,
 static void
 init_window_tracking (CinnamonWindowTracker *self)
 {
-  MetaDisplay *display;
-  MetaScreen *screen = self->global->meta_screen;
+  MetaWorkspaceManager *workspace_manager = self->global->workspace_manager;
 
-  g_signal_connect (screen, "notify::n-workspaces",
+  g_signal_connect (workspace_manager, "notify::n-workspaces",
                     G_CALLBACK (cinnamon_window_tracker_on_n_workspaces_changed), self);
-  display = meta_screen_get_display (screen);
-  g_signal_connect (display, "notify::focus-window",
+  g_signal_connect (self->global->meta_display, "notify::focus-window",
                     G_CALLBACK (on_focus_window_changed), self);
 
-  cinnamon_window_tracker_on_n_workspaces_changed (screen, NULL, self);
+  cinnamon_window_tracker_on_n_workspaces_changed (workspace_manager, NULL, self);
 }
 
 static void
-on_startup_sequence_changed (MetaScreen            *screen,
-                             SnStartupSequence     *sequence,
-                             CinnamonWindowTracker    *self)
+on_startup_sequence_changed (MetaStartupNotification *sn,
+                             MetaStartupSequence     *sequence,
+                             CinnamonWindowTracker   *self)
 {
   CinnamonApp *app;
 
-  app = cinnamon_startup_sequence_get_app ((CinnamonStartupSequence*)sequence);
+  app = meta_startup_sequence_get_app ((MetaStartupSequence*)sequence);
   if (app)
     _cinnamon_app_handle_startup_sequence (app, sequence);
 
@@ -770,18 +808,15 @@ on_startup_sequence_changed (MetaScreen            *screen,
 static void
 cinnamon_window_tracker_init (CinnamonWindowTracker *self)
 {
-  MetaScreen *screen;
-
   self->global = cinnamon_global_get ();
+  MetaStartupNotification *sn = meta_display_get_startup_notification (self->global->meta_display);
 
   self->window_to_app = g_hash_table_new_full (g_direct_hash, g_direct_equal,
                                                NULL, (GDestroyNotify) g_object_unref);
 
   self->launched_pid_to_app = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify) g_object_unref);
 
-  screen = self->global->meta_screen;
-
-  g_signal_connect (G_OBJECT (screen), "startup-sequence-changed",
+  g_signal_connect (sn, "changed",
                     G_CALLBACK (on_startup_sequence_changed), self);
 
   load_initial_windows (self);
@@ -932,57 +967,31 @@ on_focus_window_changed (MetaDisplay        *display,
  * cinnamon_window_tracker_get_startup_sequences:
  * @tracker:
  *
- * Returns: (transfer none) (element-type CinnamonStartupSequence): Currently active startup sequences
+ * Returns: (transfer none) (element-type MetaStartupSequence): Currently active startup sequences
  */
 GSList *
 cinnamon_window_tracker_get_startup_sequences (CinnamonWindowTracker *self)
 {
-  return meta_screen_get_startup_sequences (self->global->meta_screen);
-}
+  MetaStartupNotification *sn = meta_display_get_startup_notification (self->global->meta_display);
 
-/* sn_startup_sequence_ref returns void, so make a
- * wrapper which returns self */
-static SnStartupSequence *
-sequence_ref (SnStartupSequence *sequence)
-{
-  sn_startup_sequence_ref (sequence);
-  return sequence;
-}
-
-GType
-cinnamon_startup_sequence_get_type (void)
-{
-  static GType gtype = G_TYPE_INVALID;
-  if (gtype == G_TYPE_INVALID)
-    {
-      gtype = g_boxed_type_register_static ("CinnamonStartupSequence",
-          (GBoxedCopyFunc)sequence_ref,
-          (GBoxedFreeFunc)sn_startup_sequence_unref);
-    }
-  return gtype;
-}
-
-const char *
-cinnamon_startup_sequence_get_id (CinnamonStartupSequence *sequence)
-{
-  return sn_startup_sequence_get_id ((SnStartupSequence*)sequence);
+  return meta_startup_notification_get_sequences (sn);
 }
 
 /**
- * cinnamon_startup_sequence_get_app:
- * @sequence: A #CinnamonStartupSequence
+ * meta_startup_sequence_get_app:
+ * @sequence: A #MetaStartupSequence
  *
  * Returns: (transfer none): The application being launched, or %NULL if unknown.
  */
 CinnamonApp *
-cinnamon_startup_sequence_get_app (CinnamonStartupSequence *sequence)
+meta_startup_sequence_get_app (MetaStartupSequence *sequence)
 {
   const char *appid;
   char *basename;
   CinnamonAppSystem *appsys;
   CinnamonApp *app;
 
-  appid = sn_startup_sequence_get_application_id ((SnStartupSequence*)sequence);
+  appid = meta_startup_sequence_get_application_id (sequence);
   if (!appid)
     return NULL;
 
@@ -991,55 +1000,6 @@ cinnamon_startup_sequence_get_app (CinnamonStartupSequence *sequence)
   app = cinnamon_app_system_lookup_app (appsys, basename);
   g_free (basename);
   return app;
-}
-
-const char *
-cinnamon_startup_sequence_get_name (CinnamonStartupSequence *sequence)
-{
-  return sn_startup_sequence_get_name ((SnStartupSequence*)sequence);
-}
-
-gboolean
-cinnamon_startup_sequence_get_completed (CinnamonStartupSequence *sequence)
-{
-  return sn_startup_sequence_get_completed ((SnStartupSequence*)sequence);
-}
-
-/**
- * cinnamon_startup_sequence_create_icon:
- * @sequence:
- * @size: Size in pixels of icon
- *
- * Returns: (transfer none): A new #ClutterTexture containing an icon for the sequence
- */
-ClutterActor *
-cinnamon_startup_sequence_create_icon (CinnamonStartupSequence *sequence, guint size)
-{
-  GIcon *themed;
-  const char *icon_name;
-  ClutterActor *texture;
-
-  icon_name = sn_startup_sequence_get_icon_name ((SnStartupSequence*)sequence);
-  if (!icon_name)
-    {
-      gint scale;
-      CinnamonGlobal *global;
-      StThemeContext *context;
-
-      texture = clutter_texture_new ();
-
-      global = cinnamon_global_get ();
-      context = st_theme_context_get_for_stage (global->stage);
-      g_object_get (context, "scale-factor", &scale, NULL);
-
-      clutter_actor_set_size (texture, size * scale, size * scale);
-      return texture;
-    }
-
-  themed = g_themed_icon_new (icon_name);
-  texture = g_object_new (ST_TYPE_ICON, "gicon", themed, "icon-size", size, NULL);
-  g_object_unref (G_OBJECT (themed));
-  return texture;
 }
 
 

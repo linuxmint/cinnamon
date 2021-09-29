@@ -66,6 +66,7 @@ enum
 
 struct _StButtonPrivate
 {
+  ClutterInputDevice *device;
   gchar *text;
 
   guint  button_mask : 3;
@@ -159,11 +160,14 @@ st_button_button_press (ClutterActor       *actor,
 {
   StButton *button = ST_BUTTON (actor);
   StButtonMask mask = ST_BUTTON_MASK_FROM_BUTTON (event->button);
+  ClutterInputDevice *device = clutter_event_get_device ((ClutterEvent*) event);
+
+  button->priv->device = device;
 
   if (button->priv->button_mask & mask)
     {
       if (button->priv->grabbed == 0)
-        clutter_grab_pointer (actor);
+        clutter_input_device_grab (device, actor);
 
       button->priv->grabbed |= mask;
       st_button_press (button, mask);
@@ -180,6 +184,7 @@ st_button_button_release (ClutterActor       *actor,
 {
   StButton *button = ST_BUTTON (actor);
   StButtonMask mask = ST_BUTTON_MASK_FROM_BUTTON (event->button);
+  ClutterInputDevice *device = clutter_event_get_device ((ClutterEvent*) event);
 
   if (button->priv->button_mask & mask)
     {
@@ -190,7 +195,7 @@ st_button_button_release (ClutterActor       *actor,
 
       button->priv->grabbed &= ~mask;
       if (button->priv->grabbed == 0)
-        clutter_ungrab_pointer ();
+        clutter_input_device_ungrab (device);
 
       return TRUE;
     }
@@ -681,7 +686,11 @@ st_button_fake_release (StButton *button)
   if (button->priv->grabbed)
     {
       button->priv->grabbed = 0;
-      clutter_ungrab_pointer ();
+      if (button->priv->device != NULL)
+        {
+          clutter_input_device_ungrab (button->priv->device);
+          button->priv->device = NULL;
+        }
     }
 }
 

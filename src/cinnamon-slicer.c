@@ -89,7 +89,10 @@ cinnamon_slicer_allocate (ClutterActor           *self,
 }
 
 static void
-cinnamon_slicer_paint_child (CinnamonSlicer *self)
+cinnamon_slicer_paint_pick_child (CinnamonSlicer  *self,
+                                  CoglFramebuffer *fb,
+                                  gpointer         ctx,
+                                  gboolean         pick)
 {
   ClutterActor *child;
   ClutterActorBox self_box;
@@ -97,7 +100,6 @@ cinnamon_slicer_paint_child (CinnamonSlicer *self)
   float width, height, child_width, child_height;
   StAlign x_align, y_align;
   double x_align_factor, y_align_factor;
-  CoglFramebuffer *fb;
 
   child = st_bin_get_child (ST_BIN (self));
 
@@ -116,8 +118,6 @@ cinnamon_slicer_paint_child (CinnamonSlicer *self)
   child_width = child_box.x2 - child_box.x1;
   child_height = child_box.y2 - child_box.y1;
 
-  fb = cogl_get_draw_framebuffer ();
-
   cogl_framebuffer_push_matrix (fb);
 
   cogl_framebuffer_push_rectangle_clip (fb, 0, 0, width, height);
@@ -125,7 +125,14 @@ cinnamon_slicer_paint_child (CinnamonSlicer *self)
                   (int)(0.5 + y_align_factor * (height - child_height)),
                   0);
 
-  clutter_actor_paint (child);
+  if (pick)
+    {
+      clutter_actor_pick (child, (ClutterPickContext *) ctx);
+    }
+  else
+    {
+      clutter_actor_paint (child, (ClutterPaintContext *) ctx);
+    }
 
   cogl_framebuffer_pop_clip (fb);
 
@@ -133,18 +140,20 @@ cinnamon_slicer_paint_child (CinnamonSlicer *self)
 }
 
 static void
-cinnamon_slicer_paint (ClutterActor *self)
+cinnamon_slicer_paint (ClutterActor *self, ClutterPaintContext *paint_context)
 {
-  st_widget_paint_background (ST_WIDGET (self));
+  st_widget_paint_background (ST_WIDGET (self), paint_context);
 
-  cinnamon_slicer_paint_child (CINNAMON_SLICER (self));
+  CoglFramebuffer *fb = clutter_paint_context_get_framebuffer (paint_context);
+  cinnamon_slicer_paint_pick_child (CINNAMON_SLICER (self), fb, paint_context, FALSE);
 }
 
 static void
 cinnamon_slicer_pick (ClutterActor       *self,
-                   const ClutterColor *pick_color)
+                      ClutterPickContext *pick_context)
 {
-  cinnamon_slicer_paint_child (CINNAMON_SLICER (self));
+  CoglFramebuffer *fb = clutter_pick_context_get_framebuffer (pick_context);
+  cinnamon_slicer_paint_pick_child (CINNAMON_SLICER (self), fb, pick_context, TRUE);
 }
 
 static void
