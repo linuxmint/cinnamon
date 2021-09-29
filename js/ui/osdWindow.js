@@ -186,7 +186,7 @@ OsdWindow.prototype = {
                            transition: 'easeOutQuad',
                            onComplete: Lang.bind(this, function() {
                                this._reset();
-                               Meta.enable_unredirect_for_screen(global.screen);
+                               Meta.enable_unredirect_for_display(global.display);
                            })
                          });
     },

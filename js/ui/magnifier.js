@@ -110,16 +110,16 @@ Magnifier.prototype = {
 
         this._initialized = true;
         // Create small clutter tree for the magnified mouse.
-        let xfixesCursor = Cinnamon.XFixesCursor.get_for_stage(global.stage);
+        // let xfixesCursor = Cinnamon.XFixesCursor.get_for_stage(global.stage);
         this._mouseSprite = new Clutter.Texture();
-        xfixesCursor.update_texture_image(this._mouseSprite);
+        // xfixesCursor.update_texture_image(this._mouseSprite);
         this._cursorRoot = new Clutter.Group();
         this._cursorRoot.add_actor(this._mouseSprite);
 
         [this.xMouse, this.yMouse, ] = global.get_pointer();
 
-        xfixesCursor.connect('cursor-change', Lang.bind(this, this._updateMouseSprite));
-        this._xfixesCursor = xfixesCursor;
+        // xfixesCursor.connect('cursor-change', Lang.bind(this, this._updateMouseSprite));
+        // this._xfixesCursor = xfixesCursor;
 
         // Create the first ZoomRegion and initialize it according to the
         // magnification settings.
@@ -135,7 +135,7 @@ Magnifier.prototype = {
      */
     showSystemCursor: function() {
         this._initialize();
-        this._xfixesCursor.show();
+        // this._xfixesCursor.show();
     },
 
     /**
@@ -144,7 +144,7 @@ Magnifier.prototype = {
      */
     hideSystemCursor: function() {
         this._initialize();
-        this._xfixesCursor.hide();
+        // this._xfixesCursor.hide();
     },
 
     /**
@@ -169,8 +169,8 @@ Magnifier.prototype = {
 
         // Make sure system mouse pointer is shown when all zoom regions are
         // invisible.
-        if (!activate)
-            this._xfixesCursor.show();
+        // if (!activate)
+            // this._xfixesCursor.show();
 
         // Notify interested parties of this change
         this.emit('active-changed', activate);
@@ -523,10 +523,10 @@ Magnifier.prototype = {
     //// Private methods ////
 
     _updateMouseSprite: function() {
-        this._xfixesCursor.update_texture_image(this._mouseSprite);
-        let xHot = this._xfixesCursor.get_hot_x();
-        let yHot = this._xfixesCursor.get_hot_y();
-        this._mouseSprite.set_anchor_point(xHot, yHot);
+        // this._xfixesCursor.update_texture_image(this._mouseSprite);
+        // let xHot = this._xfixesCursor.get_hot_x();
+        // let yHot = this._xfixesCursor.get_hot_y();
+        // this._mouseSprite.set_anchor_point(xHot, yHot);
     },
 
     _updateZoomRegion: function(zoomRegion) {

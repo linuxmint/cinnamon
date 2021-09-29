@@ -25,7 +25,8 @@
 #ifndef _ST_BOX_LAYOUT_H
 #define _ST_BOX_LAYOUT_H
 
-#include "st-widget.h"
+#include <st-widget.h>
+#include <st-viewport.h>
 
 G_BEGIN_DECLS
 
@@ -64,7 +65,7 @@ typedef struct _StBoxLayoutPrivate StBoxLayoutPrivate;
 struct _StBoxLayout
 {
   /*< private >*/
-  StWidget parent;
+  StViewport parent;
 
   StBoxLayoutPrivate *priv;
 };

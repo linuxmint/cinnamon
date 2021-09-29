@@ -61,7 +61,7 @@
 #include "st-scroll-view.h"
 #include "st-scroll-bar.h"
 #include "st-scrollable.h"
-#include "st-scroll-view-fade.h"
+// #include "st-scroll-view-fade.h"
 #include <clutter/clutter.h>
 #include <math.h>
 
@@ -104,7 +104,7 @@ struct _StScrollViewPrivate
   GSettings *settings;
   gint setting_connect_id;
 
-  StScrollViewFade *vfade_effect;
+  // StScrollViewFade *vfade_effect;
 
   guint         row_size_set : 1;
   guint         column_size_set : 1;
@@ -189,23 +189,23 @@ st_scroll_view_update_vfade_effect (StScrollView *self,
   /* A fade amount of more than 0 enables the effect. */
   if (fade_offset > 0.)
     {
-      if (priv->vfade_effect == NULL) {
-        priv->vfade_effect = g_object_new (ST_TYPE_SCROLL_VIEW_FADE, NULL);
+      // if (priv->vfade_effect == NULL) {
+      //   priv->vfade_effect = g_object_new (ST_TYPE_SCROLL_VIEW_FADE, NULL);
 
-        clutter_actor_add_effect_with_name (CLUTTER_ACTOR (self), "vfade",
-                                            CLUTTER_EFFECT (priv->vfade_effect));
-      }
+      //   clutter_actor_add_effect_with_name (CLUTTER_ACTOR (self), "vfade",
+      //                                       CLUTTER_EFFECT (priv->vfade_effect));
+      // }
 
-      g_object_set (priv->vfade_effect,
-                    "fade-offset", fade_offset,
-                    NULL);
+      // g_object_set (priv->vfade_effect,
+      //               "fade-offset", fade_offset,
+      //               NULL);
     }
    else
     {
-      if (priv->vfade_effect != NULL) {
-        clutter_actor_remove_effect (CLUTTER_ACTOR (self), CLUTTER_EFFECT (priv->vfade_effect));
-        priv->vfade_effect = NULL;
-      }
+      // if (priv->vfade_effect != NULL) {
+      //   clutter_actor_remove_effect (CLUTTER_ACTOR (self), CLUTTER_EFFECT (priv->vfade_effect));
+      //   priv->vfade_effect = NULL;
+      // }
     }
 
   clutter_actor_queue_redraw (CLUTTER_ACTOR (self));
@@ -269,8 +269,11 @@ get_pointer_and_view_coords (ClutterActor *self,
                              gfloat       *height)
 {
     StScrollViewPrivate *priv = ST_SCROLL_VIEW (self)->priv;
+    graphene_point_t point;
 
-    clutter_input_device_get_device_coords (priv->mouse_pointer, mouse_x, mouse_y);
+    clutter_input_device_get_coords (priv->mouse_pointer, NULL, &point);
+    *mouse_x = point.x;
+    *mouse_y = point.y;
     clutter_actor_get_transformed_position (self, box_x, box_y);
     clutter_actor_get_transformed_size (self, width, height);
 }
@@ -301,8 +304,6 @@ is_in_auto_scroll_regions (gint   mouse_x,
 static gboolean
 do_auto_scroll (ClutterActor *self)
 {
-
-
     StScrollViewPrivate *priv = ST_SCROLL_VIEW (self)->priv;
     gfloat box_x, box_y, width, height;
     gint mouse_x, mouse_y;
@@ -376,11 +377,11 @@ st_scroll_view_dispose (GObject *object)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (object)->priv;
 
-  if (priv->vfade_effect)
-    {
-      clutter_actor_remove_effect (CLUTTER_ACTOR (object), CLUTTER_EFFECT (priv->vfade_effect));
-      priv->vfade_effect = NULL;
-    }
+  // if (priv->vfade_effect)
+  //   {
+  //     clutter_actor_remove_effect (CLUTTER_ACTOR (object), CLUTTER_EFFECT (priv->vfade_effect));
+  //     priv->vfade_effect = NULL;
+  //   }
 
   if (priv->vscroll)
     clutter_actor_destroy (priv->vscroll);
@@ -420,35 +421,35 @@ st_scroll_view_dispose (GObject *object)
 }
 
 static void
-st_scroll_view_paint (ClutterActor *actor)
+st_scroll_view_paint (ClutterActor *actor, ClutterPaintContext *paint_context)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (actor)->priv;
 
-  st_widget_paint_background (ST_WIDGET (actor));
+  st_widget_paint_background (ST_WIDGET (actor), paint_context);
 
   if (priv->child)
-    clutter_actor_paint (priv->child);
+    clutter_actor_paint (priv->child, paint_context);
   if (priv->hscrollbar_visible)
-    clutter_actor_paint (priv->hscroll);
+    clutter_actor_paint (priv->hscroll, paint_context);
   if (priv->vscrollbar_visible)
-    clutter_actor_paint (priv->vscroll);
+    clutter_actor_paint (priv->vscroll, paint_context);
 }
 
 static void
 st_scroll_view_pick (ClutterActor       *actor,
-                     const ClutterColor *color)
+                     ClutterPickContext *pick_context)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (actor)->priv;
 
   /* Chain up so we get a bounding box pained (if we are reactive) */
-  CLUTTER_ACTOR_CLASS (st_scroll_view_parent_class)->pick (actor, color);
+  CLUTTER_ACTOR_CLASS (st_scroll_view_parent_class)->pick (actor, pick_context);
 
   if (priv->child)
-    clutter_actor_paint (priv->child);
+    clutter_actor_pick (priv->child, pick_context);
   if (priv->hscrollbar_visible)
-    clutter_actor_paint (priv->hscroll);
+    clutter_actor_pick (priv->hscroll, pick_context);
   if (priv->vscrollbar_visible)
-    clutter_actor_paint (priv->vscroll);
+    clutter_actor_pick (priv->vscroll, pick_context);
 }
 
 static double
@@ -1013,6 +1014,9 @@ st_scroll_view_init (StScrollView *self)
 {
   StScrollViewPrivate *priv = self->priv = st_scroll_view_get_instance_private (self);
 
+  ClutterSeat *seat = clutter_backend_get_default_seat (clutter_get_default_backend ());
+  ClutterInputDevice *device = clutter_seat_get_pointer (seat);
+
   priv->hscrollbar_policy = GTK_POLICY_AUTOMATIC;
   priv->vscrollbar_policy = GTK_POLICY_AUTOMATIC;
 
@@ -1037,8 +1041,7 @@ st_scroll_view_init (StScrollView *self)
 
   priv->auto_scroll = FALSE;
   priv->auto_scroll_timeout_id = 0;
-  priv->mouse_pointer = clutter_device_manager_get_core_device (clutter_device_manager_get_default (),
-                                                                      CLUTTER_POINTER_DEVICE);
+  priv->mouse_pointer = device;
   priv->settings = g_settings_new("org.cinnamon");
   priv->setting_connect_id = g_signal_connect (priv->settings, "changed::enable-vfade", G_CALLBACK (vfade_setting_changed_cb), self);
 }
@@ -1103,23 +1106,6 @@ st_scroll_view_remove (ClutterContainer *container,
 }
 
 static void
-st_scroll_view_foreach_with_internals (ClutterContainer *container,
-                                       ClutterCallback   callback,
-                                       gpointer          user_data)
-{
-  StScrollViewPrivate *priv = ST_SCROLL_VIEW (container)->priv;
-
-  if (priv->child != NULL)
-    callback (priv->child, user_data);
-
-  if (priv->hscroll != NULL)
-    callback (priv->hscroll, user_data);
-
-  if (priv->vscroll != NULL)
-    callback (priv->vscroll, user_data);
-}
-
-static void
 clutter_container_iface_init (ClutterContainerIface *iface)
 {
   /* store a pointer to the StBin implementation of
@@ -1130,7 +1116,6 @@ clutter_container_iface_init (ClutterContainerIface *iface)
 
   iface->add = st_scroll_view_add;
   iface->remove = st_scroll_view_remove;
-  iface->foreach_with_internals = st_scroll_view_foreach_with_internals;
 }
 
 StWidget *

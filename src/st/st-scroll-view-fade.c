@@ -119,12 +119,12 @@ enum {
 };
 
 static gboolean
-st_scroll_view_fade_pre_paint (ClutterEffect *effect)
+st_scroll_view_fade_pre_paint (ClutterEffect *effect, ClutterPaintContext *paint_context)
 {
   StScrollViewFade *self = ST_SCROLL_VIEW_FADE (effect);
   ClutterEffectClass *parent_class;
 
-  if (self->shader == COGL_INVALID_HANDLE)
+  if (self->shader == NULL)
     return FALSE;
 
   if (!clutter_actor_meta_get_enabled (CLUTTER_ACTOR_META (effect)))
@@ -133,18 +133,18 @@ st_scroll_view_fade_pre_paint (ClutterEffect *effect)
   if (self->actor == NULL)
     return FALSE;
 
-  if (self->program == COGL_INVALID_HANDLE)
+  if (self->program == NULL)
     self->program = cogl_create_program ();
 
   if (!self->is_attached)
     {
-      g_assert (self->shader != COGL_INVALID_HANDLE);
-      g_assert (self->program != COGL_INVALID_HANDLE);
+      g_assert (self->shader != NULL);
+      g_assert (self->program != NULL);
 
       cogl_program_attach_shader (self->program, self->shader);
       cogl_program_link (self->program);
 
-      cogl_handle_unref (self->shader);
+      cogl_object_unref (self->shader);
 
       self->is_attached = TRUE;
 
@@ -163,7 +163,7 @@ st_scroll_view_fade_pre_paint (ClutterEffect *effect)
     }
 
   parent_class = CLUTTER_EFFECT_CLASS (st_scroll_view_fade_parent_class);
-  return parent_class->pre_paint (effect);
+  return parent_class->pre_paint (effect, paint_context);
 }
 
 static CoglHandle
@@ -177,7 +177,8 @@ st_scroll_view_fade_create_texture (ClutterOffscreenEffect *effect,
 }
 
 static void
-st_scroll_view_fade_paint_target (ClutterOffscreenEffect *effect)
+st_scroll_view_fade_paint_target (ClutterOffscreenEffect *effect,
+                                  ClutterPaintContext    *paint_context)
 {
   StScrollViewFade *self = ST_SCROLL_VIEW_FADE (effect);
   ClutterOffscreenEffectClass *parent;
@@ -200,9 +201,9 @@ st_scroll_view_fade_paint_target (ClutterOffscreenEffect *effect)
    *
    */
   float fade_area[2][2];
-  ClutterVertex verts[4];
+  graphene_point3d_t verts[4];
 
-  if (self->program == COGL_INVALID_HANDLE)
+  if (self->program == NULL)
     goto out;
 
   clutter_actor_get_paint_box (self->actor, &paint_box);
@@ -267,7 +268,7 @@ st_scroll_view_fade_paint_target (ClutterOffscreenEffect *effect)
 
 out:
   parent = CLUTTER_OFFSCREEN_EFFECT_CLASS (st_scroll_view_fade_parent_class);
-  parent->paint_target (effect);
+  parent->paint_target (effect, paint_context);
 }
 
 static void
@@ -301,7 +302,7 @@ st_scroll_view_fade_set_actor (ClutterActorMeta *meta,
       return;
     }
 
-  if (self->shader == COGL_INVALID_HANDLE)
+  if (self->shader == NULL)
     {
       clutter_actor_meta_set_enabled (meta, FALSE);
       return;
@@ -340,12 +341,12 @@ st_scroll_view_fade_dispose (GObject *gobject)
 {
   StScrollViewFade *self = ST_SCROLL_VIEW_FADE (gobject);
 
-  if (self->program != COGL_INVALID_HANDLE)
+  if (self->program != NULL)
     {
-      cogl_handle_unref (self->program);
+      cogl_object_unref (self->program);
 
-      self->program = COGL_INVALID_HANDLE;
-      self->shader = COGL_INVALID_HANDLE;
+      self->program = NULL;
+      self->shader = NULL;
     }
 
   if (self->vadjustment)
@@ -450,9 +451,9 @@ st_scroll_view_fade_class_init (StScrollViewFadeClass *klass)
 static void
 st_scroll_view_fade_init (StScrollViewFade *self)
 {
-  static CoglHandle shader = COGL_INVALID_HANDLE;
+  static CoglHandle shader = NULL;
 
-  if (shader == COGL_INVALID_HANDLE)
+  if (shader == NULL)
     {
       if (clutter_feature_available (CLUTTER_FEATURE_SHADERS_GLSL))
         {
@@ -467,8 +468,8 @@ st_scroll_view_fade_init (StScrollViewFade *self)
                          log_buf);
               g_free (log_buf);
 
-              cogl_handle_unref (shader);
-              shader = COGL_INVALID_HANDLE;
+              cogl_object_unref (shader);
+              shader = NULL;
           }
         }
     }
@@ -483,8 +484,8 @@ st_scroll_view_fade_init (StScrollViewFade *self)
   self->offset_bottom_uniform = -1;
   self->fade_offset = DEFAULT_FADE_OFFSET;
 
-  if (shader != COGL_INVALID_HANDLE)
-    cogl_handle_ref (self->shader);
+  if (shader != NULL)
+    cogl_object_ref (self->shader);
 }
 
 ClutterEffect *
