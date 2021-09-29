@@ -15,9 +15,7 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin Street - Suite 500,
- * Boston, MA 02110-1335, USA.
+ * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef __NA_TRAY_CHILD_H__
@@ -28,14 +26,14 @@
 
 G_BEGIN_DECLS
 
-#define NA_TYPE_TRAY_CHILD		(na_tray_child_get_type ())
-#define NA_TRAY_CHILD(obj)		(G_TYPE_CHECK_INSTANCE_CAST ((obj), NA_TYPE_TRAY_CHILD, NaTrayChild))
-#define NA_TRAY_CHILD_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST ((klass), NA_TYPE_TRAY_CHILD, NaTrayChildClass))
-#define NA_IS_TRAY_CHILD(obj)		(G_TYPE_CHECK_INSTANCE_TYPE ((obj), NA_TYPE_TRAY_CHILD))
-#define NA_IS_TRAY_CHILD_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass), NA_TYPE_TRAY_CHILD))
-#define NA_TRAY_CHILD_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS ((obj), NA_TYPE_TRAY_CHILD, NaTrayChildClass))
+#define NA_TYPE_TRAY_CHILD      (na_tray_child_get_type ())
+#define NA_TRAY_CHILD(obj)      (G_TYPE_CHECK_INSTANCE_CAST ((obj), NA_TYPE_TRAY_CHILD, NaTrayChild))
+#define NA_TRAY_CHILD_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass), NA_TYPE_TRAY_CHILD, NaTrayChildClass))
+#define NA_IS_TRAY_CHILD(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NA_TYPE_TRAY_CHILD))
+#define NA_IS_TRAY_CHILD_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), NA_TYPE_TRAY_CHILD))
+#define NA_TRAY_CHILD_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), NA_TYPE_TRAY_CHILD, NaTrayChildClass))
 
-typedef struct _NaTrayChild	  NaTrayChild;
+typedef struct _NaTrayChild   NaTrayChild;
 typedef struct _NaTrayChildClass  NaTrayChildClass;
 typedef struct _NaTrayChildChild  NaTrayChildChild;
 
@@ -45,7 +43,6 @@ struct _NaTrayChild
   Window icon_window;
   guint has_alpha : 1;
   guint parent_relative_bg : 1;
-  gint scale;
 };
 
 struct _NaTrayChildClass
@@ -56,14 +53,13 @@ struct _NaTrayChildClass
 GType           na_tray_child_get_type        (void);
 
 GtkWidget      *na_tray_child_new            (GdkScreen    *screen,
-                                              Window        icon_window,
-                                              gint          scale);
+                                              Window        icon_window);
 char           *na_tray_child_get_title      (NaTrayChild  *child);
 gboolean        na_tray_child_has_alpha      (NaTrayChild  *child);
 void            na_tray_child_force_redraw   (NaTrayChild  *child);
 void            na_tray_child_get_wm_class   (NaTrayChild  *child,
-					      char        **res_name,
-					      char        **res_class);
+                          char        **res_name,
+                          char        **res_class);
 
 G_END_DECLS
 

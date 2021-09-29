@@ -32,7 +32,7 @@ cinnamon_glsl_quad_get_paint_volume (ClutterActor       *actor,
 }
 
 static void
-cinnamon_glsl_quad_paint (ClutterActor *actor)
+cinnamon_glsl_quad_paint (ClutterActor *actor, ClutterPaintContext *paint_context)
 {
   CinnamonGLSLQuad *self = CINNAMON_GLSL_QUAD (actor);
   CinnamonGLSLQuadPrivate *priv;
@@ -49,7 +49,7 @@ cinnamon_glsl_quad_paint (ClutterActor *actor)
                               paint_opacity,
                               paint_opacity,
                               paint_opacity);
-  cogl_framebuffer_draw_rectangle (cogl_get_draw_framebuffer (),
+  cogl_framebuffer_draw_rectangle (clutter_paint_context_get_framebuffer (paint_context),
                                    priv->pipeline,
                                    box.x1, box.y1,
                                    box.x2, box.y2);

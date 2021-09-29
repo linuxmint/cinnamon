@@ -80,8 +80,6 @@ class ManageAppletsPage(ManageSpicesPage):
         size_group.add_widget(self.previous_button)
         size_group.add_widget(self.next_button)
 
-        self.spices.send_proxy_signal('highlightPanel', '(ib)', self.panel_id, True)
-
         self.connect("map", self.restore_highlight)
         self.connect("unmap", self.remove_highlight)
         self.connect("destroy", self.remove_highlight)

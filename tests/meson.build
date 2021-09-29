@@ -23,8 +23,8 @@ tests = [
 ]
 
 test_conf = configuration_data()
-test_conf.set('MUFFIN_TYPELIB_DIR', muffinlibdir)
-test_conf.set('srcdir', muffinlibdir)
+test_conf.set('MUFFIN_TYPELIB_DIR', muffin_typelibdir)
+test_conf.set('srcdir', muffin_typelibdir)
 
 test_script = configure_file(
     input: 'run-test.sh.in',

@@ -33,22 +33,13 @@ G_BEGIN_DECLS
 
 #define I_(str)         (g_intern_static_string ((str)))
 
-#define ST_PARAM_READABLE     \
-        (G_PARAM_READABLE |     \
-         G_PARAM_STATIC_NICK | G_PARAM_STATIC_NAME | G_PARAM_STATIC_BLURB)
-
-#define ST_PARAM_READWRITE    \
-        (G_PARAM_READABLE | G_PARAM_WRITABLE | \
-         G_PARAM_STATIC_NICK | G_PARAM_STATIC_NAME | G_PARAM_STATIC_BLURB)
+#define ST_PARAM_READABLE  (G_PARAM_READABLE  | G_PARAM_STATIC_STRINGS)
+#define ST_PARAM_WRITABLE  (G_PARAM_WRITABLE  | G_PARAM_STATIC_STRINGS)
+#define ST_PARAM_READWRITE (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)
 
 G_END_DECLS
 
 ClutterActor *_st_widget_get_dnd_clone (StWidget *widget);
-
-void _st_get_align_factors (StAlign   x_align,
-                            StAlign   y_align,
-                            gdouble  *x_align_out,
-                            gdouble  *y_align_out);
 
 void _st_actor_get_preferred_width  (ClutterActor *actor,
                                      gfloat        for_height,
@@ -67,17 +58,25 @@ void _st_set_text_from_style (ClutterText *text,
 CoglPipeline * _st_create_texture_pipeline (CoglTexture *src_texture);
 
 /* Helper for widgets which need to draw additional shadows */
+CoglPipeline * _st_create_shadow_pipeline_at_scale (StShadow    *shadow_spec,
+                                                    CoglTexture *src_texture,
+                                                    float        resource_scale);
 CoglPipeline * _st_create_shadow_pipeline (StShadow    *shadow_spec,
                                            CoglTexture *src_texture);
 CoglPipeline * _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
                                                       ClutterActor *actor);
-cairo_pattern_t * _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
-                                                   cairo_pattern_t *src_pattern);
+cairo_pattern_t *_st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
+                                                  cairo_pattern_t *src_pattern);
 
 void _st_paint_shadow_with_opacity (StShadow        *shadow_spec,
                                     CoglPipeline    *shadow_pipeline,
-                                    CoglFramebuffer *fb,
+                                    CoglFramebuffer *framebuffer,
                                     ClutterActorBox *box,
                                     guint8           paint_opacity);
+
+void _st_get_align_factors (StAlign   x_align,
+                            StAlign   y_align,
+                            gdouble  *x_align_out,
+                            gdouble  *y_align_out);
 
 #endif /* __ST_PRIVATE_H__ */

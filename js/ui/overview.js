@@ -13,6 +13,9 @@ const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Tweener = imports.ui.tweener;
 const WorkspacesView = imports.ui.workspacesView;
+// ***************
+// This shows all of the windows on the current workspace
+// ***************
 
 // Time for initial animation going into Overview mode
 var ANIMATION_TIME = 0.2;
@@ -252,7 +255,7 @@ Overview.prototype = {
         this._background.set_position(0, 0);
         this._group.add_actor(this._background);
 
-        let desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
+        let desktopBackground = Meta.X11BackgroundActor.new_for_display(global.display);
         this._background.add_actor(desktopBackground);
 
         let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
@@ -289,7 +292,7 @@ Overview.prototype = {
         global.overlay_group.add_actor(this.workspacesView.actor);
         Main.panelManager.disablePanels();
 
-        let animate = Main.wm.settingsState['desktop-effects-workspace'];
+        let animate = Main.animations_enabled;
         if (animate) {
             this._group.opacity = 0;
             Tweener.addTween(this._group, {
@@ -408,7 +411,7 @@ Overview.prototype = {
 
         this.workspacesView.hide();
 
-        let animate = Main.wm.settingsState['desktop-effects-workspace'];
+        let animate = Main.animations_enabled;
         if (animate) {
             // Make other elements fade out.
             Tweener.addTween(this._group, {
@@ -451,7 +454,7 @@ Overview.prototype = {
         this._background = null;
 
         // Re-enable unredirection
-        Meta.enable_unredirect_for_screen(global.screen);
+        Meta.enable_unredirect_for_display(global.display);
 
         global.window_group.show();
 

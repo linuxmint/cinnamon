@@ -2,6 +2,7 @@ const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 const Gio = imports.gi.Gio;
+const Clutter = imports.gi.Clutter;
 
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
@@ -243,7 +244,8 @@ Tooltip.prototype = {
      */
     set_text: function(text) {
         this._tooltip.set_text(text);
-        this._tooltip.get_clutter_text().set_use_markup(false);
+        this._tooltip.clutter_text.set_use_markup(false);
+        this._tooltip.clutter_text.allocate_preferred_size(Clutter.AllocationFlags.NONE);
     },
 
     /**
@@ -254,7 +256,8 @@ Tooltip.prototype = {
      */
     set_markup: function(markup) {
         this._tooltip.set_text(markup);
-        this._tooltip.get_clutter_text().set_use_markup(true);
+        this._tooltip.clutter_text.set_use_markup(true);
+        this._tooltip.clutter_text.allocate_preferred_size(Clutter.AllocationFlags.NONE);
     },
 
     _destroy: function() {

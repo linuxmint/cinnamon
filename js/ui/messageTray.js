@@ -400,8 +400,8 @@ var Notification = class Notification {
                  * many notifications.
                  */
                 this._scrollArea = new St.ScrollView({ name: 'notification-scrollview',
-                                                       vscrollbar_policy: Gtk.PolicyType.NEVER,
-                                                       hscrollbar_policy: Gtk.PolicyType.NEVER,
+                                                       vscrollbar_policy: St.PolicyType.NEVER,
+                                                       hscrollbar_policy: St.PolicyType.NEVER,
                                                        enable_mouse_scrolling: false/*,
                                                        style_class: 'vfade'*/ });
 

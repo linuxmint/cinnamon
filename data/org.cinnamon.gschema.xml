@@ -182,9 +182,17 @@
 
     <key name="desktop-effects-workspace" type="b">
       <default>true</default>
-      <summary>Enable desktop effects on the workspace</summary>
+      <summary>Enable desktop effects in the Cinnamon ui</summary>
       <description>
         This affects switching workspaces, expo and scale.
+      </description>
+    </key>
+
+    <key name="desktop-effects" type="b">
+      <default>true</default>
+      <summary>Enable desktop effects</summary>
+      <description>
+        Whether to enable desktop effects and window animations.
       </description>
     </key>
 
@@ -200,7 +208,7 @@
       <default>"traditional"</default>
       <summary>Effect used when mapping windows</summary>
       <description>
-       An effect: traditional, fly, move, none
+       An effect: traditional, fly, fade, none
       </description>
     </key>
 
@@ -208,14 +216,7 @@
       <default>"traditional"</default>
       <summary>Effect used when minimizing windows</summary>
       <description>
-       An effect: traditional, fly, none
-      </description>
-    </key>
-
-    <key type="b" name="desktop-effects-maximize">
-      <default>false</default>
-      <summary>Whether to show an animation when maximizing windows</summary>
-      <description>
+       An effect: traditional, fly, fade, none
       </description>
     </key>
 
@@ -224,6 +225,36 @@
       <summary>Whether to show an animation when unmaximizing/tiling/snapping windows</summary>
       <description>
       </description>
+    </key>
+
+    <key type="s" name="desktop-effects-sizechange-effect">
+      <default>"scale"</default>
+      <summary>Effect used when maximizing windows</summary>
+      <description>
+       An effect: none
+      </description>
+    </key>
+
+     <key name="desktop-effects-sizechange-transition" type="s">
+      <default>"easeInQuad"</default>
+      <summary>Transition used when maximizing windows</summary>
+      <description>
+       A Tweener transition
+      </description>
+    </key>
+
+    <key type="i" name="desktop-effects-sizechange-time">
+      <default>100</default>
+      <summary>Duration of the effect (in milliseconds)</summary>
+      <description>
+       Duration of the effect (in milliseconds)
+      </description>
+    </key>
+
+    <key type="i" name="window-effect-speed">
+      <default>1</default>
+      <range min="0" max="2"/>
+      <summary>Speed multiplier for window-effects</summary>
     </key>
 
     <key type="b" name="startup-animation">
@@ -873,10 +904,20 @@
     </key>
   </schema>
 
-  <schema id="org.cinnamon.keybindings" path="/org/cinnamon/keybindings/">
-    <key name="custom-list" type="as">
+  <schema id="org.cinnamon.runtime-keybindings" path="/org/cinnamon/runtime-keybindings/">
+    <key name="placeholder" type="b">
+      <default>false</default>
+    </key>
+   </schema>
+
+  <schema id="org.cinnamon.runtime-keybindings.runtime-keybinding">
+    <key name="bindings" type="as">
       <default>[]</default>
-      <summary>deprecated - moved to org.cinnamon.desktop.keybindings</summary>
+      <summary>Keybinding array for runtime keybinding.</summary>
+    </key>
+    <key name="action-id" type="i">
+      <default>0</default>
+      <summary>Action id for keybinding</summary>
     </key>
   </schema>
 

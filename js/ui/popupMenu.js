@@ -3,6 +3,7 @@
 const Cairo = imports.cairo;
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
+const Graphene = imports.gi.Graphene;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
@@ -22,7 +23,6 @@ const Params = imports.misc.params;
 const Util = imports.misc.util;
 
 var SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
-var MENU_ANIMATION_TIME = 0.15; /* Seconds */
 var MENU_ANIMATION_OFFSET = 0.1;
 
 var PanelLoc = {
@@ -482,10 +482,48 @@ var PopupMenuItem = class PopupMenuItem extends PopupBaseMenuItem {
         this.label = new St.Label({ text: text });
         this.addActor(this.label);
         this.actor.label_actor = this.label;
+
+        this._ornament = new St.Bin();
+        this._icon = new St.Icon({ style_class: 'popup-menu-icon', icon_type: St.IconType.FULLCOLOR });
+
+        this._ornament.child = this._icon;
+        this._ornament.child._delegate = this._ornament;
+        this.addActor(this._ornament, {span: 0});
     }
 
     setLabel(label) {
         this.label.set_text(label);
+    }
+
+    setOrnament(ornamentType, state) {
+        switch (ornamentType) {
+        case OrnamentType.CHECK:
+            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof CheckBox.CheckButton))) {
+                this._ornament.child.destroy();
+                this._ornament.child = null;
+            }
+            if (!this._ornament.child) {
+                let switchOrn = new CheckBox.CheckButton(state);
+                this._ornament.child = switchOrn.actor;
+            } else {
+                this._ornament.child._delegate.setToggleState(state);
+            }
+            this._icon = null;
+            break;
+        case OrnamentType.DOT:
+            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof RadioButton.RadioBox))) {
+                this._ornament.child.destroy();
+                this._ornament.child = null;
+            }
+            if (!this._ornament.child) {
+                let radioOrn = new RadioButton.RadioBox(state);
+                this._ornament.child = radioOrn.actor;
+            } else {
+                this._ornament.child._delegate.setToggleState(state);
+            }
+            this._icon = null;
+            break;
+        }
     }
 }
 
@@ -735,7 +773,7 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         // FIXME: we should only grab the specific device that originated
         // the event, but for some weird reason events are still delivered
         // outside the slider if using clutter_grab_pointer_for_device
-        Clutter.grab_pointer(this._slider);
+        event.get_device().grab(this._slider);
         this._signals.connect(this._slider, 'button-release-event', Lang.bind(this, this._endDragging));
         this._signals.connect(this._slider, 'motion-event', Lang.bind(this, this._motionEvent));
         let absX, absY;
@@ -743,12 +781,12 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         this._moveHandle(absX, absY);
     }
 
-    _endDragging() {
+    _endDragging(actor, event) {
         if (this._dragging) {
             this._signals.disconnect('button-release-event', this._slider);
             this._signals.disconnect('motion-event', this._slider);
 
-            Clutter.ungrab_pointer();
+            event.get_device().ungrab();
             this._dragging = false;
 
             this.emit('drag-end');
@@ -758,6 +796,9 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
 
     _onScrollEvent (actor, event) {
         let direction = event.get_scroll_direction();
+        if (direction == Clutter.ScrollDirection.SMOOTH) {
+            return;
+        }
 
         if (direction == Clutter.ScrollDirection.DOWN) {
             this._value = Math.max(0, this._value - SLIDER_SCROLL_STEP);
@@ -1125,7 +1166,7 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
                 this._ornament.child = null;
             }
             if (!this._ornament.child) {
-                let switchOrn = new CheckBox.CheckButton(state);
+                let switchOrn = new CheckBox.CheckButton(null, {}, state);
                 this._ornament.child = switchOrn.actor;
             } else {
                 this._ornament.child._delegate.setToggleState(state);
@@ -1719,7 +1760,10 @@ var PopupMenuBase = class PopupMenuBase {
     addAction(title, callback) {
         let menuItem = new PopupMenuItem(title);
         this.addMenuItem(menuItem);
-        this._signals.connect(menuItem, 'activate', (menuItem, event) => { callback(event) });
+
+        menuItem.connect('activate', (o, event) => {
+            callback(event);
+        });
 
         return menuItem;
     }
@@ -1918,6 +1962,16 @@ var PopupMenuBase = class PopupMenuBase {
         menuItem.actor.show();
     }
 
+    _updateAllSeparatorVisibility() {
+        let children = this.box.get_children();
+
+        for (let child of children) {
+            if (child._delegate instanceof PopupSeparatorMenuItem) {
+                this._updateSeparatorVisibility(child._delegate);
+            }
+        }
+    }
+
     /**
      * addMenuItem:
      * @menuItem (PopupMenu.PopupBaseMenuItem): the item to include (can also
@@ -1972,7 +2026,6 @@ var PopupMenuBase = class PopupMenuBase {
             // precise ways would require a lot more bookkeeping.
             let updateSeparatorVisibility = this._updateSeparatorVisibility.bind(this, menuItem);
             this._signals.connect(this, 'open-state-changed', updateSeparatorVisibility);
-            this._signals.connect(this.box, 'allocation-changed', updateSeparatorVisibility);
         } else if (menuItem instanceof PopupBaseMenuItem)
             this._connectItemSignals(menuItem);
         else
@@ -2108,7 +2161,6 @@ var PopupMenuBase = class PopupMenuBase {
     destroy() {
         this._signals.disconnectAllSignals();
         this.removeAll();
-        this.actor.destroy();
         /**
          * SIGNAL:destroy
          *
@@ -2220,6 +2272,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         Main.popup_rendering_actor = this.actor;
 
         this.setMaxHeight();
+        this._updateAllSeparatorVisibility();
 
         /* I'd rather this be inside the active tween scope as an onUpdate param, but how do you modify
          * a tweens own parameters during said tweening? */
@@ -2266,14 +2319,14 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             Main.uiGroup.set_child_above_sibling(this.actor, null);
         }
 
-        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (animate && Main.wm.desktop_effects_menus) {
             this.animating = true;
             this.actor.show();
             this.actor.opacity = 0;
 
             let tweenParams = {
                 transition: "easeOutQuad",
-                time: MENU_ANIMATION_TIME,
+                time: Main.wm.MENU_ANIMATION_TIME,
                 opacity: 255,
                 onUpdate: dest => {
                     let clipY = 0;
@@ -2375,13 +2428,13 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         if (this._activeMenuItem)
             this._activeMenuItem.setActive(false);
 
-        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (animate && Main.wm.desktop_effects_menus) {
             this.actor.set_position(...this._calculatePosition());
             this.actor.set_size(...this.actor.get_size());
             this.animating = true;
             let tweenParams = {
                 transition: "easeInQuad",
-                time: MENU_ANIMATION_TIME,
+                time: Main.wm.MENU_ANIMATION_TIME,
                 opacity: 0,
                 onUpdate: dest => {
                         let clipY = 0;
@@ -2540,9 +2593,9 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 else if (xPos + natWidth > x2) xPos = x2 - natWidth;
 
                 // now we calculate the x postion based on the orientation
-                if (this._orientation === St.Side.BOTTOM) {
+                if (this._orientation === St.Side.BOTTOM || (y2 - sourceBox.y2) < natHeight) {
                     this.sideFlipped = true;
-                    yPos = Math.min(y2, sourceBox.y1) - natHeight;
+                    yPos = y2 - natHeight;
                     styleClasses.push("bottom");
                 }
                 else {
@@ -2658,8 +2711,8 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
         }
 
         this.actor = new St.ScrollView({ style_class: 'popup-sub-menu',
-                                         hscrollbar_policy: Gtk.PolicyType.NEVER,
-                                         vscrollbar_policy: Gtk.PolicyType.NEVER });
+                                         hscrollbar_policy: St.PolicyType.NEVER,
+                                         vscrollbar_policy: St.PolicyType.NEVER });
 
         // StScrollbar plays dirty tricks with events, calling
         // clutter_set_motion_events_enabled (FALSE) during the scroll; this
@@ -2731,7 +2784,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
         // when we *don't* need it, so turn off the scrollbar when that's true.
         // Dynamic changes in whether we need it aren't handled properly.
         this.actor.vscrollbar_policy =
-            needsScrollbar ? Gtk.PolicyType.AUTOMATIC : Gtk.PolicyType.NEVER;
+            needsScrollbar ? St.PolicyType.AUTOMATIC : St.PolicyType.NEVER;
 
         // It looks funny if we animate with a scrollbar (at what point is
         // the scrollbar added?) so just skip that case
@@ -2739,7 +2792,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
 
         const targetAngle = this.actor.get_direction() === St.TextDirection.RTL ? -90 : 90;
 
-        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (animate && Main.wm.desktop_effects_menus) {
             let [minHeight, naturalHeight] = this.actor.get_preferred_height(-1);
             this.actor.height = 0;
             if (this._arrow)
@@ -2783,7 +2836,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
 
         animate = animate && !this._needsScrollbar();
 
-        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (animate && Main.wm.desktop_effects_menus) {
             if (this._arrow)
                 this.actor._arrowRotation = this._arrow.rotation_angle_z;
             Tweener.addTween(this.actor,
@@ -2896,7 +2949,7 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
             this._triangle = this.actor.get_direction() === St.TextDirection.RTL ?
                 arrowIcon(St.Side.LEFT) :
                 arrowIcon(St.Side.RIGHT);
-            this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.5 });
+            this._triangle.pivot_point = new Graphene.Point({ x: 0.5, y: 0.5 });
             this._triangleBin.child = this._triangle;
         }
 
@@ -2983,7 +3036,7 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
         this.actor.opacity = 0;
         this.actor.show();
 
-        if (global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (Main.wm.desktop_effects_menus) {
             Tweener.addTween(this.actor,
                              { opacity: 255,
                                transition: 'linear',
@@ -3000,7 +3053,7 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
             return;
 
         this.isOpen = false;
-        if (global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (Main.wm.desktop_effects_menus) {
             Tweener.addTween(this.actor,
                              { opacity: 0,
                                transition: 'linear',
@@ -3611,7 +3664,7 @@ var PopupMenuManager = class PopupMenuManager {
         if (!this.grabbed)
             return false;
 
-        if (Main.keyboard.shouldTakeEvent(event))
+        if (Main.virtualKeyboard.shouldTakeEvent(event))
             return Clutter.EVENT_PROPAGATE;
 
         if (this._owner.menuEventFilter &&

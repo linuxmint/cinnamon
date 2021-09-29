@@ -437,7 +437,6 @@ class AppGroup {
             let rect = new Meta.Rectangle();
             [rect.x, rect.y] = this.actor.get_transformed_position();
             [rect.width, rect.height] = this.actor.get_transformed_size();
-
             each(this.groupState.metaWindows, (metaWindow) => {
                 if (metaWindow) {
                     metaWindow.set_icon_geometry(rect);
@@ -805,7 +804,7 @@ class AppGroup {
             if (!this.rightClickMenu.isOpen) {
                 this.listState.trigger('closeAllRightClickMenus', () => {
                     this.listState.trigger('closeAllHoverMenus', () => {
-                        this.rightClickMenu.open();
+                        this.rightClickMenu.toggle();
                     });
                 });
             } else {
@@ -893,7 +892,7 @@ class AppGroup {
             this.signals.connect(metaWindow, 'notify::gtk-application-id', (w) => this.onAppChange(w));
             this.signals.connect(metaWindow, 'notify::wm-class', (w) => this.onAppChange(w));
 
-            this.signals.connect(metaWindow, 'icon-changed', (w) => this.setIcon(w));
+            this.signals.connect(metaWindow, 'notify::icon', (w) => this.setIcon(w));
 
             if (metaWindow.progress !== undefined) {
                 // Check if GWL is starting with pre-existing windows that have progress,
@@ -1147,7 +1146,12 @@ class AppGroup {
             }
             this.rightClickMenu.destroy();
         }
-        if (this.hoverMenu) this.hoverMenu.destroy();
+
+        if (this.hoverMenu) {
+            Main.layoutManager.removeChrome(this.hoverMenu.actor);
+            this.hoverMenu.destroy();
+        }
+
         this.listState.trigger('removeChild', this.actor);
         this.actor.destroy();
 

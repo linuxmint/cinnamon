@@ -120,12 +120,12 @@ Animation.prototype = {
 
     _finished: function() {
         if (this.shroud) {
-            this.shroud.destroy();
+            Main.layoutManager.removeChrome(this.shroud);
             this.shroud = null;
         }
 
         if (this.logo) {
-            this.logo.destroy();
+            Main.layoutManager.removeChrome(this.logo);
             this.logo = null;
         }
 

@@ -188,13 +188,13 @@ st_label_dispose (GObject   *object)
 }
 
 static void
-st_label_paint (ClutterActor *actor)
+st_label_paint (ClutterActor *actor, ClutterPaintContext *paint_context)
 {
   StLabelPrivate *priv = ST_LABEL (actor)->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
   StShadow *shadow_spec = st_theme_node_get_text_shadow (theme_node);
 
-  st_widget_paint_background (ST_WIDGET (actor));
+  st_widget_paint_background (ST_WIDGET (actor), paint_context);
 
   if (shadow_spec)
     {
@@ -218,7 +218,7 @@ st_label_paint (ClutterActor *actor)
 
       if (priv->text_shadow_pipeline != NULL)
         {
-          CoglFramebuffer *fb = cogl_get_draw_framebuffer();
+          CoglFramebuffer *fb = clutter_paint_context_get_framebuffer (paint_context);
           _st_paint_shadow_with_opacity (shadow_spec,
                                          priv->text_shadow_pipeline,
                                          fb,
@@ -227,7 +227,7 @@ st_label_paint (ClutterActor *actor)
         }
     }
 
-  clutter_actor_paint (priv->label);
+  clutter_actor_paint (priv->label, paint_context);
 }
 
 static void

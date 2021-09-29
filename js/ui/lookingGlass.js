@@ -229,22 +229,33 @@ class WindowList {
 
 function addBorderPaintHook(actor) {
     let signalId = actor.connect_after('paint',
-        function () {
-            let color = new Cogl.Color();
-            color.init_from_4ub(0xff, 0, 0, 0xc4);
-            Cogl.set_source_color(color);
+        function (actor, paint_context) {
+            let framebuffer = paint_context.get_framebuffer();
+            let coglContext = framebuffer.get_context();
 
-            let geom = actor.get_allocation_geometry();
+            if (!this._pipeline) {
+                let color = new Cogl.Color();
+                color.init_from_4ub(0xff, 0, 0, 0xc4);
+
+                this._pipeline = new Cogl.Pipeline(coglContext);
+                this._pipeline.set_color(color);
+            }
+
+            let alloc = actor.get_allocation_box();
             let width = 2;
 
             // clockwise order
-            Cogl.rectangle(0, 0, geom.width, width);
-            Cogl.rectangle(geom.width - width, width,
-                           geom.width, geom.height);
-            Cogl.rectangle(0, geom.height,
-                           geom.width - width, geom.height - width);
-            Cogl.rectangle(0, geom.height - width,
-                           width, width);
+            framebuffer.draw_rectangle(this._pipeline,
+                0, 0, alloc.get_width(), width);
+            framebuffer.draw_rectangle(this._pipeline,
+                alloc.get_width() - width, width,
+                alloc.get_width(), alloc.get_height());
+            framebuffer.draw_rectangle(this._pipeline,
+                0, alloc.get_height(),
+                alloc.get_width() - width, alloc.get_height() - width);
+            framebuffer.draw_rectangle(this._pipeline,
+                0, alloc.get_height() - width,
+                width, width);
         });
 
     actor.queue_redraw();

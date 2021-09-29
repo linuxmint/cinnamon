@@ -121,12 +121,15 @@ class XAppStatusIcon {
 
             // Assume symbolic icons would always be square/suitable for an StIcon.
             if (iconName.includes("/") && type != St.IconType.SYMBOLIC) {
-                St.TextureCache.get_default().load_image_from_file_async(iconName,
-                                                                         /* If top/bottom panel, allow the image to expand horizontally,
-                                                                          * otherwise, restrict it to a square (but keep aspect ratio.) */
-                                                                         this.actor.vertical ? this.iconSize : -1,
-                                                                         this.iconSize,
-                                                                         (...args)=>this._onImageLoaded(...args));
+                this.icon_loader_handle = St.TextureCache.get_default().load_image_from_file_async(
+                    iconName,
+                    /* If top/bottom panel, allow the image to expand horizontally,
+                     * otherwise, restrict it to a square (but keep aspect ratio.) */
+                    this.actor.vertical ? this.iconSize : -1,
+                    this.iconSize,
+                    (...args)=>this._onImageLoaded(...args)
+                );
+
                 return;
             }
             else {
@@ -141,7 +144,12 @@ class XAppStatusIcon {
         }
     }
 
-    _onImageLoaded(cache, actor, data=null) {
+    _onImageLoaded(cache, handle, actor, data=null) {
+        if (handle !== this.icon_loader_handle) {
+            global.logError(`xapp-status@cinnamon.org: Icon or image seems out of sync (${this.name}`);
+            return;
+        }
+
         this.icon_holder.child = actor;
         this.icon_holder.show();
     }
@@ -251,10 +259,10 @@ class XAppStatusIcon {
     onScrollEvent(actor, event) {
         let direction = event.get_scroll_direction();
 
-        let x_dir = XApp.ScrollDirection.UP;
-        let delta = 0;
-
         if (direction != Clutter.ScrollDirection.SMOOTH) {
+            let x_dir = XApp.ScrollDirection.UP;
+            let delta = 0;
+
             if (direction == Clutter.ScrollDirection.UP) {
                 x_dir = XApp.ScrollDirection.UP;
                 delta = -1;
@@ -268,9 +276,11 @@ class XAppStatusIcon {
                 x_dir = XApp.ScrollDirection.RIGHT;
                 delta = 1;
             }
+
+            this.proxy.call_scroll(delta, x_dir, event.get_time(), null, null);
         }
 
-        this.proxy.call_scroll(delta, x_dir, event.get_time(), null, null);
+        return Clutter.EVENT_STOP;
     }
 
     destroy() {

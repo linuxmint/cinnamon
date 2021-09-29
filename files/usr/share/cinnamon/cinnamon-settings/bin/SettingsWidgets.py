@@ -11,6 +11,7 @@ from xapp.SettingsWidgets import SettingsWidget, SettingsLabel
 from xapp.GSettingsWidgets import PXGSettingsBackend
 from ChooserButtonWidgets import DateChooserButton, TimeChooserButton
 from KeybindingWidgets import ButtonKeybinding
+import util
 
 settings_objects = {}
 
@@ -358,29 +359,13 @@ class SoundFileChooser(SettingsWidget):
         self.play_button.connect("clicked", self.on_play_clicked)
         self.content_widget.pack_start(self.play_button, False, False, 0)
 
-        self._proxy = None
-
-        try:
-            Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
-                                      'org.cinnamon.SettingsDaemon.Sound',
-                                      '/org/cinnamon/SettingsDaemon/Sound',
-                                      'org.cinnamon.SettingsDaemon.Sound',
-                                      None, self._on_proxy_ready, None)
-        except GLib.Error as e:
-            print(e.message)
-            self._proxy = None
-            self.play_button.set_sensitive(False)
-
         self.set_tooltip_text(tooltip)
 
         if size_group:
             self.add_to_size_group(size_group)
 
-    def _on_proxy_ready (self, object, result, data=None):
-        self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
-
     def on_play_clicked(self, widget):
-        self._proxy.PlaySoundFile("(us)", 0, self.get_value())
+        util.play_sound_file(self.get_value())
 
     def on_picker_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(title=self.label.get_text(),

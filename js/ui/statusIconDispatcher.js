@@ -46,7 +46,7 @@ StatusIconDispatcher.prototype = {
     },
 
     start: function(themeWidget) {
-        this._traymanager.manage_stage(global.stage, themeWidget);
+        this._traymanager.manage_screen(themeWidget);
     },
 
     set_tray_orientation: function(orientation) {

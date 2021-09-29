@@ -56,6 +56,8 @@ enum
   LAST_SIGNAL
 };
 
+static StThemeContext *stage_context = NULL;
+
 static guint signals[LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (StThemeContext, st_theme_context, G_TYPE_OBJECT);
@@ -243,6 +245,7 @@ on_stage_destroy (ClutterStage *stage)
   StThemeContext *context = st_theme_context_get_for_stage (stage);
 
   g_object_set_data (G_OBJECT (stage), "st-theme-context", NULL);
+  stage_context = NULL;
   g_object_unref (context);
 }
 
@@ -310,6 +313,7 @@ st_theme_context_get_for_stage (ClutterStage *stage)
 
   context = st_theme_context_new ();
   g_object_set_data (G_OBJECT (stage), "st-theme-context", context);
+  stage_context = context;
   g_signal_connect (stage, "destroy",
                     G_CALLBACK (on_stage_destroy), NULL);
 
@@ -447,3 +451,19 @@ st_theme_context_intern_node (StThemeContext *context,
   g_hash_table_add (context->nodes, g_object_ref (node));
   return node;
 }
+
+/**
+ * st_theme_context_get_stage_scale:
+ *
+ * Gets the stage's ui scale.
+ *
+ * Return value: the ui scale
+ */
+gint
+st_theme_context_get_scale_for_stage (void)
+{
+  g_return_val_if_fail (stage_context != NULL, 1);
+  // g_printerr ("theme scale: %d\n", stage_context->scale_factor);
+  return stage_context->scale_factor;
+}
+
