@@ -26,8 +26,8 @@ const {
     Minimize,
     Unminimize,
     Tile,
-    Maximize,
-    Unmaximize
+    Unmaximize,
+    SizeChange
 } = imports.ui.windowEffects;
 const {each, filter, tryFn} = imports.misc.util;
 const Main = imports.ui.main;
@@ -153,7 +153,7 @@ class TilePreview {
                                                    y: monitor.y,
                                                    width: monitor.width,
                                                    height: monitor.height });
-            let [, rect] = window.get_outer_rect().intersect(monitorRect);
+            let [, rect] = window.get_buffer_rect().intersect(monitorRect);
             this.actor.set_size(rect.width, rect.height);
             this.actor.set_position(rect.x, rect.y);
             this.actor.opacity = 0;
@@ -225,10 +225,10 @@ class HudPreview {
         this.actor = new Bin({ style_class: 'tile-hud', important: true });
         global.window_group.add_actor(this.actor);
 
-        this._tileHudSettings = new Settings({ schema_id: "org.cinnamon.muffin" });
-        this._tileHudSettings.connect("changed::tile-hud-threshold", () => this._onTileHudSettingsChanged());
+        // this._tileHudSettings = new Settings({ schema_id: "org.cinnamon.muffin" });
+        // this._tileHudSettings.connect("changed::tile-hud-threshold", () => this._onTileHudSettingsChanged());
 
-        this._onTileHudSettingsChanged();
+        // this._onTileHudSettingsChanged();
         this._snapQueued = 0;
 
         this._reset();
@@ -449,11 +449,11 @@ class HudPreview {
 var WindowManager = class WindowManager {
     constructor() {
         this._minimizing = [];
-        this._maximizing = [];
-        this._unmaximizing = [];
+        this._unminimizing = [];
         this._tiling = [];
         this._mapping = [];
         this._destroying = [];
+        this._size_changing = [];
 
         const _endWindowEffect = (c, n, a) => this._endWindowEffect(c, n, a);
 
@@ -462,25 +462,25 @@ var WindowManager = class WindowManager {
             close: new Close(_endWindowEffect),
             minimize: new Minimize(_endWindowEffect),
             unminimize: new Unminimize(_endWindowEffect),
-            tile: new Tile(_endWindowEffect),
-            maximize: new Maximize(_endWindowEffect),
-            unmaximize: new Unmaximize(_endWindowEffect)
+            sizechange: new SizeChange(_endWindowEffect),
+            // maximize: new Maximize(_endWindowEffect),
+            // unmaximize: new Unmaximize(_endWindowEffect)
         };
 
-        this.settings = new Settings({schema_id: 'org.cinnamon.muffin'});
+        this.settings = new Settings({schema_id: 'org.gnome.mutter'});
 
         const settingsState = {
             'desktop-effects-on-dialogs': global.settings.get_boolean('desktop-effects-on-dialogs'),
             'desktop-effects-on-menus': global.settings.get_boolean('desktop-effects-on-menus'),
-            'desktop-effects': this.settings.get_boolean('desktop-effects'),
+            'desktop-effects': true//this.settings.get_boolean('desktop-effects'),
         };
 
         global.settings.connect('changed::desktop-effects-on-dialogs', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         global.settings.connect('changed::desktop-effects-on-menus', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
-        this.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        // this.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
 
         each(this.effects, (value, key) => {
-            if (key === 'unminimize') return;
+            // if (key === 'unminimize') return;
             each(SETTINGS_EFFECTS_TYPES, (item) => {
                 let [name, type] = item;
                 let property = `desktop-effects-${key}-${name}`;
@@ -505,13 +505,15 @@ var WindowManager = class WindowManager {
         global.window_manager.connect('kill-window-effects', (c, a) => this._killWindowEffects(c, a));
         global.window_manager.connect('switch-workspace', (c, f, t, d) => this._switchWorkspace(c, f, t, d));
         global.window_manager.connect('minimize', (c, a) => this._minimizeWindow(c, a));
-        global.window_manager.connect('maximize', (c, a, x, y, w, h) => this._maximizeWindow(c, a, x, y, w, h));
-        global.window_manager.connect('unmaximize', (c, a, x, y, w, h) => this._unmaximizeWindow(c, a, x, y, w, h));
-        global.window_manager.connect('tile', (c, a, x, y, w, h) => this._tileWindow(c, a, x, y, w, h));
+        global.window_manager.connect('unminimize', (c, a) => this._unminimizeWindow(c, a));
+        // global.window_manager.connect('unmaximize', (c, a, x, y, w, h) => this._unmaximizeWindow(c, a, x, y, w, h));
+        // global.window_manager.connect('tile', (c, a, x, y, w, h) => this._tileWindow(c, a, x, y, w, h));
+        global.window_manager.connect('size-change', this._sizeChangeWindow.bind(this));
+        // global.window_manager.connect('size-changed', this._sizeChangedWindow.bind(this));
         global.window_manager.connect('show-tile-preview', (c, w, t, m, s) => this._showTilePreview(c, w, t, m, s));
         global.window_manager.connect('hide-tile-preview', (c) => this._hideTilePreview(c));
-        global.window_manager.connect('show-hud-preview', (c, p, w, s) => this._showHudPreview(c, p, w, s));
-        global.window_manager.connect('hide-hud-preview', (c) => this._hideHudPreview(c));
+        // global.window_manager.connect('show-hud-preview', (c, p, w, s) => this._showHudPreview(c, p, w, s));
+        // global.window_manager.connect('hide-hud-preview', (c) => this._hideHudPreview(c));
         global.window_manager.connect('map', (c, a) => this._mapWindow(c, a));
         global.window_manager.connect('destroy', (c, a) => this._destroyWindow(c, a));
 
@@ -552,9 +554,9 @@ var WindowManager = class WindowManager {
             case 'org.cinnamon':
                 this.settingsState[key] = global.settings[type](key);
                 break;
-            case 'org.cinnamon.muffin':
-                this.settingsState[key] = this.settings[type](key);
-                break;
+            // case 'org.cinnamon.muffin':
+            //     this.settingsState[key] = this.settings[type](key);
+            //     break;
         }
     }
 
@@ -590,13 +592,14 @@ var WindowManager = class WindowManager {
     _startWindowEffect(cinnamonwm, name, actor, args, overwriteKey) {
         let effect = this.effects[name];
         if (!this.settingsState['desktop-effects'] || !this._shouldAnimate(actor)) {
+            log("BAILINGG EFFECT: "+name);
             cinnamonwm[effect.wmCompleteName](actor);
             return;
         }
 
         let key = "desktop-effects-" + (overwriteKey || effect.name);
         let time = this.settingsState[`${key}-time`];
-
+log("TIME: " + time);
         // Transition time is 0ms, bail
         if (!time) {
             cinnamonwm[effect.wmCompleteName](actor);
@@ -624,6 +627,7 @@ var WindowManager = class WindowManager {
     }
 
     _endWindowEffect(cinnamonwm, name, actor) {
+        log("end: " + name);
         let effect = this.effects[name];
         // effect will be an instance of Effect
         let idx = this[effect.arrayName].indexOf(actor);
@@ -645,28 +649,25 @@ var WindowManager = class WindowManager {
 
     _minimizeWindow(cinnamonwm, actor) {
         soundManager.play('minimize');
+        log("start minimize");
 
         // reset all cached values in case "traditional" is no longer in effect
         actor.meta_window._cinnamonwm_has_origin = false;
         this._startWindowEffect(cinnamonwm, "minimize", actor);
     }
 
-    _tileWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
-        soundManager.play('tile');
-
-        this._startWindowEffect(cinnamonwm, "tile", actor, [targetX, targetY, targetWidth, targetHeight]);
-    }
-
-    _maximizeWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
+    _unminimizeWindow(cinnamonwm, actor) {
         soundManager.play('maximize');
-
-        this._startWindowEffect(cinnamonwm, "maximize", actor, [targetX, targetY, targetWidth, targetHeight]);
+        log("start unminimize");
+        let [success, target] = actor.meta_window.get_icon_geometry()
+        this._startWindowEffect(cinnamonwm, "unminimize", actor, [target.x, target.y, target.width, target.height]);
     }
 
-    _unmaximizeWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
-        soundManager.play('unmaximize');
+    _sizeChangeWindow(cinnamonwm, actor, whichChange, oldFrameRect, _oldBufferRect) {
+        log("start size-change");
+        let [success, target] = actor.meta_window.get_icon_geometry()
 
-        this._startWindowEffect(cinnamonwm, "unmaximize", actor, [targetX, targetY, targetWidth, targetHeight]);
+        this._startWindowEffect(cinnamonwm, "sizechange", actor, [oldFrameRect, target]);
     }
 
     _hasAttachedDialogs(window, ignoreWindow) {
@@ -742,6 +743,7 @@ var WindowManager = class WindowManager {
     }
 
     _mapWindow(cinnamonwm, actor) {
+        log("map");
         let {meta_window} = actor;
         if (meta_window.is_attached_dialog()) {
             this._checkDimming(meta_window.get_transient_for());
@@ -847,7 +849,7 @@ var WindowManager = class WindowManager {
                  * there while other windows move. */
                 window.show_all();
                 this._movingWindow = undefined;
-            } else if (window.get_workspace() === from) {
+            } else if (meta_window.get_workspace() === from) {
                 if (window.origX == undefined) {
                     window.origX = window.x;
                     window.origY = window.y;
@@ -864,7 +866,7 @@ var WindowManager = class WindowManager {
                               window.origY = undefined;
                           }
                         });
-            } else if (window.get_workspace() === to) {
+            } else if (meta_window.get_workspace() === to) {
                 if (window.origX == undefined) {
                     window.origX = window.x;
                     window.origY = window.y;

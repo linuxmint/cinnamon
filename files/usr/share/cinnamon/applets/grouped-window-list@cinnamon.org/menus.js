@@ -722,28 +722,31 @@ class WindowThumbnail {
         }
         // Create our own thumbnail if it doesn't exist
         if (this.metaWindowActor) {
-            this.signals.disconnect('size-changed', this.metaWindowActor);
+            this.signals.disconnect('notify::size', this.metaWindowActor);
         } else {
             this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
         if (this.metaWindowActor && !this.metaWindowActor.is_finalized()) {
-            this.signals.connect(this.metaWindowActor, 'size-changed', () => this.refreshThumbnail());
+            this.signals.connect(this.metaWindowActor, 'notify::size', () => this.refreshThumbnail());
 
             let windowTexture = this.metaWindowActor.get_texture();
             if (!windowTexture) return;
-            let [width, height] = windowTexture.get_size();
+            // FIXME
+            // let [width, height] = windowTexture.get_preferred_size();
+            let width = this.metaWindowActor.width;
+            let height = this.metaWindowActor.height;
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
             height = Math.round(height * scale);
             if (this.thumbnailActor.child) {
                 this.thumbnailActor.height = height;
                 this.thumbnailActor.width = width;
-                this.thumbnailActor.child.source = windowTexture;
+                this.thumbnailActor.child.source = this.metaWindowActor;
                 this.thumbnailActor.child.width = width;
                 this.thumbnailActor.child.height = height;
             } else {
                 this.thumbnailActor.child = new Clutter.Clone({
-                    source: windowTexture,
+                    source: this.metaWindowActor,
                     reactive: true,
                     width,
                     height
@@ -838,7 +841,7 @@ class WindowThumbnail {
         }
         this.state.set({
             overlayPreview: new Clutter.Clone({
-                source: this.metaWindowActor.get_texture(),
+                source: this.metaWindowActor,
                 opacity: 0
             })
         });

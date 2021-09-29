@@ -46,6 +46,7 @@
 
 const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
+const Cogl = imports.gi.Cogl;
 const Gio = imports.gi.Gio;
 const Gdk = imports.gi.Gdk;
 const Lang = imports.lang;
@@ -124,8 +125,13 @@ class WindowPreview extends Tooltips.TooltipBase {
         this.mousePosition = event.get_coords();
     }
 
-    _getScaledTextureSize(windowTexture) {
-        let [width, height] = windowTexture.get_size();
+    _getScaledTextureSize(windowActor) {
+        let width = windowActor.width;
+        let height = windowActor.height;
+
+        // let width = windowTexture.get_texture().get_width();
+        // let height = windowTexture.get_texture().get_height();
+
         let scale = this.thumbScale * this.uiScale *
                     Math.min(WINDOW_PREVIEW_WIDTH / width, WINDOW_PREVIEW_HEIGHT / height);
         return [ width * scale,
@@ -146,7 +152,7 @@ class WindowPreview extends Tooltips.TooltipBase {
             this.thumbnail.destroy();
             this.thumbnail = null;
         }
-
+        //FIXME - previews should show content only, not frames
         let windowTexture = this.windowActor.get_texture();
 
         if (!windowTexture) {
@@ -154,16 +160,16 @@ class WindowPreview extends Tooltips.TooltipBase {
             return;
         }
 
-        let [width, height] = this._getScaledTextureSize(windowTexture);
+        let [width, height] = this._getScaledTextureSize(this.windowActor);
 
         this.thumbnail = new Clutter.Clone({
-            source: windowTexture,
+            source: this.windowActor,
             width: width,
             height: height
         });
 
-        this._sizeChangedId = this.windowActor.connect('size-changed', () => {
-            let [width, height] = this._getScaledTextureSize(windowTexture);
+        this._sizeChangedId = this.windowActor.connect('notify::size', () => {
+            let [width, height] = this._getScaledTextureSize(this.windowActor);
             this.thumbnail.set_size(width, height);
             this._set_position();
         });
@@ -265,10 +271,10 @@ class AppMenuButton {
         this._applet = applet;
         this.metaWindow = metaWindow;
         this.transient = transient;
-        let initially_urgent = transient || metaWindow.is_demanding_attention() || metaWindow.is_urgent();
+        let initially_urgent = transient || metaWindow.demands_attention || metaWindow.urgent;
         this.labelVisible = false;
         this._signals = new SignalManager.SignalManager();
-        this.xid = metaWindow.get_xwindow();
+        this.xid = global.screen.get_xwindow_for_window(metaWindow);
 
         if (this._applet.orientation == St.Side.TOP)
             this.actor.add_style_class_name('top');
@@ -367,7 +373,7 @@ class AppMenuButton {
         this._signals.connect(this.metaWindow, 'notify::title', this.setDisplayTitle, this);
         this._signals.connect(this.metaWindow, "notify::minimized", this.setDisplayTitle, this);
         this._signals.connect(this.metaWindow, "notify::tile-type", this.setDisplayTitle, this);
-        this._signals.connect(this.metaWindow, "icon-changed", this.setIcon, this);
+        this._signals.connect(this.metaWindow, "notify::icon", this.setIcon, this);
         this._signals.connect(this.metaWindow, "notify::appears-focused", this.onFocus, this);
         this._signals.connect(this.metaWindow, "unmanaged", this.onUnmanaged, this);
     }
@@ -515,14 +521,15 @@ class AppMenuButton {
         if (this._tooltip  && this._tooltip.set_text)
             this._tooltip.set_text(title);
 
-        if (this.metaWindow.minimized) {
-            title = "["+ title +"]";
-        } else if (this.metaWindow.tile_type == Meta.WindowTileType.TILED) {
-            title = "|"+ title;
-        }
-        else if (this.metaWindow.tile_type == Meta.WindowTileType.SNAPPED) {
-            title = "||"+ title;
-        }
+        // FIXME
+        // if (this.metaWindow.minimized) {
+        //     title = "["+ title +"]";
+        // } else if (this.metaWindow.tile_type == Meta.WindowTileType.TILED) {
+        //     title = "|"+ title;
+        // }
+        // else if (this.metaWindow.tile_type == Meta.WindowTileType.SNAPPED) {
+        //     title = "||"+ title;
+        // }
 
         this._label.set_text(title);
     }
@@ -1256,9 +1263,14 @@ class CinnamonWindowListApplet extends Applet.Applet {
         }
 
         // Now track the windows in our favorite monitors
-        let windows = global.display.list_windows(0);
+        const active_ws = global.screen.get_active_workspace();
+        let windows = active_ws.list_windows();
         if (this.showAllWorkspaces) {
-            for (let wks=0; wks<global.screen.n_workspaces; wks++) {
+            for (let wks = 0; wks < global.screen.n_workspaces; wks++) {
+                if (wks == active_ws.workspace_index) {
+                    continue;
+                }
+
                 let metaWorkspace = global.screen.get_workspace_by_index(wks);
                 let wks_windows = metaWorkspace.list_windows();
                 for (let wks_window of wks_windows) {

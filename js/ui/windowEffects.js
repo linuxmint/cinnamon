@@ -245,9 +245,9 @@ var Minimize = class Minimize extends Close {
     }
 
     traditional(cinnamonwm, actor, time, transition) {
-        let success;
-        let geom = new Rectangle();
-        success = actor.meta_window.get_icon_geometry(geom);
+        // let success;
+        // let geom;
+        let [success, geom] = actor.meta_window.get_icon_geometry();
         if (success) {
             actor.set_scale(1, 1);
             let xDest, yDest, xScale, yScale;
@@ -266,21 +266,19 @@ var Minimize = class Minimize extends Close {
 }
 
 // unminimizing is a 'map' effect but should use 'minimize' setting values
-var Unminimize = class Unminimize extends Effect {
+var Unminimize = class Unminimize extends Minimize {
     constructor() {
         super(...arguments);
 
         this.name = 'unminimize';
-        this.arrayName = '_mapping';
-        this.wmCompleteName = 'completed_map';
-
-        this._end = Map.prototype._end;
+        this.arrayName = '_unminimizing';
+        this.wmCompleteName = 'completed_unminimize';
     }
 
     traditional(cinnamonwm, actor, time, transition) {
-        let success;
-        let geom = new Rectangle();
-        success = actor.meta_window.get_icon_geometry(geom);
+        // let success;
+        // let geom = new Rectangle();
+        let [success, geom] = actor.meta_window.get_icon_geometry();
         if (success) {
             actor.set_scale(0.1, 0.1);
             actor.opacity = 0;
@@ -297,25 +295,25 @@ var Unminimize = class Unminimize extends Effect {
     }
 }
 
-var Tile = class Tile extends Effect {
+var SizeChange = class SizeChange extends Effect {
     constructor() {
         super(...arguments);
 
-        this.name = 'tile';
-        this.arrayName = '_tiling';
-        this.wmCompleteName = 'completed_tile';
+        this.name = 'sizechange';
+        this.arrayName = '_size_changing';
+        this.wmCompleteName = 'completed_size_change';
     }
 
     scale(cinnamonwm, actor, time, transition, args) {
-        let [targetX, targetY, targetWidth, targetHeight] = args;
+        let [old_rect, new_rect] = args;
 
-        if (targetWidth === actor.width) targetWidth -= 1;
-        if (targetHeight === actor.height) targetHeight -= 1;
+        if (new_rect.width === old_rect.width) new_rect.width -= 1;
+        if (new_rect.height === old_rect.height) new_rect.height -= 1;
 
-        let scale_x = targetWidth / actor.width;
-        let scale_y = targetHeight / actor.height;
-        let anchor_x = (actor.x - targetX) * actor.width / (targetWidth - actor.width);
-        let anchor_y = (actor.y - targetY) * actor.height / (targetHeight - actor.height);
+        let scale_x = new_rect.width / old_rect.width;
+        let scale_y = new_rect.height / old_rect.height;
+        let anchor_x = (old_rect.x - new_rect.x) * old_rect.width / (new_rect.width - old_rect.width);
+        let anchor_y = (old_rect.y - new_rect.y) * old_rect.height / (new_rect.height - old_rect.height);
 
         actor.move_anchor_point(anchor_x, anchor_y);
 
@@ -323,23 +321,23 @@ var Tile = class Tile extends Effect {
     }
 }
 
-var Maximize = class Maximize extends Tile {
-    constructor() {
-        super(...arguments);
+// var Maximize = class Maximize extends Tile {
+//     constructor() {
+//         super(...arguments);
 
-        this.name = 'maximize';
-        this.arrayName = '_maximizing';
-        this.wmCompleteName = 'completed_maximize';
-    }
+//         this.name = 'maximize';
+//         this.arrayName = '_maximizing';
+//         this.wmCompleteName = 'completed_maximize';
+//     }
 
-}
+// }
 
-var Unmaximize = class Unmaximize extends Tile {
-    constructor() {
-        super(...arguments);
+// var Unmaximize = class Unmaximize extends Tile {
+//     constructor() {
+//         super(...arguments);
 
-        this.name = 'unmaximize';
-        this.arrayName = '_unmaximizing';
-        this.wmCompleteName = 'completed_unmaximize';
-    }
-}
+//         this.name = 'unmaximize';
+//         this.arrayName = '_unmaximizing';
+//         this.wmCompleteName = 'completed_unmaximize';
+//     }
+// }

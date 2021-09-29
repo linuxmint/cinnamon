@@ -206,7 +206,7 @@ function _initRecorder() {
 
         if (recorder.is_recording()) {
             recorder.pause();
-            Meta.enable_unredirect_for_screen(global.screen);
+            Meta.enable_unredirect_for_display(global.display);
         } else {
             // read the parameters from GSettings always in case they have changed
             recorder.set_framerate(recorderSettings.get_int('framerate'));
@@ -223,7 +223,7 @@ function _initRecorder() {
             else
                 recorder.set_pipeline(null);
 
-            Meta.disable_unredirect_for_screen(global.screen);
+            Meta.disable_unredirect_for_display(global.display);
             recorder.record();
         }
     });
@@ -252,7 +252,7 @@ function _addXletDirectoriesToSearchPath() {
 function _initUserSession() {
     _initRecorder();
 
-    global.screen.override_workspace_layout(Meta.ScreenCorner.TOPLEFT, false, 1, -1);
+    global.screen.override_workspace_layout(Meta.DisplayCorner.TOPLEFT, false, 1, -1);
 
     systrayManager = new Systray.SystrayManager();
 
@@ -365,10 +365,9 @@ function start() {
                         let height = global.stage.height;
                         [alloc.min_size, alloc.natural_size] = [height, height];
                     });
-
-    global.reparentActor(global.background_actor, uiGroup);
-    global.background_actor.hide();
-    global.reparentActor(global.bottom_window_group, uiGroup);
+    // global.reparentActor(global.background_actor, uiGroup);
+    // global.background_actor.hide();
+    // global.reparentActor(global.bottom_window_group, uiGroup);
     uiGroup.add_actor(deskletContainer.actor);
     global.reparentActor(global.window_group, uiGroup);
     global.reparentActor(global.overlay_group, uiGroup);
@@ -413,14 +412,14 @@ function start() {
     overview = new Overview.Overview();
     expo = new Expo.Expo();
 
-    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
+    // statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
 
     layoutManager._updateBoxes();
 
     wm = new imports.ui.windowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
-    notificationDaemon = new NotificationDaemon.NotificationDaemon();
+    // notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
     placesManager = new PlacesManager.PlacesManager();
 
@@ -496,7 +495,7 @@ function start() {
                 return GLib.SOURCE_REMOVE;
             });
         } else {
-            global.background_actor.show();
+            // global.background_actor.show();
             setRunState(RunState.RUNNING);
 
             if (do_login_sound)
@@ -507,6 +506,8 @@ function start() {
         if (global.settings.get_boolean("panel-edit-mode")) {
             global.settings.set_boolean("panel-edit-mode", false);
         }
+
+        global.stage.show();
 
         global.connect('shutdown', do_shutdown_sequence);
 
@@ -1196,7 +1197,7 @@ function pushModal(actor, timestamp, options) {
             log('pushModal: invocation of begin_modal failed');
             return false;
         }
-        Meta.disable_unredirect_for_screen(global.screen);
+        Meta.disable_unredirect_for_display(global.display);
     }
 
     global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
@@ -1285,7 +1286,7 @@ function popModal(actor, timestamp) {
 
     layoutManager.updateChrome(true);
 
-    Meta.enable_unredirect_for_screen(global.screen);
+    Meta.enable_unredirect_for_display(global.display);
 }
 
 /**
@@ -1482,7 +1483,7 @@ function isInteresting(metaWindow) {
         return false;
 
     // Include any window the tracker finds interesting
-    if (metaWindow.is_interesting()) {
+    if (tracker.is_window_interesting(metaWindow)) {
         return true;
     }
 

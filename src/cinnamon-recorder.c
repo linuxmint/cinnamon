@@ -308,7 +308,7 @@ cinnamon_recorder_finalize (GObject  *object)
   recorder_set_pipeline (recorder, NULL);
   recorder_set_filename (recorder, NULL);
 
-  cogl_handle_unref (recorder->recording_icon);
+  cogl_object_unref (recorder->recording_icon);
 
   G_OBJECT_CLASS (cinnamon_recorder_parent_class)->finalize (object);
 }

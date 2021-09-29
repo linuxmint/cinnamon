@@ -2863,7 +2863,8 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
                                                align: St.Align.END });
 
             this._triangle = arrowIcon(St.Side.RIGHT);
-            this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.5 });
+            this._triangle.set_pivot_point(0.5, 0.5);
+            // this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.5 });
             this._triangleBin.child = this._triangle;
         }
 

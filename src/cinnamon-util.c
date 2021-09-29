@@ -473,7 +473,7 @@ cinnamon_util_get_transformed_allocation (ClutterActor    *actor,
   /* Code adapted from clutter-actor.c:
    * Copyright 2006, 2007, 2008 OpenedHand Ltd
    */
-  ClutterVertex v[4];
+  graphene_point3d_t v[4];
   gfloat x_min, x_max, y_min, y_max;
   guint i;
 

@@ -451,7 +451,7 @@ Overview.prototype = {
         this._background = null;
 
         // Re-enable unredirection
-        Meta.enable_unredirect_for_screen(global.screen);
+        Meta.enable_unredirect_for_display(global.display);
 
         global.window_group.show();
 
