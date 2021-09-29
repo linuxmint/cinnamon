@@ -5,6 +5,8 @@ const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
+const Clutter = imports.gi.Clutter;
+const Meta = imports.gi.Meta;
 
 function init() {
     overrideDumpStack();
@@ -12,6 +14,8 @@ function init() {
     overrideGObject();
     overrideMainloop();
     overrideJS();
+    overrideClutter();
+    overrideMeta();
 }
 
 function check_schema_and_init(obj, method, params) {
@@ -123,6 +127,99 @@ function overrideGObject() {
         }
     };
 }
+
+function overrideClutter() {
+    const oldClutterGroup = Clutter.Group;
+
+    // ClutterGroups are broken - ClutterActor with a FixedLayoutManager is
+    // its drop-in replacement.
+    const fake_group = GObject.registerClass(
+    class fake_group extends Clutter.Actor {
+        _init(params) {
+            super._init(params);
+            this.layout_manager = new Clutter.FixedLayout();
+        }
+    });
+
+    Clutter.Group = fake_group;
+
+    Clutter.Actor.prototype.raise = function(below) {
+        let self_parent = this.get_parent();
+        let below_parent = below.get_parent();
+
+        if (self_parent === null) {
+            logError("Clutter.Actor.raise() actor has no parent!");
+            return
+        }
+
+        if (self_parent !== below_parent) {
+            logError("Clutter.Actor.raise() both actors must share the same parent!");
+            return;
+        }
+
+        self_parent.set_child_above_sibling(this, below);
+    }
+
+    Clutter.Actor.prototype.lower = function(above) {
+        let self_parent = this.get_parent();
+        let above_parent = above.get_parent();
+
+        if (self_parent === null) {
+            logError("Clutter.Actor.lower() actor has no parent!");
+            return
+        }
+
+        if (self_parent !== above_parent) {
+            logError("Clutter.Actor.lower() both actors must share the same parent!");
+            return;
+        }
+
+        self_parent.set_child_below_sibling(this, above);
+    }
+
+    Clutter.Actor.prototype.raise_top = function() {
+
+        let self_parent = this.get_parent();
+
+        if (self_parent === null) {
+            logError("Clutter.Actor.raise_top() actor has no parent!");
+            return
+        }
+
+        self_parent.set_child_above_sibling(this, null);
+    }
+
+    Clutter.Actor.prototype.lower_bottom = function() {
+
+        let self_parent = this.get_parent();
+
+        if (self_parent === null) {
+            logError("Clutter.Actor.lower_bottom() actor has no parent!");
+            return
+        }
+
+        self_parent.set_child_below_sibling(this, null);
+    }
+}
+
+function overrideMeta() {
+    Meta.BackgroundActor.new_for_screen = function(screen) {
+        return Meta.X11BackgroundActor.new_for_display(global.display);
+    }
+
+    Meta.disable_unredirect_for_screen = function(screen) {
+        Meta.disable_unredirect_for_display(global.display);
+    }
+
+    Meta.enable_unredirect_for_screen = function(screen) {
+        Meta.enable_unredirect_for_display(global.display);
+    }
+
+    Meta.WindowActor.prototype.get_workspace = function() {
+        return this.meta_window ? this.meta_window.get_workspace().workspace_index : 0;
+    }
+}
+
 
 function overrideMainloop() {
     Mainloop.__real_source_remove = Mainloop.source_remove;

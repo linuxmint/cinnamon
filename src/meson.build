@@ -10,6 +10,7 @@ calendar_generated = gnome.gdbus_codegen('cinnamon-calendar',
 )
 
 cinnamon_headers = [
+    'cinnamon-action-mode.h',
     'cinnamon-app.h',
     'cinnamon-app-system.h',
     'cinnamon-doc-system.h',
@@ -19,7 +20,8 @@ cinnamon_headers = [
     'cinnamon-gtk-embed.h',
     'cinnamon-global.h',
     'cinnamon-perf-log.h',
-    'cinnamon-screenshot.h',
+    'cinnamon-screen.h',
+    # 'cinnamon-screenshot.h',
     'cinnamon-slicer.h',
     'cinnamon-stack.h',
     'cinnamon-tray-icon.h',
@@ -27,7 +29,6 @@ cinnamon_headers = [
     'cinnamon-util.h',
     'cinnamon-window-tracker.h',
     'cinnamon-wm.h',
-    'cinnamon-xfixes-cursor.h',
 ]
 
 cinnamon_private_headers = [
@@ -50,7 +51,8 @@ cinnamon_sources = [
     'cinnamon-gtk-embed.c',
     'cinnamon-global.c',
     'cinnamon-perf-log.c',
-    'cinnamon-screenshot.c',
+    'cinnamon-screen.c',
+    # 'cinnamon-screenshot.c',
     'cinnamon-slicer.c',
     'cinnamon-stack.c',
     'cinnamon-tray-icon.c',
@@ -58,7 +60,6 @@ cinnamon_sources = [
     'cinnamon-util.c',
     'cinnamon-window-tracker.c',
     'cinnamon-wm.c',
-    'cinnamon-xfixes-cursor.c',
     cinnamon_headers,
     calendar_generated
 ]
@@ -98,7 +99,6 @@ libcinnamon_deps = [
     muffin,
     pango,
     polkit,
-    sn,
     soup,
     st_dep,
     xapp,
@@ -107,28 +107,33 @@ libcinnamon_deps = [
 ]
 
 non_gir = []
-if get_option('build_recorder')
-    cinnamon_sources += [
-        'cinnamon-recorder.c',
-        'cinnamon-recorder.h',
-    ]
+# FIXME
+# if get_option('build_recorder')
+#     cinnamon_sources += [
+#         'cinnamon-recorder.c',
+#         'cinnamon-recorder.h',
+#     ]
 
-    non_gir += [
-        'cinnamon-recorder-src.c',
-        'cinnamon-recorder-src.h',
-    ]
+#     non_gir += [
+#         'cinnamon-recorder-src.c',
+#         'cinnamon-recorder-src.h',
+#     ]
 
-    libcinnamon_deps += [
-        gstreamer,
-        gstreamer_base,
-    ]
-endif
+#     libcinnamon_deps += [
+#         gstreamer,
+#         gstreamer_base,
+#     ]
+# endif
+
+install_rpath = ':'.join([muffin_typelibdir, pkglibdir])
+
 
 libcinnamon = library(
     'cinnamon',
     [cinnamon_sources, non_gir, tray_sources, st_enum_types[1]],
     include_directories: [include_root, include_directories('st', 'tray')],
-    install_rpath: join_paths(prefix, pkglibdir),
+    install_rpath: install_rpath,
+    build_rpath: muffin_typelibdir,
     dependencies: libcinnamon_deps,
     install: true,
     install_dir: pkglibdir,
@@ -148,18 +153,21 @@ executable(
     dependencies: [config_h, gtk],
     install: true,
     install_dir: libexecdir,
+    install_rpath: install_rpath,
+    build_rpath: muffin_typelibdir
 )
 
-js_tester = executable(
-    'run-js-test',
-    ['run-js-test.c', cinnamon_enum_types[1], st_enum_types[1]],
-    c_args: [
-        '-DCINNAMON_PKGLIBDIR="@0@"'.format(join_paths(prefix, pkglibdir)),
-    ],
-    include_directories: include_root,
-    dependencies: cinnamon_dep,
-    install: false,
-)
+# FIXME
+# js_tester = executable(
+#     'run-js-test',
+#     ['run-js-test.c', cinnamon_enum_types[1], st_enum_types[1]],
+#     c_args: [
+#         '-DCINNAMON_PKGLIBDIR="@0@"'.format(join_paths(prefix, pkglibdir)),
+#     ],
+#     include_directories: include_root,
+#     dependencies: cinnamon_dep,
+#     install: false,
+# )
 
 executable(
     'cinnamon',
@@ -168,8 +176,9 @@ executable(
         '-DLOCALEDIR="@0@"'.format(join_paths(prefix, datadir, 'locale')),
         '-DCINNAMON_PKGLIBDIR="@0@"'.format(join_paths(prefix, pkglibdir)),
     ],
-    install_rpath: ':'.join([join_paths(prefix, pkglibdir), muffinlibdir]),
-    include_directories: include_root,
+    install_rpath: install_rpath,
+    build_rpath: muffin_typelibdir,
+    include_directories: [include_root, st_inc],
     dependencies: cinnamon_dep,
     install: true,
 )
@@ -179,7 +188,7 @@ cinnamon_gir_includes = [
     'ClutterX11-0',
     'CoglPango-0',
     'Cogl-0',
-    'Meta-Muffin.0',
+    'Meta-0',
     'Soup-2.4',
     'CMenu-3.0',
     st_gir[0],

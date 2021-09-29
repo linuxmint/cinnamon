@@ -3,6 +3,7 @@
 const Lang = imports.lang;
 
 const Clutter = imports.gi.Clutter;
+const Graphene = imports.gi.Graphene;
 const St = imports.gi.St;
 const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
@@ -22,7 +23,7 @@ const ICON_TITLE_SPACING = 10;
 const PREVIEW_SCALE = 0.5;
 
 const TITLE_POSITION = 7/8; // percent position
-const ANIMATION_TIME = 0.25; // seconds
+var ANIMATION_TIME = 0.25; // seconds
 const SWITCH_TIME_DELAY = 100; // milliseconds
 const DIM_FACTOR = 0.4; // percent
 
@@ -40,7 +41,7 @@ AppSwitcher3D.prototype = {
         this._icon = null;
         this._lastTime = 0;
 
-        this._background = Meta.BackgroundActor.new_for_screen(global.screen);
+        this._background = Meta.X11BackgroundActor.new_for_display(global.display);
         this._background.hide();
         global.overlay_group.add_actor(this._background);
 
@@ -108,7 +109,7 @@ AppSwitcher3D.prototype = {
                 rotation_vertex_x = -preview.width / 2;
             }
             preview.move_anchor_point_from_gravity(compositor.get_anchor_point_gravity());
-            preview.rotation_center_y = new Clutter.Vertex({ x: rotation_vertex_x, y: 0.0, z: 0.0 });
+            preview.rotation_center_y = new Graphene.Point3D({ x: rotation_vertex_x, y: 0.0, z: 0.0 });
 
             Tweener.addTween(preview, {
                 opacity: (!metaWin.minimized && metaWin.get_workspace() == currentWorkspace
@@ -183,7 +184,7 @@ AppSwitcher3D.prototype = {
             let compositor = this._windows[i].get_compositor_private();
             if (compositor) {
                 let texture = compositor.get_texture();
-                let [width, height] = texture.get_size();
+                let [width, height] = compositor.get_size();
 
                 let scale = 1.0;
                 let previewWidth = monitor.width * PREVIEW_SCALE;
@@ -205,7 +206,7 @@ AppSwitcher3D.prototype = {
                 preview.target_height_side = preview.target_height;
 
                 
-                preview.set_child(new Clutter.Clone({ source: texture }));
+                preview.set_child(new Clutter.Actor({ content: texture, request_mode: Clutter.RequestMode.CONTENT_SIZE }));
                 preview.metaWindow = metaWin;
                 preview.connect('clicked', Lang.bind(this, this._cloneClicked));
 

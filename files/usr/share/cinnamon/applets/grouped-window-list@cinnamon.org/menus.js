@@ -106,7 +106,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 }
             }
             // Workspace
-            if ((length = global.screen.n_workspaces) > 1) {
+            if ((length = global.workspace_manager.n_workspaces) > 1) {
                 if (this.groupState.lastFocused && this.groupState.lastFocused.is_on_all_workspaces()) {
                     item = createMenuItem({label: _('Only on this workspace')});
                     this.signals.connect(item, 'activate', () => {
@@ -130,7 +130,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
                     let connectWorkspaceEvent = (ws, j) => {
                         this.signals.connect(ws, 'activate', () => {
-                            this.groupState.lastFocused.change_workspace(global.screen.get_workspace_by_index(j));
+                            this.groupState.lastFocused.change_workspace(global.workspace_manager.get_workspace_by_index(j));
                         });
                     };
                     for (let i = 0; i < length; i++) {
@@ -370,11 +370,15 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
     onToggled(actor, isOpening) {
         this.state.set({menuOpen: this.isOpen});
+    }
 
-        if (!isOpening) return;
+    toggle() {
+        if (!this.isOpen) {
+            this.removeAll();
+            this.populateMenu();
+        }
 
-        this.removeAll();
-        this.populateMenu();
+        Applet.AppletPopupMenu.prototype.toggle.call(this);
     }
 
     toggleAutostart() {
@@ -704,16 +708,16 @@ class WindowThumbnail {
         }
         // Create our own thumbnail if it doesn't exist
         if (this.metaWindowActor) {
-            this.signals.disconnect('size-changed', this.metaWindowActor);
+            this.signals.disconnect('notify::size', this.metaWindowActor);
         } else {
             this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
         if (this.metaWindowActor && !this.metaWindowActor.is_finalized()) {
-            this.signals.connect(this.metaWindowActor, 'size-changed', () => this.refreshThumbnail());
+            this.signals.connect(this.metaWindowActor, 'notify::size', () => this.refreshThumbnail());
 
             let windowTexture = this.metaWindowActor.get_texture();
             if (!windowTexture) return;
-            let [width, height] = windowTexture.get_size();
+            let [width, height] = this.metaWindowActor.get_size();
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
             height = Math.round(height * scale);
@@ -724,8 +728,8 @@ class WindowThumbnail {
                 this.thumbnailActor.child.width = width;
                 this.thumbnailActor.child.height = height;
             } else {
-                this.thumbnailActor.child = new Clutter.Clone({
-                    source: windowTexture,
+                this.thumbnailActor.child = new Clutter.Actor({
+                    content: windowTexture,
                     reactive: true,
                     width,
                     height
@@ -818,11 +822,12 @@ class WindowThumbnail {
             this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
         this.state.set({
-            lastOverlayPreview: new Clutter.Clone({
-                source: this.metaWindowActor.get_texture(),
+            lastOverlayPreview: new Clutter.Actor({
+                content: this.metaWindowActor.get_texture(),
                 opacity: 0
             })
         });
+
         let [x, y] = this.metaWindowActor.get_position();
         this.state.lastOverlayPreview.set_position(x, y);
         global.overlay_group.add_child(this.state.lastOverlayPreview);

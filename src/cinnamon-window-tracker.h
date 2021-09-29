@@ -39,17 +39,6 @@ gboolean cinnamon_window_tracker_is_window_interesting (CinnamonWindowTracker *t
 
 GSList *cinnamon_window_tracker_get_startup_sequences (CinnamonWindowTracker *tracker);
 
-/* Hidden typedef for SnStartupSequence */
-typedef struct _CinnamonStartupSequence CinnamonStartupSequence;
-#define CINNAMON_TYPE_STARTUP_SEQUENCE (cinnamon_startup_sequence_get_type ())
-GType cinnamon_startup_sequence_get_type (void);
-
-const char *cinnamon_startup_sequence_get_id (CinnamonStartupSequence *sequence);
-CinnamonApp *cinnamon_startup_sequence_get_app (CinnamonStartupSequence *sequence);
-const char *cinnamon_startup_sequence_get_name (CinnamonStartupSequence *sequence);
-gboolean cinnamon_startup_sequence_get_completed (CinnamonStartupSequence *sequence);
-ClutterActor *cinnamon_startup_sequence_create_icon (CinnamonStartupSequence *sequence, guint size);
-
 G_END_DECLS
 
 #endif /* __CINNAMON_WINDOW_TRACKER_H__ */

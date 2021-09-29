@@ -69,7 +69,7 @@ st_drawing_area_dispose (GObject *object)
 }
 
 static void
-st_drawing_area_paint (ClutterActor *self)
+st_drawing_area_paint (ClutterActor *self, ClutterPaintContext *paint_context)
 {
   static CoglPipeline *drawing_pipeline_template = NULL;
   StDrawingArea *area = ST_DRAWING_AREA (self);
@@ -79,7 +79,7 @@ st_drawing_area_paint (ClutterActor *self)
   ClutterActorBox content_box;
   guint width, height;
 
-  (CLUTTER_ACTOR_CLASS (st_drawing_area_parent_class))->paint (self);
+  (CLUTTER_ACTOR_CLASS (st_drawing_area_parent_class))->paint (self, paint_context);
 
   clutter_actor_get_allocation_box (self, &allocation_box);
   st_theme_node_get_content_box (theme_node, &allocation_box, &content_box);
@@ -142,7 +142,7 @@ st_drawing_area_paint (ClutterActor *self)
     {
       CoglColor color;
       guint8 paint_opacity;
-      CoglFramebuffer *fb = cogl_get_draw_framebuffer ();
+      CoglFramebuffer *fb = clutter_paint_context_get_framebuffer (paint_context);
 
       paint_opacity = clutter_actor_get_paint_opacity (self);
       cogl_color_init_from_4ub (&color, paint_opacity, paint_opacity, paint_opacity, paint_opacity);

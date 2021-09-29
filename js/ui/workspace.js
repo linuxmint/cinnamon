@@ -66,7 +66,7 @@ WindowClone.prototype = {
 
         this._stackAbove = null;
 
-        let sizeChangedId = this.realWindow.connect('size-changed',
+        let sizeChangedId = this.realWindow.connect('notify::size',
                 this._onRealWindowSizeChanged.bind(this));
         let workspaceChangedId = this.metaWindow.connect('workspace-changed',
                 (w, oldws) => this.emit('workspace-changed', oldws));
@@ -91,7 +91,7 @@ WindowClone.prototype = {
     refreshClone: function(withTransients) {
         this.actor.destroy_all_children();
 
-        let {x, y, width, height} = this.metaWindow.get_outer_rect();
+        let {x, y, width, height} = this.metaWindow.get_frame_rect();
         let clones = WindowUtils.createWindowClone(this.metaWindow, 0, 0, withTransients);
         let leftGap, topGap;
         for (let clone of clones) {
@@ -680,7 +680,7 @@ WorkspaceMonitor.prototype = {
      */
     _computeWindowLayout: function(metaWindow, slot) {
         let [x, y, width, height] = this._getSlotGeometry(slot);
-        let rect = metaWindow.get_outer_rect();
+        let rect = metaWindow.get_frame_rect();
         let topBorder = 0, bottomBorder = 0, leftBorder = 0, rightBorder = 0;
 
         if (this._windows.length) {
@@ -893,7 +893,7 @@ WorkspaceMonitor.prototype = {
             else
                 this._updateEmptyPlaceholder();
         } else {
-            let animate = Main.wm.settingsState['desktop-effects-workspace'];
+            let animate = Main.wm.hasEffects;
             this.positionWindows(animate ? WindowPositionFlags.ANIMATE : 0);
         }
 
@@ -932,7 +932,7 @@ WorkspaceMonitor.prototype = {
 
         if (this.actor.get_stage()) {
             clone._is_new_window = true;
-            let animate = Main.wm.settingsState['desktop-effects-workspace'];
+            let animate = Main.wm.hasEffects;
             this.positionWindows(animate ? WindowPositionFlags.ANIMATE : 0);
         }
     },
@@ -971,7 +971,7 @@ WorkspaceMonitor.prototype = {
 
     // Animate the full-screen to Overview transition.
     zoomToOverview : function() {
-        let animate = Main.wm.settingsState['desktop-effects-workspace'];
+        let animate = Main.wm.hasEffects;
         // Position and scale the windows.
         if (Main.overview.animationInProgress && animate)
             this.positionWindows(WindowPositionFlags.ANIMATE | WindowPositionFlags.INITIAL);
@@ -995,7 +995,7 @@ WorkspaceMonitor.prototype = {
         if (this.metaWorkspace != null && this.metaWorkspace != currentWorkspace)
             return;
 
-        let animate = Main.wm.settingsState['desktop-effects-workspace'];
+        let animate = Main.wm.hasEffects;
         if (!animate)
             return;
 

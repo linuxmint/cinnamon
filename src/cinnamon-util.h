@@ -5,6 +5,7 @@
 
 #include <gio/gio.h>
 #include <clutter/clutter.h>
+#include <meta/meta-window-actor.h>
 #include <libsoup/soup.h>
 
 G_BEGIN_DECLS
@@ -53,6 +54,9 @@ typedef void (* CinnamonFileContentsCallback) (const gchar *utf8_contents,
 void     cinnamon_get_file_contents_utf8         (const char                   *path,
                                                   CinnamonFileContentsCallback  callback,
                                                   gpointer                      user_data);
+
+ClutterContent * cinnamon_util_get_content_for_window_actor (MetaWindowActor *window_actor,
+                                                             MetaRectangle   *window_rect);
 
 void     cinnamon_breakpoint                      (void);
 

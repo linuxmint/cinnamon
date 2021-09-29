@@ -60,6 +60,7 @@ void  st_theme_node_transition_update   (StThemeNodeTransition *transition,
 
 void  st_theme_node_transition_paint    (StThemeNodeTransition *transition,
                                          ClutterActorBox       *allocation,
+                                         ClutterPaintContext   *paint_context,
                                          guint8                 paint_opacity);
 
 void  st_theme_node_transition_get_paint_box (StThemeNodeTransition *transition,

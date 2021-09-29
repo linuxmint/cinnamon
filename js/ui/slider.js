@@ -133,10 +133,7 @@ Slider.prototype = {
         this.emit('drag-begin');
         this._dragging = true;
 
-        // FIXME: we should only grab the specific device that originated
-        // the event, but for some weird reason events are still delivered
-        // outside the slider if using clutter_grab_pointer_for_device
-        Clutter.grab_pointer(this.actor);
+        event.get_device().grab(this.actor);
         this._releaseId = this.actor.connect('button-release-event', Lang.bind(this, this._endDragging));
         this._motionId = this.actor.connect('motion-event', Lang.bind(this, this._motionEvent));
         let absX, absY;
@@ -149,7 +146,7 @@ Slider.prototype = {
             this.actor.disconnect(this._releaseId);
             this.actor.disconnect(this._motionId);
 
-            Clutter.ungrab_pointer();
+            event.get_device().ungrab();
             this._dragging = false;
 
             this.emit('drag-end');

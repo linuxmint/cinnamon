@@ -9,7 +9,7 @@ version = meson.project_version()
 prefix = get_option('prefix')
 bindir = get_option('bindir')
 datadir = get_option('datadir')
-libdir = get_option('libdir')
+libdir = join_paths(prefix, get_option('libdir'))
 includedir = get_option('includedir')
 libexecdir = get_option('libexecdir')
 desktopdir = join_paths(datadir, 'applications')
@@ -38,10 +38,9 @@ gl = dependency('gl')
 glib_version = '2.52.0'
 glib = dependency('glib-2.0', version: '>= ' + glib_version)
 gtk = dependency('gtk+-3.0', version: '>= 3.12.0')
-muffin = dependency('libmuffin', version: '>= 4.0.3')
-muffinlibdir = muffin.get_pkgconfig_variable('typelibdir')
+muffin = dependency('libmuffin-0', version: '>= 4.0.3')
+muffin_typelibdir = muffin.get_pkgconfig_variable('typelibdir')
 pango = dependency('muffin-cogl-pango-0')
-sn = dependency('libstartup-notification-1.0')
 soup = dependency('libsoup-2.4')
 xapp = dependency('xapp', version: '>= 2.0.0')
 X11 = dependency('x11')
@@ -116,7 +115,7 @@ c_args = [
     '-DBINDIR="@0@"'.format(join_paths(prefix, bindir)),
     '-DCINNAMON_DATADIR="@0@"'.format(join_paths(prefix, pkgdatadir)),
     '-DJSDIR="@0@/js"'.format(join_paths(prefix, pkgdatadir)),
-    '-DMUFFIN_TYPELIB_DIR="@0@"'.format(muffinlibdir),
+    '-DMUFFIN_TYPELIB_DIR="@0@"'.format(muffin_typelibdir),
 ]
 
 if not get_option('deprecated_warnings')

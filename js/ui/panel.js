@@ -634,8 +634,7 @@ PanelManager.prototype = {
         this.addPanelMode = false;
         this._addOsd.hide();
         this._moveOsd.hide();
-        if (Main.keybindingManager.bindings['close-add-panel'])
-            Main.keybindingManager.removeHotKey('close-add-panel');
+        Main.keybindingManager.removeHotKey('close-add-panel');
     },
 
     /**
@@ -1645,7 +1644,7 @@ PanelContextMenu.prototype = {
 
         menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
         menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
-            global.reexec_self();
+            Main.restartCinnamon(true);
         });
 
         menu.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
@@ -1656,7 +1655,7 @@ PanelContextMenu.prototype = {
             let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to restore all settings to default?\n\n"),
                     function() {
                         Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
-                        global.reexec_self();
+                        Main.restartCinnamon(true);
                     });
             confirm.open();
         });

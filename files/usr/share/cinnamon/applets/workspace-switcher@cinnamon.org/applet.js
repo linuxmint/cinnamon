@@ -91,8 +91,7 @@ class WorkspaceGraph extends WorkspaceButton {
     }
 
     setGraphSize () {
-        this.workspace_size = new Meta.Rectangle();
-        this.workspace.get_work_area_all_monitors(this.workspace_size);
+        this.workspace_size = this.workspace.get_work_area_all_monitors();
 
         let height, width;
         if (this.panelApplet.orientation == St.Side.LEFT ||
@@ -134,7 +133,7 @@ class WorkspaceGraph extends WorkspaceButton {
         let windowBackgroundColor;
         let windowBorderColor;
 
-        let scaled_rect = this.scale(metaWindow.get_outer_rect(), this.workspace_size);
+        let scaled_rect = this.scale(metaWindow.get_buffer_rect(), this.workspace_size);
 
         if (metaWindow.has_focus()) {
             windowBorderColor = themeNode.get_color('-active-window-border');
@@ -265,9 +264,9 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this._last_switch_direction = 0;
         this.createButtonsQueued = false;
 
-        this._focusWindow = 0;
+        this._focusWindow = null;
         if (global.display.focus_window)
-            this._focusWindow = global.display.focus_window.get_compositor_private();
+            this._focusWindow = global.display.focus_window;
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bind("display-type", "display_type", this.queueCreateButtons);
@@ -420,7 +419,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
     _onFocusChanged() {
         if (global.display.focus_window &&
-            this._focusWindow == global.display.focus_window.get_compositor_private())
+            this._focusWindow == global.display.focus_window)
             return;
 
         this.signals.disconnect("position-changed");
@@ -429,7 +428,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         if (!global.display.focus_window)
             return;
 
-        this._focusWindow = global.display.focus_window.get_compositor_private();
+        this._focusWindow = global.display.focus_window;
         this.signals.connect(this._focusWindow, "position-changed", Lang.bind(this, this._onPositionChanged), this);
         this.signals.connect(this._focusWindow, "size-changed", Lang.bind(this, this._onPositionChanged), this);
         this._onPositionChanged();

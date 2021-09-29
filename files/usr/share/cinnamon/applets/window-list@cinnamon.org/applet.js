@@ -46,6 +46,7 @@
 
 const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
+const Cogl = imports.gi.Cogl;
 const Gio = imports.gi.Gio;
 const Gdk = imports.gi.Gdk;
 const GLib = imports.gi.GLib;
@@ -76,7 +77,6 @@ class WindowPreview extends Tooltips.TooltipBase {
         this._applet = item._applet;
         this.metaWindow = metaWindow;
         this._windowActor = null;
-        let x = this.windowActor;
         this.uiScale = global.ui_scale;
         this.thumbScale = previewScale;
 
@@ -155,16 +155,16 @@ class WindowPreview extends Tooltips.TooltipBase {
             return;
         }
 
-        let [width, height] = this._getScaledTextureSize(windowTexture);
+        let [width, height] = this._getScaledTextureSize(this.windowActor);
 
-        this.thumbnail = new Clutter.Clone({
-            source: windowTexture,
+        this.thumbnail = new Clutter.Actor({
+            content: windowTexture,
             width: width,
             height: height
         });
 
-        this._sizeChangedId = this.windowActor.connect('size-changed', () => {
-            let [width, height] = this._getScaledTextureSize(windowTexture);
+        this._sizeChangedId = this.windowActor.connect('notify::size', () => {
+            let [width, height] = this._getScaledTextureSize(this.windowActor);
             this.thumbnail.set_size(width, height);
             this._set_position();
         });
@@ -266,11 +266,12 @@ class AppMenuButton {
         this._applet = applet;
         this.metaWindow = metaWindow;
         this.transient = transient;
-        let initially_urgent = transient || metaWindow.is_demanding_attention() || metaWindow.is_urgent();
+
+        let initially_urgent = transient || metaWindow.demands_attention || metaWindow.urgent;
         this.drawLabel = false;
         this.labelVisiblePref = false;
         this._signals = new SignalManager.SignalManager();
-        this.xid = metaWindow.get_xwindow();
+        this.xid = global.screen.get_xwindow_for_window(metaWindow);
         this._flashTimer = null;
 
         if (this._applet.orientation == St.Side.TOP)
@@ -370,7 +371,7 @@ class AppMenuButton {
         this._signals.connect(this.metaWindow, 'notify::title', this.setDisplayTitle, this);
         this._signals.connect(this.metaWindow, "notify::minimized", this.setDisplayTitle, this);
         this._signals.connect(this.metaWindow, "notify::tile-type", this.setDisplayTitle, this);
-        this._signals.connect(this.metaWindow, "icon-changed", this.setIcon, this);
+        this._signals.connect(this.metaWindow, "notify::icon", this.setIcon, this);
         this._signals.connect(this.metaWindow, "notify::appears-focused", this.onFocus, this);
         this._signals.connect(this.metaWindow, "unmanaged", this.onUnmanaged, this);
     }
@@ -518,14 +519,15 @@ class AppMenuButton {
         if (this._tooltip  && this._tooltip.set_text)
             this._tooltip.set_text(title);
 
-        if (this.metaWindow.minimized) {
-            title = "["+ title +"]";
-        } else if (this.metaWindow.tile_type == Meta.WindowTileType.TILED) {
-            title = "|"+ title;
-        }
-        else if (this.metaWindow.tile_type == Meta.WindowTileType.SNAPPED) {
-            title = "||"+ title;
-        }
+        // FIXME
+        // if (this.metaWindow.minimized) {
+        //     title = "["+ title +"]";
+        // } else if (this.metaWindow.tile_type == Meta.WindowTileType.TILED) {
+        //     title = "|"+ title;
+        // }
+        // else if (this.metaWindow.tile_type == Meta.WindowTileType.SNAPPED) {
+        //     title = "||"+ title;
+        // }
 
         this._label.set_text(title);
     }
@@ -865,7 +867,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         }
 
         // Move to workspace
-        if ((length = global.screen.n_workspaces) > 1) {
+        if ((length = global.workspace_manager.n_workspaces) > 1) {
             if (mw.is_on_all_workspaces()) {
                 item = new PopupMenu.PopupMenuItem(_("Only on this workspace"));
                 this._signals.connect(item, 'activate', function() {
@@ -893,7 +895,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                         ws.setSensitive(false);
 
                     this._signals.connect(ws, 'activate', function() {
-                        mw.change_workspace(global.screen.get_workspace_by_index(j));
+                        mw.change_workspace(global.workspace_manager.get_workspace_by_index(j));
                     });
                     item.menu.addMenuItem(ws);
                 }
@@ -1052,7 +1054,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("window-preview-scale", "previewScale", this._onPreviewChanged);
         this.settings.bind("last-window-order", "lastWindowOrder", null);
 
-        this.signals.connect(global.screen, 'window-added', this._onWindowAddedAsync, this);
+        this.signals.connect(global.display, 'window-created', this._onWindowAddedAsync, this);
         this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged, this);
         this.signals.connect(global.screen, 'window-workspace-changed', this._onWindowWorkspaceChanged, this);
         this.signals.connect(global.screen, 'window-skip-taskbar-changed', this._onWindowSkipTaskbarChanged, this);
@@ -1296,8 +1298,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
         // Now track the windows in our favorite monitors
         let windows = global.display.list_windows(0);
         if (this.showAllWorkspaces) {
-            for (let wks=0; wks<global.screen.n_workspaces; wks++) {
-                let metaWorkspace = global.screen.get_workspace_by_index(wks);
+            for (let wks=0; wks<global.workspace_manager.n_workspaces; wks++) {
+                let metaWorkspace = global.workspace_manager.get_workspace_by_index(wks);
                 let wks_windows = metaWorkspace.list_windows();
                 for (let wks_window of wks_windows) {
                     windows.push(wks_window);
@@ -1336,10 +1338,10 @@ class CinnamonWindowListApplet extends Applet.Applet {
          * workspace, put it in the right position. It is at the end by
          * default, so move it to the start if needed */
         if (transient) {
-            if (metaWindow.get_workspace().index() < global.screen.get_active_workspace_index())
+            if (metaWindow.get_workspace().index() < global.workspace_manager.get_active_workspace_index())
                 this.manager_container.set_child_at_index(appButton.actor, 0);
         } else {
-            if (metaWindow.get_workspace() != global.screen.get_active_workspace()) {
+            if (metaWindow.get_workspace() != global.workspace_manager.get_active_workspace()) {
                 if (!(this.showAllWorkspaces)) {
                     appButton.actor.hide();
                 }

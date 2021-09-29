@@ -6,7 +6,9 @@
 #include <glib-object.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkx.h>
 #include <meta/meta-plugin.h>
+#include "cinnamon-screen.h"
 
 G_BEGIN_DECLS
 
@@ -30,7 +32,7 @@ GType cinnamon_global_get_type (void) G_GNUC_CONST;
 CinnamonGlobal   *cinnamon_global_get                       (void);
 
 ClutterStage  *cinnamon_global_get_stage                 (CinnamonGlobal *global);
-MetaScreen    *cinnamon_global_get_screen                (CinnamonGlobal *global);
+CinnamonScreen *cinnamon_global_get_screen                (CinnamonGlobal *global);
 GdkScreen     *cinnamon_global_get_gdk_screen            (CinnamonGlobal *global);
 MetaDisplay   *cinnamon_global_get_display               (CinnamonGlobal *global);
 GList         *cinnamon_global_get_window_actors         (CinnamonGlobal *global);
@@ -122,9 +124,7 @@ void     cinnamon_global_notify_error              (CinnamonGlobal  *global,
                                                  const char   *msg,
                                                  const char   *details);
 
-void     cinnamon_global_init_xdnd                 (CinnamonGlobal  *global);
-
-void     cinnamon_global_shutdown                  (void);
+void     cinnamon_global_real_restart              (CinnamonGlobal  *global);
 void     cinnamon_global_reexec_self               (CinnamonGlobal  *global);
 
 void     cinnamon_global_segfault                  (CinnamonGlobal  *global);

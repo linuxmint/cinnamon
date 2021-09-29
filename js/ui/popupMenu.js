@@ -3,6 +3,7 @@
 const Cairo = imports.cairo;
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
+const Graphene = imports.gi.Graphene;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
@@ -482,10 +483,48 @@ var PopupMenuItem = class PopupMenuItem extends PopupBaseMenuItem {
         this.label = new St.Label({ text: text });
         this.addActor(this.label);
         this.actor.label_actor = this.label;
+
+        this._ornament = new St.Bin();
+        this._icon = new St.Icon({ style_class: 'popup-menu-icon', icon_type: St.IconType.FULLCOLOR });
+
+        this._ornament.child = this._icon;
+        this._ornament.child._delegate = this._ornament;
+        this.addActor(this._ornament, {span: 0});
     }
 
     setLabel(label) {
         this.label.set_text(label);
+    }
+
+    setOrnament(ornamentType, state) {
+        switch (ornamentType) {
+        case OrnamentType.CHECK:
+            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof CheckBox.CheckButton))) {
+                this._ornament.child.destroy();
+                this._ornament.child = null;
+            }
+            if (!this._ornament.child) {
+                let switchOrn = new CheckBox.CheckButton(state);
+                this._ornament.child = switchOrn.actor;
+            } else {
+                this._ornament.child._delegate.setToggleState(state);
+            }
+            this._icon = null;
+            break;
+        case OrnamentType.DOT:
+            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof RadioButton.RadioBox))) {
+                this._ornament.child.destroy();
+                this._ornament.child = null;
+            }
+            if (!this._ornament.child) {
+                let radioOrn = new RadioButton.RadioBox(state);
+                this._ornament.child = radioOrn.actor;
+            } else {
+                this._ornament.child._delegate.setToggleState(state);
+            }
+            this._icon = null;
+            break;
+        }
     }
 }
 
@@ -735,7 +774,7 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         // FIXME: we should only grab the specific device that originated
         // the event, but for some weird reason events are still delivered
         // outside the slider if using clutter_grab_pointer_for_device
-        Clutter.grab_pointer(this._slider);
+        event.get_device().grab(this._slider);
         this._signals.connect(this._slider, 'button-release-event', Lang.bind(this, this._endDragging));
         this._signals.connect(this._slider, 'motion-event', Lang.bind(this, this._motionEvent));
         let absX, absY;
@@ -743,12 +782,12 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         this._moveHandle(absX, absY);
     }
 
-    _endDragging() {
+    _endDragging(actor, event) {
         if (this._dragging) {
             this._signals.disconnect('button-release-event', this._slider);
             this._signals.disconnect('motion-event', this._slider);
 
-            Clutter.ungrab_pointer();
+            event.get_device().ungrab();
             this._dragging = false;
 
             this.emit('drag-end');
@@ -758,6 +797,9 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
 
     _onScrollEvent (actor, event) {
         let direction = event.get_scroll_direction();
+        if (direction == Clutter.ScrollDirection.SMOOTH) {
+            return;
+        }
 
         if (direction == Clutter.ScrollDirection.DOWN) {
             this._value = Math.max(0, this._value - SLIDER_SCROLL_STEP);
@@ -1125,7 +1167,7 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
                 this._ornament.child = null;
             }
             if (!this._ornament.child) {
-                let switchOrn = new CheckBox.CheckButton(state);
+                let switchOrn = new CheckBox.CheckButton(null, {}, state);
                 this._ornament.child = switchOrn.actor;
             } else {
                 this._ornament.child._delegate.setToggleState(state);
@@ -1719,7 +1761,10 @@ var PopupMenuBase = class PopupMenuBase {
     addAction(title, callback) {
         let menuItem = new PopupMenuItem(title);
         this.addMenuItem(menuItem);
-        this._signals.connect(menuItem, 'activate', (menuItem, event) => { callback(event) });
+
+        menuItem.connect('activate', (o, event) => {
+            callback(event);
+        });
 
         return menuItem;
     }
@@ -1916,6 +1961,16 @@ var PopupMenuBase = class PopupMenuBase {
         }
 
         menuItem.actor.show();
+    }
+
+    _updateAllSeparatorVisibility() {
+        let children = this.box.get_children();
+
+        for (let child of children) {
+            if (child._delegate instanceof PopupSeparatorMenuItem) {
+                this._updateSeparatorVisibility(child._delegate);
+            }
+        }
     }
 
     /**
@@ -2220,6 +2275,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         Main.popup_rendering_actor = this.actor;
 
         this.setMaxHeight();
+        this._updateAllSeparatorVisibility();
 
         /* I'd rather this be inside the active tween scope as an onUpdate param, but how do you modify
          * a tweens own parameters during said tweening? */
@@ -2540,9 +2596,9 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 else if (xPos + natWidth > x2) xPos = x2 - natWidth;
 
                 // now we calculate the x postion based on the orientation
-                if (this._orientation === St.Side.BOTTOM) {
+                if (this._orientation === St.Side.BOTTOM || (y2 - sourceBox.y2) < natHeight) {
                     this.sideFlipped = true;
-                    yPos = Math.min(y2, sourceBox.y1) - natHeight;
+                    yPos = y2 - natHeight;
                     styleClasses.push("bottom");
                 }
                 else {
@@ -2896,7 +2952,7 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
             this._triangle = this.actor.get_direction() === St.TextDirection.RTL ?
                 arrowIcon(St.Side.LEFT) :
                 arrowIcon(St.Side.RIGHT);
-            this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.5 });
+            this._triangle.pivot_point = new Graphene.Point({ x: 0.5, y: 0.5 });
             this._triangleBin.child = this._triangle;
         }
 

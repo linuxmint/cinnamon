@@ -202,14 +202,14 @@ function setRunState(state) {
 function _initRecorder() {
     let recorderSettings = new Gio.Settings({ schema_id: 'org.cinnamon.recorder' });
 
-    global.screen.connect('toggle-recording', function() {
+    Meta.keybindings_set_custom_handler('toggle-recording', function() {
         if (recorder == null) {
             recorder = new Cinnamon.Recorder({ stage: global.stage });
         }
 
         if (recorder.is_recording()) {
             recorder.pause();
-            Meta.enable_unredirect_for_screen(global.screen);
+            Meta.enable_unredirect_for_display(global.display);
         } else {
             // read the parameters from GSettings always in case they have changed
             recorder.set_framerate(recorderSettings.get_int('framerate'));
@@ -226,7 +226,7 @@ function _initRecorder() {
             else
                 recorder.set_pipeline(null);
 
-            Meta.disable_unredirect_for_screen(global.screen);
+            Meta.disable_unredirect_for_display(global.display);
             recorder.record();
         }
     });
@@ -255,7 +255,7 @@ function _addXletDirectoriesToSearchPath() {
 function _initUserSession() {
     _initRecorder();
 
-    global.screen.override_workspace_layout(Meta.ScreenCorner.TOPLEFT, false, 1, -1);
+    global.screen.override_workspace_layout(Meta.DisplayCorner.TOPLEFT, false, 1, -1);
 
     systrayManager = new Systray.SystrayManager();
 
@@ -370,7 +370,6 @@ function start() {
                         let height = global.stage.height;
                         [alloc.min_size, alloc.natural_size] = [height, height];
                     });
-
     global.reparentActor(global.background_actor, uiGroup);
     global.background_actor.hide();
     global.reparentActor(global.bottom_window_group, uiGroup);
@@ -445,6 +444,11 @@ function start() {
 
     _startDate = new Date();
 
+    global.display.connect('restart', () => {
+        global.real_restart();
+        return true;
+    });
+
     global.stage.connect('captured-event', _stageEventHandler);
 
     global.log('loaded at ' + _startDate);
@@ -497,7 +501,7 @@ function start() {
         // when the system is bogged down
         if (do_animation) {
             let id = GLib.idle_add(GLib.PRIORITY_LOW, () => {
-                if (do_login_sound)
+                if (do_login_sound && !global.session_running)
                     soundManager.play_once_per_session('login');
                 layoutManager._doStartupAnimation();
                 return GLib.SOURCE_REMOVE;
@@ -506,7 +510,7 @@ function start() {
             global.background_actor.show();
             setRunState(RunState.RUNNING);
 
-            if (do_login_sound)
+            if (do_login_sound && !global.session_running)
                 soundManager.play_once_per_session('login');
         }
 
@@ -1076,11 +1080,8 @@ function logStackTrace(msg) {
  * Returns (boolean): whether the window is on the workspace
  */
 function isWindowActorDisplayedOnWorkspace(win, workspaceIndex) {
-    if (win.get_workspace() == workspaceIndex) {return true;}
-    let mwin = win.get_meta_window();
-    return mwin && (mwin.is_on_all_workspaces() ||
-        (wm.workspacesOnlyOnPrimary && mwin.get_monitor() != layoutManager.primaryIndex)
-    );
+    return win.get_workspace() == workspaceIndex ||
+        (win.get_meta_window() && win.get_meta_window().is_on_all_workspaces());
 }
 
 /**
@@ -1105,6 +1106,8 @@ function getWindowActorsForWorkspace(workspaceIndex) {
 function _stageEventHandler(actor, event) {
     if (modalCount == 0)
         return false;
+    // log("Stage event handler........." + event.type() + "..." + event);
+
     if (event.type() != Clutter.EventType.KEY_PRESS) {
         if(!popup_rendering_actor || event.type() != Clutter.EventType.BUTTON_RELEASE)
             return false;
@@ -1117,9 +1120,8 @@ function _stageEventHandler(actor, event) {
 
     // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
     let action = global.display.get_keybinding_action(keyCode, modifierState);
-
-    if (action == Meta.KeyBindingAction.CUSTOM) {
-        global.display.keybinding_action_invoke_by_code(keyCode, modifierState);
+    if (action > 0) {
+        keybindingManager.invoke_action(action);
     }
 
     // Other bindings are only available when the overview is up and no modal dialog is present
@@ -1203,7 +1205,7 @@ function pushModal(actor, timestamp, options) {
             log('pushModal: invocation of begin_modal failed');
             return false;
         }
-        Meta.disable_unredirect_for_screen(global.screen);
+        Meta.disable_unredirect_for_display(global.display);
     }
 
     global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
@@ -1292,7 +1294,7 @@ function popModal(actor, timestamp) {
 
     layoutManager.updateChrome(true);
 
-    Meta.enable_unredirect_for_screen(global.screen);
+    Meta.enable_unredirect_for_display(global.display);
 }
 
 /**
@@ -1489,7 +1491,7 @@ function isInteresting(metaWindow) {
         return false;
 
     // Include any window the tracker finds interesting
-    if (metaWindow.is_interesting()) {
+    if (tracker.is_window_interesting(metaWindow)) {
         return true;
     }
 
@@ -1538,11 +1540,16 @@ function getTabList(workspaceOpt, screenOpt) {
 }
 
 function restartCinnamon(showOsd = false) {
-    if (showOsd) {
-        let dialog = new ModalDialog.InfoOSD(_("Restarting Cinnamon..."));
-        dialog.actor.add_style_class_name('restart-osd');
-        dialog.show();
-    }
+    global.display.connect("show-restart-message", () => {
+        if (showOsd) {
+            let dialog = new ModalDialog.InfoOSD(_("Restarting Cinnamon..."));
+            dialog.actor.add_style_class_name('restart-osd');
+            dialog.show();
+
+            return true;
+        }
+        return false;
+    });
 
     global.reexec_self();
 }

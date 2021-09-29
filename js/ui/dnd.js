@@ -93,6 +93,8 @@ var _Draggable = new Lang.Class({
         this.target = null;
         this.recentDropTarget = null;
 
+        this.drag_device = null
+
         if (target) {
             this.target = target;
         }
@@ -108,7 +110,7 @@ var _Draggable = new Lang.Class({
             this._actorDestroyed = true;
 
             if (this._dragInProgress && this._dragCancellable)
-                this._cancelDrag(global.get_current_time());
+                this._cancelDrag(null);
             this.disconnectAll();
         }));
         this._onEventId = null;
@@ -138,7 +140,7 @@ var _Draggable = new Lang.Class({
             return false;
 
         this._buttonDown = true;
-        this._grabActor();
+        this._grabActor(event);
 
         let [stageX, stageY] = event.get_coords();
         this._dragStartX = stageX;
@@ -147,32 +149,40 @@ var _Draggable = new Lang.Class({
         return false;
     },
 
-    _grabActor: function() {
-        Clutter.grab_pointer(this.actor);
+    _grabActor: function(event) {
+        this.drag_device = event.get_device();
+        this.drag_device.grab(this.actor);
         this._onEventId = this.actor.connect('event',
                                              Lang.bind(this, this._onEvent));
     },
 
-    _ungrabActor: function() {
+    _ungrabActor: function(event) {
         if (!this._onEventId)
             return;
 
-        Clutter.ungrab_pointer();
+        if (this.drag_device) {
+            this.drag_device.ungrab();
+        } else if (event) {
+            event.get_device().ungrab();
+        }
+
         this.actor.disconnect(this._onEventId);
         this._onEventId = null;
     },
 
-    _grabEvents: function() {
+    _grabEvents: function(event) {
         if (!this._eventsGrabbed) {
             this._eventsGrabbed = Main.pushModal(_getEventHandlerActor());
-            if (this._eventsGrabbed)
-                Clutter.grab_pointer(_getEventHandlerActor());
+            if (this._eventsGrabbed) {
+                this.drag_device = event.get_device()
+                this.drag_device.grab(_getEventHandlerActor());
+            }
         }
     },
 
     _ungrabEvents: function() {
         if (this._eventsGrabbed) {
-            Clutter.ungrab_pointer();
+            this.drag_device.ungrab();
             Main.popModal(_getEventHandlerActor());
             this._eventsGrabbed = false;
         }
@@ -197,7 +207,7 @@ var _Draggable = new Lang.Class({
                 return true;
             } else {
                 // Drag has never started.
-                this._ungrabActor();
+                this._ungrabActor(event);
                 return false;
             }
         // We intercept MOTION event to figure out if the drag has started and to draw
@@ -213,7 +223,7 @@ var _Draggable = new Lang.Class({
         } else if (event.type() == Clutter.EventType.KEY_PRESS && this._dragInProgress) {
             let symbol = event.get_key_symbol();
             if (symbol === Clutter.KEY_Escape) {
-                this._cancelDrag(event.get_time());
+                this._cancelDrag(event);
                 return true;
             }
         }
@@ -244,7 +254,7 @@ var _Draggable = new Lang.Class({
      * This function is useful to call if you've specified manualMode
      * for the draggable.
      */
-    startDrag: function (stageX, stageY, time) {
+    startDrag: function (stageX, stageY, event) {
         currentDraggable = this;
         this._dragInProgress = true;
 
@@ -255,10 +265,10 @@ var _Draggable = new Lang.Class({
             this.actor.hover = false;
         }
 
-        this.emit('drag-begin', time);
+        this.emit('drag-begin', event.get_time());
         if (this._onEventId)
-            this._ungrabActor();
-        this._grabEvents();
+            this._ungrabActor(event);
+        this._grabEvents(event);
         global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
 
         this._dragX = this._dragStartX = stageX;
@@ -366,7 +376,7 @@ var _Draggable = new Lang.Class({
         let threshold = Gtk.Settings.get_default().gtk_dnd_drag_threshold;
         if ((Math.abs(stageX - this._dragStartX) > threshold ||
              Math.abs(stageY - this._dragStartY) > threshold)) {
-                this.startDrag(stageX, stageY, event.get_time());
+                this.startDrag(stageX, stageY, event);
                 this._updateDragPosition(event);
         }
 
@@ -526,14 +536,14 @@ var _Draggable = new Lang.Class({
                     this._dragInProgress = false;
                     global.unset_cursor();
                     this.emit('drag-end', event.get_time(), true);
-                    this._dragComplete();
+                    this._dragComplete(event);
                     return true;
                 }
             }
             target = target.get_parent();
         }
 
-        this._cancelDrag(event.get_time());
+        this._cancelDrag(event);
 
         return true;
     },
@@ -570,7 +580,13 @@ var _Draggable = new Lang.Class({
         return [x, y, scale];
     },
 
-    _cancelDrag: function(eventTime) {
+    _cancelDrag: function(event) {
+        let eventTime;
+        if (event !== null) {
+            eventTime = event.get_time();
+        } else {
+            eventTime = global.get_current_time()
+        }
         this.emit('drag-cancelled', eventTime);
         this._dragInProgress = false;
         let [snapBackX, snapBackY, snapBackScale] = this._getRestoreLocation();
@@ -809,8 +825,10 @@ GenericDragItemContainer.prototype = {
         if (this.child == null)
             return;
 
-        this.child.set_scale_with_gravity(scale, scale,
-                                          Clutter.Gravity.CENTER);
+        this.child.pivot_point.x = 0.5;
+        this.child.pivot_point.y = 0.5;
+        this.child.scale_x = scale;
+        this.child.scale_y = scale;
         this.actor.queue_relayout();
     },
 

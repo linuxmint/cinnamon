@@ -19,7 +19,7 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
   let texture = metaWindowActor.get_texture();
   let [windowWidth, windowHeight] = metaWindowActor.get_size();
   let [maxWidth, maxHeight] = [windowWidth, windowHeight];
-  let {x, y} = metaWindow.get_input_rect();
+  let {x, y} = metaWindow.get_buffer_rect();
   let [minX, minY] = [x, y];
   let [maxX, maxY] = [minX + windowWidth, minY + windowHeight];
   textures.push({t: texture, x: x, y: y, w: windowWidth, h: windowHeight});
@@ -28,7 +28,7 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
       let metaWindowActor = win.get_compositor_private();
       texture = metaWindowActor.get_texture();
       [windowWidth, windowHeight] = metaWindowActor.get_size();
-      let { x, y } = win.get_input_rect();
+      let { x, y } = win.get_buffer_rect();
       maxWidth = Math.max(maxWidth, windowWidth);
       maxHeight = Math.max(maxHeight, windowHeight);
       minX = Math.min(minX, x);
@@ -58,15 +58,22 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
       x -= minX;
       y -= minY;
     }
-    let params = {};
-    params.source = texture;
-    if (scale != 1) {
-      params.width = Math.round(texWidth * scale);
-      params.height = Math.round(texHeight * scale);
-      x = Math.round(x * scale);
-      y = Math.round(y * scale);
-    }
-    let clone = {actor: new Clutter.Clone(params), x: x, y: y};
+
+    let width = Math.round(texWidth * scale);
+    let height = Math.round(texHeight * scale);
+
+    let actor = new Clutter.Actor({
+        content: texture,
+        width: width,
+        height: height,
+    });
+    actor.set_offscreen_redirect(Clutter.OffscreenRedirect.ALWAYS);
+
+    x = Math.round(x * scale);
+    y = Math.round(y * scale);
+
+    let clone = { actor: actor, x: x, y: y };
+    texture.invalidate();
     clones.push(clone);
   }
   return clones;

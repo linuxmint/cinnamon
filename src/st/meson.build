@@ -1,6 +1,6 @@
 st_headers = [
     'st-adjustment.h',
-    'st-background-effect.h',
+    # 'st-background-effect.h',
     'st-bin.h',
     'st-border-image.h',
     'st-box-layout.h',
@@ -13,14 +13,14 @@ st_headers = [
     'st-group.h',
     'st-icon.h',
     'st-icon-colors.h',
-    'st-im-text.h',
     'st-label.h',
+    'st-image-content.h',
     'st-polygon.h',
     'st-private.h',
     'st-scrollable.h',
     'st-scroll-bar.h',
     'st-scroll-view.h',
-    'st-scroll-view-fade.h',
+    # 'st-scroll-view-fade.h',
     'st-settings.h',
     'st-shadow.h',
     'st-table.h',
@@ -30,6 +30,7 @@ st_headers = [
     'st-theme-context.h',
     'st-theme-node.h',
     'st-types.h',
+    'st-viewport.h',
     'st-widget.h',
     'st-widget-accessible.h',
     'st-cogl-wrapper.h',
@@ -98,7 +99,7 @@ st_private_headers = [
 
 st_gir_sources = [
     'st-adjustment.c',
-    'st-background-effect.c',
+    # 'st-background-effect.c',
     'st-bin.c',
     'st-border-image.c',
     'st-box-layout.c',
@@ -112,14 +113,14 @@ st_gir_sources = [
     'st-group.c',
     'st-icon.c',
     'st-icon-colors.c',
-    'st-im-text.c',
+    'st-image-content.c',
     'st-label.c',
     'st-polygon.c',
     'st-private.c',
     'st-scrollable.c',
     'st-scroll-bar.c',
     'st-scroll-view.c',
-    'st-scroll-view-fade.c',
+    # 'st-scroll-view-fade.c',
     'st-settings.c',
     'st-shadow.c',
     'st-table.c',
@@ -130,6 +131,7 @@ st_gir_sources = [
     'st-theme-node.c',
     'st-theme-node-drawing.c',
     'st-theme-node-transition.c',
+    'st-viewport.c',
     'st-widget.c',
     st_headers,
 ]
@@ -171,6 +173,8 @@ libst_deps = [
     muffin,
 ]
 
+st_inc = include_directories('.', '..')
+
 libst = library(
     'st',
     st_sources,
@@ -178,8 +182,8 @@ libst = library(
         '-DST_H_INSIDE',
         '-DG_LOG_DOMAIN="St"'
     ],
-    build_rpath: muffinlibdir,
-    install_rpath: muffinlibdir,
+    build_rpath: muffin_typelibdir,
+    install_rpath: muffin_typelibdir,
     include_directories: include_root,
     dependencies: libst_deps,
     install: true,
@@ -197,7 +201,7 @@ st_dep = declare_dependency(
 st_gir_includes = [
     'Clutter-0',
     'ClutterX11-0',
-    'Meta-Muffin.0',
+    'Meta-0',
     'Gtk-3.0',
 ]
 

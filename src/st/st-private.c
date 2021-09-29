@@ -23,7 +23,6 @@
 #include <string.h>
 
 #include "st-private.h"
-#include "st-cogl-wrapper.h"
 
 /**
  * _st_actor_get_preferred_width:
@@ -99,67 +98,6 @@ _st_actor_get_preferred_height (ClutterActor *actor,
   clutter_actor_get_preferred_height (actor, for_width, min_height_p, natural_height_p);
 }
 
-
-/**
- * _st_get_align_factors:
- * @x_align: an #StAlign
- * @y_align: an #StAlign
- * @x_align_out: (out) (allow-none): @x_align as a #gdouble
- * @y_align_out: (out) (allow-none): @y_align as a #gdouble
- *
- * Converts @x_align and @y_align to #gdouble values.
- */
-void
-_st_get_align_factors (StAlign   x_align,
-                       StAlign   y_align,
-                       gdouble  *x_align_out,
-                       gdouble  *y_align_out)
-{
-  if (x_align_out)
-    {
-      switch (x_align)
-        {
-        case ST_ALIGN_START:
-          *x_align_out = 0.0;
-          break;
-
-        case ST_ALIGN_MIDDLE:
-          *x_align_out = 0.5;
-          break;
-
-        case ST_ALIGN_END:
-          *x_align_out = 1.0;
-          break;
-
-        default:
-          g_warn_if_reached ();
-          break;
-        }
-    }
-
-  if (y_align_out)
-    {
-      switch (y_align)
-        {
-        case ST_ALIGN_START:
-          *y_align_out = 0.0;
-          break;
-
-        case ST_ALIGN_MIDDLE:
-          *y_align_out = 0.5;
-          break;
-
-        case ST_ALIGN_END:
-          *y_align_out = 1.0;
-          break;
-
-        default:
-          g_warn_if_reached ();
-          break;
-        }
-    }
-}
-
 /**
  * _st_set_text_from_style:
  * @text: Target #ClutterText
@@ -177,23 +115,41 @@ _st_set_text_from_style (ClutterText *text,
   StTextDecoration decoration;
   PangoAttrList *attribs = NULL;
   const PangoFontDescription *font;
-  gchar *font_string;
+  PangoAttribute *foreground;
   StTextAlign align;
-
-  st_theme_node_get_foreground_color (theme_node, &color);
-  clutter_text_set_color (text, &color);
+  gdouble spacing;
+  gchar *font_features;
 
   font = st_theme_node_get_font (theme_node);
-  font_string = pango_font_description_to_string (font);
-  clutter_text_set_font_name (text, font_string);
-  g_free (font_string);
+  clutter_text_set_font_description (text, (PangoFontDescription *) font);
+
+  attribs = pango_attr_list_new ();
+
+  st_theme_node_get_foreground_color (theme_node, &color);
+  clutter_text_set_cursor_color (text, &color);
+  foreground = pango_attr_foreground_new (color.red * 255,
+                                          color.green * 255,
+                                          color.blue * 255);
+  pango_attr_list_insert (attribs, foreground);
+
+  if (color.alpha != 255)
+    {
+      PangoAttribute *alpha;
+
+      /* An alpha value of 0 means "system inherited", so the
+       * minimum regular value is 1.
+       */
+      if (color.alpha == 0)
+        alpha = pango_attr_foreground_alpha_new (1);
+      else
+        alpha = pango_attr_foreground_alpha_new (color.alpha * 255);
+
+      pango_attr_list_insert (attribs, alpha);
+    }
 
   decoration = st_theme_node_get_text_decoration (theme_node);
-
   if (decoration)
     {
-      attribs = pango_attr_list_new ();
-
       if (decoration & ST_TEXT_DECORATION_UNDERLINE)
         {
           PangoAttribute *underline = pango_attr_underline_new (PANGO_UNDERLINE_SINGLE);
@@ -207,6 +163,20 @@ _st_set_text_from_style (ClutterText *text,
       /* Pango doesn't have an equivalent attribute for _OVERLINE, and we deliberately
        * skip BLINK (for now...)
        */
+    }
+
+  spacing = st_theme_node_get_letter_spacing (theme_node);
+  if (spacing)
+    {
+      PangoAttribute *letter_spacing = pango_attr_letter_spacing_new ((int)(.5 + spacing) * PANGO_SCALE);
+      pango_attr_list_insert (attribs, letter_spacing);
+    }
+
+  font_features = st_theme_node_get_font_features (theme_node);
+  if (font_features)
+    {
+      pango_attr_list_insert (attribs, pango_attr_font_features_new (font_features));
+      g_free (font_features);
     }
 
   clutter_text_set_attributes (text, attribs);
@@ -226,9 +196,9 @@ _st_set_text_from_style (ClutterText *text,
 
 /**
  * _st_create_texture_pipeline:
- * @src_texture: The CoglTexture for the material
+ * @src_texture: The CoglTexture for the pipeline
  *
- * Creates a simple material which contains the given texture as a
+ * Creates a simple pipeline which contains the given texture as a
  * single layer.
  */
 CoglPipeline *
@@ -247,10 +217,11 @@ _st_create_texture_pipeline (CoglTexture *src_texture)
      pipeline ancestry instead of resorting to the shader cache. */
   if (G_UNLIKELY (texture_pipeline_template == NULL))
     {
-      texture_pipeline_template = cogl_pipeline_new (st_get_cogl_context());
-      cogl_pipeline_set_layer_null_texture (texture_pipeline_template,
-                                            0, /* layer */
-                                            COGL_TEXTURE_TYPE_2D);
+      CoglContext *ctx =
+        clutter_backend_get_cogl_context (clutter_get_default_backend ());
+
+      texture_pipeline_template = cogl_pipeline_new (ctx);
+      cogl_pipeline_set_layer_null_texture (texture_pipeline_template, 0);
     }
 
   pipeline = cogl_pipeline_copy (texture_pipeline_template);
@@ -266,12 +237,12 @@ _st_create_texture_pipeline (CoglTexture *src_texture)
  *****/
 
 static gdouble *
-calculate_gaussian_kernel (float   sigma,
-                           gint     n_values)
+calculate_gaussian_kernel (gdouble   sigma,
+                           guint     n_values)
 {
   gdouble *ret, sum;
   gdouble exp_divisor;
-  gint half, i;
+  int half, i;
 
   g_return_val_if_fail (sigma > 0, NULL);
 
@@ -283,14 +254,14 @@ calculate_gaussian_kernel (float   sigma,
   exp_divisor = 2 * sigma * sigma;
 
   /* n_values of 1D Gauss function */
-  for (i = 0; i < n_values; i++)
+  for (i = 0; i < (int)n_values; i++)
     {
       ret[i] = exp (-(i - half) * (i - half) / exp_divisor);
       sum += ret[i];
     }
 
   /* normalize */
-  for (i = 0; i < n_values; i++)
+  for (i = 0; i < (int)n_values; i++)
     ret[i] /= sum;
 
   return ret;
@@ -307,7 +278,7 @@ blur_pixels (guchar  *pixels_in,
              gint    *rowstride_out)
 {
   guchar *pixels_out;
-  float   sigma;
+  gdouble sigma;
 
   /* The CSS specification defines (or will define) the blur radius as twice
    * the Gaussian standard deviation. See:
@@ -402,13 +373,18 @@ blur_pixels (guchar  *pixels_in,
 }
 
 CoglPipeline *
-_st_create_shadow_pipeline (StShadow     *shadow_spec,
-                            CoglTexture  *src_texture)
+_st_create_shadow_pipeline_at_scale (StShadow    *shadow_spec,
+                                     CoglTexture *src_texture,
+                                     float        resource_scale)
 {
+  ClutterBackend *backend = clutter_get_default_backend ();
+  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
+  GError *error = NULL;
+
   static CoglPipeline *shadow_pipeline_template = NULL;
 
   CoglPipeline *pipeline;
-  CoglPipeline *texture;
+  CoglTexture *texture;
   guchar *pixels_in, *pixels_out;
   gint width_in, height_in, rowstride_in;
   gint width_out, height_out, rowstride_out;
@@ -426,22 +402,27 @@ _st_create_shadow_pipeline (StShadow     *shadow_spec,
                          rowstride_in, pixels_in);
 
   pixels_out = blur_pixels (pixels_in, width_in, height_in, rowstride_in,
-                            shadow_spec->blur,
+                            shadow_spec->blur * resource_scale,
                             &width_out, &height_out, &rowstride_out);
   g_free (pixels_in);
 
-  texture = st_cogl_texture_new_from_data_wrapper (width_out, height_out,
-                                                   COGL_TEXTURE_NONE,
-                                                   COGL_PIXEL_FORMAT_A_8,
-                                                   COGL_PIXEL_FORMAT_A_8,
-                                                   rowstride_out,
-                                                   pixels_out);
+  texture = COGL_TEXTURE (cogl_texture_2d_new_from_data (ctx, width_out, height_out,
+                                                         COGL_PIXEL_FORMAT_A_8,
+                                                         rowstride_out,
+                                                         pixels_out,
+                                                         &error));
+
+  if (error)
+    {
+      g_warning ("Failed to allocate texture: %s", error->message);
+      g_error_free (error);
+    }
 
   g_free (pixels_out);
 
   if (G_UNLIKELY (shadow_pipeline_template == NULL))
     {
-      shadow_pipeline_template = cogl_pipeline_new (st_get_cogl_context());
+      shadow_pipeline_template = cogl_pipeline_new (ctx);
 
       /* We set up the pipeline to blend the shadow texture with the combine
        * constant, but defer setting the latter until painting, so that we can
@@ -452,7 +433,6 @@ _st_create_shadow_pipeline (StShadow     *shadow_spec,
     }
 
   pipeline = cogl_pipeline_copy (shadow_pipeline_template);
-
   cogl_pipeline_set_layer_texture (pipeline, 0, texture);
 
   if (texture)
@@ -461,75 +441,100 @@ _st_create_shadow_pipeline (StShadow     *shadow_spec,
   return pipeline;
 }
 
+
+CoglPipeline *
+_st_create_shadow_pipeline (StShadow    *shadow_spec,
+                            CoglTexture *src_texture)
+{
+
+  return _st_create_shadow_pipeline_at_scale (shadow_spec, src_texture, 1.0);
+}
+
 CoglPipeline *
 _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
                                        ClutterActor *actor)
 {
+  ClutterContent *image = NULL;
   CoglPipeline *shadow_pipeline = NULL;
+  float resource_scale;
+  float width, height;
+  ClutterPaintContext *paint_context;
 
-  if (CLUTTER_IS_TEXTURE (actor))
+  g_return_val_if_fail (clutter_actor_has_allocation (actor), NULL);
+
+  clutter_actor_get_size (actor, &width, &height);
+
+  if (width == 0 || height == 0)
+    return NULL;
+
+  if (!clutter_actor_get_resource_scale (actor, &resource_scale))
+    return NULL;
+
+  width = ceilf (width * resource_scale);
+  height = ceilf (height * resource_scale);
+
+  image = clutter_actor_get_content (actor);
+  if (image && CLUTTER_IS_IMAGE (image))
     {
       CoglTexture *texture;
 
-      texture = clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (actor));
-      if (texture)
-        shadow_pipeline = _st_create_shadow_pipeline (shadow_spec, texture);
+      texture = clutter_image_get_texture (CLUTTER_IMAGE (image));
+      if (texture &&
+          cogl_texture_get_width (texture) == width &&
+          cogl_texture_get_height (texture) == height)
+        shadow_pipeline = _st_create_shadow_pipeline_at_scale (shadow_spec, texture,
+                                                               resource_scale);
     }
-  else
+
+  if (shadow_pipeline == NULL)
     {
       CoglTexture *buffer;
       CoglOffscreen *offscreen;
       CoglFramebuffer *fb;
-      ClutterActorBox box;
+      CoglContext *ctx;
       CoglColor clear_color;
-      float width, height;
-      CoglError *catch_error;
+      GError *catch_error = NULL;
+      float x, y;
 
-      clutter_actor_get_allocation_box (actor, &box);
-      clutter_actor_box_get_size (&box, &width, &height);
-
-      if (width == 0 || height == 0)
-        return NULL;
-
-      buffer = st_cogl_texture_new_with_size_wrapper (width, height,
-                                                      COGL_TEXTURE_NO_SLICING,
-                                                      COGL_PIXEL_FORMAT_ANY);
+      ctx = clutter_backend_get_cogl_context (clutter_get_default_backend ());
+      buffer = cogl_texture_2d_new_with_size (ctx, width, height);
 
       if (buffer == NULL)
         return NULL;
 
       offscreen = cogl_offscreen_new_with_texture (buffer);
       fb = COGL_FRAMEBUFFER (offscreen);
-      catch_error = NULL;
 
       if (!cogl_framebuffer_allocate (fb, &catch_error))
         {
-          cogl_error_free (catch_error);
+          g_error_free (catch_error);
           cogl_object_unref (offscreen);
           cogl_object_unref (buffer);
           return NULL;
         }
 
       cogl_color_init_from_4ub (&clear_color, 0, 0, 0, 0);
-
-      /* XXX: There's no way to render a ClutterActor to an offscreen
-       * as it uses the implicit API. */
-      G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
-      cogl_push_framebuffer (fb);
-      G_GNUC_END_IGNORE_DEPRECATIONS;
+      clutter_actor_get_position (actor, &x, &y);
+      x *= resource_scale;
+      y *= resource_scale;
 
       cogl_framebuffer_clear (fb, COGL_BUFFER_BIT_COLOR, &clear_color);
-      cogl_framebuffer_translate (fb, -box.x1, -box.y1, 0);
+      cogl_framebuffer_translate (fb, -x, -y, 0);
       cogl_framebuffer_orthographic (fb, 0, 0, width, height, 0, 1.0);
-      clutter_actor_paint (actor);
+      cogl_framebuffer_scale (fb, resource_scale, resource_scale, 1);
 
-      G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
-      cogl_pop_framebuffer ();
-      G_GNUC_END_IGNORE_DEPRECATIONS;
+      clutter_actor_set_opacity_override (actor, 255);
+
+      paint_context = clutter_paint_context_new_for_framebuffer (fb);
+      clutter_actor_paint (actor, paint_context);
+      clutter_paint_context_destroy (paint_context);
+
+      clutter_actor_set_opacity_override (actor, -1);
 
       cogl_object_unref (fb);
 
-      shadow_pipeline = _st_create_shadow_pipeline (shadow_spec, buffer);
+      shadow_pipeline = _st_create_shadow_pipeline_at_scale (shadow_spec, buffer,
+                                                             resource_scale);
 
       cogl_object_unref (buffer);
     }
@@ -555,9 +560,10 @@ _st_create_shadow_pipeline_from_actor (StShadow     *shadow_spec,
  * the offset.
  */
 cairo_pattern_t *
-_st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
+_st_create_shadow_cairo_pattern (StShadow        *shadow_spec_in,
                                  cairo_pattern_t *src_pattern)
 {
+  g_autoptr(StShadow) shadow_spec = NULL;
   static cairo_user_data_key_t shadow_pattern_user_data;
   cairo_t *cr;
   cairo_surface_t *src_surface;
@@ -568,9 +574,10 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
   gint             width_in, height_in, rowstride_in;
   gint             width_out, height_out, rowstride_out;
   cairo_matrix_t   shadow_matrix;
+  double           xscale_in, yscale_in;
   int i, j;
 
-  g_return_val_if_fail (shadow_spec != NULL, NULL);
+  g_return_val_if_fail (shadow_spec_in != NULL, NULL);
   g_return_val_if_fail (src_pattern != NULL, NULL);
 
   if (cairo_pattern_get_surface (src_pattern, &src_surface) != CAIRO_STATUS_SUCCESS)
@@ -582,6 +589,25 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
 
   width_in  = cairo_image_surface_get_width  (src_surface);
   height_in = cairo_image_surface_get_height (src_surface);
+
+  cairo_surface_get_device_scale (src_surface, &xscale_in, &yscale_in);
+
+  if (xscale_in != 1.0 || yscale_in != 1.0)
+    {
+      /* Scale the shadow specifications in a temporary copy so that
+       * we can work everywhere in absolute surface coordinates */
+      double scale = (xscale_in + yscale_in) / 2.0;
+      shadow_spec = st_shadow_new (&shadow_spec_in->color,
+                                   shadow_spec_in->xoffset * xscale_in,
+                                   shadow_spec_in->yoffset * yscale_in,
+                                   shadow_spec_in->blur * scale,
+                                   shadow_spec_in->spread * scale,
+                                   shadow_spec_in->inset);
+    }
+  else
+    {
+      shadow_spec = st_shadow_ref (shadow_spec_in);
+    }
 
   /* We want the output to be a color agnostic alpha mask,
    * so we need to strip the color channels from the input
@@ -625,6 +651,7 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
                                                      width_out,
                                                      height_out,
                                                      rowstride_out);
+  cairo_surface_set_device_scale (surface_out, xscale_in, yscale_in);
   cairo_surface_set_user_data (surface_out, &shadow_pattern_user_data,
                                pixels_out, (cairo_destroy_func_t) g_free);
 
@@ -635,6 +662,9 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
 
   if (shadow_spec->inset)
     {
+      /* Scale the matrix in surface absolute coordinates */
+      cairo_matrix_scale (&shadow_matrix, 1.0 / xscale_in, 1.0 / yscale_in);
+
       /* For inset shadows, offsets and spread radius have already been
        * applied to the original pattern, so all left to do is shift the
        * blurred image left, so that it aligns centered under the
@@ -643,6 +673,10 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
       cairo_matrix_translate (&shadow_matrix,
                               (width_out - width_in) / 2.0,
                               (height_out - height_in) / 2.0);
+
+      /* Scale back the matrix in original coordinates */
+      cairo_matrix_scale (&shadow_matrix, xscale_in, yscale_in);
+
       cairo_pattern_set_matrix (dst_pattern, &shadow_matrix);
       return dst_pattern;
     }
@@ -654,6 +688,9 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
 
   /* 6. Invert the matrix back */
   cairo_matrix_invert (&shadow_matrix);
+
+  /* Scale the matrix in surface absolute coordinates */
+  cairo_matrix_scale (&shadow_matrix, 1.0 / xscale_in, 1.0 / yscale_in);
 
   /* 5. Adjust based on specified offsets */
   cairo_matrix_translate (&shadow_matrix,
@@ -676,6 +713,9 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
                           - (width_out - width_in) / 2.0,
                           - (height_out - height_in) / 2.0);
 
+  /* Scale back the matrix in scaled coordinates */
+  cairo_matrix_scale (&shadow_matrix, xscale_in, yscale_in);
+
   /* 1. Invert the matrix so we can work with it in pattern space
    */
   cairo_matrix_invert (&shadow_matrix);
@@ -688,27 +728,87 @@ _st_create_shadow_cairo_pattern (StShadow        *shadow_spec,
 void
 _st_paint_shadow_with_opacity (StShadow        *shadow_spec,
                                CoglPipeline    *shadow_pipeline,
-                               CoglFramebuffer *fb,
+                               CoglFramebuffer *framebuffer,
                                ClutterActorBox *box,
                                guint8           paint_opacity)
 {
   ClutterActorBox shadow_box;
   CoglColor color;
-  guint8 adjusted;
 
   g_return_if_fail (shadow_spec != NULL);
   g_return_if_fail (shadow_pipeline != NULL);
 
   st_shadow_get_box (shadow_spec, box, &shadow_box);
 
-  adjusted = paint_opacity / 255;
   cogl_color_init_from_4ub (&color,
-                            shadow_spec->color.red   * adjusted,
-                            shadow_spec->color.green * adjusted,
-                            shadow_spec->color.blue  * adjusted,
-                            shadow_spec->color.alpha * adjusted);
+                            shadow_spec->color.red   * paint_opacity / 255,
+                            shadow_spec->color.green * paint_opacity / 255,
+                            shadow_spec->color.blue  * paint_opacity / 255,
+                            shadow_spec->color.alpha * paint_opacity / 255);
+  cogl_color_premultiply (&color);
   cogl_pipeline_set_layer_combine_constant (shadow_pipeline, 0, &color);
-  cogl_framebuffer_draw_rectangle (fb, shadow_pipeline,
+  cogl_framebuffer_draw_rectangle (framebuffer,
+                                   shadow_pipeline,
                                    shadow_box.x1, shadow_box.y1,
                                    shadow_box.x2, shadow_box.y2);
+}
+
+/**
+ * _st_get_align_factors:
+ * @x_align: an #StAlign
+ * @y_align: an #StAlign
+ * @x_align_out: (out) (allow-none): @x_align as a #gdouble
+ * @y_align_out: (out) (allow-none): @y_align as a #gdouble
+ *
+ * Converts @x_align and @y_align to #gdouble values.
+ */
+void
+_st_get_align_factors (StAlign   x_align,
+                       StAlign   y_align,
+                       gdouble  *x_align_out,
+                       gdouble  *y_align_out)
+{
+  if (x_align_out)
+    {
+      switch (x_align)
+        {
+        case ST_ALIGN_START:
+          *x_align_out = 0.0;
+          break;
+
+        case ST_ALIGN_MIDDLE:
+          *x_align_out = 0.5;
+          break;
+
+        case ST_ALIGN_END:
+          *x_align_out = 1.0;
+          break;
+
+        default:
+          g_warn_if_reached ();
+          break;
+        }
+    }
+
+  if (y_align_out)
+    {
+      switch (y_align)
+        {
+        case ST_ALIGN_START:
+          *y_align_out = 0.0;
+          break;
+
+        case ST_ALIGN_MIDDLE:
+          *y_align_out = 0.5;
+          break;
+
+        case ST_ALIGN_END:
+          *y_align_out = 1.0;
+          break;
+
+        default:
+          g_warn_if_reached ();
+          break;
+        }
+    }
 }

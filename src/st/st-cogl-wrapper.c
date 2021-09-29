@@ -12,22 +12,27 @@ static gboolean supports_npot = FALSE;
 inline static gboolean
 hardware_supports_npot_sizes (void)
 {
-    if (cogl_context != NULL)
-        return supports_npot;
+    // if (cogl_context != NULL)
+    //     return supports_npot;
 
     cogl_context = st_get_cogl_context();
-    supports_npot = cogl_has_feature (cogl_context, COGL_FEATURE_ID_TEXTURE_NPOT);
+    // supports_npot = cogl_has_feature (cogl_context, COGL_FEATURE_ID_TEXTURE_NPOT);
 
-    g_message ("cogl npot texture sizes %s", supports_npot ? "SUPPORTED" : "NOT supported");
+    // g_message ("cogl npot texture sizes %s", supports_npot ? "SUPPORTED" : "NOT supported");
 
-    return supports_npot;
+    // return supports_npot;
+    return TRUE;
 }
 
+/**
+ * st_get_cogl_context: (skip)
+ */
 CoglContext *
 st_get_cogl_context (void)
 {
   if (G_UNLIKELY (cogl_context == NULL))
     cogl_context = clutter_backend_get_cogl_context (clutter_get_default_backend ());
+
   return cogl_context;
 }
 
@@ -52,13 +57,10 @@ st_cogl_texture_new_from_data_wrapper                (int  width,
 
     if (hardware_supports_npot_sizes ())
       {
-        CoglError *error = NULL;
+        GError *error = NULL;
 
         texture = COGL_TEXTURE (cogl_texture_2d_new_from_data (cogl_context, width, height,
                                                                format,
-#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
-                                                               COGL_PIXEL_FORMAT_ANY,
-#endif
                                                                rowstride,
                                                                data,
                                                                &error));
@@ -66,7 +68,7 @@ st_cogl_texture_new_from_data_wrapper                (int  width,
         if (error)
           {
             g_debug ("(st) cogl_texture_2d_new_from_data failed: %s\n", error->message);
-            cogl_error_free (error);
+            g_error_free (error);
           }
       }
     else
@@ -97,15 +99,12 @@ st_cogl_texture_new_from_file_wrapper         (const char *filename,
                                           CoglPixelFormat  internal_format)
 {
     CoglTexture *texture = NULL;
-    CoglError *error = NULL;
+    GError *error = NULL;
 
     if (hardware_supports_npot_sizes ())
       {
         texture = COGL_TEXTURE (cogl_texture_2d_new_from_file (cogl_context,
                                                                filename,
-#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
-                                                               COGL_PIXEL_FORMAT_ANY,
-#endif
                                                                &error));
       }
     else
@@ -119,7 +118,7 @@ st_cogl_texture_new_from_file_wrapper         (const char *filename,
     if (error)
       {
         g_debug ("cogl_texture_(2d)_new_from_file failed: %s\n", error->message);
-        cogl_error_free (error);
+        g_error_free (error);
       }
 
     return texture;
@@ -145,11 +144,7 @@ st_cogl_texture_new_with_size_wrapper           (int width,
       {
         texture = COGL_TEXTURE (cogl_texture_2d_new_with_size (cogl_context,
                                                                width,
-                                                               height
-#if COGL_VERSION < COGL_VERSION_ENCODE (1, 18, 0)
-                                                              ,CLUTTER_CAIRO_FORMAT_ARGB32
-#endif
-                                                              ));
+                                                               height));
       }
     else
       {

@@ -226,6 +226,30 @@
       </description>
     </key>
 
+    <key type="s" name="desktop-effects-sizechange-effect">
+      <default>"scale"</default>
+      <summary>Effect used when maximizing windows</summary>
+      <description>
+       An effect: none
+      </description>
+    </key>
+
+     <key name="desktop-effects-sizechange-transition" type="s">
+      <default>"easeInQuad"</default>
+      <summary>Transition used when maximizing windows</summary>
+      <description>
+       A Tweener transition
+      </description>
+    </key>
+
+    <key type="i" name="desktop-effects-sizechange-time">
+      <default>100</default>
+      <summary>Duration of the effect (in milliseconds)</summary>
+      <description>
+       Duration of the effect (in milliseconds)
+      </description>
+    </key>
+
     <key type="b" name="startup-animation">
       <default>true</default>
       <summary>Whether the startup animation is enabled</summary>
@@ -873,10 +897,20 @@
     </key>
   </schema>
 
-  <schema id="org.cinnamon.keybindings" path="/org/cinnamon/keybindings/">
-    <key name="custom-list" type="as">
+  <schema id="org.cinnamon.runtime-keybindings" path="/org/cinnamon/runtime-keybindings/">
+    <key name="placeholder" type="b">
+      <default>false</default>
+    </key>
+   </schema>
+
+  <schema id="org.cinnamon.runtime-keybindings.runtime-keybinding">
+    <key name="bindings" type="as">
       <default>[]</default>
-      <summary>deprecated - moved to org.cinnamon.desktop.keybindings</summary>
+      <summary>Keybinding array for runtime keybinding.</summary>
+    </key>
+    <key name="action-id" type="i">
+      <default>0</default>
+      <summary>Action id for keybinding</summary>
     </key>
   </schema>
 

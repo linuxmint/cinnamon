@@ -1,6 +1,8 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
+const GObject = imports.gi.GObject;
+const Meta = imports.gi.Meta;
 const Gio = imports.gi.Gio;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
@@ -64,6 +66,95 @@ const ZOOM_OUT_KEY              = "magnifier-zoom-out"
 let magDBusService = null;
 let magInputHandler = null;
 
+var MouseSpriteContent = GObject.registerClass({
+    Implements: [Clutter.Content],
+}, class MouseSpriteContent extends GObject.Object {
+    _init() {
+        super._init();
+        this._scale = 1.0;
+        this._monitorScale = 1.0;
+        this._texture = null;
+    }
+
+    vfunc_get_preferred_size() {
+        if (!this._texture)
+            return [false, 0, 0];
+
+        let width = this._texture.get_width() / this._scale;
+        let height = this._texture.get_height() / this._scale;
+
+        return [true, width, height];
+    }
+
+    vfunc_paint_content(actor, node, _paintContext) {
+        if (!this._texture)
+            return;
+
+        let color = Clutter.Color.get_static(Clutter.StaticColor.WHITE);
+        let [minFilter, magFilter] = actor.get_content_scaling_filters();
+        let textureNode = new Clutter.TextureNode(this._texture,
+                                                  color, minFilter, magFilter);
+        textureNode.set_name('MouseSpriteContent');
+        node.add_child(textureNode);
+
+        textureNode.add_rectangle(actor.get_content_box());
+    }
+
+    _textureScale() {
+        if (!this._texture)
+            return 1;
+
+        /* This is a workaround to guess the sprite scale; while it works file
+         * in normal scenarios, it's not guaranteed to work in all the cases,
+         * and so we should actually add an API to mutter that will allow us
+         * to know the real spirte texture scaling in order to adapt it to the
+         * wanted one. */
+        let avgSize = (this._texture.get_width() + this._texture.get_height()) / 2;
+        return Math.max (1, Math.floor (avgSize / Meta.prefs_get_cursor_size() + .1));
+    }
+
+    _recomputeScale() {
+        let scale = this._textureScale() / this._monitorScale;
+
+        if (this._scale != scale) {
+            this._scale = scale;
+            return true;
+        }
+        return false;
+    }
+
+    get texture() {
+        return this._texture;
+    }
+
+    set texture(coglTexture) {
+        if (this._texture == coglTexture)
+            return;
+
+        let oldTexture = this._texture;
+        this._texture = coglTexture;
+        this.invalidate();
+
+        if (!oldTexture || !coglTexture ||
+            oldTexture.get_width() != coglTexture.get_width() ||
+            oldTexture.get_height() != coglTexture.get_height()) {
+            this._recomputeScale();
+            this.invalidate_size();
+        }
+    }
+
+    get scale() {
+        return this._scale;
+    }
+
+    set monitorScale(monitorScale) {
+        this._monitorScale = monitorScale;
+        if (this._recomputeScale())
+            this.invalidate_size();
+    }
+});
+
+
 function Magnifier() {
     this._init();
 }
@@ -110,16 +201,20 @@ Magnifier.prototype = {
 
         this._initialized = true;
         // Create small clutter tree for the magnified mouse.
-        let xfixesCursor = Cinnamon.XFixesCursor.get_for_stage(global.stage);
-        this._mouseSprite = new Clutter.Texture();
-        xfixesCursor.update_texture_image(this._mouseSprite);
+        let cursor_tracker = Meta.CursorTracker.get_for_display(global.display);
+
+        this._mouseSprite = new Clutter.Actor({ request_mode: Clutter.RequestMode.CONTENT_SIZE });
+        this._mouseSprite.content = new MouseSpriteContent();
+        this._cursor_tracker = cursor_tracker;
+
+        this._updateMouseSprite();
+
         this._cursorRoot = new Clutter.Group();
         this._cursorRoot.add_actor(this._mouseSprite);
 
         [this.xMouse, this.yMouse, ] = global.get_pointer();
 
-        xfixesCursor.connect('cursor-change', Lang.bind(this, this._updateMouseSprite));
-        this._xfixesCursor = xfixesCursor;
+        cursor_tracker.connect('cursor-changed', Lang.bind(this, this._updateMouseSprite));
 
         // Create the first ZoomRegion and initialize it according to the
         // magnification settings.
@@ -135,7 +230,7 @@ Magnifier.prototype = {
      */
     showSystemCursor: function() {
         this._initialize();
-        this._xfixesCursor.show();
+        this._cursor_tracker.set_pointer_visible(true);
     },
 
     /**
@@ -144,7 +239,7 @@ Magnifier.prototype = {
      */
     hideSystemCursor: function() {
         this._initialize();
-        this._xfixesCursor.hide();
+        this._cursor_tracker.set_pointer_visible(false);
     },
 
     /**
@@ -170,7 +265,7 @@ Magnifier.prototype = {
         // Make sure system mouse pointer is shown when all zoom regions are
         // invisible.
         if (!activate)
-            this._xfixesCursor.show();
+            this._cursor_tracker.set_pointer_visible(true);
 
         // Notify interested parties of this change
         this.emit('active-changed', activate);
@@ -523,9 +618,8 @@ Magnifier.prototype = {
     //// Private methods ////
 
     _updateMouseSprite: function() {
-        this._xfixesCursor.update_texture_image(this._mouseSprite);
-        let xHot = this._xfixesCursor.get_hot_x();
-        let yHot = this._xfixesCursor.get_hot_y();
+        this._mouseSprite.content.texture = this._cursor_tracker.get_sprite();
+        let [xHot, yHot] = this._cursor_tracker.get_hot();
         this._mouseSprite.set_anchor_point(xHot, yHot);
     },
 
@@ -1633,8 +1727,8 @@ MagnifierInputHandler.prototype = {
     _enable_zoom: function() {
         if (this._zoom_in_id > 0 || this._zoom_out_id > 0)
             this._disable_zoom();
-        this._zoom_in_id = global.display.connect('zoom-scroll-in', Lang.bind(this, this._zoom_in));
-        this._zoom_out_id = global.display.connect('zoom-scroll-out', Lang.bind(this, this._zoom_out));
+        // this._zoom_in_id = global.display.connect('zoom-scroll-in', Lang.bind(this, this._zoom_in));
+        // this._zoom_out_id = global.display.connect('zoom-scroll-out', Lang.bind(this, this._zoom_out));
 
         let kb = this.keybinding_settings.get_strv(ZOOM_IN_KEY);
         Main.keybindingManager.addHotKeyArray("magnifier-zoom-in", kb, Lang.bind(this, this._zoom_in));

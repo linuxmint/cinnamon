@@ -342,7 +342,7 @@ static CoglHandle
 st_theme_node_lookup_corner (StThemeNode    *node,
                              StCorner        corner_id)
 {
-  CoglHandle texture, material= COGL_INVALID_HANDLE;
+  CoglHandle texture, material= NULL;
   char *key;
   StTextureCache *cache;
   StCornerSpec corner;
@@ -351,7 +351,7 @@ st_theme_node_lookup_corner (StThemeNode    *node,
   st_theme_node_reduce_border_radius (node, radius);
 
   if (radius[corner_id] == 0)
-    return COGL_INVALID_HANDLE;
+    return NULL;
 
   cache = st_texture_cache_get_default ();
 
@@ -387,14 +387,14 @@ st_theme_node_lookup_corner (StThemeNode    *node,
   if (corner.color.alpha == 0 &&
       corner.border_color_1.alpha == 0 &&
       corner.border_color_2.alpha == 0)
-    return COGL_INVALID_HANDLE;
+    return NULL;
 
   key = corner_to_string (&corner);
   texture = st_texture_cache_load (cache, key, ST_TEXTURE_CACHE_POLICY_NONE, load_corner, &corner, NULL);
   if (texture)
     {
       material = _st_create_texture_pipeline (texture);
-      cogl_handle_unref (texture);
+      cogl_object_unref (texture);
     }
 
   g_free (key);
@@ -1283,28 +1283,28 @@ _st_theme_node_free_drawing_state (StThemeNode  *node)
 {
   int corner_id;
 
-  if (node->background_texture != COGL_INVALID_HANDLE)
-    cogl_handle_unref (node->background_texture);
-  if (node->background_material != COGL_INVALID_HANDLE)
-    cogl_handle_unref (node->background_material);
-  if (node->background_shadow_material != COGL_INVALID_HANDLE)
-    cogl_handle_unref (node->background_shadow_material);
-  if (node->border_slices_texture != COGL_INVALID_HANDLE)
-    cogl_handle_unref (node->border_slices_texture);
-  if (node->border_slices_material != COGL_INVALID_HANDLE)
-    cogl_handle_unref (node->border_slices_material);
-  if (node->prerendered_texture != COGL_INVALID_HANDLE)
-    cogl_handle_unref (node->prerendered_texture);
-  if (node->prerendered_material != COGL_INVALID_HANDLE)
-    cogl_handle_unref (node->prerendered_material);
-  if (node->box_shadow_material != COGL_INVALID_HANDLE)
-    cogl_handle_unref (node->box_shadow_material);
-  if (node->color_pipeline != COGL_INVALID_HANDLE)
-    cogl_handle_unref (node->color_pipeline);
+  if (node->background_texture != NULL)
+    cogl_object_unref (node->background_texture);
+  if (node->background_material != NULL)
+    cogl_object_unref (node->background_material);
+  if (node->background_shadow_material != NULL)
+    cogl_object_unref (node->background_shadow_material);
+  if (node->border_slices_texture != NULL)
+    cogl_object_unref (node->border_slices_texture);
+  if (node->border_slices_material != NULL)
+    cogl_object_unref (node->border_slices_material);
+  if (node->prerendered_texture != NULL)
+    cogl_object_unref (node->prerendered_texture);
+  if (node->prerendered_material != NULL)
+    cogl_object_unref (node->prerendered_material);
+  if (node->box_shadow_material != NULL)
+    cogl_object_unref (node->box_shadow_material);
+  if (node->color_pipeline != NULL)
+    cogl_object_unref (node->color_pipeline);
 
   for (corner_id = 0; corner_id < 4; corner_id++)
-    if (node->corner_material[corner_id] != COGL_INVALID_HANDLE)
-      cogl_handle_unref (node->corner_material[corner_id]);
+    if (node->corner_material[corner_id] != NULL)
+      cogl_object_unref (node->corner_material[corner_id]);
 
   _st_theme_node_init_drawing_state (node);
 }
@@ -1314,18 +1314,18 @@ _st_theme_node_init_drawing_state (StThemeNode *node)
 {
   int corner_id;
 
-  node->background_texture = COGL_INVALID_HANDLE;
-  node->background_material = COGL_INVALID_HANDLE;
-  node->background_shadow_material = COGL_INVALID_HANDLE;
-  node->box_shadow_material = COGL_INVALID_HANDLE;
-  node->border_slices_texture = COGL_INVALID_HANDLE;
-  node->border_slices_material = COGL_INVALID_HANDLE;
-  node->prerendered_texture = COGL_INVALID_HANDLE;
-  node->prerendered_material = COGL_INVALID_HANDLE;
-  node->color_pipeline = COGL_INVALID_HANDLE;
+  node->background_texture = NULL;
+  node->background_material = NULL;
+  node->background_shadow_material = NULL;
+  node->box_shadow_material = NULL;
+  node->border_slices_texture = NULL;
+  node->border_slices_material = NULL;
+  node->prerendered_texture = NULL;
+  node->prerendered_material = NULL;
+  node->color_pipeline = NULL;
 
   for (corner_id = 0; corner_id < 4; corner_id++)
-    node->corner_material[corner_id] = COGL_INVALID_HANDLE;
+    node->corner_material[corner_id] = NULL;
 }
 
 static void st_theme_node_paint_borders (StThemeNode           *node,
@@ -1420,7 +1420,7 @@ st_theme_node_render_resources (StThemeNode   *node,
   if (node->border_slices_texture)
     node->border_slices_material = _st_create_texture_pipeline (node->border_slices_texture);
   else
-    node->border_slices_material = COGL_INVALID_HANDLE;
+    node->border_slices_material = NULL;
 
   node->corner_material[ST_CORNER_TOPLEFT] =
     st_theme_node_lookup_corner (node, ST_CORNER_TOPLEFT);
@@ -1449,20 +1449,20 @@ st_theme_node_render_resources (StThemeNode   *node,
   if (node->prerendered_texture)
     node->prerendered_material = _st_create_texture_pipeline (node->prerendered_texture);
   else
-    node->prerendered_material = COGL_INVALID_HANDLE;
+    node->prerendered_material = NULL;
 
   if (box_shadow_spec && !has_inset_box_shadow)
     {
-      if (node->border_slices_texture != COGL_INVALID_HANDLE)
+      if (node->border_slices_texture != NULL)
         node->box_shadow_material = _st_create_shadow_pipeline (box_shadow_spec,
                                                                 node->border_slices_texture);
-      else if (node->prerendered_texture != COGL_INVALID_HANDLE)
+      else if (node->prerendered_texture != NULL)
         node->box_shadow_material = _st_create_shadow_pipeline (box_shadow_spec,
                                                                 node->prerendered_texture);
       else if (node->background_color.alpha > 0 || has_border)
         {
           CoglHandle buffer, offscreen;
-          CoglError *error = NULL;
+          GError *error = NULL;
           int texture_width = ceil (width);
           int texture_height = ceil (height);
 
@@ -1486,7 +1486,7 @@ st_theme_node_render_resources (StThemeNode   *node,
               cogl_framebuffer_clear4f (offscreen, COGL_BUFFER_BIT_COLOR, 0, 0, 0, 0);
 
               st_theme_node_paint_borders (node, offscreen, &box, 0xFF);
-              cogl_handle_unref (offscreen);
+              cogl_object_unref (offscreen);
 
               node->box_shadow_material = _st_create_shadow_pipeline (box_shadow_spec,
                                                                       buffer);
@@ -1495,11 +1495,11 @@ st_theme_node_render_resources (StThemeNode   *node,
             {
               if (error)
                 {
-                  cogl_error_free (error);
+                  g_error_free (error);
                 }
             }
 
-          cogl_handle_unref (buffer);
+          cogl_object_unref (buffer);
         }
     }
 
@@ -1545,7 +1545,7 @@ st_theme_node_ensure_color_pipeline (StThemeNode *node)
 {
   static CoglPipeline *color_pipeline_template = NULL;
 
-  if (node->color_pipeline != COGL_INVALID_HANDLE)
+  if (node->color_pipeline != NULL)
     return;
 
   if (G_UNLIKELY (color_pipeline_template == NULL))
@@ -1666,7 +1666,7 @@ st_theme_node_paint_borders (StThemeNode           *node,
     {
       for (corner_id = 0; corner_id < 4; corner_id++)
         {
-          if (node->corner_material[corner_id] == COGL_INVALID_HANDLE)
+          if (node->corner_material[corner_id] == NULL)
             continue;
 
           cogl_pipeline_set_color4ub (node->corner_material[corner_id],
@@ -2043,7 +2043,6 @@ st_theme_node_paint (StThemeNode           *node,
    *    instead of the outside edges of the border (but position the image
    *    such that it's aligned to the outside edges)
    */
-
   if (node->box_shadow_material)
     _st_paint_shadow_with_opacity (node->box_shadow,
                                    node->box_shadow_material,
@@ -2051,10 +2050,10 @@ st_theme_node_paint (StThemeNode           *node,
                                    &allocation,
                                    paint_opacity);
 
-  if (node->prerendered_material != COGL_INVALID_HANDLE ||
-      node->border_slices_material != COGL_INVALID_HANDLE)
+  if (node->prerendered_material != NULL ||
+      node->border_slices_material != NULL)
     {
-      if (node->prerendered_material != COGL_INVALID_HANDLE)
+      if (node->prerendered_material != NULL)
         {
           ClutterActorBox paint_box;
 
@@ -2069,7 +2068,7 @@ st_theme_node_paint (StThemeNode           *node,
                                        paint_opacity);
         }
 
-      if (node->border_slices_material != COGL_INVALID_HANDLE)
+      if (node->border_slices_material != NULL)
         st_theme_node_paint_sliced_border_image (node, fb, &allocation, paint_opacity);
     }
   else
@@ -2079,7 +2078,7 @@ st_theme_node_paint (StThemeNode           *node,
 
   st_theme_node_paint_outline (node, fb, box, paint_opacity);
 
-  if (node->background_texture != COGL_INVALID_HANDLE)
+  if (node->background_texture != NULL)
     {
       ClutterActorBox background_box;
       ClutterActorBox texture_coords;
@@ -2112,7 +2111,7 @@ st_theme_node_paint (StThemeNode           *node,
        * there is nothing (like a border, or the edge of the background color)
        * to logically confine it.
        */
-      if (node->background_shadow_material != COGL_INVALID_HANDLE)
+      if (node->background_shadow_material != NULL)
         _st_paint_shadow_with_opacity (node->background_image_shadow,
                                        node->background_shadow_material,
                                        fb,
@@ -2158,24 +2157,24 @@ st_theme_node_copy_cached_paint_state (StThemeNode *node,
   node->alloc_height = other->alloc_height;
 
   if (other->background_shadow_material)
-    node->background_shadow_material = cogl_handle_ref (other->background_shadow_material);
+    node->background_shadow_material = cogl_object_ref (other->background_shadow_material);
   if (other->box_shadow_material)
-    node->box_shadow_material = cogl_handle_ref (other->box_shadow_material);
+    node->box_shadow_material = cogl_object_ref (other->box_shadow_material);
   if (other->background_texture)
-    node->background_texture = cogl_handle_ref (other->background_texture);
+    node->background_texture = cogl_object_ref (other->background_texture);
   if (other->background_material)
-    node->background_material = cogl_handle_ref (other->background_material);
+    node->background_material = cogl_object_ref (other->background_material);
   if (other->border_slices_texture)
-    node->border_slices_texture = cogl_handle_ref (other->border_slices_texture);
+    node->border_slices_texture = cogl_object_ref (other->border_slices_texture);
   if (other->border_slices_material)
-    node->border_slices_material = cogl_handle_ref (other->border_slices_material);
+    node->border_slices_material = cogl_object_ref (other->border_slices_material);
   if (other->prerendered_texture)
-    node->prerendered_texture = cogl_handle_ref (other->prerendered_texture);
+    node->prerendered_texture = cogl_object_ref (other->prerendered_texture);
   if (other->prerendered_material)
-    node->prerendered_material = cogl_handle_ref (other->prerendered_material);
+    node->prerendered_material = cogl_object_ref (other->prerendered_material);
   if (other->color_pipeline)
-    node->color_pipeline = cogl_handle_ref (other->color_pipeline);
+    node->color_pipeline = cogl_object_ref (other->color_pipeline);
   for (corner_id = 0; corner_id < 4; corner_id++)
     if (other->corner_material[corner_id])
-      node->corner_material[corner_id] = cogl_handle_ref (other->corner_material[corner_id]);
+      node->corner_material[corner_id] = cogl_object_ref (other->corner_material[corner_id]);
 }
