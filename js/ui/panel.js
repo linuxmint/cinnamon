@@ -634,8 +634,7 @@ PanelManager.prototype = {
         this.addPanelMode = false;
         this._addOsd.hide();
         this._moveOsd.hide();
-        if (Main.keybindingManager.bindings['close-add-panel'])
-            Main.keybindingManager.removeHotKey('close-add-panel');
+        Main.keybindingManager.removeHotKey('close-add-panel');
     },
 
     /**
@@ -1204,7 +1203,7 @@ PanelDummy.prototype = {
      * Destroys panel dummy actor
      */
     destroy: function() {
-        this.actor.destroy();
+        Main.layoutManager.removeChrome(this.actor);
     }
 }
 
@@ -1577,10 +1576,14 @@ PanelContextMenu.prototype = {
             global.settings.set_boolean("panel-edit-mode", item.state);
         });
         menu.addMenuItem(panelEditMode);        // menu item for panel edit mode
-        global.settings.connect('changed::panel-edit-mode', function() {
+        this.panel_edit_setting_id = global.settings.connect('changed::panel-edit-mode', function() {
             panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
         });
 
+        this.connect("destroy", Lang.bind(this, function() {
+            global.settings.disconnect(this.panel_edit_setting_id);
+            this.panel_edit_setting_id = 0;
+        }))
 
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
 
@@ -1645,7 +1648,7 @@ PanelContextMenu.prototype = {
 
         menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
         menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
-            global.reexec_self();
+            Main.restartCinnamon(true);
         });
 
         menu.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
@@ -1656,7 +1659,7 @@ PanelContextMenu.prototype = {
             let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to restore all settings to default?\n\n"),
                     function() {
                         Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
-                        global.reexec_self();
+                        Main.restartCinnamon(true);
                     });
             confirm.open();
         });
@@ -1835,7 +1838,6 @@ PanelZoneDNDHandler.prototype = {
         let sourcebox = source.actor._applet._panelLocation; /* this is the panel box providing the applet */
 
         this._clearDragPlaceholder();
-        actor.destroy();
         AppletManager.saveAppletsPositions();
 
         /* this._panelZone is the panel box being dropped into. Note that the style class name will
@@ -2070,18 +2072,22 @@ Panel.prototype = {
 
         if (this.actor.is_finalized()) return;
 
-        if (this._leftCorner && !this._leftCorner.actor.is_finalized())
+        if (this._leftCorner)
             this.actor.add_actor(this._leftCorner.actor);
-        if (this._rightCorner && !this._rightCorner.actor.is_finalized())
+        if (this._rightCorner)
             this.actor.add_actor(this._rightCorner.actor);
     },
 
     _destroycorners: function()
     {
-    if (this._leftCorner)
+    if (this._leftCorner) {
         this._leftCorner.actor.destroy();
-    if (this._rightCorner)
+        this._leftCorner = null;
+    }
+    if (this._rightCorner) {
         this._rightCorner.actor.destroy();
+        this._rightCorner = null;
+    }
     this.drawcorner = [false,false];
     },
 
@@ -2190,6 +2196,8 @@ Panel.prototype = {
         this._destroyed = true;    // set this early so that any routines triggered during
                                    // the destroy process can test it
 
+        Main.layoutManager.removeChrome(this.actor);
+
         if (removeIconSizes) this._removeZoneIconSizes();
         // remove icon size settings if requested
         // settings should be removed except when panel is destroyed due to monitor change
@@ -2204,8 +2212,6 @@ Panel.prototype = {
         this._centerBox.destroy();
         this._rightBox.destroy();
         this._destroycorners();
-
-        this.actor.destroy();
 
         this._signalManager.disconnectAllSignals()
 

@@ -21,6 +21,10 @@
 #include "config.h"
 
 #include "st-shadow.h"
+#include "st-private.h"
+
+G_DEFINE_BOXED_TYPE (StShadow, st_shadow, st_shadow_ref, st_shadow_unref)
+G_DEFINE_BOXED_TYPE (StShadowHelper, st_shadow_helper, st_shadow_helper_copy, st_shadow_helper_free)
 
 /**
  * SECTION: st-shadow
@@ -175,16 +179,119 @@ st_shadow_get_box (StShadow              *shadow,
                    + shadow->blur + shadow->spread;
 }
 
-GType
-st_shadow_get_type (void)
+/**
+ * SECTION: st-shadow-helper
+ *
+ * An helper for implementing a drop shadow on a actor.
+ * The actor is expected to recreate the helper whenever its contents
+ * or size change. Then, it would call st_shadow_helper_paint() inside
+ * its paint() virtual function.
+ */
+
+struct _StShadowHelper {
+  StShadow     *shadow;
+  CoglPipeline *pipeline;
+
+  gfloat        width;
+  gfloat        height;
+};
+
+/**
+ * st_shadow_helper_new:
+ * @shadow: a #StShadow representing the shadow properties
+ *
+ * Builds a #StShadowHelper that will build a drop shadow
+ * using @source as the mask.
+ *
+ * Returns: (transfer full): a new #StShadowHelper
+ */
+StShadowHelper *
+st_shadow_helper_new (StShadow     *shadow)
 {
-  static GType _st_shadow_type = 0;
+  StShadowHelper *helper;
 
-  if (G_UNLIKELY (_st_shadow_type == 0))
-    _st_shadow_type =
-        g_boxed_type_register_static ("StShadow",
-                                      (GBoxedCopyFunc) st_shadow_ref,
-                                      (GBoxedFreeFunc) st_shadow_unref);
+  helper = g_slice_new0 (StShadowHelper);
+  helper->shadow = st_shadow_ref (shadow);
 
-  return _st_shadow_type;
+  return helper;
+}
+
+void
+st_shadow_helper_update (StShadowHelper *helper,
+                         ClutterActor   *source)
+{
+  gfloat width, height;
+
+  clutter_actor_get_size (source, &width, &height);
+
+  if (helper->pipeline == NULL ||
+      helper->width != width ||
+      helper->height != height)
+    {
+      if (helper->pipeline)
+        cogl_object_unref (helper->pipeline);
+
+      helper->pipeline = _st_create_shadow_pipeline_from_actor (helper->shadow, source);
+      helper->width = width;
+      helper->height = height;
+    }
+}
+
+/**
+ * st_shadow_helper_copy:
+ * @helper: the #StShadowHelper to copy
+ *
+ * Returns: (transfer full): a copy of @helper
+ */
+StShadowHelper *
+st_shadow_helper_copy (StShadowHelper *helper)
+{
+  StShadowHelper *copy;
+
+  copy = g_slice_new (StShadowHelper);
+  *copy = *helper;
+  if (copy->pipeline)
+    cogl_object_ref (copy->pipeline);
+  st_shadow_ref (copy->shadow);
+
+  return copy;
+}
+
+/**
+ * st_shadow_helper_free:
+ * @helper: a #StShadowHelper
+ *
+ * Free resources associated with @helper.
+ */
+void
+st_shadow_helper_free (StShadowHelper *helper)
+{
+  if (helper->pipeline)
+    cogl_object_unref (helper->pipeline);
+  st_shadow_unref (helper->shadow);
+
+  g_slice_free (StShadowHelper, helper);
+}
+
+/**
+ * st_shadow_helper_paint:
+ * @helper: a #StShadowHelper
+ * @framebuffer: a #CoglFramebuffer
+ * @actor_box: the bounding box of the shadow
+ * @paint_opacity: the opacity at which the shadow is painted
+ *
+ * Paints the shadow associated with @helper This must only
+ * be called from the implementation of ClutterActor::paint().
+ */
+void
+st_shadow_helper_paint (StShadowHelper  *helper,
+                        CoglFramebuffer *framebuffer,
+                        ClutterActorBox *actor_box,
+                        guint8           paint_opacity)
+{
+  _st_paint_shadow_with_opacity (helper->shadow,
+                                 framebuffer,
+                                 helper->pipeline,
+                                 actor_box,
+                                 paint_opacity);
 }

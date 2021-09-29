@@ -247,14 +247,14 @@ class Module:
 
             self.sidePage.stack.add_titled(page, "typing", _("Typing"))
 
-            switch = GSettingsSwitch(_("Enable key repeat"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat")
+            switch = GSettingsSwitch(_("Enable key repeat"), "org.cinnamon.desktop.peripherals.keyboard", "repeat")
             settings.add_row(switch)
 
-            slider = GSettingsRange(_("Repeat delay:"), "org.cinnamon.settings-daemon.peripherals.keyboard", "delay", _("Short"), _("Long"), 100, 2000, show_value=False)
-            settings.add_reveal_row(slider, "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat")
+            slider = GSettingsRange(_("Repeat delay:"), "org.cinnamon.desktop.peripherals.keyboard", "delay", _("Short"), _("Long"), 100, 2000, show_value=False)
+            settings.add_reveal_row(slider, "org.cinnamon.desktop.peripherals.keyboard", "repeat")
 
-            slider = GSettingsRange(_("Repeat speed:"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat-interval", _("Slow"), _("Fast"), 20, 2000, log=True, show_value=False, flipped=True)
-            settings.add_reveal_row(slider, "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat")
+            slider = GSettingsRange(_("Repeat speed:"), "org.cinnamon.desktop.peripherals.keyboard", "repeat-interval", _("Slow"), _("Fast"), 20, 2000, log=True, show_value=False, flipped=True)
+            settings.add_reveal_row(slider, "org.cinnamon.desktop.peripherals.keyboard", "repeat")
 
             settings = page.add_section(_("Text cursor"))
 

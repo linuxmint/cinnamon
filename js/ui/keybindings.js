@@ -36,7 +36,13 @@ KeybindingManager.prototype = {
                                 'org.cinnamon.SettingsDaemon.KeybindingHandler',
                                 '/org/cinnamon/SettingsDaemon/KeybindingHandler');
 
-        this.bindings = [];
+        /* Keep track of bindings so we can a) check if they've change (and avoid the work
+         * if the haven't), b) handle the callbacks when the keystrokes are captured by
+         * Main._stageEventHandler.
+         *
+         * This dict will contain [name, bindings, callback] and keyed on the id returned by
+         * add_custom_keybinding. */
+        this.bindings = {};
         this.kb_schema = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA);
         this.setup_custom_keybindings();
         this.kb_schema.connect("changed::custom-list", Lang.bind(this, this.on_customs_changed));
@@ -57,12 +63,27 @@ KeybindingManager.prototype = {
         return this.addHotKeyArray(name, bindings_string.split("::"), callback);
     },
 
-    addHotKeyArray: function(name, bindings, callback) {
-        if (this.bindings[name]) {
-            if (this.bindings[name].toString() === bindings.toString()) {
-              return true;
+    _lookupEntry: function(name) {
+        let found = 0;
+        for (let action_id in this.bindings) {
+            let entry = this.bindings[action_id];
+            if (entry !== undefined && entry.name === name) {
+                return [action_id, entry];
             }
-            global.display.remove_custom_keybinding(name);
+        }
+
+        return [Meta.KeyBindingAction.NONE, undefined];
+    },
+
+    addHotKeyArray: function(name, bindings, callback) {
+        let [existing_action_id, entry] = this._lookupEntry(name);
+
+        if (entry !== undefined) {
+            if (entry.bindings.toString() === bindings.toString()) {
+                return true;
+            }
+            global.display.remove_keybinding(name);
+            this.bindings[existing_action_id] = undefined
         }
 
         if (!bindings) {
@@ -76,30 +97,34 @@ KeybindingManager.prototype = {
         }
 
         if (empty) {
-            if (this.bindings[name])
-                this.bindings[name] = undefined;
-            global.display.rebuild_keybindings();
             return true;
         }
 
-        if (!global.display.add_custom_keybinding(name, bindings, callback)) {
+        action_id = global.display.add_custom_keybinding(name, bindings, callback);
+
+        if (action_id === Meta.KeyBindingAction.NONE) {
             global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
-            global.display.rebuild_keybindings();
             return false;
-        } else {
-            this.bindings[name] = bindings;
         }
 
-        global.display.rebuild_keybindings();
+        this.bindings[action_id] = {
+            "name"    : name,
+            "bindings": bindings,
+            "callback": callback
+        };
+
         return true;
     },
 
     removeHotKey: function(name) {
-        if (this.bindings[name] == undefined)
+        let [action_id, entry] = this._lookupEntry(name);
+
+        if (entry === undefined) {
             return;
-        global.display.remove_custom_keybinding(name);
-        global.display.rebuild_keybindings();
-        this.bindings[name] = undefined;
+        }
+
+        global.display.remove_keybinding(name);
+        this.bindings[action_id] = undefined;
     },
 
     setup_custom_keybindings: function() {
@@ -146,13 +171,21 @@ KeybindingManager.prototype = {
         return true;
     },
 
-    on_global_media_key_pressed: function(display, screen, event, kb, action) {
+    on_global_media_key_pressed: function(display, window, kb, action) {
+        // log(`${display}, ${screen}, ${event}, ${kb}, ${action}`);
         this._proxy.HandleKeybindingRemote(action);
     },
 
-    on_media_key_pressed: function(display, screen, event, kb, action) {
+    on_media_key_pressed: function(display, window, kb, action) {
+        // log(`${display}, ${screen}, ${event}, ${kb}, ${action}`);
         if (Main.modalCount == 0 && !Main.overview.visible && !Main.expo.visible)
             this._proxy.HandleKeybindingRemote(action);
+    },
+
+    invoke_keybinding_action_by_id: function(id) {
+        if (this.bindings[id] !== undefined) {
+            this.bindings[id].callback();
+        }
     }
 };
 Signals.addSignalMethods(KeybindingManager.prototype);

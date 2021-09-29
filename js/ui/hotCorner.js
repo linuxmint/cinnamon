@@ -40,12 +40,6 @@ class HotCorner {
         this.actor.connect('button-release-event', () => this._onCornerClicked());
         this.actor.connect('leave-event', () => this._onCornerLeft());
 
-        this.tile_delay = false;
-        global.window_manager.connect('tile', () => {
-            this.tile_delay = true;
-            Mainloop.timeout_add(250, () => this.tile_delay = false);
-        });
-
         // Cache the three ripples instead of dynamically creating and destroying them.
         this._ripple1 = new St.Widget({
             style_class: 'ripple-box',
@@ -164,12 +158,10 @@ class HotCorner {
            scope of an event handler or it will return 0 */
         let timestamp = global.get_current_time() + this.hover_delay;
         this.hover_delay_id = Mainloop.timeout_add(this.hover_delay, () => {
-            if (!this.tile_delay) {
-                if (this.shouldRunAction(timestamp, false)) {
-                    this._hoverActivationTime = timestamp;
-                    this.rippleAnimation();
-                    this.runAction(timestamp);
-                }
+            if (this.shouldRunAction(timestamp, false)) {
+                this._hoverActivationTime = timestamp;
+                this.rippleAnimation();
+                this.runAction(timestamp);
             }
 
             this.hover_delay_id = 0;

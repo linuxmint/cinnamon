@@ -204,7 +204,7 @@ LayoutManager.prototype = {
 
     _startupAnimationComplete: function() {
         global.stage.show_cursor();
-        this._coverPane.destroy();
+        this.removeChrome(this._coverPane);
         this._coverPane = null;
         this._chrome.thawUpdateRegions();
 
@@ -482,8 +482,8 @@ Chrome.prototype = {
             return;
         let actorData = this._trackedActors[i];
 
-        if (actorData.addToWindowgroup) global.window_group.remove_actor(actor);
-        else Main.uiGroup.remove_actor(actor);
+        if (actorData.addToWindowgroup) global.window_group.remove_child(actor);
+        else Main.uiGroup.remove_child(actor);
         this._untrackActor(actor);
     },
 

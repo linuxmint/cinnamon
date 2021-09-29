@@ -12,7 +12,7 @@ class CinnamonOnScreenKeyboardApplet extends Applet.IconApplet {
     }
 
     on_applet_clicked(event) {
-        Main.keyboard.toggle();
+        Main.virtualKeyboard.toggle();
     }
 
     update_status() {

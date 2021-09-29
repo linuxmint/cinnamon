@@ -584,7 +584,6 @@ InfoOSD.prototype = {
     destroy: function() {
         this.hide();
         Main.layoutManager.removeChrome(this.actor);
-        this.actor.destroy();
     },
 
     /**

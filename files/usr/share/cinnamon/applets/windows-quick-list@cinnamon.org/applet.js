@@ -46,7 +46,7 @@ class CinnamonWindowsQuickListApplet extends Applet.IconApplet {
 
         this.windowsBox = new St.BoxLayout({ vertical:true });
         this.scrollBox.add_actor(this.windowsBox);
-        this.scrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        this.scrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
     }
 
     _addItem(item) {

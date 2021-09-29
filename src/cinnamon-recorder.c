@@ -206,12 +206,12 @@ create_recording_icon (void)
 
   cairo_destroy (cr);
 
-  texture = st_cogl_texture_new_from_data_wrapper (32, 32,
-                                                   COGL_TEXTURE_NONE,
-                                                   CLUTTER_CAIRO_FORMAT_ARGB32,
-                                                   COGL_PIXEL_FORMAT_ANY,
-                                                   cairo_image_surface_get_stride (surface),
-                                                   cairo_image_surface_get_data (surface));
+  texture = st_cogl_texture_new_from_data (32, 32,
+                                           COGL_TEXTURE_NONE,
+                                           CLUTTER_CAIRO_FORMAT_ARGB32,
+                                           COGL_PIXEL_FORMAT_ANY,
+                                           cairo_image_surface_get_stride (surface),
+                                           cairo_image_surface_get_data (surface));
   cairo_surface_destroy (surface);
 
   return texture;
@@ -308,7 +308,7 @@ cinnamon_recorder_finalize (GObject  *object)
   recorder_set_pipeline (recorder, NULL);
   recorder_set_filename (recorder, NULL);
 
-  cogl_handle_unref (recorder->recording_icon);
+  cogl_object_unref (recorder->recording_icon);
 
   G_OBJECT_CLASS (cinnamon_recorder_parent_class)->finalize (object);
 }

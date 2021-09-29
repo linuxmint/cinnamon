@@ -97,7 +97,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START, style_class: "vfade"});
         this._maincontainer.add(this.scrollview);
         this.scrollview.add_actor(this._notificationbin);
-        this.scrollview.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        this.scrollview.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
 
         let vscroll = this.scrollview.get_vscroll_bar();
         vscroll.connect('scroll-start', Lang.bind(this, function() {

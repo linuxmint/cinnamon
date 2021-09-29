@@ -31,10 +31,13 @@
  */
 
 #include "st-polygon.h"
+#include <cogl/cogl.h>
 
 G_DEFINE_TYPE(StPolygon, st_polygon, CLUTTER_TYPE_ACTOR);
 
 struct _StPolygonPrivate {
+  CoglPipeline *pipeline;
+
   guint needs_repaint : 1;
   guint in_repaint : 1;
 
@@ -173,20 +176,22 @@ st_polygon_get_property (GObject    *object,
 }
 
 static void
-st_polygon_paint (ClutterActor *self)
+st_polygon_paint (ClutterActor *self, ClutterPaintContext *paint_context)
 {
 
     StPolygon *area = ST_POLYGON (self);
     StPolygonPrivate *priv = area->priv;
+
+    if (priv->pipeline == NULL)
+      {
+        return;
+      }
+
+    CoglFramebuffer *fb = clutter_paint_context_get_framebuffer (paint_context);
+
     if (priv->debug) {
         gfloat coords[8];
         CoglPath *selection_path;
-
-        cogl_set_source_color4f (.50,
-                                 .50,
-                                 .50,
-                                 .50);
-
         coords[0] = priv->ulc_x;
         coords[1] = priv->ulc_y;
         coords[2] = priv->llc_x;
@@ -198,7 +203,9 @@ st_polygon_paint (ClutterActor *self)
 
         selection_path = cogl_path_new();
         cogl_path_polygon (selection_path, (float *)coords, 4);
-        cogl_path_fill (selection_path);
+
+        cogl_framebuffer_fill_path (fb, priv->pipeline, selection_path);
+        cogl_framebuffer_stroke_path (fb, priv->pipeline, selection_path);
         cogl_object_unref (selection_path);
     }
 }
@@ -206,7 +213,7 @@ st_polygon_paint (ClutterActor *self)
 
 static void
 st_polygon_pick (ClutterActor       *self,
-                 const ClutterColor *pick_color)
+                 ClutterPickContext *pick_context)
 {
     CoglPath *selection_path;
     gfloat coords[8];
@@ -219,6 +226,13 @@ st_polygon_pick (ClutterActor       *self,
     area = ST_POLYGON (self);
     priv = area->priv;
 
+    if (priv->pipeline == NULL)
+      {
+        return;
+      }
+
+    CoglFramebuffer *fb = clutter_pick_context_get_framebuffer (pick_context);
+
     coords[0] = priv->ulc_x;
     coords[1] = priv->ulc_y;
     coords[2] = priv->llc_x;
@@ -228,15 +242,23 @@ st_polygon_pick (ClutterActor       *self,
     coords[6] = priv->urc_x;
     coords[7] = priv->urc_y;
 
-    cogl_set_source_color4ub (pick_color->red,
-                              pick_color->green,
-                              pick_color->blue,
-                              pick_color->alpha);
-
     selection_path = cogl_path_new();
     cogl_path_polygon (selection_path, (float *)coords, 4);
-    cogl_path_fill (selection_path);
+    cogl_framebuffer_fill_path (fb, priv->pipeline, selection_path);
     cogl_object_unref (selection_path);
+}
+
+static void
+st_polygon_dispose (GObject *object)
+{
+  StPolygon *area = ST_POLYGON (object);
+
+  if (area->priv->pipeline != NULL) {
+    cogl_object_unref (area->priv->pipeline);
+    area->priv->pipeline = NULL;
+  }
+
+  G_OBJECT_CLASS (st_polygon_parent_class)->dispose (object);
 }
 
 static void
@@ -247,6 +269,7 @@ st_polygon_class_init (StPolygonClass *klass)
 
   gobject_class->set_property = st_polygon_set_property;
   gobject_class->get_property = st_polygon_get_property;
+  gobject_class->dispose = st_polygon_dispose;
   actor_class->paint = st_polygon_paint;
   actor_class->pick = st_polygon_pick;
 
@@ -365,6 +388,9 @@ st_polygon_init (StPolygon *area)
   area->priv = G_TYPE_INSTANCE_GET_PRIVATE (area, ST_TYPE_POLYGON,
                                             StPolygonPrivate);
   area->priv->debug = FALSE;
+
+  CoglContext *ctx = clutter_backend_get_cogl_context (clutter_get_default_backend ());
+  area->priv->pipeline = cogl_pipeline_new (ctx);
 }
 
 /**

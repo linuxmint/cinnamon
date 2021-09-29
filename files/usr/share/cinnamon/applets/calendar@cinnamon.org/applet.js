@@ -88,6 +88,12 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
             this.go_home_button.connect("button-press-event", Lang.bind(this, (actor, event) => {
                 if (event.get_button() == Clutter.BUTTON_PRIMARY) {
+                    return Clutter.EVENT_STOP;
+                }
+            }));
+
+            this.go_home_button.connect("button-release-event", Lang.bind(this, (actor, event) => {
+                if (event.get_button() == Clutter.BUTTON_PRIMARY) {
                     // button immediately becomes non-reactive, so leave-event will never fire.
                     actor.remove_style_pseudo_class("hover");
                     this._resetCalendar();

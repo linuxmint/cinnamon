@@ -24,12 +24,16 @@
 #include <gio/gio.h>
 
 #include "st-settings.h"
+#include "st-private.h"
 
 #define KEY_FONT_NAME "font-name"
+#define KEY_GTK_ICON_THEME "icon-theme"
+
 
 enum {
     PROP_0,
     PROP_FONT_NAME,
+    PROP_GTK_ICON_THEME,
     N_PROPS
 };
 
@@ -41,6 +45,7 @@ struct _StSettings
   GSettings *interface_settings;
 
   gchar *font_name;
+  gchar *gtk_icon_theme;
 };
 
 G_DEFINE_TYPE (StSettings, st_settings, G_TYPE_OBJECT)
@@ -52,6 +57,7 @@ st_settings_finalize (GObject *object)
 
   g_object_unref (settings->interface_settings);
   g_free (settings->font_name);
+  g_free (settings->gtk_icon_theme);
 
   G_OBJECT_CLASS (st_settings_parent_class)->finalize (object);
 }
@@ -78,6 +84,9 @@ st_settings_get_property (GObject    *object,
     case PROP_FONT_NAME:
       g_value_set_string (value, settings->font_name);
       break;
+    case PROP_GTK_ICON_THEME:
+      g_value_set_string (value, settings->gtk_icon_theme);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -98,6 +107,12 @@ st_settings_class_init (StSettingsClass *klass)
                                                "",
                                                G_PARAM_READABLE);
 
+  props[PROP_GTK_ICON_THEME] = g_param_spec_string ("gtk-icon-theme",
+                                                    "GTK+ Icon Theme",
+                                                    "GTK+ Icon Theme",
+                                                    "",
+                                                    ST_PARAM_READABLE);
+
   g_object_class_install_properties (object_class, N_PROPS, props);
 }
 
@@ -111,6 +126,13 @@ on_interface_settings_changed (GSettings   *g_settings,
       g_free (settings->font_name);
       settings->font_name = g_settings_get_string (g_settings, key);
       g_object_notify_by_pspec (G_OBJECT (settings), props[PROP_FONT_NAME]);
+    }
+  else if (g_str_equal (key, KEY_GTK_ICON_THEME))
+    {
+      g_free (settings->gtk_icon_theme);
+      settings->gtk_icon_theme = g_settings_get_string (g_settings, key);
+      g_object_notify_by_pspec (G_OBJECT (settings),
+                                props[PROP_GTK_ICON_THEME]);
     }
 }
 

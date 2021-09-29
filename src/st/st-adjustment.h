@@ -30,31 +30,8 @@
 
 G_BEGIN_DECLS
 
-#define ST_TYPE_ADJUSTMENT            (st_adjustment_get_type())
-#define ST_ADJUSTMENT(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), ST_TYPE_ADJUSTMENT, StAdjustment))
-#define ST_IS_ADJUSTMENT(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), ST_TYPE_ADJUSTMENT))
-#define ST_ADJUSTMENT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), ST_TYPE_ADJUSTMENT, StAdjustmentClass))
-#define ST_IS_ADJUSTMENT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), ST_TYPE_ADJUSTMENT))
-#define ST_ADJUSTMENT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), ST_TYPE_ADJUSTMENT, StAdjustmentClass))
-
-typedef struct _StAdjustment          StAdjustment;
-typedef struct _StAdjustmentPrivate   StAdjustmentPrivate;
-typedef struct _StAdjustmentClass     StAdjustmentClass;
-
-/**
- * StAdjustment:
- *
- * Class for handling an interval between to values. The contents of
- * the #StAdjustment are private and should be accessed using the
- * public API.
- */
-struct _StAdjustment
-{
-  /*< private >*/
-  GObject parent_instance;
-
-  StAdjustmentPrivate *priv;
-};
+#define ST_TYPE_ADJUSTMENT (st_adjustment_get_type())
+G_DECLARE_DERIVABLE_TYPE (StAdjustment, st_adjustment, ST, ADJUSTMENT, GObject)
 
 /**
  * StAdjustmentClass:
@@ -70,8 +47,6 @@ struct _StAdjustmentClass
   /*< public >*/
   void (* changed) (StAdjustment *adjustment);
 };
-
-GType st_adjustment_get_type (void) G_GNUC_CONST;
 
 StAdjustment *st_adjustment_new         (gdouble       value,
                                          gdouble       lower,
@@ -99,6 +74,18 @@ void          st_adjustment_get_values  (StAdjustment *adjustment,
                                          gdouble      *step_increment,
                                          gdouble      *page_increment,
                                          gdouble      *page_size);
+
+void          st_adjustment_adjust_for_scroll_event (StAdjustment *adjustment,
+                                                     gdouble       delta);
+
+ClutterTransition * st_adjustment_get_transition    (StAdjustment      *adjustment,
+                                                     const char        *name);
+void                st_adjustment_add_transition    (StAdjustment      *adjustment,
+                                                     const char        *name,
+                                                     ClutterTransition *transition);
+void                st_adjustment_remove_transition (StAdjustment      *adjustment,
+                                                     const char        *name);
+
 G_END_DECLS
 
 #endif /* __ST_ADJUSTMENT_H__ */

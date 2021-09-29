@@ -52,7 +52,6 @@ class Module:
             self.sidePage.add_widget(self.sidePage.stack)
 
             self.settings = Gio.Settings.new("org.cinnamon.desktop.interface")
-            self.wm_settings = Gio.Settings.new("org.cinnamon.desktop.wm.preferences")
             self.cinnamon_settings = Gio.Settings.new("org.cinnamon.theme")
 
             self.scale = self.window.get_scale_factor()
@@ -60,16 +59,12 @@ class Module:
             self.icon_chooser = self.create_button_chooser(self.settings, 'icon-theme', 'icons', 'icons', button_picture_size=ICON_SIZE, menu_pictures_size=ICON_SIZE, num_cols=4)
             self.cursor_chooser = self.create_button_chooser(self.settings, 'cursor-theme', 'icons', 'cursors', button_picture_size=32, menu_pictures_size=32, num_cols=4)
             self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', button_picture_size=35, menu_pictures_size=35, num_cols=4)
-            self.metacity_chooser = self.create_button_chooser(self.wm_settings, 'theme', 'themes', 'metacity-1', button_picture_size=32, menu_pictures_size=32, num_cols=4)
             self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_size=60, menu_pictures_size=60*self.scale, num_cols=4)
 
             page = SettingsPage()
             self.sidePage.stack.add_titled(page, "themes", _("Themes"))
 
             settings = page.add_section(_("Themes"))
-
-            widget = self.make_group(_("Window borders"), self.metacity_chooser)
-            settings.add_row(widget)
 
             widget = self.make_group(_("Icons"), self.icon_chooser)
             settings.add_row(widget)
@@ -186,7 +181,7 @@ class Module:
         choosers = []
         choosers.append((self.cursor_chooser, "cursors", self._load_cursor_themes(), self._on_cursor_theme_selected))
         choosers.append((self.theme_chooser, "gtk-3.0", self._load_gtk_themes(), self._on_gtk_theme_selected))
-        choosers.append((self.metacity_chooser, "metacity-1", self._load_metacity_themes(), self._on_metacity_theme_selected))
+        # choosers.append((self.metacity_chooser, "metacity-1", self._load_metacity_themes(), self._on_metacity_theme_selected))
         choosers.append((self.cinnamon_chooser, "cinnamon", self._load_cinnamon_themes(), self._on_cinnamon_theme_selected))
         choosers.append((self.icon_chooser, "icons", self._load_icon_themes(), self._on_icon_theme_selected))
         for chooser in choosers:
@@ -346,15 +341,6 @@ class Module:
             print(detail)
         return True
 
-    def _on_metacity_theme_selected(self, path, theme):
-        try:
-            self.wm_settings.set_string("theme", theme)
-            self.metacity_chooser.set_button_label(theme)
-            self.metacity_chooser.set_tooltip_text(theme)
-        except Exception as detail:
-            print(detail)
-        return True
-
     def _on_gtk_theme_selected(self, path, theme):
         try:
             self.settings.set_string("gtk-theme", theme)
@@ -442,21 +428,6 @@ class Module:
     def _load_cursor_themes(self):
         dirs = ICON_FOLDERS
         valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True)
-        valid.sort(key=lambda a: a[0].lower())
-        res = []
-        for i in valid:
-            for j in res:
-                if i[0] == j[0]:
-                    if i[1] == dirs[0]:
-                        continue
-                    else:
-                        res.remove(j)
-            res.append((i[0], i[1]))
-        return res
-
-    def _load_metacity_themes(self):
-        dirs = THEME_FOLDERS
-        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "metacity-1/metacity-theme-3.xml")), return_directories=True)
         valid.sort(key=lambda a: a[0].lower())
         res = []
         for i in valid:

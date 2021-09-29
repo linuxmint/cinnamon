@@ -74,9 +74,8 @@ const MATCH_ADDERS = [
  */
 
 function calc_angle(x, y) {
-    if (x == 0 || y == 0) {
-        return 0;
-    }
+    if (x === 0) { x = .001 }
+    if (y === 0) { y = .001 }
 
     let r = Math.atan2(y, x) * (180 / Math.PI);
     return r;
@@ -2337,8 +2336,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
      */
 
     static DEBUG_VMASK = false;
-    static VECTOR_VERTEX_COLOR = Clutter.Color.from_string("white")[1];
-
     static POLL_INTERVAL = 20;
     static MIN_MOVEMENT = 2; // Movement smaller than this disables the mask.
 
@@ -2369,6 +2366,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 llc_x: mx,        llc_y: my,
                 urc_x: bx + bw,   urc_y: by,
                 lrc_x: bx + bw,   lrc_y: by + bh,
+                reactive: false,
                 debug: true
             });
 
@@ -2500,6 +2498,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _setCategoryButtonsReactive(active) {
         for (let i = 0; i < this._categoryButtons.length; i++) {
             this._categoryButtons[i].actor.reactive = active;
+            this._categoryButtons[i].actor.queue_redraw();
         }
     }
 
@@ -2845,7 +2844,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                                                 accessible_role: Atk.Role.LIST });
         this.categoriesScrollBox = new St.ScrollView({ style_class: 'vfade menu-applications-scrollbox' });
         this.categoriesScrollBox.add_actor(this.categoriesBox);
-        this.categoriesScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        this.categoriesScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
 
         this.categoriesApplicationsBox.actor.add(this.categoriesScrollBox);
 
@@ -2853,7 +2852,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.applicationsBox.add_style_class_name('menu-applications-box'); //this is to support old themes
         this.applicationsScrollBox = new St.ScrollView({ style_class: 'vfade menu-applications-scrollbox'});
         this.applicationsScrollBox.add_actor(this.applicationsBox);
-        this.applicationsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        this.applicationsScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
 
         let vscroll = this.applicationsScrollBox.get_vscroll_bar();
         vscroll.connect('scroll-start',
@@ -2878,7 +2877,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.favoritesBox = new FavoritesBox().actor;
         this.favoritesScrollBox = new St.ScrollView({ y_align: St.Align.START, style_class: 'vfade menu-favorites-scrollbox' });
-        this.favoritesScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        this.favoritesScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
         this.favoritesScrollBox.add_actor(this.favoritesBox);
 
         this.left_box.add(this.favoritesScrollBox, { expand: true });

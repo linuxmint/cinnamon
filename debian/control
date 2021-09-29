@@ -147,7 +147,7 @@ Depends:
  libcinnamon-menu-3-0-dbg (>= 4.8),
  libcjs-dbg (>= 4.8),
  libcvc-dbg,
- muffin-dbg,
+# muffin-dbg,
  nemo-dbg,
  ${misc:Depends},
 Description: Debugging symbols for the Cinnamon desktop
@@ -157,14 +157,3 @@ Description: Debugging symbols for the Cinnamon desktop
  .
  This package contains the debugging symbols.
 
-Package: cinnamon-doc
-Section: doc
-Architecture: all
-Multi-Arch: foreign
-Depends: devhelp, ${misc:Depends}
-Description: Cinnamon documentation
- Cinnamon is a modern Linux desktop which provides advanced innovative
- features and a traditional user experience. It's easy to use, powerful
- and flexible.
- .
- This package contains the code documentation for various Cinnamon components.

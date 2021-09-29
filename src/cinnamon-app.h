@@ -5,6 +5,8 @@
 #include <clutter/clutter.h>
 #include <gio/gio.h>
 #include <meta/window.h>
+#include <meta/meta-startup-notification.h>
+
 #define GMENU_I_KNOW_THIS_IS_UNSTABLE
 #include <gmenu-tree.h>
 #include <gmenu-desktopappinfo.h>

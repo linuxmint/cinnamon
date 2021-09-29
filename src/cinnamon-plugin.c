@@ -18,9 +18,17 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street - Suite 500, Boston, MA
- * 02110-1335, USA.
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * CinnamonPlugin is the entry point for for Cinnamon into and out of
+ * Mutter. By registering itself into Mutter using
+ * meta_plugin_manager_set_plugin_type(), Mutter will call the vfuncs of the
+ * plugin at the appropriate time.
+ *
+ * The funcions in in CinnamonPlugin are all just stubs, which just call the
+ * similar methods in CinnamonWm.
  */
 
 #include "config.h"
@@ -30,180 +38,81 @@
 
 #include <clutter/clutter.h>
 #include <clutter/x11/clutter-x11.h>
-#if defined (__arm__)
-#else
-#include <GL/glx.h>
-#include <GL/glxext.h>
-#endif
 #include <cjs/gjs.h>
 #include <meta/display.h>
 #include <meta/meta-plugin.h>
+#include <meta/util.h>
 
 #include "cinnamon-global-private.h"
 #include "cinnamon-perf-log.h"
 #include "cinnamon-wm-private.h"
 
-static void gnome_cinnamon_plugin_dispose     (GObject *object);
-static void gnome_cinnamon_plugin_finalize    (GObject *object);
-
-static void gnome_cinnamon_plugin_start            (MetaPlugin          *plugin);
-static void gnome_cinnamon_plugin_minimize         (MetaPlugin          *plugin,
-                                                 MetaWindowActor     *actor);
-static void gnome_cinnamon_plugin_maximize         (MetaPlugin          *plugin,
-                                                 MetaWindowActor     *actor,
-                                                 gint                 x,
-                                                 gint                 y,
-                                                 gint                 width,
-                                                 gint                 height);
-static void gnome_cinnamon_plugin_unmaximize       (MetaPlugin          *plugin,
-                                                 MetaWindowActor     *actor,
-                                                 gint                 x,
-                                                 gint                 y,
-                                                 gint                 width,
-                                                 gint                 height);
-static void gnome_cinnamon_plugin_tile             (MetaPlugin          *plugin,
-                                                 MetaWindowActor     *actor,
-                                                 gint                 x,
-                                                 gint                 y,
-                                                 gint                 width,
-                                                 gint                 height);
-static void gnome_cinnamon_plugin_map              (MetaPlugin          *plugin,
-                                                 MetaWindowActor     *actor);
-static void gnome_cinnamon_plugin_destroy          (MetaPlugin          *plugin,
-                                                 MetaWindowActor     *actor);
-
-static void gnome_cinnamon_plugin_switch_workspace (MetaPlugin          *plugin,
-                                                 gint                 from,
-                                                 gint                 to,
-                                                 MetaMotionDirection  direction);
-
-static void gnome_cinnamon_plugin_show_tile_preview (MetaPlugin     *plugin,
-                                                     MetaWindow     *window,
-                                                     MetaRectangle  *tile_rect,
-                                                     int            tile_monitor,
-                                                     guint          snap_queued);
-static void gnome_cinnamon_plugin_hide_tile_preview (MetaPlugin *plugin);
-
-static void gnome_cinnamon_plugin_show_hud_preview (MetaPlugin      *plugin,
-                                                    guint           current_proximity_zone,
-                                                    MetaRectangle   *work_area,
-                                                    guint           snap_queued);
-
-static void gnome_cinnamon_plugin_hide_hud_preview (MetaPlugin *plugin);
-
-static void gnome_cinnamon_plugin_kill_window_effects   (MetaPlugin      *plugin,
-                                                      MetaWindowActor *actor);
-
-static gboolean              gnome_cinnamon_plugin_xevent_filter (MetaPlugin *plugin,
-                                                               XEvent     *event);
-static const MetaPluginInfo *gnome_cinnamon_plugin_plugin_info   (MetaPlugin *plugin);
-
-
-#define GNOME_TYPE_CINNAMON_PLUGIN            (gnome_cinnamon_plugin_get_type ())
-#define CINNAMON_PLUGIN(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), GNOME_TYPE_CINNAMON_PLUGIN, CinnamonPlugin))
-#define CINNAMON_PLUGIN_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  GNOME_TYPE_CINNAMON_PLUGIN, CinnamonPluginClass))
-#define GNOME_IS_CINNAMON_PLUGIN(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CINNAMON_PLUGIN_TYPE))
-#define GNOME_IS_CINNAMON_PLUGIN_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  GNOME_TYPE_CINNAMON_PLUGIN))
-#define CINNAMON_PLUGIN_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  GNOME_TYPE_CINNAMON_PLUGIN, CinnamonPluginClass))
-
-typedef struct _CinnamonPlugin        CinnamonPlugin;
-typedef struct _CinnamonPluginClass   CinnamonPluginClass;
+#define CINNAMON_TYPE_PLUGIN (cinnamon_plugin_get_type ())
+G_DECLARE_FINAL_TYPE (CinnamonPlugin, cinnamon_plugin,
+                      CINNAMON, PLUGIN,
+                      MetaPlugin)
 
 struct _CinnamonPlugin
 {
   MetaPlugin parent;
 
-  Atom panel_action;
-  Atom panel_action_run_dialog;
-  Atom panel_action_main_menu;
-
   int glx_error_base;
   int glx_event_base;
   guint have_swap_event : 1;
+  CoglContext *cogl_context;
 
   CinnamonGlobal *global;
 };
 
-struct _CinnamonPluginClass
+G_DEFINE_TYPE (CinnamonPlugin, cinnamon_plugin, META_TYPE_PLUGIN)
+
+static gboolean
+cinnamon_plugin_has_swap_event (CinnamonPlugin *cinnamon_plugin)
 {
-  MetaPluginClass parent_class;
-};
+  CoglDisplay *cogl_display =
+    cogl_context_get_display (cinnamon_plugin->cogl_context);
+  CoglRenderer *renderer = cogl_display_get_renderer (cogl_display);
+  const char * (* query_extensions_string) (Display *dpy, int screen);
+  Bool (* query_extension) (Display *dpy, int *error, int *event);
+  Display *xdisplay;
+  int screen_number;
+  const char *glx_extensions;
 
-GType gnome_cinnamon_plugin_get_type (void);
+  /* We will only get swap events if Cogl is using GLX */
+  if (cogl_renderer_get_winsys_id (renderer) != COGL_WINSYS_ID_GLX)
+    return FALSE;
 
-G_DEFINE_TYPE (CinnamonPlugin, gnome_cinnamon_plugin, META_TYPE_PLUGIN)
+  xdisplay = clutter_x11_get_default_display ();
 
-static void
-gnome_cinnamon_plugin_class_init (CinnamonPluginClass *klass)
-{
-  GObjectClass      *gobject_class = G_OBJECT_CLASS (klass);
-  MetaPluginClass *plugin_class  = META_PLUGIN_CLASS (klass);
+  query_extensions_string =
+    (void *) cogl_get_proc_address ("glXQueryExtensionsString");
+  query_extension =
+    (void *) cogl_get_proc_address ("glXQueryExtension");
 
-  gobject_class->dispose         = gnome_cinnamon_plugin_dispose;
-  gobject_class->finalize        = gnome_cinnamon_plugin_finalize;
+  query_extension (xdisplay,
+                   &cinnamon_plugin->glx_error_base,
+                   &cinnamon_plugin->glx_event_base);
 
-  plugin_class->start            = gnome_cinnamon_plugin_start;
-  plugin_class->map              = gnome_cinnamon_plugin_map;
-  plugin_class->minimize         = gnome_cinnamon_plugin_minimize;
-  plugin_class->maximize         = gnome_cinnamon_plugin_maximize;
-  plugin_class->tile             = gnome_cinnamon_plugin_tile;
-  plugin_class->unmaximize       = gnome_cinnamon_plugin_unmaximize;
-  plugin_class->destroy          = gnome_cinnamon_plugin_destroy;
+  screen_number = XDefaultScreen (xdisplay);
+  glx_extensions = query_extensions_string (xdisplay, screen_number);
 
-  plugin_class->switch_workspace = gnome_cinnamon_plugin_switch_workspace;
-
-  plugin_class->show_tile_preview = gnome_cinnamon_plugin_show_tile_preview;
-  plugin_class->hide_tile_preview = gnome_cinnamon_plugin_hide_tile_preview;
-
-  plugin_class->show_hud_preview = gnome_cinnamon_plugin_show_hud_preview;
-  plugin_class->hide_hud_preview = gnome_cinnamon_plugin_hide_hud_preview;
-
-
-  plugin_class->kill_window_effects   = gnome_cinnamon_plugin_kill_window_effects;
-
-  plugin_class->xevent_filter    = gnome_cinnamon_plugin_xevent_filter;
-  plugin_class->plugin_info      = gnome_cinnamon_plugin_plugin_info;
+  return strstr (glx_extensions, "GLX_INTEL_swap_event") != NULL;
 }
 
 static void
-gnome_cinnamon_plugin_init (CinnamonPlugin *cinnamon_plugin)
-{
-}
-
-static void
-gnome_cinnamon_plugin_start (MetaPlugin *plugin)
+cinnamon_plugin_start (MetaPlugin *plugin)
 {
   CinnamonPlugin *cinnamon_plugin = CINNAMON_PLUGIN (plugin);
-#if defined (__arm__)
-#else
-  MetaScreen *screen;
-  MetaDisplay *display;
-  Display *xdisplay;
-#endif
   GError *error = NULL;
   int status;
-#if defined (__arm__)
-#else
-  const char *glx_extensions;
-#endif
   GjsContext *gjs_context;
+  ClutterBackend *backend;
 
-#if defined (__arm__)
-  cinnamon_plugin->have_swap_event = 0;
-#else
-  screen = meta_plugin_get_screen (plugin);
-  display = meta_screen_get_display (screen);
+  backend = clutter_get_default_backend ();
+  cinnamon_plugin->cogl_context = clutter_backend_get_cogl_context (backend);
 
-  xdisplay = meta_display_get_xdisplay (display);
-
-  glXQueryExtension (xdisplay,
-                     &cinnamon_plugin->glx_error_base,
-                     &cinnamon_plugin->glx_event_base);
-
-  glx_extensions = glXQueryExtensionsString (xdisplay,
-                                             meta_screen_get_screen_number (screen));
-  cinnamon_plugin->have_swap_event = strstr (glx_extensions, "GLX_INTEL_swap_event") != NULL;
-#endif
+  cinnamon_plugin->have_swap_event =
+    cinnamon_plugin_has_swap_event (cinnamon_plugin);
 
   cinnamon_perf_log_define_event (cinnamon_perf_log_get_default (),
                                "glx.swapComplete",
@@ -226,7 +135,7 @@ gnome_cinnamon_plugin_start (MetaPlugin *plugin)
       g_message ("Execution of main.js threw exception: %s", error->message);
       g_error_free (error);
       /* We just exit() here, since in a development environment you'll get the
-       * error in your cinnamon output, and it's way better than a busted WM,
+       * error in your shell output, and it's way better than a busted WM,
        * which typically manifests as a white screen.
        *
        * In production, we shouldn't crash =)  But if we do, we should get
@@ -236,20 +145,9 @@ gnome_cinnamon_plugin_start (MetaPlugin *plugin)
        * If there was a generic "hook into bug-buddy for non-C crashes"
        * infrastructure, here would be the place to put it.
        */
+      g_object_unref (gjs_context);
       exit (1);
     }
-}
-
-static void
-gnome_cinnamon_plugin_dispose (GObject *object)
-{
-  G_OBJECT_CLASS(gnome_cinnamon_plugin_parent_class)->dispose (object);
-}
-
-static void
-gnome_cinnamon_plugin_finalize (GObject *object)
-{
-  G_OBJECT_CLASS(gnome_cinnamon_plugin_parent_class)->finalize (object);
 }
 
 static CinnamonWM *
@@ -267,8 +165,8 @@ get_cinnamon_wm (void)
 }
 
 static void
-gnome_cinnamon_plugin_minimize (MetaPlugin         *plugin,
-			     MetaWindowActor    *actor)
+cinnamon_plugin_minimize (MetaPlugin         *plugin,
+                 MetaWindowActor    *actor)
 {
   _cinnamon_wm_minimize (get_cinnamon_wm (),
                       actor);
@@ -276,43 +174,33 @@ gnome_cinnamon_plugin_minimize (MetaPlugin         *plugin,
 }
 
 static void
-gnome_cinnamon_plugin_maximize (MetaPlugin         *plugin,
-                             MetaWindowActor    *actor,
-                             gint                x,
-                             gint                y,
-                             gint                width,
-                             gint                height)
+cinnamon_plugin_unminimize (MetaPlugin         *plugin,
+                               MetaWindowActor    *actor)
 {
-  _cinnamon_wm_maximize (get_cinnamon_wm (),
-                      actor, x, y, width, height);
+  _cinnamon_wm_unminimize (get_cinnamon_wm (),
+                      actor);
+
 }
 
 static void
-gnome_cinnamon_plugin_tile  (MetaPlugin         *plugin,
-                             MetaWindowActor    *actor,
-                             gint                x,
-                             gint                y,
-                             gint                width,
-                             gint                height)
+cinnamon_plugin_size_changed (MetaPlugin         *plugin,
+                                 MetaWindowActor    *actor)
 {
-  _cinnamon_wm_tile (get_cinnamon_wm (),
-                     actor, x, y, width, height);
+  _cinnamon_wm_size_changed (get_cinnamon_wm (), actor);
 }
 
 static void
-gnome_cinnamon_plugin_unmaximize (MetaPlugin         *plugin,
-                               MetaWindowActor    *actor,
-                               gint                x,
-                               gint                y,
-                               gint                width,
-                               gint                height)
+cinnamon_plugin_size_change (MetaPlugin         *plugin,
+                                MetaWindowActor    *actor,
+                                MetaSizeChange      which_change,
+                                MetaRectangle      *old_frame_rect,
+                                MetaRectangle      *old_buffer_rect)
 {
-  _cinnamon_wm_unmaximize (get_cinnamon_wm (),
-                        actor, x, y, width, height);
+  _cinnamon_wm_size_change (get_cinnamon_wm (), actor, which_change, old_frame_rect, old_buffer_rect);
 }
 
 static void
-gnome_cinnamon_plugin_map (MetaPlugin         *plugin,
+cinnamon_plugin_map (MetaPlugin         *plugin,
                         MetaWindowActor    *actor)
 {
   _cinnamon_wm_map (get_cinnamon_wm (),
@@ -320,7 +208,7 @@ gnome_cinnamon_plugin_map (MetaPlugin         *plugin,
 }
 
 static void
-gnome_cinnamon_plugin_destroy (MetaPlugin         *plugin,
+cinnamon_plugin_destroy (MetaPlugin         *plugin,
                             MetaWindowActor    *actor)
 {
   _cinnamon_wm_destroy (get_cinnamon_wm (),
@@ -328,7 +216,7 @@ gnome_cinnamon_plugin_destroy (MetaPlugin         *plugin,
 }
 
 static void
-gnome_cinnamon_plugin_switch_workspace (MetaPlugin         *plugin,
+cinnamon_plugin_switch_workspace (MetaPlugin         *plugin,
                                      gint                from,
                                      gint                to,
                                      MetaMotionDirection direction)
@@ -337,54 +225,59 @@ gnome_cinnamon_plugin_switch_workspace (MetaPlugin         *plugin,
 }
 
 static void
-gnome_cinnamon_plugin_kill_window_effects (MetaPlugin         *plugin,
+cinnamon_plugin_kill_window_effects (MetaPlugin         *plugin,
                                         MetaWindowActor    *actor)
 {
   _cinnamon_wm_kill_window_effects (get_cinnamon_wm(), actor);
 }
 
 static void
-gnome_cinnamon_plugin_show_tile_preview (MetaPlugin     *plugin,
-                                         MetaWindow     *window,
-                                         MetaRectangle  *tile_rect,
-                                         int            tile_monitor,
-                                         guint          snap_queued)
+cinnamon_plugin_kill_switch_workspace (MetaPlugin         *plugin)
 {
-    _cinnamon_wm_show_tile_preview (get_cinnamon_wm (), window, tile_rect,
-                                    tile_monitor, snap_queued);
+  _cinnamon_wm_kill_switch_workspace (get_cinnamon_wm());
 }
 
 static void
-gnome_cinnamon_plugin_hide_tile_preview (MetaPlugin *plugin)
+cinnamon_plugin_show_tile_preview (MetaPlugin      *plugin,
+                                      MetaWindow      *window,
+                                      MetaRectangle   *tile_rect,
+                                      int              tile_monitor)
 {
-    _cinnamon_wm_hide_tile_preview (get_cinnamon_wm ());
+  _cinnamon_wm_show_tile_preview (get_cinnamon_wm (), window, tile_rect, tile_monitor);
 }
 
 static void
-gnome_cinnamon_plugin_show_hud_preview (MetaPlugin      *plugin,
-                                        guint           current_proximity_zone,
-                                        MetaRectangle   *work_area,
-                                        guint           snap_queued)
+cinnamon_plugin_hide_tile_preview (MetaPlugin *plugin)
 {
-    _cinnamon_wm_show_hud_preview (get_cinnamon_wm (), current_proximity_zone,
-                                   work_area, snap_queued);
+  _cinnamon_wm_hide_tile_preview (get_cinnamon_wm ());
 }
 
 static void
-gnome_cinnamon_plugin_hide_hud_preview (MetaPlugin *plugin)
+cinnamon_plugin_show_window_menu (MetaPlugin         *plugin,
+                                     MetaWindow         *window,
+                                     MetaWindowMenuType  menu,
+                                     int                 x,
+                                     int                 y)
 {
-    _cinnamon_wm_hide_hud_preview (get_cinnamon_wm ());
+  _cinnamon_wm_show_window_menu (get_cinnamon_wm (), window, menu, x, y);
+}
+
+static void
+cinnamon_plugin_show_window_menu_for_rect (MetaPlugin         *plugin,
+                                              MetaWindow         *window,
+                                              MetaWindowMenuType  menu,
+                                              MetaRectangle      *rect)
+{
+  _cinnamon_wm_show_window_menu_for_rect (get_cinnamon_wm (), window, menu, rect);
 }
 
 static gboolean
-gnome_cinnamon_plugin_xevent_filter (MetaPlugin *plugin,
+cinnamon_plugin_xevent_filter (MetaPlugin *plugin,
                                   XEvent     *xev)
 {
-  MetaScreen *screen = meta_plugin_get_screen (plugin);
-  ClutterStage *stage = CLUTTER_STAGE (meta_get_stage_for_screen (screen));
-
-  CinnamonPlugin *cinnamon_plugin = CINNAMON_PLUGIN (plugin);
 #ifdef GLX_INTEL_swap_event
+  CinnamonPlugin *cinnamon_plugin = CINNAMON_PLUGIN (plugin);
+
   if (cinnamon_plugin->have_swap_event &&
       xev->type == (cinnamon_plugin->glx_event_base + GLX_BufferSwapComplete))
     {
@@ -395,46 +288,38 @@ gnome_cinnamon_plugin_xevent_filter (MetaPlugin *plugin,
        * can send this with a ust of 0. Simplify life for consumers
        * by ignoring such events */
       if (swap_complete_event->ust != 0)
-        cinnamon_perf_log_event_x (cinnamon_perf_log_get_default (),
-                                "glx.swapComplete",
-                                swap_complete_event->ust);
+        {
+          gboolean frame_timestamps;
+          g_object_get (cinnamon_plugin->global,
+                        "frame-timestamps", &frame_timestamps,
+                        NULL);
+
+          if (frame_timestamps)
+            cinnamon_perf_log_event_x (cinnamon_perf_log_get_default (),
+                                    "glx.swapComplete",
+                                    swap_complete_event->ust);
+        }
     }
 #endif
 
-  if ((xev->xany.type == EnterNotify || xev->xany.type == LeaveNotify)
-      && xev->xcrossing.window == clutter_x11_get_stage_window (stage))
-    {
-      /* If the pointer enters a child of the stage window (eg, a
-       * trayicon), we want to consider it to still be in the stage,
-       * so don't let Clutter see the event.
-       */
-      if (xev->xcrossing.detail == NotifyInferior)
-        return TRUE;
-
-      /* If the pointer is grabbed by a window it is not currently in,
-       * filter that out as well. In particular, if a trayicon grabs
-       * the pointer after a click on its label, we don't want to hide
-       * the message tray. Filtering out this event will leave Clutter
-       * out of sync, but that happens fairly often with grabs, and we
-       * can work around it. (Eg, cinnamon_global_sync_pointer().)
-       */
-      if (xev->xcrossing.mode == NotifyGrab &&
-          (xev->xcrossing.detail == NotifyNonlinear ||
-           xev->xcrossing.detail == NotifyNonlinearVirtual))
-        return TRUE;
-    }
-
-  /*
-   * Pass the event to cinnamon-global
-   */
-  if (_cinnamon_global_check_xdnd_event (cinnamon_plugin->global, xev))
-    return TRUE;
-
-  return clutter_x11_handle_event (xev) != CLUTTER_X11_FILTER_CONTINUE;
+  return FALSE;
 }
 
-static const
-MetaPluginInfo *gnome_cinnamon_plugin_plugin_info (MetaPlugin *plugin)
+static gboolean
+cinnamon_plugin_keybinding_filter (MetaPlugin     *plugin,
+                                      MetaKeyBinding *binding)
+{
+  return _cinnamon_wm_filter_keybinding (get_cinnamon_wm (), binding);
+}
+
+static void
+cinnamon_plugin_confirm_display_change (MetaPlugin *plugin)
+{
+  _cinnamon_wm_confirm_display_change (get_cinnamon_wm ());
+}
+
+static const MetaPluginInfo *
+cinnamon_plugin_plugin_info (MetaPlugin *plugin)
 {
   static const MetaPluginInfo info = {
     .name = "Cinnamon",
@@ -445,4 +330,67 @@ MetaPluginInfo *gnome_cinnamon_plugin_plugin_info (MetaPlugin *plugin)
   };
 
   return &info;
+}
+
+static MetaCloseDialog *
+cinnamon_plugin_create_close_dialog (MetaPlugin *plugin,
+                                        MetaWindow *window)
+{
+  return _cinnamon_wm_create_close_dialog (get_cinnamon_wm (), window);
+}
+
+static MetaInhibitShortcutsDialog *
+cinnamon_plugin_create_inhibit_shortcuts_dialog (MetaPlugin *plugin,
+                                                    MetaWindow *window)
+{
+  return _cinnamon_wm_create_inhibit_shortcuts_dialog (get_cinnamon_wm (), window);
+}
+
+static void
+cinnamon_plugin_locate_pointer (MetaPlugin *plugin)
+{
+  CinnamonPlugin *cinnamon_plugin = CINNAMON_PLUGIN (plugin);
+  // TODO
+  // _cinnamon_global_locate_pointer (cinnamon_plugin->global);
+}
+
+static void
+cinnamon_plugin_class_init (CinnamonPluginClass *klass)
+{
+  MetaPluginClass *plugin_class  = META_PLUGIN_CLASS (klass);
+
+  plugin_class->start            = cinnamon_plugin_start;
+  plugin_class->map              = cinnamon_plugin_map;
+  plugin_class->minimize         = cinnamon_plugin_minimize;
+  plugin_class->unminimize       = cinnamon_plugin_unminimize;
+  plugin_class->size_changed     = cinnamon_plugin_size_changed;
+  plugin_class->size_change      = cinnamon_plugin_size_change;
+  plugin_class->destroy          = cinnamon_plugin_destroy;
+
+  plugin_class->switch_workspace = cinnamon_plugin_switch_workspace;
+
+  plugin_class->kill_window_effects   = cinnamon_plugin_kill_window_effects;
+  plugin_class->kill_switch_workspace = cinnamon_plugin_kill_switch_workspace;
+
+  plugin_class->show_tile_preview = cinnamon_plugin_show_tile_preview;
+  plugin_class->hide_tile_preview = cinnamon_plugin_hide_tile_preview;
+  plugin_class->show_window_menu = cinnamon_plugin_show_window_menu;
+  plugin_class->show_window_menu_for_rect = cinnamon_plugin_show_window_menu_for_rect;
+
+  plugin_class->xevent_filter     = cinnamon_plugin_xevent_filter;
+  plugin_class->keybinding_filter = cinnamon_plugin_keybinding_filter;
+
+  plugin_class->confirm_display_change = cinnamon_plugin_confirm_display_change;
+
+  plugin_class->plugin_info       = cinnamon_plugin_plugin_info;
+
+  plugin_class->create_close_dialog = cinnamon_plugin_create_close_dialog;
+  plugin_class->create_inhibit_shortcuts_dialog = cinnamon_plugin_create_inhibit_shortcuts_dialog;
+
+  plugin_class->locate_pointer = cinnamon_plugin_locate_pointer;
+}
+
+static void
+cinnamon_plugin_init (CinnamonPlugin *cinnamon_plugin)
+{
 }
