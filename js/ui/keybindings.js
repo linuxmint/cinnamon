@@ -58,6 +58,8 @@ KeybindingManager.prototype = {
     },
 
     addHotKeyArray: function(name, bindings, callback) {
+        // TODO:
+        return false;
         if (this.bindings[name]) {
             if (this.bindings[name].toString() === bindings.toString()) {
               return true;

@@ -138,7 +138,7 @@ var _Draggable = new Lang.Class({
             return false;
 
         this._buttonDown = true;
-        this._grabActor();
+        this._grabActor(event);
 
         let [stageX, stageY] = event.get_coords();
         this._dragStartX = stageX;
@@ -147,32 +147,35 @@ var _Draggable = new Lang.Class({
         return false;
     },
 
-    _grabActor: function() {
-        Clutter.grab_pointer(this.actor);
+    _grabActor: function(event) {
+        event.get_device().grab(this.actor);
         this._onEventId = this.actor.connect('event',
                                              Lang.bind(this, this._onEvent));
     },
 
-    _ungrabActor: function() {
+    _ungrabActor: function(event) {
         if (!this._onEventId)
             return;
 
-        Clutter.ungrab_pointer();
+        event.get_device().ungrab();
         this.actor.disconnect(this._onEventId);
         this._onEventId = null;
     },
 
-    _grabEvents: function() {
+    _grabEvents: function(event) {
         if (!this._eventsGrabbed) {
             this._eventsGrabbed = Main.pushModal(_getEventHandlerActor());
             if (this._eventsGrabbed)
-                Clutter.grab_pointer(_getEventHandlerActor());
+                event.get_device().grab(_getEventHandlerActor);
         }
     },
 
-    _ungrabEvents: function() {
+    _ungrabEvents: function(event) {
         if (this._eventsGrabbed) {
-            Clutter.ungrab_pointer();
+            if (event) {
+
+            }
+            event.get_device().ungrab();
             Main.popModal(_getEventHandlerActor());
             this._eventsGrabbed = false;
         }
@@ -197,7 +200,7 @@ var _Draggable = new Lang.Class({
                 return true;
             } else {
                 // Drag has never started.
-                this._ungrabActor();
+                this._ungrabActor(event);
                 return false;
             }
         // We intercept MOTION event to figure out if the drag has started and to draw
@@ -244,7 +247,7 @@ var _Draggable = new Lang.Class({
      * This function is useful to call if you've specified manualMode
      * for the draggable.
      */
-    startDrag: function (stageX, stageY, time) {
+    startDrag: function (stageX, stageY, event) {
         currentDraggable = this;
         this._dragInProgress = true;
 
@@ -255,10 +258,10 @@ var _Draggable = new Lang.Class({
             this.actor.hover = false;
         }
 
-        this.emit('drag-begin', time);
+        this.emit('drag-begin', event.get_time());
         if (this._onEventId)
-            this._ungrabActor();
-        this._grabEvents();
+            this._ungrabActor(event);
+        this._grabEvents(event);
         global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
 
         this._dragX = this._dragStartX = stageX;
@@ -366,7 +369,7 @@ var _Draggable = new Lang.Class({
         let threshold = Gtk.Settings.get_default().gtk_dnd_drag_threshold;
         if ((Math.abs(stageX - this._dragStartX) > threshold ||
              Math.abs(stageY - this._dragStartY) > threshold)) {
-                this.startDrag(stageX, stageY, event.get_time());
+                this.startDrag(stageX, stageY, event);
                 this._updateDragPosition(event);
         }
 

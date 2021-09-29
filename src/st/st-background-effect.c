@@ -156,7 +156,7 @@ st_background_effect_pre_paint (ClutterEffect *effect)
 
             if (self->bg_texture != NULL)
               {
-                cogl_handle_unref (self->bg_texture);
+                cogl_object_unref (self->bg_texture);
                 self->bg_texture = NULL;
               }
 
@@ -183,7 +183,7 @@ st_background_effect_pre_paint (ClutterEffect *effect)
 
       fg_texture = clutter_offscreen_effect_get_texture (offscreen_effect);
 
-      if (fg_texture != COGL_INVALID_HANDLE)
+      if (fg_texture != NULL)
         {
           self->fg_width_i = cogl_texture_get_width (fg_texture);
           self->fg_height_i = cogl_texture_get_height (fg_texture);
@@ -231,7 +231,7 @@ st_background_effect_pre_paint (ClutterEffect *effect)
 
               if (self->bg_sub_texture != NULL)
                 {
-                  cogl_handle_unref (self->bg_sub_texture);
+                  cogl_object_unref (self->bg_sub_texture);
                   self->bg_sub_texture = NULL;
                 }
 
@@ -304,7 +304,7 @@ st_background_effect_paint_target (ClutterOffscreenEffect *effect)
       cogl_rectangle (-1.0f, 1.0f, 1.0f, -1.0f);
       cogl_pop_source ();
       cogl_pop_framebuffer ();
-      cogl_handle_unref (vertical_FBO);
+      cogl_object_unref (vertical_FBO);
 
       cogl_pipeline_set_layer_texture (self->pipeline1, 0, self->bg_sub_texture);
       cogl_push_source (self->pipeline1);
@@ -377,19 +377,19 @@ st_background_effect_dispose (GObject *gobject)
 
   if (self->bg_texture != NULL)
     {
-      cogl_handle_unref (self->bg_texture);
+      cogl_object_unref (self->bg_texture);
       self->bg_texture = NULL;
     }
 
   if (self->bg_sub_texture != NULL)
     {
-      cogl_handle_unref (self->bg_sub_texture);
+      cogl_object_unref (self->bg_sub_texture);
       self->bg_sub_texture = NULL;
     }
 
   if (self->bg_bumpmap != NULL)
     {
-      cogl_handle_unref (self->bg_bumpmap);
+      cogl_object_unref (self->bg_bumpmap);
       self->bg_bumpmap = NULL;
     }
 
@@ -413,7 +413,7 @@ st_background_effect_set_property (GObject      *gobject,
 
       if (self->bg_bumpmap != NULL)
         {
-          cogl_handle_unref (self->bg_bumpmap);
+          cogl_object_unref (self->bg_bumpmap);
           self->bg_bumpmap = NULL;
         }
 

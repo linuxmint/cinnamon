@@ -216,14 +216,14 @@ reset_im_context (StIMText *self)
 }
 
 static void
-st_im_text_paint (ClutterActor *actor)
+st_im_text_paint (ClutterActor *actor, ClutterPaintContext *paint_context)
 {
   StIMText *self = ST_IM_TEXT (actor);
   ClutterText *clutter_text = CLUTTER_TEXT (actor);
 
   /* This updates the cursor position as a side-effect */
   if (CLUTTER_ACTOR_CLASS (st_im_text_parent_class)->paint)
-    CLUTTER_ACTOR_CLASS (st_im_text_parent_class)->paint (actor);
+    CLUTTER_ACTOR_CLASS (st_im_text_parent_class)->paint (actor, paint_context);
 
   if (clutter_text_get_editable (clutter_text))
     update_im_cursor_location (self);

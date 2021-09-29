@@ -173,7 +173,7 @@ st_polygon_get_property (GObject    *object,
 }
 
 static void
-st_polygon_paint (ClutterActor *self)
+st_polygon_paint (ClutterActor *self, ClutterPaintContext *paint_context)
 {
 
     StPolygon *area = ST_POLYGON (self);

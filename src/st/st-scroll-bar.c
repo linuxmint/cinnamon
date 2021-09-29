@@ -40,17 +40,20 @@
 #include "st-enum-types.h"
 #include "st-private.h"
 #include "st-button.h"
+#include "st-settings.h"
 
 #define PAGING_INITIAL_REPEAT_TIMEOUT 500
 #define PAGING_SUBSEQUENT_REPEAT_TIMEOUT 200
 
+typedef struct _StScrollBarPrivate   StScrollBarPrivate;
 struct _StScrollBarPrivate
 {
   StAdjustment *adjustment;
 
-  gulong        capture_handler;
   gfloat        x_origin;
   gfloat        y_origin;
+
+  ClutterInputDevice *grab_device;
 
   ClutterActor *trough;
   ClutterActor *handle;
@@ -63,20 +66,24 @@ struct _StScrollBarPrivate
   guint             paging_source_id;
   guint             paging_event_no;
 
-  ClutterAnimation *paging_animation;
-
   guint             vertical : 1;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (StScrollBar, st_scroll_bar, ST_TYPE_WIDGET)
+
+#define ST_SCROLL_BAR_PRIVATE(sb) st_scroll_bar_get_instance_private (ST_SCROLL_BAR (sb))
 
 enum
 {
   PROP_0,
 
   PROP_ADJUSTMENT,
-  PROP_VERTICAL
+  PROP_VERTICAL,
+
+  N_PROPS
 };
+
+static GParamSpec *props[N_PROPS] = { NULL, };
 
 enum
 {
@@ -87,8 +94,6 @@ enum
 };
 
 static guint signals[LAST_SIGNAL] = { 0, };
-
-extern gfloat st_slow_down_factor;
 
 static gboolean
 handle_button_press_event_cb (ClutterActor       *actor,
@@ -103,7 +108,7 @@ st_scroll_bar_get_property (GObject    *gobject,
                             GValue     *value,
                             GParamSpec *pspec)
 {
-  StScrollBarPrivate *priv = ST_SCROLL_BAR (gobject)->priv;
+  StScrollBarPrivate *priv = ST_SCROLL_BAR_PRIVATE (gobject);
 
   switch (prop_id)
     {
@@ -128,6 +133,7 @@ st_scroll_bar_set_property (GObject      *gobject,
                             GParamSpec   *pspec)
 {
   StScrollBar *bar = ST_SCROLL_BAR (gobject);
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
 
   switch (prop_id)
     {
@@ -136,12 +142,12 @@ st_scroll_bar_set_property (GObject      *gobject,
       break;
 
     case PROP_VERTICAL:
-      bar->priv->vertical = g_value_get_boolean (value);
-      if (bar->priv->vertical)
-        clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->handle),
+      priv->vertical = g_value_get_boolean (value);
+      if (priv->vertical)
+        clutter_actor_set_name (CLUTTER_ACTOR (priv->handle),
                                 "vhandle");
       else
-        clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->handle),
+        clutter_actor_set_name (CLUTTER_ACTOR (priv->handle),
                                 "hhandle");
       clutter_actor_queue_relayout ((ClutterActor*) gobject);
       break;
@@ -156,7 +162,7 @@ static void
 st_scroll_bar_dispose (GObject *gobject)
 {
   StScrollBar *bar = ST_SCROLL_BAR (gobject);
-  StScrollBarPrivate *priv = bar->priv;
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
 
   if (priv->adjustment)
     st_scroll_bar_set_adjustment (bar, NULL);
@@ -189,7 +195,7 @@ scroll_bar_allocate_children (StScrollBar           *bar,
                               const ClutterActorBox *box,
                               ClutterAllocationFlags flags)
 {
-  StScrollBarPrivate *priv = bar->priv;
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (bar));
   ClutterActorBox content_box, trough_box;
 
@@ -202,7 +208,6 @@ scroll_bar_allocate_children (StScrollBar           *bar,
       trough_box.x2 = content_box.x2;
       trough_box.y2 = content_box.y2;
       clutter_actor_allocate (priv->trough, &trough_box, flags);
-
     }
   else
     {
@@ -212,6 +217,7 @@ scroll_bar_allocate_children (StScrollBar           *bar,
       trough_box.y2 = content_box.y2;
       clutter_actor_allocate (priv->trough, &trough_box, flags);
     }
+
 
   if (priv->adjustment)
     {
@@ -250,10 +256,10 @@ scroll_bar_allocate_children (StScrollBar           *bar,
           handle_size = CLAMP (handle_size, min_size, max_size);
 
           handle_box.x1 = content_box.x1;
-          handle_box.y1 = content_box.y1 + floor (position * (avail_size - handle_size));
+          handle_box.y1 = content_box.y1 + position * (avail_size - handle_size);
 
           handle_box.x2 = content_box.x2;
-          handle_box.y2 = handle_box.y1 + floor (handle_size);
+          handle_box.y2 = handle_box.y1 + handle_size;
         }
       else
         {
@@ -261,10 +267,10 @@ scroll_bar_allocate_children (StScrollBar           *bar,
           handle_size = increment * avail_size;
           handle_size = CLAMP (handle_size, min_size, max_size);
 
-          handle_box.x1 = content_box.x1 + floor (position * (avail_size - handle_size));
+          handle_box.x1 = content_box.x1 + position * (avail_size - handle_size);
           handle_box.y1 = content_box.y1;
 
-          handle_box.x2 = handle_box.x1 + floor (handle_size);
+          handle_box.x2 = handle_box.x1 + handle_size;
           handle_box.y2 = content_box.y2;
         }
 
@@ -281,7 +287,7 @@ st_scroll_bar_get_preferred_width (ClutterActor *self,
                                    gfloat       *natural_width_p)
 {
   StScrollBar *bar = ST_SCROLL_BAR (self);
-  StScrollBarPrivate *priv = bar->priv;
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   gfloat trough_min_width, trough_natural_width;
   gfloat handle_min_width, handle_natural_width;
@@ -321,7 +327,7 @@ st_scroll_bar_get_preferred_height (ClutterActor *self,
                                     gfloat       *natural_height_p)
 {
   StScrollBar *bar = ST_SCROLL_BAR (self);
-  StScrollBarPrivate *priv = bar->priv;
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   gfloat trough_min_height, trough_natural_height;
   gfloat handle_min_height, handle_natural_height;
@@ -392,7 +398,7 @@ scroll_bar_update_positions (StScrollBar *bar)
 static void
 st_scroll_bar_style_changed (StWidget *widget)
 {
-  StScrollBarPrivate *priv = ST_SCROLL_BAR (widget)->priv;
+  StScrollBarPrivate *priv = ST_SCROLL_BAR_PRIVATE (widget);
 
   st_widget_style_changed (ST_WIDGET (priv->trough));
   st_widget_style_changed (ST_WIDGET (priv->handle));
@@ -406,8 +412,9 @@ bar_reactive_notify_cb (GObject    *gobject,
                         gpointer    user_data)
 {
   StScrollBar *bar = ST_SCROLL_BAR (gobject);
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
 
-  clutter_actor_set_reactive (bar->priv->handle,
+  clutter_actor_set_reactive (priv->handle,
                               clutter_actor_get_reactive (CLUTTER_ACTOR (bar)));
 }
 
@@ -431,49 +438,63 @@ st_scroll_bar_constructor (GType                  type,
   return obj;
 }
 
+static void
+adjust_with_direction (StAdjustment           *adj,
+                       ClutterScrollDirection  direction)
+{
+  gdouble delta;
+
+  switch (direction)
+    {
+    case CLUTTER_SCROLL_UP:
+    case CLUTTER_SCROLL_LEFT:
+      delta = -1.0;
+      break;
+    case CLUTTER_SCROLL_RIGHT:
+    case CLUTTER_SCROLL_DOWN:
+      delta = 1.0;
+      break;
+    case CLUTTER_SCROLL_SMOOTH:
+    default:
+      g_assert_not_reached ();
+      break;
+    }
+
+  st_adjustment_adjust_for_scroll_event (adj, delta);
+}
+
 static gboolean
 st_scroll_bar_scroll_event (ClutterActor       *actor,
                             ClutterScrollEvent *event)
 {
-  StScrollBarPrivate *priv = ST_SCROLL_BAR (actor)->priv;
-  gdouble step, value, delta_x, delta_y;
+  StScrollBarPrivate *priv = ST_SCROLL_BAR_PRIVATE (actor);
 
-  if (priv->adjustment)
-    {
-      g_object_get (priv->adjustment,
-                    "step-increment", &step,
-                    "value", &value,
-                    NULL);
-    }
-  else
-    {
-      return FALSE;
-    }
+  if (clutter_event_is_pointer_emulated ((ClutterEvent *) event))
+    return TRUE;
 
   switch (event->direction)
     {
     case CLUTTER_SCROLL_SMOOTH:
-      clutter_event_get_scroll_delta ((ClutterEvent *)event,
-                                      &delta_x, &delta_y);
-      if (fabs (delta_x) > fabs(delta_y))
-        st_adjustment_set_value (priv->adjustment, value + delta_x);
-      else
-        st_adjustment_set_value (priv->adjustment, value + delta_y);
+      {
+        gdouble delta_x, delta_y;
+        clutter_event_get_scroll_delta ((ClutterEvent *)event, &delta_x, &delta_y);
+
+        if (priv->vertical)
+          st_adjustment_adjust_for_scroll_event (priv->adjustment, delta_y);
+        else
+          st_adjustment_adjust_for_scroll_event (priv->adjustment, delta_x);
+      }
       break;
     case CLUTTER_SCROLL_UP:
-    case CLUTTER_SCROLL_LEFT:
-      st_adjustment_set_value (priv->adjustment, value - step);
-      break;
     case CLUTTER_SCROLL_DOWN:
+    case CLUTTER_SCROLL_LEFT:
     case CLUTTER_SCROLL_RIGHT:
-      st_adjustment_set_value (priv->adjustment, value + step);
+      adjust_with_direction (priv->adjustment, event->direction);
       break;
     default:
-          g_return_val_if_reached (FALSE);
+      g_return_val_if_reached (FALSE);
       break;
     }
-
-  clutter_actor_queue_redraw (actor);
 
   return TRUE;
 }
@@ -484,7 +505,6 @@ st_scroll_bar_class_init (StScrollBarClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   StWidgetClass *widget_class = ST_WIDGET_CLASS (klass);
-  GParamSpec *pspec;
 
   object_class->get_property = st_scroll_bar_get_property;
   object_class->set_property = st_scroll_bar_set_property;
@@ -499,21 +519,19 @@ st_scroll_bar_class_init (StScrollBarClass *klass)
 
   widget_class->style_changed = st_scroll_bar_style_changed;
 
-  g_object_class_install_property
-                 (object_class,
-                 PROP_ADJUSTMENT,
-                 g_param_spec_object ("adjustment",
-                                      "Adjustment",
-                                      "The adjustment",
-                                      ST_TYPE_ADJUSTMENT,
-                                      ST_PARAM_READWRITE));
+  props[PROP_ADJUSTMENT] =
+    g_param_spec_object ("adjustment", "Adjustment", "The adjustment",
+                         ST_TYPE_ADJUSTMENT,
+                         ST_PARAM_READWRITE);
 
-  pspec = g_param_spec_boolean ("vertical",
-                                "Vertical Orientation",
-                                "Vertical Orientation",
-                                FALSE,
-                                ST_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_VERTICAL, pspec);
+  props[PROP_VERTICAL] =
+    g_param_spec_boolean ("vertical",
+                          "Vertical Orientation",
+                          "Vertical Orientation",
+                          FALSE,
+                          ST_PARAM_READWRITE);
+
+  g_object_class_install_properties (object_class, N_PROPS, props);
 
   signals[SCROLL_START] =
     g_signal_new ("scroll-start",
@@ -537,7 +555,7 @@ move_slider (StScrollBar *bar,
              gfloat       x,
              gfloat       y)
 {
-  StScrollBarPrivate *priv = bar->priv;
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
   gdouble position, lower, upper, page_size;
   gfloat ux, uy, pos, size;
 
@@ -576,57 +594,44 @@ move_slider (StScrollBar *bar,
              + lower;
 
   st_adjustment_set_value (priv->adjustment, position);
-
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (bar));
 }
 
 static void
 stop_scrolling (StScrollBar *bar)
 {
-  ClutterStage *stage;
-
-  if (!bar->priv->capture_handler)
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
+  if (!priv->grab_device)
     return;
 
-  stage = CLUTTER_STAGE (clutter_actor_get_stage (bar->priv->trough));
-  g_signal_handler_disconnect (stage, bar->priv->capture_handler);
-  bar->priv->capture_handler = 0;
+  st_widget_remove_style_pseudo_class (ST_WIDGET (priv->handle), "active");
 
-  clutter_stage_set_motion_events_enabled (stage, TRUE);
+  clutter_input_device_ungrab (priv->grab_device);
+  priv->grab_device = NULL;
   g_signal_emit (bar, signals[SCROLL_STOP], 0);
 }
 
 static gboolean
-handle_capture_event_cb (ClutterActor *trough,
-                         ClutterEvent *event,
-                         StScrollBar  *bar)
+handle_motion_event_cb (ClutterActor       *trough,
+                        ClutterMotionEvent *event,
+                        StScrollBar        *bar)
 {
-  if (clutter_event_type (event) == CLUTTER_MOTION)
-    {
-      move_slider (bar,
-                   ((ClutterMotionEvent*) event)->x,
-                   ((ClutterMotionEvent*) event)->y);
-    }
-  else if (clutter_event_type (event) == CLUTTER_BUTTON_RELEASE
-           && ((ClutterButtonEvent*) event)->button == 1)
-    {
-      ClutterActor *stage, *target;
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
+  if (!priv->grab_device)
+    return FALSE;
 
-      stop_scrolling (bar);
+  move_slider (bar, event->x, event->y);
+  return TRUE;
+}
 
-      /* check if the mouse pointer has left the handle during the drag and
-       * remove the hover state if it has */
-      stage = clutter_actor_get_stage (bar->priv->trough);
-      target = clutter_stage_get_actor_at_pos ((ClutterStage*) stage,
-                                               CLUTTER_PICK_REACTIVE,
-                                               ((ClutterButtonEvent*) event)->x,
-                                               ((ClutterButtonEvent*) event)->y);
-      if (target != bar->priv->handle)
-        {
-          st_widget_remove_style_pseudo_class ((StWidget*) bar->priv->handle, "hover");
-        }
-    }
+static gboolean
+handle_button_release_event_cb (ClutterActor       *trough,
+                                ClutterButtonEvent *event,
+                                StScrollBar        *bar)
+{
+  if (event->button != 1)
+    return FALSE;
 
+  stop_scrolling (bar);
   return TRUE;
 }
 
@@ -635,13 +640,11 @@ handle_button_press_event_cb (ClutterActor       *actor,
                               ClutterButtonEvent *event,
                               StScrollBar        *bar)
 {
-  ClutterStage *stage;
-  StScrollBarPrivate *priv;
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
+  ClutterInputDevice *device = clutter_event_get_device ((ClutterEvent*) event);
 
   if (event->button != 1)
     return FALSE;
-
-  priv = bar->priv;
 
   if (!clutter_actor_transform_stage_point (priv->handle,
                                             event->x,
@@ -650,152 +653,132 @@ handle_button_press_event_cb (ClutterActor       *actor,
                                             &priv->y_origin))
     return FALSE;
 
+  st_widget_add_style_pseudo_class (ST_WIDGET (priv->handle), "active");
+
   /* Account for the scrollbar-trough-handle nesting. */
   priv->x_origin += clutter_actor_get_x (priv->trough);
   priv->y_origin += clutter_actor_get_y (priv->trough);
 
-  stage = CLUTTER_STAGE (clutter_actor_get_stage (bar->priv->trough));
+  g_assert (!priv->grab_device);
 
-  /* Turn off picking for motion events */
-  clutter_stage_set_motion_events_enabled (stage, FALSE);
-
-  priv->capture_handler = g_signal_connect_after (
-    clutter_actor_get_stage (priv->trough),
-    "captured-event",
-    G_CALLBACK (handle_capture_event_cb),
-    bar);
+  clutter_input_device_grab (device, priv->handle);
+  priv->grab_device = device;
   g_signal_emit (bar, signals[SCROLL_START], 0);
 
   return TRUE;
 }
 
-static void
-animation_completed_cb (ClutterAnimation   *animation,
-                        StScrollBar        *self)
-{
-  ClutterTimeline *t;
-
-  t = clutter_animation_get_timeline (animation);
-  g_signal_handlers_disconnect_by_func (t, clutter_actor_queue_redraw, self);
-
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (self));
-
-  g_object_unref (self->priv->paging_animation);
-  self->priv->paging_animation = NULL;
-}
-
 static gboolean
 trough_paging_cb (StScrollBar *self)
 {
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (self);
+  g_autoptr (ClutterTransition) transition = NULL;
+  StSettings *settings;
   gfloat handle_pos, event_pos, tx, ty;
-  gdouble value;
+  gdouble value, new_value;
   gdouble page_increment;
+  gdouble slow_down_factor;
   gboolean ret;
 
   gulong mode;
-  ClutterAnimation *a;
-  GValue v = { 0, };
-  ClutterTimeline *t;
 
-  if (self->priv->paging_event_no == 0)
+  if (priv->paging_event_no == 0)
     {
       /* Scroll on after initial timeout. */
       mode = CLUTTER_EASE_OUT_CUBIC;
       ret = FALSE;
-      self->priv->paging_event_no = 1;
-      self->priv->paging_source_id = g_timeout_add (
+      priv->paging_event_no = 1;
+      priv->paging_source_id = g_timeout_add (
         PAGING_INITIAL_REPEAT_TIMEOUT,
         (GSourceFunc) trough_paging_cb,
         self);
+      g_source_set_name_by_id (priv->paging_source_id, "[gnome-shell] trough_paging_cb");
     }
-  else if (self->priv->paging_event_no == 1)
+  else if (priv->paging_event_no == 1)
     {
       /* Scroll on after subsequent timeout. */
       ret = FALSE;
       mode = CLUTTER_EASE_IN_CUBIC;
-      self->priv->paging_event_no = 2;
-      self->priv->paging_source_id = g_timeout_add (
+      priv->paging_event_no = 2;
+      priv->paging_source_id = g_timeout_add (
         PAGING_SUBSEQUENT_REPEAT_TIMEOUT,
         (GSourceFunc) trough_paging_cb,
         self);
+      g_source_set_name_by_id (priv->paging_source_id, "[gnome-shell] trough_paging_cb");
     }
   else
     {
       /* Keep scrolling. */
       ret = TRUE;
       mode = CLUTTER_LINEAR;
-      self->priv->paging_event_no++;
+      priv->paging_event_no++;
     }
 
   /* Do the scrolling */
-  st_adjustment_get_values (self->priv->adjustment,
+  st_adjustment_get_values (priv->adjustment,
                             &value, NULL, NULL,
                             NULL, &page_increment, NULL);
 
-  if (self->priv->vertical)
-    handle_pos = clutter_actor_get_y (self->priv->handle);
+  if (priv->vertical)
+    handle_pos = clutter_actor_get_y (priv->handle);
   else
-    handle_pos = clutter_actor_get_x (self->priv->handle);
+    handle_pos = clutter_actor_get_x (priv->handle);
 
-  clutter_actor_transform_stage_point (CLUTTER_ACTOR (self->priv->trough),
-                                       self->priv->move_x,
-                                       self->priv->move_y,
+  clutter_actor_transform_stage_point (CLUTTER_ACTOR (priv->trough),
+                                       priv->move_x,
+                                       priv->move_y,
                                        &tx, &ty);
 
-  if (self->priv->vertical)
+  if (priv->vertical)
     event_pos = ty;
   else
     event_pos = tx;
 
   if (event_pos > handle_pos)
     {
-      if (self->priv->paging_direction == NONE)
+      if (priv->paging_direction == NONE)
         {
           /* Remember direction. */
-          self->priv->paging_direction = DOWN;
+          priv->paging_direction = DOWN;
         }
-      if (self->priv->paging_direction == UP)
+      if (priv->paging_direction == UP)
         {
           /* Scrolled far enough. */
           return FALSE;
         }
-      value += page_increment;
+      new_value = value + page_increment;
     }
   else
     {
-      if (self->priv->paging_direction == NONE)
+      if (priv->paging_direction == NONE)
         {
           /* Remember direction. */
-          self->priv->paging_direction = UP;
+          priv->paging_direction = UP;
         }
-      if (self->priv->paging_direction == DOWN)
+      if (priv->paging_direction == DOWN)
         {
           /* Scrolled far enough. */
           return FALSE;
         }
-      value -= page_increment;
+      new_value = value - page_increment;
     }
 
-  if (self->priv->paging_animation)
-    {
-      clutter_animation_completed (self->priv->paging_animation);
-    }
+  /* Stop existing transition, if one exists */
+  st_adjustment_remove_transition (priv->adjustment, "value");
 
-  /* FIXME: Creating a new animation for each scroll is probably not the best
-  * idea, but it's a lot less involved than extenind the current animation */
-  a = self->priv->paging_animation = g_object_new (CLUTTER_TYPE_ANIMATION,
-                                                   "object", self->priv->adjustment,
-                                                   "duration", (guint)(PAGING_SUBSEQUENT_REPEAT_TIMEOUT * st_slow_down_factor),
-                                                   "mode", mode,
-                                                   NULL);
-  g_value_init (&v, G_TYPE_DOUBLE);
-  g_value_set_double (&v, value);
-  clutter_animation_bind (self->priv->paging_animation, "value", &v);
-  t = clutter_animation_get_timeline (self->priv->paging_animation);
-  g_signal_connect (a, "completed", G_CALLBACK (animation_completed_cb),
-                    self);
-  g_signal_connect_swapped (t, "new-frame", G_CALLBACK (clutter_actor_queue_redraw), self);
-  clutter_timeline_start (t);
+  settings = st_settings_get ();
+  g_object_get (settings, "slow-down-factor", &slow_down_factor, NULL);
+
+  /* FIXME: Creating a new transition for each scroll is probably not the best
+  * idea, but it's a lot less involved than extending the current animation */
+  transition = g_object_new (CLUTTER_TYPE_PROPERTY_TRANSITION,
+                             "property-name", "value",
+                             "interval", clutter_interval_new (G_TYPE_DOUBLE, value, new_value),
+                             "duration", (guint)(PAGING_SUBSEQUENT_REPEAT_TIMEOUT * slow_down_factor),
+                             "progress-mode", mode,
+                             "remove-on-complete", TRUE,
+                             NULL);
+  st_adjustment_add_transition (priv->adjustment, "value", transition);
 
   return ret;
 }
@@ -805,18 +788,21 @@ trough_button_press_event_cb (ClutterActor       *actor,
                               ClutterButtonEvent *event,
                               StScrollBar        *self)
 {
+  StScrollBarPrivate *priv;
+
   g_return_val_if_fail (self, FALSE);
 
   if (event->button != 1)
     return FALSE;
 
-  if (self->priv->adjustment == NULL)
+  priv = st_scroll_bar_get_instance_private (self);
+  if (priv->adjustment == NULL)
     return FALSE;
 
-  self->priv->move_x = event->x;
-  self->priv->move_y = event->y;
-  self->priv->paging_direction = NONE;
-  self->priv->paging_event_no = 0;
+  priv->move_x = event->x;
+  priv->move_y = event->y;
+  priv->paging_direction = NONE;
+  priv->paging_event_no = 0;
   trough_paging_cb (self);
 
   return TRUE;
@@ -827,14 +813,12 @@ trough_button_release_event_cb (ClutterActor       *actor,
                                 ClutterButtonEvent *event,
                                 StScrollBar        *self)
 {
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (self);
+
   if (event->button != 1)
     return FALSE;
 
-  if (self->priv->paging_source_id)
-    {
-      g_source_remove (self->priv->paging_source_id);
-      self->priv->paging_source_id = 0;
-    }
+  g_clear_handle_id (&priv->paging_source_id, g_source_remove);
 
   return TRUE;
 }
@@ -844,10 +828,11 @@ trough_leave_event_cb (ClutterActor *actor,
                        ClutterEvent *event,
                        StScrollBar  *self)
 {
-  if (self->priv->paging_source_id)
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (self);
+
+  if (priv->paging_source_id)
     {
-      g_source_remove (self->priv->paging_source_id);
-      self->priv->paging_source_id = 0;
+      g_clear_handle_id (&priv->paging_source_id, g_source_remove);
       return TRUE;
     }
 
@@ -857,7 +842,7 @@ trough_leave_event_cb (ClutterActor *actor,
 static void
 st_scroll_bar_notify_reactive (StScrollBar *self)
 {
-  StScrollBarPrivate *priv = self->priv;
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (self);
 
   gboolean reactive = clutter_actor_get_reactive (CLUTTER_ACTOR (self));
 
@@ -868,26 +853,30 @@ st_scroll_bar_notify_reactive (StScrollBar *self)
 static void
 st_scroll_bar_init (StScrollBar *self)
 {
-  self->priv = st_scroll_bar_get_instance_private (self);
+  StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (self);
 
-  self->priv->trough = (ClutterActor *) st_bin_new ();
-  clutter_actor_set_reactive ((ClutterActor *) self->priv->trough, TRUE);
-  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->trough), "trough");
+  priv->trough = (ClutterActor *) st_bin_new ();
+  clutter_actor_set_reactive ((ClutterActor *) priv->trough, TRUE);
+  clutter_actor_set_name (CLUTTER_ACTOR (priv->trough), "trough");
   clutter_actor_add_child (CLUTTER_ACTOR (self),
-                           CLUTTER_ACTOR (self->priv->trough));
-  g_signal_connect (self->priv->trough, "button-press-event",
+                           CLUTTER_ACTOR (priv->trough));
+  g_signal_connect (priv->trough, "button-press-event",
                     G_CALLBACK (trough_button_press_event_cb), self);
-  g_signal_connect (self->priv->trough, "button-release-event",
+  g_signal_connect (priv->trough, "button-release-event",
                     G_CALLBACK (trough_button_release_event_cb), self);
-  g_signal_connect (self->priv->trough, "leave-event",
+  g_signal_connect (priv->trough, "leave-event",
                     G_CALLBACK (trough_leave_event_cb), self);
 
-  self->priv->handle = (ClutterActor *) st_button_new ();
-  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "hhandle");
+  priv->handle = (ClutterActor *) st_button_new ();
+  clutter_actor_set_name (CLUTTER_ACTOR (priv->handle), "hhandle");
   clutter_actor_add_child (CLUTTER_ACTOR (self),
-                           CLUTTER_ACTOR (self->priv->handle));
-  g_signal_connect (self->priv->handle, "button-press-event",
+                           CLUTTER_ACTOR (priv->handle));
+  g_signal_connect (priv->handle, "button-press-event",
                     G_CALLBACK (handle_button_press_event_cb), self);
+  g_signal_connect (priv->handle, "button-release-event",
+                    G_CALLBACK (handle_button_release_event_cb), self);
+  g_signal_connect (priv->handle, "motion-event",
+                    G_CALLBACK (handle_motion_event_cb), self);
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
 
@@ -926,7 +915,7 @@ st_scroll_bar_set_adjustment (StScrollBar  *bar,
 
   g_return_if_fail (ST_IS_SCROLL_BAR (bar));
 
-  priv = bar->priv;
+  priv = st_scroll_bar_get_instance_private (bar);
 
   if (adjustment == priv->adjustment)
     return;
@@ -957,7 +946,7 @@ st_scroll_bar_set_adjustment (StScrollBar  *bar,
       clutter_actor_queue_relayout (CLUTTER_ACTOR (bar));
     }
 
-  g_object_notify (G_OBJECT (bar), "adjustment");
+  g_object_notify_by_pspec (G_OBJECT (bar), props[PROP_ADJUSTMENT]);
 }
 
 /**
@@ -974,5 +963,6 @@ st_scroll_bar_get_adjustment (StScrollBar *bar)
 {
   g_return_val_if_fail (ST_IS_SCROLL_BAR (bar), NULL);
 
-  return bar->priv->adjustment;
+  return ((StScrollBarPrivate *)ST_SCROLL_BAR_PRIVATE (bar))->adjustment;
 }
+

@@ -170,7 +170,8 @@ StThemeNode *         st_widget_get_theme_node            (StWidget        *widg
 StThemeNode *         st_widget_peek_theme_node           (StWidget        *widget);
 
 GList *               st_widget_get_focus_chain           (StWidget        *widget);
-void                  st_widget_paint_background          (StWidget        *widget);
+void                  st_widget_paint_background          (StWidget        *widget,
+                                                           ClutterPaintContext *paint_context);
 
 /* debug methods */
 char  *st_describe_actor       (ClutterActor *actor);

@@ -279,7 +279,7 @@ Expo.prototype = {
         // clones of them, this would obviously no longer be necessary.
         //
         // Disable unredirection while in the overview
-        Meta.disable_unredirect_for_screen(global.screen);
+        Meta.disable_unredirect_for_display(global.display);
         global.window_group.hide();
         this._group.show();
         this._background.show();
@@ -473,7 +473,7 @@ Expo.prototype = {
 
     _hideDone: function() {
         // Re-enable unredirection
-        Meta.enable_unredirect_for_screen(global.screen);
+        Meta.enable_unredirect_for_display(global.display);
 
         global.window_group.show();
 

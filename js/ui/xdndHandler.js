@@ -5,6 +5,7 @@ const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const DND = imports.ui.dnd;
+const Meta = imports.gi.Meta;
 
 function XdndHandler() {
     this._init();
@@ -30,9 +31,10 @@ XdndHandler.prototype = {
                                         return false;
                                       });
 
-        global.connect('xdnd-enter', Lang.bind(this, this._onEnter));
-        global.connect('xdnd-position-changed', Lang.bind(this, this._onPositionChanged));
-        global.connect('xdnd-leave', Lang.bind(this, this._onLeave));
+        var dnd = Meta.get_backend().get_dnd();
+        dnd.connect('dnd-enter', Lang.bind(this, this._onEnter));
+        dnd.connect('dnd-position-change', Lang.bind(this, this._onPositionChanged));
+        dnd.connect('dnd-leave', Lang.bind(this, this._onLeave));
 
         this._windowGroupVisibilityHandlerId = 0;
     },
