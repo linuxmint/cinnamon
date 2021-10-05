@@ -950,6 +950,11 @@ update_scaling_factor (CinnamonGlobal  *global,
 
   scaling_factor = meta_settings_get_ui_scaling_factor (settings);
   g_object_set (context, "scale-factor", scaling_factor, NULL);
+
+  if (scaling_factor != global->ui_scale) {
+      global->ui_scale = scaling_factor;
+      g_signal_emit_by_name (global, "scale-changed");
+  }
 }
 
 static void
