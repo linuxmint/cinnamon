@@ -5,6 +5,7 @@ const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
+const Clutter = imports.gi.Clutter;
 
 function init() {
     overrideDumpStack();
@@ -12,6 +13,7 @@ function init() {
     overrideGObject();
     overrideMainloop();
     overrideJS();
+    overrideClutter();
 }
 
 function check_schema_and_init(obj, method, params) {
@@ -122,6 +124,20 @@ function overrideGObject() {
             return false;
         }
     };
+}
+
+function overrideClutter() {
+    Clutter.Actor.prototype.raise = function(below) {
+
+        let self_parent = this.get_parent();
+        let below_parent = below.get_parent();
+
+        if (self_parent !== below_parent) {
+            logError("Clutter.Actor.raise() both actors must share the same parent!");
+        }
+
+        self_parent.set_child_above_sibling(this, below);
+    }
 }
 
 function overrideMainloop() {
