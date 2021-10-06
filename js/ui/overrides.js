@@ -128,15 +128,61 @@ function overrideGObject() {
 
 function overrideClutter() {
     Clutter.Actor.prototype.raise = function(below) {
-
         let self_parent = this.get_parent();
         let below_parent = below.get_parent();
 
+        if (self_parent === null) {
+            logError("Clutter.Actor.raise() actor has no parent!");
+            return
+        }
+
         if (self_parent !== below_parent) {
             logError("Clutter.Actor.raise() both actors must share the same parent!");
+            return;
         }
 
         self_parent.set_child_above_sibling(this, below);
+    }
+
+    Clutter.Actor.prototype.lower = function(above) {
+        let self_parent = this.get_parent();
+        let above_parent = above.get_parent();
+
+        if (self_parent === null) {
+            logError("Clutter.Actor.lower() actor has no parent!");
+            return
+        }
+
+        if (self_parent !== above_parent) {
+            logError("Clutter.Actor.lower() both actors must share the same parent!");
+            return;
+        }
+
+        self_parent.set_child_below_sibling(this, above);
+    }
+
+    Clutter.Actor.prototype.raise_top = function() {
+
+        let self_parent = this.get_parent();
+
+        if (self_parent === null) {
+            logError("Clutter.Actor.raise_top() actor has no parent!");
+            return
+        }
+
+        self_parent.set_child_above_sibling(this, null);
+    }
+
+    Clutter.Actor.prototype.lower_bottom = function() {
+
+        let self_parent = this.get_parent();
+
+        if (self_parent === null) {
+            logError("Clutter.Actor.lower_bottom() actor has no parent!");
+            return
+        }
+
+        self_parent.set_child_below_sibling(this, null);
     }
 }
 
