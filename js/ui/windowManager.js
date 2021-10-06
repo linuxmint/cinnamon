@@ -44,6 +44,7 @@ const {
     addTween,
     removeTweens
 } = imports.ui.tweener;
+const WindowMenu = imports.ui.windowMenu;
 
 const WINDOW_ANIMATION_TIME = 0.25;
 const TILE_HUD_ANIMATION_TIME = 0.15;
@@ -520,6 +521,7 @@ var WindowManager = class WindowManager {
         global.window_manager.connect('unminimize', (c, a) => this._unminimizeWindow(c, a));
         // global.window_manager.connect('unmaximize', (c, a, x, y, w, h) => this._unmaximizeWindow(c, a, x, y, w, h));
         // global.window_manager.connect('tile', (c, a, x, y, w, h) => this._tileWindow(c, a, x, y, w, h));
+        global.window_manager.connect('show-window-menu', this._showWindowMenu.bind(this));
         global.window_manager.connect('size-change', this._sizeChangeWindow.bind(this));
         // global.window_manager.connect('size-changed', this._sizeChangedWindow.bind(this));
         global.window_manager.connect('show-tile-preview', (c, w, t, m, s) => this._showTilePreview(c, w, t, m, s));
@@ -559,6 +561,8 @@ var WindowManager = class WindowManager {
         global.screen.connect ('show-snap-osd', (m, i) => this._showSnapOSD(m, i));
         global.screen.connect ('hide-snap-osd', () => this._hideSnapOSD());
         global.screen.connect ('show-workspace-osd', () => this.showWorkspaceOSD());
+
+        this._windowMenuManager = new WindowMenu.WindowMenuManager();
     }
 
     onSettingsChanged(settings, key, type) {
@@ -1044,6 +1048,10 @@ var WindowManager = class WindowManager {
         if (this._snapOsd != null) {
             this._snapOsd.hide();
         }
+    }
+
+    _showWindowMenu(cinnamonwm, window, menu, rect) {
+        this._windowMenuManager.showWindowMenuForWindow(window, menu, rect);
     }
 
     _createAppSwitcher(binding) {
