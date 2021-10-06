@@ -482,10 +482,48 @@ var PopupMenuItem = class PopupMenuItem extends PopupBaseMenuItem {
         this.label = new St.Label({ text: text });
         this.addActor(this.label);
         this.actor.label_actor = this.label;
+
+        this._ornament = new St.Bin();
+        this._icon = new St.Icon({ style_class: 'popup-menu-icon', icon_type: St.IconType.FULLCOLOR });
+
+        this._ornament.child = this._icon;
+        this._ornament.child._delegate = this._ornament;
+        this.addActor(this._ornament, {span: 0});
     }
 
     setLabel(label) {
         this.label.set_text(label);
+    }
+
+    setOrnament(ornamentType, state) {
+        switch (ornamentType) {
+        case OrnamentType.CHECK:
+            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof CheckBox.CheckButton))) {
+                this._ornament.child.destroy();
+                this._ornament.child = null;
+            }
+            if (!this._ornament.child) {
+                let switchOrn = new CheckBox.CheckButton(state);
+                this._ornament.child = switchOrn.actor;
+            } else {
+                this._ornament.child._delegate.setToggleState(state);
+            }
+            this._icon = null;
+            break;
+        case OrnamentType.DOT:
+            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof RadioButton.RadioBox))) {
+                this._ornament.child.destroy();
+                this._ornament.child = null;
+            }
+            if (!this._ornament.child) {
+                let radioOrn = new RadioButton.RadioBox(state);
+                this._ornament.child = radioOrn.actor;
+            } else {
+                this._ornament.child._delegate.setToggleState(state);
+            }
+            this._icon = null;
+            break;
+        }
     }
 }
 
@@ -1099,7 +1137,7 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
                 this._ornament.child = null;
             }
             if (!this._ornament.child) {
-                let switchOrn = new CheckBox.CheckButton(state);
+                let switchOrn = new CheckBox.CheckButton(null, {}, state);
                 this._ornament.child = switchOrn.actor;
             } else {
                 this._ornament.child._delegate.setToggleState(state);
@@ -1693,7 +1731,10 @@ var PopupMenuBase = class PopupMenuBase {
     addAction(title, callback) {
         let menuItem = new PopupMenuItem(title);
         this.addMenuItem(menuItem);
-        this._signals.connect(menuItem, 'activate', (menuItem, event) => { callback(event) });
+
+        menuItem.connect('activate', (o, event) => {
+            callback(event);
+        });
 
         return menuItem;
     }
@@ -2864,7 +2905,6 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
 
             this._triangle = arrowIcon(St.Side.RIGHT);
             this._triangle.set_pivot_point(0.5, 0.5);
-            // this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.5 });
             this._triangleBin.child = this._triangle;
         }
 
