@@ -201,9 +201,9 @@ st_dep = declare_dependency(
 )
 
 st_gir_includes = [
-    'Clutter-6',
-    'ClutterX11-6',
-    'Meta-6',
+    'Clutter-0',
+    'ClutterX11-0',
+    'Meta-0',
     'Gtk-3.0',
 ]
 
