@@ -468,7 +468,7 @@ var WindowManager = class WindowManager {
             // unmaximize: new Unmaximize(_endWindowEffect)
         };
 
-        this.settings = new Settings({schema_id: 'org.gnome.mutter'});
+        this.settings = new Settings({schema_id: 'org.cinnamon.muffin'});
 
         const settingsState = {
             'desktop-effects-on-dialogs': global.settings.get_boolean('desktop-effects-on-dialogs'),
