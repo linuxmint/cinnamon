@@ -16,26 +16,26 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
   if (!metaWindowActor) {
     return clones;
   }
-  let texture = metaWindowActor.get_texture();
+  // let texture = metaWindowActor.get_texture();
   let [windowWidth, windowHeight] = metaWindowActor.get_size();
   let [maxWidth, maxHeight] = [windowWidth, windowHeight];
-  let {x, y} = metaWindow.get_input_rect();
+  let {x, y} = metaWindow.get_buffer_rect();
   let [minX, minY] = [x, y];
   let [maxX, maxY] = [minX + windowWidth, minY + windowHeight];
-  textures.push({t: texture, x: x, y: y, w: windowWidth, h: windowHeight});
+  textures.push({t: metaWindowActor, x: x, y: y, w: windowWidth, h: windowHeight});
   if (withTransients) {
     metaWindow.foreach_transient(function(win) {
       let metaWindowActor = win.get_compositor_private();
-      texture = metaWindowActor.get_texture();
+      // texture = metaWindowActor.get_texture();
       [windowWidth, windowHeight] = metaWindowActor.get_size();
-      let { x, y } = win.get_input_rect();
+      let { x, y } = win.get_buffer_rect();
       maxWidth = Math.max(maxWidth, windowWidth);
       maxHeight = Math.max(maxHeight, windowHeight);
       minX = Math.min(minX, x);
       maxX = Math.max(maxX, x + windowWidth);
       minY = Math.min(minY, y);
       maxY = Math.max(maxY, y + windowHeight);
-      textures.push({t: texture, x: x, y: y, w: windowWidth, h: windowHeight});
+      textures.push({t: metaWindowActor, x: x, y: y, w: windowWidth, h: windowHeight});
     });
   }
   let scale = 1;
