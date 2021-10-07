@@ -185,11 +185,11 @@ executable(
 )
 
 cinnamon_gir_includes = [
-    'Clutter-6',
-    'ClutterX11-6',
-    'CoglPango-6',
-    'Cogl-6',
-    'Meta-6',
+    'Clutter-0',
+    'ClutterX11-0',
+    'CoglPango-0',
+    'Cogl-0',
+    'Meta-0',
     'Soup-2.4',
     'CMenu-3.0',
     st_gir[0],
