@@ -52,7 +52,7 @@ ExpoWindowClone.prototype = {
         this.refreshClone();
         this._signalManager = new SignalManager.SignalManager(null);
 
-        this._signalManager.connect(this.realWindow, 'size-changed', this.onSizeChanged, this);
+        this._signalManager.connect(this.realWindow, 'notify::size', this.onSizeChanged, this);
         this._signalManager.connect(this.metaWindow, 'workspace-changed', function(w, oldws) {
             this.emit('workspace-changed', oldws);
         }, this);

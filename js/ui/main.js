@@ -370,8 +370,8 @@ function start() {
                         let height = global.stage.height;
                         [alloc.min_size, alloc.natural_size] = [height, height];
                     });
-    // global.reparentActor(global.background_actor, uiGroup);
-    // global.background_actor.hide();
+    global.reparentActor(global.background_actor, uiGroup);
+    global.background_actor.hide();
     // global.reparentActor(global.bottom_window_group, uiGroup);
     uiGroup.add_actor(deskletContainer.actor);
     global.reparentActor(global.window_group, uiGroup);
@@ -500,7 +500,7 @@ function start() {
                 return GLib.SOURCE_REMOVE;
             });
         } else {
-            // global.background_actor.show();
+            global.background_actor.show();
             setRunState(RunState.RUNNING);
 
             if (do_login_sound)
@@ -1075,8 +1075,8 @@ function logStackTrace(msg) {
  * Returns (boolean): whether the window is on the workspace
  */
 function isWindowActorDisplayedOnWorkspace(win, workspaceIndex) {
-    if (win.get_workspace() == workspaceIndex) {return true;}
     let mwin = win.get_meta_window();
+    if (mwin.get_workspace().index() === workspaceIndex) {return true;}
     return mwin && (mwin.is_on_all_workspaces() ||
         (wm.workspacesOnlyOnPrimary && mwin.get_monitor() != layoutManager.primaryIndex)
     );

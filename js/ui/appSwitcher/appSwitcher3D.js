@@ -40,7 +40,7 @@ AppSwitcher3D.prototype = {
         this._icon = null;
         this._lastTime = 0;
 
-        this._background = Meta.BackgroundActor.new_for_screen(global.screen);
+        this._background = Meta.X11BackgroundActor.new_for_display(global.display);
         this._background.hide();
         global.overlay_group.add_actor(this._background);
 
