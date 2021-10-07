@@ -9,6 +9,7 @@
 #include <meta/meta-x11-display.h>
 #include <meta/compositor-mutter.h>
 #include <meta/meta-cursor-tracker.h>
+#include <meta/meta-background-actor.h>
 #include <meta/meta-settings.h>
 #include <meta/meta-backend.h>
 #include <meta/util.h>
@@ -138,10 +139,9 @@ cinnamon_global_get_property(GObject         *object,
     case PROP_TOP_WINDOW_GROUP:
       g_value_set_object (value, meta_get_top_window_group_for_display (global->meta_display));
       break;
-      // TODO -- MetaBackgroundActor creates new actor each time.
-    // case PROP_BACKGROUND_ACTOR:
-    //   g_value_set_object (value, meta_get_background_actor_for_screen (global->cinnamon_screen));
-    //   break;
+    case PROP_BACKGROUND_ACTOR:
+      g_value_set_object (value, meta_get_x11_background_actor_for_display (global->meta_display));
+      break;
     case PROP_WINDOW_MANAGER:
       g_value_set_object (value, global->wm);
       break;

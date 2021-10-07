@@ -66,7 +66,7 @@ WindowClone.prototype = {
 
         this._stackAbove = null;
 
-        let sizeChangedId = this.realWindow.connect('size-changed',
+        let sizeChangedId = this.realWindow.connect('notify::size',
                 this._onRealWindowSizeChanged.bind(this));
         let workspaceChangedId = this.metaWindow.connect('workspace-changed',
                 (w, oldws) => this.emit('workspace-changed', oldws));
@@ -91,7 +91,7 @@ WindowClone.prototype = {
     refreshClone: function(withTransients) {
         this.actor.destroy_all_children();
 
-        let {x, y, width, height} = this.metaWindow.get_outer_rect();
+        let {x, y, width, height} = this.metaWindow.get_frame_rect();
         let clones = WindowUtils.createWindowClone(this.metaWindow, 0, 0, withTransients);
         let leftGap, topGap;
         for (let clone of clones) {
@@ -680,7 +680,7 @@ WorkspaceMonitor.prototype = {
      */
     _computeWindowLayout: function(metaWindow, slot) {
         let [x, y, width, height] = this._getSlotGeometry(slot);
-        let rect = metaWindow.get_outer_rect();
+        let rect = metaWindow.get_frame_rect();
         let topBorder = 0, bottomBorder = 0, leftBorder = 0, rightBorder = 0;
 
         if (this._windows.length) {
