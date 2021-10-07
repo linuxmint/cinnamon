@@ -1727,6 +1727,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let keyCode = event.get_key_code();
         let modifierState = Cinnamon.get_event_state(event);
 
+        /* Accounts for mirrored RTL layout.
+           Switches between left/right key presses */
+        if(St.Widget.get_default_direction() === St.TextDirection.RTL) {
+            if(symbol === Clutter.KEY_Right) {
+                symbol = Clutter.KEY_Left;
+            } else if(symbol === Clutter.KEY_Left) {
+                symbol = Clutter.KEY_Right;
+            }
+        }
+
         /* check for a keybinding and quit early, otherwise we get a double hit
            of the keybinding callback */
         let action = global.display.get_keybinding_action(keyCode, modifierState);
