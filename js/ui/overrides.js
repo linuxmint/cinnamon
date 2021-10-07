@@ -6,6 +6,7 @@ const Mainloop = imports.mainloop;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
+const Meta = imports.gi.Meta;
 
 function init() {
     overrideDumpStack();
@@ -14,6 +15,7 @@ function init() {
     overrideMainloop();
     overrideJS();
     overrideClutter();
+    overrideMeta();
 }
 
 function check_schema_and_init(obj, method, params) {
@@ -185,6 +187,23 @@ function overrideClutter() {
         self_parent.set_child_below_sibling(this, null);
     }
 }
+
+function overrideMeta() {
+    Meta.BackgroundActor.new_for_screen = function(screen) {
+        let bga = new Meta.BackgroundActor({meta_display: global.display, monitor: 0});
+        bga.set_background(new Meta.Background({meta_display: global.display}));
+        return bga;
+    }
+
+    Meta.disable_unredirect_for_screen = function(screen) {
+        Meta.disable_unredirect_for_display(global.display);
+    }
+
+    Meta.enable_unredirect_for_screen = function(screen) {
+        Meta.enable_unredirect_for_display(global.display);
+    }
+}
+
 
 function overrideMainloop() {
     Mainloop.__real_source_remove = Mainloop.source_remove;
