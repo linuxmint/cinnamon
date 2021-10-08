@@ -1,13 +1,6 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 
 /*
- * Copyright (C) 2001, 2002 Havoc Pennington
- * Copyright (C) 2002, 2003 Red Hat Inc.
- * Some ICCCM manager selection code derived from fvwm2,
- * Copyright (C) 2001 Dominik Vogt, Matthias Clasen, and fvwm2 team
- * Copyright (C) 2003 Rob Adams
- * Copyright (C) 2004-2006 Elijah Newren
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the
@@ -25,9 +18,10 @@
  */
 
 /**
- * SECTION:screen
- * @title: CinnamonScreen
- * @short_description: Muffin X screen handler
+ * This is a shim class to help compatibility with older (pre-5.2)
+ * js code. MetaScreen no longer exists (global.screen), and its api
+ * is distributed in MetaDisplay, MetaWorkspaceManager and elsewhere.
+ * We should use new api when possible, especially in core cinnamon js.
  */
 
 #include <config.h>
@@ -53,7 +47,6 @@ enum
 enum
 {
   RESTACKED,
-  TOGGLE_RECORDING,
   WORKSPACE_ADDED,
   WORKSPACE_REMOVED,
   WORKSPACE_SWITCHED,
@@ -347,14 +340,6 @@ cinnamon_screen_class_init (CinnamonScreenClass *klass)
   //                 0,
   //                 NULL, NULL, NULL,
   //                 G_TYPE_NONE, 1, G_TYPE_POINTER);
-
-  screen_signals[TOGGLE_RECORDING] =
-    g_signal_new ("toggle-recording",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  0,
-                  NULL, NULL, NULL,
-                  G_TYPE_NONE, 0);
 
   screen_signals[WORKAREAS_CHANGED] =
     g_signal_new ("workareas-changed",
