@@ -202,7 +202,7 @@ function setRunState(state) {
 function _initRecorder() {
     let recorderSettings = new Gio.Settings({ schema_id: 'org.cinnamon.recorder' });
 
-    global.screen.connect('toggle-recording', function() {
+    Meta.keybindings_set_custom_handler('toggle-recording', function() {
         if (recorder == null) {
             recorder = new Cinnamon.Recorder({ stage: global.stage });
         }
