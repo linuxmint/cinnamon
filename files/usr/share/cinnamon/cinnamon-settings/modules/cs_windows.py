@@ -107,21 +107,21 @@ class Module:
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            placement_options = [["automatic", _("Automatic")], ["pointer", _("Cursor")], ["manual", _("Manual")], ["center", _("Center")]]
-            widget = GSettingsComboBox(_("Location of newly opened windows"), "org.cinnamon.muffin", "placement-mode", placement_options, size_group=size_group)
-            settings.add_row(widget)
+            # placement_options = [["automatic", _("Automatic")], ["pointer", _("Cursor")], ["manual", _("Manual")], ["center", _("Center")]]
+            # widget = GSettingsComboBox(_("Location of newly opened windows"), "org.cinnamon.muffin", "placement-mode", placement_options, size_group=size_group)
+            # settings.add_row(widget)
 
             special_key_options = [["", _("Disabled")], ["<Alt>", "<Alt>"],["<Super>", "<Super>"],["<Control>", "<Control>"]]
             widget = GSettingsComboBox(_("Special key to move and resize windows"), "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", special_key_options, size_group=size_group)
             widget.set_tooltip_text(_("While the special key is pressed, windows can be dragged with the left mouse button and resized with the right mouse button."))
             settings.add_row(widget)
 
-            widget = GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", _("Pixels"), 1, 100, size_group=size_group)
-            settings.add_row(widget)
+            # widget = GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", _("Pixels"), 1, 100, size_group=size_group)
+            # settings.add_row(widget)
 
-            widget = GSettingsSwitch(_("Edge resistance with other windows and monitor boundaries"), "org.cinnamon.muffin", "edge-resistance-window")
-            widget.set_tooltip_text(_("Make window borders stick when moved or resized near other windows or monitor edges."))
-            settings.add_row(widget)
+            # widget = GSettingsSwitch(_("Edge resistance with other windows and monitor boundaries"), "org.cinnamon.muffin", "edge-resistance-window")
+            # widget.set_tooltip_text(_("Make window borders stick when moved or resized near other windows or monitor edges."))
+            # settings.add_row(widget)
 
             # Alt Tab
 
