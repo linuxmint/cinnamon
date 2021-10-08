@@ -172,9 +172,8 @@ st_texture_cache_init (StTextureCache *self)
 
   self->priv = g_new0 (StTextureCachePrivate, 1);
 
-  self->priv->icon_theme = gtk_icon_theme_new ();
-  gtk_icon_theme_add_resource_path (self->priv->icon_theme,
-                                    "/org/gnome/shell/theme/icons");
+  self->priv->icon_theme = gtk_icon_theme_get_default ();
+
   g_signal_connect (self->priv->icon_theme, "changed",
                     G_CALLBACK (on_gtk_icon_theme_changed), self);
 
