@@ -20,15 +20,6 @@ const {getWindowsForBinding} = imports.ui.appSwitcher.appSwitcher;
 const {CoverflowSwitcher} = imports.ui.appSwitcher.coverflowSwitcher;
 const {TimelineSwitcher} = imports.ui.appSwitcher.timelineSwitcher;
 const {ClassicSwitcher} = imports.ui.appSwitcher.classicSwitcher;
-const {
-    Map,
-    Close,
-    Minimize,
-    Unminimize,
-    Tile,
-    Unmaximize,
-    SizeChange
-} = imports.ui.windowEffects;
 const {each, filter, tryFn} = imports.misc.util;
 const Main = imports.ui.main;
 const {
@@ -47,7 +38,6 @@ const {
 const WindowMenu = imports.ui.windowMenu;
 
 const WINDOW_ANIMATION_TIME = 0.25;
-const TILE_HUD_ANIMATION_TIME = 0.15;
 const DIM_TIME = 0.500;
 const DIM_DESATURATION = 0.6;
 const DIM_BRIGHTNESS = -0.2;
@@ -81,8 +71,6 @@ const ZONE_TL = 4;
 const ZONE_TR = 5;
 const ZONE_BR = 6;
 const ZONE_BL = 7;
-
-const SETTINGS_EFFECTS_TYPES = [['effect', 'get_string'], ['time', 'get_int'], ['transition', 'get_string']];
 
 class WindowDimmer {
     constructor(actor) {
@@ -123,20 +111,14 @@ class TilePreview {
         this.actor = new Bin({ style_class: 'tile-preview', important: true });
         global.window_group.add_actor(this.actor);
 
-        this._snapQueued = 0;
         this._reset();
         this._showing = false;
     }
 
-    show(window, tileRect, monitorIndex, snapQueued, effectsEnabled) {
+    show(window, tileRect, monitorIndex) {
         let windowActor = window.get_compositor_private();
         if (!windowActor)
             return;
-
-        if (this._snapQueued != snapQueued) {
-            this._updateStyle();
-            this._snapQueued = snapQueued;
-        }
 
         if (this._rect && this._rect.equal(tileRect))
             return;
@@ -172,7 +154,7 @@ class TilePreview {
             opacity: 255,
         };
 
-        if (effectsEnabled) {
+        if (true) {
             Object.assign(props, {
                 time: WINDOW_ANIMATION_TIME,
                 transition: 'easeOutQuad'
@@ -184,13 +166,13 @@ class TilePreview {
         Object.assign(this.actor, props);
     }
 
-    hide(effectsEnabled) {
+    hide() {
         if (!this._showing)
             return;
 
         this._showing = false;
 
-        if (effectsEnabled) {
+        if (true) {
             addTween(this.actor, {
                 opacity: 0,
                 time: WINDOW_ANIMATION_TIME,
@@ -221,303 +203,46 @@ class TilePreview {
     }
 };
 
-class HudPreview {
-    constructor() {
-        this.actor = new Bin({ style_class: 'tile-hud', important: true });
-        global.window_group.add_actor(this.actor);
-
-        // this._tileHudSettings = new Settings({ schema_id: "org.cinnamon.muffin" });
-        // this._tileHudSettings.connect("changed::tile-hud-threshold", () => this._onTileHudSettingsChanged());
-
-        // this._onTileHudSettingsChanged();
-        this._snapQueued = 0;
-
-        this._reset();
-        this._showing = false;
-    }
-
-    show(currentProximityZone, workArea, snapQueued, effectsEnabled) {
-        let changeZone = (this._zone != currentProximityZone);
-
-        if (this._snapQueued != snapQueued) {
-            this._updateSnapStyle();
-            this._snapQueued = snapQueued;
-        }
-
-        let pseudoClass = null;
-
-        if (!this._showing || changeZone) {
-            this._zone = currentProximityZone;
-
-            let monitorRect = workArea;
-            let tileGap = this._hudSize + 10;
-
-            switch(this._zone) {
-                case ZONE_TOP:
-                    this._x = monitorRect.x + tileGap;
-                    this._y = monitorRect.y;
-                    this._w = monitorRect.width - (tileGap * 2);
-                    this._h = 0;
-                    this._animatedX = this._x;
-                    this._animatedY = this._y;
-                    this._animatedW = this._w;
-                    this._animatedH = this._h + this._hudSize;
-                    this.actor.set_size(this._w, this._h);
-                    this.actor.set_position(this._x, this._y);
-                    pseudoClass = 'top';
-                    break;
-                case ZONE_BOTTOM:
-                    this._x = monitorRect.x + tileGap;
-                    this._y = monitorRect.y + monitorRect.height;
-                    this._w = monitorRect.width - (tileGap * 2);
-                    this._h = 0;
-                    this._animatedX = this._x;
-                    this._animatedY = this._y - this._hudSize;
-                    this._animatedW = this._w;
-                    this._animatedH = this._h + this._hudSize;
-                    this.actor.set_size(this._w, this._h);
-                    this.actor.set_position(this._x, this._y);
-                    pseudoClass = 'bottom';
-                    break;
-                case ZONE_LEFT:
-                    this._x = monitorRect.x;
-                    this._y = monitorRect.y + tileGap;
-                    this._w = 0;
-                    this._h = monitorRect.height - (tileGap * 2);
-                    this._animatedX = this._x;
-                    this._animatedY = this._y;
-                    this._animatedW = this._w + this._hudSize;
-                    this._animatedH = this._h;
-                    this.actor.set_size(this._w, this._h);
-                    this.actor.set_position(this._x, this._y);
-                    pseudoClass = 'left';
-                    break;
-                case ZONE_RIGHT:
-                    this._x = monitorRect.x + monitorRect.width;
-                    this._y = monitorRect.y + tileGap;
-                    this._w = 0;
-                    this._h = monitorRect.height - (tileGap * 2);
-                    this._animatedX = this._x - this._hudSize;
-                    this._animatedY = this._y;
-                    this._animatedW = this._w + this._hudSize;
-                    this._animatedH = this._h;
-                    this.actor.set_size(this._w, this._h);
-                    this.actor.set_position(this._x, this._y);
-                    pseudoClass = 'right';
-                    break;
-                case ZONE_TL:
-                    this._x = monitorRect.x;
-                    this._y = monitorRect.y;
-                    this._w = 0;
-                    this._h = 0;
-                    this._animatedX = this._x;
-                    this._animatedY = this._y;
-                    this._animatedW = this._w + this._hudSize;
-                    this._animatedH = this._h + this._hudSize;
-                    this.actor.set_size(this._w, this._h);
-                    this.actor.set_position(this._x, this._y);
-                    pseudoClass = 'top-left';
-                    break;
-                case ZONE_TR:
-                    this._x = monitorRect.x + monitorRect.width;
-                    this._y = monitorRect.y;
-                    this._w = 0;
-                    this._h = 0;
-                    this._animatedX = this._x - this._hudSize;
-                    this._animatedY = this._y;
-                    this._animatedW = this._w + this._hudSize;
-                    this._animatedH = this._h + this._hudSize;
-                    this.actor.set_size(this._w, this._h);
-                    this.actor.set_position(this._x, this._y);
-                    pseudoClass = 'top-right';
-                    break;
-                case ZONE_BL:
-                    this._x = monitorRect.x;
-                    this._y = monitorRect.y + monitorRect.height;
-                    this._w = 0;
-                    this._h = 0;
-                    this._animatedX = this._x;
-                    this._animatedY = this._y - this._hudSize;
-                    this._animatedW = this._w + this._hudSize;
-                    this._animatedH = this._h + this._hudSize;
-                    this.actor.set_size(this._w, this._h);
-                    this.actor.set_position(this._x, this._y);
-                    pseudoClass = 'bottom-left';
-                    break;
-                case ZONE_BR:
-                    this._x = monitorRect.x + monitorRect.width;
-                    this._y = monitorRect.y + monitorRect.height;
-                    this._w = 0;
-                    this._h = 0;
-                    this._animatedX = this._x - this._hudSize;
-                    this._animatedY = this._y - this._hudSize;
-                    this._animatedW = this._w + this._hudSize;
-                    this._animatedH = this._h + this._hudSize;
-                    this.actor.set_size(this._w, this._h);
-                    this.actor.set_position(this._x, this._y);
-                    pseudoClass = 'bottom-right';
-                    break;
-                default:
-                    this.hide();
-                    return;
-
-            }
-            this._updateStyle(pseudoClass);
-
-            this._showing = true;
-            this.actor.show();
-            this.actor.get_parent().set_child_above_sibling(this.actor, null);
-            this.actor.opacity = 0;
-
-            let props = {
-                x: this._animatedX,
-                y: this._animatedY,
-                width: this._animatedW,
-                height: this._animatedH,
-                opacity: 255,
-            };
-
-            if (effectsEnabled) {
-                Object.assign(props, {
-                    time: TILE_HUD_ANIMATION_TIME,
-                    transition: 'easeOutQuad'
-                })
-                addTween(this.actor, props);
-                return;
-            }
-
-            Object.assign(this.actor, props);
-        }
-    }
-
-    hide(effectsEnabled) {
-        if (!this._showing)
-            return;
-        this._showing = false;
-        let props = {
-            x: this._x,
-            y: this._y,
-            width: this._w,
-            height: this._h,
-            opacity: 0,
-        };
-
-        if (effectsEnabled) {
-            Object.assign(props, {
-                time: TILE_HUD_ANIMATION_TIME,
-                transition: 'easeOutQuad',
-                onComplete: () => this._reset()
-            });
-            addTween(this.actor, props);
-            return;
-        }
-
-        Object.assign(this.actor, props);
-    }
-
-    _reset() {
-        this.actor.hide();
-        this._zone = -1;
-    }
-
-    _onTileHudSettingsChanged() {
-        let scaleFactor = global.ui_scale;
-        this._hudSize = this._tileHudSettings.get_int("tile-hud-threshold") * scaleFactor;
-
-    }
-
-    _updateStyle(pseudoClass) {
-        let currentStyle = this.actor.get_style_pseudo_class();
-        if (currentStyle)
-            this.actor.remove_style_pseudo_class(currentStyle);
-        if (pseudoClass) {
-            this.actor.set_style_pseudo_class(pseudoClass);
-        }
-    }
-
-    _updateSnapStyle() {
-        if (this.actor.has_style_class_name('snap'))
-            this.actor.remove_style_class_name('snap');
-        else
-            this.actor.add_style_class_name('snap');
-    }
-
-    destroy() {
-        this.actor.destroy();
-    }
-}
-
 var WindowManager = class WindowManager {
     constructor() {
-        this._minimizing = [];
-        this._unminimizing = [];
-        this._tiling = [];
-        this._mapping = [];
-        this._destroying = [];
-        this._size_changing = [];
+        this._cinnamonwm = global.window_manager;
 
-        const _endWindowEffect = (c, n, a) => this._endWindowEffect(c, n, a);
-
-        this.effects = {
-            map: new Map(_endWindowEffect),
-            close: new Close(_endWindowEffect),
-            minimize: new Minimize(_endWindowEffect),
-            unminimize: new Unminimize(_endWindowEffect),
-            sizechange: new SizeChange(_endWindowEffect),
-            // maximize: new Maximize(_endWindowEffect),
-            // unmaximize: new Unmaximize(_endWindowEffect)
-        };
+        this._minimizing = new Set();
+        this._unminimizing = new Set();
+        this._mapping = new Set();
+        this._resizing = new Set();
+        this._resizePending = new Set();
+        this._destroying = new Set();
+        this._movingWindow = null;
 
         this.settings = new Settings({schema_id: 'org.cinnamon.muffin'});
+        this.hasEffects = global.settings.get_boolean('desktop-effects');
 
-        const settingsState = {
-            'desktop-effects-on-dialogs': global.settings.get_boolean('desktop-effects-on-dialogs'),
-            'desktop-effects-on-menus': global.settings.get_boolean('desktop-effects-on-menus'),
-            'desktop-effects': true//this.settings.get_boolean('desktop-effects'),
-        };
+        global.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
 
-        global.settings.connect('changed::desktop-effects-on-dialogs', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
-        global.settings.connect('changed::desktop-effects-on-menus', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
-        // this.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        this._workspace_osd_array = [];
+        this._tilePreview = null;
+        this._dimmedWindows = [];
+        this._animationBlockCount = 0;
+        this._switchData = null;
 
-        each(this.effects, (value, key) => {
-            // if (key === 'unminimize') return;
-            each(SETTINGS_EFFECTS_TYPES, (item) => {
-                let [name, type] = item;
-                let property = `desktop-effects-${key}-${name}`;
-                settingsState[property] = global.settings[type](property);
-                global.settings.connect(`changed::${property}`, (s, k) => this.onSettingsChanged(s, k, type));
-            });
+        this._cinnamonwm.connect('kill-window-effects', (cinnamonwm, actor) => {
+            this._minimizeWindowDone(cinnamonwm, actor);
+            this._mapWindowDone(cinnamonwm, actor);
+            this._destroyWindowDone(cinnamonwm, actor);
+            this._sizeChangeWindowDone(cinnamonwm, actor);
         });
 
-        this.settingsState = settingsState;
-
-        this._snapOsd = null;
-        this._workspace_osd_array = [];
-
-        this._tilePreview = null;
-        this._hudPreview = null;
-
-        this._dimmedWindows = [];
-
-        this._animationBlockCount = 0;
-
-        this._switchData = null;
-        global.window_manager.connect('kill-window-effects', (c, a) => this._killWindowEffects(c, a));
+        this._cinnamonwm.connect('show-tile-preview', this._showTilePreview.bind(this));
+        this._cinnamonwm.connect('hide-tile-preview', this._hideTilePreview.bind(this));
+        this._cinnamonwm.connect('show-window-menu', this._showWindowMenu.bind(this));
+        this._cinnamonwm.connect('minimize', this._minimizeWindow.bind(this));
+        this._cinnamonwm.connect('minimize', this._minimizeWindow.bind(this));
+        this._cinnamonwm.connect('size-change', this._sizeChangeWindow.bind(this));
+        this._cinnamonwm.connect('size-changed', this._sizeChangedWindow.bind(this));
+        this._cinnamonwm.connect('map', this._mapWindow.bind(this));
+        this._cinnamonwm.connect('destroy', this._destroyWindow.bind(this));
         global.window_manager.connect('switch-workspace', (c, f, t, d) => this._switchWorkspace(c, f, t, d));
-        global.window_manager.connect('minimize', (c, a) => this._minimizeWindow(c, a));
-        global.window_manager.connect('unminimize', (c, a) => this._unminimizeWindow(c, a));
-        // global.window_manager.connect('unmaximize', (c, a, x, y, w, h) => this._unmaximizeWindow(c, a, x, y, w, h));
-        // global.window_manager.connect('tile', (c, a, x, y, w, h) => this._tileWindow(c, a, x, y, w, h));
-        global.window_manager.connect('show-window-menu', this._showWindowMenu.bind(this));
-        global.window_manager.connect('size-change', this._sizeChangeWindow.bind(this));
-        // global.window_manager.connect('size-changed', this._sizeChangedWindow.bind(this));
-        global.window_manager.connect('show-tile-preview', (c, w, t, m, s) => this._showTilePreview(c, w, t, m, s));
-        global.window_manager.connect('hide-tile-preview', (c) => this._hideTilePreview(c));
-        // global.window_manager.connect('show-hud-preview', (c, p, w, s) => this._showHudPreview(c, p, w, s));
-        // global.window_manager.connect('hide-hud-preview', (c) => this._hideHudPreview(c));
-        global.window_manager.connect('map', (c, a) => this._mapWindow(c, a));
-        global.window_manager.connect('destroy', (c, a) => this._destroyWindow(c, a));
 
         keybindings_set_custom_handler('move-to-workspace-left', (d, w, b) => this._moveWindowToWorkspaceLeft(d, w, b));
         keybindings_set_custom_handler('move-to-workspace-right', (d, w, b) => this._moveWindowToWorkspaceRight(d, w, b));
@@ -546,22 +271,13 @@ var WindowManager = class WindowManager {
             }
         });
 
-        global.screen.connect ('show-snap-osd', (m, i) => this._showSnapOSD(m, i));
-        global.screen.connect ('hide-snap-osd', () => this._hideSnapOSD());
         global.screen.connect ('show-workspace-osd', () => this.showWorkspaceOSD());
 
         this._windowMenuManager = new WindowMenu.WindowMenuManager();
     }
 
     onSettingsChanged(settings, key, type) {
-        switch (settings.schema) {
-            case 'org.cinnamon':
-                this.settingsState[key] = global.settings[type](key);
-                break;
-            // case 'org.cinnamon.muffin':
-            //     this.settingsState[key] = this.settings[type](key);
-            //     break;
-        }
+        this.hasEffects = global.settings.get_boolean('desktop-effects');
     }
 
     blockAnimations() {
@@ -580,98 +296,48 @@ var WindowManager = class WindowManager {
 
         switch (actor.meta_window.window_type) {
             case WindowType.NORMAL:
-                return true;
             case WindowType.DIALOG:
             case WindowType.MODAL_DIALOG:
-                return this.settingsState['desktop-effects-on-dialogs'];
+                return true;
             case WindowType.MENU:
             case WindowType.DROPDOWN_MENU:
             case WindowType.POPUP_MENU:
-                return this.settingsState['desktop-effects-on-menus'];
+                return false;
             default:
                 return false;
         }
     }
 
-    _startWindowEffect(cinnamonwm, name, actor, args, overwriteKey) {
-        let effect = this.effects[name];
-        if (!this.settingsState['desktop-effects'] || !this._shouldAnimate(actor)) {
-            log("BAILINGG EFFECT: "+name);
-            cinnamonwm[effect.wmCompleteName](actor);
-            return;
-        }
-
-        let key = "desktop-effects-" + (overwriteKey || effect.name);
-        let time = this.settingsState[`${key}-time`];
-log("TIME: " + time);
-        // Transition time is 0ms, bail
-        if (!time) {
-            cinnamonwm[effect.wmCompleteName](actor);
-            return;
-        }
-
-        let type = this.settingsState[`${key}-effect`];
-
-        // make sure to end a running effect
-        if (actor.current_effect_name) {
-            this._endWindowEffect(cinnamonwm, actor.current_effect_name, actor);
-        }
-        this[effect.arrayName].push(actor);
-        actor.current_effect_name = name;
-        actor.orig_opacity = actor.opacity;
-        actor.show();
-
-        if (effect[type]) {
-            time = time / 1000;
-            let transition = this.settingsState[`${key}-transition`];
-
-            effect[type](cinnamonwm, actor, time, transition, args);
-        } else if (!overwriteKey) // when not unminimizing, but the effect was not found, end it
-            this._endWindowEffect(cinnamonwm, name, actor);
-    }
-
-    _endWindowEffect(cinnamonwm, name, actor) {
-        log("end: " + name);
-        let effect = this.effects[name];
-        // effect will be an instance of Effect
-        let idx = this[effect.arrayName].indexOf(actor);
-        if (idx !== -1) {
-            this[effect.arrayName].splice(idx, 1);
-            removeTweens(actor);
-            delete actor.current_effect_name;
-            effect._end(actor);
-            cinnamonwm[effect.wmCompleteName](actor);
-            panelManager.updatePanelsVisibility();
-        }
-    }
-
-    _killWindowEffects(cinnamonwm, actor) {
-        for (let i in this.effects) {
-            this._endWindowEffect(cinnamonwm, i, actor);
-        }
-    }
-
     _minimizeWindow(cinnamonwm, actor) {
         soundManager.play('minimize');
-        log("start minimize");
 
-        // reset all cached values in case "traditional" is no longer in effect
-        actor.meta_window._cinnamonwm_has_origin = false;
-        this._startWindowEffect(cinnamonwm, "minimize", actor);
+        cinnamonwm.completed_minimize(actor);
+    }
+
+    _minimizeWindowDone(cinnamonwm, actor) {
+        cinnamonwm.completed_minimize(actor);
     }
 
     _unminimizeWindow(cinnamonwm, actor) {
         soundManager.play('maximize');
-        log("start unminimize");
-        let [success, target] = actor.meta_window.get_icon_geometry()
-        this._startWindowEffect(cinnamonwm, "unminimize", actor, [target.x, target.y, target.width, target.height]);
+
+        cinnamonwm.completed_unminimize(actor);
+    }
+
+    _unminimizeWindowDone(shellwm, actor) {
+        cinnamonwm.completed_unminimize(actor);
     }
 
     _sizeChangeWindow(cinnamonwm, actor, whichChange, oldFrameRect, _oldBufferRect) {
-        log("start size-change");
-        let [success, target] = actor.meta_window.get_icon_geometry()
+        cinnamonwm.completed_size_change(actor);
+    }
 
-        this._startWindowEffect(cinnamonwm, "sizechange", actor, [oldFrameRect, target]);
+    _sizeChangedWindow(cinnamonwm, actor) {
+        return;
+    }
+
+    _sizeChangeWindowDone(cinnamonwm, actor) {
+        this._cinnamonwm.completed_size_change(actor);
     }
 
     _hasAttachedDialogs(window, ignoreWindow) {
@@ -753,14 +419,11 @@ log("TIME: " + time);
             this._checkDimming(meta_window.get_transient_for());
         }
 
-        if (meta_window._cinnamonwm_has_origin && meta_window._cinnamonwm_has_origin === true) {
-            soundManager.play('minimize');
-            this._startWindowEffect(cinnamonwm, 'unminimize', actor, null, 'minimize');
-            return;
-        } else if (meta_window.window_type === WindowType.NORMAL) {
-            soundManager.play('map');
-        }
-        this._startWindowEffect(cinnamonwm, "map", actor);
+        cinnamonwm.completed_map(actor);
+    }
+
+    _mapWindowDone(cinnamonwm, actor) {
+        cinnamonwm.completed_map(actor);
     }
 
     _destroyWindow(cinnamonwm, actor) {
@@ -793,11 +456,15 @@ log("TIME: " + time);
             return;
         }
 
-        this._startWindowEffect(cinnamonwm, "close", actor);
+        cinnamonwm.completed_destroy(actor);
+    }
+
+    _destroyWindowDone(cinnamonwm, actor) {
+        cinnamonwm.completed_destroy(actor);
     }
 
     _switchWorkspace(cinnamonwm, from, to, direction) {
-        if (!this.settingsState['desktop-effects'] || Main.modalCount || Main.software_rendering) {
+        if (Main.modalCount || Main.software_rendering) {
             this.showWorkspaceOSD();
             cinnamonwm.completed_switch_workspace();
             return;
@@ -895,38 +562,21 @@ log("TIME: " + time);
         }});
     }
 
-    _showTilePreview(cinnamonwm, window, tileRect, monitorIndex, snapQueued) {
+    _showTilePreview(cinnamonwm, window, tileRect, monitorIndex) {
         if (!this._tilePreview)
             this._tilePreview = new TilePreview();
-        this._tilePreview.show(window, tileRect, monitorIndex, snapQueued, this.settingsState['desktop-effects']);
+        this._tilePreview.show(window, tileRect, monitorIndex);
     }
 
     _hideTilePreview(cinnamonwm) {
         if (!this._tilePreview)
             return;
-        this._tilePreview.hide(this.settingsState['desktop-effects']);
+        this._tilePreview.hide();
         this._tilePreview.destroy();
         this._tilePreview = null;
     }
 
-    _showHudPreview(cinnamonwm, currentProximityZone, workArea, snapQueued) {
-        if (global.settings.get_boolean('show-tile-hud')) {
-            if (!this._hudPreview)
-                this._hudPreview = new HudPreview();
-            this._hudPreview.show(currentProximityZone, workArea, snapQueued, this.settingsState['desktop-effects']);
-        }
-    }
-
-    _hideHudPreview(cinnamonwm) {
-        if (!this._hudPreview)
-            return;
-        this._hudPreview.hide(this.settingsState['desktop-effects']);
-        this._hudPreview.destroy();
-        this._hudPreview = null;
-    }
-
     showWorkspaceOSD() {
-        this._hideSnapOSD();
         this._hideWorkspaceOSD();
         if (global.settings.get_boolean('workspace-osd-visible')) {
             let current_workspace_index = global.screen.get_active_workspace_index();
@@ -953,51 +603,19 @@ log("TIME: " + time);
     }
 
     _hideWorkspaceOSD() {
-        let effectsEnabled = this.settingsState['desktop-effects'];
-
         for (let i = 0; i < this._workspace_osd_array.length; i++) {
             let osd = this._workspace_osd_array[i];
             if (osd != null) {
-                if (effectsEnabled) {
-                    osd.actor.opacity = 255;
-                    addTween(osd.actor, {
-                        opacity: 0,
-                        time: WORKSPACE_OSD_TIMEOUT,
-                        transition: 'linear',
-                        onComplete: () => osd.destroy()
-                    });
-                } else {
-                    osd.destroy();
-                }
+                osd.actor.opacity = 255;
+                addTween(osd.actor, {
+                    opacity: 0,
+                    time: WORKSPACE_OSD_TIMEOUT,
+                    transition: 'linear',
+                    onComplete: () => osd.destroy()
+                });
             }
         }
         this._workspace_osd_array = [];
-    }
-
-    _showSnapOSD(metaScreen, monitorIndex) {
-        if (global.settings.get_boolean('show-snap-osd')) {
-            if (this._snapOsd == null) {
-                this._snapOsd = new InfoOSD();
-
-                let mod = this.settings.get_string('snap-modifier');
-                if (mod === 'Super')
-                    this._snapOsd.addText(_("Hold <Super> to enter snap mode"));
-                else if (mod === 'Alt')
-                    this._snapOsd.addText(_("Hold <Alt> to enter snap mode"));
-                else if (mod === 'Control')
-                    this._snapOsd.addText(_("Hold <Ctrl> to enter snap mode"));
-                else if (mod === 'Shift')
-                    this._snapOsd.addText(_("Hold <Shift> to enter snap mode"));
-                this._snapOsd.addText(_("Use the arrow or numeric keys to switch workspaces while dragging"));
-            }
-            this._snapOsd.show(monitorIndex);
-        }
-    }
-
-    _hideSnapOSD() {
-        if (this._snapOsd != null) {
-            this._snapOsd.hide();
-        }
     }
 
     _showWindowMenu(cinnamonwm, window, menu, rect) {
