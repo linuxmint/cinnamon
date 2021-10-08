@@ -38,7 +38,7 @@ gl = dependency('gl')
 glib_version = '2.52.0'
 glib = dependency('glib-2.0', version: '>= ' + glib_version)
 gtk = dependency('gtk+-3.0', version: '>= 3.12.0')
-muffin = dependency('libmuffin-0', version: '>= 4.0.3')
+muffin = dependency('libmuffin-0', version: '>= 5.2.0')
 muffin_typelibdir = muffin.get_pkgconfig_variable('typelibdir')
 pango = dependency('muffin-cogl-pango-0')
 soup = dependency('libsoup-2.4')
