@@ -519,19 +519,19 @@ var WindowManager = class WindowManager {
         global.window_manager.connect('map', (c, a) => this._mapWindow(c, a));
         global.window_manager.connect('destroy', (c, a) => this._destroyWindow(c, a));
 
-        keybindings_set_custom_handler('move-to-workspace-left', (d, s, w, b) => this._moveWindowToWorkspaceLeft(d, s, w, b));
-        keybindings_set_custom_handler('move-to-workspace-right', (d, s, w, b) => this._moveWindowToWorkspaceRight(d, s, w, b));
+        keybindings_set_custom_handler('move-to-workspace-left', (d, w, b) => this._moveWindowToWorkspaceLeft(d, w, b));
+        keybindings_set_custom_handler('move-to-workspace-right', (d, w, b) => this._moveWindowToWorkspaceRight(d, w, b));
 
-        keybindings_set_custom_handler('switch-to-workspace-left', (d, s, w, b) => this._showWorkspaceSwitcher(d, s, w, b));
-        keybindings_set_custom_handler('switch-to-workspace-right', (d, s, w, b) => this._showWorkspaceSwitcher(d, s, w, b));
-        keybindings_set_custom_handler('switch-to-workspace-up', (d, s, w, b) => this._showWorkspaceSwitcher(d, s, w, b));
-        keybindings_set_custom_handler('switch-to-workspace-down', (d, s, w, b) => this._showWorkspaceSwitcher(d, s, w, b));
-        keybindings_set_custom_handler('switch-windows', (d, s, w, b) => this._startAppSwitcher(d, s, w, b));
-        keybindings_set_custom_handler('switch-group', (d, s, w, b) => this._startAppSwitcher(d, s, w, b));
-        keybindings_set_custom_handler('switch-windows-backward', (d, s, w, b) => this._startAppSwitcher(d, s, w, b));
-        keybindings_set_custom_handler('switch-group-backward', (d, s, w, b) => this._startAppSwitcher(d, s, w, b));
-        keybindings_set_custom_handler('switch-panels', (d, s, w, b) => this._startAppSwitcher(d, s, w, b));
-        keybindings_set_custom_handler('switch-panels-backward', (d, s, w, b) => this._startAppSwitcher(d, s, w, b));
+        keybindings_set_custom_handler('switch-to-workspace-left', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
+        keybindings_set_custom_handler('switch-to-workspace-right', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
+        keybindings_set_custom_handler('switch-to-workspace-up', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
+        keybindings_set_custom_handler('switch-to-workspace-down', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
+        keybindings_set_custom_handler('switch-windows', (d, w, b) => this._startAppSwitcher(d, w, b));
+        keybindings_set_custom_handler('switch-group', (d, w, b) => this._startAppSwitcher(d, w, b));
+        keybindings_set_custom_handler('switch-windows-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
+        keybindings_set_custom_handler('switch-group-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
+        keybindings_set_custom_handler('switch-panels', (d, w, b) => this._startAppSwitcher(d, w, b));
+        keybindings_set_custom_handler('switch-panels-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
 
         overview.connect('showing', () => {
             let {_dimmedWindows} = this;
@@ -1019,7 +1019,7 @@ log("TIME: " + time);
         }
     }
 
-    _startAppSwitcher(display, screen, window, binding) {
+    _startAppSwitcher(display, window, binding) {
         this._createAppSwitcher(binding);
     }
 
@@ -1035,25 +1035,25 @@ log("TIME: " + time);
         }
     }
 
-    _moveWindowToWorkspaceLeft(display, screen, window, binding) {
+    _moveWindowToWorkspaceLeft(display, window, binding) {
         this._shiftWindowToWorkspace(window, MotionDirection.LEFT);
     }
 
-    _moveWindowToWorkspaceRight(display, screen, window, binding) {
+    _moveWindowToWorkspaceRight(display, window, binding) {
         this._shiftWindowToWorkspace(window, MotionDirection.RIGHT);
     }
 
     moveToWorkspace(workspace, direction_hint) {
         let active = global.screen.get_active_workspace();
-        if (workspace != active) {
-            if (direction_hint)
-                workspace.activate_with_direction_hint(direction_hint, global.get_current_time());
-            else
+        // if (workspace != active) {
+            // if (direction_hint)
+                // workspace.activate_with_direction_hint(direction_hint, global.get_current_time());
+            // else
                 workspace.activate(global.get_current_time());
-        }
+        // }
     }
 
-    _showWorkspaceSwitcher(display, screen, window, binding) {
+    _showWorkspaceSwitcher(display, window, binding) {
         let bindingName = binding.get_name();
         if (bindingName === 'switch-to-workspace-up') {
             expo.toggle();
@@ -1064,7 +1064,7 @@ log("TIME: " + time);
             return;
         }
 
-        if (screen.n_workspaces === 1)
+        if (global.screen.n_workspaces === 1)
             return;
 
         if (bindingName === 'switch-to-workspace-left') {
