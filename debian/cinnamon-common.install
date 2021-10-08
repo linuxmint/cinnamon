@@ -1,6 +1,6 @@
 etc/xdg/menus/cinnamon*
-usr/share/cinnamon-session
 usr/share/cinnamon
+usr/share/cinnamon-session
 usr/share/desktop-directories
 usr/share/glib-2.0
 usr/share/icons
