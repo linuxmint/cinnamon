@@ -1,6 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const {BrightnessContrastEffect, DesaturateEffect} = imports.gi.Clutter;
+const Cinnamon = imports.gi.Cinnamon;
+const {BrightnessContrastEffect, DesaturateEffect, OffscreenRedirect} = imports.gi.Clutter;
 const Lang = imports.lang;
 const {
     GrabOp,
@@ -13,7 +14,8 @@ const {
 const {
     Bin,
     Label,
-    ThemeContext
+    ThemeContext,
+    Widget
 } = imports.gi.St;
 const {Settings} = imports.gi.Gio;
 const {getWindowsForBinding} = imports.ui.appSwitcher.appSwitcher;
@@ -40,6 +42,7 @@ const WindowMenu = imports.ui.windowMenu;
 const WINDOW_ANIMATION_TIME = 0.25;
 const MAP_ANIMATION_TIME = 0.1;
 const DESTROY_ANIMATION_TIME = 0.15;
+const MINIMIZE_ANIMATION_TIME = 0.16;
 const DIM_TIME = 0.500;
 const DIM_DESATURATION = 0.6;
 const DIM_BRIGHTNESS = -0.2;
@@ -303,11 +306,54 @@ var WindowManager = class WindowManager {
     _minimizeWindow(cinnamonwm, actor) {
         soundManager.play('minimize');
 
-        cinnamonwm.completed_minimize(actor);
+                let types = [WindowType.NORMAL,
+                     WindowType.MODAL_DIALOG,
+                     WindowType.DIALOG];
+        if (!this._shouldAnimateActor(actor, types)) {
+            cinnamonwm.completed_minimize(actor);
+            return;
+        }
+
+        actor.set_scale(1.0, 1.0);
+
+        this._minimizing.add(actor);
+
+        let [success, geom] = actor.meta_window.get_icon_geometry();
+        if (success) {
+            let xDest, yDest, xScale, yScale;
+            xDest = geom.x;
+            yDest = geom.y;
+            xScale = geom.width / actor.width;
+            yScale = geom.height / actor.height;
+
+            addTween(actor, {
+                scale_x: xScale,
+                scale_y: yScale,
+                x: xDest,
+                y: yDest,
+                time: MINIMIZE_ANIMATION_TIME,
+                transition: 'easeInQuad',
+                onComplete: () => this._minimizeWindowDone(cinnamonwm, actor),
+            });
+        } else { // fall-back effect. Same as destroy
+            addTween(actor, {
+                opacity: 0,
+                scale_x: 0.88,
+                scale_y: 0.88,
+                time: DESTROY_ANIMATION_TIME,
+                transition: 'easeOutQuad',
+                onComplete: () => this._minimizeWindowDone(cinnamonwm, actor),
+            });
+        }
     }
 
     _minimizeWindowDone(cinnamonwm, actor) {
         if (this._minimizing.delete(actor)) {
+            removeTweens(actor);
+            actor.set_scale(1.0, 1.0);
+            actor.set_opacity(255);
+            actor.set_pivot_point(0, 0);
+
             cinnamonwm.completed_minimize(actor);
         }
     }
@@ -315,27 +361,175 @@ var WindowManager = class WindowManager {
     _unminimizeWindow(cinnamonwm, actor) {
         soundManager.play('minimize');
 
-        cinnamonwm.completed_unminimize(actor);
+                let types = [WindowType.NORMAL,
+                     WindowType.MODAL_DIALOG,
+                     WindowType.DIALOG];
+        if (!this._shouldAnimateActor(actor, types)) {
+            cinnamonwm.completed_unminimize(actor);
+            return;
+        }
+
+        this._unminimizing.add(actor);
+
+        let [success, geom] = actor.meta_window.get_icon_geometry();
+        if (success) {
+            actor.set_position(geom.x, geom.y);
+            actor.set_scale(geom.width / actor.width,
+                            geom.height / actor.height);
+
+            let rect = actor.meta_window.get_frame_rect();
+            let [xDest, yDest] = [rect.x, rect.y];
+
+            actor.show();
+
+            addTween(actor, {
+                scale_x: 1.0,
+                scale_y: 1.0,
+                x: xDest,
+                y: yDest,
+                time: MINIMIZE_ANIMATION_TIME,
+                transition: 'easeOutQuad',
+                onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
+            });
+        } else { // fall-back effect. Same as map
+            actor.set_pivot_point(0.5, 0.5);
+            actor.scale_x = 0.94;
+            actor.scale_y = 0.94;
+            actor.opacity = 0;
+            actor.show();
+
+            addTween(actor, {
+                opacity: 255,
+                scale_x: 1.0,
+                scale_y: 1.0,
+                time: MAP_ANIMATION_TIME,
+                transition: 'easeOutQuad',
+                onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
+            });
+        }
     }
 
-    _unminimizeWindowDone(shellwm, actor) {
+    _unminimizeWindowDone(cinnamonwm, actor) {
         if (this._unminimizing.delete(actor)) {
+            removeTweens(actor);
+            actor.set_scale(1.0, 1.0);
+            actor.set_opacity(255);
+            actor.set_pivot_point(0, 0);
+
             cinnamonwm.completed_unminimize(actor);
         }
     }
 
     _sizeChangeWindow(cinnamonwm, actor, whichChange, oldFrameRect, _oldBufferRect) {
-        cinnamonwm.completed_size_change(actor);
+        let types = [WindowType.NORMAL];
+        if (!this._shouldAnimateActor(actor, types)) {
+            cinnamonwm.completed_size_change(actor);
+            return;
+        }
+
+        if (oldFrameRect.width > 0 && oldFrameRect.height > 0)
+            this._prepareAnimationInfo(cinnamonwm, actor, oldFrameRect, whichChange);
+        else
+            cinnamonwm.completed_size_change(actor);
+    }
+
+    _prepareAnimationInfo(cinnamonwm, actor, oldFrameRect, _change) {
+        // Position a clone of the window on top of the old position,
+        // while actor updates are frozen.
+        let actorContent = Cinnamon.util_get_content_for_window_actor(actor, oldFrameRect);
+        let actorClone = new Widget({ content: actorContent });
+        actorClone.set_offscreen_redirect(OffscreenRedirect.ALWAYS);
+        actorClone.set_position(oldFrameRect.x, oldFrameRect.y);
+        actorClone.set_size(oldFrameRect.width, oldFrameRect.height);
+
+        if (this._clearAnimationInfo(actor))
+            this._cinnamonwm.completed_size_change(actor);
+
+        let destroyId = actor.connect('destroy', () => {
+            this._clearAnimationInfo(actor);
+        });
+
+        this._resizePending.add(actor);
+        actor.__animationInfo = { clone: actorClone,
+                                  oldRect: oldFrameRect,
+                                  destroyId };
     }
 
     _sizeChangedWindow(cinnamonwm, actor) {
-        return;
+        if (!actor.__animationInfo)
+            return;
+        if (this._resizing.has(actor))
+            return;
+
+        let actorClone = actor.__animationInfo.clone;
+        let targetRect = actor.meta_window.get_frame_rect();
+        let sourceRect = actor.__animationInfo.oldRect;
+
+        let scaleX = targetRect.width / sourceRect.width;
+        let scaleY = targetRect.height / sourceRect.height;
+
+        this._resizePending.delete(actor);
+        this._resizing.add(actor);
+
+        Main.uiGroup.add_child(actorClone);
+
+        // Now scale and fade out the clone
+        addTween(actorClone, {
+                x: targetRect.x,
+                y: targetRect.y,
+                scale_x: scaleX,
+                scale_y: scaleY,
+                opacity: 0,
+                time: WINDOW_ANIMATION_TIME,
+                transition: 'easeOutQuad',
+        });
+
+        actor.translation_x = -targetRect.x + sourceRect.x;
+        actor.translation_y = -targetRect.y + sourceRect.y;
+
+        // Now set scale the actor to size it as the clone.
+        actor.scale_x = 1 / scaleX;
+        actor.scale_y = 1 / scaleY;
+
+        // Scale it to its actual new size
+        addTween(actor, {
+                scale_x: 1,
+                scale_y: 1,
+                translation_x: 0,
+                translation_y: 0,
+                time: WINDOW_ANIMATION_TIME,
+                transition: 'easeOutQuad',
+                onComplete: () => this._sizeChangeWindowDone(cinnamonwm, actor),
+        });
+
+        // Now unfreeze actor updates, to get it to the new size.
+        // It's important that we don't wait until the animation is completed to
+        // do this, otherwise our scale will be applied to the old texture size.
+        cinnamonwm.completed_size_change(actor);
+    }
+
+    _clearAnimationInfo(actor) {
+        if (actor.__animationInfo) {
+            actor.__animationInfo.clone.destroy();
+            actor.disconnect(actor.__animationInfo.destroyId);
+            delete actor.__animationInfo;
+            return true;
+        }
+        return false;
     }
 
     _sizeChangeWindowDone(cinnamonwm, actor) {
         if (this._resizing.delete(actor)) {
-            this._cinnamonwm.completed_size_change(actor);
+            removeTweens(actor);
+            actor.scale_x = 1.0;
+            actor.scale_y = 1.0;
+            actor.translation_x = 0;
+            actor.translation_y = 0;
+            this._clearAnimationInfo(actor);
         }
+
+        if (this._resizePending.delete(actor))
+            this._cinnamonwm.completed_size_change(actor);
     }
 
     _hasAttachedDialogs(window, ignoreWindow) {
