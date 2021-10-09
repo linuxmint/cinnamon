@@ -38,6 +38,8 @@ const {
 const WindowMenu = imports.ui.windowMenu;
 
 const WINDOW_ANIMATION_TIME = 0.25;
+const MAP_ANIMATION_TIME = 0.1;
+const DESTROY_ANIMATION_TIME = 0.15;
 const DIM_TIME = 0.500;
 const DIM_DESATURATION = 0.6;
 const DIM_BRIGHTNESS = -0.2;
@@ -321,24 +323,14 @@ var WindowManager = class WindowManager {
         this._animationBlockCount = Math.max(0, this._animationBlockCount - 1);
     }
 
-    _shouldAnimate(actor) {
+    _shouldAnimateActor(actor, types) {
         // Check if system is in modal state or in software rendering
-        if (Main.modalCount || Main.software_rendering) {
+        if (!this.hasEffects || Main.modalCount || Main.software_rendering) {
             return false;
         }
 
-        switch (actor.meta_window.window_type) {
-            case WindowType.NORMAL:
-            case WindowType.DIALOG:
-            case WindowType.MODAL_DIALOG:
-                return true;
-            case WindowType.MENU:
-            case WindowType.DROPDOWN_MENU:
-            case WindowType.POPUP_MENU:
-                return false;
-            default:
-                return false;
-        }
+        let type = actor.meta_window.get_window_type();
+        return types.includes(type);
     }
 
     _startWindowEffect(cinnamonwm, name, actor, args, overwriteKey) {
@@ -526,54 +518,150 @@ var WindowManager = class WindowManager {
     }
 
     _mapWindow(cinnamonwm, actor) {
-        log("map");
-        let {meta_window} = actor;
-        if (meta_window.is_attached_dialog()) {
-            this._checkDimming(meta_window.get_transient_for());
+        actor._windowType = actor.meta_window.get_window_type();
+        actor._notifyWindowTypeSignalId =
+            actor.meta_window.connect('notify::window-type', () => {
+                let type = actor.meta_window.get_window_type();
+                if (type == actor._windowType)
+                    return;
+                if (type == WindowType.MODAL_DIALOG ||
+                    actor._windowType == WindowType.MODAL_DIALOG) {
+                    let parent = actor.get_meta_window().get_transient_for();
+                    if (parent)
+                        this._checkDimming(parent);
+                }
+
+                actor._windowType = type;
+            });
+        actor.meta_window.connect('unmanaged', window => {
+            let parent = window.get_transient_for();
+            if (parent)
+                this._checkDimming(parent);
+        });
+
+        if (actor._windowType === WindowType.NORMAL) {
+            soundManager.play('map');
         }
 
-        cinnamonwm.completed_map(actor);
+        if (actor.meta_window.is_attached_dialog())
+            this._checkDimming(actor.get_meta_window().get_transient_for());
+
+        let types = [WindowType.NORMAL,
+                     WindowType.DIALOG,
+                     WindowType.MODAL_DIALOG];
+        if (!this._shouldAnimateActor(actor, types)) {
+            cinnamonwm.completed_map(actor);
+            return;
+        }
+
+        switch (actor._windowType) {
+            case WindowType.NORMAL:
+            case WindowType.MODAL_DIALOG:
+            case WindowType.DIALOG:
+                actor.orig_opacity = actor.opacity;
+                actor.set_pivot_point(0.5, 0.5);
+                actor.scale_x = 0.94;
+                actor.scale_y = 0.94;
+                actor.opacity = 0;
+                actor.show();
+                this._mapping.add(actor);
+
+                addTween(actor, {
+                    opacity: actor.orig_opacity,
+                    scale_x: 1,
+                    scale_y: 1,
+                    time: MAP_ANIMATION_TIME,
+                    transition: 'easeOutQuad',
+                    onComplete: () => this._mapWindowDone(cinnamonwm, actor),
+                });
+                break;
+            default:
+                cinnamonwm.completed_map(actor);
+        }
     }
 
     _mapWindowDone(cinnamonwm, actor) {
-        cinnamonwm.completed_map(actor);
+        if (this._mapping.delete(actor)) {
+            removeTweens(actor);
+            actor.opacity = 255;
+            actor.set_pivot_point(0, 0);
+            actor.scale_y = 1;
+            actor.scale_x = 1;
+            actor.translation_y = 0;
+            actor.translation_x = 0;
+            cinnamonwm.completed_map(actor);
+        }
     }
 
     _destroyWindow(cinnamonwm, actor) {
-        let {meta_window} = actor;
+        let window = actor.meta_window;
+        if (actor._notifyWindowTypeSignalId) {
+            window.disconnect(actor._notifyWindowTypeSignalId);
+            actor._notifyWindowTypeSignalId = 0;
+        }
+        if (window._dimmed) {
+            this._dimmedWindows =
+                this._dimmedWindows.filter(win => win != window);
+        }
 
         if (actor.meta_window.window_type === WindowType.NORMAL) {
             soundManager.play('close');
         }
 
-        actor.orig_opacity = actor.opacity;
-        actor.orig_opacity = actor.opacity;
+        if (window.is_attached_dialog())
+            this._checkDimming(window.get_transient_for(), window);
 
-        if (meta_window.is_attached_dialog()) {
-            let parent = meta_window.get_transient_for();
-            this._checkDimming(parent, meta_window);
-        }
-
-        if (actor._notifyWindowTypeSignalId) {
-            meta_window.disconnect(actor._notifyWindowTypeSignalId);
-            actor._notifyWindowTypeSignalId = 0;
-        }
-        if (meta_window._dimmed) {
-            this._dimmedWindows = filter(this._dimmedWindows, function(win) {
-                return win !== meta_window;
-            });
-        }
-
-        if (meta_window.minimized) {
+        if (window.minimized) {
             cinnamonwm.completed_destroy(actor);
             return;
         }
 
-        cinnamonwm.completed_destroy(actor);
+        let types = [WindowType.NORMAL,
+                     WindowType.DIALOG,
+                     WindowType.MODAL_DIALOG];
+        if (!this._shouldAnimateActor(actor, types)) {
+            cinnamonwm.completed_destroy(actor);
+            return;
+        }
+
+        switch (actor.meta_window.window_type) {
+            case WindowType.NORMAL:
+            case WindowType.MODAL_DIALOG:
+            case WindowType.DIALOG:
+                actor.set_pivot_point(0.5, 1.0);
+                this._destroying.add(actor);
+
+                if (window.is_attached_dialog()) {
+                    let parent = window.get_transient_for();
+                    actor._parentDestroyId = parent.connect('unmanaged', () => {
+                        removeTweens(actor);
+                        this._destroyWindowDone(cinnamonwm, actor);
+                    });
+                }
+
+                addTween(actor, {
+                    opacity: 0,
+                    scale_x: 0.88,
+                    scale_y: 0.88,
+                    time: DESTROY_ANIMATION_TIME,
+                    transition: 'easeOutQuad',
+                    onComplete: () => this._destroyWindowDone(cinnamonwm, actor),
+                });
+                break;
+            default:
+                cinnamonwm.completed_destroy(actor);
+        }
     }
 
     _destroyWindowDone(cinnamonwm, actor) {
-        cinnamonwm.completed_destroy(actor);
+        if (this._destroying.delete(actor)) {
+            let parent = actor.get_meta_window().get_transient_for();
+            if (parent && actor._parentDestroyId) {
+                parent.disconnect(actor._parentDestroyId);
+                actor._parentDestroyId = 0;
+            }
+            cinnamonwm.completed_destroy(actor);
+        }
     }
 
     _switchWorkspace(cinnamonwm, from, to, direction) {
