@@ -2555,9 +2555,9 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 else if (xPos + natWidth > x2) xPos = x2 - natWidth;
 
                 // now we calculate the x postion based on the orientation
-                if (this._orientation === St.Side.BOTTOM) {
+                if (this._orientation === St.Side.BOTTOM || (y2 - sourceBox.y2) < natHeight) {
                     this.sideFlipped = true;
-                    yPos = Math.min(y2, sourceBox.y1) - natHeight;
+                    yPos = y2 - natHeight;
                     styleClasses.push("bottom");
                 }
                 else {
