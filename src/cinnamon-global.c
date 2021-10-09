@@ -13,6 +13,7 @@
 #include <meta/meta-settings.h>
 #include <meta/meta-backend.h>
 #include <meta/util.h>
+#include <meta/main.h>
 #include <cogl-pango/cogl-pango.h>
 
 static CinnamonGlobal *the_object = NULL;
@@ -1285,10 +1286,22 @@ pre_exec_close_fds(void)
  * cinnamon_global_reexec_self:
  * @global: A #CinnamonGlobal
  *
- * Restart the current process.  Only intended for development purposes.
+ * Initiates the shutdown sequence.
+ */
+void
+cinnamon_global_reexec_self (CinnamonGlobal *global)
+{
+  meta_restart ("Restarting Cinnamon...");
+}
+
+/**
+ * cinnamon_global_real_restart:
+ * @global: A #CinnamonGlobal
+ *
+ * Restart the current process.
  */
 void 
-cinnamon_global_reexec_self (CinnamonGlobal *global)
+cinnamon_global_real_restart (CinnamonGlobal *global)
 {
   GPtrArray *arr;
   gsize len;
