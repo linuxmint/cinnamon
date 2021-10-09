@@ -124,7 +124,7 @@ void     cinnamon_global_notify_error              (CinnamonGlobal  *global,
                                                  const char   *msg,
                                                  const char   *details);
 
-// void     cinnamon_global_shutdown                  (void);
+void     cinnamon_global_real_restart              (CinnamonGlobal  *global);
 void     cinnamon_global_reexec_self               (CinnamonGlobal  *global);
 
 void     cinnamon_global_segfault                  (CinnamonGlobal  *global);
