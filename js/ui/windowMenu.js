@@ -202,7 +202,7 @@ var WindowMenuManager = class {
 
         this._sourceActor = new St.Widget({ reactive: true, visible: false });
         this._sourceActor.connect('button-press-event', () => {
-            this._manager.activeMenu.toggle();
+            this._manager._activeMenu.toggle();
         });
         Main.uiGroup.add_actor(this._sourceActor);
         this.dummyCursor = new St.Widget({ width: 0, height: 0, opacity: 0 });
@@ -228,8 +228,11 @@ var WindowMenuManager = class {
         this._sourceActor.set_position(rect.x, rect.y);
         this._sourceActor.show();
 
+        let [minWidth, minHeight, natWidth, natHeight] = menu.actor.get_preferred_size();
+
+        menu.shiftToPosition((rect.x + natWidth / 2) + 5); // +5 for appearances
+
         menu.open();
-        // menu.open(BoxPointer.PopupAnimation.FADE);
         menu.actor.navigate_focus(null, Gtk.DirectionType.TAB_FORWARD, false);
         menu.connect('open-state-changed', (menu_, isOpen) => {
             if (isOpen)
