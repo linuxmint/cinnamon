@@ -272,7 +272,7 @@ var WindowManager = class WindowManager {
         this._cinnamonwm.connect('hide-tile-preview', this._hideTilePreview.bind(this));
         this._cinnamonwm.connect('show-window-menu', this._showWindowMenu.bind(this));
         this._cinnamonwm.connect('minimize', this._minimizeWindow.bind(this));
-        this._cinnamonwm.connect('minimize', this._minimizeWindow.bind(this));
+        this._cinnamonwm.connect('unminimize', this._unminimizeWindow.bind(this));
         this._cinnamonwm.connect('size-change', this._sizeChangeWindow.bind(this));
         this._cinnamonwm.connect('size-changed', this._sizeChangedWindow.bind(this));
         this._cinnamonwm.connect('map', this._mapWindow.bind(this));
@@ -402,11 +402,13 @@ var WindowManager = class WindowManager {
     }
 
     _minimizeWindowDone(cinnamonwm, actor) {
-        cinnamonwm.completed_minimize(actor);
+        if (this._minimizing.delete(actor)) {
+            cinnamonwm.completed_minimize(actor);
+        }
     }
 
     _unminimizeWindow(cinnamonwm, actor) {
-        soundManager.play('maximize');
+        soundManager.play('minimize');
 
         actor.meta_window._cinnamonwm_has_origin = false;
         this._startWindowEffect(cinnamonwm, "minimize", actor);
@@ -430,7 +432,9 @@ var WindowManager = class WindowManager {
     }
 
     _unminimizeWindowDone(shellwm, actor) {
-        cinnamonwm.completed_unminimize(actor);
+        if (this._unminimizing.delete(actor)) {
+            cinnamonwm.completed_unminimize(actor);
+        }
     }
 
     _sizeChangeWindow(cinnamonwm, actor, whichChange, oldFrameRect, _oldBufferRect) {
@@ -442,7 +446,9 @@ var WindowManager = class WindowManager {
     }
 
     _sizeChangeWindowDone(cinnamonwm, actor) {
-        this._cinnamonwm.completed_size_change(actor);
+        if (this._resizing.delete(actor)) {
+            this._cinnamonwm.completed_size_change(actor);
+        }
     }
 
     _hasAttachedDialogs(window, ignoreWindow) {
