@@ -799,6 +799,61 @@ cinnamon_get_file_contents_utf8         (const char                   *path,
   g_object_unref (task);
 }
 
+static gboolean
+canvas_draw_cb (ClutterContent *content,
+                cairo_t        *cr,
+                gint            width,
+                gint            height,
+                gpointer        user_data)
+{
+  cairo_surface_t *surface = user_data;
+
+  cairo_set_source_surface (cr, surface, 0, 0);
+  cairo_paint (cr);
+
+  return FALSE;
+}
+
+/**
+ * cinnamon_util_get_content_for_window_actor:
+ * @window_actor: a #MetaWindowActor
+ * @window_rect: a #MetaRectangle
+ *
+ * Returns: (transfer full) (nullable): a new #ClutterContent
+ */
+ClutterContent *
+cinnamon_util_get_content_for_window_actor (MetaWindowActor *window_actor,
+                                            MetaRectangle   *window_rect)
+{
+  ClutterContent *content;
+  cairo_surface_t *surface;
+  cairo_rectangle_int_t clip;
+  gfloat actor_x, actor_y;
+
+  clutter_actor_get_position (CLUTTER_ACTOR (window_actor), &actor_x, &actor_y);
+
+  clip.x = window_rect->x - (gint) actor_x;
+  clip.y = window_rect->y - (gint) actor_y;
+  clip.width = window_rect->width;
+  clip.height = window_rect->height;
+
+  surface = meta_window_actor_get_image (window_actor, &clip);
+
+  if (!surface)
+    return NULL;
+
+  content = clutter_canvas_new ();
+  clutter_canvas_set_size (CLUTTER_CANVAS (content),
+                           cairo_image_surface_get_width (surface),
+                           cairo_image_surface_get_height (surface));
+  g_signal_connect (content, "draw",
+                    G_CALLBACK (canvas_draw_cb), surface);
+  clutter_content_invalidate (content);
+  cairo_surface_destroy (surface);
+
+  return content;
+}
+
 /**
  * cinnamon_breakpoint:
  *
