@@ -140,8 +140,7 @@ st_texture_cache_evict_icons (StTextureCache *cache)
 }
 
 static void
-on_icon_theme_changed (StSettings     *settings,
-                       GParamSpec     *pspec,
+on_icon_theme_changed (GtkIconTheme   *icon_theme,
                        StTextureCache *cache)
 {
   g_autofree gchar *theme = NULL;
@@ -151,18 +150,7 @@ on_icon_theme_changed (StSettings     *settings,
 
   st_texture_cache_evict_icons (cache);
 
-  g_object_get (settings, "gtk-icon-theme", &theme, NULL);
-  gtk_icon_theme_set_custom_theme (cache->priv->icon_theme, theme);
-
   g_signal_emit (cache, signals[ICON_THEME_CHANGED], 0);
-}
-
-static void
-on_gtk_icon_theme_changed (GtkIconTheme   *icon_theme,
-                           StTextureCache *self)
-{
-  st_texture_cache_evict_icons (self);
-  g_signal_emit (self, signals[ICON_THEME_CHANGED], 0);
 }
 
 static void
@@ -175,10 +163,6 @@ st_texture_cache_init (StTextureCache *self)
   self->priv->icon_theme = gtk_icon_theme_get_default ();
 
   g_signal_connect (self->priv->icon_theme, "changed",
-                    G_CALLBACK (on_gtk_icon_theme_changed), self);
-
-  settings = st_settings_get ();
-  g_signal_connect (settings, "notify::gtk-icon-theme",
                     G_CALLBACK (on_icon_theme_changed), self);
 
   self->priv->keyed_cache = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -196,7 +180,7 @@ st_texture_cache_init (StTextureCache *self)
 
   self->priv->cancellable = g_cancellable_new ();
 
-  on_icon_theme_changed (settings, NULL, self);
+  on_icon_theme_changed (self->priv->icon_theme, self);
 }
 
 static void
