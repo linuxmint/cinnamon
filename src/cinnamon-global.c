@@ -1436,34 +1436,6 @@ grab_notify (GtkWidget *widget, gboolean was_grabbed, gpointer user_data)
   cinnamon_global_set_stage_input_mode (global, global->input_mode);
 }
 
-// /**
-//  * cinnamon_global_init_xdnd:
-//  * @global: the #CinnamonGlobal
-//  *
-//  * Enables tracking of Xdnd events
-//  */
-// void cinnamon_global_init_xdnd (CinnamonGlobal *global)
-// {
-//   Window output_window = meta_get_overlay_window (global->cinnamon_screen);
-//   long xdnd_version = 5;
-
-//   XChangeProperty (global->xdisplay, global->stage_xwindow,
-//                    gdk_x11_get_xatom_by_name ("XdndAware"), XA_ATOM,
-//                    32, PropModeReplace, (const unsigned char *)&xdnd_version, 1);
-
-//   XChangeProperty (global->xdisplay, output_window,
-//                    gdk_x11_get_xatom_by_name ("XdndProxy"), XA_WINDOW,
-//                    32, PropModeReplace, (const unsigned char *)&global->stage_xwindow, 1);
-
-//   /*
-//    * XdndProxy is additionally set on the proxy window as verification that the
-//    * XdndProxy property on the target window isn't a left-over
-//    */
-//   XChangeProperty (global->xdisplay, global->stage_xwindow,
-//                    gdk_x11_get_xatom_by_name ("XdndProxy"), XA_WINDOW,
-//                    32, PropModeReplace, (const unsigned char *)&global->stage_xwindow, 1);
-// }
-
 /**
  * cinnamon_global_get_pointer:
  * @global: the #CinnamonGlobal
