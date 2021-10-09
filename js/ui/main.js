@@ -439,6 +439,11 @@ function start() {
 
     _startDate = new Date();
 
+    global.display.connect('restart', () => {
+        global.real_restart();
+        return true;
+    });
+
     global.stage.connect('captured-event', _stageEventHandler);
 
     global.log('loaded at ' + _startDate);
@@ -1532,11 +1537,16 @@ function getTabList(workspaceOpt, screenOpt) {
 }
 
 function restartCinnamon(showOsd = false) {
-    if (showOsd) {
-        let dialog = new ModalDialog.InfoOSD(_("Restarting Cinnamon..."));
-        dialog.actor.add_style_class_name('restart-osd');
-        dialog.show();
-    }
+    global.display.connect("show-restart-message", () => {
+        if (showOsd) {
+            let dialog = new ModalDialog.InfoOSD(_("Restarting Cinnamon..."));
+            dialog.actor.add_style_class_name('restart-osd');
+            dialog.show();
+
+            return true;
+        }
+        return false;
+    });
 
     global.reexec_self();
 }
