@@ -667,6 +667,14 @@ var WindowManager = class WindowManager {
             this._cinnamonwm.completed_size_change(actor);
     }
 
+    _filterKeybinding(shellwm, binding) {
+        // TODO: We can use ActionModes to manage what keybindings are
+        // available where. For now, this allows global keybindings in a non-
+        // modal state. 
+
+        return global.stage_input_mode !== Cinnamon.StageInputMode.NORMAL;
+    }
+
     _hasAttachedDialogs(window, ignoreWindow) {
         let count = 0;
         window.foreach_transient(function(win) {
