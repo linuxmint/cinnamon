@@ -757,7 +757,7 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         // FIXME: we should only grab the specific device that originated
         // the event, but for some weird reason events are still delivered
         // outside the slider if using clutter_grab_pointer_for_device
-        Clutter.grab_pointer(this._slider);
+        event.get_device().grab(this._slider);
         this._signals.connect(this._slider, 'button-release-event', Lang.bind(this, this._endDragging));
         this._signals.connect(this._slider, 'motion-event', Lang.bind(this, this._motionEvent));
         let absX, absY;
@@ -765,12 +765,12 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         this._moveHandle(absX, absY);
     }
 
-    _endDragging() {
+    _endDragging(actor, event) {
         if (this._dragging) {
             this._signals.disconnect('button-release-event', this._slider);
             this._signals.disconnect('motion-event', this._slider);
 
-            Clutter.ungrab_pointer();
+            event.get_device().ungrab();
             this._dragging = false;
 
             this.emit('drag-end');
