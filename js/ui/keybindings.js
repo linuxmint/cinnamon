@@ -42,8 +42,7 @@ KeybindingManager.prototype = {
 
         this.kb_schema = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA);
 
-        // this.runtime_backend = Gio.memory_settings_backend_new();
-        this.runtime_backend = Gio.SettingsBackend.get_default();
+        this.runtime_backend = Gio.memory_settings_backend_new();
         this.runtime_schema = new Gio.Settings({ schema_id: "org.cinnamon.runtime-keybindings",
                                                  backend: this.runtime_backend });
         this.schema = this.runtime_schema.settings_schema;
@@ -107,6 +106,11 @@ KeybindingManager.prototype = {
 
         if (empty) {
             this._bindings[name] = undefined;
+
+            if (settings !== undefined) {
+                settings.reset("bindings");
+            }
+
             return true;
         }
 
