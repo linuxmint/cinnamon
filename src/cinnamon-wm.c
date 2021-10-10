@@ -210,7 +210,7 @@ _cinnamon_wm_switch_workspace (CinnamonWM      *wm,
                             gint          to,
                             MetaMotionDirection direction)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   g_signal_emit (wm, cinnamon_wm_signals[SWITCH_WORKSPACE], 0,
                  from, to, direction);
 }
@@ -225,7 +225,7 @@ _cinnamon_wm_switch_workspace (CinnamonWM      *wm,
 void
 cinnamon_wm_completed_switch_workspace (CinnamonWM *wm)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   meta_plugin_switch_workspace_completed (wm->plugin);
 }
 
@@ -240,7 +240,7 @@ void
 cinnamon_wm_completed_minimize (CinnamonWM         *wm,
                              MetaWindowActor *actor)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   meta_plugin_minimize_completed (wm->plugin, actor);
 }
 
@@ -255,7 +255,7 @@ void
 cinnamon_wm_completed_unminimize (CinnamonWM         *wm,
                              MetaWindowActor *actor)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   meta_plugin_unminimize_completed (wm->plugin, actor);
 }
 
@@ -263,7 +263,7 @@ void
 cinnamon_wm_completed_size_change  (CinnamonWM         *wm,
                              MetaWindowActor *actor)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   meta_plugin_size_change_completed (wm->plugin, actor);
 }
 
@@ -278,7 +278,7 @@ void
 cinnamon_wm_completed_map (CinnamonWM         *wm,
                         MetaWindowActor *actor)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   meta_plugin_map_completed (wm->plugin, actor);
 }
 
@@ -293,7 +293,7 @@ void
 cinnamon_wm_completed_destroy (CinnamonWM         *wm,
                             MetaWindowActor *actor)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   meta_plugin_destroy_completed (wm->plugin, actor);
 }
 
@@ -308,14 +308,14 @@ void
 cinnamon_wm_complete_display_change (CinnamonWM  *wm,
                                      gboolean  ok)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   meta_plugin_complete_display_change (wm->plugin, ok);
 }
 
 void
 _cinnamon_wm_kill_switch_workspace (CinnamonWM      *wm)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   g_signal_emit (wm, cinnamon_wm_signals[KILL_SWITCH_WORKSPACE], 0);
 }
 
@@ -323,7 +323,7 @@ void
 _cinnamon_wm_kill_window_effects (CinnamonWM         *wm,
                                MetaWindowActor *actor)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   g_signal_emit (wm, cinnamon_wm_signals[KILL_WINDOW_EFFECTS], 0, actor);
 }
 
@@ -333,7 +333,7 @@ _cinnamon_wm_show_tile_preview (CinnamonWM      *wm,
                                 MetaRectangle   *tile_rect,
                                 int            tile_monitor)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
     g_signal_emit (wm, cinnamon_wm_signals[SHOW_TILE_PREVIEW], 0,
                    window, tile_rect, tile_monitor);
 }
@@ -341,7 +341,7 @@ _cinnamon_wm_show_tile_preview (CinnamonWM      *wm,
 void
 _cinnamon_wm_hide_tile_preview (CinnamonWM *wm)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
     g_signal_emit (wm, cinnamon_wm_signals[HIDE_TILE_PREVIEW], 0);
 }
 
@@ -352,7 +352,7 @@ _cinnamon_wm_show_window_menu (CinnamonWM            *wm,
                             int                 x,
                             int                 y)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   MetaRectangle rect;
 
   rect.x = x;
@@ -368,7 +368,7 @@ _cinnamon_wm_show_window_menu_for_rect (CinnamonWM            *wm,
                                      MetaWindowMenuType  menu,
                                      MetaRectangle      *rect)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   g_signal_emit (wm, cinnamon_wm_signals[SHOW_WINDOW_MENU], 0, window, menu, rect);
 }
 
@@ -376,7 +376,7 @@ void
 _cinnamon_wm_minimize (CinnamonWM         *wm,
                     MetaWindowActor *actor)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   g_signal_emit (wm, cinnamon_wm_signals[MINIMIZE], 0, actor);
 }
 
@@ -384,7 +384,7 @@ void
 _cinnamon_wm_unminimize (CinnamonWM         *wm,
                       MetaWindowActor *actor)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   g_signal_emit (wm, cinnamon_wm_signals[UNMINIMIZE], 0, actor);
 }
 
@@ -392,7 +392,7 @@ void
 _cinnamon_wm_size_changed (CinnamonWM         *wm,
                         MetaWindowActor *actor)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   g_signal_emit (wm, cinnamon_wm_signals[SIZE_CHANGED], 0, actor);
 }
 
@@ -403,7 +403,7 @@ _cinnamon_wm_size_change (CinnamonWM         *wm,
                        MetaRectangle   *old_frame_rect,
                        MetaRectangle   *old_buffer_rect)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   g_signal_emit (wm, cinnamon_wm_signals[SIZE_CHANGE], 0, actor, which_change, old_frame_rect, old_buffer_rect);
 }
 
@@ -411,7 +411,7 @@ void
 _cinnamon_wm_map (CinnamonWM         *wm,
                MetaWindowActor *actor)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   g_signal_emit (wm, cinnamon_wm_signals[MAP], 0, actor);
 }
 
@@ -419,7 +419,7 @@ void
 _cinnamon_wm_destroy (CinnamonWM         *wm,
                    MetaWindowActor *actor)
 {
-  g_printerr ("%s\n", G_STRFUNC);
+  g_debug ("%s", G_STRFUNC);
   g_signal_emit (wm, cinnamon_wm_signals[DESTROY], 0, actor);
 }
 
