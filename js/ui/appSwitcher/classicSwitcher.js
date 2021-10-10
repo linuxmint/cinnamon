@@ -404,12 +404,6 @@ AppIcon.prototype = {
                 contrast_effect.set_brightness_full(-0.5, -0.5, -0.5);
                 this._iconBin.add_effect(contrast_effect);                
             }
-            else if (window.tile_type == Meta.WindowTileType.TILED) {
-                this.label = new St.Label({ text: "|" + title });
-            }
-            else if (window.tile_type == Meta.WindowTileType.SNAPPED) {
-                this.label = new St.Label({ text: "||" + title });
-            }
             else {
                 this.label = new St.Label({ text: title });    
             }
