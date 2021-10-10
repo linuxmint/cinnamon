@@ -247,6 +247,7 @@ var WindowManager = class WindowManager {
         this._cinnamonwm.connect('size-changed', this._sizeChangedWindow.bind(this));
         this._cinnamonwm.connect('map', this._mapWindow.bind(this));
         this._cinnamonwm.connect('destroy', this._destroyWindow.bind(this));
+        this._cinnamonwm.connect('filter-keybinding', this._filterKeybinding.bind(this));
         global.window_manager.connect('switch-workspace', (c, f, t, d) => this._switchWorkspace(c, f, t, d));
 
         keybindings_set_custom_handler('move-to-workspace-left', (d, w, b) => this._moveWindowToWorkspaceLeft(d, w, b));
@@ -530,6 +531,14 @@ var WindowManager = class WindowManager {
 
         if (this._resizePending.delete(actor))
             this._cinnamonwm.completed_size_change(actor);
+    }
+
+    _filterKeybinding(shellwm, binding) {
+        // TODO: We can use ActionModes to manage what keybindings are
+        // available where. For now, this allows global keybindings in a non-
+        // modal state. 
+
+        return global.stage_input_mode !== Cinnamon.StageInputMode.NORMAL;
     }
 
     _hasAttachedDialogs(window, ignoreWindow) {
