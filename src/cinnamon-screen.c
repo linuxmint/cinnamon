@@ -17,7 +17,7 @@
  * 02110-1335, USA.
  */
 
-/**
+/*
  * This is a shim class to help compatibility with older (pre-5.2)
  * js code. MetaScreen no longer exists (global.screen), and its api
  * is distributed in MetaDisplay, MetaWorkspaceManager and elsewhere.
