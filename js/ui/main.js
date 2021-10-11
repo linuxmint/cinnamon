@@ -412,14 +412,14 @@ function start() {
     overview = new Overview.Overview();
     expo = new Expo.Expo();
 
-    // statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
+    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
 
     layoutManager._updateBoxes();
 
     wm = new imports.ui.windowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
-    // notificationDaemon = new NotificationDaemon.NotificationDaemon();
+    notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
     placesManager = new PlacesManager.PlacesManager();
 
