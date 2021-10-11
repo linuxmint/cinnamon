@@ -57,13 +57,13 @@ int cinnamon_screen_get_active_workspace_index (CinnamonScreen *screen);
 
 MetaWorkspace * cinnamon_screen_get_active_workspace (CinnamonScreen *screen);
 
-// void cinnamon_screen_show_desktop (CinnamonScreen *screen,
-//                                 guint32        timestamp);
+void cinnamon_screen_show_desktop (CinnamonScreen *screen,
+                                   guint32         timestamp);
 
-// void cinnamon_screen_toggle_desktop (CinnamonScreen *screen,
-//                                  guint32    timestamp);
+void cinnamon_screen_toggle_desktop (CinnamonScreen *screen,
+                                     guint32         timestamp);
                                 
-// void cinnamon_screen_unshow_desktop (CinnamonScreen *screen);
+void cinnamon_screen_unshow_desktop (CinnamonScreen *screen);
 
 int  cinnamon_screen_get_n_monitors       (CinnamonScreen    *screen);
 int  cinnamon_screen_get_primary_monitor  (CinnamonScreen    *screen);
