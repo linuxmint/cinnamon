@@ -825,8 +825,10 @@ GenericDragItemContainer.prototype = {
         if (this.child == null)
             return;
 
-        this.child.set_scale_with_gravity(scale, scale,
-                                          Clutter.Gravity.CENTER);
+        this.child.pivot_point.x = 0.5;
+        this.child.pivot_point.y = 0.5;
+        this.child.scale_x = scale;
+        this.child.scale_y = scale;
         this.actor.queue_relayout();
     },
 

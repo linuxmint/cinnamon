@@ -146,9 +146,10 @@ KeybindingManager.prototype = {
             return;
 
         name = name.replace("_", "-");
-        tmp.reset("bindings")
 
         let ret = global.display.remove_keybinding(`RUNTIME-${name}`);
+
+        settings.reset("bindings")
         this._bindings[name] = undefined;
 
         return ret;
