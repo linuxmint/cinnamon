@@ -6,6 +6,7 @@
 #include "cinnamon-gtk-embed.h"
 #include "tray/na-tray-child.h"
 #include <gdk/gdkx.h>
+#include <X11/Xatom.h>
 #include "st.h"
 
 enum {

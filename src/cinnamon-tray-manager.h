@@ -8,44 +8,15 @@
 
 G_BEGIN_DECLS
 
-#define CINNAMON_TYPE_TRAY_MANAGER			(cinnamon_tray_manager_get_type ())
-#define CINNAMON_TRAY_MANAGER(obj)			(G_TYPE_CHECK_INSTANCE_CAST ((obj), CINNAMON_TYPE_TRAY_MANAGER, CinnamonTrayManager))
-#define CINNAMON_TRAY_MANAGER_CLASS(klass)		(G_TYPE_CHECK_CLASS_CAST ((klass), CINNAMON_TYPE_TRAY_MANAGER, CinnamonTrayManagerClass))
-#define CINNAMON_IS_TRAY_MANAGER(obj)		(G_TYPE_CHECK_INSTANCE_TYPE ((obj), CINNAMON_TYPE_TRAY_MANAGER))
-#define CINNAMON_IS_TRAY_MANAGER_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass), CINNAMON_TYPE_TRAY_MANAGER))
-#define CINNAMON_TRAY_MANAGER_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS ((obj), CINNAMON_TYPE_TRAY_MANAGER, CinnamonTrayManagerClass))
-	
-typedef struct _CinnamonTrayManager        CinnamonTrayManager;
-typedef struct _CinnamonTrayManagerPrivate CinnamonTrayManagerPrivate;
-typedef struct _CinnamonTrayManagerClass   CinnamonTrayManagerClass;
-
-struct _CinnamonTrayManager
-{
-  GObject parent_instance;
-
-  CinnamonTrayManagerPrivate *priv;
-};
-
-struct _CinnamonTrayManagerClass
-{
-  GObjectClass parent_class;
-
-  void (* tray_icon_added)   (CinnamonTrayManager *manager,
-			      ClutterActor     *icon,
-			      const char       *lowercase_wm_class);
-  void (* tray_icon_removed) (CinnamonTrayManager *manager,
-			      ClutterActor     *icon);
-
-};
-
-GType             cinnamon_tray_manager_get_type     (void);
+#define CINNAMON_TYPE_TRAY_MANAGER (cinnamon_tray_manager_get_type ())
+G_DECLARE_FINAL_TYPE (CinnamonTrayManager, cinnamon_tray_manager,
+                      CINNAMON, TRAY_MANAGER, GObject)
 
 CinnamonTrayManager *cinnamon_tray_manager_new          (void);
-void              cinnamon_tray_manager_manage_stage (CinnamonTrayManager *manager,
-                                                   ClutterStage     *stage,
-                                                   StWidget         *theme_widget);
+void              cinnamon_tray_manager_manage_screen (CinnamonTrayManager *manager,
+                                                    StWidget         *theme_widget);
+void              cinnamon_tray_manager_unmanage_screen (CinnamonTrayManager *manager);
 void              cinnamon_tray_manager_redisplay (CinnamonTrayManager *manager);
-
 void              cinnamon_tray_manager_set_orientation (CinnamonTrayManager *manager,
                                                          ClutterOrientation   orientation);
 G_END_DECLS
