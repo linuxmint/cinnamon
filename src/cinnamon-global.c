@@ -128,12 +128,9 @@ cinnamon_global_get_property(GObject         *object,
     case PROP_STAGE_INPUT_MODE:
       g_value_set_enum (value, global->input_mode);
       break;
-      // TODO: Not sure - this is for desklets, there's no real analog in new muffin.
-      // Maybe we can just make the actor ourselves, since there's no stacking/windows
-      // to deal with.
-    // case PROP_BOTTOM_WINDOW_GROUP:
-    //   g_value_set_object (value, meta_get_bottom_window_group_for_screen (global->cinnamon_screen));
-    //   break;
+    case PROP_BOTTOM_WINDOW_GROUP:
+      g_value_set_object (value, meta_get_bottom_window_group_for_display (global->meta_display));
+      break;
     case PROP_WINDOW_GROUP:
       g_value_set_object (value, meta_get_window_group_for_display (global->meta_display));
       break;
