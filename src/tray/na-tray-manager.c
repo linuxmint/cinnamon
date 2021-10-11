@@ -715,10 +715,10 @@ na_tray_manager_set_colors_property (NaTrayManager *manager)
 #ifdef GDK_WINDOWING_X11
 
 static gboolean
-na_tray_manager_manage_screen_x11 (NaTrayManager *manager,
-				   GdkScreen     *screen)
+na_tray_manager_manage_screen_x11 (NaTrayManager *manager)
 {
   GdkDisplay *display;
+  GdkScreen  *screen;
   Screen     *xscreen;
   GtkWidget  *invisible;
   GdkWindow  *window;
@@ -726,7 +726,9 @@ na_tray_manager_manage_screen_x11 (NaTrayManager *manager,
   guint32     timestamp;
 
   g_return_val_if_fail (NA_IS_TRAY_MANAGER (manager), FALSE);
-  g_return_val_if_fail (manager->screen == NULL, FALSE);
+
+  screen = gdk_screen_get_default ();
+  manager->screen = screen;
 
   /* If there's already a manager running on the screen
    * we can't create another one.
@@ -735,8 +737,6 @@ na_tray_manager_manage_screen_x11 (NaTrayManager *manager,
   if (na_tray_manager_check_running_screen_x11 (screen))
     return FALSE;
 #endif
-
-  manager->screen = screen;
 
   display = gdk_screen_get_display (screen);
   xscreen = GDK_SCREEN_XSCREEN (screen);
@@ -826,14 +826,12 @@ na_tray_manager_manage_screen_x11 (NaTrayManager *manager,
 #endif
 
 gboolean
-na_tray_manager_manage_screen (NaTrayManager *manager,
-			       GdkScreen     *screen)
+na_tray_manager_manage_screen (NaTrayManager *manager)
 {
-  g_return_val_if_fail (GDK_IS_SCREEN (screen), FALSE);
   g_return_val_if_fail (manager->screen == NULL, FALSE);
 
 #ifdef GDK_WINDOWING_X11
-  return na_tray_manager_manage_screen_x11 (manager, screen);
+  return na_tray_manager_manage_screen_x11 (manager);
 #else
   return FALSE;
 #endif
