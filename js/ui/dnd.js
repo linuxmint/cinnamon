@@ -93,6 +93,8 @@ var _Draggable = new Lang.Class({
         this.target = null;
         this.recentDropTarget = null;
 
+        this.drag_device = null
+
         if (target) {
             this.target = target;
         }
@@ -108,7 +110,7 @@ var _Draggable = new Lang.Class({
             this._actorDestroyed = true;
 
             if (this._dragInProgress && this._dragCancellable)
-                this._cancelDrag(global.get_current_time());
+                this._cancelDrag(null);
             this.disconnectAll();
         }));
         this._onEventId = null;
@@ -148,7 +150,8 @@ var _Draggable = new Lang.Class({
     },
 
     _grabActor: function(event) {
-        event.get_device().grab(this.actor);
+        this.drag_device = event.get_device();
+        this.drag_device.grab(this.actor);
         this._onEventId = this.actor.connect('event',
                                              Lang.bind(this, this._onEvent));
     },
@@ -157,7 +160,12 @@ var _Draggable = new Lang.Class({
         if (!this._onEventId)
             return;
 
-        event.get_device().ungrab();
+        if (this.drag_device) {
+            this.drag_device.ungrab();
+        } else if (event) {
+            event.get_device().ungrab();
+        }
+
         this.actor.disconnect(this._onEventId);
         this._onEventId = null;
     },
@@ -165,17 +173,16 @@ var _Draggable = new Lang.Class({
     _grabEvents: function(event) {
         if (!this._eventsGrabbed) {
             this._eventsGrabbed = Main.pushModal(_getEventHandlerActor());
-            if (this._eventsGrabbed)
-                event.get_device().grab(_getEventHandlerActor);
+            if (this._eventsGrabbed) {
+                this.drag_device = event.get_device()
+                this.drag_device.grab(_getEventHandlerActor());
+            }
         }
     },
 
-    _ungrabEvents: function(event) {
+    _ungrabEvents: function() {
         if (this._eventsGrabbed) {
-            if (event) {
-
-            }
-            event.get_device().ungrab();
+            this.drag_device.ungrab();
             Main.popModal(_getEventHandlerActor());
             this._eventsGrabbed = false;
         }
@@ -216,7 +223,7 @@ var _Draggable = new Lang.Class({
         } else if (event.type() == Clutter.EventType.KEY_PRESS && this._dragInProgress) {
             let symbol = event.get_key_symbol();
             if (symbol === Clutter.KEY_Escape) {
-                this._cancelDrag(event.get_time());
+                this._cancelDrag(event);
                 return true;
             }
         }
@@ -529,14 +536,14 @@ var _Draggable = new Lang.Class({
                     this._dragInProgress = false;
                     global.unset_cursor();
                     this.emit('drag-end', event.get_time(), true);
-                    this._dragComplete();
+                    this._dragComplete(event);
                     return true;
                 }
             }
             target = target.get_parent();
         }
 
-        this._cancelDrag(event.get_time());
+        this._cancelDrag(event);
 
         return true;
     },
@@ -573,7 +580,13 @@ var _Draggable = new Lang.Class({
         return [x, y, scale];
     },
 
-    _cancelDrag: function(eventTime) {
+    _cancelDrag: function(event) {
+        let eventTime;
+        if (event !== null) {
+            eventTime = event.get_time();
+        } else {
+            eventTime = global.get_current_time()
+        }
         this.emit('drag-cancelled', eventTime);
         this._dragInProgress = false;
         let [snapBackX, snapBackY, snapBackScale] = this._getRestoreLocation();
