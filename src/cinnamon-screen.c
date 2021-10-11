@@ -695,74 +695,24 @@ cinnamon_screen_override_workspace_layout (CinnamonScreen      *screen,
 
 void
 cinnamon_screen_toggle_desktop (CinnamonScreen *screen,
-                            guint32    timestamp)
+                                guint32         timestamp)
 {
-  // TODO
-
-
-  // if (screen->active_workspace->showing_desktop)
-  //   {
-  //     cinnamon_screen_unshow_desktop (screen);
-  //     meta_workspace_focus_default_window (screen->active_workspace,
-  //                                          NULL,
-  //                                          timestamp);
-  //   }
-  // else
-  //   {
-  //     cinnamon_screen_show_desktop (screen, timestamp);
-  //   }
+  meta_workspace_manager_toggle_desktop (screen->ws_manager,
+                                         timestamp);
 }
 
 void
 cinnamon_screen_show_desktop (CinnamonScreen *screen,
-                          guint32     timestamp)
+                              guint32         timestamp)
 {
-  // TODO
-
-  // GList *windows;
-
-  // if (screen->active_workspace->showing_desktop)
-  //   return;
-
-  // screen->active_workspace->showing_desktop = TRUE;
-
-  // queue_windows_showing (screen);
-
-  // /* Focus the most recently used META_WINDOW_DESKTOP window, if there is one;
-  //  * see bug 159257.
-  //  */
-  // windows = screen->active_workspace->mru_list;
-  // while (windows != NULL)
-  //   {
-  //     MetaWindow *w = windows->data;
-
-  //     if (w->screen == screen  &&
-  //         w->type == META_WINDOW_DESKTOP)
-  //       {
-  //         meta_window_focus (w, timestamp);
-  //         break;
-  //       }
-
-  //     windows = windows->next;
-  //   }
-
-
-  // cinnamon_screen_update_showing_desktop_hint (screen);
+  meta_workspace_manager_show_desktop (screen->ws_manager,
+                                       timestamp);
 }
 
 void
 cinnamon_screen_unshow_desktop (CinnamonScreen *screen)
 {
-  // TODO
-
-  // if (!screen->active_workspace->showing_desktop)
-  //   return;
-
-  // screen->active_workspace->showing_desktop = FALSE;
-
-  // queue_windows_showing (screen);
-
-  // cinnamon_screen_update_showing_desktop_hint (screen);
+  meta_workspace_manager_unshow_desktop (screen->ws_manager);
 }
 
 /**

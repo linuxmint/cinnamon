@@ -105,7 +105,7 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
     }
 
     on_applet_clicked(event) {
-        global.screen.toggle_desktop(global.get_current_time());
+        global.workspace_manager.toggle_desktop(global.get_current_time());
         this.show_all_windows(0);
         if (this._peek_timeout_id > 0) {
             Mainloop.source_remove(this._peek_timeout_id);
