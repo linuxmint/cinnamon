@@ -930,7 +930,7 @@ var WindowManager = class WindowManager {
                  * there while other windows move. */
                 window.show_all();
                 this._movingWindow = undefined;
-            } else if (meta_window.get_workspace() === from) {
+            } else if (window.get_workspace() === from) {
                 if (window.origX == undefined) {
                     window.origX = window.x;
                     window.origY = window.y;
@@ -947,7 +947,7 @@ var WindowManager = class WindowManager {
                               window.origY = undefined;
                           }
                         });
-            } else if (meta_window.get_workspace() === to) {
+            } else if (window.get_workspace() === to) {
                 if (window.origX == undefined) {
                     window.origX = window.x;
                     window.origY = window.y;

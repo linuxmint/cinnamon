@@ -202,6 +202,10 @@ function overrideMeta() {
     Meta.enable_unredirect_for_screen = function(screen) {
         Meta.enable_unredirect_for_display(global.display);
     }
+
+    Meta.WindowActor.prototype.get_workspace = function() {
+        return this.meta_window ? this.meta_window.get_workspace().workspace_index : 0;
+    }
 }
 
 
