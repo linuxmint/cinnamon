@@ -188,15 +188,6 @@
       </description>
     </key>
 
-    <key type="s" name="desktop-effects-style">
-      <default>"cinnamon"</default>
-      <summary>The style of desktop effects</summary>
-      <description>
-        An overall style used for desktop effects.
-        This key should not be edited directly.
-      </description>
-    </key>
-
     <key type="s" name="desktop-effects-close-effect">
       <default>"traditional"</default>
       <summary>Effect used when closing windows</summary>
