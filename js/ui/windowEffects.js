@@ -59,20 +59,6 @@ var Map = class Map extends Effect {
         this.wmCompleteName = 'completed_map';
     }
 
-    scale(cinnamonwm, actor) {
-        let transition = 'easeOutSquad';
-        let time = 0.8;
-        actor.set_scale(0, 0);
-        this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
-    }
-
-    fade(cinnamonwm, actor) {
-        let transition = 'easeOutSquad';
-        let time = 0.8;
-        actor.opacity = 0;
-        this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
-    }
-
     move(cinnamonwm, actor) {
         let transition = 'easeOutSquad';
         let time = 0.8;
@@ -163,28 +149,6 @@ var Close = class Close extends Effect {
             parent.disconnect(actor._parentDestroyId);
             actor._parentDestroyId = 0;
         }
-    }
-
-    scale(cinnamonwm, actor) {
-        let transition = 'easeOutSquad';
-        let time = 0.8;
-        this._scaleWindow(cinnamonwm, actor, 0, 0, time, transition);
-    }
-
-    fade(cinnamonwm, actor) {
-        let transition = 'easeOutSquad';
-        let time = 0.8;
-        removeTweens(actor);
-        this._fadeWindow(cinnamonwm, actor, 0, time, transition);
-    }
-
-    move(cinnamonwm, actor) {
-        let transition = 'easeOutSquad';
-        let time = 0.8;
-        let [xDest, yDest] = global.get_pointer();
-
-        this._scaleWindow(cinnamonwm, actor, 0, 0, time, transition);
-        this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
     fly(cinnamonwm, actor) {
@@ -319,7 +283,7 @@ var Tile = class Tile extends Effect {
         this.wmCompleteName = 'completed_tile';
     }
 
-    scale(cinnamonwm, actor, args) {
+    traditional(cinnamonwm, actor, args) {
         let transition = 'easeInQuad';
         let time = 0.1;
         let [targetX, targetY, targetWidth, targetHeight] = args;
@@ -347,7 +311,7 @@ var Maximize = class Maximize extends Tile {
         this.wmCompleteName = 'completed_maximize';
     }
 
-    scale(cinnamonwm, actor, args) {
+    traditional(cinnamonwm, actor, args) {
         let transition = 'easeInExpo';
         let time = 0.1;
         let [targetX, targetY, targetWidth, targetHeight] = args;
@@ -376,7 +340,7 @@ var Unmaximize = class Unmaximize extends Tile {
         this.wmCompleteName = 'completed_unmaximize';
     }
 
-    scale(cinnamonwm, actor, args) {
+    traditional(cinnamonwm, actor, args) {
         let transition = 'easeNone';
         let time = 0.1;
         let [targetX, targetY, targetWidth, targetHeight] = args;
