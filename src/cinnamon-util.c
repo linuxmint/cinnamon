@@ -627,7 +627,10 @@ ClutterModifierType
 cinnamon_get_event_state (ClutterEvent *event)
 {
   ClutterModifierType state = clutter_event_get_state (event);
-  return state & CLUTTER_MODIFIER_MASK;
+  state &= ~CLUTTER_MOD2_MASK;
+  state &= ~CLUTTER_LOCK_MASK;
+  state &= CLUTTER_MODIFIER_MASK;
+  return state;
 }
 
 /**
