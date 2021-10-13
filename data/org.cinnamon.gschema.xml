@@ -164,14 +164,6 @@
       </description>
     </key>
 
-    <key name="desktop-effects" type="b">
-      <default>true</default>
-      <summary>Enable desktop effects</summary>
-      <description>
-        Whether to enable desktop effects and window animations.
-      </description>
-    </key>
-
     <key name="desktop-effects-on-dialogs" type="b">
       <default>true</default>
       <summary>Enable desktop effects on dialog boxes</summary>
