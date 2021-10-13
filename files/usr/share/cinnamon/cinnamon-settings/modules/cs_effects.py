@@ -119,14 +119,14 @@ class Module:
             settings.add_row(widget)
 
             widget = GSettingsSwitch(_("Effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs")
-            settings.add_reveal_row(widget, "org.cinnamon", "desktop-effects")
+            settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
             widget = GSettingsSwitch(_("Effects on menus"), "org.cinnamon", "desktop-effects-on-menus")
-            settings.add_reveal_row(widget, "org.cinnamon", "desktop-effects")
+            settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
             self.chooser = GSettingsComboBox(_("Effects style"), "org.cinnamon", "desktop-effects-style", OPTIONS)
             self.chooser.content_widget.connect("changed", self.on_value_changed)
-            settings.add_reveal_row(self.chooser, "org.cinnamon", "desktop-effects")
+            settings.add_reveal_row(self.chooser, "org.cinnamon.muffin", "desktop-effects")
 
             widget = GSettingsSwitch(_("Fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade")
             settings.add_row(widget)
@@ -136,8 +136,6 @@ class Module:
 
             self.schema.connect("changed::desktop-effects", self.on_desktop_effects_enabled_changed)
 
-            settings = SettingsSection(_("Effect"))
-            page.add(settings)
 
             self.size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -145,28 +143,28 @@ class Module:
 
             # MAPPING WINDOWS
             widget = self.make_effect_group(_("Mapping windows"), "map", effects)
-            settings.add_row(widget)
+            settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
             # CLOSING WINDOWS
             widget = self.make_effect_group(_("Closing windows"), "close", effects)
-            settings.add_row(widget)
+            settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
             # MINIMIZING WINDOWS
             widget = self.make_effect_group(_("Minimizing windows"), "minimize", effects)
-            settings.add_row(widget)
+            settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
             # MAXIMIZING WINDOWS
             # effects = ["none", _("None")], ["scale", _("Scale")]]
             widget = self.make_effect_group(_("Maximizing windows"), "maximize")
-            settings.add_row(widget)
+            settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
             # UNMAXIMIZING WINDOWS
             widget = self.make_effect_group(_("Unmaximizing windows"), "unmaximize")
-            settings.add_row(widget)
+            settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
             # TILING WINDOWS
             widget = self.make_effect_group(_("Tiling and snapping windows"), "tile")
-            settings.add_row(widget)
+            settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
     def make_effect_group(self, group_label, key, effects=None):
         tmin, tmax, tstep, tdefault = (0, 2000, 50, 200)
