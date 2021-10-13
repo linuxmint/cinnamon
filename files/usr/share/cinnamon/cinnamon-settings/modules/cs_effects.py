@@ -4,59 +4,6 @@ from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 from ChooserButtonWidgets import TweenChooserButton, EffectChooserButton
 
-EFFECT_SETS = {
-    "cinnamon": ("traditional", "traditional", "traditional", "none",  "none",  "none"),
-    "scale":    ("scale",       "scale",       "scale",       "scale", "scale", "scale"),
-    "fade":     ("fade",        "fade",        "fade",        "scale", "scale", "scale"),
-    "blend":    ("blend",       "blend",       "blend",       "scale", "scale", "scale"),
-    "move":     ("move",        "move",        "move",        "scale", "scale", "scale"),
-    "flyUp":    ("flyUp",       "flyDown",     "flyDown",     "scale", "scale", "scale"),
-    "flyDown":  ("flyDown",     "flyUp",       "flyUp",       "scale", "scale", "scale"),
-    "default":  ("scale",       "scale",       "none",        "none",  "none",  "none")
-}
-
-TRANSITIONS_SETS = {
-    "cinnamon": ("easeOutQuad",    "easeOutQuad",   "easeInQuad",  "easeInExpo", "easeNone",       "easeInQuad"),
-    "normal":   ("easeOutSine",    "easeInBack",    "easeInSine",  "easeInBack", "easeOutBounce",  "easeInBack"),
-    "extra":    ("easeOutElastic", "easeOutBounce", "easeOutExpo", "easeInExpo", "easeOutElastic", "easeInExpo"),
-    "fade":     ("easeOutQuart",   "easeInQuart",   "easeInQuart", "easeInBack", "easeOutBounce",  "easeInBack")
-}
-
-TIME_SETS = {
-    "cinnamon": (100, 120, 160, 100, 100, 100),
-    "slow":     (400, 400, 400, 100, 100, 100),
-    "normal":   (250, 250, 250, 100, 100, 100),
-    "fast":     (100, 100, 100, 100, 100, 100),
-    "default":  (250, 250, 150, 400, 400, 400)
-}
-
-COMBINATIONS = {
-    #  name           effect    transition    time
-    "cinnamon":   ("cinnamon", "cinnamon", "cinnamon"),
-    "scale":      ("scale",    "normal",   "normal"),
-    "fancyScale": ("scale",    "extra",    "slow"),
-    "fade":       ("fade",     "fade",     "normal"),
-    "blend":      ("blend",    "fade",     "normal"),
-    "move":       ("move",     "normal",   "fast"),
-    "flyUp":      ("flyUp",    "normal",   "fast"),
-    "flyDown":    ("flyDown",  "normal",   "fast"),
-    #for previous versions
-    "default":    ("default",  "normal",   "default")
-}
-
-OPTIONS = (
-    ("cinnamon",   _("Cinnamon")),
-    ("scale",      _("Scale")),
-    ("fancyScale", _("Fancy Scale")),
-    ("fade",       _("Fade")),
-    ("blend",      _("Blend")),
-    ("move",       _("Move")),
-    ("flyUp",      _("Fly up, down")),
-    ("flyDown",    _("Fly down, up")),
-    #for previous versions
-    ("default",    _("Default"))
-)
-TYPES = ("map", "close", "minimize", "maximize", "unmaximize", "tile")
 SCHEMA = "org.cinnamon"
 DEP_PATH = "org.cinnamon/desktop-effects"
 KEY_TEMPLATE = "desktop-effects-%s-%s"
@@ -104,11 +51,6 @@ class Module:
             print("Loading Effects module")
 
             self.schema = Gio.Settings(SCHEMA)
-            self.effect_sets = {}
-            for name, sets in COMBINATIONS.items():
-                self.effect_sets[name] = (EFFECT_SETS[sets[0]], TRANSITIONS_SETS[sets[1]], TIME_SETS[sets[2]])
-
-            # Enable effects
 
             page = SettingsPage()
             self.sidePage.add_widget(page)
@@ -123,10 +65,6 @@ class Module:
 
             widget = GSettingsSwitch(_("Effects on menus"), "org.cinnamon", "desktop-effects-on-menus")
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
-
-            self.chooser = GSettingsComboBox(_("Effects style"), "org.cinnamon", "desktop-effects-style", OPTIONS)
-            self.chooser.content_widget.connect("changed", self.on_value_changed)
-            settings.add_reveal_row(self.chooser, "org.cinnamon.muffin", "desktop-effects")
 
             widget = GSettingsSwitch(_("Fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade")
             settings.add_row(widget)
@@ -195,28 +133,6 @@ class Module:
         row.pack_end(effect, False, False, 0)
 
         return row
-
-    def is_custom(self):
-        effects = []
-        transitions = []
-        times = []
-
-        for i in TYPES:
-            effects.append(self.schema.get_string(KEY_TEMPLATE % (i, "effect")))
-            transitions.append(self.schema.get_string(KEY_TEMPLATE % (i, "transition")))
-            times.append(self.schema.get_int(KEY_TEMPLATE % (i, "time")))
-
-        value = (tuple(effects), tuple(transitions), tuple(times))
-        return value != self.effect_sets[self.chooser.value]
-
-    def on_value_changed(self, widget):
-        value = self.effect_sets[self.schema.get_string("desktop-effects-style")]
-        j = 0
-        for i in TYPES:
-            self.schema.set_string(KEY_TEMPLATE % (i, "effect"), value[0][j])
-            self.schema.set_string(KEY_TEMPLATE % (i, "transition"), value[1][j])
-            self.schema.set_int(KEY_TEMPLATE % (i, "time"), value[2][j])
-            j += 1
 
     def on_desktop_effects_enabled_changed(self, schema, key):
         active = schema.get_boolean(key)
