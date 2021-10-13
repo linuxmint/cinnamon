@@ -55,7 +55,13 @@ class Module:
             page = SettingsPage()
             self.sidePage.add_widget(page)
 
-            settings = page.add_section(_("Enable Effects"))
+            settings = page.add_section(_("Desktop Effects"))
+
+            widget = GSettingsSwitch(_("Session startup animation"), "org.cinnamon", "startup-animation")
+            settings.add_row(widget)
+
+            widget = GSettingsSwitch(_("Fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade")
+            settings.add_row(widget)
 
             widget = GSettingsSwitch(_("Window effects"), "org.cinnamon.muffin", "desktop-effects")
             settings.add_row(widget)
@@ -66,14 +72,9 @@ class Module:
             widget = GSettingsSwitch(_("Effects on menus"), "org.cinnamon", "desktop-effects-on-menus")
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
-            widget = GSettingsSwitch(_("Fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade")
-            settings.add_row(widget)
-
-            widget = GSettingsSwitch(_("Session startup animation"), "org.cinnamon", "startup-animation")
-            settings.add_row(widget)
-
             self.schema.connect("changed::desktop-effects", self.on_desktop_effects_enabled_changed)
 
+            settings = page.add_reveal_section(_("Window Effects"), "org.cinnamon.muffin", "desktop-effects")
 
             self.size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
