@@ -103,9 +103,6 @@ class Module:
         if not self.loaded:
             print("Loading Effects module")
 
-            self.sidePage.stack = SettingsStack()
-            self.sidePage.add_widget(self.sidePage.stack)
-
             self.schema = Gio.Settings(SCHEMA)
             self.effect_sets = {}
             for name, sets in COMBINATIONS.items():
@@ -114,7 +111,7 @@ class Module:
             # Enable effects
 
             page = SettingsPage()
-            self.sidePage.stack.add_titled(page, "effects", _("Enable effects"))
+            self.sidePage.add_widget(page)
 
             settings = page.add_section(_("Enable Effects"))
 
@@ -139,26 +136,8 @@ class Module:
 
             self.schema.connect("changed::desktop-effects", self.on_desktop_effects_enabled_changed)
 
-            # Customize
-
-            page = SettingsPage()
-            self.sidePage.stack.add_titled(page, "customize", _("Customize"))
-
-            box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-            label = Gtk.Label()
-            label.set_markup("<b>%s</b>" % _("Customize settings"))
-            box.pack_start(label, False, False, 0)
-            self.custom_switch = Gtk.Switch(active = self.is_custom())
-            box.pack_end(self.custom_switch, False, False, 0)
-            self.custom_switch.connect("notify::active", self.update_effects)
-            page.add(box)
-
-            self.revealer = Gtk.Revealer()
-            self.revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
-            self.revealer.set_transition_duration(150)
-            page.add(self.revealer)
             settings = SettingsSection(_("Effect"))
-            self.revealer.add(settings)
+            page.add(settings)
 
             self.size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -188,8 +167,6 @@ class Module:
             # TILING WINDOWS
             widget = self.make_effect_group(_("Tiling and snapping windows"), "tile")
             settings.add_row(widget)
-
-            self.update_effects(self.custom_switch, None)
 
     def make_effect_group(self, group_label, key, effects=None):
         tmin, tmax, tstep, tdefault = (0, 2000, 50, 200)
@@ -243,14 +220,6 @@ class Module:
             self.schema.set_int(KEY_TEMPLATE % (i, "time"), value[2][j])
             j += 1
 
-    def update_effects(self, switch, gparam):
-        active = switch.get_active()
-
-        self.revealer.set_reveal_child(active)
-        #when unchecking the checkbutton, reset the values
-        if not active:
-            self.on_value_changed(self.chooser)
-
     def on_desktop_effects_enabled_changed(self, schema, key):
         active = schema.get_boolean(key)
 
@@ -259,5 +228,3 @@ class Module:
 
         if not active and schema.get_boolean("desktop-effects-on-menus"):
             schema.set_boolean("desktop-effects-on-menus", False)
-
-        self.update_effects(self.custom_switch, None)
