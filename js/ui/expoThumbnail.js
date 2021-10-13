@@ -1696,7 +1696,10 @@ ExpoThumbnailsBox.prototype = {
         childBox.y2 = childBox.y1 + buttonHeight;
         
         this.button.allocate(childBox, flags);
-        this.emit('allocated');
+
+        if (this.targetScale === this._scale) {
+            this.emit('allocated');
+        }
     },
 
     activeWorkspaceChanged: function(wm, from, to, direction) {
