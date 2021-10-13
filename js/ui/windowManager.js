@@ -474,9 +474,7 @@ var WindowManager = class WindowManager {
             'desktop-effects-map': global.settings.get_string('desktop-effects-map'),
             'desktop-effects-close': global.settings.get_string('desktop-effects-close'),
             'desktop-effects-minimize': global.settings.get_string('desktop-effects-minimize'),
-            'desktop-effects-maximize': global.settings.get_string('desktop-effects-maximize'),
-            'desktop-effects-unmaximize': global.settings.get_string('desktop-effects-unmaximize'),
-            'desktop-effects-tile': global.settings.get_string('desktop-effects-tile')
+            'desktop-effects-change-size': global.settings.get_boolean('desktop-effects-change-size')
         };
 
         global.settings.connect('changed::desktop-effects-on-dialogs', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
@@ -485,9 +483,7 @@ var WindowManager = class WindowManager {
         global.settings.connect('changed::desktop-effects-map', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
         global.settings.connect('changed::desktop-effects-close', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
         global.settings.connect('changed::desktop-effects-minimize', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
-        global.settings.connect('changed::desktop-effects-maximize', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
-        global.settings.connect('changed::desktop-effects-unmaximize', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
-        global.settings.connect('changed::desktop-effects-tile', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+        global.settings.connect('changed::desktop-effects-change-size', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
 
         this.settingsState = settingsState;
 
@@ -618,6 +614,31 @@ var WindowManager = class WindowManager {
             this._endWindowEffect(cinnamonwm, name, actor);
     }
 
+    _startTraditionalWindowEffect(cinnamonwm, name, actor, args) {
+        let effect = this.effects[name];
+
+        if (!this.settingsState['desktop-effects'] || !this._shouldAnimate(actor) || !this.settingsState["desktop-effects-change-size"]) {
+            cinnamonwm[effect.wmCompleteName](actor);
+            return;
+        }
+
+        let type = "traditional";
+
+        // make sure to end a running effect
+        if (actor.current_effect_name) {
+            this._endWindowEffect(cinnamonwm, actor.current_effect_name, actor);
+        }
+        this[effect.arrayName].push(actor);
+        actor.current_effect_name = name;
+        actor.orig_opacity = actor.opacity;
+        actor.show();
+
+        if (effect[type]) {
+            effect[type](cinnamonwm, actor, args);
+        } else if (!overwriteKey) // when not unminimizing, but the effect was not found, end it
+            this._endWindowEffect(cinnamonwm, name, actor);
+    }
+
     _endWindowEffect(cinnamonwm, name, actor) {
         let effect = this.effects[name];
         // effect will be an instance of Effect
@@ -649,19 +670,19 @@ var WindowManager = class WindowManager {
     _tileWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
         soundManager.play('tile');
 
-        this._startWindowEffect(cinnamonwm, "tile", actor, [targetX, targetY, targetWidth, targetHeight]);
+        this._startTraditionalWindowEffect(cinnamonwm, "tile", actor, [targetX, targetY, targetWidth, targetHeight]);
     }
 
     _maximizeWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
         soundManager.play('maximize');
 
-        this._startWindowEffect(cinnamonwm, "maximize", actor, [targetX, targetY, targetWidth, targetHeight]);
+        this._startTraditionalWindowEffect(cinnamonwm, "maximize", actor, [targetX, targetY, targetWidth, targetHeight]);
     }
 
     _unmaximizeWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
         soundManager.play('unmaximize');
 
-        this._startWindowEffect(cinnamonwm, "unmaximize", actor, [targetX, targetY, targetWidth, targetHeight]);
+        this._startTraditionalWindowEffect(cinnamonwm, "unmaximize", actor, [targetX, targetY, targetWidth, targetHeight]);
     }
 
     _hasAttachedDialogs(window, ignoreWindow) {

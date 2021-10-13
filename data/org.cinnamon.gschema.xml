@@ -204,27 +204,10 @@
       </description>
     </key>
 
-    <key type="s" name="desktop-effects-maximize">
-      <default>"none"</default>
-      <summary>Effect used when maximizing windows</summary>
+    <key type="b" name="desktop-effects-change-size">
+      <default>true</default>
+      <summary>Whether to show an animation when maximizing/unmaximizing/tiling/snapping windows</summary>
       <description>
-       An effect: none
-      </description>
-    </key>
-
-    <key type="s" name="desktop-effects-unmaximize">
-      <default>"none"</default>
-      <summary>Effect used when unmaximizing windows</summary>
-      <description>
-       An effect: none
-      </description>
-    </key>
-
-    <key type="s" name="desktop-effects-tile">
-      <default>"none"</default>
-      <summary>Effect used when maximizing windows</summary>
-      <description>
-       An effect: none
       </description>
     </key>
 

@@ -72,19 +72,8 @@ class Module:
             widget = GSettingsComboBox(_("Minimizing windows"), "org.cinnamon", "desktop-effects-minimize", options)
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
-            # MAXIMIZING WINDOWS
-            options = ["none", _("None")], ["traditional", _("Traditional")]
-            widget = GSettingsComboBox(_("Maximizing windows"), "org.cinnamon", "desktop-effects-maximize", options)
-            settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
-
-            # UNMAXIMIZING WINDOWS
-            options = ["none", _("None")], ["traditional", _("Traditional")]
-            widget = GSettingsComboBox(_("Unmaximizing windows"), "org.cinnamon", "desktop-effects-unmaximize", options)
-            settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
-
-            # TILING WINDOWS
-            options = ["none", _("None")], ["traditional", _("Traditional")]
-            widget = GSettingsComboBox(_("Tiling and snapping windows"), "org.cinnamon", "desktop-effects-tile", options)
+            # MAXIMIZING/TILING WINDOWS
+            widget = GSettingsSwitch(_("Maximizing and tiling windows"), "org.cinnamon", "desktop-effects-change-size")
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
     def on_desktop_effects_enabled_changed(self, schema, key):
