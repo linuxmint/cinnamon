@@ -190,9 +190,7 @@ function overrideClutter() {
 
 function overrideMeta() {
     Meta.BackgroundActor.new_for_screen = function(screen) {
-        let bga = new Meta.BackgroundActor({meta_display: global.display, monitor: 0});
-        bga.set_background(new Meta.Background({meta_display: global.display}));
-        return bga;
+        return Meta.X11BackgroundActor.new_for_display(global.display);
     }
 
     Meta.disable_unredirect_for_screen = function(screen) {
