@@ -589,6 +589,7 @@ var WindowManager = class WindowManager {
 
     _startWindowEffect(cinnamonwm, name, actor, args, overwriteKey) {
         let effect = this.effects[name];
+
         if (!this.settingsState['desktop-effects'] || !this._shouldAnimate(actor)) {
             cinnamonwm[effect.wmCompleteName](actor);
             return;
@@ -640,7 +641,7 @@ var WindowManager = class WindowManager {
     _minimizeWindow(cinnamonwm, actor) {
         soundManager.play('minimize');
 
-        // reset all cached values in case "traditional" is no longer in effect
+        // reset all cached values in case the minimize effect is no longer in effect
         actor.meta_window._cinnamonwm_has_origin = false;
         this._startWindowEffect(cinnamonwm, "minimize", actor);
     }

@@ -73,15 +73,6 @@ var Map = class Map extends Effect {
         this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
     }
 
-    blend(cinnamonwm, actor) {
-        let transition = 'easeOutSquad';
-        let time = 0.8;
-        actor.opacity = 0;
-        actor.set_scale(1.5, 1.5);
-        this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
-        this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
-    }
-
     move(cinnamonwm, actor) {
         let transition = 'easeOutSquad';
         let time = 0.8;
@@ -101,7 +92,7 @@ var Map = class Map extends Effect {
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
-    flyUp(cinnamonwm, actor) {
+    fly(cinnamonwm, actor) {
         let transition = 'easeInSine';
         let time = 0.1;
         // FIXME: somehow we need this line to get the correct position, without it will return [0, 0]
@@ -116,22 +107,6 @@ var Map = class Map extends Effect {
 
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
 
-    }
-
-    flyDown(cinnamonwm, actor) {
-        let transition = 'easeInSine';
-        let time = 0.1;
-        // FIXME - see also flyUp
-        actor.get_allocation_box().get_size();
-        let [xDest, yDest] = actor.get_transformed_position();
-        let ySrc = -actor.get_allocation_box().get_height();
-
-        actor.set_position(xDest, ySrc);
-
-        let dist = Math.abs(ySrc - yDest);
-        time *= dist / layoutManager.primaryMonitor.height * 2; // The time time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
-
-        this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
     traditional(cinnamonwm, actor) {
@@ -203,13 +178,6 @@ var Close = class Close extends Effect {
         this._fadeWindow(cinnamonwm, actor, 0, time, transition);
     }
 
-    blend(cinnamonwm, actor) {
-        let transition = 'easeOutSquad';
-        let time = 0.8;
-        this._fadeWindow(cinnamonwm, actor, 0, time, transition);
-        this._scaleWindow(cinnamonwm, actor, 1.5, 1.5, time, transition);
-    }
-
     move(cinnamonwm, actor) {
         let transition = 'easeOutSquad';
         let time = 0.8;
@@ -219,19 +187,7 @@ var Close = class Close extends Effect {
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
-    flyUp(cinnamonwm, actor) {
-        let transition = 'easeInSine';
-        let time = 0.1;
-        let xDest = actor.get_transformed_position()[0];
-        let yDest = -actor.get_allocation_box().get_height();
-
-        let dist = Math.abs(actor.get_transformed_position()[1] - yDest);
-        time *= dist / layoutManager.primaryMonitor.height * 2; // The time time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
-
-        this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
-    }
-
-    flyDown(cinnamonwm, actor) {
+    fly(cinnamonwm, actor) {
         let transition = 'easeInSine';
         let time = 0.1;
         let xDest = actor.get_transformed_position()[0];
@@ -272,6 +228,19 @@ var Minimize = class Minimize extends Close {
         this._end = Effect.prototype._end;
     }
 
+    fly(cinnamonwm, actor) {
+        let transition = 'easeInSine';
+        let time = 0.1;
+        let xDest = actor.get_transformed_position()[0];
+        let yDest = global.stage.get_height();
+
+        let dist = Math.abs(actor.get_transformed_position()[1] - yDest);
+        time *= dist / layoutManager.primaryMonitor.height * 2; // The transition time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
+
+        actor.meta_window._cinnamonwm_has_origin = true;
+        this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
+    }
+
     traditional(cinnamonwm, actor) {
         let transition = 'easeInQuad';
         let time = 0.16;
@@ -305,6 +274,18 @@ var Unminimize = class Unminimize extends Effect {
         this.wmCompleteName = 'completed_map';
 
         this._end = Map.prototype._end;
+    }
+
+    fly(cinnamonwm, actor) {
+        let transition = 'easeInSine';
+        let time = 0.1;
+        let xDest = actor.get_transformed_position()[0];
+        let yDest = -actor.get_allocation_box().get_height();
+
+        let dist = Math.abs(actor.get_transformed_position()[1] - yDest);
+        time *= dist / layoutManager.primaryMonitor.height * 2; // The time time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
+
+        this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
     traditional(cinnamonwm, actor) {

@@ -48,24 +48,31 @@ class Module:
 
             self.size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
+
+            # MAPPING WINDOWS
             options = ["none", _("None")], \
                       ["scale", _("Scale")], \
                       ["fade", _("Fade")], \
-                      ["blend", _("Blend")], \
                       ["move", _("Move")], \
-                      ["flyUp", _("Fly up, down")], \
-                      ["flyDown", _("Fly down, up")], \
+                      ["fly", _("Fly")], \
                       ["traditional", _("Traditional")]
-
-            # MAPPING WINDOWS
             widget = GSettingsComboBox(_("Mapping windows"), "org.cinnamon", "desktop-effects-map", options)
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
             # CLOSING WINDOWS
+            options = ["none", _("None")], \
+                      ["scale", _("Scale")], \
+                      ["fade", _("Fade")], \
+                      ["move", _("Move")], \
+                      ["fly", _("Fly")], \
+                      ["traditional", _("Traditional")]
             widget = GSettingsComboBox(_("Closing windows"), "org.cinnamon", "desktop-effects-close", options)
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
             # MINIMIZING WINDOWS
+            options = ["none", _("None")], \
+                      ["traditional", _("Traditional")], \
+                      ["fly", _("Fly")]
             widget = GSettingsComboBox(_("Minimizing windows"), "org.cinnamon", "desktop-effects-minimize", options)
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
@@ -75,10 +82,12 @@ class Module:
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
             # UNMAXIMIZING WINDOWS
+            options = ["none", _("None")], ["scale", _("Scale")]
             widget = GSettingsComboBox(_("Unmaximizing windows"), "org.cinnamon", "desktop-effects-unmaximize", options)
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
             # TILING WINDOWS
+            options = ["none", _("None")], ["scale", _("Scale")]
             widget = GSettingsComboBox(_("Tiling and snapping windows"), "org.cinnamon", "desktop-effects-tile", options)
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
