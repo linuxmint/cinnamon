@@ -244,12 +244,19 @@ ExpoWindowClone.prototype = {
     },
 
     onButtonRelease : function (actor, event) {
-        if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK) ||
-            (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK))
+        const state = Cinnamon.get_event_state(event);
+
+        if (state !== 0) {
+            return true;
+        }
+
+        const button = event.get_button();
+
+        if ([Clutter.BUTTON_PRIMARY, Clutter.BUTTON_SECONDARY].includes(button))
         {
             this.emit('selected', event.get_time());
         }
-        if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK))
+        else if (button == Clutter.BUTTON_MIDDLE)
         {
             this.emit('middle-button-release', event.get_time());
         }
@@ -331,15 +338,20 @@ ExpoWorkspaceThumbnail.prototype = {
                 if (timeElapsed > 500) {
                     return true;
                 }
-                let evstate = Cinnamon.get_event_state(event);
-                if ((evstate & Clutter.ModifierType.BUTTON1_MASK) ||
-                        (evstate & Clutter.ModifierType.BUTTON3_MASK))
+
+                const state = Cinnamon.get_event_state(event);
+                if (state !== 0) {
+                    return false;
+                }
+
+                const button = event.get_button();
+                if ([Clutter.BUTTON_PRIMARY, Clutter.BUTTON_SECONDARY].includes(button))
                 {
-                   this.activate(null, event.get_time());
+                    this.activate(null, event.get_time());
                     return true;
-                } else if (evstate & Clutter.ModifierType.BUTTON2_MASK) {
+                } else if (button === Clutter.BUTTON_MIDDLE) {
                     this.remove();
-                    return true;                
+                    return true;
                 }
                 return false;
             }));
@@ -375,7 +387,7 @@ ExpoWorkspaceThumbnail.prototype = {
         this.background = new Clutter.Group();
         this.contents.add_actor(this.background);
 
-        let desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
+        let desktopBackground = Meta.X11BackgroundActor.new_for_display(global.display);
         this.background.add_actor(desktopBackground);
 
         let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
@@ -1081,7 +1093,7 @@ ExpoThumbnailsBox.prototype = {
         // after it has been allocated
         let allocId = this.connect('allocated', Lang.bind(this, function() {
             this.disconnect(allocId);
-            Mainloop.timeout_add(0, Lang.bind(this, function() {
+            Mainloop.timeout_add(100, Lang.bind(this, function() {
                 this.emit('set-overview-mode', forceOverviewMode === 1);
                 this.thumbnails[this.kbThumbnailIndex].showKeyboardSelectedState(true);
             }));
@@ -1092,7 +1104,8 @@ ExpoThumbnailsBox.prototype = {
             this.emit('set-overview-mode', forceOverviewMode === 1);
         };
         this.actor.connect('button-release-event', Lang.bind(this, function(actor, event) {
-            if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
+            if (Cinnamon.get_event_state(event) === 0 &&
+                    event.get_button() == Clutter.BUTTON_MIDDLE) {
                 this.toggleGlobalOverviewMode();
             }
         }));
@@ -1234,11 +1247,11 @@ ExpoThumbnailsBox.prototype = {
                 thumbnail.actor.contains(event.get_related());
         }
         for (let k = start; k < start + count; k++) {
-            let metaWorkspace = global.screen.get_workspace_by_index(k);
+            let metaWorkspace = global.workspace_manager.get_workspace_by_index(k);
             let thumbnail = new ExpoWorkspaceThumbnail(metaWorkspace, this);
                                   
             this.thumbnails.push(thumbnail);
-            if (metaWorkspace == global.screen.get_active_workspace()) {
+            if (metaWorkspace == global.workspace_manager.get_active_workspace()) {
                 this.lastActiveWorkspace = thumbnail;
                 thumbnail.setActive(true);
             }
@@ -1683,7 +1696,10 @@ ExpoThumbnailsBox.prototype = {
         childBox.y2 = childBox.y1 + buttonHeight;
         
         this.button.allocate(childBox, flags);
-        this.emit('allocated');
+
+        if (this.targetScale === this._scale) {
+            this.emit('allocated');
+        }
     },
 
     activeWorkspaceChanged: function(wm, from, to, direction) {
