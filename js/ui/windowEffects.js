@@ -59,24 +59,32 @@ var Map = class Map extends Effect {
         this.wmCompleteName = 'completed_map';
     }
 
-    scale(cinnamonwm, actor, time, transition) {
+    scale(cinnamonwm, actor) {
+        let transition = 'easeOutSquad';
+        let time = 0.8;
         actor.set_scale(0, 0);
         this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
     }
 
-    fade(cinnamonwm, actor, time, transition) {
+    fade(cinnamonwm, actor) {
+        let transition = 'easeOutSquad';
+        let time = 0.8;
         actor.opacity = 0;
         this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
     }
 
-    blend(cinnamonwm, actor, time, transition) {
+    blend(cinnamonwm, actor) {
+        let transition = 'easeOutSquad';
+        let time = 0.8;
         actor.opacity = 0;
         actor.set_scale(1.5, 1.5);
         this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
         this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition);
     }
 
-    move(cinnamonwm, actor, time, transition) {
+    move(cinnamonwm, actor) {
+        let transition = 'easeOutSquad';
+        let time = 0.8;
         let [width, height] = actor.get_allocation_box().get_size();
         let [xDest, yDest] = actor.get_transformed_position();
         xDest += width /= 2;
@@ -93,7 +101,9 @@ var Map = class Map extends Effect {
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
-    flyUp(cinnamonwm, actor, time, transition) {
+    flyUp(cinnamonwm, actor) {
+        let transition = 'easeInSine';
+        let time = 0.1;
         // FIXME: somehow we need this line to get the correct position, without it will return [0, 0]
         actor.get_allocation_box().get_size();
         let [xDest, yDest] = actor.get_transformed_position();
@@ -108,7 +118,9 @@ var Map = class Map extends Effect {
 
     }
 
-    flyDown(cinnamonwm, actor, time, transition) {
+    flyDown(cinnamonwm, actor) {
+        let transition = 'easeInSine';
+        let time = 0.1;
         // FIXME - see also flyUp
         actor.get_allocation_box().get_size();
         let [xDest, yDest] = actor.get_transformed_position();
@@ -122,7 +134,9 @@ var Map = class Map extends Effect {
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
-    traditional(cinnamonwm, actor, time, transition) {
+    traditional(cinnamonwm, actor) {
+        let transition = 'easeOutQuad';
+        let time = 0.1;
         switch (actor.meta_window.window_type) {
             case WindowType.NORMAL:
             case WindowType.MODAL_DIALOG:
@@ -176,28 +190,38 @@ var Close = class Close extends Effect {
         }
     }
 
-    scale(cinnamonwm, actor, time, transition) {
+    scale(cinnamonwm, actor) {
+        let transition = 'easeOutSquad';
+        let time = 0.8;
         this._scaleWindow(cinnamonwm, actor, 0, 0, time, transition);
     }
 
-    fade(cinnamonwm, actor, time, transition) {
+    fade(cinnamonwm, actor) {
+        let transition = 'easeOutSquad';
+        let time = 0.8;
         removeTweens(actor);
         this._fadeWindow(cinnamonwm, actor, 0, time, transition);
     }
 
-    blend(cinnamonwm, actor, time, transition) {
+    blend(cinnamonwm, actor) {
+        let transition = 'easeOutSquad';
+        let time = 0.8;
         this._fadeWindow(cinnamonwm, actor, 0, time, transition);
         this._scaleWindow(cinnamonwm, actor, 1.5, 1.5, time, transition);
     }
 
-    move(cinnamonwm, actor, time, transition) {
+    move(cinnamonwm, actor) {
+        let transition = 'easeOutSquad';
+        let time = 0.8;
         let [xDest, yDest] = global.get_pointer();
 
         this._scaleWindow(cinnamonwm, actor, 0, 0, time, transition);
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
-    flyUp(cinnamonwm, actor, time, transition) {
+    flyUp(cinnamonwm, actor) {
+        let transition = 'easeInSine';
+        let time = 0.1;
         let xDest = actor.get_transformed_position()[0];
         let yDest = -actor.get_allocation_box().get_height();
 
@@ -207,7 +231,9 @@ var Close = class Close extends Effect {
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
-    flyDown(cinnamonwm, actor, time, transition) {
+    flyDown(cinnamonwm, actor) {
+        let transition = 'easeInSine';
+        let time = 0.1;
         let xDest = actor.get_transformed_position()[0];
         let yDest = global.stage.get_height();
 
@@ -217,7 +243,9 @@ var Close = class Close extends Effect {
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
-    traditional(cinnamonwm, actor, time, transition) {
+    traditional(cinnamonwm, actor) {
+        let transition = 'easeOutSquad';
+        let time = 0.8;
         switch (actor.meta_window.window_type) {
             case WindowType.NORMAL:
             case WindowType.MODAL_DIALOG:
@@ -244,7 +272,9 @@ var Minimize = class Minimize extends Close {
         this._end = Effect.prototype._end;
     }
 
-    traditional(cinnamonwm, actor, time, transition) {
+    traditional(cinnamonwm, actor) {
+        let transition = 'easeInQuad';
+        let time = 0.16;
         let success;
         let geom = new Rectangle();
         success = actor.meta_window.get_icon_geometry(geom);
@@ -277,7 +307,9 @@ var Unminimize = class Unminimize extends Effect {
         this._end = Map.prototype._end;
     }
 
-    traditional(cinnamonwm, actor, time, transition) {
+    traditional(cinnamonwm, actor) {
+        let transition = 'easeOutSquad';
+        let time = 0.8;
         let success;
         let geom = new Rectangle();
         success = actor.meta_window.get_icon_geometry(geom);
@@ -306,7 +338,9 @@ var Tile = class Tile extends Effect {
         this.wmCompleteName = 'completed_tile';
     }
 
-    scale(cinnamonwm, actor, time, transition, args) {
+    scale(cinnamonwm, actor, args) {
+        let transition = 'easeInQuad';
+        let time = 0.1;
         let [targetX, targetY, targetWidth, targetHeight] = args;
 
         if (targetWidth === actor.width) targetWidth -= 1;
@@ -332,6 +366,24 @@ var Maximize = class Maximize extends Tile {
         this.wmCompleteName = 'completed_maximize';
     }
 
+    scale(cinnamonwm, actor, args) {
+        let transition = 'easeInExpo';
+        let time = 0.1;
+        let [targetX, targetY, targetWidth, targetHeight] = args;
+
+        if (targetWidth === actor.width) targetWidth -= 1;
+        if (targetHeight === actor.height) targetHeight -= 1;
+
+        let scale_x = targetWidth / actor.width;
+        let scale_y = targetHeight / actor.height;
+        let anchor_x = (actor.x - targetX) * actor.width / (targetWidth - actor.width);
+        let anchor_y = (actor.y - targetY) * actor.height / (targetHeight - actor.height);
+
+        actor.move_anchor_point(anchor_x, anchor_y);
+
+        this._scaleWindow(cinnamonwm, actor, scale_x, scale_y, time, transition, true);
+    }
+
 }
 
 var Unmaximize = class Unmaximize extends Tile {
@@ -341,5 +393,23 @@ var Unmaximize = class Unmaximize extends Tile {
         this.name = 'unmaximize';
         this.arrayName = '_unmaximizing';
         this.wmCompleteName = 'completed_unmaximize';
+    }
+
+    scale(cinnamonwm, actor, args) {
+        let transition = 'easeNone';
+        let time = 0.1;
+        let [targetX, targetY, targetWidth, targetHeight] = args;
+
+        if (targetWidth === actor.width) targetWidth -= 1;
+        if (targetHeight === actor.height) targetHeight -= 1;
+
+        let scale_x = targetWidth / actor.width;
+        let scale_y = targetHeight / actor.height;
+        let anchor_x = (actor.x - targetX) * actor.width / (targetWidth - actor.width);
+        let anchor_y = (actor.y - targetY) * actor.height / (targetHeight - actor.height);
+
+        actor.move_anchor_point(anchor_x, anchor_y);
+
+        this._scaleWindow(cinnamonwm, actor, scale_x, scale_y, time, transition, true);
     }
 }

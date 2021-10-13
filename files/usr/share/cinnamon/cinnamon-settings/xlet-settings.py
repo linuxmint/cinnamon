@@ -45,8 +45,6 @@ XLET_SETTINGS_WIDGETS = {
     "fontchooser"       :   "JSONSettingsFontButton",
     "soundfilechooser"  :   "JSONSettingsSoundFileChooser",
     "iconfilechooser"   :   "JSONSettingsIconChooser",
-    "tween"             :   "JSONSettingsTweenChooser",
-    "effect"            :   "JSONSettingsEffectChooser",
     "datechooser"       :   "JSONSettingsDateChooser",
     "timechooser"       :   "JSONSettingsTimeChooser",
     "keybinding"        :   "JSONSettingsKeybinding",

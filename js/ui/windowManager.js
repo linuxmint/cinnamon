@@ -81,8 +81,6 @@ const ZONE_TR = 5;
 const ZONE_BR = 6;
 const ZONE_BL = 7;
 
-const SETTINGS_EFFECTS_TYPES = [['effect', 'get_string'], ['time', 'get_int'], ['transition', 'get_string']];
-
 class WindowDimmer {
     constructor(actor) {
         this._desaturateEffect = new DesaturateEffect();
@@ -473,21 +471,23 @@ var WindowManager = class WindowManager {
             'desktop-effects-on-dialogs': global.settings.get_boolean('desktop-effects-on-dialogs'),
             'desktop-effects-on-menus': global.settings.get_boolean('desktop-effects-on-menus'),
             'desktop-effects': this.settings.get_boolean('desktop-effects'),
+            'desktop-effects-map': global.settings.get_string('desktop-effects-map'),
+            'desktop-effects-close': global.settings.get_string('desktop-effects-close'),
+            'desktop-effects-minimize': global.settings.get_string('desktop-effects-minimize'),
+            'desktop-effects-maximize': global.settings.get_string('desktop-effects-maximize'),
+            'desktop-effects-unmaximize': global.settings.get_string('desktop-effects-unmaximize'),
+            'desktop-effects-tile': global.settings.get_string('desktop-effects-tile')
         };
 
         global.settings.connect('changed::desktop-effects-on-dialogs', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         global.settings.connect('changed::desktop-effects-on-menus', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         this.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
-
-        each(this.effects, (value, key) => {
-            if (key === 'unminimize') return;
-            each(SETTINGS_EFFECTS_TYPES, (item) => {
-                let [name, type] = item;
-                let property = `desktop-effects-${key}-${name}`;
-                settingsState[property] = global.settings[type](property);
-                global.settings.connect(`changed::${property}`, (s, k) => this.onSettingsChanged(s, k, type));
-            });
-        });
+        global.settings.connect('changed::desktop-effects-map', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+        global.settings.connect('changed::desktop-effects-close', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+        global.settings.connect('changed::desktop-effects-minimize', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+        global.settings.connect('changed::desktop-effects-maximize', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+        global.settings.connect('changed::desktop-effects-unmaximize', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+        global.settings.connect('changed::desktop-effects-tile', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
 
         this.settingsState = settingsState;
 
@@ -595,15 +595,12 @@ var WindowManager = class WindowManager {
         }
 
         let key = "desktop-effects-" + (overwriteKey || effect.name);
-        let time = this.settingsState[`${key}-time`];
-
-        // Transition time is 0ms, bail
-        if (!time) {
+        if (key == null || key == 'none') {
             cinnamonwm[effect.wmCompleteName](actor);
             return;
         }
 
-        let type = this.settingsState[`${key}-effect`];
+        let type = this.settingsState[key];
 
         // make sure to end a running effect
         if (actor.current_effect_name) {
@@ -615,10 +612,7 @@ var WindowManager = class WindowManager {
         actor.show();
 
         if (effect[type]) {
-            time = time / 1000;
-            let transition = this.settingsState[`${key}-transition`];
-
-            effect[type](cinnamonwm, actor, time, transition, args);
+            effect[type](cinnamonwm, actor, args);
         } else if (!overwriteKey) // when not unminimizing, but the effect was not found, end it
             this._endWindowEffect(cinnamonwm, name, actor);
     }
