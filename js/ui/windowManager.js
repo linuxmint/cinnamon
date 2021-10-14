@@ -811,13 +811,14 @@ var WindowManager = class WindowManager {
     }
 
     _switchWorkspace(cinnamonwm, from, to, direction) {
+        soundManager.play('switch');
+
         if (!this.settingsState['desktop-effects'] || Main.modalCount || Main.software_rendering) {
             this.showWorkspaceOSD();
             cinnamonwm.completed_switch_workspace();
             return;
         }
 
-        soundManager.play('switch');
         this.showWorkspaceOSD();
 
         let windows = global.get_window_actors();
