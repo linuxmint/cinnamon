@@ -33,7 +33,10 @@ class Module:
             widget = GSettingsSwitch(_("Fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade")
             settings.add_row(widget)
 
-            widget = GSettingsSwitch(_("Desktop effects"), "org.cinnamon.muffin", "desktop-effects")
+            widget = GSettingsSwitch(_("Desktop effects"), "org.cinnamon", "desktop-effects-workspace")
+            settings.add_row(widget)
+
+            widget = GSettingsSwitch(_("Window effects"), "org.cinnamon.muffin", "desktop-effects")
             settings.add_row(widget)
 
             widget = GSettingsSwitch(_("Effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs")

@@ -180,6 +180,14 @@
       </description>
     </key>
 
+    <key name="desktop-effects-workspace" type="b">
+      <default>true</default>
+      <summary>Enable desktop effects on the workspace</summary>
+      <description>
+        This affects switching workspaces, expo and scale.
+      </description>
+    </key>
+
     <key type="s" name="desktop-effects-close">
       <default>"traditional"</default>
       <summary>Effect used when closing windows</summary>

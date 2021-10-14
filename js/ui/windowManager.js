@@ -470,6 +470,7 @@ var WindowManager = class WindowManager {
         this.settingsState = {
             'desktop-effects-on-dialogs': global.settings.get_boolean('desktop-effects-on-dialogs'),
             'desktop-effects-on-menus': global.settings.get_boolean('desktop-effects-on-menus'),
+            'desktop-effects-workspace': global.settings.get_boolean('desktop-effects-workspace'),
             'desktop-effects': this.settings.get_boolean('desktop-effects'),
             'desktop-effects-map': global.settings.get_string('desktop-effects-map'),
             'desktop-effects-close': global.settings.get_string('desktop-effects-close'),
@@ -479,6 +480,7 @@ var WindowManager = class WindowManager {
 
         global.settings.connect('changed::desktop-effects-on-dialogs', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         global.settings.connect('changed::desktop-effects-on-menus', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        global.settings.connect('changed::desktop-effects-workspace', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         this.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         global.settings.connect('changed::desktop-effects-map', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
         global.settings.connect('changed::desktop-effects-close', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
@@ -813,7 +815,7 @@ var WindowManager = class WindowManager {
     _switchWorkspace(cinnamonwm, from, to, direction) {
         soundManager.play('switch');
 
-        if (!this.settingsState['desktop-effects'] || Main.modalCount || Main.software_rendering) {
+        if (!this.settingsState['desktop-effects-workspace'] || Main.modalCount || Main.software_rendering) {
             this.showWorkspaceOSD();
             cinnamonwm.completed_switch_workspace();
             return;
@@ -913,13 +915,13 @@ var WindowManager = class WindowManager {
     _showTilePreview(cinnamonwm, window, tileRect, monitorIndex, snapQueued) {
         if (!this._tilePreview)
             this._tilePreview = new TilePreview();
-        this._tilePreview.show(window, tileRect, monitorIndex, snapQueued, this.settingsState['desktop-effects']);
+        this._tilePreview.show(window, tileRect, monitorIndex, snapQueued, this.settingsState['desktop-effects-workspace']);
     }
 
     _hideTilePreview(cinnamonwm) {
         if (!this._tilePreview)
             return;
-        this._tilePreview.hide(this.settingsState['desktop-effects']);
+        this._tilePreview.hide(this.settingsState['desktop-effects-workspace']);
         this._tilePreview.destroy();
         this._tilePreview = null;
     }
@@ -928,14 +930,14 @@ var WindowManager = class WindowManager {
         if (global.settings.get_boolean('show-tile-hud')) {
             if (!this._hudPreview)
                 this._hudPreview = new HudPreview();
-            this._hudPreview.show(currentProximityZone, workArea, snapQueued, this.settingsState['desktop-effects']);
+            this._hudPreview.show(currentProximityZone, workArea, snapQueued, this.settingsState['desktop-effects-workspace']);
         }
     }
 
     _hideHudPreview(cinnamonwm) {
         if (!this._hudPreview)
             return;
-        this._hudPreview.hide(this.settingsState['desktop-effects']);
+        this._hudPreview.hide(this.settingsState['desktop-effects-workspace']);
         this._hudPreview.destroy();
         this._hudPreview = null;
     }
@@ -968,7 +970,7 @@ var WindowManager = class WindowManager {
     }
 
     _hideWorkspaceOSD() {
-        let effectsEnabled = this.settingsState['desktop-effects'];
+        let effectsEnabled = this.settingsState['desktop-effects-workspace'];
 
         for (let i = 0; i < this._workspace_osd_array.length; i++) {
             let osd = this._workspace_osd_array[i];

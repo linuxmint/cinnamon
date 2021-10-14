@@ -300,7 +300,7 @@ Expo.prototype = {
             clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
             clones.push(clone);
         }, this);
-        let animate = Main.wm.settingsState['desktop-effects'];
+        let animate = Main.wm.settingsState['desktop-effects-workspace'];
         //We need to allocate activeWorkspace before we begin its clone animation
         let allocateID = this._expo.connect('allocated', Lang.bind(this, function() {
             this._expo.disconnect(allocateID);
