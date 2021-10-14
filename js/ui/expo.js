@@ -288,7 +288,7 @@ Expo.prototype = {
 
         this._expo.connect('drag-begin', Lang.bind(this, this._showCloseArea));
         this._expo.connect('drag-end', Lang.bind(this, this._hideCloseArea));
-        
+
         let activeWorkspace = this._expo.lastActiveWorkspace;
         let activeWorkspaceActor = activeWorkspace.actor;
 
@@ -300,30 +300,39 @@ Expo.prototype = {
             clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
             clones.push(clone);
         }, this);
+        let animate = Main.wm.settingsState['desktop-effects'];
         //We need to allocate activeWorkspace before we begin its clone animation
         let allocateID = this._expo.connect('allocated', Lang.bind(this, function() {
             this._expo.disconnect(allocateID);
             Main.layoutManager.monitors.forEach(function(monitor,index) {
                 let clone = clones[index];
-                Tweener.addTween(clone, {
-                    x: Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1,
-                    y: Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1,
-                    scale_x: activeWorkspaceActor.get_scale()[0] , 
-                    scale_y: activeWorkspaceActor.get_scale()[1], 
-                    time: ANIMATION_TIME,
-                    transition: 'easeOutQuad', 
-                    onComplete: function() {
-                        global.overlay_group.remove_actor(clone);
-                        clone.destroy();
-                        if (index == Main.layoutManager.monitors.length < 1) {
-                            this._showDone();
-                        }
-                    }, 
-                    onCompleteScope: this
-                });
+                if (animate) {
+                    Tweener.addTween(clone, {
+                        x: Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1,
+                        y: Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1,
+                        scale_x: activeWorkspaceActor.get_scale()[0] , 
+                        scale_y: activeWorkspaceActor.get_scale()[1], 
+                        time: ANIMATION_TIME,
+                        transition: 'easeOutQuad', 
+                        onComplete: function() {
+                            global.overlay_group.remove_actor(clone);
+                            clone.destroy();
+                            if (index == Main.layoutManager.monitors.length < 1) {
+                                this._showDone();
+                            }
+                        }, 
+                        onCompleteScope: this
+                    });
+                }
+                else {
+                    global.overlay_group.remove_actor(clone);
+                    clone.destroy();
+                    if (index == Main.layoutManager.monitors.length < 1) {
+                        this._showDone();
+                    }
+                }
             }, this);
         }));
-
         this._gradient.show();
         Main.panelManager.disablePanels();
 
