@@ -467,7 +467,7 @@ var WindowManager = class WindowManager {
 
         this.settings = new Settings({schema_id: 'org.cinnamon.muffin'});
 
-        const settingsState = {
+        this.settingsState = {
             'desktop-effects-on-dialogs': global.settings.get_boolean('desktop-effects-on-dialogs'),
             'desktop-effects-on-menus': global.settings.get_boolean('desktop-effects-on-menus'),
             'desktop-effects': this.settings.get_boolean('desktop-effects'),
@@ -484,8 +484,6 @@ var WindowManager = class WindowManager {
         global.settings.connect('changed::desktop-effects-close', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
         global.settings.connect('changed::desktop-effects-minimize', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
         global.settings.connect('changed::desktop-effects-change-size', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
-
-        this.settingsState = settingsState;
 
         this._snapOsd = null;
         this._workspace_osd_array = [];
