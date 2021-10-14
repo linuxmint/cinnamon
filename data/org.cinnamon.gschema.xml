@@ -184,7 +184,7 @@
       <default>"traditional"</default>
       <summary>Effect used when closing windows</summary>
       <description>
-       An effect: scale, fade, traditional, none
+       An effect: traditional, fly, none
       </description>
     </key>
 
@@ -192,7 +192,7 @@
       <default>"traditional"</default>
       <summary>Effect used when mapping windows</summary>
       <description>
-       An effect: scale, fade, traditional, none
+       An effect: traditional, fly, move, none
       </description>
     </key>
 
@@ -200,12 +200,12 @@
       <default>"traditional"</default>
       <summary>Effect used when minimizing windows</summary>
       <description>
-       An effect: traditional, scale, fade, traditional, none
+       An effect: traditional, fly, none
       </description>
     </key>
 
     <key type="b" name="desktop-effects-change-size">
-      <default>true</default>
+      <default>false</default>
       <summary>Whether to show an animation when maximizing/unmaximizing/tiling/snapping windows</summary>
       <description>
       </description>

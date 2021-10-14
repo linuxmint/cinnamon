@@ -60,8 +60,7 @@ class Module:
             # CLOSING WINDOWS
             options = ["none", _("None")], \
                       ["traditional", _("Traditional")], \
-                      ["fly", _("Fly")], \
-                      ["move", _("Move")]
+                      ["fly", _("Fly")]
             widget = GSettingsComboBox(_("Closing windows"), "org.cinnamon", "desktop-effects-close", options)
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 

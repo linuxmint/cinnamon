@@ -60,8 +60,8 @@ var Map = class Map extends Effect {
     }
 
     move(cinnamonwm, actor) {
-        let transition = 'easeOutSquad';
-        let time = 0.8;
+        let transition = 'easeOutQuad';
+        let time = 0.12;
         let [width, height] = actor.get_allocation_box().get_size();
         let [xDest, yDest] = actor.get_transformed_position();
         xDest += width /= 2;
@@ -164,8 +164,8 @@ var Close = class Close extends Effect {
     }
 
     traditional(cinnamonwm, actor) {
-        let transition = 'easeOutSquad';
-        let time = 0.8;
+        let transition = 'easeOutQuad';
+        let time = 0.12;
         switch (actor.meta_window.window_type) {
             case WindowType.NORMAL:
             case WindowType.MODAL_DIALOG:
@@ -243,18 +243,22 @@ var Unminimize = class Unminimize extends Effect {
     fly(cinnamonwm, actor) {
         let transition = 'easeInSine';
         let time = 0.1;
-        let xDest = actor.get_transformed_position()[0];
-        let yDest = -actor.get_allocation_box().get_height();
+        // FIXME: somehow we need this line to get the correct position, without it will return [0, 0]
+        actor.get_allocation_box().get_size();
+        let [xDest, yDest] = actor.get_transformed_position();
+        let ySrc = global.stage.get_height();
 
-        let dist = Math.abs(actor.get_transformed_position()[1] - yDest);
-        time *= dist / layoutManager.primaryMonitor.height * 2; // The time time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
+        actor.set_position(xDest, ySrc);
+
+        let dist = Math.abs(ySrc - yDest);
+        time *= dist / layoutManager.primaryMonitor.height * 2; // The transition time set is the time if the animation starts/ends at the middle of the screen. Scale it proportional to the actual distance so that the speed of all animations will be constant.
 
         this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
     }
 
     traditional(cinnamonwm, actor) {
-        let transition = 'easeOutSquad';
-        let time = 0.8;
+        let transition = 'easeOutQuad';
+        let time = 0.16;
         let success;
         let geom = new Rectangle();
         success = actor.meta_window.get_icon_geometry(geom);
@@ -284,8 +288,8 @@ var Tile = class Tile extends Effect {
     }
 
     traditional(cinnamonwm, actor, args) {
-        let transition = 'easeInQuad';
-        let time = 0.1;
+        let transition = 'easeNone';
+        let time = 0.05;
         let [targetX, targetY, targetWidth, targetHeight] = args;
 
         if (targetWidth === actor.width) targetWidth -= 1;
@@ -312,8 +316,8 @@ var Maximize = class Maximize extends Tile {
     }
 
     traditional(cinnamonwm, actor, args) {
-        let transition = 'easeInExpo';
-        let time = 0.1;
+        let transition = 'easeNone';
+        let time = 0.05;
         let [targetX, targetY, targetWidth, targetHeight] = args;
 
         if (targetWidth === actor.width) targetWidth -= 1;
@@ -342,7 +346,7 @@ var Unmaximize = class Unmaximize extends Tile {
 
     traditional(cinnamonwm, actor, args) {
         let transition = 'easeNone';
-        let time = 0.1;
+        let time = 0.05;
         let [targetX, targetY, targetWidth, targetHeight] = args;
 
         if (targetWidth === actor.width) targetWidth -= 1;
