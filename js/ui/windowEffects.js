@@ -175,7 +175,7 @@ var Close = class Close extends Effect {
                 this._fadeWindow(cinnamonwm, actor, 0, time, transition);
                 break;
             default:
-                this.scale(cinnamonwm, actor, time, transition);
+                this._scaleWindow(cinnamonwm, actor, 0, 0, time, transition);
         }
     }
 }

@@ -599,6 +599,13 @@ var WindowManager = class WindowManager {
 
         let type = this.settingsState[key];
 
+        // menu effects should always be traditional
+        if (actor.meta_window.window_type == WindowType.MENU ||
+            actor.meta_window.window_type == WindowType.DROPDOWN_MENU ||
+            actor.meta_window.window_type == WindowType.POPUP_MENU) {
+            type = 'traditional';
+        }
+
         // make sure to end a running effect
         if (actor.current_effect_name) {
             this._endWindowEffect(cinnamonwm, actor.current_effect_name, actor);
