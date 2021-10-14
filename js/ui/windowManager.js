@@ -635,8 +635,7 @@ var WindowManager = class WindowManager {
 
         if (effect[type]) {
             effect[type](cinnamonwm, actor, args);
-        } else if (!overwriteKey) // when not unminimizing, but the effect was not found, end it
-            this._endWindowEffect(cinnamonwm, name, actor);
+        }
     }
 
     _endWindowEffect(cinnamonwm, name, actor) {
