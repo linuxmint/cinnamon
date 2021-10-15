@@ -1,3 +1,30 @@
+cinnamon (5.0.6) uma; urgency=medium
+
+  [ Michael Webster ]
+  * menu applet.js: Use localeCompare for the fallback sort.
+  * cinnamon-settings: Remove ~/.local and /usr/local from python's module search paths.
+
+  [ Ammako ]
+  * Properly hide JavaEmbeddedFrame on Grouped Window List
+
+  [ Michael Webster ]
+  * menu applet: Check first if we should show items that are refreshed while the menu is open.
+  * menu applet: Hide app buttons by default, and when the menu closes.
+  * cinnamon-subprocess-wrapper: Set the exception result as bytes, not a string.
+  * main.js: Fix activateWindow so it will respect the workspace index if provided.
+  * main.js: Be strict about the workspace argument in activateWindow.
+
+  [ JosephMcc ]
+  * GWL: Don't force the "New Window" option to show
+
+  [ Benjamin Owen ]
+  * Fix window ordering with vertical panels (#10297)
+
+  [ Michael Webster ]
+  * gwl: Remove redundant check for skip-taskbar. Main.isInteresting does this and more.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 15 Oct 2021 15:37:49 +0100
+
 cinnamon (5.0.5) uma; urgency=medium
 
   [ Michael Webster ]
