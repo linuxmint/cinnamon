@@ -232,7 +232,6 @@ class AppList {
         return (this.state.settings.showAllWorkspaces
             || metaWindow.is_on_all_workspaces()
             || metaWindow.get_workspace() === this.metaWorkspace)
-        && !metaWindow.is_skip_taskbar()
         && Main.isInteresting(metaWindow)
         && this.state.monitorWatchList.indexOf(metaWindow.get_monitor()) > -1;
     }
