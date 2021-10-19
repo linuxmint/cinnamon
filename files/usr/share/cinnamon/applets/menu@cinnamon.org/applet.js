@@ -78,9 +78,8 @@ function strip(str) {
  */
 
 function calc_angle(x, y) {
-    if (x == 0 || y == 0) {
-        return 0;
-    }
+    if (x === 0) { x = .001 }
+    if (y === 0) { y = .001 }
 
     let r = Math.atan2(y, x) * (180 / Math.PI);
     return r;
@@ -2328,8 +2327,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
      */
 
     static DEBUG_VMASK = false;
-    static VECTOR_VERTEX_COLOR = Clutter.Color.from_string("white")[1];
-
     static POLL_INTERVAL = 20;
     static MIN_MOVEMENT = 2; // Movement smaller than this disables the mask.
 
@@ -2360,6 +2357,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 llc_x: mx,        llc_y: my,
                 urc_x: bx + bw,   urc_y: by,
                 lrc_x: bx + bw,   lrc_y: by + bh,
+                reactive: false,
                 debug: true
             });
 
@@ -2491,6 +2489,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _setCategoryButtonsReactive(active) {
         for (let i = 0; i < this._categoryButtons.length; i++) {
             this._categoryButtons[i].actor.reactive = active;
+            this._categoryButtons[i].actor.queue_redraw();
         }
     }
 
