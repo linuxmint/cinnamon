@@ -206,8 +206,8 @@ var Minimize = class Minimize extends Close {
     }
 
     traditional(cinnamonwm, actor) {
-        let transition = 'easeInQuad';
-        let time = 0.16;
+        let transition = 'easeInExpo';
+        let time = 0.2;
         let success;
         let geom = new Rectangle();
         success = actor.meta_window.get_icon_geometry(geom);
@@ -289,7 +289,7 @@ var Tile = class Tile extends Effect {
 
     traditional(cinnamonwm, actor, args) {
         let transition = 'easeNone';
-        let time = 0.05;
+        let time = 0.1;
         let [targetX, targetY, targetWidth, targetHeight] = args;
 
         if (targetWidth === actor.width) targetWidth -= 1;
@@ -317,7 +317,7 @@ var Maximize = class Maximize extends Tile {
 
     traditional(cinnamonwm, actor, args) {
         let transition = 'easeNone';
-        let time = 0.05;
+        let time = 0.1;
         let [targetX, targetY, targetWidth, targetHeight] = args;
 
         if (targetWidth === actor.width) targetWidth -= 1;
@@ -346,7 +346,7 @@ var Unmaximize = class Unmaximize extends Tile {
 
     traditional(cinnamonwm, actor, args) {
         let transition = 'easeNone';
-        let time = 0.05;
+        let time = 0.1;
         let [targetX, targetY, targetWidth, targetHeight] = args;
 
         if (targetWidth === actor.width) targetWidth -= 1;
