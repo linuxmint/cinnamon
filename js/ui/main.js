@@ -1111,6 +1111,8 @@ function getWindowActorsForWorkspace(workspaceIndex) {
 function _stageEventHandler(actor, event) {
     if (modalCount == 0)
         return false;
+    // log("Stage event handler........." + event.type() + "..." + event);
+
     if (event.type() != Clutter.EventType.KEY_PRESS) {
         if(!popup_rendering_actor || event.type() != Clutter.EventType.BUTTON_RELEASE)
             return false;
@@ -1123,9 +1125,8 @@ function _stageEventHandler(actor, event) {
 
     // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
     let action = global.display.get_keybinding_action(keyCode, modifierState);
-
-    if (action == Meta.KeyBindingAction.CUSTOM) {
-        global.display.keybinding_action_invoke_by_code(keyCode, modifierState);
+    if (action > 0) {
+        keybindingManager.invoke_action(action);
     }
 
     // Other bindings are only available when the overview is up and no modal dialog is present
