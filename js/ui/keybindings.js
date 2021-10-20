@@ -4,6 +4,7 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Util = imports.misc.util;
 const Meta = imports.gi.Meta;
+const Clutter = imports.gi.Clutter;
 
 const MK = imports.gi.CDesktopEnums.MediaKeyType;
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
@@ -82,39 +83,40 @@ KeybindingManager.prototype = {
         return this._remove_keybinding(name);
     },
 
-    _add_keybinding: function(name, bindings, flags, handler) {
-        let settings = this._bindings[name];
+    _add_keybinding: function(name, bindings_array, flags, handler, user_data) {
+        const key = `RUNTIME-${name}`;
 
-        if (settings !== undefined) {
-            if (this._bindings[name] === bindings) {
-              return true;
-            }
+        let binding = this._bindings[key];
 
-            global.display.remove_keybinding(`RUNTIME-${name}`);
+        if (binding !== undefined) {
+            //  Muffin monitors settings
+            return;
         }
 
-        if (!bindings) {
+        if (bindings_array === null) {
             global.logError("Missing bindings array for keybinding: " + name);
-            this._bindings[name] = undefined;
+            this._bindings[key] = undefined;
             return false;
         }
 
         let empty = true;
-        for (let i = 0; empty && (i < bindings.length); i++) {
-            empty = bindings[i].toString().trim() == "";
+        for (let i = 0; empty && (i < bindings_array.length); i++) {
+            empty = bindings_array[i].toString().trim() == "";
         }
 
         if (empty) {
-            this._bindings[name] = undefined;
+            if (this._bindings[key] !== undefined) {
+                delete this._bindings[key];
+            }
 
-            if (settings !== undefined) {
-                settings.reset("bindings");
+            if (binding !== undefined) {
+                binding["settings"].reset("bindings");
             }
 
             return true;
         }
 
-        if (settings === undefined) {
+        if (binding === undefined) {
             name = name.replace("_", "-");
 
             custom_schema_path = `/org/cinnamon/runtime-keybindings/${name}/`;
@@ -125,32 +127,58 @@ KeybindingManager.prototype = {
                                                               custom_schema_path);
         }
 
-        settings.set_strv("bindings", bindings);
+        settings.set_strv("bindings", bindings_array);
         Gio.Settings.sync();
 
-        let ret = global.display.add_keybinding(`RUNTIME-${name}`, settings, flags, handler);
+        const ret = global.display.add_keybinding(key,
+                                                  settings,
+                                                  flags,
+                                                  Lang.bind(this, this._call_handler, user_data));
 
         if (ret === Meta.KeyBindingAction.NONE) {
             global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
             return false;
         }
 
-        this._bindings[name] = settings;
+        this._bindings[key] = { action: ret, settings: settings, handler: handler };
         return true;
     },
 
-    _remove_keybinding: function(name) {
-        let settings = this._bindings[name];
+    _call_handler: function(display, window, kb, user_data) {
+        let event = Clutter.get_current_event();
 
-        if (settings === undefined)
+        let binding = this._bindings[kb.get_name()];
+
+        if (binding === undefined) {
+            global.logWarning(`unknown keybinding triggered ${kb.get_name()}`)
             return;
+        }
 
-        name = name.replace("_", "-");
+        binding["handler"](display, window, kb, user_data);
+    },
 
-        let ret = global.display.remove_keybinding(`RUNTIME-${name}`);
+    invoke_action: function(action) {
+        for (let key in this._bindings) {
+            let binding = this._bindings[key];
 
-        settings.reset("bindings")
-        this._bindings[name] = undefined;
+            if (binding["action"] === action) {
+                binding["handler"](global.display, null, null);
+                return;
+            }
+        }
+    },
+
+    _remove_keybinding: function(key) {
+        let binding = this._bindings[key];
+
+        if (binding === undefined) {
+            return true;
+        }
+
+        let ret = global.display.remove_keybinding(key);
+
+        binding["settings"].reset("bindings");
+        this._bindings[key] = undefined;
 
         return ret;
     },
@@ -191,13 +219,13 @@ KeybindingManager.prototype = {
         for (let i = 0; i < MK.SEPARATOR; i++) {
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
             this._add_keybinding("media-keys-" + i.toString(), bindings, Meta.KeyBindingFlags.PER_WINDOW,
-                                 Lang.bind(this, this.on_global_media_key_pressed, i));
+                                 Lang.bind(this, this.on_global_media_key_pressed), i);
         }
 
         for (let i = MK.SEPARATOR + 1; i < MK.LAST; i++) {
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
             this._add_keybinding("media-keys-" + i.toString(), bindings, Meta.KeyBindingFlags.PER_WINDOW,
-                                 Lang.bind(this, this.on_media_key_pressed, i));
+                                 Lang.bind(this, this.on_media_key_pressed), i);
         }
         return true;
     },

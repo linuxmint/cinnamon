@@ -535,10 +535,9 @@ var WindowManager = class WindowManager {
 
     _filterKeybinding(shellwm, binding) {
         // TODO: We can use ActionModes to manage what keybindings are
-        // available where. For now, this allows global keybindings in a non-
-        // modal state. 
-
-        return global.stage_input_mode !== Cinnamon.StageInputMode.NORMAL;
+        // available where. For now just disable this, things are handled
+        // in Main._stageEventHandler.
+        return false;
     }
 
     _hasAttachedDialogs(window, ignoreWindow) {
