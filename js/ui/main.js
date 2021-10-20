@@ -1075,11 +1075,8 @@ function logStackTrace(msg) {
  * Returns (boolean): whether the window is on the workspace
  */
 function isWindowActorDisplayedOnWorkspace(win, workspaceIndex) {
-    let mwin = win.get_meta_window();
-    if (mwin.get_workspace().index() === workspaceIndex) {return true;}
-    return mwin && (mwin.is_on_all_workspaces() ||
-        (wm.workspacesOnlyOnPrimary && mwin.get_monitor() != layoutManager.primaryIndex)
-    );
+    return win.get_workspace() == workspaceIndex ||
+        (win.get_meta_window() && win.get_meta_window().is_on_all_workspaces());
 }
 
 /**
