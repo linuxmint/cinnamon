@@ -76,7 +76,6 @@ class WindowPreview extends Tooltips.TooltipBase {
         this._applet = item._applet;
         this.metaWindow = metaWindow;
         this._windowActor = null;
-        let x = this.windowActor;
         this.uiScale = global.ui_scale;
         this.thumbScale = previewScale;
 
@@ -125,13 +124,8 @@ class WindowPreview extends Tooltips.TooltipBase {
         this.mousePosition = event.get_coords();
     }
 
-    _getScaledTextureSize(windowActor) {
-        let width = windowActor.width;
-        let height = windowActor.height;
-
-        // let width = windowTexture.get_texture().get_width();
-        // let height = windowTexture.get_texture().get_height();
-
+    _getScaledTextureSize(windowTexture) {
+        let [width, height] = windowTexture.get_size();
         let scale = this.thumbScale * this.uiScale *
                     Math.min(WINDOW_PREVIEW_WIDTH / width, WINDOW_PREVIEW_HEIGHT / height);
         return [ width * scale,
@@ -152,7 +146,7 @@ class WindowPreview extends Tooltips.TooltipBase {
             this.thumbnail.destroy();
             this.thumbnail = null;
         }
-        //FIXME - previews should show content only, not frames
+
         let windowTexture = this.windowActor.get_texture();
 
         if (!windowTexture) {
@@ -162,8 +156,8 @@ class WindowPreview extends Tooltips.TooltipBase {
 
         let [width, height] = this._getScaledTextureSize(this.windowActor);
 
-        this.thumbnail = new Clutter.Clone({
-            source: this.windowActor,
+        this.thumbnail = new Clutter.Actor({
+            content: windowTexture,
             width: width,
             height: height
         });
