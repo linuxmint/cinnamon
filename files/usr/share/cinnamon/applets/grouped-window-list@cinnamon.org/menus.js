@@ -732,21 +732,19 @@ class WindowThumbnail {
             let windowTexture = this.metaWindowActor.get_texture();
             if (!windowTexture) return;
             // FIXME
-            // let [width, height] = windowTexture.get_preferred_size();
-            let width = this.metaWindowActor.width;
-            let height = this.metaWindowActor.height;
+            let [width, height] = this.metaWindowActor.get_size();
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
             height = Math.round(height * scale);
             if (this.thumbnailActor.child) {
                 this.thumbnailActor.height = height;
                 this.thumbnailActor.width = width;
-                this.thumbnailActor.child.source = this.metaWindowActor;
+                this.thumbnailActor.child.source = windowTexture;
                 this.thumbnailActor.child.width = width;
                 this.thumbnailActor.child.height = height;
             } else {
-                this.thumbnailActor.child = new Clutter.Clone({
-                    source: this.metaWindowActor,
+                this.thumbnailActor.child = new Clutter.Actor({
+                    content: windowTexture,
                     reactive: true,
                     width,
                     height
