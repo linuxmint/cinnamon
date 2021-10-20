@@ -874,7 +874,8 @@ replay_to_json (gint64      time,
                 gpointer    user_data)
 {
   ReplayToJsonClosure *closure = user_data;
-  char *event_str;
+  char *event_str = NULL;
+  gboolean rc;
 
   if (closure->error != NULL)
     return;
@@ -923,7 +924,9 @@ replay_to_json (gint64      time,
       g_assert_not_reached ();
     }
 
-  if (!write_string (closure->out, event_str, &closure->error))
+  rc = write_string (closure->out, event_str, &closure->error);
+  g_free (event_str);
+  if (!rc)
       return;
 }
 
