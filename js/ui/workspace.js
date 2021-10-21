@@ -92,7 +92,7 @@ WindowClone.prototype = {
         this.actor.destroy_all_children();
 
         let {x, y, width, height} = this.metaWindow.get_frame_rect();
-        let clones = WindowUtils.createWindowClone(this.metaWindow, 0, 0, withTransients);
+        let clones = WindowUtils.createLiveWindowClone(this.metaWindow, 0, 0, withTransients);
         let leftGap, topGap;
         for (let clone of clones) {
             leftGap = x - clone.x;
