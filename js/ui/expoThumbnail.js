@@ -401,7 +401,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this.shader.opacity = INACTIVE_OPACITY;
 
-        if (metaWorkspace == global.screen.get_active_workspace())
+        if (metaWorkspace == global.workspace_manager.get_active_workspace())
             this.shader.opacity = 0;
 
         let windows = global.get_window_actors().filter(this.isMyWindow, this);
@@ -419,9 +419,9 @@ ExpoWorkspaceThumbnail.prototype = {
                                                           Lang.bind(this, this.windowAdded));
         let windowRemovedId = this.metaWorkspace.connect('window-removed',
                                                            Lang.bind(this, this.windowRemoved));
-        let windowEnteredMonitorId = global.screen.connect('window-entered-monitor',
+        let windowEnteredMonitorId = global.display.connect('window-entered-monitor',
             Lang.bind(this, this.windowEnteredMonitor));
-        let windowLeftMonitorId = global.screen.connect('window-left-monitor',
+        let windowLeftMonitorId = global.display.connect('window-left-monitor',
             Lang.bind(this, this.windowLeftMonitor));
 
         let setOverviewModeId = box.connect('set-overview-mode', Lang.bind(this, function(box, turnOn) {
@@ -431,16 +431,16 @@ ExpoWorkspaceThumbnail.prototype = {
         let stickyAddedId = box.connect('sticky-detected', Lang.bind(this, function(box, metaWindow) {
             this.doAddWindow(metaWindow);
         }));
-        let restackedNotifyId = global.screen.connect('restacked', Lang.bind(this, this.onRestack));
+        let restackedNotifyId = global.display.connect('restacked', Lang.bind(this, this.onRestack));
 
         this.disconnectOtherSignals = function() {
-            global.screen.disconnect(restackedNotifyId);
+            global.display.disconnect(restackedNotifyId);
             this.box.disconnect(setOverviewModeId);
             this.box.disconnect(stickyAddedId);
             this.metaWorkspace.disconnect(windowAddedId);
             this.metaWorkspace.disconnect(windowRemovedId);
-            global.screen.disconnect(windowEnteredMonitorId);
-            global.screen.disconnect(windowLeftMonitorId);
+            global.display.disconnect(windowEnteredMonitorId);
+            global.display.disconnect(windowLeftMonitorId);
         };
         
         this.isActive = false;
@@ -509,7 +509,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
    
     activateWorkspace: function() {
-        if (this.metaWorkspace != global.screen.get_active_workspace())
+        if (this.metaWorkspace != global.workspace_manager.get_active_workspace())
             this.metaWorkspace.activate(global.get_current_time());
         Main.expo.hide();
     },
@@ -882,7 +882,7 @@ ExpoWorkspaceThumbnail.prototype = {
         if (clone && clone.metaWindow != null){
             Main.activateWindow(clone.metaWindow, time, this.metaWorkspace.index());
         }
-        if (this.metaWorkspace != global.screen.get_active_workspace())
+        if (this.metaWorkspace != global.workspace_manager.get_active_workspace())
             this.metaWorkspace.activate(time);
         Main.expo.hide();
     },
@@ -901,7 +901,7 @@ ExpoWorkspaceThumbnail.prototype = {
             // this workspace is already being removed
             return;
         }
-        if (global.screen.n_workspaces <= 1) {
+        if (global.workspace_manager.n_workspaces <= 1) {
             return;
         }
         let removeAction = Lang.bind(this, function() {
@@ -1086,7 +1086,7 @@ ExpoThumbnailsBox.prototype = {
             height: global.screen_height
             };
 
-        this.kbThumbnailIndex = global.screen.get_active_workspace_index();
+        this.kbThumbnailIndex = global.workspace_manager.get_active_workspace_index();
         
         // apparently we get no direct call to show the initial
         // view, so we must force an explicit overviewMode On/Off display
@@ -1116,16 +1116,16 @@ ExpoThumbnailsBox.prototype = {
             global.window_manager.connect('switch-workspace',
                                           Lang.bind(this, this.activeWorkspaceChanged));
 
-        this.workspaceAddedId = global.screen.connect('workspace-added', Lang.bind(this, function(screen, index) {
+        this.workspaceAddedId = global.workspace_manager.connect('workspace-added', Lang.bind(this, function(screen, index) {
             this.addThumbnails(index, 1);
         }));
-        this.workspaceRemovedId = global.screen.connect('workspace-removed', Lang.bind(this, function() {
+        this.workspaceRemovedId = global.workspace_manager.connect('workspace-removed', Lang.bind(this, function() {
             this.button.hide();
 
             // just handling the single workspace removed is not enough
             let removedCount = 0;
             this.thumbnails.forEach(function(thumbnail, i) {
-                let metaWorkspace = global.screen.get_workspace_by_index(i-removedCount);
+                let metaWorkspace = global.workspace_manager.get_workspace_by_index(i-removedCount);
                 if (thumbnail.metaWorkspace != metaWorkspace) {
                     ++removedCount;
                     if (thumbnail.state <= ThumbnailState.NORMAL) {
@@ -1140,7 +1140,7 @@ ExpoThumbnailsBox.prototype = {
         for (let key in ThumbnailState)
             this.stateCounts[ThumbnailState[key]] = 0;
 
-        this.addThumbnails(0, global.screen.n_workspaces);
+        this.addThumbnails(0, global.workspace_manager.n_workspaces);
         this.button.raise_top();
 
         global.stage.set_key_focus(this.actor);
@@ -1223,8 +1223,8 @@ ExpoThumbnailsBox.prototype = {
 
     hide: function() {
         global.window_manager.disconnect(this.switchWorkspaceNotifyId);
-        global.screen.disconnect(this.workspaceAddedId);
-        global.screen.disconnect(this.workspaceRemovedId);
+        global.workspace_manager.disconnect(this.workspaceAddedId);
+        global.workspace_manager.disconnect(this.workspaceRemovedId);
 
         for (let w = 0; w < this.thumbnails.length; w++) {
             this.thumbnails[w].destroy();
@@ -1233,7 +1233,7 @@ ExpoThumbnailsBox.prototype = {
     },
 
     showButton: function(){
-        if (global.screen.n_workspaces <= 1)
+        if (global.workspace_manager.n_workspaces <= 1)
             return false;
         this.actor.queue_relayout();
         this.button.raise_top();
@@ -1516,7 +1516,7 @@ ExpoThumbnailsBox.prototype = {
             return;
 
         let spacing = this.actor.get_theme_node().get_length('spacing');
-        let nWorkspaces = global.screen.n_workspaces;
+        let nWorkspaces = global.workspace_manager.n_workspaces;
         let totalSpacing = (nWorkspaces - 1) * spacing;
 
         let avail = Main.layoutManager.primaryMonitor.width - totalSpacing;
@@ -1541,7 +1541,7 @@ ExpoThumbnailsBox.prototype = {
         // to the actual number of current workspaces, we just animate within that
 
         let spacing = this.actor.get_theme_node().get_length('spacing');
-        let nWorkspaces = global.screen.n_workspaces;
+        let nWorkspaces = global.workspace_manager.n_workspaces;
         let totalSpacing = (nWorkspaces - 1) * spacing;
 
         let avail = Main.layoutManager.primaryMonitor.width - totalSpacing;
@@ -1704,11 +1704,11 @@ ExpoThumbnailsBox.prototype = {
 
     activeWorkspaceChanged: function(wm, from, to, direction) {
         this.thumbnails[this.kbThumbnailIndex].showKeyboardSelectedState(false);
-        this.kbThumbnailIndex = global.screen.get_active_workspace_index();
+        this.kbThumbnailIndex = global.workspace_manager.get_active_workspace_index();
         this.thumbnails[this.kbThumbnailIndex].showKeyboardSelectedState(true);
 
         let thumbnail;
-        let activeWorkspace = global.screen.get_active_workspace();
+        let activeWorkspace = global.workspace_manager.get_active_workspace();
         for (let i = 0; i < this.thumbnails.length; i++) {
             if (this.thumbnails[i].metaWorkspace == activeWorkspace) {
                 thumbnail = this.thumbnails[i];
