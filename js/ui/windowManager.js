@@ -806,6 +806,13 @@ var WindowManager = class WindowManager {
             if (!meta_window.showing_on_its_workspace())
                 continue;
 
+            // Muffin 5.2 window.showing_on_its_workspace() no longer
+            // ends up filtering the desktop window (If I re-add it, it
+            // breaks things elsewhere that rely on the new behavior).
+            if (meta_window.get_window_type() === WindowType.DESKTOP) {
+                continue;
+            }
+
             if ((meta_window === this._movingWindow) ||
                 ((grabOp === GrabOp.MOVING ||
                   grabOp === GrabOp.KEYBOARD_MOVING)
