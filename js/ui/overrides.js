@@ -129,6 +129,20 @@ function overrideGObject() {
 }
 
 function overrideClutter() {
+    const oldClutterGroup = Clutter.Group;
+
+    // ClutterGroups are broken - ClutterActor with a FixedLayoutManager is
+    // its drop-in replacement.
+    const fake_group = GObject.registerClass(
+    class fake_group extends Clutter.Actor {
+        _init(params) {
+            super._init(params);
+            this.layout_manager = new Clutter.FixedLayout();
+        }
+    });
+
+    Clutter.Group = fake_group;
+
     Clutter.Actor.prototype.raise = function(below) {
         let self_parent = this.get_parent();
         let below_parent = below.get_parent();
