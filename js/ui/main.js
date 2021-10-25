@@ -519,8 +519,6 @@ function start() {
             global.settings.set_boolean("panel-edit-mode", false);
         }
 
-        global.stage.show();
-
         global.connect('shutdown', do_shutdown_sequence);
 
         global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
