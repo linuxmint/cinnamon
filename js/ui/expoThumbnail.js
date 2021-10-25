@@ -315,7 +315,8 @@ ExpoWorkspaceThumbnail.prototype = {
         this.actor._delegate = this;
         this.actor.set_size(global.screen_width, global.screen_height);
 
-        this.contents = new Clutter.Group();
+        let layout_manager = new Clutter.FixedLayout();
+        this.contents = new Clutter.Actor({ layout_manager: layout_manager });
         this.actor.add_actor(this.contents);
 
         this.actor.connect('destroy', Lang.bind(this, this.onDestroy));
@@ -1696,10 +1697,7 @@ ExpoThumbnailsBox.prototype = {
         childBox.y2 = childBox.y1 + buttonHeight;
         
         this.button.allocate(childBox, flags);
-
-        if (this.targetScale === this._scale) {
-            this.emit('allocated');
-        }
+        this.emit('allocated');
     },
 
     activeWorkspaceChanged: function(wm, from, to, direction) {
