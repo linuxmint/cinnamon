@@ -315,8 +315,7 @@ ExpoWorkspaceThumbnail.prototype = {
         this.actor._delegate = this;
         this.actor.set_size(global.screen_width, global.screen_height);
 
-        let layout_manager = new Clutter.FixedLayout();
-        this.contents = new Clutter.Actor({ layout_manager: layout_manager });
+        this.contents = new Clutter.Group();
         this.actor.add_actor(this.contents);
 
         this.actor.connect('destroy', Lang.bind(this, this.onDestroy));
