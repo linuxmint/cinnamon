@@ -24,6 +24,9 @@ hardware_supports_npot_sizes (void)
     return TRUE;
 }
 
+/**
+ * st_get_cogl_context: (skip)
+ */
 CoglContext *
 st_get_cogl_context (void)
 {

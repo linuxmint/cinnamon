@@ -1709,7 +1709,7 @@ out:
 }
 
 /**
- * st_texture_cache_gload_file_to_cogl_texture: (skip)
+ * st_texture_cache_load_gfile_to_cogl_texture: (skip)
  * @cache: A #StTextureCache
  * @file: A #GFile in supported image format
  * @paint_scale: Scale factor of the display
