@@ -41,9 +41,9 @@ typedef struct _StViewportPrivate          StViewportPrivate;
 typedef struct _StViewportClass            StViewportClass;
 
 /**
- * StBin:
+ * StViewport:
  *
- * The #StBin struct contains only private data
+ * The #StViewport struct contains only private data
  */
 struct _StViewport
 {
