@@ -204,6 +204,7 @@ LayoutManager.prototype = {
 
     _startupAnimationComplete: function() {
         global.stage.show_cursor();
+        this.removeChrome(this._coverPane);
         this._coverPane.destroy();
         this._coverPane = null;
         this._chrome.thawUpdateRegions();
