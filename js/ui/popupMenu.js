@@ -1934,6 +1934,16 @@ var PopupMenuBase = class PopupMenuBase {
         menuItem.actor.show();
     }
 
+    _updateAllSeparatorVisibility() {
+        let children = this.box.get_children();
+
+        for (let child of children) {
+            if (child._delegate instanceof PopupSeparatorMenuItem) {
+                this._updateSeparatorVisibility(child._delegate);
+            }
+        }
+    }
+
     /**
      * addMenuItem:
      * @menuItem (PopupMenu.PopupBaseMenuItem): the item to include (can also
@@ -2236,6 +2246,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         Main.popup_rendering_actor = this.actor;
 
         this.setMaxHeight();
+        this._updateAllSeparatorVisibility();
 
         /* I'd rather this be inside the active tween scope as an onUpdate param, but how do you modify
          * a tweens own parameters during said tweening? */
