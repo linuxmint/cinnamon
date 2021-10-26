@@ -2382,18 +2382,22 @@ Panel.prototype = {
                     if (panelTop != panelBottom && x_coord >= 0)
                     {
                         if (screen_width > this.monitor.x + this.monitor.width - this.margin_right) {    // if there is a monitor to the right or panel offset into monitor
-                            this._rightPanelBarrier = global.create_pointer_barrier( // permit moving in negative x direction for a right hand barrier
-                                                  x_coord, panelTop,
-                                                  x_coord, panelBottom,
-                                                  4 /* BarrierNegativeX (value 1 << 2) */);
+                            this._rightPanelBarrier = new Meta.Barrier({
+                                display: global.display,
+                                x1: x_coord, y1: panelTop,
+                                x2: x_coord, y2: panelBottom,
+                                directions: Meta.BarrierDirection.NEGATIVE_X  // permit moving in positive y direction for a top barrier
+                            });
                         }
 
                         x_coord = this.monitor.x + this.margin_left;
                         if (x_coord > 0) {                                    // if there is a monitor to the left or panel offset into monitor
-                            this._leftPanelBarrier = global.create_pointer_barrier(  // permit moving in positive x direction for a left hand barrier
-                                                 x_coord, panelTop,
-                                                 x_coord, panelBottom,
-                                                 1 /* BarrierPositiveX   (value  1 << 0) */);
+                            this._leftPanelBarrier = new Meta.Barrier({
+                                display: global.display,
+                                x1: x_coord, y1: panelTop,
+                                x2: x_coord, y2: panelBottom,
+                                directions: Meta.BarrierDirection.POSITIVE_X  // permit moving in positive y direction for a top barrier
+                            });
                         }
                     }
                 } else {
@@ -2412,19 +2416,23 @@ Panel.prototype = {
                     if (panelRight != panelLeft) {
                         let y_coord = this.monitor.y + Math.floor(this.toppanelHeight) + this.margin_top;
                         if (y_coord > 0) {                                  // if there is a monitor above or top of panel offset into monitor
-                            this._topPanelBarrier = global.create_pointer_barrier( // permit moving in positive y direction for a top barrier
-                                                panelLeft,  y_coord ,
-                                                panelRight, y_coord ,
-                                                2 /* BarrierPositiveY (value  1 << 1) */);
+                            this._topPanelBarrier = new Meta.Barrier({
+                                display: global.display,
+                                x1: panelLeft, y1: y_coord,
+                                x2: panelRight, y2: y_coord,
+                                directions: Meta.BarrierDirection.POSITIVE_Y  // permit moving in positive y direction for a top barrier
+                            });
                         }
-                        y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
 
+                        y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
                         if (screen_height > this.monitor.y + this.monitor.height         // if there is a monitor below
-                            || this.bottompanelHeight > 0 || this.margin_bottom > 0) {   // or the bottom of the panel is offset into the monitor
-                            this._bottomPanelBarrier = global.create_pointer_barrier( // permit moving in negative y direction for a bottom barrier
-                                                   panelLeft,  y_coord,
-                                                   panelRight, y_coord,
-                                                   8 /* BarrierNegativeY (value 1 << 3) */);
+                            || this.bottompanelHeight > 0 || this.margin_bottom > 0) {   
+                            this._bottomPanelBarrier = new Meta.Barrier({
+                                display: global.display,
+                                x1: panelLeft, y1: y_coord,
+                                x2: panelRight, y2: y_coord,
+                                directions: Meta.BarrierDirection.NEGATIVE_Y
+                            });
                         }
                     }
                 }
@@ -2438,18 +2446,18 @@ Panel.prototype = {
 
     _clearPanelBarriers: function() {
         if (this._leftPanelBarrier)
-            global.destroy_pointer_barrier(this._leftPanelBarrier);
+            this._leftPanelBarrier.destroy();
         if (this._rightPanelBarrier)
-            global.destroy_pointer_barrier(this._rightPanelBarrier);
+            this._rightPanelBarrier.destroy();
         if (this._topPanelBarrier)
-            global.destroy_pointer_barrier(this._topPanelBarrier);
+            this._topPanelBarrier.destroy();
         if (this._bottomPanelBarrier)
-            global.destroy_pointer_barrier(this._bottomPanelBarrier);
+            this._bottomPanelBarrier.destroy();
 
-        this._leftPanelBarrier = 0;
-        this._rightPanelBarrier = 0;
-        this._topPanelBarrier = 0;
-        this._bottomPanelBarrier = 0;
+        this._leftPanelBarrier = null;
+        this._rightPanelBarrier = null;
+        this._topPanelBarrier = null;
+        this._bottomPanelBarrier = null;
     },
 
     _onPanelEditModeChanged: function() {
