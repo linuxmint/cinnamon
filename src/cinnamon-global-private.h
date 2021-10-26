@@ -62,7 +62,6 @@ struct _CinnamonGlobal {
   GSList *leisure_closures;
   guint leisure_function_id;
 
-  guint32 xdnd_timestamp;
   gint64 last_gc_end_time;
   guint ui_scale;
   gboolean session_running;
@@ -75,8 +74,5 @@ void _cinnamon_global_set_plugin      (CinnamonGlobal  *global,
                                     MetaPlugin   *plugin);
 
 GjsContext *_cinnamon_global_get_gjs_context (CinnamonGlobal  *global);
-
-gboolean _cinnamon_global_check_xdnd_event (CinnamonGlobal  *global,
-                                         XEvent       *xev);
 
 #endif /* __CINNAMON_GLOBAL_PRIVATE_H__ */
