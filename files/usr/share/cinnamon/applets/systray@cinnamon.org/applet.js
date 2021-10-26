@@ -35,8 +35,6 @@ class CinnamonSystrayApplet extends Applet.Applet {
                                                orientation: Clutter.Orientation.VERTICAL });
         }
 
-        this.update_na_tray_orientation();
-
         this.manager = manager;
         this.manager_container = new Clutter.Actor( { layout_manager: manager } );
         this.actor.add_actor (this.manager_container);
@@ -82,6 +80,8 @@ class CinnamonSystrayApplet extends Applet.Applet {
         if (!global.trayReloading) {
             Main.statusIconDispatcher.start(this.actor.get_parent().get_parent());
         }
+
+        this.update_na_tray_orientation();
 
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-added', this._onTrayIconAdded, this);
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-removed', this._onTrayIconRemoved, this);
