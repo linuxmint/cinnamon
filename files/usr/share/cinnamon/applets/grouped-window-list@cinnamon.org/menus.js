@@ -107,7 +107,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 }
             }
             // Workspace
-            if ((length = global.screen.n_workspaces) > 1) {
+            if ((length = global.workspace_manager.n_workspaces) > 1) {
                 if (this.groupState.lastFocused && this.groupState.lastFocused.is_on_all_workspaces()) {
                     item = createMenuItem({label: _('Only on this workspace')});
                     this.signals.connect(item, 'activate', () => {
@@ -131,7 +131,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
                     let connectWorkspaceEvent = (ws, j) => {
                         this.signals.connect(ws, 'activate', () => {
-                            this.groupState.lastFocused.change_workspace(global.screen.get_workspace_by_index(j));
+                            this.groupState.lastFocused.change_workspace(global.workspace_manager.get_workspace_by_index(j));
                         });
                     };
                     for (let i = 0; i < length; i++) {
@@ -383,11 +383,15 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
     onToggled(actor, isOpening) {
         this.state.set({menuOpen: this.isOpen});
+    }
 
-        if (!isOpening) return;
+    toggle() {
+        if (!this.isOpen) {
+            this.removeAll();
+            this.populateMenu();
+        }
 
-        this.removeAll();
-        this.populateMenu();
+        Applet.AppletPopupMenu.prototype.toggle.call(this);
     }
 
     toggleAutostart() {
@@ -731,7 +735,6 @@ class WindowThumbnail {
 
             let windowTexture = this.metaWindowActor.get_texture();
             if (!windowTexture) return;
-            // FIXME
             let [width, height] = this.metaWindowActor.get_size();
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
@@ -838,8 +841,8 @@ class WindowThumbnail {
             this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
         this.state.set({
-            overlayPreview: new Clutter.Clone({
-                source: this.metaWindowActor,
+            overlayPreview: new Clutter.Actor({
+                content: this.metaWindowActor.get_texture(),
                 opacity: 0
             })
         });

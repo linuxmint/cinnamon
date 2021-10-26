@@ -794,7 +794,7 @@ class AppGroup {
             if (!this.rightClickMenu.isOpen) {
                 this.listState.trigger('closeAllRightClickMenus', () => {
                     this.listState.trigger('closeAllHoverMenus', () => {
-                        this.rightClickMenu.open();
+                        this.rightClickMenu.toggle();
                     });
                 });
             } else {
