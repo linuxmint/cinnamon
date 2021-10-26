@@ -3,6 +3,7 @@
 const Cairo = imports.cairo;
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
+const Graphene = imports.gi.Graphene;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
@@ -2904,7 +2905,8 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
                                                align: St.Align.END });
 
             this._triangle = arrowIcon(St.Side.RIGHT);
-            this._triangle.set_pivot_point(0.5, 0.5);
+
+            this._triangle.pivot_point = new Graphene.Point({ x: 0.5, y: 0.5 });
             this._triangleBin.child = this._triangle;
         }
 
