@@ -49,9 +49,6 @@ enum {
 /* Signals */
 enum
 {
- XDND_POSITION_CHANGED,
- XDND_LEAVE,
- XDND_ENTER,
  NOTIFY_ERROR,
  SCALE_CHANGED,
  SHUTDOWN,
@@ -282,33 +279,6 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
   gobject_class->get_property = cinnamon_global_get_property;
   gobject_class->set_property = cinnamon_global_set_property;
   gobject_class->finalize = cinnamon_global_finalize;
-
-  // /* Emitted from cinnamon-plugin.c during event handling */
-  // cinnamon_global_signals[XDND_POSITION_CHANGED] =
-  //     g_signal_new ("xdnd-position-changed",
-  //                   G_TYPE_FROM_CLASS (klass),
-  //                   G_SIGNAL_RUN_LAST,
-  //                   0,
-  //                   NULL, NULL, NULL,
-  //                   G_TYPE_NONE, 2, G_TYPE_INT, G_TYPE_INT);
-
-  // /* Emitted from cinnamon-plugin.c during event handling */
-  // cinnamon_global_signals[XDND_LEAVE] =
-  //     g_signal_new ("xdnd-leave",
-  //                   G_TYPE_FROM_CLASS (klass),
-  //                   G_SIGNAL_RUN_LAST,
-  //                   0,
-  //                   NULL, NULL, NULL,
-  //                   G_TYPE_NONE, 0);
-
-  // /* Emitted from cinnamon-plugin.c during event handling */
-  // cinnamon_global_signals[XDND_ENTER] =
-  //     g_signal_new ("xdnd-enter",
-  //                   G_TYPE_FROM_CLASS (klass),
-  //                   G_SIGNAL_RUN_LAST,
-  //                   0,
-  //                   NULL, NULL, NULL,
-  //                   G_TYPE_NONE, 0);
 
   cinnamon_global_signals[NOTIFY_ERROR] =
       g_signal_new ("notify-error",
@@ -1150,54 +1120,6 @@ cinnamon_global_end_modal (CinnamonGlobal *global,
     sync_input_region (global);
 }
 
-/**
- * cinnamon_global_create_pointer_barrier:
- * @global: a #CinnamonGlobal
- * @x1: left X coordinate
- * @y1: top Y coordinate
- * @x2: right X coordinate
- * @y2: bottom Y coordinate
- * @directions: The directions we're allowed to pass through
- *
- * If supported by X creates a pointer barrier.
- *
- * Return value: value you can pass to cinnamon_global_destroy_pointer_barrier()
- */
-guint32
-cinnamon_global_create_pointer_barrier (CinnamonGlobal *global,
-                                     int x1, int y1, int x2, int y2,
-                                     int directions)
-{
-#if HAVE_XFIXESCREATEPOINTERBARRIER
-  return (guint32)
-    XFixesCreatePointerBarrier (global->xdisplay,
-                                DefaultRootWindow (global->xdisplay),
-                                x1, y1,
-                                x2, y2,
-                                directions,
-                                0, NULL);
-#else
-  return 0;
-#endif
-}
-
-/**
- * cinnamon_global_destroy_pointer_barrier:
- * @global: a #CinnamonGlobal
- * @barrier: a pointer barrier
- *
- * Destroys the @barrier created by cinnamon_global_create_pointer_barrier().
- */
-void
-cinnamon_global_destroy_pointer_barrier (CinnamonGlobal *global, guint32 barrier)
-{
-#if HAVE_XFIXESCREATEPOINTERBARRIER
-  g_return_if_fail (barrier > 0);
-
-  XFixesDestroyPointerBarrier (global->xdisplay, (PointerBarrier)barrier);
-#endif
-}
-
 static int
 set_cloexec (void *data, gint fd)
 {
@@ -1756,64 +1678,6 @@ cinnamon_global_run_at_leisure (CinnamonGlobal         *global,
   if (global->work_count == 0)
     schedule_leisure_functions (global);
 }
-
-// /*
-//  * Process Xdnd events
-//  *
-//  * We pass the position and leave events to JS via a signal
-//  * where the actual drag & drop handling happens.
-//  *
-//  * http://www.freedesktop.org/wiki/Specifications/XDND
-//  */
-// gboolean _cinnamon_global_check_xdnd_event (CinnamonGlobal  *global,
-//                                          XEvent       *xev)
-// {
-//   Window output_window = meta_get_overlay_window (global->cinnamon_screen);
-
-//   if (xev->xany.window != output_window && xev->xany.window != global->stage_xwindow)
-//     return FALSE;
-
-//   if (xev->xany.type == ClientMessage && xev->xclient.message_type == gdk_x11_get_xatom_by_name ("XdndPosition"))
-//     {
-//       XEvent xevent;
-//       Window src = xev->xclient.data.l[0];
-
-//       memset (&xevent, 0, sizeof(xevent));
-//       xevent.xany.type = ClientMessage;
-//       xevent.xany.display = global->xdisplay;
-//       xevent.xclient.window = src;
-//       xevent.xclient.message_type = gdk_x11_get_xatom_by_name ("XdndStatus");
-//       xevent.xclient.format = 32;
-//       xevent.xclient.data.l[0] = output_window;
-//       /* flags: bit 0: will we accept the drop? bit 1: do we want more position messages */
-//       xevent.xclient.data.l[1] = 2;
-//       xevent.xclient.data.l[4] = None;
-
-//       XSendEvent (global->xdisplay, src, False, 0, &xevent);
-
-//       /* Store the timestamp of the xdnd position event */
-//       global->xdnd_timestamp = xev->xclient.data.l[3];
-//       g_signal_emit_by_name (G_OBJECT (global), "xdnd-position-changed",
-//                             (int)(xev->xclient.data.l[2] >> 16), (int)(xev->xclient.data.l[2] & 0xFFFF));
-//       global->xdnd_timestamp = 0;
-
-//       return TRUE;
-//     }
-//    else if (xev->xany.type == ClientMessage && xev->xclient.message_type == gdk_x11_get_xatom_by_name ("XdndLeave"))
-//     {
-//       g_signal_emit_by_name (G_OBJECT (global), "xdnd-leave");
-
-//       return TRUE;
-//     }
-//    else if (xev->xany.type == ClientMessage && xev->xclient.message_type == gdk_x11_get_xatom_by_name ("XdndEnter"))
-//     {
-//       g_signal_emit_by_name (G_OBJECT (global), "xdnd-enter");
-
-//       return TRUE;
-//     }
-
-//     return FALSE;
-// }
 
 /**
  * cinnamon_global_segfault:
