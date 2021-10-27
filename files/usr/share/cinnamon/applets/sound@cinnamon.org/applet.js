@@ -1163,7 +1163,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         this._applet_tooltip.show();
 
-        this._notifyVolumeChange(this._output);
+        if (event.get_scroll_direction() != Clutter.ScrollDirection.SMOOTH) {
+            this._notifyVolumeChange(this._output);
+        }
     }
 
     _onButtonPressEvent (actor, event) {
@@ -1493,7 +1495,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     }
 
     _notifyVolumeChange(stream) {
-        Main.soundManager.playVolume('volume', stream.decibel);
+        Main.soundManager.play('volume');
     }
 
     _mutedChanged(object, param_spec, property) {
