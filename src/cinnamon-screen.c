@@ -52,12 +52,8 @@ enum
   WORKSPACE_SWITCHED,
   WINDOW_ENTERED_MONITOR,
   WINDOW_LEFT_MONITOR,
-  STARTUP_SEQUENCE_CHANGED,
   WORKAREAS_CHANGED,
   MONITORS_CHANGED,
-  SNAP_OSD_SHOW,
-  SNAP_OSD_HIDE,
-  WORKSPACE_OSD_SHOW,
   WINDOW_ADDED,
   WINDOW_REMOVED,
   WINDOW_MONITOR_CHANGED,
@@ -111,7 +107,7 @@ cinnamon_screen_get_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_N_WORKSPACES:
-      g_value_set_int (value, cinnamon_screen_get_n_workspaces (screen));
+      g_value_set_int (value, meta_workspace_manager_get_n_workspaces (screen->ws_manager));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -206,6 +202,15 @@ on_window_workspace_changed (MetaWindow     *window,
 }
 
 static void
+on_window_skip_taskbar_changed (MetaWindow     *window,
+                                CinnamonScreen *screen)
+{
+  g_debug ("screen: window skip-taskbar prop changed");
+  g_signal_emit (screen, screen_signals[WINDOW_SKIP_TASKBAR_CHANGED], 0,
+                 window);
+}
+
+static void
 on_window_created (MetaDisplay    *display,
                    MetaWindow     *window,
                    CinnamonScreen *screen)
@@ -213,6 +218,7 @@ on_window_created (MetaDisplay    *display,
   g_debug ("screen: window added");
   g_signal_connect_after (window, "unmanaged", G_CALLBACK (on_window_unmanaged), screen);
   g_signal_connect_after (window, "workspace-changed", G_CALLBACK (on_window_workspace_changed), screen);
+  g_signal_connect_after (window, "notify::skip-taskbar", G_CALLBACK (on_window_skip_taskbar_changed), screen);
   g_signal_emit (screen, screen_signals[WINDOW_ADDED], 0, window, meta_window_get_monitor (window));
 }
 
@@ -251,8 +257,6 @@ cinnamon_screen_constructed (GObject *object)
   g_signal_connect (screen->display, "window-created", G_CALLBACK (on_window_created), screen);
   g_signal_connect (screen->monitor_manager, "monitors-changed", G_CALLBACK (on_monitors_changed), screen);
   g_signal_connect (screen->display, "in-fullscreen-changed", G_CALLBACK (on_fullscreen_changed), screen);
-
-
 }
 
 static void
@@ -333,14 +337,6 @@ cinnamon_screen_class_init (CinnamonScreenClass *klass)
                   G_TYPE_INT,
                   META_TYPE_WINDOW);
 
-  // screen_signals[STARTUP_SEQUENCE_CHANGED] =
-  //   g_signal_new ("startup-sequence-changed",
-  //                 G_TYPE_FROM_CLASS (klass),
-  //                 G_SIGNAL_RUN_LAST,
-  //                 0,
-  //                 NULL, NULL, NULL,
-  //                 G_TYPE_NONE, 1, G_TYPE_POINTER);
-
   screen_signals[WORKAREAS_CHANGED] =
     g_signal_new ("workareas-changed",
                   G_TYPE_FROM_CLASS (object_class),
@@ -356,31 +352,6 @@ cinnamon_screen_class_init (CinnamonScreenClass *klass)
           0,
           NULL, NULL, NULL,
           G_TYPE_NONE, 0);
-
-  screen_signals[SNAP_OSD_SHOW] =
-    g_signal_new ("show-snap-osd",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  0,
-                  NULL, NULL, NULL,
-                  G_TYPE_NONE, 1,
-                  G_TYPE_INT);
-
-  screen_signals[SNAP_OSD_HIDE] =
-    g_signal_new ("hide-snap-osd",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  0,
-                  NULL, NULL, NULL,
-                  G_TYPE_NONE, 0);
-
-  screen_signals[WORKSPACE_OSD_SHOW] =
-    g_signal_new ("show-workspace-osd",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  0,
-                  NULL, NULL, NULL,
-                  G_TYPE_NONE, 0);
 
   screen_signals[WINDOW_ADDED] =
     g_signal_new ("window-added",
