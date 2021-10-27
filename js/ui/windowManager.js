@@ -277,8 +277,6 @@ var WindowManager = class WindowManager {
             }
         });
 
-        global.screen.connect ('show-workspace-osd', () => this.showWorkspaceOSD());
-
         this._windowMenuManager = new WindowMenu.WindowMenuManager();
     }
 
