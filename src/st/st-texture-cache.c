@@ -1482,6 +1482,149 @@ st_texture_cache_load_file_async (StTextureCache *cache,
   return actor;
 }
 
+typedef struct {
+  gchar *path;
+  gint   width, height;
+  StTextureCacheLoadImageCallback load_callback;
+  gpointer load_callback_data;
+} ImageFromFileAsyncData;
+
+static void
+on_image_from_file_data_destroy (gpointer data)
+{
+  ImageFromFileAsyncData *d = (ImageFromFileAsyncData *)data;
+  g_free (d->path);
+  g_free (d);
+}
+
+static void
+on_image_from_file_loaded (GObject      *source,
+                           GAsyncResult *res,
+                           gpointer      user_data)
+{
+  GTask *task = G_TASK (res);
+  GdkPixbuf *pixbuf;
+  ClutterContent *content;
+  ClutterActor *actor;
+  GError *error;
+  ImageFromFileAsyncData *data;
+  gint width, height;
+
+  data = (ImageFromFileAsyncData *)user_data;
+  error = NULL;
+
+  actor = clutter_actor_new ();
+
+  pixbuf = g_task_propagate_pointer (task, &error);
+  width = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
+
+  if (error)
+    {
+      g_warning ("Could not load image from file: %s\n", error->message);
+      g_error_free (error);
+
+      data->load_callback (ST_TEXTURE_CACHE (source), actor, data->load_callback_data);
+
+      return;
+    }
+
+  content = clutter_image_new ();
+
+  clutter_image_set_data (CLUTTER_IMAGE (content),
+                          gdk_pixbuf_get_pixels (pixbuf),
+                          gdk_pixbuf_get_has_alpha (pixbuf)
+                              ? COGL_PIXEL_FORMAT_RGBA_8888
+                              : COGL_PIXEL_FORMAT_RGB_888,
+                          gdk_pixbuf_get_width (pixbuf),
+                          gdk_pixbuf_get_height (pixbuf),
+                          gdk_pixbuf_get_rowstride (pixbuf),
+                          &error);
+
+  g_object_unref (pixbuf);
+
+  clutter_actor_set_content (actor, content);
+  clutter_actor_set_size (actor, width, height);
+
+  g_object_unref (content);
+
+  data->load_callback (ST_TEXTURE_CACHE (source), actor, data->load_callback_data);
+}
+
+static void
+load_image_from_file_thread (GTask        *task,
+                             gpointer      source,
+                             gpointer      task_data,
+                             GCancellable *cancellable)
+{
+  ImageFromFileAsyncData *data;
+  GdkPixbuf *pixbuf;
+  GError *error;
+
+  data = task_data;
+  error = NULL;
+
+  pixbuf = gdk_pixbuf_new_from_file_at_scale (data->path,
+                                              data->width,
+                                              data->height,
+                                              TRUE,
+                                              &error);
+
+  if (error)
+    {
+      g_task_return_error (task, error);
+      return;
+    }
+
+  g_task_return_pointer (task, pixbuf, g_object_unref);
+}
+
+/**
+ * st_texture_cache_load_image_from_file_async:
+ * @cache: A #StTextureCache
+ * @path: Path to a filename
+ * @width: Width in pixels (or -1 to leave unconstrained)
+ * @height: Height in pixels (or -1 to leave unconstrained)
+ * @callback: (scope async) (not nullable): Function called when the image is loaded (required)
+ * @user_data: Data to pass to the load callback
+ *
+ * This function loads an image file into a clutter actor asynchronously.  This is
+ * mostly useful for situations where you want to load an image asynchronously, but don't
+ * want the actor back until it's fully loaded and sized (as opposed to load_uri_async,
+ * which provides no callback function, and leaves size negotiation to its own devices.)
+ */
+void
+st_texture_cache_load_image_from_file_async (StTextureCache                  *cache,
+                                             const gchar                     *path,
+                                             gint                             width,
+                                             gint                             height,
+                                             StTextureCacheLoadImageCallback  callback,
+                                             gpointer                         user_data)
+{
+  if (callback == NULL)
+    {
+      g_warning ("st_texture_cache_load_image_from_file_async callback cannot be NULL");
+      return;
+    }
+
+  ImageFromFileAsyncData *data;
+  GTask *result;
+  //FIXME
+  gint scale = 1;
+  data = g_new0 (ImageFromFileAsyncData, 1);
+  data->width = width == -1 ? -1 : width * scale;
+  data->height = height == -1 ? -1 : height * scale;
+  data->path = g_strdup (path);
+  data->load_callback = callback;
+  data->load_callback_data = user_data;
+
+  result = g_task_new (cache, NULL, on_image_from_file_loaded, data);
+  g_task_set_task_data (result, data, on_image_from_file_data_destroy);
+  g_task_run_in_thread (result, load_image_from_file_thread);
+
+  g_object_unref (result);
+}
+
 static char *
 symbolic_name_for_icon (const char *name)
 {
