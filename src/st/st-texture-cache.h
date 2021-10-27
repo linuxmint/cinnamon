@@ -121,6 +121,26 @@ cairo_surface_t *st_texture_cache_load_gfile_to_cairo_surface (StTextureCache *c
                                                               gfloat          resource_scale);
 cairo_surface_t *st_texture_cache_load_file_to_cairo_surface (StTextureCache *cache,
                                                               const gchar    *file_path);
+
+/**
+ * StTextureCacheLoadImageCallback
+ * @cache: a #StTextureCache
+ * @actor: the actor containing the loaded image
+ * @user_data: Callback data
+ *
+ * Callback from st_texture_cache_load_image_from_file_async
+ */
+typedef void (* StTextureCacheLoadImageCallback) (StTextureCache *cache,
+                                                  ClutterActor   *actor,
+                                                  gpointer        user_data);
+
+void st_texture_cache_load_image_from_file_async (StTextureCache                    *cache,
+                                                  const gchar                       *path,
+                                                  gint                               width,
+                                                  gint                               height,
+                                                  StTextureCacheLoadImageCallback    callback,
+                                                  gpointer                           user_data);
+
 /**
  * StTextureCacheLoader: (skip)
  * @cache: a #StTextureCache
