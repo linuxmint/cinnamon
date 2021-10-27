@@ -1259,15 +1259,10 @@ class CinnamonWindowListApplet extends Applet.Applet {
         }
 
         // Now track the windows in our favorite monitors
-        const active_ws = global.screen.get_active_workspace();
-        let windows = active_ws.list_windows();
+        let windows = global.display.list_windows(0);
         if (this.showAllWorkspaces) {
-            for (let wks = 0; wks < global.screen.n_workspaces; wks++) {
-                if (wks == active_ws.workspace_index) {
-                    continue;
-                }
-
-                let metaWorkspace = global.screen.get_workspace_by_index(wks);
+            for (let wks=0; wks<global.workspace_manager.n_workspaces; wks++) {
+                let metaWorkspace = global.workspace_manager.get_workspace_by_index(wks);
                 let wks_windows = metaWorkspace.list_windows();
                 for (let wks_window of wks_windows) {
                     windows.push(wks_window);
