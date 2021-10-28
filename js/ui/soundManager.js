@@ -72,7 +72,7 @@ SoundManager.prototype = {
     playSound: function(id, name) {
         global.display.get_sound_player().play_from_theme
         (
-            Gio.File.new_for_path(filename),
+            name,
             id.toString(),
             null
         );

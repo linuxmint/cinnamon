@@ -107,7 +107,7 @@ cinnamon_global_get_property(GObject         *object,
       {
         int width, height;
 
-        cinnamon_screen_get_size (global->cinnamon_screen, &width, &height);
+        meta_display_get_size (global->meta_display, &width, &height);
         g_value_set_int (value, width);
       }
       break;
@@ -115,7 +115,7 @@ cinnamon_global_get_property(GObject         *object,
       {
         int width, height;
 
-        cinnamon_screen_get_size (global->cinnamon_screen, &width, &height);
+        meta_display_get_size (global->meta_display, &width, &height);
         g_value_set_int (value, height);
       }
       break;
