@@ -58,7 +58,7 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
       x -= minX;
       y -= minY;
     }
-    log(scale);
+
     let width = Math.round(texWidth * scale);
     let height = Math.round(texHeight * scale);
 
