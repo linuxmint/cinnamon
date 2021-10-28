@@ -834,7 +834,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         }
 
         // Move to workspace
-        if ((length = global.screen.n_workspaces) > 1) {
+        if ((length = global.workspace_manager.n_workspaces) > 1) {
             if (mw.is_on_all_workspaces()) {
                 item = new PopupMenu.PopupMenuItem(_("Only on this workspace"));
                 this._signals.connect(item, 'activate', function() {
@@ -862,7 +862,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                         ws.setSensitive(false);
 
                     this._signals.connect(ws, 'activate', function() {
-                        mw.change_workspace(global.screen.get_workspace_by_index(j));
+                        mw.change_workspace(global.workspace_manager.get_workspace_by_index(j));
                     });
                     item.menu.addMenuItem(ws);
                 }
@@ -1021,7 +1021,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("window-preview-scale", "previewScale", this._onPreviewChanged);
         this.settings.bind("last-window-order", "lastWindowOrder", null);
 
-        this.signals.connect(global.screen, 'window-added', this._onWindowAddedAsync, this);
+        this.signals.connect(global.display, 'window-created', this._onWindowAddedAsync, this);
         this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged, this);
         this.signals.connect(global.screen, 'window-workspace-changed', this._onWindowWorkspaceChanged, this);
         this.signals.connect(global.screen, 'window-skip-taskbar-changed', this._onWindowSkipTaskbarChanged, this);
@@ -1300,10 +1300,10 @@ class CinnamonWindowListApplet extends Applet.Applet {
          * workspace, put it in the right position. It is at the end by
          * default, so move it to the start if needed */
         if (transient) {
-            if (metaWindow.get_workspace().index() < global.screen.get_active_workspace_index())
+            if (metaWindow.get_workspace().index() < global.workspace_manager.get_active_workspace_index())
                 this.manager_container.set_child_at_index(appButton.actor, 0);
         } else {
-            if (metaWindow.get_workspace() != global.screen.get_active_workspace()) {
+            if (metaWindow.get_workspace() != global.workspace_manager.get_active_workspace()) {
                 if (!(this.showAllWorkspaces)) {
                     appButton.actor.hide();
                 }
