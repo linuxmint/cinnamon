@@ -826,7 +826,8 @@ var WindowManager = class WindowManager {
         this.showWorkspaceOSD();
 
         let showing_windows = [];
-        let hiding_windows = []
+        let hiding_windows = [];
+        let sticky_windows = [];
 
         for (let i = 0; i < windows.length; i++) {
             let window = windows[i];
@@ -862,8 +863,10 @@ var WindowManager = class WindowManager {
                     clone.actor.x = clone.x;
                     clone.actor.y = clone.y;
 
-                    window.visible = false;
-                    hiding_windows.push(window);
+                    if (!meta_window.on_all_workspaces) {
+                        window.visible = false;
+                        hiding_windows.push(window);
+                    }
                 }
             } else
             if (window.get_workspace() === to) {
@@ -901,6 +904,12 @@ var WindowManager = class WindowManager {
                 w.opacity = w.orig_opacity;
                 w.orig_opacity = undefined;
             });
+
+            sticky_windows.forEach((w) => {
+                w.show();
+            })
+
+            hiding_windows = null;
 
             cinnamonwm.completed_switch_workspace();
         };
