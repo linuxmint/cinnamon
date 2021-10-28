@@ -22,7 +22,6 @@ cinnamon_headers = [
     'cinnamon-util.h',
     'cinnamon-window-tracker.h',
     'cinnamon-wm.h',
-    # 'cinnamon-xfixes-cursor.h',
 ]
 
 cinnamon_private_headers = [
@@ -53,7 +52,6 @@ cinnamon_sources = [
     'cinnamon-util.c',
     'cinnamon-window-tracker.c',
     'cinnamon-wm.c',
-    # 'cinnamon-xfixes-cursor.c',
     cinnamon_headers,
 ]
 
