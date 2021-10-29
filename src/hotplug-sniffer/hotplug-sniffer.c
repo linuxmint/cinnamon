@@ -297,7 +297,6 @@ print_debug (const gchar *format, ...)
 
   g_print ("cinnamon-hotplug-sniffer[%d]: %s.%03d: %s\n",
            pid, timestamp, g_date_time_get_microsecond (now), s);
-  g_free (s);
  out:
   ;
 }
