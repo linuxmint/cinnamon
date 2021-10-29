@@ -23,7 +23,6 @@ const Params = imports.misc.params;
 const Util = imports.misc.util;
 
 var SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
-var MENU_ANIMATION_TIME = 0.15; /* Seconds */
 var MENU_ANIMATION_OFFSET = 0.1;
 
 var PanelLoc = {
@@ -2322,14 +2321,14 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             Main.uiGroup.set_child_above_sibling(this.actor, null);
         }
 
-        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (animate && Main.wm.desktop_effects_menus) {
             this.animating = true;
             this.actor.show();
             this.actor.opacity = 0;
 
             let tweenParams = {
                 transition: "easeOutQuad",
-                time: MENU_ANIMATION_TIME,
+                time: Main.wm.MENU_ANIMATION_TIME,
                 opacity: 255,
                 onUpdate: dest => {
                     let clipY = 0;
@@ -2431,13 +2430,13 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         if (this._activeMenuItem)
             this._activeMenuItem.setActive(false);
 
-        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (animate && Main.wm.desktop_effects_menus) {
             this.actor.set_position(...this._calculatePosition());
             this.actor.set_size(...this.actor.get_size());
             this.animating = true;
             let tweenParams = {
                 transition: "easeInQuad",
-                time: MENU_ANIMATION_TIME,
+                time: Main.wm.MENU_ANIMATION_TIME,
                 opacity: 0,
                 onUpdate: dest => {
                         let clipY = 0;
@@ -2795,7 +2794,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
 
         const targetAngle = this.actor.get_direction() === St.TextDirection.RTL ? -90 : 90;
 
-        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (animate && Main.wm.desktop_effects_menus) {
             let [minHeight, naturalHeight] = this.actor.get_preferred_height(-1);
             this.actor.height = 0;
             if (this._arrow)
@@ -2839,7 +2838,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
 
         animate = animate && !this._needsScrollbar();
 
-        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (animate && Main.wm.desktop_effects_menus) {
             if (this._arrow)
                 this.actor._arrowRotation = this._arrow.rotation_angle_z;
             Tweener.addTween(this.actor,
@@ -3039,7 +3038,7 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
         this.actor.opacity = 0;
         this.actor.show();
 
-        if (global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (Main.wm.desktop_effects_menus) {
             Tweener.addTween(this.actor,
                              { opacity: 255,
                                transition: 'linear',
@@ -3056,7 +3055,7 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
             return;
 
         this.isOpen = false;
-        if (global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (Main.wm.desktop_effects_menus) {
             Tweener.addTween(this.actor,
                              { opacity: 0,
                                transition: 'linear',
@@ -3667,7 +3666,7 @@ var PopupMenuManager = class PopupMenuManager {
         if (!this.grabbed)
             return false;
 
-        if (Main.keyboard.shouldTakeEvent(event))
+        if (Main.virtualKeyboard.shouldTakeEvent(event))
             return Clutter.EVENT_PROPAGATE;
 
         if (this._owner.menuEventFilter &&

@@ -527,9 +527,10 @@ cinnamon_screen_get_mouse_window (CinnamonScreen  *screen,
 
   meta_cursor_tracker_get_pointer (cursor_tracker, &mx, &my, NULL);
 
+  /* Bottom to top */
   actors = meta_get_window_actors (screen->display);
 
-  for (l = actors; l != NULL; l=l->next)
+  for (l = g_list_last (actors); l != NULL; l=l->prev)
     {
       ClutterActor *actor = CLUTTER_ACTOR (l->data);
       MetaWindow *mw = meta_window_actor_get_meta_window (META_WINDOW_ACTOR (actor));

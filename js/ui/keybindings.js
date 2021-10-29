@@ -4,7 +4,6 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Util = imports.misc.util;
 const Meta = imports.gi.Meta;
-const Clutter = imports.gi.Clutter;
 
 const MK = imports.gi.CDesktopEnums.MediaKeyType;
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
@@ -14,8 +13,6 @@ const CUSTOM_KEYS_BASENAME = "/org/cinnamon/desktop/keybindings/custom-keybindin
 const CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding";
 
 const MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys";
-
-const RUNTIME_ENTRY_SCHEMA_ID = "org.cinnamon.runtime-keybindings.runtime-keybinding"
 
 const iface = "\
     <node> \
@@ -38,16 +35,15 @@ KeybindingManager.prototype = {
         this._proxy = new proxy(Gio.DBus.session,
                                 'org.cinnamon.SettingsDaemon.KeybindingHandler',
                                 '/org/cinnamon/SettingsDaemon/KeybindingHandler');
-        // name: gsettings
-        this._bindings = {};
 
+        /* Keep track of bindings so we can a) check if they've change (and avoid the work
+         * if the haven't), b) handle the callbacks when the keystrokes are captured by
+         * Main._stageEventHandler.
+         *
+         * This dict will contain [name, bindings, callback] and keyed on the id returned by
+         * add_custom_keybinding. */
+        this.bindings = {};
         this.kb_schema = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA);
-
-        this.runtime_backend = Gio.memory_settings_backend_new();
-        this.runtime_schema = new Gio.Settings({ schema_id: "org.cinnamon.runtime-keybindings",
-                                                 backend: this.runtime_backend });
-        this.schema = this.runtime_schema.settings_schema;
-
         this.setup_custom_keybindings();
         this.kb_schema.connect("changed::custom-list", Lang.bind(this, this.on_customs_changed));
 
@@ -64,123 +60,65 @@ KeybindingManager.prototype = {
     addHotKey: function(name, bindings_string, callback) {
         if (!bindings_string)
             return false;
+        return this.addHotKeyArray(name, bindings_string.split("::"), callback);
+    },
 
-        return this._add_keybinding(name,
-                                    bindings_string.split("::"),
-                                    Meta.KeyBindingFlags.PER_WINDOW,
-                                    callback);
+    _lookupEntry: function(name) {
+        for (let key in this.bindings) {
+            let entry = this.bindings[key];
+            if (entry !== undefined && entry.name === name) {
+                return entry;
+            }
+        }
     },
 
     addHotKeyArray: function(name, bindings, callback) {
-        return this._add_keybinding(name,
-                                    bindings,
-                                    Meta.KeyBindingFlags.PER_WINDOW,
-                                    callback);
-    },
-
-
-    removeHotKey: function(name) {
-        return this._remove_keybinding(name);
-    },
-
-    _add_keybinding: function(name, bindings_array, flags, handler, user_data) {
-        const key = `RUNTIME-${name}`;
-
-        let binding = this._bindings[key];
-
-        if (binding !== undefined) {
-            //  Muffin monitors settings
-            return;
+        let entry = this._lookupEntry(name);
+        if (entry !== undefined) {
+            if (entry.bindings.toString() === bindings.toString()) {
+              return true;
+            }
+            global.display.remove_keybinding(name);
         }
 
-        if (bindings_array === null) {
+        if (!bindings) {
             global.logError("Missing bindings array for keybinding: " + name);
-            this._bindings[key] = undefined;
             return false;
         }
 
         let empty = true;
-        for (let i = 0; empty && (i < bindings_array.length); i++) {
-            empty = bindings_array[i].toString().trim() == "";
+        for (let i = 0; empty && (i < bindings.length); i++) {
+            empty = bindings[i].toString().trim() == "";
         }
 
         if (empty) {
-            if (this._bindings[key] !== undefined) {
-                delete this._bindings[key];
+            if (entry !== undefined) {
+                this.bindings[name] = undefined;
             }
-
-            if (binding !== undefined) {
-                binding["settings"].reset("bindings");
-            }
-
             return true;
         }
 
-        if (binding === undefined) {
-            name = name.replace("_", "-");
+        let action_id = global.display.add_custom_keybinding(name, bindings, callback);
 
-            custom_schema_path = `/org/cinnamon/runtime-keybindings/${name}/`;
-            custom_schema_id = `org.cinnamon.runtime-keybindings.${name}`;
-
-            settings = Gio.Settings.new_with_backend_and_path(RUNTIME_ENTRY_SCHEMA_ID,
-                                                              this.runtime_backend,
-                                                              custom_schema_path);
-        }
-
-        settings.set_strv("bindings", bindings_array);
-        Gio.Settings.sync();
-
-        const ret = global.display.add_keybinding(key,
-                                                  settings,
-                                                  flags,
-                                                  Lang.bind(this, this._call_handler, user_data));
-
-        if (ret === Meta.KeyBindingAction.NONE) {
+        if (action_id === Meta.KeyBindingAction.NONE) {
             global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
             return false;
+        } else {
+            this.bindings[action_id] = {
+                "name"    : name,
+                "bindings": bindings,
+                "callback": callback
+            };
         }
 
-        this._bindings[key] = { action: ret, settings: settings, handler: handler };
         return true;
     },
 
-    _call_handler: function(display, window, kb, user_data) {
-        let event = Clutter.get_current_event();
-
-        let binding = this._bindings[kb.get_name()];
-
-        if (binding === undefined) {
-            global.logWarning(`unknown keybinding triggered ${kb.get_name()}`)
+    removeHotKey: function(name) {
+        if (this.bindings[name] == undefined)
             return;
-        }
-
-        binding["handler"](display, window, kb, user_data);
-    },
-
-    invoke_action: function(action) {
-        for (let key in this._bindings) {
-            let binding = this._bindings[key];
-
-            if (binding["action"] === action) {
-                binding["handler"](global.display, null, null);
-                return;
-            }
-        }
-    },
-
-    _remove_keybinding: function(key) {
-        let binding = this._bindings[key];
-
-        if (binding === undefined) {
-            return true;
-        }
-
-        let ret = global.display.remove_keybinding(key);
-
-        binding["settings"].reset("bindings");
-        this._bindings[key] = undefined;
-
-        return ret;
+        global.display.remove_keybinding(name);
+        this.bindings[name] = undefined;
     },
 
     setup_custom_keybindings: function() {
@@ -194,49 +132,54 @@ KeybindingManager.prototype = {
             let custom_path = CUSTOM_KEYS_BASENAME + "/" + list[i] + "/";
             let schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path);
             let command = schema.get_string("command");
-            let bindings = schema.get_strv("binding");
+            let binding = schema.get_strv("binding");
             let name = list[i];
-            this._add_keybinding(name, bindings, Meta.KeyBindingFlags.PER_WINDOW,
-                                 Lang.bind(this, function() {
-                                     Util.spawnCommandLine(command);
-                                 }));
+            this.addHotKeyArray(name, binding, Lang.bind(this, function() {
+                Util.spawnCommandLine(command);
+            }))
         }
     },
 
     remove_custom_keybindings: function() {
-        let list = this.kb_schema.get_strv("custom-list");
-
-        for (let i = 0; i < list.length; i++) {
-            if (list[i] === "__dummy__") {
-                continue;
+        for (let i in this.bindings) {
+            if (i.indexOf("custom") > -1) {
+                this.removeHotKey(i);
             }
-
-            this._remove_keybinding(list[i]);
         }
     },
 
     setup_media_keys: function() {
         for (let i = 0; i < MK.SEPARATOR; i++) {
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
-            this._add_keybinding("media-keys-" + i.toString(), bindings, Meta.KeyBindingFlags.PER_WINDOW,
-                                 Lang.bind(this, this.on_global_media_key_pressed), i);
+            this.addHotKeyArray("media-keys-" + i.toString(),
+                           bindings,
+                           Lang.bind(this, this.on_global_media_key_pressed, i));
         }
 
         for (let i = MK.SEPARATOR + 1; i < MK.LAST; i++) {
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
-            this._add_keybinding("media-keys-" + i.toString(), bindings, Meta.KeyBindingFlags.PER_WINDOW,
-                                 Lang.bind(this, this.on_media_key_pressed), i);
+            this.addHotKeyArray("media-keys-" + i.toString(),
+                           bindings,
+                           Lang.bind(this, this.on_media_key_pressed, i));
         }
         return true;
     },
 
     on_global_media_key_pressed: function(display, window, kb, action) {
+        // log(`${display}, ${screen}, ${event}, ${kb}, ${action}`);
         this._proxy.HandleKeybindingRemote(action);
     },
 
     on_media_key_pressed: function(display, window, kb, action) {
+        // log(`${display}, ${screen}, ${event}, ${kb}, ${action}`);
         if (Main.modalCount == 0 && !Main.overview.visible && !Main.expo.visible)
             this._proxy.HandleKeybindingRemote(action);
+    },
+
+    invoke_keybinding_action_by_id: function(id) {
+        if (this.bindings[id] !== undefined) {
+            this.bindings[id].callback();
+        }
     }
 };
 Signals.addSignalMethods(KeybindingManager.prototype);

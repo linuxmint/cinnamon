@@ -429,7 +429,6 @@ class AppGroup {
             let rect = new Meta.Rectangle();
             [rect.x, rect.y] = this.actor.get_transformed_position();
             [rect.width, rect.height] = this.actor.get_transformed_size();
-
             each(this.groupState.metaWindows, (metaWindow) => {
                 if (metaWindow) {
                     metaWindow.set_icon_geometry(rect);
@@ -882,7 +881,7 @@ class AppGroup {
             this.signals.connect(metaWindow, 'notify::gtk-application-id', (w) => this.onAppChange(w));
             this.signals.connect(metaWindow, 'notify::wm-class', (w) => this.onAppChange(w));
 
-            // this.signals.connect(metaWindow, 'icon-changed', (w) => this.setIcon(w));
+            this.signals.connect(metaWindow, 'notify::icon', (w) => this.setIcon(w));
 
             if (metaWindow.progress !== undefined) {
                 // Check if GWL is starting with pre-existing windows that have progress,

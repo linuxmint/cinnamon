@@ -22,7 +22,7 @@
  * @magnifier (Magnifier.Magnifier): The magnifier
  * @xdndHandler (XdndHandler.XdndHandler): The X DND handler
  * @statusIconDispatcher (StatusIconDispatcher.StatusIconDispatcher): The status icon dispatcher
- * @keyboard (Keyboard.Keyboard): The keyboard object
+ * @virtualKeyboard (VirtualKeyboard.Keyboard): The keyboard object
  * @layoutManager (Layout.LayoutManager): The layout manager.
  * \
  * All actors that are part of the Cinnamon UI ar handled by the layout
@@ -91,7 +91,7 @@ var AppletManager = imports.ui.appletManager;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
-const Keyboard = imports.ui.keyboard;
+const VirtualKeyboard = imports.ui.virtualKeyboard;
 const MessageTray = imports.ui.messageTray;
 const OsdWindow = imports.ui.osdWindow;
 const Overview = imports.ui.overview;
@@ -117,6 +117,7 @@ const Accessibility = imports.ui.accessibility;
 const ModalDialog = imports.ui.modalDialog;
 const {readOnlyError} = imports.ui.environment;
 const {installPolyfills} = imports.ui.overrides;
+const InputMethod = imports.misc.inputMethod;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -149,7 +150,7 @@ var uiGroup = null;
 var magnifier = null;
 var xdndHandler = null;
 var statusIconDispatcher = null;
-var keyboard = null;
+var virtualKeyboard = null;
 var layoutManager = null;
 var themeManager = null;
 var keybindingManager = null;
@@ -310,6 +311,8 @@ function start() {
 
     Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
+    Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
+
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
     setRunState(RunState.STARTUP);
 
@@ -423,7 +426,7 @@ function start() {
 
     wm = new imports.ui.windowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
-    keyboard = new Keyboard.Keyboard();
+    virtualKeyboard = new VirtualKeyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
     placesManager = new PlacesManager.PlacesManager();
@@ -431,7 +434,7 @@ function start() {
     magnifier = new Magnifier.Magnifier();
 
     layoutManager.init();
-    keyboard.init();
+    virtualKeyboard.init();
     overview.init();
     expo.init();
 
@@ -501,18 +504,16 @@ function start() {
         // when the system is bogged down
         if (do_animation) {
             let id = GLib.idle_add(GLib.PRIORITY_LOW, () => {
-                if (do_login_sound && !global.session_running)
-                    soundManager.play_once_per_session('login');
                 layoutManager._doStartupAnimation();
                 return GLib.SOURCE_REMOVE;
             });
         } else {
             global.background_actor.show();
             setRunState(RunState.RUNNING);
-
-            if (do_login_sound && !global.session_running)
-                soundManager.play_once_per_session('login');
         }
+
+        if (do_login_sound && !global.session_running)
+		    soundManager.play('login');
 
         // Disable panel edit mode when Cinnamon starts
         if (global.settings.get_boolean("panel-edit-mode")) {
@@ -1121,7 +1122,7 @@ function _stageEventHandler(actor, event) {
     // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
     let action = global.display.get_keybinding_action(keyCode, modifierState);
     if (action > 0) {
-        keybindingManager.invoke_action(action);
+        keybindingManager.invoke_keybinding_action_by_id(action);
     }
 
     // Other bindings are only available when the overview is up and no modal dialog is present

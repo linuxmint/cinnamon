@@ -28,8 +28,6 @@ class Module:
 
             settings = page.add_reveal_section(_("Tiling and Snapping"), "org.cinnamon.muffin", "edge-tiling")
 
-            settings.add_row(GSettingsSpinButton(_("Tiling HUD visibility threshold"), "org.cinnamon.muffin", "tile-hud-threshold", _("Pixels")))
-
             modifiers = [["", _("Disabled")],["Super", _("Super (Windows)")],["Alt", _("Alt")],["Shift", _("Shift")],["Control", _("Control")]]
             settings.add_row(GSettingsComboBox(_("Modifier to use for toggling between tile and snap mode"), "org.cinnamon.muffin", "snap-modifier", modifiers))
 

@@ -443,9 +443,7 @@ get_app_for_flatpak_window (MetaWindow *window)
   CinnamonApp *result = NULL;
   gchar *info_filename;
   GFile *file;
-  // FIXME
-  // int pid = meta_window_get_client_pid (window);
-  int pid = meta_window_get_pid (window);
+  int pid = meta_window_get_client_pid (window);
 
   g_return_val_if_fail (pid > 0, NULL);
 

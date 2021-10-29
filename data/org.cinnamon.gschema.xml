@@ -182,9 +182,17 @@
 
     <key name="desktop-effects-workspace" type="b">
       <default>true</default>
-      <summary>Enable desktop effects on the workspace</summary>
+      <summary>Enable desktop effects in the Cinnamon ui</summary>
       <description>
         This affects switching workspaces, expo and scale.
+      </description>
+    </key>
+
+    <key name="desktop-effects" type="b">
+      <default>true</default>
+      <summary>Enable desktop effects</summary>
+      <description>
+        Whether to enable desktop effects and window animations.
       </description>
     </key>
 
@@ -200,7 +208,7 @@
       <default>"traditional"</default>
       <summary>Effect used when mapping windows</summary>
       <description>
-       An effect: traditional, fly, move, none
+       An effect: traditional, fly, fade, none
       </description>
     </key>
 
@@ -208,14 +216,7 @@
       <default>"traditional"</default>
       <summary>Effect used when minimizing windows</summary>
       <description>
-       An effect: traditional, fly, none
-      </description>
-    </key>
-
-    <key type="b" name="desktop-effects-maximize">
-      <default>false</default>
-      <summary>Whether to show an animation when maximizing windows</summary>
-      <description>
+       An effect: traditional, fly, fade, none
       </description>
     </key>
 
@@ -248,6 +249,12 @@
       <description>
        Duration of the effect (in milliseconds)
       </description>
+    </key>
+
+    <key type="i" name="window-effect-speed">
+      <default>1</default>
+      <range min="0" max="2"/>
+      <summary>Speed multiplier for window-effects</summary>
     </key>
 
     <key type="b" name="startup-animation">

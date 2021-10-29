@@ -44,7 +44,7 @@ SoundManager.prototype = {
     },
 
     play: function(sound) {
-        if (this.startup_delay)
+        if (this.startup_delay && sound !== "login")
             return;
         if (this.enabled[sound] && this.file[sound] != "") {
             this.playSoundFile(0, this.file[sound]);
