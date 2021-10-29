@@ -1,15 +1,8 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Cinnamon = imports.gi.Cinnamon;
-const {
-    BrightnessContrastEffect,
-    DesaturateEffect,
-    OffscreenRedirect,
-    Actor,
-    FixedLayout
-} = imports.gi.Clutter;
+const {BrightnessContrastEffect, DesaturateEffect, OffscreenRedirect} = imports.gi.Clutter;
 const Lang = imports.lang;
-const WindowUtils = imports.misc.windowUtils;
 const {
     GrabOp,
     Rectangle,
@@ -887,6 +880,7 @@ var WindowManager = class WindowManager {
 
         this.showWorkspaceOSD();
         soundManager.play('switch');
+        this.showWorkspaceOSD();
 
         let windows = global.get_window_actors();
 
@@ -899,12 +893,12 @@ var WindowManager = class WindowManager {
         let {focus_window} = display;
         let grabOp = display.get_grab_op();
 
+
         if (direction === MotionDirection.UP ||
             direction === MotionDirection.UP_LEFT ||
             direction === MotionDirection.UP_RIGHT)
             yDest = screen_height;
-        else
-        if (direction === MotionDirection.DOWN ||
+        else if (direction === MotionDirection.DOWN ||
             direction === MotionDirection.DOWN_LEFT ||
             direction === MotionDirection.DOWN_RIGHT)
             yDest = -screen_height;
@@ -913,36 +907,13 @@ var WindowManager = class WindowManager {
             direction === MotionDirection.UP_LEFT ||
             direction === MotionDirection.DOWN_LEFT)
             xDest = screen_width;
-        else
-        if (direction === MotionDirection.RIGHT ||
-            direction === MotionDirection.UP_RIGHT ||
-            direction === MotionDirection.DOWN_RIGHT)
+        else if (direction === MotionDirection.RIGHT ||
+                 direction === MotionDirection.UP_RIGHT ||
+                 direction === MotionDirection.DOWN_RIGHT)
             xDest = -screen_width;
 
-        let to_group = new Actor(
-            {
-                layout_manager: new FixedLayout(),
-                x: -xDest,
-                y: -yDest,
-                width: screen_width,
-                height: screen_height,
-            });
-        let from_group = new Actor(
-            {
-                layout_manager: new FixedLayout(),
-                x: 0,
-                y: 0,
-                width: screen_width,
-                height: screen_height,
-            });
-
-        Main.uiGroup.add_child(to_group);
-        Main.uiGroup.add_child(from_group);
-        this.showWorkspaceOSD();
-
-        let showing_windows = [];
-        let hiding_windows = [];
-        let sticky_windows = [];
+        let from_windows = [];
+        let to_windows = [];
 
         for (let i = 0; i < windows.length; i++) {
             let window = windows[i];
@@ -958,6 +929,10 @@ var WindowManager = class WindowManager {
                 continue;
             }
 
+            if (meta_window.is_on_all_workspaces()) {
+                continue;
+            }
+
             if ((meta_window === this._movingWindow) ||
                 ((grabOp === GrabOp.MOVING ||
                   grabOp === GrabOp.KEYBOARD_MOVING)
@@ -968,35 +943,36 @@ var WindowManager = class WindowManager {
                  * there while other windows move. */
                 window.show_all();
                 this._movingWindow = undefined;
-                continue;
-            } else
-            if (window.get_workspace() === from) {
-                let clones = WindowUtils.createWindowClone(meta_window, 0, 0, true);
-
-                for (let clone of clones) {
-                    from_group.add_actor(clone.actor);
-                    clone.actor.x = clone.x;
-                    clone.actor.y = clone.y;
-
-                    if (!meta_window.on_all_workspaces) {
-                        window.visible = false;
-                        hiding_windows.push(window);
-                    }
+            } else if (window.get_workspace() === from) {
+                if (window.origX == undefined) {
+                    window.origX = window.x;
+                    window.origY = window.y;
                 }
-            } else
-            if (window.get_workspace() === to) {
-                let clones = WindowUtils.createWindowClone(meta_window, 0, 0, true);
 
-                for (let clone of clones) {
-                    to_group.add_actor(clone.actor);
-                    clone.actor.x = clone.x;
-                    clone.actor.y = clone.y;
-
-                    window.orig_opacity = window.opacity;
-                    window.opacity = 0;
-
-                    showing_windows.push(window);
+                from_windows.push(window);
+                addTween(window,
+                    {
+                        x: window.origX + xDest,
+                        y: window.origY + yDest,
+                        time: WINDOW_ANIMATION_TIME,
+                        transition: 'easeOutQuad'
+                    });
+            } else if (window.get_workspace() === to) {
+                if (window.origX == undefined) {
+                    window.origX = window.x;
+                    window.origY = window.y;
+                    window.set_position(window.origX - xDest, window.origY - yDest);
                 }
+
+                to_windows.push(window);
+                addTween(window,
+                    {
+                        x: window.origX,
+                        y: window.origY,
+                        time: WINDOW_ANIMATION_TIME,
+                        transition: 'easeOutQuad'
+                    });
+                window.show_all();
             }
         }
 
@@ -1007,24 +983,21 @@ var WindowManager = class WindowManager {
         {
             this._cinnamonwm.disconnect(kill_id);
 
-            removeTweens(from_group);
-            removeTweens(to_group);
             removeTweens(this);
 
-            from_group.destroy();
-            to_group.destroy();
-
-            showing_windows.forEach((w) => {
-                w.show();
-                w.opacity = w.orig_opacity;
-                w.orig_opacity = undefined;
+            from_windows.forEach((w) => {
+                removeTweens(w);
+                w.hide();
+                w.set_position(w.origX, w.origY);
+                w.origX = undefined;
+                w.origY = undefined;
             });
 
-            sticky_windows.forEach((w) => {
-                w.show();
-            })
-
-            hiding_windows = null;
+            to_windows.forEach((w) => {
+                removeTweens(w);
+                w.origX = undefined;
+                w.origY = undefined;
+            });
 
             cinnamonwm.completed_switch_workspace();
         };
@@ -1034,30 +1007,11 @@ var WindowManager = class WindowManager {
             finish_switch_workspace();
         });
 
-        addTween(from_group,
-        { 
-            x: xDest,
-            y: yDest,
-            time: WINDOW_ANIMATION_TIME,
-            transition: 'easeOutQuad',
-        });
-        addTween(to_group,
-        {
-            x: 0,
-            y: 0,
-            time: WINDOW_ANIMATION_TIME,
-            transition: 'easeOutQuad',
-        });
-
-        addTween(this,
-        {
-            time: WINDOW_ANIMATION_TIME,
-            onComplete: function() {
-                if (!killed) {
-                    finish_switch_workspace();
-                }
+        addTween(this, {time: WINDOW_ANIMATION_TIME, onComplete: function() {
+            if (!killed) {
+                finish_switch_workspace();
             }
-        });
+        }});
     }
 
     _showTilePreview(cinnamonwm, window, tileRect, monitorIndex) {
