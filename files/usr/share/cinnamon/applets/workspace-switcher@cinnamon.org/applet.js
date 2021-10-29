@@ -271,7 +271,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bind("display-type", "display_type", this.queueCreateButtons);
-        this.settings.bind("reverse-scrolling", "reverse_scrolling");
+        this.settings.bind("scroll-behavior", "scroll_behavior");
 
         this.actor.connect('scroll-event', this.hook.bind(this));
 
@@ -354,6 +354,9 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
     }
 
     hook(actor, event) {
+        if (this.scroll_behavior == "disabled")
+            return;
+
         let now = (new Date()).getTime();
         let direction = event.get_scroll_direction();
 
@@ -366,7 +369,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             direction !== this._last_switch_direction) {
 
             // XOR used to determine the effective direction
-            if ((direction == 0) != this.reverse_scrolling)
+            if ((direction == 0) == (this.scroll_behavior == "normal"))
                 Main.wm.actionMoveWorkspaceLeft();
             else
                 Main.wm.actionMoveWorkspaceRight();
