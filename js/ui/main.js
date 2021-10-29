@@ -494,18 +494,16 @@ function start() {
         // when the system is bogged down
         if (do_animation) {
             let id = GLib.idle_add(GLib.PRIORITY_LOW, () => {
-                if (do_login_sound && !global.session_running)
-                    soundManager.play_once_per_session('login');
                 layoutManager._doStartupAnimation();
                 return GLib.SOURCE_REMOVE;
             });
         } else {
             global.background_actor.show();
             setRunState(RunState.RUNNING);
-
-            if (do_login_sound && !global.session_running)
-                soundManager.play_once_per_session('login');
         }
+
+        if (do_login_sound && !global.session_running)
+		    soundManager.play('login');
 
         // Disable panel edit mode when Cinnamon starts
         if (global.settings.get_boolean("panel-edit-mode")) {
