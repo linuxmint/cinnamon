@@ -6,6 +6,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Cvc, GdkPixbuf, Gio
 from SettingsWidgets import SidePage, GSettingsSoundFileChooser
 from xapp.GSettingsWidgets import *
+import util
 
 CINNAMON_SOUNDS = "org.cinnamon.sounds"
 CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound"
@@ -469,17 +470,7 @@ class SoundTest(Gtk.Dialog):
             sound = "audio-channel-"+position[1]
 
         try:
-            connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-
-            connection.call_sync("org.cinnamon.SettingsDaemon.Sound",
-                                 "/org/cinnamon/SettingsDaemon/Sound",
-                                 "org.cinnamon.SettingsDaemon.Sound",
-                                 "PlaySoundWithChannel",
-                                 GLib.Variant("(uss)", (0, sound, position[1])),
-                                 None,
-                                 Gio.DBusCallFlags.NONE,
-                                 2000,
-                                 None)
+            util.play_sound_name(sound)
         except GLib.Error as e:
             print("Could not play test sound: %s" % e.message)
 
