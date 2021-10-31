@@ -711,9 +711,6 @@ class Player extends PopupMenu.PopupMenuSection {
         let change = false;
         if (metadata["mpris:artUrl"]) {
             let artUrl = metadata["mpris:artUrl"].unpack();
-            if ( this._name.toLowerCase() === "spotify" ) {
-                artUrl = artUrl.replace("open.spotify.com", "i.scdn.co");
-            }
             if (this._trackCoverFile != artUrl) {
                 this._trackCoverFile = artUrl;
                 change = true;
