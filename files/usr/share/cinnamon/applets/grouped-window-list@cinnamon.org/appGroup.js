@@ -903,6 +903,10 @@ class AppGroup {
                 metaWindows.push(metaWindow);
                 if (this.hoverMenu) trigger('addThumbnailToMenu', metaWindow);
             }
+
+            // update icon using recent window for cases when the first window of an app doesn't have an icon. e.g: VirtualBox VM
+            this.setIcon(metaWindow)
+
             this.calcWindowNumber();
             this.onFocusChange();
         }
