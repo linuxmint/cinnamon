@@ -3632,7 +3632,7 @@ var PopupMenuManager = class PopupMenuManager {
         if (!this.grabbed)
             return false;
 
-        if (Main.keyboard.shouldTakeEvent(event))
+        if (Main.virtualKeyboard.shouldTakeEvent(event))
             return Clutter.EVENT_PROPAGATE;
 
         if (this._owner.menuEventFilter &&
