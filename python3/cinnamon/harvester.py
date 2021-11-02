@@ -47,9 +47,9 @@ URL_MAP = {
     'extension': URL_SPICES_HOME + "/json/extensions.json"
 }
 
-TIMEOUT_DOWNLOAD_JSON = 120
-TIMEOUT_DOWNLOAD_THUMB = 120
-TIMEOUT_DOWNLOAD_ZIP = 300
+TIMEOUT_DOWNLOAD_JSON = 60
+TIMEOUT_DOWNLOAD_THUMB = 60
+TIMEOUT_DOWNLOAD_ZIP = 120
 
 home = os.path.expanduser("~")
 locale_inst = '%s/.local/share/locale' % home
@@ -167,11 +167,15 @@ class Harvester():
         debug("harvester: Downloading new list of available %ss" % self.spice_type)
         url = URL_MAP[self.spice_type]
 
-        r = requests.get(url, timeout=TIMEOUT_DOWNLOAD_JSON, proxies=self.proxy_info, params={ "time" : round(time.time()) })
-        debug("Downloading from %s" % r.request.url)
+        try:
+            r = requests.get(url, timeout=TIMEOUT_DOWNLOAD_JSON, proxies=self.proxy_info, params={ "time" : round(time.time()) })
+            debug("Downloading from %s" % r.request.url)
+        except Exception as e:
+            print("Could not refresh json data for %s: %s" % (self.spice_type, e))
+            return
 
         if r.status_code != requests.codes.ok:
-            debug("Can't download spices json")
+            debug("Can't download spices json: ", r.status_code)
             return
 
         with open(self.index_file, "w") as f:
@@ -196,7 +200,11 @@ class Harvester():
         if (not os.path.isfile(paths.thumb_local_path)) or self._is_bad_image(paths.thumb_local_path) or self._spice_has_update(uuid):
             debug("Downloading thumbnail for %s: %s" % (uuid, paths.thumb_download_url))
 
-            r = requests.get(paths.thumb_download_url, timeout=TIMEOUT_DOWNLOAD_THUMB, proxies=self.proxy_info, params={ "time" : round(time.time()) })
+            try:
+                r = requests.get(paths.thumb_download_url, timeout=TIMEOUT_DOWNLOAD_THUMB, proxies=self.proxy_info, params={ "time" : round(time.time()) })
+            except Exception as e:
+                print("Could not get thumbnail for %s: %s" % (uuid, e))
+                return
 
             if r.status_code != requests.codes.ok:
                 debug("Can't download thumbnail for %s: %s" % (uuid, r.status_code))
@@ -278,7 +286,12 @@ class Harvester():
             return
 
         paths = SpicePathSet(item, spice_type=self.spice_type)
-        r = requests.get(paths.zip_download_url, timeout=TIMEOUT_DOWNLOAD_ZIP, proxies=self.proxy_info, params={ "time" : round(time.time()) })
+
+        try:
+            r = requests.get(paths.zip_download_url, timeout=TIMEOUT_DOWNLOAD_ZIP, proxies=self.proxy_info, params={ "time" : round(time.time()) })
+        except Exception as e:
+            print("Could not download zip for %s: %s" % (uuid, e))
+            return
 
         if r.status_code != requests.codes.ok:
             debug("couldn't download")
