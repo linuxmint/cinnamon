@@ -15,7 +15,7 @@ const Tweener = imports.ui.tweener;
 const WorkspacesView = imports.ui.workspacesView;
 
 // Time for initial animation going into Overview mode
-var ANIMATION_TIME = 0.25;
+var ANIMATION_TIME = 0.2;
 
 const SwipeScrollDirection = WorkspacesView.SwipeScrollDirection;
 
@@ -289,7 +289,7 @@ Overview.prototype = {
         global.overlay_group.add_actor(this.workspacesView.actor);
         Main.panelManager.disablePanels();
 
-        let animate = Main.wm.settingsState['desktop-effects'];
+        let animate = Main.wm.settingsState['desktop-effects-workspace'];
         if (animate) {
             this._group.opacity = 0;
             Tweener.addTween(this._group, {
@@ -408,7 +408,7 @@ Overview.prototype = {
 
         this.workspacesView.hide();
 
-        let animate = Main.wm.settingsState['desktop-effects'];
+        let animate = Main.wm.settingsState['desktop-effects-workspace'];
         if (animate) {
             // Make other elements fade out.
             Tweener.addTween(this._group, {

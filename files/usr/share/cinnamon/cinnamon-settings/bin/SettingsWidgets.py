@@ -9,12 +9,12 @@ from gi.repository import Gio, Gtk, GObject, GLib
 
 from xapp.SettingsWidgets import SettingsWidget, SettingsLabel
 from xapp.GSettingsWidgets import PXGSettingsBackend
-from ChooserButtonWidgets import DateChooserButton, TweenChooserButton, EffectChooserButton, TimeChooserButton
+from ChooserButtonWidgets import DateChooserButton, TimeChooserButton
 from KeybindingWidgets import ButtonKeybinding
 
 settings_objects = {}
 
-CAN_BACKEND = ["SoundFileChooser", "TweenChooser", "EffectChooser", "DateChooser", "TimeChooser", "Keybinding"]
+CAN_BACKEND = ["SoundFileChooser", "DateChooser", "TimeChooser", "Keybinding"]
 
 class BinFileMonitor(GObject.GObject):
     __gsignals__ = {
@@ -420,44 +420,6 @@ class SoundFileChooser(SettingsWidget):
 
     def connect_widget_handlers(self, *args):
         pass
-
-class TweenChooser(SettingsWidget):
-    bind_prop = "tween"
-    bind_dir = Gio.SettingsBindFlags.DEFAULT
-
-    def __init__(self, label, size_group=None, dep_key=None, tooltip=""):
-        super(TweenChooser, self).__init__(dep_key=dep_key)
-
-        self.label = SettingsLabel(label)
-
-        self.content_widget = TweenChooserButton()
-
-        self.pack_start(self.label, False, False, 0)
-        self.pack_end(self.content_widget, False, False, 0)
-
-        self.set_tooltip_text(tooltip)
-
-        if size_group:
-            self.add_to_size_group(size_group)
-
-class EffectChooser(SettingsWidget):
-    bind_prop = "effect"
-    bind_dir = Gio.SettingsBindFlags.DEFAULT
-
-    def __init__(self, label, possible=None, size_group=None, dep_key=None, tooltip=""):
-        super(EffectChooser, self).__init__(dep_key=dep_key)
-
-        self.label = SettingsLabel(label)
-
-        self.content_widget = EffectChooserButton(possible)
-
-        self.pack_start(self.label, False, False, 0)
-        self.pack_end(self.content_widget, False, False, 0)
-
-        self.set_tooltip_text(tooltip)
-
-        if size_group:
-            self.add_to_size_group(size_group)
 
 class DateChooser(SettingsWidget):
     bind_dir = None
