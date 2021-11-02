@@ -212,9 +212,16 @@
       </description>
     </key>
 
-    <key type="b" name="desktop-effects-change-size">
+    <key type="b" name="desktop-effects-maximize">
       <default>false</default>
-      <summary>Whether to show an animation when maximizing/unmaximizing/tiling/snapping windows</summary>
+      <summary>Whether to show an animation when maximizing windows</summary>
+      <description>
+      </description>
+    </key>
+
+    <key type="b" name="desktop-effects-change-size">
+      <default>true</default>
+      <summary>Whether to show an animation when unmaximizing/tiling/snapping windows</summary>
       <description>
       </description>
     </key>

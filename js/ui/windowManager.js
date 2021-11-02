@@ -475,6 +475,7 @@ var WindowManager = class WindowManager {
             'desktop-effects-map': global.settings.get_string('desktop-effects-map'),
             'desktop-effects-close': global.settings.get_string('desktop-effects-close'),
             'desktop-effects-minimize': global.settings.get_string('desktop-effects-minimize'),
+            'desktop-effects-maximize': global.settings.get_boolean('desktop-effects-maximize'),
             'desktop-effects-change-size': global.settings.get_boolean('desktop-effects-change-size')
         };
 
@@ -485,6 +486,7 @@ var WindowManager = class WindowManager {
         global.settings.connect('changed::desktop-effects-map', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
         global.settings.connect('changed::desktop-effects-close', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
         global.settings.connect('changed::desktop-effects-minimize', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+        global.settings.connect('changed::desktop-effects-maximize', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         global.settings.connect('changed::desktop-effects-change-size', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
 
         this._snapOsd = null;
@@ -682,7 +684,7 @@ var WindowManager = class WindowManager {
     _maximizeWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
         soundManager.play('maximize');
 
-        this._startTraditionalWindowEffect(cinnamonwm, "maximize", actor, [targetX, targetY, targetWidth, targetHeight]);
+        this._startWindowEffect(cinnamonwm, "maximize", actor, [targetX, targetY, targetWidth, targetHeight]);
     }
 
     _unmaximizeWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {

@@ -75,7 +75,9 @@ class Module:
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
             # MAXIMIZING/TILING WINDOWS
-            widget = GSettingsSwitch(_("Maximizing and tiling windows"), "org.cinnamon", "desktop-effects-change-size")
+            widget = GSettingsSwitch(_("Maximizing windows"), "org.cinnamon", "desktop-effects-maximize")
+            settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
+            widget = GSettingsSwitch(_("Unmaximizing and tiling windows"), "org.cinnamon", "desktop-effects-change-size")
             settings.add_reveal_row(widget, "org.cinnamon.muffin", "desktop-effects")
 
     def on_desktop_effects_enabled_changed(self, schema, key):
