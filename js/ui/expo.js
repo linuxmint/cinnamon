@@ -13,7 +13,7 @@ const Tweener = imports.ui.tweener;
 const ExpoThumbnail = imports.ui.expoThumbnail;
 
 // Time for initial animation going into Overview mode
-const ANIMATION_TIME = 0.3;
+const ANIMATION_TIME = 0.2;
 
 function Expo() {
     this._init.apply(this, arguments);
@@ -336,11 +336,16 @@ Expo.prototype = {
         this._gradient.show();
         Main.panelManager.disablePanels();
 
-        this._background.dim_factor = 1;
-        Tweener.addTween(this._background,
+        if (animate) {
+            this._background.dim_factor = 1;
+            Tweener.addTween(this._background,
                             { dim_factor: 0.4,
                               transition: 'easeOutQuad',
                               time: ANIMATION_TIME});
+        }
+        else {
+            this._background.dim_factor = 0.4;
+        }
 
         this._coverPane.raise_top();
         this._coverPane.show();
@@ -420,23 +425,34 @@ Expo.prototype = {
             clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
             clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
 
-            Tweener.addTween(clone, {
-                x: 0,
-                y: 0,
-                scale_x: 1,
-                scale_y: 1,
-                time: animationTime,
-                transition: 'easeOutQuad',
-                onCompleteScope: this,
-                onComplete: function() {
-                    global.overlay_group.remove_actor(cover);
-                    cover.destroy();
-                    if (index == Main.layoutManager.monitors.length < 1) {
-                        this._group.hide();
-                        this._hideDone();
+            let animate = Main.wm.settingsState['desktop-effects-workspace'];
+            if (animate) {
+                Tweener.addTween(clone, {
+                    x: 0,
+                    y: 0,
+                    scale_x: 1,
+                    scale_y: 1,
+                    time: animationTime,
+                    transition: 'easeOutQuad',
+                    onCompleteScope: this,
+                    onComplete: function() {
+                        global.overlay_group.remove_actor(cover);
+                        cover.destroy();
+                        if (index == Main.layoutManager.monitors.length < 1) {
+                            this._group.hide();
+                            this._hideDone();
+                        }
                     }
+                });
+            }
+            else {
+                global.overlay_group.remove_actor(cover);
+                cover.destroy();
+                if (index == Main.layoutManager.monitors.length < 1) {
+                    this._group.hide();
+                    this._hideDone();
                 }
-            });
+            }
         }, this);
 
         this.emit('hiding');
@@ -477,8 +493,8 @@ Expo.prototype = {
 
         this.emit('hidden');
         // Handle any calls to show* while we were hiding
-        if (this._shown)
-            this._animateVisible();
+        // if (this._shown)
+        //     this._animateVisible();
 
         this._syncInputMode();
 
