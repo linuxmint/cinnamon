@@ -3,6 +3,7 @@
 import requests
 import os
 import time
+import math
 import subprocess
 import json
 import locale
@@ -56,6 +57,14 @@ locale_inst = '%s/.local/share/locale' % home
 settings_dir = '%s/.cinnamon/configs/' % home
 
 activity_logger = logger.ActivityLogger()
+
+# return how many times 10m goes into the utc timestamp.
+# This gives us a unique value every 10 minutes to allow
+# the server cache to be utilized.
+TIMESTAMP_LIFETIME_MINUTES = 10
+def get_current_timestamp():
+    seconds = datetime.datetime.utcnow().timestamp()
+    return int(seconds // (TIMESTAMP_LIFETIME_MINUTES * 60))
 
 class SpiceUpdate():
     def __init__(self, spice_type, uuid, index_node, meta_node):
@@ -151,6 +160,7 @@ class Harvester():
             print(e)
 
     def refresh(self):
+        debug("Cache stamp: %d" % get_current_timestamp())
         self._update_local_json()
         self._update_local_thumbs()
 
@@ -168,7 +178,10 @@ class Harvester():
         url = URL_MAP[self.spice_type]
 
         try:
-            r = requests.get(url, timeout=TIMEOUT_DOWNLOAD_JSON, proxies=self.proxy_info, params={ "time" : round(time.time()) })
+            r = requests.get(url,
+                             timeout=TIMEOUT_DOWNLOAD_JSON,
+                             proxies=self.proxy_info,
+                             params={ "time" : get_current_timestamp() })
             debug("Downloading from %s" % r.request.url)
         except Exception as e:
             print("Could not refresh json data for %s: %s" % (self.spice_type, e))
@@ -201,7 +214,10 @@ class Harvester():
             debug("Downloading thumbnail for %s: %s" % (uuid, paths.thumb_download_url))
 
             try:
-                r = requests.get(paths.thumb_download_url, timeout=TIMEOUT_DOWNLOAD_THUMB, proxies=self.proxy_info, params={ "time" : round(time.time()) })
+                r = requests.get(paths.thumb_download_url,
+                                 timeout=TIMEOUT_DOWNLOAD_THUMB,
+                                 proxies=self.proxy_info,
+                                 params={ "time" : get_current_timestamp() })
             except Exception as e:
                 print("Could not get thumbnail for %s: %s" % (uuid, e))
                 return
@@ -288,7 +304,10 @@ class Harvester():
         paths = SpicePathSet(item, spice_type=self.spice_type)
 
         try:
-            r = requests.get(paths.zip_download_url, timeout=TIMEOUT_DOWNLOAD_ZIP, proxies=self.proxy_info, params={ "time" : round(time.time()) })
+            r = requests.get(paths.zip_download_url,
+                             timeout=TIMEOUT_DOWNLOAD_ZIP,
+                             proxies=self.proxy_info,
+                             params={ "time" : get_current_timestamp() })
         except Exception as e:
             print("Could not download zip for %s: %s" % (uuid, e))
             return
