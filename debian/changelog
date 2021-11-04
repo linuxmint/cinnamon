@@ -1,3 +1,11 @@
+cinnamon (5.0.7) uma; urgency=medium
+
+  [ Michael Webster ]
+  * harvester.py: Catch request timeout errors.
+  * harvester.py: Don't use a unique timestamp for every request from the spices server.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 04 Nov 2021 13:03:55 +0000
+
 cinnamon (5.0.6) uma; urgency=medium
 
   [ Michael Webster ]
