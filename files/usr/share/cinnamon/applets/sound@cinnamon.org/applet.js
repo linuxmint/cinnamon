@@ -502,7 +502,11 @@ class Player extends PopupMenu.PopupMenuSection {
         // Player info
         this._playerBox = new St.BoxLayout();
         this.playerIcon = new St.Icon({icon_type: St.IconType.SYMBOLIC, style_class: "popup-menu-icon"});
-        this.playerLabel = new St.Label({ y_expand: true, y_align: Clutter.ActorAlign.CENTER, x_expand: true });
+        this.playerLabel = new St.Label({
+            y_expand: true, y_align: Clutter.ActorAlign.CENTER,
+            x_expand: true, x_align: Clutter.ActorAlign.START
+        });
+
         this._playerBox.add_actor(this.playerIcon);
         this._playerBox.add_actor(this.playerLabel);
 
