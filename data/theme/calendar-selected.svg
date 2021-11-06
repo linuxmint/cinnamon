@@ -11,7 +11,7 @@
    width="48"
    version="1.1"
    id="svg13"
-   sodipodi:docname="calendar-today.svg"
+   sodipodi:docname="calendar-selected.svg"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
   <metadata
      id="metadata17">
@@ -21,7 +21,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -39,8 +39,8 @@
      id="namedview15"
      showgrid="false"
      inkscape:zoom="9.44"
-     inkscape:cx="-11.837571"
-     inkscape:cy="12.5"
+     inkscape:cx="-24.135593"
+     inkscape:cy="19.392479"
      inkscape:window-x="0"
      inkscape:window-y="26"
      inkscape:window-maximized="1"
@@ -64,11 +64,9 @@
          id="stop4" />
     </radialGradient>
   </defs>
-  <rect
-     style="opacity:1;fill:#bebebe;fill-opacity:0.74509804;fill-rule:evenodd;stroke:none;stroke-width:1.49602652;stroke-opacity:1"
+  <path
+     style="opacity:1;fill:#bebebe;fill-opacity:0.74509804;fill-rule:evenodd;stroke:none;stroke-width:5.12814188;stroke-opacity:1"
+     d="M 0,0 V 47 H 47 V 0 Z M 0.97916667,1.0315395 H 46.020833 V 46.021948 H 0.97916667 Z"
      id="rect824"
-     width="47"
-     height="4"
-     x="0"
-     y="43" />
+     inkscape:connector-curvature="0" />
 </svg>

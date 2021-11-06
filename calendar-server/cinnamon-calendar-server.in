@@ -1,0 +1,6 @@
+#!/bin/sh
+
+export GI_TYPELIB_PATH="@pkglibdir@:@muffinlibdir@"
+export LD_LIBRARY_PATH="@pkglibdir@:@muffinlibdir@"
+
+exec /usr/libexec/cinnamon/cinnamon-calendar-server.py

@@ -178,5 +178,6 @@ install_subdir(
     strip_directory: true,
 )
 
+subdir('calendar-server')
 subdir('python3')
 subdir('install-scripts')
