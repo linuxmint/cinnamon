@@ -904,7 +904,7 @@ class FavoriteButton extends SimpleMenuItem {
 }
 
 class CategoryButton extends SimpleMenuItem {
-    constructor(applet, categoryId, label, icon) {
+    constructor(applet, categoryId, label, icon, symbolic=false) {
         super(applet, { name: label,
                         type: 'category',
                         styleClass: 'menu-category-button',
@@ -912,9 +912,9 @@ class CategoryButton extends SimpleMenuItem {
         this.actor.accessible_role = Atk.Role.LIST_ITEM;
 
         if (typeof icon === 'string')
-            this.addIcon(applet.categoryIconSize, icon);
+            this.addIcon(applet.categoryIconSize, icon, null, symbolic);
         else if (icon)
-            this.addIcon(applet.categoryIconSize, null, icon);
+            this.addIcon(applet.categoryIconSize, null, icon, symbolic);
 
         if (this.icon && !applet.showCategoryIcons)
             this.icon.visible = false;
@@ -2637,7 +2637,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._applicationsButtons = [];
 
         if (!this._allAppsCategoryButton) {
-            this._allAppsCategoryButton = new CategoryButton(this, null, _("All Applications"), null);
+            this._allAppsCategoryButton = new CategoryButton(this, null, _("All Applications"), "start-here", true);
             this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
             this._categoryButtons.push(this._allAppsCategoryButton);
         }
