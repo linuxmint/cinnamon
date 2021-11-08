@@ -46,7 +46,7 @@
   "panel-show-label": {
       "type": "switch",
       "default": true,
-      "description": "Show window labels next to icons"
+      "description": "Show window names in the panel"
   },
   "window-preview": {
       "type": "switch",
