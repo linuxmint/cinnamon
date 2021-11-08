@@ -19,10 +19,10 @@
         "description": "Show empty tray",
         "tooltip": "Check this to show the tray even when there are no new notifications."
     },
-    "hideNotificationCount": {
+    "showNotificationCount": {
         "type": "switch",
-        "default": false,
-        "description": "Don't show notification count in tray"
+        "default": true,
+        "description": "Show the number of notifications"
     },
     "section3": {
         "type": "section",
