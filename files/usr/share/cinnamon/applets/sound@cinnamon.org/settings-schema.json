@@ -34,12 +34,6 @@
         "description": "Show song information on the panel",
         "dependency": "playerControl"
     },
-    "hideUnknownArtist": {
-        "type": "switch",
-        "default": false,
-        "description": "Hide Unknown Artist on the panel",
-        "dependency": "showtrack"
-    },
     "truncatetext": {
         "type": "spinbutton",
         "default": 30,
