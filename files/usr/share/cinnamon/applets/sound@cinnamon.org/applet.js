@@ -563,7 +563,11 @@ class Player extends PopupMenu.PopupMenuSection {
                                              _("Next"),
                                              () => this._mediaServerPlayer.NextRemote());
         this.trackInfo.add_actor(trackControls);
+
         this.controls = new St.BoxLayout();
+        if(St.Widget.get_default_direction () === St.TextDirection.RTL)
+            this.controls.set_pack_start(true)
+
         this.controls.add_actor(this._prevButton.getActor());
         this.controls.add_actor(this._playButton.getActor());
         this.controls.add_actor(this._stopButton.getActor());
