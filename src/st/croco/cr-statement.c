@@ -874,8 +874,10 @@ cr_statement_import_rule_to_string (CRStatement const *a_this,
                                                 str);
                         g_free (str);
                         str = NULL ;
-                } else          /*there is no url, so no import rule, get out! */
+                } else {        /*there is no url, so no import rule, get out! */
+                        g_string_free (stringue, TRUE);
                         return NULL;
+                }
 
                 if (a_this->kind.import_rule->media_list) {
                         GList const *cur = NULL;
@@ -1291,6 +1293,7 @@ cr_statement_new_at_media_rule (CRStyleSheet * a_sheet,
                         cr_utils_trace_info ("Bad parameter a_rulesets. "
                                              "It should be a list of "
                                              "correct ruleset statement only !");
+                        g_free (result);
                         goto error;
                 }
                 cur->kind.ruleset->parent_media_rule = result;

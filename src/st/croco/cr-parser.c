@@ -1850,6 +1850,7 @@ cr_parser_parse_simple_selector (CRParser * a_this, CRSimpleSel ** a_sel)
                                 found_sel = TRUE;
                         } else {
                                 status = CR_PARSING_ERROR;
+                                cr_pseudo_destroy (pseudo);
                                 goto error;
                         }
 
@@ -1867,7 +1868,8 @@ cr_parser_parse_simple_selector (CRParser * a_this, CRSimpleSel ** a_sel)
                                         cr_additional_sel_append
                                         (add_sel_list, add_sel);
                                 status = CR_OK;
-                        }
+                        } else
+                                cr_pseudo_destroy (pseudo);
                 } else {
                         status = cr_tknzr_unget_token
                                 (PRIVATE (a_this)->tknzr, token);

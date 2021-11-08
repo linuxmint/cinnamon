@@ -484,8 +484,10 @@ cr_term_one_to_string (CRTerm const * a_this)
 
         if ((a_this->content.str == NULL)
             && (a_this->content.num == NULL)
-            && (a_this->content.rgb == NULL))
+            && (a_this->content.rgb == NULL)) {
+                g_string_free (str_buf, TRUE);
                 return NULL ;
+        }
 
         switch (a_this->the_operator) {
         case DIVIDE:
@@ -560,9 +562,9 @@ cr_term_one_to_string (CRTerm const * a_this)
                                 }
 
                                 g_string_append_printf (str_buf, ")");
-                                g_free (content);
-                                content = NULL;
                         }
+                        g_free (content);
+                        content = NULL;
                 }
 
                 break;

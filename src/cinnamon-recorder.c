@@ -1268,6 +1268,7 @@ recorder_open_outfile (CinnamonRecorder *recorder)
                   break;
                 default:
                   g_warning ("Unknown escape %%%c in filename", *p);
+                  g_string_free (filename, TRUE);
                   goto out;
                 }
 

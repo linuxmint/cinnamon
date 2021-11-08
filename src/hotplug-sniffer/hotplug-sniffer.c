@@ -128,9 +128,9 @@ sniff_async_ready_cb (GObject *source,
 
   g_dbus_method_invocation_return_value (data->invocation,
                                          g_variant_new ("(^as)", types));
-  g_strfreev (types);
 
  out:
+  g_strfreev (types);
   invocation_data_free (data);
   ensure_autoquit_on ();
 }
