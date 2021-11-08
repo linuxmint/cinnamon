@@ -62,7 +62,7 @@ class Module:
         switch = GSettingsSwitch(_("Show notifications on the bottom side of the screen"), "org.cinnamon.desktop.notifications", "bottom-notifications")
         settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
 
-        switch = GSettingsSwitch(_("Show non-critical notifications in fullscreen"), "org.cinnamon.desktop.notifications", "display-noncritical-in-fullscreen")
+        switch = GSettingsSwitch(_("Show all notifications over fullscreen applications"), "org.cinnamon.desktop.notifications", "display-noncritical-in-fullscreen")
         settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
 
         button = Button(_("Display a test notification"), self.send_test)
