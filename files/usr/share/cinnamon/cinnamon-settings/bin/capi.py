@@ -17,6 +17,7 @@
 
 import platform
 import os
+import sysconfig
 
 from gi.repository import Gio, GObject
 
@@ -27,18 +28,21 @@ class CManager():
         self.modules = []
 
         architecture = platform.machine()
-        paths = ["/usr/lib"]
+        # get the arch-specific triplet, e.g. 'x86_64-linux-gnu' or 'arm-linux-gnueabihf'
+        # see also: https://wiki.debian.org/Python/MultiArch
+        triplet = sysconfig.get_config_var('MULTIARCH')
+        paths = ["/usr/lib", f"/usr/lib/{triplet}"]
 
         # On x86 archs, iterate through multiple paths
         # For instance, on a Mint i686 box, the path is actually /usr/lib/i386-linux-gnu
         x86archs = ["i386", "i486", "i586", "i686"]
         if architecture in x86archs:
             for arch in x86archs:
-                paths += ["/usr/lib/%s" % arch, "/usr/lib/%s-linux-gnu" % arch]
+                paths += ["/usr/lib/%s" % arch]
         elif architecture == "x86_64":
-            paths += ["/usr/lib/x86_64", "/usr/lib/x86_64-linux-gnu", "/usr/lib64"]
+            paths += ["/usr/lib/x86_64", "/usr/lib64"]
         else:
-            paths += ["/usr/lib/%s" % architecture, "/usr/lib/%s-linux-gnu" % architecture]
+            paths += ["/usr/lib/%s" % architecture]
 
         for path in paths:
             if not os.path.islink(path):
