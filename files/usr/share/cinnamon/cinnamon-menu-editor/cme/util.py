@@ -19,7 +19,11 @@
 import os
 import xml.dom.minidom
 import uuid
-from collections import Sequence
+import sys
+if sys.version_info[:2] >= (3, 8):
+    from collections.abc import Sequence
+else:
+    from collections import Sequence
 from gi.repository import Gtk, GdkPixbuf, CMenu, GLib, Gdk
 
 DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP

@@ -43,6 +43,11 @@
       "default": false,
       "description": "Window buttons can have different sizes and use the entire space available"
   },
+  "panel-show-label": {
+      "type": "switch",
+      "default": true,
+      "description": "Show window names in the panel"
+  },
   "window-preview": {
       "type": "switch",
       "default": true,

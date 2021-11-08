@@ -26,6 +26,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.settings.bind("showEmptyTray", "showEmptyTray", this._show_hide_tray);
         this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
         this.settings.bind("keyClear", "keyClear", this._setKeybinding);
+        this.settings.bind("showNotificationCount", "showNotificationCount", this.update_list);
         this._setKeybinding();
 
         // Layout
@@ -43,17 +44,17 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this._blinking = false;
         this._blink_toggle = false;
     }
-    
+
     _setKeybinding() {
         Main.keybindingManager.addHotKey("notification-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
         Main.keybindingManager.addHotKey("notification-clear-" + this.instance_id, this.keyClear, Lang.bind(this, this._clear_all));
     }
-    
+
     on_applet_removed_from_panel () {
         Main.keybindingManager.removeHotKey("notification-open-" + this.instance_id);
         Main.keybindingManager.removeHotKey("notification-clear-" + this.instance_id);
     }
-    
+
     _openMenu() {
         this._update_timestamp();
         this.menu.toggle();
@@ -196,6 +197,11 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                 if (!this.showEmptyTray) {
                     this.actor.hide();
                 }
+            }
+            global.logError(this.showNotificationCount);
+            if (!this.showNotificationCount) {  // Don't show notification count
+                this.set_applet_label('');
+                this.clear_action.actor.hide();
             }
             this.menu_label.label.set_text(stringify(count));
             this._notificationbin.queue_relayout();

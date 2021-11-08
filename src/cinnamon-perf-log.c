@@ -126,11 +126,7 @@ G_DEFINE_TYPE(CinnamonPerfLog, cinnamon_perf_log, G_TYPE_OBJECT);
 static gint64
 get_time (void)
 {
-  GTimeVal timeval;
-
-  g_get_current_time (&timeval);
-
-  return timeval.tv_sec * G_GINT64_CONSTANT(1000000) + timeval.tv_usec;
+  return g_get_monotonic_time ();
 }
 
 static void
@@ -874,7 +870,8 @@ replay_to_json (gint64      time,
                 gpointer    user_data)
 {
   ReplayToJsonClosure *closure = user_data;
-  char *event_str;
+  char *event_str = NULL;
+  gboolean rc;
 
   if (closure->error != NULL)
     return;
@@ -923,7 +920,9 @@ replay_to_json (gint64      time,
       g_assert_not_reached ();
     }
 
-  if (!write_string (closure->out, event_str, &closure->error))
+  rc = write_string (closure->out, event_str, &closure->error);
+  g_free (event_str);
+  if (!rc)
       return;
 }
 

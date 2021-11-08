@@ -502,7 +502,11 @@ class Player extends PopupMenu.PopupMenuSection {
         // Player info
         this._playerBox = new St.BoxLayout();
         this.playerIcon = new St.Icon({icon_type: St.IconType.SYMBOLIC, style_class: "popup-menu-icon"});
-        this.playerLabel = new St.Label({ y_expand: true, y_align: Clutter.ActorAlign.CENTER, x_expand: true });
+        this.playerLabel = new St.Label({
+            y_expand: true, y_align: Clutter.ActorAlign.CENTER,
+            x_expand: true, x_align: Clutter.ActorAlign.START
+        });
+
         this._playerBox.add_actor(this.playerIcon);
         this._playerBox.add_actor(this.playerLabel);
 
@@ -563,7 +567,11 @@ class Player extends PopupMenu.PopupMenuSection {
                                              _("Next"),
                                              () => this._mediaServerPlayer.NextRemote());
         this.trackInfo.add_actor(trackControls);
+
         this.controls = new St.BoxLayout();
+        if(St.Widget.get_default_direction () === St.TextDirection.RTL)
+            this.controls.set_pack_start(true)
+
         this.controls.add_actor(this._prevButton.getActor());
         this.controls.add_actor(this._playButton.getActor());
         this.controls.add_actor(this._stopButton.getActor());
@@ -711,9 +719,6 @@ class Player extends PopupMenu.PopupMenuSection {
         let change = false;
         if (metadata["mpris:artUrl"]) {
             let artUrl = metadata["mpris:artUrl"].unpack();
-            if ( this._name.toLowerCase() === "spotify" ) {
-                artUrl = artUrl.replace("open.spotify.com", "i.scdn.co");
-            }
             if (this._trackCoverFile != artUrl) {
                 this._trackCoverFile = artUrl;
                 change = true;
@@ -730,9 +735,30 @@ class Player extends PopupMenu.PopupMenuSection {
             if (this._trackCoverFile) {
                 let cover_path = "";
                 if (this._trackCoverFile.match(/^http/)) {
-                    if(!this._trackCoverFileTmp)
+                    if (!this._trackCoverFileTmp)
                         this._trackCoverFileTmp = Gio.file_new_tmp('XXXXXX.mediaplayer-cover')[0];
                     Util.spawn_async(['wget', this._trackCoverFile, '-O', this._trackCoverFileTmp.get_path()], () => this._onDownloadedCover());
+                }
+                else if (this._trackCoverFile.match(/data:image\/(png|jpeg);base64,/)) {
+                    if (!this._trackCoverFileTmp)
+                        this._trackCoverFileTmp = Gio.file_new_tmp('XXXXXX.mediaplayer-cover')[0];
+                    const cover_base64 = this._trackCoverFile.split(',')[1];
+                    const base64_decode = data => new Promise(resolve => resolve(GLib.base64_decode(data)));
+                    if (!cover_base64) {
+                        return;
+                    }
+                    base64_decode(cover_base64)
+                    .then(decoded => {
+                        this._trackCoverFileTmp.replace_contents(
+                            decoded,
+                            null,
+                            false,
+                            Gio.FileCreateFlags.REPLACE_DESTINATION,
+                            null
+                        );
+                        return this._trackCoverFileTmp.get_path();
+                    })
+                    .then(path => this._showCover(path));
                 }
                 else {
                     cover_path = decodeURIComponent(this._trackCoverFile);

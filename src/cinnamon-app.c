@@ -1204,12 +1204,14 @@ cinnamon_app_launch (CinnamonApp     *app,
                      char           **startup_id,
                      GError         **error)
 {
+  GMenuDesktopAppInfo *app_info = cinnamon_app_get_app_info(app);
+  gboolean wants_offload = (app_info && gmenu_desktopappinfo_get_boolean(app_info, "PrefersNonDefaultGPU"));
   return real_app_launch (app,
                           timestamp,
                           uris,
                           workspace,
                           startup_id,
-                          FALSE,
+                          wants_offload,
                           error);
 }
 

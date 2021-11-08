@@ -509,20 +509,10 @@ recorder_draw_buffer_meter (CinnamonRecorder *recorder)
                   recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 2);
 }
 
-/* We want to time-stamp each frame based on the actual time it was
- * recorded. We probably should use the pipeline clock rather than
- * gettimeofday(): that would be needed to get sync'ed audio correct.
- * I'm not immediately sure how to handle the adjustment we currently
- * do when pausing recording - is pausing the pipeline enough?
- */
 static GstClockTime
 get_wall_time (void)
 {
-  GTimeVal tv;
-
-  g_get_current_time (&tv);
-
-  return tv.tv_sec * 1000000000LL + tv.tv_usec * 1000LL;
+  return g_get_real_time ();
 }
 
 /* Retrieve a frame and feed it into the pipeline
@@ -1262,15 +1252,12 @@ recorder_open_outfile (CinnamonRecorder *recorder)
                 case 'd':
                   {
                     /* Appends date as YYYYMMDD */
-                    GDate date;
-                    GTimeVal now;
-                    g_get_current_time (&now);
-                    g_date_clear (&date, 1);
-                    g_date_set_time_val (&date, &now);
+                    GDateTime *dt;
+                    dt = g_date_time_new_now_local ();
                     g_string_append_printf (filename, "%04d%02d%02d",
-                                            g_date_get_year (&date),
-                                            g_date_get_month (&date),
-                                            g_date_get_day (&date));
+                                            g_date_time_get_year (dt),
+                                            g_date_time_get_month (dt),
+                                            g_date_time_get_day_of_month (dt));
                   }
                   break;
                 case 'u':
@@ -1281,6 +1268,7 @@ recorder_open_outfile (CinnamonRecorder *recorder)
                   break;
                 default:
                   g_warning ("Unknown escape %%%c in filename", *p);
+                  g_string_free (filename, TRUE);
                   goto out;
                 }
 

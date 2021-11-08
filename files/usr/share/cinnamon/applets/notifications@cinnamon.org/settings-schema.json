@@ -13,23 +13,28 @@
         "type": "section",
         "description": "Display"
     },
-    "showEmptyTray" : {
-        "type" : "switch",
-        "default" : false,
-        "description" : "Show empty tray",
-        "tooltip" : "Check this to show the tray even when there are no new notifications."
+    "showEmptyTray": {
+        "type": "switch",
+        "default": false,
+        "description": "Show empty tray",
+        "tooltip": "Check this to show the tray even when there are no new notifications."
     },
-        "section3": {
+    "showNotificationCount": {
+        "type": "switch",
+        "default": true,
+        "description": "Show the number of notifications"
+    },
+    "section3": {
         "type": "section",
         "description": "Keyboard shortcuts"
     },
-        "keyOpen": {
+    "keyOpen": {
         "type": "keybinding",
         "description": "Show notifications",
         "default": "<Super>n",
         "tooltip" : "Set keybinding(s) to show the notification popup menu."
     },
-        "keyClear": {
+    "keyClear": {
         "type": "keybinding",
         "description": "Clear notifications",
         "default": "<Shift><Super>c",

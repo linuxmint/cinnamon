@@ -837,6 +837,13 @@ StScrollBar StButton#vhandle:hover {
     padding: 3px 31px 4px;
 }
 
+.confirm-dialog-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5em;
+    padding-bottom: 12px;
+}
+
 /* Info OSD popup */
 .info-osd {
     font-size: 1.2em;
@@ -863,13 +870,17 @@ StScrollBar StButton#vhandle:hover {
 .run-dialog-label {
     color: white;
     padding-bottom: 15px;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
 }
-.run-dialog-error-label {
+.run-dialog-description {
     color: white;
-}
-.run-dialog-error-box {
     padding-top: 15px;
-    spacing: 5px;
+    text-align: center;
+}
+.run-dialog-description.error {
+    color: #fc4138;
 }
 .run-dialog-completion-box {
     padding-left: 15px;

@@ -164,14 +164,6 @@
       </description>
     </key>
 
-    <key name="desktop-effects" type="b">
-      <default>true</default>
-      <summary>Enable desktop effects</summary>
-      <description>
-        Whether to enable desktop effects and window animations.
-      </description>
-    </key>
-
     <key name="desktop-effects-on-dialogs" type="b">
       <default>true</default>
       <summary>Enable desktop effects on dialog boxes</summary>
@@ -188,157 +180,49 @@
       </description>
     </key>
 
-    <key type="s" name="desktop-effects-style">
-      <default>"cinnamon"</default>
-      <summary>The style of desktop effects</summary>
+    <key name="desktop-effects-workspace" type="b">
+      <default>true</default>
+      <summary>Enable desktop effects on the workspace</summary>
       <description>
-        An overall style used for desktop effects.
-        This key should not be edited directly.
+        This affects switching workspaces, expo and scale.
       </description>
     </key>
 
-    <key type="s" name="desktop-effects-close-effect">
+    <key type="s" name="desktop-effects-close">
       <default>"traditional"</default>
       <summary>Effect used when closing windows</summary>
       <description>
-       An effect: scale, fade, traditional, none
+       An effect: traditional, fly, none
       </description>
     </key>
 
-     <key name="desktop-effects-close-transition" type="s">
-      <default>"easeOutQuad"</default>
-      <summary>Transition used when closing windows</summary>
-      <description>
-       A Tweener transition
-      </description>
-    </key>
-
-    <key type="i" name="desktop-effects-close-time">
-      <default>120</default>
-      <summary>Duration of the effect (in milliseconds)</summary>
-      <description>
-       Duration of the effect (in milliseconds)
-      </description>
-    </key>
-
-    <key type="s" name="desktop-effects-map-effect">
+    <key type="s" name="desktop-effects-map">
       <default>"traditional"</default>
       <summary>Effect used when mapping windows</summary>
       <description>
-       An effect: scale, fade, traditional, none
+       An effect: traditional, fly, move, none
       </description>
     </key>
 
-     <key name="desktop-effects-map-transition" type="s">
-      <default>"easeOutQuad"</default>
-      <summary>Transition used when mapping windows</summary>
-      <description>
-       A Tweener transition
-      </description>
-    </key>
-
-    <key type="i" name="desktop-effects-map-time">
-      <default>100</default>
-      <summary>Duration of the effect (in milliseconds)</summary>
-      <description>
-       Duration of the effect (in milliseconds)
-      </description>
-    </key>
-
-
-    <key type="s" name="desktop-effects-minimize-effect">
+    <key type="s" name="desktop-effects-minimize">
       <default>"traditional"</default>
       <summary>Effect used when minimizing windows</summary>
       <description>
-       An effect: traditional, scale, fade, traditional, none
+       An effect: traditional, fly, none
       </description>
     </key>
 
-     <key name="desktop-effects-minimize-transition" type="s">
-      <default>"easeInQuad"</default>
-      <summary>Transition used when minimizing windows</summary>
+    <key type="b" name="desktop-effects-maximize">
+      <default>false</default>
+      <summary>Whether to show an animation when maximizing windows</summary>
       <description>
-       A Tweener transition
       </description>
     </key>
 
-    <key type="i" name="desktop-effects-minimize-time">
-      <default>160</default>
-      <summary>Duration of the effect (in milliseconds)</summary>
+    <key type="b" name="desktop-effects-change-size">
+      <default>true</default>
+      <summary>Whether to show an animation when unmaximizing/tiling/snapping windows</summary>
       <description>
-       Duration of the effect (in milliseconds)
-      </description>
-    </key>
-
-    <key type="s" name="desktop-effects-maximize-effect">
-      <default>"none"</default>
-      <summary>Effect used when maximizing windows</summary>
-      <description>
-       An effect: none
-      </description>
-    </key>
-
-     <key name="desktop-effects-maximize-transition" type="s">
-      <default>"easeInExpo"</default>
-      <summary>Transition used when maximizing windows</summary>
-      <description>
-       A Tweener transition
-      </description>
-    </key>
-
-    <key type="i" name="desktop-effects-maximize-time">
-      <default>100</default>
-      <summary>Duration of the effect (in milliseconds)</summary>
-      <description>
-       Duration of the effect (in milliseconds)
-      </description>
-    </key>
-
-    <key type="s" name="desktop-effects-unmaximize-effect">
-      <default>"none"</default>
-      <summary>Effect used when unmaximizing windows</summary>
-      <description>
-       An effect: none
-      </description>
-    </key>
-
-     <key name="desktop-effects-unmaximize-transition" type="s">
-      <default>"easeNone"</default>
-      <summary>Transition used when unmaximizing windows</summary>
-      <description>
-       A Tweener transition
-      </description>
-    </key>
-
-    <key type="i" name="desktop-effects-unmaximize-time">
-      <default>100</default>
-      <summary>Duration of the effect (in milliseconds)</summary>
-      <description>
-       Duration of the effect (in milliseconds)
-      </description>
-    </key>
-
-    <key type="s" name="desktop-effects-tile-effect">
-      <default>"none"</default>
-      <summary>Effect used when maximizing windows</summary>
-      <description>
-       An effect: none
-      </description>
-    </key>
-
-     <key name="desktop-effects-tile-transition" type="s">
-      <default>"easeInQuad"</default>
-      <summary>Transition used when maximizing windows</summary>
-      <description>
-       A Tweener transition
-      </description>
-    </key>
-
-    <key type="i" name="desktop-effects-tile-time">
-      <default>100</default>
-      <summary>Duration of the effect (in milliseconds)</summary>
-      <description>
-       Duration of the effect (in milliseconds)
       </description>
     </key>
 

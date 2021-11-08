@@ -904,7 +904,7 @@ class FavoriteButton extends SimpleMenuItem {
 }
 
 class CategoryButton extends SimpleMenuItem {
-    constructor(applet, categoryId, label, icon) {
+    constructor(applet, categoryId, label, icon, symbolic=false) {
         super(applet, { name: label,
                         type: 'category',
                         styleClass: 'menu-category-button',
@@ -912,9 +912,9 @@ class CategoryButton extends SimpleMenuItem {
         this.actor.accessible_role = Atk.Role.LIST_ITEM;
 
         if (typeof icon === 'string')
-            this.addIcon(applet.categoryIconSize, icon);
+            this.addIcon(applet.categoryIconSize, icon, null, symbolic);
         else if (icon)
-            this.addIcon(applet.categoryIconSize, null, icon);
+            this.addIcon(applet.categoryIconSize, null, icon, symbolic);
 
         if (this.icon && !applet.showCategoryIcons)
             this.icon.visible = false;
@@ -1726,6 +1726,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         let keyCode = event.get_key_code();
         let modifierState = Cinnamon.get_event_state(event);
+
+        /* Accounts for mirrored RTL layout.
+           Switches between left/right key presses */
+        if(St.Widget.get_default_direction() === St.TextDirection.RTL) {
+            if(symbol === Clutter.KEY_Right) {
+                symbol = Clutter.KEY_Left;
+            } else if(symbol === Clutter.KEY_Left) {
+                symbol = Clutter.KEY_Right;
+            }
+        }
 
         /* check for a keybinding and quit early, otherwise we get a double hit
            of the keybinding callback */
@@ -2637,7 +2647,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._applicationsButtons = [];
 
         if (!this._allAppsCategoryButton) {
-            this._allAppsCategoryButton = new CategoryButton(this, null, _("All Applications"), null);
+            this._allAppsCategoryButton = new CategoryButton(this, null, _("All Applications"), "start-here", true);
             this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
             this._categoryButtons.push(this._allAppsCategoryButton);
         }
@@ -2799,7 +2809,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.searchBox = new St.BoxLayout({ style_class: 'menu-search-box', vertical: false });
         this.searchEntry = new St.Entry({ name: 'menu-search-entry',
-                                     hint_text: _("Type to search..."),
                                      track_hover: true,
                                      can_focus: true });
         this.searchBox.add(this.searchEntry, { x_align: St.Align.START, y_align: St.Align.MIDDLE, expand: true});
@@ -3090,7 +3099,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _onSearchTextChanged (se, prop) {
         let searchString = this.searchEntry.get_text().trim();
-        let searchActive = !(searchString == '' || searchString == this.searchEntry.hint_text);
+        let searchActive = !(searchString == '');
         if (!this.searchActive && !searchActive)
             return;
 
@@ -3186,26 +3195,28 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._previousTreeSelectedActor = null;
         this._previousSelectedActor = null;
 
-        let buttons = this._listApplications(pattern);
+        var acResultButtons = []; // search box autocompletion results
+        var buttons = []
 
-        let result = this._matchNames(this._favoriteDocButtons, pattern);
-        buttons = [...buttons, ...result];
-
-        result = this._matchNames(this._placesButtons, pattern);
-        buttons = [...buttons, ...result];
-
-        result = this._matchNames(this._recentButtons, pattern);
-        buttons = [...buttons, ...result];
-
-        var acResults = []; // search box autocompletion results
-        if (this.searchFilesystem) {
+        if (this.searchFilesystem && ["~", "/"].includes(rawPattern[0])) {
             // Don't use the pattern here, as filesystem is case sensitive
-            acResults = this._getCompletions(rawPattern);
+            acResultButtons = this._getCompletions(rawPattern);
+        } else {
+            buttons = this._listApplications(pattern);
+
+            let result = this._matchNames(this._favoriteDocButtons, pattern);
+            buttons = [...buttons, ...result];
+
+            result = this._matchNames(this._placesButtons, pattern);
+            buttons = [...buttons, ...result];
+
+            result = this._matchNames(this._recentButtons, pattern);
+            buttons = [...buttons, ...result];
         }
 
-        this._displayButtons(null, buttons, acResults);
+        this._displayButtons(null, buttons, acResultButtons);
 
-        if (buttons.length || acResults.length) {
+        if (buttons.length || acResultButtons.length) {
             this.appBoxIter.reloadVisible();
             let item_actor = this.appBoxIter.getFirstVisible();
             this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);

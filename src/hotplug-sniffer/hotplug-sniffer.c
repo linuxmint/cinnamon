@@ -128,9 +128,9 @@ sniff_async_ready_cb (GObject *source,
 
   g_dbus_method_invocation_return_value (data->invocation,
                                          g_variant_new ("(^as)", types));
-  g_strfreev (types);
 
  out:
+  g_strfreev (types);
   invocation_data_free (data);
   ensure_autoquit_on ();
 }
@@ -270,12 +270,10 @@ main (int    argc,
 static void
 print_debug (const gchar *format, ...)
 {
-  gchar *s;
+  g_autofree char *s = NULL;
+  g_autofree char *timestamp = NULL;
   va_list ap;
-  gchar timebuf[64];
-  GTimeVal now;
-  time_t now_t;
-  struct tm broken_down;
+  g_autoptr (GDateTime) now = NULL;
   static size_t once_init_value = 0;
   static gboolean show_debug = FALSE;
   static guint pid = 0;
@@ -290,17 +288,15 @@ print_debug (const gchar *format, ...)
   if (!show_debug)
     goto out;
 
-  g_get_current_time (&now);
-  now_t = now.tv_sec;
-  localtime_r (&now_t, &broken_down);
-  strftime (timebuf, sizeof timebuf, "%H:%M:%S", &broken_down);
+  now = g_date_time_new_now_local ();
+  timestamp = g_date_time_format (now, "%H:%M:%S");
 
   va_start (ap, format);
   s = g_strdup_vprintf (format, ap);
   va_end (ap);
 
-  g_print ("cinnamon-hotplug-sniffer[%d]: %s.%03d: %s\n", pid, timebuf, (gint) (now.tv_usec / 1000), s);
-  g_free (s);
+  g_print ("cinnamon-hotplug-sniffer[%d]: %s.%03d: %s\n",
+           pid, timestamp, g_date_time_get_microsecond (now), s);
  out:
   ;
 }

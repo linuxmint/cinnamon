@@ -732,7 +732,7 @@ class AppGroup {
                 } else {
                     this.hoverMenu.open();
                 }
-                if (this.state.overlayPreview) {
+                if (this.state.lastOverlayPreview) {
                     this.hoverMenu.appThumbnails[0].destroyOverlayPreview();
                     this.hoverMenu.close(true);
                 }
@@ -903,6 +903,10 @@ class AppGroup {
                 metaWindows.push(metaWindow);
                 if (this.hoverMenu) trigger('addThumbnailToMenu', metaWindow);
             }
+
+            // update icon using recent window for cases when the first window of an app doesn't have an icon. e.g: VirtualBox VM
+            this.setIcon(metaWindow)
+
             this.calcWindowNumber();
             this.onFocusChange();
         }
