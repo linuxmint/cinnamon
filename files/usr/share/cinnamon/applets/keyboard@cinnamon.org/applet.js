@@ -35,20 +35,28 @@ class EmblemedIcon {
         cr.save();
 
         const surf = St.TextureCache.get_default().load_file_to_cairo_surface(this.path);
+        const surf_width = surf.getWidth();
+        const surf_height = surf.getHeight();
 
-        const factor = w / surf.getWidth();
+        let [new_w, new_h] = [w, h];
+        const aspect = surf_width / surf_height;
+        if ((new_w / new_h) > aspect) {
+            new_w = new_h * aspect;
+        }
 
-        const true_width = surf.getWidth() * factor;
-        const true_height = surf.getHeight() * factor;
+        const factor = new_w / surf_width;
 
-        const x_offset = ((w * (1 / factor)) - surf.getWidth()) / 2;
-        const y_offset = ((h * (1 / factor)) - surf.getHeight()) / 2;
+        const render_width = surf_width * factor;
+        const render_height = surf_height * factor;
 
-        const true_x_offset = (w - true_width) / 2;
-        const true_y_offset = (h - true_height) / 2;
+        const surf_x_offset = ((w / factor) - surf_width) / 2;
+        const surf_y_offset = ((h / factor) - surf_height) / 2;
+
+        const render_x_offset = (new_w - render_width) / 2;
+        const render_y_offset = (new_h - render_height) / 2;
 
         cr.scale(factor, factor);
-        cr.setSourceSurface(surf, x_offset, y_offset);
+        cr.setSourceSurface(surf, surf_x_offset, surf_y_offset);
 
         cr.getSource().setFilter(Cairo.Filter.BEST);
         cr.setOperator(Cairo.Operator.SOURCE);
@@ -58,10 +66,10 @@ class EmblemedIcon {
         cr.restore();
 
         XApp.KbdLayoutController.render_cairo_subscript(cr,
-                                                        true_x_offset + (true_width / 2),
-                                                        true_y_offset + (true_height / 2),
-                                                        true_width / 2,
-                                                        true_height / 2,
+                                                        render_x_offset + (render_width / 2),
+                                                        render_y_offset + (render_height / 2),
+                                                        render_width / 2,
+                                                        render_height / 2,
                                                         this.id);
 
         cr.$dispose();
