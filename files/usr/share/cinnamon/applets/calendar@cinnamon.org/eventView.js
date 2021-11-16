@@ -213,44 +213,56 @@ class EventsManager {
     constructor(settings, desktop_settings) {
         this.settings = settings;
         this.desktop_settings = desktop_settings;
-        this.calendar_server = null;
+        this._calendar_server = null;
         this.current_month_year = null;
         this.current_selected_date = null;
         this.events_by_date = {};
 
-        this.ready = false;
-        this.goa_client = null;
+        this._inited = false;
+        this._has_calendars = false;
 
-        this._events_added_id = 0;
-        this._events_removed_id = 0;
-        this._client_disappeared_id = 0;
-        this._has_calendars_changed_id = 0;
+        this._periodic_update_timer_id = 0;
+
         this._reload_today_id = 0;
 
-        this.force_reload_pending = false;
+        this._force_reload_pending = false;
         this._event_list = null;
+    }
 
-        this.goa_client = Goa.Client.new(null, this._goa_client_new_finished.bind(this));
+    start_events() {
+        if (this._calendar_server == null) {
+            Cinnamon.CalendarServerProxy.new_for_bus(
+                Gio.BusType.SESSION,
+                // Gio.DBusProxyFlags.NONE,
+                Gio.DBusProxyFlags.DO_NOT_AUTO_START_AT_CONSTRUCTION,
+                "org.cinnamon.CalendarServer",
+                "/org/cinnamon/CalendarServer",
+                null,
+                this._calendar_server_ready.bind(this)
+            );
+        }
+
+        Goa.Client.new(null, this._goa_client_new_finished.bind(this));
     }
 
     _goa_client_new_finished(source, res) {
         try {
             this.goa_client = Goa.Client.new_finish(res);
-            this.goa_client.connect("account-added", this._check_for_goa_account_calendars.bind(this));
-            this.goa_client.connect("account-changed", this._check_for_goa_account_calendars.bind(this));
-            this.goa_client.connect("account-removed", this._check_for_goa_account_calendars.bind(this));
-
-            this._check_for_goa_account_calendars(this.goa_client, null);
+            this.goa_client.connect("account-added", this._update_goa_client_has_calendars.bind(this));
+            this.goa_client.connect("account-changed", this._update_goa_client_has_calendars.bind(this));
+            this.goa_client.connect("account-removed", this._update_goa_client_has_calendars.bind(this));
         } catch (e) {
-            log("can't connect to google-online-accounts: "+e);
+            log("could not connect to calendar server process: " + e);
         }
     }
 
-    _check_for_goa_account_calendars(client, changed_objects) {
+    _update_goa_client_has_calendars(client, changed_objects) {
         // goa can tell us if there are any accounts with enabled
-        // calendars. This, along with the applet 'show-events'
-        // preference, determine whether or not to run the calendar
-        // server.
+        // calendars. Asking our calendar server ("has-calenders")
+        // is useless if the server is only on periodic updates, as
+        // we'd need to wait to ask it once it was 'initialized'.
+        // This prevents having to start another process at all, if
+        // there's no reason to.
 
         let objects = this.goa_client.get_accounts();
         let any_calendars = false;
@@ -262,92 +274,71 @@ class EventsManager {
             }
         }
 
-        if (any_calendars && this.settings.getValue("show-events")) {
-            if (this.calendar_server === null || this.calendar_server.g_name_owner === null) {
-                Util.spawnCommandLine("cinnamon-calendar-server");
-            }
-
-            if (this.calendar_server == null) {
-                Cinnamon.CalendarServerProxy.new_for_bus(
-                    Gio.BusType.SESSION,
-                    Gio.DBusProxyFlags.NONE,
-                    "org.cinnamon.CalendarServer",
-                    "/org/cinnamon/CalendarServer",
-                    null,
-                    this.calendar_server_ready.bind(this)
-                );
-            }
-        } else {
-            if (this.calendar_server !== null && this.calendar_server.g_name_owner !== null) {
-                this.calendar_server.call_exit(null, null);
-            }
+        if (any_calendars !== this._has_calendars) {
+            // log("has calendars: "+any_calendars)
+            this._has_calendars = any_calendars;
+            this.emit("has-calendars-changed");
         }
     }
 
-    calendar_server_ready(obj, res) {
+    _calendar_server_ready(obj, res) {
         try {
-            this.calendar_server = Cinnamon.CalendarServerProxy.new_for_bus_finish(res);
-            let start_month = get_date_only_from_datetime(GLib.DateTime.new_now_local());
+            this._calendar_server = Cinnamon.CalendarServerProxy.new_for_bus_finish(res);
 
-            this.calendar_server.connect("notify::g-name-owner", Lang.bind(this, () => {
-                if (this.calendar_server.get_name_owner() !== null) {
-                    this._connect_to_calendar_server();
-                } else {
-                    this.ready = false;
-                }
-            }))
+            this._calendar_server.connect(
+                "events-added-or-updated",
+                this._handle_added_or_updated_events.bind(this)
+            );
 
-            if (this.calendar_server.get_name_owner() !== null) {
-                this._connect_to_calendar_server();
-            }
+            this._calendar_server.connect(
+                "events-removed",
+                this._handle_removed_events.bind(this)
+            );
+
+            this._calendar_server.connect(
+                "client-disappeared",
+                this._handle_client_disappeared.bind(this)
+            );
+
+            global.settings.connect("changed::calendar-server-keep-active", this._start_periodic_timer.bind(this));
+            global.settings.connect("changed::calendar-server-update-interval", this._start_periodic_timer.bind(this));
+
+            this._start_periodic_timer(null, null);
+            this._update_goa_client_has_calendars(null, null);
+            this._inited = true;
+
+            this.emit("events-manager-ready");
         } catch (e) {
             log("could not connect to calendar server process: " + e);
             return;
         }
     }
 
-    _connect_to_calendar_server() {
-        if (this._events_added_id > 0) {
-            this.calendar_server.disconnect(this._events_added_id);
+    _stop_periodic_timer() {
+        if (this._periodic_update_timer_id > 0) {
+            Mainloop.source_remove(this._periodic_update_timer_id);
+            this._periodic_update_timer_id = 0;
         }
-
-        if (this._events_removed_id > 0) {
-            this.calendar_server.disconnect(this._events_removed_id);
-        }
-
-        if (this._client_disappeared_id > 0) {
-            this.calendar_server.disconnect(this._client_disappeared_id);
-        }
-
-        if (this._has_calendars_changed_id > 0) {
-            this.calendar_server.disconnect(this._has_calendars_changed_id);
-        }
-
-        this._events_added_id = this.calendar_server.connect(
-            "events-added-or-updated",
-            this.handle_added_or_updated_events.bind(this)
-        );
-
-        this._events_removed_id = this.calendar_server.connect(
-            "events-removed",
-            this.handle_removed_events.bind(this)
-        );
-
-        this._client_disappeared_id = this.calendar_server.connect(
-            "client-disappeared",
-            this.handle_client_disappeared.bind(this)
-        );
-
-        this._has_calendars_changed_id = this.calendar_server.connect(
-            "notify::has-calendars",
-            this.has_calendars_property_changed.bind(this)
-        );
-
-        this.ready = true;
-        this.emit("events-manager-ready");
     }
 
-    handle_added_or_updated_events(server, varray) {
+    _start_periodic_timer(settings, key) {
+        this._stop_periodic_timer();
+
+        if (!global.settings.get_boolean("calendar-server-keep-active")) {
+            this._periodic_update_timer_id = Mainloop.timeout_add_seconds(
+                global.settings.get_int("calendar-server-update-interval") * 60,
+                this._perform_periodic_update.bind(this)
+            );
+        }
+    }
+
+    _perform_periodic_update() {
+        this.emit("run-periodic-update");
+
+        return GLib.SOURCE_CONTINUE;
+    }
+
+    _handle_added_or_updated_events(server, varray) {
         let changed = false;
 
         let events = varray.unpack()
@@ -366,7 +357,7 @@ class EventsManager {
                 }
             }
         }
-
+        // log("handle added : "+changed);
         if (changed) {
             this._event_list.set_events(this.events_by_date[this.current_selected_date.to_unix()]);
         }
@@ -374,7 +365,7 @@ class EventsManager {
         this.emit("events-updated");
     }
 
-    handle_removed_events(server, uids_string) {
+    _handle_removed_events(server, uids_string) {
         let uids = uids_string.split("::")
         for (let hash in this.events_by_date) {
             let event_data_list = this.events_by_date[hash];
@@ -389,28 +380,8 @@ class EventsManager {
         this.emit("events-updated");
     }
 
-    handle_client_disappeared(server, uid) {
+    _handle_client_disappeared(server, uid) {
         this.queue_reload_today(true);
-    }
-
-    has_calendars_property_changed(server, pspec) {
-        this.emit("calendars-changed");
-    }
-
-    update_for_settings_changes() {
-        if (this.goa_client == null) {
-            return;
-        }
-
-        this._check_for_goa_account_calendars(this.goa_client, null);
-    }
-
-    any_calendars() {
-        if (this.calendar_server === null || !this.ready) {
-            return false;
-        }
-
-        return this.calendar_server.has_calendars;
     }
 
     get_event_list() {
@@ -427,7 +398,7 @@ class EventsManager {
         if (!force && this.current_month_year !== null && gdate_time_equals(month_year, this.current_month_year)) {
             return;
         }
-
+        // global.logTrace("fetch");
         this.current_month_year = month_year;
         this.events_by_date = {};
 
@@ -441,12 +412,15 @@ class EventsManager {
         // The calendar has 42 boxes
         let end = start.add_days(42).add_seconds(-1)
 
-        this.calendar_server.call_set_time_range(start.to_unix(), end.to_unix(), force, null, null);
+        this._calendar_server.call_set_time_range(start.to_unix(), end.to_unix(), force, null, this.call_finished.bind(this));
+
+        // If we just started the server and asked for events here, the timer can be reset.
+        this._start_periodic_timer();
     }
 
     call_finished(server, res) {
         try {
-            this.calendar_server.call_set_time_range_finish(res);
+            this._calendar_server.call_set_time_range_finish(res);
         } catch (e) {
             log(e);
         }
@@ -463,7 +437,7 @@ class EventsManager {
         this._cancel_reload_today()
 
         if (force) {
-            this.force_reload_pending = true;
+            this._force_reload_pending = true;
         }
 
         this._reload_today_id = Mainloop.idle_add(Lang.bind(this, this._idle_do_reload_today));
@@ -472,23 +446,23 @@ class EventsManager {
     _idle_do_reload_today() {
         this._reload_today_id = 0;
 
-        this.select_date(new Date(), this.force_reload_pending);
-        this.force_reload_pending = false;
+        this.select_date(new Date(), this._force_reload_pending);
+        this._force_reload_pending = false;
 
         return GLib.SOURCE_REMOVE;
     }
 
     select_date(date, force) {
-        if (this.calendar_server === null || !this.ready) {
+        if (!this.is_active()) {
             return;
         }
+
         // date is a js Date(). Eventually the calendar side should use
         // GDateTime, but for now we'll convert it here - it's a bit more
-        // robust (especially with formatting).
-
+        // useful for dealing with events.
         let gdate = js_date_to_gdatetime(date);
-        let gdate_only = get_date_only_from_datetime(gdate);
 
+        let gdate_only = get_date_only_from_datetime(gdate);
         let month_year = get_month_year_only_from_datetime(gdate_only);
         this.fetch_month_events(month_year, force);
 
@@ -521,8 +495,11 @@ class EventsManager {
         return event_data_list !== undefined ? event_data_list.get_colors() : null;
     }
 
-    calendars_available() {
-        return this.calendar_server.has_calendars;
+    is_active() {
+        return this._inited &&
+               this.settings.getValue("show-events") &&
+               this._calendar_server !== null &&
+               this._has_calendars;
     }
 }
 Signals.addSignalMethods(EventsManager.prototype);

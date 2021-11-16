@@ -530,7 +530,15 @@
        Controls the default label used by the application menu.
       </description>
     </key>
-
+    <key name="calendar-server-keep-active" type="b">
+      <default>false</default>
+      <summary>If true, the cinnamon-calendar-server process will run continuously, allowing push updates to the calendar applet. If false, it will only run and update periodically, or when a new month is selected.</summary>
+    </key>
+    <key name="calendar-server-update-interval" type="i">
+      <default>15</default>
+      <summary>Amount of time (in minutes) between poking the cinnamon-calendar-server</summary>
+      <description>When 'calendar-server-keep-active' is false, it will run briefly at the interval defined here, to re-fetch events.</description>
+    </key>
   </schema>
 
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"

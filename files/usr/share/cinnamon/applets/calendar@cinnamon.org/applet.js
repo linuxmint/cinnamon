@@ -61,8 +61,9 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
             // Events
             this.events_manager = new EventView.EventsManager(this.settings, this.desktop_settings);
-            this.events_manager.connect("events-manager-ready", Lang.bind(this, this._events_manager_ready));
-            this.events_manager.connect("calendars-changed", Lang.bind(this, this._calendars_changed));
+            this.events_manager.connect("events-manager-ready", this._events_manager_ready.bind(this));
+            this.events_manager.connect("has-calendars-changed", this._has_calendars_changed.bind(this));
+            this.events_manager.connect("run-periodic-update", this._run_periodic_update.bind(this));
 
             let box = new St.BoxLayout(
                 {
@@ -196,9 +197,8 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     _onSettingsChanged() {
         this._updateFormatString();
         this._updateClockAndDate();
-        this.event_list.actor.visible = this.show_events &&
-                                        this.events_manager.any_calendars();
-        this.events_manager.update_for_settings_changes()
+        this.event_list.actor.visible = this.events_manager.is_active();
+        this.events_manager.select_date(this._calendar.getSelectedDate());
     }
 
     on_custom_format_button_pressed() {
@@ -241,14 +241,19 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     }
 
     _events_manager_ready(em) {
-        this.event_list.actor.visible = this.show_events &&
-                                        this.events_manager.any_calendars();
+        this.event_list.actor.visible = this.events_manager.is_active();
+        // log("em ready");
         this.events_manager.select_date(this._calendar.getSelectedDate(), true);
     }
 
-    _calendars_changed(em) {
-        this.event_list.actor.visible = this.show_events &&
-                                        this.events_manager.any_calendars();
+    _has_calendars_changed(em) {
+        this.event_list.actor.visible = this.events_manager.is_active();
+        this.events_manager.select_date(this._calendar.getSelectedDate());
+    }
+
+    _run_periodic_update(em) {
+        // log("update");
+        this.event_list.actor.visible = this.events_manager.is_active();
         this.events_manager.select_date(this._calendar.getSelectedDate(), true);
     }
 
@@ -271,9 +276,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         this._date.set_text(dateFormattedShort);
         this.set_applet_tooltip(dateFormattedFull);
 
-        if (this.events_manager.ready) {
-            this.events_manager.select_date(this._calendar.getSelectedDate(), false);
-        }
+        this.events_manager.select_date(this._calendar.getSelectedDate());
     }
 
     on_applet_added_to_panel() {
@@ -284,11 +287,8 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         }
 
         /* Populates the calendar so our menu allocation is correct for animation */
+        this.events_manager.start_events();
         this._updateCalendar();
-
-        if (this.events_manager.ready) {
-            this.events_manager.select_date(this._calendar.getSelectedDate(), false);
-        }
     }
 
     on_applet_removed_from_panel() {
@@ -307,17 +307,12 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         this.menu.connect('open-state-changed', Lang.bind(this, function(menu, isOpen) {
             if (isOpen) {
                 this._updateCalendar();
-                if (this.events_manager.ready) {
-                    this.events_manager.select_date(this._calendar.getSelectedDate(), false);
-                }
             }
         }));
     }
 
     _updateCalendar () {
-        let now = new Date();
-
-        this._calendar.setDate(now, true);
+        this._calendar.setDate(new Date(), true);
     }
 
     on_orientation_changed (orientation) {

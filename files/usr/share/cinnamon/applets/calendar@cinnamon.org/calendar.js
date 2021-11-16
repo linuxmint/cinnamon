@@ -218,7 +218,7 @@ class Calendar {
     }
 
     _update_events_enabled(em) {
-        this.events_enabled = this.settings.getValue("show-events") && this.events_manager.any_calendars();
+        this.events_enabled = this.events_manager.is_active()
     }
 
     _onSettingsChange(object, key, old_val, new_val) {

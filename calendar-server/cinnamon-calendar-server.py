@@ -22,6 +22,9 @@ from gi.repository import Cinnamon
 BUS_NAME = "org.cinnamon.CalendarServer"
 BUS_PATH = "/org/cinnamon/CalendarServer"
 
+CINNAMON_GSCHEMA = "org.cinnamon"
+KEEP_ALIVE_KEY = "calendar-server-keep-active"
+
 class CalendarInfo():
     def __init__(self, source, client):
         # print(source, client)
@@ -45,14 +48,18 @@ class CalendarInfo():
             self.view.stop()
         self.view = None
 
-
 class Event():
     def __init__(self, uid, color, summary, all_day, start_timet, end_timet):
         self.__dict__.update(locals())
 
-class CalendarServer():
-    def __init__(self, ml):
-        self.ml = ml
+class CalendarServer(Gio.Application):
+    def __init__(self):
+        Gio.Application.__init__(self,
+                                 application_id=BUS_NAME,
+                                 inactivity_timeout=20000,
+                                 flags=Gio.ApplicationFlags.REPLACE |
+                                       Gio.ApplicationFlags.ALLOW_REPLACEMENT |
+                                       Gio.ApplicationFlags.IS_SERVICE)
         self.bus_connection = None
         self.interface = None
         self.registry = None
@@ -68,14 +75,21 @@ class CalendarServer():
         self.zone = None
         self.update_timezone()
 
-        self.name_owner_id = Gio.bus_own_name(
-            Gio.BusType.SESSION,
-            BUS_NAME,
-            Gio.BusNameOwnerFlags.REPLACE | Gio.BusNameOwnerFlags.ALLOW_REPLACEMENT,
-            self.bus_acquired,
-            None,
-            self.name_lost
-        )
+        try:
+            self.session_bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+        except:
+            print("Unable to get session connection, fatal!")
+            exit(1)
+
+        self.interface = Cinnamon.CalendarServerSkeleton.new()
+        self.interface.connect("handle-set-time-range", self.handle_set_time_range)
+        self.interface.connect("handle-exit", self.handle_exit)
+        self.interface.export(self.session_bus, BUS_PATH)
+
+        try:
+            self.register(None)
+        except GLib.Error as e:
+            print("couldn't register on bus: ", e.message)
 
     def update_timezone(self):
         location = ECal.system_timezone_get_location()
@@ -85,25 +99,42 @@ class CalendarServer():
         else:
             self.zone = ICalGLib.Timezone.get_builtin_timezone(location).copy()
 
-    def name_lost(self, connection, name):
-        self.ml.quit()
+    def do_startup(self):
+        Gio.Application.do_startup(self)
 
-    def bus_acquired(self, connection, name):
-        self.bus_connection = connection
+        self.keep_alive = False
+        self.settings = Gio.Settings(schema_id=CINNAMON_GSCHEMA)
+        self.settings.connect("changed::" + KEEP_ALIVE_KEY, self.keep_alive_changed)
+        self.keep_alive_changed(None, None)
 
-        self.interface = Cinnamon.CalendarServerSkeleton.new()
-        self.interface.connect("handle-set-time-range", self.handle_set_time_range)
-        self.interface.connect("handle-exit", self.handle_exit)
-        self.interface.export(self.bus_connection, BUS_PATH)
+        # This makes the inactivity timeout work. Otherwise timeout is fixed at 10s after startup.
+        self.hold()
+        self.release()
 
         EDataServer.SourceRegistry.new(None, self.got_registry_callback)
+
+    def keep_alive_changed(self, settings, key):
+        new_keep_alive = self.settings.get_boolean(KEEP_ALIVE_KEY)
+
+        if new_keep_alive == self.keep_alive:
+            return
+
+        if new_keep_alive:
+            self.hold()
+        else:
+            self.release()
+
+        self.keep_alive = new_keep_alive
+
+    def do_activate(self):
+        pass
 
     def got_registry_callback(self, source, res):
         try:
             self.registry = EDataServer.SourceRegistry.new_finish(res)
         except GLib.Error as e:
             print(e)
-            self.ml.quit()
+            self.quit()
 
         self.registry_watcher = EDataServer.SourceRegistryWatcher.new(self.registry, None)
 
@@ -399,17 +430,16 @@ class CalendarServer():
         for uid in self.calendars.keys():
             self.calendars[uid].destroy()
 
-        GLib.idle_add(self.ml.quit)
+        GLib.idle_add(self.quit)
 
 def main():
     setproctitle("cinnamon-calendar-server")
-    ml = GLib.MainLoop.new(None, True)
 
-    server = CalendarServer(ml)
+    server = CalendarServer()
     signal.signal(signal.SIGINT, lambda s, f: server.exit())
     signal.signal(signal.SIGTERM, lambda s, f: server.exit())
 
-    ml.run()
+    server.run(sys.argv)
     return 0
 
 if __name__ == "__main__":
