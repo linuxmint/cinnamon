@@ -70,6 +70,7 @@ Depends:
  adwaita-icon-theme,
  gsettings-desktop-schemas (>= 0.1.7),
  iso-flag-png,
+ inxi,
  libcanberra-pulse,
  libcinnamon-desktop4,
  libcinnamon-menu-3-0,
