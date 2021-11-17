@@ -55,7 +55,7 @@ function format_timespan(timespan) {
     }
 
     if (minutes < 60) {
-        return ["soon", _(`Starting in ${minutes} minutes`)];
+        return ["soon", _("Starting in %d minutes").format(minutes)];
     }
 
     let hours = Math.floor(minutes / 60);
