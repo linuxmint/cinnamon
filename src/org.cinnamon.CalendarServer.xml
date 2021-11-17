@@ -1,0 +1,22 @@
+<node>
+  <interface name='org.cinnamon.CalendarServer'>
+    <method name='SetTimeRange'>
+      <arg type='x' name='since' direction='in'/>
+      <arg type='x' name='until' direction='in'/>
+      <arg type='b' name='force_reload' direction='in'/>
+    </method>
+    <method name='Exit'/>
+    <signal name='EventsAddedOrUpdated'>
+      <arg type='a(sssbxx)' name='events' direction='out'/>
+    </signal>
+    <signal name='EventsRemoved'>
+      <arg type='s' name='ids' direction='out'/>
+    </signal>
+    <signal name='ClientDisappeared'>
+      <arg type='s' name='source_uid' direction='out'/>
+    </signal>
+    <property name='Since' type='x' access='read'/>
+    <property name='Until' type='x' access='read'/>
+    <property name='HasCalendars' type='b' access='read'/>
+  </interface>
+</node>

@@ -3,6 +3,18 @@
         "type": "section",
         "description": "Display"
     },
+    "show-events" : {
+        "type" : "switch",
+        "default" : true,
+        "description": "Show calendar events",
+        "tooltip": "Check this to display events in the calendar."
+    },
+    "single-calendar-event-mark" : {
+        "type" : "switch",
+        "default" : false,
+        "description": "Only show if a day is busy or free in the calendar view.",
+        "tooltip": "If this is enabled, only a simple mark will show when a day has one or more events."
+    },
     "show-week-numbers" : {
         "type" : "switch",
         "default" : false,
