@@ -2711,7 +2711,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
         // the scrollbar added?) so just skip that case
         animate = animate && !needsScrollbar
 
-        let targetAngle = this.actor.text_direction == Clutter.TextDirection.RTL ? -90 : 90;
+        const targetAngle = this.actor.get_direction() === St.TextDirection.RTL ? -90 : 90;
 
         if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
             let [minHeight, naturalHeight] = this.actor.get_preferred_height(-1);
@@ -2862,7 +2862,9 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
                                                span: -1,
                                                align: St.Align.END });
 
-            this._triangle = arrowIcon(St.Side.RIGHT);
+            this._triangle = this.actor.get_direction() === St.TextDirection.RTL ?
+                arrowIcon(St.Side.LEFT) :
+                arrowIcon(St.Side.RIGHT);
             this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.5 });
             this._triangleBin.child = this._triangle;
         }
