@@ -40,73 +40,87 @@ Slider.prototype = {
     },
 
     _sliderRepaint: function(area) {
-        let cr = area.get_context();
-        let themeNode = area.get_theme_node();
-        let [width, height] = area.get_surface_size();
+        const rtl = this.actor.get_direction() === St.TextDirection.RTL;
 
-        let handleRadius = themeNode.get_length('-slider-handle-radius');
+        const cr = area.get_context();
+        const themeNode = area.get_theme_node();
+        const [width, height] = area.get_surface_size();
 
-        let sliderWidth = width - 2 * handleRadius;
-        let sliderHeight = themeNode.get_length('-slider-height');
+        const handleRadius = themeNode.get_length('-slider-handle-radius');
 
-        let sliderBorderWidth = themeNode.get_length('-slider-border-width');
-        let sliderBorderRadius = Math.min(width, sliderHeight) / 2;
+        const sliderWidth = width - 2 * handleRadius;
+        const sliderHeight = themeNode.get_length('-slider-height');
 
-        let sliderBorderColor = themeNode.get_color('-slider-border-color');
-        let sliderColor = themeNode.get_color('-slider-background-color');
+        const sliderBorderWidth = themeNode.get_length('-slider-border-width');
+        const sliderBorderRadius = Math.min(width, sliderHeight) / 2;
 
-        let sliderActiveBorderColor = themeNode.get_color('-slider-active-border-color');
-        let sliderActiveColor = themeNode.get_color('-slider-active-background-color');
+        const sliderBorderColor = themeNode.get_color('-slider-border-color');
+        const sliderColor = themeNode.get_color('-slider-background-color');
+
+        const sliderActiveBorderColor = themeNode.get_color('-slider-active-border-color');
+        const sliderActiveColor = themeNode.get_color('-slider-active-background-color');
 
         const TAU = Math.PI * 2;
 
-        let handleX = handleRadius + (width - 2 * handleRadius) * this._value;
+        const handleX = rtl ?
+            width - handleRadius - sliderWidth * this._value :
+            handleRadius + sliderWidth * this._value;
+        const handleY = height / 2;
+
+        let sliderLeftBorderColor = sliderActiveBorderColor;
+        let sliderLeftColor = sliderActiveColor;
+        let sliderRightBorderColor = sliderBorderColor;
+        let sliderRightColor = sliderColor;
+        if (rtl) {
+            sliderLeftColor = sliderColor;
+            sliderLeftBorderColor = sliderBorderColor;
+            sliderRightColor = sliderActiveColor;
+            sliderRightBorderColor = sliderActiveBorderColor;
+        }
 
         if (this.flat) {
             // Active part
             cr.rectangle(0, 0, width, height);
-            Clutter.cairo_set_source_color(cr, sliderActiveColor);
+            Clutter.cairo_set_source_color(cr, sliderLeftColor);
             cr.fill();
-            Clutter.cairo_set_source_color(cr, sliderActiveBorderColor);
+            Clutter.cairo_set_source_color(cr, sliderLeftBorderColor);
             cr.setLineWidth(sliderBorderWidth);
             cr.stroke();
 
             // Remaining part
-            let x = width * this._value;
+            const x = rtl ? width * (1 - this._value) : width * this._value;
             cr.rectangle(x, 0, width-x, height);
-            Clutter.cairo_set_source_color(cr, sliderColor);
+            Clutter.cairo_set_source_color(cr, sliderRightColor);
             cr.fill();
-            Clutter.cairo_set_source_color(cr, sliderBorderColor);
+            Clutter.cairo_set_source_color(cr, sliderRightBorderColor);
             cr.setLineWidth(sliderBorderWidth);
             cr.stroke();
         }
         else {
-            cr.arc(sliderBorderRadius + sliderBorderWidth, height / 2, sliderBorderRadius, TAU * 1/4, TAU * 3/4);
+            cr.arc(sliderBorderRadius + sliderBorderWidth, handleY, sliderBorderRadius, TAU * 1/4, TAU * 3/4);
             cr.lineTo(handleX, (height - sliderHeight) / 2);
             cr.lineTo(handleX, (height + sliderHeight) / 2);
             cr.lineTo(sliderBorderRadius + sliderBorderWidth, (height + sliderHeight) / 2);
-            Clutter.cairo_set_source_color(cr, sliderActiveColor);
+            Clutter.cairo_set_source_color(cr, sliderLeftColor);
             cr.fillPreserve();
-            Clutter.cairo_set_source_color(cr, sliderActiveBorderColor);
+            Clutter.cairo_set_source_color(cr, sliderLeftBorderColor);
             cr.setLineWidth(sliderBorderWidth);
             cr.stroke();
 
-            cr.arc(width - sliderBorderRadius - sliderBorderWidth, height / 2, sliderBorderRadius, TAU * 3/4, TAU * 1/4);
+            cr.arc(width - sliderBorderRadius - sliderBorderWidth, handleY, sliderBorderRadius, TAU * 3/4, TAU * 1/4);
             cr.lineTo(handleX, (height + sliderHeight) / 2);
             cr.lineTo(handleX, (height - sliderHeight) / 2);
             cr.lineTo(width - sliderBorderRadius - sliderBorderWidth, (height - sliderHeight) / 2);
-            Clutter.cairo_set_source_color(cr, sliderColor);
+            Clutter.cairo_set_source_color(cr, sliderRightColor);
             cr.fillPreserve();
-            Clutter.cairo_set_source_color(cr, sliderBorderColor);
+            Clutter.cairo_set_source_color(cr, sliderRightBorderColor);
             cr.setLineWidth(sliderBorderWidth);
             cr.stroke();
         }
 
-        let handleY = height / 2;
-
-        let color = themeNode.get_foreground_color();
+        const color = themeNode.get_foreground_color();
         Clutter.cairo_set_source_color(cr, color);
-        cr.arc(handleX, handleY, handleRadius, 0, 2 * Math.PI);
+        cr.arc(handleX, handleY, handleRadius, 0, TAU);
         cr.fill();
 
         cr.$dispose();
@@ -165,30 +179,41 @@ Slider.prototype = {
     },
 
     _moveHandle: function(absX, absY) {
-        let relX, relY, sliderX, sliderY;
-        [sliderX, sliderY] = this.actor.get_transformed_position();
-        relX = absX - sliderX;
-        relY = absY - sliderY;
+        const [sliderX, sliderY] = this.actor.get_transformed_position();
+        const relX = absX - sliderX;
+        const relY = absY - sliderY;
 
-        let width = this.actor.width;
-        let handleRadius = this.actor.get_theme_node().get_length('-slider-handle-radius');
+        const width = this.actor.width;
+        const handleRadius = this.actor.get_theme_node().get_length('-slider-handle-radius');
 
         let newvalue;
-        if (relX < handleRadius)
-            newvalue = 0;
-        else if (relX > width - handleRadius)
-            newvalue = 1;
+        if (this.actor.get_direction() === St.TextDirection.RTL)
+            if (relX < handleRadius)
+                newvalue = 1;
+            else if (relX > width - handleRadius)
+                newvalue = 0;
+            else
+                newvalue = 1 - (relX - handleRadius) / (width - 2 * handleRadius);
         else
-            newvalue = (relX - handleRadius) / (width - 2 * handleRadius);
+            if (relX < handleRadius)
+                newvalue = 0;
+            else if (relX > width - handleRadius)
+                newvalue = 1;
+            else
+                newvalue = (relX - handleRadius) / (width - 2 * handleRadius);
+
         this._value = newvalue;
         this.actor.queue_repaint();
         this.emit('value-changed', this._value);
     },
 
     _onKeyPressEvent: function (actor, event) {
-        let key = event.get_key_symbol();
+        const key = event.get_key_symbol();
         if (key === Clutter.KEY_Right || key === Clutter.KEY_Left) {
             let delta = key === Clutter.KEY_Right ? 0.1 : -0.1;
+            if (this.actor.get_direction() === St.TextDirection.RTL)
+                delta = -delta;
+
             this._value = Math.max(0, Math.min(this._value + delta, 1));
             this.actor.queue_repaint();
             this.emit('value-changed', this._value);
