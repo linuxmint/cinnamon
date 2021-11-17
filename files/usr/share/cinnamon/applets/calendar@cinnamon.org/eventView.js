@@ -324,6 +324,10 @@ class EventsManager {
     _start_periodic_timer(settings, key) {
         this._stop_periodic_timer();
 
+        if (!this.is_active()) {
+            return;
+        }
+
         if (!global.settings.get_boolean("calendar-server-keep-active")) {
             this._periodic_update_timer_id = Mainloop.timeout_add_seconds(
                 global.settings.get_int("calendar-server-update-interval") * 60,

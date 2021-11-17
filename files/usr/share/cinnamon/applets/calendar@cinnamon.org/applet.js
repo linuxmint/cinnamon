@@ -113,7 +113,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
                 if (event.get_button() == Clutter.BUTTON_PRIMARY) {
                     // button immediately becomes non-reactive, so leave-event will never fire.
                     actor.remove_style_pseudo_class("hover");
-                    this._updateCalendar();
+                    this._resetCalendar();
                     return Clutter.EVENT_STOP;
                 }
             }));
@@ -198,7 +198,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         this._updateFormatString();
         this._updateClockAndDate();
         this.event_list.actor.visible = this.events_manager.is_active();
-        this.events_manager.select_date(this._calendar.getSelectedDate());
+        this.events_manager.select_date(this._calendar.getSelectedDate(), true);
     }
 
     on_custom_format_button_pressed() {
@@ -288,7 +288,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
         /* Populates the calendar so our menu allocation is correct for animation */
         this.events_manager.start_events();
-        this._updateCalendar();
+        this._resetCalendar();
     }
 
     on_applet_removed_from_panel() {
@@ -306,12 +306,12 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         // Whenever the menu is opened, select today
         this.menu.connect('open-state-changed', Lang.bind(this, function(menu, isOpen) {
             if (isOpen) {
-                this._updateCalendar();
+                this._resetCalendar();
             }
         }));
     }
 
-    _updateCalendar () {
+    _resetCalendar () {
         this._calendar.setDate(new Date(), true);
     }
 
