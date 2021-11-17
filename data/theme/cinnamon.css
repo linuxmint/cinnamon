@@ -549,11 +549,20 @@ StScrollBar StButton#vhandle:hover {
     background-gradient-end: rgba(85,85,85,0.2);
 }
 
+.calendar-events-no-events-box {
+
+}
+
+.calendar-events-no-events-icon {
+
+}
+
 .calendar-events-no-events-label {
     font-size: 1.1em;
     color: #cccccc;
     font-weight: bold;
     text-align: center;
+    margin-top: 10px;
 }
 
 .calendar-events-date-label {

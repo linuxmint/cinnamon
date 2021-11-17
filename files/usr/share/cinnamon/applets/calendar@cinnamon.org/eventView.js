@@ -468,11 +468,11 @@ class EventsManager {
 
         this._event_list.set_date(gdate);
 
-        let delay_no_events_label = this.current_selected_date === null;
+        let delay_no_events_box = this.current_selected_date === null;
         if (this.current_selected_date !== null) {
             let new_month = !gdate_time_equals(get_month_year_only_from_datetime(this.current_selected_date),
                                                get_month_year_only_from_datetime(gdate_only))
-            delay_no_events_label = new_month;
+            delay_no_events_box = new_month;
         }
 
         this.current_selected_date = gdate_only;
@@ -480,9 +480,9 @@ class EventsManager {
         let existing_event_list = this.events_by_date[gdate_only.to_unix()];
         if (existing_event_list !== undefined) {
             // log("---------------cache hit");
-            this._event_list.set_events(existing_event_list, delay_no_events_label);
+            this._event_list.set_events(existing_event_list, delay_no_events_box);
         } else {
-            this._event_list.set_events(null, delay_no_events_label);
+            this._event_list.set_events(null, delay_no_events_box);
         }
     }
 
@@ -527,16 +527,35 @@ class EventList {
         )
         this.actor.add_actor(this.selected_date_label);
 
-        this.no_events_label = new St.Label(
+        this.no_events_box = new St.BoxLayout(
             {
-                style_class: "calendar-events-no-events-label",
-                text: _("No Events"),
+                style_class: "calendar-events-no-events-box",
+                vertical: true,
                 visible: false,
                 y_align: Clutter.ActorAlign.CENTER,
                 y_expand: true
             }
         );
-        this.actor.add_actor(this.no_events_label);
+
+        let no_events_icon = new St.Icon(
+            {
+                style_class: "calendar-events-no-events-icon",
+                icon_name: 'x-office-calendar',
+                icon_type: St.IconType.SYMBOLIC,
+                icon_size: 48
+            }
+        );
+
+        let no_events_label = new St.Label(
+            {
+                style_class: "calendar-events-no-events-label",
+                text: _("No Events"),
+                y_align: Clutter.ActorAlign.CENTER
+            }
+        );
+        this.no_events_box.add_actor(no_events_icon);
+        this.no_events_box.add_actor(no_events_label);
+        this.actor.add_actor(this.no_events_box);
 
         this.events_box = new St.BoxLayout(
             {
@@ -569,7 +588,7 @@ class EventList {
         this.selected_date_label.set_text(gdate.format(DATE_FORMAT_FULL));
     }
 
-    set_events(event_data_list, delay_no_events_label) {
+    set_events(event_data_list, delay_no_events_box) {
         if (event_data_list !== null && event_data_list.timestamp === this._current_event_data_list_timestamp) {
             this._rows.forEach((row) => {
                 row.update_variations();
@@ -591,21 +610,21 @@ class EventList {
         if (event_data_list === null) {
             // Show the 'no events' label, but wait a little bit to give the calendar server
             // to deliver some events if there are any.
-            if (delay_no_events_label) {
+            if (delay_no_events_box) {
                 this._no_events_timeout_id = Mainloop.timeout_add(600, Lang.bind(this, function() {
                     this._no_events_timeout_id = 0
-                    this.no_events_label.show();
+                    this.no_events_box.show();
                     return GLib.SOURCE_REMOVE;
                 }));
             } else {
-                this.no_events_label.show();
+                this.no_events_box.show();
             }
 
             this._current_event_data_list_timestamp = 0;
             return;
         }
 
-        this.no_events_label.hide();
+        this.no_events_box.hide();
         this._current_event_data_list_timestamp = event_data_list.timestamp;
 
         let events = event_data_list.get_event_list();
