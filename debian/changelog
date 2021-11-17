@@ -1,3 +1,147 @@
+cinnamon (5.2.0) una; urgency=medium
+
+  [ Michael Webster ]
+  * menu applet.js: Use localeCompare for the fallback sort.
+  * cinnamon-settings: Remove ~/.local and /usr/local from python's module search paths.
+
+  [ Ammako ]
+  * Properly hide JavaEmbeddedFrame on Grouped Window List
+
+  [ Michael Webster ]
+  * menu applet: Check first if we should show items that are refreshed while the menu is open.
+  * menu applet: Hide app buttons by default, and when the menu closes.
+  * cinnamon-subprocess-wrapper: Set the exception result as bytes, not a string.
+
+  [ Joshua Peisach ]
+  * meson girs: Export gir names as a package Fixes an issue with the package tag in the gir not being generated.
+
+  [ fredcw ]
+  * Change method of making "Clear list" label bold.. (#10178)
+
+  [ Michael Webster ]
+  * spices update module: Add a way to check if a spice is currently enabled.
+  * cinnamon-launcher: Don't call Gtk.main_quit() when showing the restart dialog.
+  * cinnamon-launcher: prevent defunct metacity process when restarting via the dialog, fix 'cinnamon --replace --replace' after crashes.
+  * main.js: Fix activateWindow so it will respect the workspace index if provided.
+  * main.js: Be strict about the workspace argument in activateWindow.
+
+  [ Odyseus ]
+  * Documentation corrections
+
+  [ Anderson André Ferreira Gomes ]
+  * Small grammar corrections in README.md (#10292)
+
+  [ Michael Webster ]
+  * cinnamon-global.c: Allow disabling cinnamon as the default notifications handler.
+
+  [ JosephMcc ]
+  * GWL: Don't force the "New Window" option to show
+  * sound-applet: use insensitive not disabled
+
+  [ Benjamin Owen ]
+  * Fix window ordering with vertical panels (#10297)
+
+  [ Michael Webster ]
+  * menu applet: Only show completion results when filesystem path entry is enabled.
+
+  [ fredcw ]
+  * Add confirmation dialog when removing a panel (#10340)
+
+  [ JosephMcc ]
+  * ui: Make the confirm dialog look a bit more like a real dialog
+  * ui: Add some styling to the run dialog
+
+  [ David Yang ]
+  * Fix type to search boilerplate text not being automatically cleared (#10248)
+
+  [ Leigh Scott ]
+  * Fix menu-editor with python-3.10 (#10370)
+
+  [ Michael Webster ]
+  * gwl: Remove redundant check for skip-taskbar. Main.isInteresting does this and more.
+
+  [ Joshua Peisach ]
+  * Stop using GTimeVal/g_get_current_time (#10043)
+
+  [ Michael Webster ]
+  * Fix previous commit - you can't call g_free on an autopointer.
+
+  [ Clement Lefebvre ]
+  * Simplify window animations (#10389)
+
+  [ Michael Webster ]
+  * harvester.py: Catch request timeout errors.
+  * harvester.py: Don't use a unique timestamp for every request from the spices server.
+
+  [ Steve Grubb ]
+  * Fix memory leaks on error paths (#10406)
+  * Fix a typo (#10405)
+
+  [ 404oops ]
+  * Spotify fixed the album art issue (#10433)
+
+  [ Michael Martin ]
+  * Add an option to disable scrolling in the workspace-switcher applet (#10427)
+
+  [ Benjamin Owen ]
+  * Add toggle for window labels on/off (#10343)
+
+  [ Clement Lefebvre ]
+  * window-list: Rename newly added option
+
+  [ Alexander ]
+  * sound applet: added processing base64 code for art url data (#10226)
+
+  [ JosephMcc ]
+  * Lightbox: Add a radial shader effect (#10344)
+
+  [ AxXxB ]
+  * notifications applet: Add new setting "Don't show notification count in tray" (#10166)
+
+  [ Clement Lefebvre ]
+  * notification applet: Rephrase newly added option
+  * menu applet: Give all applications a symbolic icon
+
+  [ ronyala ]
+  * Sound applet: Fix media control buttons having reverse order on RTL layouts (#10443)
+  * Sound applet: Fix player status label being  aligned to the left on an rtl layout (#10446)
+  * Menu applet: Improve keyboard navigation with RTL layout (#10376)
+  * GWL: Fix issue #10401; Update AppGroup icon every time a new window is added (#10439)
+
+  [ AxXxB ]
+  * keyboard applet: Change 'let' to 'const' where possible (#10167)
+
+  [ ronyala ]
+  * Window button layout setting: improve rtl handling (#10441)
+  * GWL: Fix window preview issue when fade-out effect is used (#10263)
+
+  [ Levi Bard ]
+  * Respect PrefersNonDefaultGPU desktop entry when launching apps (#10411)
+
+  [ Oliver Kästner ]
+  * Spices.py: simplify _url_retrieve (#10327)
+  * capi.py: support non-i386/x86_64 architectures (#10426)
+
+  [ Jason Lee ]
+  * sound-applet: hide "Unknown Artist" on panel (#10326)
+
+  [ James Ross ]
+  * notifications: Simplify source code (#10144)
+
+  [ AxXxB ]
+  * keyboard applet: Remove unneccesary 'if' in offsets calculation (#10168)
+  * JsonSettingsWidgets.py: remove keyword argument `encoding` (#10458)
+  * keyboard applet: Respect "icon-size" when panel is vertical (#10456)
+
+  [ Michael Webster ]
+  * calendar applet: Add support for evolution-data-server (#10453)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+  * l10n: Generate files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 17 Nov 2021 10:07:19 +0000
+
 cinnamon (5.0.5) uma; urgency=medium
 
   [ Michael Webster ]
