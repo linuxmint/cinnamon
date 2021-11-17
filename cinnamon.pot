@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-17 10:04+0000\n"
+"POT-Creation-Date: 2021-11-17 10:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -693,7 +693,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:533
-msgid "Nothing scheduled!"
+msgid "No Events"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:720

@@ -530,7 +530,7 @@ class EventList {
         this.no_events_label = new St.Label(
             {
                 style_class: "calendar-events-no-events-label",
-                text: _("Nothing scheduled!"),
+                text: _("No Events"),
                 visible: false,
                 y_align: Clutter.ActorAlign.CENTER,
                 y_expand: true
@@ -546,7 +546,7 @@ class EventList {
             }
         );
         this.events_scroll_box = new St.ScrollView(
-            { 
+            {
                 style_class: 'vfade calendar-events-scrollbox',
                 hscrollbar_policy: Gtk.PolicyType.NEVER,
                 vscrollbar_policy: Gtk.PolicyType.AUTOMATIC
