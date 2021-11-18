@@ -534,11 +534,10 @@ StScrollBar StButton#vhandle:hover {
 
 .calendar-main-box {
     padding: 0 1.0em;
-    max-height: 450px;
-    height: 450px;
 }
 
 .calendar-events-main-box {
+    height: 350px;
     margin-right: .5em;
     padding: .75em;
     min-width: 450px;
