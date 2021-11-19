@@ -24,6 +24,8 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
         this.settings.bind('width', 'width', this.on_setting_changed);
         this.settings.bind('fade-delay', 'fade_delay', this.on_setting_changed);
         this.settings.bind('effect', 'effect', this.on_setting_changed);
+	this.settings.bind('show-filename', 'showFilename', this.on_setting_changed);
+	this.settings.bind('path-size', 'pathSize', this.on_setting_changed);
 
         this.dir_monitor_id = 0;
         this.dir_monitor = null;
@@ -105,12 +107,22 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
     setup_display() {
         this._photoFrame = new St.Bin({style_class: 'photoframe-box', x_align: St.Align.START});
 
-        this._bin = new St.Bin();
-        this._bin.set_size(this.width, this.height);
+	this._box = new St.BoxLayout({
+	      vertical: true,
+	      width: this.width,
+	      style_class: 'container'
+	    });
 
+        this._bin =  new St.Bin();
+
+        this._bin.set_size(this.width, this.height);
+	this._label = new St.Label();
+	this._label.set_text('filename');
         this._images = [];
         this._photoFrame.set_child(this._bin);
-        this.setContent(this._photoFrame);
+	this._box.add(this._photoFrame);
+	this._box.add(this._label);
+        this.setContent(this._box);
 
         if (this.effect == 'black-and-white') {
             let effect = new Clutter.DesaturateEffect();
@@ -212,6 +224,10 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
         if (old_pic) {
             old_pic.destroy();
         }
+	global.log(this.pathSize);
+	let path = this.showFilename ?  image_path.split('/').slice(-Number(this.pathSize)).join('/') : '';
+
+	this._label.set_text(path);
 
         this.updateInProgress = false;
     }
@@ -245,3 +261,4 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
 function main(metadata, desklet_id) {
     return new CinnamonPhotoFrameDesklet(metadata, desklet_id);
 }
+

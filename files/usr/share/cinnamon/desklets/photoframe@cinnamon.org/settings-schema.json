@@ -56,5 +56,22 @@
             "Sepia": "sepia",
             "Black and White": "black-and-white"
         }
-    }
+    },
+   "show-filename": {
+	"type": "checkbox",
+	"description": "Show image filename",
+	"default": false
+   },
+   "path-size": {
+	   "type": "spinbutton",
+	   "default": 3,
+	   "min" : 1,
+	   "max" : 5,
+	   "step": 1,
+	   "units": "number of directories",
+	   "description" : "Directories to show before file",
+	   "indent": true,
+	   "dependency" : "show-filename"
+   }
 }
+
