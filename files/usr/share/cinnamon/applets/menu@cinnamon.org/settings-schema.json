@@ -15,22 +15,24 @@
         "panel-appear" : {
             "type" : "section",
             "title" : "Appearance",
-            "keys" : ["menu-custom", "menu-icon", "menu-label"]
+            "keys" : ["menu-custom", "menu-icon", "menu-icon-size", "menu-label"]
         },
         "panel-behave" : {
             "type" : "section",
             "title" : "Behavior",
-            "keys" : ["overlay-key", "activate-on-hover", "hover-delay", "enable-animation"]
+            "keys" : ["overlay-key", "activate-on-hover", "hover-delay", "force-show-panel", "enable-animation"]
         },
         "menu-layout" : {
             "type" : "section",
             "title" : "Layout and content",
-            "keys" : ["show-category-icons", "show-application-icons", "favbox-show", "favbox-min-height", "show-places", "menu-editor-button"]
+            "keys" : ["restrict-menu-height", "menu-height", "show-category-icons",
+                      "category-icon-size", "show-application-icons", "application-icon-size",
+                      "favbox-show", "fav-icon-size", "show-places", "show-recents", "menu-editor-button"]
         },
         "menu-behave" : {
             "type" : "section",
             "title" : "Behavior",
-            "keys" : ["enable-autoscroll", "search-filesystem"]
+            "keys" : ["category-hover", "enable-autoscroll", "search-filesystem"]
         }
     },
  "overlay-key" : {
@@ -49,27 +51,41 @@
     "default" : "cinnamon-symbolic",
     "description" : "Icon",
     "tooltip" : "Select an icon to show in the panel.",
-    "dependency" : "menu-custom",
-    "indent" : true
+    "default_icon" : "cinnamon-symbolic",
+    "dependency" : "menu-custom"
+ },
+ "menu-icon-size" : {
+    "type": "spinbutton",
+    "default" : 32,
+    "min" : 16,
+    "max" : 96,
+    "step" : 1,
+    "units" : "px",
+    "description" : "Icon size",
+    "dependency" : "menu-custom"
  },
  "menu-label" : {
     "type" : "entry",
     "default" : "Menu",
     "description" : "Text",
     "tooltip" : "Enter custom text to show in the panel.",
-    "dependency" : "menu-custom",
-    "indent": true
+    "dependency" : "menu-custom"
  },
- "favbox-min-height" : {
+ "restrict-menu-height" : {
+    "type": "switch",
+    "default" : false,
+    "description" : "Use a fixed menu height",
+    "tooltip" : "Keep the size of the menu the same now matter how many favorites or categories there are."
+ },
+ "menu-height" : {
     "type": "spinbutton",
-    "default" : 300,
-    "min" : 50,
-    "max" : 1000,
+    "default" : 550,
+    "min" : 300,
+    "max" : 2000,
     "step" : 10,
     "units" : "px",
-    "dependency" : "favbox-show",
-    "description" : "Minimum height of the favorites section",
-    "tooltip" : "The minimum size allocated for the favorites section (this has an impact on the overall height of the menu)."
+    "description" : "Menu height",
+    "dependency" : "restrict-menu-height"
  },
  "show-category-icons" : {
     "type" : "switch",
@@ -77,11 +93,31 @@
     "description" : "Show category icons",
     "tooltip" : "Choose whether or not to show icons on categories."
  },
+ "category-icon-size" : {
+    "type": "spinbutton",
+    "default" : 22,
+    "min" : 16,
+    "max" : 48,
+    "step" : 1,
+    "units" : "px",
+    "description" : "Categories icon size",
+    "dependency" : "show-category-icons"
+ },
  "show-application-icons" : {
     "type" : "switch",
     "default" : true,
     "description" : "Show application icons",
     "tooltip" : "Choose whether or not to show icons on applications."
+ },
+ "application-icon-size" : {
+    "type": "spinbutton",
+    "default" : 22,
+    "min" : 16,
+    "max" : 48,
+    "step" : 1,
+    "units" : "px",
+    "description" : "Applications icon size",
+    "dependency" : "show-application-icons"
  },
  "favbox-show" : {
     "type" : "switch",
@@ -89,11 +125,39 @@
     "description" : "Show favorites and session buttons",
     "tooltip" : "Choose whether or not to show the left pane of the menu."
  },
+ "fav-icon-size" : {
+    "type": "spinbutton",
+    "default" : 32,
+    "min" : 16,
+    "max" : 64,
+    "step" : 1,
+    "units" : "px",
+    "description" : "Favorites icon size",
+    "dependency" : "favbox-show"
+ },
+ "show-favorites" : {
+   "type" : "switch",
+   "default" : true,
+   "description": "Show favorites",
+   "tooltip": "Choose whether or not to show favorite files in the menu."
+ },
  "show-places" : {
     "type" : "switch",
     "default" : true,
     "description": "Show bookmarks and places",
     "tooltip": "Choose whether or not to show bookmarks and places in the menu."
+ },
+ "show-recents" : {
+   "type" : "switch",
+   "default" : true,
+   "description": "Show recents",
+   "tooltip": "Choose whether or not to show recents in the menu."
+ },
+ "category-hover" : {
+    "type" : "switch",
+    "default" : true,
+    "description": "Change categories on hover",
+    "tooltip": "Choose whether or not to change categories by hovering."
  },
 "enable-autoscroll" : {
     "type" : "switch",
@@ -106,6 +170,12 @@
     "default" : false,
     "description": "Enable filesystem path entry in search box",
     "tooltip": "Allows path entry in the menu search box."
+ },
+ "force-show-panel" : {
+    "type" : "switch",
+    "default" : true,
+    "description": "Force the panel to be visible when opening the menu",
+    "tooltip": "Opening the menu will also show the main panel (which may be auto-hidden)."
  },
 "activate-on-hover" : {
     "type" : "switch",

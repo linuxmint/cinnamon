@@ -44,6 +44,7 @@ function initEnabledDesklets() {
         promises.push(Extension.loadExtension(definitions[i].uuid, Extension.Type.DESKLET))
     }
     return Promise.all(promises).then(function() {
+        Main.cinnamonDBusService.EmitXletsLoadedComplete();
         promises = [];
     });
 }
@@ -78,7 +79,7 @@ function init(){
 
         deskletsLoaded = true;
         updateMouseTracking();
-        global.log(`DeskletManager started in ${new Date().getTime() - startTime} ms`);
+        global.log("DeskletManager started in " + new Date().getTime() - startTime + "ms");
     });
 }
 
@@ -199,7 +200,7 @@ function prepareExtensionReload(extension) {
         if (extension.uuid === definitions[i].uuid) {
             let {desklet, desklet_id} = definitions[i];
             if (!desklet) continue;
-            global.log(`Reloading desklet: ${extension.uuid}/${desklet_id}`);
+            global.log("Reloading desklet: " + extension.uuid + "/" + desklet_id);
             desklet.on_desklet_reloaded();
             return;
         }
@@ -549,6 +550,8 @@ DeskletContainer.prototype = {
                 if (global.settings.get_boolean(DESKLET_SNAP_KEY)){
                     elements[2] = this._dragPlaceholder.x
                     elements[3] = this._dragPlaceholder.y;
+                    actor.set_x(this._dragPlaceholder.x);
+                    actor.set_y(this._dragPlaceholder.y);
                 }
                 definition = elements.join(":");
                 enabledDesklets[i] = definition;

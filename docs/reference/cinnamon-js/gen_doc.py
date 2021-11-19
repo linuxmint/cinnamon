@@ -47,7 +47,6 @@
 
 import sys
 import os
-import xml.etree.ElementTree as ET
 import re
 from gen_lib import *
 
@@ -57,6 +56,10 @@ objects = {}
 ROOT_DIR = os.path.abspath(os.path.dirname(sys.argv[0])) + '/../../../'
 if len(sys.argv) > 1:
     ROOT_DIR = sys.argv[1]
+
+if len(sys.argv) > 2:
+    DEST_DIR = sys.argv[2]
+    os.chdir(DEST_DIR)
 
 JS_UI_DIR = os.path.join(ROOT_DIR, 'js/ui/')
 JS_MISC_DIR = os.path.join(ROOT_DIR, 'js/misc/')
@@ -279,7 +282,7 @@ for _file in _files:
 ################################################################################
 ################################################################################
 
-write_sgml(files, sys.argv[2] if len(sys.argv) > 2 else "")
+write_chapters_file(files)
 
 try:
     os.mkdir('ui')

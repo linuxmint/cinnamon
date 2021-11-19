@@ -164,6 +164,18 @@
 
     </sect3>
     <sect3>
+      <title>timechooser</title>
+      <itemizedlist>
+        <listitem><code>type</code>: should be <code>timechooser</code></listitem>
+        <listitem><code>default</code>: default time - should be of the form <code>{h: '12', m: '0', s: '0'}</code></listitem>
+        <listitem><code>description</code>: String describing the setting</listitem>
+      </itemizedlist>
+
+      <para>A button that opens a dialog that lets you select a time. The time is stored as three key/value pairs representing the numerical value for the hour('h'), minute('m'), and second('s').</para>
+      <para>New in Cinnamon 4.2</para>
+
+    </sect3>
+    <sect3>
       <title>tween</title>
       <itemizedlist>
         <listitem><code>type</code>: should be <code>tween</code></listitem>
@@ -229,22 +241,22 @@
   "section1" : {
     "type" : "section",
     "title" : "1st section",
-    "sections" : ["setting1", "setting2"]
+    "keys" : ["setting1", "setting2"]
   },
   "section2" : {
     "type" : "section",
     "title" : "2nd section",
-    "sections" : ["setting3", "setting4"]
+    "keys" : ["setting3", "setting4"]
   },
   "section3" : {
     "type" : "section",
     "title" : "3rd section",
-    "sections" : ["setting5", "setting6"]
+    "keys" : ["setting5", "setting6"]
   },
-  "section1" : {
+  "section4" : {
     "type" : "section",
     "title" : "4th section",
-    "sections" : ["setting7", "setting8"]
+    "keys" : ["setting7", "setting8"]
   }
 }</programlisting>
       </informalexample>
@@ -306,10 +318,11 @@
         <listitem><code>description</code>: (optional) String to describe the setting</listitem>
         <listitem><code>columns</code>: Array of objects specifying the columns in the list widget</listitem>
         <listitem><code>default</code>: default value</listitem>
+        <listitem><code>show-buttons</code>: (optional) Whether to show the action buttons below the list (<code>true</code> by default)</listitem>
       </itemizedlist>
 
       <para>
-        This widget provides a list with columns, and rows which can be created, edited, deleted and reordered. The columns in the list are specified by the <code>columns</code> propery. All columns have the following properties:
+        This widget provides a list with columns, and rows which can be created, edited, deleted and reordered. The columns in the list are specified by the <code>columns</code> property. All columns have the following properties:
         <itemizedlist>
           <listitem><code>id</code>: a unique string for identifying the column</listitem>
           <listitem><code>title</code>: the title that will be displayed in the column header</listitem>
@@ -326,7 +339,7 @@
           <listitem><code>file</code>: this type stores data as a string. A <code>filechooser</code> is generated in the add/edit dialog. The default value for new entries is an empty string unless specified with the <code>default</code> property.</listitem>
           <listitem><code>integer</code>: this type stores data as an integer. A <code>spinbutton</code> is generated in the add/edit dialog. The default value for new entries is 0 unless specified with the <code>default</code> property.</listitem>
           <listitem><code>float</code>: this type stores data as a floating point number. A <code>spinbutton</code> is generated in the add/edit dialog. The default value for new entries is 0.0 unless specified with the <code>default</code> property.</listitem>
-          <listitem><code>boolean</code>: this type stores data as a bool. A <code>switch</code> is generated in the add/edit dialog. The default value for new entries is false unless specified with the <code>default</code> property.</listitem>
+          <listitem><code>boolean</code>: this type stores data as a boolean. A <code>switch</code> is generated in the add/edit dialog. The default value for new entries is false unless specified with the <code>default</code> property.</listitem>
         </itemizedlist>
       </para>
       <para>The values are stored as an array of objects where each object in the array corresponds to a row in the list, and each entry in the row object is a key:value pair where the key being the <code>column id</code> of the column to which the value corresponds.</para>
@@ -397,7 +410,7 @@
 
       <itemizedlist>
         <listitem>
-            <code>dependency: </code>Shows or hides the settings widget based on the value of another key in the settings-schema file. There are several possibl values for this option:
+            <code>dependency: </code>Shows or hides the settings widget based on the value of another key in the settings-schema file. There are several possible values for this option:
             <itemizedlist>
                 <listitem>The most common value for this option is simply the <code>key</code> of the setting you wish to depend on. This is most useful for depending on a boolean setting such as a switch. This will make your setting hide if the key you're depending on is false, and show it when the key is true.</listitem>
                 <listitem>If you wish to 'invert' the dependence you can precede the key with a <code>!</code>. This will make your setting hide if the key you're depending on is true, and show it when the key is false.</listitem>
@@ -423,7 +436,7 @@
 
       <para>Signals when <code>key</code> has changed in the configuration file. Use this in conjunction with <code>getValue</code> if you want to handle your own updating in a more traditional way (like gsettings).</para>
 
-      <para>The callback function will be called with three paramenters: <code>settingProvider, oldval, newval</code>, which are, respectively, the settings object (which you usually don't need), the original value and the updated value.</para>
+      <para>The callback function will be called with three parameters: <code>settingProvider, oldval, newval</code>, which are, respectively, the settings object (which you usually don't need), the original value and the updated value.</para>
     </sect3>
   </sect2>
 
@@ -441,14 +454,21 @@
     <title>Accessing the settings window from command-line</title>
 
     <para>
-      You can access the settings with the following command:
+      You can access the settings with one of the following commands:
     </para>
     <informalexample>
       <programlisting>
 xlet-settings &lt;type&gt; &lt;uuid&gt; &lt;instanceid&gt;</programlisting>
     </informalexample>
+    <informalexample>
+      <programlisting>
+xlet-settings &lt;type&gt; &lt;uuid&gt; -i &lt;instanceid&gt; -t &lt;tabnumber&gt;</programlisting>
+    </informalexample>
     <para>
-      Where <code>type</code> is <code>applet</code>, <code>desklet</code> or <code>extension</code> depending on what type it is. The <code>instanceid</code> is optional.
+      Where <code>type</code> is <code>applet</code>, <code>desklet</code> or <code>extension</code> depending on what type it is. The <code>instanceid</code> is optional. The <code>tabnumber</code> is optional and designates the tab (or page) you want to access; the tabs are numbered from <code>0</code> to <code>number of tabs - 1</code>. 
+    </para>
+    <para>
+      The second command is new in Cinnamon 4.2.
     </para>
   </sect2>
 </chapter>

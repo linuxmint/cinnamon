@@ -1,11 +1,7 @@
 #!/usr/bin/python3
 
-from gi.repository import Gio
-
-import gi
-gi.require_version('Nemo', '3.0')
-
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 DESKTOP_SCHEMA = "org.nemo.desktop"
 LAYOUT_KEY = "desktop-layout"
@@ -32,6 +28,9 @@ class Module:
         have_nemo = False
 
         try:
+            import gi
+            gi.require_version('Nemo', '3.0')
+
             from gi.repository import Nemo
 
             if Nemo.DesktopPreferences:
@@ -40,7 +39,9 @@ class Module:
             pass
         except AttributeError:
             pass
-        print(have_nemo)
+        except ValueError:
+            pass
+
         return have_nemo
 
     def on_module_selected(self):

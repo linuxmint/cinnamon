@@ -51,6 +51,7 @@ const DIM_TIME = 0.500;
 const DIM_DESATURATION = 0.6;
 const DIM_BRIGHTNESS = -0.2;
 const UNDIM_TIME = 0.250;
+const WORKSPACE_OSD_TIMEOUT = 0.4;
 
 /* edge zones for tiling/snapping identification
    copied from muffin/src/core/window-private.h
@@ -79,8 +80,6 @@ const ZONE_TL = 4;
 const ZONE_TR = 5;
 const ZONE_BR = 6;
 const ZONE_BL = 7;
-
-const SETTINGS_EFFECTS_TYPES = [['effect', 'get_string'], ['time', 'get_int'], ['transition', 'get_string']];
 
 class WindowDimmer {
     constructor(actor) {
@@ -419,7 +418,7 @@ class HudPreview {
     }
 
     _onTileHudSettingsChanged() {
-        let scaleFactor = ThemeContext.get_for_stage(global.stage).scale_factor;
+        let scaleFactor = global.ui_scale;
         this._hudSize = this._tileHudSettings.get_int("tile-hud-threshold") * scaleFactor;
 
     }
@@ -468,27 +467,27 @@ var WindowManager = class WindowManager {
 
         this.settings = new Settings({schema_id: 'org.cinnamon.muffin'});
 
-        const settingsState = {
+        this.settingsState = {
             'desktop-effects-on-dialogs': global.settings.get_boolean('desktop-effects-on-dialogs'),
             'desktop-effects-on-menus': global.settings.get_boolean('desktop-effects-on-menus'),
+            'desktop-effects-workspace': global.settings.get_boolean('desktop-effects-workspace'),
             'desktop-effects': this.settings.get_boolean('desktop-effects'),
+            'desktop-effects-map': global.settings.get_string('desktop-effects-map'),
+            'desktop-effects-close': global.settings.get_string('desktop-effects-close'),
+            'desktop-effects-minimize': global.settings.get_string('desktop-effects-minimize'),
+            'desktop-effects-maximize': global.settings.get_boolean('desktop-effects-maximize'),
+            'desktop-effects-change-size': global.settings.get_boolean('desktop-effects-change-size')
         };
 
         global.settings.connect('changed::desktop-effects-on-dialogs', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         global.settings.connect('changed::desktop-effects-on-menus', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        global.settings.connect('changed::desktop-effects-workspace', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
         this.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
-
-        each(this.effects, (value, key) => {
-            if (key === 'unmaximize' || key === 'unminimize') return;
-            each(SETTINGS_EFFECTS_TYPES, (item) => {
-                let [name, type] = item;
-                let property = `desktop-effects-${key}-${name}`;
-                settingsState[property] = global.settings[type](property);
-                global.settings.connect(`changed::${property}`, (s, k) => this.onSettingsChanged(s, k, type));
-            });
-        });
-
-        this.settingsState = settingsState;
+        global.settings.connect('changed::desktop-effects-map', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+        global.settings.connect('changed::desktop-effects-close', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+        global.settings.connect('changed::desktop-effects-minimize', (s, k) => this.onSettingsChanged(s, k, 'get_string'));
+        global.settings.connect('changed::desktop-effects-maximize', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        global.settings.connect('changed::desktop-effects-change-size', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
 
         this._snapOsd = null;
         this._workspace_osd_array = [];
@@ -588,21 +587,26 @@ var WindowManager = class WindowManager {
 
     _startWindowEffect(cinnamonwm, name, actor, args, overwriteKey) {
         let effect = this.effects[name];
+
         if (!this.settingsState['desktop-effects'] || !this._shouldAnimate(actor)) {
             cinnamonwm[effect.wmCompleteName](actor);
             return;
         }
 
         let key = "desktop-effects-" + (overwriteKey || effect.name);
-        let time = this.settingsState[`${key}-time`];
-
-        // Transition time is 0ms, bail
-        if (!time) {
+        if (key == null || key == 'none') {
             cinnamonwm[effect.wmCompleteName](actor);
             return;
         }
 
-        let type = this.settingsState[`${key}-effect`];
+        let type = this.settingsState[key];
+
+        // menu effects should always be traditional
+        if (actor.meta_window.window_type == WindowType.MENU ||
+            actor.meta_window.window_type == WindowType.DROPDOWN_MENU ||
+            actor.meta_window.window_type == WindowType.POPUP_MENU) {
+            type = 'traditional';
+        }
 
         // make sure to end a running effect
         if (actor.current_effect_name) {
@@ -614,12 +618,33 @@ var WindowManager = class WindowManager {
         actor.show();
 
         if (effect[type]) {
-            time = time / 1000;
-            let transition = this.settingsState[`${key}-transition`];
-
-            effect[type](cinnamonwm, actor, time, transition, args);
+            effect[type](cinnamonwm, actor, args);
         } else if (!overwriteKey) // when not unminimizing, but the effect was not found, end it
             this._endWindowEffect(cinnamonwm, name, actor);
+    }
+
+    _startTraditionalWindowEffect(cinnamonwm, name, actor, args) {
+        let effect = this.effects[name];
+
+        if (!this.settingsState['desktop-effects'] || !this._shouldAnimate(actor) || !this.settingsState["desktop-effects-change-size"]) {
+            cinnamonwm[effect.wmCompleteName](actor);
+            return;
+        }
+
+        let type = "traditional";
+
+        // make sure to end a running effect
+        if (actor.current_effect_name) {
+            this._endWindowEffect(cinnamonwm, actor.current_effect_name, actor);
+        }
+        this[effect.arrayName].push(actor);
+        actor.current_effect_name = name;
+        actor.orig_opacity = actor.opacity;
+        actor.show();
+
+        if (effect[type]) {
+            effect[type](cinnamonwm, actor, args);
+        }
     }
 
     _endWindowEffect(cinnamonwm, name, actor) {
@@ -645,7 +670,7 @@ var WindowManager = class WindowManager {
     _minimizeWindow(cinnamonwm, actor) {
         soundManager.play('minimize');
 
-        // reset all cached values in case "traditional" is no longer in effect
+        // reset all cached values in case the minimize effect is no longer in effect
         actor.meta_window._cinnamonwm_has_origin = false;
         this._startWindowEffect(cinnamonwm, "minimize", actor);
     }
@@ -653,7 +678,7 @@ var WindowManager = class WindowManager {
     _tileWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
         soundManager.play('tile');
 
-        this._startWindowEffect(cinnamonwm, "tile", actor, [targetX, targetY, targetWidth, targetHeight]);
+        this._startTraditionalWindowEffect(cinnamonwm, "tile", actor, [targetX, targetY, targetWidth, targetHeight]);
     }
 
     _maximizeWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
@@ -665,7 +690,7 @@ var WindowManager = class WindowManager {
     _unmaximizeWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
         soundManager.play('unmaximize');
 
-        this._startWindowEffect(cinnamonwm, "unmaximize", actor, [targetX, targetY, targetWidth, targetHeight]);
+        this._startTraditionalWindowEffect(cinnamonwm, "unmaximize", actor, [targetX, targetY, targetWidth, targetHeight]);
     }
 
     _hasAttachedDialogs(window, ignoreWindow) {
@@ -790,13 +815,14 @@ var WindowManager = class WindowManager {
     }
 
     _switchWorkspace(cinnamonwm, from, to, direction) {
-        if (!this.settingsState['desktop-effects'] || Main.modalCount || Main.software_rendering) {
+        soundManager.play('switch');
+
+        if (!this.settingsState['desktop-effects-workspace'] || Main.modalCount || Main.software_rendering) {
             this.showWorkspaceOSD();
             cinnamonwm.completed_switch_workspace();
             return;
         }
 
-        soundManager.play('switch');
         this.showWorkspaceOSD();
 
         let windows = global.get_window_actors();
@@ -891,13 +917,13 @@ var WindowManager = class WindowManager {
     _showTilePreview(cinnamonwm, window, tileRect, monitorIndex, snapQueued) {
         if (!this._tilePreview)
             this._tilePreview = new TilePreview();
-        this._tilePreview.show(window, tileRect, monitorIndex, snapQueued, this.settingsState['desktop-effects']);
+        this._tilePreview.show(window, tileRect, monitorIndex, snapQueued, this.settingsState['desktop-effects-workspace']);
     }
 
     _hideTilePreview(cinnamonwm) {
         if (!this._tilePreview)
             return;
-        this._tilePreview.hide(this.settingsState['desktop-effects']);
+        this._tilePreview.hide(this.settingsState['desktop-effects-workspace']);
         this._tilePreview.destroy();
         this._tilePreview = null;
     }
@@ -906,14 +932,14 @@ var WindowManager = class WindowManager {
         if (global.settings.get_boolean('show-tile-hud')) {
             if (!this._hudPreview)
                 this._hudPreview = new HudPreview();
-            this._hudPreview.show(currentProximityZone, workArea, snapQueued, this.settingsState['desktop-effects']);
+            this._hudPreview.show(currentProximityZone, workArea, snapQueued, this.settingsState['desktop-effects-workspace']);
         }
     }
 
     _hideHudPreview(cinnamonwm) {
         if (!this._hudPreview)
             return;
-        this._hudPreview.hide(this.settingsState['desktop-effects']);
+        this._hudPreview.hide(this.settingsState['desktop-effects-workspace']);
         this._hudPreview.destroy();
         this._hudPreview = null;
     }
@@ -922,66 +948,49 @@ var WindowManager = class WindowManager {
         this._hideSnapOSD();
         this._hideWorkspaceOSD();
         if (global.settings.get_boolean('workspace-osd-visible')) {
-            let osd_x = global.settings.get_int('workspace-osd-x');
-            let osd_y = global.settings.get_int('workspace-osd-y');
-            let duration = global.settings.get_int('workspace-osd-duration') / 1000;
             let current_workspace_index = global.screen.get_active_workspace_index();
             if (this.settings.get_boolean('workspaces-only-on-primary')) {
-                this._showWorkspaceOSDOnMonitor(layoutManager.primaryMonitor, osd_x, osd_y, duration, current_workspace_index);
+                this._showWorkspaceOSDOnMonitor(layoutManager.primaryMonitor, current_workspace_index);
             }
             else {
                 let {monitors} = layoutManager;
                 for (let i = 0; i < monitors.length; i++) {
-                    this._showWorkspaceOSDOnMonitor(monitors[i], osd_x, osd_y, duration, current_workspace_index);
+                    this._showWorkspaceOSDOnMonitor(monitors[i], current_workspace_index);
                 }
             }
         }
     }
 
-    _showWorkspaceOSDOnMonitor(monitor, osd_x, osd_y, duration, current_workspace_index) {
-        let osd = new Label({style_class:'workspace-osd', important: true});
-        let effectsEnabled = this.settingsState['desktop-effects'];
+    _showWorkspaceOSDOnMonitor(monitor, current_workspace_index) {
+        let osd = new InfoOSD();
+        osd.actor.add_style_class_name('workspace-osd');
         this._workspace_osd_array.push(osd);
-        osd.set_text(getWorkspaceName(current_workspace_index));
-        if (effectsEnabled) osd.set_opacity = 0;
-        layoutManager.addChrome(osd, { visibleInFullscreen: false, affectsInputRegion: false });
-        /*
-         * This aligns the osd edges to the minimum/maximum values from gsettings,
-         * if those are selected to be used. For values in between minimum/maximum,
-         * it shifts the osd by half of the percentage used of the overall space available
-         * for display (100% - (left and right 'padding')).
-         * The horizontal minimum/maximum values are 5% and 95%, resulting in 90% available for positioning
-         * If the user choses 50% as osd position, these calculations result the osd being centered onscreen
-         */
-        let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
-        let delta = (osd_x - minX) / (maxX - minX);
-        let x = monitor.x + Math.round((monitor.width * osd_x / 100) - (osd.width * delta));
-        delta = (osd_y - minY) / (maxY - minY);
-        let y = monitor.y + Math.round((monitor.height * osd_y / 100) - (osd.height * delta));
-        osd.set_position(x, y);
+        osd.addText(getWorkspaceName(current_workspace_index));
+        osd.show();
 
-        if (effectsEnabled) {
-            addTween(osd, {
-                opacity: 255,
-                time: duration,
-                transition: 'linear',
-                onComplete: () => this._hideWorkspaceOSD()
-            });
-            return;
-        }
-        setTimeout(() => this._hideWorkspaceOSD(), duration * 1000);
+        setTimeout(() => this._hideWorkspaceOSD(), WORKSPACE_OSD_TIMEOUT * 1000);
     }
 
     _hideWorkspaceOSD() {
+        let effectsEnabled = this.settingsState['desktop-effects-workspace'];
+
         for (let i = 0; i < this._workspace_osd_array.length; i++) {
             let osd = this._workspace_osd_array[i];
             if (osd != null) {
-                osd.hide();
-                layoutManager.removeChrome(osd);
-                osd.destroy();
+                if (effectsEnabled) {
+                    osd.actor.opacity = 255;
+                    addTween(osd.actor, {
+                        opacity: 0,
+                        time: WORKSPACE_OSD_TIMEOUT,
+                        transition: 'linear',
+                        onComplete: () => osd.destroy()
+                    });
+                } else {
+                    osd.destroy();
+                }
             }
         }
-        this._workspace_osd_array = []
+        this._workspace_osd_array = [];
     }
 
     _showSnapOSD(metaScreen, monitorIndex) {

@@ -1,6 +1,0 @@
-[Cinnamon Session]
-Name=Cinnamon (Software Rendering)
-RequiredComponents=cinnamon2d;cinnamon-screensaver;nemo-autostart;nm-applet;cinnamon-killer-daemon;
-DesktopName=X-Cinnamon
-
-

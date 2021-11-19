@@ -130,6 +130,28 @@ class WorkspaceGraph extends WorkspaceButton {
         return (t2 < t1) ? 1 : -1;
     }
 
+    paintWindow(metaWindow, themeNode, cr) {
+        let windowBackgroundColor;
+        let windowBorderColor;
+
+        let scaled_rect = this.scale(metaWindow.get_outer_rect(), this.workspace_size);
+
+        if (metaWindow.has_focus()) {
+            windowBorderColor = themeNode.get_color('-active-window-border');
+            windowBackgroundColor = themeNode.get_color('-active-window-background');
+        } else {
+            windowBorderColor = themeNode.get_color('-inactive-window-border');
+            windowBackgroundColor = themeNode.get_color('-inactive-window-background');
+        }
+
+        Clutter.cairo_set_source_color(cr, windowBorderColor);
+        cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
+        cr.strokePreserve();
+
+        Clutter.cairo_set_source_color(cr, windowBackgroundColor);
+        cr.fill();
+    }
+
     onRepaint(area) {
         // we need to set the size of the drawing area the first time, but we can't get
         // accurate measurements until everything is added to the stage
@@ -137,6 +159,7 @@ class WorkspaceGraph extends WorkspaceButton {
 
         let graphThemeNode = this.graphArea.get_theme_node();
         let cr = area.get_context();
+        cr.setLineWidth(1);
 
         // construct a list with all windows
         let windows = this.workspace.list_windows();
@@ -145,36 +168,25 @@ class WorkspaceGraph extends WorkspaceButton {
             function(w) {
                 return !w.is_skip_taskbar() && !w.minimized;
             });
+
         windows.sort(this.sortWindowsByUserTime);
 
         if (windows.length) {
-            let windowBackgroundColor;
-            let windowBorderColor;
+            let focusWindow = null;
+
             for (let i = 0; i < windows.length; ++i) {
                 let metaWindow = windows[i];
-                let scaled_rect = this.scale(metaWindow.get_outer_rect(), this.workspace_size);
 
-                cr.setLineWidth(1);
                 if (metaWindow.has_focus()) {
-                    windowBorderColor = graphThemeNode.get_color('-active-window-border');
-                    Clutter.cairo_set_source_color(cr, windowBorderColor);
-                }
-                else {
-                    windowBorderColor = graphThemeNode.get_color('-inactive-window-border');
-                    Clutter.cairo_set_source_color(cr, windowBorderColor);
-                }
-                cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
-                cr.strokePreserve();
-                if (metaWindow.has_focus()) {
-                    windowBackgroundColor = graphThemeNode.get_color('-active-window-background');
-                    Clutter.cairo_set_source_color(cr, windowBackgroundColor);
-                }
-                else {
-                    windowBackgroundColor = graphThemeNode.get_color('-inactive-window-background');
-                    Clutter.cairo_set_source_color(cr, windowBackgroundColor);
+                    focusWindow = metaWindow;
+                    continue;
                 }
 
-                cr.fill();
+                this.paintWindow(metaWindow, graphThemeNode, cr);
+            }
+
+            if (focusWindow) {
+                this.paintWindow(focusWindow, graphThemeNode, cr);
             }
         }
 
@@ -211,13 +223,32 @@ class SimpleButton extends WorkspaceButton {
         let label = new St.Label({ text: (index + 1).toString() });
         label.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
         this.actor.set_child(label);
+        this.update();
     }
 
     activate(active) {
-        if (active)
+        if (active) {
             this.actor.add_style_pseudo_class('outlined');
-        else
+        }
+        else {
             this.actor.remove_style_pseudo_class('outlined');
+            this.update();
+        }
+    }
+
+    shade(used) {
+        if (!used) {
+            this.actor.add_style_pseudo_class('shaded');
+        }
+        else {
+            this.actor.remove_style_pseudo_class('shaded');
+        }
+    }
+    
+    update() {
+        let windows = this.workspace.list_windows();
+        let used = windows.some(Main.isInteresting);
+        this.shade(used);
     }
 }
 
@@ -239,7 +270,8 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             this._focusWindow = global.display.focus_window.get_compositor_private();
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
-        this.settings.bind("display_type", "display_type", this.queueCreateButtons);
+        this.settings.bind("display-type", "display_type", this.queueCreateButtons);
+        this.settings.bind("scroll-behavior", "scroll_behavior");
 
         this.actor.connect('scroll-event', this.hook.bind(this));
 
@@ -322,6 +354,9 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
     }
 
     hook(actor, event) {
+        if (this.scroll_behavior == "disabled")
+            return;
+
         let now = (new Date()).getTime();
         let direction = event.get_scroll_direction();
 
@@ -333,8 +368,11 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         if ((now - this._last_switch) > MIN_SWITCH_INTERVAL_MS ||
             direction !== this._last_switch_direction) {
 
-            if (direction == 0) Main.wm.actionMoveWorkspaceLeft();
-            else if (direction == 1) Main.wm.actionMoveWorkspaceRight();
+            // XOR used to determine the effective direction
+            if ((direction == 0) == (this.scroll_behavior == "normal"))
+                Main.wm.actionMoveWorkspaceLeft();
+            else
+                Main.wm.actionMoveWorkspaceRight();
 
             this._last_switch = now;
             this._last_switch_direction = direction;
@@ -354,28 +392,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             this.buttons[i].destroy();
         }
 
-        // we're just doing a rough estimate here, but less than about 20px in either
-        // direction makes visual layout useless.
-        let suppress_graph = false;
-        if (this._panelHeight < 26) suppress_graph = true;
-        else {
-            let workspace_size = new Meta.Rectangle();
-            global.screen.get_workspace_by_index(0).get_work_area_all_monitors(workspace_size);
-            if (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT) {
-                let estHeight = (this._panelHeight - 6) / workspace_size.width * workspace_size.height;
-                if (estHeight < 20) {
-                    suppress_graph = true;
-                }
-            }
-            else {
-                let estWidth = (this._panelHeight - 6) / workspace_size.height * workspace_size.width;
-                if (estWidth < 20) {
-                    suppress_graph = true;
-                }
-            }
-        }
-
-        if (this.display_type == "visual" && !suppress_graph)
+        if (this.display_type == "visual")
             this.actor.set_style_class_name('workspace-graph');
         else
             this.actor.set_style_class_name('workspace-switcher');
@@ -384,7 +401,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
         this.buttons = [];
         for (let i = 0; i < global.screen.n_workspaces; ++i) {
-            if (this.display_type == "visual" && !suppress_graph)
+            if (this.display_type == "visual")
                 this.buttons[i] = new WorkspaceGraph(i, this);
             else
                 this.buttons[i] = new SimpleButton(i, this);
@@ -393,8 +410,8 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             this.buttons[i].show();
         }
 
-        this.signals.disconnectAllSignals();
-        if (this.display_type == "visual" && !suppress_graph) {
+        this.signals.disconnect("notify::focus-window");
+        if (this.display_type == "visual") {
             // In visual mode, keep track of window events to represent them
             this.signals.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
             this._onFocusChanged();

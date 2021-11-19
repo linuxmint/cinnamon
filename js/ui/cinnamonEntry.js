@@ -1,4 +1,5 @@
 const Clutter = imports.gi.Clutter;
+const Cinnamon = imports.gi.Cinnamon;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const St = imports.gi.St;
@@ -56,9 +57,13 @@ _EntryMenu.prototype = {
         if (this._passwordItem)
             this._updatePasswordItem();
 
-        let direction = Gtk.DirectionType.TAB_FORWARD;
-        if (!this.actor.navigate_focus(null, direction, false))
-            this.actor.grab_key_focus();
+        let [x, y] = Clutter.get_current_event().get_coords();
+
+        // if x == 0 there was no event, this is probably from a keyboard menu key or shift-f10,
+        // which already handled the move.
+        if (x != 0) {
+            this.shiftToPosition(x);
+        }
 
         PopupMenu.PopupMenu.prototype.open.call(this);
     },
@@ -121,14 +126,26 @@ function _onClicked(actor, action) {
         let [stageX, stageY] = action.get_coords();
         _setMenuAlignment(entry, stageX);
         entry._menu.open();
+
+        // Stop event handling here, if it's a right-click; Depending on which actor received the
+        // event (ClutterText or the StEntry) we may lose focus if it propagates. If that happens,
+        // the selection is removed, so Copy will be clickable, but the clipboard will end up empty.
+        return Clutter.EVENT_STOP;
     }
+
+    return Clutter.EVENT_PROPAGATE;
 };
 
 function _onPopup(actor) {
     let entry = actor._menu ? actor : actor.get_parent();
     let [success, textX, textY, lineHeight] = entry.clutter_text.position_to_coords(-1);
-    if (success)
-        entry._menu.setSourceAlignment(textX / entry.width);
+
+    if (success) {
+        let [x, y] = entry.clutter_text.get_transformed_position()
+
+        entry._menu.shiftToPosition(x + textX);
+    }
+
     entry._menu.open();
 };
 

@@ -170,6 +170,13 @@ var SETTINGS_TYPES = {
             "description"
         ]
     },
+    "timechooser" : {
+        "required-fields": [
+            "type",
+            "default",
+            "description"
+        ]
+    },
     "list" : {
         "required-fields": [
             "type",
@@ -459,6 +466,13 @@ XletSettingsBase.prototype = {
 
     _getValue: function(key) {
         let value = this.settingsData[key].value;
+
+        if (value === undefined) {
+            global.logWarning(`No value field in setting '${key}' for ${this.uuid}. Using default value.`);
+
+            value = this.settingsData[key].default;
+        }
+
         return value;
     },
 
@@ -619,14 +633,67 @@ XletSettingsBase.prototype = {
         }
     },
 
+    _loadTemplate: function(checksum) {
+        let xletDir = Extension.getExtension(this.uuid).dir;
+        let templateFile = xletDir.get_child("settings-schema.json");
+        let overrideFile = xletDir.get_child("settings-override.json");
+        let overrideString, templateData;
+
+        if (!templateFile.query_exists(null)) {
+            throw "Unable to load template file for " + this.uuid + ": settings-schema.json could not be found";
+        }
+
+        let templateString = Cinnamon.get_file_contents_utf8_sync(templateFile.get_path());
+        let newChecksum = global.get_md5_for_string(templateString);
+
+        if (overrideFile.query_exists(null)) {
+            overrideString = Cinnamon.get_file_contents_utf8_sync(overrideFile.get_path());
+            newChecksum += global.get_md5_for_string(overrideString);
+        }
+
+        if (checksum && checksum == newChecksum) {
+            return [false, null];
+        }
+
+        try {
+            templateData = JSON.parse(templateString);
+        } catch(e) {
+            global.logError(e);
+            throw "Failed to parse template file for " + this.uuid;
+        }
+
+        try {
+            if (overrideString) {
+                let overrideData = JSON.parse(overrideString);
+
+                for (let key in overrideData) {
+                    if ("override-props" in overrideData[key]) {
+                        for (let prop in overrideData[key]) {
+                            if (prop == "override-props") continue;
+                            templateData[key][prop] = overrideData[key][prop];
+                        }
+                    }
+                    else {
+                        templateData[key] = overrideData[key];
+                    }
+                }
+            }
+        } catch(e) {
+            global.logError("Settings override for " + this.uuid + "failed. Skipping for now.");
+            global.logError(e);
+        }
+
+        templateData.__md5__ = newChecksum;
+
+        return [true, templateData];
+    },
+
     _ensureSettingsFiles: function() {
         let configPath = [GLib.get_home_dir(), ".cinnamon", "configs", this.uuid].join("/");
         let configDir = Gio.file_new_for_path(configPath);
         if (!configDir.query_exists(null)) configDir.make_directory_with_parents(null);
         this.file = configDir.get_child(this.instanceId + ".json");
         this.monitor = this.file.monitor_file(Gio.FileMonitorFlags.NONE, null);
-        let xletDir = Extension.getExtension(this.uuid).dir;
-        let templateFile = xletDir.get_child("settings-schema.json");
 
         // If the settings have already been installed previously we need to check if the schema
         // has changed and if so, do an upgrade
@@ -637,7 +704,6 @@ XletSettingsBase.prototype = {
                 // Some users with a little bit of know-how may be able to fix the file if it's not too corrupted. Is it worth it to give an option to skip this step?
                 global.logError(e);
                 global.logError("Failed to parse file "+this.file.get_path()+". Attempting to rebuild the settings file for "+this.uuid+".");
-                Main.notify("Unfortunately the settings file for "+this.uuid+" seems to be corrupted. Your settings have been reset to default.");
             }
         }
 
@@ -645,38 +711,30 @@ XletSettingsBase.prototype = {
         // if not, it means either that an installation has not yet occurred, or something when wrong
         // either way, we need to install
         if (this.settingsData) {
-            if (templateFile.query_exists(null)) {
-                let templateData = Cinnamon.get_file_contents_utf8_sync(templateFile.get_path());
-                let checksum = global.get_md5_for_string(templateData);
+            try {
+                let [needsUpgrade, templateData] = this._loadTemplate(this.settingsData.__md5__);
 
-                if (checksum != this.settingsData.__md5__) {
-                    try {
-                        this._doUpgrade(templateData, checksum);
-                        this._saveToFile();
-                    } catch(e) {
-                        if (e) global.logError(e);
-                        global.logWarning("upgrade failed for " + this.uuid + ": falling back to previous settings");
-                    }
+                if (needsUpgrade) {
+                    this._doUpgrade(templateData);
+                    this._saveToFile();
                 }
+            } catch(e) {
+                if (e) global.logError(e);
+                global.logWarning("upgrade failed for " + this.uuid + ": falling back to previous settings");
+
+                // if settings-schema.json is missing or corrupt, we just use the old version for now,
             }
-            // if settings-schema.json is missing, we can still load the settings from data, so we
-            // will merely skip the upgrade test
-            else global.logWarning("Couldn't find file settings-schema.json for " + this.uuid + ": skipping upgrade");
         }
         else {
             // If the settings haven't already been installed, we need to do that now
-            if (!templateFile.query_exists(null)) {
-                global.logError("Unable to load settings for " + this.uuid + ": settings-schema.json could not be found");
-                return false;
-            }
-
-            let templateData = Cinnamon.get_file_contents_utf8_sync(templateFile.get_path());
-
             try {
-                if (!this._doInstall(templateData)) return false;
+                let [loaded, templateData] = this._loadTemplate();
+
+                this._doInstall(templateData);
             } catch(e) {
-                global.logError("Unable to install settings for " + this.uuid + ": there is a problem with settings-schema.json");
                 global.logError(e);
+                global.logError("Unable to install settings for " + this.uuid);
+
                 return false;
             }
 
@@ -690,41 +748,53 @@ XletSettingsBase.prototype = {
 
     _doInstall: function(templateData) {
         global.log("Installing settings for " + this.uuid);
-        let checksum = global.get_md5_for_string(templateData);
-        this.settingsData = JSON.parse(templateData);
+
+        this.settingsData = templateData;
         for (let key in this.settingsData) {
+            if (key == "__md5__") continue;
+
             let props = this.settingsData[key];
-            if (!has_required_fields(props, key)) return false;
-            if ('default' in props)
-                props.value = props.default;
-        }
-        this.settingsData.__md5__ = checksum;
-
-        global.log("Settings successfully installed for " + this.uuid);
-        return true;
-    },
-
-    _doUpgrade: function(templateData, checksum) {
-        global.log("Upgrading settings for " + this.uuid);
-        let newSettings = JSON.parse(templateData);
-        for (let key in newSettings) {
-            let props = newSettings[key];
 
             // ignore anything that doesn't appear to be a valid settings type
             if (!("type" in props) || !("default" in props)) continue;
+
+            if (!has_required_fields(props, key)) {
+                throw "invalid settings for " + this.uuid;
+            }
+
+            if ('default' in props) {
+                props.value = props.default;
+            }
+        }
+
+        global.log("Settings successfully installed for " + this.uuid);
+    },
+
+    _doUpgrade: function(templateData) {
+        global.log("Upgrading settings for " + this.uuid);
+
+        for (let key in templateData) {
+            if (key == "__md5__") continue;
+
+            let props = templateData[key];
+
+            // ignore anything that doesn't appear to be a valid settings type
+            if (!("type" in props) || !("default" in props)) continue;
+
+            if (!has_required_fields(props, key)) {
+                throw "invalid settings for " + this.uuid;
+            }
 
             // If the setting already exists, we want to use the old value. If not we use the default.
             let oldValue = null;
             if (this.settingsData[key] && this.settingsData[key].value !== undefined) {
                 oldValue = this.settingsData[key].value;
-                if (key in this.settingsData && this._checkSanity(oldValue, newSettings[key])) newSettings[key].value = oldValue;
+                if (key in this.settingsData && this._checkSanity(oldValue, templateData[key])) templateData[key].value = oldValue;
             }
-            if (!("value" in newSettings[key])) newSettings[key].value = newSettings[key].default;
+            if (!("value" in templateData[key])) templateData[key].value = templateData[key].default;
         }
 
-        newSettings.__md5__ = checksum;
-
-        this.settingsData = newSettings;
+        this.settingsData = templateData;
         global.log("Settings successfully upgraded for " + this.uuid);
     },
 

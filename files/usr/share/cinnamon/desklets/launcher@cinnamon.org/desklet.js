@@ -1,5 +1,6 @@
 //-*- indent-tabs-mode: nil-*-
 const Cinnamon = imports.gi.Cinnamon;
+const CMenu = imports.gi.CMenu;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
@@ -48,7 +49,7 @@ class CinnamonLauncherDesklet extends Desklet.Desklet {
                 desktopFile = settingsList[i].split(':')[1];
                 app = appSys.lookup_app(desktopFile);
                 if (!app) {
-                    app = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH + desktopFile);
+                    app = CMenu.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH + desktopFile);
                 }
                 return app;
             }

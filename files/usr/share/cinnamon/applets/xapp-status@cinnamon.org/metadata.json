@@ -1,0 +1,8 @@
+{
+    "uuid": "xapp-status@cinnamon.org",
+    "name": "XApp Status Applet",
+    "description": "An applet which hosts all the system tray icons for applications which use XAppStatusIcons",
+    "max-instances": -1,
+    "icon": "cs-applets",
+    "version": "1.0"
+}

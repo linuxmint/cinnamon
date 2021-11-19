@@ -2,7 +2,7 @@
 
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GObject, GdkPixbuf
+from gi.repository import Gtk, Gdk, GObject
 from PIL import Image
 
 class EyeDropper(Gtk.HBox):

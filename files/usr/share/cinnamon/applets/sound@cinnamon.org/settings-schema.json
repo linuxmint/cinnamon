@@ -12,8 +12,13 @@
         "type": "switch",
         "default": false,
         "description": "Show Loop and Shuffle controls",
-        "dependency": "playerControl",
-        "indent": true
+        "dependency": "playerControl"
+    },
+    "keyOpen": {
+        "type": "keybinding",
+        "description": "Show menu",
+        "default": "<Shift><Super>s",
+        "tooltip" : "Set keybinding(s) to show the sound applet menu."
     },
     "_knownPlayers": {
         "type": "generic",
@@ -37,8 +42,7 @@
         "units": "characters",
         "step": 1,
         "description": "Limit song information to",
-        "dependency": "showtrack",
-        "indent": true
+        "dependency": "showtrack"
     },
     "middleClickAction": {
         "type": "combobox",
@@ -73,5 +77,24 @@
         "type" : "switch",
         "description" : "Hide system tray icons for compatible players",
         "default": true
+    },
+    "section3": {
+        "type": "section",
+        "description" : "Tooltip"
+    },
+    "tooltipShowVolume": {
+        "type": "switch",
+        "default": true,
+        "description": "Show volume in tooltip"
+    },
+    "tooltipShowPlayer": {
+        "type": "switch",
+        "default": false,
+        "description": "Show player in tooltip"
+    },
+    "tooltipShowArtistTitle": {
+        "type": "switch",
+        "default": false,
+        "description": "Show song artist and title in tooltip"
     }
 }

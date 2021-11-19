@@ -1,18 +1,17 @@
 #!/usr/bin/python3
 
-import os, json, subprocess, re
-from xml.etree import ElementTree
-import gettext
-import signal
+import subprocess
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GLib, Pango
+from gi.repository import Gtk
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 LOCK_DELAY_OPTIONS = [
     (0, _("Lock immediately")),
+    (2, _("2 seconds")),
     (15, _("15 seconds")),
     (30, _("30 seconds")),
     (60, _("1 minute")),

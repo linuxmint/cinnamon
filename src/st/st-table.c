@@ -698,7 +698,7 @@ st_table_allocate (ClutterActor          *self,
                    ClutterAllocationFlags flags)
 {
   StTablePrivate *priv = ST_TABLE (self)->priv;
-  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
+  StThemeNode *theme_node;
   ClutterActorBox content_box;
 
   clutter_actor_set_allocation (self, box, flags);
@@ -708,6 +708,7 @@ st_table_allocate (ClutterActor          *self,
       return;
     };
 
+  theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
   if (priv->homogeneous)
@@ -725,7 +726,7 @@ st_table_get_preferred_width (ClutterActor *self,
   gint *min_widths, *pref_widths;
   gfloat total_min_width, total_pref_width;
   StTablePrivate *priv = ST_TABLE (self)->priv;
-  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
+  StThemeNode *theme_node;
   gint i;
   ClutterActor *child;
 
@@ -735,6 +736,8 @@ st_table_get_preferred_width (ClutterActor *self,
       *natural_width_p = 0;
       return;
     }
+
+  theme_node = st_widget_get_theme_node (ST_WIDGET (self));
 
   /* Setting size to zero and then what we want it to be causes a clear if
    * clear flag is set (which it should be.)
@@ -807,7 +810,7 @@ st_table_get_preferred_height (ClutterActor *self,
   gint *min_heights, *pref_heights;
   gfloat total_min_height, total_pref_height;
   StTablePrivate *priv = ST_TABLE (self)->priv;
-  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
+  StThemeNode *theme_node;
   gint i;
   gint *min_widths;
   ClutterActor *child;
@@ -830,6 +833,7 @@ st_table_get_preferred_height (ClutterActor *self,
       return;
     }
 
+  theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   st_theme_node_adjust_for_width (theme_node, &for_width);
 
   /* Setting size to zero and then what we want it to be causes a clear if

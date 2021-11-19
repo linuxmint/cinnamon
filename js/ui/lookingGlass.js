@@ -6,11 +6,11 @@ const Cogl = imports.gi.Cogl;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
-const Lang = imports.lang;
 const Meta = imports.gi.Meta;
 const Signals = imports.signals;
 const St = imports.gi.St;
 const System = imports.system;
+const Mainloop = imports.mainloop;
 
 const Extension = imports.ui.extension;
 const History = imports.misc.history;
@@ -24,7 +24,6 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
                     'const Meta = imports.gi.Meta; ' +
                     'const Cinnamon = imports.gi.Cinnamon; ' +
                     'const Main = imports.ui.main; ' +
-                    'const Lang = imports.lang; ' +
                     'const Tweener = imports.ui.tweener; ' +
                     /* Utility functions...we should probably be able to use these
                      * in Cinnamon core code too. */
@@ -32,11 +31,19 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
                     'const color = function(pixel) { let c= new Clutter.Color(); c.from_pixel(pixel); return c; }; ' +
                     /* Special lookingGlass functions */
                     'const it = Main.lookingGlass.getIt(); ' +
-                    'const a = Lang.bind(Main.lookingGlass, Main.lookingGlass.getWindowApp); '+
-                    'const w = Lang.bind(Main.lookingGlass, Main.lookingGlass.getWindow); '+
-                    'const r = Lang.bind(Main.lookingGlass, Main.lookingGlass.getResult); ';
+                    'const a = Main.lookingGlass.getWindowApp.bind(Main.lookingGlass); '+
+                    'const w = Main.lookingGlass.getWindow.bind(Main.lookingGlass); '+
+                    'const r = Main.lookingGlass.getResult.bind(Main.lookingGlass); ';
+
+/* delay/aggregation period for window list updates. without a delay, the window
+ * still exists in the get_window_actor() immediately after 'MetaWindow::unmanaged',
+ * even if called through an idle source. */
+const WL_UPDATE_DELAY = 200;
 
 const HISTORY_KEY = 'looking-glass-history';
+
+// these properties throw an error even trying to use typeof on them
+const KEY_BLACKLIST = ['get_abs_allocation_vertices', 'get_allocation_vertices'];
 
 /* fake types for special cases:
  *  -"array": objects that pass Array.isArray() and should only show enumerable properties
@@ -114,8 +121,12 @@ function getObjKeysInfo(obj) {
 
 
     return Array.from(keys).map((k) => {
-        let [t, v] = getObjInfo(obj[k]);
-        return { name: k.toString(), type: t, value: v, shortValue: "" };
+        if (!KEY_BLACKLIST.includes(k)) {
+            let [t, v] = getObjInfo(obj[k]);
+            return { name: k.toString(), type: t, value: v, shortValue: "" };
+        } else {
+            return { name: k.toString(), type: '[inacessible]', value: '[inacessible]', shortValue: "" }; 
+        }
     });
 }
 
@@ -131,21 +142,18 @@ function tryEval(js) {
     return out;
 }
 
-function WindowList() {
-    this._init();
-}
-
-WindowList.prototype = {
-    _init : function () {
+class WindowList {
+    constructor() {
         this.lastId = 0;
         this.latestWindowList = [];
+        this.delayedUpdateId = 0;
 
         let tracker = Cinnamon.WindowTracker.get_default();
-        global.display.connect('window-created', Lang.bind(this, this._updateWindowList));
-        tracker.connect('tracked-windows-changed', Lang.bind(this, this._updateWindowList));
-    },
+        global.display.connect('window-created', () => { this._queueDelayedUpdate() });
+        tracker.connect('window-app-changed', () => { this._queueDelayedUpdate() });
+    }
 
-    getWindowById: function(id) {
+    getWindowById(id) {
         let windows = global.get_window_actors();
         for (let i = 0; i < windows.length; i++) {
             let metaWindow = windows[i].metaWindow;
@@ -153,9 +161,20 @@ WindowList.prototype = {
                 return metaWindow;
         }
         return null;
-    },
+    }
 
-    _updateWindowList: function() {
+    _queueDelayedUpdate() {
+        if (this.delayedUpdateId)
+            Mainloop.source_remove(this.delayedUpdateId);
+
+        this.delayedUpdateId = Mainloop.timeout_add(WL_UPDATE_DELAY, () => {
+            this.delayedUpdateId = 0;
+            this._updateWindowList();
+            return false;
+        });
+    }
+
+    _updateWindowList() {
         let windows = global.get_window_actors();
         let tracker = Cinnamon.WindowTracker.get_default();
 
@@ -170,7 +189,7 @@ WindowList.prototype = {
 
             // Avoid multiple connections
             if (!metaWindow._lookingGlassManaged) {
-                metaWindow.connect('unmanaged', Lang.bind(this, this._updateWindowList));
+                metaWindow.connect('unmanaged', () => { this._queueDelayedUpdate() });
                 metaWindow._lookingGlassManaged = true;
 
                 metaWindow._lgId = this.lastId;
@@ -207,7 +226,6 @@ WindowList.prototype = {
             Main.createLookingGlass().emitWindowListUpdate();
     }
 };
-Signals.addSignalMethods(WindowList.prototype);
 
 function addBorderPaintHook(actor) {
     let signalId = actor.connect_after('paint',
@@ -233,15 +251,11 @@ function addBorderPaintHook(actor) {
     return signalId;
 }
 
-function Inspector() {
-    this._init();
-}
-
-Inspector.prototype = {
-    _init: function() {
+class Inspector {
+    constructor() {
         let container = new Cinnamon.GenericContainer({ width: 0,
-                                                     height: 0 });
-        container.connect('allocate', Lang.bind(this, this._allocate));
+                                                        height: 0 });
+        container.connect('allocate', (...args) => { this._allocate(...args) });
         Main.uiGroup.add_actor(container);
 
         let eventHandler = new St.BoxLayout({ name: 'LookingGlassDialog',
@@ -257,8 +271,8 @@ Inspector.prototype = {
 
         this._borderPaintTarget = null;
         this._borderPaintId = null;
-        eventHandler.connect('destroy', Lang.bind(this, this._onDestroy));
-        this._capturedEventId = global.stage.connect('captured-event', Lang.bind(this, this._onCapturedEvent));
+        eventHandler.connect('destroy', () => { this._onDestroy() });
+        this._capturedEventId = global.stage.connect('captured-event', (...args) => { this._onCapturedEvent(...args) });
 
         // this._target is the actor currently shown by the inspector.
         // this._pointerTarget is the actor directly under the pointer.
@@ -269,19 +283,19 @@ Inspector.prototype = {
         this._pointerTarget = null;
         this.passThroughEvents = false;
         this._updatePassthroughText();
-    },
+    }
 
-    _updatePassthroughText: function() {
+    _updatePassthroughText() {
         if (this.passThroughEvents)
             this._passThroughText.text = '(Press Pause or Control to disable event pass through)';
         else
             this._passThroughText.text = '(Press Pause or Control to enable event pass through)';
-    },
+    }
 
-    _onCapturedEvent: function (actor, event) {
-        if (event.type() == Clutter.EventType.KEY_PRESS && (event.get_key_symbol() == Clutter.Control_L ||
-                                                            event.get_key_symbol() == Clutter.Control_R ||
-                                                            event.get_key_symbol() == Clutter.Pause)) {
+    _onCapturedEvent(actor, event) {
+        if (event.type() == Clutter.EventType.KEY_PRESS && (event.get_key_symbol() === Clutter.KEY_Control_L ||
+                                                            event.get_key_symbol() === Clutter.KEY_Control_R ||
+                                                            event.get_key_symbol() === Clutter.KEY_Pause)) {
             this.passThroughEvents = !this.passThroughEvents;
             this._updatePassthroughText();
             return true;
@@ -302,9 +316,9 @@ Inspector.prototype = {
             default:
                 return true;
         }
-    },
+    }
 
-    _allocate: function(actor, box, flags) {
+    _allocate(actor, box, flags) {
         if (!this._eventHandler)
             return;
 
@@ -319,38 +333,38 @@ Inspector.prototype = {
         childBox.y1 = primary.y + Math.floor((primary.height - natHeight) / 2);
         childBox.y2 = childBox.y1 + natHeight;
         this._eventHandler.allocate(childBox, flags);
-    },
+    }
 
-    _close: function() {
+    _close() {
         global.stage.disconnect(this._capturedEventId);
         Main.popModal(this._eventHandler);
 
         this._eventHandler.destroy();
         this._eventHandler = null;
         this.emit('closed');
-    },
+    }
 
-    _onDestroy: function() {
+    _onDestroy() {
         if (this._borderPaintTarget != null)
             this._borderPaintTarget.disconnect(this._borderPaintId);
-    },
+    }
 
-    _onKeyPressEvent: function (actor, event) {
-        if (event.get_key_symbol() == Clutter.Escape)
+    _onKeyPressEvent(actor, event) {
+        if (event.get_key_symbol() === Clutter.KEY_Escape)
             this._close();
         return true;
-    },
+    }
 
-    _onButtonPressEvent: function (actor, event) {
+    _onButtonPressEvent(actor, event) {
         if (this._target) {
             let [stageX, stageY] = event.get_coords();
             this.emit('target', this._target, stageX, stageY);
         }
         this._close();
         return true;
-    },
+    }
 
-    _onScrollEvent: function (actor, event) {
+    _onScrollEvent(actor, event) {
         switch (event.get_scroll_direction()) {
             case Clutter.ScrollDirection.UP:
                 // select parent
@@ -382,14 +396,14 @@ Inspector.prototype = {
                 break;
         }
         return true;
-    },
+    }
 
-    _onMotionEvent: function (actor, event) {
+    _onMotionEvent(actor, event) {
         this._update(event);
         return true;
-    },
+    }
 
-    _update: function(event) {
+    _update(event) {
         let [stageX, stageY] = event.get_coords();
         let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL,
                                                    stageX,
@@ -411,7 +425,6 @@ Inspector.prototype = {
         }
     }
 };
-
 Signals.addSignalMethods(Inspector.prototype);
 
 
@@ -480,17 +493,13 @@ const lgIFace =
 
 const proxy = Gio.DBusProxy.makeProxyWrapper(dbusIFace);
 
-function Melange() {
-    this._init.apply(this, arguments);
-}
-
-Melange.prototype = {
-    _init: function() {
+var Melange = class {
+    constructor() {
         this.proxy = null;
         this._it = null;
         this._open = false;
         this._settings = new Gio.Settings({schema_id: "org.cinnamon.desktop.keybindings"});
-        this._settings.connect("changed::looking-glass-keybinding", Lang.bind(this, this._update_keybinding));
+        this._settings.connect("changed::looking-glass-keybinding", () => { this._update_keybinding() });
         this._update_keybinding();
 
         this._results = [];
@@ -503,41 +512,35 @@ Melange.prototype = {
         this._dbusImpl.export(Gio.DBus.session, '/org/Cinnamon/LookingGlass');
 
         Gio.DBus.session.own_name('org.Cinnamon.LookingGlass', Gio.BusNameOwnerFlags.REPLACE, null, null);
-    },
+    }
 
-    _update_keybinding: function() {
+    _update_keybinding() {
         let kb = this._settings.get_strv("looking-glass-keybinding");
-        Main.keybindingManager.addHotKeyArray("looking-glass-toggle", kb, Lang.bind(this, this._key_callback));
-    },
+        Main.keybindingManager.addHotKeyArray("looking-glass-toggle", kb, () => { this.open() });
+    }
 
-    _key_callback: function() {
-        this.open();
-    },
-
-    ensureProxy: function() {
+    ensureProxy() {
         if (!this.proxy)
             this.proxy = new proxy(Gio.DBus.session, 'org.Cinnamon.Melange', '/org/Cinnamon/Melange');
-    },
+    }
 
-    open: function() {
+    open() {
         this.ensureProxy()
         this.proxy.showRemote();
         this.updateVisible();
-    },
+    }
 
-    close: function() {
+    close() {
         this.ensureProxy()
         this.proxy.hideRemote();
         this.updateVisible();
-    },
+    }
 
-    updateVisible: function() {
-        this.proxy.getVisibleRemote(Lang.bind(this, function(visible) {
-            this._open = visible;
-        }));
-    },
+    updateVisible() {
+        this.proxy.getVisibleRemote((visible) => { this._open = visible });
+    }
 
-    _pushResult: function(command, obj, tooltip) {
+    _pushResult(command, obj, tooltip) {
         let index = this._results.length;
         let result = {"o": obj, "index": index};
         let [type, value] = getObjInfo(obj);
@@ -546,37 +549,37 @@ Melange.prototype = {
 
         this._results.push(result);
         this._it = obj;
-    },
+    }
 
-    inspect: function(path) {
+    inspect(path) {
         let fullCmd = commandHeader + path;
         let result = tryEval(fullCmd);
         return getObjKeysInfo(result);
-    },
+    }
 
-    getIt: function () {
+    getIt() {
         return this._it;
-    },
+    }
 
-    getResult: function(idx) {
+    getResult(idx) {
         return this._results[idx].o;
-    },
+    }
 
-    getWindow: function(idx) {
+    getWindow(idx) {
         return this._windowList.getWindowById(idx);
-    },
+    }
 
-    getWindowApp: function(idx) {
+    getWindowApp(idx) {
         let metaWindow = this._windowList.getWindowById(idx)
         if (metaWindow) {
             let tracker = Cinnamon.WindowTracker.get_default();
             return tracker.get_window_app(metaWindow);
         }
         return null;
-    },
+    }
 
     // DBus function
-    Eval: function(command) {
+    Eval(command) {
         this._history.addItem(command);
 
         let fullCmd = commandHeader + command;
@@ -588,36 +591,36 @@ Melange.prototype = {
         let tooltip = _("Execution time (ms): ") + (ts2 - ts) / 1000;
 
         this._pushResult(command, resultObj, tooltip);
-    },
+    }
 
     // DBus function
-    GetResults: function() {
+    GetResults() {
         return [true, this.rawResults];
-    },
+    }
 
     // DBus function
-    AddResult: function(path) {
+    AddResult(path) {
         let fullCmd = commandHeader + path;
         this._pushResult(path, tryEval(fullCmd), "");
-    },
+    }
 
     // DBus function
-    GetErrorStack: function() {
+    GetErrorStack() {
         return [true, Main._errorLogStack];
-    },
+    }
 
     // DBus function
-    GetMemoryInfo: function() {
+    GetMemoryInfo() {
         return null;
-    },
+    }
 
     // DBus function
-    FullGc: function() {
+    FullGc() {
         System.gc();
-    },
+    }
 
     // DBus function
-    Inspect: function(path) {
+    Inspect(path) {
         try {
             let result = this.inspect(path);
             return [true, result];
@@ -625,36 +628,34 @@ Melange.prototype = {
             global.logError('Error inspecting path: ' + path, e);
             return [false, []];
         }
-    },
+    }
 
     // DBus function
-    GetLatestWindowList: function() {
+    GetLatestWindowList() {
         try {
             return [true, this._windowList.latestWindowList];
         } catch (e) {
             global.logError('Error getting latest window list', e);
             return [false, []];
         }
-    },
+    }
 
     // DBus function
-    StartInspector: function() {
+    StartInspector() {
         try {
             let inspector = new Inspector();
-            inspector.connect('target', Lang.bind(this, function(i, target, stageX, stageY) {
+            inspector.connect('target', (i, target, stageX, stageY) => {
                 let name = '<inspect x:' + stageX + ' y:' + stageY + '>';
                 this._pushResult(name, target, "Inspected actor");
-            }));
-            inspector.connect('closed', Lang.bind(this, function() {
-                this.emitInspectorDone();
-            }));
+            });
+            inspector.connect('closed', () => { this.emitInspectorDone() });
         } catch (e) {
             global.logError('Error starting inspector', e);
         }
-    },
+    }
 
     // DBus function
-    GetExtensionList: function() {
+    GetExtensionList() {
         try {
             let extensionList = Array(Extension.extensions.length);
             for (let i = 0; i < extensionList.length; i++) {
@@ -680,30 +681,30 @@ Melange.prototype = {
             global.logError('Error getting the extension list', e);
             return [false, []];
         }
-    },
+    }
 
     // DBus function
-    ReloadExtension: function(uuid, type) {
+    ReloadExtension(uuid, type) {
         Extension.reloadExtension(uuid, Extension.Type[type]);
-    },
+    }
 
-    emitLogUpdate: function() {
+    emitLogUpdate() {
         this._dbusImpl.emit_signal('LogUpdate', null);
-    },
+    }
 
-    emitWindowListUpdate: function() {
+    emitWindowListUpdate() {
         this._dbusImpl.emit_signal('WindowListUpdate', null);
-    },
+    }
 
-    emitResultUpdate: function() {
+    emitResultUpdate() {
         this._dbusImpl.emit_signal('ResultUpdate', null);
-    },
+    }
 
-    emitInspectorDone: function() {
+    emitInspectorDone() {
         this._dbusImpl.emit_signal('InspectorDone', null);
-    },
+    }
 
-    emitExtensionListUpdate: function() {
+    emitExtensionListUpdate() {
         this._dbusImpl.emit_signal('ExtensionListUpdate', null);
-    },
+    }
 }

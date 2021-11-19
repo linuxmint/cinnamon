@@ -298,7 +298,7 @@ OpenSearchSystem.prototype = {
         } catch (e) {
             // TODO: remove this after glib will be removed from moduleset
             // In the default build gio is in our prefix but gvfs is not
-            Util.spawn(['gvfs-open', url])
+            Util.spawn(['gio', 'open', url])
         }
 
         Main.overview.hide();

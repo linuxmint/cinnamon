@@ -1,16 +1,16 @@
 #!/usr/bin/python3
 
 import gi
-gi.require_version('CinnamonDesktop', '3.0')
 gi.require_version('UPowerGlib', '1.0')
-from gi.repository import CinnamonDesktop, Gdk, UPowerGlib
+from gi.repository import UPowerGlib
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 POWER_BUTTON_OPTIONS = [
     ("blank", _("Lock the screen")),
     ("suspend", _("Suspend")),
-    ("shutdown", _("Shutdown immediately")),
+    ("shutdown", _("Shut down immediately")),
     ("hibernate", _("Hibernate")),
     ("interactive", _("Ask what to do")),
     ("nothing", _("Do nothing"))
@@ -46,6 +46,20 @@ SLEEP_DELAY_OPTIONS = [
 ]
 
 (UP_ID, UP_VENDOR, UP_MODEL, UP_TYPE, UP_ICON, UP_PERCENTAGE, UP_STATE, UP_BATTERY_LEVEL, UP_SECONDS) = range(9)
+
+try:
+    UPowerGlib.DeviceLevel
+except AttributeError:
+    class DeviceLevel:
+        UNKNOWN = 1
+        NONE = 1
+        LOW = 3
+        CRITICAL = 4
+        NORMAL = 6
+        HIGH = 7
+        FULL = 9
+    UPowerGlib.DeviceLevel = DeviceLevel
+
 
 def get_timestring(time_seconds):
     minutes = int((time_seconds / 60.0) + 0.5)
@@ -128,7 +142,7 @@ class Module:
 
         section = power_page.add_section(_("Power Options"))
 
-        lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep = get_available_options(self.up_client)
+        lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep, can_hibernate = get_available_options(self.up_client)
 
         size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -173,9 +187,16 @@ class Module:
             section.add_row(GSettingsComboBox(_("When the battery is critically low"), CSD_SCHEMA, "critical-battery-action", critical_options, size_group=size_group))
 
         if can_suspend and can_hybrid_sleep:
-            switch = GSettingsSwitch(_("Enable Hybrid Sleep"), CSM_SCHEMA, "prefer-hybrid-sleep")
-            switch.set_tooltip_text(_("Replaces Suspend with Hybrid Sleep"))
-            section.add_row(switch)
+            self.hybrid_switch = GSettingsSwitch(_("Enable Hybrid Sleep"), CSM_SCHEMA, "prefer-hybrid-sleep")
+            self.hybrid_switch.set_tooltip_text(_("Replaces Suspend with Hybrid Sleep"))
+            self.hybrid_switch.content_widget.connect("notify::active", self.on_hybrid_toggled)
+            section.add_row(self.hybrid_switch)
+
+        if can_suspend and can_hibernate:
+            self.sth_switch = GSettingsSwitch(_("Enable Hibernate after suspend"), CSM_SCHEMA, "suspend-then-hibernate")
+            self.sth_switch.set_tooltip_text(_("First suspend the machine and hibernate it after a certain amount of time."))
+            self.sth_switch.content_widget.connect("notify::active", self.on_sth_toggled)
+            section.add_row(self.sth_switch)
 
         # Batteries
 
@@ -241,6 +262,16 @@ class Module:
             else:
                 section = page.add_section(_("Keyboard backlight"))
                 section.add_row(BrightnessSlider(section, proxy, _("Backlight brightness")))
+
+    def on_sth_toggled(self, widget, gparam):
+        active = widget.get_active()
+        if active and hasattr(self, "hybrid_switch"):
+            self.hybrid_switch.set_value(False)
+
+    def on_hybrid_toggled(self, widget, gparam):
+        active = widget.get_active()
+        if active and hasattr(self, "sth_switch"):
+            self.sth_switch.set_value(False)
 
     def build_battery_page(self, *args):
 
@@ -489,15 +520,8 @@ class Module:
             level_box.pack_start(level_bar, True, True, 0)
             hbox.pack_start(level_box, True, True, 0)
         else:
-            status_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-            status_icon = Gtk.Image.new_from_icon_name(self.bat_level_to_icon(battery_level), Gtk.IconSize.BUTTON)
-            status_icon.set_size_request(30, -1)
-
-            status_box.pack_start(status_icon, False, False, 15)
-
             status_label = Gtk.Label(self.bat_level_to_label(battery_level))
-            status_box.pack_end(status_label, False, False, 0)
-            hbox.pack_start(status_box, True, True, 0)
+            hbox.pack_end(status_label, False, False, 0)
 
         vbox.pack_start(hbox, False, False, 0)
 
@@ -511,16 +535,6 @@ class Module:
         widget.pack_start(vbox, True, True, 0)
 
         return widget
-
-    def bat_level_to_icon(self, level):
-        if level in (UPowerGlib.DeviceLevel.FULL, UPowerGlib.DeviceLevel.HIGH):
-            return "battery-full-symbolic"
-        elif level == UPowerGlib.DeviceLevel.NORMAL:
-            return "battery-good-symbolic"
-        elif level == UPowerGlib.DeviceLevel.LOW:
-            return "battery-low-symbolic"
-        elif level == UPowerGlib.DeviceLevel.CRITICAL:
-            return "battery-caution-symbolic"
 
     def bat_level_to_label(self, level):
         if level == UPowerGlib.DeviceLevel.FULL:
@@ -547,6 +561,7 @@ def get_available_options(up_client):
     can_hibernate = False
     can_hybrid_sleep = False
 
+    # Try logind first
     try:
         connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
         proxy = Gio.DBusProxy.new_sync(
@@ -564,11 +579,21 @@ def get_available_options(up_client):
     except:
         pass
 
-    # New versions of upower does not have get_can_suspend function
+    # Next try ConsoleKit
     try:
-        can_suspend = can_suspend or up_client.get_can_suspend()
-        can_hibernate = can_hibernate or up_client.get_can_hibernate()
-        can_hybrid_sleep = can_hibernate or up_client.get_can_hybrid_sleep()
+        connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+        proxy = Gio.DBusProxy.new_sync(
+            connection,
+            Gio.DBusProxyFlags.NONE,
+            None,
+            "org.freedesktop.ConsoleKit",
+            "/org/freedesktop/ConsoleKit/Manager",
+            "org.freedesktop.ConsoleKit.Manager",
+            None)
+
+        can_suspend = can_suspend or (proxy.CanSuspend() == "yes")
+        can_hibernate = can_hibernate or (proxy.CanHybridSleep() == "yes")
+        can_hybrid_sleep = can_hybrid_sleep or (proxy.CanHybridSleep() == "yes")
     except:
         pass
 
@@ -580,7 +605,7 @@ def get_available_options(up_client):
 
     lid_options = [
         ("suspend", _("Suspend")),
-        ("shutdown", _("Shutdown immediately")),
+        ("shutdown", _("Shut down immediately")),
         ("hibernate", _("Hibernate")),
         ("blank", _("Lock Screen")),
         ("nothing", _("Do nothing"))
@@ -589,14 +614,14 @@ def get_available_options(up_client):
     button_power_options = [
         ("blank", _("Lock Screen")),
         ("suspend", _("Suspend")),
-        ("shutdown", _("Shutdown immediately")),
+        ("shutdown", _("Shut down immediately")),
         ("hibernate", _("Hibernate")),
         ("interactive", _("Ask")),
         ("nothing", _("Do nothing"))
     ]
 
     critical_options = [
-        ("shutdown", _("Shutdown immediately")),
+        ("shutdown", _("Shut down immediately")),
         ("hibernate", _("Hibernate")),
         ("nothing", _("Do nothing"))
     ]
@@ -609,7 +634,7 @@ def get_available_options(up_client):
         for options in lid_options, button_power_options, critical_options:
             remove(options, "hibernate")
 
-    return lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep
+    return lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep, can_hibernate
 
 class BrightnessSlider(SettingsWidget):
     step = 5

@@ -1,0 +1,128 @@
+#!/usr/bin/python3
+
+import sys
+import os
+import json
+import gettext
+import datetime
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, GdkPixbuf
+
+usage = """
+usage : xlet-about-dialog applets/desklets/extensions uuid
+"""
+
+gettext.install('cinnamon', '/usr/share/locale')
+
+home = os.path.expanduser('~')
+
+class AboutDialog(Gtk.AboutDialog):
+    def __init__(self, metadata, stype):
+        super(AboutDialog, self).__init__()
+        self.metadata = metadata
+        self.stype = stype
+
+        self.set_icon()
+
+        if 'version' in metadata:
+            version = self.metadata['version']
+            if 'last-edited' in metadata:
+                timestamp = datetime.datetime.fromtimestamp(self.metadata['last-edited']).isoformat(' ')
+                self.props.version = _("Version %s (%s)") % (version, timestamp)
+            else:
+                self.props.version = _("Version %s") % version
+        elif 'last-edited' in metadata:
+            timestamp = datetime.datetime.fromtimestamp(self.metadata['last-edited']).isoformat(' ')
+            self.props.version = _("Updated on %s") % timestamp
+
+        comments = self._(self.metadata['description'])
+        if 'comments' in self.metadata:
+            comments += '\n\n' + self._(self.metadata['comments'])
+        self.props.comments = comments
+
+        s_id = self.get_spices_id()
+        if s_id:
+            self.props.website = 'https://cinnamon-spices.linuxmint.com/%s/view/%s' % (self.stype, s_id)
+            self.props.website_label = _("More info")
+
+        if 'contributors' in self.metadata:
+            self.props.authors = self.metadata['contributors'].split(',')
+
+        self.props.program_name = '%s (%s)' % (self._(self.metadata['name']), self.metadata['uuid'])
+
+        self.connect('response', self.close)
+        self.show()
+
+    def close(self, *args):
+        Gtk.main_quit()
+
+    def set_icon(self):
+        # Use the generic type icon
+        self.set_logo_icon_name('cs-%s' % self.metadata['type'])
+        # Override with metadata if set..
+        if 'icon' in self.metadata:
+            self.set_logo_icon_name(self.metadata['icon'])
+        # Override with icon.png if present
+        icon_path = os.path.join(self.metadata['path'], 'icon.png')
+        if os.path.exists(icon_path):
+            icon = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 48, 48)
+            self.set_logo(icon)
+        self.set_default_icon_name('cs-%s' % self.metadata['type'])
+
+    def _(self, msg):
+        gettext.bindtextdomain(self.metadata['uuid'], home + '/.local/share/locale')
+        translation = gettext.dgettext(self.metadata['uuid'], msg)
+        # try with cinnamon domain if the xlet domain doesn't work
+        if translation == msg:
+            return _(msg)
+
+        return translation
+
+    def get_spices_id(self):
+        try:
+            cache_path = os.path.join(home, '.cinnamon', 'spices.cache', self.stype[0:-1], 'index.json')
+            if os.path.exists(cache_path):
+                with open(cache_path, 'r') as cache_file:
+                    index_cache = json.load(cache_file)
+                    if self.metadata['uuid'] in index_cache:
+                        return index_cache[self.metadata['uuid']]['spices-id']
+            return None
+        except Exception as e:
+            print('Failed to load/parse index.json');
+            print(e)
+            return None
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print(usage)
+        quit()
+
+    xlet_type = sys.argv[1]
+    uuid = sys.argv[2]
+
+    suffix = 'share/cinnamon/%s/%s' % (xlet_type, uuid)
+    prefixes = [
+        os.path.join(home, '.local'),
+        '/usr'
+    ]
+
+    path = None
+    for prefix in prefixes:
+        path = os.path.join(prefix, suffix)
+        if os.path.exists(path):
+            break
+
+    if path is None:
+        print('Unable to locate %s %s' % (xlet_type, uuid))
+        quit()
+
+    with open(os.path.join(path, 'metadata.json')) as meta_file:
+        metadata = json.load(meta_file)
+
+    metadata['path'] = path
+    metadata['type'] = xlet_type
+
+    AboutDialog(metadata, xlet_type)
+
+    Gtk.main()

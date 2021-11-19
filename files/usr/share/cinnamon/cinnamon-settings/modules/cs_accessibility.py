@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 
+import subprocess
 import gi
 gi.require_version("Gtk", "3.0")
-gi.require_version('CDesktopEnums', '3.0')
 
-from gi.repository import Gtk, CDesktopEnums
-from GSettingsWidgets import *
+from gi.repository import Gtk
+from SettingsWidgets import SidePage, GSettingsDependencySwitch, DependencyCheckInstallButton, GSettingsSoundFileChooser
+from xapp.GSettingsWidgets import *
 
 DPI_FACTOR_LARGE         = 1.25
 DPI_FACTOR_NORMAL        = 1.0
@@ -74,6 +75,12 @@ class Module:
                                                ["gnome-orca"])
             settings.add_row(switch)
 
+            def config_orca(button):
+                subprocess.Popen(['orca', '--setup'])
+
+            button = Button(_("Configure screen reader"), config_orca)
+            settings.add_reveal_row(button, "org.cinnamon.desktop.a11y.applications", "screen-reader-enabled")
+
 # Desktop Zoom
 
             settings = page.add_section(_("Desktop Zoom"))
@@ -84,7 +91,7 @@ class Module:
             spin = GSettingsSpinButton(_("Magnification"), "org.cinnamon.desktop.a11y.magnifier", "mag-factor", None, 1.0, 15.0, step=0.5)
             settings.add_reveal_row(spin, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
 
-            zoom_key_options = [["", _("Disabled")], ["<Alt>", "<Alt>"],["<Super>", "<Super>"],["<Control>", "<Control>"]]
+            zoom_key_options = [["", _("Disabled")], ["<Alt>", "<Alt>"],["<Super>", "<Super>"],["<Control>", "<Control>"], ["<Shift>", "<Shift>"]]
             widget = GSettingsComboBox(_("Mouse wheel modifier"), "org.cinnamon.desktop.wm.preferences", "mouse-button-zoom-modifier", zoom_key_options)
             widget.set_tooltip_text(_("While this modifier is pressed, mouse scrolling will increase or decrease zoom."))
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")

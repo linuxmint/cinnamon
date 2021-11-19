@@ -16,6 +16,8 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
 
         this.label = new St.Label({ text: _("Power management") });
 
+        this.actor.label_actor = this.label;
+
         this._statusIcon = new St.Icon({ style_class: 'popup-menu-icon',
                                            icon_type: St.IconType.SYMBOLIC,
                                            icon_name: "dialog-warning-symbolic",

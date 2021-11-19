@@ -106,6 +106,10 @@ KeybindingManager.prototype = {
         let list = this.kb_schema.get_strv("custom-list");
 
         for (let i = 0; i < list.length; i++) {
+            if (list[i] === "__dummy__") {
+                continue;
+            }
+
             let custom_path = CUSTOM_KEYS_BASENAME + "/" + list[i] + "/";
             let schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path);
             let command = schema.get_string("command");

@@ -128,6 +128,8 @@ void     cinnamon_global_shutdown                  (void);
 void     cinnamon_global_reexec_self               (CinnamonGlobal  *global);
 
 void     cinnamon_global_segfault                  (CinnamonGlobal  *global);
+void     cinnamon_global_alloc_leak                (CinnamonGlobal  *global,
+                                                    gint             mb);
 
 G_END_DECLS
 

@@ -3,6 +3,7 @@
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Pango = imports.gi.Pango;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
@@ -35,11 +36,22 @@ const ALIASES_KEY = 'run-dialog-aliases';
 const DIALOG_GROW_TIME = 0.1;
 const MAX_COMPLETIONS = 40;
 
+const NAVIGATE_TYPE_NONE = 0;
+const NAVIGATE_TYPE_TAB = 1;
+const NAVIGATE_TYPE_ARROW = 2;
+
+const UP = 1;
+const DOWN = 2;
+
 const DEVEL_COMMANDS = { 'lg': x => Main.createLookingGlass().open(),
-                         'r': x => global.reexec_self(),
-                         'restart': x => global.reexec_self(),
+                         'r': x => Main.restartCinnamon(true),
+                         'restart': x => Main.restartCinnamon(true),
                          'debugexit': x => Meta.quit(Meta.ExitCode.ERROR),
                          'rt': x => Main.themeManager._changeTheme() };
+
+/* The modal dialog parent class has a 100ms close animation.  Delay long enough for it
+ * to complete before doing something disruptive like restarting cinnamon */
+const DEVEL_COMMAND_DELAY =  parseInt(ModalDialog.OPEN_AND_CLOSE_TIME * 1000) + 10;
 
 /**
  * completeCommand:
@@ -153,9 +165,11 @@ __proto__: ModalDialog.ModalDialog.prototype,
         global.display.connect('restart', () => this.close());
 
         let label = new St.Label({ style_class: 'run-dialog-label',
-                                   text: _("Please enter a command:") });
+                                   text: _("Enter a command") });
 
-        this.contentLayout.add(label, { y_align: St.Align.START });
+        this.contentLayout.set_width(350);
+
+        this.contentLayout.add(label, { x_align: St.Align.MIDDLE });
 
         let entry = new St.Entry({ style_class: 'run-dialog-entry' });
         CinnamonEntry.addContextMenu(entry);
@@ -171,73 +185,78 @@ __proto__: ModalDialog.ModalDialog.prototype,
         this.contentLayout.add(this._completionBox);
         this._completionSelected = 0;
 
-        this._errorBox = new St.BoxLayout({ style_class: 'run-dialog-error-box' });
+        let defaultDescriptionText = _("Press ESC to close");
 
-        this.contentLayout.add(this._errorBox, { expand: true });
-
-        let errorIcon = new St.Icon({ icon_name: 'dialog-error', icon_size: 24, style_class: 'run-dialog-error-icon' });
-
-        this._errorBox.add(errorIcon, { y_align: St.Align.MIDDLE });
+        this._descriptionLabel = new St.Label({ style_class: 'run-dialog-description',
+                                                text:        defaultDescriptionText });
+        this._descriptionLabel.clutter_text.line_wrap = true;
+        this._descriptionLabel.clutter_text.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
+        this.contentLayout.add(this._descriptionLabel, { y_align: St.Align.MIDDLE });
 
         this._commandError = false;
 
-        this._errorMessage = new St.Label({ style_class: 'run-dialog-error-label' });
-        this._errorMessage.clutter_text.line_wrap = true;
-
-        this._errorBox.add(this._errorMessage, { expand: true,
-                                                 y_align: St.Align.MIDDLE,
-                                                 y_fill: false });
-
-        this._errorBox.hide();
+        this._entryText.connect('key-press-event', Lang.bind(this, this._onKeyPress));
 
         this._history = new History.HistoryManager({ gsettingsKey: HISTORY_KEY,
                                                      entry: this._entryText,
                                                      deduplicate: true });
-        this._entryText.connect('key-press-event', Lang.bind(this, this._onKeyPress));
-        this._entryText.connect('key-focus-out', () => this.cancelAsyncCommand());
 
         this._updateCompletionTimer = 0;
-    },
-
-    get asyncCommandInProgress() {
-        return this.subprocess && !this.subprocess.get_if_exited()
-    },
-
-    cancelAsyncCommand: function() {
-        // If a process opens a new window and causes loss of focus (e.g. pkexec), we want
-        // to make sure our async callback is cancelled, and close the run dialog.
-        setTimeout(() => {
-            if (this.asyncCommandInProgress) {
-                this.subprocess.cancellable.cancel();
-                this.subprocess = null;
-            }
-            this.close();
-        }, 0);
-    },
+     },
 
     _onKeyPress: function (o, e) {
-        if (this.asyncCommandInProgress) return;
-
         let symbol = e.get_key_symbol();
-        if (symbol == Clutter.Return || symbol == Clutter.KP_Enter) {
+        if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) {
+            if (o.get_text().trim() == "") {
+                return false;
+            }
+
+            /* When enter is hit with completions open, if the current selection
+             * is a folder, open that folder immediately.  Otherwise, just close
+             * the completion box - the user can add an argument to the command
+             * they selected (there's already a space provided) */
+            if (this._completionBox.visible && !o.get_text().endsWith("/")) {
+                this._completionSelected = 0;
+                this._completionBox.hide();
+                this._entryText.set_selection_bound(-1);
+                this._entryText.set_cursor_position(-1);
+                this._oldText = "";
+                return true;
+            }
+
             this.popModal();
-            let inTerminal = Cinnamon.get_event_state(e) & Clutter.ModifierType.CONTROL_MASK;
-            this._run(o.get_text(), inTerminal, (success) => {
-                if (this.state == ModalDialog.State.CLOSED || this.state == ModalDialog.State.CLOSING) return;
-                if (success) return this.close();
-                if (!this.pushModal()) this.close();
-            });
+            if (Cinnamon.get_event_state(e) & Clutter.ModifierType.CONTROL_MASK)
+                this._run(o.get_text(), true);
+            else
+                this._run(o.get_text(), false);
+            if (!this._commandError)
+                this.close();
+            else {
+                if (!this.pushModal())
+                    this.close();
+            }
             return true;
         }
-        if (symbol == Clutter.Escape || symbol == Clutter.Super_L || symbol == Clutter.Super_R) {
+        if (symbol === Clutter.KEY_Escape || symbol === Clutter.KEY_Super_L || symbol === Clutter.KEY_Super_R) {
             this.close();
             return true;
         }
-        if (symbol == Clutter.Tab) {
-            this._updateCompletions(true);
+        if (symbol === Clutter.KEY_Tab) {
+            this._updateCompletions(NAVIGATE_TYPE_TAB);
             return true;
         }
-        if (symbol == Clutter.BackSpace) {
+
+        if (this._completionBox.visible) {
+            if (symbol === Clutter.KEY_Up) {
+                this._updateCompletions(NAVIGATE_TYPE_ARROW, UP);
+                return true;
+            } else if (symbol === Clutter.KEY_Down) {
+                this._updateCompletions(NAVIGATE_TYPE_ARROW, DOWN);
+                return true;
+            }
+        }
+
+        if (symbol === Clutter.KEY_BackSpace) {
             this._completionSelected = 0;
             this._completionBox.hide();
             this._oldText = "";
@@ -257,10 +276,10 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
     // There is different behaviour depending on whether this is called due to
     // pressing tab or other keys.
-    _updateCompletions: function(tab) {
+    _updateCompletions: function(nav_type=NAVIGATE_TYPE_NONE, direction=DOWN) {
         this._updateCompletionTimer = 0;
 
-        let text = this._entryText.get_text();
+        let text = this._expandHome(this._entryText.get_text());
 
         /* If update is caused by user pressing key, and the user just finished
          * a directory path, don't provide new predictions. For example, the
@@ -271,7 +290,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
          * not perform completions, since completions will list all files in
          * /home/user/, which is unexpected.
          */
-        if (!tab && text.charAt(text.length - 1) == "/") {
+        if (!nav_type && text.charAt(text.length - 1) == "/") {
             this._completionBox.hide();
             this._oldText = "";
             return;
@@ -283,12 +302,22 @@ __proto__: ModalDialog.ModalDialog.prototype,
         /* If update is caused by user typing "tab" and no text has changed
          * since then, cycle through available completions.
          */
-        if (this._oldText == text && tab && this._completionBox.visible) {
-            this._completionSelected ++;
-            this._completionSelected %= this._completions.length;
-            this._showCompletions(text);
-            return;
+        if (this._oldText == text && nav_type && this._completionBox.visible) {
+            if ((nav_type == NAVIGATE_TYPE_ARROW && direction == DOWN) || nav_type == NAVIGATE_TYPE_TAB) {
+                this._completionSelected ++;
+                this._completionSelected %= this._completions.length;
+                this._showCompletions(text);
+                return;
+            } else { // nav_type was > 0 and not tab, and not down, so navigate UP.
+                if (this._completionSelected > 0) {
+                    this._completionSelected --;
+                }
+
+                this._showCompletions(text);
+                return;
+            }
         }
+
         this._oldText = text;
 
         let [postfix, completions] = completeCommand(text);
@@ -301,7 +330,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
          * possible completions. If there is no possible completion, then hide
          * completion box.
          */
-        if (postfix.length > 0 && tab) {
+        if (postfix.length > 0 && nav_type == NAVIGATE_TYPE_TAB) {
             this._entryText.set_text(text + postfix);
         } else if (completions.length > 0 &&
                 global.settings.get_boolean(SHOW_COMPLETIONS_KEY)) {
@@ -312,6 +341,15 @@ __proto__: ModalDialog.ModalDialog.prototype,
             this._completionBox.hide();
             this._oldText = "";
         }
+    },
+
+    _expandHome: function(text) {
+        if (text.charAt(0) == '~') {
+            text = text.slice(1);
+            return GLib.build_filenamev([GLib.get_home_dir(), text]);
+        }
+
+        return text;
     },
 
     _showCompletions: function(orig) {
@@ -356,13 +394,16 @@ __proto__: ModalDialog.ModalDialog.prototype,
         this._entryText.set_selection(-1, orig.length);
     },
 
-    _run: function(input, inTerminal, callback) {
+    _run : function(input, inTerminal) {
         input = input.trim();
         this._history.addItem(input);
+        this._commandError = false;
         if (this._enableInternalCommands && input in DEVEL_COMMANDS) {
-            DEVEL_COMMANDS[input.trim()]();
+            Mainloop.timeout_add(DEVEL_COMMAND_DELAY, ()=>DEVEL_COMMANDS[input]());
             return;
         }
+
+        input = this._expandHome(input);
 
         // Aliases is a list of strings of the form a:b, where an instance of
         // "a" is to be replaced with "b". Replacement is only performed on the
@@ -376,75 +417,54 @@ __proto__: ModalDialog.ModalDialog.prototype,
             }
         }
         let command = split.join(" ");
-        let path = null;
-        let isHome = input.charAt(0) === '~';
-        let isPath = input.charAt(0) == '/'
-        if (isPath || isHome) {
-            if (isPath) {
+
+        try {
+            if (inTerminal) {
+                let exec = this._terminalSettings.get_string(EXEC_KEY);
+                let exec_arg = this._terminalSettings.get_string(EXEC_ARG_KEY);
+                command = exec + ' ' + exec_arg + ' ' + input;
+            }
+            Util.spawnCommandLineAsync(command, null, null);
+        } catch (e) {
+            // Mmmh, that failed - see if @input matches an existing file
+            let path = null;
+
+            if (input.charAt(0) == '/') {
                 path = input;
             } else {
-                input = input.slice(1);
                 path = GLib.build_filenamev([GLib.get_home_dir(), input]);
             }
 
-            if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
+            if (path && GLib.file_test(path, GLib.FileTest.EXISTS)) {
                 let file = Gio.file_new_for_path(path);
-                Util.tryFn(() => {
-                    Gio.app_info_launch_default_for_uri(file.get_uri(), global.create_app_launch_context());
-                }, (e) => {
+                try {
+                    Gio.app_info_launch_default_for_uri(file.get_uri(),
+                            global.create_app_launch_context());
+                } catch (e) {
                     // The exception from gjs contains an error string like:
                     //     Error invoking Gio.app_info_launch_default_for_uri: No application
                     //     is registered as handling this file
                     // We are only interested in the part after the first colon.
                     let message = e.message.replace(/[^:]*: *(.+)/, '$1');
                     this._showError(message);
-                });
-                this.close();
-                return;
+                }
+            } else {
+                this._showError(e.message);
             }
         }
-
-        if (inTerminal) {
-            let exec = this._terminalSettings.get_string(EXEC_KEY);
-            let exec_arg = this._terminalSettings.get_string(EXEC_ARG_KEY);
-            command = exec + ' ' + exec_arg + ' ' + input;
-        }
-        this.subprocess = Util.spawnCommandLineAsync(command, (stdout, stderr, code) => {
-            this.subprocess = null;
-            if (stderr) {
-                this._showError(stderr);
-                callback(false);
-                return;
-            }
-            callback(true);
-        });
     },
 
     _showError : function(message) {
         this._commandError = true;
 
-        this._errorMessage.set_text(message.trim());
-
-        if (!this._errorBox.visible) {
-            let [errorBoxMinHeight, errorBoxNaturalHeight] = this._errorBox.get_preferred_height(-1);
-
-            let parentActor = this._errorBox.get_parent();
-            Tweener.addTween(parentActor,
-                             { height: parentActor.height + errorBoxNaturalHeight,
-                               time: DIALOG_GROW_TIME,
-                               transition: 'easeOutQuad',
-                               onComplete: Lang.bind(this,
-                                                     function() {
-                                                         parentActor.set_height(-1);
-                                                         this._errorBox.show();
-                                                     })
-                             });
-        }
+        this._descriptionLabel.set_text(message.trim());
+        this._descriptionLabel.add_style_class_name('error');
     },
 
     open: function() {
         this._history.lastItem();
-        this._errorBox.hide();
+        this._descriptionLabel.set_text(_("Press ESC to close"));
+        this._descriptionLabel.remove_style_class_name('error');
         this._entryText.set_text('');
         this._completionBox.hide();
         this._commandError = false;

@@ -36,7 +36,7 @@
 
     <para>The <code>_init</code> function of each object is the constructor. So if you want to know what happens when you call <code>new Applet.Applet</code>, you look at the <code>_init</code> function of <code>Applet.Applet</code>. There usually isn't much helpful information apart form what each argument does.</para>
 
-    <para>Certain variables and functions are prepended with <code>_</code>, eg. <code>_showPanel</code>. These are private variables and functions which shouldn't be accessed normally, and is there purely for referencial purposes. It is generally not a good idea to use them in applets/desklets. Within Cinnamon itself, you may use them when necessary.</para>
+    <para>Certain variables and functions are prepended with <code>_</code>, eg. <code>_showPanel</code>. These are private variables and functions which shouldn't be accessed normally, and is there purely for referential purposes. It is generally not a good idea to use them in applets/desklets. Within Cinnamon itself, you may use them when necessary.</para>
 
     <para>Note that the <code>_init</code> is also a private function, and you also shouldn't call it directly (unless you are inheriting the object). It is implicitly called when you call the constructor (which technically can be totally unrelated to the <code>_init</code> function.</para>
 

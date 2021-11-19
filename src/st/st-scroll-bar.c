@@ -636,10 +636,12 @@ handle_button_press_event_cb (ClutterActor       *actor,
                               StScrollBar        *bar)
 {
   ClutterStage *stage;
-  StScrollBarPrivate *priv = bar->priv;
+  StScrollBarPrivate *priv;
 
   if (event->button != 1)
     return FALSE;
+
+  priv = bar->priv;
 
   if (!clutter_actor_transform_stage_point (priv->handle,
                                             event->x,

@@ -1,0 +1,17 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC '-//OASIS//DTD DocBook XML V4.3//EN'
+    'http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd'
+[
+  <!ENTITY version SYSTEM "../version.xml">
+  <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+]>
+<book id='index'>
+  <bookinfo>
+    <title>Cinnamon Javascript Reference Manual</title>
+    <releaseinfo>
+      This document is for Cinnamon &version;.
+    </releaseinfo>
+  </bookinfo>
+  <xi:include href="ui.xml"/>
+  <xi:include href="misc.xml"/>
+</book>

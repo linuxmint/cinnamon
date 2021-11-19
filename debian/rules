@@ -9,48 +9,20 @@ export LC_ALL=C.UTF-8
 
 export DEB_LDFLAGS_MAINT_APPEND=-Wl,--as-needed
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
-
-# To avoid running configure twice (because gnome-autogen.sh)
-export NOCONFIGURE=yes
-
-# This will set current version string
-VERSION := $(shell dpkg-parsechangelog | sed -n 's/Version: //p')
-# This will set major version string (strip substring '.<something>' after 'maemo<something>')
-CINNAMON_VERSION := $(shell echo $(VERSION) | sed 's/\(.*.*\)\..*/\1.0/')
-
-DH_GENCONTROL_ARGS = -Vcinnamon:Version=$(CINNAMON_VERSION)
 
 %:
-	dh $@ --with python3,gir
-
-override_dh_autoreconf:
-	dh_autoreconf --as-needed ./autogen.sh
+	dh $@ --with gir
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
-		--enable-compile-warnings=yes \
-		--enable-gtk-doc \
+		--libexecdir=/usr/libexec/cinnamon \
+		-D docs=true \
+		-D deprecated_warnings=false \
+		-D py3modules_dir=/usr/lib/python3/dist-packages
 
-override_dh_auto_test:
-	# Disable checks since they are not functional for the moment
-	:
+# workaround for fix lmde4 build
+override_dh_dwz:
 
-override_dh_install-indep:
-	dh_install --list-missing
-
-override_dh_install-arch:
-	dh_install -X.la --list-missing
 
 override_dh_strip:
 	dh_strip --dbg-package=cinnamon-dbg
-
-override_dh_makeshlibs:
-	dh_makeshlibs -pcinnamon -Xlibcinnamon.so
-	dh_makeshlibs --remaining-packages
-
-override_dh_girepository:
-	dh_girepository -l src -p/usr/lib/$(DEB_HOST_MULTIARCH)/muffin /usr/lib/$(DEB_HOST_MULTIARCH)/cinnamon
-
-override_dh_gencontrol:
-	dh_gencontrol -- $(DH_GENCONTROL_ARGS)

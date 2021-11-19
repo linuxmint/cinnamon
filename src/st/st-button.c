@@ -44,7 +44,7 @@
 #include "st-texture-cache.h"
 #include "st-private.h"
 
-#include <st/st-widget-accessible.h>
+#include "st-widget-accessible.h"
 
 enum
 {
@@ -207,7 +207,8 @@ st_button_key_press (ClutterActor    *actor,
   if (button->priv->button_mask & ST_BUTTON_ONE)
     {
       if (event->keyval == CLUTTER_KEY_space ||
-          event->keyval == CLUTTER_KEY_Return)
+          event->keyval == CLUTTER_KEY_Return ||
+          event->keyval == CLUTTER_KEY_KP_Enter)
         {
           st_button_press (button, ST_BUTTON_ONE);
           return TRUE;
@@ -226,7 +227,8 @@ st_button_key_release (ClutterActor    *actor,
   if (button->priv->button_mask & ST_BUTTON_ONE)
     {
       if (event->keyval == CLUTTER_KEY_space ||
-          event->keyval == CLUTTER_KEY_Return)
+          event->keyval == CLUTTER_KEY_Return ||
+          event->keyval == CLUTTER_KEY_KP_Enter)
         {
           gboolean is_click;
 
@@ -269,6 +271,8 @@ st_button_enter (ClutterActor         *actor,
         st_button_release (button, button->priv->grabbed, 0);
     }
 
+  st_widget_add_accessible_state (ST_WIDGET (button), ATK_STATE_FOCUSED);
+
   return ret;
 }
 
@@ -288,6 +292,8 @@ st_button_leave (ClutterActor         *actor,
       else
         st_button_release (button, button->priv->grabbed, 0);
     }
+
+  st_widget_remove_accessible_state (ST_WIDGET (button), ATK_STATE_FOCUSED);
 
   return ret;
 }
@@ -533,6 +539,7 @@ st_button_set_label (StButton    *button,
                             "use-markup", TRUE,
                             NULL);
       st_bin_set_child (ST_BIN (button), label);
+      st_widget_set_accessible_name (ST_WIDGET (button), text);
     }
 
   /* Fake a style change so that we reset the style properties on the label */

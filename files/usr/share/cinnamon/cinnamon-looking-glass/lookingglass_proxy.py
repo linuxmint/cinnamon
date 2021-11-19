@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import dbus
 from gi.repository import Gio
 
 LG_DBUS_NAME = "org.Cinnamon.LookingGlass"
@@ -59,8 +58,8 @@ class LookingGlassProxy:
                                                     None,
                                                     self.on_proxy_ready,
                                                     None)
-        except dbus.exceptions.DBusException as exc:
-            print(exc)
+        except GLib.Error as e:
+            print(e.message)
             self._proxy = None
 
     def on_proxy_ready(self, obj, result, data=None):

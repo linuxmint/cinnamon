@@ -34,8 +34,6 @@
 #define CACHE_PREFIX_RAW_CHECKSUM "raw-checksum:"
 #define CACHE_PREFIX_COMPRESSED_CHECKSUM "compressed-checksum:"
 
-static int active_scale = 1;
-
 struct _StTextureCachePrivate
 {
   GtkIconTheme *icon_theme;
@@ -50,13 +48,12 @@ struct _StTextureCachePrivate
   /* File monitors to evict cache data on changes */
   GHashTable *file_monitors; /* char * -> GFileMonitor * */
 
-  GSettings *settings;
-
   double scale;
 };
 
 static void st_texture_cache_dispose (GObject *object);
 static void st_texture_cache_finalize (GObject *object);
+static void ensure_monitor_for_uri (StTextureCache *cache, const gchar    *uri);
 
 enum
 {
@@ -149,15 +146,27 @@ on_icon_theme_changed (GtkIconTheme   *icon_theme,
 }
 
 static void
-update_scale_factor (GSettings *settings,
-                     gchar *key,
-                     gpointer data)
+update_scale_factor (gpointer data)
 {
   StTextureCache *cache = ST_TEXTURE_CACHE (data);
+  GdkScreen *screen;
+  guint new_scale;
+  GValue value = G_VALUE_INIT;
 
-  cache->priv->scale = g_settings_get_int (settings, key);
+  screen = gdk_screen_get_default ();
 
-  active_scale = cache->priv->scale;
+  g_value_init (&value, G_TYPE_UINT);
+  new_scale = cache->priv->scale;
+
+  if (gdk_screen_get_setting (screen, "gdk-window-scaling-factor", &value))
+    {
+      new_scale = g_value_get_uint (&value);
+    }
+
+  if (new_scale != cache->priv->scale)
+    {
+      cache->priv->scale = new_scale;
+    }
 
   on_icon_theme_changed (cache->priv->icon_theme, cache);
 }
@@ -184,12 +193,10 @@ st_texture_cache_init (StTextureCache *self)
   self->priv->file_monitors = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                      g_object_unref, g_object_unref);
 
-  self->priv->settings = g_settings_new ("org.cinnamon");
+  g_signal_connect_swapped (gtk_settings_get_default (), "notify::gtk-xft-dpi",
+                            G_CALLBACK (update_scale_factor), self);
 
-  g_signal_connect (self->priv->settings, "changed::active-display-scale",
-                    G_CALLBACK (update_scale_factor), self);
-
-  update_scale_factor (self->priv->settings, "active-display-scale", self);
+  update_scale_factor (self);
 }
 
 static void
@@ -205,13 +212,9 @@ st_texture_cache_dispose (GObject *object)
       self->priv->icon_theme = NULL;
     }
 
-  if (self->priv->settings)
-    {
-      g_signal_handlers_disconnect_by_func (self->priv->settings,
-                                            (gpointer) update_scale_factor, self);
-      g_object_unref (self->priv->settings);
-      self->priv->settings = NULL;
-    }
+  g_signal_handlers_disconnect_by_func (gtk_settings_get_default (),
+                                        (gpointer) update_scale_factor,
+                                        self);
 
   g_clear_pointer (&self->priv->keyed_cache, g_hash_table_destroy);
   g_clear_pointer (&self->priv->keyed_surface_cache, g_hash_table_destroy);
@@ -293,6 +296,7 @@ rgba_from_clutter (GdkRGBA      *rgba,
 typedef struct {
   int width;
   int height;
+  int scale;
 } Dimensions;
 
 /* This struct corresponds to a request for an texture.
@@ -309,6 +313,7 @@ typedef struct {
   GtkIconInfo *icon_info;
   StIconColors *colors;
   char *uri;
+  gint scale;
 } AsyncTextureLoadData;
 
 static void
@@ -369,8 +374,8 @@ on_image_size_prepared (GdkPixbufLoader *pixbuf_loader,
     final_height = scaled_height;
   }
 
-  final_width = (int)((double) final_width * active_scale);
-  final_height = (int)((double) final_height * active_scale);
+  final_width = (int)((double) final_width * available_dimensions->scale);
+  final_height = (int)((double) final_height * available_dimensions->scale);
   gdk_pixbuf_loader_set_size (pixbuf_loader, final_width, final_height);
 }
 
@@ -379,6 +384,7 @@ impl_load_pixbuf_data (const guchar   *data,
                        gsize           size,
                        int             available_width,
                        int             available_height,
+                       int             scale,
                        GError        **error)
 {
   GdkPixbufLoader *pixbuf_loader = NULL;
@@ -392,6 +398,7 @@ impl_load_pixbuf_data (const guchar   *data,
 
   available_dimensions.width = available_width;
   available_dimensions.height = available_height;
+  available_dimensions.scale = scale;
   g_signal_connect (pixbuf_loader, "size-prepared",
                     G_CALLBACK (on_image_size_prepared), &available_dimensions);
 
@@ -451,6 +458,7 @@ static GdkPixbuf *
 impl_load_pixbuf_file (const char     *uri,
                        int             available_width,
                        int             available_height,
+                       int             scale,
                        GError        **error)
 {
   GdkPixbuf *pixbuf = NULL;
@@ -463,6 +471,7 @@ impl_load_pixbuf_file (const char     *uri,
     {
       pixbuf = impl_load_pixbuf_data ((const guchar *) contents, size,
                                       available_width, available_height,
+                                      scale,
                                       error);
     }
 
@@ -485,7 +494,7 @@ load_pixbuf_thread (GTask        *result,
   g_assert (data != NULL);
   g_assert (data->uri != NULL);
 
-  pixbuf = impl_load_pixbuf_file (data->uri, data->width, data->height, &error);
+  pixbuf = impl_load_pixbuf_file (data->uri, data->width, data->height, data->scale, &error);
 
   if (error != NULL)
     g_task_return_error (result, error);
@@ -831,6 +840,13 @@ load_gicon_with_colors (StTextureCache    *cache,
       load_texture_async (cache, request);
     }
 
+  if (G_IS_FILE_ICON (icon))
+  {
+    GFile *file = g_file_icon_get_file (G_FILE_ICON (icon));
+    char *uri = g_file_get_uri (file);
+    ensure_monitor_for_uri (cache, uri);
+  }
+
   return CLUTTER_ACTOR (texture);
 }
 
@@ -897,24 +913,49 @@ file_changed_cb (GFileMonitor      *monitor,
                  gpointer           user_data)
 {
   StTextureCache *cache = user_data;
-  char *uri, *key;
+  char *uri, *path;
+
+  GHashTableIter iter;
+  gpointer key;
+  gpointer value;
+
+  gchar *path_prefixed;
+  gchar *uri_prefixed;
+  gchar *uri_for_cairo_prefixed;
 
   if (event_type != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT)
     return;
 
   uri = g_file_get_uri (file);
+  path = g_file_get_path (file);
 
-  key = g_strconcat (CACHE_PREFIX_URI, uri, NULL);
-  g_hash_table_remove (cache->priv->keyed_cache, key);
-  g_free (key);
+  path_prefixed = g_strconcat (CACHE_PREFIX_ICON, path, NULL);
+  uri_prefixed = g_strconcat (CACHE_PREFIX_URI, uri, NULL);
+  uri_for_cairo_prefixed = g_strconcat (CACHE_PREFIX_URI_FOR_CAIRO, uri, NULL);
 
-  key = g_strconcat (CACHE_PREFIX_URI_FOR_CAIRO, uri, NULL);
-  g_hash_table_remove (cache->priv->keyed_surface_cache, key);
-  g_free (key);
+  g_hash_table_iter_init (&iter, cache->priv->keyed_cache);
+  while (g_hash_table_iter_next (&iter, &key, &value))
+  {
+    const char *tmp = key;
+    if (g_str_has_prefix (tmp, path_prefixed))
+    {
+      g_hash_table_iter_remove (&iter);
+    }
+    if (g_strcmp0 (tmp, uri_prefixed) == 0)
+    {
+      g_hash_table_iter_remove (&iter);
+    }
+  }
+
+  g_hash_table_remove (cache->priv->keyed_surface_cache, uri_for_cairo_prefixed);
 
   g_signal_emit (cache, signals[TEXTURE_FILE_CHANGED], 0, uri);
 
+  g_free (path_prefixed);
+  g_free (uri_prefixed);
+  g_free (uri_for_cairo_prefixed);
   g_free (uri);
+  g_free (path);
 }
 
 static void
@@ -964,12 +1005,15 @@ on_sliced_image_loaded (GObject *source_object,
                         gpointer user_data)
 {
   GList *list, *pixbufs;
-  GObject *cache = source_object;
-  AsyncImageData *data = (AsyncImageData *)user_data;
+  GObject *cache;
+  AsyncImageData *data;
   GTask *task = G_TASK (res);
 
   if (g_task_had_error (task))
     return;
+
+  cache = source_object;
+  data = (AsyncImageData *)user_data;
 
   pixbufs = g_task_propagate_pointer (task, NULL);
   for (list = pixbufs; list; list = list->next)
@@ -1019,9 +1063,10 @@ load_sliced_image (GTask        *result,
         {
           GdkPixbuf *pixbuf = gdk_pixbuf_new_subpixbuf (pix, x, y, data->grid_width, data->grid_height);
           g_assert (pixbuf != NULL);
-          res = g_list_append (res, pixbuf);
+          res = g_list_prepend (res, pixbuf);
         }
     }
+  res = g_list_reverse (res);
   /* We don't need the original pixbuf anymore, though the subpixbufs
      will hold a reference. */
   g_object_unref (pix);
@@ -1073,6 +1118,149 @@ st_texture_cache_load_sliced_image (StTextureCache *cache,
 
   return actor;
 }
+
+typedef struct {
+  gchar *path;
+  gint   width, height;
+  StTextureCacheLoadImageCallback load_callback;
+  gpointer load_callback_data;
+} ImageFromFileAsyncData;
+
+static void
+on_image_from_file_data_destroy (gpointer data)
+{
+  ImageFromFileAsyncData *d = (ImageFromFileAsyncData *)data;
+  g_free (d->path);
+  g_free (d);
+}
+
+static void
+on_image_from_file_loaded (GObject      *source,
+                           GAsyncResult *res,
+                           gpointer      user_data)
+{
+  GTask *task = G_TASK (res);
+  GdkPixbuf *pixbuf;
+  ClutterContent *content;
+  ClutterActor *actor;
+  GError *error;
+  ImageFromFileAsyncData *data;
+  gint width, height;
+
+  data = (ImageFromFileAsyncData *)user_data;
+  error = NULL;
+
+  actor = clutter_actor_new ();
+
+  pixbuf = g_task_propagate_pointer (task, &error);
+  width = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
+
+  if (error)
+    {
+      g_warning ("Could not load image from file: %s\n", error->message);
+      g_error_free (error);
+
+      data->load_callback (ST_TEXTURE_CACHE (source), actor, data->load_callback_data);
+
+      return;
+    }
+
+  content = clutter_image_new ();
+
+  clutter_image_set_data (CLUTTER_IMAGE (content),
+                          gdk_pixbuf_get_pixels (pixbuf),
+                          gdk_pixbuf_get_has_alpha (pixbuf)
+                              ? COGL_PIXEL_FORMAT_RGBA_8888
+                              : COGL_PIXEL_FORMAT_RGB_888,
+                          gdk_pixbuf_get_width (pixbuf),
+                          gdk_pixbuf_get_height (pixbuf),
+                          gdk_pixbuf_get_rowstride (pixbuf),
+                          &error);
+
+  g_object_unref (pixbuf);
+
+  clutter_actor_set_content (actor, content);
+  clutter_actor_set_size (actor, width, height);
+
+  g_object_unref (content);
+
+  data->load_callback (ST_TEXTURE_CACHE (source), actor, data->load_callback_data);
+}
+
+static void
+load_image_from_file_thread (GTask        *task,
+                             gpointer      source,
+                             gpointer      task_data,
+                             GCancellable *cancellable)
+{
+  ImageFromFileAsyncData *data;
+  GdkPixbuf *pixbuf;
+  GError *error;
+
+  data = task_data;
+  error = NULL;
+
+  pixbuf = gdk_pixbuf_new_from_file_at_scale (data->path,
+                                              data->width,
+                                              data->height,
+                                              TRUE,
+                                              &error);
+
+  if (error)
+    {
+      g_task_return_error (task, error);
+      return;
+    }
+
+  g_task_return_pointer (task, pixbuf, g_object_unref);
+}
+
+/**
+ * st_texture_cache_load_image_from_file_async:
+ * @cache: A #StTextureCache
+ * @path: Path to a filename
+ * @width: Width in pixels (or -1 to leave unconstrained)
+ * @height: Height in pixels (or -1 to leave unconstrained)
+ * @callback: (scope async) (not nullable): Function called when the image is loaded (required)
+ * @user_data: Data to pass to the load callback
+ *
+ * This function loads an image file into a clutter actor asynchronously.  This is
+ * mostly useful for situations where you want to load an image asynchronously, but don't
+ * want the actor back until it's fully loaded and sized (as opposed to load_uri_async,
+ * which provides no callback function, and leaves size negotiation to its own devices.)
+ */
+void
+st_texture_cache_load_image_from_file_async (StTextureCache                  *cache,
+                                             const gchar                     *path,
+                                             gint                             width,
+                                             gint                             height,
+                                             StTextureCacheLoadImageCallback  callback,
+                                             gpointer                         user_data)
+{
+  if (callback == NULL)
+    {
+      g_warning ("st_texture_cache_load_image_from_file_async callback cannot be NULL");
+      return;
+    }
+
+  ImageFromFileAsyncData *data;
+  GTask *result;
+
+  data = g_new0 (ImageFromFileAsyncData, 1);
+  data->width = width == -1 ? -1 : width * cache->priv->scale;
+  data->height = height == -1 ? -1 : height * cache->priv->scale;
+  data->path = g_strdup (path);
+  data->load_callback = callback;
+  data->load_callback_data = user_data;
+
+  result = g_task_new (cache, NULL, on_image_from_file_loaded, data);
+  g_task_set_task_data (result, data, on_image_from_file_data_destroy);
+  g_task_run_in_thread (result, load_image_from_file_thread);
+
+  g_object_unref (result);
+}
+
 
 /**
  * StIconType:
@@ -1241,6 +1429,7 @@ st_texture_cache_load_uri_async (StTextureCache *cache,
       request->policy = policy;
       request->width = width;
       request->height = height;
+      request->scale = cache->priv->scale;
 
       load_texture_async (cache, request);
     }
@@ -1274,6 +1463,7 @@ st_texture_cache_load_uri_sync_to_cogl_texture (StTextureCache *cache,
       pixbuf = impl_load_pixbuf_file (uri,
                                       width,
                                       height,
+                                      cache->priv->scale,
                                       error);
       if (!pixbuf)
         goto out;
@@ -1312,16 +1502,16 @@ st_texture_cache_load_uri_sync_to_cairo_surface (StTextureCache        *cache,
   GdkPixbuf *pixbuf;
   char *key;
 
-  int width = available_width == -1 ? -1 : available_width * cache->priv->scale;
-  int height = available_height == -1 ? -1 : available_height * cache->priv->scale;
-
   key = g_strconcat (CACHE_PREFIX_URI_FOR_CAIRO, uri, NULL);
 
   surface = g_hash_table_lookup (cache->priv->keyed_surface_cache, key);
 
   if (surface == NULL)
     {
-      pixbuf = impl_load_pixbuf_file (uri, width, height, error);
+      int width = available_width == -1 ? -1 : available_width * cache->priv->scale;
+      int height = available_height == -1 ? -1 : available_height * cache->priv->scale;
+
+      pixbuf = impl_load_pixbuf_file (uri, width, height, cache->priv->scale, error);
       if (!pixbuf)
         goto out;
 

@@ -10,6 +10,7 @@ const constants = {
     BUTTON_BOX_ANIMATION_TIME: 0.15,
     MAX_BUTTON_WIDTH: 150, // Pixels
     FLASH_INTERVAL: 500,
+    FLASH_MAX_COUNT: 4,
     RESERVE_KEYS: ['willUnmount'],
     ICON_NAMES: {
         area_shot: 'screenshot-area',
@@ -31,6 +32,7 @@ const constants = {
         new_private_window: 'view-private',
         new_root_window: 'dialog-password',
         news: 'news',
+        new_session: 'tab-new-symbolic',
         new_window: 'window-new',
         next: 'media-skip-forward',
         open_computer: 'computer',
@@ -38,6 +40,7 @@ const constants = {
         open_trash: 'user-trash',
         play: 'media-playback-start',
         play_pause: 'media-playback-start',
+        preferences: 'preferences-other',
         prefs: 'preferences-other',
         previous: 'media-skip-backward',
         screen_shot: 'screenshot-fullscreen',

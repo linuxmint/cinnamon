@@ -24,7 +24,7 @@
 #include <gdk/gdk.h>
 
 #include "st-theme-node.h"
-#include <libcroco/libcroco.h>
+#include "croco/libcroco.h"
 #include "st-types.h"
 
 G_BEGIN_DECLS

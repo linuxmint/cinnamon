@@ -2,6 +2,6 @@
  "uuid": "settings@cinnamon.org",
  "name": "Settings Applet",
  "description": "Cinnamon Settings",
- "icon": "preferences-system",
+ "icon": "preferences-desktop",
  "max-instances": -1
 }

@@ -1,28 +1,38 @@
 #!/usr/bin/python3
 
-from gi.repository import Gio, GObject
-from SettingsWidgets import *
+from gi.repository import Gio
+from xapp.SettingsWidgets import *
+from SettingsWidgets import SoundFileChooser, DateChooser, TimeChooser, Keybinding
+from xapp.GSettingsWidgets import CAN_BACKEND as px_can_backend
+from SettingsWidgets import CAN_BACKEND as c_can_backend
 from TreeListWidgets import List
+import os
 import collections
 import json
 import operator
 
-CAN_BACKEND.append("List")
+can_backend = px_can_backend + c_can_backend
+can_backend.append('List')
 
 JSON_SETTINGS_PROPERTIES_MAP = {
-    "description"   : "label",
-    "min"           : "mini",
-    "max"           : "maxi",
-    "step"          : "step",
-    "units"         : "units",
-    "show-value"    : "show_value",
-    "select-dir"    : "dir_select",
-    "height"        : "height",
-    "tooltip"       : "tooltip",
-    "possible"      : "possible",
-    "expand-width"  : "expand_width",
-    "columns"       : "columns",
-    "event-sounds"  : "event_sounds"
+    "description"      : "label",
+    "min"              : "mini",
+    "max"              : "maxi",
+    "step"             : "step",
+    "units"            : "units",
+    "show-value"       : "show_value",
+    "select-dir"       : "dir_select",
+    "height"           : "height",
+    "tooltip"          : "tooltip",
+    "possible"         : "possible",
+    "expand-width"     : "expand_width",
+    "columns"          : "columns",
+    "event-sounds"     : "event_sounds",
+    "default_icon"     : "default_icon",
+    "icon_categories"  : "icon_categories",
+    "default_category" : "default_category",
+    "show-seconds"     : "show_seconds",
+    "show-buttons"     : "show_buttons"
 }
 
 OPERATIONS = ['<=', '>=', '<', '>', '!=', '=']
@@ -141,7 +151,7 @@ class JSONSettingsHandler(object):
         raw_data = file.read()
         file.close()
         try:
-            settings = json.loads(raw_data, encoding=None, object_pairs_hook=collections.OrderedDict)
+            settings = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
         except:
             raise Exception("Failed to parse settings JSON data for file %s" % (self.filepath))
         return settings
@@ -193,7 +203,7 @@ class JSONSettingsHandler(object):
         raw_data = file.read()
         file.close()
         try:
-            settings = json.loads(raw_data, encoding=None, object_pairs_hook=collections.OrderedDict)
+            settings = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
         except:
             raise Exception("Failed to parse settings JSON data for file %s" % (self.filepath))
 
@@ -230,7 +240,7 @@ class JSONSettingsRevealer(Gtk.Revealer):
                 break
 
         if self.key is None:
-            if key[:1] is '!':
+            if key[:1] == '!':
                 self.invert = True
                 self.key = key[1:]
             else:
@@ -260,6 +270,8 @@ class JSONSettingsRevealer(Gtk.Revealer):
 
 class JSONSettingsBackend(object):
     def attach(self):
+        self._saving = False
+
         if hasattr(self, "set_rounding") and self.settings.has_property(self.key, "round"):
             self.set_rounding(self.settings.get_property(self.key, "round"))
         if hasattr(self, "bind_object"):
@@ -271,12 +283,14 @@ class JSONSettingsBackend(object):
                                self.map_get if hasattr(self, "map_get") else None,
                                self.map_set if hasattr(self, "map_set") else None)
         else:
-            self.settings.listen(self.key, self.on_setting_changed)
+            self.settings.listen(self.key, self._settings_changed_callback)
             self.on_setting_changed()
             self.connect_widget_handlers()
 
     def set_value(self, value):
+        self._saving = True
         self.settings.set_value(self.key, value)
+        self._saving = False
 
     def get_value(self):
         return self.settings.get_value(self.key)
@@ -285,6 +299,10 @@ class JSONSettingsBackend(object):
         min = self.settings.get_property(self.key, "min")
         max = self.settings.get_property(self.key, "max")
         return [min, max]
+
+    def _settings_changed_callback(self, *args):
+        if not self._saving:
+            self.on_setting_changed(*args)
 
     def on_setting_changed(self, *args):
         raise NotImplementedError("SettingsWidget class must implement on_setting_changed().")
@@ -312,5 +330,5 @@ def json_settings_factory(subclass):
 
     return NewClass
 
-for widget in CAN_BACKEND:
+for widget in can_backend:
     globals()["JSONSettings"+widget] = json_settings_factory(widget)

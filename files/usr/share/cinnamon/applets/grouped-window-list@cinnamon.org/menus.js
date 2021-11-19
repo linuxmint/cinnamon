@@ -166,9 +166,8 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         subMenu.menu.addMenuItem(item);
 
         item = createMenuItem({label: _("Remove '%s'").format(_("Grouped window list")), icon: 'edit-delete'});
-        this.signals.connect(item, 'activate', () => {
-            AppletManager._removeAppletFromPanel(this.state.uuid, this.state.instance_id);
-        });
+        this.signals.connect(item, 'activate', (actor, event) => this.state.trigger('removeApplet', event));
+
         subMenu.menu.addMenuItem(item);
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -181,7 +180,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 let defualtPlaces = this.listDefaultPlaces();
                 let bookmarks = this.listBookmarks();
                 let devices = this.listDevices();
-                let places = defualtPlaces.concat(bookmarks).concat(devices);
+                let places = [...defualtPlaces, ...bookmarks, ...devices];
                 let handlePlaceLaunch = (item, i) => {
                     this.signals.connect(item, 'activate', () => places[i].launch());
                 };
@@ -227,6 +226,15 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             }
         }
 
+        if (Main.gpu_offload_supported && !hasWindows) {
+            item = createMenuItem({label: _("Run with NVIDIA GPU"), icon: 'cpu'});
+
+            this.signals.connect(item, 'activate', () => this.groupState.trigger('launchNewInstance', true));
+
+            this.addMenuItem(item);
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        }
+
         // Actions
         tryFn(() => {
             if (!this.groupState.appInfo) return;
@@ -266,14 +274,6 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 }
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             }
-            if (this.state.settings.launchNewInstance && (!actions || actions.length === 0) && !isWindowBacked) {
-                item = createMenuItem({label: _('New Window'), icon: 'window-new'});
-                this.signals.connect(item, 'activate', () => this.groupState.trigger('launchNewInstance'));
-                this.addMenuItem(item);
-                if (!actions || actions.length === 0) {
-                    this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-                }
-            }
         }, () => {
             if (isWindowBacked) {
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -282,19 +282,17 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
         // Pin/unpin, shortcut handling
         if (!isWindowBacked) {
-            if (this.state.settings.showPinned !== FavType.none) {
-                let label, icon;
-                if (this.groupState.isFavoriteApp) {
-                    label = _('Unpin from Panel');
-                    icon = 'unpin';
-                } else {
-                    label = _('Pin to Panel');
-                    icon = 'pin';
-                }
-                this.pinToggleItem = createMenuItem({label, icon});
-                this.signals.connect(this.pinToggleItem, 'activate', (...args) => this.toggleFavorite(...args));
-                this.addMenuItem(this.pinToggleItem);
+            let label, icon;
+            if (this.groupState.isFavoriteApp) {
+                label = _('Unpin from Panel');
+                icon = 'unpin';
+            } else {
+                label = _('Pin to Panel');
+                icon = 'pin';
             }
+            this.pinToggleItem = createMenuItem({label, icon});
+            this.signals.connect(this.pinToggleItem, 'activate', (...args) => this.toggleFavorite(...args));
+            this.addMenuItem(this.pinToggleItem);
             if (this.state.settings.autoStart) {
                 let label = this.groupState.autoStartIndex !== -1 ? _('Remove from Autostart') : _('Add to Autostart');
                 item = createMenuItem({label: label, icon: 'insert-object'});
@@ -346,6 +344,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 });
             }
             this.addMenuItem(item);
+            item.setSensitive(this.groupState.lastFocused.can_maximize());
 
             if (this.groupState.metaWindows && this.groupState.metaWindows.length > 1) {
                 // Close others
@@ -499,6 +498,21 @@ class HoverMenuController extends PopupMenu.PopupMenuManager {
         this.groupState.disconnect(this.connectId);
         super.destroy();
     }
+
+    _onMenuOpenState(menu, open) {
+        if (open) {
+            if (this._activeMenu && this._activeMenu.isChildMenu(menu)) {
+                this._menuStack.push(this._activeMenu);
+            }
+            this._activeMenu = menu;
+        } else {
+            if (this._menuStack.length > 0) {
+                this._activeMenu = this._menuStack.pop();
+                if (menu.sourceActor)
+                    this._didPop = true;
+            }
+        }
+    }
 }
 
 class WindowThumbnail {
@@ -506,9 +520,7 @@ class WindowThumbnail {
         this.state = params.state;
         this.stateConnectId = this.state.connect({
             scrollActive: () => {
-                if (this.state.overlayPreview) {
-                    this.destroyOverlayPreview();
-                }
+                this.destroyOverlayPreview();
             },
             thumbnailCloseButtonOffset: ({thumbnailCloseButtonOffset}) => {
                 this.button.style = CLOSED_BUTTON_STYLE + `position: ${thumbnailCloseButtonOffset}px -2px;`;
@@ -615,9 +627,7 @@ class WindowThumbnail {
             && (!this.lastEnterActor
                 || (this.lastEnterActor.indexOf('StButton') === -1)
                     && this.lastEnterActor.indexOf('ClutterClone') === -1)) {
-            if (this.state.overlayPreview) {
-                this.destroyOverlayPreview();
-            }
+            this.destroyOverlayPreview();
             this.hoverPeek(this.state.settings.peekOpacity);
         }
         this.lastEnterActor = actorString;
@@ -666,7 +676,6 @@ class WindowThumbnail {
     handleCloseClick() {
         this.onLeave();
         this.stopClick = true;
-        this.hoverPeek(OPACITY_OPAQUE);
 
         this.metaWindow.delete(global.get_current_time());
         if (!this.groupState.metaWindows || this.groupState.metaWindows.length <= 1) {
@@ -814,7 +823,6 @@ class WindowThumbnail {
 
     hoverPeek(opacity) {
         if (!this.state.settings.enablePeek
-            || this.state.overlayPreview
             || this.state.scrollActive
             || (this.metaWindowActor && this.metaWindowActor.is_finalized())) {
             return;
@@ -823,37 +831,41 @@ class WindowThumbnail {
             this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
         this.state.set({
-            overlayPreview: new Clutter.Clone({
+            lastOverlayPreview: new Clutter.Clone({
                 source: this.metaWindowActor.get_texture(),
                 opacity: 0
             })
         });
         let [x, y] = this.metaWindowActor.get_position();
-        this.state.overlayPreview.set_position(x, y);
-        global.overlay_group.add_child(this.state.overlayPreview);
-        global.overlay_group.set_child_above_sibling(this.state.overlayPreview, null);
-        setOpacity(this.state.settings.peekTimeIn, this.state.overlayPreview, opacity);
+        this.state.lastOverlayPreview.set_position(x, y);
+        global.overlay_group.add_child(this.state.lastOverlayPreview);
+        global.overlay_group.set_child_above_sibling(this.state.lastOverlayPreview, null);
+        setOpacity(this.state.settings.peekTimeIn, this.state.lastOverlayPreview, opacity);
     }
 
     destroyOverlayPreview() {
-        if (!this.state.overlayPreview) return;
+        if (!this.state.lastOverlayPreview) return;
 
         if (this.state.settings.peekTimeOut) {
+            let currOverlayPreview = this.state.lastOverlayPreview;
             setOpacity(
                 this.state.settings.peekTimeOut,
-                this.state.overlayPreview,
+                currOverlayPreview,
                 0,
-                () => this._destroyOverlayPreview()
+                () => this._destroyOverlayPreview(currOverlayPreview)
             );
         } else {
-            this._destroyOverlayPreview();
+            this._destroyOverlayPreview(this.state.lastOverlayPreview);
         }
     }
 
-    _destroyOverlayPreview() {
-        global.overlay_group.remove_child(this.state.overlayPreview);
-        this.state.overlayPreview.destroy();
-        this.state.set({overlayPreview: null});
+    _destroyOverlayPreview(overlayPreview) {
+        global.overlay_group.remove_child(overlayPreview);
+        overlayPreview.destroy();
+
+        if(overlayPreview === this.state.lastOverlayPreview) {
+            this.state.set({lastOverlayPreview: null});
+        }
     }
 
     destroy() {
@@ -875,14 +887,9 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         super._init.call(this, groupState.trigger('getActor'), state.orientation, 0.5);
         this.state = state;
         this.groupState = groupState;
+        this.shouldClose = true;
+        this.isOpen = false;
         this.setCustomStyleClass("grouped-window-list-thumbnail-menu");
-
-        this.stateConnectId = this.state.connect({
-            updateThumbnailsStyle: () => {
-                if (this.groupState.metaWindows.length === 0) return;
-                this.setStyleOptions();
-            }
-        });
 
         this.connectId = this.groupState.connect({
             hoverMenuClose: () => {
@@ -906,11 +913,10 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             },
             addThumbnailToMenu: (win) => {
                 if (this.isOpen) {
-                    this.close(true);
                     this.addThumbnail(win);
-                    this.open(true);
                     return;
                 }
+
                 this.queuedWindows.push(win);
             },
             removeThumbnailFromMenu: (win) => {
@@ -937,7 +943,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                     this.interval = setInterval(() => {
                         let [x, y, mask] = global.get_pointer();
                         let draggedOverActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
-                        if (draggedOverActor instanceof Meta.WindowActor) {
+                        if (draggedOverActor instanceof Meta.ShapedTexture) {
                             this.groupState.set({fileDrag: false});
                             this.close(true);
                             return;
@@ -1035,7 +1041,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         } else {
             if (force || this.state.settings.onClickThumbs) this.addQueuedThumbnails();
             this.state.set({thumbnailMenuOpen: true});
-            each(this.appThumbnails, (thumb) => thumb.metaWindowActor.set_obscured(false));
             super.open(this.state.settings.animateThumbs);
         }
     }
@@ -1054,7 +1059,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
         if (this.isOpen) {
             this.state.set({thumbnailMenuOpen: false});
-            each(this.appThumbnails, (thumb) => thumb.metaWindowActor.set_obscured(true));
             if (!this.actor.is_finalized()) super.close(this.state.settings.animateThumbs);
         }
         for (let i = 0; i < this.appThumbnails.length; i++) {
@@ -1119,7 +1123,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             } else {
                 index = this.appThumbnails.length - 1;
             }
-        } else if (symbol === Clutter.KEY_Return && entered) {
+        } else if ((symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) && entered) {
             this.appThumbnails[i].connectToWindow(null, 1);
         } else if (symbol === closeArg) {
             this.appThumbnails[i].onLeave();
@@ -1221,10 +1225,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         for (let i = 0; i < this.appThumbnails.length; i++) {
             if (this.appThumbnails[i]) {
                 this.appThumbnails[i].refreshThumbnail();
-                // Make sure Clutter updates, otherwise setStyleOptions is called afterwards,
-                // and will be calculating styles from old actor values because it closes the menu
-                // to avoid incorrect padding values.
-                this.appThumbnails[i].thumbnailActor.realize();
             }
         }
     }
@@ -1247,7 +1247,6 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
         this.removeAll();
         super.destroy();
-        this.state.disconnect(this.stateConnectId);
         this.groupState.disconnect(this.connectId);
         unref(this, RESERVE_KEYS);
     }

@@ -43,6 +43,20 @@ const _urlRegexp = new RegExp(
         ')' +
     ')', 'gi');
 
+
+/**
+ * escapeRegExp:
+ * @str: (String) a string to escape
+ *
+ * Escapes a string for use within a regular expression.
+ *
+ * Returns: (String) the escaped string
+ */
+function escapeRegExp(str) {
+    // from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
 /**
  * findUrls:
  * @str: string to find URLs in
@@ -92,7 +106,7 @@ var subprocess_callbacks = {};
 function spawn_async(args, callback) {
     subprocess_id++;
     subprocess_callbacks[subprocess_id] = callback;
-    spawn(new Array("cinnamon-subprocess-wrapper", subprocess_id.toString()).concat(args));
+    spawn(["cinnamon-subprocess-wrapper", subprocess_id.toString(), ...args]);
 }
 
 /**
@@ -155,6 +169,37 @@ function trySpawnCommandLine(command_line) {
 
 /**
  * spawnCommandLineAsync:
+ * @command_line: a command line
+ * @callback (function): called on success
+ * @errback (function): called on error
+ *
+ * Runs @command_line in the background. If the process exits without
+ * error, a callback will be called, or an error callback will be
+ * called if one is provided.
+ */
+function spawnCommandLineAsync(command_line, callback, errback) {
+    let pid;
+
+    let [success, argv] = GLib.shell_parse_argv(command_line);
+    pid = trySpawn(argv, true);
+
+    GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, function(pid, status) {
+        GLib.spawn_close_pid(pid);
+
+        if (status !== 0) {
+            if (typeof errback === 'function') {
+                errback();
+            }
+        } else {
+            if (typeof callback === 'function') {
+                callback();
+            }
+        }
+    });
+}
+
+/**
+ * spawnCommandLineAsyncIO:
  * @command: a command
  * @callback (function): called on success or failure
  * @opts (object): options: argv, flags, input
@@ -164,7 +209,7 @@ function trySpawnCommandLine(command_line) {
  *
  * Returns (object): a Gio.Subprocess instance
  */
-function spawnCommandLineAsync(command, callback, opts = {}) {
+function spawnCommandLineAsyncIO(command, callback, opts = {}) {
     let {argv, flags, input} = opts;
     if (!input) input = null;
 
@@ -277,6 +322,11 @@ const _IGNORED_PHRASES = [
 function fixupPCIDescription(desc) {
     desc = desc.replace(/[_,]/, ' ');
 
+    /* Remove any parenthesized info longer than 2 chars (which
+       may be disambiguating numbers if there are multiple identical
+       cards present) */
+    desc = desc.replace(/\([\s\S][^\(\)]{2,}\)/, '');
+
     /* Attempt to shorten ID by ignoring certain phrases */
     for (let i = 0; i < _IGNORED_PHRASES.length; i++) {
         let item = _IGNORED_PHRASES[i];
@@ -320,7 +370,7 @@ const _LATINISE_REGEX = {
     IJ: /\u0132/g,
     J: /[\u012E\u0134]/g,
     K: /\u0136/g,
-    L: /[\u0139\u013B\u013D\u0130F\u0141]/g,
+    L: /[\u0139\u013B\u013D\u013F\u0141]/g,
     N: /[\xD1\u0143\u0145\u0147\u014A]/g,
     O: /[\xD2-\xD6\xD8\u014C\u014E\u0150]/g,
     OE: /\u0152/g,
@@ -642,6 +692,25 @@ function unref(object, reserved = []) {
     }, 0);
 };
 
+// MIT © Petka Antonov, Benjamin Gruenbaum, John-David Dalton, Sindre Sorhus
+// https://github.com/sindresorhus/to-fast-properties
+let fastProto = null;
+const FastObject = function(o) {
+    if (fastProto !== null && typeof fastProto.property) {
+        const result = fastProto;
+        fastProto = FastObject.prototype = null;
+        return result;
+    }
+    fastProto = FastObject.prototype = o == null ? Object.create(null) : o;
+    return new FastObject;
+}
+FastObject();
+function toFastProperties(obj) {
+    each(obj, function(value) {
+        if (value && !Array.isArray(value)) FastObject(value);
+    });
+};
+
 const READWRITE = GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE;
 
 // Based on https://gist.github.com/ptomato/c4245c77d375022a43c5
@@ -670,7 +739,7 @@ function getGObjectPropertyValues(obj, r = 0) {
     let baseInfo = repository.find_by_gtype(obj.constructor.$gtype);
     let propertyNames = [];
     for (let info = baseInfo; info !== null; info = Gir.object_info_get_parent(info)) {
-        propertyNames = propertyNames.concat(_getWritablePropertyNamesForObjectInfo(info));
+        propertyNames = [...propertyNames, ..._getWritablePropertyNamesForObjectInfo(info)];
     }
     if (r > 0 && propertyNames.length === 0) {
         return obj.toString();
@@ -689,4 +758,32 @@ function getGObjectPropertyValues(obj, r = 0) {
         }
     }
     return jsRepresentation;
+}
+
+function version_exceeds(version, min_version) {
+    let our_version = version.split(".");
+    let cmp_version = min_version.split(".");
+    let i;
+
+    for (i = 0; i < our_version.length && i < cmp_version.length; i++) {
+        let our_part = parseInt(our_version[i]);
+        let cmp_part = parseInt(cmp_version[i]);
+
+        if (isNaN(our_part) || isNaN(cmp_part)) {
+            return false;
+        }
+
+        if (our_part < cmp_part) {
+            return false;
+        } else
+        if (our_part > cmp_part) {
+            return true;
+        }
+    }
+
+    if (our_version.length < cmp_version.length) {
+        return false;
+    } else {
+        return true;
+    }
 }

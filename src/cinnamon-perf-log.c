@@ -126,11 +126,7 @@ G_DEFINE_TYPE(CinnamonPerfLog, cinnamon_perf_log, G_TYPE_OBJECT);
 static gint64
 get_time (void)
 {
-  GTimeVal timeval;
-
-  g_get_current_time (&timeval);
-
-  return timeval.tv_sec * G_GINT64_CONSTANT(1000000) + timeval.tv_usec;
+  return g_get_monotonic_time ();
 }
 
 static void
@@ -287,7 +283,7 @@ define_event (CinnamonPerfLog *perf_log,
  * cinnamon_perf_log_define_event:
  * @perf_log: a #CinnamonPerfLog
  * @name: name of the event. This should of the form
- *   '<namespace>.<specific eventf'>, for example
+ *   '<namespace>.<specific event>', for example
  *   'clutter.stagePaintDone'.
  * @description: human readable description of the event.
  * @signature: signature defining the arguments that event takes.
@@ -475,6 +471,7 @@ cinnamon_perf_log_event_s (CinnamonPerfLog *perf_log,
 
 /**
  * cinnamon_perf_log_define_statistic:
+ * @perf_log: a #CinnamonPerfLog
  * @name: name of the statistic and of the corresponding event.
  *  This should follow the same guidelines as for cinnamon_perf_log_define_event()
  * @description: human readable description of the statistic.
@@ -873,7 +870,8 @@ replay_to_json (gint64      time,
                 gpointer    user_data)
 {
   ReplayToJsonClosure *closure = user_data;
-  char *event_str;
+  char *event_str = NULL;
+  gboolean rc;
 
   if (closure->error != NULL)
     return;
@@ -922,7 +920,9 @@ replay_to_json (gint64      time,
       g_assert_not_reached ();
     }
 
-  if (!write_string (closure->out, event_str, &closure->error))
+  rc = write_string (closure->out, event_str, &closure->error);
+  g_free (event_str);
+  if (!rc)
       return;
 }
 

@@ -9,9 +9,8 @@
  * @lookingGlass (LookingGlass.Melange): The looking glass object
  * @wm (WindowManager.WindowManager): The window manager
  * @messageTray (MessageTray.MessageTray): The mesesage tray
- * @indicatorManager (IndicatorManager.IndicatorManager): The indicator manager
  * @notificationDaemon (NotificationDaemon.NotificationDaemon): The notification daemon
- * @windowAttentionHandler (WindowAttentionHandler.WindowAttentionHandler): The window attention handler
+ * @windowAttentionHandler (WindowAttentionHandler.WindowAttentionHandler): The window attention handle
  * @recorder (Cinnamon.Recorder): The recorder
  * @cinnamonDBusService (CinnamonDBus.Cinnamon): The cinnamon dbus object
  * @modalCount (int): The number of modals "pushed"
@@ -81,8 +80,8 @@ const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const GObject = imports.gi.GObject;
+const XApp = imports.gi.XApp;
 const PointerTracker = imports.misc.pointerTracker;
-const Lang = imports.lang;
 
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
@@ -93,7 +92,6 @@ const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
-const IndicatorManager = imports.ui.indicatorManager;
 const OsdWindow = imports.ui.osdWindow;
 const Overview = imports.ui.overview;
 const Expo = imports.ui.expo;
@@ -104,7 +102,6 @@ const Layout = imports.ui.layout;
 const LookingGlass = imports.ui.lookingGlass;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
-const Scripting = imports.ui.scripting;
 const CinnamonDBus = imports.ui.cinnamonDBus;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
@@ -115,6 +112,7 @@ const Keybindings = imports.ui.keybindings;
 const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
+const ModalDialog = imports.ui.modalDialog;
 const {readOnlyError} = imports.ui.environment;
 const {installPolyfills} = imports.ui.overrides;
 
@@ -138,7 +136,6 @@ var lookingGlass = null;
 var wm = null;
 var a11yHandler = null;
 var messageTray = null;
-var indicatorManager = null;
 var notificationDaemon = null;
 var windowAttentionHandler = null;
 var recorder = null;
@@ -173,6 +170,8 @@ var software_rendering = false;
 var popup_rendering_actor = null;
 
 var xlet_startup_error = false;
+
+var gpu_offload_supported = false;
 
 var RunState = {
     INIT : 0,
@@ -256,10 +255,9 @@ function _initUserSession() {
     global.screen.override_workspace_layout(Meta.ScreenCorner.TOPLEFT, false, 1, -1);
 
     systrayManager = new Systray.SystrayManager();
-    indicatorManager = new IndicatorManager.IndicatorManager();
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
-       getRunDialog().open();
+        getRunDialog().open();
     });
 }
 
@@ -272,7 +270,7 @@ function do_shutdown_sequence() {
 function _reparentActor(actor, newParent) {
     let parent = actor.get_parent();
     if (parent)
-      parent.remove_actor(actor);
+        parent.remove_actor(actor);
     if(newParent)
         newParent.add_actor(actor);
 }
@@ -329,7 +327,7 @@ function start() {
     // The stage is always covered so Clutter doesn't need to clear it; however
     // the color is used as the default contents for the Muffin root background
     // actor so set it anyways.
-    global.stage.color = DEFAULT_BACKGROUND_COLOR;
+    global.stage.background_color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
 
     Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
@@ -337,6 +335,7 @@ function start() {
 
     soundManager = new SoundManager.SoundManager();
 
+    /* note: This call will initialize St.TextureCache */
     themeManager = new ThemeManager.ThemeManager();
 
     settingsManager = new Settings.SettingsManager();
@@ -395,7 +394,8 @@ function start() {
 
     let startupAnimationEnabled = global.settings.get_boolean("startup-animation");
 
-    let do_animation = startupAnimationEnabled &&
+    let do_animation = !global.session_running &&
+                        startupAnimationEnabled &&
                        !GLib.getenv('CINNAMON_SOFTWARE_RENDERING') &&
                        !GLib.getenv('CINNAMON_2D');
 
@@ -422,14 +422,9 @@ function start() {
     keyboard = new Keyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
-
     placesManager = new PlacesManager.PlacesManager();
 
     magnifier = new Magnifier.Magnifier();
-
-    Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
-
-    dynamicWorkspaces = false; // This should be configurable
 
     layoutManager.init();
     keyboard.init();
@@ -450,24 +445,17 @@ function start() {
     global.log('loaded at ' + _startDate);
     log('Cinnamon started at ' + _startDate);
 
-    let perfModuleName = GLib.getenv("CINNAMON_PERF_MODULE");
-    if (perfModuleName) {
-        let perfOutput = GLib.getenv("CINNAMON_PERF_OUTPUT");
-        let module = eval('imports.perf.' + perfModuleName + ';');
-        Scripting.runPerfScript(module, perfOutput);
-    }
-
     wmSettings = new Gio.Settings({schema_id: "org.cinnamon.desktop.wm.preferences"})
     workspace_names = wmSettings.get_strv("workspace-names");
 
-    global.screen.connect('notify::n-workspaces', _nWorkspacesChanged);
-
-    global.screen.connect('window-entered-monitor', _windowEnteredMonitor);
-    global.screen.connect('window-left-monitor', _windowLeftMonitor);
-
     global.display.connect('gl-video-memory-purged', loadTheme);
 
-    _nWorkspacesChanged();
+    try {
+        gpu_offload_supported = XApp.util_gpu_offload_supported()
+    } catch (e) {
+        global.logWarning("Could not check for gpu offload support - maybe xapps isn't up to date.");
+        gpu_offload_supported = false;
+    }
 
     Promise.all([
         AppletManager.init(),
@@ -480,7 +468,12 @@ function start() {
         a11yHandler = new Accessibility.A11yHandler();
 
         if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
-            notifyCinnamon2d();
+            if (GLib.file_test("/proc/cmdline", GLib.FileTest.EXISTS)) {
+                let content = Cinnamon.get_file_contents_utf8_sync("/proc/cmdline");
+                if (!content.match("boot=casper") && !content.match("boot=live")) {
+                    notifyCinnamon2d();
+                }
+            }
         }
 
         if (xlet_startup_error)
@@ -496,12 +489,12 @@ function start() {
         // This helps to prevent us from running the animation
         // when the system is bogged down
         if (do_animation) {
-            let id = GLib.idle_add(GLib.PRIORITY_LOW, Lang.bind(this, function() {
+            let id = GLib.idle_add(GLib.PRIORITY_LOW, () => {
                 if (do_login_sound)
                     soundManager.play_once_per_session('login');
-                layoutManager._startupAnimation();
+                layoutManager._doStartupAnimation();
                 return GLib.SOURCE_REMOVE;
-            }));
+            });
         } else {
             global.background_actor.show();
             setRunState(RunState.RUNNING);
@@ -522,13 +515,20 @@ function start() {
 }
 
 function notifyCinnamon2d() {
-    let icon = new St.Icon({ icon_name: 'display',
+    let icon = new St.Icon({ icon_name: 'driver-manager',
                              icon_type: St.IconType.FULLCOLOR,
                              icon_size: 36 });
-    criticalNotify(_("Running in software rendering mode"),
-                   _("Cinnamon is currently running without video hardware acceleration and, as a result, you may observe much higher than normal CPU usage.\n\n") +
-                   _("There could be a problem with your drivers or some other issue.  For the best experience, it is recommended that you only use this mode for") +
-                   _(" troubleshooting purposes."), icon);
+    let notification =
+        criticalNotify(_("Check your video drivers"),
+                       _("Your system is currently running without video hardware acceleration.") +
+                       "\n\n" +
+                       _("You may experience poor performance and high CPU usage."),
+                       icon);
+
+    if (GLib.file_test("/usr/bin/cinnamon-driver-manager", GLib.FileTest.EXISTS)) {
+        notification.addButton("driver-manager", _("Launch Driver Manager"));
+        notification.connect("action-invoked", this.launchDriverManager);
+    }
 }
 
 function notifyXletStartupError() {
@@ -575,17 +575,21 @@ function _fillWorkspaceNames(index) {
     }
 }
 
-function _trimWorkspaceNames(index) {
+function _shouldTrimWorkspace(i) {
+    return i >= 0 && (i >= global.screen.n_workspaces || !workspace_names[i].length);
+}
+
+function _trimWorkspaceNames() {
     // trim empty or out-of-bounds names from the end.
-    for (let i = workspace_names.length - 1;
-            i >= 0 && (i >= global.screen.n_workspaces || !workspace_names[i].length); --i)
-    {
+    let i = workspace_names.length - 1;
+    while (_shouldTrimWorkspace(i)) {
         workspace_names.pop();
+        i--;
     }
 }
 
 function _makeDefaultWorkspaceName(index) {
-    return _("WORKSPACE") + " " + (index + 1).toString();
+    return _("Workspace") + " " + (index + 1).toString();
 }
 
 /**
@@ -638,18 +642,16 @@ function hasDefaultWorkspaceName(index) {
 }
 
 function _addWorkspace() {
-    if (dynamicWorkspaces)
-        return false;
     global.screen.append_new_workspace(false, global.get_current_time());
     return true;
 }
 
 function _removeWorkspace(workspace) {
-    if (global.screen.n_workspaces == 1 || dynamicWorkspaces)
+    if (global.screen.n_workspaces == 1)
         return false;
     let index = workspace.index();
     if (index < workspace_names.length) {
-        workspace_names.splice (index,1);
+        workspace_names.splice (index, 1);
     }
     _trimWorkspaceNames();
     wmSettings.set_strv("workspace-names", workspace_names);
@@ -680,147 +682,6 @@ function moveWindowToNewWorkspace(metaWindow, switchToNewWorkspace) {
         });
     }
     metaWindow.change_workspace_by_index(global.screen.n_workspaces, true, global.get_current_time());
-}
-
-function _checkWorkspaces() {
-    if (!dynamicWorkspaces)
-        return false;
-    let i;
-    let emptyWorkspaces = [];
-
-    for (let i = 0; i < _workspaces.length; i++) {
-        let lastRemoved = _workspaces[i]._lastRemovedWindow;
-        if (lastRemoved &&
-            (lastRemoved.get_window_type() == Meta.WindowType.SPLASHSCREEN ||
-             lastRemoved.get_window_type() == Meta.WindowType.DIALOG ||
-             lastRemoved.get_window_type() == Meta.WindowType.MODAL_DIALOG))
-                emptyWorkspaces[i] = false;
-        else
-            emptyWorkspaces[i] = true;
-    }
-
-    let windows = global.get_window_actors();
-    for (let i = 0; i < windows.length; i++) {
-        let win = windows[i];
-
-        if (win.get_meta_window().is_on_all_workspaces())
-            continue;
-
-        let workspaceIndex = win.get_workspace();
-        emptyWorkspaces[workspaceIndex] = false;
-    }
-
-    // If we don't have an empty workspace at the end, add one
-    if (!emptyWorkspaces[emptyWorkspaces.length -1]) {
-        global.screen.append_new_workspace(false, global.get_current_time());
-        emptyWorkspaces.push(false);
-    }
-
-    let activeWorkspaceIndex = global.screen.get_active_workspace_index();
-    let removingCurrentWorkspace = (emptyWorkspaces[activeWorkspaceIndex] &&
-                                    activeWorkspaceIndex < emptyWorkspaces.length - 1);
-    // Don't enter the overview when removing multiple empty workspaces at startup
-    let showOverview  = (removingCurrentWorkspace &&
-                         !emptyWorkspaces.every(function(x) { return x; }));
-
-    if (removingCurrentWorkspace) {
-        // "Merge" the empty workspace we are removing with the one at the end
-        wm.blockAnimations();
-    }
-
-    // Delete other empty workspaces; do it from the end to avoid index changes
-    for (let i = emptyWorkspaces.length - 2; i >= 0; i--) {
-        if (emptyWorkspaces[i])
-            global.screen.remove_workspace(_workspaces[i], global.get_current_time());
-    }
-
-    if (removingCurrentWorkspace) {
-        global.screen.get_workspace_by_index(global.screen.n_workspaces - 1).activate(global.get_current_time());
-        wm.unblockAnimations();
-    }
-
-    _checkWorkspacesId = 0;
-    return false;
-}
-
-function _windowRemoved(workspace, window) {
-    workspace._lastRemovedWindow = window;
-    _queueCheckWorkspaces();
-    Mainloop.timeout_add(LAST_WINDOW_GRACE_TIME, function() {
-        if (workspace._lastRemovedWindow == window) {
-            workspace._lastRemovedWindow = null;
-            _queueCheckWorkspaces();
-        }
-    });
-}
-
-function _windowLeftMonitor(metaScreen, monitorIndex, metaWin) {
-    // If the window left the primary monitor, that
-    // might make that workspace empty
-    if (monitorIndex == layoutManager.primaryIndex)
-        _queueCheckWorkspaces();
-}
-
-function _windowEnteredMonitor(metaScreen, monitorIndex, metaWin) {
-    // If the window entered the primary monitor, that
-    // might make that workspace non-empty
-    if (monitorIndex == layoutManager.primaryIndex)
-        _queueCheckWorkspaces();
-}
-
-function _queueCheckWorkspaces() {
-    if (!dynamicWorkspaces)
-        return false;
-    if (_checkWorkspacesId == 0)
-        _checkWorkspacesId = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
-    return true;
-}
-
-function _nWorkspacesChanged() {
-    if (!dynamicWorkspaces)
-        return false;
-
-    let oldNumWorkspaces = _workspaces.length;
-    let newNumWorkspaces = global.screen.n_workspaces;
-
-    if (oldNumWorkspaces == newNumWorkspaces)
-        return false;
-
-    let lostWorkspaces = [];
-    if (newNumWorkspaces > oldNumWorkspaces) {
-        // Assume workspaces are only added at the end
-        for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++)
-            _workspaces[w] = global.screen.get_workspace_by_index(w);
-
-        for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++) {
-            let workspace = _workspaces[w];
-            workspace._windowAddedId = workspace.connect('window-added', _queueCheckWorkspaces);
-            workspace._windowRemovedId = workspace.connect('window-removed', _windowRemoved);
-        }
-
-    } else {
-        // Assume workspaces are only removed sequentially
-        // (e.g. 2,3,4 - not 2,4,7)
-        let removedIndex;
-        let removedNum = oldNumWorkspaces - newNumWorkspaces;
-        for (let w = 0; w < oldNumWorkspaces; w++) {
-            let workspace = global.screen.get_workspace_by_index(w);
-            if (_workspaces[w] != workspace) {
-                removedIndex = w;
-                break;
-            }
-        }
-
-        let lostWorkspaces = _workspaces.splice(removedIndex, removedNum);
-        lostWorkspaces.forEach(function(workspace) {
-                                   workspace.disconnect(workspace._windowAddedId);
-                                   workspace.disconnect(workspace._windowRemovedId);
-                               });
-    }
-
-    _queueCheckWorkspaces();
-
-    return false;
 }
 
 /**
@@ -897,6 +758,11 @@ function criticalNotify(msg, details, icon) {
     notification.setTransient(false);
     notification.setUrgency(MessageTray.Urgency.CRITICAL);
     source.notify(notification);
+    return notification;
+}
+
+function launchDriverManager() {
+    Util.spawnCommandLineAsync("cinnamon-driver-manager", null, null);
 }
 
 /**
@@ -1171,7 +1037,7 @@ function _logInfo(msg) {
         // Convert arguments to an array, add 'info' to the beginning of it. Invoke _log with apply so
         // unlimited arguments can be passed to it.
         let args = Array.prototype.slice.call(arguments);
-        _log.apply(this, ['info'].concat(args));
+        _log.apply(this, ['info', ...args]);
     }
 }
 
@@ -1254,7 +1120,7 @@ function _stageEventHandler(actor, event) {
         return false;
 
     // This isn't a Meta.KeyBindingAction yet
-    if (symbol == Clutter.Super_L || symbol == Clutter.Super_R) {
+    if (symbol === Clutter.KEY_Super_L || symbol === Clutter.KEY_Super_R) {
         if (expo.visible) {
             expo.hide();
             return true;
@@ -1269,12 +1135,12 @@ function _stageEventHandler(actor, event) {
     switch (action) {
         // left/right would effectively act as synonyms for up/down if we enabled them;
         // but that could be considered confusing; we also disable them in the main view.
-         case Meta.KeyBindingAction.WORKSPACE_LEFT:
-             wm.actionMoveWorkspaceLeft();
-             return true;
-         case Meta.KeyBindingAction.WORKSPACE_RIGHT:
-             wm.actionMoveWorkspaceRight();
-             return true;
+        case Meta.KeyBindingAction.WORKSPACE_LEFT:
+            wm.actionMoveWorkspaceLeft();
+            return true;
+        case Meta.KeyBindingAction.WORKSPACE_RIGHT:
+            wm.actionMoveWorkspaceRight();
+            return true;
         case Meta.KeyBindingAction.WORKSPACE_UP:
             overview.hide();
             expo.hide();
@@ -1454,29 +1320,31 @@ function getRunDialog() {
  * activateWindow:
  * @window (Meta.Window): the Meta.Window to activate
  * @time (int): (optional) current event time
- * @workspaceNum (int): (optional) window's workspace number
+ * @workspaceNum (int): (optional) workspace number to switch to
  *
- * Activates @window, switching to its workspace first if necessary,
- * and switching out of the overview if it's currently active
+ * Activates @window, switching to workspaceNum first if provided,
+ * and switching out of the overview if it's currently active. If
+ * no workspace is provided, workspace-related behavior during
+ * activation will be handled in muffin.
  */
 function activateWindow(window, time, workspaceNum) {
     let activeWorkspaceNum = global.screen.get_active_workspace_index();
-    let windowWorkspaceNum = (workspaceNum !== undefined) ? workspaceNum : window.get_workspace().index();
 
     if (!time)
         time = global.get_current_time();
 
-    if (windowWorkspaceNum != activeWorkspaceNum) {
-        let workspace = global.screen.get_workspace_by_index(windowWorkspaceNum);
+    if ((workspaceNum !== undefined) && activeWorkspaceNum !== workspaceNum) {
+        let workspace = global.screen.get_workspace_by_index(workspaceNum);
         workspace.activate_with_focus(window, time);
-    } else {
-        window.activate(time);
-        Mainloop.idle_add(function() {
-            window.foreach_transient(function(win) {
-                win.activate(time);
-            });
-        });
+        return;
     }
+
+    window.activate(time);
+    Mainloop.idle_add(function() {
+        window.foreach_transient(function(win) {
+            win.activate(time);
+        });
+    });
 
     overview.hide();
     expo.hide();
@@ -1660,4 +1528,14 @@ function getTabList(workspaceOpt, screenOpt) {
         }
     }
     return windows;
+}
+
+function restartCinnamon(showOsd = false) {
+    if (showOsd) {
+        let dialog = new ModalDialog.InfoOSD(_("Restarting Cinnamon..."));
+        dialog.actor.add_style_class_name('restart-osd');
+        dialog.show();
+    }
+
+    global.reexec_self();
 }

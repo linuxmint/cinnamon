@@ -25,7 +25,6 @@
         "dependency" : "use-custom-format",
         "default": "%l:%M %p",
         "description": "Date format",
-        "indent": true,
         "tooltip" : "Set your custom format here."
     }
 }

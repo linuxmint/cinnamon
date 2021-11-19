@@ -203,17 +203,23 @@ cinnamon_util_get_icon_for_uri_known_folders (const char *uri)
 
   path = g_filename_from_uri (uri, NULL, NULL);
 
-  len = strlen (path);
-  if (path[len] == '/')
-    path[len] = '\0';
+  if (!path)
+    return NULL;
 
   if (strcmp (path, "/") == 0)
     icon = "drive-harddisk";
-  else if (strcmp (path, g_get_home_dir ()) == 0)
-    icon = "user-home";
-  else if (strcmp (path, g_get_user_special_dir (G_USER_DIRECTORY_DESKTOP))
-      == 0)
-    icon = "user-desktop";
+  else {
+    if (g_str_has_suffix (path, "/")) {
+      len = strlen (path);
+      path[len - 1] = '\0';
+    }
+
+    if (strcmp (path, g_get_home_dir ()) == 0)
+      icon = "user-home";
+    else if (strcmp (path, g_get_user_special_dir (G_USER_DIRECTORY_DESKTOP))
+        == 0)
+      icon = "user-desktop";
+  }
 
   g_free (path);
 
@@ -522,13 +528,9 @@ cinnamon_util_format_date (const char *format,
                         gint64      time_ms)
 {
   GDateTime *datetime;
-  GTimeVal tv;
   char *result;
 
-  tv.tv_sec = time_ms / 1000;
-  tv.tv_usec = (time_ms % 1000) * 1000;
-
-  datetime = g_date_time_new_from_timeval_local (&tv);
+  datetime = g_date_time_new_from_unix_local (time_ms / 1000);
   if (!datetime) /* time_ms is out of range of GDateTime */
     return g_strdup ("");
 

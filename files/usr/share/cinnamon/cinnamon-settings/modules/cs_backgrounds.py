@@ -1,12 +1,10 @@
 #!/usr/bin/python3
 
-import sys
 import os
 import imtools
 import gettext
 import _thread as thread
 import subprocess
-import tempfile
 import locale
 import time
 import hashlib
@@ -18,11 +16,10 @@ from xml.etree import ElementTree
 from PIL import Image
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
+from gi.repository import Gio, Gtk, Gdk, GdkPixbuf, Pango, GLib
 
-import config
-sys.path.append(config.currentPath + "/bin")
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
 
@@ -165,7 +162,7 @@ class Module:
     comment = _("Change your desktop's background")
 
     def __init__(self, content_box):
-        keywords = _("background, picture, screenshot, slideshow")
+        keywords = _("background, picture, slideshow")
         self.sidePage = SidePage(_("Backgrounds"), "cs-backgrounds", keywords, content_box, module=self)
 
     def on_module_selected(self):
@@ -325,16 +322,16 @@ class Module:
                 if i.endswith(".xml"):
                     xml_path = os.path.join(properties_dir, i)
                     display_name = i.replace(".xml", "").replace("-", " ").replace("_", " ").split(" ")[-1].capitalize()
-                    icon = "cs-backgrounds"
+                    icon = "preferences-desktop-wallpaper-symbolic"
                     order = 10
                     # Special case for Linux Mint. We don't want to use 'start-here' here as it wouldn't work depending on the theme.
                     # Also, other distros should get equal treatment. If they define cinnamon-backgrounds and use their own distro name, we should add support for it.
                     if display_name == "Retro":
-                        icon = "cs-retro"
+                        icon = "document-open-recent-symbolic"
                         order = 20 # place retro bgs at the end
                     if display_name == "Linuxmint":
                         display_name = "Linux Mint"
-                        icon = "cs-linuxmint"
+                        icon = "linuxmint-logo-badge-symbolic"
                         order = 0
                     backgrounds.append([[False, icon, display_name, xml_path, BACKGROUND_COLLECTION_TYPE_XML], display_name, order])
 
@@ -352,13 +349,13 @@ class Module:
                 folder_path = line.strip("\n")
                 folder_name = folder_path.split("/")[-1]
                 if folder_path == self.xdg_pictures_directory:
-                    icon = "folder-pictures"
+                    icon = "folder-pictures-symbolic"
                 else:
-                    icon = "folder"
+                    icon = "folder-symbolic"
                 self.user_backgrounds.append([False, icon, folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
         else:
             # Add XDG PICTURE DIR
-            self.user_backgrounds.append([False, "folder-pictures", self.xdg_pictures_directory.split("/")[-1], self.xdg_pictures_directory, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
+            self.user_backgrounds.append([False, "folder-pictures-symbolic", self.xdg_pictures_directory.split("/")[-1], self.xdg_pictures_directory, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
             self.update_folder_list()
 
     def format_source(self, type, path):
@@ -445,9 +442,9 @@ class Module:
                     self.add_folder_dialog.hide()
                     return
             if folder_path == self.xdg_pictures_directory:
-                icon = "folder-pictures"
+                icon = "folder-pictures-symbolic"
             else:
-                icon = "folder"
+                icon = "folder-symbolic"
             self.user_backgrounds.append([False, icon, folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
             self.collection_store.append([False, icon, folder_name, folder_path, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
             self.update_folder_list()
@@ -794,7 +791,7 @@ class ThreadedIconView(Gtk.IconView):
                     if backgroundNode.tag == "static":
                         for staticNode in backgroundNode:
                             if staticNode.tag == "file":
-                                if staticNode[-1].tag == "size":
+                                if len(staticNode) > 0 and staticNode[-1].tag == "size":
                                     return staticNode[-1].text
                                 return staticNode.text
             print("Could not find filename in %s" % filename)

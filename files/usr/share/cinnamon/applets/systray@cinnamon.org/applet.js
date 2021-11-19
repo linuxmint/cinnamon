@@ -11,30 +11,6 @@ const {findIndex} = imports.misc.util;
 
 const NO_RESIZE_ROLES = ['shutter', 'filezilla'];
 
-// Override the factory and create an AppletPopupMenu instead of a PopupMenu
-class IndicatorMenuFactory extends PopupMenu.PopupMenuFactory {
-    constructor() {
-        super();
-    }
-
-    _createShellItem(factoryItem, launcher, orientation) {
-        // Decide whether it's a submenu or not
-        let shellItem = null;
-        let item_type = factoryItem.getFactoryType();
-        if (item_type == PopupMenu.FactoryClassTypes.RootMenuClass)
-            shellItem = new Applet.AppletPopupMenu(launcher, orientation);
-        if (item_type == PopupMenu.FactoryClassTypes.SubMenuMenuItemClass)
-            shellItem = new PopupMenu.PopupSubMenuMenuItem("FIXME");
-        else if (item_type == PopupMenu.FactoryClassTypes.MenuSectionMenuItemClass)
-            shellItem = new PopupMenu.PopupMenuSection();
-        else if (item_type == PopupMenu.FactoryClassTypes.SeparatorMenuItemClass)
-            shellItem = new PopupMenu.PopupSeparatorMenuItem('');
-        else if (item_type == PopupMenu.FactoryClassTypes.MenuItemClass)
-            shellItem = new PopupMenu.PopupIndicatorMenuItem("FIXME");
-        return shellItem;
-    }
-}
-
 class CinnamonSystrayApplet extends Applet.Applet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
@@ -58,111 +34,13 @@ class CinnamonSystrayApplet extends Applet.Applet {
             manager = new Clutter.BoxLayout( { spacing: 4,
                                                orientation: Clutter.Orientation.VERTICAL });
         }
+
+        this.update_na_tray_orientation();
+
         this.manager = manager;
         this.manager_container = new Clutter.Actor( { layout_manager: manager } );
         this.actor.add_actor (this.manager_container);
         this.manager_container.show();
-
-        this._shellIndicators = [];
-        this.menuFactory = new IndicatorMenuFactory();
-        this.menuManager = new PopupMenu.PopupMenuManager(this);
-        this._signalAdded = 0;
-        this._signalRemoved = 0;
-    }
-
-    _addIndicatorSupport() {
-        let manager = Main.indicatorManager;
-
-        // Blacklist some of the icons
-        // quassel: The proper icon in Quassel is "QuasselIRC",
-        // this is a fallback icon which Quassel launches when it fails to detect
-        // our indicator support (i.e. when Cinnamon is restarted for instance)
-        // The problem is.. Quassel doesn't kill that icon when it creates QuasselIRC again..
-        manager.insertInBlackList("quassel");
-
-        let currentIndicators = manager.getIndicatorIds();
-        for (let pos in currentIndicators) {
-            if (!manager.isInBlackList(currentIndicators[pos])) {
-                let appIndicator = manager.getIndicatorById(currentIndicators[pos]);
-                this._onIndicatorAdded(manager, appIndicator);
-            }
-        }
-        if (this._signalAdded == 0)
-            this._signalAdded = manager.connect('indicator-added', Lang.bind(this, this._onIndicatorAdded));
-        if (this._signalRemoved == 0)
-            this._signalRemoved = manager.connect('indicator-removed', Lang.bind(this, this._onIndicatorRemoved));
-    }
-
-    _removeIndicatorSupport() {
-        if (this.signalAdded) {
-            Main.indicatorManager.disconnect(this.signalAdded);
-            this.signalAdded = 0;
-        }
-        if (this.signalRemoved) {
-            Main.indicatorManager.disconnect(this.signalRemoved);
-            this.signalRemoved = 0;
-        }
-
-        for (let i = 0; i < this._shellIndicators.length; i++) {
-            this._shellIndicators[i].instance.destroy();
-        }
-
-        this._shellIndicators = [];
-
-    }
-
-    _onIndicatorAdded(manager, appIndicator) {
-        if (!(appIndicator.id in this._shellIndicators)) {
-            let indicatorActor = appIndicator.getActor(this.icon_size / global.ui_scale);
-
-            this._shellIndicators.push({
-                id: appIndicator.id,
-                instance: indicatorActor
-            });
-            this._signalManager.connect(indicatorActor.actor, 'destroy', this._onIndicatorIconDestroy, this);
-            this._signalManager.connect(indicatorActor.actor, 'enter-event', this._onEnterEvent, this);
-            this._signalManager.connect(indicatorActor.actor, 'leave-event', this._onLeaveEvent, this);
-
-            this.manager_container.add_actor(indicatorActor.actor);
-
-            appIndicator.createMenuClientAsync(Lang.bind(this, function(client) {
-                if (client != null) {
-                    let newMenu = client.getShellMenu();
-                    if (!newMenu) {
-                        newMenu = this.menuFactory.buildShellMenu(client, indicatorActor, this.orientation);
-                        this.menuManager.addMenu(newMenu);
-                    }
-                    indicatorActor.setMenu(newMenu);
-                }
-            }));
-        }
-    }
-
-    _onEnterEvent(actor, event) {
-        this.set_applet_tooltip(actor._delegate.getToolTip());
-    }
-
-    _onLeaveEvent(actor, event) {
-        this.set_applet_tooltip("");
-    }
-
-    _onIndicatorIconDestroy(actor) {
-        for (let i = 0; i < this._shellIndicators.length; i++) {
-            if (this._shellIndicators[i].instance.actor == actor) {
-                this._shellIndicators.splice(this._shellIndicators.indexOf(this._shellIndicators[i]), 1);
-                break;
-            }
-        }
-    }
-
-    _onIndicatorRemoved(manager, appIndicator) {
-        for (let i = 0; i < this._shellIndicators.length; i++) {
-            if (this._shellIndicators[i].id === appIndicator.id) {
-                this._shellIndicators[i].instance.destroy();
-                this._shellIndicators.splice(this._shellIndicators.indexOf(this._shellIndicators[i]), 1);
-                break;
-            }
-        }
     }
 
     on_applet_clicked(event) {
@@ -174,6 +52,22 @@ class CinnamonSystrayApplet extends Applet.Applet {
         } else {
             this.manager.set_vertical(true);
         }
+
+        this.update_na_tray_orientation();
+    }
+
+    update_na_tray_orientation() {
+        switch (this.orientation) {
+            case St.Side.LEFT:
+            case St.Side.RIGHT:
+                Main.statusIconDispatcher.set_tray_orientation(Clutter.Orientation.VERTICAL);
+                break;
+            case St.Side.TOP:
+            case St.Side.BOTTOM:
+            default:
+                Main.statusIconDispatcher.set_tray_orientation(Clutter.Orientation.HORIZONTAL);
+                break;
+        }
     }
 
     on_applet_reloaded() {
@@ -182,7 +76,6 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
     on_applet_removed_from_panel() {
         this._signalManager.disconnectAllSignals();
-        this._removeIndicatorSupport();
     }
 
     on_applet_added_to_panel() {
@@ -194,7 +87,6 @@ class CinnamonSystrayApplet extends Applet.Applet {
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-removed', this._onTrayIconRemoved, this);
         this._signalManager.connect(Main.statusIconDispatcher, 'before-redisplay', this._onBeforeRedisplay, this);
         this._signalManager.connect(Main.systrayManager, "changed", Main.statusIconDispatcher.redisplay, Main.statusIconDispatcher);
-        this._addIndicatorSupport();
 
         if (global.trayReloading) {
             global.trayReloading = false;
@@ -205,13 +97,6 @@ class CinnamonSystrayApplet extends Applet.Applet {
     on_panel_icon_size_changed(size) {
         this.icon_size = size * global.ui_scale;
         Main.statusIconDispatcher.redisplay();
-
-        for (let i = 0; i < this._shellIndicators.length; i++) {
-            let indicator = Main.indicatorManager.getIndicatorById(this._shellIndicators[i].id);
-            if (indicator) {
-                this._shellIndicators[i].instance.setSize(this.icon_size);
-            }
-        }
     }
 
     _onBeforeRedisplay() {
@@ -233,7 +118,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
         try {
             let hiddenIcons = Main.systrayManager.getRoles();
 
-            if (hiddenIcons.indexOf(role) != -1 ) {
+            if (hiddenIcons.indexOf(role.toLowerCase()) != -1 ) {
                 // We've got an applet for that
                 global.log("Hiding systray: " + role);
                 return;

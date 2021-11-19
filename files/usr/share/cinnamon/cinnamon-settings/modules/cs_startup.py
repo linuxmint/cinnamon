@@ -7,9 +7,10 @@ import shutil
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib, Pango
+from gi.repository import Gio, Gtk, Gdk, GdkPixbuf, GLib, Pango
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 try:
     ENVIRON = os.environ['XDG_CURRENT_DESKTOP']
@@ -21,6 +22,8 @@ DEFAULT_ICON = "system-run"
 AUTOSTART_APPS = collections.OrderedDict()
 
 KEYFILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS and GLib.KeyFileFlags.KEEP_TRANSLATIONS
+
+DELAY_GROUP = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
 def list_header_func(row, before, user_data):
     if before and not row.get_header():
@@ -208,6 +211,7 @@ class AutostartApp():
             self.app = os.path.join(self.system_position, self.basename)
             os.remove(old_app)
             self.key_file = GLib.KeyFile.new()
+            self.user_position = None
             if self.key_file.load_from_file(self.app, KEYFILE_FLAGS):
                 self.load()
             self.save_done_success()
@@ -222,7 +226,8 @@ class AutostartApp():
                 key_file.load_from_file(os.path.join(self.system_position, self.basename), KEYFILE_FLAGS)
             else:
                 key_file.load_from_file(self.path, KEYFILE_FLAGS)
-        except:
+        except Exception as e:
+            print("Problem creating user keyfile: %s" % e)
             key_file.set_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_TYPE, "Application")
             key_file.set_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_EXEC, "/bin/false")
 
@@ -383,16 +388,6 @@ class AutostartBox(Gtk.Box):
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         frame.add(main_box)
 
-        toolbar = Gtk.Toolbar.new()
-        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(toolbar), "cs-header")
-        label = Gtk.Label()
-        markup = GLib.markup_escape_text(title)
-        label.set_markup("<b>{}</b>".format(markup))
-        title_holder = Gtk.ToolItem()
-        title_holder.add(label)
-        toolbar.add(title_holder)
-        main_box.add(toolbar)
-
         scw = Gtk.ScrolledWindow()
         scw.expand = True
         scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -411,6 +406,7 @@ class AutostartBox(Gtk.Box):
         self.list_box.set_header_func(list_header_func, None)
         self.list_box.connect("row-selected", self.on_row_selected)
         self.list_box.connect("row-activated", self.on_row_activated)
+        self.list_box.set_focus_vadjustment(scw.get_vadjustment())
         self.box.add(self.list_box)
 
         button_toolbar = Gtk.Toolbar.new()
@@ -569,6 +565,8 @@ class AutostartBox(Gtk.Box):
             self.add_row(row)
             row.show_all()
 
+            self.select_new_row(row)
+
     def on_add_app(self, popup):
         app_dialog = AppChooserDialog()
         app_dialog.set_transient_for(self.list_box.get_toplevel())
@@ -602,7 +600,20 @@ class AutostartBox(Gtk.Box):
             self.add_row(row)
             row.show_all()
 
+            self.select_new_row(row)
+
         app_dialog.destroy()
+
+    def select_new_row(self, row):
+        # try to make sure the grab_focus() runs later, after the row has been allocated
+        # and sorted, otherwise the grab won't work.
+        GLib.idle_add(self.on_row_added_idle, row, priority=GLib.PRIORITY_LOW)
+
+    def on_row_added_idle(self, row):
+        self.list_box.select_row(row)
+        row.grab_focus()
+
+        return GLib.SOURCE_REMOVE
 
     def find_free_basename(self, suggested_name):
         if suggested_name.endswith(".desktop"):
@@ -672,6 +683,10 @@ class AutostartRow(Gtk.ListBoxRow):
                 img = Gtk.Image.new_from_icon_name(DEFAULT_ICON, Gtk.IconSize.LARGE_TOOLBAR)
         else:
             img = Gtk.Image.new_from_icon_name(DEFAULT_ICON, Gtk.IconSize.LARGE_TOOLBAR)
+
+        valid, w, h = Gtk.icon_size_lookup(Gtk.IconSize.LARGE_TOOLBAR)
+        img.set_pixel_size(w)
+
         grid.attach(img, 0, 0, 1, 1)
 
         self.desc_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -687,28 +702,29 @@ class AutostartRow(Gtk.ListBoxRow):
         self.comment_label.set_markup("<small>{}</small>".format(comment_markup))
         self.comment_label.props.xalign = 0.0
         self.comment_label.set_ellipsize(Pango.EllipsizeMode.END)
-        self.comment_label.set_max_width_chars(40)
         self.desc_box.add(self.comment_label)
         grid.attach_next_to(self.desc_box, img, Gtk.PositionType.RIGHT, 1, 1)
         self.desc_box.set_sensitive(app.enabled)
 
         self.delay_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        DELAY_GROUP.add_widget(self.delay_box)
         self.delay_box.props.hexpand = False
         self.delay_box.set_margin_right(15)
         delay_time_markup = GLib.markup_escape_text(self.app.delay)
 
-        label = Gtk.Label(_("Delay"))
-        self.delay_box.pack_start(label, False, False, 0)
+        self.delay_label = Gtk.Label(_("Delay"))
+        self.delay_label.set_no_show_all(True)
+        self.delay_box.pack_start(self.delay_label, False, False, 0)
         self.delay_time_label = Gtk.Label()
+        self.delay_time_label.set_no_show_all(True)
         self.delay_time_label.set_markup(_("%s s") % delay_time_markup)
         self.delay_time_label.get_style_context().add_class("dim-label")
         self.delay_box.pack_start(self.delay_time_label, False, False, 0)
         grid.attach_next_to(self.delay_box, self.desc_box, Gtk.PositionType.RIGHT, 1, 1)
         self.delay_box.set_sensitive(app.enabled)
 
-        self.delay_box.show_all()
-        self.delay_box.set_no_show_all(True)
-        self.delay_box.set_visible(delay_time_markup != "0")
+        self.delay_label.set_visible(delay_time_markup != "0")
+        self.delay_time_label.set_visible(delay_time_markup != "0")
 
         switch_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         switch_box.set_margin_top(5)
@@ -729,7 +745,8 @@ class AutostartRow(Gtk.ListBoxRow):
         self.name_label.set_markup("<b>{}</b>".format(name_markup))
         self.comment_label.set_markup("<small>{}</small>".format(comment_markup))
         self.delay_time_label.set_markup(_("%s s") % delay_time_markup)
-        self.delay_box.set_visible(delay_time_markup != "0")
+        self.delay_label.set_visible(delay_time_markup != "0")
+        self.delay_time_label.set_visible(delay_time_markup != "0")
 
     def on_switch_activated(self, switch, gparam):
         active = switch.get_active()

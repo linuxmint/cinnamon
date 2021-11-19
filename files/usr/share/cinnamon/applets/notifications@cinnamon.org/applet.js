@@ -10,6 +10,7 @@ const Urgency = imports.ui.messageTray.Urgency;
 const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
 const Settings = imports.ui.settings;
 const Gettext = imports.gettext.domain("cinnamon-applets");
+const Util = imports.misc.util;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
@@ -23,13 +24,17 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
         this.settings.bind("ignoreTransientNotifications", "ignoreTransientNotifications");
         this.settings.bind("showEmptyTray", "showEmptyTray", this._show_hide_tray);
+        this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
+        this.settings.bind("keyClear", "keyClear", this._setKeybinding);
+        this.settings.bind("showNotificationCount", "showNotificationCount", this.update_list);
+        this._setKeybinding();
 
         // Layout
         this._orientation = orientation;
         this.menuManager = new PopupMenu.PopupMenuManager(this);
 
         // Lists
-        this.notifications = [];	// The list of notifications, in order from oldest to newest.
+        this.notifications = [];    // The list of notifications, in order from oldest to newest.
 
         // Events
         Main.messageTray.connect('notify-applet-update', Lang.bind(this, this._notification_added));
@@ -38,6 +43,21 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         // States
         this._blinking = false;
         this._blink_toggle = false;
+    }
+
+    _setKeybinding() {
+        Main.keybindingManager.addHotKey("notification-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
+        Main.keybindingManager.addHotKey("notification-clear-" + this.instance_id, this.keyClear, Lang.bind(this, this._clear_all));
+    }
+
+    on_applet_removed_from_panel () {
+        Main.keybindingManager.removeHotKey("notification-open-" + this.instance_id);
+        Main.keybindingManager.removeHotKey("notification-clear-" + this.instance_id);
+    }
+
+    _openMenu() {
+        this._update_timestamp();
+        this.menu.toggle();
     }
 
     _display() {
@@ -92,9 +112,11 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
 
         this._on_panel_edit_mode_changed();
+
+        this.menu.addSettingsAction(_("Notification Settings"), 'notifications');
     }
 
-    _notification_added (mtray, notification) {	// Notification event handler.
+    _notification_added (mtray, notification) { // Notification event handler.
         // Ignore transient notifications?
         if (this.ignoreTransientNotifications && notification.isTransient) {
             notification.destroy();
@@ -103,13 +125,12 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
-        if (existing_index != -1) {	// This notification is already listed.
+        if (existing_index != -1) { // This notification is already listed.
             if (notification._destroyed) {
                 this.notifications.splice(existing_index, 1);
             } else {
                 notification._inNotificationBin = true;
                 global.reparentActor(notification.actor, this._notificationbin);
-                notification.expand();
                 notification._timeLabel.show();
             }
             this.update_list();
@@ -121,33 +142,26 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         notification._inNotificationBin = true;
         this.notifications.push(notification);
         // Steal the notication panel.
-        notification.expand();
         this._notificationbin.add(notification.actor);
         notification.actor._parent_container = this._notificationbin;
         notification.actor.add_style_class_name('notification-applet-padding');
         // Register for destruction.
-        notification.connect('clicked', Lang.bind(this, this._item_clicked, false));
-        notification.connect('destroy', Lang.bind(this, this._item_clicked, true));
+        notification.connect('scrolling-changed', (notif, scrolling) => { this.menu.passEvents = scrolling });
+        notification.connect('destroy', () => {
+            let i = this.notifications.indexOf(notification);
+            if (i != -1)
+                this.notifications.splice(i, 1);
+            this.update_list();
+        });
         notification._timeLabel.show();
 
-        this.update_list();
-    }
-
-    _item_clicked(notification, destroyed) {
-        let i = this.notifications.indexOf(notification);
-        if (i != -1) {
-            this.notifications.splice(i, 1);
-            if (!destroyed) {
-                notification.destroy(NotificationDestroyedReason.DISMISSED);
-            }
-        }
         this.update_list();
     }
 
     update_list () {
         try {
             let count = this.notifications.length;
-            if (count > 0) {	// There are notifications.
+            if (count > 0) {    // There are notifications.
                 this.actor.show();
                 this.clear_action.actor.show();
                 this.set_applet_label(count.toString());
@@ -175,7 +189,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                         }
                         break;
                 }
-            } else {	// There are no notifications.
+            } else {    // There are no notifications.
                 this._blinking = false;
                 this.set_applet_label('');
                 this.set_applet_icon_symbolic_name("empty-notif");
@@ -183,6 +197,11 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                 if (!this.showEmptyTray) {
                     this.actor.hide();
                 }
+            }
+            global.logError(this.showNotificationCount);
+            if (!this.showNotificationCount) {  // Don't show notification count
+                this.set_applet_label('');
+                this.clear_action.actor.hide();
             }
             this.menu_label.label.set_text(stringify(count));
             this._notificationbin.queue_relayout();
@@ -204,11 +223,13 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.update_list();
     }
 
-    _show_hide_tray() {	// Show or hide the notification tray.
-        if (this.notifications.length || this.showEmptyTray) {
-            this.actor.show();
-        } else {
-            this.actor.hide();
+    _show_hide_tray() { // Show or hide the notification tray.
+        if(!global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
+            if (this.notifications.length || this.showEmptyTray) {
+                this.actor.show();
+            } else {
+                this.actor.hide();
+            }
         }
     }
 
@@ -236,8 +257,11 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     }
 
     on_applet_clicked(event) {
-        this._update_timestamp();
-        this.menu.toggle();
+        this._openMenu();
+    }
+
+    on_btn_open_system_settings_clicked() {
+        Util.spawnCommandLine("cinnamon-settings notifications");
     }
 
     _update_timestamp() {
@@ -269,21 +293,11 @@ function main(metadata, orientation, panel_height, instanceId) {
 }
 
 function stringify(count) {
-    let str;
-    switch (true) {
-        case (count == 0):
-            str = _("No notifications");
-            break;
-        case (count == 1):
-            str = count.toString() + _(" notification");
-            break;
-        case (count > 1):
-            str = count.toString() + _(" notifications");
-            break;
-        default:
-            str = "";
+    if (count === 0) {
+        return _("No notifications");
+    } else {
+        return ngettext("%d notification", "%d notifications", count).format(count);
     }
-    return str;
 }
 
 function timeify(orig_time) {
@@ -302,11 +316,11 @@ function timeify(orig_time) {
             str += " (" + _("just now") + ")";
             break;
         } case (diff > 15 && diff <= 59): {
-            str += " (" + Gettext.ngettext("%d second ago", "%d seconds ago", diff).format(diff) + ")";
+            str += " (" + ngettext("%d second ago", "%d seconds ago", diff).format(diff) + ")";
             break;
         } case (diff > 59 && diff <= 3540): {
             let diff_minutes = Math.floor(diff / 60);
-            str += " (" + Gettext.ngettext("%d minute ago", "%d minutes ago", diff_minutes).format(diff_minutes) + ")";
+            str += " (" + ngettext("%d minute ago", "%d minutes ago", diff_minutes).format(diff_minutes) + ")";
             break;
         }
     }

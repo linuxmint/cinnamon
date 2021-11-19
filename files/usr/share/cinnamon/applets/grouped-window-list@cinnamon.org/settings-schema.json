@@ -30,8 +30,6 @@
         "scroll-behavior",
         "left-click-action",
         "middle-click-action",
-        "system-favorites",
-        "list-monitor-windows",
         "show-all-workspaces"
       ]
     },
@@ -41,11 +39,8 @@
       "keys": [
         "title-display",
         "launcher-animation-effect",
-        "icon-spacing",
         "number-display",
         "pinned-apps",
-        "show-alerts",
-        "show-pinned",
         "enable-app-button-dragging"
       ]
     },
@@ -55,7 +50,8 @@
       "keys": [
         "cycleMenusHotkey",
         "show-apps-order-hotkey",
-        "show-apps-order-timeout"
+        "show-apps-order-timeout",
+        "super-num-hotkeys"
       ]
     },
     "thumbnailsSection": {
@@ -89,7 +85,6 @@
       "keys": [
         "show-recent",
         "autostart-menu-item",
-        "launch-new-instance-menu-item",
         "monitor-move-all-windows"
       ]
     }
@@ -149,21 +144,6 @@
     "default": true,
     "description": "Group windows by application"
   },
-  "show-alerts": {
-    "type": "checkbox",
-    "default": true,
-    "description": "Blink on app alerts"
-  },
-  "show-pinned": {
-    "type": "checkbox",
-    "default": true,
-    "description": "Show pinned apps"
-  },
-  "system-favorites": {
-    "type": "checkbox",
-    "default": false,
-    "description": "Pin system favorites"
-  },
   "show-all-workspaces": {
     "type": "checkbox",
     "default": false,
@@ -176,7 +156,7 @@
   },
   "launcher-animation-effect": {
     "type": "combobox",
-    "default": 1,
+    "default": 3,
     "description": "Launcher animation",
     "options": {
       "None": 1,
@@ -184,14 +164,9 @@
       "Scale": 3
     }
   },
-  "list-monitor-windows": {
-    "type": "checkbox",
-    "default": true,
-    "description": "Only list windows from the current monitor"
-  },
   "cycleMenusHotkey": {
     "type": "keybinding",
-    "default": "<Super>space",
+    "default": "",
     "description": "Global hotkey for cycling through thumbnail menus"
   },
   "show-apps-order-hotkey": {
@@ -207,6 +182,11 @@
     "step": 10,
     "units": "milliseconds",
     "description": "Duration of the apps order display on hotkey press"
+  },
+  "super-num-hotkeys": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Enable Super+<number> shortcut to switch/open apps"
   },
   "thumbnail-timeout": {
     "dependency": "!onclick-thumbnails",
@@ -275,12 +255,6 @@
     "default": false,
     "description": "Show autostart option"
   },
-  "launch-new-instance-menu-item": {
-    "type": "checkbox",
-    "default": true,
-    "description": "Show new window option",
-    "tooltip": "Shows the \"New Window\" option in an app's context menu if it doesn't already have one from the app's own action menu items."
-  },
   "monitor-move-all-windows": {
     "type": "checkbox",
     "default": true,
@@ -324,14 +298,5 @@
     "step": 1,
     "units": "percent",
     "description": "Window opacity"
-  },
-  "icon-spacing": {
-    "type": "spinbutton",
-    "default": 6,
-    "min": 0,
-    "max": 15,
-    "step": 1,
-    "units": "px",
-    "description": "Space between icons"
   }
 }

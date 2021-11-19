@@ -17,6 +17,7 @@ const ModalDialog = imports.ui.modalDialog;
 const PopupMenu = imports.ui.popupMenu;
 const Tooltips = imports.ui.tooltips;
 const Tweener = imports.ui.tweener;
+const Gettext = imports.gettext;
 
 
 const RIGHT_PANEL_POPUP_ANIMATE_TIME = 0.5;
@@ -236,8 +237,30 @@ var Desklet = class Desklet {
         }
 
         this.context_menu_item_remove = new PopupMenu.PopupMenuItem(_("Remove this desklet"));
-        this.context_menu_item_remove.connect("activate", Lang.bind(this, this._onRemoveDesklet));
+        this.context_menu_item_remove.connect("activate", Lang.bind(this, function(actor, event) {
+            if (Clutter.ModifierType.CONTROL_MASK & Cinnamon.get_event_state(event)) {
+                this._onRemoveDesklet();
+            } else {
+                let dialog = new ModalDialog.ConfirmDialog(
+                    _("Are you sure you want to remove '%s'?").format(this._(this._meta.name)),
+                    () => this._onRemoveDesklet()
+                );
+                dialog.open();
+            }
+        }));
         this._menu.addMenuItem(this.context_menu_item_remove);
+    }
+
+    // translation
+    _(str) {
+        // look into the text domain first
+        let translated = Gettext.dgettext(this._uuid, str);
+
+        // if it looks translated, return the translation of the domain
+        if (translated !== str)
+            return translated;
+        // else, use the default cinnamon domain
+        return _(str);
     }
 
     /**
@@ -251,11 +274,11 @@ var Desklet = class Desklet {
     }
 
     openAbout() {
-        new ModalDialog.SpicesAboutDialog(this._meta, "desklets");
+        Util.spawnCommandLine("xlet-about-dialog desklets " + this._uuid);
     }
 
-    configureDesklet() {
-        Util.spawnCommandLine("xlet-settings desklet " + this._uuid + " " + this.instance_id);
+    configureDesklet(tab=0) {
+        Util.spawnCommandLine("xlet-settings desklet " + this._uuid + " -i " + this.instance_id + " -t " + tab);
     }
 }
 Signals.addSignalMethods(Desklet.prototype);
