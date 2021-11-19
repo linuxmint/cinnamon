@@ -123,7 +123,7 @@
   &amp;lt;para&amp;gt;Lorem &amp;lt;code&amp;gt;ipsum&amp;lt;/code&amp;gt; dolor sit amet.&amp;lt;/para&amp;gt;
 &amp;lt;/section&amp;gt;&lt;/programlisting&gt;</programlisting>
 
-      <para>There are a few things to take note of. Firstly, the &lt; and &gt; items are escaped. Secondly, the contents of the <code>&lt;programlisting&gt;</code> is flushed to the left, regardless of the current indentation of the xml. This is since all whitepsace is rendered verbatim. Thirdly, the end <code>&lt;/programlisting tag&gt;</code> is put on the same row as the last line, or else an extra row will appear in the output.</para>
+      <para>There are a few things to take note of. Firstly, the &lt; and &gt; items are escaped. Secondly, the contents of the <code>&lt;programlisting&gt;</code> is flushed to the left, regardless of the current indentation of the xml. This is since all whitespace is rendered verbatim. Thirdly, the end <code>&lt;/programlisting tag&gt;</code> is put on the same row as the last line, or else an extra row will appear in the output.</para>
 
       <para>If you are intending to show code, you will want to do syntax highlighting. Doing so via the regular DocBook way is useless. Instead, you need some magic, namely enclosing your <code>&lt;programlisting&gt;</code> inside an <code>&lt;informalexample&gt;</code> tag, eg.</para>
       <programlisting>

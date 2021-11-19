@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 
-from GSettingsWidgets import *
+import os
+
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 from gi.repository import *
 
 PREF_MEDIA_AUTORUN_NEVER = "autorun-never"
@@ -443,6 +446,7 @@ class OtherTypeDialog(Gtk.Dialog):
         return True
 
     def getDescription(self, content_type):
+        description = None
         for d in other_defs:
             if content_type == d[DEF_CONTENT_TYPE]:
                 s = d[DEF_LABEL]
@@ -572,7 +576,7 @@ class Module:
             switch.fill_row()
             page.add(switch)
 
-            settings = SettingsBox(_("Removable media"))
+            settings = SettingsSection(_("Removable media"))
             switch.revealer.add(settings)
             page.pack_start(switch.revealer, False, False, 0)
 

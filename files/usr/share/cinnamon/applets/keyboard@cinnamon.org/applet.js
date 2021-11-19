@@ -23,40 +23,40 @@ class EmblemedIcon {
     }
 
     _style_changed(actor) {
-        let icon_size = 0.5 + this.actor.get_theme_node().get_length("icon-size");
+        const icon_size = 0.5 + this.actor.get_theme_node().get_length("icon-size");
 
         this.actor.natural_width = this.actor.natural_height = icon_size;
     }
 
     _repaint(actor) {
-        let cr = actor.get_context();
-        let [w, h] = actor.get_surface_size();
+        const cr = actor.get_context();
+        const [w, h] = actor.get_surface_size();
 
         cr.save();
 
-        let surf = St.TextureCache.get_default().load_file_to_cairo_surface(this.path);
+        const surf = St.TextureCache.get_default().load_file_to_cairo_surface(this.path);
+        const surf_width = surf.getWidth();
+        const surf_height = surf.getHeight();
 
-        let factor = w / surf.getWidth();
-
-        let true_width = surf.getWidth() * factor;
-        let true_height = surf.getHeight() * factor;
-
-        let y_offset = 0;
-        let x_offset = 0;
-
-        if (surf.getWidth() >= surf.getHeight()) {
-            x_offset = 0;
-            y_offset = ((h * (1 / factor)) - surf.getHeight()) / 2;
-        } else {
-            x_offset = ((w * (1 / factor)) - surf.getWidth()) / 2;
-            y_offset = 0;
+        let [new_w, new_h] = [w, h];
+        const aspect = surf_width / surf_height;
+        if ((new_w / new_h) > aspect) {
+            new_w = new_h * aspect;
         }
 
-        let true_x_offset = (w - true_width) / 2;
-        let true_y_offset = (h - true_height) / 2;
+        const factor = new_w / surf_width;
+
+        const render_width = surf_width * factor;
+        const render_height = surf_height * factor;
+
+        const surf_x_offset = ((w / factor) - surf_width) / 2;
+        const surf_y_offset = ((h / factor) - surf_height) / 2;
+
+        const render_x_offset = (new_w - render_width) / 2;
+        const render_y_offset = (new_h - render_height) / 2;
 
         cr.scale(factor, factor);
-        cr.setSourceSurface(surf, x_offset, y_offset);
+        cr.setSourceSurface(surf, surf_x_offset, surf_y_offset);
 
         cr.getSource().setFilter(Cairo.Filter.BEST);
         cr.setOperator(Cairo.Operator.SOURCE);
@@ -66,10 +66,10 @@ class EmblemedIcon {
         cr.restore();
 
         XApp.KbdLayoutController.render_cairo_subscript(cr,
-                                                        true_x_offset + (true_width / 2),
-                                                        true_y_offset + (true_height / 2),
-                                                        true_width / 2,
-                                                        true_height / 2,
+                                                        render_x_offset + (render_width / 2),
+                                                        render_y_offset + (render_height / 2),
+                                                        render_width / 2,
+                                                        render_height / 2,
                                                         this.id);
 
         cr.$dispose();
@@ -84,7 +84,7 @@ class EmblemedIcon {
     }
 
     set_icon_size(size) {
-        this.actor.width = this.actor.height = size;
+        this.actor.width = this.actor.height = size * global.ui_scale;
     }
 
     set_style_class_name(name) {
@@ -185,6 +185,16 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         this._config.connect('config-changed', Lang.bind(this, this._syncConfig));
     }
 
+    _onButtonPressEvent(actor, event) {
+        // Cycle to the next layout
+        if (event.get_button() === 2) {
+            const selected_group = this._config.get_current_group();
+            const new_group = (selected_group + 1) % this._layoutItems.length;
+            this._config.set_current_group(new_group);
+        }
+        return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
+    }
+
     on_applet_clicked(event) {
         this.menu.toggle();
     }
@@ -218,16 +228,16 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
         this.actor.show();
 
-        let groups = this._config.get_all_names();
+        const groups = this._config.get_all_names();
 
         for (let i = 0; i < groups.length; i++) {
             let handled = false;
             let actor = null;
 
             if (this.show_flags) {
-                let name = this._config.get_icon_name_for_group(i);
+                const name = this._config.get_icon_name_for_group(i);
 
-                let file = Gio.file_new_for_path("/usr/share/iso-flag-png/" + name + ".png");
+                const file = Gio.file_new_for_path("/usr/share/iso-flag-png/" + name + ".png");
 
                 if (file.query_exists(null)) {
                     actor = new EmblemedIcon(file.get_path(), this._config.get_flag_id_for_group(i), "popup-menu-icon").actor;
@@ -248,7 +258,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
                 actor = new St.Label({ text: name });
             }
 
-            let item = new LayoutMenuItem(this._config, i, actor, groups[i]);
+            const item = new LayoutMenuItem(this._config, i, actor, groups[i]);
             this._layoutItems.push(item);
             this.menu.addMenuItem(item, i);
         }
@@ -258,14 +268,14 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
     _syncGroup() {
 
-        let selected = this._config.get_current_group();
+        const selected = this._config.get_current_group();
 
         if (this._selectedLayout) {
             this._selectedLayout.setShowDot(false);
             this._selectedLayout = null;
         }
 
-        let item = this._layoutItems[selected];
+        const item = this._layoutItems[selected];
         item.setShowDot(true);
 
         this._selectedLayout = item;
@@ -275,9 +285,9 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         let handled = false;
 
         if (this.show_flags) {
-            let name = this._config.get_current_icon_name();
+            const name = this._config.get_current_icon_name();
 
-            let file = Gio.file_new_for_path("/usr/share/iso-flag-png/" + name + ".png");
+            const file = Gio.file_new_for_path("/usr/share/iso-flag-png/" + name + ".png");
 
             if (file.query_exists(null)) {
                 this._applet_icon = new EmblemedIcon(file.get_path(), this._config.get_current_flag_id(), "applet-icon");

@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import os
-import sys
 import pwd
 import grp
 import gettext
@@ -393,6 +392,15 @@ class NewUserDialog(Gtk.Dialog):
         except Exception as detail:
             print(detail)
 
+    def user_exists(self, user_name):
+        users = AccountsService.UserManager.get_default().list_users()
+
+        for user in users:
+            if user.get_user_name() == user_name:
+                return True
+
+        return False
+
     def _on_info_changed(self, widget):
         fullname = self.realname_entry.get_text()
         username = self.username_entry.get_text()
@@ -400,6 +408,10 @@ class NewUserDialog(Gtk.Dialog):
         if re.search('[^a-z0-9_.-]', username):
             self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "dialog-warning-symbolic")
             self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Invalid username"))
+            valid = False
+        elif self.user_exists(username):
+            self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "dialog-warning-symbolic")
+            self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("A user with the name '%s' already exists.") % username)
             valid = False
         else:
             self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
@@ -456,6 +468,7 @@ class Module:
     def __init__(self):
         try:
             self.builder = Gtk.Builder()
+            self.builder.set_translation_domain('cinnamon') # let it translate!
             self.builder.add_from_file("/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.ui")
             self.window = self.builder.get_object("main_window")
             self.window.connect("destroy", Gtk.main_quit)
@@ -673,6 +686,10 @@ class Module:
                 image.thumbnail((96, 96), Image.ANTIALIAS)
                 face_path = os.path.join(user.get_home_dir(), ".face")
                 try:
+                    try:
+                        os.remove(face_path)
+                    except OSError:
+                        pass
                     priv_helper.drop_privs(user)
                     image.save(face_path, "png")
                 finally:
@@ -709,9 +726,14 @@ class Module:
                 user = model[treeiter][INDEX_USER_OBJECT]
                 user.set_icon_file(path)
                 self.face_image.set_from_file(path)
+                face_path = os.path.join(user.get_home_dir(), ".face")
                 try:
+                    try:
+                        os.remove(face_path)
+                    except OSError:
+                        pass
                     priv_helper.drop_privs(user)
-                    shutil.copy(path, os.path.join(user.get_home_dir(), ".face"))
+                    shutil.copy(path, face_path)
                 finally:
                     priv_helper.restore_privs()
                 model.set_value(treeiter, INDEX_USER_PICTURE, GdkPixbuf.Pixbuf.new_from_file_at_size(path, 48, 48))

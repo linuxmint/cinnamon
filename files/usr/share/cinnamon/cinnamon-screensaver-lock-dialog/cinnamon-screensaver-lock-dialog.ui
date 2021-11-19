@@ -73,7 +73,7 @@
           <object class="GtkLabel" id="label_description">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">label</property>
+            <property name="label" translatable="yes"></property>
           </object>
           <packing>
             <property name="expand">False</property>

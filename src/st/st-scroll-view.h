@@ -27,7 +27,7 @@
 #ifndef __ST_SCROLL_VIEW_H__
 #define __ST_SCROLL_VIEW_H__
 
-#include <st/st-bin.h>
+#include "st-bin.h"
 
 G_BEGIN_DECLS
 

@@ -23,6 +23,7 @@ const Util = imports.misc.util;
 
 var SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 var MENU_ANIMATION_TIME = 0.15; /* Seconds */
+var MENU_ANIMATION_OFFSET = 0.1;
 
 var PanelLoc = {
     top : 0,
@@ -156,7 +157,9 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
     _onKeyPressEvent(actor, event) {
         let symbol = event.get_key_symbol();
 
-        if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
+        if (symbol === Clutter.KEY_space ||
+            symbol === Clutter.KEY_Return ||
+            symbol === Clutter.KEY_KP_Enter) {
             this.activate(event);
             return true;
         }
@@ -580,7 +583,7 @@ var PopupAlternatingMenuItem = class PopupAlternatingMenuItem extends PopupBaseM
 
         let key = event.get_key_symbol();
 
-        if (key == Clutter.KEY_Alt_L || key == Clutter.KEY_Alt_R)
+        if (key === Clutter.KEY_Alt_L || key === Clutter.KEY_Alt_R)
             this._updateStateFromModifiers();
 
         return false;
@@ -790,8 +793,8 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
 
     _onKeyPressEvent (actor, event) {
         let key = event.get_key_symbol();
-        if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
-            let delta = key == Clutter.KEY_Right ? 0.1 : -0.1;
+        if (key === Clutter.KEY_Right || key === Clutter.KEY_Left) {
+            let delta = key === Clutter.KEY_Right ? 0.1 : -0.1;
             this._value = Math.max(0, Math.min(this._value + delta, 1));
             this._slider.queue_repaint();
             this.emit('value-changed', this._value);
@@ -836,6 +839,8 @@ var PopupSwitchMenuItem = class PopupSwitchMenuItem extends PopupBaseMenuItem {
 
         this.label = new St.Label({ text: text });
         this._statusLabel = new St.Label({ text: '', style_class: 'popup-inactive-menu-item' });
+
+        this.actor.label_actor = this.label;
 
         this._switch = new Switch(active);
 
@@ -893,6 +898,8 @@ var PopupSwitchIconMenuItem = class PopupSwitchIconMenuItem extends PopupBaseMen
 
         this.label = new St.Label({ text: text });
         this._statusLabel = new St.Label({ text: '', style_class: 'popup-inactive-menu-item' });
+
+        this.actor.label_actor = this.label;
 
         this._icon = new St.Icon({ style_class: 'popup-menu-icon',
             icon_name: iconName,
@@ -987,6 +994,7 @@ var PopupIconMenuItem = class PopupIconMenuItem extends PopupBaseMenuItem {
         super._init.call(this, params);
 
         this.label = new St.Label({text: text});
+        this.actor.label_actor = this.label;
         this._icon = new St.Icon({ style_class: 'popup-menu-icon',
             icon_name: iconName,
             icon_type: iconType});
@@ -1023,6 +1031,7 @@ var PopupImageMenuItem = class PopupImageMenuItem extends PopupBaseMenuItem {
         super._init.call(this, params);
 
         this.label = new St.Label({ text: text });
+        this.actor.label_actor = this.label;
         this.addActor(this.label);
         this._icon = new St.Icon({ style_class: 'popup-menu-icon' });
         this.addActor(this._icon, { align: St.Align.END });
@@ -1052,6 +1061,7 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
         this._displayIcon = false;
 
         this.label = new St.Label({ text: text });
+        this.actor.label_actor = this.label;
         this._accel = new St.Label({ x_align: St.Align.END });
         this._ornament = new St.Bin();
         this._icon = new St.Icon({ style_class: 'popup-menu-icon', icon_type: St.IconType.FULLCOLOR });
@@ -1434,7 +1444,7 @@ var PopupMenuAbstractItem = class PopupMenuAbstractItem {
 
     getChildrenIds() {
         // Clone it!
-        return this._childrenIds.concat();
+        return this._childrenIds.slice();
     }
 
     getChildren() {
@@ -2233,10 +2243,12 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
             this.animating = true;
             this.actor.show();
+            this.actor.opacity = 0;
 
             let tweenParams = {
                 transition: "easeOutQuad",
                 time: MENU_ANIMATION_TIME,
+                opacity: 255,
                 onUpdate: dest => {
                     let clipY = 0;
                     let clipX = 0;
@@ -2287,9 +2299,9 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                     yPos -= this.actor.margin_top;
                     tweenParams["onUpdateParams"] = [yPos];
                     if (this.sideFlipped) // Bottom
-                        this.actor.y = yPos + this.actor.height - this.actor.margin_top;
+                        this.actor.y = yPos + (this.actor.height * MENU_ANIMATION_OFFSET) - this.actor.margin_top;
                     else // Top
-                        this.actor.y = yPos - this.actor.height + this.actor.margin_bottom;
+                        this.actor.y = yPos - (this.actor.height * MENU_ANIMATION_OFFSET) + this.actor.margin_bottom;
                     break;
                 case St.Side.LEFT:
                 case St.Side.RIGHT:
@@ -2299,15 +2311,20 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                     xPos -= this.actor.margin_left;
                     tweenParams["onUpdateParams"] = [xPos];
                     if (this.sideFlipped) // Right
-                        this.actor.x = xPos + this.actor.width - this.actor.margin_left;
+                        this.actor.x = xPos + (this.actor.width * MENU_ANIMATION_OFFSET) - this.actor.margin_left;
                     else // Left
-                        this.actor.x = xPos - this.actor.width + this.actor.margin_right;
+                        this.actor.x = xPos - (this.actor.width * MENU_ANIMATION_OFFSET) + this.actor.margin_right;
                     break;
             }
 
             Tweener.addTween(this.actor, tweenParams);
         } else {
             this.animating = false;
+
+            let [xPos, yPos] = this._calculatePosition(); // should this be conditional on this._slidePosition being -1?
+            this.actor.x = xPos;
+            this.actor.y = yPos;
+
             this.actor.show();
         }
 
@@ -2339,6 +2356,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             let tweenParams = {
                 transition: "easeInQuad",
                 time: MENU_ANIMATION_TIME,
+                opacity: 0,
                 onUpdate: dest => {
                         let clipY = 0;
                         let clipX = 0;
@@ -2359,6 +2377,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                     this.actor.hide();
                     this.actor.remove_clip();
                     this.actor.set_size(-1, -1);
+                    this.actor.opacity = 255;
                 }
             }
 
@@ -2368,18 +2387,18 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                     let yPos = this.actor.y - this.actor.margin_top;
                     tweenParams["onUpdateParams"] = [yPos - this.actor.margin_top];
                     if (this.sideFlipped) // Botton
-                        tweenParams["y"] = yPos + this.actor.height + this.actor.margin_bottom;
+                        tweenParams["y"] = yPos + (this.actor.height * MENU_ANIMATION_OFFSET) + this.actor.margin_bottom;
                     else // Top
-                        tweenParams["y"] = yPos - this.actor.height - this.actor.margin_top;
+                        tweenParams["y"] = yPos - (this.actor.height * MENU_ANIMATION_OFFSET) - this.actor.margin_top;
                     break;
                 case St.Side.LEFT:
                 case St.Side.RIGHT:
                     let xPos = this.actor.x - this.actor.margin_left;
                     tweenParams["onUpdateParams"] = [xPos - this.actor.margin_left];
                     if (this.sideFlipped) // Right
-                        tweenParams["x"] = xPos + this.actor.width + this.actor.margin_right;
+                        tweenParams["x"] = xPos + (this.actor.width * MENU_ANIMATION_OFFSET) + this.actor.margin_right;
                     else // Left
-                        tweenParams["x"] = xPos - this.actor.width - this.actor.margin_left;
+                        tweenParams["x"] = xPos - (this.actor.width * MENU_ANIMATION_OFFSET) - this.actor.margin_left;
                     break;
             }
 
@@ -2555,7 +2574,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
     }
 
     _onKeyPressEvent(actor, event) {
-        if (event.get_key_symbol() == Clutter.Escape) {
+        if (event.get_key_symbol() === Clutter.KEY_Escape) {
             this.close(true);
             return true;
         }
@@ -2783,7 +2802,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
     _onKeyPressEvent(actor, event) {
         // Move focus back to parent menu if the user types Left.
 
-        if (this.isOpen && event.get_key_symbol() == Clutter.KEY_Left) {
+        if (this.isOpen && event.get_key_symbol() === Clutter.KEY_Left) {
             this.sourceActor._delegate.setActive(true);
             this.close(true);
             return true;
@@ -2864,11 +2883,11 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
     _onKeyPressEvent(actor, event) {
         let symbol = event.get_key_symbol();
 
-        if (symbol == Clutter.KEY_Right) {
+        if (symbol === Clutter.KEY_Right) {
             this.menu.open(true);
             this.menu.actor.navigate_focus(null, Gtk.DirectionType.DOWN, false);
             return true;
-        } else if (symbol == Clutter.KEY_Left && this.menu.isOpen) {
+        } else if (symbol === Clutter.KEY_Left && this.menu.isOpen) {
             this.menu.close();
             return true;
         }
@@ -2898,7 +2917,7 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
     }
 
     _onKeyPressEvent(actor, event) {
-        if (event.get_key_symbol() == Clutter.Escape) {
+        if (event.get_key_symbol() === Clutter.KEY_Escape) {
             this.close(true);
             return true;
         }

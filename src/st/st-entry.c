@@ -712,11 +712,13 @@ st_entry_clipboard_callback (StClipboard *clipboard,
                              const gchar *text,
                              gpointer     data)
 {
-  ClutterText *ctext = (ClutterText*)((StEntry *) data)->priv->entry;
+  ClutterText *ctext;
   gint cursor_pos;
 
   if (!text)
     return;
+
+  ctext = (ClutterText*)((StEntry *) data)->priv->entry;
 
   /* delete the current selection before pasting */
   clutter_text_delete_selection (ctext);

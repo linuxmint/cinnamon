@@ -24,9 +24,9 @@
 #ifndef __ST_TABLE_CHILD_H__
 #define __ST_TABLE_CHILD_H__
 
-#include <st/st-types.h>
-#include <st/st-widget.h>
-#include <st/st-table.h>
+#include "st-types.h"
+#include "st-widget.h"
+#include "st-table.h"
 #include <clutter/clutter.h>
 
 G_BEGIN_DECLS

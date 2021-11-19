@@ -2,6 +2,6 @@
  "uuid": "window-list@cinnamon.org",
  "name": "Window list",
  "description": "Main Cinnamon window list",
- "icon": "gnome-window-manager",
+ "icon": "cs-windows",
  "max-instances": -1
 }

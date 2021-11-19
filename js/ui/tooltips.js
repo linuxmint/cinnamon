@@ -243,6 +243,18 @@ Tooltip.prototype = {
      */
     set_text: function(text) {
         this._tooltip.set_text(text);
+        this._tooltip.get_clutter_text().set_use_markup(false);
+    },
+
+    /**
+     * set_markup:
+     * @text (string): new text to display
+     *
+     * Sets the text to display to @markup.
+     */
+    set_markup: function(markup) {
+        this._tooltip.set_text(markup);
+        this._tooltip.get_clutter_text().set_use_markup(true);
     },
 
     _destroy: function() {

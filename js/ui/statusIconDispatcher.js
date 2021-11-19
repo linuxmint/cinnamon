@@ -49,6 +49,10 @@ StatusIconDispatcher.prototype = {
         this._traymanager.manage_stage(global.stage, themeWidget);
     },
 
+    set_tray_orientation: function(orientation) {
+        this._traymanager.set_orientation(orientation);
+    },
+
     _onTrayIconAdded: function(o, icon) {
         let wmClass = (icon.wm_class || 'unknown').toLowerCase();
         let role = STANDARD_TRAY_ICON_IMPLEMENTATIONS[wmClass];

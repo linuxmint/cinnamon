@@ -14,6 +14,7 @@ const {createStore} = imports.misc.state;
 const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
 const {
     FLASH_INTERVAL,
+    FLASH_MAX_COUNT,
     MAX_BUTTON_WIDTH,
     BUTTON_BOX_ANIMATION_TIME,
     RESERVE_KEYS,
@@ -71,17 +72,19 @@ class AppGroup {
             verticalThumbs: false,
             groupReady: false,
             thumbnailMenuEntered: false,
-            fileDrag: false
+            fileDrag: false,
+            pressed: true
         });
 
         this.groupState.connect({
             isFavoriteApp: () => this.handleFavorite(true),
             getActor: () => this.actor,
-            launchNewInstance: () => this.launchNewInstance(),
+            launchNewInstance: (...args) => this.launchNewInstance(...args),
             checkFocusStyle: () => this.checkFocusStyle()
         });
 
         this.signals = new SignalManager(null);
+        this.appKeyTimeout = 0;
 
         // TODO: This needs to be in state so it can be updated more reliably.
         this.labelVisible = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
@@ -91,7 +94,7 @@ class AppGroup {
             name: 'appButton',
             style_class: 'grouped-window-list-item-box',
             important: true,
-            reactive: true,
+            reactive: !this.state.panelEditMode,
             can_focus: true,
             track_hover: true
         });
@@ -148,6 +151,7 @@ class AppGroup {
         this.groupState.set({tooltip: new Tooltips.PanelItemTooltip({actor: this.actor}, '', this.state.orientation)});
 
         this._draggable = new DND._Draggable(this.actor);
+        this._draggable.inhibit = !this.state.settings.enableDragging;
 
         this.signals.connect(this.actor, 'get-preferred-width', (...args) => this.getPreferredWidth(...args));
         this.signals.connect(this.actor, 'get-preferred-height', (...args) => this.getPreferredHeight(...args));
@@ -158,7 +162,6 @@ class AppGroup {
         this.signals.connect(this.actor, 'button-press-event', (...args) => this.onAppButtonPress(...args));
         this.signals.connect(this._draggable, 'drag-begin', (...args) => this.onDragBegin(...args));
         this.signals.connect(this._draggable, 'drag-cancelled', (...args) => this.onDragCancelled(...args));
-        this.signals.connect(this._draggable, 'drag-end', (...args) => this.onDragEnd(...args));
 
         this.calcWindowNumber();
         this.on_orientation_changed(true);
@@ -257,7 +260,7 @@ class AppGroup {
     setMargin() {
         let direction = this.state.isHorizontal ? 'right' : 'bottom';
         let existingStyle = this.actor.style ? this.actor.style : '';
-        this.actor.style = existingStyle + 'margin-' + direction + ': ' + this.state.settings.iconSpacing + 'px;';
+        this.actor.style = existingStyle + 'margin-' + direction + ':6px;';
     }
 
     updateIconBoxClip() {
@@ -325,7 +328,7 @@ class AppGroup {
 
         this.actor.remove_style_pseudo_class('active');
         this.actor.add_style_class_name('grouped-window-list-item-demands-attention');
-        if (counter < 4) {
+        if (counter < FLASH_MAX_COUNT) {
             setTimeout(() => {
                 if (this.actor && this.actor.has_style_class_name('grouped-window-list-item-demands-attention')) {
                     this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
@@ -341,13 +344,12 @@ class AppGroup {
     getPreferredWidth(actor, forHeight, alloc) {
         let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(forHeight);
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
-        let {iconSpacing} = this.state.settings;
         // The label text starts in the center of the icon, so we should allocate the space
         // needed for the icon plus the space needed for(label - icon/2)
-        alloc.min_size = iconNaturalSize + iconSpacing;
+        alloc.min_size = iconNaturalSize + 6;
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
             let max = this.labelVisible && this.groupState.metaWindows.length > 0 ?
-                labelNaturalSize + iconNaturalSize + iconSpacing : 0;
+                labelNaturalSize + iconNaturalSize + 6 : 0;
             alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
@@ -366,7 +368,6 @@ class AppGroup {
         let allocHeight = box.y2 - box.y1;
         let childBox = new Clutter.ActorBox();
         let direction = this.actor.get_text_direction();
-        let {iconSpacing} = this.state.settings;
         let spacing = 0;
 
         // Set the icon to be left-justified (or right-justified) and centered vertically
@@ -378,7 +379,7 @@ class AppGroup {
 
         if (this.labelVisible && this.groupState.metaWindows.length > 0) {
             if (direction === Clutter.TextDirection.LTR) {
-                childBox.x1 = box.x1 + iconSpacing;
+                childBox.x1 = box.x1 + 6;
             } else {
                 childBox.x1 = Math.max(box.x1, box.x2 - naturalWidth);
             }
@@ -496,6 +497,8 @@ class AppGroup {
     }
 
     onLeave() {
+        this.groupState.pressed = false;
+
         if (this.state.panelEditMode) return false;
 
         if (this.hoverMenu) this.hoverMenu.onMenuLeave();
@@ -622,25 +625,18 @@ class AppGroup {
             this._draggable._overrideX = Math.round(x);
             this._draggable._overrideY = null;
         }
+
+        if (this.rightClickMenu) this.rightClickMenu.close(false);
         if (this.hoverMenu) this.groupState.trigger('hoverMenuClose');
     }
 
-    onDragEnd() {
-        if (this.rightClickMenu) this.rightClickMenu.close(false);
-        if (this.hoverMenu) this.hoverMenu.close(false);
-        this.listState.trigger('updateAppGroupIndexes', this.groupState.appId);
-        this.state.trigger('clearDragPlaceholder');
-    }
-
     onDragCancelled() {
-        if (this.rightClickMenu) this.rightClickMenu.close(false);
-        if (this.hoverMenu) this.hoverMenu.close(false);
-        this.state.trigger('clearDragPlaceholder');
+        this.state.trigger('moveLauncher', this);
     }
 
     handleDragOver(source, actor, x, y, time) {
         if (!this.state.settings.enableDragging
-            || source instanceof AppGroup
+            || actor.name != "xdnd-proxy-actor"
             || this.state.panelEditMode) {
             return DND.DragMotionResult.CONTINUE;
         }
@@ -658,7 +654,7 @@ class AppGroup {
                 this.hoverMenu.open(true);
             }
         }
-        return true;
+        return DND.DragMotionResult.CONTINUE;
     }
 
     getDragActor() {
@@ -676,13 +672,24 @@ class AppGroup {
         this.badge.show();
     }
 
-    launchNewInstance() {
-        this.groupState.app.open_new_window(-1);
+    launchNewInstance(offload=false) {
+        if (offload) {
+            try {
+                this.groupState.app.launch_offloaded(0, [], -1);
+            } catch (e) {
+                logError(e, "Could not launch app with dedicated gpu: ");
+            }
+        } else {
+            this.groupState.app.open_new_window(-1);
+        }
+
         this.animate();
     }
 
     onAppButtonRelease(actor, event) {
-        this.state.trigger('clearDragPlaceholder');
+        if (!this.groupState.pressed) {
+            return;
+        }
 
         let button = event.get_button();
         let nWindows = this.groupState.metaWindows.length;
@@ -725,7 +732,7 @@ class AppGroup {
                 } else {
                     this.hoverMenu.open();
                 }
-                if (this.state.overlayPreview) {
+                if (this.state.lastOverlayPreview) {
                     this.hoverMenu.appThumbnails[0].destroyOverlayPreview();
                     this.hoverMenu.close(true);
                 }
@@ -743,7 +750,24 @@ class AppGroup {
                 return;
             }
             if (this.state.settings.leftClickAction === 3 && nWindows > 1) {
-                this.state.trigger('cycleWindows', null, this.actor._delegate);
+                let foundActive = false;
+                for (let i = 0, len = nWindows; i < len; i++) {
+                    if (
+                        this.groupState.lastFocused &&
+                        this.groupState.metaWindows[i] === this.groupState.lastFocused
+                    ) {
+                        if (this.groupState.metaWindows[i].appears_focused) {
+                            this.state.trigger("cycleWindows", null, this.actor._delegate);
+                        } else {
+                            handleMinimizeToggle(this.groupState.metaWindows[i]);
+                        }
+                        foundActive = true;
+                        break;
+                    }
+                }
+                if (!foundActive) {
+                    handleMinimizeToggle(this.groupState.metaWindows[0]);
+                }
                 return;
             }
             if (this.hoverMenu) this.hoverMenu.shouldOpen = false;
@@ -782,8 +806,10 @@ class AppGroup {
 
     onAppButtonPress(actor, event) {
         let button = event.get_button();
+        this.groupState.pressed = true;
 
         if (button === 3) return true;
+
         return false;
     }
 
@@ -808,7 +834,9 @@ class AppGroup {
                     this.appKeyTimeout = 0;
                     return;
                 }
-                this.hoverMenu.close(true);
+                if (this.hoverMenu) {
+                    this.hoverMenu.close(true);
+                }
                 this.appKeyTimeout = 0;
             }, this.state.settings.showAppsOrderTimeout);
         }
@@ -870,12 +898,15 @@ class AppGroup {
             // Set the initial button label as not all windows will get updated via signals initially.
             if (this.state.settings.titleDisplay > 1) {
                 this.onWindowTitleChanged(metaWindow);
-                this.state.trigger('updateThumbnailsStyle');
             }
             if (refWindow === -1) {
                 metaWindows.push(metaWindow);
                 if (this.hoverMenu) trigger('addThumbnailToMenu', metaWindow);
             }
+
+            // update icon using recent window for cases when the first window of an app doesn't have an icon. e.g: VirtualBox VM
+            this.setIcon(metaWindow)
+
             this.calcWindowNumber();
             this.onFocusChange();
         }
@@ -1011,8 +1042,6 @@ class AppGroup {
                 && this.groupState.appId.indexOf(global.display.focus_window.wm_class.toLowerCase()) === -1) {
                 this.hideLabel();
             }
-            // Re-orient the menu after the focus button expands
-            if (this.hoverMenu) this.hoverMenu.setStyleOptions(false);
         }
     }
 
@@ -1060,7 +1089,7 @@ class AppGroup {
         });
     }
 
-    animate(step = 0) {
+    animate() {
         let effect = this.state.settings.launcherAnimationEffect;
 
         if (effect === 1) return;
@@ -1068,24 +1097,22 @@ class AppGroup {
             this.iconBox.set_z_rotation_from_gravity(0.0, Clutter.Gravity.CENTER);
             Tweener.addTween(this.iconBox, {
                 opacity: 70,
-                time: 1.0,
+                time: 0.2,
                 transition: 'linear',
                 onCompleteScope: this,
                 onComplete() {
                     Tweener.addTween(this.iconBox, {
                         opacity: 255,
-                        time: 0.5,
+                        time: 0.2,
                         transition: 'linear'
                     });
                 }
             });
         } else if (effect === 3) {
-            if (step >= 3) return;
-
             this.iconBox.set_pivot_point(0.5, 0.5);
             Tweener.addTween(this.iconBox, {
-                scale_x: 0.7,
-                scale_y: 0.7,
+                scale_x: 0.8,
+                scale_y: 0.8,
                 time: 0.2,
                 transition: 'easeOutQuad',
                 onComplete: () => {
@@ -1093,10 +1120,7 @@ class AppGroup {
                         scale_x: 1.0,
                         scale_y: 1.0,
                         time: 0.2,
-                        transition: 'easeOutQuad',
-                        onComplete: () => {
-                            this.animate(step + 1);
-                        }
+                        transition: 'easeOutQuad'
                     });
                 }
             });

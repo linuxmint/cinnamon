@@ -5,8 +5,7 @@ import gettext
 import glob
 import sys
 
-sys.path.append('/usr/lib/linuxmint/common')  # noqa
-import additionalfiles
+from mintcommon import additionalfiles
 
 import traceback
 
@@ -22,7 +21,7 @@ try:
     sys.path.append('files/usr/share/cinnamon/cinnamon-settings/bin')
     mod_files = glob.glob('files/usr/share/cinnamon/cinnamon-settings/modules/*.py')
     mod_files.sort()
-    if len(mod_files) is 0:
+    if len(mod_files) == 0:
         print("No settings modules found!!")
         sys.exit(1)
 
@@ -32,7 +31,6 @@ try:
         if mod_file[0:3] != "cs_":
             raise Exception("Settings modules must have a prefix of 'cs_' !!")
 
-    print(mod_files)
     modules = map(__import__, mod_files)
 except Exception as detail:
     print(detail)

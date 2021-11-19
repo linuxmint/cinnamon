@@ -1,0 +1,7 @@
+{
+ "uuid": "printers@cinnamon.org",
+ "name": "Printers",
+ "description": "Manage print jobs",
+ "icon": "cs-printer",
+ "max-instances": -1
+}

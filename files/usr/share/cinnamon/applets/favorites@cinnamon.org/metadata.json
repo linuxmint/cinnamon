@@ -1,0 +1,7 @@
+{
+ "uuid": "favorites@cinnamon.org",
+ "name": "Favorites",
+ "description": "Access your favorite files",
+ "icon": "xapp-favorites-app",
+ "max-instances": -1
+}

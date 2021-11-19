@@ -60,7 +60,7 @@
         Open a terminal in the directory where the <code>metadata.json</code> file is saved.
       </listitem>
       <listitem>
-        Type in the command <code>cinnamon-json-makepot --js po/yourApplet.pot</code>
+        Type in the command <code>cinnamon-xlet-makepot</code>
       </listitem>
     </itemizedlist>
     <para>
@@ -70,7 +70,7 @@
   <sect2>
     <title>Create a translation for the first time with the application Poedit</title>
     <para>
-      Install the programm "Poedit": <code>sudo apt install poedit</code>
+      Install the program "Poedit": <code>sudo apt install poedit</code>
     </para>
     <itemizedlist>
       <listitem>
@@ -108,7 +108,7 @@
         Open a terminal in the directory where the <code>metadata.json</code> file is saved.
       </listitem>
       <listitem>
-        Type in the command <code>cinnamon-json-makepot --js po/yourApplet.pot</code>
+        Type in the command <code>cinnamon-xlet-makepot</code>
       </listitem>
     </itemizedlist>
     <para>
@@ -145,7 +145,7 @@
         Open a terminal in the directory where the <code>metadata.json</code> file is saved.
       </listitem>
       <listitem>
-        Type in the command <code>cinnamon-json-makepot -i</code> to install the existing translations (i.e. the <code>.po</code> files)
+        Type in the command <code>cinnamon-xlet-makepot -i</code> to install the existing translations (i.e. the <code>.po</code> files)
       </listitem>
       <listitem>
         Restart Cinnamon: <code>CTRL+ALT+ESC</code>
@@ -159,7 +159,7 @@
         Open a terminal in the directory where the <code>metadata.json</code> file is saved.
       </listitem>
       <listitem>
-        Type in the command <code>cinnamon-json-makepot -r</code> to remove the installed translations.
+        Type in the command <code>cinnamon-xlet-makepot -r</code> to remove the installed translations.
       </listitem>
       <listitem>
         Restart Cinnamon: <code>CTRL+ALT+ESC</code>

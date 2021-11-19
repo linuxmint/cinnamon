@@ -2,6 +2,6 @@
  "uuid": "recent@cinnamon.org",
  "name": "Recent documents",
  "description": "Access the documents you recently opened",
- "icon": "document-open-recent",
+ "icon": "folder-recent",
  "max-instances": -1
 }

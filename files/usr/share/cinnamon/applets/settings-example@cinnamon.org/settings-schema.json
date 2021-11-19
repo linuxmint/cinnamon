@@ -60,7 +60,7 @@
         "section6": {
             "type": "section",
             "title": "Other choosers",
-            "keys": ["font-select", "date-select"]
+            "keys": ["font-select", "date-select", "time-select"]
         },
         "section7": {
             "type": "section",
@@ -137,7 +137,6 @@
         "type" : "entry",
         "default" : "custom",
         "description" : "Custom Applet Label",
-        "indent": true,
         "dependency" : "use-custom-label",
         "tooltip" : "Set your custom label here.  This field is unavailable unless the switch above is enabled"
     },
@@ -205,6 +204,15 @@
             "d" : 1,
             "m" : 1,
             "y" : 2000
+        }
+    },
+    "time-select" : {
+        "type" : "timechooser",
+        "description" : "Choose a Time",
+        "default" : {
+            "h" : 12,
+            "m" : 0,
+            "s" : 0
         }
     },
     "tree" : {

@@ -1,5 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+const ByteArray = imports.byteArray;
+
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
@@ -29,7 +31,6 @@ var knownCinnamon4Conflicts = [
     'turbonote@iksws.com.b',
     'vnstat@linuxmint.com',
     'netusagemonitor@pdcurtis',
-    'multicore-sys-monitor@ccadeptic23',
     // Desklets
     'netusage@30yavash.com',
     'simple-system-monitor@ariel'
@@ -230,7 +231,8 @@ Extension.prototype = {
             path: this.meta.path,
             uuid: uuid,
             userDir: type.userDir,
-            folder: type.folder
+            folder: type.folder,
+            force: force
         }).then((meta) => {
             // Timer needs to start after the first initial I/O, otherwise every applet shows as taking 1-2 seconds to load.
             // Maybe because of how promises are wired up in CJS?
@@ -242,23 +244,18 @@ Extension.prototype = {
                 this.validateMetaData();
             }
 
-            if (this.meta.multiversion) {
-                return findExtensionSubdirectory(this.dir).then((dir) => {
-                    this.dir = dir;
-                    this.meta.path = this.dir.get_path();
+            return findExtensionSubdirectory(this.dir).then((dir) => {
+                this.dir = dir;
+                this.meta.path = this.dir.get_path();
 
-                    // If an xlet has known usage of imports.gi.NMClient, we require them to have a
-                    // 4.0 directory. It is the only way to assume they are patched for Cinnamon 4 from here.
-                    if (isPotentialNMClientConflict && this.meta.path.indexOf(`/4.0`) === -1) {
-                        throw new Error(`Found unpatched usage of imports.gi.NMClient for ${this.lowerType} ${uuid}`);
-                    }
+                // If an xlet has known usage of imports.gi.NMClient, we require them to have a
+                // 4.0 directory. It is the only way to assume they are patched for Cinnamon 4 from here.
+                if (isPotentialNMClientConflict && this.meta.path.indexOf(`/4.0`) === -1) {
+                    throw new Error(`Found unpatched usage of imports.gi.NMClient for ${this.lowerType} ${uuid}`);
+                }
 
-                    return finishLoad();
-                });
-            } else if (isPotentialNMClientConflict) {
-                throw new Error(`Found un-versioned ${this.lowerType} ${uuid} with known usage of imports.gi.NMClient`);
-            }
-            return finishLoad();
+                return finishLoad();
+            });
         }).then((moduleIndex) => {
             if (moduleIndex == null) {
                 throw new Error(`Could not find module index: ${moduleIndex}`);
@@ -280,12 +277,12 @@ Extension.prototype = {
             this.finalize();
             Main.cinnamonDBusService.EmitXletAddedComplete(true, uuid);
         }).catch((e) => {
-            /* Silently fail to load xlets that aren't actually installed -
-               but no error, since the user can't do anything about it anyhow
-               (short of editing gsettings).  Silent failure is consistent with
-               other reactions in Cinnamon to missing items (e.g. panel launchers
-               just don't show up if their program isn't installed, but we don't
-               remove them or anything) */
+             // Silently fail to load xlets that aren't actually installed -
+             //   but no error, since the user can't do anything about it anyhow
+             //   (short of editing gsettings).  Silent failure is consistent with
+             //   other reactions in Cinnamon to missing items (e.g. panel launchers
+             //   just don't show up if their program isn't installed, but we don't
+             //   remove them or anything)
             Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
             Main.xlet_startup_error = true;
             forgetExtension(uuid, type);
@@ -317,12 +314,9 @@ Extension.prototype = {
             throw logError(`uuid "${this.meta.uuid}" from metadata.json does not match directory name.`, this.uuid);
         }
 
-        // If cinnamon or js version are set, check them
+        // If cinnamon versions are set check them
         if ('cinnamon-version' in this.meta && !versionCheck(this.meta['cinnamon-version'], Config.PACKAGE_VERSION)) {
             throw logError('Extension is not compatible with current Cinnamon version', this.uuid, null, State.OUT_OF_DATE);
-        }
-        if ('js-version' in this.meta && !versionCheck(this.meta['js-version'], Config.GJS_VERSION)) {
-            throw logError('Extension is not compatible with current GJS version', this.uuid, null, State.OUT_OF_DATE);
         }
 
         // If a role is set, make sure it's a valid one
@@ -427,11 +421,11 @@ Extension.prototype = {
 
 /**
 * versionCheck:
-* @required: an array of versions we're compatible with
+* @required: an array of minimum versions we are compatible with
 * @current: the version we have
 *
 * Check if a component is compatible for an extension.
-* @required is an array, and at least one version must match.
+* @required is an array, and at least one version must be lower than the current version.
 * @current must be in the format <major>.<minor>.<point>.<micro>
 * <micro> is always ignored
 * <point> is ignored if not specified (so you can target the whole release)
@@ -440,15 +434,15 @@ Extension.prototype = {
 */
 function versionCheck(required, current) {
     let currentArray = current.split('.');
-    let major = currentArray[0];
-    let minor = currentArray[1];
-    let point = currentArray[2];
+    let currentMajor = parseInt(currentArray[0]);
+    let currentMinor = parseInt(currentArray[1]);
     for (let i = 0; i < required.length; i++) {
         let requiredArray = required[i].split('.');
-        if (requiredArray[0] == major &&
-            requiredArray[1] == minor &&
-            (requiredArray[2] === undefined || requiredArray[2] == point))
+        requiredMajor = parseInt(requiredArray[0]);
+        requiredMinor = parseInt(requiredArray[1]);
+        if (currentMajor > requiredMajor || (currentMajor == requiredMajor  && currentMinor >= requiredMinor)) {
             return true;
+        }
     }
     return false;
 }
@@ -561,9 +555,15 @@ function forgetExtension(extensionIndex, uuid, type, forgetMeta) {
  * Reloads an xlet. Useful when the source has changed.
  */
 function reloadExtension(uuid, type) {
-    if (getExtension(uuid)) {
+    let extension = getExtension(uuid);
+
+    if (extension) {
         unloadExtension(uuid, type, false, true);
         Main._addXletDirectoriesToSearchPath();
+
+        if (extension.meta.force_loaded) {
+            uuid = "!" + uuid;
+        }
         loadExtension(uuid, type);
         return;
     }
@@ -572,10 +572,13 @@ function reloadExtension(uuid, type) {
 }
 
 function findExtensionDirectory(uuid, userDir, folder) {
-    let dirPath = `${userDir}/${uuid}`;
-    let dir = Gio.file_new_for_path(dirPath);
-    if (dir.query_file_type(Gio.FileQueryInfoFlags.NONE, null) === Gio.FileType.DIRECTORY) {
-        return dir;
+    let dir, dirPath;
+    if (!GLib.getenv('CINNAMON_TROUBLESHOOT')) {
+        dirPath = `${userDir}/${uuid}`;
+        dir = Gio.file_new_for_path(dirPath);
+        if (dir.query_file_type(Gio.FileQueryInfoFlags.NONE, null) === Gio.FileType.DIRECTORY) {
+            return dir;
+        }
     }
 
     let systemDataDirs = GLib.get_system_data_dirs();
@@ -597,7 +600,7 @@ function getMetadata(uuid, type) {
     });
 }
 
-function loadMetaData({state, path, uuid, userDir, folder}) {
+function loadMetaData({state, path, uuid, userDir, folder, force}) {
     return new Promise((resolve, reject) => {
         let dir = findExtensionDirectory(uuid, userDir, folder);
         let meta;
@@ -612,7 +615,7 @@ function loadMetaData({state, path, uuid, userDir, folder}) {
                     reject();
                     return;
                 }
-                meta = JSON.parse(json);
+                meta = JSON.parse(ByteArray.toString(json));
             } catch (e) {
                 logError(`Failed to load/parse metadata.json`, uuid, e);
                 meta = createMetaDummy(uuid, oldPath, State.ERROR);
@@ -622,6 +625,7 @@ function loadMetaData({state, path, uuid, userDir, folder}) {
             meta.state = oldState;
             meta.path = oldPath;
             meta.error = '';
+            meta.force_loaded = force;
             resolve(meta);
         });
     });

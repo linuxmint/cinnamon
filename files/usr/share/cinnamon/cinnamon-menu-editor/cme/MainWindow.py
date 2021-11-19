@@ -20,12 +20,11 @@
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('CMenu', '3.0')
-from gi.repository import Gtk, GObject, Gio, GdkPixbuf, Gdk, CMenu, GLib
-import cgi
+from gi.repository import Gtk, GObject, Gdk, CMenu
+import html
 import os
 import gettext
 import subprocess
-import shutil
 
 from cme import config
 gettext.bindtextdomain(config.GETTEXT_PACKAGE, config.localedir)
@@ -52,19 +51,41 @@ class MainWindow(object):
         self.tree.connect_signals(self)
         self.setupMenuTree()
         self.setupItemTree()
-        self.tree.get_object('edit_delete').set_sensitive(False)
-        self.tree.get_object('edit_properties').set_sensitive(False)
-        self.tree.get_object('edit_cut').set_sensitive(False)
-        self.tree.get_object('edit_copy').set_sensitive(False)
-        self.tree.get_object('edit_paste').set_sensitive(False)
+
+        self.popup_menu = Gtk.Menu()
+
+        self.cut_menu_item = Gtk.ImageMenuItem.new_from_stock("gtk-cut")
+        self.cut_menu_item.connect("activate", self.on_edit_cut_activate)
+        self.popup_menu.append(self.cut_menu_item)
+
+        self.copy_menu_item = Gtk.ImageMenuItem.new_from_stock("gtk-copy")
+        self.copy_menu_item.connect("activate", self.on_edit_copy_activate)
+        self.popup_menu.append(self.copy_menu_item)
+
+        self.paste_menu_item = Gtk.ImageMenuItem.new_from_stock("gtk-paste")
+        self.paste_menu_item.connect("activate", self.on_edit_paste_activate)
+        self.popup_menu.append(self.paste_menu_item)
+
+        self.delete_menu_item = Gtk.ImageMenuItem.new_from_stock("gtk-delete")
+        self.delete_menu_item.connect("activate", self.on_edit_delete_activate)
+        self.popup_menu.append(self.delete_menu_item)
+
+        self.properties_menu_item = Gtk.ImageMenuItem.new_from_stock("gtk-properties")
+        self.properties_menu_item.connect("activate", self.on_edit_properties_activate)
+        self.popup_menu.append(self.properties_menu_item)
+
+        self.popup_menu.show_all()
+
         self.cut_copy_buffer = None
         self.file_id = None
         self.last_tree = None
         self.main_window = self.tree.get_object('mainwindow')
 
+        self.tree.get_object("action_box").set_layout(Gtk.ButtonBoxStyle.EDGE)
+
     def run(self):
         self.loadMenus()
-        self.tree.get_object('mainwindow').show_all()
+        self.main_window.show_all()
         Gtk.main()
 
     def menuChanged(self, *a):
@@ -209,7 +230,7 @@ class MainWindow(object):
 
     def loadMenu(self, iters, parent=None):
         for menu, show in self.editor.getMenus(parent):
-            name = cgi.escape(menu.get_name())
+            name = html.escape(menu.get_name())
             if not show:
                 name = "<small><i>%s</i></small>" % (name,)
 
@@ -230,7 +251,7 @@ class MainWindow(object):
             else:
                 assert False, 'should not be reached'
 
-            name = cgi.escape(name)
+            name = html.escape(name)
             if not show:
                 name = "<small><i>%s</i></small>" % (name,)
 
@@ -370,18 +391,13 @@ class MainWindow(object):
         item_tree = self.tree.get_object('item_tree')
         item_tree.get_selection().unselect_all()
         self.loadItems(self.menu_store[menu_path][3])
-        self.tree.get_object('edit_delete').set_sensitive(False)
-        self.tree.get_object('edit_properties').set_sensitive(True)
-        self.tree.get_object('edit_cut').set_sensitive(False)
-        self.tree.get_object('edit_copy').set_sensitive(False)
-        self.tree.get_object('properties_button').set_sensitive(True)
-        self.tree.get_object('delete_button').set_sensitive(False)
-        self.tree.get_object('cut_button').set_sensitive(False)
-        self.tree.get_object('copy_button').set_sensitive(False)
+        self.set_cut_sensitive(False)
+        self.set_copy_sensitive(False)
+        self.set_delete_sensitive(False)
+        self.set_properties_sensitive(True)
 
         can_paste = isinstance(menu, CMenu.TreeDirectory) and self.cut_copy_buffer is not None
-        self.tree.get_object('edit_paste').set_sensitive(can_paste)
-        self.tree.get_object('paste_button').set_sensitive(can_paste)
+        self.set_paste_sensitive(can_paste)
 
         index = menus.get_path(iter).get_indices()[menus.get_path(iter).get_depth() - 1]
         parent_iter = menus.iter_parent(iter)
@@ -409,23 +425,17 @@ class MainWindow(object):
             return
 
         item = items[iter][3]
-        self.tree.get_object('edit_delete').set_sensitive(True)
-        self.tree.get_object('delete_button').set_sensitive(True)
+        self.set_delete_sensitive(True)
 
         can_edit = not isinstance(item, CMenu.TreeSeparator)
-        self.tree.get_object('edit_properties').set_sensitive(can_edit)
-        self.tree.get_object('properties_button').set_sensitive(can_edit)
+        self.set_properties_sensitive(can_edit)
 
         can_cut_copy = not isinstance(item, CMenu.TreeDirectory)
-        self.tree.get_object('cut_button').set_sensitive(can_cut_copy)
-        self.tree.get_object('copy_button').set_sensitive(can_cut_copy)
-        self.tree.get_object('edit_cut').set_sensitive(can_cut_copy)
-        self.tree.get_object('edit_copy').set_sensitive(can_cut_copy)
+        self.set_cut_sensitive(can_cut_copy)
+        self.set_copy_sensitive(can_cut_copy)
 
         can_paste = isinstance(item, CMenu.TreeDirectory) and self.cut_copy_buffer is not None
-
-        self.tree.get_object('edit_paste').set_sensitive(can_paste)
-        self.tree.get_object('paste_button').set_sensitive(can_paste)
+        self.set_paste_sensitive(can_paste)
 
         index = items.get_path(iter).get_indices()[0]
         can_go_up = index > 0 and isinstance(item, CMenu.TreeDirectory)
@@ -434,6 +444,26 @@ class MainWindow(object):
 
     def on_item_tree_row_activated(self, treeview, path, column):
         self.on_edit_properties_activate(None)
+
+    def set_cut_sensitive(self, sensitive):
+        self.tree.get_object("cut_button").set_sensitive(sensitive)
+        self.cut_menu_item.set_sensitive(sensitive)
+
+    def set_copy_sensitive(self, sensitive):
+        self.tree.get_object("copy_button").set_sensitive(sensitive)
+        self.copy_menu_item.set_sensitive(sensitive)
+
+    def set_paste_sensitive(self, sensitive):
+        self.tree.get_object("paste_button").set_sensitive(sensitive)
+        self.paste_menu_item.set_sensitive(sensitive)
+
+    def set_delete_sensitive(self, sensitive):
+        self.tree.get_object("delete_button").set_sensitive(sensitive)
+        self.delete_menu_item.set_sensitive(sensitive)
+
+    def set_properties_sensitive(self, sensitive):
+        self.tree.get_object("properties_button").set_sensitive(sensitive)
+        self.properties_menu_item.set_sensitive(sensitive)
 
     def on_item_tree_popup_menu(self, item_tree, event=None):
         model, iter = item_tree.get_selection().get_selected()
@@ -454,8 +484,7 @@ class MainWindow(object):
             event_time = 0
             item_tree.grab_focus()
             item_tree.set_cursor(path, item_tree.get_columns()[0], 0)
-        popup = self.tree.get_object('edit_menu')
-        popup.popup(None, None, None, None, button, event_time)
+        self.popup_menu.popup(None, None, None, None, button, event_time)
         #without this shift-f10 won't work
         return True
 
@@ -507,6 +536,24 @@ class MainWindow(object):
 
     def on_paste_button_clicked(self, button):
         self.on_edit_paste_activate(None)
+
+    def on_open_desktop_file_button_clicked(self, button):
+        item_tree = self.tree.get_object(self.last_tree)
+        items, iter = item_tree.get_selection().get_selected()
+        if not iter:
+            return
+        item = items[iter][3]
+        if not isinstance(item, CMenu.TreeEntry) and not isinstance(item, CMenu.TreeDirectory):
+            return
+
+        if isinstance(item, CMenu.TreeEntry):
+            file_type = 'launcher'
+        elif isinstance(item, CMenu.TreeDirectory):
+            file_type = 'directory'
+
+        file_path = item.get_desktop_file_path()
+
+        subprocess.run(["xdg-open", file_path])
 
     def quit(self):
         Gtk.main_quit()

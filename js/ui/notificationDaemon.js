@@ -20,7 +20,7 @@ const AUTOCLEAR_BLACKLIST = ['chromium', 'firefox', 'google chrome'];
 let nextNotificationId = 1;
 
 // Should really be defined in Gio.js
-const BusIface = 
+const BusIface =
     '<node> \
         <interface name="org.freedesktop.DBus"> \
             <method name="GetConnectionUnixProcessID"> \
@@ -163,7 +163,19 @@ NotificationDaemon.prototype = {
                  bitsPerSample, nChannels, data] = hints['image-data'];
             return textureCache.load_from_raw(data, hasAlpha, width, height, rowStride, size);
         } else if (hints['image-path']) {
-            return textureCache.load_uri_async(GLib.filename_to_uri(hints['image-path'], null), size, size);
+            let path = hints['image-path'];
+            if (GLib.path_is_absolute (path)) {
+                return textureCache.load_uri_async(GLib.filename_to_uri(path, null), size, size);
+            } else {
+                let icon_type = St.IconType.FULLCOLOR;
+                if (path.search("-symbolic") != -1) {
+                    icon_type = St.IconType.SYMBOLIC;
+                }
+
+                return new St.Icon({ icon_name: path,
+                                     icon_type: icon_type,
+                                     icon_size: size });
+            }
         } else {
             let stockIcon;
             switch (hints.urgency) {
@@ -272,7 +284,7 @@ NotificationDaemon.prototype = {
         this._expireTimer = 0;
         return false;
     },
- 
+
     // Sends a notification to the notification daemon. Returns the id allocated to the notification.
     NotifyAsync: function(params, invocation) {
         let [appName, replacesId, icon, summary, body, actions, hints, timeout] = params;
@@ -308,6 +320,8 @@ NotificationDaemon.prototype = {
                 // early versions of the spec; 'icon_data' should only be used if 'image-path' is not available
                 hints['image-data'] = hints['icon_data'];
 
+        hints['suppress-sound'] = hints.maybeGet('suppress-sound') == true;
+
         let ndata = { appName: appName,
                       icon: icon,
                       summary: summary,
@@ -334,7 +348,7 @@ NotificationDaemon.prototype = {
         } else {    // Custom expiration.
              expires = ndata.expires = Date.now()+timeout;
         }
- 
+
         // Does this notification expire?
         if (expires != 0) {
             // Find place in the notification queue.
@@ -410,7 +424,8 @@ NotificationDaemon.prototype = {
         if (notification == null) {    // Create a new notification!
             notification = new MessageTray.Notification(source, summary, body,
                                                         { icon: iconActor,
-                                                          bannerMarkup: true });
+                                                          bodyMarkup: true,
+                                                          silent: hints['suppress-sound'] });
             ndata.notification = notification;
             notification.connect('destroy', Lang.bind(this,
                 function(n, reason) {
@@ -446,8 +461,8 @@ NotificationDaemon.prototype = {
                 }));
         } else {
             notification.update(summary, body, { icon: iconActor,
-                                                 bannerMarkup: true,
-                                                 clear: true });
+                                                 bodyMarkup: true,
+                                                 silent: hints['suppress-sound'] });
         }
 
         // We only display a large image if an icon is also specified.
@@ -467,6 +482,8 @@ NotificationDaemon.prototype = {
         } else {
             notification.unsetImage();
         }
+
+        notification.clearButtons();
 
         if (actions.length) {
             notification.setUseActionIcons(hints.maybeGet('action-icons') == true);
@@ -520,7 +537,7 @@ NotificationDaemon.prototype = {
             // 'icon-multi',
             'icon-static',
             'persistence',
-            // 'sound',
+            'sound',
         ];
     },
 
@@ -626,37 +643,6 @@ Source.prototype = {
             this._setSummaryIcon(icon);
 
         this.notify(notification);
-    },
-
-    handleSummaryClick: function() {
-        if (!this.trayIcon)
-            return false;
-
-        let event = Clutter.get_current_event();
-        if (event.type() != Clutter.EventType.BUTTON_RELEASE)
-            return false;
-
-        // Left clicks are passed through only where there aren't unacknowledged
-        // notifications, so it possible to open them in summary mode; right
-        // clicks are always forwarded, as the right click menu is not useful for
-        // tray icons
-        if (event.get_button() == 1 &&
-            this.notifications.length > 0)
-            return false;
-
-        if (Main.overview.visible) {
-            // We can't just connect to Main.overview's 'hidden' signal,
-            // because it's emitted *before* it calls popModal()...
-            let id = global.connect('notify::stage-input-mode', Lang.bind(this,
-                function () {
-                    global.disconnect(id);
-                    this.trayIcon.click(event);
-                }));
-            Main.overview.hide();
-        } else {
-            this.trayIcon.click(event);
-        }
-        return true;
     },
 
     _getApp: function() {

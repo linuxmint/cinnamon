@@ -26,6 +26,7 @@ class MainWindow:
         home_dir = pwd.getpwuid(user_id).pw_dir
 
         self.builder = Gtk.Builder()
+        self.builder.set_translation_domain('cinnamon') # let it translate!
         self.builder.add_from_file("/usr/share/cinnamon/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.ui")
 
         self.window = self.builder.get_object("main_dialog")

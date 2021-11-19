@@ -17,9 +17,11 @@ import subprocess
 import PIL
 import gi
 gi.require_version('AccountsService', '1.0')
-from gi.repository import AccountsService, GLib
+from gi.repository import AccountsService, GLib, GdkPixbuf
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from ChooserButtonWidgets import PictureChooserButton
+from xapp.GSettingsWidgets import *
 
 class PasswordError(Exception):
     '''Exception raised when an incorrect password is supplied.'''
@@ -35,6 +37,10 @@ class Module:
         keywords = _("user, account, information, details, password")
         sidePage = SidePage(_("Account details"), "cs-user", keywords, content_box, module=self)
         self.sidePage = sidePage
+        self.window = None
+
+    def _setParentRef(self, window):
+        self.window = window
 
     def on_module_selected(self):
         if not self.loaded:
@@ -45,7 +51,9 @@ class Module:
 
             settings = page.add_section(_("Account details"))
 
-            self.face_button = PictureChooserButton(num_cols=4, button_picture_size=64, menu_pictures_size=64, keep_square=True)
+            self.scale = self.window.get_scale_factor()
+
+            self.face_button = PictureChooserButton(num_cols=4, button_picture_size=64, menu_pictures_size=64*self.scale, keep_square=True)
             self.face_button.set_alignment(0.0, 0.5)
             self.face_button.set_tooltip_text(_("Click to change your picture"))
 

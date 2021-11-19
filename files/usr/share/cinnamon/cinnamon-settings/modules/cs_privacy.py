@@ -1,11 +1,25 @@
 #!/usr/bin/python3
 
-from GSettingsWidgets import *
+nm_client = None
+try:
+    import gi
+    gi.require_version('NM', '1.0')
+    from gi.repository import NM
+    nm_client = NM.Client.new(None)
+    # call connectivity_check_get_available to make
+    # sure it's available (it's new in libnm 1.10)
+    # if it's not, we catch the exception and set
+    # the client to None
+    nm_client.connectivity_check_get_available()
+except:
+    nm_client = None
+
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy"
 GTK_RECENT_ENABLE_KEY = "remember-recent-files"
 GTK_RECENT_MAX_AGE = "recent-files-max-age"
-
 
 class Module:
     name = "privacy"
@@ -67,6 +81,14 @@ class Module:
                     self.settings.set_int(GTK_RECENT_MAX_AGE, 30)
                 self.bind_spinner()
 
+            if nm_client is not None and nm_client.connectivity_check_get_available():
+                section = page.add_section(_("Internet connectivity"))
+                connectivity_switch = Switch(_("Check connectivity"))
+                connectivity_switch.content_widget.set_active(nm_client.connectivity_check_get_enabled())
+                connectivity_switch.content_widget.connect("notify::active", self.on_connectivity_toggled)
+                section.add_row(connectivity_switch)
+                section.add_note(_("Check that network connections can reach the Internet. This makes it possible to detect captive portals, but also generates periodic network traffic."))
+
     def bind_spinner(self):
         self.settings.bind(GTK_RECENT_MAX_AGE, self.spinner, "value", Gio.SettingsBindFlags.DEFAULT)
 
@@ -92,3 +114,7 @@ class Module:
                 if cur_val > 0:
                     self.settings.set_int(GTK_RECENT_MAX_AGE, cur_val)
             self.bind_spinner()
+
+    def on_connectivity_toggled(self, widget, gparam):
+        active = widget.get_active()
+        nm_client.connectivity_check_set_enabled(active)

@@ -2,7 +2,8 @@
 
 from ExtensionCore import ManageSpicesPage, DownloadSpicesPage
 from Spices import Spice_Harvester
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 from gi.repository import GLib, Gtk
 
 class Module:

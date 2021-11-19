@@ -19,7 +19,7 @@
 
 #include "cinnamon-window-tracker-private.h"
 #include "cinnamon-app-private.h"
-#include "cinnamon-global.h"
+#include "cinnamon-global-private.h"
 #include "st.h"
 
 /* This file includes modified code from
@@ -43,6 +43,8 @@ struct _CinnamonWindowTracker
 {
   GObject parent;
 
+  CinnamonGlobal *global;
+
   CinnamonApp *focus_app;
 
   /* <MetaWindow * window, CinnamonApp *app> */
@@ -61,8 +63,7 @@ enum {
 
 enum {
   STARTUP_SEQUENCE_CHANGED,
-  TRACKED_WINDOWS_CHANGED,
-
+  WINDOW_APP_CHANGED,
   LAST_SIGNAL
 };
 
@@ -118,12 +119,13 @@ cinnamon_window_tracker_class_init (CinnamonWindowTrackerClass *klass)
                                    0,
                                    NULL, NULL, NULL,
                                    G_TYPE_NONE, 1, CINNAMON_TYPE_STARTUP_SEQUENCE);
-  signals[TRACKED_WINDOWS_CHANGED] = g_signal_new ("tracked-windows-changed",
-                                                   CINNAMON_TYPE_WINDOW_TRACKER,
-                                                   G_SIGNAL_RUN_LAST,
-                                                   0,
-                                                   NULL, NULL, NULL,
-                                                   G_TYPE_NONE, 0);
+
+  signals[WINDOW_APP_CHANGED] = g_signal_new ("window-app-changed",
+                                              CINNAMON_TYPE_WINDOW_TRACKER,
+                                              G_SIGNAL_RUN_LAST,
+                                              0,
+                                              NULL, NULL, NULL,
+                                              G_TYPE_NONE, 1, META_TYPE_WINDOW);
 }
 
 /**
@@ -147,6 +149,49 @@ gboolean
 cinnamon_window_tracker_is_window_interesting (CinnamonWindowTracker *tracker, MetaWindow *window)
 {
   return meta_window_is_interesting (window);
+}
+
+static gboolean
+is_window_only_browser_app (MetaWindow  *window,
+                            const gchar *wm_instance,
+                            const gchar *wm_class)
+{
+    if (wm_instance == NULL || wm_class == NULL)
+    {
+        return FALSE;
+    }
+
+    /* This is to catch browser-based app windows that are spawned
+     * windows (such as from clicking an extension - LINE is a test
+     * case). There's no desktop file but we don't want to use the
+     * browser icon and the window has a pixmap to use. */
+
+    g_autofree gchar *utf8_instance = NULL;
+    g_autofree gchar *utf8_class = NULL;
+    g_autofree gchar *lower_instance = NULL;
+    g_autofree gchar *lower_class = NULL;
+
+    utf8_instance = g_utf8_make_valid (wm_instance, -1);
+    utf8_class = g_utf8_make_valid (wm_class, -1);
+
+    lower_instance = g_utf8_casefold (utf8_instance, -1);
+    lower_class = g_utf8_casefold (utf8_class, -1);
+
+    // If the instance and instance are the same ["chromium-browser", "Chromium-browser"],
+    // don't consider it special.
+    if (g_strcmp0 (lower_instance, lower_class) == 0)
+    {
+        return FALSE;
+    }
+
+    // If the two strings differ, and one has browser in it, then assume it's a web app.
+    if (g_strstr_len (lower_instance, -1, "browser") || g_strstr_len (lower_class, -1, "browser"))
+    {
+        return TRUE;
+    }
+
+    // we don't know, match some other way.
+    return FALSE;
 }
 
 /**
@@ -203,6 +248,12 @@ get_app_from_window_wmclass (MetaWindow  *window)
      class are the same except for case and there is no StartupWMClass at all.
   */
 
+#if 0
+  wm_instance = meta_window_get_wm_class_instance (window);
+  wm_class = meta_window_get_wm_class (window);
+  g_printerr ("get_app_from_window_wmclass: wm_instance: %s, wm_class: %s\n", wm_instance, wm_class);
+#endif
+
   /* first try a match from WM_CLASS (instance part) to StartupWMClass */
   wm_instance = meta_window_get_wm_class_instance (window);
   app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_instance);
@@ -219,6 +270,13 @@ get_app_from_window_wmclass (MetaWindow  *window)
   app = cinnamon_app_system_lookup_desktop_wmclass (appsys, wm_instance);
   if (app != NULL)
     return g_object_ref (app);
+
+  /* figure out if it's a browser app without a desktop file. */
+  if (is_window_only_browser_app (window, wm_instance, wm_class))
+  {
+    // Force it to use the window pixmap.
+    return NULL;
+  }
 
   /* finally, try a match from WM_CLASS to .desktop */
   app = cinnamon_app_system_lookup_desktop_wmclass (appsys, wm_class);
@@ -342,6 +400,86 @@ get_app_from_window_pid (CinnamonWindowTracker  *tracker,
   return result;
 }
 
+static CinnamonApp *
+get_app_for_flatpak_window (MetaWindow *window)
+{
+  CinnamonAppSystem *appsys;
+  CinnamonApp *app = NULL;
+  CinnamonApp *result = NULL;
+  gchar *info_filename;
+  GFile *file;
+  int pid = meta_window_get_client_pid (window);
+
+  g_return_val_if_fail (pid > 0, NULL);
+
+  info_filename = g_strdup_printf ("/proc/%u/root/.flatpak-info", pid);
+  file = g_file_new_for_path (info_filename);
+
+  if (g_file_query_exists (file, NULL)) {
+    gchar *wm_class;
+    gchar *wm_instance;
+    GKeyFile *keyfile;
+
+    appsys = cinnamon_app_system_get_default ();
+
+    wm_instance = g_strconcat(meta_window_get_wm_class_instance (window), GMENU_DESKTOPAPPINFO_FLATPAK_SUFFIX, NULL);
+    wm_class = g_strconcat(meta_window_get_wm_class (window), GMENU_DESKTOPAPPINFO_FLATPAK_SUFFIX, NULL);
+
+    // First, try a match WM_INSTANCE to StartupWMClass
+    app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_instance);
+    if (app != NULL) {
+      result = g_object_ref (app);
+    }
+
+    /* then try a match from WM_CLASS to StartupWMClass */
+    if (result == NULL) {
+      app = cinnamon_app_system_lookup_startup_wmclass (appsys, wm_class);
+      if (app != NULL) {
+        result = g_object_ref (app);
+      }
+    }
+
+    /* then try a match from WM_CLASS (instance part) to .desktop */
+    if (result == NULL) {
+      app = cinnamon_app_system_lookup_desktop_wmclass (appsys, wm_instance);
+      if (app != NULL) {
+        result = g_object_ref (app);
+      }
+    }
+
+    /* finally, try a match from WM_CLASS to .desktop */
+    if (result == NULL) {
+      app = cinnamon_app_system_lookup_desktop_wmclass (appsys, wm_class);
+      if (app != NULL) {
+        result = g_object_ref (app);
+      }
+    }
+
+    g_free (wm_instance);
+    g_free (wm_class);
+
+    // Finally, try to match it against the .flatpak-info entry "Application"
+    if (result == NULL) {
+      keyfile = g_key_file_new ();
+      if (g_key_file_load_from_file (keyfile, info_filename, G_KEY_FILE_NONE, NULL)) {
+        gchar *app_id;
+        app_id = g_key_file_get_string (keyfile, "Application", "name", NULL);
+        app = cinnamon_app_system_lookup_flatpak_app_id (appsys, app_id);
+
+        if (app != NULL) {
+          result = g_object_ref (app);
+        }
+      }
+      g_key_file_unref (keyfile);
+    }
+  }
+
+  g_free (info_filename);
+  g_object_unref(file);
+
+  return result;
+}
+
 /**
  * get_app_for_window:
  *
@@ -374,6 +512,11 @@ get_app_for_window (CinnamonWindowTracker    *tracker,
 
   if (meta_window_is_remote (window))
     return _cinnamon_app_new_for_window (window);
+
+  /* Check if the window was launched from a sandboxed app, e.g. Flatpak */
+  result = get_app_for_flatpak_window (window);
+  if (result != NULL)
+    return result;
 
   /* Check if the window has a GApplication ID attached; this is
    * canonical if it does
@@ -435,7 +578,7 @@ update_focus_app (CinnamonWindowTracker *self)
   MetaWindow *new_focus_win;
   CinnamonApp *new_focus_app;
 
-  new_focus_win = meta_display_get_focus_window (cinnamon_global_get_display (cinnamon_global_get ()));
+  new_focus_win = meta_display_get_focus_window (self->global->meta_display);
   new_focus_app = new_focus_win ? cinnamon_window_tracker_get_window_app (self, new_focus_win) : NULL;
 
   set_focus_app (self, new_focus_app);
@@ -493,7 +636,7 @@ track_window (CinnamonWindowTracker *self,
 
   _cinnamon_app_add_window (app, window);
 
-  g_signal_emit (self, signals[TRACKED_WINDOWS_CHANGED], 0);
+  g_signal_emit (self, signals[WINDOW_APP_CHANGED], 0, window);
 }
 
 static void
@@ -527,7 +670,7 @@ disassociate_window (CinnamonWindowTracker   *self,
       g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_gtk_application_id_changed), self);
     }
 
-  g_signal_emit (self, signals[TRACKED_WINDOWS_CHANGED], 0);
+  g_signal_emit (self, signals[WINDOW_APP_CHANGED], 0, window);
 
   g_object_unref (app);
 }
@@ -544,7 +687,7 @@ static void
 load_initial_windows (CinnamonWindowTracker *tracker)
 {
   GList *workspaces, *iter;
-  MetaScreen *screen = cinnamon_global_get_screen (cinnamon_global_get ());
+  MetaScreen *screen = tracker->global->meta_screen;
   workspaces = meta_screen_get_workspaces (screen);
 
   for (iter = workspaces; iter; iter = iter->next)
@@ -599,7 +742,7 @@ static void
 init_window_tracking (CinnamonWindowTracker *self)
 {
   MetaDisplay *display;
-  MetaScreen *screen = cinnamon_global_get_screen (cinnamon_global_get ());
+  MetaScreen *screen = self->global->meta_screen;
 
   g_signal_connect (screen, "notify::n-workspaces",
                     G_CALLBACK (cinnamon_window_tracker_on_n_workspaces_changed), self);
@@ -629,12 +772,14 @@ cinnamon_window_tracker_init (CinnamonWindowTracker *self)
 {
   MetaScreen *screen;
 
+  self->global = cinnamon_global_get ();
+
   self->window_to_app = g_hash_table_new_full (g_direct_hash, g_direct_equal,
                                                NULL, (GDestroyNotify) g_object_unref);
 
   self->launched_pid_to_app = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify) g_object_unref);
 
-  screen = cinnamon_global_get_screen (cinnamon_global_get ());
+  screen = self->global->meta_screen;
 
   g_signal_connect (G_OBJECT (screen), "startup-sequence-changed",
                     G_CALLBACK (on_startup_sequence_changed), self);
@@ -792,9 +937,7 @@ on_focus_window_changed (MetaDisplay        *display,
 GSList *
 cinnamon_window_tracker_get_startup_sequences (CinnamonWindowTracker *self)
 {
-  CinnamonGlobal *global = cinnamon_global_get ();
-  MetaScreen *screen = cinnamon_global_get_screen (global);
-  return meta_screen_get_startup_sequences (screen);
+  return meta_screen_get_startup_sequences (self->global->meta_screen);
 }
 
 /* sn_startup_sequence_ref returns void, so make a
@@ -886,7 +1029,7 @@ cinnamon_startup_sequence_create_icon (CinnamonStartupSequence *sequence, guint 
       texture = clutter_texture_new ();
 
       global = cinnamon_global_get ();
-      context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
+      context = st_theme_context_get_for_stage (global->stage);
       g_object_get (context, "scale-factor", &scale, NULL);
 
       clutter_actor_set_size (texture, size * scale, size * scale);

@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 
 class Module:

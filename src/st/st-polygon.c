@@ -210,11 +210,14 @@ st_polygon_pick (ClutterActor       *self,
 {
     CoglPath *selection_path;
     gfloat coords[8];
-    StPolygon *area = ST_POLYGON (self);
-    StPolygonPrivate *priv = area->priv;
+    StPolygon *area;
+    StPolygonPrivate *priv;
 
     if (!clutter_actor_should_pick_paint (self))
         return;
+
+    area = ST_POLYGON (self);
+    priv = area->priv;
 
     coords[0] = priv->ulc_x;
     coords[1] = priv->ulc_y;

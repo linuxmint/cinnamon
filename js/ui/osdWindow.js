@@ -110,6 +110,10 @@ OsdWindow.prototype = {
 
         this._level = new LevelBar();
         this.actor.add(this._level.actor);
+        
+        this._label = new St.Label();
+        this._label.style = 'font-size: 1.2em; text-align: center;'
+        this.actor.add(this._label);
 
         this._hideTimeoutId = 0;
         this._reset();
@@ -125,8 +129,10 @@ OsdWindow.prototype = {
     },
 
     setLevel: function(level) {
-        this._level.actor.visible = (level != undefined);
         if (level != undefined) {
+            this._label.set_text(String(level) + " %");
+            this._label.visible = this._level.actor.visible = true;
+
             if (this.actor.visible)
                 Tweener.addTween(this._level,
                                  { level: level,
@@ -134,6 +140,9 @@ OsdWindow.prototype = {
                                    transition: 'easeOutQuad' });
             else
                 this._level.level = level;
+        } else {
+            this._label.set_text("");
+            this._label.visible = this._level.actor.visible = false;
         }
     },
 
@@ -185,7 +194,7 @@ OsdWindow.prototype = {
 
     _reset: function() {
         this.actor.hide();
-        this.setLevel(null);
+        this.setLevel();
     },
 
     _monitorsChanged: function() {
@@ -196,7 +205,7 @@ OsdWindow.prototype = {
             let scale = Math.min(scaleW, scaleH);
             this._popupSize = this._osdBaseSize * Math.max(1, scale);
 
-            let scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+            let scaleFactor = global.ui_scale;
             this._icon.icon_size = this._popupSize / (2 * scaleFactor);
             this.actor.set_size(this._popupSize, this._popupSize);
             this.actor.translation_y = (monitor.height + monitor.y) - (this._popupSize + (50 * scaleFactor));

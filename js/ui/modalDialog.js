@@ -19,9 +19,10 @@ const Tweener = imports.ui.tweener;
 
 const Gettext = imports.gettext;
 
-const OPEN_AND_CLOSE_TIME = 0.1;
 const FADE_IN_BUTTONS_TIME = 0.33;
 const FADE_OUT_DIALOG_TIME = 1.0;
+
+var OPEN_AND_CLOSE_TIME = 0.1;
 
 var State = {
     OPENED: 0,
@@ -92,7 +93,8 @@ ModalDialog.prototype = {
 
         if (!this._cinnamonReactive) {
             this._lightbox = new Lightbox.Lightbox(this._group,
-                                                   { inhibitEvents: true });
+                                                   { inhibitEvents: true,
+                                                     radialEffect: true });
             this._lightbox.highlight(this._backgroundBin);
 
             let stack = new Cinnamon.Stack();
@@ -156,12 +158,12 @@ ModalDialog.prototype = {
      *     {
      *         label: _("Cancel"),
      *         action: Lang.bind(this, this.callback),
-     *         key: Clutter.Escape
+     *         key: Clutter.KEY_Escape
      *     },
      *     {
      *         label: _("OK"),
      *         action: Lang.bind(this, this.destroy),
-     *         key: Clutter.Return
+     *         key: Clutter.KEY_Return
      *     }
      * ]);
      * ```
@@ -242,7 +244,7 @@ ModalDialog.prototype = {
         let modifiers = Cinnamon.get_event_state(keyPressEvent);
         let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
         let symbol = keyPressEvent.get_key_symbol();
-        if (symbol === Clutter.Escape && !(modifiers & ctrlAltMask)) {
+        if (symbol === Clutter.KEY_Escape && !(modifiers & ctrlAltMask)) {
             this.close();
             return;
         }
@@ -423,207 +425,6 @@ ModalDialog.prototype = {
 Signals.addSignalMethods(ModalDialog.prototype);
 
 /**
- * #SpicesAboutDialog:
- * @short_description: A dialog for a spice "about" window
- *
- * This is a window that displays an about dialog for Cinnamon "spices".
- *
- * This is usually used by Cinnamon itself via an "About" right click menu, but
- * individual spices can also use this to open an about dialog if they wish.
- */
-function SpicesAboutDialog(metadata, type) {
-    this._init(metadata, type);
-}
-
-SpicesAboutDialog.prototype = {
-    __proto__: ModalDialog.prototype,
-
-    /**
-     * _init:
-     * metadata (JSON): the metadata object of the spice
-     * type (string): the type of the spice, which should be "applet",
-     * "desklet" or "extension"
-     */
-    _init: function(metadata, type) {
-        ModalDialog.prototype._init.call(this);
-
-        //prepare translation
-        this.uuid = metadata.uuid;
-
-        let contentBox = new St.BoxLayout({vertical: true, style_class: "about-content" });
-        this.contentLayout.add_actor(contentBox);
-
-        let topBox = new St.BoxLayout();
-        contentBox.add_actor(topBox);
-
-        //icon
-        let icon;
-        if (metadata.icon) {
-            icon = new St.Icon({icon_name: metadata.icon, icon_size: 48, icon_type: St.IconType.FULLCOLOR, style_class: "about-icon"});
-        } else {
-            let file = Gio.file_new_for_path(metadata.path + "/icon.png");
-            if (file.query_exists(null)) {
-                let gicon = new Gio.FileIcon({file: file});
-                icon = new St.Icon({gicon: gicon, icon_size: 48, icon_type: St.IconType.FULLCOLOR, style_class: "about-icon"});
-            } else {
-                icon = new St.Icon({icon_name: "cs-"+type, icon_size: 48, icon_type: St.IconType.FULLCOLOR, style_class: "about-icon"});
-            }
-        }
-        icon.set_y_align(Clutter.ActorAlign.START);
-        topBox.add_actor(icon);
-
-        let topTextBox = new St.BoxLayout({vertical: true});
-        topBox.add_actor(topTextBox);
-
-        /*title*/
-        let title = new St.Label({text: this._(metadata.name), style_class: "about-title"});
-        topTextBox.add_actor(title);
-
-        //uuid
-        let uuid = new St.Label({text: metadata.uuid, style_class: "about-uuid"});
-        topTextBox.add_actor(uuid);
-
-        //last-edited timestamp
-        if ('last-edited' in metadata) {
-            let lastEditedTimestamp = metadata['last-edited'];
-            let date = new Date(lastEditedTimestamp*1000);
-            let dateUTC = date.toISOString().replace(/T/, ' ');               // replace T with a space;
-            dateUTC = dateUTC.substring(0,dateUTC.lastIndexOf(':')) + ' UTC'; // remove seconds and append UTC label
-
-            let lastEdited = new St.Label({text: _("Last modified:") + " " + dateUTC, style_class: "about-uuid"});
-            topTextBox.add_actor(lastEdited);
-        }
-
-        //version
-        if (metadata.version) {
-            let version = new St.Label({text: _("Version:") + " " + "%s".format(metadata.version), style_class: "about-uuid"});
-            topTextBox.add_actor(version);
-        }
-
-        //description
-        let desc = new St.Label({text: this._(metadata.description), style_class: "about-description"});
-        let dText = desc.clutter_text;
-        dText.ellipsize = Pango.EllipsizeMode.NONE;
-        dText.line_wrap = true;
-        dText.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
-        contentBox.add_actor(desc);
-
-        // optional content
-        if(metadata.comments || metadata.website || metadata.contributors){
-            let scrollBox = new St.ScrollView({style_class: "about-scrollBox"});
-            contentBox.add(scrollBox, {expand: true});
-            let infoBox = new St.BoxLayout({vertical: true, style_class: "about-scrollBox-innerBox"});
-            scrollBox.add_actor(infoBox);
-
-            // comments
-            if (metadata.comments) {
-                let comments = new St.Label({text: this._(metadata.comments)});
-                let cText = comments.clutter_text;
-                cText.ellipsize = Pango.EllipsizeMode.NONE;
-                cText.line_wrap = true;
-                cText.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
-                infoBox.add_actor(comments);
-            }
-
-            // website
-            if (metadata.website) {
-                let wsBox = new St.BoxLayout({vertical: true});
-                infoBox.add_actor(wsBox);
-
-                let wLabel = new St.Label({text: _("Website:")});
-                wsBox.add_actor(wLabel);
-
-                let wsButton = new St.Button({x_align: St.Align.START, style_class: "cinnamon-link", name: "about-website"});
-                wsBox.add_actor(wsButton);
-                let website = new St.Label({text: "\t" + metadata.website});
-                let wtext = website.clutter_text;
-                wtext.ellipsize = Pango.EllipsizeMode.NONE;
-                wtext.line_wrap = true;
-                wtext.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
-                wsButton.add_actor(website);
-                wsButton.connect("clicked", Lang.bind(this, this._launchSite, metadata.website));
-            }
-
-            // contributors
-            if (metadata.contributors) {
-                let list = metadata.contributors;
-
-                // enforce that the list is an array
-                if(typeof list === "string")
-                    list = list.split(",");
-
-                // trim whitespaces, try to translate each item and glue all together
-                list = list.map(String.trim).map(this._, this).join("\n\t");
-
-                let contributors = new St.Label({text: _("Contributors:") + "\n\t" + list});
-                infoBox.add_actor(contributors);
-            }
-        }
-
-        //dialog buttons, if it's a spice, add a "More info" button
-        let spicesID = this._getSpicesID(metadata.uuid, type);
-        if (spicesID) {
-            let spicesWebsite = "http://cinnamon-spices.linuxmint.com/" + type + "/view/" + spicesID;
-            this.setButtons([
-                {label: _("More info"), key: "", focus: true, action: Lang.bind(this, this._launchSite, spicesWebsite)},
-                {label: _("Close"), key: "", focus: true, action: Lang.bind(this, this._onOk)}
-            ]);
-        } else {
-            this.setButtons([
-                {label: _("Close"), key: "", focus: true, action: Lang.bind(this, this._onOk)}
-            ]);
-        }
-
-        this.open(global.get_current_time());
-    },
-
-    // translation
-    _: function(str) {
-        // look into the text domain first
-        let translated = Gettext.dgettext(this.uuid, str);
-
-        // if it looks translated, return the translation of the domain
-        if(translated !== str)
-            return translated;
-        // else, use the default cinnamon domain
-        return _(str);
-    },
-
-    _getSpicesID: function(uuid, type) {
-        try {
-            let indexCacheFile = Gio.file_new_for_path(GLib.get_home_dir() + "/.cinnamon/spices.cache/" + type.slice(0, -1) + "/index.json");
-            if(this._ensureFileExists(indexCacheFile)) {
-                let indexCacheContents = Cinnamon.get_file_contents_utf8_sync(indexCacheFile.get_path());
-                let index_cache = JSON.parse(indexCacheContents);
-                if (uuid in index_cache)
-                    return index_cache[uuid]['spices-id'];
-            }
-            return null;
-        } catch (e) {
-            global.log('Failed to load/parse index.json', e);
-            return null;
-        }
-    },
-
-    _ensureFileExists: function(file) {
-        if (!file.query_exists(null)) {
-            global.log('File not found: ' + file.get_path());
-            return false;
-        }
-        return true;
-    },
-
-    _onOk: function() {
-        this.close(global.get_current_time());
-    },
-
-    _launchSite: function(a, b, site) {
-        Util.spawnCommandLine("xdg-open " + site);
-        this.close(global.get_current_time());
-    }
-}
-
-/**
  * #ConfirmDialog
  * @short_description: A simple dialog with a "Yes" and "No" button.
  * @callback (function): Callback when "Yes" is clicked
@@ -649,6 +450,9 @@ ConfirmDialog.prototype = {
      */
     _init: function(label, callback){
         ModalDialog.prototype._init.call(this);
+        this.contentLayout.add(new St.Label({ text:        _("Confirm"),
+                                              style_class: 'confirm-dialog-title',
+                                              important:   true }));
         this.contentLayout.add(new St.Label({text: label}));
         this.callback = callback;
 
@@ -778,6 +582,7 @@ InfoOSD.prototype = {
      * Destroys the OSD
      */
     destroy: function() {
+        this.hide();
         Main.layoutManager.removeChrome(this.actor);
         this.actor.destroy();
     },

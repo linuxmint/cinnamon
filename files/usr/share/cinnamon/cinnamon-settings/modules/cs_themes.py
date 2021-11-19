@@ -1,8 +1,13 @@
 #!/usr/bin/python3
 
-from gi.repository.Gtk import SizeGroup, SizeGroupMode
+import os
 
-from GSettingsWidgets import *
+from gi.repository import Gtk
+
+from xapp.GSettingsWidgets import *
+from CinnamonGtkSettings import CssRange, CssOverrideSwitch, GtkSettingsSwitch, PreviewWidget, Gtk2ScrollbarSizeEditor
+from SettingsWidgets import LabelRow, SidePage, walk_directories
+from ChooserButtonWidgets import PictureChooserButton
 from ExtensionCore import DownloadSpicesPage
 from Spices import Spice_Harvester
 
@@ -35,6 +40,7 @@ class Module:
         self.window = None
         sidePage = SidePage(_("Themes"), self.icon, self.keywords, content_box, module=self)
         self.sidePage = sidePage
+        self.refreshing = False # flag to ensure we only refresh once at any given moment
 
     def on_module_selected(self):
         if not self.loaded:
@@ -49,11 +55,13 @@ class Module:
             self.wm_settings = Gio.Settings.new("org.cinnamon.desktop.wm.preferences")
             self.cinnamon_settings = Gio.Settings.new("org.cinnamon.theme")
 
+            self.scale = self.window.get_scale_factor()
+
             self.icon_chooser = self.create_button_chooser(self.settings, 'icon-theme', 'icons', 'icons', button_picture_size=ICON_SIZE, menu_pictures_size=ICON_SIZE, num_cols=4)
             self.cursor_chooser = self.create_button_chooser(self.settings, 'cursor-theme', 'icons', 'cursors', button_picture_size=32, menu_pictures_size=32, num_cols=4)
             self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', button_picture_size=35, menu_pictures_size=35, num_cols=4)
             self.metacity_chooser = self.create_button_chooser(self.wm_settings, 'theme', 'themes', 'metacity-1', button_picture_size=32, menu_pictures_size=32, num_cols=4)
-            self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_size=60, menu_pictures_size=60, num_cols=4)
+            self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_size=60, menu_pictures_size=60*self.scale, num_cols=4)
 
             page = SettingsPage()
             self.sidePage.stack.add_titled(page, "themes", _("Themes"))
@@ -89,6 +97,53 @@ class Module:
             widget = GSettingsSwitch(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons")
             settings.add_row(widget)
 
+            try:
+                import tinycss2
+            except:
+                self.refresh()
+                return
+
+            settings = page.add_section(_("Scrollbar behavior"))
+
+            # Translators: The 'trough' is the part of the scrollbar that the 'handle'
+            # rides in.  This setting determines whether clicking in that trough somewhere
+            # jumps directly to the new position, or if it only scrolls towards it.
+            switch = GtkSettingsSwitch(_("Jump to position when clicking in a trough"), "gtk-primary-button-warps-slider")
+            settings.add_row(switch)
+
+            widget = GSettingsSwitch(_("Use overlay scroll bars"), "org.cinnamon.desktop.interface", "gtk-overlay-scrollbars")
+            settings.add_row(widget)
+
+            self.gtk2_scrollbar_editor = Gtk2ScrollbarSizeEditor(widget.get_scale_factor())
+
+            switch = CssOverrideSwitch(_("Override the current theme's scrollbar width"))
+            settings.add_row(switch)
+            self.scrollbar_switch = switch.content_widget
+
+            widget = CssRange(_("Scrollbar width"), "scrollbar slider", ["min-width", "min-height"], 2, 40, "px", None, switch)
+            settings.add_reveal_row(widget)
+
+            try:
+                widget.sync_initial_switch_state()
+            except PermissionError as e:
+                print(e)
+                switch.set_sensitive(False)
+
+            self.scrollbar_css_range = widget.content_widget
+            self.scrollbar_css_range.get_adjustment().set_page_increment(2.0)
+
+            switch.content_widget.connect("notify::active", self.on_css_override_active_changed)
+            widget.content_widget.connect("value-changed", self.on_range_slider_value_changed)
+
+            self.on_css_override_active_changed(switch)
+
+            widget = PreviewWidget()
+            settings.add_row(widget)
+
+            label_widget = LabelRow(_(
+"""Changes will take effect the next time you log in and may not affect all applications."""))
+            settings.add_row(label_widget)
+
             self.builder = self.sidePage.builder
 
             for path in [os.path.expanduser("~/.themes"), os.path.expanduser("~/.icons")]:
@@ -111,8 +166,21 @@ class Module:
 
             self.refresh()
 
+    def on_css_override_active_changed(self, switch, pspec=None, data=None):
+        if self.scrollbar_switch.get_active():
+            self.gtk2_scrollbar_editor.set_size(self.scrollbar_css_range.get_value())
+        else:
+            self.gtk2_scrollbar_editor.set_size(0)
+
+    def on_range_slider_value_changed(self, widget, data=None):
+        if self.scrollbar_switch.get_active():
+            self.gtk2_scrollbar_editor.set_size(widget.get_value())
+
     def on_file_changed(self, file, other, event, data):
-        self.refresh()
+        if self.refreshing:
+            return
+        self.refreshing = True
+        GLib.timeout_add_seconds(5, self.refresh)
 
     def refresh(self):
         choosers = []
@@ -132,6 +200,7 @@ class Module:
             callback = chooser[3]
             payload = (chooser_obj, path_suffix, themes, callback)
             self.refresh_chooser(payload)
+        self.refreshing = False
 
     def refresh_chooser(self, payload):
         (chooser, path_suffix, themes, callback) = payload
@@ -140,15 +209,65 @@ class Module:
         if len(themes) > 0:
             inc = 1.0 / len(themes)
 
-        if path_suffix == "icons":
+        if path_suffix == 'icons':
+            cache_folder = GLib.get_user_cache_dir() + '/cs_themes/'
+            icon_cache_path = os.path.join(cache_folder, 'icons')
+
+            # Retrieve list of known themes/locations for faster loading (icon theme loading and lookup are very slow)
+            if os.path.exists(icon_cache_path):
+                read_path = icon_cache_path
+            else:
+                read_path = '/usr/share/cinnamon/cinnamon-settings/icons'
+
+            icon_paths = {}
+            with open(read_path, 'r') as cache_file:
+                for line in cache_file:
+                    theme_name, icon_path = line.strip().split(':')
+                    icon_paths[theme_name] = icon_path
+
+            dump = False
             for theme in themes:
-                icon_theme = Gtk.IconTheme()
-                icon_theme.set_custom_theme(theme)
-                folder = icon_theme.lookup_icon("folder", ICON_SIZE, Gtk.IconLookupFlags.FORCE_SVG)
-                if folder:
-                    path = folder.get_filename()
-                    chooser.add_picture(path, callback, title=theme, id=theme)
-                GLib.timeout_add(5, self.increment_progress, (chooser,inc))
+                theme_path = None
+
+                if theme in icon_paths:
+                    # loop through all possible locations until we find a match
+                    # (user folders should override system ones)
+                    for theme_folder in ICON_FOLDERS:
+                        possible_path = os.path.join(theme_folder, icon_paths[theme])
+                        if os.path.exists(possible_path):
+                            theme_path = possible_path
+                            break
+
+                if theme_path is None:
+                    icon_theme = Gtk.IconTheme()
+                    icon_theme.set_custom_theme(theme)
+                    folder = icon_theme.lookup_icon('folder', ICON_SIZE, Gtk.IconLookupFlags.FORCE_SVG)
+                    if folder:
+                        theme_path = folder.get_filename()
+
+                        # we need to get the relative path for storage
+                        for theme_folder in ICON_FOLDERS:
+                            if os.path.commonpath([theme_folder, theme_path]) == theme_folder:
+                                icon_paths[theme] = os.path.relpath(theme_path, start=theme_folder)
+                                break
+
+                    dump = True
+
+                if theme_path == None:
+                    continue;
+
+                if os.path.exists(theme_path):
+                    chooser.add_picture(theme_path, callback, title=theme, id=theme)
+                GLib.timeout_add(5, self.increment_progress, (chooser, inc))
+
+            if dump:
+                if not os.path.exists(cache_folder):
+                    os.mkdir(cache_folder)
+
+                with open(icon_cache_path, 'w') as cache_file:
+                    for theme_name, icon_path in icon_paths.items():
+                        cache_file.write('%s:%s\n' % (theme_name, icon_path))
+
         else:
             if path_suffix == "cinnamon":
                 chooser.add_picture("/usr/share/cinnamon/theme/thumbnail.png", callback, title="cinnamon", id="cinnamon")

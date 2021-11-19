@@ -1,15 +1,15 @@
 #!/usr/bin/python3
 
-from gi.repository import Gio, Gtk, GObject, Gdk
-import cgi
+import html
 import gettext
 
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gio, Gtk, GObject, Gdk
+from gi.repository import Gio, Gtk
 
 from KeybindingWidgets import CellRendererKeybinding
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
 
@@ -176,6 +176,7 @@ KEYBINDINGS = [
     [_("Volume mute"), MEDIA_KEYS_SCHEMA, "volume-mute", "media"],
     [_("Volume down"), MEDIA_KEYS_SCHEMA, "volume-down", "media"],
     [_("Volume up"), MEDIA_KEYS_SCHEMA, "volume-up", "media"],
+    [_("Mic mute"), MEDIA_KEYS_SCHEMA, "mic-mute", "media"],
     [_("Launch media player"), MEDIA_KEYS_SCHEMA, "media", "media"],
     [_("Play"), MEDIA_KEYS_SCHEMA, "play", "media"],
     [_("Pause playback"), MEDIA_KEYS_SCHEMA, "pause", "media"],
@@ -200,6 +201,26 @@ KEYBINDINGS = [
     [_("Decrease text size"), MEDIA_KEYS_SCHEMA, "decrease-text-size", "accessibility"],
     [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast", "accessibility"]
 ]
+
+# keybindings.js listens for changes to 'custom-list'. Any time we create a shortcut
+# or add/remove individual keybindings, we need to cause this list to change.
+#
+# Unfortunately, at some point recently, simply 'touching' the setting without actually
+# modifying its contents stopped working (see CustomKeybinding.writeSettings), and
+# we must now do something more substantial, like reversing the list each time (the order
+# doesn't matter to the rest of this code).  In order for this to be reliable we need
+# to make sure we always end up with at least 2 entries in 'custom-list', since reversing
+# a list with one element won't do anything.
+DUMMY_CUSTOM_ENTRY = "__dummy__"
+
+def ensureCustomListIsValid(custom_list):
+    if len(custom_list) > 1:
+        return;
+
+    if DUMMY_CUSTOM_ENTRY in custom_list:
+        return;
+
+    custom_list.append(DUMMY_CUSTOM_ENTRY);
 
 class Module:
     comment = _("Manage keyboard settings and shortcuts")
@@ -418,7 +439,7 @@ class Module:
             categories, iter = tree.get_selection().get_selected()
             if iter:
                 category = categories[iter][2]
-                if category.int_name is not "custom":
+                if category.int_name != "custom":
                     for keybinding in category.keybindings:
                         self.kb_store.append((keybinding.label, keybinding))
                 else:
@@ -427,13 +448,16 @@ class Module:
 
     def loadCustoms(self):
         for category in self.main_store:
-            if category.int_name is "custom":
+            if category.int_name == "custom":
                 category.clear()
 
         parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
         custom_list = parent.get_strv("custom-list")
 
         for entry in custom_list:
+            if entry == DUMMY_CUSTOM_ENTRY:
+                continue
+
             custom_path = CUSTOM_KEYS_BASENAME+"/"+entry+"/"
             schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path)
             custom_kb = CustomKeyBinding(entry,
@@ -442,7 +466,7 @@ class Module:
                                          schema.get_strv("binding"))
             self.kb_store.append((custom_kb.label, custom_kb))
             for category in self.main_store:
-                if category.int_name is "custom":
+                if category.int_name == "custom":
                     category.add(custom_kb)
 
     def onKeyBindingChanged(self, tree):
@@ -452,7 +476,7 @@ class Module:
             if iter:
                 keybinding = keybindings[iter][1]
                 for entry in keybinding.entries:
-                    if entry is not "_invalid_":
+                    if entry != "_invalid_":
                         self.entry_store.append((entry,))
                 self.remove_custom_button.set_property('sensitive', isinstance(keybinding, CustomKeyBinding))
 
@@ -480,13 +504,13 @@ class Module:
                         msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
                         msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
                         msg += _("Do you want to continue with this operation?")
-                        dialog.set_markup(msg % {'combination':cgi.escape(accel_label), 'old':cgi.escape(keybinding.label), 'new':cgi.escape(current_keybinding.label)})
+                        dialog.set_markup(msg % {'combination':html.escape(accel_label), 'old':html.escape(keybinding.label), 'new':html.escape(current_keybinding.label)})
                         dialog.show_all()
                         response = dialog.run()
                         dialog.destroy()
                         if response == Gtk.ResponseType.YES:
                             keybinding.setBinding(keybinding.entries.index(entry), None)
-                        elif response == Gtk.ResponseType.NO:
+                        else:
                             return
         current_keybinding.setBinding(int(path), accel_string)
         self.onKeyBindingChanged(self.kb_tree)
@@ -514,6 +538,9 @@ class Module:
         array = parent.get_strv("custom-list")
         num_array = []
         for entry in array:
+            if entry == DUMMY_CUSTOM_ENTRY:
+                continue
+
             num_array.append(int(entry.replace("custom", "")))
         num_array.sort()
 
@@ -526,6 +553,7 @@ class Module:
 
         new_str = "custom" + str(i)
         array.append(new_str)
+        ensureCustomListIsValid(array);
         parent.set_strv("custom-list", array)
 
         new_path = CUSTOM_KEYS_BASENAME + "/custom" + str(i) + "/"
@@ -535,7 +563,7 @@ class Module:
         new_schema.set_strv("binding", ())
         i = 0
         for cat in self.cat_store:
-            if cat[2].int_name is "custom":
+            if cat[2].int_name == "custom":
                 self.cat_tree.set_cursor(str(i), self.cat_tree.get_column(0), False)
             i += 1
         i = 0
@@ -569,11 +597,12 @@ class Module:
                     break
             if existing:
                 array.remove(keybinding.path)
+                ensureCustomListIsValid(array)
                 parent_settings.set_strv("custom-list", array)
 
         i = 0
         for cat in self.cat_store:
-            if cat[2].int_name is "custom":
+            if cat[2].int_name == "custom":
                 self.cat_tree.set_cursor(str(i), self.cat_tree.get_column(0), False)
             i += 1
 
@@ -589,7 +618,7 @@ class Module:
                 dialog.command_entry.set_text(keybinding.action)
                 dialog.show_all()
                 response = dialog.run()
-                if response == Gtk.ResponseType.CANCEL or response == Gtk.ResponseType.DELETE_EVENT:
+                if response != Gtk.ResponseType.OK:
                     dialog.destroy()
                     return
 
@@ -599,7 +628,7 @@ class Module:
 
                 i = 0
                 for cat in self.cat_store:
-                    if cat[2].int_name is "custom":
+                    if cat[2].int_name == "custom":
                         self.cat_tree.set_cursor(str(i), self.cat_tree.get_column(0), False)
                     i += 1
                 i = 0
@@ -642,7 +671,6 @@ class Module:
     def onResetToDefault(self, popup, keybinding):
         keybinding.resetDefaults()
         self.onKeyBindingChanged(self.kb_tree)
-
 
 class KeyBindingCategory():
     def __init__(self, label, int_name, parent, icon):
@@ -690,7 +718,7 @@ class KeyBinding():
     def writeSettings(self):
         array = []
         for entry in self.entries:
-            if entry is not "":
+            if entry != "":
                 array.append(entry)
         self.settings.set_strv(self.key, array)
 
@@ -730,13 +758,15 @@ class CustomKeyBinding():
 
         array = []
         for entry in self.entries:
-            if entry is not "":
+            if entry != "":
                 array.append(entry)
         settings.set_strv("binding", array)
 
         # Touch the custom-list key, this will trigger a rebuild in cinnamon
         parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
         custom_list = parent.get_strv("custom-list")
+        custom_list.reverse()
+        ensureCustomListIsValid(custom_list);
         parent.set_strv("custom-list", custom_list)
 
 class AddCustomDialog(Gtk.Dialog):
@@ -776,5 +806,5 @@ class AddCustomDialog(Gtk.Dialog):
         self.command_entry.set_text(path)
 
     def onEntriesChanged(self, widget):
-        ok_enabled = self.name_entry.get_text().strip() is not "" and self.command_entry.get_text().strip() is not ""
+        ok_enabled = self.name_entry.get_text().strip() != "" and self.command_entry.get_text().strip() != ""
         self.set_response_sensitive(Gtk.ResponseType.OK, ok_enabled)

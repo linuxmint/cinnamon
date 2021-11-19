@@ -26,7 +26,7 @@
 
 G_BEGIN_DECLS
 
-#include <st/st-widget.h>
+#include "st-widget.h"
 
 #define ST_TYPE_ENTRY                (st_entry_get_type ())
 #define ST_ENTRY(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), ST_TYPE_ENTRY, StEntry))

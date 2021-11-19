@@ -2,6 +2,7 @@
 
 sudo rm -rf /usr/share/cinnamon/js-backup
 sudo mv /usr/share/cinnamon/js /usr/share/cinnamon/js-backup
+sudo cp -R debian/tmp/usr/share/cinnamon/js /usr/share/cinnamon/
 sudo cp -R js /usr/share/cinnamon/
 
 sudo rm -rf /usr/share/cinnamon/theme-backup

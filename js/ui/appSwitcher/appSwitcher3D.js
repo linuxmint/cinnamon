@@ -12,7 +12,6 @@ const Mainloop = imports.mainloop;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
-const {each} = imports.misc.util;
 
 const INITIAL_DELAY_TIMEOUT = 150;
 const CHECK_DESTROYED_TIMEOUT = 100;
@@ -23,7 +22,7 @@ const ICON_TITLE_SPACING = 10;
 const PREVIEW_SCALE = 0.5;
 
 const TITLE_POSITION = 7/8; // percent position
-var ANIMATION_TIME = 0.25; // seconds
+const ANIMATION_TIME = 0.25; // seconds
 const SWITCH_TIME_DELAY = 100; // milliseconds
 const DIM_FACTOR = 0.4; // percent
 
@@ -68,11 +67,6 @@ AppSwitcher3D.prototype = {
 
         // hide windows and show Coverflow actors
         global.window_group.hide();
-
-        each(this._windows, function(metaWindow) {
-            metaWindow.actor.set_obscured(false);
-        });
-
         this.actor.show();
         this._background.show();
 
@@ -94,13 +88,19 @@ AppSwitcher3D.prototype = {
         
         // preview windows
         let currentWorkspace = global.screen.get_active_workspace();
-        for (let i = 0; i < this._previews.length; i++) {
+        for (let i in this._previews) {
             let preview = this._previews[i];
             let metaWin = this._windows[i];
             let compositor = this._windows[i].get_compositor_private();
 
             if (i != this._currentIndex)
                 preview.lower_bottom();
+
+            if (compositor == null) {
+                preview.destroy();
+                continue;
+            }
+
             let rotation_vertex_x = 0.0;
             if (preview.get_anchor_point_gravity() == Clutter.Gravity.EAST) {
                 rotation_vertex_x = preview.width / 2;
@@ -126,7 +126,11 @@ AppSwitcher3D.prototype = {
     },
     
     _hide: function() {
-        this._hidePreviews(255);
+        try {
+            this._hidePreviews(255);
+        } catch (e) {
+            global.logError(e);
+        }
         
         // window title and icon
         if(this._windowTitle) {
@@ -168,24 +172,16 @@ AppSwitcher3D.prototype = {
         this._next();
     },
 
-    onPreviewDestroyed: function(metaWindow, metaWindowActor, preview) {
-        if (metaWindow) metaWindow.actor = undefined;
-        if (preview) preview.metaWindow = undefined;
-        if (!metaWindowActor || metaWindowActor.is_finalized()) return;
-        metaWindowActor.set_obscured(true);
-    },
-
     _createList: function() {
         let monitor = this._activeMonitor;
         let currentWorkspace = global.screen.get_active_workspace();
         
         this._previews = [];
-
-        for (let i = 0; i < this._windows.length; i++) {
+        
+        for (let i in this._windows) {
             let metaWin = this._windows[i];
             let compositor = this._windows[i].get_compositor_private();
             if (compositor) {
-                metaWin.actor = compositor;
                 let texture = compositor.get_texture();
                 let [width, height] = texture.get_size();
 
@@ -208,10 +204,10 @@ AppSwitcher3D.prototype = {
                 preview.target_width_side = preview.target_width * 2/3;
                 preview.target_height_side = preview.target_height;
 
+                
                 preview.set_child(new Clutter.Clone({ source: texture }));
                 preview.metaWindow = metaWin;
                 preview.connect('clicked', Lang.bind(this, this._cloneClicked));
-                preview.connect('destroy', () => this.onPreviewDestroyed(metaWin, compositor, preview));
 
                 this._previews.push(preview);
                 this.previewActor.add_actor(preview);

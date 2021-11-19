@@ -1,0 +1,13 @@
+{
+    "section1": {
+        "type": "section",
+        "description": "Appearance"
+    },
+    "show-icon": {
+        "type": "radiogroup",
+        "default": "printers",
+        "description": "Show printer icon",
+        "options": { "Always": "always", "When printers exist": "printers", "When printing": "jobs"},
+        "tooltip": "Choose when to show the printer icon in the panel"
+    }
+}

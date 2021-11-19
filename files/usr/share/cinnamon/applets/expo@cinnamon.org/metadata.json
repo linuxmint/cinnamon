@@ -2,6 +2,6 @@
 "uuid": "expo@cinnamon.org",
 "name": "Expo",
 "description": "Click or hover to activate Expo view",
-"icon": "workspace-overview",
+"icon": "cs-workspaces",
 "max-instances": -1
 }

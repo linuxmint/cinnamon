@@ -76,6 +76,10 @@ const CinnamonIface =
                 <arg type="s" direction="in" /> \
                 <arg type="s" direction="in" /> \
             </method> \
+            <method name="induceSegfault" /> \
+            <method name="leakMemory"> \
+                <arg type="i" direction="in" name="mb" /> \
+            </method> \
             <method name="switchWorkspaceRight" /> \
             <method name="switchWorkspaceLeft" /> \
             <method name="switchWorkspaceUp" /> \
@@ -105,10 +109,6 @@ const CinnamonIface =
                 <arg type="b" direction="in" name="success" /> \
             </method> \
             <method name="ToggleKeyboard"/> \
-            <method name="OpenSpicesAbout"> \
-                <arg type="s" direction="in" name="uuid" /> \
-                <arg type="s" direction="in" name="type" /> \
-            </method> \
             <method name="GetMonitors"> \
                 <arg type="ai" direction="out" name="monitors" /> \
             </method> \
@@ -120,7 +120,11 @@ const CinnamonIface =
             <method name="GetRunState"> \
                <arg type="i" direction="out" name="state" /> \
             </method> \
+            <method name="RestartCinnamon"> \
+                <arg type="b" direction="in" name="show_osd" /> \
+            </method> \
             <signal name="RunStateChanged"/> \
+            <signal name="XletsLoadedComplete"/> \
         </interface> \
     </node>';
 
@@ -361,6 +365,14 @@ CinnamonDBus.prototype = {
         Main.settingsManager.uuids[uuid][instance_id].remoteUpdate(key, payload);
     },
 
+    induceSegfault: function() {
+        global.segfault();
+    },
+
+    leakMemory: function(mb) {
+        global.alloc_leak(mb);
+    },
+
     switchWorkspaceLeft: function() {
         Main.wm.actionMoveWorkspaceLeft();
     },
@@ -414,12 +426,6 @@ CinnamonDBus.prototype = {
         Main.keyboard.toggle();
     },
 
-    OpenSpicesAbout: function(uuid, type) {
-        Extension.getMetadata(uuid, Extension.Type[type.toUpperCase()]).then(function(metadata) {
-            new ModalDialog.SpicesAboutDialog(metadata, `${type}s`);
-        });
-    },
-
     GetMonitors: function() {
         let monitors = [];
 
@@ -458,12 +464,20 @@ CinnamonDBus.prototype = {
         return Main.runState;
     },
 
+    RestartCinnamon: function(showOsd) {
+        Main.restartCinnamon(showOsd);
+    },
+
     EmitRunStateChanged: function() {
         this._dbusImpl.emit_signal('RunStateChanged', null);
     },
 
     EmitMonitorsChanged: function() {
         this._dbusImpl.emit_signal('MonitorsChanged', null);
+    },
+
+    EmitXletsLoadedComplete: function() {
+        this._dbusImpl.emit_signal('XletsLoadedComplete', null);
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

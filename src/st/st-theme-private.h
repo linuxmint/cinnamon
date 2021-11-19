@@ -21,7 +21,7 @@
 #ifndef __ST_THEME_PRIVATE_H__
 #define __ST_THEME_PRIVATE_H__
 
-#include <libcroco/libcroco.h>
+#include "croco/libcroco.h"
 #include "st-theme.h"
 
 G_BEGIN_DECLS

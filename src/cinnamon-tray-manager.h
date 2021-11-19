@@ -46,6 +46,8 @@ void              cinnamon_tray_manager_manage_stage (CinnamonTrayManager *manag
                                                    StWidget         *theme_widget);
 void              cinnamon_tray_manager_redisplay (CinnamonTrayManager *manager);
 
+void              cinnamon_tray_manager_set_orientation (CinnamonTrayManager *manager,
+                                                         ClutterOrientation   orientation);
 G_END_DECLS
 
 #endif /* __CINNAMON_TRAY_MANAGER_H__ */

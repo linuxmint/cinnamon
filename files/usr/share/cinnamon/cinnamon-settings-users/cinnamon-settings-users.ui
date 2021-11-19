@@ -116,7 +116,7 @@
           <object class="GtkLabel" id="label_users">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">page 1</property>
+            <property name="label" translatable="yes"></property>
           </object>
           <packing>
             <property name="tab_fill">False</property>
@@ -213,7 +213,7 @@
           <object class="GtkLabel" id="label_groups">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">page 2</property>
+            <property name="label" translatable="yes"></property>
           </object>
           <packing>
             <property name="position">1</property>

@@ -4,6 +4,9 @@
  "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
 <policyconfig>
 
+  <vendor>Cinnamon</vendor>
+  <vendor_url>https://projects.linuxmint.com/cinnamon/</vendor_url>
+
   <action id="org.cinnamon.settings-users">
     <message gettext-domain="cinnamon">Users and Groups</message>
     <icon_name>system-users</icon_name>

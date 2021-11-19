@@ -498,7 +498,7 @@ BoxPointer.prototype = {
                 arrowOrigin = y1;
             } else if (arrowOrigin >= (y2 - (borderRadius + halfBase))) {
                 if (arrowOrigin < y2)
-                    resX -= (y2 - arrowOrigin);
+                    resY -= (y2 - arrowOrigin);
                 arrowOrigin = y2;
             }
             break;

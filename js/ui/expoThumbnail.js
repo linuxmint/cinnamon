@@ -484,8 +484,10 @@ ExpoWorkspaceThumbnail.prototype = {
     onTitleKeyPressEvent: function(actor, event) {
         this.undoTitleEdit = false;
         let symbol = event.get_key_symbol();
-        if (symbol === Clutter.Return || symbol === Clutter.Escape) {
-            if (symbol === Clutter.Escape) {
+        if (symbol === Clutter.KEY_Return ||
+            symbol === Clutter.KEY_KP_Enter ||
+            symbol === Clutter.KEY_Escape) {
+            if (symbol === Clutter.KEY_Escape) {
                 this.undoTitleEdit = true;
             }
             global.stage.set_key_focus(this.actor);
@@ -1135,18 +1137,19 @@ ExpoThumbnailsBox.prototype = {
         let modifiers = Cinnamon.get_event_state(event);
         let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
         let symbol = event.get_key_symbol();
-        if (symbol === Clutter.Return || symbol === Clutter.KEY_space 
-            || symbol === Clutter.KP_Enter)
+        if (symbol === Clutter.KEY_Return ||
+            symbol === Clutter.KEY_KP_Enter ||
+            symbol === Clutter.KEY_space)
         {
             this.activateSelectedWorkspace();
             return true;
         }
-        if (symbol === Clutter.F2) {
+        if (symbol === Clutter.KEY_F2) {
             this.editWorkspaceTitle();
             return true;
         }
 
-        if ((symbol === Clutter.o || symbol === Clutter.O) && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+        if ((symbol === Clutter.KEY_o || symbol === Clutter.KEY_O) && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             this.toggleGlobalOverviewMode();
             return true;
         }
@@ -1184,7 +1187,7 @@ ExpoThumbnailsBox.prototype = {
                 // OK
             }
             else {
-                index = symbol - Clutter.KP_1; // convert Num-pad '1' to index 0, etc
+                index = symbol - Clutter.KEY_KP_1; // convert Num-pad '1' to index 0, etc
                 if (index < 0 || index > 9) {
                     return false; // not handled
                 }
