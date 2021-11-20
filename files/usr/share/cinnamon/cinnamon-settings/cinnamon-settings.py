@@ -261,6 +261,7 @@ class MainWindow(Gtk.Application):
     # Create the UI
     def __init__(self):
         Gtk.Application.__init__(self,
+                                 application_id="org.cinnamon.Settings_%d" % os.getpid(),
                                  flags=Gio.ApplicationFlags.NON_UNIQUE | Gio.ApplicationFlags.HANDLES_OPEN)
         self.builder = Gtk.Builder()
         self.builder.set_translation_domain('cinnamon')  # let it translate!
