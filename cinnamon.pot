@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-17 10:25+0000\n"
+"POT-Creation-Date: 2021-11-22 11:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,7 +40,7 @@ msgid "File System"
 msgstr ""
 
 #: src/cinnamon-util.c:256
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:296
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:299
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:435
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:830
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:174
@@ -460,8 +460,8 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:59
 #: generate_additional_files.py:24
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:51
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:378
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:699
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:381
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:709
 msgid "System Settings"
 msgstr ""
 
@@ -677,6 +677,11 @@ msgstr ""
 msgid "Starting in a few minutes"
 msgstr ""
 
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:58
+#, javascript-format
+msgid "Starting in %d minutes"
+msgstr ""
+
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:68
 msgid "This evening"
 msgstr ""
@@ -692,15 +697,15 @@ msgid_plural "In %d hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:533
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:556
 msgid "No Events"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:720
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:743
 msgid "All day"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:788
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:811
 msgid "In progress"
 msgstr ""
 
@@ -1936,7 +1941,7 @@ msgid ""
 "test, create, iso, ISO, disk, image"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:289
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:292
 msgid "Back to all settings"
 msgstr ""
 
@@ -7616,18 +7621,6 @@ msgstr ""
 
 #. calendar@cinnamon.org->settings-schema.json->show-events->tooltip
 msgid "Check this to display events in the calendar."
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->single-calendar-event-
-#. mark->description
-msgid "Only show if a day is busy or free in the calendar view."
-msgstr ""
-
-#. calendar@cinnamon.org->settings-schema.json->single-calendar-event-
-#. mark->tooltip
-msgid ""
-"If this is enabled, only a simple mark will show when a day has one or more "
-"events."
 msgstr ""
 
 #. calendar@cinnamon.org->settings-schema.json->show-week-numbers->description
