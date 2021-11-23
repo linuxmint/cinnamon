@@ -19,7 +19,10 @@ const AppList = require('./appList');
 const {
   RESERVE_KEYS,
   TitleDisplay,
-  autoStartStrDir
+  ScrollBehavior,
+  LeftClickAction,
+  ScrollDirection,
+  autoStartStrDir,
 }  = require('./constants');
 
 class PinnedFavs {
@@ -672,49 +675,78 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     handleScroll(e, sourceFromAppGroup) {
-        if( (this.state.settings.thumbnailScrollBehavior) || (this.state.settings.scrollBehavior === 2) ||
-            (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior !== 3
-             && !e && sourceFromAppGroup)  ||
-            (this.state.settings.leftClickAction !== 3 && this.state.settings.scrollBehavior === 3               
-                        && e && !sourceFromAppGroup)  || 
-            (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior === 3)) {
+        //if( (this.state.settings.thumbnailScrollBehavior) || (this.state.settings.scrollBehavior === 2) ||
+        //    (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior !== 3
+        //     && !e && sourceFromAppGroup)  ||
+        //    (this.state.settings.leftClickAction !== 3 && this.state.settings.scrollBehavior === 3
+        //                && e && !sourceFromAppGroup)  ||
+        //    (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior === 3)) {
+
+        if( ((this.state.settings.scrollBehavior === ScrollBehavior.CycleApps || // groupbar scroll wheel
+            this.state.settings.scrollBehavior === ScrollBehavior.CycleWindowsInGroup) &&
+                e && !sourceFromAppGroup) ||
+            (this.state.settings.thumbnailScrollBehavior && // thumbnails scroll wheel
+                e && sourceFromAppGroup) ||
+            (this.state.settings.leftClickAction === LeftClickAction.CycleWindowsInGroup && // left click cycle
+                !e && sourceFromAppGroup) ){
 
             this.state.set({scrollActive: true});
 
-            let isAppScroll = this.state.settings.scrollBehavior === 2;
-            let direction, source;
+            let isAppScroll, direction, source;
 
+            // thumbnail or left-click cycle
             if (sourceFromAppGroup) {
                 isAppScroll = false;
-                direction = e ? e.get_scroll_direction() : 1;
+                direction = e ? e.get_scroll_direction() : ScrollDirection.Down;
                 source = sourceFromAppGroup;
-            } else {
+            } else { // scroll wheel cycle
+                isAppScroll = this.state.settings.scrollBehavior === ScrollBehavior.CycleApps;
                 direction = e.get_scroll_direction();
                 source = e.get_source()._delegate;
             }
-            let lastFocusedApp, z, count
 
-            if (isAppScroll) {
-                lastFocusedApp = this.appLists[this.state.currentWs].listState.lastFocusedApp;
-                if (!lastFocusedApp) {
-                    lastFocusedApp = this.appLists[this.state.currentWs].appList[0].groupState.appId
+            //let lastFocusedApp
+            let lastFocused, focusedIndex, z, count;
+
+            // This if-else block identifies last/current focused app group or window
+            if (isAppScroll) { // Identifies last/current focused app group
+                // Get name of the last focused app from current WS (not the app under mouse cursor)
+                //lastFocusedApp = this.appLists[this.state.currentWs].listState.lastFocusedApp;
+                // If there is no lastFocused app, select frist app
+                //if (!lastFocusedApp) {
+                //    lastFocusedApp = this.appLists[this.state.currentWs].appList[0].groupState.appId;
+                //}
+                // Get last focused metaWindow
+                lastFocused = this.appLists[this.state.currentWs].listState.lastFocused;
+                // If there is no lastFocused window, select frist lastFocused from first app
+                if (!lastFocused) {
+                    lastFocused = this.appLists[this.state.currentWs].appList[0].groupState.lastFocused;
                 }
-                let focusedIndex = findIndex(this.appLists[this.state.currentWs].appList, function(appGroup) {
-                    return appGroup.groupState.metaWindows.length > 0 && appGroup.groupState.appId === lastFocusedApp;
+                // Get the first index of the group with app equals the lastFocusedApp
+                // and has lastFocused windows in its metaWindows array.
+                focusedIndex = findIndex(this.appLists[this.state.currentWs].appList, function(appGroup) {
+                    return appGroup.groupState.metaWindows.length > 0 &&
+                            //appGroup.groupState.appId === lastFocusedApp &&
+                            appGroup.groupState.metaWindows.includes(lastFocused);
                 });
-                z = direction === 0 ? focusedIndex - 1 : focusedIndex + 1;
                 count = this.appLists[this.state.currentWs].appList.length - 1;
-            } else {
+            } else { // Identifies last/current focused window from source group (focused group or thumbnails)
                 if (!source.groupState || source.groupState.metaWindows.length < 1) {
                     return;
                 }
-                let focusedIndex = findIndex(source.groupState.metaWindows, function(metaWindow) {
+                focusedIndex = findIndex(source.groupState.metaWindows, function(metaWindow) {
                     return metaWindow === source.groupState.lastFocused;
                 });
-                z = direction === 0 ? focusedIndex - 1 : focusedIndex + 1;
                 count = source.groupState.metaWindows.length - 1;
             }
 
+            // Preparation to search the next AppGroup/Window index to focus
+            // Also support horizontal scroll
+            z = (direction === ScrollDirection.Up || direction === ScrollDirection.Left) ?
+                focusedIndex - 1
+                : focusedIndex + 1;
+
+            // While below finds the final AppGroup/Window index to focus
             let limit = count * 2;
 
             while ((isAppScroll
@@ -724,7 +756,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                     (!source.groupState.metaWindows[z]
                         || source.groupState.metaWindows[z] === source.groupState.lastFocused))) {
                 limit--;
-                if (direction === 0) {
+                if (direction === ScrollDirection.Up || direction === ScrollDirection.Left) {
                     z -= 1;
                 } else {
                     z += 1;
@@ -741,6 +773,8 @@ class GroupedWindowListApplet extends Applet.Applet {
                 }
             }
 
+            // if isAppScroll z means the index for the next app group,
+            // othewise z means the index for next window from its group.
             let _window = isAppScroll ?
                 this.appLists[this.state.currentWs].appList[z].groupState.lastFocused
                 : source.groupState.metaWindows[z];

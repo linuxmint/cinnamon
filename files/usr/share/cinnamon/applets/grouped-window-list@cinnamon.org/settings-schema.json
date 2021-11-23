@@ -112,7 +112,7 @@
     "options": {
       "None": 1,
       "Cycle apps": 2,
-      "Cycle windows": 3
+      "Cycle windows in group": 3
     }
   },
   "left-click-action": {
@@ -122,7 +122,7 @@
     "options": {
       "None": 1,
       "Toggle activation of last focused window": 2,
-      "Cycle windows": 3
+      "Cycle windows in group": 3
     }
   },
   "middle-click-action": {
@@ -212,7 +212,7 @@
   },
   "thumbnail-scroll-behavior": {
     "type": "checkbox",
-    "default": false,
+    "default": true,
     "description": "Cycle windows on mouse wheel scroll"
   },
   "show-thumbnails": {

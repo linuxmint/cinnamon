@@ -67,6 +67,22 @@ const constants = {
         pinnedApps: 1,
         none: 2
     },
+    ScrollBehavior: {
+        None: 1,
+        CycleApps: 2,
+        CycleWindowsInGroup: 3,
+    },
+    LeftClickAction: {
+        None: 1,
+        ToggleLastFocusedWindow: 2,
+        CycleWindowsInGroup: 3,
+    },
+    ScrollDirection: {
+        Up: 0,
+        Down: 1,
+        Left: 2,
+        Right: 3,
+    },
     autoStartStrDir: './.config/autostart',
 };
 
