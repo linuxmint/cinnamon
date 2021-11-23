@@ -1005,7 +1005,10 @@ class AppGroup {
 
         let hasFocus = getFocusState(metaWindow);
         if (hasFocus && this.groupState.hasOwnProperty('lastFocused')) {
-            this.listState.set({lastFocusedApp: this.groupState.appId});
+            this.listState.set({
+                lastFocusedApp: this.groupState.appId,
+                lastFocused: metaWindow,
+            });
             this.groupState.set({lastFocused: metaWindow});
         }
         this.onFocusChange(hasFocus);

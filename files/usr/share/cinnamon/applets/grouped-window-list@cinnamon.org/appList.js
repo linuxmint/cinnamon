@@ -16,7 +16,8 @@ class AppList {
         });
         this.listState = createStore({
             workspaceIndex: params.index,
-            lastFocusedApp: null
+            lastFocusedApp: null,
+            lastFocused: null,
         });
         this.listState.connect({
             getWorkspace: () => this.metaWorkspace,
@@ -48,6 +49,7 @@ class AppList {
 
         this.appList = [];
         this.lastFocusedApp = null;
+        this.lastFocused = null;
 
         // Connect all the signals
         this.signals.connect(global.screen, 'window-workspace-changed', (...args) => this.windowWorkspaceChanged(...args));
