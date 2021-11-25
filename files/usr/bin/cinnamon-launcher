@@ -72,7 +72,7 @@ class Launcher():
     @async_function
     def wait_for_process(self):
         exit_status = os.waitpid(self.cinnamon_pid, 0)[1]
-        if exit_status != 0:
+        if not os.WIFEXITED(exit_status):
             with self.kill_lock:
                 if self.killed:
                     # Restart Cinnamon
