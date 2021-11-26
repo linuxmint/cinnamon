@@ -81,8 +81,8 @@ function gdate_time_equals(dt1, dt2) {
 }
 
 class EventData {
-    constructor(data_var) {
-        const [id, color, summary, all_day, start_time, end_time] = data_var.deep_unpack();
+    constructor(data_var, last_request_timestamp) {
+        const [id, color, summary, all_day, start_time, end_time, mod_time] = data_var.deep_unpack();
         this.id = id;
         this.start = GLib.DateTime.new_from_unix_local(start_time);
         this.end = GLib.DateTime.new_from_unix_local(end_time);
@@ -95,28 +95,34 @@ class EventData {
         this.is_today = gdate_time_equals(date_only_start, date_only_today);
         this.summary = summary
         this.color = color;
+        // This is the time_t for when event was last modified by e-d-s
+        this.modified = mod_time;
+        // This is the last monotonic time we contacted our server to update our events. This
+        // is used to cull deleted events.
+        this.last_request_timestamp = last_request_timestamp;
     }
 
     equal(other_event) {
-        return (this.start.to_unix() === other_event.start.to_unix() &&
-                this.end.to_unix() === other_event.end.to_unix() &&
-                this.all_day === other_event.all_day &&
-                this.summary === other_event.summary &&
-                this.color === other_event.color);
+        return this.id === other_event.id && this.modified === other_event.modified;
     }
 }
 
 class EventDataList {
     constructor(gdate_only) {
-        // a system timestamp, to let the event list know if the array it received
-        // is changed.
+        // Timestamp gets updated any time events are added, removed of modified. The event list
+        // compares this to the timestamp it recorded when it initially loaded the day's events.
+        // is changed. It updates any time the events of this day are added, modified or removed.
+        // This prompts the event list to completely reload the re-sorted event list.
+        //
+        // If the event list is updated and the timestamps haven't changed, only the variable details
+        // of the events are updated - time till start, style changes, etc...
+        this.timestamp = GLib.get_monotonic_time();
         this.gdate_only = gdate_only
-        this.timestamp = 0;
         this.length = 0;
         this._events = {}
     }
 
-    add_or_update(event_data) {
+    add_or_update(event_data, last_request_timestamp) {
         let existing = this._events[event_data.id];
 
         if (existing === undefined) {
@@ -124,7 +130,8 @@ class EventDataList {
         }
 
         if (existing !== undefined && event_data.equal(existing)) {
-            return false;;
+            existing.last_request_timestamp = last_request_timestamp;
+            return false;
         }
 
         this._events[event_data.id] = event_data;
@@ -145,6 +152,19 @@ class EventDataList {
 
         this.timestamp = GLib.get_monotonic_time();
         return true;
+    }
+
+    cull_removed_events(last_request_timestamp) {
+        let to_remove = [];
+        for (let id in this._events) {
+            if (this._events[id].last_request_timestamp < last_request_timestamp) {
+                to_remove.push(id);
+            }
+        }
+
+        to_remove.forEach((id) => {
+            this.delete(id);
+        })
     }
 
     get_event_list() {
@@ -216,12 +236,14 @@ class EventsManager {
         this._calendar_server = null;
         this.current_month_year = null;
         this.current_selected_date = null;
+
+        this.last_update_timestamp = 0;
         this.events_by_date = {};
 
         this._inited = false;
         this._has_calendars = false;
 
-        this._periodic_update_timer_id = 0;
+        this._gc_timer_id = 0;
 
         this._reload_today_id = 0;
 
@@ -259,10 +281,7 @@ class EventsManager {
     _update_goa_client_has_calendars(client, changed_objects) {
         // goa can tell us if there are any accounts with enabled
         // calendars. Asking our calendar server ("has-calenders")
-        // is useless if the server is only on periodic updates, as
-        // we'd need to wait to ask it once it was 'initialized'.
-        // This prevents having to start another process at all, if
-        // there's no reason to.
+        // is useless since only certain actions activate it.
 
         let objects = this.goa_client.get_accounts();
         let any_calendars = false;
@@ -275,7 +294,6 @@ class EventsManager {
         }
 
         if (any_calendars !== this._has_calendars) {
-            // log("has calendars: "+any_calendars)
             this._has_calendars = any_calendars;
             this.emit("has-calendars-changed");
         }
@@ -300,10 +318,6 @@ class EventsManager {
                 this._handle_client_disappeared.bind(this)
             );
 
-            global.settings.connect("changed::calendar-server-keep-active", this._start_periodic_timer.bind(this));
-            global.settings.connect("changed::calendar-server-update-interval", this._start_periodic_timer.bind(this));
-
-            this._start_periodic_timer(null, null);
             this._update_goa_client_has_calendars(null, null);
             this._inited = true;
 
@@ -314,32 +328,40 @@ class EventsManager {
         }
     }
 
-    _stop_periodic_timer() {
-        if (this._periodic_update_timer_id > 0) {
-            Mainloop.source_remove(this._periodic_update_timer_id);
-            this._periodic_update_timer_id = 0;
+    _stop_gc_timer() {
+        if (this._gc_timer_id > 0) {
+            Mainloop.source_remove(this._gc_timer_id);
+            this._gc_timer_id = 0;
         }
     }
 
-    _start_periodic_timer(settings, key) {
-        this._stop_periodic_timer();
+    _start_gc_timer() {
+        this._stop_gc_timer();
 
         if (!this.is_active()) {
             return;
         }
 
-        if (!global.settings.get_boolean("calendar-server-keep-active")) {
-            this._periodic_update_timer_id = Mainloop.timeout_add_seconds(
-                global.settings.get_int("calendar-server-update-interval") * 60,
-                this._perform_periodic_update.bind(this)
-            );
-        }
+        this._gc_timer_id = Mainloop.timeout_add_seconds(
+            3, Lang.bind(this, this._perform_gc)
+        );
     }
 
-    _perform_periodic_update() {
-        this.emit("run-periodic-update");
+    _perform_gc() {
+        let any_removed = false;
+        for (let date in this.events_by_date) {
+            if (this.events_by_date[date].cull_removed_events(this.last_request_timestamp)) {
+                any_removed = true;
+            }
+        }
 
-        return GLib.SOURCE_CONTINUE;
+        if (any_removed) {
+            this._event_list.set_events(this.events_by_date[this.current_selected_date.to_unix()]);
+            this.emit("events-updated");
+        }
+
+        this._gc_timer_id = 0;
+        return GLib.SOURCE_REMOVE;
     }
 
     _handle_added_or_updated_events(server, varray) {
@@ -347,7 +369,7 @@ class EventsManager {
 
         let events = varray.unpack()
         for (let n = 0; n < events.length; n++) {
-            let data = new EventData(events[n]);
+            let data = new EventData(events[n], this.last_update_timestamp);
             let gdate_only = get_date_only_from_datetime(data.start);
             let hash = gdate_only.to_unix();
 
@@ -355,17 +377,17 @@ class EventsManager {
                 this.events_by_date[hash] = new EventDataList(gdate_only);
             }
 
-            if (this.events_by_date[hash].add_or_update(data)) {
+            if (this.events_by_date[hash].add_or_update(data, this.last_request_timestamp)) {
                 if (gdate_time_equals(gdate_only, this.current_selected_date)) {
                     changed = true;
                 }
             }
         }
-        // log("handle added : "+changed);
         if (changed) {
             this._event_list.set_events(this.events_by_date[this.current_selected_date.to_unix()]);
         }
 
+        this._start_gc_timer();
         this.emit("events-updated");
     }
 
@@ -399,12 +421,16 @@ class EventsManager {
     }
 
     fetch_month_events(month_year, force) {
-        if (!force && this.current_month_year !== null && gdate_time_equals(month_year, this.current_month_year)) {
+        let changed_month = this.current_month_year === null || !gdate_time_equals(month_year, this.current_month_year);
+
+        if (!changed_month && !force) {
             return;
         }
-        // global.logTrace("fetch");
         this.current_month_year = month_year;
-        this.events_by_date = {};
+
+        if (changed_month) {
+            this.events_by_date = {};
+        }
 
         // get first day of month
         let day_one = get_month_year_only_from_datetime(month_year)
@@ -418,8 +444,7 @@ class EventsManager {
 
         this._calendar_server.call_set_time_range(start.to_unix(), end.to_unix(), force, null, this.call_finished.bind(this));
 
-        // If we just started the server and asked for events here, the timer can be reset.
-        this._start_periodic_timer();
+        this.last_update_timestamp = GLib.get_monotonic_time();
     }
 
     call_finished(server, res) {

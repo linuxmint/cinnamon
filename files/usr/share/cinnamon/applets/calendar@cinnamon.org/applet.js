@@ -63,7 +63,6 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             this.events_manager = new EventView.EventsManager(this.settings, this.desktop_settings);
             this.events_manager.connect("events-manager-ready", this._events_manager_ready.bind(this));
             this.events_manager.connect("has-calendars-changed", this._has_calendars_changed.bind(this));
-            this.events_manager.connect("run-periodic-update", this._run_periodic_update.bind(this));
 
             let box = new St.BoxLayout(
                 {
@@ -242,19 +241,12 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
     _events_manager_ready(em) {
         this.event_list.actor.visible = this.events_manager.is_active();
-        // log("em ready");
         this.events_manager.select_date(this._calendar.getSelectedDate(), true);
     }
 
     _has_calendars_changed(em) {
         this.event_list.actor.visible = this.events_manager.is_active();
         this.events_manager.select_date(this._calendar.getSelectedDate());
-    }
-
-    _run_periodic_update(em) {
-        // log("update");
-        this.event_list.actor.visible = this.events_manager.is_active();
-        this.events_manager.select_date(this._calendar.getSelectedDate(), true);
     }
 
     _updateClockAndDate() {
@@ -307,6 +299,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         this.menu.connect('open-state-changed', Lang.bind(this, function(menu, isOpen) {
             if (isOpen) {
                 this._resetCalendar();
+                this.events_manager.select_date(this._calendar.getSelectedDate(), true);
             }
         }));
     }

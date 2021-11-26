@@ -22,9 +22,6 @@ from gi.repository import Cinnamon
 BUS_NAME = "org.cinnamon.CalendarServer"
 BUS_PATH = "/org/cinnamon/CalendarServer"
 
-CINNAMON_GSCHEMA = "org.cinnamon"
-KEEP_ALIVE_KEY = "calendar-server-keep-active"
-
 class CalendarInfo():
     def __init__(self, source, client):
         # print(source, client)
@@ -49,7 +46,7 @@ class CalendarInfo():
         self.view = None
 
 class Event():
-    def __init__(self, uid, color, summary, all_day, start_timet, end_timet):
+    def __init__(self, uid, color, summary, all_day, start_timet, end_timet, mod_timet):
         self.__dict__.update(locals())
 
 class CalendarServer(Gio.Application):
@@ -102,29 +99,11 @@ class CalendarServer(Gio.Application):
     def do_startup(self):
         Gio.Application.do_startup(self)
 
-        self.keep_alive = False
-        self.settings = Gio.Settings(schema_id=CINNAMON_GSCHEMA)
-        self.settings.connect("changed::" + KEEP_ALIVE_KEY, self.keep_alive_changed)
-        self.keep_alive_changed(None, None)
-
         # This makes the inactivity timeout work. Otherwise timeout is fixed at 10s after startup.
         self.hold()
         self.release()
 
         EDataServer.SourceRegistry.new(None, self.got_registry_callback)
-
-    def keep_alive_changed(self, settings, key):
-        new_keep_alive = self.settings.get_boolean(KEEP_ALIVE_KEY)
-
-        if new_keep_alive == self.keep_alive:
-            return
-
-        if new_keep_alive:
-            self.hold()
-        else:
-            self.release()
-
-        self.keep_alive = new_keep_alive
 
     def do_activate(self):
         pass
@@ -305,13 +284,19 @@ class CalendarServer(Gio.Application):
                 else:
                     end_timet = start_timet + (60 * 30) # Default to 30m if the end time is bad.
 
+                mod_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.LASTMODIFIED_PROPERTY)
+                ical_time_modified = mod_prop.get_lastmodified()
+                # Modified time "last-modified" is utc
+                mod_timet = ical_time_modified.as_timet()
+
                 event = Event(
                     self.create_uid(calendar, comp),
                     calendar.color,
                     summary,
                     all_day,
                     start_timet,
-                    end_timet
+                    end_timet,
+                    mod_timet
                 )
 
                 events.append(event)
@@ -345,13 +330,19 @@ class CalendarServer(Gio.Application):
         start_timet = instance_start.as_timet_with_zone(dts_timezone)
         end_timet = instance_end.as_timet_with_zone(dte_timezone)
 
+        mod_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.LASTMODIFIED_PROPERTY)
+        ical_time_modified = mod_prop.get_lastmodified()
+        # Modified time "last-modified" is utc
+        mod_timet = ical_time_modified.as_timet()
+
         event = Event(
             self.create_uid(calendar, comp),
             calendar.color,
             summary,
             all_day,
             start_timet,
-            end_timet
+            end_timet,
+            mod_timet
         )
 
         self.emit_events_added_or_updated(calendar, [event])
@@ -360,21 +351,22 @@ class CalendarServer(Gio.Application):
 
     def emit_events_added_or_updated(self, calendar, events):
         # print("package: ",len(events))
-        all_events = GLib.VariantBuilder(GLib.VariantType.new("a(sssbxx)"))
+        all_events = GLib.VariantBuilder(GLib.VariantType.new("a(sssbxxx)"))
 
         for event in events:
             if event.end_timet <= (calendar.start - 1) and event.start_timet >= calendar.end:
                 continue
 
             event_var = GLib.Variant(
-                "(sssbxx)",
+                "(sssbxxx)",
                 [
                     event.uid,
                     event.color,
                     event.summary,
                     event.all_day,
                     event.start_timet,
-                    event.end_timet
+                    event.end_timet,
+                    event.mod_timet
                 ]
             )
 
