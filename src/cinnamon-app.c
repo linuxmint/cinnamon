@@ -1195,6 +1195,7 @@ real_app_launch (CinnamonApp   *app,
                                       error))
         {
             g_key_file_unref (keyfile);
+            g_object_unref (context);
             return FALSE;
         }
 
