@@ -11,6 +11,11 @@
         "description": "Shuffle",
         "type" : "switch"
     },
+    "skip-hidden": {
+        "default": true,
+        "description": "Skip hidden directory and files",
+        "type" : "switch"
+    },
     "delay": {
         "default": 5,
         "type": "spinbutton",
@@ -55,6 +60,26 @@
             "None": "",
             "Sepia": "sepia",
             "Black and White": "black-and-white"
+        }
+    },
+    "left-click": {
+        "type": "combobox",
+        "description": "Left button click action",
+        "default": "next",
+        "options": {
+            "None": "",
+            "Show Next": "next",
+            "Open Photo": "open"
+        }
+    },
+    "middle-click": {
+        "type": "combobox",
+        "description": "Middle button click action",
+        "default": "open",
+        "options": {
+            "None": "",
+            "Show Next": "next",
+            "Open Photo": "open"
         }
     }
 }

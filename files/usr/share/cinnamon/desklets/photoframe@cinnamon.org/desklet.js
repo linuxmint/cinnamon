@@ -19,11 +19,14 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
         this.settings = new Settings.DeskletSettings(this, this.metadata.uuid, this.instance_id);
         this.settings.bind('directory', 'dir', this.on_setting_changed);
         this.settings.bind('shuffle', 'shuffle', this.on_setting_changed);
+        this.settings.bind('skip-hidden', 'skip_hidden', this.on_setting_changed);
         this.settings.bind('delay', 'delay', this.on_setting_changed);
         this.settings.bind('height', 'height', this.on_setting_changed);
         this.settings.bind('width', 'width', this.on_setting_changed);
         this.settings.bind('fade-delay', 'fade_delay', this.on_setting_changed);
         this.settings.bind('effect', 'effect', this.on_setting_changed);
+        this.settings.bind('left-click', 'left_click', this.on_setting_changed);
+        this.settings.bind('middle-click', 'middle_click', this.on_setting_changed);
 
         this.dir_monitor_id = 0;
         this.dir_monitor = null;
@@ -90,6 +93,11 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
 
         let info;
         while ((info = fileEnum.next_file(null)) != null) {
+            /* Skip hidden files / directories */
+            if (this.skip_hidden && info.get_name().indexOf(".") == 0) {
+                continue;
+            }
+
             let fileType = info.get_file_type();
             let fileName = dir + '/' + info.get_name();
             if (fileType != Gio.FileType.DIRECTORY) {
@@ -219,9 +227,15 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
     on_desklet_clicked(event) {
         try {
             if (event.get_button() == 1) {
-                this._update();
+                if (this.left_click == "next")
+                    this._update();
+                else if (this.left_click == "open")
+                    Util.spawn(['xdg-open', this.currentPicture.path]);
             } else if (event.get_button() == 2) {
-                Util.spawn(['xdg-open', this.currentPicture.path]);
+                if (this.middle_click == "open")
+                    Util.spawn(['xdg-open', this.currentPicture.path]);
+                else if (this.middle_click == "next")
+                    this._update();
             }
         } catch (e) {
             global.logError(e);
