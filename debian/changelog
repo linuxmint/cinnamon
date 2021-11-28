@@ -1,3 +1,26 @@
+cinnamon (5.2.1) una; urgency=medium
+
+  [ Clement Lefebvre ]
+  * l10n: Rename mgsid in calendar applet
+  * calendar applet: Add an icon when no events are available
+
+  [ Michael Webster ]
+  * calendar: remove unintentional setting.
+  * calendar: Don't use the new string format style for translatable strings.
+  * calendar applet: Reset the periodic timer when settings change.
+  * cinnamon.css: Move height element to affect the events box only.
+  * Make cinnamon-settings a minimal GApplication to accomodate webkit.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * cinnamon-launcher: use os.WIFEXITED to interpret the status code when cinnamon exits.
+  * calendar events: update when the applet is opened only, and update events incrementally, to reduce ui relayouts.
+  * cinnamon-app.c: Don't allow offloaded programs to be dbus-activated.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 28 Nov 2021 14:03:33 +0000
+
 cinnamon (5.2.0) una; urgency=medium
 
   [ Michael Webster ]
