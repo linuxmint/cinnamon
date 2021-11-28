@@ -213,7 +213,7 @@ st_gir = gnome.generate_gir(
     includes: st_gir_includes,
     install: true,
     install_dir_typelib: pkglibdir,
-    install_dir_gir: false,
+    install_dir_gir: [false],
     extra_args: [
         '-DST_COMPILATION',
         '--quiet',
