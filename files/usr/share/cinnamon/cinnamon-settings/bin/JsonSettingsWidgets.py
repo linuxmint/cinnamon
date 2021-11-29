@@ -160,7 +160,7 @@ class JSONSettingsHandler(object):
         self.pause_monitor()
         if os.path.exists(self.filepath):
             os.remove(self.filepath)
-        raw_data = json.dumps(self.settings, indent=4)
+        raw_data = json.dumps(self.settings, indent=4, ensure_ascii=False)
         new_file = open(self.filepath, 'w+')
         new_file.write(raw_data)
         new_file.close()
