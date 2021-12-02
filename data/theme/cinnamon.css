@@ -533,7 +533,6 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .calendar-main-box {
-    padding: 0 1.0em;
 }
 
 .calendar-events-main-box {
@@ -577,6 +576,11 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .calendar-events-scrollbox {
+
+}
+
+.calendar-events-scrollbox .vfade {
+    -st-vfade-offset: 30px;
 }
 
 .calendar-events-main-box .separator {
@@ -589,11 +593,6 @@ StScrollBar StButton#vhandle:hover {
 .calendar-event-button {
     margin: 6px 0 6px 0;
     border-radius: 4px;
-}
-
-.calendar-event-button:past,
-.calendar-event-button:present,
-.calendar-event-button:future {
 }
 
 .calendar-event-button:hover {
@@ -612,22 +611,26 @@ StScrollBar StButton#vhandle:hover {
     margin:  7px;
 }
 
-.calendar-event-time {
-    color: #cccccc;
+.calendar-event-time-past {
+    color: rgba(204,204,204,.3);
     font-weight: bold;
     text-align: left;
     margin-bottom: .6em;
 }
 
-.calendar-event-time:past {
-    color: rgba(204,204,204,.3);
+.calendar-event-time-present {
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: .6em;
 }
 
-.calendar-event-time:all-day {
+.calendar-event-time-present:all-day {
     color: rgba(0,255,0,0.6);
 }
 
-.calendar-event-time:future {
+.calendar-event-time-future {
+    text-align: left;
+    margin-bottom: .6em;
 }
 
 .calendar-event-countdown {

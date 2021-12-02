@@ -595,9 +595,10 @@ class EventList {
         );
         this.events_scroll_box = new St.ScrollView(
             {
-                style_class: 'vfade calendar-events-scrollbox',
+                style_class: 'calendar-events-scrollbox vfade',
                 hscrollbar_policy: Gtk.PolicyType.NEVER,
-                vscrollbar_policy: Gtk.PolicyType.AUTOMATIC
+                vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+                enable_auto_scrolling: true
             }
         );
 
