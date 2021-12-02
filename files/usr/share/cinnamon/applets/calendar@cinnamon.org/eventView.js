@@ -774,7 +774,7 @@ class EventRow {
             {
                 x_align: Clutter.ActorAlign.START,
                 text: text,
-                style_class: "calendar-event-time"
+                style_class: "calendar-event-time-present"
             }
         );
         label_box.add(this.event_time, { expand: true, x_fill: true });
@@ -809,13 +809,11 @@ class EventRow {
         let time_until_finish = this.event.end.difference(GLib.DateTime.new_now_local())
 
         if (time_until_finish < 0) {
-            this.actor.set_style_pseudo_class("past");
-            this.event_time.set_style_pseudo_class("past");
+            this.event_time.set_style_class_name("calendar-event-time-past");
 
             this.countdown_label.set_text("");
         } else if (time_until_start > 0) {
-            this.actor.set_style_pseudo_class("future");
-            this.event_time.set_style_pseudo_class("future");
+            this.event_time.set_style_class_name("calendar-event-time-future");
 
             if (this.event.is_today) {
                 let [countdown_pclass, text] = format_timespan(time_until_start);
@@ -826,8 +824,7 @@ class EventRow {
                 this.countdown_label.set_text("");
             }
         } else {
-            this.actor.set_style_pseudo_class("present");
-            this.event_time.set_style_pseudo_class("");
+            this.event_time.set_style_class_name("calendar-event-time-present");
 
             if (this.event.all_day) {
                 this.countdown_label.set_text("");
