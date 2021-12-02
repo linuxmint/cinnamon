@@ -123,6 +123,7 @@ const CinnamonIface =
             <method name="RestartCinnamon"> \
                 <arg type="b" direction="in" name="show_osd" /> \
             </method> \
+            <method name="ReloadTheme"/> \
             <signal name="RunStateChanged"/> \
             <signal name="XletsLoadedComplete"/> \
         </interface> \
@@ -466,6 +467,10 @@ CinnamonDBus.prototype = {
 
     RestartCinnamon: function(showOsd) {
         Main.restartCinnamon(showOsd);
+    },
+
+    ReloadTheme: function() {
+        Main.themeManager._changeTheme()
     },
 
     EmitRunStateChanged: function() {
