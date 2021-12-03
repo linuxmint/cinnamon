@@ -533,13 +533,20 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .calendar-main-box {
+    margin: 0 .8em 0 .8em;
+}
+
+.calendar {
+    /*padding: 0 0.5em 0.4em;*/
+    spacing-rows: 0px;
+    spacing-columns: 0px;
 }
 
 .calendar-events-main-box {
-    height: 350px;
-    margin-right: .5em;
-    padding: .75em;
-    min-width: 450px;
+    height: 300px;
+    margin-right: 0.8em;
+    padding: .5em;
+    min-width: 350px;
     border: 1px solid #666;
     border-radius: 8px;
     background-gradient-direction: vertical;
@@ -682,11 +689,6 @@ StScrollBar StButton#vhandle:hover {
     text-align: center;
 }
 
-.calendar {
-    padding: 0 0.5em 0.4em;
-    spacing-rows: 0px;
-    spacing-columns: 0px;
-}
 .calendar-month-label {
     color: #cccccc;
     padding-bottom: 8px;
@@ -725,7 +727,7 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .calendar-day-event-dot-box {
-    margin-top: 32px;
+    margin-top: 22px;
 
     /* any other way do do something like this? */
     max-rows: 2;
@@ -740,16 +742,17 @@ StScrollBar StButton#vhandle:hover {
 
 .calendar-day-base {
     text-align: center;
-    width: 3.5em;
-    height: 3.5em;
+    width: 2.4em;
+    height: 2.4em;
 }
 .calendar-day-base:hover {
-    background-color: #777777;
     color: #fff;
+    font-weight: bold;
 }
 .calendar-day-base:active {
-    background-color: #555555;
+    background-color: #444444;
 }
+
 .calendar-day-heading {
     color: #cccccc;
     padding-top: 1em;
@@ -761,7 +764,6 @@ StScrollBar StButton#vhandle:hover {
 /* Hack used in lieu of border-collapse - see calendar.js */
 .calendar-day:ltr {
     border: 1px solid #333333;
-    color: #cccccc;
     border-top-width: 0;
     border-left-width: 0;
 }
@@ -773,7 +775,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .calendar-day:rtl {
     border: 1px solid #333333;
-    color: #cccccc;
     border-top-width: 0;
     border-right-width: 0;
 }
@@ -789,14 +790,15 @@ StScrollBar StButton#vhandle:hover {
     background-color: rgba(128, 128, 128, 0.1);
 }
 .calendar-today {
-    background-image: url("calendar-today.svg");
-    text-shadow: black 0px 2px 2px;
-    color: #ffffff;
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(255,255,255,0.35);
+    background-gradient-end: rgba(255,255,255,0.15);
+    color: #cccccc;
     font-weight: bold;
 }
 
 .calendar-today:selected {
-    background-image: url("calendar-today-selected.svg");
+    color: #fff;
 }
 
 .calendar-other-month-day {
@@ -805,10 +807,12 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .calendar-not-today {
+    color: #cccccc;
 }
 
 .calendar-not-today:selected {
-    background-image: url("calendar-selected.svg");
+    color: #fff;
+    font-weight: bold;
 }
 
 
