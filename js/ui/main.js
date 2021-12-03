@@ -13,6 +13,7 @@
  * @windowAttentionHandler (WindowAttentionHandler.WindowAttentionHandler): The window attention handle
  * @recorder (Cinnamon.Recorder): The recorder
  * @cinnamonDBusService (CinnamonDBus.Cinnamon): The cinnamon dbus object
+ * @screenshotService (Screenshot.ScreenshotService): Implementation of gnome-shell's screenshot interface.
  * @modalCount (int): The number of modals "pushed"
  * @modalActorFocusStack (array): Array of pushed modal actors
  * @uiGroup (Cinnamon.GenericContainer): The group containing all Cinnamon and
@@ -103,6 +104,7 @@ const LookingGlass = imports.ui.lookingGlass;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const CinnamonDBus = imports.ui.cinnamonDBus;
+const Screenshot = imports.ui.screenshot;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
 const XdndHandler = imports.ui.xdndHandler;
@@ -140,6 +142,7 @@ var notificationDaemon = null;
 var windowAttentionHandler = null;
 var recorder = null;
 var cinnamonDBusService = null;
+var screenshotService = null;
 var modalCount = 0;
 var modalActorFocusStack = [];
 var uiGroup = null;
@@ -309,6 +312,8 @@ function start() {
 
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
     setRunState(RunState.STARTUP);
+
+    screenshotService = new Screenshot.ScreenshotService();
 
     // Ensure CinnamonWindowTracker and CinnamonAppUsage are initialized; this will
     // also initialize CinnamonAppSystem first.  CinnamonAppSystem

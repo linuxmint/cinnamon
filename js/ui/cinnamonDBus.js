@@ -199,7 +199,7 @@ CinnamonDBus.prototype = {
      */
     ScreenshotArea: function(include_cursor, x, y, width, height, flash, filename) {
         let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_area(include_cursor, x, y, width, 200, filename,
+        screenshot.screenshot_area(include_cursor, x, y, width, height, filename,
             Lang.bind(this, this._onScreenshotComplete, flash));
     },
 
