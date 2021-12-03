@@ -242,6 +242,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
 class Seeker extends Slider.Slider {
     constructor(mediaServerPlayer, props, playerName) {
         super(0, true);
+        this.actor.set_direction(St.TextDirection.LTR); //Do not invert on RTL layout
 
         this.canSeek = true;
         this.status = 'Stopped';
