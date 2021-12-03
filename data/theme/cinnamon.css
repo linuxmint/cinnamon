@@ -579,10 +579,6 @@ StScrollBar StButton#vhandle:hover {
 
 }
 
-.calendar-events-scrollbox .vfade {
-    -st-vfade-offset: 30px;
-}
-
 .calendar-events-main-box .separator {
     -margin-horizontal:  1em;
     -gradient-height: 1px;
