@@ -1,3 +1,21 @@
+cinnamon (5.2.2) una; urgency=medium
+
+  [ Jan Beich ]
+  * build: disable gir install via list to pacify meson >= 0.60.2 (#10489)
+
+  [ Michael Webster ]
+  * JsonSettingsWidgets.py: Don't escape non-ascii characters when saving the json file.
+  * flashspot.js: Use class expression to fix subclassing of Lightbox.
+  * appletManager.js: Fix highlighting when adding an applet to a panel.
+  * Add "ReloadTheme" to available dbus commands.
+  * calendar applet: Change a few style classes.
+  * calendar applet: Update the default theme for some calendar changes.
+  * cinnamon-app.c: Unref the launch context if offloading setup fails.
+  * calendar: Don't try to override vfade in the default theme.
+  * cinnamon.css: Improve some spacing in the calendar, change how selected/current days are displayed.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 03 Dec 2021 15:33:29 +0000
+
 cinnamon (5.2.1) una; urgency=medium
 
   [ Clement Lefebvre ]
