@@ -2826,9 +2826,14 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
     }
 
     _onKeyPressEvent(actor, event) {
-        // Move focus back to parent menu if the user types Left.
+        if(!this.isOpen) return false;
 
-        if (this.isOpen && event.get_key_symbol() === Clutter.KEY_Left) {
+        const rtl = this.actor.get_direction() === St.TextDirection.RTL;
+
+        // Move focus back to parent menu if the user
+        // types Left on ltr, or Right on rtl layout.
+        if ((event.get_key_symbol() === Clutter.KEY_Left && !rtl) ||
+            (event.get_key_symbol() === Clutter.KEY_Right && rtl)) {
             this.sourceActor._delegate.setActive(true);
             this.close(true);
             return true;
@@ -2909,13 +2914,16 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
     }
 
     _onKeyPressEvent(actor, event) {
-        let symbol = event.get_key_symbol();
+        const symbol = event.get_key_symbol();
+        const rtl = this.actor.get_direction() === St.TextDirection.RTL;
+        const shouldOpen = (symbol === Clutter.KEY_Right && !rtl) || (symbol === Clutter.KEY_Left && rtl);
+        const shouldClose = (symbol === Clutter.KEY_Left && !rtl) || (symbol === Clutter.KEY_Right && rtl);
 
-        if (symbol === Clutter.KEY_Right) {
+        if (shouldOpen) {
             this.menu.open(true);
             this.menu.actor.navigate_focus(null, Gtk.DirectionType.DOWN, false);
             return true;
-        } else if (symbol === Clutter.KEY_Left && this.menu.isOpen) {
+        } else if (shouldClose && this.menu.isOpen) {
             this.menu.close();
             return true;
         }
