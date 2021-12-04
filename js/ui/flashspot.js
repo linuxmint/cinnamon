@@ -6,7 +6,7 @@ const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 
-const FLASHSPOT_ANIMATION_TIME = 0.15; // seconds
+const FLASHSPOT_ANIMATION_TIME = 0.4; // seconds
 
 var Flashspot = class Flashspot extends Lightbox.Lightbox {
     constructor(area) {
@@ -28,25 +28,18 @@ var Flashspot = class Flashspot extends Lightbox.Lightbox {
    }
 
    fire() {
-      this.actor.opacity = 0;
+      this.actor.opacity = 255;
       Tweener.addTween(this.actor,
-                      { opacity: 255,
+                      { opacity: 0,
                         time: this.animation_time,
-                        transition: 'linear',
+                        transition: 'easeOutQuad',
                         onComplete: Lang.bind(this, this._onFireShowComplete)
                       });
       this.actor.show();
    }
 
    _onFireShowComplete () {
-      Tweener.addTween(this.actor,
-                      { opacity: 0,
-                        time: this.animation_time,
-                        transition: 'linear',
-                        onComplete: Lang.bind(this, function() {
-                            this.destroy();
-                        })
-                      });
+        this.destroy();
    }
 };
 
