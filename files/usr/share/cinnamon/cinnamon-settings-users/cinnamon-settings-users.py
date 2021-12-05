@@ -364,6 +364,8 @@ class NewUserDialog(Gtk.Dialog):
             self.account_type_combo = Gtk.ComboBoxText()
             self.account_type_combo.append_text(_("Standard"))
             self.account_type_combo.append_text(_("Administrator"))
+            self.account_type_combo.append_text(_("Child"))
+            self.account_type_combo.append_text(_("Elder"))
             self.account_type_combo.set_active(0)
 
             self.realname_entry = Gtk.Entry()
@@ -564,6 +566,8 @@ class Module:
             self.account_type_combo = Gtk.ComboBoxText()
             self.account_type_combo.append_text(_("Standard"))
             self.account_type_combo.append_text(_("Administrator"))
+            self.account_type_combo.append_text(_("Child"))
+            self.account_type_combo.append_text(_("Elder"))
             self.account_type_combo.connect("changed", self._on_accounttype_changed)
 
             self.realname_entry = EditableEntry()
@@ -635,9 +639,29 @@ class Module:
             user = model[treeiter][INDEX_USER_OBJECT]
             if self.account_type_combo.get_active() == 1:
                 user.set_account_type(AccountsService.UserAccountType.ADMINISTRATOR)
+                subprocess.call(["gpasswd", "-d", user.get_user_name(), "child"])
+                subprocess.call(["gpasswd", "-d", user.get_user_name(), "elder"])
             else:
                 user.set_account_type(AccountsService.UserAccountType.STANDARD)
-
+                subprocess.call(["gpasswd", "-d", user.get_user_name(), "child"])
+                subprocess.call(["gpasswd", "-d", user.get_user_name(), "elder"])
+            groups_all = []
+            for group in grp.getgrall():
+                groups_all.append(group[0])
+            if self.account_type_combo.get_active() == 2:
+                if "child" not in groups_all:
+                    subprocess.call(["addgroup", "--system", "--gid", "800", "child"])
+                user.set_account_type(AccountsService.UserAccountType.STANDARD)
+                if "elder" in groups_all:
+                    subprocess.call(["usermod", user.get_user_name(), "-a", "-G", "%s,child" % user.get_user_name()])
+                    subprocess.call(["gpasswd", "-d", user.get_user_name(), "elder"])
+            elif self.account_type_combo.get_active() == 3:
+                if "elder" not in groups_all:
+                    subprocess.call(["addgroup", "--system", "--gid", "801", "elder"])
+                user.set_account_type(AccountsService.UserAccountType.STANDARD)
+                if "child" in groups_all:
+                    subprocess.call(["usermod", user.get_user_name(), "-a", "-G", "%s,elder" % user.get_user_name()])
+                    subprocess.call(["gpasswd", "-d", user.get_user_name(), "child"])
             groups = []
             for group in grp.getgrall():
                 if user.get_user_name() in group[3]:
@@ -808,9 +832,20 @@ class Module:
             else:
                 self.password_mask.set_text(_("Set at login"))
 
+            groups = []
+            for group in grp.getgrall():
+                if user.get_user_name() in group[3]:
+                    groups.append(group[0])
+            groups.sort()
+
             if user.get_account_type() == AccountsService.UserAccountType.ADMINISTRATOR:
                 self.account_type_combo.set_active(1)
             else:
+              if "child" in groups:
+                self.account_type_combo.set_active(2)
+              elif "elder" in groups:
+                self.account_type_combo.set_active(3)
+              else:
                 self.account_type_combo.set_active(0)
 
             pixbuf = None
@@ -839,11 +874,6 @@ class Module:
                     print(message)
                 self.face_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")
 
-            groups = []
-            for group in grp.getgrall():
-                if user.get_user_name() in group[3]:
-                    groups.append(group[0])
-            groups.sort()
             self.groups_label.set_text(", ".join(groups))
             self.builder.get_object("box_users").show()
 
@@ -890,6 +920,12 @@ class Module:
         if response == Gtk.ResponseType.OK:
             if dialog.account_type_combo.get_active() == 1:
                 account_type = AccountsService.UserAccountType.ADMINISTRATOR
+            elif self.account_type_combo.get_active() == 2:
+                account_type = AccountsService.UserAccountType.STANDARD
+                subprocess.call(["addgroup", "--system", "--gid", "800", "child"])
+            elif self.account_type_combo.get_active() == 3:
+                account_type = AccountsService.UserAccountType.STANDARD
+                subprocess.call(["addgroup", "--system", "--gid", "801", "elder"])
             else:
                 account_type = AccountsService.UserAccountType.STANDARD
             fullname = dialog.realname_entry.get_text()
@@ -902,6 +938,10 @@ class Module:
             # Add the user to his/her own group and sudo if Administrator was selected
             if dialog.account_type_combo.get_active() == 1:
                 subprocess.call(["usermod", username, "-G", "%s,sudo,nopasswdlogin" % username])
+            elif dialog.account_type_combo.get_active() == 2:
+                subprocess.call(["usermod", username, "-G", "%s,child,nopasswdlogin" % username])
+            elif dialog.account_type_combo.get_active() == 3:
+                subprocess.call(["usermod", username, "-G", "%s,elder,nopasswdlogin" % username])
             else:
                 subprocess.call(["usermod", username, "-G", "%s,nopasswdlogin" % username])
             self.load_groups()
