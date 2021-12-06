@@ -675,13 +675,6 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     handleScroll(e, sourceFromAppGroup) {
-        //if( (this.state.settings.thumbnailScrollBehavior) || (this.state.settings.scrollBehavior === 2) ||
-        //    (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior !== 3
-        //     && !e && sourceFromAppGroup)  ||
-        //    (this.state.settings.leftClickAction !== 3 && this.state.settings.scrollBehavior === 3
-        //                && e && !sourceFromAppGroup)  ||
-        //    (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior === 3)) {
-
         if( ((this.state.settings.scrollBehavior === ScrollBehavior.CycleApps || // groupbar scroll wheel
             this.state.settings.scrollBehavior === ScrollBehavior.CycleWindowsInGroup) &&
                 e && !sourceFromAppGroup) ||
@@ -710,12 +703,6 @@ class GroupedWindowListApplet extends Applet.Applet {
 
             // This if-else block identifies last/current focused app group or window
             if (isAppScroll) { // Identifies last/current focused app group
-                // Get name of the last focused app from current WS (not the app under mouse cursor)
-                //lastFocusedApp = this.appLists[this.state.currentWs].listState.lastFocusedApp;
-                // If there is no lastFocused app, select frist app
-                //if (!lastFocusedApp) {
-                //    lastFocusedApp = this.appLists[this.state.currentWs].appList[0].groupState.appId;
-                //}
                 // Get last focused metaWindow
                 lastFocused = this.appLists[this.state.currentWs].listState.lastFocused;
                 // If there is no lastFocused window, select frist lastFocused from first app
@@ -726,7 +713,6 @@ class GroupedWindowListApplet extends Applet.Applet {
                 // and has lastFocused windows in its metaWindows array.
                 focusedIndex = findIndex(this.appLists[this.state.currentWs].appList, function(appGroup) {
                     return appGroup.groupState.metaWindows.length > 0 &&
-                            //appGroup.groupState.appId === lastFocusedApp &&
                             appGroup.groupState.metaWindows.includes(lastFocused);
                 });
                 count = this.appLists[this.state.currentWs].appList.length - 1;
@@ -742,9 +728,13 @@ class GroupedWindowListApplet extends Applet.Applet {
 
             // Preparation to search the next AppGroup/Window index to focus
             // Also support horizontal scroll
-            z = (direction === ScrollDirection.Up || direction === ScrollDirection.Left) ?
-                focusedIndex - 1
-                : focusedIndex + 1;
+            let step;
+            if (direction === ScrollDirection.Up || direction === ScrollDirection.Left){
+              step = -1 // previous
+            } else {
+              step = +1 // next
+            }
+            z = focusedIndex + step
 
             // While below finds the final AppGroup/Window index to focus
             let limit = count * 2;
@@ -756,11 +746,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                     (!source.groupState.metaWindows[z]
                         || source.groupState.metaWindows[z] === source.groupState.lastFocused))) {
                 limit--;
-                if (direction === ScrollDirection.Up || direction === ScrollDirection.Left) {
-                    z -= 1;
-                } else {
-                    z += 1;
-                }
+                z += step
                 if (limit < 0) {
                     if (count === 0) {
                         z = 0;
