@@ -314,25 +314,6 @@ var Maximize = class Maximize extends Tile {
         this.arrayName = '_maximizing';
         this.wmCompleteName = 'completed_maximize';
     }
-
-    traditional(cinnamonwm, actor, args) {
-        let transition = 'easeNone';
-        let time = 0.1;
-        let [targetX, targetY, targetWidth, targetHeight] = args;
-
-        if (targetWidth === actor.width) targetWidth -= 1;
-        if (targetHeight === actor.height) targetHeight -= 1;
-
-        let scale_x = targetWidth / actor.width;
-        let scale_y = targetHeight / actor.height;
-        let anchor_x = (actor.x - targetX) * actor.width / (targetWidth - actor.width);
-        let anchor_y = (actor.y - targetY) * actor.height / (targetHeight - actor.height);
-
-        actor.move_anchor_point(anchor_x, anchor_y);
-
-        this._scaleWindow(cinnamonwm, actor, scale_x, scale_y, time, transition, true);
-    }
-
 }
 
 var Unmaximize = class Unmaximize extends Tile {
