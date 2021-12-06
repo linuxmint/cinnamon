@@ -1,3 +1,11 @@
+cinnamon (5.2.3) una; urgency=medium
+
+  [ Michael Webster ]
+  * Add org.gnome.Shell.Screensaver service for taking screenshots.
+  * flashspot.js: Improve effect.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 06 Dec 2021 16:56:15 +0000
+
 cinnamon (5.2.2) una; urgency=medium
 
   [ Jan Beich ]
