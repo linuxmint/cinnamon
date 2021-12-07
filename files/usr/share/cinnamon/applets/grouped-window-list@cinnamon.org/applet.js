@@ -340,6 +340,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'number-display', value: 'numDisplay', cb: this.updateWindowNumberState},
             {key: 'title-display', value: 'titleDisplay', cb: this.updateTitleDisplay},
             {key: 'scroll-behavior', value: 'scrollBehavior', cb: null},
+            {key: 'reverse-scrolling', value: 'reverseScrolling', cb: null},
             {key: 'show-recent', value: 'showRecent', cb: null},
             {key: 'autostart-menu-item', value: 'autoStart', cb: null},
             {key: 'monitor-move-all-windows', value: 'monitorMoveAllWindows', cb: null},
@@ -728,8 +729,11 @@ class GroupedWindowListApplet extends Applet.Applet {
 
             // Preparation to search the next AppGroup/Window index to focus
             // Also support horizontal scroll
+            const isReverseScrolling = this.state.settings.reverseScrolling;
             let step;
-            if (direction === ScrollDirection.Up || direction === ScrollDirection.Left){
+            if ( (direction === ScrollDirection.Up && !isReverseScrolling) ||
+                 (direction === ScrollDirection.Down && isReverseScrolling) ||
+                 direction === ScrollDirection.Left){
               step = -1 // previous
             } else {
               step = +1 // next

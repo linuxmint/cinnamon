@@ -28,6 +28,7 @@
       "keys": [
         "group-apps",
         "scroll-behavior",
+        "reverse-scrolling",
         "left-click-action",
         "middle-click-action",
         "show-all-workspaces"
@@ -114,6 +115,12 @@
       "Cycle apps": 2,
       "Cycle windows in group": 3
     }
+  },
+  "reverse-scrolling" : {
+      "type" : "switch",
+      "default" : false,
+      "description" : "Reverse mouse wheel scroll direction",
+      "dependency": "scroll-behavior>1"
   },
   "left-click-action": {
     "type": "combobox",
