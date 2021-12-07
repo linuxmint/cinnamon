@@ -480,6 +480,28 @@ class AppGroup {
         this.label.hide();
     }
 
+    cycleWindows(step) {
+        let lastFocused, focusedIndex, z, count;
+        // Identifies last/current focused window from group (focused group or thumbnails)
+        lastFocused = this.groupState.lastFocused;
+        focusedIndex = findIndex(this.groupState.metaWindows, function(metaWindow) {
+            return metaWindow === lastFocused;
+        });
+        count = this.groupState.metaWindows.length - 1;
+
+        // Set next Window index (z) to focus
+        z = focusedIndex + step
+        // cycle on borders
+        if (z < 0) {
+            z = count;
+        } else if (z > count) {
+            z = 0;
+        }
+
+        let _window = this.groupState.metaWindows[z];
+        Main.activateWindow(_window, global.get_current_time());
+    }
+
     onEnter() {
         if (this.state.panelEditMode) return false;
 

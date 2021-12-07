@@ -83,6 +83,10 @@ const constants = {
         Left: 2,
         Right: 3,
     },
+    CycleStep: {
+        Forward: 1,
+        Backward: -1,
+    },
     autoStartStrDir: './.config/autostart',
 };
 

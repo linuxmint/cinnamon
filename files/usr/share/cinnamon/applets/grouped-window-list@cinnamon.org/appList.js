@@ -165,6 +165,47 @@ class AppList {
         }
     }
 
+    cycleApps(step) {
+        let lastFocused, focusedIndex, z, count;
+        // Get last focused metaWindow
+        lastFocused = this.listState.lastFocused;
+        // If there is no lastFocused window, select frist lastFocused from first app
+        if (!lastFocused) {
+            lastFocused = this.appList[0].groupState.lastFocused;
+        }
+        // Get the first index of the group with app equals the lastFocusedApp
+        // and has lastFocused windows in its metaWindows array.
+        focusedIndex = findIndex(this.appList, function(appGroup) {
+            return appGroup.groupState.metaWindows.length > 0 &&
+                appGroup.groupState.metaWindows.includes(lastFocused);
+        });
+        count = this.appList.length - 1;
+
+        // Preparation to search the next AppGroup index (z) to focus
+        z = focusedIndex + step
+
+        // The loop below finds the final AppGroup index to focus
+        let limit = count * 2;
+
+        while (!this.appList[z] || !this.appList[z].groupState.lastFocused) {
+            limit--;
+            z += step
+            if (limit < 0) {
+                if (count === 0) {
+                    z = 0;
+                }
+                break;
+            } else if (z < 0) {
+                z = count;
+            } else if (z > count) {
+                z = 0;
+            }
+        }
+
+        let _window = this.appList[z].groupState.lastFocused;
+        Main.activateWindow(_window, global.get_current_time());
+    }
+
     reloadList() {
         let windows;
         windows = this.metaWorkspace.list_windows();
