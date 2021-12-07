@@ -321,6 +321,8 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'show-apps-order-timeout', value: 'showAppsOrderTimeout', cb: null},
             {key: 'super-num-hotkeys', value: 'SuperNumHotkeys', cb: this.bindAppKeys},
             {key: 'cycleMenusHotkey', value: 'cycleMenusHotkey', cb: this.bindAppKeys},
+            {key: 'cycleAppsForwardHotkey', value: 'cycleAppsForwardHotkey', cb: this.bindAppKeys},
+            {key: 'cycleAppsBackwardHotkey', value: 'cycleAppsBackwardHotkey', cb: this.bindAppKeys},
             {key: 'enable-hover-peek', value: 'enablePeek', cb: null},
             {key: 'onclick-thumbnails', value: 'onClickThumbs', cb: null},
             {key: 'hover-peek-opacity', value: 'peekOpacity', cb: null},
@@ -466,6 +468,12 @@ class GroupedWindowListApplet extends Applet.Applet {
         Main.keybindingManager.addHotKey('launch-cycle-menus', this.state.settings.cycleMenusHotkey, () =>
             this.cycleMenus()
         );
+        Main.keybindingManager.addHotKey('launch-cycle-apps-forward', this.state.settings.cycleAppsForwardHotkey, () =>
+            this.cycleApps(CycleStep.Forward)
+        );
+        Main.keybindingManager.addHotKey('launch-cycle-apps-backward', this.state.settings.cycleAppsBackwardHotkey, () =>
+            this.cycleApps(CycleStep.Backward)
+        );
     }
 
     unbindAppKeys() {
@@ -501,6 +509,10 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     cycleMenus() {
         this.getCurrentAppList().cycleMenus();
+    }
+
+    cycleApps(step) {
+        this.getCurrentAppList().cycleApps(step);
     }
 
     handleMonitorWindowsPrefsChange(value) {

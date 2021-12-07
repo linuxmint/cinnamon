@@ -50,6 +50,8 @@
       "title" : "Hot Keys",
       "keys": [
         "cycleMenusHotkey",
+        "cycleAppsForwardHotkey",
+        "cycleAppsBackwardHotkey",
         "show-apps-order-hotkey",
         "show-apps-order-timeout",
         "super-num-hotkeys"
@@ -175,6 +177,16 @@
     "type": "keybinding",
     "default": "",
     "description": "Global hotkey for cycling through thumbnail menus"
+  },
+  "cycleAppsForwardHotkey": {
+    "type": "keybinding",
+    "default": "",
+    "description": "Cycle apps forward"
+  },
+  "cycleAppsBackwardHotkey": {
+    "type": "keybinding",
+    "default": "",
+    "description": "Cycle apps backward"
   },
   "show-apps-order-hotkey": {
     "type": "keybinding",
