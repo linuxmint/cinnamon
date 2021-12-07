@@ -691,7 +691,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             // thumbnail or left-click cycle
             if (sourceFromAppGroup) {
                 isAppScroll = false;
-                direction = e ? e.get_scroll_direction() : ScrollDirection.Down;
+                direction = e ? e.get_scroll_direction() : ScrollDirection.Right;
                 source = sourceFromAppGroup;
             } else { // scroll wheel cycle
                 isAppScroll = this.state.settings.scrollBehavior === ScrollBehavior.CycleApps;
@@ -728,12 +728,8 @@ class GroupedWindowListApplet extends Applet.Applet {
             }
 
             // Preparation to search the next AppGroup/Window index to focus
-            // Also support horizontal scroll
-            let isLeftClickCycle = (
-                this.state.settings.leftClickAction === LeftClickAction.CycleWindowsInGroup &&
-                !e && sourceFromAppGroup
-            )
-            let isReverseScrolling = isLeftClickCycle?false:this.state.settings.reverseScrolling;
+            // Also support horizontal scroll and reverse mouse wheel scrolling
+            let isReverseScrolling = this.state.settings.reverseScrolling;
             let step;
             if ( (direction === ScrollDirection.Up && !isReverseScrolling) ||
                  (direction === ScrollDirection.Down && isReverseScrolling) ||
