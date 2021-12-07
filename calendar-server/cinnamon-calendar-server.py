@@ -22,13 +22,23 @@ from gi.repository import Cinnamon
 BUS_NAME = "org.cinnamon.CalendarServer"
 BUS_PATH = "/org/cinnamon/CalendarServer"
 
-class CalendarInfo():
+STATUS_UNKNOWN = 0
+STATUS_NO_CALENDARS = 1
+STATUS_HAS_CALENDARS = 2
+
+class CalendarInfo(GObject.Object):
+    __gsignals__ = {
+        "color-changed": (GObject.SignalFlags.RUN_LAST, None, ()),
+    }
     def __init__(self, source, client):
+        super(CalendarInfo, self).__init__()
         # print(source, client)
         self.source = source
         self.client = client
 
-        self.color = source.get_extension(EDataServer.SOURCE_EXTENSION_CALENDAR).get_color()
+        self.extension = source.get_extension(EDataServer.SOURCE_EXTENSION_CALENDAR)
+        self.color = self.extension.get_color()
+        self.color_prop_listener_id = self.extension.connect("notify::color", self.ext_color_prop_changed)
 
         self.start = None
         self.end = None
@@ -38,6 +48,11 @@ class CalendarInfo():
         self.events = []
 
     def destroy(self):
+        self.extension.disconnect(self.color_prop_listener_id)
+        self.extension = None
+
+        self.disconnect(self.owner_color_signal_id)
+
         if self.view_cancellable != None:
             self.view_cancellable.cancel()
 
@@ -45,22 +60,27 @@ class CalendarInfo():
             self.view.stop()
         self.view = None
 
+    def ext_color_prop_changed(self, extension, pspect, data=None):
+        self.color = self.extension.get_color()
+        self.emit("color-changed")
+
 class Event():
     def __init__(self, uid, color, summary, all_day, start_timet, end_timet, mod_timet):
         self.__dict__.update(locals())
 
 class CalendarServer(Gio.Application):
-    def __init__(self):
+    def __init__(self, hold=False):
         Gio.Application.__init__(self,
                                  application_id=BUS_NAME,
                                  inactivity_timeout=20000,
                                  flags=Gio.ApplicationFlags.REPLACE |
                                        Gio.ApplicationFlags.ALLOW_REPLACEMENT |
                                        Gio.ApplicationFlags.IS_SERVICE)
+        self._hold = hold
         self.bus_connection = None
         self.interface = None
         self.registry = None
-        self.registery_watcher = None
+        self.registry_watcher = None
         self.client_appeared_id = 0
         self.client_disappeared_id = 0
 
@@ -99,9 +119,7 @@ class CalendarServer(Gio.Application):
     def do_startup(self):
         Gio.Application.do_startup(self)
 
-        # This makes the inactivity timeout work. Otherwise timeout is fixed at 10s after startup.
         self.hold()
-        self.release()
 
         EDataServer.SourceRegistry.new(None, self.got_registry_callback)
 
@@ -115,6 +133,8 @@ class CalendarServer(Gio.Application):
             print(e)
             self.quit()
 
+        self.update_status()
+
         self.registry_watcher = EDataServer.SourceRegistryWatcher.new(self.registry, None)
 
         self.client_appeared_id = self.registry_watcher.connect("appeared", self.source_appeared)
@@ -125,20 +145,28 @@ class CalendarServer(Gio.Application):
         # the callbacks can process them)
         self.registry_watcher.reclaim()
 
+        if not self._hold:
+            self.release()
+
     def source_appeared(self, watcher, source):
-        print(source.get_display_name())
+        print("Discovered calendar: ", source.get_display_name())
+
+        self.hold()
         ECal.Client.connect(source, ECal.ClientSourceType.EVENTS, 10, None, self.ecal_client_connected, source)
 
         # ??? should be (self, source, res) but we get the client instead
     def ecal_client_connected(self, c, res, source):
+        self.release()
+
         try:
             client = ECal.Client.connect_finish(res)
             client.set_default_timezone(self.zone)
 
             calendar = CalendarInfo(source, client)
+            calendar.owner_color_signal_id = calendar.connect("color-changed", self.source_color_changed)
             self.calendars[source.get_uid()] = calendar
 
-            self.interface.set_property("has-calendars", True)
+            self.update_status()
 
             if self.current_month_start != 0 and self.current_month_end != 0:
                 self.create_view_for_calendar(calendar)
@@ -146,6 +174,9 @@ class CalendarServer(Gio.Application):
             # what to do
             print("couldn't connect to source", e.message)
             return
+
+    def source_color_changed(self, calendar):
+        self.create_view_for_calendar(calendar)
 
     def source_disappeared(self, watcher, source):
         try:
@@ -158,10 +189,21 @@ class CalendarServer(Gio.Application):
         calendar.destroy()
 
         del self.calendars[source.get_uid()]
-        if len(self.calendars) > 0:
-            return
 
-        self.interface.set_property("has-calendars", False)
+        self.update_status()
+
+    def update_status(self):
+        status = STATUS_NO_CALENDARS
+
+        enabled_sources = self.registry.list_enabled(EDataServer.SOURCE_EXTENSION_CALENDAR)
+        for source in enabled_sources:
+            if self.is_relevant_source(None, source):
+                status = STATUS_HAS_CALENDARS
+
+        self.interface.set_property("status", status)
+
+        if status == STATUS_NO_CALENDARS:
+            self.exit()
 
     def is_relevant_source(self, watcher, source):
         relevant = source.has_extension(EDataServer.SOURCE_EXTENSION_CALENDAR) and \
@@ -171,6 +213,9 @@ class CalendarServer(Gio.Application):
     def handle_set_time_range(self, iface, inv, time_since, time_until, force_reload):
         print("SET TIME: from %s to %s" % (GLib.DateTime.new_from_unix_local(time_since).format_iso8601(),
                             GLib.DateTime.new_from_unix_local(time_until).format_iso8601()))
+
+        self.hold()
+        self.release()
 
         if time_since == self.current_month_start and time_until == self.current_month_end:
             if not force_reload:
@@ -195,6 +240,8 @@ class CalendarServer(Gio.Application):
         self.interface.complete_exit(inv)
 
     def create_view_for_calendar(self, calendar):
+        self.hold()
+
         if calendar.view_cancellable != None:
             calendar.view_cancellable.cancel()
         calendar.view_cancellable = Gio.Cancellable()
@@ -215,6 +262,8 @@ class CalendarServer(Gio.Application):
         calendar.client.get_view(query, calendar.view_cancellable, self.got_calendar_view, calendar)
 
     def got_calendar_view(self, client, res, calendar):
+        self.release()
+
         if calendar.view_cancellable.is_cancelled():
             return
 
@@ -245,6 +294,8 @@ class CalendarServer(Gio.Application):
     def handle_new_or_modified_objects(self, view, objects, calendar):
         if (calendar.view_cancellable.is_cancelled()):
             return
+
+        self.hold()
 
         events = []
 
@@ -302,6 +353,8 @@ class CalendarServer(Gio.Application):
                 events.append(event)
         if len(events) > 0:
             self.emit_events_added_or_updated(calendar, events)
+
+        self.release()
 
     def recurrence_generated(self, ical_comp, instance_start, instance_end, calendar, cancellable):
         if calendar.view_cancellable.is_cancelled():
@@ -416,8 +469,9 @@ class CalendarServer(Gio.Application):
             self.interface.emit_events_removed(uids_string)
 
     def exit(self):
-        self.registry_watcher.disconnect(self.client_appeared_id)
-        self.registry_watcher.disconnect(self.client_disappeared_id)
+        if self.registry_watcher != None:
+            self.registry_watcher.disconnect(self.client_appeared_id)
+            self.registry_watcher.disconnect(self.client_disappeared_id)
 
         for uid in self.calendars.keys():
             self.calendars[uid].destroy()
@@ -427,11 +481,19 @@ class CalendarServer(Gio.Application):
 def main():
     setproctitle("cinnamon-calendar-server")
 
-    server = CalendarServer()
+    # For debugging, this will keep the process alive instead of exiting after 10s
+    hold = False
+    if len(sys.argv) > 1 and sys.argv[1] == "hold":
+        print("idle exit disabled...")
+        hold = True
+
+    server = CalendarServer(hold)
     signal.signal(signal.SIGINT, lambda s, f: server.exit())
     signal.signal(signal.SIGTERM, lambda s, f: server.exit())
 
-    server.run(sys.argv)
+    # Only pass the first argument to the GApplication - or it will
+    # complain the IS_SERVICE flag doesn't support arguments.
+    server.run([sys.argv[0]])
     return 0
 
 if __name__ == "__main__":

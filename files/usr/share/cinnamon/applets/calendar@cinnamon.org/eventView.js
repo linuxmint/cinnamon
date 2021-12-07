@@ -3,7 +3,6 @@
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const Goa = imports.gi.Goa;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Signals = imports.signals;
@@ -18,6 +17,10 @@ const Main = imports.ui.main;
 const Util = imports.misc.util;
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
+
+const STATUS_UNKNOWN = 0
+const STATUS_NO_CALENDARS = 1
+const STATUS_HAS_CALENDARS = 2
 
 // TODO: this is duplicated from applet.js
 const DATE_FORMAT_FULL = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A, %B %-e, %Y");
@@ -131,6 +134,7 @@ class EventDataList {
 
         if (existing !== undefined && event_data.equal(existing)) {
             existing.last_request_timestamp = last_request_timestamp;
+            existing.color = event_data.color;
             return false;
         }
 
@@ -235,13 +239,13 @@ class EventsManager {
         this.desktop_settings = desktop_settings;
         this._calendar_server = null;
         this.current_month_year = null;
-        this.current_selected_date = null;
+        this.current_selected_date = GLib.DateTime.new_from_unix_local(0);
 
         this.last_update_timestamp = 0;
         this.events_by_date = {};
 
         this._inited = false;
-        this._has_calendars = false;
+        this._cached_state = STATUS_UNKNOWN;
 
         this._gc_timer_id = 0;
 
@@ -262,40 +266,6 @@ class EventsManager {
                 null,
                 this._calendar_server_ready.bind(this)
             );
-        }
-
-        Goa.Client.new(null, this._goa_client_new_finished.bind(this));
-    }
-
-    _goa_client_new_finished(source, res) {
-        try {
-            this.goa_client = Goa.Client.new_finish(res);
-            this.goa_client.connect("account-added", this._update_goa_client_has_calendars.bind(this));
-            this.goa_client.connect("account-changed", this._update_goa_client_has_calendars.bind(this));
-            this.goa_client.connect("account-removed", this._update_goa_client_has_calendars.bind(this));
-        } catch (e) {
-            log("could not connect to calendar server process: " + e);
-        }
-    }
-
-    _update_goa_client_has_calendars(client, changed_objects) {
-        // goa can tell us if there are any accounts with enabled
-        // calendars. Asking our calendar server ("has-calenders")
-        // is useless since only certain actions activate it.
-
-        let objects = this.goa_client.get_accounts();
-        let any_calendars = false;
-
-        for (let obj of objects) {
-            let account = obj.get_account()
-            if (!account.calendar_disabled) {
-                any_calendars = true;
-            }
-        }
-
-        if (any_calendars !== this._has_calendars) {
-            this._has_calendars = any_calendars;
-            this.emit("has-calendars-changed");
         }
     }
 
@@ -318,7 +288,11 @@ class EventsManager {
                 this._handle_client_disappeared.bind(this)
             );
 
-            this._update_goa_client_has_calendars(null, null);
+            this._calendar_server.connect(
+                "notify::status",
+                this._handle_status_notify.bind(this)
+            );
+
             this._inited = true;
 
             this.emit("events-manager-ready");
@@ -407,7 +381,28 @@ class EventsManager {
     }
 
     _handle_client_disappeared(server, uid) {
+        // A calendar was removed/disabled. Instead of picking
+        // specific matching events to remove, just rebuild the
+        // entire list.
+        this.events_by_date = {}
         this.queue_reload_today(true);
+    }
+
+    _handle_status_notify(server, pspec) {
+        if (this._calendar_server.status === this._cached_state) {
+            return;
+        }
+
+        // Never reload when the new status is STATUS_UNKNOWN - this
+        // means the server name-owner disappeared, it doesn't mean
+        // there are no calendars.
+        if (this._calendar_server.status === STATUS_UNKNOWN) {
+            return;
+        }
+
+        this._cached_state = this._calendar_server.status;
+        this.queue_reload_today(true);
+        this.emit("has-calendars-changed");
     }
 
     get_event_list() {
@@ -528,7 +523,10 @@ class EventsManager {
         return this._inited &&
                this.settings.getValue("show-events") &&
                this._calendar_server !== null &&
-               this._has_calendars;
+               // Not blocking STATUS_UNKNOWN allows our calendar to remain
+               // populated while the server is 'unowned' (sleeping), since
+               // its cached property is set to 0 when its current owner exits.
+               this._calendar_server.status !== STATUS_NO_CALENDARS;
     }
 }
 Signals.addSignalMethods(EventsManager.prototype);

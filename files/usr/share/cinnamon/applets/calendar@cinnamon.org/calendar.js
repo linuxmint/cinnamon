@@ -162,7 +162,7 @@ class Calendar {
         this.events_enabled = true;
         this.events_manager.connect("events-updated", this._events_updated.bind(this));
         this.events_manager.connect("events-manager-ready", this._update_events_enabled.bind(this));
-        this.events_manager.connect("calendars-changed", this._update_events_enabled.bind(this));
+        this.events_manager.connect("has-calendars-changed", this._update_events_enabled.bind(this));
 
         // Find the ordering for month/year in the calendar heading
 
@@ -219,6 +219,7 @@ class Calendar {
 
     _update_events_enabled(em) {
         this.events_enabled = this.events_manager.is_active()
+        this._queue_update();
     }
 
     _onSettingsChange(object, key, old_val, new_val) {
@@ -392,8 +393,6 @@ class Calendar {
 
     _update(forceReload) {
         let now = new Date();
-
-        this._update_events_enabled();
 
         this._monthLabel.text = this._selectedDate.toLocaleFormat('%OB').capitalize();
         this._yearLabel.text = this._selectedDate.toLocaleFormat('%Y');

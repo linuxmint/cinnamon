@@ -246,7 +246,6 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
     _has_calendars_changed(em) {
         this.event_list.actor.visible = this.events_manager.is_active();
-        this.events_manager.select_date(this._calendar.getSelectedDate());
     }
 
     _updateClockAndDate() {

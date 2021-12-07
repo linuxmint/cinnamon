@@ -24,6 +24,10 @@
     <!-- since, until are localized time_t -->
     <property name='Since' type='x' access='read'/>
     <property name='Until' type='x' access='read'/>
-    <property name='HasCalendars' type='b' access='read'/>
+    <!-- Status- enum:
+         0: unknown
+         1: no calendars
+         2: calendars -->
+    <property name='Status' type='u' access='read'/>
   </interface>
 </node>

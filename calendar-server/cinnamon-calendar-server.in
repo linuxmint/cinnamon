@@ -3,4 +3,4 @@
 export GI_TYPELIB_PATH="@PKGLIBDIR@:@MUFFINLIBDIR@"
 export LD_LIBRARY_PATH="@PKGLIBDIR@:@MUFFINLIBDIR@"
 
-exec /usr/libexec/cinnamon/cinnamon-calendar-server.py
+exec /usr/libexec/cinnamon/cinnamon-calendar-server.py $@
