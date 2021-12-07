@@ -729,7 +729,11 @@ class GroupedWindowListApplet extends Applet.Applet {
 
             // Preparation to search the next AppGroup/Window index to focus
             // Also support horizontal scroll
-            const isReverseScrolling = this.state.settings.reverseScrolling;
+            let isLeftClickCycle = (
+                this.state.settings.leftClickAction === LeftClickAction.CycleWindowsInGroup &&
+                !e && sourceFromAppGroup
+            )
+            let isReverseScrolling = isLeftClickCycle?false:this.state.settings.reverseScrolling;
             let step;
             if ( (direction === ScrollDirection.Up && !isReverseScrolling) ||
                  (direction === ScrollDirection.Down && isReverseScrolling) ||
