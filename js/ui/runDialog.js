@@ -167,7 +167,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
         let label = new St.Label({ style_class: 'run-dialog-label',
                                    text: _("Enter a command") });
 
-        this.contentLayout.set_width(350);
+        this.contentLayout.set_width(350 * global.ui_scale);
 
         this.contentLayout.add(label, { x_align: St.Align.MIDDLE });
 
