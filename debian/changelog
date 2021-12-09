@@ -1,3 +1,11 @@
+cinnamon (5.2.5) una; urgency=medium
+
+  [ Michael Webster ]
+  * calendar: Remove using GOA for calendar source discovery.
+  * runDialog.js: Take the global.ui_scale into account when setting the dialog width.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 09 Dec 2021 11:25:23 +0000
+
 cinnamon (5.2.4) una; urgency=medium
 
   [ Michael Webster ]
