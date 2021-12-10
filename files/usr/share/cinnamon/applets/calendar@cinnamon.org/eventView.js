@@ -576,6 +576,7 @@ class EventList {
         this.no_events_button.connect('clicked', () => {
             // gnome-calendar --date is broken, just open the calendar for now.
             Util.trySpawn(["gnome-calendar"], false);
+            this.emit("launched-calendar");
         });
 
         let button_inner_box = new St.BoxLayout(
