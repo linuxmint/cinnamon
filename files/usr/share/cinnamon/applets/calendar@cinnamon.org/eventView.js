@@ -534,6 +534,7 @@ Signals.addSignalMethods(EventsManager.prototype);
 class EventList {
     constructor(settings, desktop_settings) {
         this.settings = settings;
+        this.selected_date = GLib.DateTime.new_now_local();
         this.desktop_settings = desktop_settings;
         this._no_events_timeout_id = 0;
         this._rows = []
@@ -559,8 +560,27 @@ class EventList {
                 style_class: "calendar-events-no-events-box",
                 vertical: true,
                 visible: false,
+                x_align: Clutter.ActorAlign.CENTER,
                 y_align: Clutter.ActorAlign.CENTER,
                 y_expand: true
+            }
+        );
+
+        this.no_events_button = new St.Button(
+            {
+                style_class: "calendar-events-no-events-button",
+                reactive: GLib.find_program_in_path("gnome-calendar")
+            }
+        );
+
+        this.no_events_button.connect('clicked', () => {
+            // gnome-calendar --date is broken, just open the calendar for now.
+            Util.trySpawn(["gnome-calendar"], false);
+        });
+
+        let button_inner_box = new St.BoxLayout(
+            {
+                vertical: true
             }
         );
 
@@ -580,8 +600,10 @@ class EventList {
                 y_align: Clutter.ActorAlign.CENTER
             }
         );
-        this.no_events_box.add_actor(no_events_icon);
-        this.no_events_box.add_actor(no_events_label);
+        button_inner_box.add_actor(no_events_icon);
+        button_inner_box.add_actor(no_events_label);
+        this.no_events_button.add_actor(button_inner_box)
+        this.no_events_box.add_actor(this.no_events_button);
         this.actor.add_actor(this.no_events_box);
 
         this.events_box = new St.BoxLayout(
@@ -614,6 +636,7 @@ class EventList {
 
     set_date(gdate) {
         this.selected_date_label.set_text(gdate.format(DATE_FORMAT_FULL));
+        this.selected_date = gdate;
     }
 
     set_events(event_data_list, delay_no_events_box) {

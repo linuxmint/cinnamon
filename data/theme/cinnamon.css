@@ -555,11 +555,29 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .calendar-events-no-events-box {
+}
 
+.calendar-events-no-events-button {
+    margin: 6px 0 6px 0;
+    padding: 6px;
+    border-radius: 4px;
+}
+
+.calendar-events-no-events-button:active:active {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(255,255,255,0.5);
+    background-gradient-end: rgba(255,255,255,0.08);
+    box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+}
+
+.calendar-events-no-events-button:hover {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(255,255,255,0.1);
+    background-gradient-end: rgba(255,255,255,0.04);
+    box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
 }
 
 .calendar-events-no-events-icon {
-
 }
 
 .calendar-events-no-events-label {

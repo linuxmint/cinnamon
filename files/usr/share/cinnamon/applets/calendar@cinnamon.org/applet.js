@@ -22,24 +22,6 @@ String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
-function _onVertSepRepaint (area)
-{
-    let cr = area.get_context();
-    let themeNode = area.get_theme_node();
-    let [width, height] = area.get_surface_size();
-    let stippleColor = themeNode.get_color('-stipple-color');
-    let stippleWidth = themeNode.get_length('-stipple-width');
-    let x = Math.floor(width/2) + 0.5;
-    cr.moveTo(x, 0);
-    cr.lineTo(x, height);
-    Clutter.cairo_set_source_color(cr, stippleColor);
-    cr.setDash([1, 3], 1); // Hard-code for now
-    cr.setLineWidth(stippleWidth);
-    cr.stroke();
-
-    cr.$dispose();
-};
-
 class CinnamonCalendarApplet extends Applet.TextApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
