@@ -563,21 +563,15 @@ StScrollBar StButton#vhandle:hover {
     border-radius: 4px;
 }
 
-.calendar-events-no-events-button:hover:active {
+.calendar-events-no-events-button:hover {
     background-gradient-direction: vertical;
-    background-gradient-start: rgba(255,255,255,0.5);
+    background-gradient-start: rgba(255,255,255,0.2);
     background-gradient-end: rgba(255,255,255,0.08);
     box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
 }
 
-.calendar-events-no-events-button:hover {
-    background-gradient-direction: vertical;
-    background-gradient-start: rgba(255,255,255,0.1);
-    background-gradient-end: rgba(255,255,255,0.04);
-    box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
-}
-
 .calendar-events-no-events-icon {
+    color: #cccccc;
 }
 
 .calendar-events-no-events-label {
@@ -679,13 +673,14 @@ StScrollBar StButton#vhandle:hover {
     width: 200px;
 }
 
-.calendar-today-home-button {
+.calendar-today-home-button,
+.calendar-today-home-button-enabled {
     margin: 6px 0 6px 0;
     padding: 6px;
     border-radius: 4px;
 }
 
-.calendar-today-home-button:hover {
+.calendar-today-home-button-enabled:hover {
     background-gradient-direction: vertical;
     background-gradient-start: rgba(255,255,255,0.2);
     background-gradient-end: rgba(255,255,255,0.08);

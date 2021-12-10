@@ -238,6 +238,13 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         }
 
         this.go_home_button.reactive = !this._calendar.todaySelected();
+        if (this._calendar.todaySelected()) {
+            this.go_home_button.reactive = false;
+            this.go_home_button.set_style_class_name("calendar-today-home-button");
+        } else {
+            this.go_home_button.reactive = true;
+            this.go_home_button.set_style_class_name("calendar-today-home-button-enabled");
+        }
 
         this.set_applet_label(label_string);
 
