@@ -79,8 +79,15 @@ class ScreenshotService {
         let [x, y, width, height, flash, filename, callback] = params;
 
         let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_area(false, x, y, width, height, filename,
-            Lang.bind(this, this._onScreenshotComplete, flash, filename, invocation));
+        screenshot.screenshot_area(
+            false,
+            x * global.ui_scale,
+            y * global.ui_scale,
+            width * global.ui_scale,
+            height * global.ui_scale,
+            filename,
+            Lang.bind(this, this._onScreenshotComplete, flash, filename, invocation)
+        );
     }
 
     ScreenshotWindowAsync(params, invocation) {
