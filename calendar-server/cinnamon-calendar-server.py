@@ -335,10 +335,7 @@ class CalendarServer(Gio.Application):
                 else:
                     end_timet = start_timet + (60 * 30) # Default to 30m if the end time is bad.
 
-                mod_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.LASTMODIFIED_PROPERTY)
-                ical_time_modified = mod_prop.get_lastmodified()
-                # Modified time "last-modified" is utc
-                mod_timet = ical_time_modified.as_timet()
+                mod_timet = self.get_mod_timet(ical_comp)
 
                 event = Event(
                     self.create_uid(calendar, comp),
@@ -382,11 +379,7 @@ class CalendarServer(Gio.Application):
         all_day = instance_start.is_date()
         start_timet = instance_start.as_timet_with_zone(dts_timezone)
         end_timet = instance_end.as_timet_with_zone(dte_timezone)
-
-        mod_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.LASTMODIFIED_PROPERTY)
-        ical_time_modified = mod_prop.get_lastmodified()
-        # Modified time "last-modified" is utc
-        mod_timet = ical_time_modified.as_timet()
+        mod_timet = self.get_mod_timet(ical_comp)
 
         event = Event(
             self.create_uid(calendar, comp),
@@ -426,6 +419,25 @@ class CalendarServer(Gio.Application):
             all_events.add_value(event_var)
 
         self.interface.emit_events_added_or_updated(all_events.end())
+
+    def get_mod_timet(self, ical_comp):
+        # Both last-modified and created are optional. Try one, then the other,
+        # then just return 0. The value isn't used except for comparison, when
+        # checking if a received event is an update for an already existing one
+        # in the applet.
+        mod_timet = 0
+
+        mod_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.LASTMODIFIED_PROPERTY)
+        if mod_prop != None:
+            ical_time_modified = mod_prop.get_lastmodified()
+            mod_timet = ical_time_modified.as_timet()
+        else:
+            created_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.CREATED_PROPERTY)
+            if created_prop != None:
+                ical_time_created = created_prop.get_created()
+                mod_timet = ical_time_created.as_timet()
+
+        return mod_timet
 
     def ical_time_get_timet(self, client, ical_time, prop):
         tzid  = prop.get_first_parameter(ICalGLib.ParameterKind.TZID_PARAMETER)
