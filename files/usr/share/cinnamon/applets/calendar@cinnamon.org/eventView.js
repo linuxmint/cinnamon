@@ -18,9 +18,9 @@ const Util = imports.misc.util;
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
 
-const STATUS_UNKNOWN = 0
-const STATUS_NO_CALENDARS = 1
-const STATUS_HAS_CALENDARS = 2
+const STATUS_UNKNOWN = 0;
+const STATUS_NO_CALENDARS = 1;
+const STATUS_HAS_CALENDARS = 2;
 
 // TODO: this is duplicated from applet.js
 const DATE_FORMAT_FULL = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A, %B %-e, %Y");
@@ -40,7 +40,7 @@ function date_only(gdatetime) {
         gdatetime.get_year(),
         gdatetime.get_month(),
         gdatetime.get_day_of_month(), 0, 0, 0
-    )
+    );
 
     return date;
 }
@@ -50,13 +50,13 @@ function month_year_only(gdatetime) {
         gdatetime.get_year(),
         gdatetime.get_month(),
         1, 0, 0, 0
-    )
+    );
 
     return month_year_only;
 }
 
 function format_timespan(timespan) {
-    let minutes = Math.floor(timespan / GLib.TIME_SPAN_MINUTE)
+    let minutes = Math.floor(timespan / GLib.TIME_SPAN_MINUTE);
 
     if (minutes < 10) {
         return ["imminent", _("Starting in a few minutes")];
@@ -73,7 +73,7 @@ function format_timespan(timespan) {
         let later = now.add_hours(hours);
 
         if (later.get_hour() > 18) {
-            return ["", _("This evening")]
+            return ["", _("This evening")];
         }
 
         return ["", _("Starting later today")];
@@ -110,7 +110,7 @@ class EventData {
             this.span = 1;
         }
 
-        this.summary = summary
+        this.summary = summary;
         this.color = color;
         // This is the time_t for when event was last modified by e-d-s
         this.modified = mod_time;
@@ -154,9 +154,9 @@ class EventDataList {
         // If the event list is updated and the timestamps haven't changed, only the variable details
         // of the events are updated - time till start, style changes, etc...
         this.timestamp = GLib.get_monotonic_time();
-        this.gdate_only = gdate_only
+        this.gdate_only = gdate_only;
         this.length = 0;
-        this._events = {}
+        this._events = {};
     }
 
     add_or_update(event_data, last_request_timestamp) {
@@ -202,7 +202,7 @@ class EventDataList {
 
         to_remove.forEach((id) => {
             this.delete(id);
-        })
+        });
     }
 
     get_event_list() {
@@ -210,7 +210,7 @@ class EventDataList {
 
         let events_as_array = [];
         for (let id in this._events) {
-            events_as_array.push(this._events[id])
+            events_as_array.push(this._events[id]);
         }
 
         // chrono order for non-current day
@@ -223,8 +223,8 @@ class EventDataList {
         }
 
         // for the current day keep all-day events just above the current or first pending event
-        let all_days = []
-        let final_list = []
+        let all_days = [];
+        let final_list = [];
 
         for (let i = 0; i < events_as_array.length; i++) {
             if (events_as_array[i].all_day) {
@@ -375,7 +375,7 @@ class EventsManager {
     _handle_added_or_updated_events(server, varray) {
         let changed = false;
 
-        let events = varray.unpack()
+        let events = varray.unpack();
         for (let n = 0; n < events.length; n++) {
             let data = new EventData(events[n], this.last_update_timestamp);
             // don't loop endlessly in case of a bugged event
@@ -412,7 +412,7 @@ class EventsManager {
     }
 
     _handle_removed_events(server, uids_string) {
-        let uids = uids_string.split("::")
+        let uids = uids_string.split("::");
         for (let hash in this.events_by_date) {
             let event_data_list = this.events_by_date[hash];
 
@@ -430,7 +430,7 @@ class EventsManager {
         // A calendar was removed/disabled. Instead of picking
         // specific matching events to remove, just rebuild the
         // entire list.
-        this.events_by_date = {}
+        this.events_by_date = {};
         this.queue_reload_today(true);
     }
 
@@ -474,14 +474,14 @@ class EventsManager {
         }
 
         // get first day of month
-        let day_one = month_year_only(month_year)
-        let week_day = day_one.get_day_of_week()
+        let day_one = month_year_only(month_year);
+        let week_day = day_one.get_day_of_week();
         let week_start = Cinnamon.util_get_week_start();
 
         // back up to the start of the week preceeding day 1
-        let start = day_one.add_days( -(week_day - week_start) )
+        let start = day_one.add_days( -(week_day - week_start) );
         // The calendar has 42 boxes
-        let end = start.add_days(42).add_seconds(-1)
+        let end = start.add_days(42).add_seconds(-1);
 
         this._calendar_server.call_set_time_range(start.to_unix(), end.to_unix(), force, null, this.call_finished.bind(this));
 
@@ -504,7 +504,7 @@ class EventsManager {
     }
 
     queue_reload_today(force) {
-        this._cancel_reload_today()
+        this._cancel_reload_today();
 
         if (force) {
             this._force_reload_pending = true;
@@ -583,7 +583,7 @@ class EventList {
         this.selected_date = GLib.DateTime.new_now_local();
         this.desktop_settings = desktop_settings;
         this._no_events_timeout_id = 0;
-        this._rows = []
+        this._rows = [];
         this._current_event_data_list_timestamp = 0;
 
         this.actor = new St.BoxLayout(
@@ -598,7 +598,7 @@ class EventList {
             {
                 style_class: "calendar-events-date-label"
             }
-        )
+        );
         this.actor.add_actor(this.selected_date_label);
 
         this.no_events_box = new St.BoxLayout(
@@ -649,7 +649,7 @@ class EventList {
         );
         button_inner_box.add_actor(no_events_icon);
         button_inner_box.add_actor(no_events_label);
-        this.no_events_button.add_actor(button_inner_box)
+        this.no_events_button.add_actor(button_inner_box);
         this.no_events_box.add_actor(this.no_events_button);
         this.actor.add_actor(this.no_events_box);
 
@@ -696,7 +696,7 @@ class EventList {
 
         this.events_box.get_children().forEach((actor) => {
             actor.destroy();
-        })
+        });
 
         this._rows = [];
 
@@ -710,7 +710,7 @@ class EventList {
             // to deliver some events if there are any.
             if (delay_no_events_box) {
                 this._no_events_timeout_id = Mainloop.timeout_add(600, Lang.bind(this, function() {
-                    this._no_events_timeout_id = 0
+                    this._no_events_timeout_id = 0;
                     this.no_events_box.show();
                     return GLib.SOURCE_REMOVE;
                 }));
@@ -746,7 +746,7 @@ class EventList {
             row.connect("view-event", Lang.bind(this, (row, uuid) => {
                 this.emit("launched-calendar");
                 Util.trySpawn(["gnome-calendar", "--uuid", uuid], false);
-            }))
+            }));
 
             this.events_box.add_actor(row.actor);
 
@@ -788,11 +788,11 @@ class EventRow {
 
         this.actor.connect("enter-event", Lang.bind(this, () => {
             this.actor.add_style_pseudo_class("hover");
-        }))
+        }));
 
         this.actor.connect("leave-event", Lang.bind(this, () => {
             this.actor.remove_style_pseudo_class("hover");
-        }))
+        }));
 
         if (GLib.find_program_in_path("gnome-calendar")) {
             this.actor.connect("button-press-event", Lang.bind(this, (actor, event) => {
@@ -808,7 +808,7 @@ class EventRow {
                 style_class: "calendar-event-color-strip",
                 style: `background-color: ${event.color};`
             }
-        )
+        );
 
         this.actor.add(color_strip);
 
@@ -864,8 +864,8 @@ class EventRow {
     }
 
     update_variations() {
-        let time_until_start = this.event.start.difference(GLib.DateTime.new_now_local())
-        let time_until_finish = this.event.end.difference(GLib.DateTime.new_now_local())
+        let time_until_start = this.event.start.difference(GLib.DateTime.new_now_local());
+        let time_until_finish = this.event.end.difference(GLib.DateTime.new_now_local());
 
         let today = date_only(GLib.DateTime.new_now_local());
         let selected_is_today = dt_equals(today, this.selected_date);
