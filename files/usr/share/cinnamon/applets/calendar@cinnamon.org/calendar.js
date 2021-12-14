@@ -205,7 +205,7 @@ class Calendar {
     }
 
     _queue_update() {
-        this._cancel_update()
+        this._cancel_update();
 
         this.update_id = Mainloop.idle_add(Lang.bind(this, this._idle_do_update));
     }
@@ -218,7 +218,7 @@ class Calendar {
     }
 
     _update_events_enabled(em) {
-        this.events_enabled = this.events_manager.is_active()
+        this.events_enabled = this.events_manager.is_active();
         this._queue_update();
     }
 
@@ -437,8 +437,8 @@ class Calendar {
                         }
                     )
                 }
-            )
-            dot_box.connect('allocate', this._allocate_dot_box.bind(this))
+            );
+            dot_box.connect('allocate', this._allocate_dot_box.bind(this));
             group.add_actor(dot_box);
 
             let iterStr = iter.toUTCString();
@@ -452,9 +452,9 @@ class Calendar {
 
             let styleClass = 'calendar-day-base calendar-day';
             if (_isWorkDay(iter))
-                styleClass += ' calendar-work-day'
+                styleClass += ' calendar-work-day';
             else
-                styleClass += ' calendar-nonwork-day'
+                styleClass += ' calendar-nonwork-day';
 
             // Hack used in lieu of border-collapse - see cinnamon.css
             if (row == 2)
@@ -554,7 +554,7 @@ class Calendar {
             let start_x = (box_width - total_child_width) / 2;
 
             let cbox = new Clutter.ActorBox();
-            cbox.x1 = start_x
+            cbox.x1 = start_x;
             cbox.y1 = dot_row * nh;
             cbox.x2 = cbox.x1 + nw;
             cbox.y2 = cbox.y1 + nh;

@@ -18,10 +18,6 @@ const DAY_FORMAT = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A");
 const DATE_FORMAT_SHORT = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%B %-e, %Y");
 const DATE_FORMAT_FULL = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A, %B %-e, %Y");
 
-String.prototype.capitalize = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-}
-
 class CinnamonCalendarApplet extends Applet.TextApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
@@ -125,7 +121,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            let item = new PopupMenu.PopupMenuItem(_("Date and Time Settings"))
+            let item = new PopupMenu.PopupMenuItem(_("Date and Time Settings"));
             item.connect("activate", Lang.bind(this, this._onLaunchSettings));
 
             this.menu.addMenuItem(item);
