@@ -24,6 +24,11 @@ const STATUS_HAS_CALENDARS = 2
 
 // TODO: this is duplicated from applet.js
 const DATE_FORMAT_FULL = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A, %B %-e, %Y");
+const DAY_FORMAT = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A");
+
+function locale_cap(str) {
+    return str.charAt(0).toLocaleUpperCase() + str.slice(1);
+}
 
 function js_date_to_gdatetime(js_date) {
     let unix = js_date.getTime() / 1000; // getTime returns ms
@@ -677,7 +682,7 @@ class EventList {
     }
 
     set_date(gdate) {
-        this.selected_date_label.set_text(gdate.format(DATE_FORMAT_FULL));
+        this.selected_date_label.set_text(locale_cap(gdate.format(DATE_FORMAT_FULL)));
         this.selected_date = gdate;
     }
 
@@ -929,7 +934,7 @@ class EventRow {
                     final_str = _("Today");
                 }
                 else {
-                    final_str += this.event.start_date.format("%A");
+                    final_str += locale_cap(this.event.start_date.format(DAY_FORMAT));
                 }
 
                 final_str += " -> ";
@@ -938,7 +943,7 @@ class EventRow {
                     final_str += _("Today");
                 }
                 else {
-                    final_str += this.event.end_date.format("%A");
+                    final_str += locale_cap(this.event.end_date.format(DAY_FORMAT));
                 }
             }
 
@@ -970,7 +975,7 @@ class EventRow {
                 final_str += this.event.start.format("%x");
             }
             else {
-                final_str += this.event.start.format("%A");
+                final_str += locale_cap(this.event.start.format(DAY_FORMAT));
             }
             final_str += " -> ";
             final_str += this.event.end.format(time_format);
@@ -983,9 +988,11 @@ class EventRow {
         // Started today but ends after today
         if (this.event.ends_after_day(this.selected_date)) {
             if (this.event.ends_after_day(this.selected_date.add_days(7))) {
-                final_str += this.event.end.format(" -> %x");
+                final_str += this.event.end.format(" -> ");
+                final_str += this.event.end.format("%x");
             } else {
-                final_str += this.event.end.format(" -> %A");
+                final_str += this.event.end.format(" -> ");
+                final_str += locale_cap(this.event.end.format(DAY_FORMAT));
             }
         }
 
