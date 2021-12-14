@@ -30,17 +30,17 @@ function js_date_to_gdatetime(js_date) {
     return GLib.DateTime.new_from_unix_local(unix);
 }
 
-function get_date_only_from_datetime(gdatetime) {
-    let date_only = GLib.DateTime.new_local(
+function date_only(gdatetime) {
+    let date = GLib.DateTime.new_local(
         gdatetime.get_year(),
         gdatetime.get_month(),
         gdatetime.get_day_of_month(), 0, 0, 0
     )
 
-    return date_only;
+    return date;
 }
 
-function get_month_year_only_from_datetime(gdatetime) {
+function month_year_only(gdatetime) {
     let month_year_only = GLib.DateTime.new_local(
         gdatetime.get_year(),
         gdatetime.get_month(),
@@ -79,7 +79,7 @@ function format_timespan(timespan) {
 
 
 // GLib.DateTime.equal is broken
-function gdate_time_equals(dt1, dt2) {
+function dt_equals(dt1, dt2) {
     return dt1.to_unix() === dt2.to_unix();
 }
 
@@ -89,13 +89,22 @@ class EventData {
         this.id = id;
         this.start = GLib.DateTime.new_from_unix_local(start_time);
         this.end = GLib.DateTime.new_from_unix_local(end_time);
+
         this.all_day = all_day;
-        this.duration = all_day ? -1 : this.end.difference(this.start);
+        if (this.all_day) {
+            // An all day event can be from 00:00 to 00:00 the next day, which will end up
+            // causing it to appear for two days.
+            this.end = this.end.add_seconds(-1);
+        }
+        this.start_date = date_only(this.start);
+        this.end_date = date_only(this.end);
+        this.multi_day = !dt_equals(this.start_date, this.end_date);
+        if (this.multi_day) {
+            this.span = this.end_date.difference(this.start_date) / GLib.TIME_SPAN_DAY;
+        } else {
+            this.span = 1;
+        }
 
-        let date_only_start = get_date_only_from_datetime(this.start)
-        let date_only_today = get_date_only_from_datetime(GLib.DateTime.new_now_local())
-
-        this.is_today = gdate_time_equals(date_only_start, date_only_today);
         this.summary = summary
         this.color = color;
         // This is the time_t for when event was last modified by e-d-s
@@ -103,6 +112,26 @@ class EventData {
         // This is the last monotonic time we contacted our server to update our events. This
         // is used to cull deleted events.
         this.last_request_timestamp = last_request_timestamp;
+    }
+
+    starts_on_day(date) {
+        return dt_equals(date_only(date), this.start_date);
+    }
+
+    ends_on_day(date) {
+        return dt_equals(date_only(date), this.end_date);
+    }
+
+    started_before_day(date) {
+        return date_only(date).difference(this.start_date) > 0;
+    }
+
+    ends_after_day(date) {
+        return date_only(date).difference(this.end_date) < 0;
+    }
+
+    started_before_and_ends_after(date) {
+        return this.multi_day && this.started_before_day(date) && this.ends_after_day(date);
     }
 
     equal(other_event) {
@@ -184,7 +213,7 @@ class EventDataList {
             return a.start.to_unix() - b.start.to_unix();
         });
 
-        if (!gdate_time_equals(get_date_only_from_datetime(now), this.gdate_only)) {
+        if (!dt_equals(date_only(now), this.gdate_only)) {
             return events_as_array;
         }
 
@@ -344,19 +373,31 @@ class EventsManager {
         let events = varray.unpack()
         for (let n = 0; n < events.length; n++) {
             let data = new EventData(events[n], this.last_update_timestamp);
-            let gdate_only = get_date_only_from_datetime(data.start);
-            let hash = gdate_only.to_unix();
+            // don't loop endlessly in case of a bugged event
+            let escape = 0;
+            let date_iter = date_only(data.start);
+            do {
+                let hash = date_iter.to_unix();
 
-            if (this.events_by_date[hash] === undefined) {
-                this.events_by_date[hash] = new EventDataList(gdate_only);
-            }
-
-            if (this.events_by_date[hash].add_or_update(data, this.last_request_timestamp)) {
-                if (gdate_time_equals(gdate_only, this.current_selected_date)) {
-                    changed = true;
+                if (this.events_by_date[hash] === undefined) {
+                    this.events_by_date[hash] = new EventDataList(date_iter);
                 }
-            }
+
+                if (this.events_by_date[hash].add_or_update(data, this.last_request_timestamp)) {
+                    if (dt_equals(date_iter, this.current_selected_date)) {
+                        changed = true;
+                    }
+                }
+
+                if (data.ends_on_day(date_iter) || escape == 50) {
+                    break;
+                }
+
+                escape++;
+                date_iter = date_iter.add_days(1);
+            } while (true);
         }
+
         if (changed) {
             this._event_list.set_events(this.events_by_date[this.current_selected_date.to_unix()]);
         }
@@ -416,7 +457,7 @@ class EventsManager {
     }
 
     fetch_month_events(month_year, force) {
-        let changed_month = this.current_month_year === null || !gdate_time_equals(month_year, this.current_month_year);
+        let changed_month = this.current_month_year === null || !dt_equals(month_year, this.current_month_year);
 
         if (!changed_month && !force) {
             return;
@@ -428,7 +469,7 @@ class EventsManager {
         }
 
         // get first day of month
-        let day_one = get_month_year_only_from_datetime(month_year)
+        let day_one = month_year_only(month_year)
         let week_day = day_one.get_day_of_week()
         let week_start = Cinnamon.util_get_week_start();
 
@@ -486,16 +527,16 @@ class EventsManager {
         // useful for dealing with events.
         let gdate = js_date_to_gdatetime(date);
 
-        let gdate_only = get_date_only_from_datetime(gdate);
-        let month_year = get_month_year_only_from_datetime(gdate_only);
+        let gdate_only = date_only(gdate);
+        let month_year = month_year_only(gdate_only);
         this.fetch_month_events(month_year, force);
 
-        this._event_list.set_date(gdate);
+        this._event_list.set_date(gdate_only);
 
         let delay_no_events_box = this.current_selected_date === null;
         if (this.current_selected_date !== null) {
-            let new_month = !gdate_time_equals(get_month_year_only_from_datetime(this.current_selected_date),
-                                               get_month_year_only_from_datetime(gdate_only))
+            let new_month = !dt_equals(month_year_only(this.current_selected_date),
+                                       month_year_only(gdate_only));
             delay_no_events_box = new_month;
         }
 
@@ -512,9 +553,9 @@ class EventsManager {
 
     get_colors_for_date(js_date) {
         let gdate = js_date_to_gdatetime(js_date);
-        let date_only = get_date_only_from_datetime(gdate);
+        let gdate_only = date_only(gdate);
 
-        let event_data_list = this.events_by_date[date_only.to_unix()];
+        let event_data_list = this.events_by_date[gdate_only.to_unix()];
 
         return event_data_list !== undefined ? event_data_list.get_colors() : null;
     }
@@ -691,6 +732,7 @@ class EventList {
 
             let row = new EventRow(
                 event_data,
+                this.selected_date,
                 {
                     use_24h: this.desktop_settings.get_boolean("clock-use-24h")
                 }
@@ -726,9 +768,11 @@ class EventList {
 Signals.addSignalMethods(EventList.prototype);
 
 class EventRow {
-    constructor(event, params) {
+    constructor(event, date, params) {
         this.event = event;
         this.is_current_or_next = false;
+        this.selected_date = date;
+        this.use_24h = params.use_24h;
 
         this.actor = new St.BoxLayout(
             {
@@ -776,27 +820,14 @@ class EventRow {
             {
                 name: "label-box",
                 x_expand: true
-            });
+            }
+        );
         vbox.add_actor(label_box);
-
-        let time_format = "%l:%M %p"
-
-        if (params.use_24h) {
-            time_format = "%H:%M"
-        }
-
-        let text = null;
-
-        if (this.event.all_day) {
-            text = _("All day");
-        } else {
-            text = `${this.event.start.format(time_format)}`;
-        }
 
         this.event_time = new St.Label(
             {
                 x_align: Clutter.ActorAlign.START,
-                text: text,
+                text: "",
                 style_class: "calendar-event-time-present"
             }
         );
@@ -831,6 +862,9 @@ class EventRow {
         let time_until_start = this.event.start.difference(GLib.DateTime.new_now_local())
         let time_until_finish = this.event.end.difference(GLib.DateTime.new_now_local())
 
+        let today = date_only(GLib.DateTime.new_now_local());
+        let selected_is_today = dt_equals(today, this.selected_date);
+
         if (time_until_finish < 0) {
             this.event_time.set_style_class_name("calendar-event-time-past");
 
@@ -838,7 +872,7 @@ class EventRow {
         } else if (time_until_start > 0) {
             this.event_time.set_style_class_name("calendar-event-time-future");
 
-            if (this.event.is_today) {
+            if (selected_is_today) {
                 let [countdown_pclass, text] = format_timespan(time_until_start);
                 this.countdown_label.set_text(text);
                 this.countdown_label.add_style_pseudo_class(countdown_pclass);
@@ -849,7 +883,7 @@ class EventRow {
         } else {
             this.event_time.set_style_class_name("calendar-event-time-present");
 
-            if (this.event.all_day) {
+            if (this.event.all_day || this.event.multi_day) {
                 this.countdown_label.set_text("");
                 this.event_time.set_style_pseudo_class("all-day");
             } else {
@@ -859,6 +893,103 @@ class EventRow {
 
             this.is_current_or_next = this.event.is_today && !this.event.all_day;
         }
+
+        // Event is marked all day, just a single day.
+        if (this.event.all_day && !this.event.multi_day) {
+            this.event_time.set_text(_("All day"));
+            return;
+        }
+
+        let final_str = "";
+
+        // Multi day events that we're in the middle of, or multi-day-all-day events.
+        // Handles start and end of all-day-multi-day events.
+        if (this.event.started_before_and_ends_after(this.selected_date) ||
+            (this.event.all_day && this.event.multi_day)) {
+            if (this.event.span > 7) {
+                if (selected_is_today && this.event.starts_on_day(this.selected_date)) {
+                    final_str = _("Today");
+                }
+                else {
+                    final_str += this.event.start_date.format("%x");
+                }
+
+                final_str += " -> ";
+
+                if (selected_is_today && this.event.ends_on_day(this.selected_date)) {
+                    final_str += _("Today");
+                }
+                else {
+                    final_str += this.event.end_date.format("%x");
+                }
+            }
+            else
+            {
+                if (selected_is_today && this.event.starts_on_day(this.selected_date)) {
+                    final_str = _("Today");
+                }
+                else {
+                    final_str += this.event.start_date.format("%A");
+                }
+
+                final_str += " -> ";
+
+                if (selected_is_today && this.event.ends_on_day(this.selected_date)) {
+                    final_str += _("Today");
+                }
+                else {
+                    final_str += this.event.end_date.format("%A");
+                }
+            }
+
+            this.event_time.set_text(final_str);
+            return;
+        }
+
+        let time_format;
+
+        if (this.use_24h) {
+            time_format = "%H:%M";
+        } else {
+            time_format = "%l:%M %p";
+        }
+
+        // Normal single day event, not all day.
+        if (this.event.starts_on_day(this.selected_date)) {
+            final_str += this.event.start.format(time_format);
+
+            if (!this.event.multi_day) {
+                this.event_time.set_text(final_str);
+                return;
+            }
+        }
+
+        // Started before selected but ends on selected
+        if (this.event.started_before_day(this.selected_date)) {
+            if (this.event.started_before_day(this.selected_date.add_days(-7))) {
+                final_str += this.event.start.format("%x");
+            }
+            else {
+                final_str += this.event.start.format("%A");
+            }
+            final_str += " -> ";
+            final_str += this.event.end.format(time_format);
+            if (selected_is_today) {
+                final_str += " ";
+                final_str += _("Today");
+            }
+        }
+
+        // Started today but ends after today
+        if (this.event.ends_after_day(this.selected_date)) {
+            if (this.event.ends_after_day(this.selected_date.add_days(7))) {
+                final_str += this.event.end.format(" -> %x");
+            } else {
+                final_str += this.event.end.format(" -> %A");
+            }
+        }
+
+        this.event_time.set_text(final_str);
     }
 }
 Signals.addSignalMethods(EventRow.prototype);
