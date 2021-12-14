@@ -619,11 +619,16 @@ class EventList {
             }
         );
 
-        this.no_events_button.connect('clicked', () => {
-            // gnome-calendar --date is broken, just open the calendar for now.
-            Util.trySpawn(["gnome-calendar"], false);
+        this.no_events_button.connect('clicked', Lang.bind(this, () => {
+            // --date will be broken anywhere but Mint 20.3 and upstream releases > 41.2
+            // (unless some fixes are backported). Maintainer can patch this to comment
+            // out either line here.
+
+            // Util.trySpawn(["gnome-calendar"], false);
+            Util.trySpawn(["gnome-calendar", "--date", this.selected_date.format("%x")], false);
+
             this.emit("launched-calendar");
-        });
+        }));
 
         let button_inner_box = new St.BoxLayout(
             {
