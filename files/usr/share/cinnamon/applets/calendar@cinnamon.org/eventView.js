@@ -874,6 +874,7 @@ class EventRow {
 
         let today = date_only(GLib.DateTime.new_now_local());
         let selected_is_today = dt_equals(today, this.selected_date);
+        let starts_today = dt_equals(today, this.event.start_date);
 
         if (time_until_finish < 0) {
             this.event_time.set_style_class_name("calendar-event-time-past");
@@ -882,7 +883,7 @@ class EventRow {
         } else if (time_until_start > 0) {
             this.event_time.set_style_class_name("calendar-event-time-future");
 
-            if (selected_is_today) {
+            if (starts_today) {
                 let [countdown_pclass, text] = format_timespan(time_until_start);
                 this.countdown_label.set_text(text);
                 this.countdown_label.add_style_pseudo_class(countdown_pclass);
