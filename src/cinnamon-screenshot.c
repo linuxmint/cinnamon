@@ -367,6 +367,13 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
   MetaScreen *screen = cinnamon_global_get_screen (screenshot->global);
   MetaDisplay *display = meta_screen_get_display (screen);
   MetaWindow *window = meta_display_get_focus_window (display);
+
+  if (window == NULL)
+  {
+    cinnamon_screenshot_screenshot (screenshot, include_cursor, filename, callback);
+    return;
+  }
+
   ClutterActor *window_actor;
   gfloat actor_x, actor_y;
   MetaShapedTexture *stex;
