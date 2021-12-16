@@ -1,3 +1,36 @@
+cinnamon (5.2.6) una; urgency=medium
+
+  [ Michael Webster ]
+  * calendar: Have the 'no events' icon/label open gnome-calendar when clicked.
+  * calendar: Fix theme typo, close the calendar popup when launching gnome-calendar.
+  * calendar: some default theme improvements for buttons.
+  * screenshot.js: Adjust area coordinates by the ui scale.
+  * cinnamon-calendar-server.py: Don't assume that an event will have a last-modified property.
+
+  [ Clement Lefebvre ]
+  * cinnamon-calendar-server: Fix typo
+
+  [ Michael Webster ]
+  * calendar applet: Handle multi-day events.
+  * Calendar applet: Fix a few translation and date-format issues.
+  * calendar applet: some cleanup.
+  * calendar applet: Enable opening gnome-calendar to a specific day when the 'no events' button is clicked.
+
+  [ Thomas Kemmer ]
+  * calendar: Fix missing prefix in bindir path for D-Bus service
+
+  [ Michael Webster ]
+  * build: Don't hardcode the libexec path for the cinnamon-calendar- server bin file.
+  * cinnamon-screenshot.c: Fall back to a full screenshot when there is no default focus window.
+  * cinnamon-screenshot.c: Don't take a screenshot of the "Desktop" window when taking a 'window' screenshot.
+  * calendar applet: Show countdown text for multiday events that start today on any day the event will be active.
+
+  [ Clement Lefebvre ]
+  * l10n: Generate files
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 16 Dec 2021 09:05:23 +0000
+
 cinnamon (5.2.5) una; urgency=medium
 
   [ Michael Webster ]
