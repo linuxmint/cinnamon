@@ -75,7 +75,7 @@
         "section9": {
             "type": "section",
             "title": "Dependencies section",
-            "dependency": "!show-deps-section",
+            "dependency": "show-deps-section",
             "keys": ["deps-info", "dep-combo", "dep-combo-info1", "dep-combo-info2", "dep-spin", "dep-spin-info1", "dep-spin-info2"]
         }
     },
@@ -236,7 +236,7 @@
     },
     "show-deps-section" : {
         "type" : "switch",
-        "default" : false,
+        "default" : true,
         "description": "Show the dependencies section",
         "tooltip": "Checking this box shows the Dependencies section below. Unchecking hides it."
     },
