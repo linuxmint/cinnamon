@@ -14,6 +14,11 @@ const SearchProviderManager = imports.ui.searchProviderManager;
 const ModalDialog = imports.ui.modalDialog;
 const Util = imports.misc.util;
 const Cinnamon = imports.gi.Cinnamon;
+const Signals = imports.signals;
+const St = imports.gi.St;
+const Clutter = imports.gi.Clutter;
+const Gtk = imports.gi.Gtk;
+const Tweener = imports.ui.tweener;
 
 const ScreenshotIface =
     '<node> \
@@ -42,6 +47,18 @@ const ScreenshotIface =
                 <arg type="s" direction="in" name="filename"/> \
                 <arg type="b" direction="out" name="success"/> \
                 <arg type="s" direction="out" name="filename_used"/> \
+            </method> \
+            <method name="FlashArea"> \
+                <arg type="i" direction="in" name="x"/> \
+                <arg type="i" direction="in" name="y"/> \
+                <arg type="i" direction="in" name="width"/> \
+                <arg type="i" direction="in" name="height"/> \
+            </method> \
+            <method name="SelectArea"> \
+              <arg type="i" direction="out" name="x"/> \
+              <arg type="i" direction="out" name="y"/> \
+              <arg type="i" direction="out" name="width"/> \
+              <arg type="i" direction="out" name="height"/> \
             </method> \
         </interface> \
     </node>';
@@ -105,4 +122,240 @@ class ScreenshotService {
         screenshot.screenshot(include_cursor, filename,
             Lang.bind(this, this._onScreenshotComplete, flash, filename, invocation));
     }
+
+    SelectAreaAsync(params, invocation) {
+        let selectArea = new SelectArea();
+        selectArea.show();
+        selectArea.connect('finished', (selectArea, areaRectangle) => {
+            if (areaRectangle) {
+                let x = areaRectangle.x / global.ui_scale;
+                let y = areaRectangle.y / global.ui_scale;
+                let w = areaRectangle.width / global.ui_scale;
+                let h = areaRectangle.height / global.ui_scale;
+                let retval = GLib.Variant.new('(iiii)', [x, y, w, h]);
+                invocation.return_value(retval);
+            } else {
+                invocation.return_error_literal(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED,
+                    "Operation was cancelled");
+            }
+        });
+    }
+
+    FlashAreaAsync(params, invocation) {
+        let [x, y, width, height] = params;
+
+        let flashspot = new Flashspot.Flashspot({
+            x: x * global.ui_scale,
+            y: y * global.ui_scale,
+            width: width * global.ui_scale,
+            height: height * global.ui_scale
+        });
+        flashspot.fire();
+        invocation.return_value(null);
+    }
 }
+
+class SelectArea {
+    constructor() {
+        this._startX = -1;
+        this._startY = -1;
+        this._lastX = 0;
+        this._lastY = 0;
+        this._result = null;
+
+        this.top_mask = null;
+        this.bottom_mask = null;
+        this.left_mask = null;
+        this.right_mask = null;
+
+        this._initRubberbandColors();
+
+        this._group = new St.Widget(
+            { 
+                visible: false,
+                reactive: true,
+                x: 0,
+                y: 0,
+                layout_manager: new Clutter.FixedLayout()
+            }
+        );
+        Main.uiGroup.add_actor(this._group);
+
+        this._group.connect('button-press-event',
+                            this._onButtonPress.bind(this));
+        this._group.connect('button-release-event',
+                            this._onButtonRelease.bind(this));
+        this._group.connect('motion-event',
+                            this._onMotionEvent.bind(this));
+
+        let constraint = new Clutter.BindConstraint({ source: global.stage,
+                                                      coordinate: Clutter.BindCoordinate.ALL });
+        this._group.add_constraint(constraint);
+
+        this._setupMasks();
+
+        this._rubberband = new Clutter.Rectangle(
+            {
+                color: new Clutter.Color({ alpha: 0 }),
+                has_border: true,
+                border_width: 1,
+                border_color: this._border
+            }
+        );
+
+        this._group.add_actor(this._rubberband);
+    }
+
+    show() {
+        if (!Main.pushModal(this._group))
+            return;
+        this._group.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
+
+        global.set_cursor(Cinnamon.Cursor.CROSSHAIR);
+        Main.uiGroup.set_child_above_sibling(this._group, null);
+        this._group.visible = true;
+    }
+
+    _initRubberbandColors() {
+        function colorFromRGBA(rgba) {
+            return new Clutter.Color({ red: rgba.red * 255,
+                                       green: rgba.green * 255,
+                                       blue: rgba.blue * 255,
+                                       alpha: rgba.alpha * 255 });
+        }
+
+        let path = new Gtk.WidgetPath();
+        path.append_type(Gtk.IconView);
+
+        let context = new Gtk.StyleContext();
+        context.set_path(path);
+        context.add_class('rubberband');
+
+        this._background = colorFromRGBA(context.get_background_color(Gtk.StateFlags.NORMAL));
+        this._border = colorFromRGBA(context.get_border_color(Gtk.StateFlags.NORMAL));
+    }
+
+    _setupMasks() {
+        this.top_mask = new Clutter.Rectangle(
+            {
+                x: 0,
+                y: 0,
+                width: global.stage.width,
+                height: global.stage.height,
+                color: this._background
+            }
+        );
+        this._group.add_actor(this.top_mask);
+
+        this.bottom_mask = new Clutter.Rectangle(
+            {
+                x: 0,
+                y: global.stage.height,
+                width: global.stage.width,
+                height: 0,
+                color: this._background
+            }
+        );
+        this._group.add_actor(this.bottom_mask);
+
+        this.left_mask = new Clutter.Rectangle(
+            {
+                color: this._background
+            }
+        );
+        this._group.add_actor(this.left_mask);
+
+        this.right_mask = new Clutter.Rectangle(
+            {
+                color: this._background
+            }
+        );
+        this._group.add_actor(this.right_mask);
+    }
+
+    _getGeometry() {
+        return { x: Math.min(this._startX, this._lastX),
+                 y: Math.min(this._startY, this._lastY),
+                 width: Math.abs(this._startX - this._lastX) + 1,
+                 height: Math.abs(this._startY - this._lastY) + 1 };
+    }
+
+    _onKeyPressEvent(object, keyPressEvent) {
+        let modifiers = Cinnamon.get_event_state(keyPressEvent);
+        let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
+        let symbol = keyPressEvent.get_key_symbol();
+        if (symbol === Clutter.KEY_Escape && !(modifiers & ctrlAltMask)) {
+            this._ungrab()
+            return;
+        }
+
+        return Clutter.EVENT_STOP;
+    }
+
+    _onMotionEvent(actor, event) {
+        if (this._startX == -1 || this._startY == -1)
+            return Clutter.EVENT_PROPAGATE;
+
+        [this._lastX, this._lastY] = event.get_coords();
+        this._lastX = Math.floor(this._lastX);
+        this._lastY = Math.floor(this._lastY);
+        let geometry = this._getGeometry();
+
+        this._rubberband.set_position(geometry.x, geometry.y);
+        this._rubberband.set_size(geometry.width, geometry.height);
+
+        this.top_mask.height = this._rubberband.y;
+
+        this.bottom_mask.y = this._rubberband.y + this._rubberband.height;
+        this.bottom_mask.height = global.stage.height - this.bottom_mask.y;
+
+        this.left_mask.width = this._rubberband.x;
+        this.left_mask.y = this._rubberband.y;
+        this.left_mask.height = this._rubberband.height;
+
+        this.right_mask.x = this._rubberband.x + this._rubberband.width;
+        this.right_mask.width = global.stage.width - this.right_mask.x;
+        this.right_mask.y = this._rubberband.y;
+        this.right_mask.height = this._rubberband.height;
+
+        return Clutter.EVENT_PROPAGATE;
+    }
+
+    _onButtonPress(actor, event) {
+        [this._startX, this._startY] = event.get_coords();
+        this._startX = Math.floor(this._startX);
+        this._startY = Math.floor(this._startY);
+        this._rubberband.set_position(this._startX, this._startY);
+
+        this.top_mask.height = this._startY;
+        this.bottom_mask.y = this._startY;
+        this.bottom_mask.height = global.stage.height - this._startY;
+
+        return Clutter.EVENT_PROPAGATE;
+    }
+
+    _onButtonRelease(actor, event) {
+        this._result = this._getGeometry();
+        Tweener.addTween(this._group,
+                         { opacity: 0,
+                           time: 0.1,
+                           transition: 'easeOutQuad',
+                           onComplete: () => {
+                               this._ungrab();
+                           }
+                         });
+        return Clutter.EVENT_PROPAGATE;
+    }
+
+    _ungrab() {
+        Main.popModal(this._group);
+        global.unset_cursor();
+        this.emit('finished', this._result);
+
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this._group.destroy();
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+};
+Signals.addSignalMethods(SelectArea.prototype);
