@@ -125,7 +125,7 @@ var AppletPopupMenu = class AppletPopupMenu extends PopupMenu.PopupMenu {
  *
  * Base applet class that other applets can inherit
  */
-var Applet = class Applet {
+class Applet {
 
     /**
      * _init:
@@ -134,11 +134,7 @@ var Applet = class Applet {
      * @instance_id (int): instance id of the applet
      */
 
-    constructor() {
-        return this._init.apply(this, arguments);
-    }
-
-    _init(orientation, panel_height, instance_id) {
+    constructor(orientation, panel_height, instance_id) {
 
         this.actor = new St.BoxLayout({ style_class: 'applet-box',
                                         reactive: true,
@@ -671,7 +667,7 @@ Signals.addSignalMethods(Applet.prototype);
  *
  * Inherits: Applet.Applet
  */
-var IconApplet = class IconApplet extends Applet {
+class IconApplet extends Applet {
 
     /**
      * _init:
@@ -679,8 +675,8 @@ var IconApplet = class IconApplet extends Applet {
      * @panelHeight (int): height of the panel containing the applet
      * @instance_id (int): instance id of the applet
      */
-    _init(orientation, panel_height, instance_id) {
-        super._init(orientation, panel_height, instance_id);
+    constructor(orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
         this._applet_icon_box = new St.Bin(); // https://developer.gnome.org/st/stable/StBin.htm
 
@@ -798,7 +794,7 @@ var IconApplet = class IconApplet extends Applet {
  *
  * Inherits: Applet.Applet
  */
-var TextApplet = class TextApplet extends Applet {
+class TextApplet extends Applet {
 
     /**
      * _init:
@@ -809,8 +805,8 @@ var TextApplet = class TextApplet extends Applet {
      * Note that suitability for display in a vertical panel is handled by having applets declare
      * they work OK, handled elsewhere
      */
-    _init(orientation, panel_height, instance_id) {
-        super._init(orientation, panel_height, instance_id);
+     constructor(orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
         this._applet_label = new St.Label({ reactive: true,
                                             track_hover: true,
                                             style_class: 'applet-label'});
@@ -849,7 +845,7 @@ var TextApplet = class TextApplet extends Applet {
  * Note that suitability for display in a vertical panel is handled by having applets declare
  * they work OK, handled elsewhere
  */
-var TextIconApplet = class TextIconApplet extends IconApplet {
+class TextIconApplet extends IconApplet {
 
     /**
      * _init:
@@ -857,8 +853,8 @@ var TextIconApplet = class TextIconApplet extends IconApplet {
      * @panelHeight (int): height of the panel containing the applet
      * @instance_id (int): instance id of the applet
      */
-    _init(orientation, panel_height, instance_id) {
-        super._init(orientation, panel_height, instance_id);
+    constructor(orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
         this._applet_label = new St.Label({ reactive: true,
                                             track_hover: true,
                                             style_class: 'applet-label'});
