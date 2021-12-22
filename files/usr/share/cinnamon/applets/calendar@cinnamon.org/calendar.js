@@ -551,7 +551,7 @@ class Calendar {
             let dots_this_row = Math.min(dots_left, max_children_per_row);
             let total_child_width = nw * dots_this_row;
 
-            let start_x = (box_width - total_child_width) / 2;
+            let start_x = Math.floor((box_width - total_child_width) / 2);
 
             let cbox = new Clutter.ActorBox();
             cbox.x1 = start_x;
