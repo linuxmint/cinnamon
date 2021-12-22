@@ -1668,15 +1668,10 @@ NMMessageTraySource.prototype = {
     }
 };
 
-function CinnamonNetworkApplet(metadata, orientation, panel_height, instance_id) {
-    this._init(metadata, orientation, panel_height, instance_id);
-}
+class CinnamonNetworkApplet extends Applet.IconApplet {
 
-CinnamonNetworkApplet.prototype = {
-    __proto__: Applet.IconApplet.prototype,
-
-    _init: function(metadata, orientation, panel_height, instance_id) {
-        Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+    constructor(metadata, orientation, panel_height, instance_id) {
+        super(orientation, panel_height, instance_id);
 
         try {
             this.metadata = metadata;
@@ -1699,13 +1694,13 @@ CinnamonNetworkApplet.prototype = {
         catch (e) {
             global.logError(e);
         }
-    },
+    }
 
     _setKeybinding() {
         Main.keybindingManager.addHotKey("network-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
-    },
+    }
 
-    _clientGot: function(obj, result) {
+    _clientGot (obj, result) {
         try {
             this._client = NM.Client.new_finish(result);
             this._v1_28_0 = Util.version_exceeds(this._client.get_version(), "1.28.0");
@@ -1832,24 +1827,24 @@ CinnamonNetworkApplet.prototype = {
         catch (e) {
             global.logError(e);
         }
-    },
+    }
 
-    _setIcon: function(name) {
+    _setIcon(name) {
         if (this._currentIconName !== name) {
             this.set_applet_icon_symbolic_name(name);
             this._currentIconName = name;
         }
-    },
+    }
 
-    on_applet_clicked: function(event) {
+    on_applet_clicked (event) {
         this.menu.toggle();
-    },
+    }
 
-    _openMenu: function () {
+    _openMenu() {
         this.menu.toggle();
-    },
+    }
 
-    _ensureSource: function() {
+    _ensureSource() {
         if (!this._source) {
             this._source = new NMMessageTraySource();
             this._source.connect('destroy', Lang.bind(this, function() {
@@ -1857,9 +1852,9 @@ CinnamonNetworkApplet.prototype = {
             }));
             if (Main.messageTray) Main.messageTray.add(this._source);
         }
-    },
+    }
 
-    _makeToggleItem: function(type, title) {
+    _makeToggleItem (type, title) {
         let item = new NMWirelessSectionTitleMenuItem(this._client, type, title);
         item.connect('enabled-changed', Lang.bind(this, function(item, enabled) {
             let devices = this._devices[type].devices;
@@ -1869,9 +1864,9 @@ CinnamonNetworkApplet.prototype = {
             this._syncSectionTitle(type);
         }));
         return item;
-    },
+    }
 
-    _syncSectionTitle: function(category) {
+    _syncSectionTitle(category) {
         let devices = this._devices[category].devices;
         let vis_devices = [];
 
@@ -1910,16 +1905,16 @@ CinnamonNetworkApplet.prototype = {
                 item.updateForDevice(null);
             }
         }
-    },
+    }
 
-    _readDevices: function() {
+    _readDevices() {
         let devices = this._client.get_devices() || [ ];
         for (let i = 0; i < devices.length; ++i) {
             this._deviceAdded(this._client, devices[i]);
         }
-    },
+    }
 
-    _notifyForDevice: function(device, iconName, title, text, urgency) {
+    _notifyForDevice(device, iconName, title, text, urgency) {
         if (device._notification)
             device._notification.destroy();
 
@@ -1939,9 +1934,9 @@ CinnamonNetworkApplet.prototype = {
             device._notification = null;
         });
         this._source.notify(device._notification);
-    },
+    }
 
-    _deviceAdded: function(client, device) {
+    _deviceAdded (client, device) {
         if (device._delegate) {
             // already seen, not adding again
             return;
@@ -1976,9 +1971,9 @@ CinnamonNetworkApplet.prototype = {
             this._syncSectionTitle(wrapper.category);
         } else
             log('Unknown network device type, is ' + device.get_device_type());
-    },
+    }
 
-    _deviceRemoved: function(client, device) {
+    _deviceRemoved(client, device) {
         if (!device._delegate) {
             log('Removing a network device that was not added');
             return;
@@ -1992,9 +1987,9 @@ CinnamonNetworkApplet.prototype = {
         devices.splice(pos, 1);
 
         this._syncSectionTitle(wrapper.category);
-    },
+    }
 
-    _syncActiveConnections: function() {
+    _syncActiveConnections() {
         let closedConnections = [ ];
         let newActiveConnections = this._client.get_active_connections() || [ ];
         for (let i = 0; i < this._activeConnections.length; i++) {
@@ -2102,9 +2097,9 @@ CinnamonNetworkApplet.prototype = {
         }
 
         this._mainConnection = activated || activating || default_ip4 || default_ip6 || null;
-    },
+    }
 
-    _notifyActivated: function(activeConnection) {
+    _notifyActivated(activeConnection) {
         if (activeConnection.state == NM.ActiveConnectionState.ACTIVATED &&
             activeConnection._primaryDevice && activeConnection._primaryDevice._notification) {
                 activeConnection._primaryDevice._notification.destroy();
@@ -2112,9 +2107,9 @@ CinnamonNetworkApplet.prototype = {
         }
 
         this._updateIcon();
-    },
+    }
 
-    _readConnections: function() {
+    _readConnections() {
         let connections = this._client.get_connections();
         for (let i = 0; i < connections.length; i++) {
             let connection = connections[i];
@@ -2127,9 +2122,9 @@ CinnamonNetworkApplet.prototype = {
             this._updateConnection(connection);
             this._connections.push(connection);
         }
-    },
+    }
 
-    _connectionAdded: function(client, connection) {
+    _connectionAdded(client, connection) {
         if (connection._uuid) {
             // connection was already seen
             return;
@@ -2141,9 +2136,9 @@ CinnamonNetworkApplet.prototype = {
         this._connections.push(connection);
 
         this._updateIcon();
-    },
+    }
 
-    _connectionRemoved: function(client, connection) {
+    _connectionRemoved(client, connection) {
         let pos = this._connections.indexOf(connection);
         if (pos != -1)
             this._connections.splice(pos);
@@ -2162,9 +2157,9 @@ CinnamonNetworkApplet.prototype = {
 
         connection._uuid = null;
         connection.disconnect(connection._updatedId);
-    },
+    }
 
-    _updateConnection: function(connection) {
+    _updateConnection(connection) {
         let connectionSettings = connection.get_setting_by_name(NM.SETTING_CONNECTION_SETTING_NAME);
         connection._type = connectionSettings.type;
 
@@ -2186,16 +2181,16 @@ CinnamonNetworkApplet.prototype = {
                 devices[i].checkConnection(connection);
             }
         }
-    },
+    }
 
-    _hideDevices: function() {
+    _hideDevices() {
         this._devicesHidden = true;
 
         for (let category in this._devices)
             this._devices[category].section.actor.hide();
-    },
+    }
 
-    _showNormal: function() {
+    _showNormal() {
         if (!this._devicesHidden) // nothing to do
             return;
         this._devicesHidden = false;
@@ -2208,9 +2203,9 @@ CinnamonNetworkApplet.prototype = {
 
         if (!this._devices.vpn.device.empty)
             this._devices.vpn.section.actor.show();
-    },
+    }
 
-    _syncNMState: function() {
+    _syncNMState() {
         if (!this._client.nm_running) {
             log('NetworkManager is not running, hiding...');
             this.menu.close();
@@ -2229,9 +2224,9 @@ CinnamonNetworkApplet.prototype = {
 
         this._showNormal();
         this._updateIcon();
-    },
+    }
 
-    _updateIcon: function() {
+    _updateIcon() {
         let new_delay = DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS;
 
         try {
@@ -2353,9 +2348,9 @@ CinnamonNetworkApplet.prototype = {
         }
 
         return new_delay;
-    },
+    }
 
-    _periodicUpdateIcon: function() {
+    _periodicUpdateIcon() {
         let new_delay = this._updateIcon();
         this._lastConnectivityState = this._client.get_connectivity();
 
@@ -2384,7 +2379,7 @@ CinnamonNetworkApplet.prototype = {
         }
 
         return GLib.SOURCE_REMOVE;
-    },
+    }
 
     _correctStateForTunnel(state) {
         if (state !== NM.ConnectivityState.LIMITED) {
@@ -2402,7 +2397,7 @@ CinnamonNetworkApplet.prototype = {
         if (this._activeConnections.some(con => con.get_connection_type() === "tun")) {
             return NM.ConnectivityState.FULL;
         }
-    },
+    }
 
     _proxyConnectivityCheckCallback(new_state) {
         let state = this._correctStateForTunnel(new_state[0]);
@@ -2412,7 +2407,7 @@ CinnamonNetworkApplet.prototype = {
         }
 
         this._checkingConnectivity = false;
-    },
+    }
 
     _connectivityCheckCallback(source, result) {
         let new_state = NM.ConnectivityState.UNKNOWN;
@@ -2430,9 +2425,9 @@ CinnamonNetworkApplet.prototype = {
         }
 
         this._checkingConnectivity = false;
-    },
+    }
 
-    _restartPeriodicUpdateTimer: function(new_delay) {
+    _restartPeriodicUpdateTimer(new_delay) {
         if (this._periodicTimeoutId > 0) {
             Mainloop.source_remove(this._periodicTimeoutId);
         }
@@ -2440,9 +2435,9 @@ CinnamonNetworkApplet.prototype = {
         this._updateFrequencySeconds = new_delay;
 
         this._periodicTimeoutId = Mainloop.timeout_add_seconds(this._updateFrequencySeconds, Lang.bind(this, this._periodicUpdateIcon));
-    },
+    }
 
-    _rescanAccessPoints: function() {
+    _rescanAccessPoints() {
         try {
             let devices = this._devices.wireless.devices;
 
@@ -2459,24 +2454,24 @@ CinnamonNetworkApplet.prototype = {
                 log(gerror);
             }
         }
-    },
+    }
 
-    _onMenuOpenStateChanged: function(popup, open) {
+    _onMenuOpenStateChanged(popup, open) {
         this._periodicUpdateIcon();
 
         if (open) {
             this._rescanAccessPoints();
         }
-    },
+    }
 
-    on_applet_removed_from_panel: function() {
+    on_applet_removed_from_panel() {
         Main.systrayManager.unregisterRole("network", this.metadata.uuid);
         Main.systrayManager.unregisterRole("nm-applet", this.metadata.uuid);
         Main.keybindingManager.removeHotKey("network-open-" + this.instance_id);
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);
         }
-    },
+    }
 
 };
 
