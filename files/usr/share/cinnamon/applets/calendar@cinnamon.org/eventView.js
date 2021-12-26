@@ -23,7 +23,7 @@ const STATUS_NO_CALENDARS = 1;
 const STATUS_HAS_CALENDARS = 2;
 
 // TODO: this is duplicated from applet.js
-const DATE_FORMAT_FULL = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A, %B %-e, %Y");
+const DATE_FORMAT_FULL = CinnamonDesktop.WallClock.lctime_format("cinnamon", _("%A, %B %-e, %Y"));
 const DAY_FORMAT = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A");
 
 function locale_cap(str) {
