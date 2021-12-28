@@ -50,7 +50,7 @@ class Effect {
     }
 };
 
-var Map = class Map extends Effect {
+class Map extends Effect {
     constructor() {
         super(...arguments);
 
@@ -134,7 +134,7 @@ var Map = class Map extends Effect {
     }
 }
 
-var Close = class Close extends Effect {
+class Close extends Effect {
     constructor() {
         super(...arguments);
 
@@ -180,7 +180,7 @@ var Close = class Close extends Effect {
     }
 }
 
-var Minimize = class Minimize extends Close {
+class Minimize extends Close {
     constructor() {
         super(...arguments);
 
@@ -223,13 +223,13 @@ var Minimize = class Minimize extends Close {
             this._scaleWindow(cinnamonwm, actor, xScale, yScale, time, transition, true);
             this._fadeWindow(cinnamonwm, actor, 0, time, transition);
         } else {
-            this.scale(cinnamonwm, actor, time, transition); // fall-back effect
+            actor.set_scale(0,0)
         }
     }
 }
 
 // unminimizing is a 'map' effect but should use 'minimize' setting values
-var Unminimize = class Unminimize extends Effect {
+class Unminimize extends Effect {
     constructor() {
         super(...arguments);
 
@@ -278,7 +278,7 @@ var Unminimize = class Unminimize extends Effect {
     }
 }
 
-var Tile = class Tile extends Effect {
+class Tile extends Effect {
     constructor() {
         super(...arguments);
 
@@ -306,7 +306,7 @@ var Tile = class Tile extends Effect {
     }
 }
 
-var Maximize = class Maximize extends Tile {
+class Maximize extends Tile {
     constructor() {
         super(...arguments);
 
@@ -316,7 +316,7 @@ var Maximize = class Maximize extends Tile {
     }
 }
 
-var Unmaximize = class Unmaximize extends Tile {
+class Unmaximize extends Tile {
     constructor() {
         super(...arguments);
 
