@@ -223,7 +223,7 @@ var Minimize = class Minimize extends Close {
             this._scaleWindow(cinnamonwm, actor, xScale, yScale, time, transition, true);
             this._fadeWindow(cinnamonwm, actor, 0, time, transition);
         } else {
-            this.scale(cinnamonwm, actor, time, transition); // fall-back effect
+            this._scaleWindow(cinnamonwm, actor, 0, 0, time, transition); // fall-back effect
         }
     }
 }
@@ -261,19 +261,24 @@ var Unminimize = class Unminimize extends Effect {
         let time = 0.16;
         let success;
         let geom = new Rectangle();
+
+        let [xDest, yDest] = actor.get_transformed_position();
+        actor.opacity = 0;
+
         success = actor.meta_window.get_icon_geometry(geom);
+
         if (success) {
             actor.set_scale(0.1, 0.1);
-            actor.opacity = 0;
             let xSrc = geom.x;
             let ySrc = geom.y;
-            let [xDest, yDest] = actor.get_transformed_position();
             actor.set_position(xSrc, ySrc);
             this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
             this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, true);
             this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
         } else {
-            global.logWarning('windowEffects.Unminimize: No origin found.');
+            actor.set_scale(1.0, 1.0);
+            actor.set_position(xDest, yDest)
+            this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
         }
     }
 }
