@@ -26,6 +26,9 @@ const STATUS_HAS_CALENDARS = 2;
 const DATE_FORMAT_FULL = CinnamonDesktop.WallClock.lctime_format("cinnamon", _("%A, %B %-e, %Y"));
 const DAY_FORMAT = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A");
 
+// https://www.w3schools.com/charsets/ref_utf_geometric.asp
+const ARROW_SEPARATOR = "  ►  "
+
 function locale_cap(str) {
     return str.charAt(0).toLocaleUpperCase() + str.slice(1);
 }
@@ -941,7 +944,7 @@ class EventRow {
         // "12/04/2011 -> 12/08/2011"
         if (this.event.multi_day && this.event.ended_before_day(today)) {
             final_str += this.event.start_date.format("%x");
-            final_str += " -> ";
+            final_str += ARROW_SEPARATOR;
             final_str += this.event.end_date.format("%x");
             this.event_time.set_text(final_str);
             return;
@@ -969,7 +972,7 @@ class EventRow {
                 }
             }
 
-            final_str += " -> ";
+            final_str += ARROW_SEPARATOR;
 
             // suffix for current day selected
             if (this.event.ends_on_day(this.selected_date)) {
@@ -1025,7 +1028,7 @@ class EventRow {
                 }
             }
 
-            final_str += " -> ";
+            final_str += ARROW_SEPARATOR;
 
             if (this.event.ends_on_day(today)) {
                 // Event ends today (but we're viewing some interim day)
