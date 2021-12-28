@@ -131,8 +131,16 @@ class EventData {
         return date_only(date).difference(this.start_date) > 0;
     }
 
+    ended_before_day(date) {
+        return date_only(date).difference(this.end_date) > 0;
+    }
+
     ends_after_day(date) {
         return date_only(date).difference(this.end_date) < 0;
+    }
+
+    started_after_day(date) {
+        return date_only(date).difference(this.start_date) < 0;
     }
 
     started_before_and_ends_after(date) {
@@ -905,58 +913,6 @@ class EventRow {
             this.is_current_or_next = this.event.is_today && !this.event.all_day;
         }
 
-        // Event is marked all day, just a single day.
-        if (this.event.all_day && !this.event.multi_day) {
-            this.event_time.set_text(_("All day"));
-            return;
-        }
-
-        let final_str = "";
-
-        // Multi day events that we're in the middle of, or multi-day-all-day events.
-        // Handles start and end of all-day-multi-day events.
-        if (this.event.started_before_and_ends_after(this.selected_date) ||
-            (this.event.all_day && this.event.multi_day)) {
-            if (this.event.span > 7) {
-                if (selected_is_today && this.event.starts_on_day(this.selected_date)) {
-                    final_str = _("Today");
-                }
-                else {
-                    final_str += this.event.start_date.format("%x");
-                }
-
-                final_str += " -> ";
-
-                if (selected_is_today && this.event.ends_on_day(this.selected_date)) {
-                    final_str += _("Today");
-                }
-                else {
-                    final_str += this.event.end_date.format("%x");
-                }
-            }
-            else
-            {
-                if (selected_is_today && this.event.starts_on_day(this.selected_date)) {
-                    final_str = _("Today");
-                }
-                else {
-                    final_str += locale_cap(this.event.start_date.format(DAY_FORMAT));
-                }
-
-                final_str += " -> ";
-
-                if (selected_is_today && this.event.ends_on_day(this.selected_date)) {
-                    final_str += _("Today");
-                }
-                else {
-                    final_str += locale_cap(this.event.end_date.format(DAY_FORMAT));
-                }
-            }
-
-            this.event_time.set_text(final_str);
-            return;
-        }
-
         let time_format;
 
         if (this.use_24h) {
@@ -965,40 +921,132 @@ class EventRow {
             time_format = "%l:%M %p";
         }
 
-        // Normal single day event, not all day.
-        if (this.event.starts_on_day(this.selected_date)) {
-            final_str += this.event.start.format(time_format);
+        let final_str = "";
 
-            if (!this.event.multi_day) {
-                this.event_time.set_text(final_str);
-                return;
-            }
-        }
-
-        // Started before selected but ends on selected
-        if (this.event.started_before_day(this.selected_date)) {
-            if (this.event.started_before_day(this.selected_date.add_days(-7))) {
-                final_str += this.event.start.format("%x");
-            }
-            else {
-                final_str += locale_cap(this.event.start.format(DAY_FORMAT));
-            }
-            final_str += " -> ";
-            final_str += this.event.end.format(time_format);
-            if (selected_is_today) {
-                final_str += " ";
-                final_str += _("Today");
-            }
-        }
-
-        // Started today but ends after today
-        if (this.event.ends_after_day(this.selected_date)) {
-            if (this.event.ends_after_day(this.selected_date.add_days(7))) {
-                final_str += this.event.end.format(" -> ");
-                final_str += this.event.end.format("%x");
+        // Simple, single-day events
+        if (this.event.starts_on_day(this.selected_date) && !this.event.multi_day) {
+            if (this.event.all_day) {
+                // an all day event: "All day"
+                final_str += _("All day");
             } else {
-                final_str += this.event.end.format(" -> ");
-                final_str += locale_cap(this.event.end.format(DAY_FORMAT));
+                // a timed event: "12:00 pm"
+                final_str += this.event.start.format(time_format);
+            }
+
+            this.event_time.set_text(final_str);
+            return;
+        }
+
+        // Past multi-day events (all-day or timed)
+        // "12/04/2011 -> 12/08/2011"
+        if (this.event.multi_day && this.event.ended_before_day(today)) {
+            final_str += this.event.start_date.format("%x");
+            final_str += " -> ";
+            final_str += this.event.end_date.format("%x");
+            this.event_time.set_text(final_str);
+            return;
+        }
+
+        if (selected_is_today) {
+            // prefix for current day selected
+            if (this.event.starts_on_day(this.selected_date)) {
+                if (this.event.all_day) {
+                    // all day event that starts today: "Today -> ..."
+                    final_str += _("Today")
+                } else {
+                    // timed: "12:00 pm -> ..."
+                    final_str += this.event.start.format(time_format);
+                }
+            } else
+            // event started prior to today
+            if (this.event.started_before_day(this.selected_date)) {
+                // If it started within the last few days, show the day of week: "Wednesday -> ..."
+                if (this.event.started_after_day(this.selected_date.add_days(-4))) {
+                    final_str += locale_cap(this.event.start_date.format(DAY_FORMAT));
+                } else {
+                    // otherwise the date: "12/04/2011 ->"
+                    final_str += this.event.start_date.format("%x");
+                }
+            }
+
+            final_str += " -> ";
+
+            // suffix for current day selected
+            if (this.event.ends_on_day(this.selected_date)) {
+                if (this.event.all_day) {
+                    // All-day event started previously, ends today: "-> Today"
+                    final_str += _("Today")
+                } else {
+                    // Timed event started previously, ends today: "-> 12:00 pm"
+                    final_str += this.event.end.format(time_format);
+                }
+            } else
+            if (this.event.ends_after_day(this.selected_date.add_days(4))) {
+                // ends more than a few days after today: "-> 04/15/2011"
+                final_str += this.event.end_date.format("%x");
+            } else {
+                // ends only a few days after today: "-> Wednesday"
+                final_str += locale_cap(this.event.end_date.format(DAY_FORMAT));
+            }
+        } else {
+            // Prefix for non-current day selected
+            if (this.event.started_before_day(today)) {
+                if (this.event.started_after_day(today.add_days(-4))) {
+                    // started in the last couple of days: "Wednesday -> ..."
+                    final_str += locale_cap(this.event.start_date.format(DAY_FORMAT));
+                } else {
+                    // Started on the selected day (but not today): "12:00 pm -> ..."
+                    if (this.event.starts_on_day(this.selected_date) && !this.event.all_day) {
+                        final_str += this.event.start.format(time_format);
+                    } else {
+                        // just the date if it's all day or started on an earlier day than selected: "04-16-2011 -> ..."
+                        final_str += this.event.start_date.format("%x");
+                    }
+                }
+            } else {
+                // We're viewing some future day, an event that started today: "4:00 pm Today"
+                if (this.event.starts_on_day(today)) {
+
+                    // Just "Today" if it's an all-day event
+                    if (!this.event.all_day) {
+                        final_str += this.event.start.format(time_format);
+                        final_str += " ";
+                    }
+
+                    final_str += _("Today");
+                } else {
+                    // Event starts in the next few days: "Wednesday -> ..."
+                    if (this.event.started_before_day(today.add_days(4))) {
+                        final_str += this.event.start_date.format(DAY_FORMAT);
+                    } else {
+                        // Any other start date, show that date: "04/16/2011 -> ..."
+                        final_str += this.event.start_date.format("%x");
+                    }
+                }
+            }
+
+            final_str += " -> ";
+
+            if (this.event.ends_on_day(today)) {
+                // Event ends today (but we're viewing some interim day)
+                if (!this.event.all_day) {
+                    // not all day: "-> 4:30 pm Today"
+                    final_str += this.event.end.format(time_format);
+                    final_str += " ";
+                }
+                // all day ends today: "-> Today"
+                final_str += _("Today");
+            } else
+            if (this.event.ends_on_day(this.selected_date) && !this.event.all_day) {
+                // Ends on the selected date, not all day: "-> 12:00 pm"
+                final_str += this.event.end_date.format(time_format);
+            } else
+            // Ends more than a few days after today: "-> 4/16/2021"
+            if (this.event.ends_after_day(today.add_days(4))) {
+                final_str += this.event.end_date.format("%x");
+            } else {
+                // less than a few days after today: "-> Wednesday"
+                final_str += locale_cap(this.event.end_date.format(DAY_FORMAT));
             }
         }
 
