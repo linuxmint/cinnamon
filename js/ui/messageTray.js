@@ -879,7 +879,6 @@ MessageTray.prototype = {
         let notificationsPending = this._notificationQueue.length > 0 && (!this._busy || notificationUrgent);
 
         let notificationExpired = (this._notificationTimeoutId == 0 &&
-                !(this._notification && this._notification.urgency == Urgency.CRITICAL) &&
                 !this._locked
             ) || this._notificationRemoved;
         let canShowNotification = notificationsPending && this._notificationsEnabled;
