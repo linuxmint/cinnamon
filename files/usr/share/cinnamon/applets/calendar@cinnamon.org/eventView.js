@@ -1042,7 +1042,7 @@ class EventRow {
             } else
             if (this.event.ends_on_day(this.selected_date) && !this.event.all_day) {
                 // Ends on the selected date, not all day: "-> 12:00 pm"
-                final_str += this.event.end_date.format(time_format);
+                final_str += this.event.end.format(time_format);
             } else
             // Ends more than a few days after today: "-> 4/16/2021"
             if (this.event.ends_after_day(today.add_days(4))) {
