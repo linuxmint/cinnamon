@@ -607,9 +607,18 @@ class EventList {
 
         this.selected_date_label = new St.Label(
             {
-                style_class: "calendar-events-date-label"
+                style_class: "calendar-events-date-label",
+                reactive: true
             }
         );
+
+        this.selected_date_label.connect("button-press-event", Lang.bind(this, (actor, event) => {
+            if (event.get_button() == Clutter.BUTTON_PRIMARY) {
+                this.launch_calendar(this.selected_date);
+                return Clutter.EVENT_STOP;
+            }
+        }));
+
         this.actor.add_actor(this.selected_date_label);
 
         this.no_events_box = new St.BoxLayout(
@@ -631,14 +640,7 @@ class EventList {
         );
 
         this.no_events_button.connect('clicked', Lang.bind(this, () => {
-            // --date will be broken anywhere but Mint 20.3 and upstream releases > 41.2
-            // (unless some fixes are backported). Maintainer can patch this to comment
-            // out either line here.
-
-            // Util.trySpawn(["gnome-calendar"], false);
-            Util.trySpawn(["gnome-calendar", "--date", this.selected_date.format("%x")], false);
-
-            this.emit("launched-calendar");
+            this.launch_calendar(this.selected_date);
         }));
 
         let button_inner_box = new St.BoxLayout(
@@ -695,6 +697,17 @@ class EventList {
 
         this.events_scroll_box.add_actor(this.events_box);
         this.actor.add_actor(this.events_scroll_box);
+    }
+
+    launch_calendar(gdate) {
+        // --date will be broken anywhere but Mint 20.3 and upstream releases > 41.2
+        // (unless some fixes are backported). Maintainer can patch this to comment
+        // out either line here.
+
+        // Util.trySpawn(["gnome-calendar"], false);
+        Util.trySpawn(["gnome-calendar", "--date", gdate.format("%x")], false);
+
+        this.emit("launched-calendar");
     }
 
     set_date(gdate) {
