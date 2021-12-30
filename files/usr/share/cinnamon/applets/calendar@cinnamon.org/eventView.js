@@ -301,7 +301,7 @@ class EventsManager {
     }
 
     start_events() {
-        if (this._calendar_server == null) {
+        if (this._calendar_server == null && Cinnamon.CalendarServerProxy) {
             Cinnamon.CalendarServerProxy.new_for_bus(
                 Gio.BusType.SESSION,
                 // Gio.DBusProxyFlags.NONE,

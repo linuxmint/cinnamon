@@ -13,6 +13,11 @@ option('build_recorder',
     value: true,
     description: 'Build the cinnamon recorder into source'
 )
+option('build_calendar_server',
+    type: 'boolean',
+    value: true,
+    description: 'Build the cinnamon EDS calendar server'
+)
 option('disable_networkmanager',
     type: 'boolean',
     value: false,

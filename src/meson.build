@@ -3,12 +3,6 @@ subdir('hotplug-sniffer')
 
 include_src = include_directories('.')
 
-calendar_generated = gnome.gdbus_codegen('cinnamon-calendar',
-  sources: 'org.cinnamon.CalendarServer.xml',
-  interface_prefix: 'org.cinnamon.',
-  namespace: 'Cinnamon'
-)
-
 cinnamon_headers = [
     'cinnamon-app.h',
     'cinnamon-app-system.h',
@@ -59,9 +53,20 @@ cinnamon_sources = [
     'cinnamon-window-tracker.c',
     'cinnamon-wm.c',
     'cinnamon-xfixes-cursor.c',
-    cinnamon_headers,
-    calendar_generated
+    cinnamon_headers
 ]
+
+if get_option('build_calendar_server')
+    calendar_generated = gnome.gdbus_codegen('cinnamon-calendar',
+      sources: 'org.cinnamon.CalendarServer.xml',
+      interface_prefix: 'org.cinnamon.',
+      namespace: 'Cinnamon'
+    )
+
+    cinnamon_sources += [
+        calendar_generated
+    ]
+endif
 
 cinnamon_enum_types = gnome.mkenums_simple(
     'cinnamon-enum-types',

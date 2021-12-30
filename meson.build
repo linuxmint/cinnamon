@@ -179,6 +179,9 @@ install_subdir(
     strip_directory: true,
 )
 
-subdir('calendar-server')
+
+if get_option('build_calendar_server')
+    subdir('calendar-server')
+endif
 subdir('python3')
 subdir('install-scripts')
