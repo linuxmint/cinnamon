@@ -72,7 +72,7 @@ const ScreenshotIface =
  * The callback argument is unused.
  */
 
-class ScreenshotService {
+var ScreenshotService = class ScreenshotService {
     constructor() {
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(ScreenshotIface, this);
         this._dbusImpl.export(Gio.DBus.session, '/org/gnome/Shell/Screenshot');
