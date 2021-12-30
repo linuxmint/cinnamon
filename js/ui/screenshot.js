@@ -127,7 +127,7 @@ class ScreenshotService {
         let selectArea = new SelectArea();
         selectArea.show();
         selectArea.connect('finished', (selectArea, areaRectangle) => {
-            if (areaRectangle) {
+            if (areaRectangle && areaRectangle.width > 0 && areaRectangle.height > 0) {
                 let x = areaRectangle.x / global.ui_scale;
                 let y = areaRectangle.y / global.ui_scale;
                 let w = areaRectangle.width / global.ui_scale;
@@ -276,8 +276,8 @@ class SelectArea {
     _getGeometry() {
         return { x: Math.min(this._startX, this._lastX),
                  y: Math.min(this._startY, this._lastY),
-                 width: Math.abs(this._startX - this._lastX) + 1,
-                 height: Math.abs(this._startY - this._lastY) + 1 };
+                 width: Math.abs(this._startX - this._lastX),
+                 height: Math.abs(this._startY - this._lastY) };
     }
 
     _onKeyPressEvent(object, keyPressEvent) {
@@ -330,6 +330,9 @@ class SelectArea {
         this.top_mask.height = this._startY;
         this.bottom_mask.y = this._startY;
         this.bottom_mask.height = global.stage.height - this._startY;
+
+        this._lastX = this._startX;
+        this._lastY = this._startY;
 
         return Clutter.EVENT_PROPAGATE;
     }
