@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-16 09:04+0000\n"
+"POT-Creation-Date: 2021-12-31 14:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,8 +20,8 @@ msgstr ""
 
 #: src/cinnamon-app.c:332 src/cinnamon-app.c:341
 #: js/ui/notificationDaemon.js:584
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:65
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:94
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:66
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:95
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:797
 msgid "Unknown"
 msgstr ""
@@ -668,52 +668,71 @@ msgstr ""
 msgid "Large Text"
 msgstr ""
 
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:18
+msgid "%B %-e, %Y"
+msgstr ""
+
+#. Translators: This is the date which appears in the calendar
+#. applet, as a tooltip and as a title header inside the applet.
+#. The format uses the strftime syntax.
+#. %A, %B %-e, %Y is the American Date format (Saturday, January 4, 2020):
+#. %A is the name of the day, %B is the name of the month
+#. %-e is the non-padded day number, %Y is the year.
+#. for info on the strftime format visit: http://man7.org/linux/man-
+#. pages/man3/strftime.3.html
+#. for info on international date formats visit:
+#. http://www.localeplanet.com/compare/date-pattern.html?pat=FULL
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:19
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:26
+#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:311
+msgid "%A, %B %-e, %Y"
+msgstr ""
+
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:124
 #: files/usr/share/cinnamon/desklets/clock@cinnamon.org/desklet.js:24
 msgid "Date and Time Settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:62
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:65
 msgid "Starting in a few minutes"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:66
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:69
 #, javascript-format
 msgid "Starting in %d minutes"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:76
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:79
 msgid "This evening"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:79
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:82
 msgid "Starting later today"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:82
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:85
 #, javascript-format
 msgid "In %d hour"
 msgid_plural "In %d hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:651
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:664
 msgid "No Events"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:901
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:925
 msgid "In progress"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:910
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:946
 msgid "All day"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:922
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:931
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:940
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:949
-#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:990
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:971
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:994
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:1032
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:1054
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:257
 msgid "Today"
 msgstr ""
@@ -1200,49 +1219,49 @@ msgstr ""
 msgid "Panel launchers"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:55
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:541
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:56
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:544
 msgid "Battery full"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:57
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:543
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:58
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:546
 msgid "Battery almost full"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:59
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:545
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:60
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:548
 msgid "Battery good"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:61
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:547
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:62
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:550
 msgid "Low battery"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:63
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:549
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:64
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:552
 msgid "Critically low battery"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:72
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:73
 msgid "AC adapter"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:74
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:75
 msgid "Laptop battery"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:76
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:77
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:371
 msgid "UPS"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:78
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:79
 msgid "Monitor"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:80
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:81
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:334
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:78
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:84
@@ -1250,71 +1269,71 @@ msgid "Mouse"
 msgstr ""
 
 #. keyboard@cinnamon.org->metadata.json->name
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:82
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:83
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:147
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:232
 msgid "Keyboard"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:84
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:85
 msgid "PDA"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:86
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:87
 msgid "Cell phone"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:88
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:89
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:471
 msgid "Media player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:90
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:91
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:160
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:462
 msgid "Tablet"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:92
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:93
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:474
 msgid "Computer"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:342
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:664
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:345
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:667
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:237
 msgid "Brightness"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:343
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:670
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:346
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:673
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:263
 msgid "Keyboard backlight"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:349
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:352
 msgid "Power Settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:421
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:424
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:402
 msgid "Charging"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:425
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:428
 #, javascript-format
 msgid "Charging - %d hour until fully charged"
 msgid_plural "Charging - %d hours until fully charged"
 msgstr[0] ""
 msgstr[1] ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:429
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:432
 #, javascript-format
 msgid "Charging - %d %s %d %s until fully charged"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:430
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:451
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:433
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:454
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:83
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:91
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:94
@@ -1323,8 +1342,8 @@ msgid_plural "hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:430
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:451
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:433
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:454
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:73
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:91
 msgid "minute"
@@ -1332,36 +1351,36 @@ msgid_plural "minutes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:434
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:437
 #, javascript-format
 msgid "Charging - %d minute until fully charged"
 msgid_plural "Charging - %d minutes until fully charged"
 msgstr[0] ""
 msgstr[1] ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:438
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:441
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:424
 msgid "Fully charged"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:442
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:445
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:404
 msgid "Using battery power"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:446
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:449
 #, javascript-format
 msgid "Using battery power - %d hour remaining"
 msgid_plural "Using battery power - %d hours remaining"
 msgstr[0] ""
 msgstr[1] ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:450
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:453
 #, javascript-format
 msgid "Using battery power - %d %s %d %s remaining"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:455
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:458
 #, javascript-format
 msgid "Using battery power - %d minute remaining"
 msgid_plural "Using battery power - %d minutes remaining"
@@ -1634,8 +1653,8 @@ msgid "Open Trash"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:67
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:610
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:615
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:613
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:618
 msgid "Lock Screen"
 msgstr ""
 
@@ -2265,20 +2284,6 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:245
 msgid "Select a date"
-msgstr ""
-
-#. Translators: This is the date which appears in the calendar
-#. applet, as a tooltip and as a title header inside the applet.
-#. The format uses the strftime syntax.
-#. %A, %B %-e, %Y is the American Date format (Saturday, January 4, 2020):
-#. %A is the name of the day, %B is the name of the month
-#. %-e is the non-padded day number, %Y is the year.
-#. for info on the strftime format visit: http://man7.org/linux/man-
-#. pages/man3/strftime.3.html
-#. for info on international date formats visit:
-#. http://www.localeplanet.com/compare/date-pattern.html?pat=FULL
-#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:311
-msgid "%A, %B %-e, %Y"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:387
@@ -3192,11 +3197,11 @@ msgstr ""
 msgid "First day of week"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:205
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:223
 msgid "Region"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:208
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:226
 msgid "City"
 msgstr ""
 
@@ -3347,9 +3352,9 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:346
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:16
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:611
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:620
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:626
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:614
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:623
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:629
 msgid "Do nothing"
 msgstr ""
 
@@ -4353,16 +4358,16 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:143
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:12
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:607
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:616
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:610
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:619
 msgid "Suspend"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:144
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:14
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:609
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:618
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:625
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:612
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:621
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:628
 msgid "Hibernate"
 msgstr ""
 
@@ -5054,9 +5059,9 @@ msgid "Allow the pointer to pass through the edges of panels"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:13
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:608
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:617
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:624
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:611
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:620
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:627
 msgid "Shut down immediately"
 msgstr ""
 
@@ -5309,6 +5314,7 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:412
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:477
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:480
 msgid "Battery"
 msgstr ""
 
@@ -5336,7 +5342,7 @@ msgstr ""
 msgid "Cellphone"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:619
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:622
 msgid "Ask"
 msgstr ""
 
