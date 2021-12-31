@@ -1,3 +1,34 @@
+cinnamon (5.2.7) una; urgency=medium
+
+  [ Michael Webster ]
+  * cs_calendar.py: Update gnome's 24h preference when ours gets updated.
+  * settings api demo: Fix dependency example to match description.
+  * notification applet: Remove leftover log statement.
+  * power applet: Show a generic panel icon even if there's only a single coarse-level device attached.
+  * screenshot.js: Add SelectArea method.
+  * calendar applet: Improve event dot positioning.
+
+  [ Cobinja ]
+  * [calendar applet] Make new dates translatable (#10560)
+
+  [ Michael Webster ]
+  * calendar applet: Re-organize multi-day string construction.
+  * calendar applet: Use the ► unicode symbol in place of '->' for event times.
+
+  [ BaptisteMiq ]
+  * Checking None values to prevent crashes (#10552)
+
+  [ Michael Webster ]
+  * Fix minimize effect when there is no icon geometry set by a window- list.
+  * events: Actual time should be used with time_format, not a date-only.
+  * calendar events: Clicking on the selected date over the event list will open gnome-calendar.
+  * screenshot.js: Cancel an area selection op if the rubberbanding is completed with a width or height of 0.
+
+  [ Matt Turnbull ]
+  * Fix warning about using var for module exports. (#10568)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 31 Dec 2021 11:26:30 +0000
+
 cinnamon (5.2.6) una; urgency=medium
 
   [ Michael Webster ]
