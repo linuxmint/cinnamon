@@ -121,6 +121,7 @@ A11yHandler.prototype = {
             switch (this.event_flash_type) {
                 case CDesktopEnums.VisualBellType.FULLSCREEN_FLASH:
                     this.flash_window(display, null);
+                    break;
                 case CDesktopEnums.VisualBellType.FRAME_FLASH:
                     this.flash_window(display, bell_window);
             }
