@@ -415,6 +415,8 @@ class Module:
         walked = walk_directories(dirs, lambda d: os.path.isdir(d), return_directories=True)
         valid = []
         for directory in walked:
+            if directory[0] in ("gnome", "hicolor"):
+                continue
             path = os.path.join(directory[1], directory[0], "index.theme")
             if os.path.exists(path):
                 try:
