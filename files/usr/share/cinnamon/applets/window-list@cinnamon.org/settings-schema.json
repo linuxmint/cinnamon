@@ -38,6 +38,15 @@
     "type": "section",
     "description": "Display"
   },
+  "button-width": {
+        "type": "spinbutton",
+        "default" : 150,
+        "min" : 0,
+        "max" : 400,
+        "step" : 5,
+        "units" : "pixels",
+        "description" : "Window button width in the panel" 
+  },
   "buttons-use-entire-space": {
       "type": "switch",
       "default": false,
