@@ -647,7 +647,7 @@ class AppMenuButton {
                 alloc.natural_size = Math.max(150 * global.ui_scale,
                         naturalSize + spacing + lnaturalSize);
             } else {
-                alloc.natural_size = 150 * global.ui_scale;
+                alloc.natural_size = this._applet.buttonWidth * global.ui_scale;
             }
         } else {
             alloc.natural_size = this._applet._panelHeight;
@@ -1018,6 +1018,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("left-click-minimize", "leftClickMinimize");
         this.settings.bind("middle-click-close", "middleClickClose");
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
+        this.settings.bind("button-width", "buttonWidth", this._refreshAllItems);
         this.settings.bind("panel-show-label", "showLabelPanel", this._updateLabels);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
         this.settings.bind("window-preview-show-label", "showLabel", this._onPreviewChanged);
