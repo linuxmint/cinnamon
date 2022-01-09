@@ -740,10 +740,10 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .calendar-day-event-dot-box {
-    margin-top: 22px;
+    margin-top: 1.75em;
 
     /* any other way do do something like this? */
-    max-rows: 2;
+    max-rows: 1;
 }
 
 .calendar-day-event-dot {
