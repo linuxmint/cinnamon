@@ -159,7 +159,7 @@ class Calendar {
         this.desktop_settings = new Gio.Settings({ schema_id: DESKTOP_SCHEMA });
         this.desktop_settings.connect("changed::" + FIRST_WEEKDAY_KEY, Lang.bind(this, this._onSettingsChange));
 
-        this.events_enabled = true;
+        this.events_enabled = false;
         this.events_manager.connect("events-updated", this._events_updated.bind(this));
         this.events_manager.connect("events-manager-ready", this._update_events_enabled.bind(this));
         this.events_manager.connect("has-calendars-changed", this._update_events_enabled.bind(this));
