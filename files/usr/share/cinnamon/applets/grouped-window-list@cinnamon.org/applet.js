@@ -483,6 +483,9 @@ class GroupedWindowListApplet extends Applet.Applet {
         }
         Main.keybindingManager.removeHotKey('launch-show-apps-order');
         Main.keybindingManager.removeHotKey('launch-cycle-menus');
+
+        Main.keybindingManager.removeHotKey('launch-cycle-apps-forward');
+        Main.keybindingManager.removeHotKey('launch-cycle-apps-backward');
     }
 
     bindAppKey(i) {
