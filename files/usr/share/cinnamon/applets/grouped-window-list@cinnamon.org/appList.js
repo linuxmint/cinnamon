@@ -179,26 +179,33 @@ class AppList {
             return appGroup.groupState.metaWindows.length > 0 &&
                 appGroup.groupState.metaWindows.includes(lastFocused);
         });
-        count = this.appList.length - 1;
 
-        // Preparation to search the next AppGroup index (z) to focus
-        z = focusedIndex + step
+        // Activates last focused if all minimized
+        if ( this.state.settings.lastFocusedIfMinimized &&
+             (!lastFocused.appears_focused || lastFocused.minimized) ) {
+            z = focusedIndex
+        } else { // Otherwise activates next app group
+            count = this.appList.length - 1;
 
-        // The loop below finds the final AppGroup index to focus
-        let limit = count * 2;
+            // Preparation to search the next AppGroup index (z) to focus
+            z = focusedIndex + step
 
-        while (!this.appList[z] || !this.appList[z].groupState.lastFocused) {
-            limit--;
-            z += step
-            if (limit < 0) {
-                if (count === 0) {
+            // The loop below finds the final AppGroup index to focus
+            let limit = count * 2;
+
+            while (!this.appList[z] || !this.appList[z].groupState.lastFocused) {
+                limit--;
+                z += step
+                if (limit < 0) {
+                    if (count === 0) {
+                        z = 0;
+                    }
+                    break;
+                } else if (z < 0) {
+                    z = count;
+                } else if (z > count) {
                     z = 0;
                 }
-                break;
-            } else if (z < 0) {
-                z = count;
-            } else if (z > count) {
-                z = 0;
             }
         }
 

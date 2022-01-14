@@ -31,7 +31,8 @@
         "reverse-scrolling",
         "left-click-action",
         "middle-click-action",
-        "show-all-workspaces"
+        "show-all-workspaces",
+        "last-focused-if-minimized"
       ]
     },
     "appButtonsSection": {
@@ -157,6 +158,11 @@
     "type": "checkbox",
     "default": false,
     "description": "Show windows from all workspaces"
+  },
+  "last-focused-if-minimized": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Cycle apps activates last focused if all minimized"
   },
   "enable-app-button-dragging": {
     "type": "checkbox",

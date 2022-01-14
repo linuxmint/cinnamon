@@ -347,7 +347,9 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'show-recent', value: 'showRecent', cb: null},
             {key: 'autostart-menu-item', value: 'autoStart', cb: null},
             {key: 'monitor-move-all-windows', value: 'monitorMoveAllWindows', cb: null},
-            {key: 'show-all-workspaces', value: 'showAllWorkspaces', cb: this.refreshAllAppLists}
+            {key: 'show-all-workspaces', value: 'showAllWorkspaces', cb: this.refreshAllAppLists},
+            {key: 'last-focused-if-minimized', value: 'lastFocusedIfMinimized', cb: this.refreshAllAppLists}
+
         ];
 
         for (let i = 0, len = settingsProps.length; i < len; i++) {
