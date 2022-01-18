@@ -267,6 +267,7 @@ class AppMenuButton {
         this.transient = transient;
         let initially_urgent = transient || metaWindow.is_demanding_attention() || metaWindow.is_urgent();
         this.labelVisible = false;
+        this.labelVisiblePref = false;
         this._signals = new SignalManager.SignalManager();
         this.xid = metaWindow.get_xwindow();
 
@@ -287,6 +288,8 @@ class AppMenuButton {
                 Lang.bind(this, this._getPreferredWidth));
         this._signals.connect(this.actor, 'get-preferred-height',
                 Lang.bind(this, this._getPreferredHeight));
+        this._signals.connect(this.actor, 'allocation-changed',
+                              Lang.bind(this, this._onAllocationChanged));
         this._signals.connect(this.actor, 'allocate', Lang.bind(this, this._allocate));
 
         this.progressOverlay = new St.Widget({ style_class: "progress", reactive: false, important: true  });
@@ -294,10 +297,6 @@ class AppMenuButton {
         this.actor.add_actor(this.progressOverlay);
 
         this._iconBox = new Cinnamon.Slicer({ name: 'appMenuIcon' });
-        this._signals.connect(this._iconBox, 'style-changed',
-                              Lang.bind(this, this._onIconBoxStyleChanged));
-        this._signals.connect(this._iconBox, 'notify::allocation',
-                              Lang.bind(this, this._updateIconBoxClipAndGeometry));
         this.actor.add_actor(this._iconBox);
 
         this._label = new St.Label();
@@ -305,7 +304,6 @@ class AppMenuButton {
 
         this.updateLabelVisible();
 
-        this._iconBottomClip = 0;
         this._visible = true;
 
         this._progress = 0;
@@ -612,42 +610,31 @@ class AppMenuButton {
         }
     }
 
-    _onIconBoxStyleChanged() {
-        let node = this._iconBox.get_theme_node();
-        this._iconBottomClip = node.get_length('app-icon-bottom-clip');
-        this._updateIconBoxClipAndGeometry();
-    }
-
-    _updateIconBoxClipAndGeometry() {
-        let allocation = this._iconBox.allocation;
-        if (this._iconBottomClip > 0)
-            this._iconBox.set_clip(0, 0,
-                   allocation.x2 - allocation.x1,
-                   allocation.y2 - allocation.y1 - this._iconBottomClip);
-        else
-            this._iconBox.remove_clip();
-
+    _onAllocationChanged() {
         let rect = new Meta.Rectangle();
         [rect.x, rect.y] = this.actor.get_transformed_position();
         [rect.width, rect.height] = this.actor.get_transformed_size();
-
         this.metaWindow.set_icon_geometry(rect);
     }
 
     _getPreferredWidth(actor, forHeight, alloc) {
         let [minSize, naturalSize] = this._iconBox.get_preferred_width(forHeight);
-        // minimum size just enough for icon if we ever get that many apps going
-        alloc.min_size = naturalSize;
+
+        alloc.min_size = 1 * global.ui_scale;
 
         if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM ) {
-        // the 'buttons use entire space' option only makes sense on horizontal panels
-            if (this._applet.buttonsUseEntireSpace) {
-                let [lminSize, lnaturalSize] = this._label.get_preferred_width(forHeight);
-                let spacing = this.actor.get_theme_node().get_length('spacing');
-                alloc.natural_size = Math.max(150 * global.ui_scale,
-                        naturalSize + spacing + lnaturalSize);
+        // the 'buttons use entire space' option only makes sense on horizontal panels with labels
+            if (this.labelVisible) {
+                if (this._applet.buttonsUseEntireSpace) {
+                    let [lminSize, lnaturalSize] = this._label.get_preferred_width(forHeight);
+                    let spacing = this.actor.get_theme_node().get_length('spacing');
+                    alloc.natural_size = Math.max(150 * global.ui_scale,
+                            naturalSize + spacing + lnaturalSize);
+                } else {
+                    alloc.natural_size = 150 * global.ui_scale;
+                }
             } else {
-                alloc.natural_size = 150 * global.ui_scale;
+                alloc.natural_size = naturalSize
             }
         } else {
             alloc.natural_size = this._applet._panelHeight;
@@ -691,6 +678,12 @@ class AppMenuButton {
 
         childBox.y1 = box.y1 + yPadding;
         childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
+
+        if (allocWidth < naturalWidth) {
+            this.labelVisible = false;
+        } else {
+            this.labelVisible = this.labelVisiblePref;
+        }
 
         if (this.labelVisible) {
             if (direction === Clutter.TextDirection.LTR) {
@@ -741,9 +734,11 @@ class AppMenuButton {
     updateLabelVisible() {
         if (this._applet.showLabelPanel) {
             this._label.show();
+            this.labelVisiblePref = true;
             this.labelVisible = true;
         } else {
             this._label.hide();
+            this.labelVisiblePref = false;
             this.labelVisible = false;
         }
     }
