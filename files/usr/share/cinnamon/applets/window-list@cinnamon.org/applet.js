@@ -266,7 +266,7 @@ class AppMenuButton {
         this.metaWindow = metaWindow;
         this.transient = transient;
         let initially_urgent = transient || metaWindow.is_demanding_attention() || metaWindow.is_urgent();
-        this.labelVisible = false;
+        this.drawLabel = false;
         this.labelVisiblePref = false;
         this._signals = new SignalManager.SignalManager();
         this.xid = metaWindow.get_xwindow();
@@ -624,7 +624,7 @@ class AppMenuButton {
 
         if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM ) {
         // the 'buttons use entire space' option only makes sense on horizontal panels with labels
-            if (this.labelVisible) {
+            if (this.labelVisiblePref) {
                 if (this._applet.buttonsUseEntireSpace) {
                     let [lminSize, lnaturalSize] = this._label.get_preferred_width(forHeight);
                     let spacing = this.actor.get_theme_node().get_length('spacing');
@@ -644,7 +644,7 @@ class AppMenuButton {
     _getPreferredHeight(actor, forWidth, alloc) {
         let [minSize1, naturalSize1] = this._iconBox.get_preferred_height(forWidth);
 
-        if (this.labelVisible) {
+        if (this.labelVisiblePref) {
             let [minSize2, naturalSize2] = this._label.get_preferred_height(forWidth);
             alloc.min_size = Math.max(minSize1, minSize2);
         } else {
@@ -685,7 +685,7 @@ class AppMenuButton {
             this.labelVisible = this.labelVisiblePref;
         }
 
-        if (this.labelVisible) {
+        if (this.drawLabel) {
             if (direction === Clutter.TextDirection.LTR) {
                 childBox.x1 = box.x1;
             } else {
@@ -698,7 +698,7 @@ class AppMenuButton {
         }
         this._iconBox.allocate(childBox, flags);
 
-        if (this.labelVisible) {
+        if (this.drawLabel) {
             [minWidth, minHeight, naturalWidth, naturalHeight] = this._label.get_preferred_size();
 
             yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
@@ -735,11 +735,11 @@ class AppMenuButton {
         if (this._applet.showLabelPanel) {
             this._label.show();
             this.labelVisiblePref = true;
-            this.labelVisible = true;
+            this.drawLabel = true;
         } else {
             this._label.hide();
             this.labelVisiblePref = false;
-            this.labelVisible = false;
+            this.drawLabel = false;
         }
     }
 
