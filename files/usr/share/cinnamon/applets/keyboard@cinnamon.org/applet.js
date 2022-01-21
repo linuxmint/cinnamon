@@ -106,7 +106,7 @@ class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
 
     activate(event) {
         PopupMenu.PopupBaseMenuItem.prototype.activate.call(this);
-        this._config.set_current_group(this._id);
+        Main.keyboardLayoutManager.set_current_group(this._id);
     }
 }
 
@@ -172,7 +172,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
     }
 
     on_applet_added_to_panel() {
-        this._config = new XApp.KbdLayoutController();
+        this._config = Main.keyboardLayoutManager.layout_controller;
 
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
             this._syncConfig();
@@ -181,8 +181,8 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             this._syncConfig();
         }
 
-        this._config.connect('layout-changed', Lang.bind(this, this._syncGroup));
-        this._config.connect('config-changed', Lang.bind(this, this._syncConfig));
+        Main.keyboardLayoutManager.connect('layout-changed', Lang.bind(this, this._syncGroup));
+        Main.keyboardLayoutManager.connect('config-changed', Lang.bind(this, this._syncConfig));
     }
 
     _onButtonPressEvent(actor, event) {
@@ -190,7 +190,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         if (event.get_button() === 2) {
             const selected_group = this._config.get_current_group();
             const new_group = (selected_group + 1) % this._layoutItems.length;
-            this._config.set_current_group(new_group);
+            Main.keyboardLayoutManager.set_current_group(new_group);
         }
         return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
     }
@@ -230,6 +230,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
         const groups = this._config.get_all_names();
 
+        log(`groups: ${groups}`);
         for (let i = 0; i < groups.length; i++) {
             let handled = false;
             let actor = null;
@@ -270,6 +271,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
         const selected = this._config.get_current_group();
 
+        log(`sync group: ${selected}`);
         if (this._selectedLayout) {
             this._selectedLayout.setShowDot(false);
             this._selectedLayout = null;
