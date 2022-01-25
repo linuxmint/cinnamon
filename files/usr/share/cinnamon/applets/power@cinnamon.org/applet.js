@@ -298,6 +298,8 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
             this.tooltipText += ": " + value + "%";
 
         this.tooltip.set_text(this.tooltipText);
+        if (this._dragging)
+            this.tooltip.show();
     }
 
     /* Overriding PopupSliderMenuItem so we can modify the scroll step */
