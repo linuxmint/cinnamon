@@ -123,14 +123,12 @@ class AppGroup {
             x_align: St.Align.START,
             y_align: St.Align.MIDDLE,
             show_on_set_parent: false,
-            style: 'margin: 0;',
         });
         this.numberLabel = new St.Label({
-            style: 'font-size: 10px;padding: 0px;',
             style_class: 'grouped-window-list-number-label',
             important: true,
             text: '',
-            anchor_x: -3 * global.ui_scale,
+            anchor_x: St.Widget.get_default_direction() === St.TextDirection.RTL ? 3 * global.ui_scale : -3 * global.ui_scale,
             anchor_y: 1 + (global.ui_scale > 1 ? 2 : 0)
         });
         this.numberLabel.clutter_text.ellipsize = false;
@@ -144,9 +142,9 @@ class AppGroup {
             style_class: 'grouped-window-list-button-label',
             important: true,
             text: '',
+            x_align: St.Align.START,
             show_on_set_parent: this.state.settings.titleDisplay > 1
         });
-        this.label.x_align = St.Align.START;
         this.actor.add_child(this.label);
 
         this.groupState.set({tooltip: new Tooltips.PanelItemTooltip({actor: this.actor}, '', this.state.orientation)});
@@ -354,45 +352,34 @@ class AppGroup {
     }
 
     allocate(actor, box, flags) {
-        let allocWidth = box.x2 - box.x1;
-        let allocHeight = box.y2 - box.y1;
-        let childBox = new Clutter.ActorBox();
-        let direction = this.actor.get_text_direction();
-        let spacing = 0;
+        const allocWidth = box.x2 - box.x1;
+        const allocHeight = box.y2 - box.y1;
+        const childBox = new Clutter.ActorBox();
+        const direction = this.actor.get_text_direction();
 
         // Set the icon to be left-justified (or right-justified) and centered vertically
-        let [minWidth, minHeight, naturalWidth, naturalHeight] = this.iconBox.get_preferred_size();
-        let yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
+        const [minWidth, minHeight, naturalWidth, naturalHeight] = this.iconBox.get_preferred_size();
+        const iconYPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
 
-        childBox.y1 = box.y1 + yPadding;
+        this.drawLabel = this.labelVisiblePref && allocWidth >= naturalWidth + 10 * global.ui_scale;
+
+        childBox.y1 = box.y1 + iconYPadding;
         childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
 
-        if (this.labelVisiblePref && allocWidth < naturalWidth + 10 * global.ui_scale) {
-            this.drawLabel = false;
-        } else {
-            this.drawLabel = this.labelVisiblePref;
-        }
-
         if (this.drawLabel && this.groupState.metaWindows.length > 0) {
-            if (direction === Clutter.TextDirection.LTR) {
-                childBox.x1 = box.x1 + 6;
-            } else {
-                childBox.x1 = Math.max(box.x1, box.x2 - naturalWidth);
-            }
-            spacing = childBox.x1;
+            childBox.x1 = direction === Clutter.TextDirection.LTR ?
+                box.x1 + 6 : Math.max(box.x1, box.x2 - 6 - naturalWidth);
             childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
         } else {
-            let offset = 0;
-            if (this.state.orientation === St.Side.LEFT) {
-                offset += this.actor.style_length('border-left-width') * 2;
-            }
+            const offset = this.state.orientation === St.Side.LEFT ? this.actor.style_length('border-left-width') * 2 : 0;
             [childBox.x1, childBox.x2] = center(allocWidth + offset, naturalWidth);
         }
 
         this.iconBox.allocate(childBox, flags);
 
-        let windowCountFactor = this.groupState.windowCount > 9 ? 1.5 : 2;
-        let badgeOffset = 2 * global.ui_scale;
+        // Set badge position
+        const windowCountFactor = this.groupState.windowCount > 9 ? 1.5 : 2;
+        const badgeOffset = 2 * global.ui_scale;
         childBox.x1 = childBox.x1 - badgeOffset;
         childBox.x2 = childBox.x1 + (this.numberLabel.width * windowCountFactor);
         childBox.y1 = Math.max(childBox.y1 - badgeOffset, 0);
@@ -400,23 +387,21 @@ class AppGroup {
 
         this.badge.allocate(childBox, flags);
 
+        // Set label position
         if (this.drawLabel) {
-            let iconSize = this.state.trigger('getPanelIconSize') * global.ui_scale;
-            spacing = iconSize - spacing;
-            [minWidth, minHeight, naturalWidth, naturalHeight] = this.label.get_preferred_size();
+            const labelNaturalHeight = this.label.get_preferred_size()[3];
+            const labelYPadding = Math.floor(Math.max(0, allocHeight - labelNaturalHeight) / 2);
 
-            yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
-            childBox.y1 = box.y1 + yPadding;
-            childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
+            childBox.y1 = box.y1 + labelYPadding;
+            childBox.y2 = childBox.y1 + Math.min(labelNaturalHeight, allocHeight);
+
             if (direction === Clutter.TextDirection.LTR) {
-                // Reuse the values from the previous allocation
-                childBox.x1 = Math.min(childBox.x2 + spacing, box.x2);
+                childBox.x1 = Math.min(this.iconBox.x + this.iconBox.width, box.x2);
                 childBox.x2 = box.x2;
             } else {
-                childBox.x2 = Math.max(childBox.x1 - spacing, box.x1);
                 childBox.x1 = box.x1;
+                childBox.x2 = this.iconBox.x;
             }
-
             this.label.allocate(childBox, flags);
         }
 
@@ -453,8 +438,6 @@ class AppGroup {
         if (this.label.text == null) {
             this.label.set_text('');
         }
-        // TODO: This should be set by the theme.
-        this.label.set_style('padding-right: 4px;');
 
         if (!animate) {
             this.label.show();
@@ -1083,7 +1066,6 @@ class AppGroup {
     handleTitleDisplayChange() {
         each(this.groupState.metaWindows, (win) => {
             this.onWindowTitleChanged(win, true);
-            this.handleButtonLabel(win);
         });
     }
 
