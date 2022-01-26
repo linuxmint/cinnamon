@@ -430,11 +430,8 @@ class Calendar {
         let row = 2;
 
         while (true) {
-            let group = new Clutter.Actor(
-                {
-                    layout_manager: new Clutter.FixedLayout()
-                }
-            );
+            let group = new Cinnamon.Stack();
+
             let button = new St.Button(
                 {
                     label: iter.getDate().toString(),
@@ -446,12 +443,6 @@ class Calendar {
             let dot_box = new Cinnamon.GenericContainer(
                 {
                     style_class: "calendar-day-event-dot-box",
-                    constraints: new Clutter.BindConstraint(
-                        {
-                            source: group,
-                            coordinate: Clutter.BindCoordinate.WIDTH
-                        }
-                    )
                 }
             );
             dot_box.connect('allocate', this._allocate_dot_box.bind(this));
