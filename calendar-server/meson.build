@@ -1,6 +1,6 @@
 
 server_launcher_conf = configuration_data()
-server_launcher_conf.set('MUFFINLIBDIR', muffinlibdir)
+server_launcher_conf.set('MUFFINLIBDIR', muffin_typelibdir)
 server_launcher_conf.set('PKGLIBDIR', join_paths(prefix, pkglibdir))
 server_launcher_conf.set('LIBEXECDIR', join_paths(prefix, libexecdir))
 

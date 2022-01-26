@@ -1,3 +1,9 @@
+cinnamon (5.3.0) UNRELEASED; urgency=medium
+
+  * Adapt to muffin 5.3 changes.
+
+ -- Michael Webster <miketwebster@gmail.com>  Wed, 26 Jan 2022 09:12:03 -0500
+
 cinnamon (5.2.7) una; urgency=medium
 
   [ Michael Webster ]
