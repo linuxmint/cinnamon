@@ -314,38 +314,37 @@ cinnamon_app_create_icon_texture_for_window (CinnamonApp   *app,
                                              int            size,
                                              MetaWindow    *for_window)
 {
-    //FIXME
-  // MetaWindow *window;
+  MetaWindow *window;
 
-  // window = NULL;
+  window = NULL;
 
-  // if (app->running_state != NULL)
-  // {
-  //   const gchar *icon_name;
+  if (app->running_state != NULL)
+  {
+    const gchar *icon_name;
 
-  //   if (for_window != NULL)
-  //     {
-  //       if (g_slist_find (app->running_state->windows, for_window) != NULL)
-  //         {
-  //           window = for_window;
-  //         }
-  //       else
-  //         {
-  //           g_warning ("cinnamon_app_create_icon_texture: MetaWindow %p provided that does not match App %p",
-  //                      for_window, app);
-  //         }
-  //     }
+    if (for_window != NULL)
+      {
+        if (g_slist_find (app->running_state->windows, for_window) != NULL)
+          {
+            window = for_window;
+          }
+        else
+          {
+            g_warning ("cinnamon_app_create_icon_texture: MetaWindow %p provided that does not match App %p",
+                       for_window, app);
+          }
+      }
 
-  //   if (window != NULL)
-  //     {
-  //       icon_name = meta_window_get_icon_name (window);
+    if (window != NULL)
+      {
+        icon_name = meta_window_get_icon_name (window);
 
-  //       if (icon_name != NULL)
-  //         {
-  //           return get_actor_for_icon_name (app, icon_name, size);
-  //         }
-  //     }
-  // }
+        if (icon_name != NULL)
+          {
+            return get_actor_for_icon_name (app, icon_name, size);
+          }
+      }
+  }
 
   return cinnamon_app_create_icon_texture (app, size);
 }
