@@ -282,15 +282,18 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
   GIcon *icon;
   ClutterActor *ret;
 
+  ret = NULL;
+
   if (app->info == NULL)
     return window_backed_app_get_icon (app, size);
 
-  ret = st_icon_new ();
-  st_icon_set_icon_size (ST_ICON (ret), size);
-  // st_icon_set_fallback_icon_name (ST_ICON (ret), "application-x-executable");
-
   icon = g_app_info_get_icon (G_APP_INFO (app->info));
-  st_icon_set_gicon (ST_ICON (ret), icon);
+
+  if (icon != NULL)
+    ret = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+
+  if (ret == NULL)
+    ret = get_failsafe_icon (size);
 
   return ret;
 }
