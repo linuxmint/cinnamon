@@ -47,7 +47,7 @@ Depends:
  cinnamon-l10n,
  cinnamon-screensaver,
  cinnamon-session,
- cinnamon-settings-daemon,
+ cinnamon-settings-daemon (>= 5.3),
  cjs (>= 4.8),
  cups-pk-helper,
  gir1.2-accountsservice-1.0,
