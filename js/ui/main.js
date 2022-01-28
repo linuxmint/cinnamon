@@ -1124,7 +1124,7 @@ function _stageEventHandler(actor, event) {
     // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
     let action = global.display.get_keybinding_action(keyCode, modifierState);
     if (action > 0) {
-        keybindingManager.invoke_action(action);
+        keybindingManager.invoke_keybinding_action_by_id(action);
     }
 
     // Other bindings are only available when the overview is up and no modal dialog is present
