@@ -118,6 +118,7 @@ const Accessibility = imports.ui.accessibility;
 const ModalDialog = imports.ui.modalDialog;
 const {readOnlyError} = imports.ui.environment;
 const {installPolyfills} = imports.ui.overrides;
+const InputMethod = imports.misc.inputMethod;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -313,6 +314,8 @@ function start() {
     global.connect('notify-error', function (global, msg, detail) { notifyError(msg, detail); });
 
     Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
+
+    Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
 
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
     setRunState(RunState.STARTUP);
