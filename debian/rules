@@ -11,7 +11,7 @@ export DEB_LDFLAGS_MAINT_APPEND=-Wl,--as-needed
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 %:
-	dh $@ --with gir
+	dh $@ --with gir,python3
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
@@ -22,6 +22,8 @@ override_dh_auto_configure:
 # workaround for fix lmde4 build
 override_dh_dwz:
 
+override_dh_python3:
+	dh_python3 /usr/share/cinnamon
 
 override_dh_strip:
 	dh_strip --dbg-package=cinnamon-dbg
