@@ -132,6 +132,7 @@ class CalendarServer(Gio.Application):
         except GLib.Error as e:
             print(e)
             self.quit()
+            return
 
         self.update_status()
 
