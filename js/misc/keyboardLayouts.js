@@ -10,66 +10,59 @@ const CinnamonDesktop = imports.gi.CinnamonDesktop;
 const Meta = imports.gi.Meta;
 
 var InputGroup = class {
-    constructor(xkbinfo, id, groups) {
-        this.id = id;
-
-        let [ret, display_name, short_name, layout, variant] = xkbinfo.get_layout_info(id);
-
-        this.user_label = display_name;
+    constructor(source, display_name, short_name, layout_name, variant) {
+        this.display_name = display_name;
+        this.short_name = short_name;
+        this.layout_name = layout_name;
+        this.variant = variant;
+        this.source = source;
 
         // TODO: deduplication
-
-
-
-        this.group_name = layout;
-        this.group_label = layout;
-        this.group_dupe_id = 0;
-
-        this.variant_name = variant;
-        this.variant_label = variant;
-        this.variant_dupe_id = 0;
     }
 }
 
 var KeyboardLayoutManager = class {
     constructor() {
-        this.layout_controller = new XApp.KbdLayoutController();
-        this.gnomekbd_settings = new Gio.Settings({ schema_id: "org.gnome.libgnomekbd.keyboard" });
+        this.input_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.input-sources" });
         this.xkbinfo = new CinnamonDesktop.XkbInfo();
 
-        this.groups = {};
+        this.groups = [];
 
-        this.current_layouts_str = null;
-        this.current_variants_str = null;
-        this.current_options_str = null;
+        this.input_settings.connect("changed::sources", this._refresh_keymap.bind(this));
+        this.input_settings.connect("changed::xkb-options", this._refresh_keymap.bind(this));
 
-        // this.kbd_settings_id = this.gnomekbd_settings.connect("changed", this._refresh_keymap.bind(this));
-        this.kbd_settings_id = this.layout_controller.connect("config-changed", this._refresh_keymap.bind(this));
-        // this.kbd_settings_id = this.layout_controller.connect("layout-changed", this._refresh_keymap.bind(this));
+        this.ibus_active = false;
+        Gio.DBus.session.watch_name(
+            "org.fcitx.Fcitx",
+            Gio.BusNameWatcherFlags.NONE,
+            this._ibus_appeared.bind(this),
+            this._ibus_vanished.bind(this)
+        );
 
-        this._refresh_keymap(null);
-        this.set_current_group(this.layout_controller.get_current_group());
+        this._refresh_keymap();
 
-        // Meta.get_backend().connect("keymap-changed", this._backend_keymap_change_done.bind(this));
-        // Meta.get_backend().connect("keymap-layout-group-changed", this._backend_layout_group_change_done.bind(this));
+        this._current_group_idx = this.input_settings.get_uint("current");
+
+        this.set_current_group(this._current_group_idx);
     }
 
     _refresh_keymap(controller) {
-        let options = this.gnomekbd_settings.get_strv("options") || [];
-        let ids = this.gnomekbd_settings.get_strv("layouts");
-
-        let layouts = []
+        let sources = this.input_settings.get_value("sources");
+        let options = this.input_settings.get_strv("xkb-options");
+        let layouts = [];
         let variants = [];
 
-        for (let id of ids) {
-            // let group = new GroupData(this.xkbinfo, id);
-            // groups.push(group);
-        // }
+        let new_groups = [];
 
+        let i = 0;
 
+        for (let i = 0; i < sources.n_children(); i++) {
+            let [source, id] = sources.get_child_value(i).deep_unpack();
+            let [success, display_name, short_name, layout, variant] = this.xkbinfo.get_layout_info(id);
 
-
-            let [,,, layout, variant] = this.xkbinfo.get_layout_info(id);
+            if (success) {
+                new_groups.push(new InputGroup(source, display_name, short_name, layout, variant));
+            }
 
             layouts.push(layout);
             variants.push(variant);
@@ -79,36 +72,99 @@ var KeyboardLayoutManager = class {
         let variants_str = variants.join(",");
         let options_str = options.join(",");
 
-        log("reload")
-        log(layouts_str);
-        log(variants_str);
-        log(options_str);
-        log("reload done")
-
         if (layouts_str === this.current_layouts_str &&
             variants_str === this.current_variants_str &&
             options_str === this.current_options_str) {
             return;
         }
 
-        this.current_layouts_str = layouts_str;
-        this.current_variants_str = variants_str;
-        this.current_options_str = options_str;
-
+        this.groups = new_groups;
         Meta.get_backend().set_keymap(layouts_str, variants_str, options_str);
-    }
 
-    set_current_group(id) {
-        Meta.get_backend().lock_layout_group(id);
-    }
-
-    _backend_keymap_change_done(backend) {
-        log("backend keymap changed");
         this.emit("config-changed");
     }
 
-    _backend_layout_group_change_done(backend, id) {
-        log("backend gorup changed");
+    set_current_group(idx) {
+        if (idx < 0 || idx >= this.groups.length) {
+            global.logError(`KeyboardLayoutManager.set_current_group() invalid index: ${idx}`)
+            return;
+        }
+
+        if (idx === this._current_group_idx) {
+            return;
+        }
+
+        this._current_group_idx = idx;
+
+        this.input_settings.set_uint("current", idx);
+
+        Meta.get_backend().lock_layout_group(idx);
+        this.emit("layout-changed", idx);
+    }
+
+    get_current_group_idx() {
+        return this._current_group_idx;
+    }
+
+    get_layout_name(idx) {
+        let group = this.groups[idx];
+
+        if (group === undefined) {
+            return null
+        }
+
+        return group.layout_name;
+    }
+
+    get_group_display_name(idx) {
+        let group = this.groups[idx];
+
+        if (group === undefined) {
+            return null
+        }
+
+        return group.display_name;
+    }
+
+    get_group_variant_name(idx) {
+        let group = this.groups[idx];
+
+        if (group === undefined) {
+            return null
+        }
+
+        return group.short_name;
+    }
+
+    get_group_short_name(idx) {
+        let group = this.groups[idx];
+
+        if (group === undefined) {
+            return null
+        }
+
+        return group.short_name;
+    }
+
+    have_multiple_layouts() {
+        return this.groups.length > 1;
+    }
+
+    get_n_layouts() {
+        return this.groups.length;
+    }
+
+    get_ibus_active() {
+        return this.ibus_active;
+    }
+
+    _ibus_appeared(connection, name, owner) {
+        this.ibus_active = true;
+        this.emit("layout-changed");
+    }
+
+    _ibus_vanished(connection, name) {
+        this.ibus_active = false;
         this.emit("layout-changed");
     }
 }
