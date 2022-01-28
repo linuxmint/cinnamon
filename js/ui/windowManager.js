@@ -221,9 +221,9 @@ var WindowManager = class WindowManager {
         this._movingWindow = null;
 
         this.settings = new Settings({schema_id: 'org.cinnamon.muffin'});
-        this.hasEffects = global.settings.get_boolean('desktop-effects');
+        this.hasEffects = global.settings.get_boolean('desktop-effects-workspace');
 
-        global.settings.connect('changed::desktop-effects', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
+        global.settings.connect('changed::desktop-effects-workspace', (s, k) => this.onSettingsChanged(s, k, 'get_boolean'));
 
         this._workspace_osd_array = [];
         this._tilePreview = null;
