@@ -25,5 +25,9 @@ override_dh_dwz:
 override_dh_python3:
 	dh_python3 /usr/share/cinnamon
 
+override_dh_makeshlibs:
+	dh_makeshlibs -pcinnamon -Xlibcinnamon
+	dh_makeshlibs --remaining-packages
+
 override_dh_strip:
 	dh_strip --dbg-package=cinnamon-dbg
