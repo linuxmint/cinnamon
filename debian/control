@@ -3,7 +3,6 @@ Section: x11
 Priority: optional
 Maintainer: Linux Mint <root@linuxmint.com>
 Build-Depends:
- meson,
  debhelper-compat (= 12),
  dh-python,
  dpkg-dev (>= 1.16.1~),
@@ -33,6 +32,7 @@ Build-Depends:
  libstartup-notification0-dev (>= 0.11),
  libxapp-dev (>= 2.0.0),
  libxfixes-dev (>= 1:5.0),
+ meson,
  python3:any,
 Standards-Version: 3.9.5
 Homepage: https://projects.linuxmint.com/cinnamon/
@@ -41,6 +41,7 @@ Package: cinnamon
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
 Depends:
+ adwaita-icon-theme,
  cinnamon-common,
  cinnamon-control-center,
  cinnamon-desktop-data,
@@ -72,7 +73,6 @@ Depends:
  gir1.2-upowerglib-1.0,
  gir1.2-xapp-1.0 (>= 1.9.0),
  gkbd-capplet,
- adwaita-icon-theme,
  gsettings-desktop-schemas (>= 0.1.7),
  iso-flag-png,
  libcanberra-pulse,
@@ -125,8 +125,8 @@ Depends:
  gir1.2-cinnamondesktop-3.0 (>= 4.8),
  gir1.2-meta-muffin-0.0 (>= 5.3),
  gir1.2-timezonemap-1.0,
- xdg-utils,
  python3-xapp,
+ xdg-utils,
  ${misc:Depends},
  ${python3:Depends},
 Description: Cinnamon desktop (Common data files)
@@ -156,4 +156,3 @@ Description: Debugging symbols for the Cinnamon desktop
  and flexible.
  .
  This package contains the debugging symbols.
-
