@@ -93,9 +93,10 @@ class EmblemedIcon {
 }
 
 class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
-    constructor(id, indicator, long_name) {
+    constructor(config, id, indicator, long_name) {
         super();
 
+        this._config = config;
         this._id = id;
         this.label = new St.Label({ text: long_name });
         this.indicator = indicator;
@@ -105,10 +106,7 @@ class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
 
     activate(event) {
         PopupMenu.PopupBaseMenuItem.prototype.activate.call(this);
-
-        Mainloop.timeout_add(100, Lang.bind(this, function() {
-            Main.keyboardLayoutManager.set_current_group(this._id);
-        }))
+        Main.keyboardLayoutManager.set_current_group(this._id);
     }
 }
 
@@ -122,8 +120,6 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             this.metadata = metadata;
             Main.systrayManager.registerRole("keyboard", metadata.uuid);
 
-            this._config = Main.keyboardLayoutManager;
-
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);
@@ -131,6 +127,8 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             this.actor.add_style_class_name('panel-status-button');
 
             this._layoutItems = [ ];
+
+            this.im_running = false;
 
             this.show_flags = false;
             this.use_upper = false;
@@ -154,6 +152,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             }));
             this.menu.addSettingsAction(_("Keyboard Settings"), 'keyboard');
 
+            Gio.DBus.session.watch_name("org.fcitx.Fcitx", Gio.BusNameWatcherFlags.NONE, Lang.bind(this, this._itemAppeared), Lang.bind(this, this._itemVanished));
         }
         catch (e) {
             global.logError(e);
@@ -173,6 +172,8 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
     }
 
     on_applet_added_to_panel() {
+        this._config = new XApp.KbdLayoutController();
+
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
             this._syncConfig();
             this._onPanelEditModeChanged();
@@ -180,16 +181,16 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             this._syncConfig();
         }
 
-        Main.keyboardLayoutManager.connect('layout-changed', Lang.bind(this, this._syncGroup));
-        Main.keyboardLayoutManager.connect('config-changed', Lang.bind(this, this._syncConfig));
+        this._config.connect('layout-changed', Lang.bind(this, this._syncGroup));
+        this._config.connect('config-changed', Lang.bind(this, this._syncConfig));
     }
 
     _onButtonPressEvent(actor, event) {
         // Cycle to the next layout
         if (event.get_button() === 2) {
-            const selected_group = this._config.get_current_group_idx();
+            const selected_group = this._config.get_current_group();
             const new_group = (selected_group + 1) % this._layoutItems.length;
-            Main.keyboardLayoutManager.set_current_group(new_group);
+            this._config.set_current_group(new_group);
         }
         return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
     }
@@ -215,7 +216,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         this._selectedLayout = null;
         this._layoutItems = [ ];
 
-        if (!this._config.have_multiple_layouts()) {
+        if (!this._config.get_enabled()) {
             this.menu.close();
             this.actor.hide();
             return;
@@ -227,18 +228,19 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
         this.actor.show();
 
-        for (let i = 0; i < this._config.get_n_layouts(); i++) {
+        const groups = this._config.get_all_names();
+
+        for (let i = 0; i < groups.length; i++) {
             let handled = false;
             let actor = null;
 
             if (this.show_flags) {
-                const name = this._config.get_layout_name(i);
+                const name = this._config.get_icon_name_for_group(i);
 
                 const file = Gio.file_new_for_path("/usr/share/iso-flag-png/" + name + ".png");
 
                 if (file.query_exists(null)) {
-                    // FIXME: dedupe flag id
-                    actor = new EmblemedIcon(file.get_path(), 0, "popup-menu-icon").actor;
+                    actor = new EmblemedIcon(file.get_path(), this._config.get_flag_id_for_group(i), "popup-menu-icon").actor;
                     handled = true;
                 }
             }
@@ -247,16 +249,16 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
                 let name;
 
                 if (this.use_variants) {
-                    name = this._config.get_group_variant_name(i);
+                    name = this._config.get_variant_label_for_group(i);
                 } else {
-                    name = this._config.get_group_short_name(i);
+                    name = this._config.get_short_group_label_for_group(i);
                 }
 
                 name = this.use_upper ? name.toUpperCase() : name;
                 actor = new St.Label({ text: name });
             }
 
-            const item = new LayoutMenuItem(i, actor, this._config.get_group_display_name(i));
+            const item = new LayoutMenuItem(this._config, i, actor, groups[i]);
             this._layoutItems.push(item);
             this.menu.addMenuItem(item, i);
         }
@@ -265,7 +267,8 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
     }
 
     _syncGroup() {
-        const selected = this._config.get_current_group_idx();
+
+        const selected = this._config.get_current_group();
 
         if (this._selectedLayout) {
             this._selectedLayout.setShowDot(false);
@@ -277,17 +280,17 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
         this._selectedLayout = item;
 
-        this.set_applet_tooltip(this._config.get_group_display_name(selected));
+        this.set_applet_tooltip(this._config.get_current_name());
 
         let handled = false;
 
         if (this.show_flags) {
-            const file = Gio.file_new_for_path("/usr/share/iso-flag-png/" + this._config.get_layout_name(selected) + ".png");
+            const name = this._config.get_current_icon_name();
+
+            const file = Gio.file_new_for_path("/usr/share/iso-flag-png/" + name + ".png");
 
             if (file.query_exists(null)) {
-                // FIXME: dedupe
-                // this._applet_icon = new EmblemedIcon(file.get_path(), this._config.get_current_flag_id(), "applet-icon");
-                this._applet_icon = new EmblemedIcon(file.get_path(), 0, "applet-icon");
+                this._applet_icon = new EmblemedIcon(file.get_path(), this._config.get_current_flag_id(), "applet-icon");
                 this._applet_icon_box.set_child(this._applet_icon.actor);
                 this._applet_icon_box.show();
 
@@ -303,10 +306,9 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             let name;
 
             if (this.use_variants) {
-                name = "xx" // FIXME: this._config.get_current_variant_label();
+                name = this._config.get_current_variant_label();
             } else {
-                name = this._config.get_group_short_name(selected);
-                // name = this._config.get_current_short_group_label();
+                name = this._config.get_current_short_group_label();
             }
 
             name = this.use_upper ? name.toUpperCase() : name;
@@ -315,7 +317,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             this._applet_icon_box.hide();
         }
 
-        if (this._config.get_ibus_active()) {
+        if (this.im_running) {
             this.actor.hide();
         }
     }
