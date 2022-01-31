@@ -1,44 +1,365 @@
-This package is based on the Debian packaging of gnome-shell:
-<http://packages.qa.debian.org/g/gnome-shell.html>
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Cinnamon
+Upstream-Contact: Linux Mint Project <root@linuxmint.com>
+Source: https://github.com/linuxmint/cinnamon
 
-The Debian gnome-shell package was debianized by Sebastien Bacher
-<seb128@ubuntu.com> on Wed, 01 Jul 2009 23:29:31 +0200.
+Files: *
+Copyright: 1989-1991, Free Software Foundation, Inc
+           2011, Giovanni Campagna
+           2008, Intel Corp
+           2013-2014, Jonas Kümmerlin <rgcjonas@gmail.com>
+           2009, Marcelo Jorge Vieira (metal) <metal@alucinados.com>
+           2008-2011, Red Hat, Inc
+           1999-2001, Eazel, Inc
+           2001, George Lebl
+           2000, Helix Code, Inc
+           2006-2008, OpenedHand Ltd
+           2007-2011, Red Hat, Inc
+           2002, Sun Microsystems Inc
+           1997-2000, The Free Software Foundation
+License: GPL-2+
 
-Upstream Authors:
+Files: src/cinnamon-window-tracker.c
+       src/st/croco/cr-additional-sel.c
+       src/st/croco/cr-additional-sel.h
+       src/st/croco/cr-attr-sel.c
+       src/st/croco/cr-attr-sel.h
+       src/st/croco/cr-cascade.c
+       src/st/croco/cr-cascade.h
+       src/st/croco/cr-declaration.c
+       src/st/croco/cr-declaration.h
+       src/st/croco/cr-doc-handler.c
+       src/st/croco/cr-doc-handler.h
+       src/st/croco/cr-enc-handler.c
+       src/st/croco/cr-enc-handler.h
+       src/st/croco/cr-fonts.c
+       src/st/croco/cr-fonts.h
+       src/st/croco/cr-input.c
+       src/st/croco/cr-input.h
+       src/st/croco/cr-num.c
+       src/st/croco/cr-num.h
+       src/st/croco/cr-om-parser.c
+       src/st/croco/cr-om-parser.h
+       src/st/croco/cr-parser.c
+       src/st/croco/cr-parser.h
+       src/st/croco/cr-parsing-location.c
+       src/st/croco/cr-parsing-location.h
+       src/st/croco/cr-prop-list.c
+       src/st/croco/cr-prop-list.h
+       src/st/croco/cr-pseudo.c
+       src/st/croco/cr-pseudo.h
+       src/st/croco/cr-rgb.c
+       src/st/croco/cr-rgb.h
+       src/st/croco/cr-selector.c
+       src/st/croco/cr-selector.h
+       src/st/croco/cr-simple-sel.c
+       src/st/croco/cr-simple-sel.h
+       src/st/croco/cr-statement.c
+       src/st/croco/cr-statement.h
+       src/st/croco/cr-string.c
+       src/st/croco/cr-string.h
+       src/st/croco/cr-stylesheet.c
+       src/st/croco/cr-stylesheet.h
+       src/st/croco/cr-term.c
+       src/st/croco/cr-term.h
+       src/st/croco/cr-tknzr.c
+       src/st/croco/cr-tknzr.h
+       src/st/croco/cr-token.c
+       src/st/croco/cr-token.h
+       src/st/croco/cr-utils.c
+       src/st/croco/cr-utils.h
+       src/st/croco/libcroco.h
+       src/st/st-adjustment.c
+       src/st/st-adjustment.h
+       src/st/st-bin.c
+       src/st/st-bin.h
+       src/st/st-box-layout-child.c
+       src/st/st-box-layout-child.h
+       src/st/st-box-layout.h
+       src/st/st-button.c
+       src/st/st-button.h
+       src/st/st-clipboard.c
+       src/st/st-clipboard.h
+       src/st/st-entry.c
+       src/st/st-entry.h
+       src/st/st-group.c
+       src/st/st-group.h
+       src/st/st-icon.c
+       src/st/st-icon.h
+       src/st/st-label.c
+       src/st/st-label.h
+       src/st/st-private.c
+       src/st/st-private.h
+       src/st/st-scroll-bar.c
+       src/st/st-scroll-bar.h
+       src/st/st-scroll-view-fade.c
+       src/st/st-scroll-view-fade.h
+       src/st/st-scroll-view.c
+       src/st/st-scroll-view.h
+       src/st/st-scrollable.c
+       src/st/st-scrollable.h
+       src/st/st-settings.c
+       src/st/st-settings.h
+       src/st/st-table-child.c
+       src/st/st-table-child.h
+       src/st/st-table-private.h
+       src/st/st-table.c
+       src/st/st-table.h
+       src/st/st-theme-node-drawing.c
+       src/st/st-theme.c
+       src/st/st-types.h
+       src/st/st-viewport.h
+       src/st/st-widget-accessible.h
+       src/st/st-widget.c
+       src/st/st-widget.h
+Copyright: 2009, Abderrahim Kitouni
+           2010-2011, Adel Gadllah
+           2002-2004, Dodji Seketeli
+           2002-2004, Dodji Seketeli <dodji@seketeli.org>
+           2019, Endless, Inc
+           2009-2010, Florian Müllner
+           2010, Giovanni Campagna
+           2010, Igalia, S.L
+           2008-2010, Intel Corporation
+           2010, Maxim Ermilov
+           2007-2008, OpenedHand
+           2006-2019, Red Hat, Inc
+           2008, litl, LLC
+License: LGPL-2.1
 
-         Colin Walters
-         Dan Winship
-         Marina Zhurakhinskaya
-         Owen Taylor
-         William Jon McCann
+Files: src/st/st-border-image.c
+       src/st/st-border-image.h
+       src/st/st-drawing-area.c
+       src/st/st-drawing-area.h
+       src/st/st-focus-manager.c
+       src/st/st-focus-manager.h
+       src/st/st-icon-colors.c
+       src/st/st-image-content.c
+       src/st/st-image-content.h
+       src/st/st-polygon.c
+       src/st/st-polygon.h
+       src/st/st-shadow.c
+       src/st/st-shadow.h
+       src/st/st-texture-cache.c
+       src/st/st-texture-cache.h
+       src/st/st-theme-context.c
+       src/st/st-theme-context.h
+       src/st/st-theme-node-private.h
+       src/st/st-theme-node-transition.c
+       src/st/st-theme-node-transition.h
+       src/st/st-theme-node.c
+       src/st/st-theme-node.h
+       src/st/st-theme-private.h
+       src/st/st-theme.h
+       src/st/test-theme.c
+Copyright: 2010, Adel Gadllah
+           2019, Canonical, Ltd
+           2009-2010, Florian Müllner
+           2010, Giovanni Campagna
+           2010, Maxim Ermilov
+           2008-2010, Red Hat, Inc
+           2009, Steve Frécinaux
+License: LGPL-2.1+
 
-Files: src/*
-       js/*
-Copyright: © 2000 Helix Code, Inc.
-           © 2000,2001 Eazel, Inc.
-           © 2001 George Lebl
-           © 2002 Sun Microsystems Inc.
-           © 2004-2005 James M. Cape <jcape@ignore-your.tv>
-           © 2006-2008 Red Hat, Inc.
-           © 2007 Ryan Lortie
-           © 2008 Intel Corp.
-License: GPL-2+ (/usr/share/common-licenses/GPL-2)
+Files: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py
+       files/usr/share/cinnamon/cinnamon-menu-editor/cme/MenuEditor.py
+       files/usr/share/cinnamon/cinnamon-menu-editor/cme/util.py
+       src/st/st-box-layout.c
+       src/st/st-viewport.c
+       src/tray/*
+Copyright: 2009, Abderrahim Kitouni
+           2002, Anders Carlsson <andersca@gnu.org>
+           2019, Endless, Inc
+           2010, Florian Muellner
+           2009, Intel Corporation
+           2006, OpenedHand
+           2008-2010, Red Hat, Inc
+           2006, Travis Watkins
+           2006, Travis Watkins, Heinrich Wendel
+           2003-2006, Vincent Untz
+License: LGPL-2+
 
-Files: src/tray/*
-Copyright: © 2002 Anders Carlsson <andersca@gnu.org>
-           © 2003-2006 Vincent Untz
-           © 2008 Red Hat, Inc.
+Files: files/usr/share/cinnamon/cinnamon-settings/bin/capi.py
+       files/usr/share/cinnamon/cinnamon-settings/bin/imtools.py
+Copyright: 2007-2010, www.stani.be
+License: GPL-3+
 
-Files: src/st/*
-Copyright: © 2008 OpenedHand
-           © 2009 Intel Corporation.
-           © 2003-2004 Dodji Seketeli
-License: LGPL-2.1 (/usr/share/common-licenses/LGPL-2.1)
+Files: files/usr/share/cinnamon/cinnamon-settings/bin/proxygsettings.py
+       python3/cinnamon/proxygsettings.py
+Copyright: 2011-2012, Canonical Ltd
+           2014, Erik Devriendt
+License: GPL-3_SSLException
 
-The Debian packaging is:
+Files: src/run-js-test.c
+Copyright: 2010, Red Hat, Inc
+           2008, litl, LLC
+License: Expat
 
-    Copyright © 2009 Sebastien Bacher <seb128@ubuntu.com>
-    Copyright © 2009 Collabora Ltd.
+Files: files/usr/share/cinnamon/cinnamon-settings/bin/tweenEquations.py
+Copyright: 2001, Robert Penner
+           2008, litl, LLC
+License: BSD-3-clause
 
-and is licensed under the GPL version 3,
-see `/usr/share/common-licenses/GPL-3'.
+Files: debian/*
+Copyright: Linux Mint Project <root@linuxmint.com>
+License: GPL-2+
+
+License: BSD-3-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ .
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+  * Neither the name of the author nor the names of contributors may be used
+    to endorse or promote products derived from this software without specific
+    prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to
+ deal in the Software without restriction, including without limitation the
+ rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ sell copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ IN THE SOFTWARE.
+
+License: GPL-2+
+ This package is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+ .
+ This package is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this package; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ version 2 can be found in `/usr/share/common-licenses/GPL-2'.
+
+License: GPL-3+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see http://www.gnu.org/licenses/
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ version 3 can be found in `/usr/share/common-licenses/GPL-3.
+
+License: GPL-3_SSLException
+ This program is free software: you can redistribute it and/or modify it
+ under the terms of the GNU General Public License version 3, as published
+ by the Free Software Foundation.
+ .
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranties of
+ MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
+ PURPOSE.  See the GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License along
+ with this program.  If not, see <http://www.gnu.org/licenses/>.
+ .
+ In addition, as a special exception, the copyright holders give
+ permission to link the code of portions of this program with the
+ OpenSSL library under certain conditions as described in each
+ individual source file, and distribute linked combinations
+ including the two.
+ You must obey the GNU General Public License in all respects
+ for all of the code used other than OpenSSL.  If you modify
+ file(s) with this exception, you may extend this exception to your
+ version of the file(s), but you are not obligated to do so.  If you
+ do not wish to do so, delete this exception statement from your
+ version.  If you delete this exception statement from all source
+ files in the program, then also delete it here.
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ version 3 can be found in `/usr/share/common-licenses/GPL-3.
+
+License: LGPL-2+
+ This library is free software; you can redistribute it and/or modify it under
+ the terms of the GNU Lesser General Public License as published by the Free
+ Software Foundation; either version 2 of the License, or (at your option) any
+ later version.
+ .
+ This library is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+ details.
+ .
+ You should have received a copy of the GNU Lesser General Public License
+ along with this library; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street - Suite 500, Boston, MA 02110-1335, USA.
+ .
+ On Debian systems, the complete text of the GNU Lesser General Public License
+ version 2 can be found in `/usr/share/common-licenses/LGPL-2'.
+
+License: LGPL-2.1
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License version 2.1 as published by the Free Software Foundation.
+ .
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ .
+ On Debian systems, the complete text of the GNU Lesser General Public License
+ version 2.1 can be found in `/usr/share/common-licenses/LGPL-2.1'.
+
+License: LGPL-2.1+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as
+ published by the Free Software Foundation, either version 2.1 of
+ the License, or (at your option) any later version.
+ .
+ This program is distributed in the hope it will be useful, but WITHOUT ANY
+ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ more details.
+ .
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
+ .
+ On Debian systems, the complete text of the GNU Lesser General Public License
+ version 2.1 can be found in `/usr/share/common-licenses/LGPL-2.1'.
