@@ -23,7 +23,6 @@ const Params = imports.misc.params;
 const Util = imports.misc.util;
 
 var SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
-var MENU_ANIMATION_TIME = 0.15; /* Seconds */
 var MENU_ANIMATION_OFFSET = 0.1;
 
 var PanelLoc = {
@@ -2303,7 +2302,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
 
             let tweenParams = {
                 transition: "easeOutQuad",
-                time: MENU_ANIMATION_TIME,
+                time: Main.wm.MENU_ANIMATION_TIME,
                 opacity: 255,
                 onUpdate: dest => {
                     let clipY = 0;
@@ -2411,7 +2410,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             this.animating = true;
             let tweenParams = {
                 transition: "easeInQuad",
-                time: MENU_ANIMATION_TIME,
+                time: Main.wm.MENU_ANIMATION_TIME,
                 opacity: 0,
                 onUpdate: dest => {
                         let clipY = 0;

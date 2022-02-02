@@ -55,27 +55,36 @@ class Module:
             options = ["none", _("None")], \
                       ["traditional", _("Traditional")], \
                       ["fly", _("Fly")], \
-                      ["move", _("Move")]
+                      ["fade", _("Fade")]
             widget = GSettingsComboBox(_("New windows or unminimizing existing ones"), "org.cinnamon", "desktop-effects-map", options)
-            settings.add_reveal_row(widget, "org.cinnamon", "desktop-effects")
+            settings.add_row(widget)
 
             # CLOSING WINDOWS
             options = ["none", _("None")], \
                       ["traditional", _("Traditional")], \
                       ["fly", _("Fly")]
             widget = GSettingsComboBox(_("Closing windows"), "org.cinnamon", "desktop-effects-close", options)
-            settings.add_reveal_row(widget, "org.cinnamon", "desktop-effects")
+            settings.add_row(widget)
 
             # MINIMIZING WINDOWS
             options = ["none", _("None")], \
                       ["traditional", _("Traditional")], \
-                      ["fly", _("Fly")]
+                      ["fly", _("Fly")], \
+                      ["fade", _("Fade")]
             widget = GSettingsComboBox(_("Minimizing windows"), "org.cinnamon", "desktop-effects-minimize", options)
-            settings.add_reveal_row(widget, "org.cinnamon", "desktop-effects")
+            settings.add_row(widget)
 
             # MAXIMIZING/TILING WINDOWS
             widget = GSettingsSwitch(_("Resizing and tiling windows"), "org.cinnamon", "desktop-effects-change-size")
-            settings.add_reveal_row(widget, "org.cinnamon", "desktop-effects")
+            settings.add_row(widget)
+
+            slider = GSettingsRange(_("Window animation speed"), "org.cinnamon", "window-effect-speed", _("Slower"), _("Faster"),
+                                    mini=0, maxi=2, step=1, show_value=False)
+            slider.content_widget.set_has_origin(False)
+            slider.content_widget.add_mark(1, Gtk.PositionType.TOP, None)
+
+            settings.add_row(slider)
+
 
     def on_desktop_effects_enabled_changed(self, schema, key):
         active = schema.get_boolean(key)
