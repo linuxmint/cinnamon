@@ -47,6 +47,7 @@
 const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const Cogl = imports.gi.Cogl;
+const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Gdk = imports.gi.Gdk;
 const Lang = imports.lang;
@@ -289,8 +290,11 @@ class AppMenuButton {
                 Lang.bind(this, this._getPreferredWidth));
         this._signals.connect(this.actor, 'get-preferred-height',
                 Lang.bind(this, this._getPreferredHeight));
-        this._signals.connect(this.actor, 'allocation-changed',
-                              Lang.bind(this, this._onAllocationChanged));
+
+        this._signals.connect(this.actor, 'notify::allocation',
+                              Lang.bind(this, this.updateIconGeometry));
+        this._updateIconGeometryTimeoutId = 0;
+
         this._signals.connect(this.actor, 'allocate', Lang.bind(this, this._allocate));
 
         this.progressOverlay = new St.Widget({ style_class: "progress", reactive: false, important: true  });
@@ -528,6 +532,10 @@ class AppMenuButton {
     }
 
     destroy() {
+        if (this._updateIconGeometryTimeoutId > 0) {
+            Mainloop.source_remove(this._updateIconGeometryTimeoutId);
+        }
+
         this._signals.disconnectAllSignals();
         this._tooltip.destroy();
         if (!this.transient) {
@@ -612,11 +620,24 @@ class AppMenuButton {
         }
     }
 
-    _onAllocationChanged() {
+    updateIconGeometry() {
+        if (this._updateIconGeometryTimeoutId > 0) {
+            Mainloop.source_remove(this._updateIconGeometryTimeoutId);
+        }
+
+        this._updateIconGeometryTimeoutId = Mainloop.timeout_add(50, Lang.bind(this, this._updateIconGeometryTimeout));
+    }
+
+    _updateIconGeometryTimeout() {
+        this._updateIconGeometryTimeoutId = 0;
+
         let rect = new Meta.Rectangle();
         [rect.x, rect.y] = this.actor.get_transformed_position();
         [rect.width, rect.height] = this.actor.get_transformed_size();
+
         this.metaWindow.set_icon_geometry(rect);
+
+        return GLib.SOURCE_REMOVE;
     }
 
     _getPreferredWidth(actor, forHeight, alloc) {
@@ -1112,6 +1133,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
         if (this.appletEnabled) {
             this._updateSpacing();
         }
+
+        this._updateAllIconGeometry()
     }
 
     _updateSpacing() {
@@ -1212,6 +1235,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
         if (window.actor.visible)
             window.setIcon();
+
+        window.updateIconGeometry();
     }
 
     _refreshAllItems() {
@@ -1282,6 +1307,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.refreshing = false;
 
         this._applySavedOrder();
+        this._updateAllIconGeometry();
     }
 
     _addWindow(metaWindow, transient) {
@@ -1311,6 +1337,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         }
 
         this._saveOrder();
+        this._updateAllIconGeometry();
     }
 
     _removeWindow(metaWindow) {
@@ -1324,6 +1351,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         }
 
         this._saveOrder();
+        this._updateAllIconGeometry();
     }
 
     _shouldAdd(metaWindow) {
@@ -1378,6 +1406,12 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.lastWindowOrder = new_order.join("::");
     }
 
+    _updateAllIconGeometry() {
+        for (let window of this._windows) {
+            window.updateIconGeometry();
+        }
+    }
+
     handleDragOver(source, actor, x, y, time) {
         if (this._inEditMode)
             return DND.DragMotionResult.MOVE_DROP;
@@ -1424,6 +1458,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.manager_container.set_child_at_index(source.actor, this._dragPlaceholderPos);
 
         this._saveOrder();
+        this._updateAllIconGeometry();
 
         return true;
     }
