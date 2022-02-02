@@ -106,7 +106,7 @@ class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
 
     activate(event) {
         PopupMenu.PopupBaseMenuItem.prototype.activate.call(this);
-        Main.keyboardLayoutManager.set_current_group(this._id);
+        this._config.set_current_group(this._id);
     }
 }
 
