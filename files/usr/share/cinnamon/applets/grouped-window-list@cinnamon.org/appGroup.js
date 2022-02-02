@@ -164,8 +164,6 @@ class AppGroup {
         this.signals.connect(this._draggable, 'drag-begin', (...args) => this.onDragBegin(...args));
         this.signals.connect(this._draggable, 'drag-cancelled', (...args) => this.onDragCancelled(...args));
 
-        this.signals.connect(this.actor, 'notify::allocation', (...args) => this.updateIconGeometry(...args));
-
         this.calcWindowNumber();
         this.on_orientation_changed(true);
         this.handleFavorite();
@@ -421,22 +419,19 @@ class AppGroup {
             this.label.allocate(childBox, flags);
         }
 
-        if (this.progressOverlay.visible) this.allocateProgress(childBox, flags);
-    }
-
-    updateIconGeometry(actor, box, flags) {
         // Call set_icon_geometry for support of Cinnamon's minimize animation
         if (this.groupState.metaWindows.length > 0 && this.actor.realized) {
             let rect = new Meta.Rectangle();
             [rect.x, rect.y] = this.actor.get_transformed_position();
             [rect.width, rect.height] = this.actor.get_transformed_size();
-
             each(this.groupState.metaWindows, (metaWindow) => {
                 if (metaWindow) {
                     metaWindow.set_icon_geometry(rect);
                 }
             });
         }
+
+        if (this.progressOverlay.visible) this.allocateProgress(childBox, flags);
     }
 
     showLabel(animate = false) {
@@ -913,7 +908,6 @@ class AppGroup {
             metaWindows,
             lastFocused: metaWindow
         });
-        this.updateIconGeometry();
         this.handleFavorite();
     }
 
