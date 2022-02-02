@@ -208,7 +208,7 @@
       <default>"traditional"</default>
       <summary>Effect used when mapping windows</summary>
       <description>
-       An effect: traditional, fly, move, none
+       An effect: traditional, fly, fade, none
       </description>
     </key>
 
@@ -216,7 +216,7 @@
       <default>"traditional"</default>
       <summary>Effect used when minimizing windows</summary>
       <description>
-       An effect: traditional, fly, none
+       An effect: traditional, fly, fade, none
       </description>
     </key>
 
@@ -249,6 +249,12 @@
       <description>
        Duration of the effect (in milliseconds)
       </description>
+    </key>
+
+    <key type="i" name="window-effect-speed">
+      <default>1</default>
+      <range min="0" max="2"/>
+      <summary>Speed multiplier for window-effects</summary>
     </key>
 
     <key type="b" name="startup-animation">
