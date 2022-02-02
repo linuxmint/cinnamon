@@ -157,7 +157,6 @@ class AppGroup {
         this.signals.connect(this.actor, 'get-preferred-width', (...args) => this.getPreferredWidth(...args));
         this.signals.connect(this.actor, 'get-preferred-height', (...args) => this.getPreferredHeight(...args));
         this.signals.connect(this.actor, 'allocate', (...args) => this.allocate(...args));
-        this.signals.connect(this.actor, 'allocation-changed', (...args) => this.allocationChanged(...args));
         this.signals.connect(this.actor, 'enter-event', (...args) => this.onEnter(...args));
         this.signals.connect(this.actor, 'leave-event', (...args) => this.onLeave(...args));
         this.signals.connect(this.actor, 'button-release-event', (...args) => this.onAppButtonRelease(...args));
@@ -420,10 +419,6 @@ class AppGroup {
             this.label.allocate(childBox, flags);
         }
 
-        if (this.progressOverlay.visible) this.allocateProgress(childBox, flags);
-    }
-
-    allocationChanged(actor, box, flags) {
         // Call set_icon_geometry for support of Cinnamon's minimize animation
         if (this.groupState.metaWindows.length > 0 && this.actor.realized) {
             let rect = new Meta.Rectangle();
@@ -436,6 +431,8 @@ class AppGroup {
                 }
             });
         }
+
+        if (this.progressOverlay.visible) this.allocateProgress(childBox, flags);
     }
 
     showLabel(animate = false) {
