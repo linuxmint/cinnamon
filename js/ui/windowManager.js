@@ -39,10 +39,22 @@ const {
 } = imports.ui.tweener;
 const WindowMenu = imports.ui.windowMenu;
 
-const WINDOW_ANIMATION_TIME = 0.1;
-const MAP_ANIMATION_TIME = 0.1;
-const DESTROY_ANIMATION_TIME = 0.15;
-const MINIMIZE_ANIMATION_TIME = 0.16;
+const MENU_ANIMATION_TIME = 0.1;
+const WORKSPACE_ANIMATION_TIME = 0.15;
+
+const TILE_PREVIEW_ANIMATION_TIME = 0.12;
+const SIZE_CHANGE_ANIMATION_TIME = 0.12;
+const MAP_ANIMATION_TIME = 0.12;
+const DESTROY_ANIMATION_TIME = 0.12;
+const MINIMIZE_ANIMATION_TIME = 0.12;
+
+// maps org.cinnamon window-effect-speed
+const ANIMATION_TIME_MULTIPLIERS = [
+    1.4, // 0 SLOW
+    1.0, // 1 DEFAULT
+    0.6  // 2 FAST
+]
+
 const DIM_TIME = 0.500;
 const DIM_DESATURATION = 0.6;
 const DIM_BRIGHTNESS = -0.2;
@@ -161,7 +173,7 @@ class TilePreview {
 
         if (animate) {
             Object.assign(props, {
-                time: WINDOW_ANIMATION_TIME,
+                time: TILE_PREVIEW_ANIMATION_TIME,
                 transition: 'easeOutQuad'
             });
             addTween(this.actor, props);
@@ -180,7 +192,7 @@ class TilePreview {
         if (true) {
             addTween(this.actor, {
                 opacity: 0,
-                time: WINDOW_ANIMATION_TIME,
+                time: TILE_PREVIEW_ANIMATION_TIME,
                 transition: 'easeOutQuad',
                 onComplete: () => this._reset()
             });
@@ -231,6 +243,7 @@ var WindowManager = class WindowManager {
         global.settings.connect('changed::desktop-effects-close', this.onSettingsChanged.bind(this));
         global.settings.connect('changed::desktop-effects-map', this.onSettingsChanged.bind(this));
         global.settings.connect('changed::desktop-effects-minimize', this.onSettingsChanged.bind(this));
+        global.settings.connect('changed::window-effect-speed', this.onSettingsChanged.bind(this));
 
         this.onSettingsChanged();
 
@@ -306,6 +319,8 @@ var WindowManager = class WindowManager {
         this.desktop_effects_close_type = global.settings.get_string("desktop-effects-close");
         this.desktop_effects_map_type = global.settings.get_string("desktop-effects-map");
         this.desktop_effects_minimize_type = global.settings.get_string("desktop-effects-minimize");
+
+        this.window_effect_multiplier = ANIMATION_TIME_MULTIPLIERS[global.settings.get_int("window-effect-speed")];
     }
 
     _shouldAnimate(actor, types=null) {
@@ -346,11 +361,12 @@ var WindowManager = class WindowManager {
         switch (this.desktop_effects_minimize_type) {
             case "traditional":
             {
-                this._minimizing.add(actor);
-                actor.set_scale(1.0, 1.0);
-
                 let [success, geom] = actor.meta_window.get_icon_geometry();
+
                 if (success) {
+                    this._minimizing.add(actor);
+                    actor.set_scale(1.0, 1.0);
+
                     let xDest, yDest, xScale, yScale;
                     xDest = geom.x;
                     yDest = geom.y;
@@ -362,22 +378,28 @@ var WindowManager = class WindowManager {
                         scale_y: yScale,
                         x: xDest,
                         y: yDest,
-                        time: MINIMIZE_ANIMATION_TIME,
+                        time: MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier,
                         transition: 'easeInQuad',
                         onComplete: () => this._minimizeWindowDone(cinnamonwm, actor),
                     });
-                } else {
-                        actor.set_pivot_point(0.5, 0.5);
 
-                        addTween(actor, {
-                            opacity: 0,
-                            scale_x: 0.88,
-                            scale_y: 0.88,
-                            time: DESTROY_ANIMATION_TIME,
-                            transition: 'easeOutQuad',
-                            onComplete: () => this._minimizeWindowDone(cinnamonwm, actor),
-                        });
+                    return;
                 }
+            }
+            case "fade":
+            { // this fallback for 'traditional' also
+                this._minimizing.add(actor);
+                actor.set_scale(1.0, 1.0);
+                actor.set_pivot_point(0.5, 0.5);
+
+                addTween(actor, {
+                    opacity: 0,
+                    scale_x: 0.88,
+                    scale_y: 0.88,
+                    time: MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier,
+                    transition: 'easeOutQuad',
+                    onComplete: () => this._minimizeWindowDone(cinnamonwm, actor),
+                });
 
                 return;
             }
@@ -391,12 +413,12 @@ var WindowManager = class WindowManager {
                 // The transition time set is the time if the animation starts/ends at the middle of the screen.
                 // Scale it proportional to the actual distance so that the speed of all animations will be constant.
                 let dist = Math.abs(actor.y - yDest);
-                let time = 0.1 * dist / yDest * 2;
+                let time = MINIMIZE_ANIMATION_TIME * (dist / yDest * 2);
 
                 addTween(actor, {
                     x: xDest,
                     y: yDest,
-                    time: time,
+                    time: time * this.window_effect_multiplier,
                     transition: "easeInSine",
                     onComplete: () => this._minimizeWindowDone(cinnamonwm, actor),
                 });
@@ -429,25 +451,22 @@ var WindowManager = class WindowManager {
             return;
         }
         switch (this.desktop_effects_map_type) {
-            case "move":
+            case "fade":
             {
                 this._unminimizing.add(actor);
 
-                let [width, height] = actor.get_size();
-                let [xDest, yDest] = actor.get_position();
-
-                let [xSrc, ySrc] = global.get_pointer();
-
-                actor.set_position(xSrc, ySrc);
-                actor.set_scale(0, 0);
+                actor.orig_opacity = actor.opacity;
+                actor.set_pivot_point(0.5, 0.5);
+                actor.scale_x = 0.94;
+                actor.scale_y = 0.94;
+                actor.opacity = 0;
                 actor.show();
 
                 addTween(actor, {
-                    scale_x: 1.0,
-                    scale_y: 1.0,
-                    x: xDest,
-                    y: yDest,
-                    time: MINIMIZE_ANIMATION_TIME,
+                    opacity: actor.orig_opacity,
+                    scale_x: 1,
+                    scale_y: 1,
+                    time: MAP_ANIMATION_TIME * this.window_effect_multiplier,
                     transition: 'easeOutQuad',
                     onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
                 });
@@ -464,13 +483,13 @@ var WindowManager = class WindowManager {
                 // The transition time set is the time if the animation starts/ends at the middle of the screen.
                 // Scale it proportional to the actual distance so that the speed of all animations will be constant.
                 let dist = Math.abs(ySrc - yDest);
-                let time = 0.1 * (dist / ySrc * 2);
+                let time = MAP_ANIMATION_TIME * (dist / ySrc * 2);
                 actor.show();
 
                 addTween(actor, {
                     x: xDest,
                     y: yDest,
-                    time: time,
+                    time: time * this.window_effect_multiplier,
                     transition: "easeInSine",
                     onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
                 });
@@ -496,7 +515,7 @@ var WindowManager = class WindowManager {
                         scale_y: 1.0,
                         x: xDest,
                         y: yDest,
-                        time: MINIMIZE_ANIMATION_TIME,
+                        time: MAP_ANIMATION_TIME * this.window_effect_multiplier,
                         transition: 'easeOutQuad',
                         onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
                     });
@@ -511,7 +530,7 @@ var WindowManager = class WindowManager {
                         opacity: 255,
                         scale_x: 1.0,
                         scale_y: 1.0,
-                        time: MINIMIZE_ANIMATION_TIME,
+                        time: MAP_ANIMATION_TIME * this.window_effect_multiplier,
                         transition: 'easeOutQuad',
                         onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
                     });
@@ -596,7 +615,7 @@ var WindowManager = class WindowManager {
                 scale_x: scaleX,
                 scale_y: scaleY,
                 opacity: 0,
-                time: WINDOW_ANIMATION_TIME,
+                time: SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier,
                 transition: 'easeOutQuad',
         });
 
@@ -613,7 +632,7 @@ var WindowManager = class WindowManager {
                 scale_y: 1,
                 translation_x: 0,
                 translation_y: 0,
-                time: WINDOW_ANIMATION_TIME,
+                time: SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier,
                 transition: 'easeOutQuad',
                 onComplete: () => this._sizeChangeWindowDone(cinnamonwm, actor),
         });
@@ -755,15 +774,15 @@ var WindowManager = class WindowManager {
             return;
         }
 
-        // menu effects are always traditional
+        // menu effects are always fade-in/out
         let overridden_types = [WindowType.MENU,
                                 WindowType.DROPDOWN_MENU,
                                 WindowType.POPUP_MENU    ];
 
-        let adjusted_type = overridden_types.includes(actor._windowType) ? "traditional" : this.desktop_effects_map_type;
+        let adjusted_type = overridden_types.includes(actor._windowType) ? "fade" : this.desktop_effects_map_type;
 
         switch (adjusted_type) {
-            case "move":
+            case "traditional":
             {
                 this._mapping.add(actor);
 
@@ -781,7 +800,7 @@ var WindowManager = class WindowManager {
                     x: xDest,
                     y: yDest,
                     time: 1.0,
-                    time: MAP_ANIMATION_TIME,
+                    time: MAP_ANIMATION_TIME * this.window_effect_multiplier,
                     transition: 'easeOutQuad',
                     onComplete: () => this._mapWindowDone(cinnamonwm, actor),
                 });
@@ -800,20 +819,20 @@ var WindowManager = class WindowManager {
                 // The transition time set is the time if the animation starts/ends at the middle of the screen.
                 // Scale it proportional to the actual distance so that the speed of all animations will be constant.
                 let dist = Math.abs(ySrc - yDest);
-                let time = .1 * (dist / ySrc);
+                let time = MAP_ANIMATION_TIME * (dist / ySrc * 2);
 
                 actor.show();
 
                 addTween(actor, {
                     y: yDest,
-                    time: time,
+                    time: time * this.window_effect_multiplier,
                     transition: "easeInSine",
                     onComplete: () => this._mapWindowDone(cinnamonwm, actor),
                 });
 
                 return;
             }
-            case "traditional":
+            case "fade":
             {
                 this._mapping.add(actor);
 
@@ -824,11 +843,18 @@ var WindowManager = class WindowManager {
                 actor.opacity = 0;
                 actor.show();
 
+                let time = MAP_ANIMATION_TIME * this.window_effect_multiplier;
+
+                // Popups shouldn't be affected by the multiplier.
+                if (overridden_types.includes(actor._windowType)) {
+                    time = MENU_ANIMATION_TIME;
+                }
+
                 addTween(actor, {
                     opacity: actor.orig_opacity,
                     scale_x: 1,
                     scale_y: 1,
-                    time: MAP_ANIMATION_TIME,
+                    time: time,
                     transition: 'easeOutQuad',
                     onComplete: () => this._mapWindowDone(cinnamonwm, actor),
                 });
@@ -905,11 +931,11 @@ var WindowManager = class WindowManager {
                 // The transition time set is the time if the animation starts/ends at the middle of the screen.
                 // Scale it proportional to the actual distance so that the speed of all animations will be constant.
                 let dist = Math.abs(ySrc - yDest);
-                let time = 0.1 * (dist / yDest * 2);
+                let time = DESTROY_ANIMATION_TIME * (dist / yDest * 2);
 
                 addTween(actor, {
                     y: yDest,
-                    time: time,
+                    time: time * this.window_effect_multiplier,
                     transition: "easeInSine",
                     onComplete: () => this._destroyWindowDone(cinnamonwm, actor),
                 });
@@ -925,7 +951,7 @@ var WindowManager = class WindowManager {
                     {
                         this._destroying.add(actor);
 
-                        actor.set_pivot_point(0.5, 1.0);
+                        actor.set_pivot_point(0.5, 0.5);
 
                         if (window.is_attached_dialog()) {
                             let parent = window.get_transient_for();
@@ -939,7 +965,7 @@ var WindowManager = class WindowManager {
                             opacity: 0,
                             scale_x: 0.88,
                             scale_y: 0.88,
-                            time: DESTROY_ANIMATION_TIME,
+                            time: DESTROY_ANIMATION_TIME * this.window_effect_multiplier,
                             transition: 'easeOutQuad',
                             onComplete: () => this._destroyWindowDone(cinnamonwm, actor),
                         });
@@ -1052,7 +1078,7 @@ var WindowManager = class WindowManager {
                     {
                         x: window.origX + xDest,
                         y: window.origY + yDest,
-                        time: WINDOW_ANIMATION_TIME,
+                        time: WORKSPACE_ANIMATION_TIME,
                         transition: 'easeOutQuad'
                     });
             } else if (window.get_workspace() === to) {
@@ -1067,7 +1093,7 @@ var WindowManager = class WindowManager {
                     {
                         x: window.origX,
                         y: window.origY,
-                        time: WINDOW_ANIMATION_TIME,
+                        time: WORKSPACE_ANIMATION_TIME,
                         transition: 'easeOutQuad'
                     });
                 window.show_all();
@@ -1105,7 +1131,7 @@ var WindowManager = class WindowManager {
             finish_switch_workspace();
         });
 
-        addTween(this, {time: WINDOW_ANIMATION_TIME, onComplete: function() {
+        addTween(this, {time: WORKSPACE_ANIMATION_TIME, onComplete: function() {
             if (!killed) {
                 finish_switch_workspace();
             }
