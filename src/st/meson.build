@@ -20,7 +20,7 @@ st_headers = [
     'st-scrollable.h',
     'st-scroll-bar.h',
     'st-scroll-view.h',
-    # 'st-scroll-view-fade.h',
+    'st-scroll-view-fade.h',
     'st-settings.h',
     'st-shadow.h',
     'st-table.h',
@@ -120,7 +120,7 @@ st_gir_sources = [
     'st-scrollable.c',
     'st-scroll-bar.c',
     'st-scroll-view.c',
-    # 'st-scroll-view-fade.c',
+    'st-scroll-view-fade.c',
     'st-settings.c',
     'st-shadow.c',
     'st-table.c',
@@ -135,6 +135,17 @@ st_gir_sources = [
     'st-widget.c',
     st_headers,
 ]
+
+data_to_c = find_program(meson.source_root() + '/src/data-to-c.pl')
+
+glsl_sources = custom_target('scroll-view-fade-glsl',
+  input: ['st-scroll-view-fade.glsl'],
+  output: ['st-scroll-view-fade-generated.h'],
+  capture: true,
+  command: [data_to_c, '@INPUT@', 'st_scroll_view_fade_glsl']
+)
+
+st_non_gir += glsl_sources
 
 st_enum_types = gnome.mkenums_simple(
     'st-enum-types',

@@ -26,12 +26,8 @@
 G_BEGIN_DECLS
 
 #define ST_TYPE_SCROLL_VIEW_FADE        (st_scroll_view_fade_get_type ())
-#define ST_SCROLL_VIEW_FADE(obj)        (G_TYPE_CHECK_INSTANCE_CAST ((obj), ST_TYPE_SCROLL_VIEW_FADE, StScrollViewFade))
-#define ST_IS_SCROLL_VIEW_FADE(obj)     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), ST_TYPE_SCROLL_VIEW_FADE))
-
-typedef struct _StScrollViewFade       StScrollViewFade;
-
-GType st_scroll_view_fade_get_type (void) G_GNUC_CONST;
+G_DECLARE_FINAL_TYPE (StScrollViewFade, st_scroll_view_fade,
+                      ST, SCROLL_VIEW_FADE, ClutterShaderEffect)
 
 ClutterEffect *st_scroll_view_fade_new (void);
 
