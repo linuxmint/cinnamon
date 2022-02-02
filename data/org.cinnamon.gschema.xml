@@ -182,9 +182,17 @@
 
     <key name="desktop-effects-workspace" type="b">
       <default>true</default>
-      <summary>Enable desktop effects on the workspace</summary>
+      <summary>Enable desktop effects in the Cinnamon ui</summary>
       <description>
         This affects switching workspaces, expo and scale.
+      </description>
+    </key>
+
+    <key name="desktop-effects" type="b">
+      <default>true</default>
+      <summary>Enable desktop effects</summary>
+      <description>
+        Whether to enable desktop effects and window animations.
       </description>
     </key>
 
@@ -209,13 +217,6 @@
       <summary>Effect used when minimizing windows</summary>
       <description>
        An effect: traditional, fly, none
-      </description>
-    </key>
-
-    <key type="b" name="desktop-effects-maximize">
-      <default>false</default>
-      <summary>Whether to show an animation when maximizing windows</summary>
-      <description>
       </description>
     </key>
 

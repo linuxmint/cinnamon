@@ -164,6 +164,8 @@ class AppGroup {
         this.signals.connect(this._draggable, 'drag-begin', (...args) => this.onDragBegin(...args));
         this.signals.connect(this._draggable, 'drag-cancelled', (...args) => this.onDragCancelled(...args));
 
+        this.signals.connect(this.actor, 'notify::allocation', (...args) => this.updateIconGeometry(...args));
+
         this.calcWindowNumber();
         this.on_orientation_changed(true);
         this.handleFavorite();
@@ -419,6 +421,10 @@ class AppGroup {
             this.label.allocate(childBox, flags);
         }
 
+        if (this.progressOverlay.visible) this.allocateProgress(childBox, flags);
+    }
+
+    updateIconGeometry(actor, box, flags) {
         // Call set_icon_geometry for support of Cinnamon's minimize animation
         if (this.groupState.metaWindows.length > 0 && this.actor.realized) {
             let rect = new Meta.Rectangle();
@@ -431,8 +437,6 @@ class AppGroup {
                 }
             });
         }
-
-        if (this.progressOverlay.visible) this.allocateProgress(childBox, flags);
     }
 
     showLabel(animate = false) {
@@ -877,7 +881,7 @@ class AppGroup {
             this.signals.connect(metaWindow, 'notify::gtk-application-id', (w) => this.onAppChange(w));
             this.signals.connect(metaWindow, 'notify::wm-class', (w) => this.onAppChange(w));
 
-            // this.signals.connect(metaWindow, 'icon-changed', (w) => this.setIcon(w));
+            this.signals.connect(metaWindow, 'notify::icon', (w) => this.setIcon(w));
 
             if (metaWindow.progress !== undefined) {
                 // Check if GWL is starting with pre-existing windows that have progress,
@@ -909,6 +913,7 @@ class AppGroup {
             metaWindows,
             lastFocused: metaWindow
         });
+        this.updateIconGeometry();
         this.handleFavorite();
     }
 
