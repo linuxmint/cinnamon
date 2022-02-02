@@ -8,6 +8,7 @@
 #include <meta/util.h>
 #include <meta/meta-plugin.h>
 #include <meta/meta-shaped-texture.h>
+#include <meta/meta-cursor-tracker.h>
 
 #include "cinnamon-global.h"
 #include "cinnamon-screenshot.h"
@@ -83,11 +84,12 @@ write_screenshot_thread (GSimpleAsyncResult *result,
 }
 
 static void
-do_grab_screenshot (_screenshot_data *screenshot_data,
-                    int               x,
-                    int               y,
-                    int               width,
-                    int               height)
+do_grab_screenshot (_screenshot_data    *screenshot_data,
+                    ClutterPaintContext *paint_context,
+                    int                  x,
+                    int                  y,
+                    int                  width,
+                    int                  height)
 {
   CoglBitmap *bitmap;
   ClutterBackend *backend;
@@ -113,7 +115,8 @@ do_grab_screenshot (_screenshot_data *screenshot_data,
                                      CLUTTER_CAIRO_FORMAT_ARGB32,
                                      stride,
                                      data);
-  cogl_framebuffer_read_pixels_into_bitmap (cogl_get_draw_framebuffer (),
+
+  cogl_framebuffer_read_pixels_into_bitmap (clutter_paint_context_get_framebuffer (paint_context),
                                             x, y,
                                             COGL_READ_PIXELS_COLOR_BUFFER,
                                             bitmap);
@@ -123,73 +126,94 @@ do_grab_screenshot (_screenshot_data *screenshot_data,
 }
 
 static void
-_draw_cursor_image (cairo_surface_t *surface,
-                    cairo_rectangle_int_t area)
+_draw_cursor_image (cairo_surface_t       *surface,
+                   cairo_rectangle_int_t  area)
 {
-  XFixesCursorImage *cursor_image;
-
+  CoglTexture *texture;
+  int width, height;
+  int stride;
+  guint8 *data;
+  MetaDisplay *display;
+  MetaCursorTracker *tracker;
   cairo_surface_t *cursor_surface;
   cairo_region_t *screenshot_region;
   cairo_t *cr;
+  int x, y;
+  int xhot, yhot;
+  double xscale, yscale;
 
-  guchar *data;
-  int stride;
-  int i, j;
+  display = cinnamon_global_get_display (cinnamon_global_get ());
+  tracker = meta_cursor_tracker_get_for_display (display);
+  texture = meta_cursor_tracker_get_sprite (tracker);
 
-  cursor_image = XFixesGetCursorImage (clutter_x11_get_default_display ());
-
-  if (!cursor_image)
+  if (!texture)
     return;
 
   screenshot_region = cairo_region_create_rectangle (&area);
+  meta_cursor_tracker_get_pointer (tracker, &x, &y, NULL);
 
-  if (!cairo_region_contains_point (screenshot_region, cursor_image->x, cursor_image->y))
+  if (!cairo_region_contains_point (screenshot_region, x, y))
     {
-       XFree (cursor_image);
-       cairo_region_destroy (screenshot_region);
-       return;
+      cairo_region_destroy (screenshot_region);
+      return;
     }
 
-  cursor_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, cursor_image->width, cursor_image->height);
+  meta_cursor_tracker_get_hot (tracker, &xhot, &yhot);
+  width = cogl_texture_get_width (texture);
+  height = cogl_texture_get_height (texture);
+  stride = 4 * width;
+  data = g_new (guint8, stride * height);
+  cogl_texture_get_data (texture, CLUTTER_CAIRO_FORMAT_ARGB32, stride, data);
 
-  /* The pixel data (in typical Xlib breakage) is longs even on
-   * 64-bit platforms, so we have to data-convert there. For simplicity,
-   * just do it always
-   */
-  data = cairo_image_surface_get_data (cursor_surface);
-  stride = cairo_image_surface_get_stride (cursor_surface);
-  for (i = 0; i < cursor_image->height; i++)
-    for (j = 0; j < cursor_image->width; j++)
-      *(guint32 *)(data + i * stride + 4 * j) = cursor_image->pixels[i * cursor_image->width + j];
+  /* FIXME: cairo-gl? */
+  cursor_surface = cairo_image_surface_create_for_data (data,
+                                                        CAIRO_FORMAT_ARGB32,
+                                                        width, height,
+                                                        stride);
 
-  cairo_surface_mark_dirty (cursor_surface);
+  cairo_surface_get_device_scale (surface, &xscale, &yscale);
+
+  if (xscale != 1.0 || yscale != 1.0)
+    {
+      int monitor;
+      float monitor_scale;
+      MetaRectangle cursor_rect = {
+        .x = x, .y = y, .width = width, .height = height
+      };
+
+      monitor = meta_display_get_monitor_index_for_rect (display, &cursor_rect);
+      monitor_scale = meta_display_get_monitor_scale (display, monitor);
+
+      cairo_surface_set_device_scale (cursor_surface, monitor_scale, monitor_scale);
+    }
 
   cr = cairo_create (surface);
   cairo_set_source_surface (cr,
                             cursor_surface,
-                            cursor_image->x - cursor_image->xhot - area.x,
-                            cursor_image->y - cursor_image->yhot - area.y);
+                            x - xhot - area.x,
+                            y - yhot - area.y);
   cairo_paint (cr);
 
   cairo_destroy (cr);
   cairo_surface_destroy (cursor_surface);
   cairo_region_destroy (screenshot_region);
-  XFree (cursor_image);
+  g_free (data);
 }
 
 static void
-grab_screenshot (ClutterActor *stage,
-                 _screenshot_data *screenshot_data)
+grab_screenshot (ClutterActor        *stage,
+                 ClutterPaintContext *paint_context,
+                 _screenshot_data    *screenshot_data)
 {
-  MetaScreen *screen = cinnamon_global_get_screen (screenshot_data->screenshot->global);
+  CinnamonScreen *screen = cinnamon_global_get_screen (screenshot_data->screenshot->global);
   int width, height;
   GSimpleAsyncResult *result;
 
-  meta_screen_get_size (screen, &width, &height);
+  cinnamon_screen_get_size (screen, &width, &height);
 
-  do_grab_screenshot (screenshot_data, 0, 0, width, height);
+  do_grab_screenshot (screenshot_data, paint_context, 0, 0, width, height);
 
-  if (meta_screen_get_n_monitors (screen) > 1)
+  if (cinnamon_screen_get_n_monitors (screen) > 1)
     {
       cairo_region_t *screen_region = cairo_region_create ();
       cairo_region_t *stage_region;
@@ -198,9 +222,9 @@ grab_screenshot (ClutterActor *stage,
       int i;
       cairo_t *cr;
 
-      for (i = meta_screen_get_n_monitors (screen) - 1; i >= 0; i--)
+      for (i = cinnamon_screen_get_n_monitors (screen) - 1; i >= 0; i--)
         {
-          meta_screen_get_monitor_geometry (screen, i, &monitor_rect);
+          cinnamon_screen_get_monitor_geometry (screen, i, &monitor_rect);
           cairo_region_union_rectangle (screen_region, (const cairo_rectangle_int_t *) &monitor_rect);
         }
 
@@ -244,11 +268,13 @@ grab_screenshot (ClutterActor *stage,
 
 static void
 grab_area_screenshot (ClutterActor *stage,
+                      ClutterPaintContext *paint_context,
                       _screenshot_data *screenshot_data)
 {
   GSimpleAsyncResult *result;
 
   do_grab_screenshot (screenshot_data,
+                      paint_context,
                       screenshot_data->screenshot_area.x,
                       screenshot_data->screenshot_area.y,
                       screenshot_data->screenshot_area.width,
@@ -362,8 +388,8 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
 {
   GSimpleAsyncResult *result;
 
-  MetaScreen *screen = cinnamon_global_get_screen (screenshot->global);
-  MetaDisplay *display = meta_screen_get_display (screen);
+  CinnamonScreen *screen = cinnamon_global_get_screen (screenshot->global);
+  MetaDisplay *display = cinnamon_screen_get_display (screen);
   MetaWindow *window = meta_display_get_focus_window (display);
 
   if (window == NULL || g_strcmp0 (meta_window_get_title (window), "Desktop") == 0)
@@ -389,7 +415,7 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
 
   if (include_frame || !meta_window_get_frame (window))
     {
-      meta_window_get_outer_rect (window, &rect);
+      meta_window_get_frame_rect (window, &rect);
 
       screenshot_data->screenshot_area.x = rect.x;
       screenshot_data->screenshot_area.y = rect.y;
@@ -399,7 +425,7 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
     }
   else
     {
-      rect = *meta_window_get_rect (window);
+      meta_window_get_buffer_rect (window, &rect);
 
       screenshot_data->screenshot_area.x = (gint) actor_x + rect.x;
       screenshot_data->screenshot_area.y = (gint) actor_y + rect.y;
