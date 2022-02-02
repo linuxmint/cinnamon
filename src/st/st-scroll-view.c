@@ -61,7 +61,7 @@
 #include "st-scroll-view.h"
 #include "st-scroll-bar.h"
 #include "st-scrollable.h"
-// #include "st-scroll-view-fade.h"
+#include "st-scroll-view-fade.h"
 #include <clutter/clutter.h>
 #include <math.h>
 
@@ -104,7 +104,7 @@ struct _StScrollViewPrivate
   GSettings *settings;
   gint setting_connect_id;
 
-  // StScrollViewFade *vfade_effect;
+  StScrollViewFade *vfade_effect;
 
   guint         row_size_set : 1;
   guint         column_size_set : 1;
@@ -189,23 +189,23 @@ st_scroll_view_update_vfade_effect (StScrollView *self,
   /* A fade amount of more than 0 enables the effect. */
   if (fade_offset > 0.)
     {
-      // if (priv->vfade_effect == NULL) {
-      //   priv->vfade_effect = g_object_new (ST_TYPE_SCROLL_VIEW_FADE, NULL);
+      if (priv->vfade_effect == NULL) {
+        priv->vfade_effect = g_object_new (ST_TYPE_SCROLL_VIEW_FADE, NULL);
 
-      //   clutter_actor_add_effect_with_name (CLUTTER_ACTOR (self), "vfade",
-      //                                       CLUTTER_EFFECT (priv->vfade_effect));
-      // }
+        clutter_actor_add_effect_with_name (CLUTTER_ACTOR (self), "vfade",
+                                            CLUTTER_EFFECT (priv->vfade_effect));
+      }
 
-      // g_object_set (priv->vfade_effect,
-      //               "fade-offset", fade_offset,
-      //               NULL);
+      g_object_set (priv->vfade_effect,
+                    "vfade-offset", fade_offset,
+                    NULL);
     }
    else
     {
-      // if (priv->vfade_effect != NULL) {
-      //   clutter_actor_remove_effect (CLUTTER_ACTOR (self), CLUTTER_EFFECT (priv->vfade_effect));
-      //   priv->vfade_effect = NULL;
-      // }
+      if (priv->vfade_effect != NULL) {
+        clutter_actor_remove_effect (CLUTTER_ACTOR (self), CLUTTER_EFFECT (priv->vfade_effect));
+        priv->vfade_effect = NULL;
+      }
     }
 
   clutter_actor_queue_redraw (CLUTTER_ACTOR (self));
@@ -377,11 +377,11 @@ st_scroll_view_dispose (GObject *object)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (object)->priv;
 
-  // if (priv->vfade_effect)
-  //   {
-  //     clutter_actor_remove_effect (CLUTTER_ACTOR (object), CLUTTER_EFFECT (priv->vfade_effect));
-  //     priv->vfade_effect = NULL;
-  //   }
+  if (priv->vfade_effect)
+    {
+      clutter_actor_remove_effect (CLUTTER_ACTOR (object), CLUTTER_EFFECT (priv->vfade_effect));
+      priv->vfade_effect = NULL;
+    }
 
   if (priv->vscroll)
     clutter_actor_destroy (priv->vscroll);
