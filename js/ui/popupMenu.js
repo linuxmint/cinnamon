@@ -2296,7 +2296,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             Main.uiGroup.set_child_above_sibling(this.actor, null);
         }
 
-        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (animate && Main.wm.desktop_effects_menus) {
             this.animating = true;
             this.actor.show();
             this.actor.opacity = 0;
@@ -2405,7 +2405,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         if (this._activeMenuItem)
             this._activeMenuItem.setActive(false);
 
-        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (animate && Main.wm.desktop_effects_menus) {
             this.actor.set_position(...this._calculatePosition());
             this.actor.set_size(...this.actor.get_size());
             this.animating = true;
@@ -2769,7 +2769,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
 
         let targetAngle = this.actor.text_direction == Clutter.TextDirection.RTL ? -90 : 90;
 
-        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (animate && Main.wm.desktop_effects_menus) {
             let [minHeight, naturalHeight] = this.actor.get_preferred_height(-1);
             this.actor.height = 0;
             if (this._arrow)
@@ -2813,7 +2813,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
 
         animate = animate && !this._needsScrollbar();
 
-        if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (animate && Main.wm.desktop_effects_menus) {
             if (this._arrow)
                 this.actor._arrowRotation = this._arrow.rotation_angle_z;
             Tweener.addTween(this.actor,
@@ -3004,7 +3004,7 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
         this.actor.opacity = 0;
         this.actor.show();
 
-        if (global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (Main.wm.desktop_effects_menus) {
             Tweener.addTween(this.actor,
                              { opacity: 255,
                                transition: 'linear',
@@ -3021,7 +3021,7 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
             return;
 
         this.isOpen = false;
-        if (global.settings.get_boolean("desktop-effects-on-menus")) {
+        if (Main.wm.desktop_effects_menus) {
             Tweener.addTween(this.actor,
                              { opacity: 0,
                                transition: 'linear',
