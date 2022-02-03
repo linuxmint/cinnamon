@@ -12,7 +12,6 @@ gnome.gtkdoc(
     'cinnamon-js',
     mode: 'xml',
     main_xml: 'cinnamon-js-docs.sgml',
-    dependencies: parts_files,
     src_dir: meson.current_build_dir(),
     install: true,
 )
