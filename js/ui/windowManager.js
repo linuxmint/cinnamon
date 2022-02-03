@@ -199,6 +199,29 @@ class TilePreview {
     }
 };
 
+var ResizePopup = GObject.registerClass(
+class ResizePopup extends St.Widget {
+    _init() {
+        super._init({ layout_manager: new Clutter.BinLayout() });
+        this._label = new St.Label({ style_class: 'info-osd',
+                                     x_align: Clutter.ActorAlign.CENTER,
+                                     y_align: Clutter.ActorAlign.CENTER,
+                                     x_expand: true, y_expand: true });
+        this.add_child(this._label);
+        Main.uiGroup.add_actor(this);
+    }
+
+    set(rect, displayW, displayH) {
+        /* Translators: This represents the size of a window. The first number is
+         * the width of the window and the second is the height. */
+        let text = _("%d × %d").format(displayW, displayH);
+        this._label.set_text(text);
+
+        this.set_position(rect.x, rect.y);
+        this.set_size(rect.width, rect.height);
+    }
+});
+
 var WindowManager = class WindowManager {
     constructor() {
         this._cinnamonwm = global.window_manager;
@@ -264,6 +287,8 @@ var WindowManager = class WindowManager {
         Meta.keybindings_set_custom_handler('switch-group-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
         Meta.keybindings_set_custom_handler('switch-panels', (d, w, b) => this._startAppSwitcher(d, w, b));
         Meta.keybindings_set_custom_handler('switch-panels-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
+
+        global.display.connect('show-resize-popup', this._showResizePopup.bind(this));
 
         Main.overview.connect('showing', () => {
             let {_dimmedWindows} = this;
@@ -1296,6 +1321,21 @@ var WindowManager = class WindowManager {
             neighbor.activate(global.get_current_time());
             let [x, y, mods] = global.get_pointer();
             global.set_pointer(10, y);
+        }
+    }
+
+    _showResizePopup(display, show, rect, displayW, displayH) {
+        if (show) {
+            if (!this._resizePopup)
+                this._resizePopup = new ResizePopup();
+
+            this._resizePopup.set(rect, displayW, displayH);
+        } else {
+            if (!this._resizePopup)
+                return;
+
+            this._resizePopup.destroy();
+            this._resizePopup = null;
         }
     }
 };
