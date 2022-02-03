@@ -1,0 +1,53 @@
+#! /usr/bin/python3
+
+"""
+Close dialog spawned by cinnamon (closeDialog.js) that prompts the user to kill a hung window.
+"""
+import signal
+import time
+
+import gi
+gi.require_version('Gtk', '3.0')
+
+from gi.repository import Gtk
+
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+class FrozenWindow(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self)
+
+        self.set_title("cinnamon-close-dialog test window!")
+
+        self.set_default_size(400, 200)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        box.set_border_width(15)
+        box.set_spacing(10)
+
+        self.add(box)
+
+        heading = Gtk.Label(label="<b>Click the button to freeze the window</b>", use_markup=True)
+        box.pack_start(heading, False, False, 6)
+
+        button = Gtk.Button(image=Gtk.Image.new_from_icon_name("face-sad", Gtk.IconSize.DIALOG))
+        box.pack_start(button, True, True, 0)
+        button.connect("clicked", self.button_clicked)
+
+        self.connect("delete-event", lambda w,e: Gtk.main_quit())
+        self.show_all()
+        self.present()
+
+    def button_clicked(self, button):
+        time.sleep(100)
+
+if __name__ == "__main__":
+
+    window = FrozenWindow()
+
+    Gtk.main()
+
+    window.destroy()
+
+    exit(0)
+

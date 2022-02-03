@@ -12,6 +12,7 @@ const WindowMenu = imports.ui.windowMenu;
 const GObject = imports.gi.GObject;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const ModalDialog = imports.ui.modalDialog;
+const CloseDialog = imports.ui.closeDialog;
 
 const {CoverflowSwitcher} = imports.ui.appSwitcher.coverflowSwitcher;
 const {TimelineSwitcher} = imports.ui.appSwitcher.timelineSwitcher;
@@ -289,6 +290,15 @@ var WindowManager = class WindowManager {
         Meta.keybindings_set_custom_handler('switch-panels-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
 
         global.display.connect('show-resize-popup', this._showResizePopup.bind(this));
+        this._cinnamonwm.connect('create-close-dialog', this._createCloseDialog.bind(this));
+
+        /* TODO: Wacom
+        global.display.connect('show-pad-osd', this._showPadOsd.bind(this));
+        global.display.connect('show-osd', (display, monitorIndex, iconName, label) => {
+            let icon = Gio.Icon.new_for_string(iconName);
+            Main.osdWindowManager.show(monitorIndex, icon, label, null);
+        });
+        */
 
         Main.overview.connect('showing', () => {
             let {_dimmedWindows} = this;
@@ -753,7 +763,7 @@ var WindowManager = class WindowManager {
 
     _mapWindow(cinnamonwm, actor) {
         actor._windowType = actor.meta_window.get_window_type();
-        actor._notifyMeta.WindowTypeSignalId =
+        actor._notifyWindowTypeSignalId =
             actor.meta_window.connect('notify::window-type', () => {
                 let type = actor.meta_window.get_window_type();
                 if (type === actor._windowType)
@@ -895,9 +905,9 @@ var WindowManager = class WindowManager {
 
     _destroyWindow(cinnamonwm, actor) {
         let window = actor.meta_window;
-        if (actor._notifyMeta.WindowTypeSignalId > 0) {
-            window.disconnect(actor._notifyMeta.WindowTypeSignalId);
-            actor._notifyMeta.WindowTypeSignalId = 0;
+        if (actor._notifyWindowTypeSignalId > 0) {
+            window.disconnect(actor._notifyWindowTypeSignalId);
+            actor._notifyWindowTypeSignalId = 0;
         }
         if (window._dimmed) {
             this._dimmedWindows =
@@ -1337,5 +1347,9 @@ var WindowManager = class WindowManager {
             this._resizePopup.destroy();
             this._resizePopup = null;
         }
+    }
+
+    _createCloseDialog(shellwm, window) {
+        return new CloseDialog.CloseDialog(window);
     }
 };
