@@ -6,6 +6,7 @@ const Lang = imports.lang;
 const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const Util = imports.misc.util;
 const Main = imports.ui.main;
 const WindowMenu = imports.ui.windowMenu;
@@ -223,6 +224,78 @@ class ResizePopup extends St.Widget {
     }
 });
 
+var DisplayChangesDialog = class DisplayChangesDialog extends ModalDialog.ModalDialog {
+    constructor(wm) {
+        super();
+        this._wm = wm;
+        this._countDown = Meta.MonitorManager.get_display_configuration_timeout();
+
+        this.contentLayout.add(new St.Label({ text:        _('Keep these display settings?'),
+                                              style_class: 'confirm-dialog-title',
+                                              important:   true }));
+        this.countdown_label = new St.Label({ style: "text-align: center" });
+        this.contentLayout.add(this.countdown_label);
+
+        this.setButtons([
+            {
+                label: _("Revert settings"),
+                action: this._revert.bind(this),
+                key: Clutter.KEY_Escape
+            },
+            {
+                label: _("Keep changes"),
+                action: this._keep.bind(this),
+                default: true
+            }
+        ]);
+
+        this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, this._tick.bind(this));
+        GLib.Source.set_name_by_id(this._timeoutId, '[cinnamon-display-countdown] this._tick');
+    }
+
+    close(timestamp) {
+        if (this._timeoutId > 0) {
+            GLib.source_remove(this._timeoutId);
+            this._timeoutId = 0;
+        }
+
+        super.close(timestamp);
+    }
+
+    _formatCountDown() {
+        const fmt = ngettext(
+            'Settings changes will revert in %d second',
+            'Settings changes will revert in %d seconds',
+            this._countDown);
+        return fmt.format(this._countDown);
+    }
+
+    _tick() {
+        this._countDown--;
+
+        if (this._countDown == 0) {
+            /* mutter already takes care of failing at timeout */
+            this._timeoutId = 0;
+            this.close();
+            return GLib.SOURCE_REMOVE;
+        }
+
+        this.countdown_label.set_text(this._formatCountDown());
+        return GLib.SOURCE_CONTINUE;
+    }
+
+    _revert() {
+        this._wm.complete_display_change(false);
+        this.close();
+    }
+
+    _keep() {
+        this._wm.complete_display_change(true);
+        this.close();
+    }
+};
+
+
 var WindowManager = class WindowManager {
     constructor() {
         this._cinnamonwm = global.window_manager;
@@ -291,6 +364,7 @@ var WindowManager = class WindowManager {
 
         global.display.connect('show-resize-popup', this._showResizePopup.bind(this));
         this._cinnamonwm.connect('create-close-dialog', this._createCloseDialog.bind(this));
+        this._cinnamonwm.connect('confirm-display-change', this._confirmDisplayChange.bind(this));
 
         /* TODO: Wacom
         global.display.connect('show-pad-osd', this._showPadOsd.bind(this));
@@ -1351,5 +1425,10 @@ var WindowManager = class WindowManager {
 
     _createCloseDialog(shellwm, window) {
         return new CloseDialog.CloseDialog(window);
+    }
+
+    _confirmDisplayChange() {
+        let dialog = new DisplayChangesDialog(this._cinnamonwm);
+        dialog.open();
     }
 };
