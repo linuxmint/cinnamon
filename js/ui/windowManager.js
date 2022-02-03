@@ -1,43 +1,22 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Cinnamon = imports.gi.Cinnamon;
-const {BrightnessContrastEffect, DesaturateEffect, OffscreenRedirect} = imports.gi.Clutter;
+const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
-const {
-    GrabOp,
-    Rectangle,
-    MotionDirection,
-    WindowType,
-    keybindings_set_custom_handler,
-    prefs_get_attach_modal_dialogs
-} = imports.gi.Meta;
-const {
-    Bin,
-    Label,
-    ThemeContext,
-    Widget
-} = imports.gi.St;
-const {Settings} = imports.gi.Gio;
-const {getWindowsForBinding} = imports.ui.appSwitcher.appSwitcher;
+const Meta = imports.gi.Meta;
+const St = imports.gi.St;
+const Gio = imports.gi.Gio;
+const Util = imports.misc.util;
+const Main = imports.ui.main;
+const WindowMenu = imports.ui.windowMenu;
+const GObject = imports.gi.GObject;
+const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
+const ModalDialog = imports.ui.modalDialog;
+
 const {CoverflowSwitcher} = imports.ui.appSwitcher.coverflowSwitcher;
 const {TimelineSwitcher} = imports.ui.appSwitcher.timelineSwitcher;
 const {ClassicSwitcher} = imports.ui.appSwitcher.classicSwitcher;
-const {each, filter, tryFn} = imports.misc.util;
-const Main = imports.ui.main;
-const {
-    expo,
-    getWorkspaceName,
-    layoutManager,
-    overview,
-    panelManager,
-    soundManager,
-} = Main;
-const {InfoOSD} = imports.ui.modalDialog;
-const {
-    addTween,
-    removeTweens
-} = imports.ui.tweener;
-const WindowMenu = imports.ui.windowMenu;
+const {addTween, removeTweens} = imports.ui.tweener;
 
 const MENU_ANIMATION_TIME = 0.1;
 const WORKSPACE_ANIMATION_TIME = 0.15;
@@ -91,8 +70,8 @@ const ZONE_BL = 7;
 
 class WindowDimmer {
     constructor(actor) {
-        this._desaturateEffect = new DesaturateEffect();
-        this._brightnessEffect = new BrightnessContrastEffect();
+        this._desaturateEffect = new Clutter.DesaturateEffect();
+        this._brightnessEffect = new Clutter.BrightnessContrastEffect();
         actor.add_effect(this._desaturateEffect);
         actor.add_effect(this._brightnessEffect);
 
@@ -125,7 +104,7 @@ function getWindowDimmer(actor) {
 
 class TilePreview {
     constructor() {
-        this.actor = new Bin({ style_class: 'tile-preview', important: true });
+        this.actor = new St.Bin({ style_class: 'tile-preview', important: true });
         global.window_group.add_actor(this.actor);
 
         this._reset();
@@ -145,11 +124,11 @@ class TilePreview {
 
         this._monitorIndex = monitorIndex;
         this._rect = tileRect;
-        let monitor = layoutManager.monitors[monitorIndex];
+        let monitor = Main.layoutManager.monitors[monitorIndex];
         let {x, y, width, height} = tileRect;
 
         if (!this._showing || changeMonitor) {
-            let monitorRect = new Rectangle({ x: monitor.x,
+            let monitorRect = new Meta.Rectangle({ x: monitor.x,
                                                    y: monitor.y,
                                                    width: monitor.width,
                                                    height: monitor.height });
@@ -232,7 +211,7 @@ var WindowManager = class WindowManager {
         this._destroying = new Set();
         this._movingWindow = null;
 
-        this.wm_settings = new Settings({schema_id: 'org.cinnamon.muffin'});
+        this.wm_settings = new Gio.Settings({schema_id: 'org.cinnamon.muffin'});
 
         global.settings.connect('changed::desktop-effects', this.onSettingsChanged.bind(this));
         global.settings.connect('changed::desktop-effects-workspace', this.onSettingsChanged.bind(this));
@@ -272,27 +251,27 @@ var WindowManager = class WindowManager {
         this._cinnamonwm.connect('filter-keybinding', this._filterKeybinding.bind(this));
         global.window_manager.connect('switch-workspace', (c, f, t, d) => this._switchWorkspace(c, f, t, d));
 
-        keybindings_set_custom_handler('move-to-workspace-left', (d, w, b) => this._moveWindowToWorkspaceLeft(d, w, b));
-        keybindings_set_custom_handler('move-to-workspace-right', (d, w, b) => this._moveWindowToWorkspaceRight(d, w, b));
+        Meta.keybindings_set_custom_handler('move-to-workspace-left', (d, w, b) => this._moveWindowToWorkspaceLeft(d, w, b));
+        Meta.keybindings_set_custom_handler('move-to-workspace-right', (d, w, b) => this._moveWindowToWorkspaceRight(d, w, b));
 
-        keybindings_set_custom_handler('switch-to-workspace-left', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
-        keybindings_set_custom_handler('switch-to-workspace-right', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
-        keybindings_set_custom_handler('switch-to-workspace-up', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
-        keybindings_set_custom_handler('switch-to-workspace-down', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
-        keybindings_set_custom_handler('switch-windows', (d, w, b) => this._startAppSwitcher(d, w, b));
-        keybindings_set_custom_handler('switch-group', (d, w, b) => this._startAppSwitcher(d, w, b));
-        keybindings_set_custom_handler('switch-windows-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
-        keybindings_set_custom_handler('switch-group-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
-        keybindings_set_custom_handler('switch-panels', (d, w, b) => this._startAppSwitcher(d, w, b));
-        keybindings_set_custom_handler('switch-panels-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
+        Meta.keybindings_set_custom_handler('switch-to-workspace-left', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
+        Meta.keybindings_set_custom_handler('switch-to-workspace-right', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
+        Meta.keybindings_set_custom_handler('switch-to-workspace-up', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
+        Meta.keybindings_set_custom_handler('switch-to-workspace-down', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
+        Meta.keybindings_set_custom_handler('switch-windows', (d, w, b) => this._startAppSwitcher(d, w, b));
+        Meta.keybindings_set_custom_handler('switch-group', (d, w, b) => this._startAppSwitcher(d, w, b));
+        Meta.keybindings_set_custom_handler('switch-windows-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
+        Meta.keybindings_set_custom_handler('switch-group-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
+        Meta.keybindings_set_custom_handler('switch-panels', (d, w, b) => this._startAppSwitcher(d, w, b));
+        Meta.keybindings_set_custom_handler('switch-panels-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
 
-        overview.connect('showing', () => {
+        Main.overview.connect('showing', () => {
             let {_dimmedWindows} = this;
             for (let i = 0, len = _dimmedWindows.length; i < len; i++) {
                 this._undimWindow(_dimmedWindows[i], true);
             }
         });
-        overview.connect('hiding', () => {
+        Main.overview.connect('hiding', () => {
             let {_dimmedWindows} = this;
             for (let i = 0, len = _dimmedWindows.length; i < len; i++) {
                 this._dimWindow(_dimmedWindows[i], true);
@@ -336,14 +315,14 @@ var WindowManager = class WindowManager {
         }
 
         switch (type) {
-            case WindowType.NORMAL:
+            case Meta.WindowType.NORMAL:
                 return true;
-            case WindowType.DIALOG:
-            case WindowType.MODAL_DIALOG:
+            case Meta.WindowType.DIALOG:
+            case Meta.WindowType.MODAL_DIALOG:
                 return this.desktop_effects_dialogs;
-            case WindowType.MENU:
-            case WindowType.DROPDOWN_MENU:
-            case WindowType.POPUP_MENU:
+            case Meta.WindowType.MENU:
+            case Meta.WindowType.DROPDOWN_MENU:
+            case Meta.WindowType.POPUP_MENU:
                 return this.desktop_effects_menus;
             default:
                 return false;
@@ -351,7 +330,7 @@ var WindowManager = class WindowManager {
     }
 
     _minimizeWindow(cinnamonwm, actor) {
-        soundManager.play('minimize');
+        Main.soundManager.play('minimize');
 
         if (!this.desktop_effects_windows || !this._shouldAnimate(actor)) {
             cinnamonwm.completed_minimize(actor);
@@ -444,7 +423,7 @@ var WindowManager = class WindowManager {
     }
 
     _unminimizeWindow(cinnamonwm, actor) {
-        soundManager.play('minimize');
+        Main.soundManager.play('minimize');
 
         if (!this.desktop_effects_windows || !this._shouldAnimate(actor)) {
             cinnamonwm.completed_unminimize(actor);
@@ -557,7 +536,7 @@ var WindowManager = class WindowManager {
     }
 
     _sizeChangeWindow(cinnamonwm, actor, whichChange, oldFrameRect, _oldBufferRect) {
-        if (!this.desktop_effects_windows || !this._shouldAnimate(actor, [WindowType.NORMAL]) || !this.desktop_effects_size_change) {
+        if (!this.desktop_effects_windows || !this._shouldAnimate(actor, [Meta.WindowType.NORMAL]) || !this.desktop_effects_size_change) {
             cinnamonwm.completed_size_change(actor);
             return;
         }
@@ -572,8 +551,8 @@ var WindowManager = class WindowManager {
         // Position a clone of the window on top of the old position,
         // while actor updates are frozen.
         let actorContent = Cinnamon.util_get_content_for_window_actor(actor, oldFrameRect);
-        let actorClone = new Widget({ content: actorContent });
-        actorClone.set_offscreen_redirect(OffscreenRedirect.ALWAYS);
+        let actorClone = new St.Widget({ content: actorContent });
+        actorClone.set_offscreen_redirect(Clutter.OffscreenRedirect.ALWAYS);
         actorClone.set_position(oldFrameRect.x, oldFrameRect.y);
         actorClone.set_size(oldFrameRect.width, oldFrameRect.height);
 
@@ -691,14 +670,14 @@ var WindowManager = class WindowManager {
         if (shouldDim && !window._dimmed) {
             window._dimmed = true;
             this._dimmedWindows.push(window);
-            if (!overview.visible)
+            if (!Main.overview.visible)
                 this._dimWindow(window, true);
         } else if (!shouldDim && window._dimmed) {
             window._dimmed = false;
-            this._dimmedWindows = filter(this._dimmedWindows, function(win) {
+            this._dimmedWindows = Util.filter(this._dimmedWindows, function(win) {
                 return win !== window;
             });
-            if (!overview.visible)
+            if (!Main.overview.visible)
                 this._undimWindow(window, true);
         }
     }
@@ -709,7 +688,7 @@ var WindowManager = class WindowManager {
             return;
 
         let dimmer = getWindowDimmer(actor);
-        let enabled = prefs_get_attach_modal_dialogs();
+        let enabled = Meta.prefs_get_attach_modal_dialogs();
         dimmer.setEnabled(enabled);
         if (!enabled)
             return;
@@ -731,7 +710,7 @@ var WindowManager = class WindowManager {
             return;
 
         let dimmer = getWindowDimmer(actor);
-        let enabled = prefs_get_attach_modal_dialogs();
+        let enabled = Meta.prefs_get_attach_modal_dialogs();
         dimmer.setEnabled(enabled);
         if (!enabled)
             return;
@@ -749,13 +728,13 @@ var WindowManager = class WindowManager {
 
     _mapWindow(cinnamonwm, actor) {
         actor._windowType = actor.meta_window.get_window_type();
-        actor._notifyWindowTypeSignalId =
+        actor._notifyMeta.WindowTypeSignalId =
             actor.meta_window.connect('notify::window-type', () => {
                 let type = actor.meta_window.get_window_type();
                 if (type === actor._windowType)
                     return;
-                if (type === WindowType.MODAL_DIALOG ||
-                    actor._windowType === WindowType.MODAL_DIALOG) {
+                if (type === Meta.WindowType.MODAL_DIALOG ||
+                    actor._windowType === Meta.WindowType.MODAL_DIALOG) {
                     let parent = actor.get_meta_window().get_transient_for();
                     if (parent)
                         this._checkDimming(parent);
@@ -769,8 +748,8 @@ var WindowManager = class WindowManager {
                 this._checkDimming(parent);
         });
 
-        if (actor._windowType === WindowType.NORMAL) {
-            soundManager.play('map');
+        if (actor._windowType === Meta.WindowType.NORMAL) {
+            Main.soundManager.play('map');
         }
 
         if (actor.meta_window.is_attached_dialog()) {
@@ -783,9 +762,9 @@ var WindowManager = class WindowManager {
         }
 
         // menu effects are always fade-in/out
-        let overridden_types = [WindowType.MENU,
-                                WindowType.DROPDOWN_MENU,
-                                WindowType.POPUP_MENU    ];
+        let overridden_types = [Meta.WindowType.MENU,
+                                Meta.WindowType.DROPDOWN_MENU,
+                                Meta.WindowType.POPUP_MENU    ];
 
         let adjusted_type = overridden_types.includes(actor._windowType) ? "fade" : this.desktop_effects_map_type;
 
@@ -891,17 +870,17 @@ var WindowManager = class WindowManager {
 
     _destroyWindow(cinnamonwm, actor) {
         let window = actor.meta_window;
-        if (actor._notifyWindowTypeSignalId > 0) {
-            window.disconnect(actor._notifyWindowTypeSignalId);
-            actor._notifyWindowTypeSignalId = 0;
+        if (actor._notifyMeta.WindowTypeSignalId > 0) {
+            window.disconnect(actor._notifyMeta.WindowTypeSignalId);
+            actor._notifyMeta.WindowTypeSignalId = 0;
         }
         if (window._dimmed) {
             this._dimmedWindows =
                 this._dimmedWindows.filter(win => win != window);
         }
 
-        if (actor.meta_window.window_type === WindowType.NORMAL) {
-            soundManager.play('close');
+        if (actor.meta_window.window_type === Meta.WindowType.NORMAL) {
+            Main.soundManager.play('close');
         }
 
         if (window.is_attached_dialog())
@@ -912,9 +891,9 @@ var WindowManager = class WindowManager {
             return;
         }
 
-        let types = [WindowType.NORMAL,
-                     WindowType.DIALOG,
-                     WindowType.MODAL_DIALOG];
+        let types = [Meta.WindowType.NORMAL,
+                     Meta.WindowType.DIALOG,
+                     Meta.WindowType.MODAL_DIALOG];
 
         if (!this.desktop_effects_windows || !this._shouldAnimate(actor, types)) {
             cinnamonwm.completed_destroy(actor);
@@ -922,9 +901,9 @@ var WindowManager = class WindowManager {
         }
 
         // menu effects are always traditional
-        let overridden_types = [WindowType.MENU,
-                                WindowType.DROPDOWN_MENU,
-                                WindowType.POPUP_MENU    ];
+        let overridden_types = [Meta.WindowType.MENU,
+                                Meta.WindowType.DROPDOWN_MENU,
+                                Meta.WindowType.POPUP_MENU    ];
 
         let adjusted_type = overridden_types.includes(actor._windowType) ? "traditional" : this.desktop_effects_close_type;
 
@@ -953,9 +932,9 @@ var WindowManager = class WindowManager {
             case "traditional":
             {
                 switch (actor.meta_window.window_type) {
-                    case WindowType.NORMAL:
-                    case WindowType.MODAL_DIALOG:
-                    case WindowType.DIALOG:
+                    case Meta.WindowType.NORMAL:
+                    case Meta.WindowType.MODAL_DIALOG:
+                    case Meta.WindowType.DIALOG:
                     {
                         this._destroying.add(actor);
 
@@ -980,9 +959,9 @@ var WindowManager = class WindowManager {
 
                         return;
                     }
-                    case WindowType.MENU:
-                    case WindowType.DROPDOWN_MENU:
-                    case WindowType.POPUP_MENU:
+                    case Meta.WindowType.MENU:
+                    case Meta.WindowType.DROPDOWN_MENU:
+                    case Meta.WindowType.POPUP_MENU:
                     // ??
                     default:
                     {
@@ -1011,7 +990,7 @@ var WindowManager = class WindowManager {
             return;
         }
 
-        soundManager.play('switch');
+        Main.soundManager.play('switch');
         this.showWorkspaceOSD();
 
         let windows = global.get_window_actors();
@@ -1026,22 +1005,22 @@ var WindowManager = class WindowManager {
         let grabOp = display.get_grab_op();
 
 
-        if (direction === MotionDirection.UP ||
-            direction === MotionDirection.UP_LEFT ||
-            direction === MotionDirection.UP_RIGHT)
+        if (direction === Meta.MotionDirection.UP ||
+            direction === Meta.MotionDirection.UP_LEFT ||
+            direction === Meta.MotionDirection.UP_RIGHT)
             yDest = screen_height;
-        else if (direction === MotionDirection.DOWN ||
-            direction === MotionDirection.DOWN_LEFT ||
-            direction === MotionDirection.DOWN_RIGHT)
+        else if (direction === Meta.MotionDirection.DOWN ||
+            direction === Meta.MotionDirection.DOWN_LEFT ||
+            direction === Meta.MotionDirection.DOWN_RIGHT)
             yDest = -screen_height;
 
-        if (direction === MotionDirection.LEFT ||
-            direction === MotionDirection.UP_LEFT ||
-            direction === MotionDirection.DOWN_LEFT)
+        if (direction === Meta.MotionDirection.LEFT ||
+            direction === Meta.MotionDirection.UP_LEFT ||
+            direction === Meta.MotionDirection.DOWN_LEFT)
             xDest = screen_width;
-        else if (direction === MotionDirection.RIGHT ||
-                 direction === MotionDirection.UP_RIGHT ||
-                 direction === MotionDirection.DOWN_RIGHT)
+        else if (direction === Meta.MotionDirection.RIGHT ||
+                 direction === Meta.MotionDirection.UP_RIGHT ||
+                 direction === Meta.MotionDirection.DOWN_RIGHT)
             xDest = -screen_width;
 
         let from_windows = [];
@@ -1057,7 +1036,7 @@ var WindowManager = class WindowManager {
             // Muffin 5.2 window.showing_on_its_workspace() no longer
             // ends up filtering the desktop window (If I re-add it, it
             // breaks things elsewhere that rely on the new behavior).
-            if (meta_window.get_window_type() === WindowType.DESKTOP) {
+            if (meta_window.get_window_type() === Meta.WindowType.DESKTOP) {
                 continue;
             }
 
@@ -1066,8 +1045,8 @@ var WindowManager = class WindowManager {
             }
 
             if ((meta_window === this._movingWindow) ||
-                ((grabOp === GrabOp.MOVING ||
-                  grabOp === GrabOp.KEYBOARD_MOVING)
+                ((grabOp === Meta.GrabOp.MOVING ||
+                  grabOp === Meta.GrabOp.KEYBOARD_MOVING)
                  && meta_window === focus_window)) {
                 /* We are moving this window to the other workspace. In fact,
                  * it is already on the other workspace, so it is hidden. We
@@ -1165,10 +1144,10 @@ var WindowManager = class WindowManager {
         if (global.settings.get_boolean('workspace-osd-visible')) {
             let current_workspace_index = global.screen.get_active_workspace_index();
             if (this.wm_settings.get_boolean('workspaces-only-on-primary')) {
-                this._showWorkspaceOSDOnMonitor(layoutManager.primaryMonitor, current_workspace_index);
+                this._showWorkspaceOSDOnMonitor(Main.layoutManager.primaryMonitor, current_workspace_index);
             }
             else {
-                let {monitors} = layoutManager;
+                let {monitors} = Main.layoutManager;
                 for (let i = 0; i < monitors.length; i++) {
                     this._showWorkspaceOSDOnMonitor(monitors[i], current_workspace_index);
                 }
@@ -1177,10 +1156,10 @@ var WindowManager = class WindowManager {
     }
 
     _showWorkspaceOSDOnMonitor(monitor, current_workspace_index) {
-        let osd = new InfoOSD();
+        let osd = new ModalDialog.InfoOSD();
         osd.actor.add_style_class_name('workspace-osd');
         this._workspace_osd_array.push(osd);
-        osd.addText(getWorkspaceName(current_workspace_index));
+        osd.addText(Main.getWorkspaceName(current_workspace_index));
         osd.show();
 
         setTimeout(() => this._hideWorkspaceOSD(), WORKSPACE_OSD_TIMEOUT * 1000);
@@ -1207,7 +1186,7 @@ var WindowManager = class WindowManager {
     }
 
     _createAppSwitcher(binding) {
-        if (getWindowsForBinding(binding).length === 0) return;
+        if (AppSwitcher.getWindowsForBinding(binding).length === 0) return;
 
         switch (global.settings.get_string('alttab-switcher-style')) {
             case 'coverflow':
@@ -1226,7 +1205,7 @@ var WindowManager = class WindowManager {
     }
 
     _shiftWindowToWorkspace(window, direction) {
-        if (window.window_type === WindowType.DESKTOP) {
+        if (window.window_type === Meta.WindowType.DESKTOP) {
             return;
         }
         this._movingWindow = window;
@@ -1238,11 +1217,11 @@ var WindowManager = class WindowManager {
     }
 
     _moveWindowToWorkspaceLeft(display, window, binding) {
-        this._shiftWindowToWorkspace(window, MotionDirection.LEFT);
+        this._shiftWindowToWorkspace(window, Meta.MotionDirection.LEFT);
     }
 
     _moveWindowToWorkspaceRight(display, window, binding) {
-        this._shiftWindowToWorkspace(window, MotionDirection.RIGHT);
+        this._shiftWindowToWorkspace(window, Meta.MotionDirection.RIGHT);
     }
 
     moveToWorkspace(workspace, direction_hint) {
@@ -1258,11 +1237,11 @@ var WindowManager = class WindowManager {
     _showWorkspaceSwitcher(display, window, binding) {
         let bindingName = binding.get_name();
         if (bindingName === 'switch-to-workspace-up') {
-            expo.toggle();
+            Main.expo.toggle();
             return;
         }
         if (bindingName === 'switch-to-workspace-down') {
-            overview.toggle();
+            Main.overview.toggle();
             return;
         }
 
@@ -1278,31 +1257,31 @@ var WindowManager = class WindowManager {
 
     actionMoveWorkspaceLeft() {
         let active = global.screen.get_active_workspace();
-        let neighbor = active.get_neighbor(MotionDirection.LEFT)
+        let neighbor = active.get_neighbor(Meta.MotionDirection.LEFT)
         if (active != neighbor) {
-            this.moveToWorkspace(neighbor, MotionDirection.LEFT);
+            this.moveToWorkspace(neighbor, Meta.MotionDirection.LEFT);
         }
     }
 
     actionMoveWorkspaceRight() {
         let active = global.screen.get_active_workspace();
-        let neighbor = active.get_neighbor(MotionDirection.RIGHT)
+        let neighbor = active.get_neighbor(Meta.MotionDirection.RIGHT)
         if (active != neighbor) {
-            this.moveToWorkspace(neighbor, MotionDirection.RIGHT);
+            this.moveToWorkspace(neighbor, Meta.MotionDirection.RIGHT);
         }
     }
 
     actionMoveWorkspaceUp() {
-        global.screen.get_active_workspace().get_neighbor(MotionDirection.UP).activate(global.get_current_time());
+        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.UP).activate(global.get_current_time());
     }
 
     actionMoveWorkspaceDown() {
-        global.screen.get_active_workspace().get_neighbor(MotionDirection.DOWN).activate(global.get_current_time());
+        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.DOWN).activate(global.get_current_time());
     }
 
     actionFlipWorkspaceLeft() {
         let active = global.screen.get_active_workspace();
-        let neighbor = active.get_neighbor(MotionDirection.LEFT);
+        let neighbor = active.get_neighbor(Meta.MotionDirection.LEFT);
         if (active != neighbor) {
             neighbor.activate(global.get_current_time());
             let [x, y, mods] = global.get_pointer();
@@ -1312,7 +1291,7 @@ var WindowManager = class WindowManager {
 
     actionFlipWorkspaceRight() {
         let active = global.screen.get_active_workspace();
-        let neighbor = active.get_neighbor(MotionDirection.RIGHT);
+        let neighbor = active.get_neighbor(Meta.MotionDirection.RIGHT);
         if (active != neighbor) {
             neighbor.activate(global.get_current_time());
             let [x, y, mods] = global.get_pointer();
