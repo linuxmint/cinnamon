@@ -298,17 +298,23 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                     or  keyval in FORBIDDEN_KEYVALS):
                 dialog = Gtk.MessageDialog(None,
                                            Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                           Gtk.MessageType.ERROR,
-                                           Gtk.ButtonsType.OK,
+                                           Gtk.MessageType.WARNING,
+                                           Gtk.ButtonsType.NONE,
                                            None)
+                button = dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
+                button = dialog.add_button(_("Continue"), Gtk.ResponseType.OK)
+                dialog.set_default_response(Gtk.ResponseType.CANCEL)
+                button.get_style_context().add_class(Gtk.STYLE_CLASS_DESTRUCTIVE_ACTION)
                 dialog.set_default_size(400, 200)
-                msg = _("\nThis key combination, \'<b>%s</b>\' cannot be used because it would become impossible to type using this key.\n\n")
-                msg += _("Please try again with a modifier key such as Control, Alt or Super (Windows key) at the same time.\n")
+                msg = _("\nThis key combination, \'<b>%s</b>\' should not be used because it would become impossible to type using this key. ")
+                msg += _("Please try again using a modifier key such as Control, Alt or Super (Windows key).\n\n")
+                msg += _("Continue only if you are certain this is what you want, otherwise press cancel.\n")
                 dialog.set_markup(msg % (accel_label))
                 dialog.show_all()
                 response = dialog.run()
                 dialog.destroy()
-                return True
+                if response != Gtk.ResponseType.OK:
+                    return True
 
         self.press_event = None
         self.set_value(accel_string)
