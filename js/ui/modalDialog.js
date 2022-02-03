@@ -47,8 +47,8 @@ var State = {
  * For simple usage such as displaying a message, or asking for confirmation,
  * the #ConfirmDialog and #NotifyDialog classes may be used instead.
  */
-function ModalDialog() {
-    this._init();
+function ModalDialog(params) {
+    this._init(params);
 }
 
 ModalDialog.prototype = {
@@ -244,15 +244,18 @@ ModalDialog.prototype = {
         let modifiers = Cinnamon.get_event_state(keyPressEvent);
         let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
         let symbol = keyPressEvent.get_key_symbol();
+
+        let action = this._actionKeys[symbol];
+
+        if (action) {
+            action();
+            return;
+        }
+
         if (symbol === Clutter.KEY_Escape && !(modifiers & ctrlAltMask)) {
             this.close();
             return;
         }
-
-        let action = this._actionKeys[symbol];
-
-        if (action)
-            action();
     },
 
     _onGroupDestroy: function() {
