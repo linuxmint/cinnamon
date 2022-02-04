@@ -405,7 +405,10 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
                 }
                 break;
             default:
-                return true;
+                if (this._action.startsWith("action_")) {
+                    let action = this._action.substring(7);
+                    this._appButton.app.get_app_info().launch_action(action, global.create_app_launch_context());
+                } else return true;
         }
         this._appButton.applet.toggleContextMenu(this._appButton);
         this._appButton.applet.menu.close();
@@ -476,6 +479,16 @@ class GenericApplicationButton extends SimpleMenuItem {
         if (this.applet._canUninstallApps) {
             menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "edit-delete");
             menu.addMenuItem(menuItem);
+        }
+        
+        let actions = this.app.get_app_info().list_actions();
+        if (actions) {
+            for (let i = 0; i < actions.length; i++) {
+                let icon = 'application-x-executable';
+                let label = this.app.get_app_info().get_action_name(actions[i]);
+                menuItem = new ApplicationContextMenuItem(this, label, "action_" + actions[i], icon);
+                menu.addMenuItem(menuItem);
+            }
         }
     }
 }
