@@ -531,10 +531,15 @@ class AppGroup {
 
     allocateProgress(childBox = null, flags = 0) {
         if (!childBox) childBox = new Clutter.ActorBox();
-        childBox.x1 = 0;
         childBox.y1 = 0;
-        childBox.x2 = Math.max((this.actor.width) * (this.progress / 100.0), 1.0);
         childBox.y2 = this.actor.height;
+        if (St.Widget.get_default_direction() === St.TextDirection.RTL) {
+            childBox.x1 = Math.max(this.actor.width * ((100 - this.progress) / 100.0), 1.0);
+            childBox.x2 = this.actor.width;
+        } else {
+            childBox.x1 = 0;
+            childBox.x2 = Math.max(this.actor.width * (this.progress / 100.0), 1.0);
+        }
         this.progressOverlay.allocate(childBox, flags);
     }
 
