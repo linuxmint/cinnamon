@@ -168,6 +168,7 @@ WorkspacesView.prototype = {
             this._workspaces[w].disconnectAll();
             this._workspaces[w].destroy();
         }
+        this._workspaces = [];
         this.actor.destroy();
     },
 

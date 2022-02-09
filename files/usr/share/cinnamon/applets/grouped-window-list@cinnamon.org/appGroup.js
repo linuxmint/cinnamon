@@ -1136,7 +1136,12 @@ class AppGroup {
             }
             this.rightClickMenu.destroy();
         }
-        if (this.hoverMenu) this.hoverMenu.destroy();
+
+        if (this.hoverMenu) {
+            Main.layoutManager.removeChrome(this.hoverMenu.actor);
+            this.hoverMenu.destroy();
+        }
+
         this.listState.trigger('removeChild', this.actor);
         this.actor.destroy();
 

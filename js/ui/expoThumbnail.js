@@ -219,7 +219,7 @@ ExpoWindowClone.prototype = {
         this.killUrgencyTimeout();
         this.disconnectAttentionSignals();
         this.actor.destroy();
-        this.icon.destroy();
+        this.icon = null;
     },
 
     onPositionChanged: function() {
