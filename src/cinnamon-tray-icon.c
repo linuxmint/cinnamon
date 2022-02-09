@@ -23,6 +23,7 @@ struct _CinnamonTrayIconPrivate
 
   pid_t pid;
   char *title, *wm_class;
+  gboolean entered;
 };
 
 G_DEFINE_TYPE (CinnamonTrayIcon, cinnamon_tray_icon, CINNAMON_TYPE_GTK_EMBED);
@@ -171,29 +172,136 @@ cinnamon_tray_icon_new (CinnamonEmbeddedWindow *window)
                        NULL);
 }
 
-/**
- * cinnamon_tray_icon_click:
- * @icon: a #CinnamonTrayIcon
- * @event: the #ClutterEvent triggering the fake click
- *
- * Fakes a press and release on @icon. @event must be a
- * %CLUTTER_BUTTON_RELEASE event. Its relevant details will be passed
- * on to the icon, but its coordinates will be ignored; the click is
- * always made on the center of @icon.
- */
-void
-cinnamon_tray_icon_click (CinnamonTrayIcon *icon,
-                       ClutterEvent  *event)
+#define DEBUG_TRAY_EVENTS 0
+
+static void
+send_button_xevent (ClutterEventType  event_type,
+                    ClutterEvent     *event,
+                    GdkWindow        *remote_window,
+                    GdkScreen        *screen,
+                    gboolean          clutter_scroll)
 {
-  XButtonEvent xbevent;
-  XCrossingEvent xcevent;
-  GdkWindow *remote_window;
-  GdkScreen *screen;
-  int x_root, y_root;
   Display *xdisplay;
   Window xwindow, xrootwindow;
+  guint32 c_event_time;
+  int x_root, y_root, target_x, target_y;
 
-  g_return_if_fail (clutter_event_type (event) == CLUTTER_BUTTON_RELEASE);
+  c_event_time = clutter_event_get_time (event);
+  xwindow = GDK_WINDOW_XID (remote_window);
+  xdisplay = GDK_WINDOW_XDISPLAY (remote_window);
+  xrootwindow = GDK_WINDOW_XID (gdk_screen_get_root_window (screen));
+  target_x = gdk_window_get_width (remote_window) / 2;
+  target_y = gdk_window_get_height (remote_window) / 2;
+  gdk_window_get_origin (remote_window, &x_root, &y_root);
+  x_root += target_x;
+  y_root += target_y;
+
+  XButtonEvent xbevent;
+
+  xbevent.type = event_type;
+  xbevent.window = xwindow;
+  xbevent.root = xrootwindow;
+  xbevent.subwindow = None;
+  xbevent.time = c_event_time;
+  xbevent.x = target_x;
+  xbevent.y = target_y;
+  xbevent.x_root = x_root;
+  xbevent.y_root = y_root;
+  xbevent.state = clutter_event_get_state (event);
+  xbevent.same_screen = True;
+
+  if (clutter_scroll)
+    {
+      uint button;
+
+      button = 4;
+
+      switch (clutter_event_get_scroll_direction (event))
+        {
+          case CLUTTER_SCROLL_UP:
+            button = 4;
+            break;
+          case CLUTTER_SCROLL_DOWN:
+            button = 5;
+            break;
+          case CLUTTER_SCROLL_LEFT:
+            button = 6;
+            break;
+          case CLUTTER_SCROLL_RIGHT:
+            button = 7;
+            break;
+          default:
+            g_warn_if_reached ();
+            break;
+        }
+
+      xbevent.button = button;
+    }
+  else
+  {
+    xbevent.button = clutter_event_get_button (event);
+  }
+
+  XSendEvent (xdisplay, xwindow, False, 0, (XEvent *) &xbevent);
+}
+
+static void
+send_crossing_xevent (ClutterEventType  event_type,
+                      ClutterEvent     *event,
+                      GdkWindow        *remote_window,
+                      GdkScreen        *screen)
+{
+  Display *xdisplay;
+  Window xwindow, xrootwindow;
+  guint32 c_event_time;
+  int x_root, y_root, target_x, target_y;
+
+  c_event_time = clutter_event_get_time (event);
+  xwindow = GDK_WINDOW_XID (remote_window);
+  xdisplay = GDK_WINDOW_XDISPLAY (remote_window);
+  xrootwindow = GDK_WINDOW_XID (gdk_screen_get_root_window (screen));
+  target_x = gdk_window_get_width (remote_window) / 2;
+  target_y = gdk_window_get_height (remote_window) / 2;
+  gdk_window_get_origin (remote_window, &x_root, &y_root);
+  x_root += target_x;
+  y_root += target_y;
+
+  XCrossingEvent xcevent;
+
+  xcevent.type = event_type;
+  xcevent.window = xwindow;
+  xcevent.root = xrootwindow;
+  xcevent.subwindow = None;
+  xcevent.time = c_event_time;
+  xcevent.x = target_x;
+  xcevent.y = target_y;
+  xcevent.x_root = x_root;
+  xcevent.y_root = y_root;
+  xcevent.mode = NotifyNormal;
+  xcevent.detail = NotifyNonlinear;
+  xcevent.same_screen = True;
+
+  XSendEvent (xdisplay, xwindow, False, 0, (XEvent *) &xcevent);
+}
+
+/**
+ * cinnamon_tray_icon_handle_event:
+ * @icon: a #CinnamonTrayIcon
+ * @event_type: a #ClutterEventType
+ * @event: the #ClutterEvent
+ *
+ * Converts a ClutterEvent into an XEvent.
+ *
+ * Returns: Whether to continue the event chain.
+ */
+gboolean
+cinnamon_tray_icon_handle_event (CinnamonTrayIcon *icon,
+                                 ClutterEventType  event_type,
+                                 ClutterEvent     *event)
+{
+  GdkScreen *screen;
+  GdkWindow *remote_window;
+  gboolean cont = CLUTTER_EVENT_PROPAGATE;
 
   gdk_error_trap_push ();
 
@@ -202,50 +310,103 @@ cinnamon_tray_icon_click (CinnamonTrayIcon *icon,
     {
       g_warning ("cinnamon tray: plug window is gone");
       gdk_error_trap_pop_ignored ();
-      return;
+      return CLUTTER_EVENT_STOP;
     }
-  xwindow = GDK_WINDOW_XID (remote_window);
-  xdisplay = GDK_WINDOW_XDISPLAY (remote_window);
+
   screen = gdk_window_get_screen (remote_window);
-  xrootwindow = GDK_WINDOW_XID (gdk_screen_get_root_window (screen));
-  gdk_window_get_origin (remote_window, &x_root, &y_root);
 
-  /* First make the icon believe the pointer is inside it */
-  xcevent.type = EnterNotify;
-  xcevent.window = xwindow;
-  xcevent.root = xrootwindow;
-  xcevent.subwindow = None;
-  xcevent.time = clutter_event_get_time (event);
-  xcevent.x = gdk_window_get_width (remote_window) / 2;
-  xcevent.y = gdk_window_get_height (remote_window) / 2;
-  xcevent.x_root = x_root + xcevent.x;
-  xcevent.y_root = y_root + xcevent.y;
-  xcevent.mode = NotifyNormal;
-  xcevent.detail = NotifyNonlinear;
-  xcevent.same_screen = True;
-  XSendEvent (xdisplay, xwindow, False, 0, (XEvent *)&xcevent);
+  switch (event_type) {
+    case CLUTTER_BUTTON_PRESS:
+    case CLUTTER_BUTTON_RELEASE:
+      {
+        if (DEBUG_TRAY_EVENTS)
+          g_message ("%s", event_type == CLUTTER_BUTTON_PRESS ? "ButtonPress" : "ButtonRelease");
 
-  /* Now do the click */
-  xbevent.type = ButtonPress;
-  xbevent.window = xwindow;
-  xbevent.root = xrootwindow;
-  xbevent.subwindow = None;
-  xbevent.time = xcevent.time;
-  xbevent.x = xcevent.x;
-  xbevent.y = xcevent.y;
-  xbevent.x_root = xcevent.x_root;
-  xbevent.y_root = xcevent.y_root;
-  xbevent.state = clutter_event_get_state (event);
-  xbevent.button = clutter_event_get_button (event);
-  xbevent.same_screen = True;
-  XSendEvent (xdisplay, xwindow, False, 0, (XEvent *)&xbevent);
+        if (!icon->priv->entered)
+          {
+            send_crossing_xevent (EnterNotify,
+                                  event,
+                                  remote_window,
+                                  screen);
+            icon->priv->entered = TRUE;
+          }
 
-  xbevent.type = ButtonRelease;
-  XSendEvent (xdisplay, xwindow, False, 0, (XEvent *)&xbevent);
+        send_button_xevent (event_type == CLUTTER_BUTTON_PRESS ? ButtonPress : ButtonRelease,
+                            event,
+                            remote_window,
+                            screen,
+                            FALSE);
 
-  /* And move the pointer back out */
-  xcevent.type = LeaveNotify;
-  XSendEvent (xdisplay, xwindow, False, 0, (XEvent *)&xcevent);
+        icon->priv->entered = FALSE;
 
-  gdk_error_trap_pop_ignored ();
+        cont = CLUTTER_EVENT_STOP;
+        break;
+      }
+    case CLUTTER_ENTER:
+    case CLUTTER_LEAVE:
+      {
+        if ((event_type == CLUTTER_ENTER && icon->priv->entered) || (event_type == CLUTTER_LEAVE && !icon->priv->entered))
+          {
+            if (DEBUG_TRAY_EVENTS)
+              g_message ("Bail tray icon on crossing event");
+            return CLUTTER_EVENT_STOP;
+          }
+
+        if (DEBUG_TRAY_EVENTS)
+          g_message ("%s", event_type == CLUTTER_ENTER ? "EnterNotify" : "LeaveNotify");
+
+        send_crossing_xevent (event_type == CLUTTER_ENTER ? EnterNotify : LeaveNotify,
+                              event,
+                              remote_window,
+                              screen);
+
+        icon->priv->entered = event_type == CLUTTER_ENTER;
+
+        cont = CLUTTER_EVENT_STOP;
+        break;
+      }
+    case CLUTTER_SCROLL:
+      {
+        if (clutter_event_get_scroll_direction (event) == CLUTTER_SCROLL_SMOOTH)
+          {
+            return CLUTTER_EVENT_STOP;
+          }
+
+        if (DEBUG_TRAY_EVENTS)
+          g_message ("Scroll");
+
+        send_crossing_xevent (EnterNotify,
+                              event,
+                              remote_window,
+                              screen);
+
+        send_button_xevent (ButtonPress,
+                            event,
+                            remote_window,
+                            screen,
+                            TRUE);
+
+        send_button_xevent (ButtonRelease,
+                            event,
+                            remote_window,
+                            screen,
+                            TRUE);
+
+        send_crossing_xevent (LeaveNotify,
+                              event,
+                              remote_window,
+                              screen);
+
+        icon->priv->entered = FALSE;
+
+        cont = CLUTTER_EVENT_STOP;
+        break;
+      }
+    case CLUTTER_MOTION:
+      cont = CLUTTER_EVENT_STOP;
+    default:
+      cont = CLUTTER_EVENT_PROPAGATE;
+  }
+
+  return cont;
 }
