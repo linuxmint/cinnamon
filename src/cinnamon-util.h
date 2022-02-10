@@ -37,6 +37,7 @@ gboolean cinnamon_write_string_to_stream          (GOutputStream    *stream,
 char    *cinnamon_get_file_contents_utf8_sync     (const char       *path,
                                                 GError          **error);
 
+gboolean cinnamon_get_gpu_offload_supported        (void);
 /**
  * CinnamonFileContentsCallback:
  * @utf8_contents: The contents of the file

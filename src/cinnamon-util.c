@@ -5,6 +5,7 @@
 #include "cinnamon-util.h"
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
+#include <libxapp/xapp-util.h>
 
 #ifdef HAVE__NL_TIME_FIRST_WEEKDAY
 #include <langinfo.h>
@@ -964,4 +965,28 @@ cinnamon_shader_effect_set_double_uniform (ClutterShaderEffect *effect,
   clutter_shader_effect_set_uniform_value (effect,
                                            name,
                                            &gvalue);
+}
+
+/**
+ * cinnamon_get_gpu_offload_supported:
+ *
+ * Performs a check to see if on-demand mode for discrete graphics
+ * is supported.
+ *
+ * Returns: %TRUE if supported.
+ */
+gboolean
+cinnamon_get_gpu_offload_supported (void)
+{
+    static gboolean offload_supported = FALSE;
+    static gsize once_init_value = 0;
+
+    if (g_once_init_enter (&once_init_value))
+    {
+        offload_supported = xapp_util_gpu_offload_supported ();
+
+        g_once_init_leave (&once_init_value, 1);
+    }
+
+    return offload_supported;
 }

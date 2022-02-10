@@ -101,6 +101,7 @@ libcinnamon_deps = [
     sn,
     soup,
     st_dep,
+    xapp,
     xfixes,
     xml,
 ]
