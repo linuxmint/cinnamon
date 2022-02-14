@@ -540,6 +540,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                 this._deviceItems = [];
                 let devices_stats = [];
                 let pct_support_count = 0;
+                let _devices = []; let _deviceItems = [];
 
                 if (!error) {
                     let devices = result[0];
@@ -562,7 +563,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
                         let stats = "%s (%d%%)".format(deviceTypeToString(device_type), percentage);
                         devices_stats.push(stats);
-                        this._devices.push(devices[i]);
+                        _devices.push(devices[i]);
 
                         if (this._primaryDeviceId == null || this._primaryDeviceId == device_id) {
                             // Info for the primary battery (either the primary device, or any battery device if there is no primary device)
@@ -574,13 +575,17 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         let status = this._getDeviceStatus(devices[i]);
                         let item = new DeviceItem (devices[i], status, this.aliases);
                         this.menu.addMenuItem(item, position);
-                        this._deviceItems.push(item);
+                        _deviceItems.push(item);
                         position++;
                     }
                 }
                 else {
                     global.log(error);
                 }
+
+
+                this._devices = _devices;
+                this._deviceItems = _deviceItems;
 
                 // The menu is built. Below, we update the information present in the panel (icon, tooltip and label)
                 this.set_applet_enabled(true);
