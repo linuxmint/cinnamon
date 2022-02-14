@@ -87,7 +87,8 @@ class AppGroup {
         this.appKeyTimeout = 0;
 
         // TODO: This needs to be in state so it can be updated more reliably.
-        this.labelVisible = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
+        this.labelVisiblePref = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
+        this.drawLabel = this.labelVisiblePref;
         this.progress = 0;
 
         this.actor =  new Cinnamon.GenericContainer({
@@ -110,7 +111,7 @@ class AppGroup {
         this.actor.add_child(this.progressOverlay);
 
         // Create the app button icon, number label, and text label for titleDisplay
-        this.iconBox = new St.Bin({name: 'appMenuIcon'});
+        this.iconBox = new Cinnamon.Slicer({name: 'appMenuIcon'});
         this.actor.add_child(this.iconBox);
         this.setActorAttributes(null, params.metaWindow);
 
@@ -233,20 +234,10 @@ class AppGroup {
 
         let panelHeight = this.state.trigger('getPanelHeight');
 
-        // TODO: Button width should be applied to buttons if they don't have a label set, not based on
-        // mode, but not currently sure how to unset the fixed width on the actor so it revert to a
-        // resizable state without destroying it. Otherwise, buttons with labels don't have enough padding set.
-        if (!this.state.isHorizontal
-            || this.state.settings.titleDisplay === 1
-            || this.state.settings.titleDisplay === 3 && !this.labelVisible) {
-            this.actor.width = panelHeight;
-        }
-
         if (this.state.isHorizontal) {
             this.actor.height = panelHeight;
         }
         this.setIcon(metaWindow);
-        this.updateIconBoxClip();
         this.setIconPadding(panelHeight);
         this.setMargin();
     }
@@ -261,21 +252,6 @@ class AppGroup {
         let direction = this.state.isHorizontal ? 'right' : 'bottom';
         let existingStyle = this.actor.style ? this.actor.style : '';
         this.actor.style = existingStyle + 'margin-' + direction + ':6px;';
-    }
-
-    updateIconBoxClip() {
-        let iconBottomClip = this.iconBox.style_length('app-icon-bottom-clip');
-        let allocation = this.iconBox.allocation;
-        if (iconBottomClip > 0) {
-            this.iconBox.set_clip(
-                0,
-                0,
-                allocation.x2 - allocation.x1,
-                allocation.y2 - allocation.y1 - iconBottomClip
-            );
-        } else {
-            this.iconBox.remove_clip();
-        }
     }
 
     setIcon(metaWindow) {
@@ -346,11 +322,24 @@ class AppGroup {
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
         // The label text starts in the center of the icon, so we should allocate the space
         // needed for the icon plus the space needed for(label - icon/2)
-        alloc.min_size = iconNaturalSize + 6;
+        alloc.min_size = 1 * global.ui_scale;
+
+        let {appId, metaWindows, lastFocused} = this.groupState;
+
+        let allocateForLabel = false;
+
+        allocateForLabel = this.labelVisiblePref ||
+                           (this.state.settings.titleDisplay == TitleDisplay.Focused &&
+                            this.listState.lastFocusedApp === appId);
+
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
-            let max = this.labelVisible && this.groupState.metaWindows.length > 0 ?
-                labelNaturalSize + iconNaturalSize + 6 : 0;
-            alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
+            if (allocateForLabel) {
+                let max = this.labelVisiblePref && this.groupState.metaWindows.length > 0 ?
+                    labelNaturalSize + iconNaturalSize + 6 : 0;
+                alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
+            } else {
+                alloc.natural_size = iconNaturalSize + 6 * global.ui_scale;
+            }
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
         }
@@ -377,7 +366,13 @@ class AppGroup {
         childBox.y1 = box.y1 + yPadding;
         childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
 
-        if (this.labelVisible && this.groupState.metaWindows.length > 0) {
+        if (this.labelVisiblePref && allocWidth < naturalWidth + 10 * global.ui_scale) {
+            this.drawLabel = false;
+        } else {
+            this.drawLabel = this.labelVisiblePref;
+        }
+
+        if (this.drawLabel && this.groupState.metaWindows.length > 0) {
             if (direction === Clutter.TextDirection.LTR) {
                 childBox.x1 = box.x1 + 6;
             } else {
@@ -404,7 +399,7 @@ class AppGroup {
 
         this.badge.allocate(childBox, flags);
 
-        if (this.labelVisible) {
+        if (this.drawLabel) {
             let iconSize = this.state.trigger('getPanelIconSize') * global.ui_scale;
             spacing = iconSize - spacing;
             [minWidth, minHeight, naturalWidth, naturalHeight] = this.label.get_preferred_size();
@@ -441,7 +436,7 @@ class AppGroup {
     }
 
     showLabel(animate = false) {
-        if (this.labelVisible
+        if (this.labelVisiblePref
             || !this.label
             || !this.state.isHorizontal
             || this.label.is_finalized()
@@ -451,7 +446,7 @@ class AppGroup {
 
         let width = MAX_BUTTON_WIDTH * global.ui_scale;
 
-        this.labelVisible = true;
+        this.labelVisiblePref = true;
         if (this.label.text == null) {
             this.label.set_text('');
         }
@@ -480,7 +475,7 @@ class AppGroup {
         if (!this.label || this.label.is_finalized() || !this.label.realized) return;
 
         this.label.set_text('');
-        this.labelVisible = false;
+        this.labelVisiblePref = false;
         this.label.width = 1;
         this.label.hide();
     }

@@ -223,7 +223,7 @@ var Minimize = class Minimize extends Close {
             this._scaleWindow(cinnamonwm, actor, xScale, yScale, time, transition, true);
             this._fadeWindow(cinnamonwm, actor, 0, time, transition);
         } else {
-            this.scale(cinnamonwm, actor, time, transition); // fall-back effect
+            this._scaleWindow(cinnamonwm, actor, 0, 0, time, transition); // fall-back effect
         }
     }
 }
@@ -261,19 +261,24 @@ var Unminimize = class Unminimize extends Effect {
         let time = 0.16;
         let success;
         let geom = new Rectangle();
+
+        let [xDest, yDest] = actor.get_transformed_position();
+        actor.opacity = 0;
+
         success = actor.meta_window.get_icon_geometry(geom);
+
         if (success) {
             actor.set_scale(0.1, 0.1);
-            actor.opacity = 0;
             let xSrc = geom.x;
             let ySrc = geom.y;
-            let [xDest, yDest] = actor.get_transformed_position();
             actor.set_position(xSrc, ySrc);
             this._moveWindow(cinnamonwm, actor, xDest, yDest, time, transition);
             this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, true);
             this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
         } else {
-            global.logWarning('windowEffects.Unminimize: No origin found.');
+            actor.set_scale(1.0, 1.0);
+            actor.set_position(xDest, yDest)
+            this._fadeWindow(cinnamonwm, actor, actor.orig_opacity, time, transition);
         }
     }
 }
@@ -314,25 +319,6 @@ var Maximize = class Maximize extends Tile {
         this.arrayName = '_maximizing';
         this.wmCompleteName = 'completed_maximize';
     }
-
-    traditional(cinnamonwm, actor, args) {
-        let transition = 'easeNone';
-        let time = 0.1;
-        let [targetX, targetY, targetWidth, targetHeight] = args;
-
-        if (targetWidth === actor.width) targetWidth -= 1;
-        if (targetHeight === actor.height) targetHeight -= 1;
-
-        let scale_x = targetWidth / actor.width;
-        let scale_y = targetHeight / actor.height;
-        let anchor_x = (actor.x - targetX) * actor.width / (targetWidth - actor.width);
-        let anchor_y = (actor.y - targetY) * actor.height / (targetHeight - actor.height);
-
-        actor.move_anchor_point(anchor_x, anchor_y);
-
-        this._scaleWindow(cinnamonwm, actor, scale_x, scale_y, time, transition, true);
-    }
-
 }
 
 var Unmaximize = class Unmaximize extends Tile {

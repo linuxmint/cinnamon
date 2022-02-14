@@ -236,7 +236,6 @@ NotificationDaemon.prototype = {
         if (!isForTransientNotification) {
             let source = this._lookupSource(title, pid, trayIcon);
             if (source) {
-                source.setTitle(title);
                 return source;
             }
         }

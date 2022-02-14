@@ -160,7 +160,7 @@ class JSONSettingsHandler(object):
         self.pause_monitor()
         if os.path.exists(self.filepath):
             os.remove(self.filepath)
-        raw_data = json.dumps(self.settings, indent=4)
+        raw_data = json.dumps(self.settings, indent=4, ensure_ascii=False)
         new_file = open(self.filepath, 'w+')
         new_file.write(raw_data)
         new_file.close()
@@ -203,7 +203,7 @@ class JSONSettingsHandler(object):
         raw_data = file.read()
         file.close()
         try:
-            settings = json.loads(raw_data, encoding=None, object_pairs_hook=collections.OrderedDict)
+            settings = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
         except:
             raise Exception("Failed to parse settings JSON data for file %s" % (self.filepath))
 

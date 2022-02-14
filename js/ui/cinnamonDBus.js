@@ -123,6 +123,7 @@ const CinnamonIface =
             <method name="RestartCinnamon"> \
                 <arg type="b" direction="in" name="show_osd" /> \
             </method> \
+            <method name="ReloadTheme"/> \
             <signal name="RunStateChanged"/> \
             <signal name="XletsLoadedComplete"/> \
         </interface> \
@@ -198,7 +199,7 @@ CinnamonDBus.prototype = {
      */
     ScreenshotArea: function(include_cursor, x, y, width, height, flash, filename) {
         let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_area(include_cursor, x, y, width, 200, filename,
+        screenshot.screenshot_area(include_cursor, x, y, width, height, filename,
             Lang.bind(this, this._onScreenshotComplete, flash));
     },
 
@@ -466,6 +467,10 @@ CinnamonDBus.prototype = {
 
     RestartCinnamon: function(showOsd) {
         Main.restartCinnamon(showOsd);
+    },
+
+    ReloadTheme: function() {
+        Main.themeManager._changeTheme()
     },
 
     EmitRunStateChanged: function() {

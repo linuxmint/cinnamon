@@ -64,6 +64,8 @@ class Module:
                 print('using systemd backend')
                 self.proxy_handler = SytemdDBusProxyHandler(self._on_proxy_ready)
 
+            self.sync_24h_to_gnome()
+
     def _on_proxy_ready(self):
         self.zone = self.proxy_handler.get_timezone()
         if self.zone is None:
@@ -79,6 +81,22 @@ class Module:
         self.ntp_switch.content_widget.set_active(is_using_ntp)
         self.ntp_switch.content_widget.connect('notify::active', self.on_ntp_changed)
         self.revealer.set_reveal_child(not is_using_ntp)
+
+    def sync_24h_to_gnome(self):
+        # Firefox (and maybe other apps?) check gnome's 24h setting only. It'd be
+        # messy to change it in firefox since our setting is a boolean and their's
+        # is a string, so just update the gnome preference when the user changes ours.
+        self.our_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
+        self.gnome_settings = Gio.Settings(schema_id="org.gnome.desktop.interface")
+
+        self.our_settings.connect("changed::clock-use-24h", self.update_gnome_24h)
+        self.update_gnome_24h()
+
+    def update_gnome_24h(self, settings=None, pspec=None):
+        if self.our_settings.get_boolean("clock-use-24h"):
+            self.gnome_settings.set_string("clock-format", "24h")
+        else:
+            self.gnome_settings.set_string("clock-format", "12h")
 
     def on_map_location_changed(self, *args):
         zone = self.tz_map.get_location().props.zone

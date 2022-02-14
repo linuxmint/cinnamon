@@ -472,6 +472,9 @@ class Module:
         elif kind == UPowerGlib.DeviceKind.COMPUTER:
             icon_name = "computer"
             desc = _("Computer")
+        elif kind == UPowerGlib.DeviceKind.GAMING_INPUT:
+            icon_name = "input-gaming"
+            desc = (_("Battery"))
         else:
             icon_name = "battery"
             desc = (_("Battery"))

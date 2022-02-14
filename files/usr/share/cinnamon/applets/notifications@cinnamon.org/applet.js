@@ -198,7 +198,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                     this.actor.hide();
                 }
             }
-            global.logError(this.showNotificationCount);
+
             if (!this.showNotificationCount) {  // Don't show notification count
                 this.set_applet_label('');
                 this.clear_action.actor.hide();

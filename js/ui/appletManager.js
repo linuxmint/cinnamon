@@ -93,7 +93,12 @@ function finishExtensionLoad(extensionIndex) {
             || definitions[i].applet != null) {
             continue;
         }
-        if (!addAppletToPanels(extension, definitions[i])) {
+        // Applets that haven't been added ever (for this process) will call
+        // addAppletToPanels here, as they are loaded from disk asynchronously.
+        // If initial applet loading has been completed, we can assume this is
+        // a user action, and flag the applet to be flashed when it is added
+        // to the panel.
+        if (!addAppletToPanels(extension, definitions[i], null, appletsLoaded)) {
             return false;
         }
     }
@@ -264,7 +269,10 @@ function onEnabledAppletsChanged() {
 
         if (!oldDefinition || !isEqualToOldDefinition) {
             let extension = Extension.getExtension(uuid);
-            addedApplets.push({extension, definition: definitions[i]});
+            // If the applet definition previously didn't exist, also assume it's a new
+            // instance. As opposed to an applet that's just getting re-loaded because something
+            // about its definition changed (maybe the position value, if a new applet was added).
+            addedApplets.push({extension, definition: definitions[i], is_new: !oldDefinition});
             continue;
         }
 
@@ -291,11 +299,17 @@ function onEnabledAppletsChanged() {
     }
 
     for (let i = 0; i < addedApplets.length; i++) {
-        let {extension, definition} = addedApplets[i];
+        let {extension, definition, is_new} = addedApplets[i];
+
+        // If this is the first instance of an applet *for the life of the process*,
+        // loading an applet fails here. In that case, expect addAppletToPanels()
+        // to be called by finishExtensionLoad instead.
         if (!extension) {
             continue;
         }
-        addAppletToPanels(extension, definition);
+
+        // is_new will get this applet flashied.
+        addAppletToPanels(extension, definition, null, appletsLoaded && is_new);
     }
 
     // Make sure all applet extensions are loaded.
@@ -350,7 +364,7 @@ function _removeAppletConfigFile(uuid, instanceId) {
     }
 }
 
-function addAppletToPanels(extension, appletDefinition, panel = null) {
+function addAppletToPanels(extension, appletDefinition, panel = null, user_action=false) {
     if (!appletDefinition.panelId) return true;
 
     try {
@@ -396,7 +410,7 @@ function addAppletToPanels(extension, appletDefinition, panel = null) {
 
         applet._panelLocation = location;
 
-        applet.on_applet_added_to_panel_internal(appletsLoaded);
+        applet.on_applet_added_to_panel_internal(user_action);
 
         removeAppletFromInappropriatePanel (extension, appletDefinition);
 

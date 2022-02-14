@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include <glib/gi18n-lib.h>
+#include <glib/gstdio.h>
 
 #define GMENU_I_KNOW_THIS_IS_UNSTABLE
 #include <gmenu-desktopappinfo.h>
@@ -1171,19 +1172,51 @@ real_app_launch (CinnamonApp   *app,
   gdk_app_launch_context_set_timestamp (context, timestamp);
   gdk_app_launch_context_set_desktop (context, workspace);
 
+  GMenuDesktopAppInfo *launch_info;
+  GMenuDesktopAppInfo *offload_appinfo = NULL;
+
   if (offload)
     {
+      GKeyFile *keyfile;
+
       apply_discrete_gpu_env (G_APP_LAUNCH_CONTEXT (context));
       g_debug ("Offloading '%s' to discrete gpu.", cinnamon_app_get_name (app));
+
+      /* Desktop files marked DBusActivatable are launched using their GApplication
+       * interface. The offload environment variables aren't used in this case. So
+       * construct a temporary appinfo via keyfile instead - this disables dbus
+       * launching as a side-effect, since that requires the original filename.
+       */
+
+      keyfile = g_key_file_new ();
+      if (!g_key_file_load_from_file (keyfile,
+                                      gmenu_desktopappinfo_get_filename (app->info),
+                                      G_KEY_FILE_NONE,
+                                      error))
+        {
+            g_key_file_unref (keyfile);
+            g_object_unref (context);
+            return FALSE;
+        }
+
+      offload_appinfo = gmenu_desktopappinfo_new_from_keyfile (keyfile);
+      g_key_file_unref (keyfile);
+
+      launch_info = offload_appinfo;
+    }
+  else
+    {
+      launch_info = app->info;
     }
 
-  ret = gmenu_desktopappinfo_launch_uris_as_manager (app->info, uris,
+  ret = gmenu_desktopappinfo_launch_uris_as_manager (launch_info, uris,
                                                    G_APP_LAUNCH_CONTEXT (context),
                                                    G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
                                                    NULL, NULL,
                                                    _gather_pid_callback, app,
                                                    error);
   g_object_unref (context);
+  g_clear_object (&offload_appinfo);
 
   return ret;
 }
@@ -1205,7 +1238,9 @@ cinnamon_app_launch (CinnamonApp     *app,
                      GError         **error)
 {
   GMenuDesktopAppInfo *app_info = cinnamon_app_get_app_info(app);
-  gboolean wants_offload = (app_info && gmenu_desktopappinfo_get_boolean(app_info, "PrefersNonDefaultGPU"));
+  gboolean wants_offload = (app_info &&
+                            gmenu_desktopappinfo_get_boolean(app_info, "PrefersNonDefaultGPU") &&
+                            cinnamon_get_gpu_offload_supported ());
   return real_app_launch (app,
                           timestamp,
                           uris,
@@ -1238,7 +1273,7 @@ cinnamon_app_launch_offloaded (CinnamonApp     *app,
                           uris,
                           workspace,
                           startup_id,
-                          TRUE,
+                          cinnamon_get_gpu_offload_supported (), // check shouldn't be needed but in case.
                           error);
 }
 

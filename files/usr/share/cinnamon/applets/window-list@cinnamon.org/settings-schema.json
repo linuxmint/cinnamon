@@ -38,15 +38,16 @@
     "type": "section",
     "description": "Display"
   },
-  "buttons-use-entire-space": {
-      "type": "switch",
-      "default": false,
-      "description": "Window buttons can have different sizes and use the entire space available"
-  },
   "panel-show-label": {
       "type": "switch",
       "default": true,
       "description": "Show window names in the panel"
+  },
+  "buttons-use-entire-space": {
+      "type": "switch",
+      "default": false,
+      "description": "Window buttons can have different sizes and use the entire space available",
+      "dependency": "panel-show-label"
   },
   "window-preview": {
       "type": "switch",

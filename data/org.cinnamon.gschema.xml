@@ -530,7 +530,6 @@
        Controls the default label used by the application menu.
       </description>
     </key>
-
   </schema>
 
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"

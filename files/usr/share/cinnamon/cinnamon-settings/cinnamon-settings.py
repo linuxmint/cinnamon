@@ -166,7 +166,7 @@ def touch(fname, times=None):
         os.utime(fname, times)
 
 
-class MainWindow:
+class MainWindow(Gio.Application):
     # Change pages
     def side_view_nav(self, side_view, path, cat):
         selected_items = side_view.get_selected_items()
@@ -260,6 +260,9 @@ class MainWindow:
 
     # Create the UI
     def __init__(self):
+        Gio.Application.__init__(self,
+                                 application_id="org.cinnamon.Settings_%d" % os.getpid(),
+                                 flags=Gio.ApplicationFlags.NON_UNIQUE | Gio.ApplicationFlags.HANDLES_OPEN)
         self.builder = Gtk.Builder()
         self.builder.set_translation_domain('cinnamon')  # let it translate!
         self.builder.add_from_file(config.currentPath + "/cinnamon-settings.ui")
@@ -297,7 +300,7 @@ class MainWindow:
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
 
-        self.window.connect("destroy", self.quit)
+        self.window.connect("destroy", self._quit)
 
         self.builder.connect_signals(self)
         self.unsortedSidePages = []
@@ -447,6 +450,13 @@ class MainWindow:
             self.window.connect("button-press-event", self.on_buttonpress)
 
             self.window.show()
+
+    # If there are no arguments, do_active() is called, otherwise do_open().
+    def do_activate(self):
+        self.hold()
+
+    def do_open(self, files, n_files, hint):
+        self.hold()
 
     def on_keypress(self, widget, event):
         grab = False
@@ -715,10 +725,9 @@ class MainWindow:
 
         self.current_sidepage = None
 
-    def quit(self, *args):
+    def _quit(self, *args):
         self.window.destroy()
-        Gtk.main_quit()
-
+        self.quit()
 
 if __name__ == "__main__":
     setproctitle("cinnamon-settings")
@@ -733,4 +742,4 @@ if __name__ == "__main__":
 
     window = MainWindow()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    Gtk.main()
+    window.run(sys.argv)

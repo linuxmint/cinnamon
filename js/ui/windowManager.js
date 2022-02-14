@@ -631,6 +631,11 @@ var WindowManager = class WindowManager {
             return;
         }
 
+        if (name === "maximize" && !this.settingsState["desktop-effects-maximize"]) {
+            cinnamonwm[effect.wmCompleteName](actor);
+            return;
+        }
+
         let type = "traditional";
 
         // make sure to end a running effect
@@ -684,7 +689,7 @@ var WindowManager = class WindowManager {
     _maximizeWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
         soundManager.play('maximize');
 
-        this._startWindowEffect(cinnamonwm, "maximize", actor, [targetX, targetY, targetWidth, targetHeight]);
+        this._startTraditionalWindowEffect(cinnamonwm, "maximize", actor, [targetX, targetY, targetWidth, targetHeight]);
     }
 
     _unmaximizeWindow(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {

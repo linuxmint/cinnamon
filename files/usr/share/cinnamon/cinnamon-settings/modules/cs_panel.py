@@ -578,5 +578,5 @@ class PanelRange(Range, PanelWidgetBackend):
 
     def on_setting_changed(self, *args):
         value = self.get_value()
-        if value != int(self.bind_object.get_value()):
+        if value != None and value != int(self.bind_object.get_value()):
             self.bind_object.set_value(value)

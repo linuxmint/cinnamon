@@ -531,11 +531,177 @@ StScrollBar StButton#vhandle:hover {
 /*calendar-background allows the date applet calendar to be themed separately from other applet menus*/
 .calendar-background {
 }
+
+.calendar-main-box {
+    margin: 0 .8em 0 .8em;
+}
+
 .calendar {
-    padding: .4em 1.75em;
+    /*padding: 0 0.5em 0.4em;*/
     spacing-rows: 0px;
     spacing-columns: 0px;
 }
+
+.calendar-events-main-box {
+    height: 300px;
+    margin-right: 0.8em;
+    padding: .5em;
+    min-width: 350px;
+    border: 1px solid #666;
+    border-radius: 8px;
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(85,85,85,0.8);
+    background-gradient-end: rgba(85,85,85,0.2);
+}
+
+.calendar-events-no-events-box {
+}
+
+.calendar-events-no-events-button {
+    margin: 6px 0 6px 0;
+    padding: 6px;
+    border-radius: 4px;
+}
+
+.calendar-events-no-events-button:hover {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(255,255,255,0.2);
+    background-gradient-end: rgba(255,255,255,0.08);
+    box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+}
+
+.calendar-events-no-events-icon {
+    color: #cccccc;
+}
+
+.calendar-events-no-events-label {
+    font-size: 1.1em;
+    color: #cccccc;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.calendar-events-date-label {
+    padding: .2em 0 .75em .2em;
+    font-size: 1.1em;
+    color: #cccccc;
+    font-weight: bold;
+    text-align: center;
+}
+
+.calendar-events-event-container {
+    padding:  .1em;
+}
+
+.calendar-events-scrollbox {
+
+}
+
+.calendar-events-main-box .separator {
+    -margin-horizontal:  1em;
+    -gradient-height: 1px;
+    -gradient-start: #666666;
+    -gradient-end: #666666;
+}
+
+.calendar-event-button {
+    margin: 6px 0 6px 0;
+    border-radius: 4px;
+}
+
+.calendar-event-button:hover {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(255,255,255,0.2);
+    background-gradient-end: rgba(255,255,255,0.08);
+    box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+}
+
+.calendar-event-color-strip {
+    width: 4px;
+    border-radius: 4px 0 0 4px;
+}
+
+.calendar-event-row-content {
+    margin:  7px;
+}
+
+.calendar-event-time-past {
+    color: rgba(204,204,204,.3);
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: .6em;
+}
+
+.calendar-event-time-present {
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: .6em;
+}
+
+.calendar-event-time-present:all-day {
+    color: rgba(0,255,0,0.6);
+}
+
+.calendar-event-time-future {
+    text-align: left;
+    margin-bottom: .6em;
+}
+
+.calendar-event-countdown {
+    color: #cccccc;
+    font-weight: bold;
+    text-align: right;
+    margin-bottom: .6em;
+}
+
+.calendar-event-countdown:soon {
+    color: #ffffff;
+}
+
+.calendar-event-countdown:imminent {
+    color: rgba(255,255,0,0.6);
+}
+
+.calendar-event-countdown:current {
+    color: rgba(0,255,0,0.6);
+}
+
+.calendar-event-summary {
+    color: #cccccc;
+    text-align: left;
+    width: 200px;
+}
+
+.calendar-today-home-button,
+.calendar-today-home-button-enabled {
+    margin: 6px 0 6px 0;
+    padding: 6px;
+    border-radius: 4px;
+}
+
+.calendar-today-home-button-enabled:hover {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(255,255,255,0.2);
+    background-gradient-end: rgba(255,255,255,0.08);
+    box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+}
+
+.calendar-today-day-label {
+    font-size: 1.75em;
+    color: #cccccc;
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: .1em;
+}
+
+.calendar-today-date-label {
+    font-size: 1.1em;
+    color: #cccccc;
+    font-weight: bold;
+    text-align: center;
+}
+
 .calendar-month-label {
     color: #cccccc;
     padding-bottom: 8px;
@@ -572,24 +738,34 @@ StScrollBar StButton#vhandle:hover {
 .calendar-change-month-forward:active {
     background-color: #aaaaaa;
 }
-.datemenu-date-label {
-    padding: .4em 1.75em;
-    font-size: 1.1em;
-    color: #cccccc;
-    font-weight: bold;
+
+.calendar-day-event-dot-box {
+    margin-top: 1.75em;
+
+    /* any other way do do something like this? */
+    max-rows: 1;
 }
+
+.calendar-day-event-dot {
+    margin: 1px;
+    border-radius: 2px;
+    width: 4px;
+    height: 4px;
+}
+
 .calendar-day-base {
     text-align: center;
     width: 2.4em;
     height: 2.4em;
 }
 .calendar-day-base:hover {
-    background-color: #777777;
     color: #fff;
+    font-weight: bold;
 }
 .calendar-day-base:active {
-    background-color: #555555;
+    background-color: #444444;
 }
+
 .calendar-day-heading {
     color: #cccccc;
     padding-top: 1em;
@@ -601,7 +777,6 @@ StScrollBar StButton#vhandle:hover {
 /* Hack used in lieu of border-collapse - see calendar.js */
 .calendar-day:ltr {
     border: 1px solid #333333;
-    color: #cccccc;
     border-top-width: 0;
     border-left-width: 0;
 }
@@ -613,7 +788,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .calendar-day:rtl {
     border: 1px solid #333333;
-    color: #cccccc;
     border-top-width: 0;
     border-right-width: 0;
 }
@@ -629,19 +803,32 @@ StScrollBar StButton#vhandle:hover {
     background-color: rgba(128, 128, 128, 0.1);
 }
 .calendar-today {
-    background-image: url("calendar-today.svg");
-    text-shadow: black 0px 2px 2px;
-    color: #ffffff;
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(255,255,255,0.35);
+    background-gradient-end: rgba(255,255,255,0.15);
+    color: #cccccc;
     font-weight: bold;
 }
+
+.calendar-today:selected {
+    color: #fff;
+}
+
 .calendar-other-month-day {
     color: #888888;
     background-color: rgba(64, 64, 64, 0.5);
 }
-.calendar-day-with-events {
-    font-weight: bold;
+
+.calendar-not-today {
     color: #cccccc;
 }
+
+.calendar-not-today:selected {
+    color: #fff;
+    font-weight: bold;
+}
+
+
 /* ===================================================================
  * Notifications
  * ===================================================================*/

@@ -11,7 +11,7 @@
    width="48"
    version="1.1"
    id="svg13"
-   sodipodi:docname="calendar-today.svg"
+   sodipodi:docname="calendar-today-selected.svg"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
   <metadata
      id="metadata17">
@@ -39,7 +39,7 @@
      id="namedview15"
      showgrid="false"
      inkscape:zoom="9.44"
-     inkscape:cx="-11.837571"
+     inkscape:cx="-8.7669492"
      inkscape:cy="12.5"
      inkscape:window-x="0"
      inkscape:window-y="26"
@@ -64,11 +64,8 @@
          id="stop4" />
     </radialGradient>
   </defs>
-  <rect
+  <path
      style="opacity:1;fill:#bebebe;fill-opacity:0.74509804;fill-rule:evenodd;stroke:none;stroke-width:1.49602652;stroke-opacity:1"
-     id="rect824"
-     width="47"
-     height="4"
-     x="0"
-     y="43" />
+     d="M 0 0 L 0 43 L 0 47 L 47 47 L 47 43 L 47 0 L 0 0 z M 0.97851562 1.03125 L 46.021484 1.03125 L 46.021484 43 L 0.97851562 43 L 0.97851562 1.03125 z "
+     id="rect824" />
 </svg>

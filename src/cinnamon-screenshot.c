@@ -362,11 +362,18 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
 {
   GSimpleAsyncResult *result;
 
-  _screenshot_data *screenshot_data = g_new0 (_screenshot_data, 1);
-
   MetaScreen *screen = cinnamon_global_get_screen (screenshot->global);
   MetaDisplay *display = meta_screen_get_display (screen);
   MetaWindow *window = meta_display_get_focus_window (display);
+
+  if (window == NULL || g_strcmp0 (meta_window_get_title (window), "Desktop") == 0)
+  {
+    cinnamon_screenshot_screenshot (screenshot, include_cursor, filename, callback);
+    return;
+  }
+
+  _screenshot_data *screenshot_data = g_new0 (_screenshot_data, 1);
+
   ClutterActor *window_actor;
   gfloat actor_x, actor_y;
   MetaShapedTexture *stex;

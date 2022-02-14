@@ -26,7 +26,8 @@ const UPDeviceType = {
     PHONE: 8,
     MEDIA_PLAYER: 9,
     TABLET: 10,
-    COMPUTER: 11
+    COMPUTER: 11,
+    GAMING_INPUT: 12
 };
 
 const UPDeviceState = {
@@ -110,6 +111,8 @@ function deviceToIcon(type, icon) {
             return ("input-tablet");
         case UPDeviceType.COMPUTER:
             return ("computer");
+        case UPDeviceType.GAMING_INPUT:
+            return ("input-gaming");
         default:
             if (icon) {
                 return icon;
@@ -595,7 +598,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                     if (this._devices.length === 1 && pct_support_count === 1) {
                         this.showDeviceInPanel(this._devices[0]);
                     }
-                    else if (this._devices.length > 1) {
+                    else if (this._devices.length > 0) {
                         // Show a summary
                         let labelText = "";
                         if (this.labelinfo !== "nothing") {

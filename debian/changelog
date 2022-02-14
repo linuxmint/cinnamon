@@ -1,3 +1,276 @@
+cinnamon (5.2.7) una; urgency=medium
+
+  [ Michael Webster ]
+  * cs_calendar.py: Update gnome's 24h preference when ours gets updated.
+  * settings api demo: Fix dependency example to match description.
+  * notification applet: Remove leftover log statement.
+  * power applet: Show a generic panel icon even if there's only a single coarse-level device attached.
+  * screenshot.js: Add SelectArea method.
+  * calendar applet: Improve event dot positioning.
+
+  [ Cobinja ]
+  * [calendar applet] Make new dates translatable (#10560)
+
+  [ Michael Webster ]
+  * calendar applet: Re-organize multi-day string construction.
+  * calendar applet: Use the ► unicode symbol in place of '->' for event times.
+
+  [ BaptisteMiq ]
+  * Checking None values to prevent crashes (#10552)
+
+  [ Michael Webster ]
+  * Fix minimize effect when there is no icon geometry set by a window- list.
+  * events: Actual time should be used with time_format, not a date-only.
+  * calendar events: Clicking on the selected date over the event list will open gnome-calendar.
+  * screenshot.js: Cancel an area selection op if the rubberbanding is completed with a width or height of 0.
+
+  [ Matt Turnbull ]
+  * Fix warning about using var for module exports. (#10568)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 31 Dec 2021 11:26:30 +0000
+
+cinnamon (5.2.6) una; urgency=medium
+
+  [ Michael Webster ]
+  * calendar: Have the 'no events' icon/label open gnome-calendar when clicked.
+  * calendar: Fix theme typo, close the calendar popup when launching gnome-calendar.
+  * calendar: some default theme improvements for buttons.
+  * screenshot.js: Adjust area coordinates by the ui scale.
+  * cinnamon-calendar-server.py: Don't assume that an event will have a last-modified property.
+
+  [ Clement Lefebvre ]
+  * cinnamon-calendar-server: Fix typo
+
+  [ Michael Webster ]
+  * calendar applet: Handle multi-day events.
+  * Calendar applet: Fix a few translation and date-format issues.
+  * calendar applet: some cleanup.
+  * calendar applet: Enable opening gnome-calendar to a specific day when the 'no events' button is clicked.
+
+  [ Thomas Kemmer ]
+  * calendar: Fix missing prefix in bindir path for D-Bus service
+
+  [ Michael Webster ]
+  * build: Don't hardcode the libexec path for the cinnamon-calendar- server bin file.
+  * cinnamon-screenshot.c: Fall back to a full screenshot when there is no default focus window.
+  * cinnamon-screenshot.c: Don't take a screenshot of the "Desktop" window when taking a 'window' screenshot.
+  * calendar applet: Show countdown text for multiday events that start today on any day the event will be active.
+
+  [ Clement Lefebvre ]
+  * l10n: Generate files
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 16 Dec 2021 09:05:23 +0000
+
+cinnamon (5.2.5) una; urgency=medium
+
+  [ Michael Webster ]
+  * calendar: Remove using GOA for calendar source discovery.
+  * runDialog.js: Take the global.ui_scale into account when setting the dialog width.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 09 Dec 2021 11:25:23 +0000
+
+cinnamon (5.2.4) una; urgency=medium
+
+  [ Michael Webster ]
+  * window effects: Fix maximize effect.
+  * notificationDaemon.js: Remove call to non-existant Source method.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 07 Dec 2021 17:44:17 +0000
+
+cinnamon (5.2.3) una; urgency=medium
+
+  [ Michael Webster ]
+  * Add org.gnome.Shell.Screensaver service for taking screenshots.
+  * flashspot.js: Improve effect.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 06 Dec 2021 16:56:15 +0000
+
+cinnamon (5.2.2) una; urgency=medium
+
+  [ Jan Beich ]
+  * build: disable gir install via list to pacify meson >= 0.60.2 (#10489)
+
+  [ Michael Webster ]
+  * JsonSettingsWidgets.py: Don't escape non-ascii characters when saving the json file.
+  * flashspot.js: Use class expression to fix subclassing of Lightbox.
+  * appletManager.js: Fix highlighting when adding an applet to a panel.
+  * Add "ReloadTheme" to available dbus commands.
+  * calendar applet: Change a few style classes.
+  * calendar applet: Update the default theme for some calendar changes.
+  * cinnamon-app.c: Unref the launch context if offloading setup fails.
+  * calendar: Don't try to override vfade in the default theme.
+  * cinnamon.css: Improve some spacing in the calendar, change how selected/current days are displayed.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 03 Dec 2021 15:33:29 +0000
+
+cinnamon (5.2.1) una; urgency=medium
+
+  [ Clement Lefebvre ]
+  * l10n: Rename mgsid in calendar applet
+  * calendar applet: Add an icon when no events are available
+
+  [ Michael Webster ]
+  * calendar: remove unintentional setting.
+  * calendar: Don't use the new string format style for translatable strings.
+  * calendar applet: Reset the periodic timer when settings change.
+  * cinnamon.css: Move height element to affect the events box only.
+  * Make cinnamon-settings a minimal GApplication to accomodate webkit.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * cinnamon-launcher: use os.WIFEXITED to interpret the status code when cinnamon exits.
+  * calendar events: update when the applet is opened only, and update events incrementally, to reduce ui relayouts.
+  * cinnamon-app.c: Don't allow offloaded programs to be dbus-activated.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 28 Nov 2021 14:03:33 +0000
+
+cinnamon (5.2.0) una; urgency=medium
+
+  [ Michael Webster ]
+  * menu applet.js: Use localeCompare for the fallback sort.
+  * cinnamon-settings: Remove ~/.local and /usr/local from python's module search paths.
+
+  [ Ammako ]
+  * Properly hide JavaEmbeddedFrame on Grouped Window List
+
+  [ Michael Webster ]
+  * menu applet: Check first if we should show items that are refreshed while the menu is open.
+  * menu applet: Hide app buttons by default, and when the menu closes.
+  * cinnamon-subprocess-wrapper: Set the exception result as bytes, not a string.
+
+  [ Joshua Peisach ]
+  * meson girs: Export gir names as a package Fixes an issue with the package tag in the gir not being generated.
+
+  [ fredcw ]
+  * Change method of making "Clear list" label bold.. (#10178)
+
+  [ Michael Webster ]
+  * spices update module: Add a way to check if a spice is currently enabled.
+  * cinnamon-launcher: Don't call Gtk.main_quit() when showing the restart dialog.
+  * cinnamon-launcher: prevent defunct metacity process when restarting via the dialog, fix 'cinnamon --replace --replace' after crashes.
+  * main.js: Fix activateWindow so it will respect the workspace index if provided.
+  * main.js: Be strict about the workspace argument in activateWindow.
+
+  [ Odyseus ]
+  * Documentation corrections
+
+  [ Anderson André Ferreira Gomes ]
+  * Small grammar corrections in README.md (#10292)
+
+  [ Michael Webster ]
+  * cinnamon-global.c: Allow disabling cinnamon as the default notifications handler.
+
+  [ JosephMcc ]
+  * GWL: Don't force the "New Window" option to show
+  * sound-applet: use insensitive not disabled
+
+  [ Benjamin Owen ]
+  * Fix window ordering with vertical panels (#10297)
+
+  [ Michael Webster ]
+  * menu applet: Only show completion results when filesystem path entry is enabled.
+
+  [ fredcw ]
+  * Add confirmation dialog when removing a panel (#10340)
+
+  [ JosephMcc ]
+  * ui: Make the confirm dialog look a bit more like a real dialog
+  * ui: Add some styling to the run dialog
+
+  [ David Yang ]
+  * Fix type to search boilerplate text not being automatically cleared (#10248)
+
+  [ Leigh Scott ]
+  * Fix menu-editor with python-3.10 (#10370)
+
+  [ Michael Webster ]
+  * gwl: Remove redundant check for skip-taskbar. Main.isInteresting does this and more.
+
+  [ Joshua Peisach ]
+  * Stop using GTimeVal/g_get_current_time (#10043)
+
+  [ Michael Webster ]
+  * Fix previous commit - you can't call g_free on an autopointer.
+
+  [ Clement Lefebvre ]
+  * Simplify window animations (#10389)
+
+  [ Michael Webster ]
+  * harvester.py: Catch request timeout errors.
+  * harvester.py: Don't use a unique timestamp for every request from the spices server.
+
+  [ Steve Grubb ]
+  * Fix memory leaks on error paths (#10406)
+  * Fix a typo (#10405)
+
+  [ 404oops ]
+  * Spotify fixed the album art issue (#10433)
+
+  [ Michael Martin ]
+  * Add an option to disable scrolling in the workspace-switcher applet (#10427)
+
+  [ Benjamin Owen ]
+  * Add toggle for window labels on/off (#10343)
+
+  [ Clement Lefebvre ]
+  * window-list: Rename newly added option
+
+  [ Alexander ]
+  * sound applet: added processing base64 code for art url data (#10226)
+
+  [ JosephMcc ]
+  * Lightbox: Add a radial shader effect (#10344)
+
+  [ AxXxB ]
+  * notifications applet: Add new setting "Don't show notification count in tray" (#10166)
+
+  [ Clement Lefebvre ]
+  * notification applet: Rephrase newly added option
+  * menu applet: Give all applications a symbolic icon
+
+  [ ronyala ]
+  * Sound applet: Fix media control buttons having reverse order on RTL layouts (#10443)
+  * Sound applet: Fix player status label being  aligned to the left on an rtl layout (#10446)
+  * Menu applet: Improve keyboard navigation with RTL layout (#10376)
+  * GWL: Fix issue #10401; Update AppGroup icon every time a new window is added (#10439)
+
+  [ AxXxB ]
+  * keyboard applet: Change 'let' to 'const' where possible (#10167)
+
+  [ ronyala ]
+  * Window button layout setting: improve rtl handling (#10441)
+  * GWL: Fix window preview issue when fade-out effect is used (#10263)
+
+  [ Levi Bard ]
+  * Respect PrefersNonDefaultGPU desktop entry when launching apps (#10411)
+
+  [ Oliver Kästner ]
+  * Spices.py: simplify _url_retrieve (#10327)
+  * capi.py: support non-i386/x86_64 architectures (#10426)
+
+  [ Jason Lee ]
+  * sound-applet: hide "Unknown Artist" on panel (#10326)
+
+  [ James Ross ]
+  * notifications: Simplify source code (#10144)
+
+  [ AxXxB ]
+  * keyboard applet: Remove unneccesary 'if' in offsets calculation (#10168)
+  * JsonSettingsWidgets.py: remove keyword argument `encoding` (#10458)
+  * keyboard applet: Respect "icon-size" when panel is vertical (#10456)
+
+  [ Michael Webster ]
+  * calendar applet: Add support for evolution-data-server (#10453)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+  * l10n: Generate files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 17 Nov 2021 10:07:19 +0000
+
 cinnamon (5.0.5) uma; urgency=medium
 
   [ Michael Webster ]

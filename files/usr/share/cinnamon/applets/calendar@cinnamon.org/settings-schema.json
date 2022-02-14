@@ -3,6 +3,12 @@
         "type": "section",
         "description": "Display"
     },
+    "show-events" : {
+        "type" : "switch",
+        "default" : true,
+        "description": "Show calendar events",
+        "tooltip": "Check this to display events in the calendar."
+    },
     "show-week-numbers" : {
         "type" : "switch",
         "default" : false,
