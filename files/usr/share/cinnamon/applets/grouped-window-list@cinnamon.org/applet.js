@@ -718,15 +718,18 @@ class GroupedWindowListApplet extends Applet.Applet {
             }
 
             // Prepare step direction to cycle based on scroll direction
-            // Also suport horizontal scrolling (i.e. touchpad) and reverse mouse wheel scrolling
-            let isReverseScrolling = this.state.settings.reverseScrolling;
+            // Also suport horizontal scrolling (i.e. touchpad)
             let step;
-            if ( (direction === ScrollDirection.Up && !isReverseScrolling) ||
-                 (direction === ScrollDirection.Down && isReverseScrolling) ||
-                 direction === ScrollDirection.Left){
+            if ( direction === ScrollDirection.Up || direction === ScrollDirection.Left ) {
               step = CycleStep.Backward;
             } else {
               step = CycleStep.Forward;
+            }
+
+            // Reverse scrolling
+            let isReverseScrolling = this.state.settings.reverseScrolling;
+            if (isReverseScrolling) {
+                step = step * (-1)
             }
 
             if (isAppScroll) {
