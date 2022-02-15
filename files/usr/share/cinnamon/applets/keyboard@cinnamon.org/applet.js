@@ -16,6 +16,7 @@ class EmblemedIcon {
     constructor(path, id, style_class) {
         this.path = path;
         this.id = id;
+        this.HORIZONTAL_SCALE = 1.2;
 
         this.actor = new St.DrawingArea({ style_class: style_class });
 
@@ -24,9 +25,10 @@ class EmblemedIcon {
     }
 
     _style_changed(actor) {
-        const icon_size = 0.5 + this.actor.get_theme_node().get_length("icon-size");
+        const icon_size = this.actor.get_theme_node().get_length("icon-size");
 
-        this.actor.natural_width = this.actor.natural_height = icon_size;
+        this.actor.natural_height = 0.5 + icon_size;
+        this.actor.natural_width = icon_size * this.HORIZONTAL_SCALE;
     }
 
     _repaint(actor) {
@@ -39,13 +41,7 @@ class EmblemedIcon {
         const surf_width = surf.getWidth();
         const surf_height = surf.getHeight();
 
-        let [new_w, new_h] = [w, h];
-        const aspect = surf_width / surf_height;
-        if ((new_w / new_h) > aspect) {
-            new_w = new_h * aspect;
-        }
-
-        const factor = new_w / surf_width;
+        const factor = Math.min(w / surf_width, h / surf_height);
 
         const render_width = surf_width * factor;
         const render_height = surf_height * factor;
@@ -53,8 +49,8 @@ class EmblemedIcon {
         const surf_x_offset = ((w / factor) - surf_width) / 2;
         const surf_y_offset = ((h / factor) - surf_height) / 2;
 
-        const render_x_offset = (new_w - render_width) / 2;
-        const render_y_offset = (new_h - render_height) / 2;
+        const render_x_offset = (w - render_width) / 2;
+        const render_y_offset = (h - render_height) / 2;
 
         cr.scale(factor, factor);
         cr.setSourceSurface(surf, surf_x_offset, surf_y_offset);
@@ -84,7 +80,8 @@ class EmblemedIcon {
     }
 
     set_icon_size(size) {
-        this.actor.width = this.actor.height = size * global.ui_scale;
+        this.actor.height = size * global.ui_scale;
+        this.actor.width = this.actor.height * this.HORIZONTAL_SCALE;
     }
 
     set_style_class_name(name) {
@@ -250,6 +247,11 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         return {name, iconObject, iconActor, isFlagIcon};
     }
 
+    _setMargin(actor, left, right) {
+        actor.set_margin_left(left);
+        actor.set_margin_right(right);
+    }
+
     _syncConfig() {
         if (!this._config.get_enabled()) {
             this._setLayoutItems([], null);
@@ -316,10 +318,8 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         this.set_applet_tooltip(this._config.get_current_name());
 
         const _applet_label_box = this._applet_label.get_parent();
-        this._applet_icon_box.set_margin_left(0);
-        this._applet_icon_box.set_margin_right(0);
-        _applet_label_box.set_margin_left(0);
-        _applet_label_box.set_margin_right(0);
+        this._setMargin(_applet_label_box, 0, 0);
+        this._setMargin(this._applet_icon_box, 0, 0);
 
         const {name, iconActor, iconObject, isFlagIcon} = this._getIcon(selected, "applet-icon");
         if (isFlagIcon) {
@@ -333,6 +333,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             this._applet_icon_box.hide();
         }
 
+        const box = isFlagIcon ? this._applet_icon_box : _applet_label_box;
         const width = this.actor.get_width();
         const height = this.actor.get_height();
         if (width >= this._maxSeenWidth) {
@@ -346,14 +347,12 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         const addedWidth = this._maxSeenWidth - width;
         const leftOffset = parseInt(addedWidth / 2);
         const rightOffset = addedWidth - leftOffset; 
-        const box = isFlagIcon ? this._applet_icon_box : _applet_label_box;
-        box.set_margin_left(leftOffset); box.set_margin_right(rightOffset);
-
-        if (this.im_running) {
-        	this.actor.hide();
-        } else {
-            this.actor.show();
+        this._setMargin(box, leftOffset, rightOffset);
+        if (isFlagIcon) {
+            this._setStyle();
         }
+
+        this.im_running ? this.actor.hide() : this.actor.show();
     }
 
     on_applet_removed_from_panel() {
