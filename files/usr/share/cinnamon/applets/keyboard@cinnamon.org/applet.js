@@ -10,23 +10,30 @@ const Cairo = imports.cairo;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
+const POPUP_MENU_ICON_STYLE_CLASS = "popup-menu-icon";
+const APPLET_ICON_STYLE_CLASS = "applet-icon";
+
 const getFlagFileName = name => `/usr/share/iso-flag-png/${name}.png`;
 
 class EmblemedIcon {
     constructor(path, id, style_class) {
-        this.path = path;
         this.id = id;
-        this.HORIZONTAL_SCALE = 1.2;
 
-        this.actor = new St.DrawingArea({ style_class: style_class });
+        this.img_surf = St.TextureCache.get_default().load_file_to_cairo_surface(path);
+        this.img_sizes = [this.img_surf.getWidth(), this.img_surf.getHeight()];
 
-        this.actor.connect("style-changed", (...args) => this._style_changed(...args));
+        const aspect = this.img_sizes[0] / this.img_sizes[1];
+
+        this.HORIZONTAL_SCALE = aspect;
+        this.STYLE_CLASS_SCALE = (style_class == POPUP_MENU_ICON_STYLE_CLASS) ? aspect : 1;
+
+        this.actor = new St.DrawingArea({ style_class });
+        this.actor.connect("style-changed", () => this._style_changed());
         this.actor.connect("repaint", (...args) => this._repaint(...args));
     }
 
-    _style_changed(actor) {
-        const icon_size = this.actor.get_theme_node().get_length("icon-size");
-
+    _style_changed() {
+        const icon_size = this.actor.get_theme_node().get_length("icon-size") * this.STYLE_CLASS_SCALE;
         this.actor.natural_height = 0.5 + icon_size;
         this.actor.natural_width = icon_size * this.HORIZONTAL_SCALE;
     }
@@ -34,37 +41,34 @@ class EmblemedIcon {
     _repaint(actor) {
         const cr = actor.get_context();
         const [w, h] = actor.get_surface_size();
+        const [img_width, img_height] = this.img_sizes;
 
         cr.save();
 
-        const surf = St.TextureCache.get_default().load_file_to_cairo_surface(this.path);
-        const surf_width = surf.getWidth();
-        const surf_height = surf.getHeight();
+        const factor = Math.min(w / img_width, h / img_height);
 
-        const factor = Math.min(w / surf_width, h / surf_height);
+        const img_offset_x = ((w / factor) - this.img_sizes[0]) / 2;
+        const img_offset_y = ((h / factor) - this.img_sizes[1]) / 2;
 
-        const render_width = surf_width * factor;
-        const render_height = surf_height * factor;
+        const render_sizes = this.img_sizes.map(x => x * factor);
 
-        const surf_x_offset = ((w / factor) - surf_width) / 2;
-        const surf_y_offset = ((h / factor) - surf_height) / 2;
-
-        const render_x_offset = (w - render_width) / 2;
-        const render_y_offset = (h - render_height) / 2;
+        const render_offset_x = (w - render_sizes[0]) / 2;
+        const render_offset_y = (h - render_sizes[1]) / 2;
 
         cr.scale(factor, factor);
-        cr.setSourceSurface(surf, surf_x_offset, surf_y_offset);
-
+        cr.setSourceSurface(this.img_surf, img_offset_x, img_offset_y);
         cr.getSource().setFilter(Cairo.Filter.BEST);
         cr.setOperator(Cairo.Operator.SOURCE);
 
         cr.paint();
         cr.restore();
 
+        const [render_center_x, render_center_y] = render_sizes.map(x => x / 2);
+
         XApp.KbdLayoutController.render_cairo_subscript(
             cr,
-            render_x_offset + (render_width / 2), render_y_offset + (render_height / 2),
-            render_width / 2,                     render_height / 2,
+            render_offset_x + render_center_x, render_offset_y + render_center_y,
+            render_center_x,                   render_center_y,
             this.id
         );
 
@@ -80,13 +84,11 @@ class EmblemedIcon {
     }
 
     set_icon_size(size) {
-        this.actor.height = size * global.ui_scale;
+        this.actor.height = size * global.ui_scale * this.STYLE_CLASS_SCALE;
         this.actor.width = this.actor.height * this.HORIZONTAL_SCALE;
     }
 
-    set_style_class_name(name) {
-        return;
-    }
+    set_style_class_name(name) { }
 }
 
 class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
@@ -123,18 +125,13 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
             this.actor.add_style_class_name('panel-status-button');
 
+            this.desktop_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
+
             this._layoutItems = [ ];
 
-            this._maxSeenWidth = 0;
-            this._maxSeenHeight = 0;
-
+            this._maxSeenWidth = this._maxSeenHeight = 0;
             this.im_running = false;
-
-            this.show_flags = false;
-            this.use_upper = false;
-            this.use_variants = false;
-
-            this.desktop_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
+            this.show_flags = this.use_upper = this.use_variants = false;
 
             const _syncConfig = () => this._syncConfig();
 
@@ -170,22 +167,17 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
                 this.set_applet_icon_symbolic_name("input-keyboard");
                 this.actor.show();
             }
-        }
-        else {
+        } else {
             this._syncConfig();
         }
     }
 
     on_applet_added_to_panel() {
         this._config = new XApp.KbdLayoutController();
-
+        this._syncConfig();
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
-            this._syncConfig();
             this._onPanelEditModeChanged();
-        } else {
-            this._syncConfig();
         }
-
         this._config.connect('layout-changed', () => this._syncGroup());
         this._config.connect('config-changed', () => this._syncConfig());
     }
@@ -267,8 +259,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         this.use_variants = this.desktop_settings.get_boolean("keyboard-layout-prefer-variant-names");
 
         if (this.show_flags) {
-            this._maxSeenWidth = 0;
-            this._maxSeenHeight = 0;
+            this._maxSeenWidth = this._maxSeenHeight = 0;
         }
 
         this.actor.show();
@@ -276,7 +267,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         const groups = this._config.get_all_names();
 
         for (let i = 0; i < groups.length; i++) {
-            const {name, iconActor} = this._getIcon(i, "popup-menu-icon");
+            const {name, iconActor} = this._getIcon(i, POPUP_MENU_ICON_STYLE_CLASS);
             const item = new LayoutMenuItem(this._config, i, iconActor, groups[i]);
             layoutItems.push(item);
             this.menu.addMenuItem(item, i);
@@ -321,7 +312,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         this._setMargin(_applet_label_box, 0, 0);
         this._setMargin(this._applet_icon_box, 0, 0);
 
-        const {name, iconActor, iconObject, isFlagIcon} = this._getIcon(selected, "applet-icon");
+        const {name, iconActor, iconObject, isFlagIcon} = this._getIcon(selected, APPLET_ICON_STYLE_CLASS);
         if (isFlagIcon) {
             this._applet_icon = iconObject;
             this._applet_icon_box.set_child(iconActor);
