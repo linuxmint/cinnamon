@@ -128,6 +128,9 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
             this._layoutItems = [ ];
 
+            this._maxSeenWidth = 0;
+            this._maxSeenHeight = 0;
+
             this.im_running = false;
 
             this.show_flags = false;
@@ -240,7 +243,8 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
         if (!isFlagIcon) {
             name = this.use_variants ? cfg.get_variant_label_for_group(layoutIndex) : cfg.get_short_group_label_for_group(layoutIndex);
-            iconActor = new St.Label({ text: (this.use_upper ? name.toUpperCase() : name) });
+            name = this.use_upper ? name.toUpperCase() : name;
+            iconActor = new St.Label({ text: name });
         }
 
         return {name, iconObject, iconActor, isFlagIcon};
@@ -259,6 +263,11 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         this.show_flags = this.desktop_settings.get_boolean("keyboard-layout-show-flags");
         this.use_upper = this.desktop_settings.get_boolean("keyboard-layout-use-upper");
         this.use_variants = this.desktop_settings.get_boolean("keyboard-layout-prefer-variant-names");
+
+        if (this.show_flags) {
+            this._maxSeenWidth = 0;
+            this._maxSeenHeight = 0;
+        }
 
         this.actor.show();
 
@@ -306,6 +315,12 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
         this.set_applet_tooltip(this._config.get_current_name());
 
+        const _applet_label_box = this._applet_label.get_parent();
+        this._applet_icon_box.set_margin_left(0);
+        this._applet_icon_box.set_margin_right(0);
+        _applet_label_box.set_margin_left(0);
+        _applet_label_box.set_margin_right(0);
+
         const {name, iconActor, iconObject, isFlagIcon} = this._getIcon(selected, "applet-icon");
         if (isFlagIcon) {
             this._applet_icon = iconObject;
@@ -317,7 +332,23 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             this.set_applet_label(name);
             this._applet_icon_box.hide();
         }
-        
+
+        const width = this.actor.get_width();
+        const height = this.actor.get_height();
+        if (width >= this._maxSeenWidth) {
+            this._maxSeenWidth = width;
+        }
+        if (height >= this._maxSeenHeight) {
+            this._maxSeenHeight = height;
+        } else {
+            this.actor.set_height(this._maxSeenHeight);
+        }
+        const addedWidth = this._maxSeenWidth - width;
+        const leftOffset = parseInt(addedWidth / 2);
+        const rightOffset = addedWidth - leftOffset; 
+        const box = isFlagIcon ? this._applet_icon_box : _applet_label_box;
+        box.set_margin_left(leftOffset); box.set_margin_right(rightOffset);
+
         if (this.im_running) {
         	this.actor.hide();
         } else {
