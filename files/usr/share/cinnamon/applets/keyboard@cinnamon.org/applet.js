@@ -178,7 +178,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
             this._onPanelEditModeChanged();
         }
-        this._config.connect('layout-changed', () => this._syncGroup());
+        this._config.connect('layout-changed', () => this._syncConfig());
         this._config.connect('config-changed', () => this._syncConfig());
     }
 
