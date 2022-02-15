@@ -1,6 +1,5 @@
 const Applet = imports.ui.applet;
 const XApp = imports.gi.XApp;
-const Lang = imports.lang;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
@@ -11,6 +10,8 @@ const Cairo = imports.cairo;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
+const getFlagFileName = name => `/usr/share/iso-flag-png/${name}.png`;
+
 class EmblemedIcon {
     constructor(path, id, style_class) {
         this.path = path;
@@ -18,8 +19,8 @@ class EmblemedIcon {
 
         this.actor = new St.DrawingArea({ style_class: style_class });
 
-        this.actor.connect("style-changed", Lang.bind(this, this._style_changed));
-        this.actor.connect("repaint", Lang.bind(this, this._repaint));
+        this.actor.connect("style-changed", (...args) => this._style_changed(...args));
+        this.actor.connect("repaint", (...args) => this._repaint(...args));
     }
 
     _style_changed(actor) {
@@ -62,15 +63,14 @@ class EmblemedIcon {
         cr.setOperator(Cairo.Operator.SOURCE);
 
         cr.paint();
-
         cr.restore();
 
-        XApp.KbdLayoutController.render_cairo_subscript(cr,
-                                                        render_x_offset + (render_width / 2),
-                                                        render_y_offset + (render_height / 2),
-                                                        render_width / 2,
-                                                        render_height / 2,
-                                                        this.id);
+        XApp.KbdLayoutController.render_cairo_subscript(
+            cr,
+            render_x_offset + (render_width / 2), render_y_offset + (render_height / 2),
+            render_width / 2,                     render_height / 2,
+            this.id
+        );
 
         cr.$dispose();
     }
@@ -136,23 +136,28 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
             this.desktop_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
 
-            this.desktop_settings.connect("changed::keyboard-layout-show-flags", Lang.bind(this, this._syncConfig));
-            this.desktop_settings.connect("changed::keyboard-layout-use-upper", Lang.bind(this, this._syncConfig));
-            this.desktop_settings.connect("changed::keyboard-layout-prefer-variant-names", Lang.bind(this, this._syncConfig));
-            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
+            const _syncConfig = () => this._syncConfig();
+
+            this.desktop_settings.connect("changed::keyboard-layout-show-flags", _syncConfig);
+            this.desktop_settings.connect("changed::keyboard-layout-use-upper", _syncConfig);
+            this.desktop_settings.connect("changed::keyboard-layout-prefer-variant-names", _syncConfig);
+            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, () => this._onPanelEditModeChanged());
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addAction(_("Show Keyboard Layout"), Lang.bind(this, function() {
+            this.menu.addAction(_("Show Keyboard Layout"), () => {
                 Main.overview.hide();
                 Util.spawn(['gkbd-keyboard-display', '-g', String(this._config.get_current_group() + 1)]);
-            }));
-            this.menu.addAction(_("Show Character Table"), Lang.bind(this, function() {
+            });
+            this.menu.addAction(_("Show Character Table"), () => {
                 Main.overview.hide();
                 Util.spawn(['gucharmap']);
-            }));
+            });
             this.menu.addSettingsAction(_("Keyboard Settings"), 'keyboard');
 
-            Gio.DBus.session.watch_name("org.fcitx.Fcitx", Gio.BusNameWatcherFlags.NONE, Lang.bind(this, this._itemAppeared), Lang.bind(this, this._itemVanished));
+            Gio.DBus.session.watch_name(
+                "org.fcitx.Fcitx", Gio.BusNameWatcherFlags.NONE, 
+                (...args) => this._itemAppeared(...args), (...args) => this._itemVanished(...args)
+            );
         }
         catch (e) {
             global.logError(e);
@@ -181,8 +186,8 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             this._syncConfig();
         }
 
-        this._config.connect('layout-changed', Lang.bind(this, this._syncGroup));
-        this._config.connect('config-changed', Lang.bind(this, this._syncConfig));
+        this._config.connect('layout-changed', () => this._syncGroup());
+        this._config.connect('config-changed', () => this._syncConfig());
     }
 
     _onButtonPressEvent(actor, event) {
@@ -209,18 +214,47 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         this._syncConfig();
     }
 
-    _syncConfig() {
+    _setLayoutItems(items, selectedItem) {
+        this._selectedLayout = selectedItem;
         for (let i = 0; i < this._layoutItems.length; i++)
             this._layoutItems[i].destroy();
+        this._layoutItems = items || [];
+    }
 
-        this._selectedLayout = null;
-        this._layoutItems = [ ];
+    _getIcon(layoutIndex, actorClass) {
+        const cfg = this._config;
 
+        let isFlagIcon = false;
+        let iconActor = null;
+        let iconObject = null;
+        let name = cfg.get_icon_name_for_group(layoutIndex);
+
+        if (this.show_flags) {
+            const file = Gio.file_new_for_path(getFlagFileName(name));
+            if (file.query_exists(null)) {
+                iconObject = new EmblemedIcon(file.get_path(), cfg.get_flag_id_for_group(layoutIndex), actorClass);
+                iconActor = iconObject.actor;
+                isFlagIcon = true;
+            }
+        }
+
+        if (!isFlagIcon) {
+            name = this.use_variants ? cfg.get_variant_label_for_group(layoutIndex) : cfg.get_short_group_label_for_group(layoutIndex);
+            iconActor = new St.Label({ text: (this.use_upper ? name.toUpperCase() : name) });
+        }
+
+        return {name, iconObject, iconActor, isFlagIcon};
+    }
+
+    _syncConfig() {
         if (!this._config.get_enabled()) {
+            this._setLayoutItems([], null);
             this.menu.close();
             this.actor.hide();
             return;
         }
+
+        const layoutItems = [];
 
         this.show_flags = this.desktop_settings.get_boolean("keyboard-layout-show-flags");
         this.use_upper = this.desktop_settings.get_boolean("keyboard-layout-use-upper");
@@ -231,44 +265,34 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         const groups = this._config.get_all_names();
 
         for (let i = 0; i < groups.length; i++) {
-            let handled = false;
-            let actor = null;
-
-            if (this.show_flags) {
-                const name = this._config.get_icon_name_for_group(i);
-
-                const file = Gio.file_new_for_path("/usr/share/iso-flag-png/" + name + ".png");
-
-                if (file.query_exists(null)) {
-                    actor = new EmblemedIcon(file.get_path(), this._config.get_flag_id_for_group(i), "popup-menu-icon").actor;
-                    handled = true;
-                }
-            }
-
-            if (!handled) {
-                let name;
-
-                if (this.use_variants) {
-                    name = this._config.get_variant_label_for_group(i);
-                } else {
-                    name = this._config.get_short_group_label_for_group(i);
-                }
-
-                name = this.use_upper ? name.toUpperCase() : name;
-                actor = new St.Label({ text: name });
-            }
-
-            const item = new LayoutMenuItem(this._config, i, actor, groups[i]);
-            this._layoutItems.push(item);
+            const {name, iconActor} = this._getIcon(i, "popup-menu-icon");
+            const item = new LayoutMenuItem(this._config, i, iconActor, groups[i]);
+            layoutItems.push(item);
             this.menu.addMenuItem(item, i);
         }
 
-        Mainloop.idle_add(Lang.bind(this, this._syncGroup));
+        this._setLayoutItems(layoutItems, null);
+
+        Mainloop.idle_add(() => this._syncGroup());
     }
 
     _syncGroup() {
-
         const selected = this._config.get_current_group();
+
+        if (!this._layoutItems.length) {
+            global.logError(new Error('Layouts list is empty'));
+            this.actor.hide();
+            return;
+        }
+
+        if (selected >= this._layoutItems.length) {
+            global.logError(new Error(
+                `Number of layouts: ${this._layoutItems.length}, selected layout: ${selected}`
+            ));
+            selected = 0;
+            Mainloop.idle_add(() => this._config.set_current_group(0));
+            return;
+        }
 
         if (this._selectedLayout) {
             this._selectedLayout.setShowDot(false);
@@ -282,43 +306,22 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
         this.set_applet_tooltip(this._config.get_current_name());
 
-        let handled = false;
-
-        if (this.show_flags) {
-            const name = this._config.get_current_icon_name();
-
-            const file = Gio.file_new_for_path("/usr/share/iso-flag-png/" + name + ".png");
-
-            if (file.query_exists(null)) {
-                this._applet_icon = new EmblemedIcon(file.get_path(), this._config.get_current_flag_id(), "applet-icon");
-                this._applet_icon_box.set_child(this._applet_icon.actor);
-                this._applet_icon_box.show();
-
-                this._setStyle();
-
-                this.set_applet_label("");
-
-                handled = true;
-            }
-        }
-
-        if (!handled) {
-            let name;
-
-            if (this.use_variants) {
-                name = this._config.get_current_variant_label();
-            } else {
-                name = this._config.get_current_short_group_label();
-            }
-
-            name = this.use_upper ? name.toUpperCase() : name;
-
+        const {name, iconActor, iconObject, isFlagIcon} = this._getIcon(selected, "applet-icon");
+        if (isFlagIcon) {
+            this._applet_icon = iconObject;
+            this._applet_icon_box.set_child(iconActor);
+            this._applet_icon_box.show();
+            this._setStyle();
+            this.set_applet_label("");
+        } else {
             this.set_applet_label(name);
             this._applet_icon_box.hide();
         }
-
+        
         if (this.im_running) {
         	this.actor.hide();
+        } else {
+            this.actor.show();
         }
     }
 
