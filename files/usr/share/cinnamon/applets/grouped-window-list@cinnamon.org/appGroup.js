@@ -21,6 +21,18 @@ const {
     TitleDisplay
 } = require('./constants');
 
+const _reLetterRtl = new RegExp("\\p{Script=Hebrew}|\\p{Script=Arabic}", "u");
+const _reLetter = new RegExp("\\p{L}", "u");
+const getTextDirection = function(text) {
+    for (const l of text) {
+        if (l.match(_reLetterRtl))
+            return Clutter.TextDirection.RTL;
+        if (l.match(_reLetter))
+            return Clutter.TextDirection.LTR;
+    }
+    return Clutter.TextDirection.None;
+}
+
 // returns [x1,x2] so that the area between x1 and x2 is
 // centered in length
 
@@ -389,6 +401,7 @@ class AppGroup {
 
         // Set label position
         if (this.drawLabel) {
+            const textDirection = getTextDirection(this.label.get_text());
             const labelNaturalHeight = this.label.get_preferred_size()[3];
             const labelYPadding = Math.floor(Math.max(0, allocHeight - labelNaturalHeight) / 2);
 
@@ -402,6 +415,18 @@ class AppGroup {
                 childBox.x1 = box.x1;
                 childBox.x2 = this.iconBox.x;
             }
+
+            // Set text alignment
+            if (textDirection === St.TextDirection.LTR)
+                this.label.set_style('text-align: left;');
+            else if (textDirection === St.TextDirection.RTL)
+                this.label.set_style('text-align: right;');
+            else
+                if (direction === St.TextDirection.LTR)
+                    this.label.set_style('text-align: left;');
+                else
+                    this.label.set_style('text-align: right;');
+
             this.label.allocate(childBox, flags);
         }
 
