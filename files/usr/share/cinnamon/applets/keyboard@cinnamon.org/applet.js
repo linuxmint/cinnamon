@@ -266,6 +266,8 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
     }
 
     _syncConfig() {
+        this._maxSeenWidth = this._maxSeenHeight = 0;
+        
         if (!this._config.get_enabled()) {
             this._setLayoutItems([]);
             this.menu.close();
