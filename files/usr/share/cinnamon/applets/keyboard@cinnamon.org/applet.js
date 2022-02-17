@@ -80,11 +80,6 @@ class EmblemedIcon {
         cr.$dispose();
     }
 
-    destroy() {
-        const actor = this.actor;
-        Mainloop.idle_add(() => actor.destroy());
-    }
-
     /* Monkey patch St.Icon functions used in js/ui/applet.js IconApplet so
        we can use its _setStyle() function for figuring out how big we should
        be
@@ -229,9 +224,6 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
     }
 
     _setLayoutIcons(icons) {
-        this._layoutIcons.forEach(icon => 
-            icon.isFlagIcon ? icon.iconInstance.destroy() : icon.iconActor.destroy()
-        );
         this._layoutIcons = icons || [];
     }
 
@@ -267,7 +259,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
     _syncConfig() {
         this._maxSeenWidth = this._maxSeenHeight = 0;
-        
+
         if (!this._config.get_enabled()) {
             this._setLayoutItems([]);
             this.menu.close();
