@@ -413,6 +413,8 @@ class MainWindow(Gio.Application):
                     opts = getopt.getopt(sys.argv[2:], "t:s:", ["tab=", "sort="])[0]
             except getopt.GetoptError:
                 pass
+            # pop the arg once we consume it so we don't pass it go Gio.application.run
+            sys.argv.pop(1)
 
             for opt, arg in opts:
                 if opt in ("-t", "--tab"):
@@ -425,6 +427,9 @@ class MainWindow(Gio.Application):
                         self.sort = int(arg)
                     elif arg in sorts_literal.keys():
                         self.sort = sorts_literal[arg]
+                # remove the args we consume
+                sys.argv.remove(opt)
+                sys.argv.remove(arg)
 
             # If we're launching a module directly, set the WM class so GWL
             # can consider it as a standalone app and give it its own
