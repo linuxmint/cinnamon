@@ -25,6 +25,7 @@
 #include "st-texture-cache.h"
 #include "st-private.h"
 #include "st-settings.h"
+#include "st-theme-context.h"
 #include <gtk/gtk.h>
 #include <math.h>
 #include <string.h>
@@ -1067,7 +1068,8 @@ st_texture_cache_load_gicon (StTextureCache    *cache,
                              gint               size)
 {
     return st_texture_cache_load_gicon_with_scale (cache, theme_node, icon, size,
-                                                   1, 1.0);
+                                                   st_theme_context_get_scale_for_stage (),
+                                                   1.0);
 }
 
 
@@ -1411,7 +1413,8 @@ st_texture_cache_load_sliced_image (StTextureCache *cache,
     actor = st_texture_cache_load_sliced_image_file (cache, file,
                                                      grid_height,
                                                      grid_height,
-                                                     1, 1.0,
+                                                     st_theme_context_get_scale_for_stage (),
+                                                     1.0,
                                                      load_callback, user_data);
 
     g_object_unref (file);
@@ -1601,6 +1604,7 @@ st_texture_cache_load_image_from_file_async (StTextureCache                  *ca
                                              StTextureCacheLoadImageCallback  callback,
                                              gpointer                         user_data)
 {
+  gint scale;
   if (callback == NULL)
     {
       g_warning ("st_texture_cache_load_image_from_file_async callback cannot be NULL");
@@ -1609,8 +1613,7 @@ st_texture_cache_load_image_from_file_async (StTextureCache                  *ca
 
   ImageFromFileAsyncData *data;
   GTask *result;
-  //FIXME
-  gint scale = 1;
+  scale = st_theme_context_get_scale_for_stage (),
   data = g_new0 (ImageFromFileAsyncData, 1);
   data->width = width == -1 ? -1 : width * scale;
   data->height = height == -1 ? -1 : height * scale;
@@ -1744,7 +1747,8 @@ st_texture_cache_load_uri_async (StTextureCache *cache,
 
     actor = st_texture_cache_load_file_async (cache, file,
                                               available_width, available_height,
-                                              1, 1.0);
+                                              st_theme_context_get_scale_for_stage (),
+                                              1.0);
 
     g_object_unref (file);
     return actor;
@@ -1906,7 +1910,9 @@ st_texture_cache_load_file_to_cogl_texture (StTextureCache *cache,
     GFile *file = g_file_new_for_path (file_path);
     CoglTexture *texture;
 
-    texture = st_texture_cache_load_gfile_to_cogl_texture (cache, file, 1, 1.0);
+    texture = st_texture_cache_load_gfile_to_cogl_texture (cache, file,
+                                                           st_theme_context_get_scale_for_stage (),
+                                                           1.0);
     g_object_unref (file);
 
     return texture;
@@ -1966,7 +1972,9 @@ st_texture_cache_load_file_to_cairo_surface (StTextureCache *cache,
 {
     GFile *file = g_file_new_for_path (file_path);
 
-    cairo_surface_t *surface = st_texture_cache_load_gfile_to_cairo_surface (cache, file, 1, 1.0);
+    cairo_surface_t *surface = st_texture_cache_load_gfile_to_cairo_surface (cache, file,
+                                                                             st_theme_context_get_scale_for_stage (),
+                                                                             1.0);
     g_object_unref (file);
 
     return surface;

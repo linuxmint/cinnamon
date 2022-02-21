@@ -422,9 +422,6 @@ st_icon_update (StIcon *icon)
   StIconPrivate *priv = icon->priv;
   StThemeNode *theme_node;
   StTextureCache *cache;
-  gint scale;
-  ClutterActor *stage;
-  StThemeContext *context;
 
   if (priv->pending_texture)
     {
@@ -438,11 +435,7 @@ st_icon_update (StIcon *icon)
   if (theme_node == NULL)
     return;
 
-  stage = clutter_actor_get_stage (CLUTTER_ACTOR (icon));
-  context = st_theme_context_get_for_stage (CLUTTER_STAGE (stage));
-  g_object_get (context, "scale-factor", &scale, NULL);
-
-  priv->icon_scale = scale;
+  priv->icon_scale = st_theme_context_get_scale_for_stage ();
 
   cache = st_texture_cache_get_default ();
   if (priv->gicon)
@@ -496,15 +489,11 @@ st_icon_update_icon_size (StIcon *icon)
   else if (priv->theme_icon_size > 0)
     {
       gint scale;
-      ClutterActor *stage;
-      StThemeContext *context;
 
       /* The theme will give us an already-scaled size, so we
        * undo it here, as priv->icon_size is in unscaled pixels.
        */
-      stage = clutter_actor_get_stage (CLUTTER_ACTOR (icon));
-      context = st_theme_context_get_for_stage (CLUTTER_STAGE (stage));
-      g_object_get (context, "scale-factor", &scale, NULL);
+      scale = st_theme_context_get_scale_for_stage ();
       new_size = (gint) (priv->theme_icon_size / scale);
     }
   else
