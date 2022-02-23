@@ -190,7 +190,7 @@ var _Draggable = new Lang.Class({
             } else if (this._dragActor != null && !this._animationInProgress) {
                 // Drag must have been cancelled with Esc.
                 // Check if escaped drag was from a desklet
-                if (this.target._delegate.acceptDrop){
+                if (this.target?._delegate.acceptDrop){
                     this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
                 }
                 this._dragComplete();
