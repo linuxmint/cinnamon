@@ -60,15 +60,15 @@ function unloadRemovedDesklets(removedDeskletUUIDs) {
  *
  * Initialize desklet manager
  */
-function init(){
-    let startTime = new Date().getTime();
+function init() {
+    const startTime = new Date().getTime();
     try {
         desklets = imports.desklets;
     } catch (e) {
         desklets = {};
     }
     deskletMeta = Extension.Type.DESKLET.legacyMeta;
-    deskletsLoaded = false
+    deskletsLoaded = false;
 
     definitions = getDefinitions();
 
@@ -79,7 +79,7 @@ function init(){
 
         deskletsLoaded = true;
         updateMouseTracking();
-        global.log("DeskletManager started in " + new Date().getTime() - startTime + "ms");
+        global.log(`DeskletManager started in ${new Date().getTime() - startTime} ms`);
     });
 }
 
