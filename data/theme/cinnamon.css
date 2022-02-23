@@ -1424,6 +1424,12 @@ StScrollBar StButton#vhandle:hover {
  * Grouped window list (grouped-window-list@cinnamon.org)
  * ===================================================================*/
 
+.grouped-window-list-box {
+    spacing: 2px;
+}
+.grouped-window-list-box.vertical {
+    spacing: 3px;
+}
 .grouped-window-list-thumbnail-label {
     padding-left: 4px;
 }

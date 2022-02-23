@@ -249,9 +249,14 @@ class AppGroup {
     }
 
     setMargin() {
-        let direction = this.state.isHorizontal ? 'right' : 'bottom';
-        let existingStyle = this.actor.style ? this.actor.style : '';
-        this.actor.style = existingStyle + 'margin-' + direction + ':6px;';
+        const applet = this.state.appletActor;
+        const direction = this.state.isHorizontal ? 'right' : 'bottom';
+        const existingStyle = this.actor.style ? this.actor.style : '';
+        let spacing = parseInt(applet.get_theme_node().get_length('spacing'));
+        if (!spacing) {
+            spacing = 6;
+        }
+        this.actor.style = existingStyle + 'margin-' + direction + ':' + spacing + 'px;';
     }
 
     setIcon(metaWindow) {
