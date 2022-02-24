@@ -655,7 +655,7 @@ var _Draggable = new Lang.Class({
     },
 
     _dragComplete: function() {
-        if (!this._actorDestroyed && !this._dragActor.is_finalized())
+        if (this._dragOrigParent)
             Cinnamon.util_set_hidden_from_pick(this._dragActor, false);
 
         this._ungrabEvents();
