@@ -463,7 +463,7 @@ gint
 st_theme_context_get_scale_for_stage (void)
 {
   g_return_val_if_fail (stage_context != NULL, 1);
-  g_printerr ("theme scale: %d\n", stage_context->scale_factor);
+  // g_printerr ("theme scale: %d\n", stage_context->scale_factor);
   return stage_context->scale_factor;
 }
 

@@ -130,10 +130,26 @@ class CinnamonSystrayApplet extends Applet.Applet {
             if (parent) parent.remove_child(icon);
 
             this._insertStatusItem(role, icon);
+            icon.connect("button-press-event", ()=> { return Clutter.EVENT_STOP; });
+            icon.connect("button-release-event", this._buttonReleased.bind());
+            icon.reactive = true;
 
         } catch (e) {
             global.logError(e);
         }
+    }
+
+    _buttonReleased(icon, event) {
+        const button = event.get_button();
+
+        switch (button) {
+            case Clutter.BUTTON_PRIMARY:
+            case Clutter.BUTTON_SECONDARY:
+            case Clutter.BUTTON_MIDDLE:
+                icon.click(event);
+        }
+
+        return Clutter.EVENT_PROPAGATE;
     }
 
     _onTrayIconRemoved(o, icon) {
