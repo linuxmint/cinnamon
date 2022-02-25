@@ -163,6 +163,7 @@ var tracker = null;
 var settingsManager = null;
 var systrayManager = null;
 var wmSettings = null;
+var pointerTracker = null;
 
 var workspace_names = [];
 
@@ -410,7 +411,7 @@ function start() {
         layoutManager._prepareStartupAnimation();
     }
 
-    let pointerTracker = new PointerTracker.PointerTracker();
+    pointerTracker = new PointerTracker.PointerTracker();
     pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 

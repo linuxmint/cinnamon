@@ -13,6 +13,9 @@ const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Tweener = imports.ui.tweener;
 const WorkspacesView = imports.ui.workspacesView;
+// ***************
+// This shows all of the windows on the current workspace
+// ***************
 
 // Time for initial animation going into Overview mode
 var ANIMATION_TIME = 0.2;

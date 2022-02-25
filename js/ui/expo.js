@@ -12,6 +12,10 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const ExpoThumbnail = imports.ui.expoThumbnail;
 
+// ***************
+// This shows all of the workspaces
+// ***************
+
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.2;
 
