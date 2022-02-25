@@ -2026,7 +2026,6 @@ var PopupMenuBase = class PopupMenuBase {
             // precise ways would require a lot more bookkeeping.
             let updateSeparatorVisibility = this._updateSeparatorVisibility.bind(this, menuItem);
             this._signals.connect(this, 'open-state-changed', updateSeparatorVisibility);
-            this._signals.connect(this.box, 'allocation-changed', updateSeparatorVisibility);
         } else if (menuItem instanceof PopupBaseMenuItem)
             this._connectItemSignals(menuItem);
         else

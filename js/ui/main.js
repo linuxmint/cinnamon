@@ -62,6 +62,7 @@
  * This is a container that contains all the desklets as childs. Its actor is
  * put between @global.bottom_window_group and @global.uiGroup.
  * @software_rendering (boolean): Whether software rendering is used
+ * @animations_enabled (boolean): Whether any effects or animations should be used.
  * @popup_rendering_actor (Clutter.Actor): The popup actor that is in the process of rendering
  * @xlet_startup_error (boolean): Whether there was at least one xlet that did
  * not manage to load
@@ -163,6 +164,7 @@ var tracker = null;
 var settingsManager = null;
 var systrayManager = null;
 var wmSettings = null;
+var pointerTracker = null;
 
 var workspace_names = [];
 
@@ -170,6 +172,7 @@ var applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem t
 var deskletContainer = null;
 
 var software_rendering = false;
+var animations_enabled = false;
 
 var popup_rendering_actor = null;
 
@@ -300,10 +303,27 @@ function start() {
     let cinnamonStartTime = new Date().getTime();
 
     log("About to start Cinnamon");
-    if (GLib.getenv('CINNAMON_SOFTWARE_RENDERING')) {
-        log("ACTIVATING SOFTWARE RENDERING");
+
+    let backend = Meta.get_backend();
+
+    // Only cinnamon2d laucher will set CINNAMON_2D - this is deliberate by the user.
+    let cinnamon_2d = GLib.getenv("CINNAMON_2D") === true;
+    let live = false;
+
+    if (!backend.is_rendering_hardware_accelerated() || cinnamon_2d) {
         global.logError("Cinnamon Software Rendering mode enabled");
         software_rendering = true;
+
+        // We only warn if software_rendering is not of the user's volition.
+        if (!cinnamon_2d && GLib.file_test("/proc/cmdline", GLib.FileTest.EXISTS)) {
+            let content = Cinnamon.get_file_contents_utf8_sync("/proc/cmdline");
+            if (content.match("boot=casper") || content.match("boot=live")) {
+                // If we're in a live session, pretend we're using hardware rendering,
+                // so all animations end up being enabled.
+                software_rendering = false;
+                live = true;
+            }
+        }
     }
 
     // Chain up async errors reported from C
@@ -401,16 +421,15 @@ function start() {
 
     let startupAnimationEnabled = global.settings.get_boolean("startup-animation");
 
-    let do_animation = !global.session_running &&
-                        startupAnimationEnabled &&
-                       !GLib.getenv('CINNAMON_SOFTWARE_RENDERING') &&
-                       !GLib.getenv('CINNAMON_2D');
+    let do_startup_animation = !global.session_running &&
+                                startupAnimationEnabled &&
+                                !software_rendering;
 
-    if (do_animation) {
+    if (do_startup_animation) {
         layoutManager._prepareStartupAnimation();
     }
 
-    let pointerTracker = new PointerTracker.PointerTracker();
+    pointerTracker = new PointerTracker.PointerTracker();
     pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
@@ -481,13 +500,9 @@ function start() {
 
         a11yHandler = new Accessibility.A11yHandler();
 
-        if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
-            if (GLib.file_test("/proc/cmdline", GLib.FileTest.EXISTS)) {
-                let content = Cinnamon.get_file_contents_utf8_sync("/proc/cmdline");
-                if (!content.match("boot=casper") && !content.match("boot=live")) {
-                    notifyCinnamon2d();
-                }
-            }
+        // We only warn if software_rendering is not of the user's volition.
+        if (software_rendering && !cinnamon_2d && !live) {
+            notifyCinnamon2d();
         }
 
         if (xlet_startup_error)
@@ -502,7 +517,7 @@ function start() {
         // until the event loop is uncontended and idle.
         // This helps to prevent us from running the animation
         // when the system is bogged down
-        if (do_animation) {
+        if (do_startup_animation) {
             let id = GLib.idle_add(GLib.PRIORITY_LOW, () => {
                 layoutManager._doStartupAnimation();
                 return GLib.SOURCE_REMOVE;
@@ -524,6 +539,11 @@ function start() {
 
         global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
     });
+}
+
+function updateAnimationsEnabled() {
+    animations_enabled = !(software_rendering) && global.settings.get_boolean("desktop-effects-workspace");
+    cinnamonDBusService.notifyAnimationsEnabled();
 }
 
 function notifyCinnamon2d() {

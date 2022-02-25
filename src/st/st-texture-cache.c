@@ -1488,6 +1488,7 @@ st_texture_cache_load_file_async (StTextureCache *cache,
 typedef struct {
   gchar *path;
   gint   width, height;
+  guint handle;
   StTextureCacheLoadImageCallback load_callback;
   gpointer load_callback_data;
 } ImageFromFileAsyncData;
@@ -1527,7 +1528,7 @@ on_image_from_file_loaded (GObject      *source,
       g_warning ("Could not load image from file: %s\n", error->message);
       g_error_free (error);
 
-      data->load_callback (ST_TEXTURE_CACHE (source), actor, data->load_callback_data);
+      data->load_callback (ST_TEXTURE_CACHE (source), data->handle, actor, data->load_callback_data);
 
       return;
     }
@@ -1551,7 +1552,7 @@ on_image_from_file_loaded (GObject      *source,
 
   g_object_unref (content);
 
-  data->load_callback (ST_TEXTURE_CACHE (source), actor, data->load_callback_data);
+  data->load_callback (ST_TEXTURE_CACHE (source), data->handle, actor, data->load_callback_data);
 }
 
 static void
@@ -1595,8 +1596,14 @@ load_image_from_file_thread (GTask        *task,
  * mostly useful for situations where you want to load an image asynchronously, but don't
  * want the actor back until it's fully loaded and sized (as opposed to load_uri_async,
  * which provides no callback function, and leaves size negotiation to its own devices.)
+ * 
+ * The image's aspect ratio is always maintained and if both width and height are > 0
+ * the image will never exceed these dimensions.
+ * 
+ * Return Value: A handle that can be used to verify the actor issued in the callback
+ * is the expected one.
  */
-void
+guint
 st_texture_cache_load_image_from_file_async (StTextureCache                  *cache,
                                              const gchar                     *path,
                                              gint                             width,
@@ -1608,7 +1615,7 @@ st_texture_cache_load_image_from_file_async (StTextureCache                  *ca
   if (callback == NULL)
     {
       g_warning ("st_texture_cache_load_image_from_file_async callback cannot be NULL");
-      return;
+      return 0;
     }
 
   ImageFromFileAsyncData *data;
@@ -1617,6 +1624,10 @@ st_texture_cache_load_image_from_file_async (StTextureCache                  *ca
   data = g_new0 (ImageFromFileAsyncData, 1);
   data->width = width == -1 ? -1 : width * scale;
   data->height = height == -1 ? -1 : height * scale;
+
+  static gint handles = 1;
+  data->handle = handles++;
+
   data->path = g_strdup (path);
   data->load_callback = callback;
   data->load_callback_data = user_data;
@@ -1626,6 +1637,8 @@ st_texture_cache_load_image_from_file_async (StTextureCache                  *ca
   g_task_run_in_thread (result, load_image_from_file_thread);
 
   g_object_unref (result);
+
+  return data->handle;
 }
 
 static char *

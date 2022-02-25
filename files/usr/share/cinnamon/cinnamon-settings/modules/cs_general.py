@@ -25,10 +25,6 @@ class Module:
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            sync_method = [["none", _("None")], ["fallback", "Fallback"], ["swap_throttling", "Swap Throttling"], ["presentation_time", "Presentation Time"]]
-            widget = GSettingsComboBox(_("VSync method"), "org.cinnamon.muffin", "sync-method", sync_method, size_group=size_group)
-            settings.add_row(widget)
-
             switch = GSettingsSwitch(_("Disable compositing for full-screen windows"), "org.cinnamon.muffin", "unredirect-fullscreen-windows")
             switch.set_tooltip_text(_("Select this option to let full-screen applications skip the compositing manager and run at maximum speed. Unselect it if you're experiencing screen-tearing in full screen mode."))
             settings.add_row(switch)

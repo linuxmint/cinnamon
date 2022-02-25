@@ -1203,6 +1203,7 @@ PanelDummy.prototype = {
      * Destroys panel dummy actor
      */
     destroy: function() {
+        Main.layoutManager.removeChrome(this.actor);
         this.actor.destroy();
     }
 }
@@ -1576,10 +1577,14 @@ PanelContextMenu.prototype = {
             global.settings.set_boolean("panel-edit-mode", item.state);
         });
         menu.addMenuItem(panelEditMode);        // menu item for panel edit mode
-        global.settings.connect('changed::panel-edit-mode', function() {
+        this.panel_edit_setting_id = global.settings.connect('changed::panel-edit-mode', function() {
             panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
         });
 
+        this.connect("destroy", Lang.bind(this, function() {
+            global.settings.disconnect(this.panel_edit_setting_id);
+            this.panel_edit_setting_id = 0;
+        }))
 
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
 
@@ -2069,18 +2074,22 @@ Panel.prototype = {
 
         if (this.actor.is_finalized()) return;
 
-        if (this._leftCorner && !this._leftCorner.actor.is_finalized())
+        if (this._leftCorner)
             this.actor.add_actor(this._leftCorner.actor);
-        if (this._rightCorner && !this._rightCorner.actor.is_finalized())
+        if (this._rightCorner)
             this.actor.add_actor(this._rightCorner.actor);
     },
 
     _destroycorners: function()
     {
-    if (this._leftCorner)
+    if (this._leftCorner) {
         this._leftCorner.actor.destroy();
-    if (this._rightCorner)
+        this._leftCorner = null;
+    }
+    if (this._rightCorner) {
         this._rightCorner.actor.destroy();
+        this._rightCorner = null;
+    }
     this.drawcorner = [false,false];
     },
 
@@ -2188,6 +2197,8 @@ Panel.prototype = {
         if (this._destroyed) return;
         this._destroyed = true;    // set this early so that any routines triggered during
                                    // the destroy process can test it
+
+        Main.layoutManager.removeChrome(this.actor);
 
         if (removeIconSizes) this._removeZoneIconSizes();
         // remove icon size settings if requested

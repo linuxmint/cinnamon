@@ -12,6 +12,10 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const ExpoThumbnail = imports.ui.expoThumbnail;
 
+// ***************
+// This shows all of the workspaces
+// ***************
+
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.2;
 
@@ -300,7 +304,7 @@ Expo.prototype = {
             clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
             clones.push(clone);
         }, this);
-        let animate = Main.wm.desktop_effects_ui;
+        let animate = Main.animations_enabled;
         //We need to allocate activeWorkspace before we begin its clone animation
         let allocateID = this._expo.connect('allocated', Lang.bind(this, function() {
             this._expo.disconnect(allocateID);
@@ -425,7 +429,7 @@ Expo.prototype = {
             clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
             clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
 
-            let animate = Main.wm.desktop_effects_ui;
+            let animate = Main.animations_enabled;
             if (animate) {
                 Tweener.addTween(clone, {
                     x: 0,

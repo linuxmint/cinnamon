@@ -534,6 +534,9 @@ class Player extends PopupMenu.PopupMenuSection {
         this.cover = new St.Icon({icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
         this.coverBox.add_actor(this.cover);
 
+        this._cover_load_handle = 0;
+        this._cover_path = null;
+
         // Track info (artist + title)
         this._artist = _("Unknown Artist");
         this._album = _("Unknown Album");
@@ -845,22 +848,32 @@ class Player extends PopupMenu.PopupMenuSection {
     }
 
     _showCover(cover_path) {
-        this.coverBox.remove_actor(this.cover);
         if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
             this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
             cover_path = null;
         }
         else {
-            if (this._applet.keepAlbumAspectRatio) {
-                this.cover = new Clutter.Texture({width: 300, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
-            }
-            else {
-                this.cover = new Clutter.Texture({width: 300, height: 300, keep_aspect_ratio: false, filter_quality: 2, filename: cover_path});
-            }
+            this._cover_path = cover_path;
+            this._cover_load_handle = St.TextureCache.get_default().load_image_from_file_async(cover_path, 300, 300, this._on_cover_loaded.bind(this));
         }
+    }
+
+    _on_cover_loaded(cache, handle, actor) {
+        if (handle !== this._cover_load_handle) {
+            // Maybe a cover image load stalled? Make sure our requests match the callback.
+            return;
+        }
+
+        this.coverBox.remove_actor(this.cover);
+
+        // Make sure any oddly-shaped album art doesn't affect the height of the applet popup
+        // (and move the player controls as a result).
+        actor.margin_bottom = 300 - actor.height;
+
+        this.cover = actor;
         this.coverBox.add_actor(this.cover);
         this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
-        this._applet.setAppletTextIcon(this, cover_path);
+        this._applet.setAppletTextIcon(this, this._cover_path);
     }
 
     onSettingsChanged() {
@@ -909,7 +922,6 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this.settings.bind("horizontalScroll", "horizontalScroll")
         this.settings.bind("showalbum", "showalbum", this.on_settings_changed);
         this.settings.bind("truncatetext", "truncatetext", this.on_settings_changed);
-        this.settings.bind("keepAlbumAspectRatio", "keepAlbumAspectRatio", this.on_settings_changed);
         this.settings.bind("hideSystray", "hideSystray", function() {
             if (this.hideSystray) this.registerSystrayIcons();
             else this.unregisterSystrayIcons();

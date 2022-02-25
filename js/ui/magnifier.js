@@ -1727,8 +1727,8 @@ MagnifierInputHandler.prototype = {
     _enable_zoom: function() {
         if (this._zoom_in_id > 0 || this._zoom_out_id > 0)
             this._disable_zoom();
-        // this._zoom_in_id = global.display.connect('zoom-scroll-in', Lang.bind(this, this._zoom_in));
-        // this._zoom_out_id = global.display.connect('zoom-scroll-out', Lang.bind(this, this._zoom_out));
+        this._zoom_in_id = global.display.connect('zoom-scroll-in', Lang.bind(this, this._zoom_in));
+        this._zoom_out_id = global.display.connect('zoom-scroll-out', Lang.bind(this, this._zoom_out));
 
         let kb = this.keybinding_settings.get_strv(ZOOM_IN_KEY);
         Main.keybindingManager.addHotKeyArray("magnifier-zoom-in", kb, Lang.bind(this, this._zoom_in));

@@ -64,21 +64,26 @@ KeybindingManager.prototype = {
     },
 
     _lookupEntry: function(name) {
-        for (let key in this.bindings) {
-            let entry = this.bindings[key];
+        let found = 0;
+        for (let action_id in this.bindings) {
+            let entry = this.bindings[action_id];
             if (entry !== undefined && entry.name === name) {
-                return entry;
+                return [action_id, entry];
             }
         }
+
+        return [Meta.KeyBindingAction.NONE, undefined];
     },
 
     addHotKeyArray: function(name, bindings, callback) {
-        let entry = this._lookupEntry(name);
+        let [existing_action_id, entry] = this._lookupEntry(name);
+
         if (entry !== undefined) {
             if (entry.bindings.toString() === bindings.toString()) {
-              return true;
+                return true;
             }
             global.display.remove_keybinding(name);
+            this.bindings[existing_action_id] = undefined
         }
 
         if (!bindings) {
@@ -92,33 +97,34 @@ KeybindingManager.prototype = {
         }
 
         if (empty) {
-            if (entry !== undefined) {
-                this.bindings[name] = undefined;
-            }
             return true;
         }
 
-        let action_id = global.display.add_custom_keybinding(name, bindings, callback);
+        action_id = global.display.add_custom_keybinding(name, bindings, callback);
 
         if (action_id === Meta.KeyBindingAction.NONE) {
             global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
             return false;
-        } else {
-            this.bindings[action_id] = {
-                "name"    : name,
-                "bindings": bindings,
-                "callback": callback
-            };
         }
+
+        this.bindings[action_id] = {
+            "name"    : name,
+            "bindings": bindings,
+            "callback": callback
+        };
 
         return true;
     },
 
     removeHotKey: function(name) {
-        if (this.bindings[name] == undefined)
+        let [action_id, entry] = this._lookupEntry(name);
+
+        if (entry === undefined) {
             return;
+        }
+
         global.display.remove_keybinding(name);
-        this.bindings[name] = undefined;
+        this.bindings[action_id] = undefined;
     },
 
     setup_custom_keybindings: function() {

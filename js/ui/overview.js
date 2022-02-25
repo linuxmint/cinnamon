@@ -13,6 +13,9 @@ const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Tweener = imports.ui.tweener;
 const WorkspacesView = imports.ui.workspacesView;
+// ***************
+// This shows all of the windows on the current workspace
+// ***************
 
 // Time for initial animation going into Overview mode
 var ANIMATION_TIME = 0.2;
@@ -289,7 +292,7 @@ Overview.prototype = {
         global.overlay_group.add_actor(this.workspacesView.actor);
         Main.panelManager.disablePanels();
 
-        let animate = Main.wm.desktop_effects_ui;
+        let animate = Main.animations_enabled;
         if (animate) {
             this._group.opacity = 0;
             Tweener.addTween(this._group, {
@@ -408,7 +411,7 @@ Overview.prototype = {
 
         this.workspacesView.hide();
 
-        let animate = Main.wm.desktop_effects_ui;
+        let animate = Main.animations_enabled;
         if (animate) {
             // Make other elements fade out.
             Tweener.addTween(this._group, {
