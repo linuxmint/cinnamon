@@ -54,7 +54,7 @@ class SoundBox(Gtk.Box):
 
         label = Gtk.Label()
         label.set_markup("<b>%s</b>" % title)
-        label.set_x_align(0.0)
+        label.set_xalign(0.0)
         self.add(label)
 
         frame = Gtk.Frame()
