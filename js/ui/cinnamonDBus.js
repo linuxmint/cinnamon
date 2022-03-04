@@ -126,6 +126,7 @@ const CinnamonIface =
             <method name="ReloadTheme"/> \
             <signal name="RunStateChanged"/> \
             <signal name="XletsLoadedComplete"/> \
+            <property name="AnimationsEnabled" type="b" access="read" /> \
         </interface> \
     </node>';
 
@@ -483,6 +484,15 @@ CinnamonDBus.prototype = {
 
     EmitXletsLoadedComplete: function() {
         this._dbusImpl.emit_signal('XletsLoadedComplete', null);
+    },
+
+    get AnimationsEnabled() {
+        return Main.animations_enabled;
+    },
+
+    notifyAnimationsEnabled() {
+        let variant = new GLib.Variant('b', Main.animations_enabled);
+        this._dbusImpl.emit_property_changed('AnimationsEnabled', variant);
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

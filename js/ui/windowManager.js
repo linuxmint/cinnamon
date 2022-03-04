@@ -20,17 +20,8 @@ const {TimelineSwitcher} = imports.ui.appSwitcher.timelineSwitcher;
 const {ClassicSwitcher} = imports.ui.appSwitcher.classicSwitcher;
 const {addTween, removeTweens} = imports.ui.tweener;
 
-const MENU_ANIMATION_TIME = 0.1;
-const WORKSPACE_ANIMATION_TIME = 0.15;
-
-const TILE_PREVIEW_ANIMATION_TIME = 0.12;
-const SIZE_CHANGE_ANIMATION_TIME = 0.12;
-const MAP_ANIMATION_TIME = 0.12;
-const DESTROY_ANIMATION_TIME = 0.12;
-const MINIMIZE_ANIMATION_TIME = 0.12;
-
 // maps org.cinnamon window-effect-speed
-const ANIMATION_TIME_MULTIPLIERS = [
+const WINDOW_ANIMATION_TIME_MULTIPLIERS = [
     1.4, // 0 SLOW
     1.0, // 1 DEFAULT
     0.6  // 2 FAST
@@ -154,7 +145,7 @@ class TilePreview {
 
         if (animate) {
             Object.assign(props, {
-                time: TILE_PREVIEW_ANIMATION_TIME,
+                time: this.TILE_PREVIEW_ANIMATION_TIME,
                 transition: 'easeOutQuad'
             });
             addTween(this.actor, props);
@@ -173,7 +164,7 @@ class TilePreview {
         if (true) {
             addTween(this.actor, {
                 opacity: 0,
-                time: TILE_PREVIEW_ANIMATION_TIME,
+                time: this.TILE_PREVIEW_ANIMATION_TIME,
                 transition: 'easeOutQuad',
                 onComplete: () => this._reset()
             });
@@ -297,6 +288,14 @@ var DisplayChangesDialog = class DisplayChangesDialog extends ModalDialog.ModalD
 
 
 var WindowManager = class WindowManager {
+        MENU_ANIMATION_TIME = 0.1;
+        WORKSPACE_ANIMATION_TIME = 0.15;
+        TILE_PREVIEW_ANIMATION_TIME = 0.12;
+        SIZE_CHANGE_ANIMATION_TIME = 0.12;
+        MAP_ANIMATION_TIME = 0.12;
+        DESTROY_ANIMATION_TIME = 0.12;
+        MINIMIZE_ANIMATION_TIME = 0.12;
+
     constructor() {
         this._cinnamonwm = global.window_manager;
 
@@ -321,7 +320,7 @@ var WindowManager = class WindowManager {
         global.settings.connect('changed::desktop-effects-minimize', this.onSettingsChanged.bind(this));
         global.settings.connect('changed::window-effect-speed', this.onSettingsChanged.bind(this));
 
-        this.onSettingsChanged();
+        this.onSettingsChanged(global.settings, "desktop-effects-workspace");
 
         this._workspace_osd_array = [];
         this._tilePreview = null;
@@ -397,35 +396,40 @@ var WindowManager = class WindowManager {
         return false;
     }
 
-    onSettingsChanged(settings, key, type) {
-        this.desktop_effects_windows = global.settings.get_boolean("desktop-effects");
-        this.desktop_effects_ui = global.settings.get_boolean("desktop-effects-workspace");
-        this.desktop_effects_menus = global.settings.get_boolean("desktop-effects-on-menus");
-        this.desktop_effects_dialogs = global.settings.get_boolean("desktop-effects-on-dialogs");
-        this.desktop_effects_size_change = global.settings.get_boolean("desktop-effects-change-size");
+    onSettingsChanged(settings, key, data=null) {
+        if (key === "desktop-effects-workspace") {
+            Main.updateAnimationsEnabled();
+        }
+
+        this.desktop_effects_windows = Main.animations_enabled && global.settings.get_boolean("desktop-effects");
+        this.desktop_effects_menus = Main.animations_enabled && global.settings.get_boolean("desktop-effects-on-menus");
+        this.desktop_effects_dialogs = Main.animations_enabled && global.settings.get_boolean("desktop-effects-on-dialogs");
+        this.desktop_effects_size_change = this.desktop_effects_windows && global.settings.get_boolean("desktop-effects-change-size");
 
         this.desktop_effects_close_type = global.settings.get_string("desktop-effects-close");
         this.desktop_effects_map_type = global.settings.get_string("desktop-effects-map");
         this.desktop_effects_minimize_type = global.settings.get_string("desktop-effects-minimize");
 
-        this.window_effect_multiplier = ANIMATION_TIME_MULTIPLIERS[global.settings.get_int("window-effect-speed")];
+        this.window_effect_multiplier = WINDOW_ANIMATION_TIME_MULTIPLIERS[global.settings.get_int("window-effect-speed")];
     }
 
     _shouldAnimate(actor, types=null) {
         // Check if system is in modal state or in software rendering
-        if (Main.modalCount || Main.software_rendering) {
+        if (Main.modalCount || !Main.animations_enabled) {
             return false;
         }
 
         let type = actor.meta_window.get_window_type();
         
         if (types !== null) {
-            return types.includes(type);
+            if (!types.includes(type)) {
+                return false;
+            }
         }
 
         switch (type) {
             case Meta.WindowType.NORMAL:
-                return true;
+                return this.desktop_effects_windows;
             case Meta.WindowType.DIALOG:
             case Meta.WindowType.MODAL_DIALOG:
                 return this.desktop_effects_dialogs;
@@ -441,7 +445,7 @@ var WindowManager = class WindowManager {
     _minimizeWindow(cinnamonwm, actor) {
         Main.soundManager.play('minimize');
 
-        if (!this.desktop_effects_windows || !this._shouldAnimate(actor)) {
+        if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_minimize(actor);
             return;
         }
@@ -466,7 +470,7 @@ var WindowManager = class WindowManager {
                         scale_y: yScale,
                         x: xDest,
                         y: yDest,
-                        time: MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier,
+                        time: this.MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier,
                         transition: 'easeInQuad',
                         onComplete: () => this._minimizeWindowDone(cinnamonwm, actor),
                     });
@@ -484,7 +488,7 @@ var WindowManager = class WindowManager {
                     opacity: 0,
                     scale_x: 0.88,
                     scale_y: 0.88,
-                    time: MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier,
+                    time: this.MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier,
                     transition: 'easeOutQuad',
                     onComplete: () => this._minimizeWindowDone(cinnamonwm, actor),
                 });
@@ -501,7 +505,7 @@ var WindowManager = class WindowManager {
                 // The transition time set is the time if the animation starts/ends at the middle of the screen.
                 // Scale it proportional to the actual distance so that the speed of all animations will be constant.
                 let dist = Math.abs(actor.y - yDest);
-                let time = MINIMIZE_ANIMATION_TIME * (dist / yDest * 2);
+                let time = this.MINIMIZE_ANIMATION_TIME * (dist / yDest * 2);
 
                 addTween(actor, {
                     x: xDest,
@@ -534,7 +538,7 @@ var WindowManager = class WindowManager {
     _unminimizeWindow(cinnamonwm, actor) {
         Main.soundManager.play('minimize');
 
-        if (!this.desktop_effects_windows || !this._shouldAnimate(actor)) {
+        if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_unminimize(actor);
             return;
         }
@@ -554,7 +558,7 @@ var WindowManager = class WindowManager {
                     opacity: actor.orig_opacity,
                     scale_x: 1,
                     scale_y: 1,
-                    time: MAP_ANIMATION_TIME * this.window_effect_multiplier,
+                    time: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
                     transition: 'easeOutQuad',
                     onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
                 });
@@ -571,7 +575,7 @@ var WindowManager = class WindowManager {
                 // The transition time set is the time if the animation starts/ends at the middle of the screen.
                 // Scale it proportional to the actual distance so that the speed of all animations will be constant.
                 let dist = Math.abs(ySrc - yDest);
-                let time = MAP_ANIMATION_TIME * (dist / ySrc * 2);
+                let time = this.MAP_ANIMATION_TIME * (dist / ySrc * 2);
                 actor.show();
 
                 addTween(actor, {
@@ -603,7 +607,7 @@ var WindowManager = class WindowManager {
                         scale_y: 1.0,
                         x: xDest,
                         y: yDest,
-                        time: MAP_ANIMATION_TIME * this.window_effect_multiplier,
+                        time: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
                         transition: 'easeOutQuad',
                         onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
                     });
@@ -618,7 +622,7 @@ var WindowManager = class WindowManager {
                         opacity: 255,
                         scale_x: 1.0,
                         scale_y: 1.0,
-                        time: MAP_ANIMATION_TIME * this.window_effect_multiplier,
+                        time: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
                         transition: 'easeOutQuad',
                         onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
                     });
@@ -645,7 +649,7 @@ var WindowManager = class WindowManager {
     }
 
     _sizeChangeWindow(cinnamonwm, actor, whichChange, oldFrameRect, _oldBufferRect) {
-        if (!this.desktop_effects_windows || !this._shouldAnimate(actor, [Meta.WindowType.NORMAL]) || !this.desktop_effects_size_change) {
+        if (!this._shouldAnimate(actor, [Meta.WindowType.NORMAL]) || !this.desktop_effects_size_change) {
             cinnamonwm.completed_size_change(actor);
             return;
         }
@@ -703,7 +707,7 @@ var WindowManager = class WindowManager {
                 scale_x: scaleX,
                 scale_y: scaleY,
                 opacity: 0,
-                time: SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier,
+                time: this.SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier,
                 transition: 'easeOutQuad',
         });
 
@@ -720,7 +724,7 @@ var WindowManager = class WindowManager {
                 scale_y: 1,
                 translation_x: 0,
                 translation_y: 0,
-                time: SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier,
+                time: this.SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier,
                 transition: 'easeOutQuad',
                 onComplete: () => this._sizeChangeWindowDone(cinnamonwm, actor),
         });
@@ -865,7 +869,7 @@ var WindowManager = class WindowManager {
             this._checkDimming(actor.get_meta_window().get_transient_for());
         }
 
-        if (!this.desktop_effects_windows || !this._shouldAnimate(actor)) {
+        if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_map(actor);
             return;
         }
@@ -896,7 +900,7 @@ var WindowManager = class WindowManager {
                     x: xDest,
                     y: yDest,
                     time: 1.0,
-                    time: MAP_ANIMATION_TIME * this.window_effect_multiplier,
+                    time: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
                     transition: 'easeOutQuad',
                     onComplete: () => this._mapWindowDone(cinnamonwm, actor),
                 });
@@ -915,7 +919,7 @@ var WindowManager = class WindowManager {
                 // The transition time set is the time if the animation starts/ends at the middle of the screen.
                 // Scale it proportional to the actual distance so that the speed of all animations will be constant.
                 let dist = Math.abs(ySrc - yDest);
-                let time = MAP_ANIMATION_TIME * (dist / ySrc * 2);
+                let time = this.MAP_ANIMATION_TIME * (dist / ySrc * 2);
 
                 actor.show();
 
@@ -939,11 +943,11 @@ var WindowManager = class WindowManager {
                 actor.opacity = 0;
                 actor.show();
 
-                let time = MAP_ANIMATION_TIME * this.window_effect_multiplier;
+                let time = this.MAP_ANIMATION_TIME * this.window_effect_multiplier;
 
                 // Popups shouldn't be affected by the multiplier.
                 if (overridden_types.includes(actor._windowType)) {
-                    time = MENU_ANIMATION_TIME;
+                    time = this.MENU_ANIMATION_TIME;
                 }
 
                 addTween(actor, {
@@ -1004,7 +1008,7 @@ var WindowManager = class WindowManager {
                      Meta.WindowType.DIALOG,
                      Meta.WindowType.MODAL_DIALOG];
 
-        if (!this.desktop_effects_windows || !this._shouldAnimate(actor, types)) {
+        if (!this._shouldAnimate(actor, types)) {
             cinnamonwm.completed_destroy(actor);
             return;
         }
@@ -1027,7 +1031,7 @@ var WindowManager = class WindowManager {
                 // The transition time set is the time if the animation starts/ends at the middle of the screen.
                 // Scale it proportional to the actual distance so that the speed of all animations will be constant.
                 let dist = Math.abs(ySrc - yDest);
-                let time = DESTROY_ANIMATION_TIME * (dist / yDest * 2);
+                let time = this.DESTROY_ANIMATION_TIME * (dist / yDest * 2);
 
                 addTween(actor, {
                     y: yDest,
@@ -1061,7 +1065,7 @@ var WindowManager = class WindowManager {
                             opacity: 0,
                             scale_x: 0.88,
                             scale_y: 0.88,
-                            time: DESTROY_ANIMATION_TIME * this.window_effect_multiplier,
+                            time: this.DESTROY_ANIMATION_TIME * this.window_effect_multiplier,
                             transition: 'easeOutQuad',
                             onComplete: () => this._destroyWindowDone(cinnamonwm, actor),
                         });
@@ -1093,7 +1097,7 @@ var WindowManager = class WindowManager {
     }
 
     _switchWorkspace(cinnamonwm, from, to, direction) {
-        if (!this.desktop_effects_ui || Main.modalCount || Main.software_rendering) {
+        if (!Main.animations_enabled || Main.modalCount) {
             this.showWorkspaceOSD();
             cinnamonwm.completed_switch_workspace();
             return;
@@ -1174,7 +1178,7 @@ var WindowManager = class WindowManager {
                     {
                         x: window.origX + xDest,
                         y: window.origY + yDest,
-                        time: WORKSPACE_ANIMATION_TIME,
+                        time: this.WORKSPACE_ANIMATION_TIME,
                         transition: 'easeOutQuad'
                     });
             } else if (window.get_workspace() === to) {
@@ -1189,7 +1193,7 @@ var WindowManager = class WindowManager {
                     {
                         x: window.origX,
                         y: window.origY,
-                        time: WORKSPACE_ANIMATION_TIME,
+                        time: this.WORKSPACE_ANIMATION_TIME,
                         transition: 'easeOutQuad'
                     });
                 window.show_all();
@@ -1227,7 +1231,7 @@ var WindowManager = class WindowManager {
             finish_switch_workspace();
         });
 
-        addTween(this, {time: WORKSPACE_ANIMATION_TIME, onComplete: function() {
+        addTween(this, {time: this.WORKSPACE_ANIMATION_TIME, onComplete: function() {
             if (!killed) {
                 finish_switch_workspace();
             }
@@ -1237,7 +1241,7 @@ var WindowManager = class WindowManager {
     _showTilePreview(cinnamonwm, window, tileRect, monitorIndex) {
         if (!this._tilePreview)
             this._tilePreview = new TilePreview();
-        this._tilePreview.show(window, tileRect, monitorIndex, this.desktop_effects_ui);
+        this._tilePreview.show(window, tileRect, monitorIndex, Main.animations_enabled);
     }
 
     _hideTilePreview(cinnamonwm) {
