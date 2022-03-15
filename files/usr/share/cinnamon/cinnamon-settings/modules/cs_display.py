@@ -48,6 +48,10 @@ class Module:
             switch.set_tooltip_text(_("Select this option to disable automatic screen rotation on hardware equipped with supported accelerometers."))
             settings.add_row(switch)
 
+            switch = GSettingsSwitch(_("Rotate in tablet mode only"), "org.cinnamon.settings-daemon.peripherals.touchscreen", "tabletmode-lock")
+            switch.set_tooltip_text(_("Select this option to enable automatic screen rotation only if your convertible is in tablet mode. In general, tablet mode is being activated by folding the display at least 180 degrees."))
+            settings.add_row(switch)
+
             switch = GSettingsSwitch(_("Enable fractional scaling controls (experimental)"), "org.cinnamon.control-center.display", "show-fractional-scaling-controls")
             switch.set_tooltip_text(_("Select this option to display additional layout controls for per-monitor scaling."))
             settings.add_row(switch)
