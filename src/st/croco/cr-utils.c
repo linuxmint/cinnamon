@@ -812,7 +812,7 @@ cr_utils_ucs4_to_utf8 (const guint32 * a_in,
                                 = (0x80 | ((a_in[in_index] >> 12) & 0x3F));
                         a_out[out_index + 4]
                                 = (0x80 | ((a_in[in_index] >> 6) & 0x3F));
-                        a_out[out_index + 4]
+                        a_out[out_index + 5]
                                 = (0x80 | (a_in[in_index] & 0x3F));
                         out_index += 6;
                 } else {
