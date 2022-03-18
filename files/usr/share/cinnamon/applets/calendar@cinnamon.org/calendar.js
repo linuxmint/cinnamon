@@ -153,7 +153,8 @@ class Calendar {
         this._digitWidth = NaN;
         this.settings = settings;
 
-        this.update_id = 0;
+        this._update_id = 0;
+        this._set_date_idle_id = 0;
 
         this.settings.bindWithObject(this, "show-week-numbers", "show_week_numbers", this._onSettingsChange);
         this.desktop_settings = new Gio.Settings({ schema_id: DESKTOP_SCHEMA });
@@ -198,23 +199,38 @@ class Calendar {
     }
 
     _cancel_update() {
-        if (this.update_id > 0) {
-            Mainloop.source_remove(this.update_id);
-            this.update_id = 0;
+        if (this._update_id > 0) {
+            Mainloop.source_remove(this._update_id);
+            this._update_id = 0;
         }
     }
 
     _queue_update() {
         this._cancel_update();
 
-        this.update_id = Mainloop.idle_add(Lang.bind(this, this._idle_do_update));
+        this._update_id = Mainloop.idle_add(Lang.bind(this, this._idle_do_update));
     }
 
     _idle_do_update() {
-        this.update_id = 0;
+        this._update_id = 0;
         this._update();
 
         return GLib.SOURCE_REMOVE;
+    }
+
+    _queue_set_date_idle(date) {
+        this.setDate(date, false);
+        this._set_date_idle_id = 0;
+
+        return GLib.SOURCE_REMOVE;
+     }
+
+    queue_set_date(date) {
+        if (this._set_date_idle_id > 0) {
+            return;
+        }
+
+        this._set_date_idle_id = Mainloop.timeout_add(25, this._queue_set_date_idle.bind(this, date));
     }
 
     _update_events_enabled(em) {
@@ -372,7 +388,7 @@ class Calendar {
 
         let newDate = new Date();
         newDate.setFullYear(newYear, newMonth, newDayOfMonth);
-        this.setDate(newDate, false);
+        this.queue_set_date(newDate);
     }
 
     _onPrevYearButtonClicked() {
