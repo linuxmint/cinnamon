@@ -125,21 +125,24 @@ cairo_surface_t *st_texture_cache_load_file_to_cairo_surface (StTextureCache *ca
 /**
  * StTextureCacheLoadImageCallback
  * @cache: a #StTextureCache
+ * @handle: the handle returned to the caller in the original call.
  * @actor: the actor containing the loaded image
  * @user_data: Callback data
  *
- * Callback from st_texture_cache_load_image_from_file_async
+ * Callback from st_texture_cache_load_image_from_file_async. The handle should match
+ * the one returned by _load_image_from_file_async.
  */
 typedef void (* StTextureCacheLoadImageCallback) (StTextureCache *cache,
+                                                  guint           handle,
                                                   ClutterActor   *actor,
                                                   gpointer        user_data);
 
-void st_texture_cache_load_image_from_file_async (StTextureCache                    *cache,
-                                                  const gchar                       *path,
-                                                  gint                               width,
-                                                  gint                               height,
-                                                  StTextureCacheLoadImageCallback    callback,
-                                                  gpointer                           user_data);
+guint st_texture_cache_load_image_from_file_async (StTextureCache                    *cache,
+                                                   const gchar                       *path,
+                                                   gint                               width,
+                                                   gint                               height,
+                                                   StTextureCacheLoadImageCallback    callback,
+                                                   gpointer                           user_data);
 
 /**
  * StTextureCacheLoader: (skip)

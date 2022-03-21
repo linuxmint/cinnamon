@@ -67,12 +67,6 @@
         "description": "Show album art as icon",
         "dependency": "playerControl"
     },
-    "keepAlbumAspectRatio": {
-        "type": "switch",
-        "default": true,
-        "description": "Keep album art aspect ratio",
-        "dependency": "playerControl"
-    },
     "hideSystray" : {
         "type" : "switch",
         "description" : "Hide system tray icons for compatible players",
