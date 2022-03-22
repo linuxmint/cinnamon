@@ -1,0 +1,72 @@
+#! /usr/bin/python3
+
+"""
+Close dialog spawned by cinnamon (closeDialog.js) that prompts the user to kill a hung window.
+"""
+import signal
+import gettext
+import argparse
+
+import gi
+gi.require_version('Gtk', '3.0')
+
+from gi.repository import GLib, Gtk, GdkX11, Gdk
+
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+gettext.install("cinnamon", "/usr/share/locale", names=["ngettext"])
+
+class CloseDialog(Gtk.Dialog):
+    def __init__(self, parent_xid, title):
+        Gtk.Dialog.__init__(self)
+
+        self.set_title("")
+
+        self.add_buttons(_("Force quit"), Gtk.ResponseType.YES, _("Wait"), Gtk.ResponseType.NO)
+        self.set_default_size(300, -1)
+        self.set_default_response(Gtk.ResponseType.NO)
+
+        w = self.get_widget_for_response(Gtk.ResponseType.YES)
+        w.get_style_context().add_class(Gtk.STYLE_CLASS_DESTRUCTIVE_ACTION)
+
+        text = _("%s is not responding." % title)
+
+        content = self.get_content_area()
+        content.set_border_width(15)
+        content.set_spacing(10)
+
+        topbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, halign=Gtk.Align.CENTER, spacing=6)
+        topbox.pack_start(Gtk.Image(icon_name="window-close-symbolic", icon_size=Gtk.IconSize.DIALOG), False, False, 0)
+
+        heading = Gtk.Label(label="<b>%s</b>" % text, use_markup=True, wrap=True)
+        topbox.pack_start(heading, False, False, 0)
+
+        content.pack_start(topbox, False, False, 0)
+
+        body = Gtk.Label(label=_("You may choose to wait a short while for it to continue or force the application to quit entirely."))
+        content.pack_start(body, True, True, 4)
+
+        self.show_all()
+
+        self.connect("close", lambda w: self.response(Gtk.ResponseType.NO))
+        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, lambda: self.response(Gtk.ResponseType.NO))
+
+        parent = GdkX11.X11Window.foreign_new_for_display(Gdk.Display.get_default(), parent_xid)
+        self.realize()
+        self.get_window().set_transient_for(parent)
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="Cinnamon dialog for force-closing stuck windows.\n Returns 0 to confirm, 1 to wait, 2 this window was terminated.")
+    parser.add_argument("xid", type=int, help="The parent window's xid")
+    parser.add_argument("message", type=str, help="The program title")
+
+    args = parser.parse_args()
+
+    dialog = CloseDialog(args.xid, args.message)
+    return_code = dialog.run()
+
+    dialog.destroy()
+
+    exit(0 if return_code == Gtk.ResponseType.YES else 1)
+
