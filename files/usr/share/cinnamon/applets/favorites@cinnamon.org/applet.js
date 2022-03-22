@@ -72,7 +72,7 @@ class CinnamonFavoriteApplet extends Applet.IconApplet {
 
         this.favorites_id = this.favorites.connect('changed', ()=>this._refreshFavorites());
 
-        global.settings.connect('changed::panel-edit-mode', ()=>this._on_panel_edit_mode_changed());
+        this.edit_mode_id = global.settings.connect('changed::panel-edit-mode', () => this._on_panel_edit_mode_changed());
     }
 
     settings_changed() {
@@ -88,6 +88,11 @@ class CinnamonFavoriteApplet extends Applet.IconApplet {
         if (this.favorites_id > 0) {
             this.favorites.disconnect(this.favorites_id);
             this.favorites_id = 0;
+        }
+
+        if (this.edit_mode_id > 0) {
+            global.settings.disconnect(this.edit_mode_id);
+            this.edit_mode_id = 0;
         }
 
         this.favorites = null;
