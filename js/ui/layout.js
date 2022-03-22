@@ -145,7 +145,7 @@ LayoutManager.prototype = {
 
     _updateBoxes: function() {
         if (this.hotCornerManager)
-            this.hotCornerManager.updatePosition(this.primaryMonitor);
+            this.hotCornerManager.update();
         this._chrome._queueUpdateRegions();
     },
 
