@@ -1,6 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
+const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 
 const Util = imports.misc.util;
@@ -12,25 +13,127 @@ const Mainloop = imports.mainloop;
 const HOT_CORNER_ACTIVATION_TIMEOUT = 500; // Milliseconds
 const OVERVIEW_CORNERS_KEY = 'hotcorner-layout';
 
+const CORNER_FENCE_LENGTH = 10;
+const CORNER_ACTOR_SIZE = 2;
+
+const ULC = 0;
+const URC = 1;
+const LLC = 2;
+const LRC = 3;
+
 // HotCorner:
 //
 // This class manages a "hot corner" that can toggle switching to
 // overview.
 class HotCorner {
-    constructor() {
+    constructor(corner_type) {
         this.action = null; // The action to activate when hot corner is triggered
         this.hover_delay = 0; // Hover delay activation
         this.hover_delay_id = 0; // Hover delay timer ID
         this._hoverActivationTime = 0; // Milliseconds
 
-        // Construct the hot corner 'ripples'
+        this._hleg = null;
+        this._vleg = null;
+
+        const m = Main.layoutManager.primaryMonitor;
+
         this.actor = new Clutter.Actor({
             name: 'hot-corner',
-            width: 2,
-            height: 2,
+            width: CORNER_ACTOR_SIZE,
+            height: CORNER_ACTOR_SIZE,
             opacity: 0,
             reactive: true
         });
+
+        Main.layoutManager.addChrome(this.actor)
+        this.actor.raise_top();
+        switch (corner_type) {
+            case ULC:
+                this._hleg = new Meta.Barrier(
+                    {
+                        display: global.display,
+                        x1: m.x,                                        y1: m.y,
+                        x2: m.x + CORNER_FENCE_LENGTH,                  y2: m.y,
+                        directions: Meta.BarrierDirection.POSITIVE_Y
+                    }
+                );
+
+                this._vleg = new Meta.Barrier(
+                    {
+                        display: global.display,
+                        x1: m.x,                                        y1: m.y,
+                        x2: m.x,                                        y2: m.y + CORNER_FENCE_LENGTH,
+                        directions: Meta.BarrierDirection.POSITIVE_X
+                    }
+                );
+                this.actor.set_position(m.x, m.y);
+                break;
+
+            case URC:
+                this._hleg = new Meta.Barrier(
+                    {
+                        display: global.display,
+                        x1: m.x + m.width - CORNER_FENCE_LENGTH,        y1: m.y,
+                        x2: m.x + m.width,                              y2: m.y,
+                        directions: Meta.BarrierDirection.POSITIVE_Y
+                    }
+                );
+
+                this._vleg = new Meta.Barrier(
+                    {
+                        display: global.display,
+                        x1: m.x + m.width,                              y1: m.y,
+                        x2: m.x + m.width,                              y2: m.y + CORNER_FENCE_LENGTH,
+                        directions: Meta.BarrierDirection.NEGATIVE_X
+                    }
+                );
+                this.actor.set_position(m.x + m.width - CORNER_ACTOR_SIZE, m.y);
+                break;
+
+            case LLC:
+                this._hleg = new Meta.Barrier(
+                    {
+                        display: global.display,
+                        x1: m.x,                                        y1: m.y + m.height,
+                        x2: m.x + CORNER_FENCE_LENGTH,                  y2: m.y + m.height,
+                        directions: Meta.BarrierDirection.NEGATIVE_Y
+                    }
+                );
+
+                this._vleg = new Meta.Barrier(
+                    {
+                        display: global.display,
+                        x1: m.x,                                        y1: m.y + m.height - CORNER_FENCE_LENGTH,
+                        x2: m.x,                                        y2: m.y + m.height,
+                        directions: Meta.BarrierDirection.POSITIVE_X
+                    }
+                );
+                this.actor.set_position(m.x, m.y + m.height - CORNER_ACTOR_SIZE);
+                break;
+
+            case LRC:
+                this._hleg = new Meta.Barrier(
+                    {
+                        display: global.display,
+                        x1: m.x + m.width - CORNER_FENCE_LENGTH,        y1: m.y + m.height,
+                        x2: m.x + m.width,                              y2: m.y + m.height,
+                        directions: Meta.BarrierDirection.NEGATIVE_Y
+                    }
+                );
+
+                this._vleg = new Meta.Barrier(
+                    {
+                        display: global.display,
+                        x1: m.x + m.width,                              y1: m.y + m.height - CORNER_FENCE_LENGTH,
+                        x2: m.x + m.width,                              y2: m.y + m.height,
+                        directions: Meta.BarrierDirection.POSITIVE_X
+                    }
+                );
+                this.actor.set_position(m.x + m.width - CORNER_ACTOR_SIZE, m.y + m.height - CORNER_ACTOR_SIZE);
+            break;
+        }
+
+        // Construct the hot corner 'ripples'
 
         // In addition to being triggered by the mouse enter event,
         // the hot corner can be triggered by clicking on it. This is
@@ -64,9 +167,12 @@ class HotCorner {
     }
 
     destroy() {
+        this._vleg = null;
+        this._hleg = null;
         this._ripple1.destroy();
         this._ripple2.destroy();
         this._ripple3.destroy();
+        Main.layoutManager.removeChrome(this.actor)
         this.actor.destroy();
     }
 
@@ -215,12 +321,12 @@ class HotCorner {
 
 var HotCornerManager = class {
     constructor() {
-        this.corners = [null, null, null, null];
+        this.corners = {};
         global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, () => this.update());
         this.update();
     }
 
-    parseGSettings() {
+    update() {
         let options = global.settings.get_strv(OVERVIEW_CORNERS_KEY);
         if (options.length != 4) {
             global.logError(_("Invalid overview options: Incorrect number of corners"));
@@ -229,6 +335,11 @@ var HotCornerManager = class {
 
         // In order: top left; top right; bottom left; bottom right;
         for (let i = 0; i < 4; i++) {
+            if (this.corners[i] !== undefined) {
+                this.corners[i].destroy();
+                this.corners[i] = undefined;
+            }
+
             let elements = options[i].split(':');
             if (elements[1] === 'true') {
                 if (elements.length > 3) {
@@ -237,45 +348,10 @@ var HotCornerManager = class {
                     let cmd = elements.splice(0, elements.length-2).join(':');
                     elements.unshift(cmd);
                 }
-                if (!this.corners[i]) {
-                    this.corners[i] = new HotCorner();
-                    Main.layoutManager.addChrome(this.corners[i].actor);
-                }
+
+                this.corners[i] = new HotCorner(i);
                 this.corners[i].setProperties(elements);
-            } else if (this.corners[i]) {
-                this.corners[i].destroy();
-                this.corners[i] = null;
             }
         }
-    }
-
-    update() {
-        this.parseGSettings();
-        this.updatePosition(Main.layoutManager.primaryMonitor);
-    }
-
-    updatePosition(monitor) {
-        let left   = monitor.x;
-        let right  = monitor.x + monitor.width - 2;
-        let top    = monitor.y;
-        let bottom = monitor.y + monitor.height - 2;
-
-        let fn = (i, x, y) => {
-            if (this.corners[i] !== null) {
-                this.corners[i].actor.set_position(x, y);
-            }
-        }
-
-        // Top Left: 0
-        fn(0, left, top);
-
-        // Top Right: 1
-        fn(1, right, top);
-
-        // Bottom Left: 2
-        fn(2, left, bottom);
-
-        // Bottom Right: 3
-        fn(3, right, bottom);
     }
 };
