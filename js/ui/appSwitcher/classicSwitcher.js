@@ -75,6 +75,9 @@ ClassicSwitcher.prototype = {
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
         
+        this._applist_act_id = 0;
+        this._applist_enter_id = 0;
+
         // Need to force an allocation so we can figure out whether we
         // need to scroll when selecting
         this.actor.opacity = 0;
@@ -174,6 +177,8 @@ ClassicSwitcher.prototype = {
             return;
         
         if (this._appList) {
+            this._appList.disconnect(this._applist_act_id);
+            this._appList.disconnect(this._applist_enter_id);
             this._clearPreview();
             this._destroyThumbnails();
             this.actor.remove_actor(this._appList.actor);
@@ -184,8 +189,8 @@ ClassicSwitcher.prototype = {
         if (!this._iconsEnabled && !this._thumbnailsEnabled) {
             this._appList.actor.hide();
         }
-        this._appList.connect('item-activated', Lang.bind(this, this._appActivated));
-        this._appList.connect('item-entered', Lang.bind(this, this._appEntered));
+        this._applist_act_id = this._appList.connect('item-activated', Lang.bind(this, this._appActivated));
+        this._applist_enter_id = this._appList.connect('item-entered', Lang.bind(this, this._appEntered));
         
         this._appIcons = this._appList.icons;
         this.actor.get_allocation_box();
@@ -237,6 +242,18 @@ ClassicSwitcher.prototype = {
     },
 
     _onDestroy: function() {
+        if (this._appList !== null) {
+            if (this._applist_act_id > 0) {
+                this._appList.disconnect(this._applist_act_id);
+                this._applist_act_id = 0;
+            }
+
+            if (this._applist_enter_id > 0) {
+                this._appList.disconnect(this._applist_enter_id);
+                this._applist_enter_id = 0;
+            }
+        }
+
         if (this._thumbnailTimeoutId != 0) {
             Mainloop.source_remove(this._thumbnailTimeoutId);
             this._thumbnailTimeoutId = 0;

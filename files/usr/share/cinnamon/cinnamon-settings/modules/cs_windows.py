@@ -2,7 +2,7 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk
+from gi.repository import Gio, Gtk, CDesktopEnums
 
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
@@ -95,10 +95,35 @@ class Module:
             widget = GSettingsSwitch(_("Bring windows which require attention to the current workspace"), "org.cinnamon", "bring-windows-to-current-workspace")
             settings.add_row(widget)
 
-            stealing_options = [["smart", _("Smart")], ["strict", _("Strict")]]
-            widget = GSettingsComboBox(_("Focus mode for new windows"), "org.cinnamon.desktop.wm.preferences", "focus-new-windows", stealing_options)
-            widget.set_tooltip_text(_("This option provides additional control over how newly created windows get focus. It has two possible values; 'smart' applies the user's normal focus mode, and 'strict' results in windows started from a terminal not being given focus."))
+            # It's weird to show a combo for two items. For now this is simpler to explain as a switch...
+            widget = Switch(_("Give focus to new windows launched from a terminal"))
+            widget.set_tooltip_text(_("Normally, all windows created by the user are given initial focus. "
+                                      "This controls whether or not to include programs launched from a terminal."))
             settings.add_row(widget)
+
+            gsettings = widget.get_settings("org.cinnamon.desktop.wm.preferences")
+            real_switch = widget.content_widget
+            self.updating = False
+
+            def update_switch(settings, key):
+                if self.updating:
+                    return
+                self.updating = True
+                real_switch.set_active(gsettings.get_enum(key) == CDesktopEnums.FocusNewWindows.SMART)
+                self.updating = False
+
+            def update_setting(widget, pspec):
+                if self.updating:
+                    return
+                self.updating = True
+                gsettings.set_enum("focus-new-windows",
+                                   CDesktopEnums.FocusNewWindows.SMART if real_switch.get_active() else CDesktopEnums.FocusNewWindows.STRICT)
+                self.updating = False
+
+            real_switch.connect("notify::active", update_setting)
+            gsettings.connect("changed::focus-new-windows", update_switch)
+            update_switch(gsettings, "focus-new-windows")
+            #######
 
             widget = GSettingsSwitch(_("Attach dialog windows to the parent window"), "org.cinnamon.muffin", "attach-modal-dialogs")
             settings.add_row(widget)
@@ -107,21 +132,19 @@ class Module:
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            # placement_options = [["automatic", _("Automatic")], ["pointer", _("Cursor")], ["manual", _("Manual")], ["center", _("Center")]]
-            # widget = GSettingsComboBox(_("Location of newly opened windows"), "org.cinnamon.muffin", "placement-mode", placement_options, size_group=size_group)
-            # settings.add_row(widget)
+            widget = GSettingsSwitch(_("Center new windows"), "org.cinnamon.muffin", "center-new-windows")
+            settings.add_row(widget)
+
+            widget = GSettingsRange(_("Draggable border width"), "org.cinnamon.muffin", "draggable-border-width", _("Narrower"), _("Wider"),
+                                    2, 64, show_value=False)
+            widget.content_widget.set_tooltip_text(_("This adjusts the width of that portion of the window border used for resizing."))
+            widget.add_mark(10, Gtk.PositionType.TOP, None)
+            settings.add_row(widget)
 
             special_key_options = [["", _("Disabled")], ["<Alt>", "<Alt>"],["<Super>", "<Super>"],["<Control>", "<Control>"]]
             widget = GSettingsComboBox(_("Special key to move and resize windows"), "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", special_key_options, size_group=size_group)
             widget.set_tooltip_text(_("While the special key is pressed, windows can be dragged with the left mouse button and resized with the right mouse button."))
             settings.add_row(widget)
-
-            # widget = GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", _("Pixels"), 1, 100, size_group=size_group)
-            # settings.add_row(widget)
-
-            # widget = GSettingsSwitch(_("Edge resistance with other windows and monitor boundaries"), "org.cinnamon.muffin", "edge-resistance-window")
-            # widget.set_tooltip_text(_("Make window borders stick when moved or resized near other windows or monitor edges."))
-            # settings.add_row(widget)
 
             # Alt Tab
 

@@ -44,5 +44,5 @@ class Module:
             # spin = GSettingsSpinButton(_("Edge Flip delay"), "org.cinnamon", "edge-flip-delay", mini=1, maxi=3000, units=_("ms"))
             # settings.add_reveal_row(spin, "org.cinnamon", "enable-edge-flip")
 
-            switch = GSettingsSwitch(_("Invert the left and right arrow key directions used to shift workspaces during a window drag"), "org.cinnamon.muffin", "invert-workspace-flip-direction")
-            settings.add_row(switch)
+            # switch = GSettingsSwitch(_("Invert the left and right arrow key directions used to shift workspaces during a window drag"), "org.cinnamon.muffin", "invert-workspace-flip-direction")
+            # settings.add_row(switch)

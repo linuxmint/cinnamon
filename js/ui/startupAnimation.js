@@ -121,13 +121,11 @@ Animation.prototype = {
     _finished: function() {
         if (this.shroud) {
             Main.layoutManager.removeChrome(this.shroud);
-            this.shroud.destroy();
             this.shroud = null;
         }
 
         if (this.logo) {
             Main.layoutManager.removeChrome(this.logo);
-            this.logo.destroy();
             this.logo = null;
         }
 

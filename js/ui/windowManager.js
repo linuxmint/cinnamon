@@ -104,7 +104,7 @@ class TilePreview {
         this._showing = false;
     }
 
-    show(window, tileRect, monitorIndex, animate) {
+    show(window, tileRect, monitorIndex, animate, anim_time) {
         let windowActor = window.get_compositor_private();
         if (!windowActor)
             return;
@@ -145,7 +145,7 @@ class TilePreview {
 
         if (animate) {
             Object.assign(props, {
-                time: this.TILE_PREVIEW_ANIMATION_TIME,
+                time: anim_time,
                 transition: 'easeOutQuad'
             });
             addTween(this.actor, props);
@@ -290,7 +290,7 @@ var DisplayChangesDialog = class DisplayChangesDialog extends ModalDialog.ModalD
 var WindowManager = class WindowManager {
         MENU_ANIMATION_TIME = 0.1;
         WORKSPACE_ANIMATION_TIME = 0.15;
-        TILE_PREVIEW_ANIMATION_TIME = 0.12;
+        TILE_PREVIEW_ANIMATION_TIME = 0.15;
         SIZE_CHANGE_ANIMATION_TIME = 0.12;
         MAP_ANIMATION_TIME = 0.12;
         DESTROY_ANIMATION_TIME = 0.12;
@@ -886,6 +886,35 @@ var WindowManager = class WindowManager {
             {
                 this._mapping.add(actor);
 
+                actor.orig_opacity = actor.opacity;
+                actor.set_pivot_point(0.5, 0.5);
+                actor.scale_x = 0.94;
+                actor.scale_y = 0.94;
+                actor.opacity = 0;
+                actor.show();
+
+                let time = this.MAP_ANIMATION_TIME * this.window_effect_multiplier;
+
+                // Popups shouldn't be affected by the multiplier.
+                if (overridden_types.includes(actor._windowType)) {
+                    time = this.MENU_ANIMATION_TIME;
+                }
+
+                addTween(actor, {
+                    opacity: actor.orig_opacity,
+                    scale_x: 1,
+                    scale_y: 1,
+                    time: time,
+                    transition: 'easeOutQuad',
+                    onComplete: () => this._mapWindowDone(cinnamonwm, actor),
+                });
+
+                return;
+            }
+            case "move":
+            {
+                this._mapping.add(actor);
+
                 let [width, height] = actor.get_size();
                 let [xDest, yDest] = actor.get_position();
                 let [xSrc, ySrc] = global.get_pointer();
@@ -927,35 +956,6 @@ var WindowManager = class WindowManager {
                     y: yDest,
                     time: time * this.window_effect_multiplier,
                     transition: "easeInSine",
-                    onComplete: () => this._mapWindowDone(cinnamonwm, actor),
-                });
-
-                return;
-            }
-            case "fade":
-            {
-                this._mapping.add(actor);
-
-                actor.orig_opacity = actor.opacity;
-                actor.set_pivot_point(0.5, 0.5);
-                actor.scale_x = 0.94;
-                actor.scale_y = 0.94;
-                actor.opacity = 0;
-                actor.show();
-
-                let time = this.MAP_ANIMATION_TIME * this.window_effect_multiplier;
-
-                // Popups shouldn't be affected by the multiplier.
-                if (overridden_types.includes(actor._windowType)) {
-                    time = this.MENU_ANIMATION_TIME;
-                }
-
-                addTween(actor, {
-                    opacity: actor.orig_opacity,
-                    scale_x: 1,
-                    scale_y: 1,
-                    time: time,
-                    transition: 'easeOutQuad',
                     onComplete: () => this._mapWindowDone(cinnamonwm, actor),
                 });
 
@@ -1241,7 +1241,7 @@ var WindowManager = class WindowManager {
     _showTilePreview(cinnamonwm, window, tileRect, monitorIndex) {
         if (!this._tilePreview)
             this._tilePreview = new TilePreview();
-        this._tilePreview.show(window, tileRect, monitorIndex, Main.animations_enabled);
+        this._tilePreview.show(window, tileRect, monitorIndex, Main.animations_enabled, this.TILE_PREVIEW_ANIMATION_TIME * this.window_effect_multiplier);
     }
 
     _hideTilePreview(cinnamonwm) {

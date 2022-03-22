@@ -26,6 +26,9 @@ class WorkspaceButton {
 
         this.ws_signals.connect(this.workspace, "window-added", this.update, this);
         this.ws_signals.connect(this.workspace, "window-removed", this.update, this);
+
+        // Connect after Main or else we'll end up with stale names.
+        this.ws_signals.connect_after(Main.wmSettings, "changed::workspace-names", this.updateName, this);
     }
 
     show() {
@@ -34,6 +37,11 @@ class WorkspaceButton {
         if (this.index === global.screen.get_active_workspace_index()) {
             this.activate(true);
         }
+    }
+
+    updateName() {
+        this.workspace_name = Main.getWorkspaceName(this.index);
+        this._tooltip.set_text(this.workspace_name);
     }
 
     onClicked(actor, event) {

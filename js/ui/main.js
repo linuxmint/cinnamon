@@ -393,10 +393,7 @@ function start() {
                         let height = global.stage.height;
                         [alloc.min_size, alloc.natural_size] = [height, height];
                     });
-    global.reparentActor(global.background_actor, uiGroup);
     global.background_actor.hide();
-    global.reparentActor(global.bottom_window_group, uiGroup);
-    uiGroup.add_actor(deskletContainer.actor);
     global.reparentActor(global.window_group, uiGroup);
     global.reparentActor(global.overlay_group, uiGroup);
 
@@ -479,6 +476,10 @@ function start() {
     wmSettings = new Gio.Settings({schema_id: "org.cinnamon.desktop.wm.preferences"})
     workspace_names = wmSettings.get_strv("workspace-names");
 
+    wmSettings.connect("changed::workspace-names", function (settings, pspec) {
+        workspace_names = wmSettings.get_strv("workspace-names");
+    });
+
     global.display.connect('gl-video-memory-purged', loadTheme);
 
     try {
@@ -489,6 +490,12 @@ function start() {
     }
 
     log(`GPU offload supported: ${gpu_offload_supported}`);
+
+    // We're ready for the session manager to move to the next phase
+    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+        Meta.register_with_session();
+        return GLib.SOURCE_REMOVE;
+    });
 
     Promise.all([
         AppletManager.init(),

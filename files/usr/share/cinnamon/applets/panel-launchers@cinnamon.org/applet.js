@@ -457,7 +457,6 @@ class LaunchersBox {
             this.applet.addForeignLauncher(sourceId, dropIndex, source);
         }
 
-        actor.destroy();
         return true;
     }
 

@@ -2161,7 +2161,6 @@ var PopupMenuBase = class PopupMenuBase {
     destroy() {
         this._signals.disconnectAllSignals();
         this.removeAll();
-        this.actor.destroy();
         /**
          * SIGNAL:destroy
          *
@@ -2712,8 +2711,8 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
         }
 
         this.actor = new St.ScrollView({ style_class: 'popup-sub-menu',
-                                         hscrollbar_policy: Gtk.PolicyType.NEVER,
-                                         vscrollbar_policy: Gtk.PolicyType.NEVER });
+                                         hscrollbar_policy: St.PolicyType.NEVER,
+                                         vscrollbar_policy: St.PolicyType.NEVER });
 
         // StScrollbar plays dirty tricks with events, calling
         // clutter_set_motion_events_enabled (FALSE) during the scroll; this
@@ -2785,7 +2784,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
         // when we *don't* need it, so turn off the scrollbar when that's true.
         // Dynamic changes in whether we need it aren't handled properly.
         this.actor.vscrollbar_policy =
-            needsScrollbar ? Gtk.PolicyType.AUTOMATIC : Gtk.PolicyType.NEVER;
+            needsScrollbar ? St.PolicyType.AUTOMATIC : St.PolicyType.NEVER;
 
         // It looks funny if we animate with a scrollbar (at what point is
         // the scrollbar added?) so just skip that case

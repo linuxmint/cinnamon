@@ -133,7 +133,7 @@ function createLiveWindowClone(metaWindow, width, height, withTransients, withPo
       x -= minX;
       y -= minY;
     }
-    log(scale);
+
     let width = Math.round(texWidth * scale);
     let height = Math.round(texHeight * scale);
 

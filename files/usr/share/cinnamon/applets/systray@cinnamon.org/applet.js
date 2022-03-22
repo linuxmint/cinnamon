@@ -138,11 +138,14 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
                 if (etype === Clutter.EventType.BUTTON_PRESS) {
                     global.begin_modal(Meta.ModalOptions.POINTER_ALREADY_GRABBED, event.time);
-                    button.add_style_class_name("tray-pressed");
                 }
                 else
-                if (etype === Clutter.EventType.BUTTON_RELEASE) {
-                    button.remove_style_class_name("tray-pressed");
+                if (etype === Clutter.EventType.ENTER) {
+                    button.add_style_pseudo_class("hover");
+                }
+                else
+                if (etype === Clutter.EventType.LEAVE) {
+                    button.remove_style_pseudo_class("hover");
                 }
 
                 let ret = icon.handle_event(etype, event);

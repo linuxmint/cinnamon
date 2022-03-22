@@ -1204,7 +1204,6 @@ PanelDummy.prototype = {
      */
     destroy: function() {
         Main.layoutManager.removeChrome(this.actor);
-        this.actor.destroy();
     }
 }
 
@@ -1839,7 +1838,6 @@ PanelZoneDNDHandler.prototype = {
         let sourcebox = source.actor._applet._panelLocation; /* this is the panel box providing the applet */
 
         this._clearDragPlaceholder();
-        actor.destroy();
         AppletManager.saveAppletsPositions();
 
         /* this._panelZone is the panel box being dropped into. Note that the style class name will
@@ -2214,8 +2212,6 @@ Panel.prototype = {
         this._centerBox.destroy();
         this._rightBox.destroy();
         this._destroycorners();
-
-        this.actor.destroy();
 
         this._signalManager.disconnectAllSignals()
 

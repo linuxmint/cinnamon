@@ -425,7 +425,7 @@ function DeskletContainer(){
 
 DeskletContainer.prototype = {
     _init: function(){
-        this.actor = new Clutter.Group();
+        this.actor = global.desklet_container;
         this.actor._delegate = this;
 
         this.last_x = -1;
