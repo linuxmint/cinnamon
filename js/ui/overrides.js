@@ -7,6 +7,7 @@ const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
 const Meta = imports.gi.Meta;
+const Graphene = imports.gi.Graphene;
 
 function init() {
     overrideDumpStack();
@@ -49,10 +50,13 @@ function overrideGObject() {
 }
 
 function overrideClutter() {
-    const oldClutterGroup = Clutter.Group;
+    Clutter.Point = Graphene.Point;
+    Clutter.Vertex = Graphene.Point3D;
 
     // ClutterGroups are broken - ClutterActor with a FixedLayoutManager is
     // its drop-in replacement.
+    const oldClutterGroup = Clutter.Group;
+
     const fake_group = GObject.registerClass(
     class fake_group extends Clutter.Actor {
         _init(params) {
