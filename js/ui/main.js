@@ -479,6 +479,10 @@ function start() {
     wmSettings = new Gio.Settings({schema_id: "org.cinnamon.desktop.wm.preferences"})
     workspace_names = wmSettings.get_strv("workspace-names");
 
+    wmSettings.connect("changed::workspace-names", function (settings, pspec) {
+        workspace_names = wmSettings.get_strv("workspace-names");
+    });
+
     global.display.connect('gl-video-memory-purged', loadTheme);
 
     try {
