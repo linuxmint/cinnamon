@@ -79,5 +79,5 @@ class Module:
             slider.content_widget.set_has_origin(False)
             slider.content_widget.add_mark(1, Gtk.PositionType.TOP, None)
 
-            settings.add_reveal_row(widget, "org.cinnamon", "desktop-effects")
+            settings.add_reveal_row(slider, "org.cinnamon", "desktop-effects")
 

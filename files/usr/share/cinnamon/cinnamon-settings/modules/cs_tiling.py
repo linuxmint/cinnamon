@@ -26,7 +26,7 @@ class Module:
             switch.label.set_markup("<b>%s</b>" % _("Enable Window Tiling and Snapping"))
             page.add(switch)
 
-            settings = page.add_reveal_section(_("Tiling and Snapping"), "org.cinnamon.muffin", "edge-tiling")
+            settings = page.add_reveal_section(_("Preferences"), "org.cinnamon.muffin", "edge-tiling")
 
-            # settings.add_row(GSettingsSwitch(_("Maximize, instead of tile, when dragging a window to the top edge"), "org.cinnamon.muffin", "tile-maximize"))
+            settings.add_row(GSettingsSwitch(_("Maximize, instead of tile, when dragging a window to the top edge"), "org.cinnamon.muffin", "tile-maximize"))
 
