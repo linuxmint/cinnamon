@@ -8,6 +8,7 @@ const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 const {findIndex} = imports.misc.util;
+const Meta = imports.gi.Meta;
 
 const NO_RESIZE_ROLES = ['shutter', 'filezilla'];
 
@@ -136,7 +137,9 @@ class CinnamonSystrayApplet extends Applet.Applet {
             });
 
             button.connect("button-press-event", (actor, event) => {
+                global.begin_modal(Meta.ModalOptions.POINTER_ALREADY_GRABBED, event.time);
                 icon.press(event);
+                global.end_modal(event.time);
                 return Clutter.EVENT_STOP;
             });
 
