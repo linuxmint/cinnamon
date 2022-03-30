@@ -321,11 +321,11 @@ class HotCorner {
 var HotCornerManager = class {
     constructor() {
         this.corners = {};
-        global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, () => this._update());
-        this._update();
+        global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, () => this.update());
+        this.update();
     }
 
-    _update() {
+    update() {
         let options = global.settings.get_strv(OVERVIEW_CORNERS_KEY);
         if (options.length != 4) {
             global.logError(_("Invalid overview options: Incorrect number of corners"));
