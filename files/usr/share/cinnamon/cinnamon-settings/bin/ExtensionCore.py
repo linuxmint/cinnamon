@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from functools import lru_cache
 import os
 import re
 import html
@@ -30,20 +31,22 @@ ROW_SIZE = 32
 
 UNSAFE_ITEMS = ['spawn_sync', 'spawn_command_line_sync', 'GTop', 'get_file_contents_utf8_sync']
 
-curr_ver = subprocess.check_output(['cinnamon', '--version']).decode("utf-8").splitlines()[0].split(' ')[1]
-curr_ver_elements = curr_ver.split(".")
-curr_ver_major = int(curr_ver_elements[0])
-curr_ver_minor = int(curr_ver_elements[1])
-
 LANGUAGE_CODE = "C"
 try:
     LANGUAGE_CODE = locale.getlocale()[0].split("_")[0]
 except:
     pass
 
+
+@lru_cache(maxsize=None)  # fetch only once
+def get_cinnamon_version():
+    version_str = subprocess.check_output(['cinnamon', '--version'], encoding="utf-8").split()[1]
+    return [int(part) for part in version_str.split(".")]
+
+
 def find_extension_subdir(directory):
-    largest = ['0']
-    curr_a = curr_ver.split('.')
+    largest = [0]
+    curr_a = get_cinnamon_version()
 
     for subdir in os.listdir(directory):
         if not os.path.isdir(os.path.join(directory, subdir)):
@@ -52,15 +55,15 @@ def find_extension_subdir(directory):
         if not re.match(r'^[1-9][0-9]*\.[0-9]+(\.[0-9]+)?$', subdir):
             continue
 
-        subdir_a = subdir.split(".")
+        subdir_a = [int(part) for part in subdir.split(".")]
 
-        if subdir_a < curr_a and largest < subdir_a:
+        if subdir_a <= curr_a and largest < subdir_a:
             largest = subdir_a
 
-    if len(largest) == 1:
+    if largest == [0]:
         return directory
     else:
-        return os.path.join(directory, ".".join(largest))
+        return os.path.join(directory, ".".join(map(str, largest)))
 
 translations = {}
 
@@ -315,11 +318,11 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         try:
             # Treat "cinnamon-version" as a list of minimum required versions
             # if any version in there is lower than our Cinnamon version, then the spice is compatible.
+            curr_ver = get_cinnamon_version()
+
             for version in self.metadata['cinnamon-version']:
-                elements = version.split(".")
-                major = int(elements[0])
-                minor = int(elements[1])
-                if curr_ver_major > major or (curr_ver_major == major and curr_ver_minor >= minor):
+                spice_ver = [int(part) for part in version.split(".")]
+                if spice_ver[:2] <= curr_ver:
                     # The version is OK, check that we can find the right .js file in the appropriate subdir
                     path = os.path.join(self.metadata['path'], self.extension_type + ".js")
                     if os.path.exists(path):
@@ -327,7 +330,6 @@ class ManageSpicesRow(Gtk.ListBoxRow):
                     else:
                         print ("The %s %s is not properly structured. Path not found: '%s'" % (self.uuid, self.extension_type, path))
                         return False
-                    return True
             print ("The %s %s is not compatible with this version of Cinnamon." % (self.uuid, self.extension_type))
             return False
         except:
