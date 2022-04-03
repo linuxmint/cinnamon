@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import os
-import imtools
 import gettext
 import _thread as thread
 import subprocess
@@ -623,6 +622,8 @@ class PixCache(object):
                         img = img.convert("RGB")
                     if size:
                         img.thumbnail((size, size), Image.ANTIALIAS)
+
+                    import imtools
                     img = imtools.round_image(img, {}, False, None, 3, 255)
                     img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0),
                                               shadow_color=0x444444, border=8, shadow_blur=3,
