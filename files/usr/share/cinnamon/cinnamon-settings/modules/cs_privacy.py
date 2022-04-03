@@ -1,25 +1,15 @@
 #!/usr/bin/python3
-
-nm_client = None
-try:
-    import gi
-    gi.require_version('NM', '1.0')
-    from gi.repository import NM
-    nm_client = NM.Client.new(None)
-    # call connectivity_check_get_available to make
-    # sure it's available (it's new in libnm 1.10)
-    # if it's not, we catch the exception and set
-    # the client to None
-    nm_client.connectivity_check_get_available()
-except:
-    nm_client = None
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gio, Gtk
 
 from SettingsWidgets import SidePage
-from xapp.GSettingsWidgets import *
+from xapp.GSettingsWidgets import GSettingsSwitch, SettingsLabel, SettingsPage, SettingsRevealer, SettingsWidget, Switch
 
 PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy"
 GTK_RECENT_ENABLE_KEY = "remember-recent-files"
 GTK_RECENT_MAX_AGE = "recent-files-max-age"
+
 
 class Module:
     name = "privacy"
@@ -31,6 +21,19 @@ class Module:
         sidePage = SidePage(_("Privacy"), "cs-privacy", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.settings = Gio.Settings(schema=PRIVACY_SCHEMA)
+        self.nm_client = None
+
+    def _init_nm_client(self):
+        try:
+            gi.require_version('NM', '1.0')
+            from gi.repository import NM
+            nm_client = NM.Client.new()
+
+            # we need libnm >=1.10
+            if hasattr(nm_client, 'connectivity_check_get_available'):
+                self.nm_client = nm_client
+        except ValueError:
+            pass
 
     def on_module_selected(self):
         if not self.loaded:
@@ -77,14 +80,16 @@ class Module:
             else:
                 self.indefinite_switch.content_widget.set_active(False)
                 self.revealer.set_reveal_child(True)
-                if start_age == 0: # Shouldn't happen, unless someone manually sets the value
+                if start_age == 0:  # Shouldn't happen, unless someone manually sets the value
                     self.settings.set_int(GTK_RECENT_MAX_AGE, 30)
                 self.bind_spinner()
 
-            if nm_client is not None and nm_client.connectivity_check_get_available():
+            self._init_nm_client()
+
+            if self.nm_client is not None and self.nm_client.connectivity_check_get_available():
                 section = page.add_section(_("Internet connectivity"))
                 connectivity_switch = Switch(_("Check connectivity"))
-                connectivity_switch.content_widget.set_active(nm_client.connectivity_check_get_enabled())
+                connectivity_switch.content_widget.set_active(self.nm_client.connectivity_check_get_enabled())
                 connectivity_switch.content_widget.connect("notify::active", self.on_connectivity_toggled)
                 section.add_row(connectivity_switch)
                 section.add_note(_("Check that network connections can reach the Internet. This makes it possible to detect captive portals, but also generates periodic network traffic."))
@@ -117,4 +122,4 @@ class Module:
 
     def on_connectivity_toggled(self, widget, gparam):
         active = widget.get_active()
-        nm_client.connectivity_check_set_enabled(active)
+        self.nm_client.connectivity_check_set_enabled(active)
