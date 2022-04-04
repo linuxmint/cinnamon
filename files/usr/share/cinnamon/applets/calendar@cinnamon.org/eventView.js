@@ -972,6 +972,8 @@ class EventRow {
             } else {
                 // a timed event: "12:00 pm"
                 final_str += this.event.start.format(time_format);
+                final_str += ARROW_SEPARATOR;
+                final_str += this.event.end.format(time_format);
             }
 
             this.event_time.set_text(final_str);
