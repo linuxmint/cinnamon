@@ -152,18 +152,13 @@ ARG_REWRITE = {
 
 def print_timing(func):
     # decorate functions with @print_timing to output how long they take to run.
-    def wrapper(*arg):
+    def wrapper(*args, **kwargs):
         t1 = time.time()
-        res = func(*arg)
+        res = func(*args, **kwargs)
         t2 = time.time()
-        print('%s took %0.3f ms' % (func.func_name, (t2-t1)*1000.0))
+        print('%s took %0.3f ms' % (func.__name__, (t2-t1)*1000.0))
         return res
     return wrapper
-
-
-def touch(fname, times=None):
-    with open(fname, 'a'):
-        os.utime(fname, times)
 
 
 class MainWindow(Gio.Application):
