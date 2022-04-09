@@ -1,55 +1,46 @@
 #!/usr/bin/python3
-
-import getopt
-import sys
-
 from bin import util
 util.strip_syspath_locals()
 
-import os
-import glob
+from functools import cmp_to_key
+import getopt
 import gettext
+import glob
+import locale
+import os
+from setproctitle import setproctitle
+import sys
 import time
 import traceback
-import locale
-import urllib.request as urllib
-from functools import cmp_to_key
+import typing
 import unicodedata
-import config
-from setproctitle import setproctitle
+import urllib.request as urllib
 
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
 from gi.repository import Gio, Gtk, Pango, Gdk, XApp
 
-sys.path.append(config.currentPath + "/modules")
-sys.path.append(config.currentPath + "/bin")
-import capi
-import proxygsettings
-import SettingsWidgets
+import config
+sys.path.append(os.path.join(config.currentPath, "bin"))
+sys.path.append(os.path.join(config.currentPath, "modules"))
+from bin import capi
+from bin import proxygsettings
+from bin import SettingsWidgets
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale", names=["ngettext"])
 
-# Standard setting pages... this can be expanded to include applet dirs maybe?
-mod_files = glob.glob(config.currentPath + "/modules/*.py")
-mod_files.sort()
-if len(mod_files) == 0:
-    print("No settings modules found!!")
-    sys.exit(1)
-
-mod_files = [x.split('/')[-1].split('.')[0] for x in mod_files]
-
-for mod_file in mod_files:
-    if mod_file[0:3] != "cs_":
-        raise Exception("Settings modules must have a prefix of 'cs_' !!")
-
-modules = map(__import__, mod_files)
-
 # i18n for menu item
 menuName = _("System Settings")
 menuComment = _("Control Center")
+
+
+class SidePageData(typing.NamedTuple):
+    sp: SettingsWidgets.SidePage
+    name: str
+    cat: str
+
 
 WIN_WIDTH = 800
 WIN_HEIGHT = 600
@@ -169,7 +160,9 @@ class MainWindow(Gio.Application):
             self.deselect(cat)
             filtered_path = side_view.get_model().convert_path_to_child_path(selected_items[0])
             if filtered_path is not None:
-                self.go_to_sidepage(cat, filtered_path, user_action=True)
+                iterator = self.store_by_cat[cat].get_iter(filtered_path)
+                sidePage = self.store_by_cat[cat].get_value(iterator, 2)
+                self.go_to_sidepage(sidePage, user_action=True)
 
     def _on_sidepage_hide_stack(self):
         self.stack_switcher.set_opacity(0)
@@ -177,57 +170,56 @@ class MainWindow(Gio.Application):
     def _on_sidepage_show_stack(self):
         self.stack_switcher.set_opacity(1)
 
-    def go_to_sidepage(self, cat, path, user_action=True):
-        iterator = self.store[cat].get_iter(path)
-        sidePage = self.store[cat].get_value(iterator, 2)
-        if not sidePage.is_standalone:
-            if not user_action:
-                self.window.set_title(sidePage.name)
-                self.window.set_icon_name(sidePage.icon)
-            sidePage.build()
-            if sidePage.stack:
-                self.stack_switcher.set_stack(sidePage.stack)
-                l = sidePage.stack.get_children()
-                if len(l) > 0:
-                    if self.tab in range(len(l)):
-                        sidePage.stack.set_visible_child(l[self.tab])
-                        visible_child = sidePage.stack.get_visible_child()
-                        if self.tab == 1 \
-                        and hasattr(visible_child, 'sort_combo') \
-                        and self.sort in range(5):
-                            visible_child.sort_combo.set_active(self.sort)
-                            visible_child.sort_changed()
-                    else:
-                        sidePage.stack.set_visible_child(l[0])
-                    if sidePage.stack.get_visible():
-                        self.stack_switcher.set_opacity(1)
-                    else:
-                        self.stack_switcher.set_opacity(0)
-                    if hasattr(sidePage, "connect_proxy"):
-                        sidePage.connect_proxy("hide_stack", self._on_sidepage_hide_stack)
-                        sidePage.connect_proxy("show_stack", self._on_sidepage_show_stack)
+    def go_to_sidepage(self, sidePage: SettingsWidgets.SidePage, user_action=True):
+        sidePage.build()
+        
+        if sidePage.is_standalone:
+            return  # we're done
+
+        if not user_action:
+            self.window.set_title(sidePage.name)
+            self.window.set_icon_name(sidePage.icon)
+
+        if sidePage.stack:
+            self.stack_switcher.set_stack(sidePage.stack)
+            l = sidePage.stack.get_children()
+            if len(l) > 0:
+                if self.tab in range(len(l)):
+                    sidePage.stack.set_visible_child(l[self.tab])
+                    visible_child = sidePage.stack.get_visible_child()
+                    if self.tab == 1 \
+                            and hasattr(visible_child, 'sort_combo') \
+                            and self.sort in range(5):
+                        visible_child.sort_combo.set_active(self.sort)
+                        visible_child.sort_changed()
+                else:
+                    sidePage.stack.set_visible_child(l[0])
+                if sidePage.stack.get_visible():
+                    self.stack_switcher.set_opacity(1)
                 else:
                     self.stack_switcher.set_opacity(0)
+                if hasattr(sidePage, "connect_proxy"):
+                    sidePage.connect_proxy("hide_stack", self._on_sidepage_hide_stack)
+                    sidePage.connect_proxy("show_stack", self._on_sidepage_show_stack)
             else:
                 self.stack_switcher.set_opacity(0)
-
-            if user_action:
-                self.main_stack.set_visible_child_name("content_box_page")
-                self.header_stack.set_visible_child_name("content_box")
-
-            else:
-                self.main_stack.set_visible_child_full("content_box_page", Gtk.StackTransitionType.NONE)
-                self.header_stack.set_visible_child_full("content_box", Gtk.StackTransitionType.NONE)
-
-            self.current_sidepage = sidePage
-            width = 0
-            for widget in self.top_bar:
-                m, n = widget.get_preferred_width()
-                width += n
-            self.top_bar.set_size_request(width + 20, -1)
-            self.maybe_resize(sidePage)
         else:
-            sidePage.build()
+            self.stack_switcher.set_opacity(0)
+
+        if user_action:
+            self.main_stack.set_visible_child_name("content_box_page")
+            self.header_stack.set_visible_child_name("content_box")
+        else:
+            self.main_stack.set_visible_child_full("content_box_page", Gtk.StackTransitionType.NONE)
+            self.header_stack.set_visible_child_full("content_box", Gtk.StackTransitionType.NONE)
+
+        self.current_sidepage = sidePage
+        width = 0
+        for widget in self.top_bar:
+            m, n = widget.get_preferred_width()
+            width += n
+        self.top_bar.set_size_request(width + 20, -1)
+        self.maybe_resize(sidePage)
 
     def maybe_resize(self, sidePage):
         m, n = self.content_box.get_preferred_size()
@@ -260,7 +252,7 @@ class MainWindow(Gio.Application):
                                  flags=Gio.ApplicationFlags.NON_UNIQUE | Gio.ApplicationFlags.HANDLES_OPEN)
         self.builder = Gtk.Builder()
         self.builder.set_translation_domain('cinnamon')  # let it translate!
-        self.builder.add_from_file(config.currentPath + "/cinnamon-settings.ui")
+        self.builder.add_from_file(os.path.join(config.currentPath, "cinnamon-settings.ui"))
         self.window = XApp.GtkWindow(window_position=Gtk.WindowPosition.CENTER,
                                      default_width=800, default_height=600)
 
@@ -298,8 +290,7 @@ class MainWindow(Gio.Application):
         self.window.connect("destroy", self._quit)
 
         self.builder.connect_signals(self)
-        self.unsortedSidePages = []
-        self.sidePages = []
+        self.sidePages: typing.List[SidePageData] = []
         self.settings = Gio.Settings.new("org.cinnamon")
         self.current_cat_widget = None
 
@@ -308,58 +299,61 @@ class MainWindow(Gio.Application):
         self.content_box.c_manager = self.c_manager
         self.bar_heights = 0
 
-        for module in modules:
-            try:
-                mod = module.Module(self.content_box)
-                if self.loadCheck(mod) and self.setParentRefs(mod):
-                    self.unsortedSidePages.append((mod.sidePage, mod.name, mod.category))
-            except:
-                print("Failed to load module %s" % module)
-                traceback.print_exc()
+        self.tab = 0  # open 'manage' tab by default
+        self.sort = 1  # sorted by 'score' by default
 
-        for item in CONTROL_CENTER_MODULES:
-            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
-            if ccmodule.process(self.c_manager):
-                self.unsortedSidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
+        self.store_by_cat: typing.Dict[str, Gtk.ListStore] = {}
+        self.storeFilter = {}
 
-        for item in STANDALONE_MODULES:
-            samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
-            if samodule.process():
-                self.unsortedSidePages.append((samodule.sidePage, samodule.name, samodule.category))
+        # load CCC and standalone modules, but not python modules yet
+        self.load_ccc_modules()
+        self.load_standalone_modules()
 
-        # sort the modules alphabetically according to the current locale
+        # if a certain sidepage is given via arguments, try to load only it
+        if len(sys.argv) > 1:
+            if self.load_sidepage_as_standalone():
+                return
+        
+        self.init_settings_overview()
+
+    def init_settings_overview(self):
+        """Load the system settings overview (default)
+        
+        This requires to initialize all settings modules.
+        """
+        # 1. load all python modules
+        self.load_python_modules()
+
+        # 2. sort the modules alphabetically according to the current locale
         localeStrKey = cmp_to_key(locale.strcoll)
         # Apply locale key to the field name of each side page.
         sidePagesKey = lambda m: localeStrKey(m[0].name)
-        self.sidePages = sorted(self.unsortedSidePages, key=sidePagesKey)
+        self.sidePages = sorted(self.sidePages, key=sidePagesKey)
 
-        # create the backing stores for the side nav-view.
-        sidePagesIters = {}
-        self.store = {}
-        self.storeFilter = {}
+        # 3. create the backing stores for the side nav-view.
         for sidepage in self.sidePages:
             sp, sp_id, sp_cat = sidepage
-            if sp_cat not in self.store:        #       Label         Icon    sidePage    Category
-                self.store[sidepage[2]] = Gtk.ListStore(str,          str,    object,     str)
+            if sidepage.cat not in self.store_by_cat:
+                self.store_by_cat[sidepage.cat] = Gtk.ListStore(str, str, object, str) # Label, Icon, sidePage, Category
                 for category in CATEGORIES:
-                    if category["id"] == sp_cat:
+                    if category["id"] == sidepage.cat:
                         category["show"] = True
 
             # Don't allow item names (and their translations) to be more than 30 chars long. It looks ugly and it creates huge gaps in the icon views
             name = sp.name
             if len(name) > 30:
                 name = "%s..." % name[:30]
-            sidePagesIters[sp_id] = (self.store[sp_cat].append([name, sp.icon, sp, sp_cat]), sp_cat)
+            self.store_by_cat[sp_cat].append([name, sp.icon, sp, sp_cat])
 
         self.min_label_length = 0
         self.min_pix_length = 0
 
-        for key in self.store:
-            char, pix = self.get_label_min_width(self.store[key])
+        for cat in self.store_by_cat:
+            char, pix = self.get_label_min_width(self.store_by_cat[cat])
             self.min_label_length = max(char, self.min_label_length)
             self.min_pix_length = max(pix, self.min_pix_length)
-            self.storeFilter[key] = self.store[key].filter_new()
-            self.storeFilter[key].set_visible_func(self.filter_visible_function)
+            self.storeFilter[cat] = self.store_by_cat[cat].filter_new()
+            self.storeFilter[cat].set_visible_func(self.filter_visible_function)
 
         self.min_label_length += 2
         self.min_pix_length += 4
@@ -378,38 +372,55 @@ class MainWindow(Gio.Application):
 
         self.calculate_bar_heights()
 
-        self.tab = 0  # open 'manage' tab by default
-        self.sort = 1  # sorted by 'score' by default
+        self.search_entry.grab_focus()
+        self.window.connect("key-press-event", self.on_keypress)
+        self.window.connect("button-press-event", self.on_buttonpress)
 
-        # Select the first sidePage
+        self.window.show()
+
+    def load_sidepage_as_standalone(self) -> bool:
+        """
+        When an explicit sidepage is given as an argument,
+        try load only this module to save much startup time.
+
+        Analyses arguments to know the tab to open
+        and the sort to apply if the tab is the 'more' one.
+
+        Examples:
+        ```
+          cinnamon-settings.py applets --tab=more --sort=date
+          cinnamon-settings.py applets --tab=1 --sort=2
+          cinnamon-settings.py applets --tab=more --sort=date
+          cinnamon-settings.py applets --tab=1 -s 2
+          cinnamon-settings.py applets -t 1 -s installed
+          cinnamon-settings.py desklets -t 2
+        ```
+        Please note that useless or wrong arguments are ignored.
+
+        :return: True if sidepage was loaded successfully, False otherwise
+        """
+        if sys.argv == 1:
+            return False
+
+        # (1) get the settings sidepage name and rewrite it if necessary
+        sidepage_name = ARG_REWRITE.get(sys.argv[1], sys.argv[1])
+        # pop the arg once we consume it so we don't pass it go Gio.application.run
+        sys.argv.pop(1)
+
+        # (2) Try to load a matching python module.
+        # Note: the requested module could also be a CCC or SA module (which are always loaded by __init__())
+        self.load_python_modules(only_module=sidepage_name)
+
+        # (3) set tab to show and/or spices sorting if specified via args
         if len(sys.argv) > 1:
-            arg1 = sys.argv[1]
-            if arg1 in ARG_REWRITE.keys():
-                arg1 = ARG_REWRITE[arg1]
-        if len(sys.argv) > 1 and arg1 in sidePagesIters:
-            # Analyses arguments to know the tab to open
-            # and the sort to apply if the tab is the 'more' one.
-            # Examples:
-            #   cinnamon-settings.py applets --tab=more --sort=date
-            #   cinnamon-settings.py applets --tab=1 --sort=2
-            #   cinnamon-settings.py applets --tab=more --sort=date
-            #   cinnamon-settings.py applets --tab=1 -s 2
-            #   cinnamon-settings.py applets -t 1 -s installed
-            #   cinnamon-settings.py desklets -t 2
-            # Please note that useless or wrong arguments are ignored.
             opts = []
             sorts_literal = {"name":0, "score":1, "date":2, "installed":3, "update":4}
-            tabs_literal = {"default":0}
-            if arg1 in TABS.keys():
-                tabs_literal = TABS[arg1]
+            tabs_literal = TABS.get(sidepage_name, {"default": 0})
 
             try:
-                if len(sys.argv) > 2:
-                    opts = getopt.getopt(sys.argv[2:], "t:s:", ["tab=", "sort="])[0]
+                opts = getopt.getopt(sys.argv[1:], "t:s:", ["tab=", "sort="])[0]
             except getopt.GetoptError:
-                pass
-            # pop the arg once we consume it so we don't pass it go Gio.application.run
-            sys.argv.pop(1)
+                pass  # ignore unknown args
 
             for opt, arg in opts:
                 if opt in ("-t", "--tab"):
@@ -426,30 +437,69 @@ class MainWindow(Gio.Application):
                 sys.argv.remove(opt)
                 sys.argv.remove(arg)
 
-            # If we're launching a module directly, set the WM class so GWL
-            # can consider it as a standalone app and give it its own
-            # group.
-            wm_class = "cinnamon-settings %s" % arg1
-            self.window.set_wmclass(wm_class, wm_class)
-            self.button_back.hide()
-            (iter, cat) = sidePagesIters[arg1]
-            path = self.store[cat].get_path(iter)
-            if path:
-                self.go_to_sidepage(cat, path, user_action=False)
-                self.window.show()
-                if arg1 in ("mintlocale", "blueberry", "system-config-printer", "mintlocale-im", "nvidia-settings"):
+        # (4) set the WM class so GWL can consider it as a standalone app and give it its own group.
+        wm_class = f"cinnamon-settings {sidepage_name}"
+        self.window.set_wmclass(wm_class, wm_class)
+        self.button_back.hide()
+
+        # (5) find and show it
+        for sp_data in self.sidePages:
+            if sp_data.name == sidepage_name:
+                self.go_to_sidepage(sp_data.sp, user_action=False)
+                if sp_data.sp.is_standalone:
                     # These modules do not need to leave the System Settings window open,
                     # when selected by command line argument.
                     self.window.close()
-            else:
-                self.search_entry.grab_focus()
-                self.window.show()
-        else:
-            self.search_entry.grab_focus()
-            self.window.connect("key-press-event", self.on_keypress)
-            self.window.connect("button-press-event", self.on_buttonpress)
+                else:
+                    self.window.show()
+                return True
+        print(f"warning: settings module {sidepage_name} not found.")
+        return False
 
-            self.window.show()
+    def load_ccc_modules(self):
+        """Loads all Cinnamon Control Center settings modules."""
+        for item in CONTROL_CENTER_MODULES:
+            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
+            if ccmodule.process(self.c_manager):
+                self.sidePages.append(SidePageData(ccmodule.sidePage, ccmodule.name, ccmodule.category))
+            else:
+                print("warning: failed to process CCC module", item[1])
+
+    def load_standalone_modules(self):
+        """Loads all standalone settings modules."""
+        for item in STANDALONE_MODULES:
+            samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
+            if samodule.process():
+                self.sidePages.append(SidePageData(samodule.sidePage, samodule.name, samodule.category))
+            # else:
+            #    print(f"note: skipped standalone module {samodule.name} (not found in PATH).")
+
+    def load_python_modules(self, only_module: str = None) -> bool:
+        """Loads all or only a given settings module(s) written in python.
+
+        :param only_module: (optional) module name to be loaded exclusively
+        :return: True if successful, False otherwise
+        """
+        # Standard setting pages... this can be expanded to include applet dirs maybe?
+        mod_files = glob.glob(os.path.join(config.currentPath, 'modules', 'cs_*.py'))
+        if len(mod_files) == 0:
+            print("warning: no python settings modules found!!", file=sys.stderr)
+            return False
+
+        to_import = [os.path.splitext(os.path.basename(x))[0] for x in mod_files]
+        
+        if only_module is not None:
+            to_import = filter(lambda mod: only_module in mod, to_import)
+
+        for module in map(__import__, to_import):
+            try:
+                mod = module.Module(self.content_box)
+                if self.loadCheck(mod) and self.setParentRefs(mod):
+                    self.sidePages.append(SidePageData(mod.sidePage, mod.name, mod.category))
+            except:
+                print(f"failed to load python module {module}", file=sys.stderr)
+                traceback.print_exc()
+        return True
 
     # If there are no arguments, do_active() is called, otherwise do_open().
     def do_activate(self):
