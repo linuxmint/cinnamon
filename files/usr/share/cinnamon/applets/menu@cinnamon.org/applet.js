@@ -59,10 +59,6 @@ const MATCH_ADDERS = [
     3000 // id
 ];
 
-function strip(str) {
-    return str.replace(/[^\p{L}\p{N}]/gu, "");
-}
-
 /* VisibleChildIterator takes a container (boxlayout, etc.)
  * and creates an array of its visible children and their index
  * positions.  We can then work through that list without
@@ -571,10 +567,10 @@ class ApplicationButton extends GenericApplicationButton {
         this.isDraggableApp = true;
 
         this.searchStrings = [
-            strip(Util.latinise(app.get_name().toLowerCase())),
-            app.get_keywords() ? strip(Util.latinise(app.get_keywords().toLowerCase())) : "",
-            app.get_description() ? strip(Util.latinise(app.get_description().toLowerCase())) : "",
-            app.get_id() ? strip(Util.latinise(app.get_id().toLowerCase())) : ""
+            AppUtils.decomp_string(app.get_name()),
+            app.get_keywords() ? AppUtils.decomp_string(app.get_keywords()) : "",
+            app.get_description() ? AppUtils.decomp_string(app.get_description()) : "",
+            app.get_id() ? AppUtils.decomp_string(app.get_id()) : ""
         ];
     }
 
@@ -671,7 +667,7 @@ class PlaceButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            strip(Util.latinise(place.name.toLowerCase()))
+            AppUtils.decomp_string(place.name.toLowerCase())
         ];
     }
 
@@ -723,7 +719,7 @@ class RecentButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            strip(Util.latinise(recent.name.toLowerCase()))
+            AppUtils.decomp_string(recent.name)
         ];
     }
 
@@ -831,7 +827,7 @@ class FavoriteButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            strip(Util.latinise(favoriteInfo.display_name.toLowerCase()))
+            AppUtils.decomp_string(favoriteInfo.display_name)
         ];
     }
 
@@ -3204,8 +3200,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _doSearch(rawPattern){
-        let lowerPattern = Util.latinise(rawPattern.toLowerCase());
-        let pattern = strip(lowerPattern);
+        let lowerPattern = AppUtils.decomp_unstripped(rawPattern);
+        let pattern = AppUtils.decomp_stripped(rawPattern);
 
         this._searchTimeoutId = 0;
         this._activeContainer = null;
