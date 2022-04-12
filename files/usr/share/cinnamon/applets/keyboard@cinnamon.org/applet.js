@@ -1,6 +1,5 @@
 const Applet = imports.ui.applet;
 const XApp = imports.gi.XApp;
-const Lang = imports.lang;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
@@ -8,24 +7,42 @@ const Util = imports.misc.util;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Cairo = imports.cairo;
+const Signals = imports.signals;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
+const POPUP_MENU_ICON_STYLE_CLASS = "popup-menu-icon";
+const APPLET_ICON_STYLE_CLASS = "applet-icon";
+
+const getFlagFileName = name => `/usr/share/iso-flag-png/${name}.png`;
+
 class EmblemedIcon {
-    constructor(path, id, style_class) {
-        this.path = path;
-        this.id = id;
+    constructor(file_path, layout_dupe_id, style_class) {
+        this.layout_dupe_id = layout_dupe_id;
 
-        this.actor = new St.DrawingArea({ style_class: style_class });
+        this.img = { surface: St.TextureCache.get_default().load_file_to_cairo_surface(file_path) };
+        this.img.width = this.img.surface.getWidth();
+        this.img.height = this.img.surface.getHeight();
+        this.img.sizes = [this.img.width, this.img.height];
+        const aspect = this.img.width / this.img.height;
 
-        this.actor.connect("style-changed", Lang.bind(this, this._style_changed));
-        this.actor.connect("repaint", Lang.bind(this, this._repaint));
+        this.HORIZONTAL_SCALE = aspect;
+        this.STYLE_CLASS_SCALE = (style_class == POPUP_MENU_ICON_STYLE_CLASS) ? aspect : 1;  
+
+        this.actor = new St.DrawingArea({ style_class });
+        this.actor.connect("style-changed", () => this._style_changed());
+        this.actor.connect("repaint", (...args) => this._repaint(...args));
     }
 
-    _style_changed(actor) {
-        const icon_size = 0.5 + this.actor.get_theme_node().get_length("icon-size");
+    _calc_natural_sizes(base_size) {
+        const height = base_size * this.STYLE_CLASS_SCALE;
+        const width = height * this.HORIZONTAL_SCALE;
+        return [width, height];
+    }
 
-        this.actor.natural_width = this.actor.natural_height = icon_size;
+    _style_changed() {
+        const base_size = Math.round(this.actor.get_theme_node().get_length("icon-size"));
+        [this.actor.natural_width, this.actor.natural_height] = this._calc_natural_sizes(base_size);
     }
 
     _repaint(actor) {
@@ -34,43 +51,32 @@ class EmblemedIcon {
 
         cr.save();
 
-        const surf = St.TextureCache.get_default().load_file_to_cairo_surface(this.path);
-        const surf_width = surf.getWidth();
-        const surf_height = surf.getHeight();
+        const factor = Math.min(w / this.img.width, h / this.img.height);
 
-        let [new_w, new_h] = [w, h];
-        const aspect = surf_width / surf_height;
-        if ((new_w / new_h) > aspect) {
-            new_w = new_h * aspect;
-        }
+        const img_offset_x = ((w / factor) - this.img.width) / 2;
+        const img_offset_y = ((h / factor) - this.img.height) / 2;
 
-        const factor = new_w / surf_width;
+        const render_sizes = this.img.sizes.map(x => x * factor);
 
-        const render_width = surf_width * factor;
-        const render_height = surf_height * factor;
-
-        const surf_x_offset = ((w / factor) - surf_width) / 2;
-        const surf_y_offset = ((h / factor) - surf_height) / 2;
-
-        const render_x_offset = (new_w - render_width) / 2;
-        const render_y_offset = (new_h - render_height) / 2;
+        const render_offset_x = (w - render_sizes[0]) / 2;
+        const render_offset_y = (h - render_sizes[1]) / 2;
 
         cr.scale(factor, factor);
-        cr.setSourceSurface(surf, surf_x_offset, surf_y_offset);
-
+        cr.setSourceSurface(this.img.surface, img_offset_x, img_offset_y);
         cr.getSource().setFilter(Cairo.Filter.BEST);
         cr.setOperator(Cairo.Operator.SOURCE);
 
         cr.paint();
-
         cr.restore();
 
-        XApp.KbdLayoutController.render_cairo_subscript(cr,
-                                                        render_x_offset + (render_width / 2),
-                                                        render_y_offset + (render_height / 2),
-                                                        render_width / 2,
-                                                        render_height / 2,
-                                                        this.id);
+        const [render_center_x, render_center_y] = render_sizes.map(x => x / 2);
+
+        XApp.KbdLayoutController.render_cairo_subscript(
+            cr,
+            render_offset_x + render_center_x, render_offset_y + render_center_y,
+            render_center_x,                   render_center_y,
+            this.layout_dupe_id
+        );
 
         cr.$dispose();
     }
@@ -84,20 +90,17 @@ class EmblemedIcon {
     }
 
     set_icon_size(size) {
-        this.actor.width = this.actor.height = size * global.ui_scale;
+        [this.actor.width, this.actor.height] = this._calc_natural_sizes(size * global.ui_scale);
     }
 
-    set_style_class_name(name) {
-        return;
-    }
+    set_style_class_name(name) { }
 }
 
 class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
-    constructor(config, id, indicator, long_name) {
+    constructor(layout_setter, indicator, long_name) {
         super();
 
-        this._config = config;
-        this._id = id;
+        this._layout_setter = layout_setter;
         this.label = new St.Label({ text: long_name });
         this.indicator = indicator;
         this.addActor(this.label);
@@ -106,15 +109,104 @@ class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
 
     activate(event) {
         PopupMenu.PopupBaseMenuItem.prototype.activate.call(this);
-        this._config.set_current_group(this._id);
+        this._layout_setter();
     }
 }
+
+class KbdLayoutController {
+    constructor() {
+        const on_ibus = (is_active) => {
+            this._ibus_active = is_active;
+            this.emit("layout-changed");
+            this.emit("config-changed");
+        };
+        Gio.DBus.session.watch_name(
+            "org.fcitx.Fcitx", Gio.BusNameWatcherFlags.NONE,
+            () => on_ibus(true), () => on_ibus(false)
+        );
+    }
+
+    applet_added() {
+        this._xappController = new XApp.KbdLayoutController();
+        this._xappController.connect('layout-changed', () => this._on_layout_changed());
+        this._xappController.connect('config-changed', () => this._on_config_changed());
+        this._on_config_changed();
+    }
+
+    _retrieve_current_layout_idx() {
+        let idx = this._xappController ?
+            this._xappController.get_current_group() : 0;
+        if (idx >= this.get_layouts_count()) {
+            this.set_current_layout_idx(0);
+        } else {
+            this._current_layout_idx = idx;
+        }
+    }
+
+    _on_layout_changed() {
+        this._retrieve_current_layout_idx();
+        this.emit("layout-changed");
+    }
+
+    _on_config_changed() {
+        const layouts = [];
+        if (this._xappController) {
+            const groups = this._xappController.get_all_names();
+            for (let i = 0; i < groups.length; i++) {
+                layouts.push({
+                    display_name: groups[i],
+                    flag_name: this._xappController.get_icon_name_for_group(i),
+                    layout_dupe_id: this._xappController.get_flag_id_for_group(i),
+                    short_name: this._xappController.get_short_group_label_for_group(i),
+                    variant_name: this._xappController.get_variant_label_for_group(i),
+                });
+            }
+        }
+        this._layouts = layouts;
+        this._retrieve_current_layout_idx();
+        this.emit("config-changed");
+    }
+
+    have_multiple_layouts() {
+        return (this.get_layouts_count() > 1) || false;
+    }
+
+    get_layouts_count() {
+        return this._layouts?.length || 0;
+    }
+
+    get_current_layout_idx() {
+        return this._current_layout_idx || 0;
+    }
+
+    set_current_layout_idx(idx) {
+        if (this._xappController)
+            this._xappController.set_current_group(idx);
+        this._current_layout_idx = idx;
+    }
+
+    get_layout_data(idx) {
+        const layouts = this._layouts || [];
+        return layouts[idx] || {};
+    }
+
+    is_ibus_active() {
+        return !!this._ibus_active;
+    }
+}
+Signals.addSignalMethods(KbdLayoutController.prototype);
 
 class CinnamonKeyboardApplet extends Applet.TextIconApplet {
     constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
+
+        this._layoutItems = [ ];
+        this._layoutIcons = [ ];
+
+        this._maxSeenWidth = this._maxSeenHeight = 0;
+        this.show_flags = this.use_upper = this.use_variants = false;
 
         try {
             this.metadata = metadata;
@@ -126,33 +218,27 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
             this.actor.add_style_class_name('panel-status-button');
 
-            this._layoutItems = [ ];
-
-            this.im_running = false;
-
-            this.show_flags = false;
-            this.use_upper = false;
-            this.use_variants = false;
-
             this.desktop_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
 
-            this.desktop_settings.connect("changed::keyboard-layout-show-flags", Lang.bind(this, this._syncConfig));
-            this.desktop_settings.connect("changed::keyboard-layout-use-upper", Lang.bind(this, this._syncConfig));
-            this.desktop_settings.connect("changed::keyboard-layout-prefer-variant-names", Lang.bind(this, this._syncConfig));
-            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
+            const _syncConfig = () => this._syncConfig();
+
+            this.desktop_settings.connect("changed::keyboard-layout-show-flags", _syncConfig);
+            this.desktop_settings.connect("changed::keyboard-layout-use-upper", _syncConfig);
+            this.desktop_settings.connect("changed::keyboard-layout-prefer-variant-names", _syncConfig);
+            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, () => this._onPanelEditModeChanged());
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addAction(_("Show Keyboard Layout"), Lang.bind(this, function() {
+            this.menu.addAction(_("Show Keyboard Layout"), () => {
                 Main.overview.hide();
-                Util.spawn(['gkbd-keyboard-display', '-g', String(this._config.get_current_group() + 1)]);
-            }));
-            this.menu.addAction(_("Show Character Table"), Lang.bind(this, function() {
+                Util.spawn(['gkbd-keyboard-display', '-g', String(this._controller.get_current_layout_idx() + 1)]);
+            });
+            this.menu.addAction(_("Show Character Table"), () => {
                 Main.overview.hide();
                 Util.spawn(['gucharmap']);
-            }));
+            });
             this.menu.addSettingsAction(_("Keyboard Settings"), 'keyboard');
 
-            Gio.DBus.session.watch_name("org.fcitx.Fcitx", Gio.BusNameWatcherFlags.NONE, Lang.bind(this, this._itemAppeared), Lang.bind(this, this._itemVanished));
+            this._controller = new KbdLayoutController();
         }
         catch (e) {
             global.logError(e);
@@ -165,32 +251,32 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
                 this.set_applet_icon_symbolic_name("input-keyboard");
                 this.actor.show();
             }
-        }
-        else {
+        } else {
             this._syncConfig();
         }
     }
 
     on_applet_added_to_panel() {
-        this._config = new XApp.KbdLayoutController();
-
+        this._controller.applet_added();
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
-            this._syncConfig();
             this._onPanelEditModeChanged();
-        } else {
-            this._syncConfig();
         }
+        this._controller.connect('layout-changed', () => this._syncGroup());
+        this._controller.connect('config-changed', () => this._syncConfig());
+        this.connect('orientation-changed', () => this.on_orientation_changed());
+    }
 
-        this._config.connect('layout-changed', Lang.bind(this, this._syncGroup));
-        this._config.connect('config-changed', Lang.bind(this, this._syncConfig));
+    on_orientation_changed() {
+        this._maxSeenWidth = this._maxSeenHeight = 0;
+        this._syncGroup();
     }
 
     _onButtonPressEvent(actor, event) {
         // Cycle to the next layout
         if (event.get_button() === 2) {
-            const selected_group = this._config.get_current_group();
+            const selected_group = this._controller.get_current_layout_idx();
             const new_group = (selected_group + 1) % this._layoutItems.length;
-            this._config.set_current_group(new_group);
+            this._controller.set_current_layout_idx(new_group);
         }
         return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
     }
@@ -199,76 +285,102 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         this.menu.toggle();
     }
 
-    _itemAppeared(proxy, busName, owner) {
-        this.im_running = true;
-        this._syncConfig();
+    _setLayoutItems(items) {
+        this._selectedLayout = null;
+        this._layoutItems.forEach(item => item.destroy());
+        this._layoutItems = items || [];
     }
 
-    _itemVanished(proxy, busName) {
-        this.im_running = false;
-        this._syncConfig();
+    _setLayoutIcons(icons) {
+        this._layoutIcons = icons || [];
+    }
+
+    _createIcon(layoutIndex, actorClass) {
+        const layoutInfo = this._controller.get_layout_data(layoutIndex);
+
+        let isFlagIcon = false;
+        let iconActor = null;
+        let iconInstance = null;
+        let name = layoutInfo.flag_name;
+
+        if (this.show_flags) {
+            const file = Gio.file_new_for_path(getFlagFileName(name));
+            if (file.query_exists(null)) {
+                iconInstance = new EmblemedIcon(file.get_path(), layoutInfo.layout_dupe_id, actorClass);
+                iconActor = iconInstance.actor;
+                isFlagIcon = true;
+            }
+        }
+
+        if (!isFlagIcon) {
+            name = this.use_variants ? layoutInfo.variant_name : layoutInfo.short_name;
+            name = this.use_upper ? name.toUpperCase() : name;
+            iconActor = new St.Label({ text: name });
+        }
+
+        return {name, iconInstance, iconActor, isFlagIcon};
+    }
+
+    _setMargin(actor, left, right) {
+        actor.set_style(`margin-left: ${left}px; margin-right: ${right}px;`);
     }
 
     _syncConfig() {
-        for (let i = 0; i < this._layoutItems.length; i++)
-            this._layoutItems[i].destroy();
+        this._maxSeenWidth = this._maxSeenHeight = 0;
 
-        this._selectedLayout = null;
-        this._layoutItems = [ ];
-
-        if (!this._config.get_enabled()) {
+        if (!this._controller.have_multiple_layouts()) {
+            this._setLayoutItems([]);
             this.menu.close();
             this.actor.hide();
             return;
         }
 
+        const layoutItems = [];
+        const layoutIcons = [];
+
         this.show_flags = this.desktop_settings.get_boolean("keyboard-layout-show-flags");
         this.use_upper = this.desktop_settings.get_boolean("keyboard-layout-use-upper");
         this.use_variants = this.desktop_settings.get_boolean("keyboard-layout-prefer-variant-names");
 
-        this.actor.show();
-
-        const groups = this._config.get_all_names();
-
-        for (let i = 0; i < groups.length; i++) {
-            let handled = false;
-            let actor = null;
-
-            if (this.show_flags) {
-                const name = this._config.get_icon_name_for_group(i);
-
-                const file = Gio.file_new_for_path("/usr/share/iso-flag-png/" + name + ".png");
-
-                if (file.query_exists(null)) {
-                    actor = new EmblemedIcon(file.get_path(), this._config.get_flag_id_for_group(i), "popup-menu-icon").actor;
-                    handled = true;
-                }
-            }
-
-            if (!handled) {
-                let name;
-
-                if (this.use_variants) {
-                    name = this._config.get_variant_label_for_group(i);
-                } else {
-                    name = this._config.get_short_group_label_for_group(i);
-                }
-
-                name = this.use_upper ? name.toUpperCase() : name;
-                actor = new St.Label({ text: name });
-            }
-
-            const item = new LayoutMenuItem(this._config, i, actor, groups[i]);
-            this._layoutItems.push(item);
-            this.menu.addMenuItem(item, i);
+        if (this.show_flags) {
+            this._maxSeenWidth = this._maxSeenHeight = 0;
         }
 
-        Mainloop.idle_add(Lang.bind(this, this._syncGroup));
+        this.actor.show();
+
+        const layoutsCount = this._controller.get_layouts_count();
+
+        for (let i = 0; i < layoutsCount; i++) {
+            const idx = i;
+
+            const layoutInfo = this._controller.get_layout_data(idx);
+
+            const popupIconInfo = this._createIcon(idx, POPUP_MENU_ICON_STYLE_CLASS);
+            const menuItem = new LayoutMenuItem(
+                () => this._controller.set_current_layout_idx(idx), 
+                popupIconInfo.iconActor, layoutInfo.display_name
+            );
+            layoutItems.push(menuItem);
+
+            this.menu.addMenuItem(menuItem, idx);
+            const appletIconInfo = this._createIcon(idx, APPLET_ICON_STYLE_CLASS);
+            layoutIcons.push(appletIconInfo);
+        }
+
+        this._setLayoutItems(layoutItems);
+        this._setLayoutIcons(layoutIcons);
+
+        Mainloop.idle_add(() => this._syncGroup());
     }
 
     _syncGroup() {
+        const selected = this._controller.get_current_layout_idx();
 
-        const selected = this._config.get_current_group();
+        if (!this._layoutItems.length) {
+            global.logError(new Error('Layouts list is empty'));
+            this.actor.hide();
+            return;
+        }
 
         if (this._selectedLayout) {
             this._selectedLayout.setShowDot(false);
@@ -280,46 +392,46 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
         this._selectedLayout = item;
 
-        this.set_applet_tooltip(this._config.get_current_name());
+        const layoutInfo = this._controller.get_layout_data(selected);
 
-        let handled = false;
+        this.set_applet_tooltip(layoutInfo.display_name);
 
-        if (this.show_flags) {
-            const name = this._config.get_current_icon_name();
+        const _applet_label_box = this._applet_label.get_parent();
+        this._setMargin(_applet_label_box, 0, 0);
+        this._setMargin(this._applet_icon_box, 0, 0);
 
-            const file = Gio.file_new_for_path("/usr/share/iso-flag-png/" + name + ".png");
-
-            if (file.query_exists(null)) {
-                this._applet_icon = new EmblemedIcon(file.get_path(), this._config.get_current_flag_id(), "applet-icon");
-                this._applet_icon_box.set_child(this._applet_icon.actor);
-                this._applet_icon_box.show();
-
-                this._setStyle();
-
-                this.set_applet_label("");
-
-                handled = true;
-            }
-        }
-
-        if (!handled) {
-            let name;
-
-            if (this.use_variants) {
-                name = this._config.get_current_variant_label();
-            } else {
-                name = this._config.get_current_short_group_label();
-            }
-
-            name = this.use_upper ? name.toUpperCase() : name;
-
+        const {name, iconActor, iconInstance, isFlagIcon} = this._layoutIcons[selected];
+        if (isFlagIcon) {
+            this._applet_icon = iconInstance;
+            this._applet_icon_box.set_child(iconActor);
+            this._applet_icon_box.show();
+            this._setStyle();
+            this.set_applet_label("");
+        } else {
             this.set_applet_label(name);
             this._applet_icon_box.hide();
         }
 
-        if (this.im_running) {
-        	this.actor.hide();
+        const box = isFlagIcon ? this._applet_icon_box : _applet_label_box;
+        const width = this.actor.get_width();
+        const height = this.actor.get_height();
+        if (width >= this._maxSeenWidth) {
+            this._maxSeenWidth = width;
         }
+        if (height >= this._maxSeenHeight) {
+            this._maxSeenHeight = height;
+        } else {
+            this.actor.set_height(this._maxSeenHeight);
+        }
+        const addedWidth = this._maxSeenWidth - width;
+        const leftOffset = parseInt(addedWidth / 2);
+        const rightOffset = addedWidth - leftOffset; 
+        this._setMargin(box, leftOffset, rightOffset);
+        if (isFlagIcon) {
+            this._setStyle();
+        }
+
+        this.im_running ? this.actor.hide() : this.actor.show();
     }
 
     on_applet_removed_from_panel() {
