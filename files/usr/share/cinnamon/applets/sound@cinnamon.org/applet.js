@@ -81,11 +81,19 @@ class ControlButton {
 }
 
 class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
-    constructor(applet, stream, tooltip, app_icon) {
+    /**
+     * A volume slider either for applications or sound input/output
+     * @param applet This sound applet
+     * @param stream A sound stream to connect the slider to. Nullable
+     * @param text An optional heading. Nullable
+     * @param tooltip The text which will show up when the users hovers over it. The slider's current value will be appended as percentage
+     * @param app_icon The icon of the application or "null" when used for input/output
+     */
+    constructor(applet, stream, text, tooltip, app_icon) {
         super(0);
         this.applet = applet;
 
-        if(tooltip)
+        if (tooltip)
             this.tooltipText = tooltip + ": ";
         else
             this.tooltipText = "";
@@ -96,16 +104,29 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
 
         this.app_icon = app_icon;
         if (this.app_icon == null) {
-            this.iconName = this.isMic ? "microphone-sensitivity-muted" : "audio-volume-muted";
-            this.icon = new St.Icon({icon_name: this.iconName, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
-        }
-        else {
+            let icon_name = this.isMic ? "microphone-sensitivity-muted" : "audio-volume-muted";
+            this.icon = new St.Icon({icon_name: icon_name, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
+        } else {
             this.icon = new St.Icon({icon_name: this.app_icon, icon_type: St.IconType.FULLCOLOR, icon_size: 16});
         }
 
+        this.mute_button = new St.Button()
+        this.mute_button.connect('clicked', () => this.toggle_muted());
+        this.mute_button.set_child(this.icon);
+
+        this.slider_box = new St.BoxLayout({ vertical: true });
+
+        if (text) {
+            this.label = new St.Label({ text: text, x_align: Clutter.ActorAlign.CENTER });
+            this.slider_box.add(this.label);
+        } else {
+            this.label = null;
+        }
+
         this.removeActor(this._slider);
-        this.addActor(this.icon, {span: 0});
-        this.addActor(this._slider, {span: -1, expand: true});
+        this.slider_box.add(this._slider);
+        this.addActor(this.mute_button, {span: 0});
+        this.addActor(this.slider_box, {span: -1, expand: true});
 
         this.connectWithStream(stream);
     }
@@ -131,6 +152,16 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         this._update();
     }
 
+    toggle_muted() {
+        if (this.stream) {
+            if (this.stream.is_muted) {
+                this.stream.change_is_muted(false);
+            } else {
+                this.stream.change_is_muted(true);
+            }
+        }
+    }
+
     _onValueChanged() {
         if (!this.stream) return;
 
@@ -138,7 +169,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         // Use the scaled volume max only for the main output
         let volume = this._value * (this.isOutputSink ? this.applet._volumeMax : this.applet._volumeNorm);
 
-        if(this._value < 0.005) {
+        if (this._value < 0.005) {
             volume = 0;
             muted = true;
         } else {
@@ -150,10 +181,10 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         this.stream.volume = volume;
         this.stream.push_volume();
 
-        if(this.stream.is_muted !== muted)
+        if (this.stream.is_muted !== muted)
             this.stream.change_is_muted(muted);
 
-        if(!this._dragging)
+        if (!this._dragging)
             this.applet._notifyVolumeChange(this.stream);
     }
 
@@ -185,7 +216,6 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         return false;
     }
 
-
     _update() {
         // value: percentage of volume_max (set as value in the widget)
         // visible_value: percentage of volume_norm (shown to the user)
@@ -212,14 +242,13 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         this.tooltip.set_text(this.tooltipText + percentage);
         if (this._dragging)
             this.tooltip.show();
-        let iconName = this._volumeToIcon(value);
         if (this.app_icon == null) {
-            this.icon.icon_name = iconName;
+            this.icon.icon_name = this._volumeToIcon(value);
         }
         this.setValue(value);
 
         // send data to applet
-        this.emit("values-changed", iconName, percentage);
+        this.emit("values-changed", this.icon.icon_name, percentage);
     }
 
     _volumeToIcon(value) {
@@ -235,7 +264,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
             else
                 icon = "high";
         }
-        return this.isMic? "microphone-sensitivity-" + icon : "audio-volume-" + icon;
+        return this.isMic ? "microphone-sensitivity-" + icon : "audio-volume-" + icon;
     }
 }
 
@@ -444,7 +473,7 @@ class StreamMenuSection extends PopupMenu.PopupMenuSection {
             iconName = "audio-x-generic";
         }
 
-        let slider = new VolumeSlider(applet, stream, name, iconName);
+        let slider = new VolumeSlider(applet, stream, name, name, iconName);
         this.addMenuItem(slider);
     }
 }
@@ -994,11 +1023,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._recordingAppsNum = 0;
 
         this._output = null;
-        this._outputMutedId = 0;
         this._outputIcon = "audio-volume-muted";
 
         this._input = null;
-        this._inputMutedId = 0;
 
         this._icon_name = '';
         this._icon_path = null;
@@ -1006,41 +1033,43 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         this.actor.connect('scroll-event', (...args) => this._onScrollEvent(...args));
 
-        this.mute_out_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute output"), false, "audio-volume-muted", St.IconType.SYMBOLIC);
-        this.mute_in_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute input"), false, "microphone-sensitivity-none", St.IconType.SYMBOLIC);
-        this._applet_context_menu.addMenuItem(this.mute_out_switch);
-        this._applet_context_menu.addMenuItem(this.mute_in_switch);
-
-        this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
+        this._chooseActivePlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Choose player controls"));
+        this._launchPlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Launch player"));
         this._outputApplicationsMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applications"));
         this._selectOutputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device"));
-        this._applet_context_menu.addMenuItem(this._outputApplicationsMenu);
-        this._applet_context_menu.addMenuItem(this._selectOutputDeviceItem);
+        this._outputVolumeSlider = new VolumeSlider(this,null, null, _("Volume"), null);
+        this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device"));
+        this._inputVolumeSlider = new VolumeSlider(this, null, null, _("Microphone"), null);
+
+        this.menu.addMenuItem(this._chooseActivePlayerItem);
+        this.menu.addMenuItem(this._launchPlayerItem);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addMenuItem(this._outputApplicationsMenu);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addMenuItem(this._selectOutputDeviceItem);
+        this.menu.addMenuItem(this._outputVolumeSlider);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addMenuItem(this._selectInputDeviceItem);
+        this.menu.addMenuItem(this._inputVolumeSlider);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addSettingsAction(_("Sound Settings"), 'sound');
+
         this._outputApplicationsMenu.actor.hide();
         this._selectOutputDeviceItem.actor.hide();
-
-        this._inputSection = new PopupMenu.PopupMenuSection();
-        this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
-        this._inputVolumeSection.connect("values-changed", (...args) => this._inputValuesChanged(...args));
-        this._selectInputDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Input device"));
-        this._inputSection.addMenuItem(this._inputVolumeSection);
-        this._inputSection.addMenuItem(this._selectInputDeviceItem);
-        this._applet_context_menu.addMenuItem(this._inputSection);
-
         this._selectInputDeviceItem.actor.hide();
-        this._inputSection.actor.hide();
-
-        this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
-        this.mute_out_switch.connect('toggled', () => this._toggle_out_mute());
-        this.mute_in_switch.connect('toggled', () => this._toggle_in_mute());
+        this._chooseActivePlayerItem.actor.hide();
+        this._inputVolumeSlider.actor.hide();
 
         this._control.open();
 
         this._volumeControlShown = false;
 
-        this._showFixedElements();
+        this._updateLaunchPlayer();
+
+        this._outputVolumeSlider.connect("values-changed", (...args) => this._outputValuesChanged(...args));
+        this._inputVolumeSlider.connect("values-changed", (...args) => this._inputValuesChanged(...args));
+        this._sound_settings.connect("changed::" + MAXIMUM_VOLUME_KEY, () => this._on_sound_settings_change());
+
         this.set_show_label_in_vertical_panels(false);
         this.set_applet_label(this._applet_label.get_text());
 
@@ -1048,10 +1077,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         appsys.connect("installed-changed", () => this._updateLaunchPlayer());
 
         if (this._volumeMax > this._volumeNorm) {
-            this._outputVolumeSection.set_mark(this._volumeNorm / this._volumeMax);
+            this._outputVolumeSlider.set_mark(this._volumeNorm / this._volumeMax);
         }
 
-        this._sound_settings.connect("changed::" + MAXIMUM_VOLUME_KEY, () => this._on_sound_settings_change());
     }
 
     _setKeybinding() {
@@ -1061,12 +1089,12 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     _on_sound_settings_change () {
         this._volumeMax = this._sound_settings.get_int(MAXIMUM_VOLUME_KEY) / 100 * this._control.get_vol_max_norm();
         if (this._volumeMax > this._volumeNorm) {
-            this._outputVolumeSection.set_mark(this._volumeNorm / this._volumeMax);
+            this._outputVolumeSlider.set_mark(this._volumeNorm / this._volumeMax);
         }
         else {
-            this._outputVolumeSection.set_mark(0);
+            this._outputVolumeSlider.set_mark(0);
         }
-        this._outputVolumeSection._update();
+        this._outputVolumeSlider._update();
     }
 
     on_settings_changed () {
@@ -1098,32 +1126,6 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
     _openMenu() {
         this.menu.toggle();
-    }
-
-    _toggle_out_mute() {
-        if (!this._output)
-            return;
-
-        if (this._output.is_muted) {
-            this._output.change_is_muted(false);
-            this.mute_out_switch.setToggleState(false);
-        } else {
-            this._output.change_is_muted(true);
-            this.mute_out_switch.setToggleState(true);
-        }
-    }
-
-    _toggle_in_mute() {
-        if (!this._input)
-            return;
-
-        if (this._input.is_muted) {
-            this._input.change_is_muted(false);
-            this.mute_in_switch.setToggleState(false);
-        } else {
-            this._input.change_is_muted(true);
-            this.mute_in_switch.setToggleState(true);
-        }
     }
 
     _onScrollEvent(actor, event) {
@@ -1342,6 +1344,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             this._changeActivePlayer(owner);
             this._updatePlayerMenuItems();
             this.setAppletTextIcon();
+            this._chooseActivePlayerItem.menu.close(true)
         } else {
             // The player doesn't seem to exist. Remove it from the players list
             this._removePlayerItem(owner);
@@ -1404,28 +1407,6 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._updateLaunchPlayer();
     }
 
-    _showFixedElements() {
-        // The launch player list
-        this._launchPlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Launch player"));
-        this.menu.addMenuItem(this._launchPlayerItem);
-        this._updateLaunchPlayer();
-
-        // The list to use when switching between active players
-        this._chooseActivePlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Choose player controls"));
-        this._chooseActivePlayerItem.actor.hide();
-        this.menu.addMenuItem(this._chooseActivePlayerItem);
-
-        //between these two separators will be the player MenuSection (position 3)
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this._outputVolumeSection = new VolumeSlider(this, null, _("Volume"), null);
-        this._outputVolumeSection.connect("values-changed", (...args) => this._outputValuesChanged(...args));
-
-        this.menu.addMenuItem(this._outputVolumeSection);
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
-        this.menu.addSettingsAction(_("Sound Settings"), 'sound');
-    }
-
     _updateLaunchPlayer() {
         let availablePlayers = [];
 
@@ -1486,7 +1467,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._activePlayer = player;
         if (this.playerControl && this._activePlayer != null) {
             let menuItem = this._players[player];
-            this.menu.addMenuItem(menuItem, 2);
+            this.menu.addMenuItem(menuItem, 0);
         }
 
         this._updatePlayerMenuItems();
@@ -1496,23 +1477,15 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         Main.soundManager.playVolume('volume', stream.decibel);
     }
 
-    _mutedChanged(object, param_spec, property) {
-        if (property == "_output") {
-            this.mute_out_switch.setToggleState(this._output.is_muted);
-        } else if (property == "_input") {
-            this.mute_in_switch.setToggleState(this._input.is_muted);
-        }
-    }
-
     _outputValuesChanged(actor, iconName, percentage) {
         this.setIcon(iconName, "output");
-        this.mute_out_switch.setIconSymbolicName(iconName);
+        //this.mute_out_switch.setIconSymbolicName(iconName);
         this.volume = percentage;
         this.setAppletTooltip();
     }
 
     _inputValuesChanged(actor, iconName) {
-        this.mute_in_switch.setIconSymbolicName(iconName);
+        //this.mute_in_switch.setIconSymbolicName(iconName);
     }
 
     _onControlStateChanged() {
@@ -1526,32 +1499,23 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     }
 
     _readOutput() {
-        if (this._outputMutedId) {
-            this._output.disconnect(this._outputMutedId);
-            this._outputMutedId = 0;
-        }
         this._output = this._control.get_default_sink();
         if (this._output) {
-            this._outputVolumeSection.connectWithStream(this._output);
-            this._outputMutedId = this._output.connect('notify::is-muted', (...args) => this._mutedChanged(...args, '_output'));
-            this._mutedChanged (null, null, '_output');
+            this._outputVolumeSlider.connectWithStream(this._output);
         } else {
             this.setIcon("audio-volume-muted-symbolic", "output");
         }
     }
 
     _readInput() {
-        if (this._inputMutedId) {
-            this._input.disconnect(this._inputMutedId);
-            this._inputMutedId = 0;
-        }
         this._input = this._control.get_default_source();
         if (this._input) {
-            this._inputVolumeSection.connectWithStream(this._input);
-            this._inputMutedId = this._input.connect('notify::is-muted', (...args) => this._mutedChanged(...args, '_input'));
-            this._mutedChanged (null, null, '_input');
+            this._inputVolumeSlider.connectWithStream(this._input);
+            this._inputVolumeSlider.actor.show()
+            this._selectInputDeviceItem.actor.show()
         } else {
-            this._inputSection.actor.hide();
+            this._inputVolumeSlider.actor.hide()
+            this._selectInputDeviceItem.actor.hide()
         }
     }
 
@@ -1584,8 +1548,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
                 //hide submenu if showing them is unnecessary
                 let selectItem = this["_select" + type[0].toUpperCase() + type.slice(1) + "DeviceItem"];
-                if (selectItem.menu.numMenuItems <= 1)
+                if (selectItem.menu.numMenuItems <= 1) {
                     selectItem.actor.hide();
+                }
 
                 this._devices.splice(i, 1);
                 break;
@@ -1620,8 +1585,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         } else if (stream instanceof Cvc.MixerSourceOutput) {
             //for source outputs, only show the input section
             this._streams.push({id: id, type: "SourceOutput"});
-            if (this._recordingAppsNum++ === 0)
-                this._inputSection.actor.show();
+            if (this._recordingAppsNum++ === 0) {
+                this._inputVolumeSlider.actor.show()
+                this._selectInputDeviceItem.actor.show()
+            }
         }
     }
 
@@ -1634,11 +1601,14 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
                 //hide submenus or sections if showing them is unnecessary
                 if (stream.type === "SinkInput") {
-                    if (this._outputApplicationsMenu.menu.numMenuItems === 0)
+                    if (this._outputApplicationsMenu.menu.numMenuItems === 0) {
                         this._outputApplicationsMenu.actor.hide();
+                    }
                 } else if (stream.type === "SourceOutput") {
-                    if(--this._recordingAppsNum === 0)
-                        this._inputSection.actor.hide();
+                    if(--this._recordingAppsNum === 0) {
+                        this._inputVolumeSlider.actor.hide()
+                        this._selectInputDeviceItem .actor.hide()
+                    }
                 }
                 this._streams.splice(i, 1);
                 break;
