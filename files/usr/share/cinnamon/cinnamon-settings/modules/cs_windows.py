@@ -133,6 +133,7 @@ class Module:
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
             widget = GSettingsSwitch(_("Center new windows"), "org.cinnamon.muffin", "center-new-windows")
+            settings.add_row(widget)
 
             widget = GSettingsRange(_("Draggable border width"), "org.cinnamon.muffin", "draggable-border-width", _("Narrower"), _("Wider"),
                                     2, 64, show_value=False)
