@@ -104,7 +104,7 @@ class TilePreview {
         this._showing = false;
     }
 
-    show(window, tileRect, monitorIndex, animate) {
+    show(window, tileRect, monitorIndex, animate, anim_time) {
         let windowActor = window.get_compositor_private();
         if (!windowActor)
             return;
@@ -145,7 +145,7 @@ class TilePreview {
 
         if (animate) {
             Object.assign(props, {
-                time: this.TILE_PREVIEW_ANIMATION_TIME,
+                time: anim_time,
                 transition: 'easeOutQuad'
             });
             addTween(this.actor, props);
@@ -290,7 +290,7 @@ var DisplayChangesDialog = class DisplayChangesDialog extends ModalDialog.ModalD
 var WindowManager = class WindowManager {
         MENU_ANIMATION_TIME = 0.1;
         WORKSPACE_ANIMATION_TIME = 0.15;
-        TILE_PREVIEW_ANIMATION_TIME = 0.12;
+        TILE_PREVIEW_ANIMATION_TIME = 0.15;
         SIZE_CHANGE_ANIMATION_TIME = 0.12;
         MAP_ANIMATION_TIME = 0.12;
         DESTROY_ANIMATION_TIME = 0.12;
@@ -1241,7 +1241,7 @@ var WindowManager = class WindowManager {
     _showTilePreview(cinnamonwm, window, tileRect, monitorIndex) {
         if (!this._tilePreview)
             this._tilePreview = new TilePreview();
-        this._tilePreview.show(window, tileRect, monitorIndex, Main.animations_enabled);
+        this._tilePreview.show(window, tileRect, monitorIndex, Main.animations_enabled, this.TILE_PREVIEW_ANIMATION_TIME * this.window_effect_multiplier);
     }
 
     _hideTilePreview(cinnamonwm) {
