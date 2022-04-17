@@ -51,7 +51,7 @@ class Module:
             options = ["none", _("None")], \
                       ["traditional", _("Traditional")], \
                       ["fly", _("Fly")], \
-                      ["fade", _("Fade")]
+                      ["move", _("Move")]
             widget = GSettingsComboBox(_("New windows or unminimizing existing ones"), "org.cinnamon", "desktop-effects-map", options)
             settings.add_reveal_row(widget, "org.cinnamon", "desktop-effects")
 
