@@ -494,6 +494,12 @@ function start() {
 
     log(`GPU offload supported: ${gpu_offload_supported}`);
 
+    // We're ready for the session manager to move to the next phase
+    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+        Meta.register_with_session();
+        return GLib.SOURCE_REMOVE;
+    });
+
     Promise.all([
         AppletManager.init(),
         ExtensionSystem.init(),
