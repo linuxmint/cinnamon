@@ -1479,13 +1479,12 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
     _outputValuesChanged(actor, iconName, percentage) {
         this.setIcon(iconName, "output");
-        //this.mute_out_switch.setIconSymbolicName(iconName);
         this.volume = percentage;
         this.setAppletTooltip();
     }
 
     _inputValuesChanged(actor, iconName) {
-        //this.mute_in_switch.setIconSymbolicName(iconName);
+
     }
 
     _onControlStateChanged() {
@@ -1585,10 +1584,6 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         } else if (stream instanceof Cvc.MixerSourceOutput) {
             //for source outputs, only show the input section
             this._streams.push({id: id, type: "SourceOutput"});
-            if (this._recordingAppsNum++ === 0) {
-                this._inputVolumeSlider.actor.show()
-                this._selectInputDeviceItem.actor.show()
-            }
         }
     }
 
@@ -1603,11 +1598,6 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 if (stream.type === "SinkInput") {
                     if (this._outputApplicationsMenu.menu.numMenuItems === 0) {
                         this._outputApplicationsMenu.actor.hide();
-                    }
-                } else if (stream.type === "SourceOutput") {
-                    if(--this._recordingAppsNum === 0) {
-                        this._inputVolumeSlider.actor.hide()
-                        this._selectInputDeviceItem .actor.hide()
                     }
                 }
                 this._streams.splice(i, 1);
