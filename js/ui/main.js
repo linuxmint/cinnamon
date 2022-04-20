@@ -393,10 +393,7 @@ function start() {
                         let height = global.stage.height;
                         [alloc.min_size, alloc.natural_size] = [height, height];
                     });
-    global.reparentActor(global.background_actor, uiGroup);
     global.background_actor.hide();
-    global.reparentActor(global.bottom_window_group, uiGroup);
-    uiGroup.add_actor(deskletContainer.actor);
     global.reparentActor(global.window_group, uiGroup);
     global.reparentActor(global.overlay_group, uiGroup);
 
