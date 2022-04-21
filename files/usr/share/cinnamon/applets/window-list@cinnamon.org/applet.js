@@ -532,6 +532,7 @@ class AppMenuButton {
     destroy() {
         if (this._updateIconGeometryTimeoutId > 0) {
             Mainloop.source_remove(this._updateIconGeometryTimeoutId);
+            this._updateIconGeometryTimeoutId = 0;
         }
 
         this._signals.disconnectAllSignals();
