@@ -271,6 +271,7 @@ class AppMenuButton {
         this.labelVisiblePref = false;
         this._signals = new SignalManager.SignalManager();
         this.xid = metaWindow.get_xwindow();
+        this._flashTimer = null;
 
         if (this._applet.orientation == St.Side.TOP)
             this.actor.add_style_class_name('top');
@@ -530,6 +531,10 @@ class AppMenuButton {
     }
 
     destroy() {
+        if (this._flashTimer) {
+            Mainloop.source_remove(this._flashTimer);
+            this._flashTimer = null;
+        }
         if (this._updateIconGeometryTimeoutId > 0) {
             Mainloop.source_remove(this._updateIconGeometryTimeoutId);
             this._updateIconGeometryTimeoutId = 0;
@@ -794,22 +799,28 @@ class AppMenuButton {
     }
 
     _flashButton() {
-        if (!this._needsAttention)
+        if (!this._needsAttention || this._flashTimer)
             return;
 
         let counter = 0;
-        let sc = "window-list-item-demands-attention";
+        const sc = "window-list-item-demands-attention";
 
-        Mainloop.timeout_add(FLASH_INTERVAL, () => {
-            if (!this._needsAttention)
+        this._flashTimer = Mainloop.timeout_add(FLASH_INTERVAL, () => {
+            if (!this._needsAttention) {
+                this._flashTimer = null;
                 return false;
+            }
 
             if (this.actor.has_style_class_name(sc))
                 this.actor.remove_style_class_name(sc);
             else
                 this.actor.add_style_class_name(sc);
 
-            return counter++ < FLASH_MAX_COUNT;
+            const continueFlashing = (counter++ < FLASH_MAX_COUNT);
+            if (!continueFlashing) {
+                this._flashTimer = null;
+            }
+            return continueFlashing;
         });
     }
 };
