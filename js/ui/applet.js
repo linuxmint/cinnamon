@@ -173,7 +173,6 @@ var Applet = class Applet {
 
         this.instance_id = instance_id; // Needed by appletSettings
         this._uuid = null;      // Defined in gsettings, set by Cinnamon.
-        this._hook = null;      // Defined in metadata.json, set by appletManager
         this._meta = null;      // set by appletManager
         this._dragging = false;
         this._draggable = DND.makeDraggable(this.actor);
