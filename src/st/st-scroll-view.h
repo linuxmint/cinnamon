@@ -42,6 +42,14 @@ typedef struct _StScrollView          StScrollView;
 typedef struct _StScrollViewPrivate   StScrollViewPrivate;
 typedef struct _StScrollViewClass     StScrollViewClass;
 
+typedef enum
+{
+  ST_POLICY_ALWAYS,
+  ST_POLICY_AUTOMATIC,
+  ST_POLICY_NEVER,
+  ST_POLICY_EXTERNAL,
+} StPolicyType;
+
 /**
  * StScrollView:
  *
@@ -84,9 +92,16 @@ void          st_scroll_view_set_auto_scrolling (StScrollView *scroll,
                                                   gboolean      enabled);
 gboolean      st_scroll_view_get_auto_scrolling (StScrollView *scroll);
 
+void          st_scroll_view_set_overlay_scrollbars (StScrollView *scroll,
+                                                     gboolean      enabled);
+gboolean      st_scroll_view_get_overlay_scrollbars (StScrollView *scroll);
+
 void          st_scroll_view_set_policy          (StScrollView   *scroll,
-                                                  GtkPolicyType   hscroll,
-                                                  GtkPolicyType   vscroll);
+                                                  StPolicyType    hscroll,
+                                                  StPolicyType    vscroll);
+void          st_scroll_view_update_fade_effect  (StScrollView *scroll,
+                                                  float vfade_offset,
+                                                  float hfade_offset);
 
 G_END_DECLS
 

@@ -50,14 +50,16 @@
  *
  * The second simplification that we make that allows us to implement
  * a straighforward height-for-width negotiation without multiple
- * allocate passes is that when the vertical scrollbar policy is
- * AUTO, we always reserve space for the vertical scrollbar in the
+ * allocate passes is that when the scrollbar policy is
+ * AUTO, we always reserve space for the scrollbar in the
  * reported minimum and natural size.
  *
  * See https://bugzilla.gnome.org/show_bug.cgi?id=611740 for a more
  * detailed description of the considerations involved.
  */
 
+#include "st-enum-types.h"
+#include "st-private.h"
 #include "st-scroll-view.h"
 #include "st-scroll-bar.h"
 #include "st-scrollable.h"
@@ -95,8 +97,8 @@ struct _StScrollViewPrivate
   ClutterActor *vscroll;
   ClutterInputDevice *mouse_pointer;
 
-  GtkPolicyType hscrollbar_policy;
-  GtkPolicyType vscrollbar_policy;
+  StPolicyType hscrollbar_policy;
+  StPolicyType vscrollbar_policy;
 
   gfloat        row_size;
   gfloat        column_size;
@@ -104,11 +106,12 @@ struct _StScrollViewPrivate
   GSettings *settings;
   gint setting_connect_id;
 
-  StScrollViewFade *vfade_effect;
+  StScrollViewFade *fade_effect;
 
   guint         row_size_set : 1;
   guint         column_size_set : 1;
   guint         mouse_scroll : 1;
+  guint         overlay_scrollbars : 1;
   guint         hscrollbar_visible : 1;
   guint         vscrollbar_visible : 1;
   guint         auto_scroll : 1;
@@ -130,8 +133,13 @@ enum {
   PROP_HSCROLLBAR_VISIBLE,
   PROP_VSCROLLBAR_VISIBLE,
   PROP_MOUSE_SCROLL,
-  PROP_AUTO_SCROLL
+  PROP_OVERLAY_SCROLLBARS,
+  PROP_AUTO_SCROLL,
+
+  N_PROPS
 };
+
+static GParamSpec *props[N_PROPS] = { NULL, };
 
 static void
 st_scroll_view_get_property (GObject    *object,
@@ -164,6 +172,9 @@ st_scroll_view_get_property (GObject    *object,
     case PROP_MOUSE_SCROLL:
       g_value_set_boolean (value, priv->mouse_scroll);
       break;
+    case PROP_OVERLAY_SCROLLBARS:
+      g_value_set_boolean (value, priv->overlay_scrollbars);
+      break;
     case PROP_AUTO_SCROLL:
       g_value_set_boolean (value, priv->auto_scroll);
       break;
@@ -173,42 +184,47 @@ st_scroll_view_get_property (GObject    *object,
 }
 
 /**
- * st_scroll_view_update_vfade_effect:
- * @self: a #StScrollView
- * @fade_offset: The length of the fade effect, in pixels.
+ * st_scroll_view_update_fade_effect:
+ * @scroll: a #StScrollView
+ * @vfade_offset: The length of the veritcal fade effect, in pixels.
+ * @hfade_offset: The length of the horizontal fade effect, in pixels.
  *
  * Sets the height of the fade area area in pixels. A value of 0
  * disables the effect.
  */
-static void
-st_scroll_view_update_vfade_effect (StScrollView *self,
-                                    float fade_offset)
+void
+st_scroll_view_update_fade_effect (StScrollView *scroll,
+                                   float vfade_offset,
+                                   float hfade_offset)
 {
-  StScrollViewPrivate *priv = ST_SCROLL_VIEW (self)->priv;
+  StScrollViewPrivate *priv = ST_SCROLL_VIEW (scroll)->priv;
 
   /* A fade amount of more than 0 enables the effect. */
-  if (fade_offset > 0.)
+  if (vfade_offset > 0. || hfade_offset > 0.)
     {
-      if (priv->vfade_effect == NULL) {
-        priv->vfade_effect = g_object_new (ST_TYPE_SCROLL_VIEW_FADE, NULL);
+      if (priv->fade_effect == NULL) {
+        priv->fade_effect = g_object_new (ST_TYPE_SCROLL_VIEW_FADE, NULL);
 
-        clutter_actor_add_effect_with_name (CLUTTER_ACTOR (self), "vfade",
-                                            CLUTTER_EFFECT (priv->vfade_effect));
+        clutter_actor_add_effect_with_name (CLUTTER_ACTOR (scroll), "fade",
+                                            CLUTTER_EFFECT (priv->fade_effect));
       }
 
-      g_object_set (priv->vfade_effect,
-                    "vfade-offset", fade_offset,
+      g_object_set (priv->fade_effect,
+                    "vfade-offset", vfade_offset,
+                    NULL);
+      g_object_set (priv->fade_effect,
+                    "hfade-offset", hfade_offset,
                     NULL);
     }
    else
     {
-      if (priv->vfade_effect != NULL) {
-        clutter_actor_remove_effect (CLUTTER_ACTOR (self), CLUTTER_EFFECT (priv->vfade_effect));
-        priv->vfade_effect = NULL;
+      if (priv->fade_effect != NULL) {
+        clutter_actor_remove_effect (CLUTTER_ACTOR (scroll), CLUTTER_EFFECT (priv->fade_effect));
+        priv->fade_effect = NULL;
       }
     }
 
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (self));
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (scroll));
 }
 
 static gboolean
@@ -353,6 +369,10 @@ st_scroll_view_set_property (GObject      *object,
       st_scroll_view_set_mouse_scrolling (self,
                                           g_value_get_boolean (value));
       break;
+    case PROP_OVERLAY_SCROLLBARS:
+      st_scroll_view_set_overlay_scrollbars (self,
+                                             g_value_get_boolean (value));
+      break;
     case PROP_HSCROLLBAR_POLICY:
       st_scroll_view_set_policy (self,
                                  g_value_get_enum (value),
@@ -377,17 +397,14 @@ st_scroll_view_dispose (GObject *object)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (object)->priv;
 
-  if (priv->vfade_effect)
+  if (priv->fade_effect)
     {
-      clutter_actor_remove_effect (CLUTTER_ACTOR (object), CLUTTER_EFFECT (priv->vfade_effect));
-      priv->vfade_effect = NULL;
+      clutter_actor_remove_effect (CLUTTER_ACTOR (object), CLUTTER_EFFECT (priv->fade_effect));
+      priv->fade_effect = NULL;
     }
 
-  if (priv->vscroll)
-    clutter_actor_destroy (priv->vscroll);
-
-  if (priv->hscroll)
-    clutter_actor_destroy (priv->hscroll);
+  g_clear_pointer (&priv->vscroll, clutter_actor_destroy);
+  g_clear_pointer (&priv->hscroll, clutter_actor_destroy);
 
   /* For most reliable freeing of memory, an object with signals
    * like StAdjustment should be explicitly disposed. Since we own
@@ -421,7 +438,8 @@ st_scroll_view_dispose (GObject *object)
 }
 
 static void
-st_scroll_view_paint (ClutterActor *actor, ClutterPaintContext *paint_context)
+st_scroll_view_paint (ClutterActor        *actor,
+                      ClutterPaintContext *paint_context)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (actor)->priv;
 
@@ -450,6 +468,13 @@ st_scroll_view_pick (ClutterActor       *actor,
     clutter_actor_pick (priv->hscroll, pick_context);
   if (priv->vscrollbar_visible)
     clutter_actor_pick (priv->vscroll, pick_context);
+}
+
+static gboolean
+st_scroll_view_get_paint_volume (ClutterActor       *actor,
+                                 ClutterPaintVolume *volume)
+{
+  return clutter_paint_volume_set_from_allocation (volume, actor);
 }
 
 static double
@@ -496,14 +521,14 @@ st_scroll_view_get_preferred_width (ClutterActor *actor,
                                     gfloat       *natural_width_p)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (actor)->priv;
-  StThemeNode *theme_node;
+  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
+  gboolean account_for_vscrollbar = FALSE;
   gfloat min_width = 0, natural_width;
   gfloat child_min_width, child_natural_width;
 
   if (!priv->child)
     return;
 
-  theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
   st_theme_node_adjust_for_height (theme_node, &for_height);
 
   clutter_actor_get_preferred_width (priv->child, -1,
@@ -513,12 +538,12 @@ st_scroll_view_get_preferred_width (ClutterActor *actor,
 
   switch (priv->hscrollbar_policy)
     {
-    case GTK_POLICY_NEVER:
+    case ST_POLICY_NEVER:
       min_width = child_min_width;
       break;
-    case GTK_POLICY_ALWAYS:
-    case GTK_POLICY_AUTOMATIC:
-    case GTK_POLICY_EXTERNAL:
+    case ST_POLICY_ALWAYS:
+    case ST_POLICY_AUTOMATIC:
+    case ST_POLICY_EXTERNAL:
       /* Should theoretically use the min width of the hscrollbar,
        * but that's not cleanly defined at the moment */
       min_width = 0;
@@ -528,7 +553,28 @@ st_scroll_view_get_preferred_width (ClutterActor *actor,
       break;
     }
 
-  if (priv->vscrollbar_policy != GTK_POLICY_NEVER)
+  switch (priv->vscrollbar_policy)
+    {
+    case ST_POLICY_NEVER:
+    case ST_POLICY_EXTERNAL:
+      account_for_vscrollbar = FALSE;
+      break;
+    case ST_POLICY_ALWAYS:
+      account_for_vscrollbar = !priv->overlay_scrollbars;
+      break;
+    case ST_POLICY_AUTOMATIC:
+      /* For automatic scrollbars, we always request space for the vertical
+       * scrollbar; we won't know whether we actually need one until our
+       * height is assigned in allocate().
+       */
+      account_for_vscrollbar = !priv->overlay_scrollbars;
+      break;
+    default:
+      g_warn_if_reached();
+      break;
+    }
+
+  if (account_for_vscrollbar)
     {
       float sb_width = get_scrollbar_width (ST_SCROLL_VIEW (actor), for_height);
 
@@ -552,7 +598,7 @@ st_scroll_view_get_preferred_height (ClutterActor *actor,
                                      gfloat       *natural_height_p)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (actor)->priv;
-  StThemeNode *theme_node = NULL;
+  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
   gboolean account_for_hscrollbar = FALSE;
   gfloat min_height = 0, natural_height;
   gfloat child_min_height, child_natural_height;
@@ -561,8 +607,6 @@ st_scroll_view_get_preferred_height (ClutterActor *actor,
 
   if (!priv->child)
     return;
-
-  theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
 
   st_theme_node_adjust_for_width (theme_node, &for_width);
 
@@ -576,11 +620,11 @@ st_scroll_view_get_preferred_height (ClutterActor *actor,
 
   switch (priv->vscrollbar_policy)
     {
-    case GTK_POLICY_NEVER:
-    case GTK_POLICY_EXTERNAL:
+    case ST_POLICY_NEVER:
+    case ST_POLICY_EXTERNAL:
       break;
-    case GTK_POLICY_ALWAYS:
-    case GTK_POLICY_AUTOMATIC:
+    case ST_POLICY_ALWAYS:
+    case ST_POLICY_AUTOMATIC:
       /* We've requested space for the scrollbar, subtract it back out */
       for_width -= sb_width;
       break;
@@ -591,15 +635,19 @@ st_scroll_view_get_preferred_height (ClutterActor *actor,
 
   switch (priv->hscrollbar_policy)
     {
-    case GTK_POLICY_NEVER:
-    case GTK_POLICY_EXTERNAL:
+    case ST_POLICY_NEVER:
+    case ST_POLICY_EXTERNAL:
       account_for_hscrollbar = FALSE;
       break;
-    case GTK_POLICY_ALWAYS:
-      account_for_hscrollbar = TRUE;
+    case ST_POLICY_ALWAYS:
+      account_for_hscrollbar = !priv->overlay_scrollbars;
       break;
-    case GTK_POLICY_AUTOMATIC:
-      account_for_hscrollbar = for_width < child_min_width;
+    case ST_POLICY_AUTOMATIC:
+      /* For automatic scrollbars, we always request space for the horizontal
+       * scrollbar; we won't know whether we actually need one until our
+       * width is assigned in allocate().
+       */
+      account_for_hscrollbar = !priv->overlay_scrollbars;
       break;
     default:
       g_warn_if_reached();
@@ -613,12 +661,12 @@ st_scroll_view_get_preferred_height (ClutterActor *actor,
 
   switch (priv->vscrollbar_policy)
     {
-    case GTK_POLICY_NEVER:
+    case ST_POLICY_NEVER:
       min_height = child_min_height;
       break;
-    case GTK_POLICY_ALWAYS:
-    case GTK_POLICY_AUTOMATIC:
-    case GTK_POLICY_EXTERNAL:
+    case ST_POLICY_ALWAYS:
+    case ST_POLICY_AUTOMATIC:
+    case ST_POLICY_EXTERNAL:
       /* Should theoretically use the min height of the vscrollbar,
        * but that's not cleanly defined at the moment */
       min_height = 0;
@@ -689,9 +737,9 @@ st_scroll_view_allocate (ClutterActor          *actor,
       clutter_actor_get_preferred_width (priv->child, -1,
                                          &child_min_width, NULL);
 
-      if (priv->vscrollbar_policy == GTK_POLICY_AUTOMATIC)
+      if (priv->vscrollbar_policy == ST_POLICY_AUTOMATIC)
         {
-          if (priv->hscrollbar_policy == GTK_POLICY_AUTOMATIC)
+          if (priv->hscrollbar_policy == ST_POLICY_AUTOMATIC)
             {
               /* Pass one, try without a vertical scrollbar */
               clutter_actor_get_preferred_height (priv->child, avail_width, &child_min_height, NULL);
@@ -709,7 +757,7 @@ st_scroll_view_allocate (ClutterActor          *actor,
             }
           else
             {
-              hscrollbar_visible = priv->hscrollbar_policy != GTK_POLICY_NEVER;
+              hscrollbar_visible = priv->hscrollbar_policy == ST_POLICY_ALWAYS;
 
               /* try without a vertical scrollbar */
               clutter_actor_get_preferred_height (priv->child, avail_width, &child_min_height, NULL);
@@ -718,18 +766,20 @@ st_scroll_view_allocate (ClutterActor          *actor,
         }
       else
         {
-          vscrollbar_visible = priv->vscrollbar_policy != GTK_POLICY_NEVER;
+          vscrollbar_visible = priv->vscrollbar_policy == ST_POLICY_ALWAYS;
 
-          if (priv->hscrollbar_policy == GTK_POLICY_AUTOMATIC)
+          if (priv->hscrollbar_policy == ST_POLICY_AUTOMATIC)
             hscrollbar_visible = child_min_width > avail_height - (vscrollbar_visible ? 0 : sb_width);
           else
-            hscrollbar_visible = priv->hscrollbar_policy != GTK_POLICY_NEVER;
+            hscrollbar_visible = priv->hscrollbar_policy == ST_POLICY_ALWAYS;
         }
     }
   else
     {
-      hscrollbar_visible = priv->hscrollbar_policy != GTK_POLICY_NEVER;
-      vscrollbar_visible = priv->vscrollbar_policy != GTK_POLICY_NEVER;
+      hscrollbar_visible = priv->hscrollbar_policy != ST_POLICY_NEVER &&
+                           priv->hscrollbar_policy != ST_POLICY_EXTERNAL;
+      vscrollbar_visible = priv->vscrollbar_policy != ST_POLICY_NEVER &&
+                           priv->vscrollbar_policy != ST_POLICY_EXTERNAL;
     }
 
   /* Whether or not we show the scrollbars, if the scrollbars are visible
@@ -740,53 +790,54 @@ st_scroll_view_allocate (ClutterActor          *actor,
    */
 
   /* Vertical scrollbar */
-  if (clutter_actor_is_visible (priv->vscroll))
+  if (clutter_actor_get_text_direction (actor) == CLUTTER_TEXT_DIRECTION_RTL)
     {
-      if (st_widget_get_direction (ST_WIDGET (actor)) == ST_TEXT_DIRECTION_RTL)
-        {
-          child_box.x1 = content_box.x1;
-          child_box.x2 = content_box.x1 + sb_width;
-        }
-      else
-        {
-          child_box.x1 = content_box.x2 - sb_width;
-          child_box.x2 = content_box.x2;
-        }
-      child_box.y1 = content_box.y1;
-      child_box.y2 = content_box.y2 - (hscrollbar_visible ? sb_height : 0);
-
-      clutter_actor_allocate (priv->vscroll, &child_box, flags);
+      child_box.x1 = content_box.x1;
+      child_box.x2 = content_box.x1 + sb_width;
     }
+  else
+    {
+      child_box.x1 = content_box.x2 - sb_width;
+      child_box.x2 = content_box.x2;
+    }
+  child_box.y1 = content_box.y1;
+  child_box.y2 = content_box.y2 - (hscrollbar_visible ? sb_height : 0);
+
+  clutter_actor_allocate (priv->vscroll, &child_box, flags);
 
   /* Horizontal scrollbar */
-  if (clutter_actor_is_visible (priv->hscroll))
+  if (clutter_actor_get_text_direction (actor) == CLUTTER_TEXT_DIRECTION_RTL)
     {
-      if (st_widget_get_direction (ST_WIDGET (actor)) == ST_TEXT_DIRECTION_RTL)
-        {
-          child_box.x1 = content_box.x1 + (vscrollbar_visible ? sb_width : 0);
-          child_box.x2 = content_box.x2;
-        }
-      else
-        {
-          child_box.x1 = content_box.x1;
-          child_box.x2 = content_box.x2 - (vscrollbar_visible ? sb_width : 0);
-        }
-      child_box.y1 = content_box.y2 - sb_height;
-      child_box.y2 = content_box.y2;
-
-      clutter_actor_allocate (priv->hscroll, &child_box, flags);
+      child_box.x1 = content_box.x1 + (vscrollbar_visible ? sb_width : 0);
+      child_box.x2 = content_box.x2;
     }
+  else
+    {
+      child_box.x1 = content_box.x1;
+      child_box.x2 = content_box.x2 - (vscrollbar_visible ? sb_width : 0);
+    }
+  child_box.y1 = content_box.y2 - sb_height;
+  child_box.y2 = content_box.y2;
 
-  /* Now fold visibility into the scrollbar sizes to simplify the rest
-   * of the computations.
+  clutter_actor_allocate (priv->hscroll, &child_box, flags);
+
+  /* In case the scrollbar policy is NEVER or EXTERNAL or scrollbars
+   * should be overlayed, we don't trim the content box allocation by
+   * the scrollbar size.
+   * Fold this into the scrollbar sizes to simplify the rest of the
+   * computations.
    */
-  if (!hscrollbar_visible)
+  if (priv->hscrollbar_policy == ST_POLICY_NEVER ||
+      priv->hscrollbar_policy == ST_POLICY_EXTERNAL ||
+      priv->overlay_scrollbars)
     sb_height = 0;
-  if (!vscrollbar_visible)
+  if (priv->vscrollbar_policy == ST_POLICY_NEVER ||
+      priv->vscrollbar_policy == ST_POLICY_EXTERNAL ||
+      priv->overlay_scrollbars)
     sb_width = 0;
 
   /* Child */
-  if (st_widget_get_direction (ST_WIDGET (actor)) == ST_TEXT_DIRECTION_RTL)
+  if (clutter_actor_get_text_direction (actor) == CLUTTER_TEXT_DIRECTION_RTL)
     {
       child_box.x1 = content_box.x1 + sb_width;
       child_box.x2 = content_box.x2;
@@ -806,7 +857,8 @@ st_scroll_view_allocate (ClutterActor          *actor,
     {
       g_object_freeze_notify (G_OBJECT (actor));
       priv->hscrollbar_visible = hscrollbar_visible;
-      g_object_notify (G_OBJECT (actor), "hscrollbar-visible");
+      g_object_notify_by_pspec (G_OBJECT (actor),
+                                props[PROP_HSCROLLBAR_VISIBLE]);
       g_object_thaw_notify (G_OBJECT (actor));
     }
 
@@ -814,10 +866,36 @@ st_scroll_view_allocate (ClutterActor          *actor,
     {
       g_object_freeze_notify (G_OBJECT (actor));
       priv->vscrollbar_visible = vscrollbar_visible;
-      g_object_notify (G_OBJECT (actor), "vscrollbar-visible");
+      g_object_notify_by_pspec (G_OBJECT (actor),
+                                props[PROP_VSCROLLBAR_VISIBLE]);
       g_object_thaw_notify (G_OBJECT (actor));
     }
 
+}
+
+static void
+adjust_with_direction (StAdjustment           *adj,
+                       ClutterScrollDirection  direction)
+{
+  gdouble delta;
+
+  switch (direction)
+    {
+    case CLUTTER_SCROLL_UP:
+    case CLUTTER_SCROLL_LEFT:
+      delta = -1.0;
+      break;
+    case CLUTTER_SCROLL_RIGHT:
+    case CLUTTER_SCROLL_DOWN:
+      delta = 1.0;
+      break;
+    case CLUTTER_SCROLL_SMOOTH:
+    default:
+      g_assert_not_reached ();
+      break;
+    }
+
+  st_adjustment_adjust_for_scroll_event (adj, delta);
 }
 
 static void
@@ -827,14 +905,17 @@ st_scroll_view_style_changed (StWidget *widget)
   StScrollViewPrivate *priv = self->priv;
 
   StThemeNode *theme_node = st_widget_get_theme_node (widget);
-  gdouble fade_offset = st_theme_node_get_length (theme_node, "-st-vfade-offset");
 
-  gboolean vfade_enabled = g_settings_get_boolean (priv->settings, "enable-vfade");
-
-  if (!vfade_enabled)
-    fade_offset = 0;
-
-  st_scroll_view_update_vfade_effect (self, fade_offset);
+  if (!g_settings_get_boolean (priv->settings, "enable-vfade"))
+    {
+      st_scroll_view_update_fade_effect (self, 0.0, 0.0);
+    }
+  else
+    {
+      gdouble vfade_offset = st_theme_node_get_length (theme_node, "-st-vfade-offset");
+      gdouble hfade_offset = st_theme_node_get_length (theme_node, "-st-hfade-offset");
+      st_scroll_view_update_fade_effect (self, vfade_offset, hfade_offset);
+    }
 
   st_widget_style_changed (ST_WIDGET (priv->hscroll));
   st_widget_style_changed (ST_WIDGET (priv->vscroll));
@@ -856,67 +937,36 @@ st_scroll_view_scroll_event (ClutterActor       *self,
                              ClutterScrollEvent *event)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (self)->priv;
-  gdouble value, step, hvalue, vvalue, delta_x, delta_y;
 
   /* don't handle scroll events if requested not to */
   if (!priv->mouse_scroll)
     return FALSE;
 
+  if (clutter_event_is_pointer_emulated ((ClutterEvent *) event))
+    return TRUE;
+
   switch (event->direction)
     {
     case CLUTTER_SCROLL_SMOOTH:
-      clutter_event_get_scroll_delta ((ClutterEvent *)event,
-                                      &delta_x, &delta_y);
-      g_object_get (priv->hadjustment,
-                    "value", &hvalue,
-                    NULL);
-      g_object_get (priv->vadjustment,
-                    "value", &vvalue,
-                    NULL);
+      {
+        gdouble delta_x, delta_y;
+        clutter_event_get_scroll_delta ((ClutterEvent *)event, &delta_x, &delta_y);
+        st_adjustment_adjust_for_scroll_event (priv->hadjustment, delta_x);
+        st_adjustment_adjust_for_scroll_event (priv->vadjustment, delta_y);
+      }
       break;
     case CLUTTER_SCROLL_UP:
     case CLUTTER_SCROLL_DOWN:
-      g_object_get (priv->vadjustment,
-                    "step-increment", &step,
-                    "value", &value,
-                    NULL);
+      adjust_with_direction (priv->vadjustment, event->direction);
       break;
     case CLUTTER_SCROLL_LEFT:
     case CLUTTER_SCROLL_RIGHT:
-      g_object_get (priv->hadjustment,
-                    "step-increment", &step,
-                    "value", &value,
-                    NULL);
+      adjust_with_direction (priv->hadjustment, event->direction);
       break;
     default:
       g_warn_if_reached();
       break;
     }
-
-  switch (event->direction)
-    {
-    case CLUTTER_SCROLL_SMOOTH:
-      st_adjustment_set_value (priv->hadjustment, hvalue + delta_x);
-      st_adjustment_set_value (priv->vadjustment, vvalue + delta_y);
-      break;
-    case CLUTTER_SCROLL_UP:
-      st_adjustment_set_value (priv->vadjustment, value - step);
-      break;
-    case CLUTTER_SCROLL_DOWN:
-      st_adjustment_set_value (priv->vadjustment, value + step);
-      break;
-    case CLUTTER_SCROLL_LEFT:
-      st_adjustment_set_value (priv->hadjustment, value - step);
-      break;
-    case CLUTTER_SCROLL_RIGHT:
-      st_adjustment_set_value (priv->hadjustment, value + step);
-      break;
-    default:
-      g_warn_if_reached();
-      break;
-    }
-
-  clutter_actor_queue_redraw (self);
 
   return TRUE;
 }
@@ -924,7 +974,6 @@ st_scroll_view_scroll_event (ClutterActor       *self,
 static void
 st_scroll_view_class_init (StScrollViewClass *klass)
 {
-  GParamSpec *pspec;
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   StWidgetClass *widget_class = ST_WIDGET_CLASS (klass);
@@ -935,6 +984,7 @@ st_scroll_view_class_init (StScrollViewClass *klass)
 
   actor_class->paint = st_scroll_view_paint;
   actor_class->pick = st_scroll_view_pick;
+  actor_class->get_paint_volume = st_scroll_view_get_paint_volume;
   actor_class->get_preferred_width = st_scroll_view_get_preferred_width;
   actor_class->get_preferred_height = st_scroll_view_get_preferred_height;
   actor_class->allocate = st_scroll_view_allocate;
@@ -942,71 +992,72 @@ st_scroll_view_class_init (StScrollViewClass *klass)
 
   widget_class->style_changed = st_scroll_view_style_changed;
 
-  g_object_class_install_property (object_class,
-                                   PROP_HSCROLL,
-                                   g_param_spec_object ("hscroll",
-                                                        "StScrollBar",
-                                                        "Horizontal scroll indicator",
-                                                        ST_TYPE_SCROLL_BAR,
-                                                        G_PARAM_READABLE));
+  props[PROP_HSCROLL] =
+    g_param_spec_object ("hscroll",
+                         "StScrollBar",
+                         "Horizontal scroll indicator",
+                         ST_TYPE_SCROLL_BAR,
+                         ST_PARAM_READABLE);
 
-  g_object_class_install_property (object_class,
-                                   PROP_VSCROLL,
-                                   g_param_spec_object ("vscroll",
-                                                        "StScrollBar",
-                                                        "Vertical scroll indicator",
-                                                        ST_TYPE_SCROLL_BAR,
-                                                        G_PARAM_READABLE));
+  props[PROP_VSCROLL] =
+    g_param_spec_object ("vscroll",
+                         "StScrollBar",
+                         "Vertical scroll indicator",
+                         ST_TYPE_SCROLL_BAR,
+                         ST_PARAM_READABLE);
 
+  props[PROP_VSCROLLBAR_POLICY] =
+    g_param_spec_enum ("vscrollbar-policy",
+                       "Vertical Scrollbar Policy",
+                       "When the vertical scrollbar is displayed",
+                       ST_TYPE_POLICY_TYPE,
+                       ST_POLICY_AUTOMATIC,
+                       ST_PARAM_READWRITE);
 
-  pspec = g_param_spec_enum ("vscrollbar-policy",
-                             "Vertical Scrollbar Policy",
-                             "When the vertical scrollbar is displayed",
-                             GTK_TYPE_POLICY_TYPE,
-                             GTK_POLICY_AUTOMATIC,
-                             G_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_VSCROLLBAR_POLICY, pspec);
+  props[PROP_HSCROLLBAR_POLICY] =
+    g_param_spec_enum ("hscrollbar-policy",
+                       "Horizontal Scrollbar Policy",
+                       "When the horizontal scrollbar is displayed",
+                       ST_TYPE_POLICY_TYPE,
+                       ST_POLICY_AUTOMATIC,
+                       ST_PARAM_READWRITE);
 
-  pspec = g_param_spec_enum ("hscrollbar-policy",
-                             "Horizontal Scrollbar Policy",
-                             "When the horizontal scrollbar is displayed",
-                             GTK_TYPE_POLICY_TYPE,
-                             GTK_POLICY_AUTOMATIC,
-                             G_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_HSCROLLBAR_POLICY, pspec);
+  props[PROP_HSCROLLBAR_VISIBLE] =
+    g_param_spec_boolean ("hscrollbar-visible",
+                          "Horizontal Scrollbar Visibility",
+                          "Whether the horizontal scrollbar is visible",
+                          TRUE,
+                          ST_PARAM_READABLE);
 
-  pspec = g_param_spec_boolean ("hscrollbar-visible",
-                                "Horizontal Scrollbar Visibility",
-                                "Whether the horizontal scrollbar is visible",
-                                TRUE,
-                                G_PARAM_READABLE);
-  g_object_class_install_property (object_class, PROP_HSCROLLBAR_VISIBLE, pspec);
+  props[PROP_VSCROLLBAR_VISIBLE] =
+    g_param_spec_boolean ("vscrollbar-visible",
+                          "Vertical Scrollbar Visibility",
+                          "Whether the vertical scrollbar is visible",
+                          TRUE,
+                          ST_PARAM_READABLE);
 
-  pspec = g_param_spec_boolean ("vscrollbar-visible",
-                                "Vertical Scrollbar Visibility",
-                                "Whether the vertical scrollbar is visible",
-                                TRUE,
-                                G_PARAM_READABLE);
-  g_object_class_install_property (object_class, PROP_VSCROLLBAR_VISIBLE, pspec);
+  props[PROP_MOUSE_SCROLL] =
+    g_param_spec_boolean ("enable-mouse-scrolling",
+                          "Enable Mouse Scrolling",
+                          "Enable automatic mouse wheel scrolling",
+                          TRUE,
+                          ST_PARAM_READWRITE);
 
-  pspec = g_param_spec_boolean ("enable-mouse-scrolling",
-                                "Enable Mouse Scrolling",
-                                "Enable automatic mouse wheel scrolling",
-                                TRUE,
-                                G_PARAM_READWRITE);
-  g_object_class_install_property (object_class,
-                                   PROP_MOUSE_SCROLL,
-                                   pspec);
+  props[PROP_OVERLAY_SCROLLBARS] =
+    g_param_spec_boolean ("overlay-scrollbars",
+                          "Use Overlay Scrollbars",
+                          "Overlay scrollbars over the content",
+                          FALSE,
+                          ST_PARAM_READWRITE);
 
-  pspec = g_param_spec_boolean ("enable-auto-scrolling",
-                                "Enable Auto Scrolling",
-                                "Enable automatic scrolling",
-                                FALSE,
-                                G_PARAM_READWRITE);
-  g_object_class_install_property (object_class,
-                                   PROP_AUTO_SCROLL,
-                                   pspec);
+  props[PROP_AUTO_SCROLL] =
+    g_param_spec_boolean ("enable-auto-scrolling",
+                          "Enable auto scrolling",
+                          "Enable automatic scrolling",
+                          FALSE,
+                          ST_PARAM_READWRITE);
 
+  g_object_class_install_properties (object_class, N_PROPS, props);
 }
 
 static void
@@ -1017,8 +1068,8 @@ st_scroll_view_init (StScrollView *self)
   ClutterSeat *seat = clutter_backend_get_default_seat (clutter_get_default_backend ());
   ClutterInputDevice *device = clutter_seat_get_pointer (seat);
 
-  priv->hscrollbar_policy = GTK_POLICY_AUTOMATIC;
-  priv->vscrollbar_policy = GTK_POLICY_AUTOMATIC;
+  priv->hscrollbar_policy = ST_POLICY_AUTOMATIC;
+  priv->vscrollbar_policy = ST_POLICY_AUTOMATIC;
 
   priv->hadjustment = g_object_new (ST_TYPE_ADJUSTMENT, NULL);
   priv->hscroll = g_object_new (ST_TYPE_SCROLL_BAR,
@@ -1042,7 +1093,7 @@ st_scroll_view_init (StScrollView *self)
   priv->auto_scroll = FALSE;
   priv->auto_scroll_timeout_id = 0;
   priv->mouse_pointer = device;
-  priv->settings = g_settings_new("org.cinnamon");
+  priv->settings = g_settings_new ("org.cinnamon");
   priv->setting_connect_id = g_signal_connect (priv->settings, "changed::enable-vfade", G_CALLBACK (vfade_setting_changed_cb), self);
 }
 
@@ -1130,7 +1181,7 @@ st_scroll_view_new (void)
  *
  * Gets the horizontal scrollbar of the scrollbiew
  *
- * Return value: (transfer none): the horizontal #StScrollbar
+ * Return value: (transfer none): the horizontal #StScrollBar
  */
 ClutterActor *
 st_scroll_view_get_hscroll_bar (StScrollView *scroll)
@@ -1146,7 +1197,7 @@ st_scroll_view_get_hscroll_bar (StScrollView *scroll)
  *
  * Gets the vertical scrollbar of the scrollbiew
  *
- * Return value: (transfer none): the vertical #StScrollbar
+ * Return value: (transfer none): the vertical #StScrollBar
  */
 ClutterActor *
 st_scroll_view_get_vscroll_bar (StScrollView *scroll)
@@ -1260,9 +1311,16 @@ st_scroll_view_get_mouse_scrolling (StScrollView *scroll)
   return priv->mouse_scroll;
 }
 
+/**
+ * st_scroll_view_set_overlay_scrollbars:
+ * @scroll: A #StScrollView
+ * @enabled: Whether to enable overlay scrollbars
+ *
+ * Sets whether scrollbars are painted on top of the content.
+ */
 void
-st_scroll_view_set_auto_scrolling (StScrollView *scroll,
-                                   gboolean      enabled)
+st_scroll_view_set_overlay_scrollbars (StScrollView *scroll,
+                                       gboolean      enabled)
 {
   StScrollViewPrivate *priv;
 
@@ -1270,27 +1328,23 @@ st_scroll_view_set_auto_scrolling (StScrollView *scroll,
 
   priv = ST_SCROLL_VIEW (scroll)->priv;
 
-  if (priv->auto_scroll != enabled)
+  if (priv->overlay_scrollbars != enabled)
     {
-      priv->auto_scroll = enabled;
-
-      /* make sure we can receive mouse wheel events */
-      if (enabled) {
-        clutter_actor_set_reactive ((ClutterActor *) scroll, TRUE);
-        g_signal_connect (scroll, "motion-event",
-                          G_CALLBACK (motion_event_cb), scroll);
-      } else {
-        g_signal_handlers_disconnect_by_func (scroll, motion_event_cb, scroll);
-        if (priv->auto_scroll_timeout_id > 0) {
-            g_source_remove (priv->auto_scroll_timeout_id);
-            priv->auto_scroll_timeout_id = 0;
-        }
-      }
+      priv->overlay_scrollbars = enabled;
+      g_object_notify_by_pspec (G_OBJECT (scroll),
+                                props[PROP_OVERLAY_SCROLLBARS]);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (scroll));
     }
 }
 
+/**
+ * st_scroll_view_get_overlay_scrollbars:
+ * @scroll: A #StScrollView
+ *
+ * Gets the value set by st_scroll_view_set_overlay_scrollbars().
+ */
 gboolean
-st_scroll_view_get_auto_scrolling (StScrollView *scroll)
+st_scroll_view_get_overlay_scrollbars (StScrollView *scroll)
 {
   StScrollViewPrivate *priv;
 
@@ -1298,7 +1352,7 @@ st_scroll_view_get_auto_scrolling (StScrollView *scroll)
 
   priv = ST_SCROLL_VIEW (scroll)->priv;
 
-  return priv->auto_scroll;
+  return priv->overlay_scrollbars;
 }
 
 /**
@@ -1311,8 +1365,8 @@ st_scroll_view_get_auto_scrolling (StScrollView *scroll)
  */
 void
 st_scroll_view_set_policy (StScrollView   *scroll,
-                           GtkPolicyType   hscroll,
-                           GtkPolicyType   vscroll)
+                           StPolicyType    hscroll,
+                           StPolicyType    vscroll)
 {
   StScrollViewPrivate *priv;
 
@@ -1328,16 +1382,63 @@ st_scroll_view_set_policy (StScrollView   *scroll,
   if (priv->hscrollbar_policy != hscroll)
     {
       priv->hscrollbar_policy = hscroll;
-      g_object_notify ((GObject *) scroll, "hscrollbar-policy");
+      g_object_notify_by_pspec ((GObject *) scroll,
+                                props[PROP_HSCROLLBAR_POLICY]);
     }
 
   if (priv->vscrollbar_policy != vscroll)
     {
       priv->vscrollbar_policy = vscroll;
-      g_object_notify ((GObject *) scroll, "vscrollbar-policy");
+      g_object_notify_by_pspec ((GObject *) scroll,
+                                props[PROP_VSCROLLBAR_POLICY]);
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (scroll));
 
   g_object_thaw_notify ((GObject *) scroll);
+}
+
+void
+st_scroll_view_set_auto_scrolling (StScrollView *scroll,
+                                   gboolean      enabled)
+{
+  StScrollViewPrivate *priv;
+
+  g_return_if_fail (ST_IS_SCROLL_VIEW (scroll));
+
+  priv = ST_SCROLL_VIEW (scroll)->priv;
+
+  if (priv->auto_scroll != enabled)
+    {
+      priv->auto_scroll = enabled;
+
+      /* make sure we can receive mouse wheel events */
+      if (enabled)
+        {
+          clutter_actor_set_reactive ((ClutterActor *) scroll, TRUE);
+          g_signal_connect (scroll, "motion-event",
+                            G_CALLBACK (motion_event_cb), scroll);
+        }
+      else
+        {
+          g_signal_handlers_disconnect_by_func (scroll, motion_event_cb, scroll);
+          if (priv->auto_scroll_timeout_id > 0)
+            {
+              g_source_remove (priv->auto_scroll_timeout_id);
+              priv->auto_scroll_timeout_id = 0;
+            }
+        }
+    }
+}
+
+gboolean
+st_scroll_view_get_auto_scrolling (StScrollView *scroll)
+{
+  StScrollViewPrivate *priv;
+
+  g_return_val_if_fail (ST_IS_SCROLL_VIEW (scroll), FALSE);
+
+  priv = ST_SCROLL_VIEW (scroll)->priv;
+
+  return priv->auto_scroll;
 }
