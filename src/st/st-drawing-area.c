@@ -33,7 +33,6 @@
  */
 
 #include "st-drawing-area.h"
-#include "st-cogl-wrapper.h"
 
 #include <cairo.h>
 
@@ -90,7 +89,11 @@ st_drawing_area_paint (ClutterActor *self, ClutterPaintContext *paint_context)
   if (priv->pipeline == NULL)
     {
       if (G_UNLIKELY (drawing_pipeline_template == NULL))
-        drawing_pipeline_template = cogl_pipeline_new (st_get_cogl_context());
+         {
+            CoglContext *ctx = clutter_backend_get_cogl_context (clutter_get_default_backend ());
+            drawing_pipeline_template = cogl_pipeline_new (ctx);
+         }
+
       priv->pipeline = cogl_pipeline_copy (drawing_pipeline_template);
     }
 
@@ -106,9 +109,9 @@ st_drawing_area_paint (ClutterActor *self, ClutterPaintContext *paint_context)
     {
       if (priv->texture == NULL)
         {
-          priv->texture = st_cogl_texture_new_with_size_wrapper (width, height,
-                                                                 COGL_TEXTURE_NONE,
-                                                                 CLUTTER_CAIRO_FORMAT_ARGB32);
+          priv->texture = cogl_texture_new_with_size (width, height,
+                                                      COGL_TEXTURE_NONE,
+                                                      CLUTTER_CAIRO_FORMAT_ARGB32);
           priv->needs_repaint = TRUE;
         }
 

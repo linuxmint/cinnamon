@@ -33,7 +33,6 @@ st_headers = [
     'st-viewport.h',
     'st-widget.h',
     'st-widget-accessible.h',
-    'st-cogl-wrapper.h',
 ]
 
 st_non_gir = [
@@ -106,7 +105,6 @@ st_gir_sources = [
     'st-box-layout-child.c',
     'st-button.c',
     'st-clipboard.c',
-    'st-cogl-wrapper.c',
     'st-drawing-area.c',
     'st-entry.c',
     'st-focus-manager.c',

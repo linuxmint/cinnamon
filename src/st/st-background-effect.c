@@ -1,5 +1,4 @@
 #include "st-background-effect.h"
-#include "st-cogl-wrapper.h"
 #define ST_BACKGROUND_EFFECT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), ST_TYPE_BACKGROUND_EFFECT, StBackgroundEffectClass))
 #define ST_IS_BACKGROUND_EFFECT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), ST_TYPE_BACKGROUND_EFFECT))
 #define ST_BACKGROUND_EFFECT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), ST_TYPE_BACKGROUND_EFFECT, StBackgroundEffectClass))
@@ -160,13 +159,13 @@ st_background_effect_pre_paint (ClutterEffect *effect)
                 self->bg_texture = NULL;
               }
 
-            self->bg_texture = st_cogl_texture_new_from_data_wrapper  (self->bg_width_i,
-                                                                       self->bg_height_i,
-                                                                       COGL_TEXTURE_NO_SLICING,
-                                                                       COGL_PIXEL_FORMAT_RGBA_8888_PRE,
-                                                                       COGL_PIXEL_FORMAT_RGBA_8888_PRE,
-                                                                       rowstride,
-                                                                       data);
+            self->bg_texture = st_cogl_texture_new_from_data (self->bg_width_i,
+                                                              self->bg_height_i,
+                                                              COGL_TEXTURE_NO_SLICING,
+                                                              COGL_PIXEL_FORMAT_RGBA_8888_PRE,
+                                                              COGL_PIXEL_FORMAT_RGBA_8888_PRE,
+                                                              rowstride,
+                                                              data);
 
             g_free (data);
 
@@ -235,9 +234,9 @@ st_background_effect_pre_paint (ClutterEffect *effect)
                   self->bg_sub_texture = NULL;
                 }
 
-              self->bg_sub_texture = st_cogl_texture_new_with_size_wrapper (self->bg_width_i, self->bg_height_i,
-                                                                            COGL_TEXTURE_NO_SLICING,
-                                                                            COGL_PIXEL_FORMAT_RGBA_8888_PRE);
+              self->bg_sub_texture = cogl_texture_new_with_size (self->bg_width_i, self->bg_height_i,
+                                                                 COGL_TEXTURE_NO_SLICING,
+                                                                 COGL_PIXEL_FORMAT_RGBA_8888_PRE);
 
               cogl_pipeline_set_layer_texture (self->pipeline0, 0, self->bg_texture);
 
@@ -425,9 +424,10 @@ st_background_effect_set_property (GObject      *gobject,
       file = g_file_new_for_path (g_strdup (self->bumpmap_location));
       if (g_file_query_exists (file, NULL))
         {
-          self->bg_bumpmap = st_cogl_texture_new_from_file_wrapper (self->bumpmap_location,
-                                                                    COGL_TEXTURE_NO_SLICING,
-                                                                    COGL_PIXEL_FORMAT_RGBA_8888_PRE);
+          self->bg_bumpmap = st_cogl_texture_new_from_file (self->bumpmap_location,
+                                                            COGL_TEXTURE_NO_SLICING,
+                                                            COGL_PIXEL_FORMAT_RGBA_8888_PRE,
+                                                            NULL);
         }
 
       g_object_unref (file);
@@ -675,9 +675,10 @@ st_background_effect_init (StBackgroundEffect *self)
 
   self->bumpmap_location = "/usr/share/cinnamon/bumpmaps/frost.png";
 
-  self->bg_bumpmap = st_cogl_texture_new_from_file_wrapper (self->bumpmap_location,
-                                                            COGL_TEXTURE_NO_SLICING,
-                                                            COGL_PIXEL_FORMAT_RGBA_8888_PRE);
+  self->bg_bumpmap = st_cogl_texture_new_from_file (self->bumpmap_location,
+                                                    COGL_TEXTURE_NO_SLICING,
+                                                    COGL_PIXEL_FORMAT_RGBA_8888_PRE,
+                                                    NULL);
   if (self->bg_bumpmap != NULL)
     {
       self->bumptex_width_i = cogl_texture_get_width (self->bg_bumpmap);

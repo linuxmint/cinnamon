@@ -20,7 +20,6 @@
  */
 
 #include "st-theme-node-transition.h"
-#include "st-cogl-wrapper.h"
 
 enum {
   COMPLETED,
@@ -231,16 +230,16 @@ setup_framebuffers (StThemeNodeTransition *transition,
   if (priv->old_texture)
     cogl_object_unref (priv->old_texture);
 
-  priv->old_texture = st_cogl_texture_new_with_size_wrapper (width, height,
-                                                             COGL_TEXTURE_NO_SLICING,
-                                                             COGL_PIXEL_FORMAT_ANY);
+  priv->old_texture = cogl_texture_new_with_size (width, height,
+                                                  COGL_TEXTURE_NO_SLICING,
+                                                  COGL_PIXEL_FORMAT_ANY);
 
   if (priv->new_texture)
     cogl_object_unref (priv->new_texture);
 
-  priv->new_texture = st_cogl_texture_new_with_size_wrapper (width, height,
-                                                             COGL_TEXTURE_NO_SLICING,
-                                                             COGL_PIXEL_FORMAT_ANY);
+  priv->new_texture = cogl_texture_new_with_size (width, height,
+                                                  COGL_TEXTURE_NO_SLICING,
+                                                  COGL_PIXEL_FORMAT_ANY);
 
   if (priv->old_texture == NULL)
     return FALSE;
@@ -277,7 +276,8 @@ setup_framebuffers (StThemeNodeTransition *transition,
     {
       if (G_UNLIKELY (material_template == NULL))
         {
-          material_template = cogl_pipeline_new (st_get_cogl_context ());
+          CoglContext *ctx = clutter_backend_get_cogl_context (clutter_get_default_backend ());
+          material_template = cogl_pipeline_new (ctx);
 
           cogl_pipeline_set_layer_combine (material_template, 0,
                                            "RGBA = REPLACE (TEXTURE)",

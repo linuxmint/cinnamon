@@ -35,7 +35,6 @@
 #include "st-theme-context.h"
 #include "st-texture-cache.h"
 #include "st-theme-node-private.h"
-#include "st-cogl-wrapper.h"
 
 /****
  * Rounded corners
@@ -166,12 +165,12 @@ create_corner_material (StCornerSpec *corner)
 
   cairo_surface_destroy (surface);
 
-  texture = st_cogl_texture_new_from_data_wrapper (size, size,
-                                                   COGL_TEXTURE_NONE,
-                                                   CLUTTER_CAIRO_FORMAT_ARGB32,
-                                                   COGL_PIXEL_FORMAT_ANY,
-                                                   rowstride,
-                                                   data);
+  texture = cogl_texture_new_from_data (size, size,
+                                        COGL_TEXTURE_NONE,
+                                        CLUTTER_CAIRO_FORMAT_ARGB32,
+                                        COGL_PIXEL_FORMAT_ANY,
+                                        rowstride,
+                                        data);
 
   g_free (data);
 
@@ -1263,13 +1262,13 @@ st_theme_node_prerender_background (StThemeNode *node)
   if (interior_path != NULL)
     cairo_path_destroy (interior_path);
 
-  texture = st_cogl_texture_new_from_data_wrapper (paint_box.x2 - paint_box.x1,
-                                                   paint_box.y2 - paint_box.y1,
-                                                   COGL_TEXTURE_NONE,
-                                                   CLUTTER_CAIRO_FORMAT_ARGB32,
-                                                   COGL_PIXEL_FORMAT_ANY,
-                                                   rowstride,
-                                                   data);
+  texture = cogl_texture_new_from_data (paint_box.x2 - paint_box.x1,
+                                        paint_box.y2 - paint_box.y1,
+                                        COGL_TEXTURE_NONE,
+                                        CLUTTER_CAIRO_FORMAT_ARGB32,
+                                        COGL_PIXEL_FORMAT_ANY,
+                                        rowstride,
+                                        data);
 
   cairo_destroy (cr);
   cairo_surface_destroy (surface);
@@ -1466,10 +1465,10 @@ st_theme_node_render_resources (StThemeNode   *node,
           int texture_width = ceil (width);
           int texture_height = ceil (height);
 
-          buffer = st_cogl_texture_new_with_size_wrapper (texture_width,
-                                                          texture_height,
-                                                          COGL_TEXTURE_NO_SLICING,
-                                                          COGL_PIXEL_FORMAT_ANY);
+          buffer = cogl_texture_new_with_size (texture_width,
+                                               texture_height,
+                                               COGL_TEXTURE_NO_SLICING,
+                                               COGL_PIXEL_FORMAT_ANY);
           if (buffer == NULL)
             {
               return;
@@ -1550,7 +1549,8 @@ st_theme_node_ensure_color_pipeline (StThemeNode *node)
 
   if (G_UNLIKELY (color_pipeline_template == NULL))
     {
-      color_pipeline_template = cogl_pipeline_new (st_get_cogl_context ());
+      CoglContext *ctx = clutter_backend_get_cogl_context (clutter_get_default_backend ());
+      color_pipeline_template = cogl_pipeline_new (ctx);
     }
 
   node->color_pipeline = cogl_pipeline_copy (color_pipeline_template);
