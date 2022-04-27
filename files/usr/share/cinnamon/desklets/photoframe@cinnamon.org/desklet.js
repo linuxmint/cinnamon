@@ -86,10 +86,14 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
 
     _scan_dir(dir) {
         let dir_file = Gio.file_new_for_uri(dir);
-        let fileEnum = dir_file.enumerate_children('standard::type,standard::name', Gio.FileQueryInfoFlags.NONE, null);
+        let fileEnum = dir_file.enumerate_children('standard::type,standard::name,standard::is-hidden', Gio.FileQueryInfoFlags.NONE, null);
 
         let info;
         while ((info = fileEnum.next_file(null)) != null) {
+            if (info.get_is_hidden()) {
+                continue;
+            }
+
             let fileType = info.get_file_type();
             let fileName = dir + '/' + info.get_name();
             if (fileType != Gio.FileType.DIRECTORY) {
