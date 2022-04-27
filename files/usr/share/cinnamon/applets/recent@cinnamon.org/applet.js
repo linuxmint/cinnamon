@@ -47,7 +47,7 @@ class CinnamonRecentApplet extends Applet.IconApplet {
 
         this.recentsBox = new St.BoxLayout({ vertical:true });
         this.recentsScrollBox.add_actor(this.recentsBox);
-        this.recentsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        this.recentsScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
 
         this.RecentManager = DocInfo.getDocManager();
         this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );

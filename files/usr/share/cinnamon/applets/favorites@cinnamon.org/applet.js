@@ -58,7 +58,7 @@ class CinnamonFavoriteApplet extends Applet.IconApplet {
 
         this.favoritesBox = new St.BoxLayout({ vertical:true });
         this.favoritesScrollBox.add_actor(this.favoritesBox);
-        this.favoritesScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        this.favoritesScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
         this.favoritesScrollBox.add_style_class_name("vfade");
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, this.instance_id);
