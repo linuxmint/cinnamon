@@ -241,24 +241,35 @@ window_backed_app_get_icon (CinnamonApp *app,
       return actor;
     }
 
+  widget = NULL;
+
   if (meta_window_get_client_type (window) == META_WINDOW_CLIENT_TYPE_X11)
     {
-      StWidget *texture_actor;
+      cairo_surface_t *icon;
 
-      texture_actor =
-        st_texture_cache_bind_cairo_surface_property (st_texture_cache_get_default (),
-                                                      G_OBJECT (window),
-                                                      "icon",
-                                                      scaled_size);
+      g_object_get (G_OBJECT (window), "icon", &icon, NULL);
 
-      widget = g_object_new (ST_TYPE_BIN,
-                             "child", texture_actor,
-                             NULL);
+      if (icon != NULL)
+        {
+          StWidget *texture_actor;
+
+          texture_actor =
+            st_texture_cache_bind_cairo_surface_property (st_texture_cache_get_default (),
+                                                          G_OBJECT (window),
+                                                          "icon",
+                                                          scaled_size);
+
+          widget = g_object_new (ST_TYPE_BIN,
+                                 "child", texture_actor,
+                                 NULL);
+        }
     }
-  else
+
+  if (widget == NULL)
     {
       widget = g_object_new (ST_TYPE_ICON,
                              "icon-size", size,
+                             "icon-type", ST_ICON_FULLCOLOR,
                              "icon-name", "application-x-executable",
                              NULL);
     }
@@ -1169,7 +1180,6 @@ real_app_launch (CinnamonApp   *app,
   gboolean ret;
   CinnamonGlobal *global;
   MetaWorkspaceManager *workspace_manager;
-  GdkDisplay *gdisplay;
 
   if (startup_id)
     *startup_id = NULL;
