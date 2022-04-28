@@ -117,7 +117,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
             global.log("Adding systray: " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
 
-            let button = new St.Button(
+            let button = new St.Bin(
             {
                 style_class: "applet-box",
                 child: icon
@@ -131,21 +131,27 @@ class CinnamonSystrayApplet extends Applet.Applet {
                     return GLib.SOURCE_REMOVE;
             });
 
-            button.connect("button-release-event", (actor, event) => {
-                icon.release(event);
-                return Clutter.EVENT_STOP;
-            });
+            icon.reactive = true;
 
-            button.connect("button-press-event", (actor, event) => {
-                global.begin_modal(Meta.ModalOptions.POINTER_ALREADY_GRABBED, event.time);
-                icon.press(event);
-                global.end_modal(event.time);
-                return Clutter.EVENT_STOP;
-            });
+            icon.connect("event", (actor, event) => {
+                let etype = event.type();
 
-            button.connect("scroll-event", (actor, event) => {
-                icon.scroll(event);
-                return Clutter.EVENT_STOP;
+                if (etype === Clutter.EventType.BUTTON_PRESS) {
+                    global.begin_modal(Meta.ModalOptions.POINTER_ALREADY_GRABBED, event.time);
+                    button.add_style_class_name("tray-pressed");
+                }
+                else
+                if (etype === Clutter.EventType.BUTTON_RELEASE) {
+                    button.remove_style_class_name("tray-pressed");
+                }
+
+                let ret = icon.handle_event(etype, event);
+
+                if (etype === Clutter.EventType.BUTTON_PRESS) {
+                    global.end_modal(event.time);
+                }
+
+                return ret;
             });
 
             this.button_box.insert_child_at_index(button, 0);
