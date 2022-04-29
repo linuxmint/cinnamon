@@ -61,9 +61,8 @@ class ManageAppletsPage(ManageSpicesPage):
 
         self.panels = []
         self.current_panel_index = 0
-
-        if len(sys.argv) > 2 and sys.argv[1] == "applets" and sys.argv[2][0:5] == "panel":
-            self.panel_id = int(sys.argv[2][5:])
+        if len(sys.argv) > 1 and sys.argv[1][0:5] == "panel":
+            self.panel_id = int(sys.argv[1][5:])
         else:
             self.panel_id = int(self.spices.settings.get_strv("panels-enabled")[0].split(":")[0])
 
