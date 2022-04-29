@@ -158,8 +158,8 @@ class Module:
             self.settings = Gio.Settings.new("org.cinnamon")
 
             try:
-                if len(sys.argv) > 2 and sys.argv[1] == "panel":
-                    self.panel_id = sys.argv[2]
+                if len(sys.argv) > 1:
+                    self.panel_id = sys.argv[1]
                 else:
                     self.panel_id = self.settings.get_strv("panels-enabled")[0].split(":")[0]
             except:
