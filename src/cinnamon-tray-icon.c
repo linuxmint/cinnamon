@@ -172,6 +172,7 @@ cinnamon_tray_icon_new (CinnamonEmbeddedWindow *window)
                        NULL);
 }
 
+#define DEBUG_TRAY_EVENTS 0
 
 static void
 send_button_xevent (ClutterEventType  event_type,
@@ -318,7 +319,8 @@ cinnamon_tray_icon_handle_event (CinnamonTrayIcon *icon,
     case CLUTTER_BUTTON_PRESS:
     case CLUTTER_BUTTON_RELEASE:
       {
-        g_debug ("%s\n", event_type == CLUTTER_BUTTON_PRESS ? "ButtonPress" : "ButtonRelease");
+        if (DEBUG_TRAY_EVENTS)
+          g_message ("%s", event_type == CLUTTER_BUTTON_PRESS ? "ButtonPress" : "ButtonRelease");
 
         if (!icon->priv->entered)
           {
@@ -345,11 +347,13 @@ cinnamon_tray_icon_handle_event (CinnamonTrayIcon *icon,
       {
         if ((event_type == CLUTTER_ENTER && icon->priv->entered) || (event_type == CLUTTER_LEAVE && !icon->priv->entered))
           {
-            g_debug ("Bail tray icon on crossing event\n");
+            if (DEBUG_TRAY_EVENTS)
+              g_message ("Bail tray icon on crossing event");
             return CLUTTER_EVENT_STOP;
           }
 
-        g_debug ("%s\n", event_type == CLUTTER_ENTER ? "EnterNotify" : "LeaveNotify");
+        if (DEBUG_TRAY_EVENTS)
+          g_message ("%s", event_type == CLUTTER_ENTER ? "EnterNotify" : "LeaveNotify");
 
         send_crossing_xevent (event_type == CLUTTER_ENTER ? EnterNotify : LeaveNotify,
                               event,
@@ -368,19 +372,27 @@ cinnamon_tray_icon_handle_event (CinnamonTrayIcon *icon,
             return CLUTTER_EVENT_STOP;
           }
 
-        send_button_xevent (event_type == ButtonPress,
+        if (DEBUG_TRAY_EVENTS)
+          g_message ("Scroll");
+
+        send_crossing_xevent (EnterNotify,
+                              event,
+                              remote_window,
+                              screen);
+
+        send_button_xevent (ButtonPress,
                             event,
                             remote_window,
                             screen,
                             TRUE);
 
-        send_button_xevent (event_type == ButtonRelease,
+        send_button_xevent (ButtonRelease,
                             event,
                             remote_window,
                             screen,
                             TRUE);
 
-        send_crossing_xevent (event_type == LeaveNotify,
+        send_crossing_xevent (LeaveNotify,
                               event,
                               remote_window,
                               screen);
