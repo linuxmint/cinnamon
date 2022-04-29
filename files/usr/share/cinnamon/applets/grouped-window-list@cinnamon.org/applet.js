@@ -200,6 +200,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                 pos: -1,
                 isForeign: null,
             },
+            appletActor: null,
             appletReady: false,
             willUnmount: false,
             settings: {},
@@ -284,6 +285,10 @@ class GroupedWindowListApplet extends Applet.Applet {
         // Declare vertical panel compatibility
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
         Gettext.bindtextdomain(metadata.uuid, GLib.get_home_dir() + '/.local/share/locale');
+
+        this.actor.set_style_class_name('grouped-window-list-box');
+        this.state.set({appletActor: this.actor});
+        this.on_orientation_changed(null);
 
         this.getAutoStartApps();
         this.onSwitchWorkspace = throttle(this.onSwitchWorkspace, 35, false); //Note: causes a 35ms delay in execution
@@ -401,10 +406,12 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     on_orientation_changed(orientation) {
-        this.state.set({
-            orientation: orientation,
-            isHorizontal: orientation === St.Side.TOP || orientation === St.Side.BOTTOM
-        });
+        if (orientation) {
+            this.state.set({
+                orientation: orientation,
+                isHorizontal: orientation === St.Side.TOP || orientation === St.Side.BOTTOM
+            });
+        }
         if (this.state.isHorizontal) {
             this.actor.remove_style_class_name('vertical');
         } else {
