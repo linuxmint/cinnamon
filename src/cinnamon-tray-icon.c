@@ -309,6 +309,7 @@ cinnamon_tray_icon_handle_event (CinnamonTrayIcon *icon,
   if (remote_window == NULL)
     {
       g_warning ("cinnamon tray: plug window is gone");
+
       gdk_error_trap_pop_ignored ();
       return CLUTTER_EVENT_STOP;
     }
@@ -349,7 +350,9 @@ cinnamon_tray_icon_handle_event (CinnamonTrayIcon *icon,
           {
             if (DEBUG_TRAY_EVENTS)
               g_message ("Bail tray icon on crossing event");
-            return CLUTTER_EVENT_STOP;
+
+            cont = CLUTTER_EVENT_STOP;
+            break;
           }
 
         if (DEBUG_TRAY_EVENTS)
@@ -369,7 +372,8 @@ cinnamon_tray_icon_handle_event (CinnamonTrayIcon *icon,
       {
         if (clutter_event_get_scroll_direction (event) == CLUTTER_SCROLL_SMOOTH)
           {
-            return CLUTTER_EVENT_STOP;
+            cont = CLUTTER_EVENT_STOP;
+            break;
           }
 
         if (DEBUG_TRAY_EVENTS)
@@ -408,5 +412,6 @@ cinnamon_tray_icon_handle_event (CinnamonTrayIcon *icon,
       cont = CLUTTER_EVENT_PROPAGATE;
   }
 
+  gdk_error_trap_pop_ignored ();
   return cont;
 }
