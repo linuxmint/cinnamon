@@ -203,6 +203,7 @@ on_window_workspace_changed (MetaWindow     *window,
 
 static void
 on_window_skip_taskbar_changed (MetaWindow     *window,
+                                GParamSpec     *pspec,
                                 CinnamonScreen *screen)
 {
   g_debug ("screen: window skip-taskbar prop changed");
@@ -518,7 +519,6 @@ cinnamon_screen_get_mouse_window (CinnamonScreen  *screen,
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), NULL);
 
   MetaCursorTracker *cursor_tracker = meta_cursor_tracker_get_for_display (screen->display);
-  MetaWindow *window;
   GList *actors, *l;
   int mx, my;
 
