@@ -256,10 +256,10 @@ class XAppStatusIcon {
     onScrollEvent(actor, event) {
         let direction = event.get_scroll_direction();
 
-        let x_dir = XApp.ScrollDirection.UP;
-        let delta = 0;
-
         if (direction != Clutter.ScrollDirection.SMOOTH) {
+            let x_dir = XApp.ScrollDirection.UP;
+            let delta = 0;
+
             if (direction == Clutter.ScrollDirection.UP) {
                 x_dir = XApp.ScrollDirection.UP;
                 delta = -1;
@@ -273,9 +273,11 @@ class XAppStatusIcon {
                 x_dir = XApp.ScrollDirection.RIGHT;
                 delta = 1;
             }
+
+            this.proxy.call_scroll(delta, x_dir, event.get_time(), null, null);
         }
 
-        this.proxy.call_scroll(delta, x_dir, event.get_time(), null, null);
+        return Clutter.EVENT_STOP;
     }
 
     destroy() {
