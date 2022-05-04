@@ -1059,6 +1059,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
         if ((!this.groupState.metaWindows || this.groupState.metaWindows.length === 0)
             && !this.groupState.tooltip._tooltip.is_finalized()) {
+            this.groupState.tooltip.set_text('');
             this.groupState.tooltip.hide();
         }
         if (this.isOpen) {
