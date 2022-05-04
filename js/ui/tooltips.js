@@ -244,8 +244,8 @@ Tooltip.prototype = {
      */
     set_text: function(text) {
         this._tooltip.set_text(text);
-        this._tooltip.get_clutter_text().set_use_markup(false);
-        this._tooltip.allocate_preferred_size(Clutter.AllocationFlags.NONE);
+        this._tooltip.clutter_text.set_use_markup(false);
+        this._tooltip.clutter_text.allocate_preferred_size(Clutter.AllocationFlags.NONE);
     },
 
     /**
@@ -256,8 +256,8 @@ Tooltip.prototype = {
      */
     set_markup: function(markup) {
         this._tooltip.set_text(markup);
-        this._tooltip.get_clutter_text().set_use_markup(true);
-        this._tooltip.allocate_preferred_size(Clutter.AllocationFlags.NONE);
+        this._tooltip.clutter_text.set_use_markup(true);
+        this._tooltip.clutter_text.allocate_preferred_size(Clutter.AllocationFlags.NONE);
     },
 
     _destroy: function() {
