@@ -1204,7 +1204,6 @@ PanelDummy.prototype = {
      */
     destroy: function() {
         Main.layoutManager.removeChrome(this.actor);
-        this.actor.destroy();
     }
 }
 
@@ -2213,8 +2212,6 @@ Panel.prototype = {
         this._centerBox.destroy();
         this._rightBox.destroy();
         this._destroycorners();
-
-        this.actor.destroy();
 
         this._signalManager.disconnectAllSignals()
 

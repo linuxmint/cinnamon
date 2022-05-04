@@ -173,7 +173,6 @@ class HotCorner {
         this._ripple2.destroy();
         this._ripple3.destroy();
         Main.layoutManager.removeChrome(this.actor)
-        this.actor.destroy();
     }
 
     _animRipple(ripple, delay, time, startScale, startOpacity, finalScale) {
