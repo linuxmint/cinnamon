@@ -172,6 +172,7 @@ class HotCorner {
         this._ripple1.destroy();
         this._ripple2.destroy();
         this._ripple3.destroy();
+        Main.layoutManager.removeChrome(this.actor)
         this.actor.destroy();
     }
 
