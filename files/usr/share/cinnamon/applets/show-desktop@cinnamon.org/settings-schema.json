@@ -29,10 +29,12 @@
  },
  "peek-opacity": {
     "type": "scale",
-    "default" : 10,
+    "default" : 5,
+    "units": "%",
+    "digits": 0,
     "min" : 0,
-    "max" : 255,
-    "step" : 10,
+    "max" : 100,
+    "step" : 5,
     "dependency" : "peek-at-desktop",
     "description" : "Window opacity",
     "tooltip" : "Change the opacity of windows when peeking at the desktop"
