@@ -618,9 +618,8 @@ DeskletContainer.prototype = {
     handleStageEvent: function(actor, event) {
         let target = event.get_source();
         let type = event.type();
-
         if ((type === Clutter.EventType.BUTTON_PRESS || type === Clutter.EventType.BUTTON_RELEASE)
-            && target.toString().indexOf('ClutterStage') > -1) {
+            && target.get_parent() instanceof Meta.WindowActor) {
             this.lower();
         }
 
@@ -631,12 +630,12 @@ DeskletContainer.prototype = {
         if (this.actor.get_children().length === 0) {
             return;
         }
-        this.actor.get_parent().set_child_above_sibling(this.actor, null);
+        global.display.set_desklets_above(true);
         this.setModal();
     },
 
     lower: function() {
-        this.actor.get_parent().set_child_below_sibling(this.actor, global.window_group);
+        global.display.set_desklets_above(false);
         this.unsetModal();
     },
 
