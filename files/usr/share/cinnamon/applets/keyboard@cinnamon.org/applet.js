@@ -115,22 +115,34 @@ class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
 
 class KbdLayoutController {
     constructor() {
-        const on_ibus = (is_active) => {
-            this._ibus_active = is_active;
-            this.emit("layout-changed");
-            this.emit("config-changed");
-        };
-        Gio.DBus.session.watch_name(
-            "org.fcitx.Fcitx", Gio.BusNameWatcherFlags.NONE,
-            () => on_ibus(true), () => on_ibus(false)
-        );
+        this._bus_watch_id = 0;
     }
 
     applet_added() {
         this._xappController = new XApp.KbdLayoutController();
         this._xappController.connect('layout-changed', () => this._on_layout_changed());
         this._xappController.connect('config-changed', () => this._on_config_changed());
+
+        if (this._bus_watch_id === 0) {
+            const on_ibus = (is_active) => {
+                this._ibus_active = is_active;
+                this.emit("layout-changed");
+                this.emit("config-changed");
+            };
+            this._bus_watch_id = Gio.DBus.session.watch_name(
+                "org.fcitx.Fcitx", Gio.BusNameWatcherFlags.NONE,
+                () => on_ibus(true), () => on_ibus(false)
+            );
+        }
+
         this._on_config_changed();
+    }
+
+    applet_removed() {
+        if (this._bus_watch_id > 0) {
+            Gio.DBus.session.unwatch_name(this._bus_watch_id);
+            this._bus_watch_id = 0;
+        }
     }
 
     _retrieve_current_layout_idx() {
@@ -257,13 +269,13 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
     }
 
     on_applet_added_to_panel() {
-        this._controller.applet_added();
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
             this._onPanelEditModeChanged();
         }
         this._controller.connect('layout-changed', () => this._syncGroup());
         this._controller.connect('config-changed', () => this._syncConfig());
         this.connect('orientation-changed', () => this.on_orientation_changed());
+        this._controller.applet_added();
     }
 
     on_orientation_changed() {
@@ -435,6 +447,8 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel() {
+        this._controller.applet_removed();
+
         Main.systrayManager.unregisterRole("keyboard", this.metadata.uuid);
     }
 };
