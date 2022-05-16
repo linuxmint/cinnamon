@@ -21,6 +21,9 @@ UNSET = -1
 KILL = 0
 WAIT = 1
 
+global response
+response = UNSET
+
 class CloseDialog(XApp.GtkWindow):
     def __init__(self, parent_xid, title):
         XApp.GtkWindow.__init__(self,
@@ -66,9 +69,13 @@ class CloseDialog(XApp.GtkWindow):
         self.connect("delete-event", lambda w, e: self.return_response(WAIT))
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, lambda: self.return_response(WAIT))
 
-        parent = GdkX11.X11Window.foreign_new_for_display(Gdk.Display.get_default(), parent_xid)
         self.realize()
-        self.get_window().set_transient_for(parent)
+
+        try:
+            parent = GdkX11.X11Window.foreign_new_for_display(Gdk.Display.get_default(), parent_xid)
+            self.get_window().set_transient_for(parent)
+        except TypeError:
+            parent = None
 
     def force_quit_clicked(self, button):
         self.return_response(KILL)
