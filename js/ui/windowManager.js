@@ -14,6 +14,7 @@ const GObject = imports.gi.GObject;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const ModalDialog = imports.ui.modalDialog;
 const CloseDialog = imports.ui.closeDialog;
+const DisplayChangesDialog = imports.ui.displayChangesDialog;
 
 const {CoverflowSwitcher} = imports.ui.appSwitcher.coverflowSwitcher;
 const {TimelineSwitcher} = imports.ui.appSwitcher.timelineSwitcher;
@@ -214,78 +215,6 @@ class ResizePopup extends St.Widget {
         this.set_size(rect.width, rect.height);
     }
 });
-
-var DisplayChangesDialog = class DisplayChangesDialog extends ModalDialog.ModalDialog {
-    constructor(wm) {
-        super();
-        this._wm = wm;
-        this._countDown = Meta.MonitorManager.get_display_configuration_timeout();
-
-        this.contentLayout.add(new St.Label({ text:        _('Keep these display settings?'),
-                                              style_class: 'confirm-dialog-title',
-                                              important:   true }));
-        this.countdown_label = new St.Label({ style: "text-align: center" });
-        this.contentLayout.add(this.countdown_label);
-
-        this.setButtons([
-            {
-                label: _("Revert settings"),
-                action: this._revert.bind(this),
-                key: Clutter.KEY_Escape
-            },
-            {
-                label: _("Keep changes"),
-                action: this._keep.bind(this),
-                default: true
-            }
-        ]);
-
-        this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, this._tick.bind(this));
-        GLib.Source.set_name_by_id(this._timeoutId, '[cinnamon-display-countdown] this._tick');
-    }
-
-    close(timestamp) {
-        if (this._timeoutId > 0) {
-            GLib.source_remove(this._timeoutId);
-            this._timeoutId = 0;
-        }
-
-        super.close(timestamp);
-    }
-
-    _formatCountDown() {
-        const fmt = ngettext(
-            'Settings changes will revert in %d second',
-            'Settings changes will revert in %d seconds',
-            this._countDown);
-        return fmt.format(this._countDown);
-    }
-
-    _tick() {
-        this._countDown--;
-
-        if (this._countDown == 0) {
-            /* mutter already takes care of failing at timeout */
-            this._timeoutId = 0;
-            this.close();
-            return GLib.SOURCE_REMOVE;
-        }
-
-        this.countdown_label.set_text(this._formatCountDown());
-        return GLib.SOURCE_CONTINUE;
-    }
-
-    _revert() {
-        this._wm.complete_display_change(false);
-        this.close();
-    }
-
-    _keep() {
-        this._wm.complete_display_change(true);
-        this.close();
-    }
-};
-
 
 var WindowManager = class WindowManager {
         MENU_ANIMATION_TIME = 0.1;
@@ -1432,7 +1361,7 @@ var WindowManager = class WindowManager {
     }
 
     _confirmDisplayChange() {
-        let dialog = new DisplayChangesDialog(this._cinnamonwm);
+        let dialog = new DisplayChangesDialog.DisplayChangesDialog(this._cinnamonwm);
         dialog.open();
     }
 };
