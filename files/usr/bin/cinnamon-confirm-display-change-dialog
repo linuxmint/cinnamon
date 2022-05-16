@@ -30,6 +30,8 @@ class DisplayChangeDialog(Gtk.Window):
                             resizable=False,
                             type_hint=Gdk.WindowTypeHint.DIALOG)
 
+        self.timeout = timeout
+
         self.set_title("Confirm Display Configuration")
         self.set_default_size(300, -1)
         self.set_keep_above(True)
@@ -48,10 +50,10 @@ class DisplayChangeDialog(Gtk.Window):
                            spacing=10)
         mainbox.pack_end(bb, False, False, 10)
 
-        button = Gtk.Button(label=_("Cancel changes"))
-        button.get_style_context().add_class(Gtk.STYLE_CLASS_DESTRUCTIVE_ACTION)
-        bb.pack_start(button, False, False, 0)
-        button.connect("clicked", self.cancel_changes_clicked)
+        self.cancel_button = Gtk.Button(label=_("Cancel changes"))
+        self.cancel_button.get_style_context().add_class(Gtk.STYLE_CLASS_DESTRUCTIVE_ACTION)
+        bb.pack_start(self.cancel_button, False, False, 0)
+        self.cancel_button.connect("clicked", self.cancel_changes_clicked)
 
         button = Gtk.Button(label=_("Keep new configuration"))
         button.get_style_context().add_class(Gtk.STYLE_CLASS_SUGGESTED_ACTION)
@@ -62,6 +64,23 @@ class DisplayChangeDialog(Gtk.Window):
 
         self.connect("delete-event", lambda w, e: self.return_response(CANCEL))
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, lambda: self.return_response(CANCEL))
+
+        self.update_cancel_label()
+        GLib.timeout_add(1000, self.dialog_timer_tick)
+
+    def update_cancel_label(self):
+        self.cancel_button.set_label(_("Cancel changes... %ds") % self.timeout)
+
+    def dialog_timer_tick(self):
+        self.timeout -= 1
+
+        if self.timeout == 0:
+            self.return_response(CANCEL)
+            return GLib.SOURCE_REMOVE
+
+        self.update_cancel_label()
+
+        return GLib.SOURCE_CONTINUE
 
     def cancel_changes_clicked(self, button):
         self.return_response(CANCEL)
