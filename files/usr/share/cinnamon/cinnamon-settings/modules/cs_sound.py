@@ -707,8 +707,11 @@ class Module:
         if icon is None:
             if (iconName is not None and "bluetooth" in iconName):
                 icon = iconTheme.load_icon("bluetooth", 32, 0)
-            else:
+            elif iconTheme.has_icon("audio-card"):
                 icon = iconTheme.load_icon("audio-card", 32, 0)
+            else:
+                # Default icon?
+                pass
 
         getattr(self, type+"DeviceList").append([device.get_description() + "\n" +  device.get_origin(), "", False, id, icon])
 
