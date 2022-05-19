@@ -320,7 +320,7 @@ class AppMenuButton {
                 this.progressOverlay.show();
             } else
                 this.progressOverlay.hide();
-            this._updateProgressId = this.metaWindow.connect("notify::progress", () => {
+            this._updateProgressId = this._signals.connect(this.metaWindow, "notify::progress", () => {
                 if (this.metaWindow.progress != this._progress) {
                     this._progress = this.metaWindow.progress;
 

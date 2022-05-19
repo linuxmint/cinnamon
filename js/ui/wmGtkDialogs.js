@@ -2,7 +2,7 @@
 
 const { Clutter, Gio, GLib, GObject, Meta, St } = imports.gi;
 
-class DisplayChangesDialog {
+var DisplayChangesDialog = class {
     constructor(wm) {
         this._wm = wm;
         this._countDown = Meta.MonitorManager.get_display_configuration_timeout();
