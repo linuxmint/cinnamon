@@ -116,6 +116,8 @@ class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
 class KbdLayoutController {
     constructor() {
         this._bus_watch_id = 0;
+        this._layouts = [];
+        this._current_layout_idx = 0;
     }
 
     applet_added() {
@@ -146,7 +148,7 @@ class KbdLayoutController {
     }
 
     _retrieve_current_layout_idx() {
-        let idx = this._xappController ?
+        let idx = this._xappController.get_enabled() ?
             this._xappController.get_current_group() : 0;
         if (idx >= this.get_layouts_count()) {
             this.set_current_layout_idx(0);
@@ -161,8 +163,9 @@ class KbdLayoutController {
     }
 
     _on_config_changed() {
-        const layouts = [];
-        if (this._xappController) {
+        if (this._xappController.get_enabled()) {
+            const layouts = [];
+
             const groups = this._xappController.get_all_names();
             for (let i = 0; i < groups.length; i++) {
                 layouts.push({
@@ -173,9 +176,13 @@ class KbdLayoutController {
                     variant_name: this._xappController.get_variant_label_for_group(i),
                 });
             }
+            this._layouts = layouts;
+            this._retrieve_current_layout_idx();
+        } else {
+            this._layouts = [];
+            this._current_layout_idx = 0;
         }
-        this._layouts = layouts;
-        this._retrieve_current_layout_idx();
+
         this.emit("config-changed");
     }
 
@@ -192,9 +199,10 @@ class KbdLayoutController {
     }
 
     set_current_layout_idx(idx) {
-        if (this._xappController)
+        if (this._xappController.get_enabled()) {
             this._xappController.set_current_group(idx);
-        this._current_layout_idx = idx;
+            this._current_layout_idx = idx;
+        }
     }
 
     get_layout_data(idx) {
@@ -389,7 +397,6 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         const selected = this._controller.get_current_layout_idx();
 
         if (!this._layoutItems.length) {
-            global.logError(new Error('Layouts list is empty'));
             this.actor.hide();
             return;
         }
