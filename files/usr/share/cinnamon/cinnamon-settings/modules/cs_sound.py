@@ -708,10 +708,10 @@ class Module:
             if (iconName is not None and "bluetooth" in iconName):
                 icon = iconTheme.load_icon("bluetooth", 32, 0)
             elif iconTheme.has_icon("audio-card"):
+                # The audio-card icon was removed from adwaita, so may be absent in the current theme
                 icon = iconTheme.load_icon("audio-card", 32, 0)
             else:
-                # Default icon?
-                pass
+                icon = iconTheme.load_icon("sound", 32, 0)
 
         getattr(self, direction+"DeviceList").append([device.get_description() + "\n" +  device.get_origin(), "", False, deviceId, icon])
 
