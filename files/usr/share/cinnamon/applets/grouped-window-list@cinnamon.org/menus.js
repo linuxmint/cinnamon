@@ -9,13 +9,12 @@ const PopupMenu = imports.ui.popupMenu;
 const Applet = imports.ui.applet;
 const SignalManager = imports.misc.signalManager;
 
-const {each, findIndex, tryFn, unref, trySpawnCommandLine, spawn_async} = imports.misc.util;
+const {each, findIndex, tryFn, unref, trySpawnCommandLine, spawn_async, getDesktopActionIcon} = imports.misc.util;
 const {
     CLOSE_BTN_SIZE,
     CLOSED_BUTTON_STYLE,
     OPACITY_OPAQUE,
     RESERVE_KEYS,
-    ICON_NAMES,
     FavType,
     autoStartStrDir
 } = require('./constants');
@@ -242,21 +241,9 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             if (actions) {
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
                 let handleAction = (action) => {
-                    let actionID = '';
-                    if (action.toUpperCase() === action) {
-                        actionID = action.toLowerCase();
-                    } else {
-                        // first letter lowercase, replace uppercase with _+lowercase
-                        actionID = action.charAt(0).toLowerCase() + action.slice(1);
-                        actionID = actionID.replace(/([A-Z])/g, '_$1').toLowerCase();
-                    }
-                    actionID = actionID.replace(/-/g, '_');
-
-                    let icon = 'application-x-executable';
-
-                    if (ICON_NAMES.hasOwnProperty(actionID)) {
-                        icon = ICON_NAMES[actionID];
-                    }
+                    let icon = getDesktopActionIcon(action);
+                    if (icon == null)
+                        icon = 'application-x-executable';
 
                     item = createMenuItem({
                         label: _(this.groupState.appInfo.get_action_name(action)),
