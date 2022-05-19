@@ -484,7 +484,7 @@ class GenericApplicationButton extends SimpleMenuItem {
         let actions = this.app.get_app_info().list_actions();
         if (actions) {
             for (let i = 0; i < actions.length; i++) {
-                let icon = 'application-x-executable';
+                let icon = Util.getDesktopActionIcon(actions[i]);
                 let label = this.app.get_app_info().get_action_name(actions[i]);
                 menuItem = new ApplicationContextMenuItem(this, label, "action_" + actions[i], icon);
                 menu.addMenuItem(menuItem);
