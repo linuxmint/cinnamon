@@ -1014,6 +1014,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this.mute_in_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute input"), false, "microphone-sensitivity-none", St.IconType.SYMBOLIC);
         this._applet_context_menu.addMenuItem(this.mute_out_switch);
         this._applet_context_menu.addMenuItem(this.mute_in_switch);
+        this.mute_in_switch.actor.hide();
 
         this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -1624,8 +1625,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         } else if (stream instanceof Cvc.MixerSourceOutput) {
             //for source outputs, only show the input section
             this._streams.push({id: id, type: "SourceOutput"});
-            if (this._recordingAppsNum++ === 0)
+            if (this._recordingAppsNum++ === 0) {
                 this._inputSection.actor.show();
+                this.mute_in_switch.actor.show();
+            }
         }
     }
 
@@ -1641,8 +1644,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                     if (this._outputApplicationsMenu.menu.numMenuItems === 0)
                         this._outputApplicationsMenu.actor.hide();
                 } else if (stream.type === "SourceOutput") {
-                    if(--this._recordingAppsNum === 0)
+                    if(--this._recordingAppsNum === 0) {
                         this._inputSection.actor.hide();
+                        this.mute_in_switch.actor.hide();
+                    }
                 }
                 this._streams.splice(i, 1);
                 break;
