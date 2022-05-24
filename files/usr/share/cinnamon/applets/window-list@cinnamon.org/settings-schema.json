@@ -38,24 +38,26 @@
     "type": "section",
     "description": "Display"
   },
-  "button-width": {
-        "type": "spinbutton",
-        "default" : 150,
-        "min" : 0,
-        "max" : 400,
-        "step" : 5,
-        "units" : "pixels",
-        "description" : "Window button width in the panel" 
-  },
-  "buttons-use-entire-space": {
-      "type": "switch",
-      "default": false,
-      "description": "Window buttons can have different sizes and use the entire space available"
-  },
   "panel-show-label": {
       "type": "switch",
       "default": true,
       "description": "Show window names in the panel"
+  },
+  "button-width": {
+        "type": "spinbutton",
+        "default" : 150,
+        "min" : 0,
+        "max" : 1000,
+        "step" : 5,
+        "units" : "pixels",
+        "description" : "Window button width in the panel",
+        "dependency": "panel-show-label"
+  },
+  "buttons-use-entire-space": {
+      "type": "switch",
+      "default": false,
+      "description": "Window buttons can have different sizes and use the entire space available",
+      "dependency": "panel-show-label"
   },
   "window-preview": {
       "type": "switch",

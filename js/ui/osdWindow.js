@@ -119,9 +119,8 @@ OsdWindow.prototype = {
         this._reset();
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._monitorsChanged));
-        this._onOsdSettingsChanged();
-
         Main.uiGroup.add_child(this.actor);
+        this._onOsdSettingsChanged();
     },
 
     setIcon: function(icon) {
@@ -210,6 +209,27 @@ OsdWindow.prototype = {
             this.actor.set_size(this._popupSize, this._popupSize);
             this.actor.translation_y = (monitor.height + monitor.y) - (this._popupSize + (50 * scaleFactor));
             this.actor.translation_x = ((monitor.width / 2) + monitor.x) - (this._popupSize / 2);
+
+            let currentSize = this._osdSettings.get_string("show-media-keys-osd");
+
+            if (monitor.height < 900 && ["small", "medium"].includes(currentSize)) {
+                let spacing = this.actor.get_theme_node().get_length ("spacing");
+                let multiplier = 1.0;
+
+                if (currentSize === "small") {
+                    this._label.style = 'font-size: 0.8em; text-align: center;'
+                    multiplier = 0.6;
+                } else
+                if (currentSize === "medium") {
+                    this._label.style = 'font-size: 1.0em; text-align: center;'
+                    multiplier = 0.8;
+                }
+
+                this.actor.style = `spacing: ${Math.floor(spacing * multiplier)}px;`;
+            } else {
+                this._label.style = 'font-size: 1.2em; text-align: center;'
+                this.actor.style = null;
+            }
         }
     },
 

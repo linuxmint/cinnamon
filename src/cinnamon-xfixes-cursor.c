@@ -379,11 +379,11 @@ cinnamon_xfixes_cursor_show (CinnamonXFixesCursor *xfixes_cursor)
 /**
  * cinnamon_xfixes_cursor_update_texture_image:
  * @xfixes_cursor:  the #CinnamonXFixesCursor
- * @texture:        ClutterTexture to update with the current sprite image.
+ * @texture:        #ClutterTexture to update with the current sprite image.
  */
 void
 cinnamon_xfixes_cursor_update_texture_image (CinnamonXFixesCursor *xfixes_cursor,
-                                          ClutterTexture *texture)
+                                             ClutterActor         *texture)
 {
     CoglHandle *old_sprite;
     g_return_if_fail (CINNAMON_IS_XFIXES_CURSOR (xfixes_cursor));
@@ -391,11 +391,11 @@ cinnamon_xfixes_cursor_update_texture_image (CinnamonXFixesCursor *xfixes_cursor
     if (texture == NULL)
         return;
 
-    old_sprite = clutter_texture_get_cogl_texture (texture);
+    old_sprite = clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (texture));
     if (xfixes_cursor->cursor_sprite == old_sprite)
         return;
 
-    clutter_texture_set_cogl_texture (texture, xfixes_cursor->cursor_sprite);
+    clutter_texture_set_cogl_texture (CLUTTER_TEXTURE (texture), xfixes_cursor->cursor_sprite);
 }
 
 /**

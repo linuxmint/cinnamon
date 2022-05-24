@@ -10,6 +10,7 @@ const SignalManager = imports.misc.signalManager;
 const Gtk = imports.gi.Gtk;
 const XApp = imports.gi.XApp;
 const GLib = imports.gi.GLib;
+const Tooltips = imports.ui.tooltips;
 
 const HORIZONTAL_STYLE = 'padding-left: 2px; padding-right: 2px; padding-top: 0; padding-bottom: 0';
 const VERTICAL_STYLE = 'padding-left: 0; padding-right: 0; padding-top: 2px; padding-bottom: 2px';
@@ -22,7 +23,6 @@ class XAppStatusIcon {
         this.proxy = proxy;
 
         this.iconName = null;
-        this.tooltipText = "";
 
         this.actor = new St.BoxLayout({
             style_class: "applet-box",
@@ -46,11 +46,12 @@ class XAppStatusIcon {
         this.actor.add_actor(this.icon_holder);
         this.actor.add_actor(this.label);
 
+        this._tooltip = new Tooltips.PanelItemTooltip(this, "", applet.orientation);
+
         this.actor.connect('button-press-event', Lang.bind(this, this.onButtonPressEvent));
         this.actor.connect('button-release-event', Lang.bind(this, this.onButtonReleaseEvent));
         this.actor.connect('scroll-event', (...args) => this.onScrollEvent(...args));
         this.actor.connect('enter-event', Lang.bind(this, this.onEnterEvent));
-        this.actor.connect('leave-event', Lang.bind(this, this.onLeaveEvent));
 
         this._proxy_prop_change_id = this.proxy.connect('g-properties-changed', Lang.bind(this, this.on_properties_changed))
 
@@ -147,13 +148,18 @@ class XAppStatusIcon {
 
     setTooltipText(tooltipText) {
         if (tooltipText) {
-            this.tooltipText = tooltipText;
+            this._tooltip.preventShow = false;
         }
         else {
-            this.tooltipText = "";
+            tooltipText = "";
+            this._tooltip.preventShow = true;
         }
-
-        this.applet.set_applet_tooltip(this.tooltipText, true);
+        this._tooltip.set_text(tooltipText);
+        // If the tooltip is currently visible, then we might need to trigger a realignment of the tooltip after changing the text length
+        if (this._tooltip.visible) {
+           this._tooltip.hide();
+           this._tooltip.show();
+        }
     }
 
     setLabel(label) {
@@ -179,11 +185,7 @@ class XAppStatusIcon {
     }
 
     onEnterEvent(actor, event) {
-        this.applet.set_applet_tooltip(this.tooltipText, true);
-    }
-
-    onLeaveEvent(actor, event) {
-        this.applet.set_applet_tooltip("", true);
+        this._tooltip.preventShow = false;
     }
 
     getEventPositionInfo(actor) {
@@ -224,7 +226,8 @@ class XAppStatusIcon {
     }
 
     onButtonPressEvent(actor, event) {
-        this.applet.set_applet_tooltip("");
+        this._tooltip.hide();
+        this._tooltip.preventShow = true;
 
         if (event.get_button() == Clutter.BUTTON_SECONDARY && event.get_state() & Clutter.ModifierType.CONTROL_MASK) {
             return Clutter.EVENT_PROPAGATE;
@@ -273,6 +276,7 @@ class XAppStatusIcon {
     destroy() {
         this.proxy.disconnect(this._proxy_prop_change_id);
         this._proxy_prop_change_id = 0;
+        this._tooltip.destroy();
     }
 }
 

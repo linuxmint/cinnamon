@@ -787,3 +787,72 @@ function version_exceeds(version, min_version) {
         return true;
     }
 }
+
+// Maps .desktop action name to an icon
+const DESKTOP_ACTION_ICON_NAMES = {
+    area_shot: 'screenshot-area',
+    base: 'x-office-database',
+    big_picture: 'view-fullscreen',
+    calc: 'x-office-spreadsheet',
+    community: 'system-users',
+    compose: 'text-editor',
+    contacts: 'x-office-address-book',
+    document: 'document-new',
+    draw: 'x-office-drawing',
+    friends: 'user-available',
+    fullscreen: 'view-fullscreen',
+    impress: 'x-office-presentation',
+    library: 'accessories-dictionary',
+    math: 'x-office-math',
+    mute: 'audio-volume-muted',
+    new_document: 'document-new',
+    new_private_window: 'view-private',
+    new_root_window: 'dialog-password',
+    news: 'news',
+    new_session: 'tab-new-symbolic',
+    new_window: 'window-new',
+    next: 'media-skip-forward',
+    open_computer: 'computer',
+    open_home: 'user-home',
+    open_trash: 'user-trash',
+    play: 'media-playback-start',
+    play_pause: 'media-playback-start',
+    preferences: 'preferences-other',
+    prefs: 'preferences-other',
+    previous: 'media-skip-backward',
+    screen_shot: 'screenshot-fullscreen',
+    screenshots: 'applets-screenshooter',
+    servers: 'network-server',
+    settings: 'preferences-other',
+    ssa: 'screenshot-area',
+    ssf: 'screenshot-fullscreen',
+    ssw: 'screenshot-window',
+    stop_quit: 'media-playback-stop',
+    store: 'store',
+    window: 'window-new',
+    window_shot: 'screenshot-window',
+    writer: 'x-office-document',
+};
+
+/**
+ * getDesktopActionIcon:
+ * @action (string): Action name
+ *
+ * Returns (string|null): Name of the icon associated with this action or null if not found
+ */
+function getDesktopActionIcon(action) {
+    let actionID = '';
+    if (action.toUpperCase() === action) {
+        actionID = action.toLowerCase();
+    } else {
+        // first letter lowercase, replace uppercase with _+lowercase
+        actionID = action.charAt(0).toLowerCase() + action.slice(1);
+        actionID = actionID.replace(/([A-Z])/g, '_$1').toLowerCase();
+    }
+    actionID = actionID.replace(/-/g, '_');
+    
+    if (DESKTOP_ACTION_ICON_NAMES.hasOwnProperty(actionID))
+        return DESKTOP_ACTION_ICON_NAMES[actionID];
+    else return null;
+}
+

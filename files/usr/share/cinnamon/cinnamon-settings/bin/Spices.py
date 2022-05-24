@@ -12,9 +12,7 @@ try:
     import threading
     from PIL import Image
     import datetime
-    import proxygsettings
     import time
-    import requests
 except Exception as detail:
     print(detail)
     sys.exit(1)
@@ -382,6 +380,9 @@ class Spice_Harvester(GObject.Object):
         #Like the one in urllib. Unlike urllib.retrieve url_retrieve
         #can be interrupted. KeyboardInterrupt exception is raised when
         #interrupted.
+        import proxygsettings
+        import requests
+
         count = 0
         blockSize = 1024 * 8
         proxy_info = proxygsettings.get_proxy_settings()

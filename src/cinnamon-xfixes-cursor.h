@@ -26,7 +26,7 @@ void                cinnamon_xfixes_cursor_hide (CinnamonXFixesCursor *xfixes_cu
 int                 cinnamon_xfixes_cursor_get_hot_x (CinnamonXFixesCursor *xfixes_cursor);
 int                 cinnamon_xfixes_cursor_get_hot_y (CinnamonXFixesCursor *xfixes_cursor);
 void                cinnamon_xfixes_cursor_update_texture_image (CinnamonXFixesCursor *xfixes_cursor,
-                                                              ClutterTexture *texture);
+                                                                 ClutterActor         *texture);
 
 G_END_DECLS
 

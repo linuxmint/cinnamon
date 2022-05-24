@@ -456,11 +456,13 @@ function start() {
     global.display.connect('gl-video-memory-purged', loadTheme);
 
     try {
-        gpu_offload_supported = XApp.util_gpu_offload_supported()
+        gpu_offload_supported = Cinnamon.get_gpu_offload_supported()
     } catch (e) {
         global.logWarning("Could not check for gpu offload support - maybe xapps isn't up to date.");
         gpu_offload_supported = false;
     }
+
+    log(`GPU offload supported: ${gpu_offload_supported}`);
 
     Promise.all([
         AppletManager.init(),

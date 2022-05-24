@@ -13,6 +13,10 @@ const DBusIface = '\
             <arg type="s" direction="in" /> \
             <arg type="s" direction="out" /> \
         </method> \
+        <method name="NameHasOwner"> \
+            <arg type="s" direction="in" /> \
+            <arg type="b" direction="out" /> \
+        </method> \
         <method name="ListNames"> \
             <arg type="as" direction="out" /> \
         </method> \

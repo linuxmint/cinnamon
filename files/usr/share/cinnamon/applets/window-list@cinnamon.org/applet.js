@@ -48,6 +48,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const Gdk = imports.gi.Gdk;
+const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
@@ -266,9 +267,11 @@ class AppMenuButton {
         this.metaWindow = metaWindow;
         this.transient = transient;
         let initially_urgent = transient || metaWindow.is_demanding_attention() || metaWindow.is_urgent();
-        this.labelVisible = false;
+        this.drawLabel = false;
+        this.labelVisiblePref = false;
         this._signals = new SignalManager.SignalManager();
         this.xid = metaWindow.get_xwindow();
+        this._flashTimer = null;
 
         if (this._applet.orientation == St.Side.TOP)
             this.actor.add_style_class_name('top');
@@ -287,6 +290,11 @@ class AppMenuButton {
                 Lang.bind(this, this._getPreferredWidth));
         this._signals.connect(this.actor, 'get-preferred-height',
                 Lang.bind(this, this._getPreferredHeight));
+
+        this._signals.connect(this.actor, 'notify::allocation',
+                              Lang.bind(this, this.updateIconGeometry));
+        this._updateIconGeometryTimeoutId = 0;
+
         this._signals.connect(this.actor, 'allocate', Lang.bind(this, this._allocate));
 
         this.progressOverlay = new St.Widget({ style_class: "progress", reactive: false, important: true  });
@@ -294,10 +302,6 @@ class AppMenuButton {
         this.actor.add_actor(this.progressOverlay);
 
         this._iconBox = new Cinnamon.Slicer({ name: 'appMenuIcon' });
-        this._signals.connect(this._iconBox, 'style-changed',
-                              Lang.bind(this, this._onIconBoxStyleChanged));
-        this._signals.connect(this._iconBox, 'notify::allocation',
-                              Lang.bind(this, this._updateIconBoxClipAndGeometry));
         this.actor.add_actor(this._iconBox);
 
         this._label = new St.Label();
@@ -305,7 +309,6 @@ class AppMenuButton {
 
         this.updateLabelVisible();
 
-        this._iconBottomClip = 0;
         this._visible = true;
 
         this._progress = 0;
@@ -528,6 +531,15 @@ class AppMenuButton {
     }
 
     destroy() {
+        if (this._flashTimer) {
+            Mainloop.source_remove(this._flashTimer);
+            this._flashTimer = null;
+        }
+        if (this._updateIconGeometryTimeoutId > 0) {
+            Mainloop.source_remove(this._updateIconGeometryTimeoutId);
+            this._updateIconGeometryTimeoutId = 0;
+        }
+
         this._signals.disconnectAllSignals();
         this._tooltip.destroy();
         if (!this.transient) {
@@ -612,42 +624,44 @@ class AppMenuButton {
         }
     }
 
-    _onIconBoxStyleChanged() {
-        let node = this._iconBox.get_theme_node();
-        this._iconBottomClip = node.get_length('app-icon-bottom-clip');
-        this._updateIconBoxClipAndGeometry();
+    updateIconGeometry() {
+        if (this._updateIconGeometryTimeoutId > 0) {
+            Mainloop.source_remove(this._updateIconGeometryTimeoutId);
+        }
+
+        this._updateIconGeometryTimeoutId = Mainloop.timeout_add(50, Lang.bind(this, this._updateIconGeometryTimeout));
     }
 
-    _updateIconBoxClipAndGeometry() {
-        let allocation = this._iconBox.allocation;
-        if (this._iconBottomClip > 0)
-            this._iconBox.set_clip(0, 0,
-                   allocation.x2 - allocation.x1,
-                   allocation.y2 - allocation.y1 - this._iconBottomClip);
-        else
-            this._iconBox.remove_clip();
+    _updateIconGeometryTimeout() {
+        this._updateIconGeometryTimeoutId = 0;
 
         let rect = new Meta.Rectangle();
         [rect.x, rect.y] = this.actor.get_transformed_position();
         [rect.width, rect.height] = this.actor.get_transformed_size();
 
         this.metaWindow.set_icon_geometry(rect);
+
+        return GLib.SOURCE_REMOVE;
     }
 
     _getPreferredWidth(actor, forHeight, alloc) {
         let [minSize, naturalSize] = this._iconBox.get_preferred_width(forHeight);
-        // minimum size just enough for icon if we ever get that many apps going
-        alloc.min_size = naturalSize;
+
+        alloc.min_size = 1 * global.ui_scale;
 
         if (this._applet.orientation == St.Side.TOP || this._applet.orientation == St.Side.BOTTOM ) {
-        // the 'buttons use entire space' option only makes sense on horizontal panels
-            if (this._applet.buttonsUseEntireSpace) {
-                let [lminSize, lnaturalSize] = this._label.get_preferred_width(forHeight);
-                let spacing = this.actor.get_theme_node().get_length('spacing');
-                alloc.natural_size = Math.max(150 * global.ui_scale,
-                        naturalSize + spacing + lnaturalSize);
+        // the 'buttons use entire space' option only makes sense on horizontal panels with labels
+            if (this.labelVisiblePref) {
+                if (this._applet.buttonsUseEntireSpace) {
+                    let [lminSize, lnaturalSize] = this._label.get_preferred_width(forHeight);
+                    let spacing = this.actor.get_theme_node().get_length('spacing');
+                    alloc.natural_size = Math.max(150 * global.ui_scale,
+                            naturalSize + spacing + lnaturalSize);
+                } else {
+                    alloc.natural_size = this._applet.buttonWidth * global.ui_scale;
+                }
             } else {
-                alloc.natural_size = this._applet.buttonWidth * global.ui_scale;
+                alloc.natural_size = naturalSize
             }
         } else {
             alloc.natural_size = this._applet._panelHeight;
@@ -657,7 +671,7 @@ class AppMenuButton {
     _getPreferredHeight(actor, forWidth, alloc) {
         let [minSize1, naturalSize1] = this._iconBox.get_preferred_height(forWidth);
 
-        if (this.labelVisible) {
+        if (this.labelVisiblePref) {
             let [minSize2, naturalSize2] = this._label.get_preferred_height(forWidth);
             alloc.min_size = Math.max(minSize1, minSize2);
         } else {
@@ -692,7 +706,13 @@ class AppMenuButton {
         childBox.y1 = box.y1 + yPadding;
         childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
 
-        if (this.labelVisible) {
+        if (allocWidth < naturalWidth) {
+            this.labelVisible = false;
+        } else {
+            this.labelVisible = this.labelVisiblePref;
+        }
+
+        if (this.drawLabel) {
             if (direction === Clutter.TextDirection.LTR) {
                 childBox.x1 = box.x1;
             } else {
@@ -705,7 +725,7 @@ class AppMenuButton {
         }
         this._iconBox.allocate(childBox, flags);
 
-        if (this.labelVisible) {
+        if (this.drawLabel) {
             [minWidth, minHeight, naturalWidth, naturalHeight] = this._label.get_preferred_size();
 
             yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
@@ -741,10 +761,12 @@ class AppMenuButton {
     updateLabelVisible() {
         if (this._applet.showLabelPanel) {
             this._label.show();
-            this.labelVisible = true;
+            this.labelVisiblePref = true;
+            this.drawLabel = true;
         } else {
             this._label.hide();
-            this.labelVisible = false;
+            this.labelVisiblePref = false;
+            this.drawLabel = false;
         }
     }
 
@@ -777,22 +799,28 @@ class AppMenuButton {
     }
 
     _flashButton() {
-        if (!this._needsAttention)
+        if (!this._needsAttention || this._flashTimer)
             return;
 
         let counter = 0;
-        let sc = "window-list-item-demands-attention";
+        const sc = "window-list-item-demands-attention";
 
-        Mainloop.timeout_add(FLASH_INTERVAL, () => {
-            if (!this._needsAttention)
+        this._flashTimer = Mainloop.timeout_add(FLASH_INTERVAL, () => {
+            if (!this._needsAttention) {
+                this._flashTimer = null;
                 return false;
+            }
 
             if (this.actor.has_style_class_name(sc))
                 this.actor.remove_style_class_name(sc);
             else
                 this.actor.add_style_class_name(sc);
 
-            return counter++ < FLASH_MAX_COUNT;
+            const continueFlashing = (counter++ < FLASH_MAX_COUNT);
+            if (!continueFlashing) {
+                this._flashTimer = null;
+            }
+            return continueFlashing;
         });
     }
 };
@@ -1017,8 +1045,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("reverse-scrolling", "reverseScroll");
         this.settings.bind("left-click-minimize", "leftClickMinimize");
         this.settings.bind("middle-click-close", "middleClickClose");
-        this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("button-width", "buttonWidth", this._refreshAllItems);
+        this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("panel-show-label", "showLabelPanel", this._updateLabels);
         this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
         this.settings.bind("window-preview-show-label", "showLabel", this._onPreviewChanged);
@@ -1116,6 +1144,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
         if (this.appletEnabled) {
             this._updateSpacing();
         }
+
+        this._updateAllIconGeometry()
     }
 
     _updateSpacing() {
@@ -1216,6 +1246,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
         if (window.actor.visible)
             window.setIcon();
+
+        window.updateIconGeometry();
     }
 
     _refreshAllItems() {
@@ -1286,6 +1318,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.refreshing = false;
 
         this._applySavedOrder();
+        this._updateAllIconGeometry();
     }
 
     _addWindow(metaWindow, transient) {
@@ -1315,6 +1348,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         }
 
         this._saveOrder();
+        this._updateAllIconGeometry();
     }
 
     _removeWindow(metaWindow) {
@@ -1328,6 +1362,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         }
 
         this._saveOrder();
+        this._updateAllIconGeometry();
     }
 
     _shouldAdd(metaWindow) {
@@ -1382,6 +1417,12 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.lastWindowOrder = new_order.join("::");
     }
 
+    _updateAllIconGeometry() {
+        for (let window of this._windows) {
+            window.updateIconGeometry();
+        }
+    }
+
     handleDragOver(source, actor, x, y, time) {
         if (this._inEditMode)
             return DND.DragMotionResult.MOVE_DROP;
@@ -1428,6 +1469,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.manager_container.set_child_at_index(source.actor, this._dragPlaceholderPos);
 
         this._saveOrder();
+        this._updateAllIconGeometry();
 
         return true;
     }

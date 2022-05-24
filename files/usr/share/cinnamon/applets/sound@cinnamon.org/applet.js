@@ -173,9 +173,12 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
     }
 
     _onKeyPressEvent(actor, event) {
-        let key = event.get_key_symbol();
+        const key = event.get_key_symbol();
         if (key === Clutter.KEY_Right || key === Clutter.KEY_Left) {
             let delta = key === Clutter.KEY_Right ? VOLUME_ADJUSTMENT_STEP : -VOLUME_ADJUSTMENT_STEP;
+            if (St.Widget.get_default_direction() === St.TextDirection.RTL)
+                delta = -delta;
+
             this._value = Math.max(0, Math.min(this._value + delta/this.applet._volumeMax*this.applet._volumeNorm, 1));
             this._slider.queue_repaint();
             this.emit('value-changed', this._value);
@@ -242,6 +245,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
 class Seeker extends Slider.Slider {
     constructor(mediaServerPlayer, props, playerName) {
         super(0, true);
+        this.actor.set_direction(St.TextDirection.LTR); //Do not invert on RTL layout
 
         this.canSeek = true;
         this.status = 'Stopped';
@@ -1010,6 +1014,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this.mute_in_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute input"), false, "microphone-sensitivity-none", St.IconType.SYMBOLIC);
         this._applet_context_menu.addMenuItem(this.mute_out_switch);
         this._applet_context_menu.addMenuItem(this.mute_in_switch);
+        this.mute_in_switch.actor.hide();
 
         this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -1620,8 +1625,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         } else if (stream instanceof Cvc.MixerSourceOutput) {
             //for source outputs, only show the input section
             this._streams.push({id: id, type: "SourceOutput"});
-            if (this._recordingAppsNum++ === 0)
+            if (this._recordingAppsNum++ === 0) {
                 this._inputSection.actor.show();
+                this.mute_in_switch.actor.show();
+            }
         }
     }
 
@@ -1637,8 +1644,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                     if (this._outputApplicationsMenu.menu.numMenuItems === 0)
                         this._outputApplicationsMenu.actor.hide();
                 } else if (stream.type === "SourceOutput") {
-                    if(--this._recordingAppsNum === 0)
+                    if(--this._recordingAppsNum === 0) {
                         this._inputSection.actor.hide();
+                        this.mute_in_switch.actor.hide();
+                    }
                 }
                 this._streams.splice(i, 1);
                 break;

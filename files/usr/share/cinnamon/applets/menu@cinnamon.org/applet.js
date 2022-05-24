@@ -59,10 +59,6 @@ const MATCH_ADDERS = [
     3000 // id
 ];
 
-function strip(str) {
-    return str.replace(/[^\p{L}\p{N}]/gu, "");
-}
-
 /* VisibleChildIterator takes a container (boxlayout, etc.)
  * and creates an array of its visible children and their index
  * positions.  We can then work through that list without
@@ -405,7 +401,10 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
                 }
                 break;
             default:
-                return true;
+                if (this._action.startsWith("action_")) {
+                    let action = this._action.substring(7);
+                    this._appButton.app.get_app_info().launch_action(action, global.create_app_launch_context());
+                } else return true;
         }
         this._appButton.applet.toggleContextMenu(this._appButton);
         this._appButton.applet.menu.close();
@@ -476,6 +475,16 @@ class GenericApplicationButton extends SimpleMenuItem {
         if (this.applet._canUninstallApps) {
             menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "edit-delete");
             menu.addMenuItem(menuItem);
+        }
+        
+        let actions = this.app.get_app_info().list_actions();
+        if (actions) {
+            for (let i = 0; i < actions.length; i++) {
+                let icon = Util.getDesktopActionIcon(actions[i]);
+                let label = this.app.get_app_info().get_action_name(actions[i]);
+                menuItem = new ApplicationContextMenuItem(this, label, "action_" + actions[i], icon);
+                menu.addMenuItem(menuItem);
+            }
         }
     }
 }
@@ -558,10 +567,10 @@ class ApplicationButton extends GenericApplicationButton {
         this.isDraggableApp = true;
 
         this.searchStrings = [
-            strip(Util.latinise(app.get_name().toLowerCase())),
-            app.get_keywords() ? strip(Util.latinise(app.get_keywords().toLowerCase())) : "",
-            app.get_description() ? strip(Util.latinise(app.get_description().toLowerCase())) : "",
-            app.get_id() ? strip(Util.latinise(app.get_id().toLowerCase())) : ""
+            AppUtils.decomp_string(app.get_name()),
+            app.get_keywords() ? AppUtils.decomp_string(app.get_keywords()) : "",
+            app.get_description() ? AppUtils.decomp_string(app.get_description()) : "",
+            app.get_id() ? AppUtils.decomp_string(app.get_id()) : ""
         ];
     }
 
@@ -658,7 +667,7 @@ class PlaceButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            strip(Util.latinise(place.name.toLowerCase()))
+            AppUtils.decomp_string(place.name.toLowerCase())
         ];
     }
 
@@ -710,7 +719,7 @@ class RecentButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            strip(Util.latinise(recent.name.toLowerCase()))
+            AppUtils.decomp_string(recent.name)
         ];
     }
 
@@ -818,7 +827,7 @@ class FavoriteButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            strip(Util.latinise(favoriteInfo.display_name.toLowerCase()))
+            AppUtils.decomp_string(favoriteInfo.display_name)
         ];
     }
 
@@ -921,15 +930,14 @@ class CategoryButton extends SimpleMenuItem {
 
         this.addLabel(this.name, 'menu-category-button-label');
 
-        if(this.applet.categoryHover)
-            this.actor_motion_id = this.actor.connect("motion-event", Lang.bind(applet, this.applet._categoryMotionEvent));
+        this.actor_motion_id = 0;
     }
 
     activate() {
         if(this.applet.searchActive)
             return;
 
-        this.applet._clearPrevCatSelection(this.actor);
+        this.applet._clearPrevCatSelection(this.actor, true);
         this.applet._select_category(this.categoryId);
         this.actor.style_class = "menu-category-button-selected";
     }
@@ -1294,8 +1302,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 child._delegate.actor_motion_id = 0;
             }
 
-            if (this.categoryHover)
+            if (this.categoryHover) {
                 child._delegate.actor_motion_id = child.connect("motion-event", Lang.bind(this, this._categoryMotionEvent));
+            }
         }, this);
     }
 
@@ -1343,6 +1352,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         this._size_dirty = true;
+
+        this._updateCategoryHover();
     }
 
     openMenu() {
@@ -1954,7 +1965,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
 
                             if (this.favBoxShow) {
-                                this._buttonEnterEvent(item_actor._delegate);
+                                this._buttonEnterEvent(item_actor._delegate, true);
                                 this._previousSelectedActor = this.categoriesBox.get_child_at_index(index);
                                 item_actor = this.favBoxIter.getFirstVisible();
                             }
@@ -2011,7 +2022,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             this._previousTreeSelectedActor = item_actor;
                             index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
 
-                            this._buttonEnterEvent(item_actor._delegate);
+                            this._buttonEnterEvent(item_actor._delegate, true);
                             item_actor = (this._previousVisibleIndex != null) ?
                                 this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
                                 this.appBoxIter.getFirstVisible();
@@ -2057,7 +2068,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             this._previousTreeSelectedActor = item_actor;
                             index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
 
-                            this._buttonEnterEvent(item_actor._delegate);
+                            this._buttonEnterEvent(item_actor._delegate, true);
                             item_actor = (this._previousVisibleIndex != null) ?
                                 this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
                                 this.appBoxIter.getFirstVisible();
@@ -2180,15 +2191,19 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         if (!item_actor || item_actor === this.searchEntry) {
             return false;
         }
-        this._buttonEnterEvent(item_actor._delegate);
+        this._buttonEnterEvent(item_actor._delegate, true);
         return true;
     }
 
-    _buttonEnterEvent(button) {
+    _buttonEnterEvent(button, synthetic=false) {
         let parent = button.actor.get_parent();
         if (this._activeContainer === this.categoriesBox && parent !== this._activeContainer) {
             this._previousTreeSelectedActor = this._activeActor;
             this._previousSelectedActor = null;
+        }
+        if (this._previousTreeSelectedActor && this._activeContainer !== this.categoriesBox &&
+                parent !== this._activeContainer && button !== this._previousTreeSelectedActor && !this.searchActive) {
+            this._previousTreeSelectedActor.style_class = "menu-category-button";
         }
         if (parent != this._activeContainer && parent._vis_iter) {
             parent._vis_iter.reloadVisible();
@@ -2200,7 +2215,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
         if (parent === this.categoriesBox && !this.searchActive) {
             this._previousSelectedActor = _maybePreviousActor;
-        //  this._clearPrevCatSelection(); // seems redundant with line 2212, and conflicted with category highlight in click mode
+            this._clearPrevCatSelection(null, synthetic);
         }
         this._activeContainer = parent;
         this._activeActor = button.actor;
@@ -2213,10 +2228,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         if (button instanceof CategoryButton) {
             if (this.searchActive)
                 return;
-
             button.isHovered = true;
-            if (this.categoryHover) {
-                this._clearPrevCatSelection(button.actor);
+            if (this.categoryHover || (button.categoryId !== this.lastSelectedCategory)) {
+                this._clearPrevCatSelection(button.actor, synthetic);
+            }
+            if (this.categoryHover || synthetic) {
                 this._select_category(button.categoryId);
             }
         } else {
@@ -2248,10 +2264,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 }
             }
             button.isHovered = false;
-
-            // unhighlight button if it doesn't correspond to the current category. only happens in click mode
-            if(button.categoryId != this.lastSelectedCategory && !this.searchActive)
-                button.actor.style_class = "menu-category-button";
         } else {
             this._previousSelectedActor = button.actor;
             this.selectedAppTitle.set_text("");
@@ -2277,8 +2289,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
-    _clearPrevCatSelection(actor) {
-        if (this._previousTreeSelectedActor && this._previousTreeSelectedActor != actor) {
+    _clearPrevCatSelection(actor, synthetic=false) {
+        if (this._previousTreeSelectedActor && this._previousTreeSelectedActor != actor &&
+            (this.categoryHover ? true : this._previousTreeSelectedActor._delegate.categoryId !== this.lastSelectedCategory)) {
+            this._previousTreeSelectedActor.style_class = "menu-category-button";
             if (this._previousTreeSelectedActor._delegate) {
                 this._buttonLeaveEvent(this._previousTreeSelectedActor._delegate);
             }
@@ -2287,10 +2301,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this._previousVisibleIndex = null;
                 this._previousTreeSelectedActor = actor;
             }
+        } else {
+            if (this.categoryHover || synthetic) {
+                this.categoriesBox.get_children().forEach(child => child.style_class = "menu-category-button");
+            }
         }
-
-        // always clear all highlights (needed for click mode)
-        this.categoriesBox.get_children().forEach(child => child.style_class = "menu-category-button");
     }
 
      /* Category Box
@@ -3185,8 +3200,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _doSearch(rawPattern){
-        let lowerPattern = Util.latinise(rawPattern.toLowerCase());
-        let pattern = strip(lowerPattern);
+        let lowerPattern = AppUtils.decomp_unstripped(rawPattern);
+        let pattern = AppUtils.decomp_stripped(rawPattern);
 
         this._searchTimeoutId = 0;
         this._activeContainer = null;
@@ -3222,7 +3237,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
             this._activeContainer = this.applicationsBox;
             this._scrollToButton(item_actor._delegate);
-            this._buttonEnterEvent(item_actor._delegate);
+            this._buttonEnterEvent(item_actor._delegate, true);
         } else {
             this.selectedAppTitle.set_text("");
             this.selectedAppDescription.set_text("");
@@ -3242,7 +3257,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                             this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
                             this._activeContainer = this.applicationsBox;
                             if (item_actor && item_actor != this.searchEntry) {
-                                this._buttonEnterEvent(item_actor._delegate);
+                                this._buttonEnterEvent(item_actor._delegate, true);
                             }
                         }
                     }

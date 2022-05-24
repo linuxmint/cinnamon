@@ -740,10 +740,10 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .calendar-day-event-dot-box {
-    margin-top: 22px;
+    margin-top: 1.75em;
 
     /* any other way do do something like this? */
-    max-rows: 2;
+    max-rows: 1;
 }
 
 .calendar-day-event-dot {
@@ -1424,6 +1424,12 @@ StScrollBar StButton#vhandle:hover {
  * Grouped window list (grouped-window-list@cinnamon.org)
  * ===================================================================*/
 
+.grouped-window-list-box {
+    spacing: 2px;
+}
+.grouped-window-list-box.vertical {
+    spacing: 3px;
+}
 .grouped-window-list-thumbnail-label {
     padding-left: 4px;
 }

@@ -647,61 +647,77 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
     }
 
     _sliderRepaint(area) {
-        let cr = area.get_context();
-        let themeNode = area.get_theme_node();
-        let [width, height] = area.get_surface_size();
+        const rtl = this.actor.get_direction() === St.TextDirection.RTL;
 
-        let handleRadius = themeNode.get_length('-slider-handle-radius');
+        const cr = area.get_context();
+        const themeNode = area.get_theme_node();
+        const [width, height] = area.get_surface_size();
 
-        let sliderWidth = width - 2 * handleRadius;
-        let sliderHeight = themeNode.get_length('-slider-height');
+        const handleRadius = themeNode.get_length('-slider-handle-radius');
 
-        let sliderBorderWidth = themeNode.get_length('-slider-border-width');
-        let sliderBorderRadius = Math.min(width, sliderHeight) / 2;
+        const sliderWidth = width - 2 * handleRadius;
+        const sliderHeight = themeNode.get_length('-slider-height');
 
-        let sliderBorderColor = themeNode.get_color('-slider-border-color');
-        let sliderColor = themeNode.get_color('-slider-background-color');
+        const sliderBorderWidth = themeNode.get_length('-slider-border-width');
+        const sliderBorderRadius = Math.min(width, sliderHeight) / 2;
 
-        let sliderActiveBorderColor = themeNode.get_color('-slider-active-border-color');
-        let sliderActiveColor = themeNode.get_color('-slider-active-background-color');
+        const sliderBorderColor = themeNode.get_color('-slider-border-color');
+        const sliderColor = themeNode.get_color('-slider-background-color');
+
+        const sliderActiveBorderColor = themeNode.get_color('-slider-active-border-color');
+        const sliderActiveColor = themeNode.get_color('-slider-active-background-color');
 
         const TAU = Math.PI * 2;
 
-        let handleX = handleRadius + (width - 2 * handleRadius) * this._value;
+        const handleX = rtl ?
+            width - handleRadius - sliderWidth * this._value :
+            handleRadius + sliderWidth * this._value;
+        const handleY = height / 2;
 
-        cr.arc(sliderBorderRadius + sliderBorderWidth, height / 2, sliderBorderRadius, TAU * 1/4, TAU * 3/4);
+        let sliderLeftBorderColor = sliderActiveBorderColor;
+        let sliderLeftColor = sliderActiveColor;
+        let sliderRightBorderColor = sliderBorderColor;
+        let sliderRightColor = sliderColor;
+        if (rtl) {
+            sliderLeftColor = sliderColor;
+            sliderLeftBorderColor = sliderBorderColor;
+            sliderRightColor = sliderActiveColor;
+            sliderRightBorderColor = sliderActiveBorderColor;
+        }
+
+        cr.arc(sliderBorderRadius + sliderBorderWidth, handleY, sliderBorderRadius, TAU * 1/4, TAU * 3/4);
         cr.lineTo(handleX, (height - sliderHeight) / 2);
         cr.lineTo(handleX, (height + sliderHeight) / 2);
         cr.lineTo(sliderBorderRadius + sliderBorderWidth, (height + sliderHeight) / 2);
-        Clutter.cairo_set_source_color(cr, sliderActiveColor);
+        Clutter.cairo_set_source_color(cr, sliderLeftColor);
         cr.fillPreserve();
-        Clutter.cairo_set_source_color(cr, sliderActiveBorderColor);
+        Clutter.cairo_set_source_color(cr, sliderLeftBorderColor);
         cr.setLineWidth(sliderBorderWidth);
         cr.stroke();
 
-        cr.arc(width - sliderBorderRadius - sliderBorderWidth, height / 2, sliderBorderRadius, TAU * 3/4, TAU * 1/4);
+        cr.arc(width - sliderBorderRadius - sliderBorderWidth, handleY, sliderBorderRadius, TAU * 3/4, TAU * 1/4);
         cr.lineTo(handleX, (height + sliderHeight) / 2);
         cr.lineTo(handleX, (height - sliderHeight) / 2);
         cr.lineTo(width - sliderBorderRadius - sliderBorderWidth, (height - sliderHeight) / 2);
-        Clutter.cairo_set_source_color(cr, sliderColor);
+        Clutter.cairo_set_source_color(cr, sliderRightColor);
         cr.fillPreserve();
-        Clutter.cairo_set_source_color(cr, sliderBorderColor);
+        Clutter.cairo_set_source_color(cr, sliderRightBorderColor);
         cr.setLineWidth(sliderBorderWidth);
         cr.stroke();
 
-        let handleY = height / 2;
-
-        let color = themeNode.get_foreground_color();
+        const color = themeNode.get_foreground_color();
         Clutter.cairo_set_source_color(cr, color);
-        cr.arc(handleX, handleY, handleRadius, 0, 2 * Math.PI);
+        cr.arc(handleX, handleY, handleRadius, 0, TAU);
         cr.fill();
 
         // Draw a mark to indicate a certain value
         if (this._mark_position > 0) {
-            let markWidth = 2;
-            let markHeight = sliderHeight + 4;
-            let xMark = sliderWidth * this._mark_position + markWidth / 2;
-            let yMark = height / 2 - markHeight / 2;
+            const markWidth = 2;
+            const markHeight = sliderHeight + 4;
+            const xMark = rtl ?
+                width - sliderWidth * this._mark_position - markWidth / 2 :
+                sliderWidth * this._mark_position + markWidth / 2;
+            const yMark = height / 2 - markHeight / 2;
             cr.rectangle(xMark, yMark, markWidth, markHeight);
             cr.fill();
         }
@@ -762,21 +778,28 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
     }
 
     _moveHandle(absX, absY) {
-        let relX, relY, sliderX, sliderY;
-        [sliderX, sliderY] = this._slider.get_transformed_position();
-        relX = absX - sliderX;
-        relY = absY - sliderY;
+        const [sliderX, sliderY] = this._slider.get_transformed_position();
+        const relX = absX - sliderX;
+        const relY = absY - sliderY;
 
-        let width = this._slider.width;
-        let handleRadius = this._slider.get_theme_node().get_length('-slider-handle-radius');
+        const width = this._slider.width;
+        const handleRadius = this._slider.get_theme_node().get_length('-slider-handle-radius');
 
         let newvalue;
-        if (relX < handleRadius)
-            newvalue = 0;
-        else if (relX > width - handleRadius)
-            newvalue = 1;
+        if (this.actor.get_direction() === St.TextDirection.RTL)
+            if (relX < handleRadius)
+                newvalue = 1;
+            else if (relX > width - handleRadius)
+                newvalue = 0;
+            else
+                newvalue = 1 - (relX - handleRadius) / (width - 2 * handleRadius);
         else
-            newvalue = (relX - handleRadius) / (width - 2 * handleRadius);
+            if (relX < handleRadius)
+                newvalue = 0;
+            else if (relX > width - handleRadius)
+                newvalue = 1;
+            else
+                newvalue = (relX - handleRadius) / (width - 2 * handleRadius);
 
         this._value = newvalue;
         this._slider.queue_repaint();
@@ -792,9 +815,12 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
     }
 
     _onKeyPressEvent (actor, event) {
-        let key = event.get_key_symbol();
+        const key = event.get_key_symbol();
         if (key === Clutter.KEY_Right || key === Clutter.KEY_Left) {
             let delta = key === Clutter.KEY_Right ? 0.1 : -0.1;
+            if (this.actor.get_direction() === St.TextDirection.RTL)
+                delta = -delta;
+
             this._value = Math.max(0, Math.min(this._value + delta, 1));
             this._slider.queue_repaint();
             this.emit('value-changed', this._value);
@@ -2711,7 +2737,7 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
         // the scrollbar added?) so just skip that case
         animate = animate && !needsScrollbar
 
-        let targetAngle = this.actor.text_direction == Clutter.TextDirection.RTL ? -90 : 90;
+        const targetAngle = this.actor.get_direction() === St.TextDirection.RTL ? -90 : 90;
 
         if (animate && global.settings.get_boolean("desktop-effects-on-menus")) {
             let [minHeight, naturalHeight] = this.actor.get_preferred_height(-1);
@@ -2800,9 +2826,14 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
     }
 
     _onKeyPressEvent(actor, event) {
-        // Move focus back to parent menu if the user types Left.
+        if(!this.isOpen) return false;
 
-        if (this.isOpen && event.get_key_symbol() === Clutter.KEY_Left) {
+        const rtl = this.actor.get_direction() === St.TextDirection.RTL;
+
+        // Move focus back to parent menu if the user
+        // types Left on ltr, or Right on rtl layout.
+        if ((event.get_key_symbol() === Clutter.KEY_Left && !rtl) ||
+            (event.get_key_symbol() === Clutter.KEY_Right && rtl)) {
             this.sourceActor._delegate.setActive(true);
             this.close(true);
             return true;
@@ -2862,7 +2893,9 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
                                                span: -1,
                                                align: St.Align.END });
 
-            this._triangle = arrowIcon(St.Side.RIGHT);
+            this._triangle = this.actor.get_direction() === St.TextDirection.RTL ?
+                arrowIcon(St.Side.LEFT) :
+                arrowIcon(St.Side.RIGHT);
             this._triangle.pivot_point = new Clutter.Point({ x: 0.5, y: 0.5 });
             this._triangleBin.child = this._triangle;
         }
@@ -2881,13 +2914,16 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
     }
 
     _onKeyPressEvent(actor, event) {
-        let symbol = event.get_key_symbol();
+        const symbol = event.get_key_symbol();
+        const rtl = this.actor.get_direction() === St.TextDirection.RTL;
+        const shouldOpen = (symbol === Clutter.KEY_Right && !rtl) || (symbol === Clutter.KEY_Left && rtl);
+        const shouldClose = (symbol === Clutter.KEY_Left && !rtl) || (symbol === Clutter.KEY_Right && rtl);
 
-        if (symbol === Clutter.KEY_Right) {
+        if (shouldOpen) {
             this.menu.open(true);
             this.menu.actor.navigate_focus(null, Gtk.DirectionType.DOWN, false);
             return true;
-        } else if (symbol === Clutter.KEY_Left && this.menu.isOpen) {
+        } else if (shouldClose && this.menu.isOpen) {
             this.menu.close();
             return true;
         }

@@ -17,6 +17,7 @@ const Main = imports.ui.main;
 const Util = imports.misc.util;
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
+const Interfaces = imports.misc.interfaces;
 
 const STATUS_UNKNOWN = 0;
 const STATUS_NO_CALENDARS = 1;
@@ -302,16 +303,40 @@ class EventsManager {
 
     start_events() {
         if (this._calendar_server == null) {
-            Cinnamon.CalendarServerProxy.new_for_bus(
-                Gio.BusType.SESSION,
-                // Gio.DBusProxyFlags.NONE,
-                Gio.DBusProxyFlags.DO_NOT_AUTO_START_AT_CONSTRUCTION,
-                "org.cinnamon.CalendarServer",
-                "/org/cinnamon/CalendarServer",
-                null,
-                this._calendar_server_ready.bind(this)
-            );
+            Interfaces.getDBusAsync((proxy, error) => {
+                if (error) {
+                    this.log_dbus_error(error);
+                    return;
+                }
+
+                proxy.NameHasOwnerRemote("org.gnome.evolution.dataserver.Calendar8", (has_owner, error) => {
+                    if (error) {
+                        this.log_dbus_error(error);
+                        return;
+                    }
+
+                    if (has_owner[0]) {
+                        log("calendar@cinnamon.org: Calendar events supported.")
+
+                        Cinnamon.CalendarServerProxy.new_for_bus(
+                            Gio.BusType.SESSION,
+                            Gio.DBusProxyFlags.DO_NOT_AUTO_START_AT_CONSTRUCTION,
+                            "org.cinnamon.CalendarServer",
+                            "/org/cinnamon/CalendarServer",
+                            null,
+                            this._calendar_server_ready.bind(this)
+                        );
+                    } else {
+                        log("calendar@cinnamon.org: No calendar event support (needs evolution-data-server)")
+
+                    }
+                });
+            })
         }
+    }
+
+    log_dbus_error(e) {
+        global.logError(`calendar@cinnamon.org: Could not check for calendar event support: ${e.toString()}`);
     }
 
     _calendar_server_ready(obj, res) {
@@ -947,6 +972,8 @@ class EventRow {
             } else {
                 // a timed event: "12:00 pm"
                 final_str += this.event.start.format(time_format);
+                final_str += ARROW_SEPARATOR;
+                final_str += this.event.end.format(time_format);
             }
 
             this.event_time.set_text(final_str);
