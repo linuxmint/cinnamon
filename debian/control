@@ -156,3 +156,15 @@ Description: Debugging symbols for the Cinnamon desktop
  and flexible.
  .
  This package contains the debugging symbols.
+
+Package: cinnamon-doc
+Section: doc
+Architecture: all
+Multi-Arch: foreign
+Depends: devhelp, ${misc:Depends}
+Description: Cinnamon documentation
+ Cinnamon is a modern Linux desktop which provides advanced innovative
+ features and a traditional user experience. It's easy to use, powerful
+ and flexible.
+ .
+ This package contains the code documentation for various Cinnamon components.
