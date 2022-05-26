@@ -2161,6 +2161,7 @@ var PopupMenuBase = class PopupMenuBase {
     destroy() {
         this._signals.disconnectAllSignals();
         this.removeAll();
+        this.actor.destroy();
         /**
          * SIGNAL:destroy
          *
