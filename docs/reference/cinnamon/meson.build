@@ -1,5 +1,6 @@
 ignore = [
     'cinnamon-recorder-src.h',
+    'cinnamon-recorder.h',
     st_headers,
     st_private_headers,
     tray_headers,
