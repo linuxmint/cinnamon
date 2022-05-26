@@ -89,6 +89,7 @@ st_private_headers = [
     'croco/cr-utils.h',
     'croco/libcroco-config.h',
     'croco/libcroco.h',
+    'st-background-effect.h',
     'st-private.h',
     'st-table-private.h',
     'st-theme-private.h',
