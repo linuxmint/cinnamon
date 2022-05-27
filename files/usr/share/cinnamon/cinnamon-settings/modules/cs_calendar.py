@@ -182,7 +182,7 @@ class CsdDBusProxyHandler(object):
         try:
             Gio.DBusProxy.new_for_bus(Gio.BusType.SYSTEM, Gio.DBusProxyFlags.NONE, None,
                                       'org.cinnamon.SettingsDaemon.DateTimeMechanism',
-                                      '/',
+                                      '/org/cinnamon/SettingsDaemon/DateTimeMechanism',
                                       'org.cinnamon.SettingsDaemon.DateTimeMechanism',
                                       None, self._on_proxy_ready, None)
         except dbus.exceptions.DBusException as e:
