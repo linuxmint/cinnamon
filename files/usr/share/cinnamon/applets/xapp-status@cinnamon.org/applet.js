@@ -451,6 +451,8 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
     }
 
     sortIcons() {
+        this.onSystrayRolesChanged();
+
         let icon_list = []
 
         for (let i in this.statusIcons) {
