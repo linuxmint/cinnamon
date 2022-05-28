@@ -130,8 +130,6 @@ class AppGroup {
         this.badge = new St.BoxLayout({
             style_class: 'grouped-window-list-badge',
             important: true,
-            width: 12 * global.ui_scale,
-            height: 12 * global.ui_scale,
             x_align: St.Align.START,
             y_align: St.Align.MIDDLE,
             show_on_set_parent: false,
@@ -140,8 +138,7 @@ class AppGroup {
             style_class: 'grouped-window-list-number-label',
             important: true,
             text: '',
-            anchor_x: St.Widget.get_default_direction() === St.TextDirection.RTL ? 3 * global.ui_scale : -3 * global.ui_scale,
-            anchor_y: 1 + (global.ui_scale > 1 ? 2 : 0)
+            anchor_x: -3 * global.ui_scale,
         });
         this.numberLabel.clutter_text.ellipsize = false;
         this.badge.add(this.numberLabel, {
@@ -149,6 +146,7 @@ class AppGroup {
             y_align: St.Align.START,
         });
         this.actor.add_child(this.badge);
+        this.badge.set_text_direction(St.TextDirection.LTR);
 
         this.label = new St.Label({
             style_class: 'grouped-window-list-button-label',
