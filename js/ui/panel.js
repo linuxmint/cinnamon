@@ -173,10 +173,10 @@ function checkPanelUpgrade()
 
     switch (oldLayout) {
         case "flipped":
-            global.settings.set_strv("panels-enabled", ["1:0:top"]);
+            setPanelsEnabledList(["1:0:top"]);
             break;
         case "classic":
-            global.settings.set_strv("panels-enabled", ["1:0:top", "2:0:bottom"]);
+            setPanelsEnabledList(["1:0:top", "2:0:bottom"]);
             break;
         case "traditional": /* Default (explicitly set) - no processing needed */
         default:
@@ -271,6 +271,84 @@ function setHeightForPanel(panel) {
     return height;
 }
 
+function convertSettingsXMonToLMon(strv) {
+    let out = [];
+
+    for (let i = 0; i < strv.length; i++) {
+        let elements = strv[i].split(":");
+
+        if (elements.length !== 3)
+            continue;
+
+        let [id, xmon, pos] = elements;
+
+        let l_mon = global.display.xinerama_index_to_logical_index(xmon);
+
+        out.push(`${id}:${l_mon}:${pos}`);
+    }
+
+    return out;
+}
+
+function convertSettingsLMonToXMon(strv) {
+    let out = [];
+
+    for (let i = 0; i < strv.length; i++) {
+        let elements = strv[i].split(":");
+
+        if (elements.length !== 3)
+            continue;
+
+        let [id, lmon, pos] = elements;
+
+        let x_mon = global.display.logical_index_to_xinerama_index(lmon);
+
+        out.push(`${id}:${x_mon}:${pos}`);
+    }
+
+    return out;
+}
+
+function getPanelsEnabledList() {
+    let panelProperties = global.settings.get_strv("panels-enabled");
+    return convertSettingsXMonToLMon(panelProperties);
+}
+
+function setPanelsEnabledList(list) {
+    let converted = convertSettingsLMonToXMon(list)
+    let panelProperties = global.settings.set_strv("panels-enabled", converted);
+}
+
+function updatePanelsMeta(meta, panel_props) {
+    let changed = false;
+
+    // panelMeta is [panel_id, monitor]
+    // Find matching panel ids and update their monitor value if necessary.
+
+    for (let i = 0; i < meta.length; i++) {
+        if (!meta[i])
+            continue;
+
+        panel_props.forEach(prop => {
+            let elements = prop.split(":");
+            let [id_str, lmon_str, pos_str] = elements;
+
+            let id = parseInt(id_str);
+
+            if (id === i) {
+                let l_mon = parseInt(lmon_str);
+
+                if (meta[i][0] !== l_mon) {
+                    meta[i][0] = l_mon;
+                    changed = true;
+                }
+            }
+        });
+    }
+
+    return changed;
+}
+
 /**
  * #PanelManager
  *
@@ -331,7 +409,7 @@ PanelManager.prototype = {
         let panels_used = []; // [monitor] [top, bottom, left, right].  Used to keep track of which panel types are in use,
                               // as we need knowledge of the combinations in order to instruct the correct panel to create a corner
 
-        let panelProperties = global.settings.get_strv("panels-enabled");
+        let panelProperties = getPanelsEnabledList();
         //
         // First pass through just to count the monitors, as there is no ordering to rely on
         //
@@ -508,14 +586,15 @@ PanelManager.prototype = {
      */
     removePanel: function(panelId) {
         this.panelCount -= 1;
-        let list = global.settings.get_strv("panels-enabled");
+        let list = getPanelsEnabledList();
         for (let i = 0, len = list.length; i < len; i++) {
             if (list[i].split(":")[0] == panelId) {
                 list.splice(i, 1);
                 break;
             }
         }
-        global.settings.set_strv("panels-enabled", list);
+
+        setPanelsEnabledList(list);
     },
 
     /**
@@ -526,7 +605,7 @@ PanelManager.prototype = {
      * Adds a new panel to the specified position
      */
     addPanel: function(monitorIndex, panelPosition) {
-        let list = global.settings.get_strv("panels-enabled");
+        let list = getPanelsEnabledList();
         let i = 0; // Start counting at 1 for compatibility
 
         // Magic: Keep recursing until there is a free panel id
@@ -564,7 +643,7 @@ PanelManager.prototype = {
             default:
                 global.log("addPanel - unrecognised panel position "+panelPosition);
         }
-        global.settings.set_strv("panels-enabled", list);
+        setPanelsEnabledList(list);
 
         // Delete all panel dummies
         if (this.addPanelMode)
@@ -579,7 +658,7 @@ PanelManager.prototype = {
      * Moves the panel of id this.moveId to the specified position
      */
     movePanel: function(monitorIndex, panelPosition) {
-        let list = global.settings.get_strv("panels-enabled");
+        let list = getPanelsEnabledList();
         let i = -1;
 
         for (let i = 0, len = list.length; i < len; i++) {
@@ -605,7 +684,7 @@ PanelManager.prototype = {
             }
         }
 
-        global.settings.set_strv("panels-enabled", list);
+        setPanelsEnabledList(list);
 
         // Delete all panel dummies
         if (this.addPanelMode)
@@ -796,7 +875,8 @@ PanelManager.prototype = {
         let newMeta = new Array(this.panels.length);
         let drawcorner = [false,false];
 
-        let panelProperties = global.settings.get_strv("panels-enabled");
+        let panelProperties = getPanelsEnabledList();
+
 
         for (let i = 0; i < panelProperties.length; i ++) {
 
@@ -982,10 +1062,15 @@ PanelManager.prototype = {
         let monitorCount = global.screen.get_n_monitors();
         let drawcorner = [false, false];
 
+        let panelProperties = getPanelsEnabledList()
+        // adjust any changes to logical/xinerama monitor relationships
+        let monitors_changed = updatePanelsMeta(this.panelsMeta, panelProperties);
+
         for (let i = 0, len = this.panelsMeta.length; i < len; i++) {
             if (!this.panelsMeta[i]) {
                 continue;
             }
+
             if (!this.panels[i]) { // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again
                                                          // - the monitor may just have been reconnected
                 if (this.panelsMeta[i][0] < monitorCount)  // just check that the monitor is there
@@ -1001,9 +1086,16 @@ PanelManager.prototype = {
                     this.panelCount -= 1;
                 }
 
-            } else { // Nothing happens. Re-allocate panel
+            } else {
                 this.panels[i]._monitorsChanged = true;
-                this.panels[i]._moveResizePanel();
+
+                if (monitors_changed) {
+                    this.panels[i].updatePosition(...this.panelsMeta[i]);
+                    this.emit("monitors-changed");
+                } else {
+                     // Nothing happens. Re-allocate panel
+                    this.panels[i]._moveResizePanel();
+                }
             }
         }
 
@@ -1017,7 +1109,7 @@ PanelManager.prototype = {
             if (this.panels[i])
                 this.panels[i]._destroycorners();
         }
-        let panelProperties = global.settings.get_strv("panels-enabled");
+
         this._fullCornerLoad(panelProperties);
 
         this._setMainPanel();
@@ -1119,6 +1211,8 @@ PanelManager.prototype = {
     }
 
 };  // end of panel manager
+Signals.addSignalMethods(PanelManager.prototype);
+
 
 /**
  * #PanelDummy

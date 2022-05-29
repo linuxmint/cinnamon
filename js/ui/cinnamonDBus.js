@@ -435,7 +435,8 @@ CinnamonDBus.prototype = {
             for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
                 let current = Main.layoutManager.monitors[i];
 
-                monitors.push(current.index);
+                let xinerama_index = global.display.logical_index_to_xinerama_index(current.index);
+                monitors.push(xinerama_index);
             }
         } catch (e) {
             log(e.message);
@@ -451,13 +452,14 @@ CinnamonDBus.prototype = {
     },
 
     GetMonitorWorkRect: function(index) {
-        let n_mons = global.screen.get_n_monitors();
+        let n_mons = global.display.get_n_monitors();
 
         if ((index < 0) || index > (n_mons - 1)) {
             throw new Error("GetMonitorWorkRect: invalid monitor index: " + index + ".  Must be 0 to " + (n_mons - 1));
         }
 
-        let rect = global.screen.get_active_workspace().get_work_area_for_monitor(index);
+        let logical_index = global.display.xinerama_index_to_logical_index(index);
+        let rect = global.workspace_manager.get_active_workspace().get_work_area_for_monitor(logical_index);
 
         return [rect.x, rect.y, rect.width, rect.height];
     },
