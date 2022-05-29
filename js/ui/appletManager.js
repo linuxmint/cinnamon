@@ -12,6 +12,7 @@ const ModalDialog = imports.ui.modalDialog;
 const {getModuleByIndex} = imports.misc.fileUtils;
 const {queryCollection, findIndex} = imports.misc.util;
 const Gettext = imports.gettext;
+const Panel = imports.ui.panel;
 
 // Maps uuid -> importer object (applet directory tree)
 var applets;
@@ -514,7 +515,7 @@ function removeApplet(appletDefinition) {
 
 function moveApplet(appletDefinition, allowedLayout) {
     let panelId = null;
-    let panels = global.settings.get_strv('panels-enabled');
+    let panels = Panel.getPanelsEnabledList();
     for (let i = 0; i < panels.length; i++) {
         let panelInfo = panels[i].split(':');
         global.logWarning(allowedLayout==Applet.AllowedLayout.HORIZONTAL);

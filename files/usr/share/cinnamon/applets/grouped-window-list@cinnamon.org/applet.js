@@ -297,7 +297,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.signals.connect(global.window_manager, 'switch-workspace', (...args) => this.onSwitchWorkspace(...args));
         this.signals.connect(global.screen, 'workspace-removed', (...args) => this.onWorkspaceRemoved(...args));
         this.signals.connect(global.screen, 'window-monitor-changed', (...args) => this.onWindowMonitorChanged(...args));
-        this.signals.connect(global.screen, 'monitors-changed', (...args) => this.on_applet_instances_changed(...args));
+        this.signals.connect(Main.panelManager, 'monitors-changed', (...args) => this.on_applet_instances_changed(...args));
         this.signals.connect(global.screen, 'window-skip-taskbar-changed', (...args) => this.onWindowSkipTaskbarChanged(...args));
         this.signals.connect(global.display, 'window-marked-urgent', (...args) => this.updateAttentionState(...args));
         this.signals.connect(global.display, 'window-demands-attention', (...args) => this.updateAttentionState(...args));
