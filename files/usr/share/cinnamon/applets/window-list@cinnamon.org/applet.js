@@ -1228,13 +1228,13 @@ class CinnamonWindowListApplet extends Applet.Applet {
         if (!this._windows[i].getAttention())
             return;
 
-        if (window.get_workspace() != global.screen.get_active_workspace())
+        if (window.get_workspace() != global.workspace_manager.get_active_workspace())
             this._addWindow(window, true);
     }
 
     _refreshItem(window) {
         window.actor.visible =
-            (window.metaWindow.get_workspace() == global.screen.get_active_workspace()) ||
+            (window.metaWindow.get_workspace() == global.workspace_manager.get_active_workspace()) ||
             window.metaWindow.is_on_all_workspaces() ||
             this.showAllWorkspaces;
 
@@ -1269,7 +1269,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     _updateWatchedMonitors() {
-        let n_mons = Gdk.Screen.get_default().get_n_monitors();
+        let n_mons = global.display.get_n_monitors();
         let on_primary = this.panel.monitorIndex == Main.layoutManager.primaryIndex;
         let instances = Main.AppletManager.getRunningInstancesForUuid(this._uuid);
 

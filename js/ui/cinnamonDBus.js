@@ -143,7 +143,7 @@ CinnamonDBus.prototype = {
          * layoutManager.Chrome.updateRegions method.  Workspace code in muffin filters
          * out chrome updates that don't actually change the workarea before emitting this
          * signal, which is desirable. */
-        global.screen.connect("workareas-changed", ()=> this.EmitMonitorsChanged());
+        global.display.connect("workareas-changed", ()=> this.EmitMonitorsChanged());
     },
 
     /**
@@ -393,16 +393,16 @@ CinnamonDBus.prototype = {
 
     JumpToNewWorkspace: function() {
         Main._addWorkspace();
-        let num = global.screen.get_n_workspaces();
-        if (global.screen.get_workspace_by_index(num - 1) != null) {
-            global.screen.get_workspace_by_index(num - 1).activate(global.get_current_time());
+        let num = global.workspace_manager.get_n_workspaces();
+        if (global.workspace_manager.get_workspace_by_index(num - 1) != null) {
+            global.workspace_manager.get_workspace_by_index(num - 1).activate(global.get_current_time());
         }
     },
 
     RemoveCurrentWorkspace: function() {
-        let index = global.screen.get_active_workspace_index();
-        if (global.screen.get_workspace_by_index(index) != null) {
-            Main._removeWorkspace(global.screen.get_workspace_by_index(index));
+        let index = global.workspace_manager.get_active_workspace_index();
+        if (global.workspace_manager.get_workspace_by_index(index) != null) {
+            Main._removeWorkspace(global.workspace_manager.get_workspace_by_index(index));
         }
     },
 
