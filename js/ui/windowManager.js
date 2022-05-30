@@ -1147,6 +1147,7 @@ var WindowManager = class WindowManager {
 
             to_windows.forEach((w) => {
                 removeTweens(w);
+                w.set_position(w.origX, w.origY);
                 w.origX = undefined;
                 w.origY = undefined;
             });
