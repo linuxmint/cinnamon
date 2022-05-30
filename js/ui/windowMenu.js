@@ -220,6 +220,10 @@ var WindowMenuManager = class {
         menu.connect('activate', () => {
             window.check_alive(global.get_current_time());
         });
+        menu.connect('menu-animated-closed', () => {
+            menu.destroy()
+        });
+
         let destroyId = window.connect('unmanaged', () => {
             menu.close();
         });
@@ -239,7 +243,6 @@ var WindowMenuManager = class {
                 return;
 
             this._sourceActor.hide();
-            menu.destroy();
             window.disconnect(destroyId);
         });
     }
