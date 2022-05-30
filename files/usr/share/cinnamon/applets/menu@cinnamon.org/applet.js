@@ -1193,6 +1193,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.menu.setCustomStyleClass('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
+        this.menu.connect('menu-animated-closed', () => {
+            this._clearAllSelections();
+            this._hideAllAppActors();
+        });
 
         this.settings.bind("menu-custom", "menuCustom", this._updateIconAndLabel);
         this.settings.bind("menu-icon", "menuIcon", this._updateIconAndLabel);
@@ -1500,7 +1504,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._previousVisibleIndex = null;
 
             this._disableVectorMask();
-            this._clearAllSelections(true);
             this._scrollToButton(null, this.applicationsScrollBox);
             this._scrollToButton(null, this.categoriesScrollBox);
             this._scrollToButton(null, this.favoritesScrollBox);
@@ -2904,7 +2907,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.systemButtonsBox._vis_iter = this.sysBoxIter;
 
         Mainloop.idle_add(Lang.bind(this, function() {
-            this._clearAllSelections(true);
+            this._clearAllSelections();
+            this._hideAllAppActors();
         }));
 
         this.a11y_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.a11y.applications" });
@@ -2939,14 +2943,19 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.favoritesScrollBox.set_auto_scrolling(this.autoscroll_enabled);
     }
 
-    _clearAllSelections(hide_apps) {
+    _hideAllAppActors() {
+        let actors = this.applicationsBox.get_children();
+        for (let i = 0; i < actors.length; i++) {
+            let actor = actors[i];
+            actor.hide();
+        }
+    }
+
+    _clearAllSelections() {
         let actors = this.applicationsBox.get_children();
         for (let i = 0; i < actors.length; i++) {
             let actor = actors[i];
             actor.style_class = "menu-application-button";
-            if (hide_apps) {
-                actor.hide();
-            }
         }
         actors = this.categoriesBox.get_children();
         for (let i = 0; i < actors.length; i++){

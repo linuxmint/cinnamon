@@ -2429,7 +2429,11 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         if (this._activeMenuItem)
             this._activeMenuItem.setActive(false);
 
+        let did_animate = false;
+
         if (animate && Main.wm.desktop_effects_menus) {
+            did_animate = true;
+
             this.actor.set_position(...this._calculatePosition());
             this.actor.set_size(...this.actor.get_size());
             this.animating = true;
@@ -2458,6 +2462,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                     this.actor.remove_clip();
                     this.actor.set_size(-1, -1);
                     this.actor.opacity = 255;
+                    this.emit("menu-animated-closed");
                 }
             }
 
@@ -2489,6 +2494,11 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             this.actor.hide();
         }
         this.emit('open-state-changed', false);
+
+        // keep the order of open-state-changed -> menu-animated-closed in case it matters.
+        if (!did_animate) {
+            this.emit("menu-animated-closed");
+        }
     }
 
     /**
