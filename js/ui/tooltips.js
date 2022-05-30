@@ -83,6 +83,13 @@ TooltipBase.prototype = {
         this.mousePosition = null;
     },
 
+    _roundedMousePosition: function(event) {
+        let [x, y] = event.get_coords();
+        let rmp = [Math.round(x), Math.round(y)];
+
+        return rmp;
+    },
+
     _onMotionEvent: function(actor, event) {
         if (this._showTimer) {
             Mainloop.source_remove(this._showTimer);
@@ -96,7 +103,7 @@ TooltipBase.prototype = {
 
         if (!this.visible) {
             this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onShowTimerComplete));
-            this.mousePosition = event.get_coords();
+            this.mousePosition = this._roundedMousePosition(event);
         } else {
             this._hideTimer = Mainloop.timeout_add(500, Lang.bind(this, this._onHideTimerComplete));
         }
@@ -105,7 +112,7 @@ TooltipBase.prototype = {
     _onEnterEvent: function(actor, event) {
         if (!this._showTimer) {
             this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onShowTimerComplete));
-            this.mousePosition = event.get_coords();
+            this.mousePosition = this._roundedMousePosition(event);
         }
     },
 
