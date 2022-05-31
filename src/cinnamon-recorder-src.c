@@ -11,11 +11,15 @@ struct _CinnamonRecorderSrc
 {
   GstPushSrc parent;
 
-  GMutex *mutex;
+  GMutex mutex;
 
   GstCaps *caps;
-  GAsyncQueue *queue;
-  gboolean closed;
+  GMutex queue_lock;
+  GCond queue_cond;
+  GQueue *queue;
+
+  gboolean eos;
+  gboolean flushing;
   guint memory_used;
   guint memory_used_update_idle;
 };
@@ -31,9 +35,7 @@ enum {
   PROP_MEMORY_USED
 };
 
-/* Special marker value once the source is closed */
-#define RECORDER_QUEUE_END ((GstBuffer *)1)
-
+#define cinnamon_recorder_src_parent_class parent_class
 G_DEFINE_TYPE(CinnamonRecorderSrc, cinnamon_recorder_src, GST_TYPE_PUSH_SRC);
 
 static void
@@ -41,10 +43,11 @@ cinnamon_recorder_src_init (CinnamonRecorderSrc      *src)
 {
   gst_base_src_set_format (GST_BASE_SRC (src), GST_FORMAT_TIME);
   gst_base_src_set_live (GST_BASE_SRC (src), TRUE);
-  gst_base_src_set_do_timestamp (GST_BASE_SRC (src), TRUE);
 
-  src->queue = g_async_queue_new ();
-  src->mutex = g_mutex_new ();
+  src->queue = g_queue_new ();
+  g_mutex_init (&src->mutex);
+  g_mutex_init (&src->queue_lock);
+  g_cond_init (&src->queue_cond);
 }
 
 static gboolean
@@ -52,9 +55,9 @@ cinnamon_recorder_src_memory_used_update_idle (gpointer data)
 {
   CinnamonRecorderSrc *src = data;
 
-  g_mutex_lock (src->mutex);
+  g_mutex_lock (&src->mutex);
   src->memory_used_update_idle = 0;
-  g_mutex_unlock (src->mutex);
+  g_mutex_unlock (&src->mutex);
 
   g_object_notify (G_OBJECT (src), "memory-used");
 
@@ -68,11 +71,11 @@ static void
 cinnamon_recorder_src_update_memory_used (CinnamonRecorderSrc *src,
 				       int               delta)
 {
-  g_mutex_lock (src->mutex);
+  g_mutex_lock (&src->mutex);
   src->memory_used += delta;
   if (src->memory_used_update_idle == 0)
     src->memory_used_update_idle = g_idle_add (cinnamon_recorder_src_memory_used_update_idle, src);
-  g_mutex_unlock (src->mutex);
+  g_mutex_unlock (&src->mutex);
 }
 
 /* _negotiate() is called when we have to decide on a format. We
@@ -88,6 +91,82 @@ cinnamon_recorder_src_negotiate (GstBaseSrc * base_src)
   return result;
 }
 
+static gboolean
+cinnamon_recorder_src_unlock (GstBaseSrc * base_src)
+{
+  CinnamonRecorderSrc *src = CINNAMON_RECORDER_SRC (base_src);
+
+  g_mutex_lock (&src->queue_lock);
+  src->flushing = TRUE;
+  g_cond_signal (&src->queue_cond);
+  g_mutex_unlock (&src->queue_lock);
+
+  return TRUE;
+}
+
+static gboolean
+cinnamon_recorder_src_unlock_stop (GstBaseSrc * base_src)
+{
+  CinnamonRecorderSrc *src = CINNAMON_RECORDER_SRC (base_src);
+
+  g_mutex_lock (&src->queue_lock);
+  src->flushing = FALSE;
+  g_cond_signal (&src->queue_cond);
+  g_mutex_unlock (&src->queue_lock);
+
+  return TRUE;
+}
+
+static gboolean
+cinnamon_recorder_src_start (GstBaseSrc * base_src)
+{
+  CinnamonRecorderSrc *src = CINNAMON_RECORDER_SRC (base_src);
+
+  g_mutex_lock (&src->queue_lock);
+  src->flushing = FALSE;
+  src->eos = FALSE;
+  g_cond_signal (&src->queue_cond);
+  g_mutex_unlock (&src->queue_lock);
+
+  return TRUE;
+}
+
+static gboolean
+cinnamon_recorder_src_stop (GstBaseSrc * base_src)
+{
+  CinnamonRecorderSrc *src = CINNAMON_RECORDER_SRC (base_src);
+
+  g_mutex_lock (&src->queue_lock);
+  src->flushing = TRUE;
+  src->eos = FALSE;
+  g_queue_foreach (src->queue, (GFunc) gst_buffer_unref, NULL);
+  g_queue_clear (src->queue);
+  g_cond_signal (&src->queue_cond);
+  g_mutex_unlock (&src->queue_lock);
+
+  return TRUE;
+}
+
+static gboolean
+cinnamon_recorder_src_send_event (GstElement * element, GstEvent * event)
+{
+  CinnamonRecorderSrc *src = CINNAMON_RECORDER_SRC (element);
+  gboolean res;
+
+  if (GST_EVENT_TYPE (event) == GST_EVENT_EOS)
+    {
+      cinnamon_recorder_src_close (src);
+      gst_event_unref (event);
+      res = TRUE;
+    }
+  else
+    {
+      res = GST_CALL_PARENT_WITH_DEFAULT (GST_ELEMENT_CLASS, send_event, (element,
+              event), FALSE);
+    }
+  return res;
+}
+
 /* The create() virtual function is responsible for returning the next buffer.
  * We just pop buffers off of the queue and block if necessary.
  */
@@ -98,17 +177,29 @@ cinnamon_recorder_src_create (GstPushSrc  *push_src,
   CinnamonRecorderSrc *src = CINNAMON_RECORDER_SRC (push_src);
   GstBuffer *buffer;
 
-  if (src->closed)
-    return GST_FLOW_EOS;
+  g_mutex_lock (&src->queue_lock);
+  while (TRUE) {
+    /* int the flushing state we just return FLUSHING */
+    if (src->flushing) {
+      g_mutex_unlock (&src->queue_lock);
+      return GST_FLOW_FLUSHING;
+    }
 
-  buffer = g_async_queue_pop (src->queue);
+    buffer = g_queue_pop_head (src->queue);
 
-  if (buffer == RECORDER_QUEUE_END)
-    {
-      /* Returning UNEXPECTED here will cause a EOS message to be sent */
-      src->closed = TRUE;
+    /* we have a buffer, exit the loop to handle it */
+    if (buffer != NULL)
+      break;
+
+    /* no buffer, check EOS */
+    if (src->eos) {
+      g_mutex_unlock (&src->queue_lock);
       return GST_FLOW_EOS;
     }
+    /* wait for something to happen and try again */
+    g_cond_wait (&src->queue_cond, &src->queue_lock);
+  }
+  g_mutex_unlock (&src->queue_lock);
 
   cinnamon_recorder_src_update_memory_used (src,
 					 - (int)(gst_buffer_get_size(buffer) / 1024));
@@ -153,9 +244,11 @@ cinnamon_recorder_src_finalize (GObject *object)
   }
 
   cinnamon_recorder_src_set_caps (src, NULL);
-  g_async_queue_unref (src->queue);
+  g_queue_free_full (src->queue, (GDestroyNotify) gst_buffer_unref);
 
-  g_mutex_free (src->mutex);
+  g_mutex_clear (&src->mutex);
+  g_mutex_clear (&src->queue_lock);
+  g_cond_clear (&src->queue_cond);
 
   G_OBJECT_CLASS (cinnamon_recorder_src_parent_class)->finalize (object);
 }
@@ -193,9 +286,9 @@ cinnamon_recorder_src_get_property (GObject         *object,
       gst_value_set_caps (value, src->caps);
       break;
     case PROP_MEMORY_USED:
-      g_mutex_lock (src->mutex);
+      g_mutex_lock (&src->mutex);
       g_value_set_uint (value, src->memory_used);
-      g_mutex_unlock (src->mutex);
+      g_mutex_unlock (&src->mutex);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -221,24 +314,20 @@ cinnamon_recorder_src_class_init (CinnamonRecorderSrcClass *klass)
   object_class->set_property = cinnamon_recorder_src_set_property;
   object_class->get_property = cinnamon_recorder_src_get_property;
 
-  base_src_class->negotiate = cinnamon_recorder_src_negotiate;
-
-  push_src_class->create = cinnamon_recorder_src_create;
-
   g_object_class_install_property (object_class,
                                    PROP_CAPS,
                                    g_param_spec_boxed ("caps",
 						       "Caps",
 						       "Fixed GstCaps for the source",
 						       GST_TYPE_CAPS,
-						       G_PARAM_READWRITE));
+						       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
   g_object_class_install_property (object_class,
                                    PROP_MEMORY_USED,
                                    g_param_spec_uint ("memory-used",
 						     "Memory Used",
 						     "Memory currently used by the queue (in kB)",
 						      0, G_MAXUINT, 0,
-						      G_PARAM_READABLE));
+						      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
   gst_element_class_add_pad_template (element_class,
 				      gst_static_pad_template_get (&src_template));
 
@@ -247,6 +336,16 @@ cinnamon_recorder_src_class_init (CinnamonRecorderSrcClass *klass)
 					"Generic/Src",
 					"Feed screen capture data to a pipeline",
 					"Owen Taylor <otaylor@redhat.com>");
+
+  element_class->send_event = cinnamon_recorder_src_send_event;
+
+  base_src_class->negotiate = cinnamon_recorder_src_negotiate;
+  base_src_class->unlock = cinnamon_recorder_src_unlock;
+  base_src_class->unlock_stop = cinnamon_recorder_src_unlock_stop;
+  base_src_class->start = cinnamon_recorder_src_start;
+  base_src_class->stop = cinnamon_recorder_src_stop;
+
+  push_src_class->create = cinnamon_recorder_src_create;
 }
 
 /**
@@ -267,7 +366,10 @@ cinnamon_recorder_src_add_buffer (CinnamonRecorderSrc *src,
   cinnamon_recorder_src_update_memory_used (src,
 					 (int)(gst_buffer_get_size(buffer) / 1024));
 
-  g_async_queue_push (src->queue, gst_buffer_ref (buffer));
+  g_mutex_lock (&src->queue_lock);
+  g_queue_push_tail (src->queue, gst_buffer_ref (buffer));
+  g_cond_signal (&src->queue_cond);
+  g_mutex_unlock (&src->queue_lock);
 }
 
 /**
@@ -280,10 +382,13 @@ void
 cinnamon_recorder_src_close (CinnamonRecorderSrc *src)
 {
   /* We can't send a message to the source immediately or buffers that haven't
-   * been pushed yet will be discarded. Instead stick a marker onto our own
-   * queue to send an event once everything has been pushed.
+   * been pushed yet will be discarded. Instead mark ourselves EOS, which will
+   * make us send an event once everything has been pushed.
    */
-  g_async_queue_push (src->queue, RECORDER_QUEUE_END);
+  g_mutex_lock (&src->queue_lock);
+  src->eos = TRUE;
+  g_cond_signal (&src->queue_cond);
+  g_mutex_unlock (&src->queue_lock);
 }
 
 static gboolean

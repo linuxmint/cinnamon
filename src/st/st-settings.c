@@ -28,12 +28,13 @@
 
 #define KEY_FONT_NAME "font-name"
 #define KEY_GTK_ICON_THEME "icon-theme"
-
+#define KEY_MAGNIFIER_FACTOR "mag-factor"
 
 enum {
     PROP_0,
     PROP_FONT_NAME,
     PROP_GTK_ICON_THEME,
+    PROP_MAGNIFIER_ACTIVE,
     N_PROPS
 };
 
@@ -43,9 +44,11 @@ struct _StSettings
 {
   GObject parent_object;
   GSettings *interface_settings;
+  GSettings *a11y_settings;
 
   gchar *font_name;
   gchar *gtk_icon_theme;
+  gboolean mag_active;
 };
 
 G_DEFINE_TYPE (StSettings, st_settings, G_TYPE_OBJECT)
@@ -56,6 +59,7 @@ st_settings_finalize (GObject *object)
   StSettings *settings = ST_SETTINGS (object);
 
   g_object_unref (settings->interface_settings);
+  g_object_unref (settings->a11y_settings);
   g_free (settings->font_name);
   g_free (settings->gtk_icon_theme);
 
@@ -87,6 +91,9 @@ st_settings_get_property (GObject    *object,
     case PROP_GTK_ICON_THEME:
       g_value_set_string (value, settings->gtk_icon_theme);
       break;
+    case PROP_MAGNIFIER_ACTIVE:
+      g_value_set_boolean (value, settings->mag_active);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -113,6 +120,12 @@ st_settings_class_init (StSettingsClass *klass)
                                                     "",
                                                     ST_PARAM_READABLE);
 
+  props[PROP_MAGNIFIER_ACTIVE] = g_param_spec_boolean ("magnifier-active",
+                                                       "Magnifier is active",
+                                                       "True if the magnifier is active",
+                                                       FALSE,
+                                                       ST_PARAM_READABLE);
+
   g_object_class_install_properties (object_class, N_PROPS, props);
 }
 
@@ -137,13 +150,33 @@ on_interface_settings_changed (GSettings   *g_settings,
 }
 
 static void
+on_mag_factor_changed (GSettings   *ally_settings,
+                       const gchar *key,
+                       StSettings  *settings)
+{
+  gdouble old_mag_active = settings->mag_active;
+
+  settings->mag_active = g_settings_get_double (ally_settings, KEY_MAGNIFIER_FACTOR) > 1.0;
+
+  if (old_mag_active != settings->mag_active)
+    {
+      g_object_notify_by_pspec (G_OBJECT (settings), props[PROP_MAGNIFIER_ACTIVE]);
+    }
+}
+
+static void
 st_settings_init (StSettings *settings)
 {
   settings->interface_settings = g_settings_new ("org.cinnamon.desktop.interface");
   g_signal_connect (settings->interface_settings, "changed",
                     G_CALLBACK (on_interface_settings_changed), settings);
-
   settings->font_name = g_settings_get_string (settings->interface_settings, KEY_FONT_NAME);
+  settings->gtk_icon_theme = g_settings_get_string (settings->interface_settings, KEY_GTK_ICON_THEME);
+
+  settings->a11y_settings = g_settings_new ("org.cinnamon.desktop.a11y.magnifier");
+  g_signal_connect (settings->a11y_settings, "changed::" KEY_MAGNIFIER_FACTOR,
+                    G_CALLBACK (on_mag_factor_changed), settings);
+  settings->mag_active = g_settings_get_double (settings->a11y_settings, KEY_MAGNIFIER_FACTOR) > 1.0;
 }
 
 /**
