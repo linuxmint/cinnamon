@@ -205,19 +205,18 @@ function setRunState(state) {
 
 function _initRecorder() {
     let recorderSettings = new Gio.Settings({ schema_id: 'org.cinnamon.recorder' });
-
     Meta.keybindings_set_custom_handler('toggle-recording', function() {
         if (recorder == null) {
-            recorder = new Cinnamon.Recorder({ stage: global.stage });
+            recorder = new Cinnamon.Recorder({ stage: global.stage, display: global.display });
         }
 
         if (recorder.is_recording()) {
-            recorder.pause();
+            recorder.close();
             Meta.enable_unredirect_for_display(global.display);
         } else {
             // read the parameters from GSettings always in case they have changed
             recorder.set_framerate(recorderSettings.get_int('framerate'));
-            recorder.set_filename('cinnamon-%d%u-%c.' + recorderSettings.get_string('file-extension'));
+            recorder.set_file_template('cinnamon-%d.' + recorderSettings.get_string('file-extension'));
             let pipeline = recorderSettings.get_string('pipeline');
 
             if (layoutManager.monitors.length > 1) {

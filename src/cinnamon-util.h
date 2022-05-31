@@ -58,6 +58,14 @@ void     cinnamon_get_file_contents_utf8         (const char                   *
 ClutterContent * cinnamon_util_get_content_for_window_actor (MetaWindowActor *window_actor,
                                                              MetaRectangle   *window_rect);
 
+cairo_surface_t * cinnamon_util_composite_capture_images (ClutterCapture  *captures,
+                                                          int              n_captures,
+                                                          int              x,
+                                                          int              y,
+                                                          int              target_width,
+                                                          int              target_height,
+                                                          float            target_scale);
+
 void     cinnamon_breakpoint                      (void);
 
 gboolean cinnamon_parse_search_provider           (const char       *data,

@@ -107,23 +107,22 @@ libcinnamon_deps = [
 ]
 
 non_gir = []
-# FIXME
-# if get_option('build_recorder')
-#     cinnamon_sources += [
-#         'cinnamon-recorder.c',
-#         'cinnamon-recorder.h',
-#     ]
+if get_option('build_recorder')
+    cinnamon_sources += [
+        'cinnamon-recorder.c',
+        'cinnamon-recorder.h',
+    ]
 
-#     non_gir += [
-#         'cinnamon-recorder-src.c',
-#         'cinnamon-recorder-src.h',
-#     ]
+    non_gir += [
+        'cinnamon-recorder-src.c',
+        'cinnamon-recorder-src.h',
+    ]
 
-#     libcinnamon_deps += [
-#         gstreamer,
-#         gstreamer_base,
-#     ]
-# endif
+    libcinnamon_deps += [
+        gstreamer,
+        gstreamer_base,
+    ]
+endif
 
 install_rpath = ':'.join([muffin_typelibdir, pkglibdir])
 

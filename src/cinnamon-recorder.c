@@ -11,16 +11,21 @@
 #define GST_USE_UNSTABLE_API
 #include <gst/gst.h>
 
+#include <gtk/gtk.h>
+
+#include <cogl/cogl.h>
+#include <meta/meta-cursor-tracker.h>
+#include <meta/display.h>
+#include <meta/compositor-mutter.h>
+#include <st/st.h>
+
+#include "cinnamon-global.h"
 #include "cinnamon-recorder-src.h"
 #include "cinnamon-recorder.h"
-
-#include <clutter/x11/clutter-x11.h>
-#include <X11/extensions/Xfixes.h>
-#include "st.h"
+#include "cinnamon-util.h"
 
 typedef enum {
   RECORDER_STATE_CLOSED,
-  RECORDER_STATE_PAUSED,
   RECORDER_STATE_RECORDING
 } RecorderState;
 
@@ -42,8 +47,6 @@ struct _CinnamonRecorder {
   guint memory_used; /* Current memory used. (In kB) */
 
   RecorderState state;
-  char *unique; /* The unique string we are using for this recording */
-  int count; /* How many times the recording has been started */
 
   ClutterStage *stage;
   gboolean custom_area;
@@ -51,28 +54,23 @@ struct _CinnamonRecorder {
   int stage_width;
   int stage_height;
 
-  gboolean have_pointer;
+  int capture_width;
+  int capture_height;
+  float scale;
+
   int pointer_x;
   int pointer_y;
 
-  guint vertical_adjust; // Y adjustment from bottom panel, if any
-  guint horizontal_adjust; // X adjustment to position on right edge of primary monitor
-
-  gboolean have_xfixes;
-  int xfixes_event_base;
-
-  CoglHandle recording_icon; /* icon shown while playing */
-
+  gboolean draw_cursor;
+  MetaCursorTracker *cursor_tracker;
   cairo_surface_t *cursor_image;
+  guint8 *cursor_memory;
   int cursor_hot_x;
   int cursor_hot_y;
 
-  gboolean only_paint; /* Used to temporarily suppress recording */
-
   int framerate;
   char *pipeline_description;
-  char *filename;
-  gboolean filename_has_count; /* %c used: handle pausing differently */
+  char *file_template;
 
   /* We might have multiple pipelines that are finishing encoding
    * to go along with the current pipeline where we are recording.
@@ -80,8 +78,7 @@ struct _CinnamonRecorder {
   RecorderPipeline *current_pipeline; /* current pipeline */
   GSList *pipelines; /* all pipelines */
 
-  GstClockTime start_time; /* When we started recording (adjusted for pauses) */
-  GstClockTime pause_time; /* When the pipeline was paused */
+  GstClockTime last_frame_time; /* Timestamp for the last frame */
 
   /* GSource IDs for different timeouts and idles */
   guint redraw_timeout;
@@ -97,6 +94,7 @@ struct _RecorderPipeline
   GstElement *pipeline;
   GstElement *src;
   int outfile;
+  char *filename;
 };
 
 static void recorder_set_stage    (CinnamonRecorder *recorder,
@@ -105,30 +103,34 @@ static void recorder_set_framerate (CinnamonRecorder *recorder,
                                     int framerate);
 static void recorder_set_pipeline (CinnamonRecorder *recorder,
                                    const char    *pipeline);
-static void recorder_set_filename (CinnamonRecorder *recorder,
-                                   const char    *filename);
+static void recorder_set_file_template (CinnamonRecorder *recorder,
+                                        const char    *file_template);
+static void recorder_set_draw_cursor (CinnamonRecorder *recorder,
+                                      gboolean       draw_cursor);
 
 static void recorder_pipeline_set_caps (RecorderPipeline *pipeline);
 static void recorder_pipeline_closed   (RecorderPipeline *pipeline);
 
+static void recorder_remove_redraw_timeout (CinnamonRecorder *recorder);
+
 enum {
   PROP_0,
+  PROP_DISPLAY,
   PROP_STAGE,
   PROP_FRAMERATE,
   PROP_PIPELINE,
-  PROP_FILENAME
+  PROP_FILE_TEMPLATE,
+  PROP_DRAW_CURSOR
 };
 
 G_DEFINE_TYPE(CinnamonRecorder, cinnamon_recorder, G_TYPE_OBJECT);
 
-/* The number of frames per second we configure for the GStreamer pipeline.
- * (the number of frames we actually write into the GStreamer pipeline is
- * based entirely on how fast clutter is drawing.) Using 60fps seems high
- * but the observed smoothness is a lot better than for 30fps when encoding
- * as theora for a minimal size increase. This may be an artifact of the
- * encoding process.
+/* The default value of the target frame rate; we'll never record more
+ * than this many frames per second, though we may record less if the
+ * screen isn't being redrawn. 30 is a compromise between smoothness
+ * and the size of the recording.
  */
-#define DEFAULT_FRAMES_PER_SECOND 15
+#define DEFAULT_FRAMES_PER_SECOND 30
 
 /* The time (in milliseconds) between querying the server for the cursor
  * position.
@@ -147,75 +149,14 @@ G_DEFINE_TYPE(CinnamonRecorder, cinnamon_recorder, G_TYPE_OBJECT);
  */
 #define MAXIMUM_PAUSE_TIME 1000
 
-/* The default pipeline. videorate is used to give a constant stream of
- * frames to theora even if there is a pause because nothing is moving.
- * (Theora does have some support for frames at non-uniform times, but
- * things seem to break down if there are large gaps.)
+/* The default pipeline.
  */
 #define DEFAULT_PIPELINE "vp8enc min_quantizer=13 max_quantizer=13 cpu-used=5 deadline=1000000 threads=%T ! queue ! webmmux"
-
-/* The default filename pattern. Example cinnamon-20090311b-2.webm
- */
-#define DEFAULT_FILENAME "cinnamon-%d%u-%c.webm"
 
 /* If we can find the amount of memory on the machine, we use half
  * of that for memory_target, otherwise, we use this value, in kB.
  */
 #define DEFAULT_MEMORY_TARGET (512*1024)
-
-#define PANEL_HEIGHT_KEY "panel-bottom-height"
-#define SCHEMA_CINNAMON "org.cinnamon"
-
-/* Create an emblem to show at the lower-left corner of the stage while
- * recording. The emblem is drawn *after* we record the frame so doesn't
- * show up in the frame.
- */
-static CoglHandle
-create_recording_icon (void)
-{
-  cairo_surface_t *surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 32, 32);
-  cairo_t *cr;
-  cairo_pattern_t *pat;
-  CoglHandle texture;
-
-  cr = cairo_create (surface);
-
-  /* clear to transparent */
-  cairo_save (cr);
-  cairo_set_operator (cr, CAIRO_OPERATOR_CLEAR);
-  cairo_paint (cr);
-  cairo_restore (cr);
-
-  /* radial "glow" */
-  pat = cairo_pattern_create_radial (16, 16, 6,
-                                     16, 16, 14);
-  cairo_pattern_add_color_stop_rgba (pat, 0.0,
-                                     1, 0, 0, 1); /* opaque red */
-  cairo_pattern_add_color_stop_rgba (pat, 1.0,
-                                     1, 0, 0, 0); /* transparent red */
-
-  cairo_set_source (cr, pat);
-  cairo_paint (cr);
-  cairo_pattern_destroy (pat);
-
-  /* red circle */
-  cairo_arc (cr, 16, 16, 8,
-             0, 2 * M_PI);
-  cairo_set_source_rgb (cr, 1, 0, 0);
-  cairo_fill (cr);
-
-  cairo_destroy (cr);
-
-  texture = st_cogl_texture_new_from_data (32, 32,
-                                           COGL_TEXTURE_NONE,
-                                           CLUTTER_CAIRO_FORMAT_ARGB32,
-                                           COGL_PIXEL_FORMAT_ANY,
-                                           cairo_image_surface_get_stride (surface),
-                                           cairo_image_surface_get_data (surface));
-  cairo_surface_destroy (surface);
-
-  return texture;
-}
 
 static guint
 get_memory_target (void)
@@ -267,28 +208,16 @@ recorder_repaint_hook (gpointer data)
 static void
 cinnamon_recorder_init (CinnamonRecorder *recorder)
 {
-  GdkRectangle work_rect, geo_rect;
-  GdkScreen *screen;
-  gint primary;
-
   /* Calling gst_init() is a no-op if GStreamer was previously initialized */
   gst_init (NULL, NULL);
 
   cinnamon_recorder_src_register ();
 
-  screen = gdk_screen_get_default ();
-  primary = gdk_screen_get_primary_monitor (screen);
-  gdk_screen_get_monitor_workarea (screen, primary, &work_rect);
-  gdk_screen_get_monitor_geometry (screen, primary, &geo_rect);
-
-  recorder->vertical_adjust = (geo_rect.y + geo_rect.height) - (work_rect.y + work_rect.height);
-  recorder->horizontal_adjust = work_rect.x + work_rect.width;
-
-  recorder->recording_icon = create_recording_icon ();
   recorder->memory_target = get_memory_target();
 
   recorder->state = RECORDER_STATE_CLOSED;
   recorder->framerate = DEFAULT_FRAMES_PER_SECOND;
+  recorder->draw_cursor = TRUE;
 }
 
 static void
@@ -303,12 +232,14 @@ cinnamon_recorder_finalize (GObject  *object)
 
   if (recorder->cursor_image)
     cairo_surface_destroy (recorder->cursor_image);
+  if (recorder->cursor_memory)
+    g_free (recorder->cursor_memory);
 
   recorder_set_stage (recorder, NULL);
   recorder_set_pipeline (recorder, NULL);
-  recorder_set_filename (recorder, NULL);
+  recorder_set_file_template (recorder, NULL);
 
-  cogl_object_unref (recorder->recording_icon);
+  recorder_remove_redraw_timeout (recorder);
 
   G_OBJECT_CLASS (cinnamon_recorder_parent_class)->finalize (object);
 }
@@ -343,20 +274,7 @@ recorder_update_memory_used (CinnamonRecorder *recorder,
     }
 
   if (memory_used != recorder->memory_used)
-    {
-      recorder->memory_used = memory_used;
-      if (repaint)
-        {
-          /* In other cases we just queue a redraw even if we only need
-           * to repaint and not redraw a frame, but having changes in
-           * memory usage cause frames to be painted and memory used
-           * seems like a bad idea.
-           */
-          recorder->only_paint = TRUE;
-          clutter_stage_ensure_redraw (recorder->stage);
-          recorder->only_paint = FALSE;
-        }
-    }
+    recorder->memory_used = memory_used;
 }
 
 /* Timeout used to avoid not drawing for more than MAXIMUM_PAUSE_TIME
@@ -396,38 +314,30 @@ recorder_remove_redraw_timeout (CinnamonRecorder *recorder)
 static void
 recorder_fetch_cursor_image (CinnamonRecorder *recorder)
 {
-  XFixesCursorImage *cursor_image;
-  guchar *data;
+  CoglTexture *texture;
+  int width, height;
   int stride;
-  int i, j;
+  guint8 *data;
 
-  if (!recorder->have_xfixes)
+  texture = meta_cursor_tracker_get_sprite (recorder->cursor_tracker);
+  if (!texture)
     return;
 
-  cursor_image = XFixesGetCursorImage (clutter_x11_get_default_display ());
-  if (!cursor_image)
-    return;
+  meta_cursor_tracker_get_hot (recorder->cursor_tracker,
+                               &recorder->cursor_hot_x, &recorder->cursor_hot_y);
 
-  recorder->cursor_hot_x = cursor_image->xhot;
-  recorder->cursor_hot_y = cursor_image->yhot;
+  width = cogl_texture_get_width (texture);
+  height = cogl_texture_get_height (texture);
+  stride = 4 * width;
+  data = g_new (guint8, stride * height);
+  cogl_texture_get_data (texture, CLUTTER_CAIRO_FORMAT_ARGB32, stride, data);
 
-  recorder->cursor_image = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
-                                                       cursor_image->width,
-                                                       cursor_image->height);
-
-  /* The pixel data (in typical Xlib breakage) is longs even on
-   * 64-bit platforms, so we have to data-convert there. For simplicity,
-   * just do it always
-   */
-  data = cairo_image_surface_get_data (recorder->cursor_image);
-  stride = cairo_image_surface_get_stride (recorder->cursor_image);
-  for (i = 0; i < cursor_image->height; i++)
-    for (j = 0; j < cursor_image->width; j++)
-      *(guint32 *)(data + i * stride + 4 * j) = cursor_image->pixels[i * cursor_image->width + j];
-
-  cairo_surface_mark_dirty (recorder->cursor_image);
-
-  XFree (cursor_image);
+  /* FIXME: cairo-gl? */
+  recorder->cursor_image = cairo_image_surface_create_for_data (data,
+                                                                CAIRO_FORMAT_ARGB32,
+                                                                width, height,
+                                                                stride);
+  recorder->cursor_memory = data;
 }
 
 /* Overlay the cursor image on the frame. We draw the cursor image
@@ -478,43 +388,6 @@ recorder_draw_cursor (CinnamonRecorder *recorder,
   gst_buffer_unmap (buffer, &info);
 }
 
-/* Draw an overlay indicating how much of the target memory is used
- * for buffering frames.
- */
-static void
-recorder_draw_buffer_meter (CinnamonRecorder *recorder)
-{
-  int fill_level;
-
-  recorder_update_memory_used (recorder, FALSE);
-
-  /* As the buffer gets more full, we go from green, to yellow, to red */
-  if (recorder->memory_used > (recorder->memory_target * 3) / 4)
-    cogl_set_source_color4f (1, 0, 0, 1);
-  else if (recorder->memory_used > recorder->memory_target / 2)
-    cogl_set_source_color4f (1, 1, 0, 1);
-  else
-    cogl_set_source_color4f (0, 1, 0, 1);
-
-  fill_level = MIN (60, (recorder->memory_used * 60) / recorder->memory_target);
-
-  /* A hollow rectangle filled from the left to fill_level */
-  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 10,
-                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 9);
-  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 9,
-                  recorder->horizontal_adjust - (63 - fill_level), recorder->stage_height - recorder->vertical_adjust - 3);
-  cogl_rectangle (recorder->horizontal_adjust - 3,  recorder->stage_height - recorder->vertical_adjust - 9,
-                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 3);
-  cogl_rectangle (recorder->horizontal_adjust - 64, recorder->stage_height - recorder->vertical_adjust - 3,
-                  recorder->horizontal_adjust - 2,  recorder->stage_height - recorder->vertical_adjust - 2);
-}
-
-static GstClockTime
-get_wall_time (void)
-{
-  return g_get_real_time ();
-}
-
 /* Retrieve a frame and feed it into the pipeline
  */
 static void
@@ -555,28 +428,31 @@ recorder_record_frame (CinnamonRecorder *recorder,
   now = gst_clock_get_time (clock) - base_time;
   gst_object_unref (clock);
 
-  if (GST_CLOCK_TIME_IS_VALID (recorder->start_time) &&
-      now - recorder->start_time < gst_util_uint64_scale_int (GST_SECOND, 3, 4 * recorder->framerate))
+  if (GST_CLOCK_TIME_IS_VALID (recorder->last_frame_time) &&
+      now - recorder->last_frame_time < gst_util_uint64_scale_int (GST_SECOND, 3, 4 * recorder->framerate))
     return;
-  recorder->start_time = now;
+  recorder->last_frame_time = now;
 
-  clutter_stage_capture (recorder->stage, paint, &recorder->area,
-                         &captures, &n_captures);
-
-  if (n_captures == 0)
+  if (!clutter_stage_capture (recorder->stage, paint, &recorder->area,
+                              &captures, &n_captures))
     return;
 
-  /*
-   * TODO: Deal with each capture region separately, instead of dropping
-   * anything except the first one.
-   */
+  if (n_captures == 1)
+    image = cairo_surface_reference (captures[0].image);
+  else
+    image = cinnamon_util_composite_capture_images (captures,
+                                                 n_captures,
+                                                 recorder->area.x,
+                                                 recorder->area.y,
+                                                 recorder->capture_width,
+                                                 recorder->capture_height,
+                                                 recorder->scale);
 
-  image = captures[0].image;
   data = cairo_image_surface_get_data (image);
-  size = captures[0].rect.width * captures[0].rect.height * 4;
+  size = (cairo_image_surface_get_height (image) *
+          cairo_image_surface_get_stride (image));
 
-  /* TODO: Capture more than the first framebuffer. */
-  for (i = 1; i < n_captures; i++)
+  for (i = 0; i < n_captures; i++)
     cairo_surface_destroy (captures[i].image);
   g_free (captures);
 
@@ -588,7 +464,16 @@ recorder_record_frame (CinnamonRecorder *recorder,
 
   GST_BUFFER_PTS(buffer) = now;
 
-  recorder_draw_cursor (recorder, buffer);
+  if (recorder->draw_cursor)
+    {
+      StSettings *settings = st_settings_get ();
+      gboolean magnifier_active = FALSE;
+
+      g_object_get (settings, "magnifier-active", &magnifier_active, NULL);
+
+      if (!magnifier_active)
+        recorder_draw_cursor (recorder, buffer);
+    }
 
   cinnamon_recorder_src_add_buffer (CINNAMON_RECORDER_SRC (recorder->current_pipeline->src), buffer);
   gst_buffer_unref (buffer);
@@ -602,21 +487,11 @@ recorder_record_frame (CinnamonRecorder *recorder,
  * by clutter before glSwapBuffers() makes it visible to the user.
  */
 static void
-recorder_on_stage_paint (ClutterActor     *actor,
-                         CinnamonRecorder *recorder)
+recorder_on_stage_after_paint (ClutterActor        *actor,
+                               CinnamonRecorder    *recorder)
 {
   if (recorder->state == RECORDER_STATE_RECORDING)
-    {
-      if (!recorder->only_paint)
-        recorder_record_frame (recorder, FALSE);
-
-      cogl_set_source_texture (recorder->recording_icon);
-      cogl_rectangle (recorder->horizontal_adjust - 32, recorder->stage_height - recorder->vertical_adjust - 42,
-                      recorder->horizontal_adjust,      recorder->stage_height - recorder->vertical_adjust - 10);
-    }
-
-  if (recorder->state == RECORDER_STATE_RECORDING || recorder->memory_used != 0)
-    recorder_draw_buffer_meter (recorder);
+    recorder_record_frame (recorder, FALSE);
 }
 
 static void
@@ -634,6 +509,11 @@ recorder_update_size (CinnamonRecorder *recorder)
       recorder->area.y = 0;
       recorder->area.width = recorder->stage_width;
       recorder->area.height = recorder->stage_height;
+
+      clutter_stage_get_capture_final_size (recorder->stage, NULL,
+                                            &recorder->capture_width,
+                                            &recorder->capture_height,
+                                            &recorder->scale);
     }
 }
 
@@ -671,161 +551,42 @@ recorder_queue_redraw (CinnamonRecorder *recorder)
    * we need to queue a "low priority redraw" after timeline updates
    */
   if (recorder->state == RECORDER_STATE_RECORDING && recorder->redraw_idle == 0)
-    recorder->redraw_idle = g_idle_add_full (CLUTTER_PRIORITY_REDRAW + 1,
-                                             recorder_idle_redraw, recorder, NULL);
+    {
+      recorder->redraw_idle = g_idle_add_full (CLUTTER_PRIORITY_REDRAW + 1,
+                                               recorder_idle_redraw, recorder, NULL);
+    }
 }
 
-/* We use an event filter on the stage to get the XFixesCursorNotifyEvent
- * and also to track cursor position (when the cursor is over the stage's
- * input area); tracking cursor position here rather than with ClutterEvent
- * allows us to avoid worrying about event propagation and competing
- * signal handlers.
- */
-static ClutterX11FilterReturn
-recorder_event_filter (XEvent        *xev,
-                       ClutterEvent  *cev,
-                       gpointer       data)
-{
-  CinnamonRecorder *recorder = data;
-
-  if (xev->xany.window != clutter_x11_get_stage_window (recorder->stage))
-    return CLUTTER_X11_FILTER_CONTINUE;
-
-  if (xev->xany.type == recorder->xfixes_event_base + XFixesCursorNotify)
-    {
-      XFixesCursorNotifyEvent *notify_event = (XFixesCursorNotifyEvent *)xev;
-
-      if (notify_event->subtype == XFixesDisplayCursorNotify)
-        {
-          if (recorder->cursor_image)
-            {
-              cairo_surface_destroy (recorder->cursor_image);
-              recorder->cursor_image = NULL;
-            }
-
-          recorder_queue_redraw (recorder);
-        }
-    }
-  else if (xev->xany.type == MotionNotify)
-    {
-      recorder->pointer_x = xev->xmotion.x;
-      recorder->pointer_y = xev->xmotion.y;
-
-      recorder_queue_redraw (recorder);
-    }
-  /* We want to track whether the pointer is over the stage
-   * window itself, and not in a child window. A "virtual"
-   * crossing is one that goes directly from ancestor to child.
-   */
-  else if (xev->xany.type == EnterNotify &&
-           (xev->xcrossing.detail != NotifyVirtual &&
-            xev->xcrossing.detail != NotifyNonlinearVirtual))
-    {
-      recorder->have_pointer = TRUE;
-      recorder->pointer_x = xev->xcrossing.x;
-      recorder->pointer_y = xev->xcrossing.y;
-
-      recorder_queue_redraw (recorder);
-    }
-  else if (xev->xany.type == LeaveNotify &&
-           (xev->xcrossing.detail != NotifyVirtual &&
-            xev->xcrossing.detail != NotifyNonlinearVirtual))
-    {
-      recorder->have_pointer = FALSE;
-      recorder->pointer_x = xev->xcrossing.x;
-      recorder->pointer_y = xev->xcrossing.y;
-
-      recorder_queue_redraw (recorder);
-    }
-
-  return CLUTTER_X11_FILTER_CONTINUE;
-}
-
-/* We optimize out querying the server for the pointer position if the
- * pointer is in the input area of the ClutterStage. We track changes to
- * that with Enter/Leave events, but we need to 100% accurate about the
- * initial condition, which is a little involved.
- */
 static void
-recorder_get_initial_cursor_position (CinnamonRecorder *recorder)
+on_cursor_changed (MetaCursorTracker *tracker,
+                   CinnamonRecorder     *recorder)
 {
-  Display *xdisplay = clutter_x11_get_default_display ();
-  Window xwindow = clutter_x11_get_stage_window (recorder->stage);
-  XWindowAttributes xwa;
-  Window root, child, parent;
-  Window *children;
-  guint n_children;
-  int root_x,root_y;
-  int window_x, window_y;
-  guint mask;
-
-  XGrabServer(xdisplay);
-
-  XGetWindowAttributes (xdisplay, xwindow, &xwa);
-  XQueryTree (xdisplay, xwindow, &root, &parent, &children, &n_children);
-  XFree (children);
-
-  if (xwa.map_state == IsViewable &&
-      XQueryPointer (xdisplay, parent,
-                     &root, &child, &root_x, &root_y, &window_x, &window_y, &mask) &&
-      child == xwindow)
+  if (recorder->cursor_image)
     {
-      /* The point of this call is not actually to translate the coordinates -
-       * we could do that ourselves using xwa.{x,y} -  but rather to see if
-       * the pointer is in a child of the window, which we count as "not in
-       * window", because we aren't guaranteed to get pointer events.
-       */
-      XTranslateCoordinates(xdisplay, parent, xwindow,
-                            window_x, window_y,
-                            &window_x, &window_y, &child);
-      if (child == None)
-        {
-          recorder->have_pointer = TRUE;
-          recorder->pointer_x = window_x;
-          recorder->pointer_y = window_y;
-        }
+      cairo_surface_destroy (recorder->cursor_image);
+      recorder->cursor_image = NULL;
     }
-  else
-    recorder->have_pointer = FALSE;
+  if (recorder->cursor_memory)
+    {
+      g_free (recorder->cursor_memory);
+      recorder->cursor_memory = NULL;
+    }
 
-  XUngrabServer(xdisplay);
-  XFlush(xdisplay);
-
-  /* While we are at it, add mouse events to the event mask; they will
-   * be there for the stage windows that Clutter creates by default, but
-   * maybe this stage was created differently. Since we've already
-   * retrieved the event mask, it's almost free.
-   */
-  XSelectInput(xdisplay, xwindow,
-               xwa.your_event_mask | EnterWindowMask | LeaveWindowMask | PointerMotionMask);
+  recorder_queue_redraw (recorder);
 }
 
-/* When the cursor is not over the stage's input area, we query for the
- * pointer position in a timeout.
- */
 static void
 recorder_update_pointer (CinnamonRecorder *recorder)
 {
-  Display *xdisplay = clutter_x11_get_default_display ();
-  Window xwindow = clutter_x11_get_stage_window (recorder->stage);
-  Window root, child;
-  int root_x,root_y;
-  int window_x, window_y;
-  guint mask;
+  int pointer_x, pointer_y;
 
-  if (recorder->have_pointer)
-    return;
+  meta_cursor_tracker_get_pointer (recorder->cursor_tracker, &pointer_x, &pointer_y, NULL);
 
-  if (XQueryPointer (xdisplay, xwindow,
-                     &root, &child, &root_x, &root_y, &window_x, &window_y, &mask))
+  if (pointer_x != recorder->pointer_x || pointer_y != recorder->pointer_y)
     {
-      if (window_x != recorder->pointer_x || window_y != recorder->pointer_y)
-        {
-          recorder->pointer_x = window_x;
-          recorder->pointer_y = window_y;
-
-          recorder_queue_redraw (recorder);
-        }
+      recorder->pointer_x = pointer_x;
+      recorder->pointer_y = pointer_y;
+      recorder_queue_redraw (recorder);
     }
 }
 
@@ -857,6 +618,42 @@ recorder_remove_update_pointer_timeout (CinnamonRecorder *recorder)
 }
 
 static void
+recorder_connect_stage_callbacks (CinnamonRecorder *recorder)
+{
+  g_signal_connect (recorder->stage, "destroy",
+                    G_CALLBACK (recorder_on_stage_destroy), recorder);
+  g_signal_connect_after (recorder->stage, "after-paint",
+                          G_CALLBACK (recorder_on_stage_after_paint), recorder);
+  g_signal_connect (recorder->stage, "notify::width",
+                    G_CALLBACK (recorder_on_stage_notify_size), recorder);
+  g_signal_connect (recorder->stage, "notify::height",
+                    G_CALLBACK (recorder_on_stage_notify_size), recorder);
+  g_signal_connect (recorder->stage, "notify::resource-scale",
+                    G_CALLBACK (recorder_on_stage_notify_size), recorder);
+}
+
+static void
+recorder_disconnect_stage_callbacks (CinnamonRecorder *recorder)
+{
+  g_signal_handlers_disconnect_by_func (recorder->stage,
+                                        (void *)recorder_on_stage_destroy,
+                                        recorder);
+  g_signal_handlers_disconnect_by_func (recorder->stage,
+                                        (void *)recorder_on_stage_after_paint,
+                                        recorder);
+  g_signal_handlers_disconnect_by_func (recorder->stage,
+                                        (void *)recorder_on_stage_notify_size,
+                                        recorder);
+
+  /* We don't don't deselect for cursor changes in case someone else just
+   * happened to be selecting for cursor events on the same window; sending
+   * us the events is close to free in any case.
+   */
+
+  g_clear_handle_id (&recorder->redraw_idle, g_source_remove);
+}
+
+static void
 recorder_set_stage (CinnamonRecorder *recorder,
                     ClutterStage  *stage)
 {
@@ -867,63 +664,28 @@ recorder_set_stage (CinnamonRecorder *recorder,
     cinnamon_recorder_close (recorder);
 
   if (recorder->stage)
-    {
-      g_signal_handlers_disconnect_by_func (recorder->stage,
-                                            (void *)recorder_on_stage_destroy,
-                                            recorder);
-      g_signal_handlers_disconnect_by_func (recorder->stage,
-                                            (void *)recorder_on_stage_paint,
-                                            recorder);
-      g_signal_handlers_disconnect_by_func (recorder->stage,
-                                            (void *)recorder_on_stage_notify_size,
-                                            recorder);
-
-      clutter_x11_remove_filter (recorder_event_filter, recorder);
-
-      /* We don't don't deselect for cursor changes in case someone else just
-       * happened to be selecting for cursor events on the same window; sending
-       * us the events is close to free in any case.
-       */
-
-      if (recorder->redraw_idle)
-        {
-          g_source_remove (recorder->redraw_idle);
-          recorder->redraw_idle = 0;
-        }
-    }
+   recorder_disconnect_stage_callbacks (recorder);
 
   recorder->stage = stage;
 
   if (recorder->stage)
-    {
-      int error_base;
+    recorder_update_size (recorder);
+}
 
-      recorder->stage = stage;
-      g_signal_connect (recorder->stage, "destroy",
-                        G_CALLBACK (recorder_on_stage_destroy), recorder);
-      g_signal_connect_after (recorder->stage, "paint",
-                              G_CALLBACK (recorder_on_stage_paint), recorder);
-      g_signal_connect (recorder->stage, "notify::width",
-                        G_CALLBACK (recorder_on_stage_notify_size), recorder);
-      g_signal_connect (recorder->stage, "notify::width",
-                        G_CALLBACK (recorder_on_stage_notify_size), recorder);
+static void
+recorder_set_display (CinnamonRecorder *recorder,
+                      MetaDisplay   *display)
+{
+  MetaCursorTracker *tracker;
 
-      clutter_x11_add_filter (recorder_event_filter, recorder);
+  tracker = meta_cursor_tracker_get_for_display (display);
 
-      recorder_update_size (recorder);
+  if (tracker == recorder->cursor_tracker)
+    return;
 
-      recorder->have_xfixes = XFixesQueryExtension (clutter_x11_get_default_display (),
-                                                    &recorder->xfixes_event_base,
-                                                    &error_base);
-      if (recorder->have_xfixes)
-        XFixesSelectCursorInput (clutter_x11_get_default_display (),
-                                   clutter_x11_get_stage_window (stage),
-                                 XFixesDisplayCursorNotifyMask);
-
-      clutter_stage_ensure_current (stage);
-
-      recorder_get_initial_cursor_position (recorder);
-    }
+  recorder->cursor_tracker = tracker;
+  g_signal_connect_object (tracker, "cursor-changed",
+                           G_CALLBACK (on_cursor_changed), recorder, 0);
 }
 
 static void
@@ -961,22 +723,34 @@ recorder_set_pipeline (CinnamonRecorder *recorder,
 }
 
 static void
-recorder_set_filename (CinnamonRecorder *recorder,
-                       const char    *filename)
+recorder_set_file_template (CinnamonRecorder *recorder,
+                            const char    *file_template)
 {
-  if (filename == recorder->filename ||
-      (filename && recorder->filename && strcmp (recorder->filename, filename) == 0))
+  if (file_template == recorder->file_template ||
+      (file_template && recorder->file_template && strcmp (recorder->file_template, file_template) == 0))
     return;
 
   if (recorder->current_pipeline)
     cinnamon_recorder_close (recorder);
 
-  if (recorder->filename)
-    g_free (recorder->filename);
+  if (recorder->file_template)
+    g_free (recorder->file_template);
 
-  recorder->filename = g_strdup (filename);
+  recorder->file_template = g_strdup (file_template);
 
-  g_object_notify (G_OBJECT (recorder), "filename");
+  g_object_notify (G_OBJECT (recorder), "file-template");
+}
+
+static void
+recorder_set_draw_cursor (CinnamonRecorder *recorder,
+                          gboolean       draw_cursor)
+{
+  if (draw_cursor == recorder->draw_cursor)
+    return;
+
+  recorder->draw_cursor = draw_cursor;
+
+  g_object_notify (G_OBJECT (recorder), "draw-cursor");
 }
 
 static void
@@ -989,6 +763,9 @@ cinnamon_recorder_set_property (GObject      *object,
 
   switch (prop_id)
     {
+    case PROP_DISPLAY:
+      recorder_set_display (recorder, g_value_get_object (value));
+      break;
     case PROP_STAGE:
       recorder_set_stage (recorder, g_value_get_object (value));
       break;
@@ -998,8 +775,11 @@ cinnamon_recorder_set_property (GObject      *object,
     case PROP_PIPELINE:
       recorder_set_pipeline (recorder, g_value_get_string (value));
       break;
-    case PROP_FILENAME:
-      recorder_set_filename (recorder, g_value_get_string (value));
+    case PROP_FILE_TEMPLATE:
+      recorder_set_file_template (recorder, g_value_get_string (value));
+      break;
+    case PROP_DRAW_CURSOR:
+      recorder_set_draw_cursor (recorder, g_value_get_boolean (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1026,8 +806,11 @@ cinnamon_recorder_get_property (GObject         *object,
     case PROP_PIPELINE:
       g_value_set_string (value, recorder->pipeline_description);
       break;
-    case PROP_FILENAME:
-      g_value_set_string (value, recorder->filename);
+    case PROP_FILE_TEMPLATE:
+      g_value_set_string (value, recorder->file_template);
+      break;
+    case PROP_DRAW_CURSOR:
+      g_value_set_boolean (value, recorder->draw_cursor);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1045,12 +828,20 @@ cinnamon_recorder_class_init (CinnamonRecorderClass *klass)
   gobject_class->set_property = cinnamon_recorder_set_property;
 
   g_object_class_install_property (gobject_class,
+                                   PROP_DISPLAY,
+                                   g_param_spec_object ("display",
+                                                        "Display",
+                                                        "Display to record",
+                                                        META_TYPE_DISPLAY,
+                                                        G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class,
                                    PROP_STAGE,
                                    g_param_spec_object ("stage",
                                                         "Stage",
                                                         "Stage to record",
                                                         CLUTTER_TYPE_STAGE,
-                                                        G_PARAM_READWRITE));
+                                                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class,
                                    PROP_FRAMERATE,
@@ -1060,7 +851,7 @@ cinnamon_recorder_class_init (CinnamonRecorderClass *klass)
                                                       0,
                                                       G_MAXINT,
                                                       DEFAULT_FRAMES_PER_SECOND,
-                                                      G_PARAM_READWRITE));
+                                                      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class,
                                    PROP_PIPELINE,
@@ -1068,15 +859,23 @@ cinnamon_recorder_class_init (CinnamonRecorderClass *klass)
                                                         "Pipeline",
                                                         "GStreamer pipeline description to encode recordings",
                                                         NULL,
-                                                        G_PARAM_READWRITE));
+                                                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class,
-                                   PROP_FILENAME,
-                                   g_param_spec_string ("filename",
-                                                        "Filename",
+                                   PROP_FILE_TEMPLATE,
+                                   g_param_spec_string ("file-template",
+                                                        "File Template",
                                                         "The filename template to use for output files",
                                                         NULL,
-                                                        G_PARAM_READWRITE));
+                                                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class,
+                                   PROP_DRAW_CURSOR,
+                                   g_param_spec_boolean ("draw-cursor",
+                                                         "Draw Cursor",
+                                                         "Whether to record the cursor",
+                                                         TRUE,
+                                                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 }
 
 /* Sets the GstCaps (video format, in this case) on the stream
@@ -1084,6 +883,7 @@ cinnamon_recorder_class_init (CinnamonRecorderClass *klass)
 static void
 recorder_pipeline_set_caps (RecorderPipeline *pipeline)
 {
+  CinnamonRecorder *recorder = pipeline->recorder;
   GstCaps *caps;
 
   /* The data is always native-endian xRGB; videoconvert
@@ -1096,11 +896,10 @@ recorder_pipeline_set_caps (RecorderPipeline *pipeline)
 #else
                               "format", G_TYPE_STRING, "xRGB",
 #endif
-                              "bpp", G_TYPE_INT, 32,
-                              "depth", G_TYPE_INT, 24,
-                              "framerate", GST_TYPE_FRACTION, pipeline->recorder->framerate, 1,
-                              "width", G_TYPE_INT, pipeline->recorder->area.width,
-                              "height", G_TYPE_INT, pipeline->recorder->area.height,
+
+                              "framerate", GST_TYPE_FRACTION, recorder->framerate, 1,
+                              "width", G_TYPE_INT, recorder->capture_width,
+                              "height", G_TYPE_INT, recorder->capture_height,
                               NULL);
   g_object_set (pipeline->src, "caps", caps, NULL);
   gst_caps_unref (caps);
@@ -1171,26 +970,6 @@ recorder_pipeline_add_source (RecorderPipeline *pipeline)
   return result;
 }
 
-/* Counts '', 'a', ..., 'z', 'aa', ..., 'az', 'ba', ... */
-static void
-increment_unique (GString *unique)
-{
-  int i;
-
-  for (i = unique->len - 1; i >= 0; i--)
-    {
-      if (unique->str[i] != 'z')
-        {
-          unique->str[i]++;
-          return;
-        }
-      else
-        unique->str[i] = 'a';
-    }
-
-  g_string_prepend_c (unique, 'a');
-}
-
 static char *
 get_absolute_path (char *maybe_relative)
 {
@@ -1200,9 +979,11 @@ get_absolute_path (char *maybe_relative)
     path = g_strdup (maybe_relative);
   else
     {
-      char *cwd = g_get_current_dir ();
-      path = g_build_filename (cwd, maybe_relative, NULL);
-      g_free (cwd);
+      const char *video_dir = g_get_user_special_dir (G_USER_DIRECTORY_VIDEOS);
+      if (!g_file_test (video_dir, G_FILE_TEST_EXISTS))
+          video_dir = g_get_home_dir ();
+
+      path = g_build_filename (video_dir, maybe_relative, NULL);
     }
 
   return path;
@@ -1214,23 +995,22 @@ get_absolute_path (char *maybe_relative)
  * be opened.
  */
 static int
-recorder_open_outfile (CinnamonRecorder *recorder)
+recorder_open_outfile (CinnamonRecorder  *recorder,
+                       char          **outfilename)
 {
-  GString *unique = g_string_new (NULL); /* add to filename to make it unique */
   const char *pattern;
   int flags;
   int outfile = -1;
 
-  recorder->count++;
-
-  pattern = recorder->filename;
+  pattern = recorder->file_template;
   if (!pattern)
-    pattern = DEFAULT_FILENAME;
+    return -1;
 
   while (TRUE)
     {
       GString *filename = g_string_new (NULL);
       const char *p;
+      char *path;
 
       for (p = pattern; *p; p++)
         {
@@ -1242,33 +1022,24 @@ recorder_open_outfile (CinnamonRecorder *recorder)
                 case '\0':
                   g_string_append_c (filename, '%');
                   break;
-                case 'c':
-                  {
-                    /* Count distinguishing multiple files created in session */
-                    g_string_append_printf (filename, "%d", recorder->count);
-                    recorder->filename_has_count = TRUE;
-                  }
-                  break;
                 case 'd':
                   {
-                    /* Appends date as YYYYMMDD */
-                    GDateTime *dt;
-                    dt = g_date_time_new_now_local ();
-                    g_string_append_printf (filename, "%04d%02d%02d",
-                                            g_date_time_get_year (dt),
-                                            g_date_time_get_month (dt),
-                                            g_date_time_get_day_of_month (dt));
+                    /* Appends date according to locale */
+                    GDateTime *datetime = g_date_time_new_now_local ();
+                    char *date_str = g_date_time_format (datetime, "%Y-%m-%d:%H:%M:%S");
+                    char *s;
+
+                    for (s = date_str; *s; s++)
+                      if (G_IS_DIR_SEPARATOR (*s))
+                          *s = '-';
+
+                    g_string_append (filename, date_str);
+                    g_free (date_str);
+                    g_date_time_unref (datetime);
                   }
                   break;
-                case 'u':
-                  if (recorder->unique)
-                    g_string_append (filename, recorder->unique);
-                  else
-                    g_string_append (filename, unique->str);
-                  break;
                 default:
-                  g_warning ("Unknown escape %%%c in filename", *p);
-                  g_string_free (filename, TRUE);
+                  g_warning ("Unknown escape %%%c in filename", *(p + 1));
                   goto out;
                 }
 
@@ -1283,48 +1054,35 @@ recorder_open_outfile (CinnamonRecorder *recorder)
        * should avoid problems with malicious symlinks.
        */
       flags = O_WRONLY | O_CREAT | O_TRUNC;
-      if (recorder->filename_has_count)
-        flags |= O_EXCL;
 
-      outfile = open (filename->str, flags, 0666);
+      path = get_absolute_path (filename->str);
+      outfile = open (path, flags, 0666);
       if (outfile != -1)
         {
-          char *path = get_absolute_path (filename->str);
-          g_printerr ("Recording to %s\n", path);
+          g_message ("Recording to %s", path);
+
+          if (outfilename != NULL)
+            *outfilename = path;
+          else
+            g_free (path);
+          g_string_free (filename, TRUE);
+
+          goto out;
+        }
+
+      if (outfile == -1 && errno != EEXIST)
+        {
+          g_warning ("Cannot open output file '%s': %s", path, g_strerror (errno));
+          g_string_free (filename, TRUE);
           g_free (path);
-
-          g_string_free (filename, TRUE);
-          goto out;
-        }
-
-      if (outfile == -1 &&
-          (errno != EEXIST || !recorder->filename_has_count))
-        {
-          g_warning ("Cannot open output file '%s': %s", filename->str, g_strerror (errno));
-          g_string_free (filename, TRUE);
-          goto out;
-        }
-
-      if (recorder->unique)
-        {
-          /* We've already picked a unique string based on count=1, and now we had a collision
-           * for a subsequent count.
-           */
-          g_warning ("Name collision with existing file for '%s'", filename->str);
-          g_string_free (filename, TRUE);
           goto out;
         }
 
       g_string_free (filename, TRUE);
-
-      increment_unique (unique);
+      g_free (path);
     }
 
  out:
-  if (outfile != -1)
-    recorder->unique = g_string_free (unique, FALSE);
-  else
-    g_string_free (unique, TRUE);
 
   return outfile;
 }
@@ -1346,7 +1104,8 @@ recorder_pipeline_add_sink (RecorderPipeline *pipeline)
       return TRUE;
     }
 
-  pipeline->outfile = recorder_open_outfile (pipeline->recorder);
+  pipeline->outfile = recorder_open_outfile (pipeline->recorder,
+                                             &pipeline->filename);
   if (pipeline->outfile == -1)
     goto out;
 
@@ -1421,6 +1180,8 @@ recorder_pipeline_free (RecorderPipeline *pipeline)
   if (pipeline->outfile != -1)
     close (pipeline->outfile);
 
+  g_free (pipeline->filename);
+
   g_clear_object (&pipeline->recorder);
 
   g_free (pipeline);
@@ -1465,10 +1226,16 @@ recorder_pipeline_closed (RecorderPipeline *pipeline)
                                         (gpointer) recorder_pipeline_on_memory_used_changed,
                                         pipeline);
 
+  recorder_disconnect_stage_callbacks (pipeline->recorder);
+
   gst_element_set_state (pipeline->pipeline, GST_STATE_NULL);
 
   if (pipeline->recorder)
     {
+      GtkRecentManager *recent_manager;
+      GFile *file;
+      char *uri;
+
       CinnamonRecorder *recorder = pipeline->recorder;
       if (pipeline == recorder->current_pipeline)
         {
@@ -1476,6 +1243,15 @@ recorder_pipeline_closed (RecorderPipeline *pipeline)
           recorder->current_pipeline = NULL;
           cinnamon_recorder_close (recorder);
         }
+
+      recent_manager = gtk_recent_manager_get_default ();
+
+      file = g_file_new_for_path (pipeline->filename);
+      uri = g_file_get_uri (file);
+      gtk_recent_manager_add_item (recent_manager,
+                                   uri);
+      g_free (uri);
+      g_object_unref (file);
 
       recorder->pipelines = g_slist_remove (recorder->pipelines, pipeline);
     }
@@ -1584,10 +1360,9 @@ recorder_close_pipeline (CinnamonRecorder *recorder)
        * is written. The bus watch for the pipeline will get it and do
        * final cleanup
        */
-      cinnamon_recorder_src_close (CINNAMON_RECORDER_SRC (recorder->current_pipeline->src));
-
+      gst_element_send_event (recorder->current_pipeline->pipeline,
+          gst_event_new_eos());
       recorder->current_pipeline = NULL;
-      recorder->filename_has_count = FALSE;
     }
 }
 
@@ -1612,9 +1387,15 @@ cinnamon_recorder_new (ClutterStage  *stage)
  * @recorder: the #CinnamonRecorder
  * @framerate: Framerate used for resulting video in frames-per-second.
  *
- * Sets the number of frames per second we configure for the GStreamer pipeline.
+ * Sets the number of frames per second we try to record. Less frames
+ * will be recorded when the screen doesn't need to be redrawn this
+ * quickly. (This value will also be set as the framerate for the
+ * GStreamer pipeline; whether that has an effect on the resulting
+ * video will depend on the details of the pipeline and the codec. The
+ * default encoding to webm format doesn't pay attention to the pipeline
+ * framerate.)
  *
- * The default value is 15.
+ * The default value is 30.
  */
 void
 cinnamon_recorder_set_framerate (CinnamonRecorder *recorder,
@@ -1626,10 +1407,10 @@ cinnamon_recorder_set_framerate (CinnamonRecorder *recorder,
 }
 
 /**
- * cinnamon_recorder_set_filename:
+ * cinnamon_recorder_set_file_template:
  * @recorder: the #CinnamonRecorder
- * @filename: the filename template to use for output files,
- *            or %NULL for the defalt value.
+ * @file_template: the filename template to use for output files,
+ *                 or %NULL for the defalt value.
  *
  * Sets the filename that will be used when creating output
  * files. This is only used if the configured pipeline has an
@@ -1639,28 +1420,33 @@ cinnamon_recorder_set_framerate (CinnamonRecorder *recorder,
  * the following escapes:
  *
  * %d: The current date as YYYYYMMDD
- * %u: A string added to make the filename unique.
- *     '', 'a', 'b', ... 'aa', 'ab', ..
- * %c: A counter that is updated (opening a new file) each
- *     time the recording stream is paused.
  * %%: A literal percent
  *
  * The default value is 'cinnamon-%d%u-%c.ogg'.
  */
 void
-cinnamon_recorder_set_filename (CinnamonRecorder *recorder,
-                             const char    *filename)
+cinnamon_recorder_set_file_template (CinnamonRecorder *recorder,
+                                  const char    *file_template)
 {
   g_return_if_fail (CINNAMON_IS_RECORDER (recorder));
 
-  recorder_set_filename (recorder, filename);
+  recorder_set_file_template (recorder, file_template);
 
+}
+
+void
+cinnamon_recorder_set_draw_cursor (CinnamonRecorder *recorder,
+                                gboolean       draw_cursor)
+{
+  g_return_if_fail (CINNAMON_IS_RECORDER (recorder));
+
+  recorder_set_draw_cursor (recorder, draw_cursor);
 }
 
 /**
  * cinnamon_recorder_set_pipeline:
  * @recorder: the #CinnamonRecorder
- * @pipeline: (allow-none): the GStreamer pipeline used to encode recordings
+ * @pipeline: (nullable): the GStreamer pipeline used to encode recordings
  *            or %NULL for the default value.
  *
  * Sets the GStreamer pipeline used to encode recordings.
@@ -1668,7 +1454,7 @@ cinnamon_recorder_set_filename (CinnamonRecorder *recorder,
  * should have an unconnected sink pad where the recorded
  * video is recorded. It will normally have a unconnected
  * source pad; output from that pad will be written into the
- * output file. (See cinnamon_recorder_set_filename().) However
+ * output file. (See cinnamon_recorder_set_file_template().) However
  * the pipeline can also take care of its own output - this
  * might be used to send the output to an icecast server
  * via shout2send or similar.
@@ -1701,6 +1487,11 @@ cinnamon_recorder_set_area (CinnamonRecorder *recorder,
   recorder->area.height = CLAMP (height,
                                  0, recorder->stage_height - recorder->area.y);
 
+  clutter_stage_get_capture_final_size (recorder->stage, &recorder->area,
+                                        &recorder->capture_width,
+                                        &recorder->capture_height,
+                                        &recorder->scale);
+
   /* This breaks the recording but tweaking the GStreamer pipeline a bit
    * might make it work, at least if the codec can handle a stream where
    * the frame size changes in the middle.
@@ -1712,46 +1503,46 @@ cinnamon_recorder_set_area (CinnamonRecorder *recorder,
 /**
  * cinnamon_recorder_record:
  * @recorder: the #CinnamonRecorder
+ * @filename_used: (out) (optional): actual filename used for recording
  *
- * Starts recording, or continues a recording that was previously
- * paused. Starting the recording may fail if the output file
+ * Starts recording, Starting the recording may fail if the output file
  * cannot be opened, or if the output stream cannot be created
  * for other reasons. In that case a warning is printed to
  * stderr. There is no way currently to get details on how
  * recording failed to start.
  *
  * An extra reference count is added to the recorder if recording
- * is successfully started; the recording object will not be freed
+ * is succesfully started; the recording object will not be freed
  * until recording is stopped even if the creator no longer holds
  * a reference. Recording is automatically stopped if the stage
  * is destroyed.
  *
- * Return value: %TRUE if recording was successfully started
+ * Return value: %TRUE if recording was succesfully started
  */
 gboolean
-cinnamon_recorder_record (CinnamonRecorder *recorder)
+cinnamon_recorder_record (CinnamonRecorder  *recorder,
+                       char          **filename_used)
 {
   g_return_val_if_fail (CINNAMON_IS_RECORDER (recorder), FALSE);
   g_return_val_if_fail (recorder->stage != NULL, FALSE);
   g_return_val_if_fail (recorder->state != RECORDER_STATE_RECORDING, FALSE);
 
-  if (recorder->current_pipeline)
-    {
-      /* Adjust the start time so that the times in the stream ignore the
-       * pause
-       */
-      recorder->start_time = recorder->start_time + (get_wall_time() - recorder->pause_time);
-    }
-  else
-    {
-      if (!recorder_open_pipeline (recorder))
-        return FALSE;
+  if (!recorder_open_pipeline (recorder))
+    return FALSE;
 
-      recorder->start_time = get_wall_time();
-    }
+  if (filename_used)
+    *filename_used = g_strdup (recorder->current_pipeline->filename);
+
+  recorder_connect_stage_callbacks (recorder);
+
+  recorder->last_frame_time = GST_CLOCK_TIME_NONE;
 
   recorder->state = RECORDER_STATE_RECORDING;
+  recorder_update_pointer (recorder);
   recorder_add_update_pointer_timeout (recorder);
+
+  /* Disable unredirection while we are recoring */
+  meta_disable_unredirect_for_display (cinnamon_global_get_display (cinnamon_global_get ()));
 
   /* Set up repaint hook */
   recorder->repaint_hook_id = clutter_threads_add_repaint_func(recorder_repaint_hook, recorder->stage, NULL);
@@ -1765,44 +1556,6 @@ cinnamon_recorder_record (CinnamonRecorder *recorder)
   g_object_ref (recorder);
 
   return TRUE;
-}
-
-/**
- * cinnamon_recorder_pause:
- * @recorder: the #CinnamonRecorder
- *
- * Temporarily stop recording. If the specified filename includes
- * the %c escape, then the stream is closed and a new stream with
- * an incremented counter will be created. Otherwise the stream
- * is paused and will be continued when cinnamon_recorder_record()
- * is next called.
- */
-void
-cinnamon_recorder_pause (CinnamonRecorder *recorder)
-{
-  g_return_if_fail (CINNAMON_IS_RECORDER (recorder));
-  g_return_if_fail (recorder->state == RECORDER_STATE_RECORDING);
-
-  recorder_remove_update_pointer_timeout (recorder);
-  /* We want to record one more frame since some time may have
-   * elapsed since the last frame
-   */
-  recorder_record_frame (recorder, TRUE);
-
-  if (recorder->filename_has_count)
-    recorder_close_pipeline (recorder);
-
-  recorder->state = RECORDER_STATE_PAUSED;
-  recorder->pause_time = get_wall_time();
-
-  /* Queue a redraw to remove the recording indicator */
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (recorder->stage));
-
-  if (recorder->repaint_hook_id != 0)
-  {
-    clutter_threads_remove_repaint_func (recorder->repaint_hook_id);
-    recorder->repaint_hook_id = 0;
-  }
 }
 
 /**
@@ -1820,17 +1573,29 @@ cinnamon_recorder_close (CinnamonRecorder *recorder)
   g_return_if_fail (CINNAMON_IS_RECORDER (recorder));
   g_return_if_fail (recorder->state != RECORDER_STATE_CLOSED);
 
-  if (recorder->state == RECORDER_STATE_RECORDING)
-    cinnamon_recorder_pause (recorder);
+  /* We want to record one more frame since some time may have
+   * elapsed since the last frame
+   */
+  recorder_record_frame (recorder, TRUE);
 
   recorder_remove_update_pointer_timeout (recorder);
-  recorder_remove_redraw_timeout (recorder);
   recorder_close_pipeline (recorder);
 
+  /* Queue a redraw to remove the recording indicator */
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (recorder->stage));
+
+  if (recorder->repaint_hook_id != 0)
+    {
+      clutter_threads_remove_repaint_func (recorder->repaint_hook_id);
+      recorder->repaint_hook_id = 0;
+    }
+
   recorder->state = RECORDER_STATE_CLOSED;
-  recorder->count = 0;
-  g_free (recorder->unique);
-  recorder->unique = NULL;
+
+  /* Reenable after the recording */
+  meta_enable_unredirect_for_display (cinnamon_global_get_display (cinnamon_global_get ()));
+
+  g_message ("Recording stopped");
 
   /* Release the refcount we took when we started recording */
   g_object_unref (recorder);

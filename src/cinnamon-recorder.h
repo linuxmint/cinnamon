@@ -31,19 +31,21 @@ GType              cinnamon_recorder_get_type     (void) G_GNUC_CONST;
 CinnamonRecorder     *cinnamon_recorder_new (ClutterStage  *stage);
 
 void               cinnamon_recorder_set_framerate (CinnamonRecorder *recorder,
-                                                 int framerate);
-void               cinnamon_recorder_set_filename (CinnamonRecorder *recorder,
-						const char    *filename);
+                                                    int framerate);
+void               cinnamon_recorder_set_file_template (CinnamonRecorder *recorder,
+                                                        const char    *file_template);
 void               cinnamon_recorder_set_pipeline (CinnamonRecorder *recorder,
-						const char    *pipeline);
+                                                   const char    *pipeline);
+void               cinnamon_recorder_set_draw_cursor (CinnamonRecorder *recorder,
+                                                      gboolean       draw_cursor);
 void cinnamon_recorder_set_area (CinnamonRecorder *recorder,
                                  int               x,
                                  int               y,
                                  int               width,
                                  int               height);
-gboolean           cinnamon_recorder_record       (CinnamonRecorder *recorder);
+gboolean           cinnamon_recorder_record       (CinnamonRecorder  *recorder,
+                                                   char          **filename_used);
 void               cinnamon_recorder_close        (CinnamonRecorder *recorder);
-void               cinnamon_recorder_pause        (CinnamonRecorder *recorder);
 gboolean           cinnamon_recorder_is_recording (CinnamonRecorder *recorder);
 
 G_END_DECLS
