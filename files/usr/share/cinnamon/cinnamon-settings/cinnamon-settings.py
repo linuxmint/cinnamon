@@ -489,7 +489,7 @@ class MainWindow(Gio.Application):
         to_import = [os.path.splitext(os.path.basename(x))[0] for x in mod_files]
         
         if only_module is not None:
-            to_import = filter(lambda mod: only_module in mod, to_import)
+            to_import = filter(lambda mod: only_module.replace("-", "_") in mod, to_import)
 
         for module in map(__import__, to_import):
             try:
