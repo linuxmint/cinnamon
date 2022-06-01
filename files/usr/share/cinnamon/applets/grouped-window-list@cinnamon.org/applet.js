@@ -615,7 +615,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         each(this.appLists, (workspace) => {
             each(workspace.appList, (appGroup) => {
                 if (titleDisplay === TitleDisplay.Focused) {
-                    appGroup.hideLabel(false);
+                    appGroup.hideLabel();
                 }
                 appGroup.handleTitleDisplayChange();
             });
