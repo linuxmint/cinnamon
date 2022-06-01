@@ -36,6 +36,7 @@ class Module:
 
                 self.display_c_widget = content
                 settings.add_row(widget)
+                widget.get_parent().set_activatable(False)
 
             except Exception as detail:
                 print(detail)
