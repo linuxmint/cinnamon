@@ -14,6 +14,15 @@ const CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding";
 
 const MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys";
 
+const OBSOLETE_MEDIA_KEYS = [
+    MK.VIDEO_OUT,
+    MK.ROTATE_VIDEO
+]
+
+function is_obsolete_mk(key_enum) {
+    return OBSOLETE_MEDIA_KEYS.includes(key_enum);
+};
+
 const iface = "\
     <node> \
       <interface name='org.cinnamon.SettingsDaemon.KeybindingHandler'> \
@@ -100,6 +109,8 @@ KeybindingManager.prototype = {
             return true;
         }
 
+        // log(`set keybinding: ${name}, bindings: ${bindings}`);
+
         action_id = global.display.add_custom_keybinding(name, bindings, callback);
 
         if (action_id === Meta.KeyBindingAction.NONE) {
@@ -156,6 +167,10 @@ KeybindingManager.prototype = {
 
     setup_media_keys: function() {
         for (let i = 0; i < MK.SEPARATOR; i++) {
+            if (is_obsolete_mk(i)) {
+                continue;
+            }
+
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
             this.addHotKeyArray("media-keys-" + i.toString(),
                            bindings,
@@ -163,6 +178,10 @@ KeybindingManager.prototype = {
         }
 
         for (let i = MK.SEPARATOR + 1; i < MK.LAST; i++) {
+            if (is_obsolete_mk(i)) {
+                continue;
+            }
+
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
             this.addHotKeyArray("media-keys-" + i.toString(),
                            bindings,
