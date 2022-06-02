@@ -95,10 +95,6 @@ KEYBINDINGS = [
     [_("Push tile right"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-right", "win-tiling"],
     [_("Push tile up"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-up", "win-tiling"],
     [_("Push tile down"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-down", "win-tiling"],
-    [_("Push snap left"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-left", "win-tiling"],
-    [_("Push snap right"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-right", "win-tiling"],
-    [_("Push snap up"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-up", "win-tiling"],
-    [_("Push snap down"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-down", "win-tiling"],
     # Windows - Workspace-related
     [_("Move window to new workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-new", "win-workspaces"],
     [_("Move window to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-left", "win-workspaces"],
@@ -152,8 +148,8 @@ KEYBINDINGS = [
     [_("Copy a screenshot of a window to clipboard"), MEDIA_KEYS_SCHEMA, "window-screenshot-clip", "sys-screen"],
     [_("Toggle recording desktop (must restart Cinnamon)"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-recording", "sys-screen"],
     # System - Hardware
-    [_("Re-detect display devices"), MEDIA_KEYS_SCHEMA, "video-outputs", "sys-hw"],
-    [_("Rotate display"), MEDIA_KEYS_SCHEMA, "video-rotation", "sys-hw"],
+    [_("Switch monitor configurations"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-monitor", "sys-hw"],
+    [_("Rotate display"), MUFFIN_KEYBINDINGS_SCHEMA, "rotate-monitor", "sys-hw"],
     [_("Orientation Lock"), MEDIA_KEYS_SCHEMA, "video-rotation-lock", "sys-hw"],
     [_("Increase screen brightness"), MEDIA_KEYS_SCHEMA, "screen-brightness-up", "sys-hw"],
     [_("Decrease screen brightness"), MEDIA_KEYS_SCHEMA, "screen-brightness-down", "sys-hw"],
