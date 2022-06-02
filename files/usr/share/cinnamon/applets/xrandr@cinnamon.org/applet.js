@@ -7,21 +7,15 @@ const CinnamonDesktop = imports.gi.CinnamonDesktop;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
+const Meta = imports.gi.Meta;
 
 const N_ = function(e) { return e; };
 
-const possibleRotations = [
-    CinnamonDesktop.RRRotation.ROTATION_0,
-    CinnamonDesktop.RRRotation.ROTATION_90,
-    CinnamonDesktop.RRRotation.ROTATION_180,
-    CinnamonDesktop.RRRotation.ROTATION_270
-];
-
-let rotations = [
-    [CinnamonDesktop.RRRotation.ROTATION_0, N_("Normal")],
-    [CinnamonDesktop.RRRotation.ROTATION_90, N_("Left")],
-    [CinnamonDesktop.RRRotation.ROTATION_270, N_("Right")],
-    [CinnamonDesktop.RRRotation.ROTATION_180, N_("Upside-down")]
+let ROTATIONS = [
+    [Meta.XrandrRotation.NORMAL, N_("Normal")],
+    [Meta.XrandrRotation.LEFT, N_("Left")],
+    [Meta.XrandrRotation.RIGHT, N_("Right")],
+    [Meta.XrandrRotation.FLIPPED, N_("Upside-down")]
 ];
 
 class CinnamonXrandrApplet extends Applet.IconApplet {
@@ -35,97 +29,77 @@ class CinnamonXrandrApplet extends Applet.IconApplet {
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
-        Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.XRANDR_2", Lang.bind(this, function(proxy, error) {
-            this._proxy = proxy;
-        }));
+        this.monitor_manager = Meta.MonitorManager.get();
 
-        try {
-            this._screen = new CinnamonDesktop.RRScreen({ gdk_screen: Gdk.Screen.get_default() });
-            this._screen.init(null);
-        } catch(e) {
-            // an error means there is no XRandR extension
-            global.logError(e);
-            this.actor.hide();
-            return;
-        }
-
-        this._createMenu();
-        this._screen.connect('changed', Lang.bind(this, this._randrEvent));
+        this.monitor_manager.connect("monitors-changed", () => this._monitors_changed());
+        this._generate_menu();
     }
 
     on_applet_clicked(event) {
         this.menu.toggle();
     }
 
-    _randrEvent() {
-        this.menu.removeAll();
-        this._createMenu();
+    _update_visible() {
+        this.actor.visible = global.settings.get_boolean("panel-edit-mode") ||
+                             this._get_allowed_rotations().length > 0;
     }
 
-    _createMenu() {
-        let config = CinnamonDesktop.RRConfig.new_current(this._screen);
-        let outputs = config.get_outputs();
-        for (let i = 0; i < outputs.length; i++) {
-            if (outputs[i].is_connected())
-                this._addOutputItem(config, outputs[i]);
+    on_applet_added_to_panel(userEnabled) {
+        this._update_visible();
+        this._generate_menu();
+    }
+
+    _monitors_changed(manager) {
+        this._update_visible();
+        this._generate_menu();
+
+    }
+
+    _generate_menu() {
+        this.menu.removeAll();
+
+        if (!this.actor.visible) {
+            return;
         }
+
+        const allowed_rotations = this._get_allowed_rotations();
+
+        for (let i = 0; i < allowed_rotations.length; i++) {
+            let [rotval, name] = allowed_rotations[i];
+
+            let item = new PopupMenu.PopupMenuItem(_(name));
+            let [got, current] = this.monitor_manager.get_current_rotation();
+
+            if (got &&  current === rotval) {
+                item.setShowDot(true);
+            }
+
+            item.connect('activate', (item, event) => {
+                if (!this.monitor_manager.apply_temporary_rotation(rotval)) {
+                    global.logError('Unable to rotate the laptop display', e);
+                }
+            });
+
+            this.menu.addMenuItem(item);
+        }
+
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this.menu.addAction(_("Configure display settings..."), function() {
             GLib.spawn_command_line_async('cinnamon-settings display');
         });
     }
 
-    _addOutputItem(config, output) {
-        let item = new PopupMenu.PopupMenuItem("%s (%s)".format(output.get_display_name(), output.get_name()));
-        item.label.add_style_class_name('display-subtitle');
-        item.actor.reactive = false;
-        item.actor.can_focus = false;
-        this.menu.addMenuItem(item);
+    _get_allowed_rotations() {
+        let retval = [];
 
-        let allowedRotations = this._getAllowedRotations(config, output);
-        let currentRotation = output.get_rotation();
-        for (let i = 0; i < rotations.length; i++) {
-            let [bitmask, name] = rotations[i];
-            if (bitmask & allowedRotations) {
-                let item = new PopupMenu.PopupMenuItem(_(name));
-                if (bitmask & currentRotation)
-                    item.setShowDot(true);
-                item.connect('activate', Lang.bind(this, function(item, event) {
-                    /* ensure config is saved so we get a backup if anything goes wrong */
-                    config.save();
+        for (let i = 0; i < ROTATIONS.length; i++) {
+            let rotation = ROTATIONS[i];
 
-                    output.set_rotation(bitmask);
-                    try {
-                        config.save();
-                        this._proxy.ApplyConfigurationRemote(0, event.get_time());
-                    } catch (e) {
-                        global.logError('Could not save monitor configuration', e);
-                    }
-                }));
-                this.menu.addMenuItem(item);
-            }
-        }
-    }
-
-    _getAllowedRotations(config, output) {
-        let retval = 0;
-
-        let current = output.get_rotation();
-
-        for (let i = 0; i < possibleRotations.length; i++) {
-            output.set_rotation(possibleRotations[i]);
-            if (config.applicable(this._screen)) {
-                retval |= possibleRotations[i];
+            if (this.monitor_manager.can_apply_rotation(rotation[0])) {
+                retval.push(rotation);
             }
         }
 
-        output.set_rotation(current);
-
-        if (retval.length === 0) {
-            // what, no rotation?
-            // what's current then?
-            retval = current;
-        }
         return retval;
     }
 
