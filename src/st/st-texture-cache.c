@@ -1091,6 +1091,43 @@ load_from_pixbuf (GdkPixbuf *pixbuf,
   return actor;
 }
 
+/**
+ * st_texture_cache_load_from_pixbuf:
+ * @pixbuf: A #GdkPixbuf
+ * @size: int
+ *
+ * Converts a #GdkPixbuf into a #ClutterTexture.
+ *
+ * Return value: (transfer none): A new #ClutterActor
+ */
+ClutterActor *
+st_texture_cache_load_from_pixbuf (GdkPixbuf *pixbuf,
+                                   int        size)
+{
+
+  g_autoptr(ClutterContent) image = NULL;
+  ClutterActor *actor;
+  gfloat resource_scale;
+
+  actor = g_object_new (CLUTTER_TYPE_ACTOR,
+                        "request-mode", CLUTTER_REQUEST_CONTENT_SIZE,
+                        NULL);
+
+  clutter_actor_get_resource_scale (actor, &resource_scale);
+
+  image = pixbuf_to_st_content_image (pixbuf,
+                                      size, size,
+                                      st_theme_context_get_scale_for_stage (),
+                                      resource_scale);
+
+  actor = g_object_new (CLUTTER_TYPE_ACTOR,
+                        "request-mode", CLUTTER_REQUEST_CONTENT_SIZE,
+                        NULL);
+  clutter_actor_set_content (actor, image);
+
+  return actor;
+}
+
 static void
 hash_table_remove_with_scales (GHashTable *hash,
                                GList      *scales,
@@ -1640,6 +1677,102 @@ st_texture_cache_load_image_from_file_async (StTextureCache                  *ca
 
   return data->handle;
 }
+
+/**
+ * st_texture_cache_load_from_raw:
+ * @cache: a #StTextureCache
+ * @data: (array length=len): raw pixel data
+ * @len: the length of @data
+ * @has_alpha: whether @data includes an alpha channel
+ * @width: width in pixels of @data
+ * @height: width in pixels of @data
+ * @rowstride: rowstride of @data
+ * @size: size of icon to return
+ *
+ * Creates (or retrieves from cache) an icon based on raw pixel data.
+ *
+ * Return value: (transfer none): a new #ClutterActor displaying a
+ * pixbuf created from @data and the other parameters.
+ **/
+ClutterActor *
+st_texture_cache_load_from_raw (StTextureCache    *cache,
+                                const guchar      *data,
+                                gsize              len,
+                                gboolean           has_alpha,
+                                int                width,
+                                int                height,
+                                int                rowstride,
+                                int                size,
+                                GError           **error)
+{
+  ClutterActor *actor;
+  ClutterContent *image;
+
+  size *= st_theme_context_get_scale_for_stage ();
+  image = st_image_content_new_with_preferred_size (size, size);
+
+  clutter_image_set_data (CLUTTER_IMAGE (image),
+                          data,
+                          has_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
+                          width,
+                          height,
+                          rowstride,
+                          error);
+
+  actor = g_object_new (CLUTTER_TYPE_ACTOR,
+                        "request-mode", CLUTTER_REQUEST_CONTENT_SIZE,
+                        NULL);
+
+  if (error)
+    {
+      g_clear_object (&image);
+      return actor;
+    }
+
+  clutter_actor_set_content (actor, image);
+  return actor;
+}
+
+
+// /**
+//  * st_texture_cache_load_file_simple:
+//  * @cache: A #StTextureCache
+//  * @file_path: Filesystem path
+//  *
+//  * Synchronously load an image into a texture.  The texture will be cached
+//  * indefinitely.  On error, this function returns an empty texture and prints a warning.
+//  *
+//  * Returns: (transfer none): A new #ClutterTexture
+//  */
+// ClutterActor *
+// st_texture_cache_load_file_simple (StTextureCache *cache,
+//                                    const gchar    *file_path)
+// {
+//   GFile *file;
+//   char *uri;
+//   ClutterActor *texture;
+//   GError *error = NULL;
+
+//   file = g_file_new_for_path (file_path);
+//   uri = g_file_get_uri (file);
+
+//   texture = st_texture_cache_load_uri_sync (cache, ST_TEXTURE_CACHE_POLICY_FOREVER,
+//                                             uri, -1, -1, &error);
+//   g_object_unref (file);
+//   g_free (uri);
+//   if (texture == NULL)
+//     {
+//       if (error)
+//         {
+//           g_warning ("Failed to load %s: %s", file_path, error->message);
+//           g_clear_error (&error);
+//         }
+//       else
+//         g_warning ("Failed to load %s", file_path);
+//       texture = clutter_texture_new ();
+//     }
+//   return texture;
+// }
 
 static char *
 symbolic_name_for_icon (const char *name)

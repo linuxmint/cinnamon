@@ -72,6 +72,23 @@ st_texture_cache_load_sliced_image (StTextureCache *cache,
                                     GFunc           load_callback,
                                     gpointer        user_data);
 
+ClutterActor *
+st_texture_cache_load_from_pixbuf (GdkPixbuf *pixbuf,
+                                   int        size);
+
+ClutterActor *st_texture_cache_load_from_raw (StTextureCache    *cache,
+                                              const guchar      *data,
+                                              gsize              len,
+                                              gboolean           has_alpha,
+                                              int                width,
+                                              int                height,
+                                              int                rowstride,
+                                              int                size,
+                                              GError           **error);
+
+ClutterActor *st_texture_cache_load_file_simple (StTextureCache *cache,
+                                                 const gchar    *file_path);
+
 StWidget *st_texture_cache_bind_cairo_surface_property (StTextureCache    *cache,
                                                         GObject           *object,
                                                         const char        *property_name,
