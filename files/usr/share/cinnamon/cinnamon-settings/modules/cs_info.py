@@ -195,6 +195,43 @@ class Module:
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
 
+            if os.path.exists("/usr/bin/inxi"):
+                
+                widget = SettingsWidget()
+
+                button = Gtk.Button(label=_("Copy to clipboard"))
+                button.connect("clicked", self.on_copy_clipboard_button_clicked)
+                widget.pack_start(button, True, True, 0)
+                settings.add_row(widget)
+    
+    def on_copy_clipboard_button_clicked(self, button):
+        try:
+            # taken from https://github.com/linuxmint/xapp/blob/master/scripts/upload-system-info
+            subproc = Gio.Subprocess.new(['inxi', '-Fxxrzc0'], Gio.SubprocessFlags.STDOUT_PIPE |  Gio.SubprocessFlags.STDERR_PIPE)
+            subproc.wait_check_async(None, self.on_copy_clipboard_complete)
+        except Exception as e:
+            print ("An error occurred while copying the system information to clipboard")
+            print (e)
+
+    def on_copy_clipboard_complete(self, subproc, result):
+        def _convert_stream_to_string(stream):
+            """Convert Gio.InputStream to string"""
+            bytes = bytearray(0)
+            buf = stream.read_bytes(1024, None).get_data()
+            while buf:
+                bytes += buf
+                buf = stream.read_bytes(1024, None).get_data()
+            stream.close()
+            content = bytes.decode("utf-8")
+            return content
+        try:
+            status = subproc.wait_check_finish(result)
+            if status:
+                clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+                clipboard.set_text(_convert_stream_to_string(subproc.get_stdout_pipe()), -1)
+        except Exception as e:
+            print("copying to clipboard failed : %s" % e.message)
+
     def on_button_clicked(self, button, spinner):
 
         try:
