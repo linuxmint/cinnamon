@@ -1,8 +1,228 @@
-cinnamon (5.3.0) UNRELEASED; urgency=medium
+cinnamon (5.4.0) vanessa; urgency=medium
 
+  [ Michael Webster ]
   * Adapt to muffin 5.3 changes.
+  * Implement resize popup (for terminals).
+  * Use Meta.Barrier for pointer barriers.
+  * Use gtk window-kill and display confirmation dialogs.
+  * Simplify hotcorner setup, add corner barriers.
 
- -- Michael Webster <miketwebster@gmail.com>  Wed, 08 Jun 2022 12:00:00 -0500
+  [ Stephen Collins ]
+  * tooltip.js: trigger a relayout after triggering a reallocation
+
+  [ Michael Webster ]
+  * Fix show-desktop applet, fix implementation of raise/lower desklet layer.
+  * Update fractional scale switch backend.
+  * Small change in cs_sound for updated Cvc on cinnamon-desktop.
+  * calendar: Fix DateTimeMechanism interface path.
+  * Adapt to using logical monitors, where the primary monitor is not always 0.
+
+  [ Stephen Collins ]
+  * windowManager.js: fix window placement after workspace switch animation
+  * popupMenu.js: bring back the call to actor.destroy()
+  * Fix docs and re-enable
+
+  [ Michael Webster ]
+  * popup menus: Add a new signal to be fired when a menu finishes animating closed.
+  * tooltips: Round event mouse positions.
+  * Fix recorder, minus the recording indicator for the moment.
+  * Disable 'hover' effect for display module background.
+  * Fix some keybindings. Snap is no more, display rotate and switch have moved to a different schema.
+  * Rework xrandr applet to use muffin api.
+  * Disable some media keys - they're handled internally by muffin now.
+
+  [ Nurgazy Nazhimidinov ]
+  * add system info copy to clipboard (#10428)
+
+  [ Michael Webster ]
+  * st-texture-cache: Restore a couple of missing methods.
+  * close dialog: Fix a vertical spacing issue.
+
+  [ Clement Lefebvre ]
+  * CI: Update targets
+
+  [ Michael Webster ]
+  * makepot: Scan all of files/usr/bin
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * debian/control: Add python3-requests dependency.
+  * cs_themes.py: Don't show 'gnome' or 'hicolor' themes in the icon theme picker.
+  * cinnamon.css: Use em units for the calendar dot position.
+  * menu applet: Fix keyboard navigation when category-hover is disabled.
+  * window-list: Improve overflow issue when there are lots of windows.
+  * grouped-window-list: Improve overflow issue when there are lots of windows.
+  * window-list: Use the initial label preference in the getPreferred* methods.
+  * osdWindow.c: Scale some elements down for low resolution monitors.
+  * calendar events: Check if evolution-data-server is running before enabling events.
+  * calendar-server: Add return after calling app.quit()
+  * window lists: Improve icon geometry updates.
+
+  [ Eli Schwartz ]
+  * gtkdoc: remove dependencies on custom target files (#10606)
+  * Revert "build: disable gir install via list to pacify meson >= 0.60.2 (#10489)" (#10596)
+
+  [ Michael Webster ]
+  * cinnamon-app: Don't try to offload PrefersNonDefaultGPU if offloading isn't currently supported.
+
+  [ fredcw ]
+  * Use same icon used in cinnamon-settings... (#10685)
+
+  [ AxXxB ]
+  * deskletManager.js: correct loading time logging (#10672)
+
+  [ Michael Webster ]
+  * keybindings: Warn, but don't forbid assigning normal keys for shortcuts.
+
+  [ Jonathan Heard ]
+  * FIX #10618 (#10619)
+
+  [ Ross Brattain ]
+  * cinnamon-settings: pop sys.argv args before Gio
+
+  [ dasaleph ]
+  * Fix a typo #9756
+
+  [ Michael Webster ]
+  * calendar: Set a reasonable limit on the frequency of user setDate events.
+
+  [ Justin ]
+  * single day event now shows end time (#10734)
+
+  [ AxXxB ]
+  * keyboard applet refactoring (#10671)
+
+  [ ronyalaluf ]
+  * PopupMenu: fix arrow icon direction on rtl layout
+  * Popup Menu Slider: Fix direction and handling in rtl layout
+  * Sound applet: Update VolumeSlider for rtl layout
+  * PopupMenu: Invert right-left keyboard navigation on rtl layout
+
+  [ Michael Webster ]
+  * window-list: zero a source id when destroying an app button.
+
+  [ AxXxB ]
+  * Add _flashTimer property to AppMenuButton (#10457)
+
+  [ ronyalaluf ]
+  * Slider.js: Make inverted when in rtl layout
+  * Sound applet: Do not invert media progress bar in rtl layout
+
+  [ Jonathan Heard ]
+  * remove _hook from applet.js (#10547)
+
+  [ Steve Grubb ]
+  * Fix a couple typos in latest code (#10569)
+
+  [ Michael Webster ]
+  * cinnamon-settings: Fix specifying initial panel from the command line.
+
+  [ AxXxB ]
+  * grouped-window-list: spacing between items is now defined by CSS (#10669)
+
+  [ Andreas Müller ]
+  * Do not crash on systemd/tzdata reporting Univeral timezone
+
+  [ slowscript ]
+  * Menu applet: show application actions
+  * Menu applet: Add icons to application actions
+
+  [ Xushen ]
+  * photoframe: Avoid showing hidden files or files under hidden directories. (#10760)
+
+  [ Kevin Langman ]
+  * Fix the XApp Status Applet tooltip placement on vertical panels
+
+  [ Michael Webster ]
+  * keyboard applet: Don't check for ibus too soon.
+  * Fix keyboard applet when there's only a single layout.
+  * Fix an introspection issue in cinnamon-xfixes-cursor.c.
+
+  [ okaestne ]
+  * ExtensionCore: defer loading of cinnamon version & fix comparison
+  * cs_privacy: defer init of NM.Client
+  * cs_backgrounds: defer import of imtools module
+  * Spices: defer import of requests module
+  * cs: fix print_timing; remove stale touch function
+  * cs: lazy load python modules, when passed as arg
+
+  [ Michael Webster ]
+  * menu: Fix sort when app names include diacritical marks.
+
+  [ AxXxB ]
+  * power applet: fix device duplicates (#10670)
+
+  [ Nate Simon ]
+  * Fix: Missing icon causes output sound device to not show in list (#10794)
+
+  [ ronyala ]
+  * Sound applet: Hide microphone mute toggle if mic is not being used (#10620)
+
+  [ kimimaru4000 ]
+  * Show brightness text and value when dragging slider on power applet (#10630)
+
+  [ Michael Webster ]
+  * xapp status applet: Recheck applet roles when an icon's name id changes.
+  * cinnamon-settings.py: Replace hyphens with underscores when looking for a specific python settings module.
+
+  [ ronyala ]
+  * GWL: fix rtl layout issues (#10631)
+
+  [ martj42 ]
+  * Option to change the button width in the window list (#10575)
+
+  [ Michael Webster ]
+  * Adapt to new plugin, meta, clutter, cogl api.
+
+  [ Fabio Fantoni ]
+  * debian/ changes
+
+  [ Michael Webster ]
+  * Implement resize popup (for terminals).
+  * Use Meta.Barrier for pointer barriers.
+  * Use gtk window-kill and display confirmation dialogs.
+  * Simplify hotcorner setup, add corner barriers.
+
+  [ Stephen Collins ]
+  * tooltip.js: trigger a relayout after triggering a reallocation
+
+  [ Michael Webster ]
+  * Fix show-desktop applet, fix implementation of raise/lower desklet layer.
+  * Update fractional scale switch backend.
+  * Small change in cs_sound for updated Cvc on cinnamon-desktop.
+  * calendar: Fix DateTimeMechanism interface path.
+  * Adapt to using logical monitors, where the primary monitor is not always 0.
+
+  [ Stephen Collins ]
+  * windowManager.js: fix window placement after workspace switch animation
+  * popupMenu.js: bring back the call to actor.destroy()
+  * Fix docs and re-enable
+
+  [ Michael Webster ]
+  * popup menus: Add a new signal to be fired when a menu finishes animating closed.
+  * tooltips: Round event mouse positions.
+  * Fix recorder, minus the recording indicator for the moment.
+  * Disable 'hover' effect for display module background.
+  * Fix some keybindings. Snap is no more, display rotate and switch have moved to a different schema.
+  * Rework xrandr applet to use muffin api.
+  * Disable some media keys - they're handled internally by muffin now.
+
+  [ Nurgazy Nazhimidinov ]
+  * add system info copy to clipboard (#10428)
+
+  [ Michael Webster ]
+  * st-texture-cache: Restore a couple of missing methods.
+  * close dialog: Fix a vertical spacing issue.
+
+  [ Clement Lefebvre ]
+  * CI: Update targets
+
+  [ Michael Webster ]
+  * makepot: Scan all of files/usr/bin
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 10 Jun 2022 15:55:03 +0200
 
 cinnamon (5.2.7) una; urgency=medium
 
