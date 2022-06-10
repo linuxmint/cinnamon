@@ -1120,9 +1120,6 @@ st_texture_cache_load_from_pixbuf (GdkPixbuf *pixbuf,
                                       st_theme_context_get_scale_for_stage (),
                                       resource_scale);
 
-  actor = g_object_new (CLUTTER_TYPE_ACTOR,
-                        "request-mode", CLUTTER_REQUEST_CONTENT_SIZE,
-                        NULL);
   clutter_actor_set_content (actor, image);
 
   return actor;
@@ -1723,7 +1720,7 @@ st_texture_cache_load_from_raw (StTextureCache    *cache,
                         "request-mode", CLUTTER_REQUEST_CONTENT_SIZE,
                         NULL);
 
-  if (error)
+  if (*error)
     {
       g_clear_object (&image);
       return actor;
