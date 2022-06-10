@@ -35,13 +35,12 @@ class CloseDialog(XApp.GtkWindow):
         self.set_default_size(300, -1)
         self.set_skip_taskbar_hint(True)
 
-        mainbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
-                         margin_top=10)
+        mainbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(mainbox)
 
         content_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
                               halign=Gtk.Align.CENTER,
-                              border_width=10)
+                              margin_left=10, margin_right=10)
         mainbox.pack_start(content_box, True, False, 0)
 
         image = Gtk.Image(icon_name="window-close-symbolic", pixel_size=48)
