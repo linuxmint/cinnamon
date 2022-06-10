@@ -157,8 +157,6 @@ on_icon_theme_changed (GtkIconTheme   *icon_theme,
 static void
 st_texture_cache_init (StTextureCache *self)
 {
-  StSettings *settings;
-
   self->priv = g_new0 (StTextureCachePrivate, 1);
 
   self->priv->icon_theme = gtk_icon_theme_get_default ();
@@ -1121,6 +1119,7 @@ st_texture_cache_load_from_pixbuf (GdkPixbuf *pixbuf,
                                       resource_scale);
 
   clutter_actor_set_content (actor, image);
+  g_object_unref (image);
 
   return actor;
 }
@@ -1727,49 +1726,41 @@ st_texture_cache_load_from_raw (StTextureCache    *cache,
     }
 
   clutter_actor_set_content (actor, image);
+  g_object_unref (image);
+
   return actor;
 }
 
+/**
+ * st_texture_cache_load_file_simple:
+ * @cache: A #StTextureCache
+ * @file_path: Filesystem path
+ *
+ * Synchronously load an image into a texture.  The texture will be cached
+ * indefinitely.  On error, this function returns an empty texture and prints a warning.
+ *
+ * Returns: (transfer none): A new #ClutterTexture
+ */
+ClutterActor *
+st_texture_cache_load_file_simple (StTextureCache *cache,
+                                   const gchar    *file_path)
+{
+  ClutterActor *actor;
+  CoglTexture *texture;
+  ClutterContent *image;
 
-// /**
-//  * st_texture_cache_load_file_simple:
-//  * @cache: A #StTextureCache
-//  * @file_path: Filesystem path
-//  *
-//  * Synchronously load an image into a texture.  The texture will be cached
-//  * indefinitely.  On error, this function returns an empty texture and prints a warning.
-//  *
-//  * Returns: (transfer none): A new #ClutterTexture
-//  */
-// ClutterActor *
-// st_texture_cache_load_file_simple (StTextureCache *cache,
-//                                    const gchar    *file_path)
-// {
-//   GFile *file;
-//   char *uri;
-//   ClutterActor *texture;
-//   GError *error = NULL;
+  texture = st_texture_cache_load_file_to_cogl_texture (cache, file_path);
+  image = clutter_texture_content_new_from_texture (texture, NULL);
+  cogl_object_unref (texture);
 
-//   file = g_file_new_for_path (file_path);
-//   uri = g_file_get_uri (file);
+  actor = g_object_new (CLUTTER_TYPE_ACTOR,
+                        "request-mode", CLUTTER_REQUEST_CONTENT_SIZE,
+                        NULL);
 
-//   texture = st_texture_cache_load_uri_sync (cache, ST_TEXTURE_CACHE_POLICY_FOREVER,
-//                                             uri, -1, -1, &error);
-//   g_object_unref (file);
-//   g_free (uri);
-//   if (texture == NULL)
-//     {
-//       if (error)
-//         {
-//           g_warning ("Failed to load %s: %s", file_path, error->message);
-//           g_clear_error (&error);
-//         }
-//       else
-//         g_warning ("Failed to load %s", file_path);
-//       texture = clutter_texture_new ();
-//     }
-//   return texture;
-// }
+  clutter_actor_set_content (actor, image);
+
+  return actor;
+}
 
 static char *
 symbolic_name_for_icon (const char *name)
