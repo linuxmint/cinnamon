@@ -3,6 +3,7 @@ const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 const Gio = imports.gi.Gio;
 const Clutter = imports.gi.Clutter;
+const GLib = imports.gi.GLib;
 
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
@@ -68,19 +69,29 @@ TooltipBase.prototype = {
         this.signals.connect(item, 'button-press-event', this._hide, this);
         this.signals.connect(item, 'button-release-event', this._hide, this);
         this.signals.connect(item, 'destroy', this.destroy, this);
-        this.signals.connect(item, 'allocation-changed', function() {
-            // An allocation change could mean that the actor has moved,
-            // so hide, but wait until after the allocation cycle.
-            Mainloop.idle_add(Lang.bind(this, function() {
-                this._hide();
-            }));
-        }, this);
+
+        this._allocate_idle_id = 0;
+        this.signals.connect(item, 'notify::allocation', this._allocation_changed.bind(this));
 
         this._showTimer = null;
         this.visible = false;
         this.item = item;
         this.preventShow = false;
         this.mousePosition = null;
+    },
+
+    _allocation_changed: function(item, pspec) {
+        // An allocation change could mean that the actor has moved,
+        // so hide, but wait until after the allocation cycle.
+        if (this._allocate_idle_id > 0) {
+            Mainloop.source_remove(this._allocate_idle_id);
+        }
+
+        this._allocate_idle_id = Mainloop.idle_add(Lang.bind(this, function() {
+            this._allocate_idle_id = 0;
+            this._hide();
+            return GLib.SOURCE_REMOVE;
+        }));
     },
 
     _roundedMousePosition: function(event) {
@@ -137,14 +148,14 @@ TooltipBase.prototype = {
     },
 
     _hide: function(actor, event) {
-        if (this._showTimer) {
+        if (this._showTimer > 0) {
             Mainloop.source_remove(this._showTimer);
-            this._showTimer = null;
+            this._showTimer = 0;
         }
 
-        if (this._hideTimer) {
+        if (this._hideTimer > 0) {
             Mainloop.source_remove(this._hideTimer);
-            this._hideTimer = null;
+            this._hideTimer = 0;
         }
 
         this.hide();
@@ -156,14 +167,19 @@ TooltipBase.prototype = {
      * Destroys the tooltip.
      */
     destroy: function() {
-        if (this._showTimer) {
-            Mainloop.source_remove(this._showTimer);
-            this._showTimer = null;
+        if (this._allocate_idle_id > 0) {
+            Mainloop.source_remove(this._allocate_idle_id);
+            this._allocate_idle_id = 0;
         }
 
-        if (this._hideTimer) {
+        if (this._showTimer > 0) {
+            Mainloop.source_remove(this._showTimer);
+            this._showTimer = 0;
+        }
+
+        if (this._hideTimer > 0) {
             Mainloop.source_remove(this._hideTimer);
-            this._hideTimer = null;
+            this._hideTimer = 0;
         }
 
         this.signals.disconnectAllSignals();
