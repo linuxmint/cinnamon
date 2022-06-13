@@ -46,10 +46,17 @@ LevelBar.prototype = {
         this._bar = new St.Widget({ style_class: 'level-bar',
                                     important: true });
 
+        this.actor.connect("notify::allocation", this.allocation_changed.bind(this));
+
         this.stored_actor_width = 0;
         this.max_bar_width = 0;
 
         this.actor.set_child(this._bar);
+    },
+
+    allocation_changed: function(actor, pspec) {
+        let w = actor.allocation.x2 - actor.allocation.x1;
+        this._bar.width = w * (this._level / 100);
     },
 
     get level() {
@@ -59,25 +66,13 @@ LevelBar.prototype = {
     set level(value) {
         this._level = Math.max(0, Math.min(value, 100));
 
-        /* Track our actor's width - if it changes, we can be certain some setting
-         * or the theme changed.  Make sure we update it, as well as figure out our
-         * level bar's allocation.
-         */
-        if (this.initial || (this.stored_actor_width != this.actor.width)) {
-            this.initial = false;
-
-            this.stored_actor_width = this.actor.width;
-
-            let box = this.actor.get_theme_node().get_content_box(this.actor.get_allocation_box());
-
-            this.max_bar_width = box.x2 - box.x1;
-        }
-
-        let newWidth = this.max_bar_width * (this._level / 100);
+        let newWidth = this.actor.width * (this._level / 100);
 
         if (newWidth != this._bar.width) {
             this._bar.width = newWidth;
         }
+
+        this.actor.queue_redraw();
     },
 
     setLevelBarHeight: function(sizeMultiplier) {
@@ -88,16 +83,14 @@ LevelBar.prototype = {
     }
 };
 
-function OsdWindow(monitorIndex) {
-    this._init(monitorIndex);
+function OsdWindow(monitorIndex, size) {
+    this._init(monitorIndex, size);
 }
 
 OsdWindow.prototype = {
-    _init: function(monitorIndex) {
+    _init: function(monitorIndex, size) {
         this._popupSize = 0;
-
-        this._osdSettings = new Gio.Settings({ schema_id: "org.cinnamon" });
-        this._osdSettings.connect("changed::show-media-keys-osd", Lang.bind(this, this._onOsdSettingsChanged));
+        this._osdBaseSize = null;
 
         this._monitorIndex = monitorIndex;
 
@@ -118,9 +111,9 @@ OsdWindow.prototype = {
         this._hideTimeoutId = 0;
         this._reset();
 
-        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._monitorsChanged));
         Main.uiGroup.add_child(this.actor);
-        this._onOsdSettingsChanged();
+
+        this._sizeAndPosition(size);
     },
 
     setIcon: function(icon) {
@@ -146,7 +139,7 @@ OsdWindow.prototype = {
     },
 
     show: function() {
-        if (this._osdBaseSize == undefined)
+        if (this._osdBaseSize == null)
             return;
 
         if (!this._icon.gicon)
@@ -193,10 +186,31 @@ OsdWindow.prototype = {
 
     _reset: function() {
         this.actor.hide();
-        this.setLevel();
     },
 
-    _monitorsChanged: function() {
+    destroy: function() {
+        Main.uiGroup.remove_child(this.actor);
+        this.actor.destroy();
+    },
+
+    _sizeAndPosition: function(sizeFromSettings) {
+        switch (sizeFromSettings) {
+            case "disabled":
+                this._osdBaseSize = null;
+                break;
+            case "small":
+                this._sizeMultiplier = 0.7;
+                this._osdBaseSize = Math.floor(OSD_SIZE * this._sizeMultiplier);
+                break;
+            case "large":
+                this._sizeMultiplier = 1.0;
+                this._osdBaseSize = OSD_SIZE;
+                break;
+            default:
+                this._sizeMultiplier = 0.85;
+                this._osdBaseSize = Math.floor(OSD_SIZE * this._sizeMultiplier);
+        }
+
         let monitor = Main.layoutManager.monitors[this._monitorIndex];
         if (monitor) {
             let scaleW = monitor.width / 640.0;
@@ -210,9 +224,7 @@ OsdWindow.prototype = {
             this.actor.translation_y = (monitor.height + monitor.y) - (this._popupSize + (50 * scaleFactor));
             this.actor.translation_x = ((monitor.width / 2) + monitor.x) - (this._popupSize / 2);
 
-            let currentSize = this._osdSettings.get_string("show-media-keys-osd");
-
-            if (monitor.height < 900 && ["small", "medium"].includes(currentSize)) {
+            if (monitor.height < 900 && ["small", "medium"].includes(sizeFromSettings)) {
                 let spacing = this.actor.get_theme_node().get_length ("spacing");
                 let multiplier = 1.0;
 
@@ -231,29 +243,6 @@ OsdWindow.prototype = {
                 this.actor.style = null;
             }
         }
-    },
-
-    _onOsdSettingsChanged: function() {
-        let currentSize = this._osdSettings.get_string("show-media-keys-osd");
-
-        switch (currentSize) {
-            case "disabled":
-                this._osdBaseSize = null;
-                break;
-            case "small":
-                this._sizeMultiplier = 0.7;
-                this._osdBaseSize = Math.floor(OSD_SIZE * this._sizeMultiplier);
-                break;
-            case "large":
-                this._sizeMultiplier = 1.0;
-                this._osdBaseSize = OSD_SIZE;
-                break;
-            default:
-                this._sizeMultiplier = 0.85;
-                this._osdBaseSize = Math.floor(OSD_SIZE * this._sizeMultiplier);
-        }
-
-        this._monitorsChanged();
     }
 };
 
@@ -265,23 +254,28 @@ OsdWindowManager.prototype = {
     _init: function() {
         this._osdWindows = [];
 
-        Main.layoutManager.connect('monitors-changed',
-                                   Lang.bind(this, this._monitorsChanged));
-        this._monitorsChanged();
+        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._layoutChanged));
+        this._osdSettings = new Gio.Settings({ schema_id: "org.cinnamon" });
+        this._osdSettings.connect("changed::show-media-keys-osd", Lang.bind(this, this._layoutChanged));
+
+        this._layoutChanged();
     },
 
-    _monitorsChanged: function() {
+    _layoutChanged: function() {
+        this._osdWindows.forEach((osd) => {
+            osd.destroy();
+        })
+
+        this._osdWindows = [];
+        let size = this._osdSettings.get_string("show-media-keys-osd");
+
+        if (size === "disabled")
+            return;
+
         for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
             if (this._osdWindows[i] == undefined)
-                this._osdWindows[i] = new OsdWindow(i);
+                this._osdWindows[i] = new OsdWindow(i, size);
         }
-
-        for (let i = Main.layoutManager.monitors.length; i < this._osdWindows.length; i++) {
-            this._osdWindows[i].actor.destroy();
-            this._osdWindows[i] = null;
-        }
-
-        this._osdWindows.length = Main.layoutManager.monitors.length;
     },
 
     _showOsdWindow: function(monitorIndex, icon, level) {
@@ -291,6 +285,9 @@ OsdWindowManager.prototype = {
     },
 
     show: function(monitorIndex, icon, level, convertIndex) {
+        if (this._osdWindows.length === 0)
+            return;
+
         if (monitorIndex != -1) {
             if (convertIndex)
                 monitorIndex = convertGdkIndex(monitorIndex);
@@ -307,6 +304,9 @@ OsdWindowManager.prototype = {
     },
 
     hideAll: function() {
+        if (this._osdWindows.length === 0)
+            return;
+
         for (let i = 0; i < this._osdWindows.length; i++)
             this._osdWindows[i].cancel();
     }
