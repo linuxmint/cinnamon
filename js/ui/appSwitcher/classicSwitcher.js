@@ -177,8 +177,14 @@ ClassicSwitcher.prototype = {
             return;
         
         if (this._appList) {
-            this._appList.disconnect(this._applist_act_id);
-            this._appList.disconnect(this._applist_enter_id);
+            if (this._applist_act_id !== 0) {
+                this._appList.disconnect(this._applist_act_id);
+                this._applist_act_id = 0;
+            }
+            if (this._applist_enter_id !== 0) {
+                this._appList.disconnect(this._applist_enter_id);
+                this._applist_enter_id = 0;
+            }
             this._clearPreview();
             this._destroyThumbnails();
             this.actor.remove_actor(this._appList.actor);
