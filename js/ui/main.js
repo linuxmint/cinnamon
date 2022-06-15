@@ -376,6 +376,9 @@ function start() {
 
     // Set up stage hierarchy to group all UI actors under one container.
     uiGroup = new Cinnamon.GenericContainer({ name: 'uiGroup' });
+    // see https://gitlab.gnome.org/GNOME/gnome-shell/-/commit/73d8c82640f6125cfbf80
+    this.uiGroup.set_flags(Clutter.ActorFlags.NO_LAYOUT);
+
     uiGroup.connect('allocate',
                     function (actor, box, flags) {
                         let children = uiGroup.get_children();
