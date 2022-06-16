@@ -18,8 +18,6 @@
 
 static CinnamonGlobal *the_object = NULL;
 
-static void grab_notify (GtkWidget *widget, gboolean is_grab, gpointer user_data);
-
 enum {
   PROP_0,
 
@@ -179,8 +177,6 @@ failed_to_own_notifications (GDBusConnection *connection,
                              const gchar     *name,
                              gpointer         user_data)
 {
-    CinnamonGlobal *global = CINNAMON_GLOBAL (user_data);
-
     g_message ("Tried to become the session notification handler but failed. "
                "Maybe some other process is handling it.");
 }
@@ -244,10 +240,6 @@ cinnamon_global_init (CinnamonGlobal *global)
 
   global->ui_scale = 1;
 
-  // global->grab_notifier = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
-  // g_signal_connect (global->grab_notifier, "grab-notify", G_CALLBACK (grab_notify), global);
-  global->gtk_grab_active = FALSE;
-
   global->input_mode = CINNAMON_STAGE_INPUT_MODE_NORMAL;
 
   if (!cinnamon_js)
@@ -267,7 +259,6 @@ cinnamon_global_finalize (GObject *object)
   CinnamonGlobal *global = CINNAMON_GLOBAL (object);
   g_object_unref (global->js_context);
 
-  // gtk_widget_destroy (GTK_WIDGET (global->grab_notifier));
   g_object_unref (global->settings);
 
   the_object = NULL;
@@ -572,7 +563,7 @@ cinnamon_global_set_stage_input_mode (CinnamonGlobal         *global,
 
   x11_display = meta_display_get_x11_display (global->meta_display);
 
-  if (mode == CINNAMON_STAGE_INPUT_MODE_NONREACTIVE || global->gtk_grab_active)
+  if (mode == CINNAMON_STAGE_INPUT_MODE_NONREACTIVE)
     meta_x11_display_clear_stage_input_region (x11_display);
   else if (mode == CINNAMON_STAGE_INPUT_MODE_FULLSCREEN || !global->input_region)
     meta_x11_display_set_stage_input_region (x11_display, None);
@@ -825,99 +816,6 @@ cinnamon_fonts_init (ClutterStage *stage)
   fontmap = clutter_get_font_map ();
   cogl_pango_font_map_set_use_mipmapping (COGL_PANGO_FONT_MAP (fontmap), FALSE);
 }
-
-/* This is an IBus workaround. The flow of events with IBus is that every time
- * it gets gets a key event, it:
- *
- *  Sends it to the daemon via D-Bus asynchronously
- *  When it gets an reply, synthesizes a new GdkEvent and puts it into the
- *   GDK event queue with gdk_event_put(), including
- *   IBUS_FORWARD_MASK = 1 << 25 in the state to prevent a loop.
- *
- * (Normally, IBus uses the GTK+ key snooper mechanism to get the key
- * events early, but since our key events aren't visible to GTK+ key snoopers,
- * IBus will instead get the events via the standard
- * GtkIMContext.filter_keypress() mechanism.)
- *
- * There are a number of potential problems here; probably the worst
- * problem is that IBus doesn't forward the timestamp with the event
- * so that every key event that gets delivered ends up with
- * GDK_CURRENT_TIME.  This creates some very subtle bugs; for example
- * if you have IBus running and a keystroke is used to trigger
- * launching an application, focus stealing prevention won't work
- * right. http://code.google.com/p/ibus/issues/detail?id=1184
- *
- * In any case, our normal flow of key events is:
- *
- *  GDK filter function => clutter_x11_handle_event => clutter actor
- *
- * So, if we see a key event that gets delivered via the GDK event handler
- * function - then we know it must be one of these synthesized events, and
- * we should push it back to clutter.
- *
- * To summarize, the full key event flow with IBus is:
- *
- *   GDK filter function
- *     => Mutter
- *     => gnome_cinnamon_plugin_xevent_filter()
- *     => clutter_x11_handle_event()
- *     => clutter event delivery to actor
- *     => gtk_im_context_filter_event()
- *     => sent to IBus daemon
- *     => response received from IBus daemon
- *     => gdk_event_put()
- *     => GDK event handler
- *     => <this function>
- *     => clutter_event_put()
- *     => clutter event delivery to actor
- *
- * Anything else we see here we just pass on to the normal GDK event handler
- * gtk_main_do_event().
- */
-// static void
-// gnome_cinnamon_gdk_event_handler (GdkEvent *event_gdk,
-//                                gpointer  data)
-// {
-//   if (event_gdk->type == GDK_KEY_PRESS || event_gdk->type == GDK_KEY_RELEASE)
-//     {
-//       ClutterActor *stage;
-//       Window stage_xwindow;
-
-//       stage = CLUTTER_ACTOR (data);
-//       stage_xwindow = clutter_x11_get_stage_window (CLUTTER_STAGE (stage));
-
-//       if (GDK_WINDOW_XID (event_gdk->key.window) == stage_xwindow)
-//         {
-//           ClutterDeviceManager *device_manager = clutter_device_manager_get_default ();
-//           ClutterInputDevice *keyboard = clutter_device_manager_get_core_device (device_manager,
-//                                                                                  CLUTTER_KEYBOARD_DEVICE);
-
-//           ClutterEvent *event_clutter = clutter_event_new ((event_gdk->type == GDK_KEY_PRESS) ?
-//                                                            CLUTTER_KEY_PRESS : CLUTTER_KEY_RELEASE);
-//           event_clutter->key.time = event_gdk->key.time;
-//           event_clutter->key.flags = CLUTTER_EVENT_NONE;
-//           event_clutter->key.stage = CLUTTER_STAGE (stage);
-//           event_clutter->key.source = NULL;
-
-//           /* This depends on ClutterModifierType and GdkModifierType being
-//            * identical, which they are currently. (They both match the X
-//            * modifier state in the low 16-bits and have the same extensions.) */
-//           event_clutter->key.modifier_state = event_gdk->key.state;
-
-//           event_clutter->key.keyval = event_gdk->key.keyval;
-//           event_clutter->key.hardware_keycode = event_gdk->key.hardware_keycode;
-//           event_clutter->key.unicode_value = gdk_keyval_to_unicode (event_clutter->key.keyval);
-//           event_clutter->key.device = keyboard;
-
-//           clutter_event_put (event_clutter);
-//           clutter_event_free (event_clutter);
-
-//           return;
-//         }
-//     }
-
-//   gtk_main_do_event (event_gdk);
-// }
 
 static void
 update_scaling_factor (CinnamonGlobal  *global,
@@ -1324,18 +1222,6 @@ cinnamon_global_real_restart (CinnamonGlobal *global)
 #endif
 }
 
-// void
-// cinnamon_global_shutdown (void)
-// {
-//     g_signal_emit_by_name (the_object, "shutdown");
-
-//     meta_pre_exec_close_fds ();
-
-//     meta_display_unmanage_screen (cinnamon_global_get_display (the_object),
-//                                   cinnamon_global_get_screen (the_object),
-//                                   cinnamon_global_get_current_time (the_object));
-// }
-
 /**
  * cinnamon_global_notify_error:
  * @global: a #CinnamonGlobal
@@ -1353,17 +1239,6 @@ cinnamon_global_notify_error (CinnamonGlobal  *global,
                            const char   *details)
 {
   g_signal_emit_by_name (global, "notify-error", msg, details);
-}
-
-static void
-grab_notify (GtkWidget *widget, gboolean was_grabbed, gpointer user_data)
-{
-  CinnamonGlobal *global = CINNAMON_GLOBAL (user_data);
-
-  global->gtk_grab_active = !was_grabbed;
-
-  /* Update for the new setting of gtk_grab_active */
-  cinnamon_global_set_stage_input_mode (global, global->input_mode);
 }
 
 /**
@@ -1714,7 +1589,6 @@ void
 cinnamon_global_alloc_leak (CinnamonGlobal *global, gint mb)
 {
     gint i;
-    gchar x;
 
     for (i = 0; i < mb * 1024; i++)
     {

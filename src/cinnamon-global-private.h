@@ -36,15 +36,6 @@ struct _CinnamonGlobal {
   CinnamonScreen *cinnamon_screen;
   GdkScreen *gdk_screen;
 
-  /* We use this window to get a notification from GTK+ when
-   * a widget in our process does a GTK+ grab.  See
-   * http://bugzilla.gnome.org/show_bug.cgi?id=570641
-   *
-   * This window is never mapped or shown.
-   */
-  GtkWindow *grab_notifier;
-  gboolean gtk_grab_active;
-
   CinnamonStageInputMode input_mode;
   XserverRegion input_region;
 
