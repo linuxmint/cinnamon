@@ -2,6 +2,7 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
+gi.require_version('CDesktopEnums', '3.0')
 from gi.repository import Gio, Gtk, CDesktopEnums
 
 from SettingsWidgets import SidePage
