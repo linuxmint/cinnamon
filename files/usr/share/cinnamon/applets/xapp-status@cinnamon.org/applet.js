@@ -76,6 +76,16 @@ class XAppStatusIcon {
         if ('Name' in prop_names) {
             this.applet.sortIcons();
         }
+        if ('PrimaryMenuIsOpen' in prop_names) {
+            if (!proxy.primary_menu_is_open) {
+                this.actor.sync_hover();
+            }
+        }
+        if ('SecondaryMenuIsOpen' in prop_names) {
+            if (!proxy.secondary_menu_is_open) {
+                this.actor.sync_hover();
+            }
+        }
         return;
     }
 
