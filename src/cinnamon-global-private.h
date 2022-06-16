@@ -57,6 +57,8 @@ struct _CinnamonGlobal {
   guint ui_scale;
   gboolean session_running;
   gboolean has_modal;
+
+  guint notif_service_id;
 };
 
 void _cinnamon_global_init            (const char *first_property_name,

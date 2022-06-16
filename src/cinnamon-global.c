@@ -184,7 +184,6 @@ failed_to_own_notifications (GDBusConnection *connection,
 static void
 setup_notifications_service (CinnamonGlobal *global)
 {
-  guint owner_id;
   gboolean disabled;
 
   /* notify-osd allows itself to be replaced as the notification handler. dunst does not,
@@ -198,12 +197,12 @@ setup_notifications_service (CinnamonGlobal *global)
     return;
   }
 
-  owner_id = g_bus_own_name (G_BUS_TYPE_SESSION,
-                             "org.freedesktop.Notifications",
-                             G_BUS_NAME_OWNER_FLAGS_REPLACE,
-                             NULL, NULL,
-                             (GBusNameLostCallback) failed_to_own_notifications,
-                             global, NULL);
+  global->notif_service_id = g_bus_own_name (G_BUS_TYPE_SESSION,
+                                              "org.freedesktop.Notifications",
+                                              G_BUS_NAME_OWNER_FLAGS_REPLACE,
+                                              NULL, NULL,
+                                              (GBusNameLostCallback) failed_to_own_notifications,
+                                              global, NULL);
 }
 
 static void
@@ -260,6 +259,7 @@ cinnamon_global_finalize (GObject *object)
   g_object_unref (global->js_context);
 
   g_object_unref (global->settings);
+  g_clear_handle_id (&global->notif_service_id, g_bus_unown_name);
 
   the_object = NULL;
 
