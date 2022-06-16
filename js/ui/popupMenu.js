@@ -2224,6 +2224,25 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         this.setOrientation(side);
     }
 
+    _updateStyleClassName() {
+        let styleClasses = ["menu"];
+        if (this.customStyleClass) {
+            styleClasses.push(this.customStyleClass);
+        }
+
+        switch(this.orientation) {
+            case St.Side.TOP:
+                styleClasses.push("top");
+            case St.Side.BOTTOM:
+                styleClasses.push("bottom");
+            case St.Side.LEFT:
+                styleClasses.push("left");
+            case St.Side.RIGHT:
+                styleClasses.push("right");
+        }
+        this.actor.set_style_class_name(styleClasses.join(" "));
+    }
+
     /**
      * setOrientation:
      * @orientation (St.Side): The new orientation of the menu
@@ -2233,6 +2252,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
      */
     setOrientation(orientation) {
         this._orientation = orientation;
+        this._updateStyleClassName();
     }
 
     /**
@@ -2243,11 +2263,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
      */
     setCustomStyleClass(className) {
         this.customStyleClass = className;
-        if (this.actor.get_style_class_name()) {
-            this.actor.set_style_class_name(this.actor.get_style_class_name() + " " + className);
-        } else {
-            this.actor.set_style_class_name(className);
-        }
+        this._updateStyleClassName();
     }
 
     /**
@@ -2591,7 +2607,6 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         }
 
         let xPos, yPos;
-        let styleClasses = ["menu"];
         switch (this._orientation) {
             case St.Side.TOP:
             case St.Side.BOTTOM:
@@ -2607,12 +2622,10 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 if (this._orientation === St.Side.BOTTOM || (y2 - sourceBox.y2) < natHeight) {
                     this.sideFlipped = true;
                     yPos = y2 - natHeight;
-                    styleClasses.push("bottom");
                 }
                 else {
                     this.sideFlipped = false;
                     yPos = Math.max(sourceBox.y2, y1);
-                    styleClasses.push("top");
                 }
                 break;
             case St.Side.LEFT:
@@ -2629,17 +2642,13 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 if (this._orientation === St.Side.RIGHT || x2 - sourceBox.x2 < natWidth) {
                     this.sideFlipped = true;
                     xPos = Math.min(sourceBox.x1, x2) - natWidth;
-                    styleClasses.push("right");
                 }
                 else {
                     this.sideFlipped = false;
                     xPos = Math.max(sourceBox.x2, x1);
-                    styleClasses.push("left");
                 }
                 break;
         }
-        if (this.customStyleClass) styleClasses.push(this.customStyleClass);
-        this.actor.set_style_class_name(styleClasses.join(" "));
         return [Math.round(xPos), Math.round(yPos)];
     }
 
