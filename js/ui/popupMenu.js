@@ -2206,6 +2206,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         this._signals.connect(this._boxWrapper, 'get-preferred-width', Lang.bind(this, this._boxGetPreferredWidth));
         this._signals.connect(this._boxWrapper, 'get-preferred-height', Lang.bind(this, this._boxGetPreferredHeight));
         this._signals.connect(this._boxWrapper, 'allocate', Lang.bind(this, this._boxAllocate));
+        this._signals.connect(this.actor, 'notify::allocation', Lang.bind(this, this._allocationChanged));
         this.actor.set_child(this._boxWrapper);
         this._boxWrapper.add_actor(this.box);
 
@@ -2666,6 +2667,9 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
 
     _boxAllocate (actor, box, flags) {
         this.box.allocate(box, flags);
+    }
+
+    _allocationChanged (actor, pspec) {
         if (!this.animating && !this.sourceActor.is_finalized() && this.sourceActor.get_stage() != null) {
             let [xPos, yPos] = this._calculatePosition();
             this.actor.set_position(xPos, yPos);
