@@ -2056,3 +2056,12 @@ StScrollBar StButton#vhandle:hover {
 .systray {
     spacing: 5px;
 }
+
+/* Pointer accessibility notifications */
+.pie-timer {
+  width: 30px;
+  height: 30px;
+  -pie-border-width: 1px;
+  -pie-border-color: rgba(200, 200, 200, 0.8);
+  -pie-background-color: rgba(140, 140, 140, 0.6);;
+}
