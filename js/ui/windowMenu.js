@@ -77,8 +77,9 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
             type == Meta.WindowType.SPLASHSCREEN)
             item.setSensitive(false);
 
-        if (Meta.prefs_get_workspaces_only_on_primary() ||
-             window.is_on_primary_monitor()) {
+        if (global.workspace_manager.get_n_workspaces() > 1 &&
+            (!Meta.prefs_get_workspaces_only_on_primary() ||
+             window.is_on_primary_monitor())) {
             let isSticky = window.is_on_all_workspaces();
 
             item = this.addAction(_("Always on Visible Workspace"), () => {
