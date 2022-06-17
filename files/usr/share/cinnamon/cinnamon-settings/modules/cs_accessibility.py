@@ -368,29 +368,9 @@ class Module:
 
             settings.add_reveal_row(slider, "org.cinnamon.desktop.a11y.keyboard", "mousekeys-enable")
 
-# Dependency Checker
-
-            settings = page.add_reveal_section(_("Simulated secondary click and hover click"))
-            self.dc_section = settings
-
-            install_widget = SettingsWidget()
-
-            self.dep_button = DependencyCheckInstallButton(_("Checking dependencies"),
-                                                           _("Please install: %s") % ("mousetweaks"),
-                                                           ["mousetweaks"],
-                                                           Gtk.Alignment(),
-                                                           self.on_dep_satisfied)
-
-            install_widget.pack_start(self.dep_button, True, False, 0)
-
-            settings.add_row(install_widget)
-
-            self.dc_section._revealer.set_reveal_child(True)
-
 # Secondary click
 
-            settings = page.add_reveal_section(_("Simulated secondary click"))
-            self.ssc_section = settings
+            settings = page.add_section(_("Simulated secondary click"))
 
             switch = GSettingsSwitch(_("Trigger a secondary click by holding down the primary button"),
                                      "org.cinnamon.desktop.a11y.mouse",
@@ -409,8 +389,7 @@ class Module:
 
 # Hover Click
 
-            settings = page.add_reveal_section(_("Hover click"))
-            self.hc_section = settings
+            settings = page.add_section(_("Hover click"))
 
             switch = GSettingsSwitch(_("Trigger a click when the pointer hovers"),
                                      "org.cinnamon.desktop.a11y.mouse",
@@ -434,11 +413,6 @@ class Module:
                                     1, 30, 1, show_value=False)
 
             settings.add_reveal_row(slider, "org.cinnamon.desktop.a11y.mouse", "dwell-click-enabled")
-
-    def on_dep_satisfied(self):
-        self.ssc_section._revealer.set_reveal_child(True)
-        self.hc_section._revealer.set_reveal_child(True)
-        self.dc_section._revealer.destroy()
 
     def zoom_stack_get(self, lens_mode):
         ret = "screen"

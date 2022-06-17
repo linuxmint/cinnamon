@@ -2,6 +2,8 @@
 
 const { Clutter, Gio, GLib, GObject, Meta, St } = imports.gi;
 
+const SIGTERM = 15;
+
 var DisplayChangesDialog = class {
     constructor(wm) {
         this._wm = wm;
@@ -104,9 +106,57 @@ var CloseDialog = GObject.registerClass({
             return;
         }
 
-        this.proc.send_signal(15);
+        this.proc.send_signal(SIGTERM);
     }
 
     vfunc_focus() {
     }
 });
+
+var HoverClickHelper = class {
+    constructor(wm) {
+        this.proc = null;
+    }
+
+    set_active(active) {
+        if (active) {
+            this.open();
+        } else {
+            this.close();
+        }
+    }
+
+    open() {
+        try {
+            this.proc = Gio.Subprocess.new(
+                [
+                "cinnamon-hover-click"
+                ],
+                0);
+
+            this.proc.wait_async(null, this._wait_finish.bind(this));
+        } catch (e) {
+            global.logWarning(`Could not spawn hover click window: ${e}`);
+
+            this.proc = null;
+        }
+    }
+
+    close() {
+        if (this.proc !== null) {
+            this.proc.send_signal(SIGTERM);
+        }
+    }
+
+    _wait_finish(proc, result) {
+        try {
+            this.proc.wait_finish(result);
+        } catch (e) {
+            global.logWarning(`Problem with hover click window: ${e}`);
+        }
+
+        this.proc = null;
+    }
+
+
+};

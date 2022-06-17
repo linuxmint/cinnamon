@@ -7,10 +7,18 @@ const SignalManager = imports.misc.signalManager;
 const Gio = imports.gi.Gio;
 const CDesktopEnums = imports.gi.CDesktopEnums;
 const Flashspot = imports.ui.flashspot;
-
+const Clutter = imports.gi.Clutter;
+const Dialogs = imports.ui.wmGtkDialogs;
 
 const CAPS = 0;
 const NUM = 1;
+
+const HOVERKEY_ACTIONS = {
+    "single": Clutter.PointerA11yDwellClickType.PRIMARY,
+    "double": Clutter.PointerA11yDwellClickType.DOUBLE,
+    "drag": Clutter.PointerA11yDwellClickType.DRAG,
+    "secondary": Clutter.PointerA11yDwellClickType.SECONDARY
+}
 
 function A11yHandler(){
     this._init();
@@ -19,15 +27,19 @@ function A11yHandler(){
 A11yHandler.prototype = {
     _init: function() {
         this.a11y_keyboard_settings = new Gio.Settings( { schema_id: "org.cinnamon.desktop.a11y.keyboard" });
+        this.a11y_mouse_settings = new Gio.Settings( { schema_id: "org.cinnamon.desktop.a11y.mouse" });
         this.wm_settings = new Gio.Settings( { schema_id: "org.cinnamon.desktop.wm.preferences" });
 
         this._signalManager = new SignalManager.SignalManager(null);
+
+        this._hoverclick_helper = new Dialogs.HoverClickHelper();
 
         /* Feature toggles */
         this._toggle_keys_osd = false;
         this._toggle_keys_sound = false;
         this._events_flash = false;
         this._events_sound = false
+        this._hoverclick_enabled = false;
 
         /* Options */
         this.state_on_sound = null;
@@ -39,9 +51,11 @@ A11yHandler.prototype = {
         this.num = Keymap.get_num_lock_state();
 
         this._signalManager.connect(this.a11y_keyboard_settings, "changed", this.on_settings_changed, this);
-        this._signalManager.connect(this.wm_settings, "changed", this.on_settings_changed, this);
+        this._signalManager.connect(this.a11y_mouse_settings, "changed", this.on_settings_changed, this);
+        this._signalManager.connect(global.settings, "changed::hoverclick-action", this.hoverkey_action_changed, this);
 
         this.on_settings_changed();
+        this.hoverkey_action_changed();
     },
 
     _set_keymap_listener: function(enabled) {
@@ -51,13 +65,6 @@ A11yHandler.prototype = {
             this._signalManager.disconnect("state-changed");
     },
 
-    _set_events_listener: function(enabled) {
-        if (enabled)
-            this._signalManager.connect(global.display, "bell", this._on_event_bell, this);
-        else
-            this._signalManager.disconnect("bell");
-    },
-
     on_settings_changed: function(settings, key) {
         this.state_on_sound = this.a11y_keyboard_settings.get_string("togglekeys-sound-on");
         this.state_off_sound = this.a11y_keyboard_settings.get_string("togglekeys-sound-off");
@@ -65,22 +72,27 @@ A11yHandler.prototype = {
         this._toggle_keys_osd = this.a11y_keyboard_settings.get_boolean("togglekeys-enable-osd");
         this._toggle_keys_sound = this.a11y_keyboard_settings.get_boolean("togglekeys-enable-beep");
 
+        if (key === "dwell-click-enabled") {
+            this._hoverclick_enabled = this.a11y_mouse_settings.get_boolean("dwell-click-enabled");
+            this._hoverclick_helper.set_active(this._hoverclick_enabled);
+        }
 
         if (this._toggle_keys_sound || this._toggle_keys_osd) {
             this._set_keymap_listener(true);
         } else {
             this._set_keymap_listener(false);
         }
+    },
 
-        this._events_sound = this.wm_settings.get_boolean("audible-bell");
-        this._events_flash = this.wm_settings.get_boolean("visual-bell");
-        this.event_bell_sound = this.wm_settings.get_string("bell-sound");
-        this.event_flash_type = this.wm_settings.get_enum("visual-bell-type");
+    hoverkey_action_changed: function(settings, key) {
+        let action = global.settings.get_string("hoverclick-action");
 
-        if (this._events_sound || this._events_flash) {
-            this._set_events_listener(true);
-        } else {
-            this._set_events_listener(false);
+        seat = Clutter.get_default_backend().get_default_seat();
+
+        try {
+            seat.set_pointer_a11y_dwell_click_type(HOVERKEY_ACTIONS[action]);
+        } catch (e) {
+            global.logError("Attempted to use invalid action name for hoverclick")
         }
     },
 
@@ -112,22 +124,6 @@ A11yHandler.prototype = {
         this.num = new_num;
     },
 
-    _on_event_bell: function(display, bell_window) {
-        if (this._events_sound) {
-            this.ring_bell();
-        }
-
-        if (this._events_flash) {
-            switch (this.event_flash_type) {
-                case CDesktopEnums.VisualBellType.FULLSCREEN_FLASH:
-                    this.flash_window(display, null);
-                    break;
-                case CDesktopEnums.VisualBellType.FRAME_FLASH:
-                    this.flash_window(display, bell_window);
-            }
-        }
-    },
-
     popup_state_osd: function(key, state) {
         let icon = null;
 
@@ -154,40 +150,4 @@ A11yHandler.prototype = {
                 break;
         }
     },
-
-    rect_off_screen: function(display, rect) {
-        let [sw, sh] = global.screen.get_size();
-        return (rect.x > sw && rect.y > sh);
-    },
-
-    flash_window: function(display, bell_window) {
-        if (bell_window) {
-            let rect = bell_window.get_outer_rect();
-            if (this.rect_off_screen(display, rect)) {
-                let fw = display.get_focus_window();
-                if (fw)
-                    rect = fw.get_outer_rect();
-            }
-
-            if (rect) {
-                this.fire_flash(rect);
-                return;
-            }
-        }
-
-        this.fire_flash(Main.layoutManager.focusMonitor);
-    },
-
-    fire_flash: function(rect) {
-        let flashspot = new Flashspot.Flashspot({x      : rect.x,
-                                                 y      : rect.y,
-                                                 width  : rect.width,
-                                                 height : rect.height,
-                                                 time   : .05 });
-        flashspot.fire()
-    },
-
-    ring_bell: function() {
-        Main.soundManager.playSoundFile(0, this.event_bell_sound);
-    }
 }

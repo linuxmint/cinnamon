@@ -561,6 +561,18 @@
        Controls the default label used by the application menu.
       </description>
     </key>
+    <key name="hoverclick-action" type="s">
+      <default>"single"</default>
+      <summary>The type of mouse action to be performed using hoverkey (single, double, drag, secondary)</summary>
+    </key>
+    <key name="hoverclick-layout" type="s">
+      <default>"vertical::both"</default>
+      <summary>This defines the layout for the hoverkey window - format is vertical | horizontal :: icons | text | both</summary>
+    </key>
+    <key name="hoverclick-position" type="s">
+      <default>""</default>
+      <summary>Stores the position of the hoverclick window so it can be restored there later - format is x::y</summary>
+    </key>
   </schema>
 
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"

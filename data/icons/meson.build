@@ -1,5 +1,8 @@
 icons = run_command('find_icons.sh').stdout().strip().split()
 
+# double-click, drag-click, right-click, single-click icons imported from mousetweaks
+# (git@github.com:GNOME/mousetweaks.git)
+
 foreach icon : icons
     parts = icon.split('_')
     theme = parts[0]

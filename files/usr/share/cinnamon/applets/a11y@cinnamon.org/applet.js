@@ -6,11 +6,14 @@ const Main = imports.ui.main;
 const Gdk = imports.gi.Gdk;
 const GLib = imports.gi.GLib;
 
-const A11Y_SCHEMA = 'org.cinnamon.desktop.a11y.keyboard';
+const A11Y_KEYBOARD_SCHEMA = 'org.cinnamon.desktop.a11y.keyboard';
+const A11Y_MOUSE_SCHEMA = 'org.cinnamon.desktop.a11y.mouse';
 const KEY_STICKY_KEYS_ENABLED = 'stickykeys-enable';
 const KEY_BOUNCE_KEYS_ENABLED = 'bouncekeys-enable';
 const KEY_SLOW_KEYS_ENABLED   = 'slowkeys-enable';
 const KEY_MOUSE_KEYS_ENABLED  = 'mousekeys-enable';
+const KEY_SEC_CLICK_ENABLED = 'secondary-click-enabled';
+const KEY_DWELL_CLICK_ENABLED = 'dwell-click-enabled';
 
 const APPLICATIONS_SCHEMA = 'org.cinnamon.desktop.a11y.applications';
 
@@ -65,22 +68,32 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
                                                                        'screen-keyboard-enabled');
             this.menu.addMenuItem(screenKeyboard);
 
-            let stickyKeys = this._buildItem(_("Sticky Keys"), A11Y_SCHEMA, KEY_STICKY_KEYS_ENABLED);
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+            let stickyKeys = this._buildItem(_("Sticky Keys"), A11Y_KEYBOARD_SCHEMA, KEY_STICKY_KEYS_ENABLED);
             this.menu.addMenuItem(stickyKeys);
 
-            let slowKeys = this._buildItem(_("Slow Keys"), A11Y_SCHEMA, KEY_SLOW_KEYS_ENABLED);
+            let slowKeys = this._buildItem(_("Slow Keys"), A11Y_KEYBOARD_SCHEMA, KEY_SLOW_KEYS_ENABLED);
             this.menu.addMenuItem(slowKeys);
 
-            let bounceKeys = this._buildItem(_("Bounce Keys"), A11Y_SCHEMA, KEY_BOUNCE_KEYS_ENABLED);
+            let bounceKeys = this._buildItem(_("Bounce Keys"), A11Y_KEYBOARD_SCHEMA, KEY_BOUNCE_KEYS_ENABLED);
             this.menu.addMenuItem(bounceKeys);
 
-            let mouseKeys = this._buildItem(_("Mouse Keys"), A11Y_SCHEMA, KEY_MOUSE_KEYS_ENABLED);
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+            let mouseKeys = this._buildItem(_("Mouse Keys"), A11Y_KEYBOARD_SCHEMA, KEY_MOUSE_KEYS_ENABLED);
             this.menu.addMenuItem(mouseKeys);
+
+            let simClick = this._buildItem(_("Simulated secondary click"), A11Y_MOUSE_SCHEMA, KEY_SEC_CLICK_ENABLED);
+            this.menu.addMenuItem(simClick);
+
+            let hoverClick = this._buildItem(_("Hover click"), A11Y_MOUSE_SCHEMA, KEY_DWELL_CLICK_ENABLED);
+            this.menu.addMenuItem(hoverClick);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Universal Access Settings"), 'universal-access');
 
-            this.a11y_settings = new Gio.Settings({ schema_id: A11Y_SCHEMA });
+            this.a11y_settings = new Gio.Settings({ schema_id: A11Y_KEYBOARD_SCHEMA });
 
             this._keyboardStateChangedId = Keymap.connect('state-changed', Lang.bind(this, this._handleStateChange));
             this.set_show_label_in_vertical_panels(false);
