@@ -7,6 +7,70 @@ const BoxPointer = imports.ui.boxpointer;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Lang = imports.lang;
+const CheckBox = imports.ui.checkBox;
+const RadioButton = imports.ui.radioButton;
+
+var LeftOrnamentedMenuItem = class LeftOrnamentedMenuItem extends PopupMenu.PopupBaseMenuItem {
+    _init (text, params) {
+        super._init.call(this, params);
+
+        this._ornament = new St.Bin();
+        this._icon = new St.Icon({ style_class: 'popup-menu-icon', icon_type: St.IconType.SYMBOLIC });
+
+        this._ornament.child = this._icon;
+        this._ornament.child._delegate = this._ornament;
+        this.addActor(this._ornament, {span: 1});
+
+        this.label = new St.Label({ text: text });
+        this.addActor(this.label);
+        this.actor.label_actor = this.label;
+
+    }
+
+    setLabel(label) {
+        this.label.set_text(label);
+    }
+
+    setIcon(icon_name) {
+        this._ornament.child.destroy()
+        this._icon = new St.Icon({ style_class: 'popup-menu-icon', icon_name: icon_name, icon_type: St.IconType.SYMBOLIC });
+        this._ornament.child = this._icon;
+    }
+
+    setOrnament(ornamentType, state) {
+        switch (ornamentType) {
+        case PopupMenu.OrnamentType.CHECK:
+            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof CheckBox.CheckButton))) {
+                this._ornament.child.destroy();
+                this._ornament.child = null;
+            }
+            if (!this._ornament.child) {
+                let switchOrn = new CheckBox.CheckButton(state);
+                this._ornament.child = switchOrn.actor;
+                switchOrn.actor.reactive = false;
+            } else {
+                this._ornament.child._delegate.setToggleState(state);
+            }
+            this._icon = null;
+            break;
+        case PopupMenu.OrnamentType.DOT:
+            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof RadioButton.RadioBox))) {
+                this._ornament.child.destroy();
+                this._ornament.child = null;
+            }
+            if (!this._ornament.child) {
+                let radioOrn = new RadioButton.RadioBox(state);
+                this._ornament.child = radioOrn.actor;
+                radioOrn.actor.reactive = false;
+            } else {
+                this._ornament.child._delegate.setToggleState(state);
+            }
+            this._icon = null;
+            break;
+        }
+    }
+}
+
 
 var WindowMenu = class extends PopupMenu.PopupMenu {
     constructor(window, sourceActor) {
@@ -20,48 +84,64 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
         this._buildMenu(window);
     }
 
+    addAction(to_menu, title, callback) {
+        let menuItem = new LeftOrnamentedMenuItem(title);
+        to_menu.addMenuItem(menuItem);
+
+        menuItem.connect('activate', (o, event) => {
+            callback(event);
+        });
+
+        return menuItem;
+    }
+
     _buildMenu(window) {
         let type = window.get_window_type();
 
         let item;
 
-        item = this.addAction(_("Minimize"), () => {
+        item = this.addAction(this, _("Minimize"), () => {
             window.minimize();
         });
+        item.setIcon("window-minimize-symbolic");
+
         if (!window.can_minimize())
             item.setSensitive(false);
 
         if (window.get_maximized()) {
-            item = this.addAction(_("Unmaximize"), () => {
+            item = this.addAction(this, _("Unmaximize"), () => {
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
             });
         } else {
-            item = this.addAction(_("Maximize"), () => {
+            item = this.addAction(this, _("Maximize"), () => {
                 window.maximize(Meta.MaximizeFlags.BOTH);
             });
+            item.setIcon("window-maximize-symbolic");
         }
         if (!window.can_maximize())
             item.setSensitive(false);
 
-        item = this.addAction(_("Move"), event => {
+        item = this.addAction(this, _("Move"), event => {
             this._grabAction(window, Meta.GrabOp.KEYBOARD_MOVING, event.get_time());
         });
         if (!window.allows_move())
             item.setSensitive(false);
 
-        item = this.addAction(_("Resize"), event => {
+        item = this.addAction(this, _("Resize"), event => {
             this._grabAction(window, Meta.GrabOp.KEYBOARD_RESIZING_UNKNOWN, event.get_time());
         });
         if (!window.allows_resize())
             item.setSensitive(false);
 
         if (!window.titlebar_is_onscreen() && type != Meta.WindowType.DOCK && type != Meta.WindowType.DESKTOP) {
-            this.addAction(_("Move Titlebar Onscreen"), () => {
+            this.addAction(this, _("Move Titlebar Onscreen"), () => {
                 window.shove_titlebar_onscreen();
             });
         }
 
-        item = this.addAction(_("Always on Top"), () => {
+        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+        item = this.addAction(this, _("Always on Top"), () => {
             if (window.is_above())
                 window.unmake_above();
             else
@@ -71,8 +151,7 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
             item.setOrnament(PopupMenu.OrnamentType.CHECK, true);
         else
             item.setOrnament(PopupMenu.OrnamentType.CHECK, false);
-        if (window.get_maximized() == Meta.MaximizeFlags.BOTH ||
-            type == Meta.WindowType.DOCK ||
+        if (type == Meta.WindowType.DOCK ||
             type == Meta.WindowType.DESKTOP ||
             type == Meta.WindowType.SPLASHSCREEN)
             item.setSensitive(false);
@@ -82,96 +161,45 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
              window.is_on_primary_monitor())) {
             let isSticky = window.is_on_all_workspaces();
 
-            item = this.addAction(_("Always on Visible Workspace"), () => {
-                if (isSticky)
-                    window.unstick();
-                else
-                    window.stick();
+            this.sticky_action = this.addAction(this, _("Always on Visible Workspace"), () => {
+                log("stick");
+                window.stick();
             });
-            if (isSticky)
-                item.setOrnament(PopupMenu.OrnamentType.CHECK, true);
-            else
-                item.setOrnament(PopupMenu.OrnamentType.CHECK, false);
-            if (window.is_always_on_all_workspaces())
-                item.setSensitive(false);
+            this.unsticky_action = this.addAction(this, _("Only on This Workspace"), () => {
+                log("unstick");
+                window.unstick();
+            });
+            this.sticky_action.setOrnament(PopupMenu.OrnamentType.DOT, isSticky);
+            this.unsticky_action.setOrnament(PopupMenu.OrnamentType.DOT, !isSticky);
 
-            if (!isSticky) {
-                let workspace = window.get_workspace();
-                if (workspace != workspace.get_neighbor(Meta.MotionDirection.LEFT)) {
-                    this.addAction(_("Move to Workspace Left"), () => {
-                        let dir = Meta.MotionDirection.LEFT;
-                        window.change_workspace(workspace.get_neighbor(dir));
-                    });
-                }
-                if (workspace != workspace.get_neighbor(Meta.MotionDirection.RIGHT)) {
-                    this.addAction(_("Move to Workspace Right"), () => {
-                        let dir = Meta.MotionDirection.RIGHT;
-                        window.change_workspace(workspace.get_neighbor(dir));
-                    });
-                }
-                if (workspace != workspace.get_neighbor(Meta.MotionDirection.UP)) {
-                    this.addAction(_("Move to Workspace Up"), () => {
-                        let dir = Meta.MotionDirection.UP;
-                        window.change_workspace(workspace.get_neighbor(dir));
-                    });
-                }
-                if (workspace != workspace.get_neighbor(Meta.MotionDirection.DOWN)) {
-                    this.addAction(_("Move to Workspace Down"), () => {
-                        let dir = Meta.MotionDirection.DOWN;
-                        window.change_workspace(workspace.get_neighbor(dir));
-                    });
-                }
-            }
-        }
-
-        let display = global.display;
-        let nMonitors = display.get_n_monitors();
-        let monitorIndex = window.get_monitor();
-        if (nMonitors > 1 && monitorIndex >= 0) {
-            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
-            let dir = Meta.DisplayDirection.UP;
-            let upMonitorIndex =
-                display.get_monitor_neighbor_index(monitorIndex, dir);
-            if (upMonitorIndex != -1) {
-                this.addAction(_("Move to Monitor Up"), () => {
-                    window.move_to_monitor(upMonitorIndex);
-                });
+            if (window.is_always_on_all_workspaces()) {
+                this.sticky_action.setSensitive(false);
+                this.unsticky_action.setSensitive(false);
             }
 
-            dir = Meta.DisplayDirection.DOWN;
-            let downMonitorIndex =
-                display.get_monitor_neighbor_index(monitorIndex, dir);
-            if (downMonitorIndex != -1) {
-                this.addAction(_("Move to Monitor Down"), () => {
-                    window.move_to_monitor(downMonitorIndex);
-                });
-            }
+            let ws_sub = new PopupMenu.PopupSubMenuMenuItem(_("Move to Another Workspace"));
+            let filler = new St.Icon({ style_class: 'popup-menu-icon', icon_type: St.IconType.SYMBOLIC });
+            ws_sub.addActor(filler, { span: 1, position: 0 });
 
-            dir = Meta.DisplayDirection.LEFT;
-            let leftMonitorIndex =
-                display.get_monitor_neighbor_index(monitorIndex, dir);
-            if (leftMonitorIndex != -1) {
-                this.addAction(_("Move to Monitor Left"), () => {
-                    window.move_to_monitor(leftMonitorIndex);
-                });
-            }
+            this.addMenuItem(ws_sub);
 
-            dir = Meta.DisplayDirection.RIGHT;
-            let rightMonitorIndex =
-                display.get_monitor_neighbor_index(monitorIndex, dir);
-            if (rightMonitorIndex != -1) {
-                this.addAction(_("Move to Monitor Right"), () => {
-                    window.move_to_monitor(rightMonitorIndex);
-                });
+            let curr_index = window.get_workspace().index();
+            for (let i = 0; i < global.workspace_manager.get_n_workspaces(); i++) {
+                let j = i;
+                let name = Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i);
+                item = this.addAction(ws_sub.menu, name, () => window.change_workspace(global.workspace_manager.get_workspace_by_index(j)))
+
+                if (i == curr_index)
+                    item.setSensitive(false);
             }
         }
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        item = this.addAction(_("Close"), event => {
+        item = this.addAction(this, _("Close"), event => {
             window.delete(event.get_time());
         });
+        item.setIcon("window-close-symbolic");
         if (!window.can_close())
             item.setSensitive(false);
     }

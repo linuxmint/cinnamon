@@ -92,9 +92,6 @@ RadioBox.prototype = {
 
         this.actor._delegate = this;
         this.actor.checked = state;
-        // FIXME: The current size is big and the container only is useful,
-        // because the current theme. Can be fixed the theme also?
-        this.actor.style = 'width: 12px;';
         this._container = new St.Bin();
         this.actor.set_child(this._container);
     },

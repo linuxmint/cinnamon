@@ -221,11 +221,12 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
     addActor(child, params) {
         params = Params.parse(params, { span: 1,
                                         expand: false,
-                                        align: St.Align.START });
+                                        align: St.Align.START,
+                                        position: -1 });
         params.actor = child;
-        this._children.push(params);
+        this._children.splice(params.position >= 0 ? params.position : Number.MAX_SAFE_INTEGER, 0, params);
         this._signals.connect(this.actor, 'destroy', this._removeChild.bind(this, child));
-        this.actor.add_actor(child);
+        this.actor.insert_child_at_index(child, params.position);
     }
 
     _removeChild(child) {
