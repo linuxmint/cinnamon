@@ -26,6 +26,7 @@ enum
   MAP,
   DESTROY,
   SWITCH_WORKSPACE,
+  SWITCH_WORKSPACE_COMPLETE,
   KILL_SWITCH_WORKSPACE,
   KILL_WINDOW_EFFECTS,
   SHOW_TILE_PREVIEW,
@@ -124,6 +125,13 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
 		  0,
 		  NULL, NULL, NULL,
 		  G_TYPE_NONE, 0);
+  cinnamon_wm_signals[SWITCH_WORKSPACE_COMPLETE] =
+    g_signal_new ("switch-workspace-complete",
+          G_TYPE_FROM_CLASS (klass),
+          G_SIGNAL_RUN_LAST,
+          0,
+          NULL, NULL, NULL,
+          G_TYPE_NONE, 0);
   cinnamon_wm_signals[KILL_WINDOW_EFFECTS] =
     g_signal_new ("kill-window-effects",
 		  G_TYPE_FROM_CLASS (klass),
@@ -227,6 +235,7 @@ cinnamon_wm_completed_switch_workspace (CinnamonWM *wm)
 {
   g_debug ("%s", G_STRFUNC);
   meta_plugin_switch_workspace_completed (wm->plugin);
+  g_signal_emit (wm, cinnamon_wm_signals[SWITCH_WORKSPACE_COMPLETE], 0);
 }
 
 /**

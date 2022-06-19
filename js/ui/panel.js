@@ -2645,7 +2645,7 @@ Panel.prototype = {
 
     _onFocusChanged: function() {
         if (global.display.focus_window && this._focusWindow !== undefined &&
-            this._focusWindow == global.display.focus_window.get_compositor_private())
+            this._focusWindow == global.display.focus_window)
             return;
 
         this._signalManager.disconnect("position-changed");
@@ -2654,7 +2654,7 @@ Panel.prototype = {
         if (!global.display.focus_window)
             return;
 
-        this._focusWindow = global.display.focus_window.get_compositor_private();
+        this._focusWindow = global.display.focus_window;
         this._signalManager.connect(this._focusWindow, "position-changed", this._updatePanelVisibility, this);
         this._signalManager.connect(this._focusWindow, "size-changed", this._updatePanelVisibility, this);
         this._updatePanelVisibility();
