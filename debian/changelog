@@ -1,3 +1,43 @@
+cinnamon (5.4.1) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * st-texture-cache: Fix error check in load_from_raw, don't make a new actor twice in load_from_pixbuf.
+  * Restore st_texture_cache_load_file_simple().
+  * osdWindow.js: Fix destruction during screen changes.
+  * tooltips.js: Remove the hide idle source when destroying a tooltip.
+  * calendar applet: Listen for eds to appear on the session bus at startup.
+
+  [ Cobinja ]
+  * Don't disconnect signal ids that aren't connected
+
+  [ Michael Webster ]
+  * main.js: set the uiGroup as NO_LAYOUT.
+  * xapp applet: Monitor popup menu states and sync the hover state when one closes.
+  * cinnamon-global.c: remove dead code.
+
+  [ Cobinja ]
+  * Change style class name creation in popup menus
+
+  [ Michael Webster ]
+  * cinnamon-global: Clean up the notification presence during shutdown.
+  * popupMenu.js: Don't update the menu's position during its allocation cycle when menu effects are disabled.
+  * a11y: add a hoverkey action window, add missing items to applet, remove mousetweaks check in cs_accessibility.
+  * windowMenu.js: Fix logic for 'all workspaces' item.
+  * a11y: Add timeout indicator for hoverkeys.
+  * Add missing file from 28099e62e.
+  * windowMenu: Improve appearance compared to gtk menu.
+
+  [ JosephMcc ]
+  * runDialog.js: Don't hardcode the size of the dialog content
+
+  [ Michael Webster ]
+  * Fix panel intellihide mode.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 20 Jun 2022 10:20:54 +0200
+
 cinnamon (5.4.0) vanessa; urgency=medium
 
   [ Michael Webster ]
