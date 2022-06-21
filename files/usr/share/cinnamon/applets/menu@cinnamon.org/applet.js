@@ -666,7 +666,7 @@ class PlaceButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            AppUtils.decomp_string(place.name.toLowerCase())
+            AppUtils.decomp_string(place.name)
         ];
     }
 
