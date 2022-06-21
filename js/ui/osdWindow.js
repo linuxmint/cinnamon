@@ -228,11 +228,11 @@ OsdWindow.prototype = {
                 let spacing = this.actor.get_theme_node().get_length ("spacing");
                 let multiplier = 1.0;
 
-                if (currentSize === "small") {
+                if (sizeFromSettings === "small") {
                     this._label.style = 'font-size: 0.8em; text-align: center;'
                     multiplier = 0.6;
                 } else
-                if (currentSize === "medium") {
+                if (sizeFromSettings === "medium") {
                     this._label.style = 'font-size: 1.0em; text-align: center;'
                     multiplier = 0.8;
                 }
