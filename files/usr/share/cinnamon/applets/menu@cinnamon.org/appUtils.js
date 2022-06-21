@@ -6,7 +6,7 @@ const Util = imports.misc.util;
 let appsys = Cinnamon.AppSystem.get_default();
 
 function decomp_string(s) {
-    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    return s.normalize('NFKD').replace(/\p{Grapheme_Extend}/gu,"").toLowerCase();
 }
 
 function decomp_stripped(s) {
@@ -18,12 +18,12 @@ function decomp_unstripped(s) {
     return decomp_string(s);
 }
 
-// sort apps by their latinised name
+// sort apps by their locale sensitive sort order
 function appSort(a, b) {
-    const an = decomp_unstripped(a[0].get_name());
-    const bn = decomp_unstripped(b[0].get_name());
+    const an = a[0].get_name();
+    const bn = b[0].get_name();
 
-    return an.localeCompare(bn);
+    return an.localeCompare(bn, undefined, {sensitivity: "base", ignorePunctuation: true});
 }
 
 // sort cmenu directories with admin and prefs categories last
@@ -42,9 +42,9 @@ function dirSort(a, b) {
         return 1;
     }
 
-    let nameA = decomp_unstripped(a.get_name());
-    let nameB = decomp_unstripped(b.get_name());
-    return nameA.localeCompare(nameB);
+    const nameA = a.get_name();
+    const nameB = b.get_name();
+    return nameA.localeCompare(nameB, undefined, {sensitivity: "base", ignorePunctuation: true});
 }
 
 /* returns all apps and the categories they belong to, and all top level categories
