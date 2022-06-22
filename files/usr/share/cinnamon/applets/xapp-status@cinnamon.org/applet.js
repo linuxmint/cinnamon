@@ -172,7 +172,7 @@ class XAppStatusIcon {
             tooltipText = "";
             this._tooltip.preventShow = true;
         }
-        this._tooltip.set_text(tooltipText);
+        this._tooltip.set_markup(tooltipText);
         // If the tooltip is currently visible, then we might need to trigger a realignment of the tooltip after changing the text length
         if (this._tooltip.visible) {
            this._tooltip.hide();
