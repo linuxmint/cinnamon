@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-20 10:19+0200\n"
+"POT-Creation-Date: 2022-06-23 17:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -554,11 +554,6 @@ msgstr ""
 
 #: js/ui/runDialog.js:186 js/ui/runDialog.js:464
 msgid "Press ESC to close"
-msgstr ""
-
-#: js/ui/windowManager.js:210
-#, javascript-format
-msgid "%d × %d"
 msgstr ""
 
 #: js/ui/windowMenu.js:103 js/ui/workspace.js:1174

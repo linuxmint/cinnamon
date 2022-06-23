@@ -207,7 +207,7 @@ class ResizePopup extends St.Widget {
     set(rect, displayW, displayH) {
         /* Translators: This represents the size of a window. The first number is
          * the width of the window and the second is the height. */
-        let text = _("%d × %d").format(displayW, displayH);
+        let text = "%d × %d".format(displayW, displayH);
         this._label.set_text(text);
 
         this.set_position(rect.x, rect.y);
