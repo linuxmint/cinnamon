@@ -242,6 +242,9 @@ URLHighlighter.prototype = {
  */
 var Notification = class Notification {
     constructor(source, title, body, params) {
+        title = Util.decodeHTML(title);
+        body = Util.decodeHTML(body);
+
         this.source = source;
         this.title = title;
         this.urgency = Urgency.NORMAL;
