@@ -3587,7 +3587,7 @@ Panel.prototype = {
                     }
 
                     let a = this.actor;
-                    let b = global.display.focus_window.get_compositor_private();
+                    let b = global.display.focus_window.get_frame_rect();
                     /* Magic to check whether the panel position overlaps with the
                     * current focused window */
                     if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
