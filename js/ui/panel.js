@@ -3633,13 +3633,13 @@ Panel.prototype = {
         }
     },
 
-    _enterPanel: function(actor, event) {
+    _enterPanel: function(actor=null, event=null) {
         this._mouseEntered = true;
         this._updatePanelVisibility();
     },
 
-    _leavePanel:function(actor, event) {
-        if (this._eventOnPanelStrip(...event.get_coords())) {
+    _leavePanel:function(actor=null, event=null) {
+        if (event !== null && this._eventOnPanelStrip(...event.get_coords())) {
             return;
         }
 
