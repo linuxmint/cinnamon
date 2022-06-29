@@ -3633,14 +3633,31 @@ Panel.prototype = {
         }
     },
 
-    _enterPanel: function() {
+    _enterPanel: function(actor, event) {
         this._mouseEntered = true;
         this._updatePanelVisibility();
     },
 
-    _leavePanel:function() {
+    _leavePanel:function(actor, event) {
+        if (this._eventOnPanelStrip(...event.get_coords())) {
+            return;
+        }
+
         this._mouseEntered = false;
         this._updatePanelVisibility();
+    },
+
+    _eventOnPanelStrip: function(x, y) {
+        switch (this.panelPosition) {
+            case PanelLoc.top:
+                return y === this.monitor.y;
+            case PanelLoc.bottom:
+                return y === this.monitor.y + this.monitor.height - 1;
+            case PanelLoc.left:
+                return x === this.monitor.x;
+            case PanelLoc.right:
+                return x === this.monitor.x + this.monitor.width - 1;
+        }
     },
 
     /**
