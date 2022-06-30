@@ -61,6 +61,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
     }
 
     on_applet_reloaded() {
+        global.trayReloading = true;
     }
 
     on_applet_removed_from_panel() {
