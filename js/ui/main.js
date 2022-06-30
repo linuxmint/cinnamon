@@ -216,7 +216,7 @@ function _initRecorder() {
         } else {
             // read the parameters from GSettings always in case they have changed
             recorder.set_framerate(recorderSettings.get_int('framerate'));
-            recorder.set_file_template('cinnamon-%d.' + recorderSettings.get_string('file-extension'));
+            recorder.set_file_template('cinnamon-%Y-%m-%dT%H%M%S%z.' + recorderSettings.get_string('file-extension'));
             let pipeline = recorderSettings.get_string('pipeline');
 
             if (layoutManager.monitors.length > 1) {

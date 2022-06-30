@@ -999,6 +999,7 @@ recorder_open_outfile (CinnamonRecorder  *recorder,
                        char          **outfilename)
 {
   const char *pattern;
+  char *date_str, *path;
   int flags;
   int outfile = -1;
 
@@ -1006,81 +1007,40 @@ recorder_open_outfile (CinnamonRecorder  *recorder,
   if (!pattern)
     return -1;
 
-  while (TRUE)
+  GDateTime *datetime = g_date_time_new_now_local ();
+  date_str = g_date_time_format (datetime, pattern);
+  g_date_time_unref (datetime);
+
+  if (date_str == NULL)
     {
-      GString *filename = g_string_new (NULL);
-      const char *p;
-      char *path;
-
-      for (p = pattern; *p; p++)
-        {
-          if (*p == '%')
-            {
-              switch (*(p + 1))
-                {
-                case '%':
-                case '\0':
-                  g_string_append_c (filename, '%');
-                  break;
-                case 'd':
-                  {
-                    /* Appends date according to locale */
-                    GDateTime *datetime = g_date_time_new_now_local ();
-                    char *date_str = g_date_time_format (datetime, "%Y-%m-%d:%H:%M:%S");
-                    char *s;
-
-                    for (s = date_str; *s; s++)
-                      if (G_IS_DIR_SEPARATOR (*s))
-                          *s = '-';
-
-                    g_string_append (filename, date_str);
-                    g_free (date_str);
-                    g_date_time_unref (datetime);
-                  }
-                  break;
-                default:
-                  g_warning ("Unknown escape %%%c in filename", *(p + 1));
-                  goto out;
-                }
-
-              p++;
-            }
-          else
-            g_string_append_c (filename, *p);
-        }
-
-      /* If a filename is explicitly specified without %u then we assume the user
-       * is fine with over-writing the old contents; putting %u in the default
-       * should avoid problems with malicious symlinks.
-       */
-      flags = O_WRONLY | O_CREAT | O_TRUNC;
-
-      path = get_absolute_path (filename->str);
-      outfile = open (path, flags, 0666);
-      if (outfile != -1)
-        {
-          g_message ("Recording to %s", path);
-
-          if (outfilename != NULL)
-            *outfilename = path;
-          else
-            g_free (path);
-          g_string_free (filename, TRUE);
-
-          goto out;
-        }
-
-      if (outfile == -1 && errno != EEXIST)
-        {
-          g_warning ("Cannot open output file '%s': %s", path, g_strerror (errno));
-          g_string_free (filename, TRUE);
-          g_free (path);
-          goto out;
-        }
-
-      g_string_free (filename, TRUE);
-      g_free (path);
+      date_str = g_strdup_printf ("cinnamon-%u", g_random_int ());
+      g_warning ("Invalid filename template provided to CinnamonRecorder. Filename will be %s", date_str);
     }
+
+  path = get_absolute_path (date_str);
+  g_free (date_str);
+
+  flags = O_WRONLY | O_CREAT | O_TRUNC;
+  outfile = open (path, flags, 0666);
+
+  if (outfile != -1)
+    {
+      g_message ("Recording to %s", path);
+
+      if (outfilename != NULL)
+        *outfilename = path;
+      else
+        g_free (path);
+
+      goto out;
+    }
+
+  if (outfile == -1 && errno != EEXIST)
+    {
+      g_warning ("Cannot open output file '%s': %s", path, g_strerror (errno));
+    }
+
+  g_free (path);
 
  out:
 
