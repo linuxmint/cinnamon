@@ -365,7 +365,7 @@ cinnamon_tray_icon_handle_event (CinnamonTrayIcon *icon,
 
         icon->priv->entered = event_type == CLUTTER_ENTER;
 
-        cont = CLUTTER_EVENT_STOP;
+        cont = CLUTTER_EVENT_PROPAGATE;
         break;
       }
     case CLUTTER_SCROLL:
