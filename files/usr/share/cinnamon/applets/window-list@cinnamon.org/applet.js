@@ -164,6 +164,10 @@ class WindowPreview extends Tooltips.TooltipBase {
         });
 
         this._sizeChangedId = this.windowActor.connect('notify::size', () => {
+            if (this.thumbnail === null) {
+                return;
+            }
+
             let [width, height] = this._getScaledTextureSize(this.windowActor);
             this.thumbnail.set_size(width, height);
             this._set_position();

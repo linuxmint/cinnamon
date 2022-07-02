@@ -250,6 +250,7 @@ var WindowManager = class WindowManager {
         this._dimmedWindows = [];
         this._animationBlockCount = 0;
         this._switchData = null;
+        this._workspaceOSDs = [];
 
         this._cinnamonwm.connect('kill-window-effects', (cinnamonwm, actor) => {
             this._minimizeWindowDone(cinnamonwm, actor);
@@ -1059,8 +1060,40 @@ var WindowManager = class WindowManager {
                  direction === Meta.MotionDirection.DOWN_RIGHT)
             xDest = -screen_width;
 
-        let from_windows = [];
-        let to_windows = [];
+        let from_windows = new Set();
+        let to_windows = new Set();
+        let kill_id = 0;
+
+        let cleanup_window_effect = (window, hide=false) => {
+            window.remove_all_transitions();
+            window.set_position(window.origX, window.origY);
+            window.origX = undefined;
+            window.origY = undefined;
+
+            if (hide) {
+                window.hide();
+            }
+        }
+
+        let finish_switch_workspace = (actor) =>
+        {
+            if (to_windows.delete(actor)) {
+                cleanup_window_effect(actor);
+            }
+            else
+            if (from_windows.delete(actor)) {
+                cleanup_window_effect(actor, true);
+            };
+
+            if (to_windows.size === 0 && from_windows.size === 0) {
+                if (kill_id > 0) {
+                    this._cinnamonwm.disconnect(kill_id);
+                    kill_id = 0;
+
+                    cinnamonwm.completed_switch_workspace();
+                }
+            }
+        };
 
         for (let i = 0; i < windows.length; i++) {
             let window = windows[i];
@@ -1095,71 +1128,50 @@ var WindowManager = class WindowManager {
                     window.origX = window.x;
                     window.origY = window.y;
                 }
-
-                from_windows.push(window);
-                addTween(window,
-                    {
-                        x: window.origX + xDest,
-                        y: window.origY + yDest,
-                        time: this.WORKSPACE_ANIMATION_TIME,
-                        transition: 'easeOutQuad'
-                    });
+                from_windows.add(window);
+                window.ease({
+                    x: window.origX + xDest,
+                    y: window.origY + yDest,
+                    duration: this.WORKSPACE_ANIMATION_TIME * EASING_MULTIPLIER,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => finish_switch_workspace(window)
+                });
             } else if (window.get_workspace() === to) {
                 if (window.origX == undefined) {
                     window.origX = window.x;
                     window.origY = window.y;
                     window.set_position(window.origX - xDest, window.origY - yDest);
                 }
-
-                to_windows.push(window);
-                addTween(window,
-                    {
-                        x: window.origX,
-                        y: window.origY,
-                        time: this.WORKSPACE_ANIMATION_TIME,
-                        transition: 'easeOutQuad'
-                    });
+                to_windows.add(window);
                 window.show_all();
+                window.ease({
+                    x: window.origX,
+                    y: window.origY,
+                    duration: this.WORKSPACE_ANIMATION_TIME * EASING_MULTIPLIER,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => finish_switch_workspace(window)
+                });
             }
         }
 
-        let killed = false;
-        let kill_id = 0;
-
-        let finish_switch_workspace = () =>
-        {
-            this._cinnamonwm.disconnect(kill_id);
-
-            removeTweens(this);
-
-            from_windows.forEach((w) => {
-                removeTweens(w);
-                w.hide();
-                w.set_position(w.origX, w.origY);
-                w.origX = undefined;
-                w.origY = undefined;
+        kill_id = this._cinnamonwm.connect('kill-switch-workspace', cinnamonwm => {
+            let iter = to_windows.forEach((actor) => {
+                cleanup_window_effect(actor);
+            });
+            iter = from_windows.forEach((actor) => {
+                cleanup_window_effect(actor, true);
             });
 
-            to_windows.forEach((w) => {
-                removeTweens(w);
-                w.set_position(w.origX, w.origY);
-                w.origX = undefined;
-                w.origY = undefined;
-            });
+            to_windows.clear();
+            from_windows.clear();
+
+            if (kill_id > 0) {
+                this._cinnamonwm.disconnect(kill_id);
+                kill_id = 0;
+            }
 
             cinnamonwm.completed_switch_workspace();
-        };
-
-        kill_id = this._cinnamonwm.connect('kill-switch-workspace', cinnamonwm => {
-            killed = true;
-            finish_switch_workspace();
         });
-
-        addTween(this, {time: this.WORKSPACE_ANIMATION_TIME, onComplete: function() {
-            if (!killed) {
-                finish_switch_workspace();
-            }
-        }});
     }
 
     _showTilePreview(cinnamonwm, window, tileRect, monitorIndex) {
@@ -1175,7 +1187,7 @@ var WindowManager = class WindowManager {
     }
 
     showWorkspaceOSD() {
-        this._hideWorkspaceOSD();
+        this._hideWorkspaceOSD(true);
         if (global.settings.get_boolean('workspace-osd-visible')) {
             let current_workspace_index = global.screen.get_active_workspace_index();
             if (this.wm_settings.get_boolean('workspaces-only-on-primary')) {
@@ -1184,7 +1196,7 @@ var WindowManager = class WindowManager {
             else {
                 let {monitors} = Main.layoutManager;
                 for (let i = 0; i < monitors.length; i++) {
-                    this._showWorkspaceOSDOnMonitor(monitors[i], current_workspace_index);
+                    this._showWorkspaceOSDOnMonitor(i, current_workspace_index);
                 }
             }
         }
@@ -1195,21 +1207,30 @@ var WindowManager = class WindowManager {
         osd.actor.add_style_class_name('workspace-osd');
         this._workspace_osd_array.push(osd);
         osd.addText(Main.getWorkspaceName(current_workspace_index));
-        osd.show();
+        osd.show(monitor);
 
-        setTimeout(() => this._hideWorkspaceOSD(), WORKSPACE_OSD_TIMEOUT * 1000);
+        osd.actor.ease({
+            z_position: -.0001,
+            duration: WORKSPACE_OSD_TIMEOUT * EASING_MULTIPLIER,
+            onComplete: () => this._hideWorkspaceOSD()
+        })
     }
 
-    _hideWorkspaceOSD() {
+    _hideWorkspaceOSD(now = false) {
         for (let i = 0; i < this._workspace_osd_array.length; i++) {
             let osd = this._workspace_osd_array[i];
+            if (now) {
+                osd.actor.remove_all_transitions();
+                osd.destroy();
+                continue;
+            }
             if (osd != null) {
                 osd.actor.opacity = 255;
-                addTween(osd.actor, {
+                osd.actor.ease({
                     opacity: 0,
-                    time: WORKSPACE_OSD_TIMEOUT,
-                    transition: 'linear',
-                    onComplete: () => osd.destroy()
+                    duration: WORKSPACE_OSD_TIMEOUT * EASING_MULTIPLIER,
+                    mode: Clutter.AnimationMode.LINEAR,
+                    onStopped: () => osd.destroy()
                 });
             }
         }
