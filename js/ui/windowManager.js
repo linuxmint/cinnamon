@@ -253,6 +253,7 @@ var WindowManager = class WindowManager {
         this._workspaceOSDs = [];
 
         this._cinnamonwm.connect('kill-window-effects', (cinnamonwm, actor) => {
+            this._unminimizeWindowDone(cinnamonwm, actor);
             this._minimizeWindowDone(cinnamonwm, actor);
             this._mapWindowDone(cinnamonwm, actor);
             this._destroyWindowDone(cinnamonwm, actor);
@@ -373,6 +374,7 @@ var WindowManager = class WindowManager {
             cinnamonwm.completed_minimize(actor);
             return;
         }
+        this._minimizing.add(actor);
 
         switch (this.desktop_effects_minimize_type) {
             case "traditional":
@@ -380,7 +382,9 @@ var WindowManager = class WindowManager {
                 let [success, geom] = actor.meta_window.get_icon_geometry();
 
                 if (success) {
-                    this._minimizing.add(actor);
+                    let rect = actor.meta_window.get_buffer_rect();
+
+                    actor.set_position(rect.x, rect.y);
                     actor.set_scale(1.0, 1.0);
 
                     let xDest, yDest, xScale, yScale;
@@ -389,14 +393,14 @@ var WindowManager = class WindowManager {
                     xScale = geom.width / actor.width;
                     yScale = geom.height / actor.height;
 
-                    addTween(actor, {
+                    actor.ease({
                         scale_x: xScale,
                         scale_y: yScale,
                         x: xDest,
                         y: yDest,
-                        time: this.MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier,
-                        transition: 'easeInQuad',
-                        onComplete: () => this._minimizeWindowDone(cinnamonwm, actor),
+                        duration: this.MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                        mode: Clutter.AnimationMode.EASE_IN_QUAD,
+                        onStopped: () => this._minimizeWindowDone(cinnamonwm, actor),
                     });
 
                     return;
@@ -404,57 +408,55 @@ var WindowManager = class WindowManager {
             }
             case "fade":
             { // this fallback for 'traditional' also
-                this._minimizing.add(actor);
                 actor.set_scale(1.0, 1.0);
                 actor.set_pivot_point(0.5, 0.5);
 
-                addTween(actor, {
+                actor.ease({
                     opacity: 0,
                     scale_x: 0.88,
                     scale_y: 0.88,
-                    time: this.MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier,
-                    transition: 'easeOutQuad',
-                    onComplete: () => this._minimizeWindowDone(cinnamonwm, actor),
+                    duration: this.MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onStopped: () => this._minimizeWindowDone(cinnamonwm, actor),
                 });
 
                 return;
             }
             case "fly":
             {
-                this._minimizing.add(actor);
-
                 let xDest = actor.x;
-                let yDest = global.stage.get_height();
+                let workarea = actor.meta_window.get_work_area_current_monitor();
+
+                let yDest = workarea.y + workarea.height;
 
                 // The transition time set is the time if the animation starts/ends at the middle of the screen.
                 // Scale it proportional to the actual distance so that the speed of all animations will be constant.
                 let dist = Math.abs(actor.y - yDest);
                 let time = this.MINIMIZE_ANIMATION_TIME * (dist / yDest * 2);
 
-                addTween(actor, {
+                actor.ease({
                     x: xDest,
                     y: yDest,
-                    time: time * this.window_effect_multiplier,
-                    transition: "easeInSine",
-                    onComplete: () => this._minimizeWindowDone(cinnamonwm, actor),
+                    duration: time * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    mode: Clutter.AnimationMode.EASE_IN_SINE,
+                    onStopped: () => this._minimizeWindowDone(cinnamonwm, actor),
                 });
 
                 return;
             }
             default:
             {
-                cinnamonwm.completed_minimize(actor);
+                this._minimizeWindowDone(cinnamonwm, actor);
             }
         }
     }
 
     _minimizeWindowDone(cinnamonwm, actor) {
         if (this._minimizing.delete(actor)) {
-            removeTweens(actor);
+            actor.remove_all_transitions()
             actor.set_pivot_point(0, 0);
             actor.set_scale(1.0, 1.0);
             actor.set_opacity(255);
-
             cinnamonwm.completed_minimize(actor);
         }
     }
@@ -466,11 +468,14 @@ var WindowManager = class WindowManager {
             cinnamonwm.completed_unminimize(actor);
             return;
         }
-        switch (this.desktop_effects_map_type) {
-            case "fade":
-            {
-                this._unminimizing.add(actor);
 
+        this._unminimizing.add(actor);
+
+        switch (this.desktop_effects_map_type) {
+            case "move": // this is really fade.. a move effect would essentially make it look like traditional,
+                         // and it looks bad for things like restoring windows from a tray icon with multiple monitors.
+
+            {
                 actor.orig_opacity = actor.opacity;
                 actor.set_pivot_point(0.5, 0.5);
                 actor.scale_x = 0.94;
@@ -478,62 +483,72 @@ var WindowManager = class WindowManager {
                 actor.opacity = 0;
                 actor.show();
 
-                addTween(actor, {
+                actor.ease({
                     opacity: actor.orig_opacity,
                     scale_x: 1,
                     scale_y: 1,
-                    time: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
-                    transition: 'easeOutQuad',
-                    onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
+                    duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onStopped: () => this._unminimizeWindowDone(cinnamonwm, actor),
                 });
 
                 return;
             }
             case "fly":
             {
-                this._unminimizing.add(actor);
+                // buffer rect will have the true position of the window.
+                // if we interrupted a minimize,, the actor's position won't match. If it doesn't,
+                // we use that as its starting point, otherwise we use the monitor workarea.
 
-                let [xDest, yDest] = actor.get_position();
-                let ySrc = global.stage.get_height();
+                let rect = actor.meta_window.get_buffer_rect();
+                let [xDest, yDest] = [rect.x, rect.y];
+
+                let ySrc;
+
+                if (actor.y === yDest) {
+                    let workarea = actor.meta_window.get_work_area_current_monitor();
+                    ySrc = workarea.y + workarea.height;
+                } else {
+                    ySrc = actor.y;
+                }
+
                 actor.set_position(xDest, ySrc);
-                // The transition time set is the time if the animation starts/ends at the middle of the screen.
-                // Scale it proportional to the actual distance so that the speed of all animations will be constant.
+
                 let dist = Math.abs(ySrc - yDest);
                 let time = this.MAP_ANIMATION_TIME * (dist / ySrc * 2);
+
                 actor.show();
 
-                addTween(actor, {
+                actor.ease({
                     x: xDest,
                     y: yDest,
-                    time: time * this.window_effect_multiplier,
-                    transition: "easeInSine",
-                    onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
+                    duration: time * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    mode: Clutter.AnimationMode.EASE_IN_SINE,
+                    onStopped: () => this._unminimizeWindowDone(cinnamonwm, actor),
                 });
 
                 return;
             }
             case "traditional":
             {
-                this._unminimizing.add(actor);
-
                 let [success, geom] = actor.meta_window.get_icon_geometry();
                 if (success) {
-                    let [xDest, yDest] = [actor.x, actor.y];
+                    let rect = actor.meta_window.get_buffer_rect();
+                    let [xDest, yDest] = [rect.x, rect.y];
 
                     actor.set_position(geom.x, geom.y);
                     actor.set_scale(geom.width / actor.width,
                                     geom.height / actor.height);
-
                     actor.show();
 
-                    addTween(actor, {
+                    actor.ease({
                         scale_x: 1.0,
                         scale_y: 1.0,
                         x: xDest,
                         y: yDest,
-                        time: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
-                        transition: 'easeOutQuad',
-                        onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
+                        duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                        onStopped: () => this._unminimizeWindowDone(cinnamonwm, actor),
                     });
                 } else { // fall-back effect. Same as map
                     actor.set_pivot_point(0.5, 0.5);
@@ -542,13 +557,13 @@ var WindowManager = class WindowManager {
                     actor.opacity = 0;
                     actor.show();
 
-                    addTween(actor, {
+                    actor.ease({
                         opacity: 255,
                         scale_x: 1.0,
                         scale_y: 1.0,
-                        time: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
-                        transition: 'easeOutQuad',
-                        onComplete: () => this._unminimizeWindowDone(cinnamonwm, actor),
+                        duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                        onStopped: () => this._unminimizeWindowDone(cinnamonwm, actor),
                     });
                 }
 
@@ -556,14 +571,14 @@ var WindowManager = class WindowManager {
             }
             default:
             {
-                cinnamonwm.completed_minimize(actor);
+                this._unminimizeWindowDone(cinnamonwm, actor);
             }
         }
     }
 
     _unminimizeWindowDone(cinnamonwm, actor) {
         if (this._unminimizing.delete(actor)) {
-            removeTweens(actor);
+            actor.remove_all_transitions()
             actor.set_scale(1.0, 1.0);
             actor.set_opacity(255);
             actor.set_pivot_point(0, 0);
@@ -625,14 +640,14 @@ var WindowManager = class WindowManager {
         Main.uiGroup.add_child(actorClone);
 
         // Now scale and fade out the clone
-        addTween(actorClone, {
-                x: targetRect.x,
-                y: targetRect.y,
-                scale_x: scaleX,
-                scale_y: scaleY,
-                opacity: 0,
-                time: this.SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier,
-                transition: 'easeOutQuad',
+        actorClone.ease({
+            x: targetRect.x,
+            y: targetRect.y,
+            scale_x: scaleX,
+            scale_y: scaleY,
+            opacity: 0,
+            duration: this.SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         });
 
         actor.translation_x = -targetRect.x + sourceRect.x;
@@ -643,14 +658,14 @@ var WindowManager = class WindowManager {
         actor.scale_y = 1 / scaleY;
 
         // Scale it to its actual new size
-        addTween(actor, {
+        actor.ease({
                 scale_x: 1,
                 scale_y: 1,
                 translation_x: 0,
                 translation_y: 0,
-                time: this.SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier,
-                transition: 'easeOutQuad',
-                onComplete: () => this._sizeChangeWindowDone(cinnamonwm, actor),
+                duration: this.SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onStopped: () => this._sizeChangeWindowDone(cinnamonwm, actor),
         });
 
         // Now unfreeze actor updates, to get it to the new size.
@@ -671,7 +686,7 @@ var WindowManager = class WindowManager {
 
     _sizeChangeWindowDone(cinnamonwm, actor) {
         if (this._resizing.delete(actor)) {
-            removeTweens(actor);
+            actor.remove_all_transitions();
             actor.scale_x = 1.0;
             actor.scale_y = 1.0;
             actor.translation_x = 0;
@@ -803,13 +818,13 @@ var WindowManager = class WindowManager {
                                 Meta.WindowType.DROPDOWN_MENU,
                                 Meta.WindowType.POPUP_MENU    ];
 
+        this._mapping.add(actor);
+
         let adjusted_type = overridden_types.includes(actor._windowType) ? "fade" : this.desktop_effects_map_type;
 
         switch (adjusted_type) {
             case "traditional":
             {
-                this._mapping.add(actor);
-
                 actor.orig_opacity = actor.opacity;
                 actor.set_pivot_point(0.5, 0.5);
                 actor.scale_x = 0.94;
@@ -824,21 +839,19 @@ var WindowManager = class WindowManager {
                     time = this.MENU_ANIMATION_TIME;
                 }
 
-                addTween(actor, {
+                actor.ease({
                     opacity: actor.orig_opacity,
                     scale_x: 1,
                     scale_y: 1,
-                    time: time,
-                    transition: 'easeOutQuad',
-                    onComplete: () => this._mapWindowDone(cinnamonwm, actor),
+                    duration: time * EASING_MULTIPLIER,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onStopped: () => this._mapWindowDone(cinnamonwm, actor),
                 });
 
                 return;
             }
             case "move":
             {
-                this._mapping.add(actor);
-
                 let [width, height] = actor.get_size();
                 let [xDest, yDest] = actor.get_position();
                 let [xSrc, ySrc] = global.get_pointer();
@@ -847,23 +860,20 @@ var WindowManager = class WindowManager {
                 actor.set_scale(0, 0);
                 actor.show();
 
-                addTween(actor, {
+                actor.ease({
                     scale_x: 1.0,
                     scale_y: 1.0,
                     x: xDest,
                     y: yDest,
-                    time: 1.0,
-                    time: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
-                    transition: 'easeOutQuad',
-                    onComplete: () => this._mapWindowDone(cinnamonwm, actor),
+                    duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onStopped: () => this._mapWindowDone(cinnamonwm, actor),
                 });
 
                 return;
             }
             case "fly":
             {
-                this._mapping.add(actor);
-
                 let ySrc = global.stage.get_height();
                 let yDest = actor.y;
 
@@ -876,25 +886,25 @@ var WindowManager = class WindowManager {
 
                 actor.show();
 
-                addTween(actor, {
+                actor.ease({
                     y: yDest,
-                    time: time * this.window_effect_multiplier,
-                    transition: "easeInSine",
-                    onComplete: () => this._mapWindowDone(cinnamonwm, actor),
+                    duration: time * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    mode: Clutter.AnimationMode.EASE_IN_SINE,
+                    onStopped: () => this._mapWindowDone(cinnamonwm, actor),
                 });
 
                 return;
             }
             default:
             {
-                cinnamonwm.completed_map(actor);
+                this._mapWindowDone(cinnamonwm, actor);
             }
         }
     }
 
     _mapWindowDone(cinnamonwm, actor) {
         if (this._mapping.delete(actor)) {
-            removeTweens(actor);
+            actor.remove_all_transitions()
             actor.opacity = 255;
             actor.set_pivot_point(0, 0);
             actor.scale_y = 1;
@@ -937,6 +947,8 @@ var WindowManager = class WindowManager {
             return;
         }
 
+        this._destroying.add(actor);
+
         // menu effects are always traditional
         let overridden_types = [Meta.WindowType.MENU,
                                 Meta.WindowType.DROPDOWN_MENU,
@@ -947,21 +959,20 @@ var WindowManager = class WindowManager {
         switch (adjusted_type) {
             case "fly":
             {
-                this._destroying.add(actor);
-
                 let [xSrc, ySrc] = actor.get_position();
-                let yDest = global.stage.get_height();
 
+                let workarea = actor.meta_window.get_work_area_current_monitor();
+                let yDest = workarea.y + workarea.height;
                 // The transition time set is the time if the animation starts/ends at the middle of the screen.
                 // Scale it proportional to the actual distance so that the speed of all animations will be constant.
                 let dist = Math.abs(ySrc - yDest);
                 let time = this.DESTROY_ANIMATION_TIME * (dist / yDest * 2);
 
-                addTween(actor, {
+                actor.ease({
                     y: yDest,
-                    time: time * this.window_effect_multiplier,
-                    transition: "easeInSine",
-                    onComplete: () => this._destroyWindowDone(cinnamonwm, actor),
+                    duration: time * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    mode: Clutter.AnimationMode.EASE_IN_SINE,
+                    onStopped: () => this._destroyWindowDone(cinnamonwm, actor),
                 });
 
                 return;
@@ -973,25 +984,23 @@ var WindowManager = class WindowManager {
                     case Meta.WindowType.MODAL_DIALOG:
                     case Meta.WindowType.DIALOG:
                     {
-                        this._destroying.add(actor);
-
                         actor.set_pivot_point(0.5, 0.5);
 
                         if (window.is_attached_dialog()) {
                             let parent = window.get_transient_for();
                             actor._parentDestroyId = parent.connect('unmanaged', () => {
-                                removeTweens(actor);
+                                actor.remove_all_transitions();
                                 this._destroyWindowDone(cinnamonwm, actor);
                             });
                         }
 
-                        addTween(actor, {
+                        actor.ease({
                             opacity: 0,
                             scale_x: 0.88,
                             scale_y: 0.88,
-                            time: this.DESTROY_ANIMATION_TIME * this.window_effect_multiplier,
-                            transition: 'easeOutQuad',
-                            onComplete: () => this._destroyWindowDone(cinnamonwm, actor),
+                            duration: this.DESTROY_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                            onStopped: () => this._destroyWindowDone(cinnamonwm, actor),
                         });
 
                         return;
@@ -1002,7 +1011,7 @@ var WindowManager = class WindowManager {
                     // ??
                     default:
                     {
-                        cinnamonwm.completed_destroy(actor);
+                        this._destroyWindowDone();
                     }
                 }
             }
@@ -1011,6 +1020,7 @@ var WindowManager = class WindowManager {
 
     _destroyWindowDone(cinnamonwm, actor) {
         if (this._destroying.delete(actor)) {
+            actor.remove_all_transitions();
             let parent = actor.get_meta_window().get_transient_for();
             if (parent && actor._parentDestroyId) {
                 parent.disconnect(actor._parentDestroyId);
