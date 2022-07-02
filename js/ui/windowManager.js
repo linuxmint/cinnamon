@@ -27,6 +27,8 @@ const WINDOW_ANIMATION_TIME_MULTIPLIERS = [
     0.6  // 2 FAST
 ]
 
+const EASING_MULTIPLIER = 1000; // multiplier for tweening.time ---> easing.duration
+
 const DIM_TIME = 0.500;
 const DIM_DESATURATION = 0.6;
 const DIM_BRIGHTNESS = -0.2;
@@ -102,9 +104,12 @@ class TilePreview {
 
         this._reset();
         this._showing = false;
+        this.anim_time = null
     }
 
     show(window, tileRect, monitorIndex, animate, anim_time) {
+        this.anim_time = anim_time;
+
         let windowActor = window.get_compositor_private();
         if (!windowActor)
             return;
@@ -133,7 +138,6 @@ class TilePreview {
 
         this._showing = true;
         this.actor.show();
-        windowActor.get_parent().set_child_above_sibling(windowActor, null);
 
         let props = {
             x,
@@ -144,11 +148,13 @@ class TilePreview {
         };
 
         if (animate) {
+            this.actor.remove_all_transitions();
+
             Object.assign(props, {
-                time: anim_time,
-                transition: 'easeOutQuad'
+                duration: this.anim_time * EASING_MULTIPLIER,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD
             });
-            addTween(this.actor, props);
+            this.actor.ease(props);
             return;
         }
 
@@ -161,30 +167,19 @@ class TilePreview {
 
         this._showing = false;
 
-        if (true) {
-            addTween(this.actor, {
-                opacity: 0,
-                time: this.TILE_PREVIEW_ANIMATION_TIME,
-                transition: 'easeOutQuad',
-                onComplete: () => this._reset()
-            });
-            return;
-        }
-        this.actor.opacity = 0;
-
+        this.actor.remove_all_transitions();
+        this.actor.ease({
+            opacity: 0,
+            duration: this.anim_time * EASING_MULTIPLIER,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => this._reset()
+        });
     }
 
     _reset() {
         this.actor.hide();
         this._rect = null;
         this._monitorIndex = -1;
-    }
-
-    _updateStyle() {
-        if (this.actor.has_style_class_name('snap'))
-            this.actor.remove_style_class_name('snap');
-        else
-            this.actor.add_style_class_name('snap');
     }
 
     destroy() {
@@ -1177,8 +1172,6 @@ var WindowManager = class WindowManager {
         if (!this._tilePreview)
             return;
         this._tilePreview.hide();
-        this._tilePreview.destroy();
-        this._tilePreview = null;
     }
 
     showWorkspaceOSD() {
