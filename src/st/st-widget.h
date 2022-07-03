@@ -175,8 +175,6 @@ void                  st_widget_paint_background          (StWidget        *widg
 
 /* debug methods */
 char  *st_describe_actor       (ClutterActor *actor);
-void   st_set_slow_down_factor (gfloat factor);
-gfloat st_get_slow_down_factor (void);
 
 /* Compatibility methods */
 void  st_widget_destroy_children (StWidget     *widget);
