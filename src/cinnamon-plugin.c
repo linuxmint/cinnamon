@@ -350,8 +350,7 @@ static void
 cinnamon_plugin_locate_pointer (MetaPlugin *plugin)
 {
   CinnamonPlugin *cinnamon_plugin = CINNAMON_PLUGIN (plugin);
-  // TODO
-  // _cinnamon_global_locate_pointer (cinnamon_plugin->global);
+  _cinnamon_global_locate_pointer (cinnamon_plugin->global);
 }
 
 static void

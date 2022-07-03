@@ -51,6 +51,7 @@ enum
  NOTIFY_ERROR,
  SCALE_CHANGED,
  SHUTDOWN,
+ LOCATE_POINTER,
  LAST_SIGNAL
 };
 
@@ -295,6 +296,14 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
 
   cinnamon_global_signals[SHUTDOWN] =
       g_signal_new ("shutdown",
+                    G_TYPE_FROM_CLASS (klass),
+                    G_SIGNAL_RUN_LAST,
+                    0,
+                    NULL, NULL, NULL,
+                    G_TYPE_NONE, 0);
+
+  cinnamon_global_signals[LOCATE_POINTER] =
+      g_signal_new ("locate-pointer",
                     G_TYPE_FROM_CLASS (klass),
                     G_SIGNAL_RUN_LAST,
                     0,
@@ -1605,4 +1614,10 @@ cinnamon_global_alloc_leak (CinnamonGlobal *global, gint mb)
                                       "xxxxxxxxxxxxxxxxxxxxxxxx"
         );
     }
+}
+
+void
+_cinnamon_global_locate_pointer (CinnamonGlobal *global)
+{
+  g_signal_emit (global, cinnamon_global_signals[LOCATE_POINTER], 0);
 }

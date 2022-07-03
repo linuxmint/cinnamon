@@ -68,4 +68,6 @@ void _cinnamon_global_set_plugin      (CinnamonGlobal  *global,
 
 GjsContext *_cinnamon_global_get_gjs_context (CinnamonGlobal  *global);
 
+void _cinnamon_global_locate_pointer (CinnamonGlobal  *global);
+
 #endif /* __CINNAMON_GLOBAL_PRIVATE_H__ */
