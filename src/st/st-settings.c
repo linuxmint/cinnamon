@@ -21,6 +21,7 @@
 #include "config.h"
 #endif
 
+#include <math.h>
 #include <gio/gio.h>
 
 #include "st-settings.h"
@@ -35,6 +36,7 @@ enum {
     PROP_FONT_NAME,
     PROP_GTK_ICON_THEME,
     PROP_MAGNIFIER_ACTIVE,
+    PROP_SLOW_DOWN_FACTOR,
     N_PROPS
 };
 
@@ -49,9 +51,23 @@ struct _StSettings
   gchar *font_name;
   gchar *gtk_icon_theme;
   gboolean mag_active;
+  double slow_down_factor;
 };
 
 G_DEFINE_TYPE (StSettings, st_settings, G_TYPE_OBJECT)
+
+#define EPSILON (1e-10)
+
+static void
+st_settings_set_slow_down_factor (StSettings *settings,
+                                  double      factor)
+{
+  if (fabs (settings->slow_down_factor - factor) < EPSILON)
+    return;
+
+  settings->slow_down_factor = factor;
+  g_object_notify_by_pspec (G_OBJECT (settings), props[PROP_SLOW_DOWN_FACTOR]);
+}
 
 static void
 st_settings_finalize (GObject *object)
@@ -72,7 +88,16 @@ st_settings_set_property (GObject      *object,
                           const GValue *value,
                           GParamSpec   *pspec)
 {
-  G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+  StSettings *settings = ST_SETTINGS (object);
+
+  switch (prop_id)
+    {
+    case PROP_SLOW_DOWN_FACTOR:
+      st_settings_set_slow_down_factor (settings, g_value_get_double (value));
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
 }
 
 static void
@@ -93,6 +118,9 @@ st_settings_get_property (GObject    *object,
       break;
     case PROP_MAGNIFIER_ACTIVE:
       g_value_set_boolean (value, settings->mag_active);
+      break;
+    case PROP_SLOW_DOWN_FACTOR:
+      g_value_set_double (value, settings->slow_down_factor);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -125,6 +153,12 @@ st_settings_class_init (StSettingsClass *klass)
                                                        "True if the magnifier is active",
                                                        FALSE,
                                                        ST_PARAM_READABLE);
+
+  props[PROP_SLOW_DOWN_FACTOR] = g_param_spec_double("slow-down-factor",
+                                                      "Slow down factor",
+                                                      "Factor applied to all animation durations",
+                                                      EPSILON, G_MAXDOUBLE, 1.0,
+                                                      ST_PARAM_READWRITE);
 
   g_object_class_install_properties (object_class, N_PROPS, props);
 }
@@ -177,6 +211,8 @@ st_settings_init (StSettings *settings)
   g_signal_connect (settings->a11y_settings, "changed::" KEY_MAGNIFIER_FACTOR,
                     G_CALLBACK (on_mag_factor_changed), settings);
   settings->mag_active = g_settings_get_double (settings->a11y_settings, KEY_MAGNIFIER_FACTOR) > 1.0;
+
+  settings->slow_down_factor = 1.;
 }
 
 /**

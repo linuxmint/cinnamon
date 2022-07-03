@@ -295,6 +295,12 @@ function init() {
         return this.themeNode.get_length(property);
     };
 
+    St.set_slow_down_factor = function(factor) {
+        let { stack } = new Error();
+        log(`St.set_slow_down_factor() is deprecated, use St.Settings.slow_down_factor\n${stack}`);
+        St.Settings.get().slow_down_factor = factor;
+    };
+
     let origToString = Object.prototype.toString;
     Object.prototype.toString = function() {
         let base = origToString.call(this);
@@ -338,7 +344,7 @@ function init() {
     if (slowdownEnv) {
         let factor = parseFloat(slowdownEnv);
         if (!isNaN(factor) && factor > 0.0)
-            St.set_slow_down_factor(factor);
+            St.Settings.get().slow_down_factor = factor;
     }
 
     // OK, now things are initialized enough that we can import cinnamon JS
@@ -358,10 +364,9 @@ function init() {
 // Adjust @msecs to account for St's enable-animations
 // and slow-down-factor settings
 function adjustAnimationTime(msecs) {
-    // let settings = St.Settings.get();
+    let settings = St.Settings.get();
 
     // if (!settings.enable_animations)
     //     return 1;
-    // return settings.slow_down_factor * msecs;
-    return msecs;
+    return settings.slow_down_factor * msecs;
 }
