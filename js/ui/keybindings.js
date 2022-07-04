@@ -109,9 +109,8 @@ KeybindingManager.prototype = {
             return true;
         }
 
-        // log(`set keybinding: ${name}, bindings: ${bindings}`);
-
         action_id = global.display.add_custom_keybinding(name, bindings, callback);
+        // log(`set keybinding: ${name}, bindings: ${bindings} - action id: ${action_id}`);
 
         if (action_id === Meta.KeyBindingAction.NONE) {
             global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
@@ -191,19 +190,21 @@ KeybindingManager.prototype = {
     },
 
     on_global_media_key_pressed: function(display, window, kb, action) {
-        // log(`${display}, ${screen}, ${event}, ${kb}, ${action}`);
+        // log(`global media key ${display}, ${window}, ${kb}, ${action}`);
         this._proxy.HandleKeybindingRemote(action);
     },
 
     on_media_key_pressed: function(display, window, kb, action) {
-        // log(`${display}, ${screen}, ${event}, ${kb}, ${action}`);
+        // log(`media key ${display}, ${window}, ${kb}, ${action}`);
         if (Main.modalCount == 0 && !Main.overview.visible && !Main.expo.visible)
             this._proxy.HandleKeybindingRemote(action);
     },
 
     invoke_keybinding_action_by_id: function(id) {
         if (this.bindings[id] !== undefined) {
-            this.bindings[id].callback();
+            const binding = this.bindings[id];
+            // log(`invoke_keybinding_action_by_id: ${binding.name}, bindings: ${binding.bindings} - action id: ${id}`);
+            binding.callback(null, null, null);
         }
     }
 };
