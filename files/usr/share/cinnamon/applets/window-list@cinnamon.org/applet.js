@@ -1270,6 +1270,13 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     _updateWatchedMonitors() {
+        // this can be called after our settings are finalized (and those attributes deleted),
+        // so lastWindowOrder won't exist anymore. This can happen when panels are removed, for
+        // example due to monitor changes.
+        if (this.lastWindowOrder === undefined) {
+            return;
+        }
+
         let n_mons = global.display.get_n_monitors();
         let on_primary = this.panel.monitorIndex == Main.layoutManager.primaryIndex;
         let instances = Main.AppletManager.getRunningInstancesForUuid(this._uuid);

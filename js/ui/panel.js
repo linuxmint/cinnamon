@@ -282,9 +282,16 @@ function convertSettingsXMonToLMon(strv) {
 
         let [id, xmon, pos] = elements;
 
-        let l_mon = global.display.xinerama_index_to_logical_index(xmon);
+        if (xmon > global.display.get_n_monitors() - 1) {
+            // log("Skipping panel enabled info for monitor we don't have: " + strv[i]);
+            out.push(strv[i]);
+            continue;
+        }
 
+        let l_mon = global.display.xinerama_index_to_logical_index(xmon);
         out.push(`${id}:${l_mon}:${pos}`);
+
+        // log(`xmon: ${id}:${xmon}:${pos}  to lmon: ${id}:${l_mon}:${pos}`);
     }
 
     return out;
@@ -302,8 +309,9 @@ function convertSettingsLMonToXMon(strv) {
         let [id, lmon, pos] = elements;
 
         let x_mon = global.display.logical_index_to_xinerama_index(lmon);
-
         out.push(`${id}:${x_mon}:${pos}`);
+
+        // log(`l_mon: ${id}:${l_mon}:${pos}  to xmon: ${id}:${x_mon}:${pos}`);
     }
 
     return out;
@@ -401,7 +409,6 @@ PanelManager.prototype = {
      *                 between horizontal ones
      */
     _fullPanelLoad : function () {
-
         let monitor = 0;
         let stash = [];     // panel id, monitor, panel type
 
