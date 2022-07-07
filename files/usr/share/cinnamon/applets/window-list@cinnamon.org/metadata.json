@@ -3,5 +3,6 @@
  "name": "Window list",
  "description": "Main Cinnamon window list",
  "icon": "cs-windows",
+ "role": "windowattentionhandler",
  "max-instances": -1
 }

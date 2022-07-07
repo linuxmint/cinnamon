@@ -1024,7 +1024,7 @@ MessageTray.prototype = {
     },
 
     _updateNotificationTimeout: function(timeout) {
-        if (this._notificationTimeoutId) {
+        if (this._notificationTimeoutId > 0) {
             Mainloop.source_remove(this._notificationTimeoutId);
             this._notificationTimeoutId = 0;
         }

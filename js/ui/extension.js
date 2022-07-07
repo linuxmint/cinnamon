@@ -101,6 +101,7 @@ var Type = {
         roles: {
             notifications: null,
             windowlist: null,
+            windowattentionhandler: null,
             panellauncher: null,
             tray: null
         }
@@ -108,7 +109,8 @@ var Type = {
     DESKLET: _createExtensionType("Desklet", "desklets", DeskletManager, {
         roles: {
             notifications: null,
-            windowlist: null
+            windowlist: null,
+            windowattentionhandler: null
         }
     }),
     SEARCH_PROVIDER: _createExtensionType("Search provider", "search_providers", SearchProviderManager, {
@@ -302,7 +304,6 @@ Extension.prototype = {
         global.log(`Loaded ${this.lowerType} ${this.uuid} in ${endTime - startTime} ms`);
         startTime = new Date().getTime();
     },
-
     validateMetaData: function() {
         // Some properties are required to run
         this.checkProperties(Type[this.upperType].requiredProperties, true);
@@ -600,6 +601,16 @@ function getMetadata(uuid, type) {
     });
 }
 
+function maybeAddWindowAttentionHandlerRole(meta) {
+    const keywords = ['window-list', 'windowlist', 'taskbar'];
+
+    keywords.some(element => {
+        if (meta.uuid.includes(element)) {
+            meta.role = "windowattentionhandler";
+        }
+    });
+}
+
 function loadMetaData({state, path, uuid, userDir, folder, force}) {
     return new Promise((resolve, reject) => {
         let dir = findExtensionDirectory(uuid, userDir, folder);
@@ -616,6 +627,8 @@ function loadMetaData({state, path, uuid, userDir, folder, force}) {
                     return;
                 }
                 meta = JSON.parse(ByteArray.toString(json));
+
+                maybeAddWindowAttentionHandlerRole(meta);
             } catch (e) {
                 logError(`Failed to load/parse metadata.json`, uuid, e);
                 meta = createMetaDummy(uuid, oldPath, State.ERROR);

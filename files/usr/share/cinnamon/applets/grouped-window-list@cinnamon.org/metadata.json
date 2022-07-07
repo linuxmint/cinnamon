@@ -4,5 +4,6 @@
     "uuid": "grouped-window-list@cinnamon.org",
     "description": "Main Cinnamon window list with app grouping",
     "icon": "cs-windows",
+    "role": "windowattentionhandler",
     "max-instances": -1
 }
