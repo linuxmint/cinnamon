@@ -21,7 +21,11 @@ const _balancedParens = '\\([^\\s()<>]+\\)';
 const _leadingJunk = '[\\s`(\\[{\'\\"<\u00AB\u201C\u2018]';
 const _notTrailingJunk = '[^\\s`!()\\[\\]{};:\'\\".,<>?\u00AB\u00BB\u201C\u201D\u2018\u2019]';
 
-function decodeHTML(str) {
+function decodeHTML(str=null) {
+    if (str === null) {
+        return null;
+    }
+
     return str.replace(/&#(\d+);/g, function(match, dec) {
         return String.fromCharCode(dec);
     });
