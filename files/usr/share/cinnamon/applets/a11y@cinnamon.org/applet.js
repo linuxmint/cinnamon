@@ -39,7 +39,7 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
 
         try {
             this.metadata = metadata;
-            Main.systrayManager.registerRole("a11y", metadata.uuid);
+            Main.systrayManager.registerTrayIconReplacement("a11y", metadata.uuid);
 
             this.set_applet_icon_symbolic_name("preferences-desktop-accessibility");
             this.set_applet_tooltip(_("Accessibility"));

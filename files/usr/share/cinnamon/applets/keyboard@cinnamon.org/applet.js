@@ -230,7 +230,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
         try {
             this.metadata = metadata;
-            Main.systrayManager.registerRole("keyboard", metadata.uuid);
+            Main.systrayManager.registerTrayIconReplacement("keyboard", metadata.uuid);
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);

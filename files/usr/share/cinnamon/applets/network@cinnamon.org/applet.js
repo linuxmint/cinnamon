@@ -1680,8 +1680,8 @@ CinnamonNetworkApplet.prototype = {
 
         try {
             this.metadata = metadata;
-            Main.systrayManager.registerRole("network", metadata.uuid);
-            Main.systrayManager.registerRole("nm-applet", metadata.uuid);
+            Main.systrayManager.registerTrayIconReplacement("network", metadata.uuid);
+            Main.systrayManager.registerTrayIconReplacement("nm-applet", metadata.uuid);
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
