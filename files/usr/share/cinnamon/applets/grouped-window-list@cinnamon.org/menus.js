@@ -617,7 +617,7 @@ class WindowThumbnail {
         if (actorString.indexOf('this.actor') > -1
             && (!this.lastEnterActor
                 || (this.lastEnterActor.indexOf('StButton') === -1)
-                    && this.lastEnterActor.indexOf('ClutterClone') === -1)) {
+                    && this.lastEnterActor.indexOf('ClutterActor') === -1)) {
             this.destroyOverlayPreview();
             this.hoverPeek(this.state.settings.peekOpacity);
         }
@@ -829,7 +829,9 @@ class WindowThumbnail {
         });
 
         let [x, y] = this.metaWindowActor.get_position();
+        let [width, height] = this.metaWindowActor.get_size();
         this.state.lastOverlayPreview.set_position(x, y);
+        this.state.lastOverlayPreview.set_size(width, height);
         global.overlay_group.add_child(this.state.lastOverlayPreview);
         global.overlay_group.set_child_above_sibling(this.state.lastOverlayPreview, null);
         setOpacity(this.state.settings.peekTimeIn, this.state.lastOverlayPreview, opacity);
