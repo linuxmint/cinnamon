@@ -365,26 +365,40 @@ PlacesManager.prototype = {
 
         this._updateDevices();
 
-        this._bookmarksPath = GLib.build_filenamev([GLib.get_user_config_dir(), 'gtk-3.0', 'bookmarks']);
-        this._bookmarksFile = Gio.file_new_for_path(this._bookmarksPath);
+        this._bookmarksFile = null;
+        this._bookmarksPath = null;
 
-        if (!this._bookmarksFile.query_exists(null)) {
-            this._bookmarksPath = GLib.build_filenamev([GLib.get_home_dir(), '.gtk-bookmarks']);
-            this._bookmarksFile = Gio.file_new_for_path(this._bookmarksPath);
+        let bookmarksPath3 = GLib.build_filenamev([GLib.get_user_config_dir(), 'gtk-3.0', 'bookmarks']);
+        let bookmarksFile3 = Gio.file_new_for_path(bookmarksPath3);
+
+        if (!bookmarksFile3.query_exists(null)) {
+            let bookmarksPath2 = GLib.build_filenamev([GLib.get_home_dir(), '.gtk-bookmarks']);
+            let bookmarksFile2 = Gio.file_new_for_path(bookmarksPath2);
+
+            if (bookmarksFile2.query_exists(null)) {
+                this._bookmarksFile = bookmarksFile2;
+                this._bookmarksPath = bookmarksPath2;
+            }
         }
 
-        this.monitor = this._bookmarksFile.monitor_file(Gio.FileMonitorFlags.NONE, null);
+        if (this._bookmarksFile === null) {
+            this._bookmarksPath = bookmarksPath3;
+            this._bookmarksFile = bookmarksFile3;
+        }
+
         this._bookmarkTimeoutId = 0;
-        this.monitor.connect('changed', Lang.bind(this, function () {
+
+        this.monitor = this._bookmarksFile.monitor_file(Gio.FileMonitorFlags.NONE, null);
+        this.monitor.connect('changed', () => {
             if (this._bookmarkTimeoutId > 0)
                 return;
             /* Defensive event compression */
-            this._bookmarkTimeoutId = Mainloop.timeout_add(100, Lang.bind(this, function () {
+            this._bookmarkTimeoutId = Mainloop.timeout_add(100, () => {
                 this._bookmarkTimeoutId = 0;
                 this._reloadBookmarks();
-                return false;
-            }));
-        }));
+                return GLib.SOURCE_REMOVE;
+            });
+        });
 
         this._reloadBookmarks();
     },
@@ -490,11 +504,17 @@ PlacesManager.prototype = {
     },
 
     _reloadBookmarks: function() {
-
+        let had_bookmarks = this._bookmarks.length > 0;
         this._bookmarks = [];
 
-        if (!GLib.file_test(this._bookmarksPath, GLib.FileTest.EXISTS))
+        if (!this._bookmarksFile.query_exists(null)) {
+            if (had_bookmarks) {
+                this.emit('bookmarks-updated');
+                this.emit('places-updated');
+            }
+
             return;
+        }
 
         let bookmarksContent = Cinnamon.get_file_contents_utf8_sync(this._bookmarksPath);
 
