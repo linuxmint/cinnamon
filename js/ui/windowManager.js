@@ -18,7 +18,6 @@ const WmGtkDialogs = imports.ui.wmGtkDialogs;
 const {CoverflowSwitcher} = imports.ui.appSwitcher.coverflowSwitcher;
 const {TimelineSwitcher} = imports.ui.appSwitcher.timelineSwitcher;
 const {ClassicSwitcher} = imports.ui.appSwitcher.classicSwitcher;
-const {addTween, removeTweens} = imports.ui.tweener;
 
 // maps org.cinnamon window-effect-speed
 const WINDOW_ANIMATION_TIME_MULTIPLIERS = [
@@ -30,7 +29,6 @@ const WINDOW_ANIMATION_TIME_MULTIPLIERS = [
 const EASING_MULTIPLIER = 1000; // multiplier for tweening.time ---> easing.duration
 
 const DIM_TIME = 0.500;
-const DIM_DESATURATION = 0.6;
 const DIM_BRIGHTNESS = -0.2;
 const UNDIM_TIME = 0.250;
 const WORKSPACE_OSD_TIMEOUT = 0.4;
@@ -65,36 +63,50 @@ const ZONE_BL = 7;
 
 class WindowDimmer {
     constructor(actor) {
-        this._desaturateEffect = new Clutter.DesaturateEffect();
-        this._brightnessEffect = new Clutter.BrightnessContrastEffect();
-        actor.add_effect(this._desaturateEffect);
+        this._brightnessEffect = new Clutter.BrightnessContrastEffect({
+            name: 'dim',
+            enabled: false
+        });
         actor.add_effect(this._brightnessEffect);
-
         this.actor = actor;
-        this._dimFactor = 0.0;
+        this._enabled = true;
+    }
+
+    _syncEnabled() {
+        let animating = this.actor.get_transition('@effects.dim.brightness') != null;
+        let dimmed = this._brightnessEffect.brightness.red != 127;
+        this._brightnessEffect.enabled = this._enabled && (animating || dimmed);
     }
 
     setEnabled(enabled) {
-        this._desaturateEffect.enabled = enabled;
-        this._brightnessEffect.enabled = enabled;
+        this._enabled = enabled;
+        this._syncEnabled();
     }
 
-    set dimFactor(factor) {
-        this._dimFactor = factor;
-        this._desaturateEffect.set_factor(factor * DIM_DESATURATION);
-        this._brightnessEffect.set_brightness(factor * DIM_BRIGHTNESS);
-    }
+    setDimmed(dimmed, animate) {
+        let val = 127 * (1 + (dimmed ? 1 : 0) * DIM_BRIGHTNESS);
+        let color = Clutter.Color.new(val, val, val, 255);
 
-    get dimFactor() {
-        return this._dimFactor;
+        this.actor.ease_property('@effects.dim.brightness', color, {
+            mode: Clutter.AnimationMode.LINEAR,
+            duration: (dimmed ? DIM_TIME : UNDIM_TIME) * EASING_MULTIPLIER * (animate ? 1 : 0),
+            onComplete: () => this._syncEnabled()
+        });
+
+        this._syncEnabled();
     }
 };
 
 function getWindowDimmer(actor) {
-    if (!actor._windowDimmer)
-        actor._windowDimmer = new WindowDimmer(actor);
+    let enabled = Meta.prefs_get_attach_modal_dialogs();
 
-    return actor._windowDimmer;
+     if (enabled) {
+        if (!actor._windowDimmer)
+            actor._windowDimmer = new WindowDimmer(actor);
+        return actor._windowDimmer;
+    } else {
+        return null;
+    }
 }
 
 class TilePreview {
@@ -740,20 +752,10 @@ var WindowManager = class WindowManager {
             return;
 
         let dimmer = getWindowDimmer(actor);
-        let enabled = Meta.prefs_get_attach_modal_dialogs();
-        dimmer.setEnabled(enabled);
-        if (!enabled)
+        if (!dimmer)
             return;
 
-        if (animate) {
-            addTween(dimmer,
-                             { dimFactor: 1.0,
-                               time: DIM_TIME,
-                               transition: 'linear'
-                             });
-        } else {
-            getWindowDimmer(actor).dimFactor = 1.0;
-        }
+        dimmer.setDimmed(true, animate);
     }
 
     _undimWindow(window, animate) {
@@ -762,20 +764,10 @@ var WindowManager = class WindowManager {
             return;
 
         let dimmer = getWindowDimmer(actor);
-        let enabled = Meta.prefs_get_attach_modal_dialogs();
-        dimmer.setEnabled(enabled);
-        if (!enabled)
+        if (!dimmer)
             return;
 
-        if (animate) {
-            addTween(dimmer,
-                             { dimFactor: 0.0,
-                               time: UNDIM_TIME,
-                               transition: 'linear'
-                             });
-        } else {
-            getWindowDimmer(actor).dimFactor = 0.0;
-        }
+        dimmer.setDimmed(false, animate);
     }
 
     _mapWindow(cinnamonwm, actor) {
