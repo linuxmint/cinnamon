@@ -91,7 +91,7 @@ LayoutManager.prototype = {
 
         global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEdgeFlipChanged));
         global.settings.connect("changed::edge-flip-delay", Lang.bind(this, this._onEdgeFlipChanged));
-        global.screen.connect('monitors-changed', Lang.bind(this, this._monitorsChanged));
+        Meta.MonitorManager.get().connect('monitors-changed', Lang.bind(this, this._monitorsChanged));
     },
 
     _onEdgeFlipChanged: function(){
@@ -132,14 +132,16 @@ LayoutManager.prototype = {
     },
 
     _updateMonitors: function() {
-        let screen = global.screen;
-
         this.monitors = [];
-        let nMonitors = screen.get_n_monitors();
-        for (let i = 0; i < nMonitors; i++)
-            this.monitors.push(new Monitor(i, screen.get_monitor_geometry(i)));
+        let nMonitors = global.display.get_n_monitors();
+        for (let i = 0; i < nMonitors; i++) {
+            let rect = global.display.get_monitor_geometry(i);
+            let lmon = global.display.get_monitor_index_for_rect(rect);
 
-        this.primaryIndex = screen.get_primary_monitor();
+            this.monitors.push(new Monitor(lmon, rect));
+        }
+
+        this.primaryIndex = global.display.get_primary_monitor();
         this.primaryMonitor = this.monitors[this.primaryIndex];
     },
 
