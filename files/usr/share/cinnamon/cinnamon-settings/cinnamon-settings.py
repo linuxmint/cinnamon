@@ -91,7 +91,7 @@ STANDALONE_MODULES = [
 
 TABS = {
     # KEY (cs_KEY.py) : {"tab_name": tab_number, ... }
-    "universal-access": {"visual": 0, "keyboard": 1, "typing": 2, "mouse": 3},
+    "accessibility":    {"visual": 0, "keyboard": 1, "typing": 2, "mouse": 3},
     "applets":          {"installed": 0, "more": 1, "download": 1},
     "backgrounds":      {"images": 0, "settings": 1},
     "default":          {"preferred": 0, "removable": 1},
@@ -110,7 +110,7 @@ TABS = {
 }
 
 ARG_REWRITE = {
-    'accessibility':    'universal-access',
+    'universal-access': 'accessibility',
     'screen':           'display',
     'screens':          'display',
     'bluetooth':        'blueberry',

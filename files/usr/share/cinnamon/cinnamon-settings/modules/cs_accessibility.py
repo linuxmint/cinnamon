@@ -22,7 +22,7 @@ KEY_WM_THEME_BACKUP      = "theme-backup"
 
 
 class Module:
-    name = "universal-access"
+    name = "accessibility"
     comment = _("Configure accessibility features")
     category = "prefs"
 
