@@ -469,7 +469,7 @@ class SoundTest(Gtk.Dialog):
             sound = "audio-channel-"+position[1]
 
         try:
-            util.play_sound_name(sound)
+            util.play_sound_name(sound, position[1])
         except GLib.Error as e:
             print("Could not play test sound: %s" % e.message)
 

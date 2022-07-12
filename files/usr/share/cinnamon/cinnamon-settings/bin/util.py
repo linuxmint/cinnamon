@@ -25,8 +25,14 @@ def _get_gsound_context():
         gsound_context.init()
     return gsound_context
 
-def play_sound_name(name):
-    _get_gsound_context().play_simple({ GSound.ATTR_EVENT_ID: name })
+def play_sound_name(name, channel = None):
+    params = {GSound.ATTR_EVENT_ID: name}
+    if channel != None:
+        params[GSound.ATTR_CANBERRA_FORCE_CHANNEL] = channel
+    _get_gsound_context().play_simple(params)
 
-def play_sound_file(path):
-    _get_gsound_context().play_simple({ GSound.ATTR_MEDIA_FILENAME: path })
+def play_sound_file(path, channel = None):
+    params = {GSound.ATTR_EVENT_ID: name}
+    if channel != None:
+        params[GSound.ATTR_CANBERRA_FORCE_CHANNEL] = channel
+    _get_gsound_context().play_simple(params)
