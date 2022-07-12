@@ -23,6 +23,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
         this.actor.set_important(true);  // ensure we get class details from the default theme if not present
 
         this._signalManager = new SignalManager.SignalManager(null);
+        this._scaleUpdateId = 0;
 
         this.orientation = orientation;
         this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR) * global.ui_scale;
@@ -79,6 +80,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
         this._signalManager.connect(Main.statusIconDispatcher, 'status-icon-removed', this._onTrayIconRemoved, this);
         this._signalManager.connect(Main.statusIconDispatcher, 'before-redisplay', this._onBeforeRedisplay, this);
         this._signalManager.connect(Main.systrayManager, "changed", Main.statusIconDispatcher.redisplay, Main.statusIconDispatcher);
+        this._signalManager.connect(global, "scale-changed", this.uiScaleChanged, this);
 
         if (global.trayReloading) {
             global.trayReloading = false;
@@ -86,9 +88,26 @@ class CinnamonSystrayApplet extends Applet.Applet {
         }
     }
 
-    on_panel_icon_size_changed(size) {
+    resizeIcons(size) {
         this.icon_size = size * global.ui_scale;
         Main.statusIconDispatcher.redisplay();
+    }
+
+    on_panel_icon_size_changed(size) {
+        this.resizeIcons(size);
+    }
+
+    uiScaleChanged() {
+        if (this._scaleUpdateId > 0) {
+            Mainloop.source_remove(this._scaleUpdateId);
+        }
+
+        this._scaleUpdateId = Mainloop.timeout_add(1500, () => {
+            this.resizeIcons(this.getPanelIconSize());
+
+            this._scaleUpdateId = 0;
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     _onBeforeRedisplay() {

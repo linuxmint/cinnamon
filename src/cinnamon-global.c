@@ -830,6 +830,7 @@ update_scaling_factor (CinnamonGlobal  *global,
 
   if (scaling_factor != global->ui_scale) {
       global->ui_scale = scaling_factor;
+      g_object_notify (G_OBJECT (global), "ui-scale");
       g_signal_emit_by_name (global, "scale-changed");
   }
 }

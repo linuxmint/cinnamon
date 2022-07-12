@@ -6,6 +6,7 @@ const Clutter = imports.gi.Clutter;
 const Interfaces = imports.misc.interfaces;
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
+const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 const Gtk = imports.gi.Gtk;
 const XApp = imports.gi.XApp;
@@ -327,6 +328,7 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         this.ignoredProxies = {};
 
         this.signalManager = new SignalManager.SignalManager(null);
+        this._scaleUpdateId = 0;
 
         this.monitor = new XApp.StatusIconMonitor();
         this.signalManager.connect(this.monitor, "icon-added", this.onMonitorIconAdded, this);
@@ -341,6 +343,7 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
          * of the icon size matches the last type used by the applet.  Since this applet can contain both
          * types, listen to the panel signal directly, so we always receive the update. */
         this.signalManager.connect(this.panel, "icon-size-changed", this.icon_size_changed, this);
+        this.signalManager.connect(global, "scale-changed", this.ui_scale_changed, this);
     }
 
     getKey(icon_proxy) {
@@ -500,6 +503,19 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
 
     on_icon_theme_changed() {
         this.refreshIcons();
+    }
+
+    ui_scale_changed() {
+        if (this._scaleUpdateId > 0) {
+            Mainloop.source_remove(this._scaleUpdateId);
+        }
+
+        this._scaleUpdateId = Mainloop.timeout_add(1500, () => {
+            this.refreshIcons();
+
+            this._scaleUpdateId = 0;
+            return GLib.SOURCE_REMOVE;
+        })
     }
 
     on_applet_removed_from_panel() {
