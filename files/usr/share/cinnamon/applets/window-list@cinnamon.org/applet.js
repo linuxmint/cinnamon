@@ -687,7 +687,7 @@ class AppMenuButton {
                Assigning the natural size to the full panel height used to cause recursion errors but seems fine now.
                If this happens to avoid this you can subtract 1 or 2 pixels, but this will give an unreactive
                strip at the edge of the screen */
-            alloc.natural_size = this._applet._panelHeight;
+            alloc.natural_size = this._applet._panelHeight + 1;
         } else {
             alloc.natural_size = naturalSize1;
         }
