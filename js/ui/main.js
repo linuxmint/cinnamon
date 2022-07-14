@@ -11,7 +11,7 @@
  * @messageTray (MessageTray.MessageTray): The mesesage tray
  * @notificationDaemon (NotificationDaemon.NotificationDaemon): The notification daemon
  * @windowAttentionHandler (WindowAttentionHandler.WindowAttentionHandler): The window attention handle
- * @recorder (Cinnamon.Recorder): The recorder
+ * @screenRecorder (ScreenRecorder.ScreenRecorder): The recorder
  * @cinnamonDBusService (CinnamonDBus.Cinnamon): The cinnamon dbus object
  * @screenshotService (Screenshot.ScreenshotService): Implementation of gnome-shell's screenshot interface.
  * @modalCount (int): The number of modals "pushed"
@@ -119,6 +119,7 @@ const ModalDialog = imports.ui.modalDialog;
 const {readOnlyError} = imports.ui.environment;
 const {installPolyfills} = imports.ui.overrides;
 const InputMethod = imports.misc.inputMethod;
+const ScreenRecorder = imports.ui.screenRecorder;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -142,7 +143,7 @@ var a11yHandler = null;
 var messageTray = null;
 var notificationDaemon = null;
 var windowAttentionHandler = null;
-var recorder = null;
+var screenRecorder = null;
 var cinnamonDBusService = null;
 var screenshotService = null;
 var modalCount = 0;
@@ -203,38 +204,6 @@ function setRunState(state) {
     }
 }
 
-function _initRecorder() {
-    let recorderSettings = new Gio.Settings({ schema_id: 'org.cinnamon.recorder' });
-    Meta.keybindings_set_custom_handler('toggle-recording', function() {
-        if (recorder == null) {
-            recorder = new Cinnamon.Recorder({ stage: global.stage, display: global.display });
-        }
-
-        if (recorder.is_recording()) {
-            recorder.close();
-            Meta.enable_unredirect_for_display(global.display);
-        } else {
-            // read the parameters from GSettings always in case they have changed
-            recorder.set_framerate(recorderSettings.get_int('framerate'));
-            recorder.set_file_template('cinnamon-%Y-%m-%dT%H%M%S%z.' + recorderSettings.get_string('file-extension'));
-            let pipeline = recorderSettings.get_string('pipeline');
-
-            if (layoutManager.monitors.length > 1) {
-                let {x, y, width, height} = layoutManager.primaryMonitor;
-                recorder.set_area(x, y, width, height);
-            }
-
-            if (!pipeline.match(/^\s*$/))
-                recorder.set_pipeline(pipeline);
-            else
-                recorder.set_pipeline(null);
-
-            Meta.disable_unredirect_for_display(global.display);
-            recorder.record();
-        }
-    });
-}
-
 function _addXletDirectoriesToSearchPath() {
     imports.searchPath.unshift(global.datadir);
     imports.searchPath.unshift(global.userdatadir);
@@ -256,8 +225,6 @@ function _addXletDirectoriesToSearchPath() {
 }
 
 function _initUserSession() {
-    _initRecorder();
-
     global.screen.override_workspace_layout(Meta.DisplayCorner.TOPLEFT, false, 1, -1);
 
     systrayManager = new Systray.SystrayManager();
@@ -458,6 +425,7 @@ function start() {
 
     _addXletDirectoriesToSearchPath();
     _initUserSession();
+    screenRecorder = new ScreenRecorder.ScreenRecorder();
 
     // Provide the bus object for gnome-session to
     // initiate logouts.

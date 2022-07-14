@@ -12,12 +12,96 @@ const Gtk = imports.gi.Gtk;
 const XApp = imports.gi.XApp;
 const GLib = imports.gi.GLib;
 const Tooltips = imports.ui.tooltips;
+const RecordingIndicator = imports.ui.recordingIndicator;
 
 const HORIZONTAL_STYLE = 'padding-left: 2px; padding-right: 2px; padding-top: 0; padding-bottom: 0';
 const VERTICAL_STYLE = 'padding-left: 0; padding-right: 0; padding-top: 2px; padding-bottom: 2px';
 
-class XAppStatusIcon {
 
+class RecorderIcon {
+    constructor(applet) {
+        this.applet = applet;
+        this.actor = new St.BoxLayout({
+            style_class: "applet-box",
+            reactive: false,
+            visible: false,
+            x_expand: true,
+            y_expand: true
+        });
+
+        this.icon_holder = new St.Bin();
+        this.iconSize = this.applet.getPanelIconSize(St.IconType.FULLCOLOR);
+
+        this.actor.add_actor(this.icon_holder);
+
+        this._indicator = new St.DrawingArea();
+        this._indicator.connect("repaint", (area) => this._paint(area));
+        this.icon_holder.add_actor(this._indicator);
+
+        this._recordListenerId = Main.screenRecorder.connect("recording", () => this._recordingStateChanged());
+        this._recordingStateChanged();
+    }
+
+    _recordingStateChanged() {
+        this.actor.visible = Main.screenRecorder.recording;
+        this._indicator.queue_repaint();
+    }
+
+    _paint(area) {
+        let [width, height] = area.get_surface_size();
+        let size = Math.max(width, height);
+        let node = area.get_theme_node();
+        let border = node.get_foreground_color();
+
+        let cr = area.get_context();
+
+        let color = new Clutter.Color({ red: 255, green: 0, blue: 0, alpha: 255 });
+        Clutter.cairo_set_source_color(cr, color);
+
+        cr.arc(
+            width / 2,
+            height / 2,
+            size / 4.0,
+            0.0,
+            2.0 * Math.PI
+        )
+
+        cr.fillPreserve();
+        Clutter.cairo_set_source_color(cr, border);
+        cr.stroke();
+        cr.$dispose();
+    }
+
+    refresh() {
+        this.setOrientation(this.applet.orientation);
+        this._indicator.set_size(this.iconSize, this.iconSize);
+        this._indicator.queue_repaint();
+    }
+
+    setOrientation(orientation) {
+        switch (orientation) {
+            case St.Side.TOP:
+            case St.Side.BOTTOM:
+                this.actor.vertical = false;
+                this.actor.remove_style_class_name("vertical");
+                break;
+            case St.Side.LEFT:
+            case St.Side.RIGHT:
+                this.actor.vertical = true;
+                this.actor.add_style_class_name("vertical");
+                break;
+        }
+    }
+
+    destroy() {
+        if (this._recordListenerId > 0) {
+            Main.screenRecorder.disconnect(this._recordListenerId);
+            this._recordListenerId = 0;
+        }
+    }
+}
+
+class XAppStatusIcon {
     constructor(applet, proxy) {
         this.name = proxy.get_name();
         this.applet = applet;
@@ -321,6 +405,9 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         this.actor.add_actor (this.manager_container);
         this.manager_container.show();
 
+        this._recording_indicator = new RecorderIcon(this);
+        this.manager_container.add_actor(this._recording_indicator.actor);
+
         this.statusIcons = {};
 
         /* This doesn't really work 100% because applets get reloaded and we end up losing this
@@ -488,6 +575,8 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         for (let icon of icon_list) {
             this.manager_container.set_child_at_index(icon.actor, 0);
         }
+
+        this.manager_container.set_child_at_index(this._recording_indicator.actor, -1);
     }
 
     refreshIcons() {
@@ -495,6 +584,8 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
             let icon = this.statusIcons[owner];
             icon.refresh();
         }
+
+        this._recording_indicator.refresh();
     }
 
     icon_size_changed() {
@@ -529,6 +620,9 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         for (let key in this.ignoredProxies) {
             delete this.ignoredProxies[key];
         };
+
+        this._recording_indicator.actor.destroy();
+        this._recording_indicator = null;
 
         this.monitor = null;
     }
