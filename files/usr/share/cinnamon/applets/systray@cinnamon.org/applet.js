@@ -67,6 +67,8 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
     on_applet_removed_from_panel() {
         this._signalManager.disconnectAllSignals();
+
+        this._clearIcons();
     }
 
     on_applet_added_to_panel() {
@@ -81,11 +83,20 @@ class CinnamonSystrayApplet extends Applet.Applet {
         this._signalManager.connect(Main.statusIconDispatcher, 'before-redisplay', this._onBeforeRedisplay, this);
         this._signalManager.connect(Main.systrayManager, "changed", Main.statusIconDispatcher.redisplay, Main.statusIconDispatcher);
         this._signalManager.connect(global, "scale-changed", this.uiScaleChanged, this);
+        this._signalManager.connect(global.settings, 'changed::panel-edit-mode', this.on_panel_edit_mode_changed, this);
 
         if (global.trayReloading) {
             global.trayReloading = false;
             Main.statusIconDispatcher.redisplay();
         }
+    }
+
+    _clearIcons() {
+        this.button_box.get_children().forEach((button) => {
+            // button.set_size(-1, -1);
+            button.remove_actor(button.child);
+            button.destroy();
+        });
     }
 
     resizeIcons(size) {
@@ -95,6 +106,10 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
     on_panel_icon_size_changed(size) {
         this.resizeIcons(size);
+    }
+
+    on_panel_edit_mode_changed() {
+        this.resizeIcons(this.icon_size);
     }
 
     uiScaleChanged() {
@@ -114,15 +129,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
         // Mark all icons as obsolete
         // There might still be pending delayed operations to insert/resize of them
         // And that would crash Cinnamon
-
-        let children = this.button_box.get_children().filter(function(child) {
-            // We are only interested in the status icons and apparently we can not ask for
-            // child instanceof CinnamonTrayIcon.
-            return (child.toString().indexOf("CinnamonTrayIcon") != -1);
-        });
-        for (let i = 0; i < children.length; i++) {
-            children[i].destroy();
-        }
+        this._clearIcons();
     }
 
     _onTrayIconAdded(o, icon, role) {
@@ -146,9 +153,18 @@ class CinnamonSystrayApplet extends Applet.Applet {
             icon.set_x_align(Clutter.ActorAlign.CENTER);
             icon.set_y_align(Clutter.ActorAlign.FILL);
             button.set_y_align(Clutter.ActorAlign.FILL);
+
+            icon.visible = false;
+            icon.opacity = 0;
             GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
-                    icon.set_size(this.icon_size, this.icon_size);
-                    return GLib.SOURCE_REMOVE;
+                icon.visible = true;
+                icon.set_size(this.icon_size, this.icon_size);
+                icon.ease({
+                    opacity: 255,
+                    duration: 400,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                });
+                return GLib.SOURCE_REMOVE;
             });
 
             icon.reactive = true;
@@ -184,11 +200,10 @@ class CinnamonSystrayApplet extends Applet.Applet {
     }
 
     _onTrayIconRemoved(o, icon) {
-        if (icon.get_parent().get_parent() === this.button_box) {
-            this.button_box.remove_child(icon.get_parent());
-        }
+        const parent = icon.get_parent();
 
-        icon.destroy();
+        parent.remove_actor(icon);
+        parent.destroy()
     }
 }
 
