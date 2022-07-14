@@ -600,6 +600,18 @@ var WindowManager = class WindowManager {
     }
 
     _sizeChangeWindow(cinnamonwm, actor, whichChange, oldFrameRect, _oldBufferRect) {
+        switch (whichChange) {
+            case Meta.SizeChange.MAXIMIZE:
+                Main.soundManager.play('maximize');
+                break;
+            case Meta.SizeChange.UNMAXIMIZE:
+                Main.soundManager.play('unmaximize');
+                break;
+            case Meta.SizeChange.TILE:
+                Main.soundManager.play('tile');
+                break;
+        }
+
         if (!this._shouldAnimate(actor, [Meta.WindowType.NORMAL]) || !this.desktop_effects_size_change) {
             cinnamonwm.completed_size_change(actor);
             return;
