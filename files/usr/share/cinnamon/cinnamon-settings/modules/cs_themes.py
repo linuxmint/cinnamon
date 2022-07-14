@@ -69,7 +69,7 @@ class Module:
             widget = self.make_group(_("Icons"), self.icon_chooser)
             settings.add_row(widget)
 
-            widget = self.make_group(_("Controls"), self.theme_chooser)
+            widget = self.make_group(_("Applications"), self.theme_chooser)
             settings.add_row(widget)
 
             widget = self.make_group(_("Mouse Pointer"), self.cursor_chooser)
