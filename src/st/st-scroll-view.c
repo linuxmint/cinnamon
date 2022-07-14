@@ -906,7 +906,8 @@ st_scroll_view_style_changed (StWidget *widget)
 
   StThemeNode *theme_node = st_widget_get_theme_node (widget);
 
-  if (!g_settings_get_boolean (priv->settings, "enable-vfade"))
+  if (!g_settings_get_boolean (priv->settings, "enable-vfade") ||
+      !g_settings_get_boolean (priv->settings, "desktop-effects-workspace"))
     {
       st_scroll_view_update_fade_effect (self, 0.0, 0.0);
     }
