@@ -1,3 +1,77 @@
+cinnamon (5.4.3) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * xapp status applet: Use markup for tooltips.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * a11y: Add missing icons to support 28099e62ea98bb0
+  * notifications: Decode html entities in a notification's title and body.
+
+  [ fredcw ]
+  * Some slight improvements to app sorting..
+  * Remove redundant call toLowerCase()
+
+  [ Michael Webster ]
+  * panel.js: Fix autohide and intellihide (partially).
+  * panel.js: Get the window coordinates from the MetaWindow instead of the window actor.
+  * panel.js: _enterPanel and _leavePanel will not always receive any arguments.
+  * recorder: Use a more filesystem-friendly date format, get rid of some useless code.
+  * cinnamon-tray-icon.c: Fix interaction with tray icons when the panel is auto- or intelli-hide.
+  * systray: Fix reloading during panel-edit or adding/removing applets.
+  * windowManager.js: Fix hiding the tile preview, and use actor.ease.
+  * windowManager.js: Use easing for workspace switching, make sure all windows are animated.
+  * windowManager.js: Use easing for window effects, fix fallback path for invalid effect names.
+
+  [ JosephMcc ]
+  * st: Move slow-down-factor into settings
+
+  [ Michael Webster ]
+  * keybindings: Fix arguments sent by invoke_keybinding_action_by_id.
+
+  [ JosephMcc ]
+  * theme: Restore the styling of gwl window thumbnails
+
+  [ Michael Webster ]
+  * util.js: let decodeHTML() handle null strings gracefully.
+  * systray: Rename a couple of methods in SystrayManager
+  * windowAttentionHandler: remove filtering (no longer necessary)
+
+  [ JosephMcc ]
+  * windowManager: Check whether metaWindow is NULL after destroy animation
+
+  [ Michael Webster ]
+  * panels: Fix relayout problem when a monitor is removed or added.
+
+  [ JosephMcc ]
+  * gwl: Restore the hover peek functionality
+
+  [ Michael Webster ]
+  * placesManager: Monitor the gtk3 bookmarks path if no bookmark files exist, not gtk2.
+  * panels: listen to the layout manager for monitor changes, fix how layout.Monitors are constructed.
+
+  [ JosephMcc ]
+  * windowManager.js: Port the dimmer to the new ease() functions
+
+  [ Michael Webster ]
+  * Fix direct launching of accessibility settings.
+  * hidpi: Refresh xapp and systray icons when the scale changes.
+
+  [ Cobinja ]
+  * Fix testsound channel usage
+
+  [ Michael Webster ]
+  * cinnamon settings: Display blueman-manager as 'Bluetooth'.
+  * theme settings: Rename Controls to Applications.
+  * recorder: Display a recording indicator in the xapp applet.
+  * cs_sound: Fix testing window effect sounds.
+  * st-scroll-view: Have the fade effect respect the master effects setting as well as its individual one.
+  * windowManager: Distinguish between size-change types for sound effects.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 15 Jul 2022 15:05:57 +0200
+
 cinnamon (5.4.2) vanessa; urgency=medium
 
   [ Michael Webster ]
