@@ -1,3 +1,10 @@
+cinnamon (5.4.4) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * xapp status icon: Remove missing import.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 15 Jul 2022 17:09:33 +0200
+
 cinnamon (5.4.3) vanessa; urgency=medium
 
   [ Michael Webster ]
