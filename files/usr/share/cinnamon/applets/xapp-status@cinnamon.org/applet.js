@@ -12,7 +12,6 @@ const Gtk = imports.gi.Gtk;
 const XApp = imports.gi.XApp;
 const GLib = imports.gi.GLib;
 const Tooltips = imports.ui.tooltips;
-const RecordingIndicator = imports.ui.recordingIndicator;
 
 const HORIZONTAL_STYLE = 'padding-left: 2px; padding-right: 2px; padding-top: 0; padding-bottom: 0';
 const VERTICAL_STYLE = 'padding-left: 0; padding-right: 0; padding-top: 2px; padding-bottom: 2px';
