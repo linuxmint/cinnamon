@@ -82,7 +82,7 @@ XdndHandler.prototype = {
     },
 
     _onPositionChanged: function(obj, x, y) {
-        let pickedActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
+        let pickedActor = global.stage.get_actor_at_pos(Clutter.PickMode.NONE, x, y);
 
         // Make sure that the cursor window is on top
         if (this._cursorWindowClone)
