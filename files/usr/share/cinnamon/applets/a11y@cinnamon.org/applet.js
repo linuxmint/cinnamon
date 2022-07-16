@@ -247,7 +247,7 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel() {
-        Main.systrayManager.unregisterRole("a11y", this.metadata.uuid);
+        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
     }
 }
 

@@ -456,7 +456,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
     on_applet_removed_from_panel() {
         this._controller.applet_removed();
 
-        Main.systrayManager.unregisterRole("keyboard", this.metadata.uuid);
+        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
     }
 };
 

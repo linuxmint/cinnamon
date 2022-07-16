@@ -2470,8 +2470,7 @@ CinnamonNetworkApplet.prototype = {
     },
 
     on_applet_removed_from_panel: function() {
-        Main.systrayManager.unregisterRole("network", this.metadata.uuid);
-        Main.systrayManager.unregisterRole("nm-applet", this.metadata.uuid);
+        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
         Main.keybindingManager.removeHotKey("network-open-" + this.instance_id);
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);

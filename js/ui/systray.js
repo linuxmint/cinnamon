@@ -77,6 +77,10 @@ SystrayManager.prototype = {
     /* deprecated */
     unregisterId: function(uuid) {
         this.unregisterTrayIconReplacement(uuid)
+    },
+
+    unregisterRole: function(role, uuid) {
+        this.unregisterTrayIconReplacement(uuid)
     }
 }
 Signals.addSignalMethods(SystrayManager.prototype);
