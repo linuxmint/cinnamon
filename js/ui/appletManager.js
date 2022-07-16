@@ -26,7 +26,8 @@ var appletsLoaded = false;
 var Roles = {
     NOTIFICATIONS: 'notifications',
     PANEL_LAUNCHER: 'panellauncher',
-    WINDOW_ATTENTION_HANDLER: 'windowattentionhandler'
+    WINDOW_ATTENTION_HANDLER: 'windowattentionhandler',
+    WINDOW_LIST: 'windowlist'
 };
 
 var rawDefinitions;
@@ -412,7 +413,7 @@ function addAppletToPanels(extension, appletDefinition, panel = null, user_actio
 
         return true;
     } catch (e) {
-        extension.unlockRole();
+        extension.unlockRoles();
         Extension.logError('Failed to load applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, extension.uuid, e);
         return false;
     }

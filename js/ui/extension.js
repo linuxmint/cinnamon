@@ -154,7 +154,7 @@ function logError(message, uuid, error, state) {
         extension.meta.state = state || State.ERROR;
         extension.meta.error += message;
         if (extension.meta.state === State.INITIALIZING) {
-            extension.unlockRole();
+            extension.unlockRoles();
             extension.unloadStylesheet();
             extension.unloadIconDirectory();
             forgetExtension(uuid, Type[extension.upperType]);
@@ -321,10 +321,13 @@ Extension.prototype = {
         }
 
         // If a role is set, make sure it's a valid one
-        let role = this.meta['role'];
-        if (role) {
-            if (!(role in Type[this.upperType].roles)) {
-                throw logError(`Unknown role definition: ${role} in metadata.json`, this.uuid);
+        let meta_role_list_str = this.meta['role'];
+        if (meta_role_list_str) {
+            let meta_roles = meta_role_list_str.replace(" ", "").split(",");
+            for (let role of meta_roles) {
+                if (!(role in Type[this.upperType].roles)) {
+                    throw logError(`Unknown role definition: ${role} in metadata.json`, this.uuid);
+                }
             }
         }
     },
@@ -394,28 +397,50 @@ Extension.prototype = {
     },
 
     lockRole: function(roleProvider) {
-        if (this.meta
-            && this.meta.role
-            && Type[this.upperType].roles[this.meta.role] !== this.uuid) {
-            if (Type[this.upperType].roles[this.meta.role] != null) {
+        if (this.meta && this.meta.role) {
+            let meta_role_list_str = this.meta.role;
+            let meta_roles = meta_role_list_str.replace(" ", "").split(",");
+
+            let avail_roles = [];
+
+            for (let role of meta_roles) {
+                if (Type[this.upperType].roles[role] !== this.uuid) {
+                    if (Type[this.upperType].roles[role] != null) {
+                        continue;
+                    }
+
+                    avail_roles.push(role);
+                }
+            }
+
+            if (avail_roles.length == 0) {
                 return false;
             }
 
             if (roleProvider != null) {
-                Type[this.upperType].roles[this.meta.role] = this.uuid;
-                this.roleProvider = roleProvider;
-                global.log(`Role locked: ${this.meta.role}`);
+                for (let role of avail_roles) {
+                    Type[this.upperType].roles[role] = this.uuid;
+                    this.roleProvider = roleProvider;
+                    global.log(`Role locked: ${role}`);
+                }
             }
         }
 
         return true;
     },
 
-    unlockRole: function() {
-        if (this.meta.role && Type[this.upperType].roles[this.meta.role] === this.uuid) {
-            Type[this.upperType].roles[this.meta.role] = null;
-            this.roleProvider = null;
-            global.log(`Role unlocked: ${this.meta.role}`);
+    unlockRoles: function() {
+        if (this.meta.role) {
+            let meta_role_list_str = this.meta.role;
+            let meta_roles = meta_role_list_str.replace(" ", "").split(",");
+
+            for (let role of meta_roles) {
+                if (Type[this.upperType].roles[role] === this.uuid) {
+                    Type[this.upperType].roles[role] = null;
+                    this.roleProvider = null;
+                    global.log(`Role unlocked: ${role}`);
+                }
+            }
         }
     }
 }
@@ -512,7 +537,7 @@ function unloadExtension(uuid, type, deleteConfig = true, reload = false) {
     let extensionIndex = queryCollection(extensions, {uuid}, true);
     if (extensionIndex > -1) {
         let extension = extensions[extensionIndex];
-        extension.unlockRole();
+        extension.unlockRoles();
 
         // Try to disable it -- if it's ERROR'd, we can't guarantee that,
         // but it will be removed on next reboot, and hopefully nothing
@@ -606,7 +631,13 @@ function maybeAddWindowAttentionHandlerRole(meta) {
 
     keywords.some(element => {
         if (meta.uuid.includes(element)) {
-            meta.role = "windowattentionhandler";
+            if (!meta.role) {
+                meta.role = "windowattentionhandler";
+            } else {
+                if (!meta.role.includes("windowattentionhandler")) {
+                    meta.role += ",windowattentionhandler";
+                }
+            }
         }
     });
 }
