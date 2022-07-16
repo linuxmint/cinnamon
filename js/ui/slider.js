@@ -141,7 +141,7 @@ Slider.prototype = {
         this._moveHandle(absX, absY);
     },
 
-    _endDragging: function() {
+    _endDragging: function(actor, event) {
         if (this._dragging) {
             this.actor.disconnect(this._releaseId);
             this.actor.disconnect(this._motionId);
