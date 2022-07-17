@@ -26,13 +26,13 @@ def _get_gsound_context():
     return gsound_context
 
 def play_sound_name(name, channel = None):
-    params = {GSound.ATTR_EVENT_ID: name}
+    params = {GSound.ATTR_EVENT_ID: name, GSound.ATTR_MEDIA_ROLE: "test"}
     if channel != None:
         params[GSound.ATTR_CANBERRA_FORCE_CHANNEL] = channel
     _get_gsound_context().play_simple(params)
 
 def play_sound_file(path, channel = None):
-    params = {GSound.ATTR_MEDIA_FILENAME: path}
+    params = {GSound.ATTR_MEDIA_FILENAME: path, GSound.ATTR_MEDIA_ROLE: "test"}
     if channel != None:
         params[GSound.ATTR_CANBERRA_FORCE_CHANNEL] = channel
     _get_gsound_context().play_simple(params)
