@@ -23,6 +23,7 @@ StScrollView.vfade {
 StScrollView StScrollBar {
     min-width: 16px;
     min-height: 16px;
+    padding: 2px;
 }
 
 StScrollBar StBin#trough {
@@ -1187,10 +1188,10 @@ StScrollBar StButton#vhandle:hover {
     padding-bottom: 10px;
 }
 .menu-applications-inner-box {
-    padding-top: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 0px;
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 0px;
 }
 .menu-applications-outer-box {
     padding-top: 10px;
