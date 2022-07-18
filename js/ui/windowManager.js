@@ -1204,7 +1204,7 @@ var WindowManager = class WindowManager {
         if (global.settings.get_boolean('workspace-osd-visible')) {
             let current_workspace_index = global.screen.get_active_workspace_index();
             if (this.wm_settings.get_boolean('workspaces-only-on-primary')) {
-                this._showWorkspaceOSDOnMonitor(Main.layoutManager.primaryMonitor, current_workspace_index);
+                this._showWorkspaceOSDOnMonitor(Main.layoutManager.primaryMonitor.index, current_workspace_index);
             }
             else {
                 let {monitors} = Main.layoutManager;
