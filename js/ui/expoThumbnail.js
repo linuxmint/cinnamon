@@ -1089,7 +1089,7 @@ ExpoThumbnailsBox.prototype = {
         // apparently we get no direct call to show the initial
         // view, so we must force an explicit overviewMode On/Off display
         // after it has been allocated
-        let allocId = this.connect('allocated', Lang.bind(this, function() {
+        let allocId = this.connect('notify::allocation', Lang.bind(this, function() {
             this.disconnect(allocId);
             Mainloop.timeout_add(100, Lang.bind(this, function() {
                 this.emit('set-overview-mode', forceOverviewMode === 1);

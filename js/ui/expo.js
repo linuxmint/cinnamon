@@ -17,7 +17,7 @@ const ExpoThumbnail = imports.ui.expoThumbnail;
 // ***************
 
 // Time for initial animation going into Overview mode
-const ANIMATION_TIME = 0.2;
+const ANIMATION_TIME = 200;
 
 function Expo() {
     this._init.apply(this, arguments);
@@ -236,17 +236,20 @@ Expo.prototype = {
     _showCloseArea : function() {
         let primary = Main.layoutManager.primaryMonitor;
         this._windowCloseArea.show();
-        Tweener.addTween(this._windowCloseArea, {   y: primary.height - this._windowCloseArea.height,
-                                                    time: ANIMATION_TIME,
-                                                    transition: 'easeOutQuad'});
+        this._windowCloseArea.ease({
+            y: primary.height - this._windowCloseArea.height,
+            duration: ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
+        });
     },
 
     _hideCloseArea : function() {
         let primary = Main.layoutManager.primaryMonitor;
-        Tweener.addTween(this._windowCloseArea, {   y: primary.height,
-                                                    time: ANIMATION_TIME,
-                                                    transition: 'easeOutQuad',
-                                                    onComplete: this.hide});
+        this._windowCloseArea.ease({
+            y: primary.height,
+            duration: ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
+        });
     },
 
     //// Public methods ////
@@ -306,26 +309,26 @@ Expo.prototype = {
         }, this);
         let animate = Main.animations_enabled;
         //We need to allocate activeWorkspace before we begin its clone animation
+        this._expo.actor.queue_relayout();
         let allocateID = this._expo.connect('allocated', Lang.bind(this, function() {
             this._expo.disconnect(allocateID);
             Main.layoutManager.monitors.forEach(function(monitor,index) {
                 let clone = clones[index];
                 if (animate) {
-                    Tweener.addTween(clone, {
+                    clone.ease({
                         x: Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1,
                         y: Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1,
                         scale_x: activeWorkspaceActor.get_scale()[0] , 
                         scale_y: activeWorkspaceActor.get_scale()[1], 
-                        time: ANIMATION_TIME,
-                        transition: 'easeOutQuad', 
-                        onComplete: function() {
+                        duration: ANIMATION_TIME,
+                        mode: Clutter.AnimationMode.EASE_OUT_QUAD, 
+                        onComplete: () => {
                             global.overlay_group.remove_actor(clone);
                             clone.destroy();
                             if (index == Main.layoutManager.monitors.length < 1) {
                                 this._showDone();
                             }
-                        }, 
-                        onCompleteScope: this
+                        }
                     });
                 }
                 else {
@@ -342,10 +345,11 @@ Expo.prototype = {
 
         if (animate) {
             this._background.dim_factor = 1;
-            Tweener.addTween(this._background,
-                            { dim_factor: 0.4,
-                              transition: 'easeOutQuad',
-                              time: ANIMATION_TIME});
+            this._background.ease({
+                dim_factor: 0.4,
+                duration: ANIMATION_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD
+            });
         }
         else {
             this._background.dim_factor = 0.4;
@@ -363,8 +367,8 @@ Expo.prototype = {
         if (!this._shown)
             return;
 
-        this._animateNotVisible(options);
         this._shown = false;
+        this._animateNotVisible(options);
         this._syncInputMode();
     },
 
@@ -405,9 +409,6 @@ Expo.prototype = {
         if (!this.visible || this.animationInProgress)
             return;
 
-        let animationTime = ANIMATION_TIME;
-        this.animationInProgress = true;
-        this._hideInProgress = true;
 
         let activeWorkspace = this._expo.lastActiveWorkspace;
 
@@ -415,6 +416,17 @@ Expo.prototype = {
             Main.panelManager.enablePanels();
             activeWorkspace.overviewModeOff(true, true);
         }
+
+        let animate = Main.animations_enabled;
+
+        if (!animate) {
+            this._group.hide();
+            this._hideDone();
+            return;
+        }
+
+        this.animationInProgress = true;
+        this._hideInProgress = true;
 
         let activeWorkspaceActor = activeWorkspace.actor;
         Main.layoutManager.monitors.forEach(function(monitor,index) {
@@ -429,34 +441,22 @@ Expo.prototype = {
             clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
             clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
 
-            let animate = Main.animations_enabled;
-            if (animate) {
-                Tweener.addTween(clone, {
-                    x: 0,
-                    y: 0,
-                    scale_x: 1,
-                    scale_y: 1,
-                    time: animationTime,
-                    transition: 'easeOutQuad',
-                    onCompleteScope: this,
-                    onComplete: function() {
-                        global.overlay_group.remove_actor(cover);
-                        cover.destroy();
-                        if (index == Main.layoutManager.monitors.length < 1) {
-                            this._group.hide();
-                            this._hideDone();
-                        }
+            clone.ease({
+                x: 0,
+                y: 0,
+                scale_x: 1,
+                scale_y: 1,
+                duration: ANIMATION_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => {
+                    global.overlay_group.remove_actor(cover);
+                    cover.destroy();
+                    if (index == Main.layoutManager.monitors.length < 1) {
+                        this._group.hide();
+                        this._hideDone();
                     }
-                });
-            }
-            else {
-                global.overlay_group.remove_actor(cover);
-                cover.destroy();
-                if (index == Main.layoutManager.monitors.length < 1) {
-                    this._group.hide();
-                    this._hideDone();
                 }
-            }
+            });
         }, this);
 
         this.emit('hiding');
