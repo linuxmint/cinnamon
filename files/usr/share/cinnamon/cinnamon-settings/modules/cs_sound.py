@@ -346,7 +346,8 @@ class VolumeLevelBar(SettingsWidget):
             self.stream.remove_monitor()
             self.stream.disconnect(self.monitorId)
         self.stream = stream
-        self.monitorId = self.stream.connect("notify::state", self.update)
+        self.stream.create_monitor()
+        self.monitorId = self.stream.connect("monitor-update", self.update)
 
     def update(self, stream, value):
         if self.lastPeak >= DECAY_STEP and value < self.lastPeak - DECAY_STEP:
