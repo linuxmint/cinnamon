@@ -73,16 +73,16 @@
  * through main.
  */
 
-const Clutter = imports.gi.Clutter;
-const Gio = imports.gi.Gio;
-const GLib = imports.gi.GLib;
-const Gtk = imports.gi.Gtk;
+const {Clutter} = imports.gi;
+const {Gio} = imports.gi;
+const {GLib} = imports.gi;
+const {Gtk} = imports.gi;
 const Mainloop = imports.mainloop;
-const Meta = imports.gi.Meta;
-const Cinnamon = imports.gi.Cinnamon;
-const St = imports.gi.St;
-const GObject = imports.gi.GObject;
-const XApp = imports.gi.XApp;
+const {Meta} = imports.gi;
+const {Cinnamon} = imports.gi;
+const {St} = imports.gi;
+const {GObject} = imports.gi;
+const {XApp} = imports.gi;
 const PointerTracker = imports.misc.pointerTracker;
 
 const SoundManager = imports.ui.soundManager;
@@ -211,17 +211,15 @@ function _addXletDirectoriesToSearchPath() {
     // so we are making sure they are removed.
     let types = ['applets', 'desklets', 'extensions', 'search_providers'];
     let importsCache = {};
-    for (let i = 0; i < types.length; i++) {
-        // Cache our existing xlet GJS importer objects
-        importsCache[types[i]] = imports[types[i]];
-    }
+	// Cache our existing xlet GJS importer objects
+	types.forEach(type => {importsCache[type] = imports[type]});
     // Remove the two paths we added to the beginning of the array.
     imports.searchPath.splice(0, 2);
-    for (let i = 0; i < types.length; i++) {
+    types.forEach(type => {
         // Re-add cached xlet objects
-        imports[types[i]] = importsCache[types[i]];
-        importsCache[types[i]] = undefined;
-    }
+        imports[type] = importsCache[type];
+        importsCache[type] = undefined;
+    });
 }
 
 function _initUserSession() {
@@ -244,7 +242,7 @@ function _reparentActor(actor, newParent) {
     let parent = actor.get_parent();
     if (parent)
         parent.remove_actor(actor);
-    if(newParent)
+    if (newParent)
         newParent.add_actor(actor);
 }
 
