@@ -73,16 +73,9 @@
  * through main.
  */
 
-const {Clutter} = imports.gi;
-const {Gio} = imports.gi;
-const {GLib} = imports.gi;
-const {Gtk} = imports.gi;
+const {Clutter, Gio, GLib, Gtk} = imports.gi;
 const Mainloop = imports.mainloop;
-const {Meta} = imports.gi;
-const {Cinnamon} = imports.gi;
-const {St} = imports.gi;
-const {GObject} = imports.gi;
-const {XApp} = imports.gi;
+const {Meta, Cinnamon, St, GObject, XApp} = imports.gi;
 const PointerTracker = imports.misc.pointerTracker;
 
 const SoundManager = imports.ui.soundManager;
