@@ -75,7 +75,7 @@
     "type": "switch",
     "default" : false,
     "description" : "Use a fixed menu height",
-    "tooltip" : "Keep the size of the menu the same now matter how many favorites or categories there are."
+    "tooltip" : "Keep the size of the menu the same no matter how many favorites or categories there are."
  },
  "menu-height" : {
     "type": "spinbutton",
