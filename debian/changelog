@@ -1,3 +1,28 @@
+cinnamon (5.4.5) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * xdnd: Change pick mode when checking for drop targets.
+  * systray.js: Fix a couple of applets missed in bf2cce2e7016.
+  * extensions: Allow an applet to assume more than one 'role'.
+  * systray applet: Fix some issues when reloading icons after panel changes.
+  * slider.js: Pass the proper arguments to _endDragging() from actor's button-release-event.
+
+  [ Cobinja ]
+  * Fix testsound volume
+
+  [ JosephMcc ]
+  * theme: Fix artifacts in the menu applet when scrolling the applications
+
+  [ Rick Calixte ]
+  * Fix .gitignore for builds
+
+  [ Michael Webster ]
+  * windowManager.js: Fix workspace switching when only-on-primary is enabled.
+  * expo: Fix some bad behavior.
+  * sound settings: Fix mic gain adjustment.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 20 Jul 2022 07:53:26 +0200
+
 cinnamon (5.4.4) vanessa; urgency=medium
 
   [ Michael Webster ]
