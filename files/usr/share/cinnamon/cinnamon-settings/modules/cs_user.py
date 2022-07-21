@@ -14,7 +14,7 @@ import shutil
 import os
 import subprocess
 
-import PIL
+from PIL import Image
 import gi
 gi.require_version('AccountsService', '1.0')
 from gi.repository import AccountsService, GLib, GdkPixbuf
@@ -146,7 +146,7 @@ class Module:
         path = "/tmp/temp-account-pic07.jpeg"
 
         # Crop the image to thumbnail size
-        image = PIL.Image.open(path)
+        image = Image.open(path)
         width, height = image.size
 
         if width > height:
@@ -165,7 +165,7 @@ class Module:
         bottom = (height + new_height) / 2
 
         image = image.crop((left, top, right, bottom))
-        image.thumbnail((255, 255), PIL.Image.ANTIALIAS)
+        image.thumbnail((255, 255), Image.ANTIALIAS)
 
         face_path = os.path.join(self.accountService.get_home_dir(), ".face")
 
@@ -201,8 +201,8 @@ class Module:
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             path = dialog.get_filename()
-            image = PIL.Image.open(path)
-            image.thumbnail((255, 255), PIL.Image.ANTIALIAS)
+            image = Image.open(path)
+            image.thumbnail((255, 255), Image.ANTIALIAS)
             face_path = os.path.join(self.accountService.get_home_dir(), ".face")
             image.save(face_path, "png")
             self.accountService.set_icon_file(face_path)
