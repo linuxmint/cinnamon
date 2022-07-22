@@ -1,3 +1,4 @@
+const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const GLib = imports.gi.GLib;
@@ -679,6 +680,9 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     handleScroll(e, sourceFromAppGroup) {
+        if (e?.get_scroll_direction() == Clutter.ScrollDirection.SMOOTH)
+            return;
+
         if( (this.state.settings.thumbnailScrollBehavior) || (this.state.settings.scrollBehavior === 2) ||
             (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior !== 3
              && !e && sourceFromAppGroup)  ||
