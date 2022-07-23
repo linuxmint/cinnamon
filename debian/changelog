@@ -1,3 +1,17 @@
+cinnamon (5.4.6) vanessa; urgency=medium
+
+  [ fredcw ]
+  * Menu applet: Fix typo (#10952)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * gwl: Ignore 'smooth' scroll events when scrolling.
+  * menu applet: Strip the spaces from button search strings.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 23 Jul 2022 13:51:27 +0200
+
 cinnamon (5.4.5) vanessa; urgency=medium
 
   [ Michael Webster ]
