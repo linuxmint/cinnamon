@@ -566,9 +566,9 @@ class ApplicationButton extends GenericApplicationButton {
         this.isDraggableApp = true;
 
         this.searchStrings = [
-            AppUtils.decomp_string(app.get_name()),
+            AppUtils.decomp_string(app.get_name()).replace(/\s/g, ''),
             app.get_keywords() ? AppUtils.decomp_string(app.get_keywords()) : "",
-            app.get_description() ? AppUtils.decomp_string(app.get_description()) : "",
+            app.get_description() ? AppUtils.decomp_string(app.get_description()).replace(/\s/g, '') : "",
             app.get_id() ? AppUtils.decomp_string(app.get_id()) : ""
         ];
     }
@@ -666,7 +666,7 @@ class PlaceButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            AppUtils.decomp_string(place.name)
+            AppUtils.decomp_string(place.name).replace(/\s/g, '')
         ];
     }
 
@@ -718,7 +718,7 @@ class RecentButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            AppUtils.decomp_string(recent.name)
+            AppUtils.decomp_string(recent.name).replace(/\s/g, '')
         ];
     }
 
@@ -826,7 +826,7 @@ class FavoriteButton extends SimpleMenuItem {
         this.addLabel(this.name, 'menu-application-button-label');
 
         this.searchStrings = [
-            AppUtils.decomp_string(favoriteInfo.display_name)
+            AppUtils.decomp_string(favoriteInfo.display_name).replace(/\s/g, '')
         ];
     }
 
