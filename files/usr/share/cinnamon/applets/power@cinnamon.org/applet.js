@@ -307,14 +307,13 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         let direction = event.get_scroll_direction();
 
         if (direction == Clutter.ScrollDirection.DOWN) {
-            this._value = Math.max(0, this._value - this._step);
+            this._proxy.StepDownRemote(function() {});
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._value = Math.min(1, this._value + this._step);
+            this._proxy.StepUpRemote(function() {});
         }
 
         this._slider.queue_repaint();
-        this.emit('value-changed', this._value);
     }
 }
 
@@ -344,7 +343,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName, 0.01);
+        this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName, 0);
         this.keyboard = new BrightnessSlider(this, _("Keyboard backlight"), "keyboard-brightness", KeyboardBusName, 0);
         this.menu.addMenuItem(this.brightness);
         this.menu.addMenuItem(this.keyboard);
