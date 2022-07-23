@@ -377,6 +377,11 @@ LayoutManager.prototype = {
         return this._chrome.findMonitorIndexForActor(actor);
     },
 
+    findMonitorIndexAt: function(x, y) {
+        let [index, monitor] = this._chrome._findMonitorForRect(x, y, 1, 1)
+        return index;
+    },
+
     /**
      * isTrackingChrome:
      * @actor (Clutter.Actor): the actor to check

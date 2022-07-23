@@ -244,15 +244,17 @@ CinnamonDBus.prototype = {
             params[param] = params[param].deep_unpack();
 
         let monitorIndex = -1;
-        if (params.maybeGet('monitor') >= 0) {
-            monitorIndex = params['monitor'];
+        if (params.maybeGet('monitor_x') >= 0) {
+            let x = params['monitor_x'];
+            let y = params['monitor_y'];
+            monitorIndex = Main.layoutManager.findMonitorIndexAt(++x, ++y);
         }
 
         let icon = null;
         if (params['icon'])
             icon = Gio.Icon.new_for_string(params['icon']);
 
-        Main.osdWindowManager.show(monitorIndex, icon, params['level'], true);
+        Main.osdWindowManager.show(monitorIndex, icon, params['level'], false);
     },
 
     FlashArea: function(x, y, width, height) {
