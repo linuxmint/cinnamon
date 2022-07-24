@@ -1,3 +1,11 @@
+cinnamon (5.4.7) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * cinnamonDbus: Have cinnamon-settings-daemon provide monitor coordinates for the showOSD method, instead of a monitor index.
+  * power applet: Use step up/down when scrolling on the brightness sliders instead of directly setting a value.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 24 Jul 2022 13:45:41 +0200
+
 cinnamon (5.4.6) vanessa; urgency=medium
 
   [ fredcw ]
