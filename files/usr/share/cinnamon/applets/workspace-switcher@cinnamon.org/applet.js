@@ -18,7 +18,7 @@ class WorkspaceButton {
     constructor(index, applet) {
         this.index = index;
         this.applet = applet;
-        this.workspace = global.screen.get_workspace_by_index(this.index);
+        this.workspace = global.workspace_manager.get_workspace_by_index(this.index);
         this.workspace_name = Main.getWorkspaceName(index);
         this.actor = null; // defined in subclass
 
@@ -34,7 +34,7 @@ class WorkspaceButton {
     show() {
         this.actor.connect('button-release-event', Lang.bind(this, this.onClicked));
         this._tooltip = new Tooltips.PanelItemTooltip(this, this.workspace_name, this.applet.orientation);
-        if (this.index === global.screen.get_active_workspace_index()) {
+        if (this.index === global.workspace_manager.get_active_workspace_index()) {
             this.activate(true);
         }
     }
@@ -306,21 +306,21 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             this.removeWorkspace();
         }));
         this._applet_context_menu.addMenuItem(this.removeWorkspaceMenuItem);
-        this.removeWorkspaceMenuItem.setSensitive(global.screen.n_workspaces > 1);
+        this.removeWorkspaceMenuItem.setSensitive(global.workspace_manager.n_workspaces > 1);
     }
 
-    onNumberOfWorkspacesChanged() {
-        this.removeWorkspaceMenuItem.setSensitive(global.screen.n_workspaces > 1);
+    onWorkspacesUpdated() {
+        this.removeWorkspaceMenuItem.setSensitive(global.workspace_manager.n_workspaces > 1);
         this._createButtons();
     }
 
     removeWorkspace  (){
-        if (global.screen.n_workspaces <= 1) {
+        if (global.workspace_manager.n_workspaces <= 1) {
             return;
         }
-        this.workspace_index = global.screen.get_active_workspace_index();
+        this.workspace_index = global.workspace_manager.get_active_workspace_index();
         let removeAction = Lang.bind(this, function() {
-            Main._removeWorkspace(global.screen.get_active_workspace());
+            Main._removeWorkspace(global.workspace_manager.get_active_workspace());
         });
         if (!Main.hasDefaultWorkspaceName(this.workspace_index)) {
             let prompt = _("Are you sure you want to remove workspace \"%s\"?\n\n").format(
@@ -407,7 +407,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.actor.set_important(true);
 
         this.buttons = [];
-        for (let i = 0; i < global.screen.n_workspaces; ++i) {
+        for (let i = 0; i < global.workspace_manager.n_workspaces; ++i) {
             if (this.display_type == "visual")
                 this.buttons[i] = new WorkspaceGraph(i, this);
             else
@@ -443,7 +443,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
     }
 
     _onPositionChanged() {
-        let button = this.buttons[global.screen.get_active_workspace_index()];
+        let button = this.buttons[global.workspace_manager.get_active_workspace_index()];
         button.update();
     }
 
