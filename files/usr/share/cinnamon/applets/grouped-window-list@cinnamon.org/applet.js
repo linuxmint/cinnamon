@@ -922,14 +922,16 @@ class GroupedWindowListApplet extends Applet.Applet {
         for (let i = 0; i < this.appLists.length; i++) {
             let workspaceIndex = this.appLists[i].metaWorkspace.index();
             if (workspaceIndex === -1) {
-                this.appLists[i].destroy();
-                this.appLists[i] = null;
+                if (this.appLists[i] != null) {
+                    this.appLists[i].destroy();
+                    this.appLists[i] = null;
+                }
                 removedLists.push(i);
             } else {
                 this.appLists[i].index = workspaceIndex;
             }
         }
-        for (let i = 0; i < removedLists.length; i++) {
+        for (let i = removedLists.length - 1; i >= 0; i--) {
             this.appLists.splice(removedLists[i], 1);
         }
         this.state.set({currentWs: global.screen.get_active_workspace_index()});

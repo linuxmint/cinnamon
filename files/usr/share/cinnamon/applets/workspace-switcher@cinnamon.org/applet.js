@@ -283,8 +283,8 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.actor.connect('scroll-event', this.hook.bind(this));
 
         this.queueCreateButtons();
-        global.screen.connect('notify::n-workspaces', Lang.bind(this, this.onNumberOfWorkspacesChanged));
-        global.screen.connect('workareas-changed', Lang.bind(this, this.queueCreateButtons));
+        global.workspace_manager.connect('notify::n-workspaces', () => { this.onWorkspacesUpdated() });
+        global.workspace_manager.connect('workspaces-reordered', () => { this.onWorkspacesUpdated() });
         global.window_manager.connect('switch-workspace', this._onWorkspaceChanged.bind(this));
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
 
@@ -311,7 +311,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
     onNumberOfWorkspacesChanged() {
         this.removeWorkspaceMenuItem.setSensitive(global.screen.n_workspaces > 1);
-        this.queueCreateButtons();
+        this._createButtons();
     }
 
     removeWorkspace  (){
