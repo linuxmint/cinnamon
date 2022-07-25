@@ -1547,7 +1547,7 @@ StScrollBar StButton#vhandle:hover {
     border: 2px solid rgba(165, 165, 165, 0.7)
 }
 .grouped-window-list-thumbnail-menu .item-box:selected {
-    background: rgba(255,255,255,0.33);
+    background: rgba(110,110,110,0.8);
 }
 .grouped-window-list-thumbnail-menu .thumbnail {
     width: 256px;
