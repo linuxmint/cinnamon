@@ -280,6 +280,23 @@ class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this
         command_key = self.active_items[index_num]
         self.settings.set_string("exec", command_key)
 
+class TerminalExecArgEntry(Gtk.Entry):
+    def __init__(self):
+        super(TerminalExecArgEntry, self).__init__()
+
+        self.connect("changed", self.onChanged)
+
+        self.settings = Gio.Settings.new(TERMINAL_SCHEMA)
+        self.key_value = self.settings.get_string("exec-arg")
+
+        self.get_buffer().set_text(self.key_value, -1)
+
+        self.set_placeholder_text("exec-arg")
+        self.set_tooltip_text(_("Command-line option for your terminal to execute a passed-in command."))
+
+    def onChanged(self, entry):
+        self.settings.set_string("exec-arg", entry.get_buffer().get_text())
+
 class DefaultCalculatorButton(Gtk.AppChooserButton):
     def __init__(self):
         super(DefaultCalculatorButton, self).__init__()
@@ -552,9 +569,15 @@ class Module:
             widget = SettingsWidget()
             button = DefaultTerminalButton()
             label = MnemonicLabel(_("Te_rminal"), button)
-            size_group.add_widget(button)
+            entry = TerminalExecArgEntry()
+
+            box = Gtk.VBox()
+            box.pack_start(button, False, False, 0)
+            box.pack_start(entry, False, False, 0)
+            size_group.add_widget(box)
+
             widget.pack_start(label, False, False, 0)
-            widget.pack_end(button, False, False, 0)
+            widget.pack_end(box, False, False, 0)
             settings.add_row(widget)
 
             # Calculator
