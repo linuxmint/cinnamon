@@ -58,6 +58,17 @@ cinnamon_gtk_embed_remove_window_actor (CinnamonGtkEmbed *embed)
 }
 
 static void
+maintain_transparency (ClutterActor *actor,
+                       GParamSpec *pspec,
+                       gpointer user_data)
+{
+    if (clutter_actor_get_opacity (actor) != 0) {
+        g_signal_stop_emission_by_name (actor, "notify::opacity");
+        g_object_set (actor, "opacity", 0, NULL);
+    }
+}
+
+static void
 cinnamon_gtk_embed_window_created_cb (MetaDisplay   *display,
                                    MetaWindow    *window,
                                    CinnamonGtkEmbed *embed)
@@ -93,6 +104,7 @@ cinnamon_gtk_embed_window_created_cb (MetaDisplay   *display,
       /* Hide the original actor otherwise it will appear in the scene
          as a normal window */
       clutter_actor_set_opacity (window_actor, 0);
+      g_signal_connect (window_actor, "notify::opacity", G_CALLBACK (maintain_transparency), NULL);
 
       /* Also make sure it (or any of its children) doesn't block
          events on wayland */
