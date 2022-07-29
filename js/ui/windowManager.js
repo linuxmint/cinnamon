@@ -382,7 +382,7 @@ var WindowManager = class WindowManager {
     _minimizeWindow(cinnamonwm, actor) {
         Main.soundManager.play('minimize');
 
-        if (!this._shouldAnimate(actor)) {
+        if (!this._shouldAnimate(actor) || this.desktop_effects_minimize_type == "none") {
             cinnamonwm.completed_minimize(actor);
             return;
         }
@@ -476,7 +476,7 @@ var WindowManager = class WindowManager {
     _unminimizeWindow(cinnamonwm, actor) {
         Main.soundManager.play('minimize');
 
-        if (!this._shouldAnimate(actor)) {
+        if (!this._shouldAnimate(actor) || this.desktop_effects_map_type == "none") {
             cinnamonwm.completed_unminimize(actor);
             return;
         }
@@ -812,7 +812,7 @@ var WindowManager = class WindowManager {
             this._checkDimming(actor.get_meta_window().get_transient_for());
         }
 
-        if (!this._shouldAnimate(actor)) {
+        if (!this._shouldAnimate(actor) || this.desktop_effects_map_type == "none") {
             cinnamonwm.completed_map(actor);
             return;
         }
@@ -946,7 +946,7 @@ var WindowManager = class WindowManager {
                      Meta.WindowType.DIALOG,
                      Meta.WindowType.MODAL_DIALOG];
 
-        if (!this._shouldAnimate(actor, types)) {
+        if (!this._shouldAnimate(actor, types) || this.desktop_effects_close_type === "none") {
             cinnamonwm.completed_destroy(actor);
             return;
         }
@@ -1015,9 +1015,13 @@ var WindowManager = class WindowManager {
                     // ??
                     default:
                     {
-                        this._destroyWindowDone();
+                        this._destroyWindowDone(cinnamonwm, actor);
                     }
                 }
+            }
+            default:
+            {
+                this._destroyWindowDone(cinnamonwm, actor);
             }
         }
     }
