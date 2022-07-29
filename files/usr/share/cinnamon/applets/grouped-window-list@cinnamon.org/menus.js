@@ -708,11 +708,12 @@ class WindowThumbnail {
         }
         // Create our own thumbnail if it doesn't exist
         if (this.metaWindowActor) {
-            this.signals.disconnect('notify::size', this.metaWindowActor);
+            this.disconnectSizeNotify();
         } else {
             this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
         if (this.metaWindowActor && !this.metaWindowActor.is_finalized()) {
+            this.signals.connect(this.metaWindow, 'unmanaging', () => this.disconnectSizeNotify());
             this.signals.connect(this.metaWindowActor, 'notify::size', () => this.refreshThumbnail());
 
             let windowTexture = this.metaWindowActor.get_texture();
@@ -738,6 +739,11 @@ class WindowThumbnail {
         } else if (this.groupState.isFavoriteApp) {
             this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
         }
+    }
+
+    disconnectSizeNotify(actor) {
+        this.signals.disconnect('unmanaging', this.metaWindow);
+        this.signals.disconnect('notify::size', this.metaWindowActor);
     }
 
     refreshThumbnail() {
