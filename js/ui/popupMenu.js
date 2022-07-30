@@ -2971,9 +2971,7 @@ var PopupSubMenuMenuItem = class PopupSubMenuMenuItem extends PopupBaseMenuItem 
                                                span: -1,
                                                align: St.Align.END });
 
-            this._triangle = this.actor.get_direction() === St.TextDirection.RTL ?
-                arrowIcon(St.Side.LEFT) :
-                arrowIcon(St.Side.RIGHT);
+            this._triangle = arrowIcon(St.Side.RIGHT);
             this._triangle.pivot_point = new Graphene.Point({ x: 0.5, y: 0.5 });
             this._triangleBin.child = this._triangle;
         }
