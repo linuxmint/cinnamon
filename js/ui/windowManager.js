@@ -824,7 +824,7 @@ var WindowManager = class WindowManager {
 
         this._mapping.add(actor);
 
-        let adjusted_type = overridden_types.includes(actor._windowType) ? "fade" : this.desktop_effects_map_type;
+        let adjusted_type = overridden_types.includes(actor._windowType) ? "traditional" : this.desktop_effects_map_type;
 
         switch (adjusted_type) {
             case "traditional":
