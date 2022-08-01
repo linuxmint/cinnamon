@@ -1,3 +1,25 @@
+cinnamon (5.4.9) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * sound applet: Fix the context menu's input mute icon.
+
+  [ JosephMcc ]
+  * thumbails: Update the Adwaita thumbnails for cs_themes (#10968)
+
+  [ tedlava ]
+  * Imported submodule explicitly from PIL to fix bug (#10955)
+
+  [ Michael Webster ]
+  * cinnamon-gtk-embed: Clamp transparency of the tray icon's underlying MetaWindowActor.
+  * cinnamon-window-tracker: Use a different method for matching existing apps and new windows by pid.
+  * gwl: Fix updating tooltips and previews when the applet's panel is move to the top edge.
+  * windowManager: Fix a missing default case, return early when individual effects are disabled, not just when they all are.
+  * signalManager: Make it slightly easier to debug signals and access- after-destroy warnings.
+  * gwl: Disconnect size notify signals from actors when they become unmanaged.
+  * windowManager.js: Fix gtk popup menu animations.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 01 Aug 2022 16:07:57 +0200
+
 cinnamon (5.4.8) vanessa; urgency=medium
 
   [ Michael Webster ]
