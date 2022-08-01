@@ -172,7 +172,9 @@ STATIC_KEYBINDINGS = \
     ],
     [
       [_("Switch to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-left"],
-      [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right"]
+      [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right"],
+      [_("Switch to up workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up"],
+      [_("Switch to down workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down"]
     ]
   ],
   [_("System"), "system", None, "xsi-emblem-system-symbolic",

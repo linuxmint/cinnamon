@@ -366,7 +366,10 @@ var WindowManager = class WindowManager {
             (d, w, b) => this._moveWindowToWorkspaceLeft(d, w, b), Cinnamon.ActionMode.NORMAL);
         kbm.setBuiltinHandler('move-to-workspace-right', Meta.KeyBindingAction.MOVE_TO_WORKSPACE_RIGHT,
             (d, w, b) => this._moveWindowToWorkspaceRight(d, w, b), Cinnamon.ActionMode.NORMAL);
-
+        kbm.setBuiltinHandler('toggle-window-selection', Meta.KeyBindingAction.TOGGLE_WINDOW_SELECTION,
+            (d, w, b) => this._showWorkspaceSwitcher(d, w, b), WORKSPACE_MODES);
+        kbm.setBuiltinHandler('toggle-workspace-selection', Meta.KeyBindingAction.TOGGLE_WORKSPACE_SELECTION,
+            (d, w, b) => this._showWorkspaceSwitcher(d, w, b), WORKSPACE_MODES);
         kbm.setBuiltinHandler('switch-to-workspace-left', Meta.KeyBindingAction.WORKSPACE_LEFT,
             (d, w, b) => this._showWorkspaceSwitcher(d, w, b), WORKSPACE_MODES);
         kbm.setBuiltinHandler('switch-to-workspace-right', Meta.KeyBindingAction.WORKSPACE_RIGHT,
@@ -1394,7 +1397,7 @@ var WindowManager = class WindowManager {
     _showWorkspaceSwitcher(display, window, binding) {
         let bindingName = binding.get_name();
 
-        if (bindingName === 'switch-to-workspace-up') {
+        if (bindingName === 'toggle-workspace-selection') {
             if (Main.overview.visible || Main.expo.visible) {
                 Main.overview.hide();
                 Main.expo.hide();
@@ -1403,7 +1406,7 @@ var WindowManager = class WindowManager {
             }
             return;
         }
-        if (bindingName === 'switch-to-workspace-down') {
+        if (bindingName === 'toggle-window-selection') {
             if (Main.overview.visible || Main.expo.visible) {
                 Main.overview.hide();
                 Main.expo.hide();
@@ -1420,6 +1423,10 @@ var WindowManager = class WindowManager {
             this.actionMoveWorkspaceLeft();
         } else if (bindingName === 'switch-to-workspace-right') {
             this.actionMoveWorkspaceRight();
+        } else if (bindingName === 'switch-to-workspace-up') {
+            this.actionMoveWorkspaceUp();
+        } else if (bindingName === 'switch-to-workspace-down') {
+            this.actionMoveWorkspaceDown();
         }
     }
 
