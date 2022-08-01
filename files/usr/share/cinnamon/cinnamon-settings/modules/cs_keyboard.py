@@ -66,8 +66,8 @@ CATEGORIES = [
 KEYBINDINGS = [
     #   KB Label                        Schema                  Key name               Array?  Category
     # General
-    [_("Show the window selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down", "general"],
-    [_("Show the workspace selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up", "general"],
+    [_("Show the workspace selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-workspace-selection", "general"],
+    [_("Show the window selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-window-selection", "general"],
     [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop", "general"],
     [_("Show Desklets"), CINNAMON_SCHEMA, "show-desklets", "general"],
     [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows", "general"],
@@ -142,6 +142,8 @@ KEYBINDINGS = [
     # Workspaces
     [_("Switch to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-left", "workspaces"],
     [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right", "workspaces"],
+    [_("Switch to up workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up", "workspaces"],
+    [_("Switch to down workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down", "workspaces"],
     # Workspaces - Direct Nav
     [_("Switch to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-1", "ws-navi"],
     [_("Switch to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-2", "ws-navi"],
