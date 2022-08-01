@@ -357,6 +357,8 @@ var WindowManager = class WindowManager {
         this._cinnamonwm.connect('filter-keybinding', this._filterKeybinding.bind(this));
         global.window_manager.connect('switch-workspace', (c, f, t, d) => this._switchWorkspace(c, f, t, d));
 
+        Meta.keybindings_set_custom_handler('toggle-window-selection', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
+        Meta.keybindings_set_custom_handler('toggle-workspace-selection', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
         Meta.keybindings_set_custom_handler('move-to-workspace-left', (d, w, b) => this._moveWindowToWorkspaceLeft(d, w, b));
         Meta.keybindings_set_custom_handler('move-to-workspace-right', (d, w, b) => this._moveWindowToWorkspaceRight(d, w, b));
 
@@ -1383,11 +1385,11 @@ var WindowManager = class WindowManager {
 
     _showWorkspaceSwitcher(display, window, binding) {
         let bindingName = binding.get_name();
-        if (bindingName === 'switch-to-workspace-up') {
+        if (bindingName === 'toggle-workspace-selection') {
             Main.expo.toggle();
             return;
         }
-        if (bindingName === 'switch-to-workspace-down') {
+        if (bindingName === 'toggle-window-selection') {
             Main.overview.toggle();
             return;
         }
@@ -1399,6 +1401,10 @@ var WindowManager = class WindowManager {
             this.actionMoveWorkspaceLeft();
         } else if (bindingName === 'switch-to-workspace-right') {
             this.actionMoveWorkspaceRight();
+        } else if (bindingName === 'switch-to-workspace-up') {
+            this.actionMoveWorkspaceUp();
+        } else if (bindingName === 'switch-to-workspace-down') {
+            this.actionMoveWorkspaceDown();
         }
     }
 
