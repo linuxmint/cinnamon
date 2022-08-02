@@ -5,7 +5,7 @@
     "generalPage": {
       "type" : "page",
       "title" : "General",
-      "sections": ["generalSection", "hotKeysSection"]
+      "sections": ["generalSection", "hotKeysSection", "appearance"]
     },
     "panelPage": {
       "type" : "page",
@@ -31,6 +31,13 @@
         "left-click-action",
         "middle-click-action",
         "show-all-workspaces"
+      ]
+    },
+    "appearance": {
+      "type": "section",
+      "title": "Appearance",
+      "keys": [
+        "icon-spacing"
       ]
     },
     "appButtonsSection": {
@@ -143,6 +150,15 @@
     "type": "checkbox",
     "default": true,
     "description": "Group windows by application"
+  },
+  "icon-spacing": {
+    "type": "spinbutton",
+    "default": 12,
+    "min": 1,
+    "max": 48,
+    "step": 1,
+    "units": "pixels",
+    "description": "Space between icons"
   },
   "show-all-workspaces": {
     "type": "checkbox",

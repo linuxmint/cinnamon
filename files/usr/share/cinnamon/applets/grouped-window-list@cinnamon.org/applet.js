@@ -313,6 +313,7 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     bindSettings() {
         let settingsProps = [
+            {key: "icon-spacing", value: "iconSpacing", cb: null },
             {key: 'group-apps', value: 'groupApps', cb: this.refreshCurrentAppList},
             {key: 'enable-app-button-dragging', value: 'enableDragging', cb: this.draggableSettingChanged},
             {key: 'launcher-animation-effect', value: 'launcherAnimationEffect', cb: null},

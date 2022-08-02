@@ -260,7 +260,7 @@ class AppGroup {
         const applet = this.state.appletActor;
         const direction = this.state.isHorizontal ? 'right' : 'bottom';
         const existingStyle = this.actor.style ? this.actor.style : '';
-        let spacing = parseInt(applet.get_theme_node().get_length('spacing'));
+        let spacing = parseInt(this.state.settings.iconSpacing);
         if (!spacing) {
             spacing = 6;
         }
