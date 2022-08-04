@@ -411,7 +411,6 @@ var WindowManager = class WindowManager {
             case Meta.WindowType.MENU:
             case Meta.WindowType.DROPDOWN_MENU:
             case Meta.WindowType.POPUP_MENU:
-                return this.desktop_effects_menus;
             default:
                 return false;
         }
@@ -855,16 +854,9 @@ var WindowManager = class WindowManager {
             return;
         }
 
-        // menu effects are always fade-in/out
-        let overridden_types = [Meta.WindowType.MENU,
-                                Meta.WindowType.DROPDOWN_MENU,
-                                Meta.WindowType.POPUP_MENU    ];
-
         this._mapping.add(actor);
 
-        let adjusted_type = overridden_types.includes(actor._windowType) ? "traditional" : this.desktop_effects_map_type;
-
-        switch (adjusted_type) {
+        switch (this.desktop_effects_map_type) {
             case "traditional":
             {
                 actor.orig_opacity = actor.opacity;
@@ -875,11 +867,6 @@ var WindowManager = class WindowManager {
                 actor.show();
 
                 let time = this.MAP_ANIMATION_TIME * this.window_effect_multiplier;
-
-                // Popups shouldn't be affected by the multiplier.
-                if (overridden_types.includes(actor._windowType)) {
-                    time = this.MENU_ANIMATION_TIME;
-                }
 
                 actor.ease({
                     opacity: actor.orig_opacity,
@@ -991,14 +978,7 @@ var WindowManager = class WindowManager {
 
         this._destroying.add(actor);
 
-        // menu effects are always traditional
-        let overridden_types = [Meta.WindowType.MENU,
-                                Meta.WindowType.DROPDOWN_MENU,
-                                Meta.WindowType.POPUP_MENU    ];
-
-        let adjusted_type = overridden_types.includes(actor._windowType) ? "traditional" : this.desktop_effects_close_type;
-
-        switch (adjusted_type) {
+        switch (this.desktop_effects_close_type) {
             case "fly":
             {
                 let [xSrc, ySrc] = actor.get_position();
@@ -1047,10 +1027,6 @@ var WindowManager = class WindowManager {
 
                         return;
                     }
-                    case Meta.WindowType.MENU:
-                    case Meta.WindowType.DROPDOWN_MENU:
-                    case Meta.WindowType.POPUP_MENU:
-                    // ??
                     default:
                     {
                         this._destroyWindowDone(cinnamonwm, actor);
