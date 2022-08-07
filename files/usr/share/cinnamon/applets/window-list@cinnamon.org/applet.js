@@ -63,6 +63,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Settings = imports.ui.settings;
 const SignalManager = imports.misc.signalManager;
 const Tooltips = imports.ui.tooltips;
+const WindowUtils = imports.misc.windowUtils;
 
 const MAX_TEXT_LENGTH = 1000;
 const FLASH_INTERVAL = 500;
@@ -157,11 +158,7 @@ class WindowPreview extends Tooltips.TooltipBase {
 
         let [width, height] = this._getScaledTextureSize(this.windowActor);
 
-        this.thumbnail = new Clutter.Actor({
-            content: windowTexture,
-            width: width,
-            height: height
-        });
+        this.thumbnail = WindowUtils.getCloneOrContent(this.windowActor, width, height);
 
         this._sizeChangedId = this.windowActor.connect('notify::size', () => {
             if (this.thumbnail === null) {

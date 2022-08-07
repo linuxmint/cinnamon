@@ -241,6 +241,7 @@ var WindowManager = class WindowManager {
         this._resizePending = new Set();
         this._destroying = new Set();
         this._movingWindow = null;
+        this._seenWindows = new Set();
 
         this.wm_settings = new Gio.Settings({schema_id: 'org.cinnamon.muffin'});
 
@@ -324,6 +325,43 @@ var WindowManager = class WindowManager {
         });
 
         this._windowMenuManager = new WindowMenu.WindowMenuManager();
+
+        // Minimized windows won't be reliable clone sources until they're
+        // shown once. If they start minimized, monitor them until they've
+        // been shown for the first time. (See windowUtils.js)
+        const handleSeen = (metaWindow) => {
+            if (metaWindow === null || !Main.isInteresting(metaWindow)) {
+                return;
+            }
+
+            if (!metaWindow.minimized) {
+                this._seenWindows.add(metaWindow);
+                return;
+            }
+
+            // If not, add it when it gets unminimized.
+            let minimize_id = metaWindow.connect("notify::minimized", () => {
+                if (!metaWindow.minimized) {
+                    this._seenWindows.add(metaWindow);
+                }
+            });
+
+            metaWindow.connect("unmanaging", () => {
+                metaWindow.disconnect(minimize_id);
+                this._seenWindows.delete(metaWindow);
+            });
+        }
+
+        global.display.connect("window-created", (display, metaWindow) => {
+            handleSeen(metaWindow);
+        });
+
+        const allWindowActors = Meta.get_window_actors(global.display);
+        allWindowActors.forEach((actor) => handleSeen(actor.meta_window));
+    }
+
+    windowSeen(metaWindow) {
+        return this._seenWindows.has(metaWindow);
     }
 
     _filterKeybinding(shellwm, binding) {

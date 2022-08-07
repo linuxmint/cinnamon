@@ -8,6 +8,7 @@ const Tweener = imports.ui.tweener;
 const PopupMenu = imports.ui.popupMenu;
 const Applet = imports.ui.applet;
 const SignalManager = imports.misc.signalManager;
+const WindowUtils = imports.misc.windowUtils;
 
 const {each, findIndex, tryFn, unref, trySpawnCommandLine, spawn_async, getDesktopActionIcon} = imports.misc.util;
 const {
@@ -605,23 +606,17 @@ class WindowThumbnail {
     onEnter(a, e) {
         this.entered = true;
 
-        // Cluter.CrossingEvent will always fire on every child actor of the actor connected to the signal, so we have
-        // to filter the bogus child hover events so the hoverpeek effect only occurs once while inside this.actor.
-
         this.actor.add_style_pseudo_class('selected');
         this.button.set_opacity(255);
 
         if (!e) return;
 
-        let actorString = e.get_source().toString();
-        if (actorString.indexOf('this.actor') > -1
-            && (!this.lastEnterActor
-                || (this.lastEnterActor.indexOf('StButton') === -1)
-                    && this.lastEnterActor.indexOf('ClutterActor') === -1)) {
-            this.destroyOverlayPreview();
-            this.hoverPeek(this.state.settings.peekOpacity);
+        if (e.get_related() === this.button) {
+            return;
         }
-        this.lastEnterActor = actorString;
+
+        this.destroyOverlayPreview();
+        this.hoverPeek(this.state.settings.peekOpacity);
     }
 
     onLeave() {
@@ -716,26 +711,15 @@ class WindowThumbnail {
             this.signals.connect(this.metaWindow, 'unmanaging', () => this.disconnectSizeNotify());
             this.signals.connect(this.metaWindowActor, 'notify::size', () => this.refreshThumbnail());
 
-            let windowTexture = this.metaWindowActor.get_texture();
-            if (!windowTexture) return;
             let [width, height] = this.metaWindowActor.get_size();
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
             height = Math.round(height * scale);
             if (this.thumbnailActor.child) {
-                this.thumbnailActor.height = height;
-                this.thumbnailActor.width = width;
-                this.thumbnailActor.child.source = windowTexture;
-                this.thumbnailActor.child.width = width;
-                this.thumbnailActor.child.height = height;
-            } else {
-                this.thumbnailActor.child = new Clutter.Actor({
-                    content: windowTexture,
-                    reactive: true,
-                    width,
-                    height
-                });
+                this.thumbnailActor.child.destroy()
             }
+
+            this.thumbnailActor.child = WindowUtils.getCloneOrContent(this.metaWindowActor, width, height);
         } else if (this.groupState.isFavoriteApp) {
             this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
         }
@@ -827,12 +811,10 @@ class WindowThumbnail {
         if (!this.metaWindowActor) {
             this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
-        this.state.set({
-            lastOverlayPreview: new Clutter.Actor({
-                content: this.metaWindowActor.get_texture(),
-                opacity: 0
-            })
-        });
+
+        const preview = WindowUtils.getCloneOrContent(this.metaWindowActor);
+        preview.opacity = 0;
+        this.state.set({ lastOverlayPreview: preview });
 
         let [x, y] = this.metaWindowActor.get_position();
         let [width, height] = this.metaWindowActor.get_size();
