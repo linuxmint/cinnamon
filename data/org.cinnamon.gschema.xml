@@ -543,8 +543,8 @@
     </key>
 
     <key type="as" name="demands-attention-passthru-wm-classes">
-      <default>[]</default>
-      <summary>not used</summary>
+      <default>['firefox']</default>
+      <summary>WM class names to always give focus to in windowAttentionHandler.js</summary>
     </key>
     <key name="app-menu-icon-name" type="s">
       <default>"cinnamon-symbolic"</default>
