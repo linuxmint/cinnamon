@@ -7,6 +7,7 @@ const Tweener = imports.ui.tweener;
 const Gio = imports.gi.Gio;
 const Gdk = imports.gi.Gdk;
 const Meta = imports.gi.Meta;
+const Cinnamon = imports.gi.Cinnamon;
 
 const LEVEL_ANIMATION_TIME = 0.1;
 const FADE_TIME = 0.1;
@@ -39,24 +40,22 @@ LevelBar.prototype = {
 
         this.initial = true;
 
-        this.actor = new St.Bin({ style_class: 'level',
-                                  x_align: St.Align.START,
-                                  y_fill: true,
-                                  important: true });
+        this.actor = new Cinnamon.GenericContainer({ style_class: 'level',
+                                                     x_align: St.Align.START,
+                                                     important: true });
+        this.actor.connect("allocate", this._allocate_bar.bind(this));
+
         this._bar = new St.Widget({ style_class: 'level-bar',
                                     important: true });
-
-        this.actor.connect("notify::allocation", this.allocation_changed.bind(this));
-
-        this.stored_actor_width = 0;
-        this.max_bar_width = 0;
-
-        this.actor.set_child(this._bar);
+        this.actor.add_actor(this._bar);
     },
 
-    allocation_changed: function(actor, pspec) {
-        let w = actor.allocation.x2 - actor.allocation.x1;
-        this._bar.width = w * (this._level / 100);
+    _allocate_bar: function(actor, box, flags) {
+        let level_box = box.copy();
+
+        let new_width = (level_box.x2 - level_box.x1) * (this._level / 100);
+        level_box.x2 = Math.min((level_box.x1 + new_width), box.x2);
+        this._bar.allocate(level_box, flags);
     },
 
     get level() {
