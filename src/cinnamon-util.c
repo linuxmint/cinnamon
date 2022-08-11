@@ -631,29 +631,6 @@ cinnamon_get_event_state (ClutterEvent *event)
 }
 
 /**
- * cinnamon_write_soup_message_to_stream:
- * @stream: a #GOutputStream
- * @message: a #SoupMessage
- * @error: location to store GError
- *
- * Write a string to a GOutputStream as binary data. This is a
- * workaround for the lack of proper binary strings in GJS.
- */
-void
-cinnamon_write_soup_message_to_stream (GOutputStream *stream,
-                                    SoupMessage   *message,
-                                    GError       **error)
-{
-  SoupMessageBody *body;
-
-  body = message->response_body;
-
-  g_output_stream_write_all (stream,
-                             body->data, body->length,
-                             NULL, NULL, error);
-}
-
-/**
  * cinnamon_write_string_to_stream:
  * @stream: a #GOutputStream
  * @str: a UTF-8 string to write to @stream
