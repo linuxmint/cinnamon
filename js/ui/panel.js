@@ -2522,25 +2522,29 @@ Panel.prototype = {
                             global.log("updatePanelBarriers - unrecognised panel position "+this.panelPosition);
                     }
                     if (panelRight != panelLeft) {
-                        let y_coord = this.monitor.y + Math.floor(this.toppanelHeight) + this.margin_top;
-                        if (y_coord > 0) {                                  // if there is a monitor above or top of panel offset into monitor
-                            this._topPanelBarrier = new Meta.Barrier({
-                                display: global.display,
-                                x1: panelLeft, y1: y_coord,
-                                x2: panelRight, y2: y_coord,
-                                directions: Meta.BarrierDirection.POSITIVE_Y  // permit moving in positive y direction for a top barrier
-                            });
+                        if (this.toppanelHeight === 0) {
+                            let y_coord = this.monitor.y + Math.floor(this.toppanelHeight) + this.margin_top;
+                            if (y_coord > 0) {                                  // if there is a monitor above or top of panel offset into monitor
+                                this._topPanelBarrier = new Meta.Barrier({
+                                    display: global.display,
+                                    x1: panelLeft, y1: y_coord,
+                                    x2: panelRight, y2: y_coord,
+                                    directions: Meta.BarrierDirection.POSITIVE_Y  // permit moving in positive y direction for a top barrier
+                                });
+                            }
                         }
 
-                        y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
-                        if (screen_height > this.monitor.y + this.monitor.height         // if there is a monitor below
-                            || this.bottompanelHeight > 0 || this.margin_bottom > 0) {   
-                            this._bottomPanelBarrier = new Meta.Barrier({
-                                display: global.display,
-                                x1: panelLeft, y1: y_coord,
-                                x2: panelRight, y2: y_coord,
-                                directions: Meta.BarrierDirection.NEGATIVE_Y
-                            });
+                        if (this.bottompanelHeight === 0) {
+                            y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
+                            if (screen_height > this.monitor.y + this.monitor.height         // if there is a monitor below
+                                || this.bottompanelHeight > 0 || this.margin_bottom > 0) {
+                                this._bottomPanelBarrier = new Meta.Barrier({
+                                    display: global.display,
+                                    x1: panelLeft, y1: y_coord,
+                                    x2: panelRight, y2: y_coord,
+                                    directions: Meta.BarrierDirection.NEGATIVE_Y
+                                });
+                            }
                         }
                     }
                 }
