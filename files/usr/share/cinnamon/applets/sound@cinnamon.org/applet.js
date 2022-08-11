@@ -1144,8 +1144,15 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     }
 
     _onScrollEvent(actor, event) {
-        let direction = event.get_scroll_direction();
+        const direction = event.get_scroll_direction();
+
+        if (direction == Clutter.ScrollDirection.SMOOTH) {
+            return Clutter.EVENT_PROPAGATE;
+        }
+
         let currentVolume = this._output.volume;
+        let volumeChange = false;
+        let player = this._players[this._activePlayer];
 
         if (direction == Clutter.ScrollDirection.DOWN) {
             let prev_muted = this._output.is_muted;
@@ -1159,29 +1166,33 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 if (this._output.volume!=this._volumeNorm && this._output.volume>this._volumeNorm*(1-VOLUME_ADJUSTMENT_STEP/2) && this._output.volume<this._volumeNorm*(1+VOLUME_ADJUSTMENT_STEP/2))
                     this._output.volume=this._volumeNorm;
             }
-            this._output.push_volume();
+
+            volumeChange = true;
         }
         else if (direction == Clutter.ScrollDirection.UP) {
             this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeNorm * VOLUME_ADJUSTMENT_STEP);
             // 100% is magnetic:
             if (this._output.volume!=this._volumeNorm && this._output.volume>this._volumeNorm*(1-VOLUME_ADJUSTMENT_STEP/2) && this._output.volume<this._volumeNorm*(1+VOLUME_ADJUSTMENT_STEP/2))
                 this._output.volume=this._volumeNorm;
-            this._output.push_volume();
+
             this._output.change_is_muted(false);
+            volumeChange = true;
         }
-        else if (this.horizontalScroll) {
+        else if (this.horizontalScroll && player !== null && player._playerStatus !== "Stopped") {
             if (direction == Clutter.ScrollDirection.LEFT) {
                 this._players[this._activePlayer]._mediaServerPlayer.PreviousRemote();
             }
-            else {
+            else if (direction == Clutter.ScrollDirection.RIGHT) {
                 this._players[this._activePlayer]._mediaServerPlayer.NextRemote();
             }
         }
 
-        this._applet_tooltip.show();
-
-        if (event.get_scroll_direction() != Clutter.ScrollDirection.SMOOTH) {
+        if (volumeChange) {
+            this._output.push_volume();
             this._notifyVolumeChange(this._output);
+            this._applet_tooltip.show();
+        } else {
+            this._applet_tooltip.hide();
         }
     }
 
