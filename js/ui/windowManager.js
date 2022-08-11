@@ -1136,7 +1136,8 @@ var WindowManager = class WindowManager {
             // Muffin 5.2 window.showing_on_its_workspace() no longer
             // ends up filtering the desktop window (If I re-add it, it
             // breaks things elsewhere that rely on the new behavior).
-            if (meta_window.get_window_type() === Meta.WindowType.DESKTOP) {
+            if (meta_window.get_window_type() === Meta.WindowType.DESKTOP ||
+                meta_window.get_window_type() === Meta.WindowType.OVERRIDE_OTHER) {
                 continue;
             }
 
@@ -1183,6 +1184,11 @@ var WindowManager = class WindowManager {
                     onComplete: () => finish_switch_workspace(window)
                 });
             }
+        }
+
+        if (to_windows.size === 0 && from_windows.size === 0) {
+            this._cinnamonwm.completed_switch_workspace();
+            return;
         }
 
         kill_id = this._cinnamonwm.connect('kill-switch-workspace', cinnamonwm => {
