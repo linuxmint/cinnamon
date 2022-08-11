@@ -2459,7 +2459,9 @@ Panel.prototype = {
 
         if (this._destroyed)  // ensure we do not try to set barriers if panel is being destroyed
             return;
-        if (this.monitorIndex < 0 || this.monitorIndex >= global.screen.get_n_monitors())  // skip panels that never got created
+
+        let n_monitors = global.display.get_n_monitors();
+        if (n_monitors == 1 || this.monitorIndex < 0 || this.monitorIndex >= n_monitors)  // skip panels that never got created
             return;
 
         let screen_width  = global.screen_width;
