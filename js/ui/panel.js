@@ -845,7 +845,7 @@ PanelManager.prototype = {
 
         metaList[ID] = [monitorIndex, panelPosition];  // Note:  metaList [i][0] is the monitor index, metaList [i][1] is the panelPosition
 
-        if (monitorIndex < 0 || monitorIndex >= global.screen.get_n_monitors()) {
+        if (monitorIndex < 0 || monitorIndex >= global.display.get_n_monitors()) {
             global.log("Monitor " + monitorIndex + " not found. Not creating panel");
             return null;
         }
@@ -857,7 +857,7 @@ PanelManager.prototype = {
     },
 
     _checkCanAdd: function() {
-        let monitorCount = global.screen.get_n_monitors();
+        let monitorCount = global.display.get_n_monitors();
         let panelCount = (monitorCount * 4) - this.panelCount;          // max of 4 panels on a monitor, one per edge
 
         this.canAdd = panelCount > 0;
@@ -1066,7 +1066,7 @@ PanelManager.prototype = {
     },
 
     _onMonitorsChanged: function() {
-        let monitorCount = global.screen.get_n_monitors();
+        let monitorCount = global.display.get_n_monitors();
         let drawcorner = [false, false];
 
         let panelProperties = getPanelsEnabledList()
@@ -1166,7 +1166,7 @@ PanelManager.prototype = {
      * shows the dummy panels
      */
     _showDummyPanels: function(callback) {
-        let monitorCount = global.screen.get_n_monitors();
+        let monitorCount = global.display.get_n_monitors();
         this.dummyCallback = callback;
         this.dummyPanels = [];
 
@@ -1237,7 +1237,7 @@ PanelDummy.prototype = {
         this.monitorIndex = monitorIndex;
         this.panelPosition = panelPosition;
         this.callback = callback;
-        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
+        this.monitor = global.display.get_monitor_geometry(monitorIndex);
         let defaultheight = 40 * global.ui_scale;
 
         this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
@@ -2026,7 +2026,7 @@ Panel.prototype = {
         this.panelId = id;
         this.drawcorner = drawcorner;
         this.monitorIndex = monitorIndex;
-        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
+        this.monitor = global.display.get_monitor_geometry(monitorIndex);
         this.panelPosition = panelPosition;
         this.toppanelHeight = toppanelHeight;
         this.bottompanelHeight = bottompanelHeight;
@@ -2204,7 +2204,7 @@ Panel.prototype = {
         this.panelPosition = panelPosition;
         this._positionChanged = true;
 
-        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
+        this.monitor = global.display.get_monitor_geometry(monitorIndex);
         //
         // If there are any corners then remove them - they may or may not be required
         // in the new position, so we cannot just move them
@@ -2804,7 +2804,7 @@ Panel.prototype = {
         // NB If you want to use margin to inset the panels within a monitor, then you can't just set it here
         // else full screen windows will then go right to the edge with the panels floating over
         //
-        this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
+        this.monitor = global.display.get_monitor_geometry(this.monitorIndex);
         let horizontal_panel = (!!((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)));
 
         // this stands for width on vertical panels, and height on horizontal panels
