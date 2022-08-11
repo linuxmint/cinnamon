@@ -7,8 +7,6 @@ assignees: ''
 
 ---
 
-<details>
-
 ```
  * Cinnamon version (cinnamon --version)
    - Please specify if you are using the daily builds PPA
@@ -18,8 +16,6 @@ assignees: ''
  * 32 or 64 bit
  * Attach ~/.xsession-errors, or /var/log/syslog
  ```
-
-</details>
 
 ### Issue
 
@@ -39,12 +35,3 @@ assignees: ''
 ### Configuration info, if applicable
 If this bug report is related to an Applet, Desklet or Extension, please paste (or use a pastebin service) the offending extension's settings, if it has any.  You can obtain this by opening its configuration, clicking the 'hamburger' button in the upper-right corner of the window, and selecting "Export to a file". **Please be sure to review the contents and remove any personal data it may contain.**
 
-<details>
-
-```
-
-Please paste here
-
-```
-
-</details>
