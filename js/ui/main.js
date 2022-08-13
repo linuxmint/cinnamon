@@ -20,6 +20,7 @@
  * Muffin actors
  *
  * @magnifier (Magnifier.Magnifier): The magnifier
+ * @locatePointer (LocatePointer.LocatePointer): The locate pointer object
  * @xdndHandler (XdndHandler.XdndHandler): The X DND handler
  * @statusIconDispatcher (StatusIconDispatcher.StatusIconDispatcher): The status icon dispatcher
  * @virtualKeyboard (VirtualKeyboard.Keyboard): The keyboard object
@@ -108,6 +109,7 @@ const CinnamonDBus = imports.ui.cinnamonDBus;
 const Screenshot = imports.ui.screenshot;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
+const LocatePointer = imports.ui.locatePointer;
 const XdndHandler = imports.ui.xdndHandler;
 const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const Util = imports.misc.util;
@@ -150,6 +152,7 @@ var modalCount = 0;
 var modalActorFocusStack = [];
 var uiGroup = null;
 var magnifier = null;
+var locatePointer = null;
 var xdndHandler = null;
 var statusIconDispatcher = null;
 var virtualKeyboard = null;
@@ -417,6 +420,7 @@ function start() {
     placesManager = new PlacesManager.PlacesManager();
 
     magnifier = new Magnifier.Magnifier();
+    locatePointer = new LocatePointer.locatePointer();
 
     layoutManager.init();
     virtualKeyboard.init();
