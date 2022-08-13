@@ -1,3 +1,34 @@
+cinnamon (5.4.10) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * live previews: Use clones when valid, and static images in certain situations when a usable clone or texture isn't guaranteed.
+  * windowAttentionHandler: Fix new window focus issue with Firefox.
+  * keybindings.js: Use a js Map to track keybindings and handle changes to custom keybindings properly.
+  * osdWindow.js: Use correct allocation size for the fill level instead of the parent width.
+
+  [ ronyala ]
+  * Remove rtl workaround for the triangle arrow direction, (#10980)
+
+  [ Michael Webster ]
+  * windowAttentionHandler: remove notification fallback, re-add all 5.2 names to the pass-thru list.
+  * windowManager.js: get rid of (non-cinnamon) popup menu animations.
+  * sound@cinnamon.org: Fix panel scrolling behavior.
+  * windowManager.js: Complete the workspace switch immediately if no windows end up being animated.
+  * panel.js: Don't create a (horizontal) panel barrier for a vertical panel if there is a horizontal panel adjacent to it.
+  * panel.js: No barriers when there is only a single monitor.
+  * panel.js: global.screen -> global.display
+
+  [ Secret-chest ]
+  * More issue templates, not everything is a bug report (#11011)
+
+  [ Michael Webster ]
+  * Fix bug remplate, remove question template.
+
+  [ Leigh Scott ]
+  * Remove unused soup (#11002)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 13 Aug 2022 12:31:37 +0200
+
 cinnamon (5.4.9) vanessa; urgency=medium
 
   [ Michael Webster ]
