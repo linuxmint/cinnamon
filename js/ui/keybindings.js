@@ -202,8 +202,8 @@ KeybindingManager.prototype = {
     },
 
     invoke_keybinding_action_by_id: function(id) {
-        if (this.bindings[id] !== undefined) {
-            const binding = this.bindings[id];
+        const binding = this.bindings.get(id);
+        if (id !== undefined) {
             // log(`invoke_keybinding_action_by_id: ${binding.name}, bindings: ${binding.bindings} - action id: ${id}`);
             binding.callback(null, null, null);
         }
