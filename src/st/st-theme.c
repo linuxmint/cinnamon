@@ -1062,14 +1062,11 @@ _st_theme_get_matched_properties (StTheme        *theme,
 
 GPtrArray *
 _st_theme_get_matched_properties_fallback (StTheme        *theme,
-                                           StThemeNode    *node)
+                                           StThemeNode    *node,
+                                           GPtrArray      *props)
 {
-  GPtrArray *props;
-
   g_return_val_if_fail (ST_IS_THEME (theme), NULL);
   g_return_val_if_fail (ST_IS_THEME_NODE (node), NULL);
-
-  props = g_ptr_array_new ();
 
   if (theme->fallback_cr_stylesheet)
     add_matched_properties (theme, theme->fallback_cr_stylesheet, node, props);

@@ -468,8 +468,10 @@ ensure_properties (StThemeNode *node)
       if (node->theme)
         {
           properties = _st_theme_get_matched_properties (node->theme, node);
-          if ((!properties || properties->len == 0) && node->important)
-            properties = _st_theme_get_matched_properties_fallback (node->theme, node);
+          if (properties->len == 0 && node->important)
+            {
+              properties = _st_theme_get_matched_properties_fallback (node->theme, node, properties);
+            }
         }
 
       if (node->inline_style)
