@@ -10,6 +10,7 @@ const LOCATE_POINTER_SCHEMA = "org.cinnamon.muffin"
 var locatePointer = class {
     constructor() {
         this._enabledSettings = new Gio.Settings({schema_id: LOCATE_POINTER_ENABLED_SCHEMA});
+        this._enabledSettings.connect('changed::locate-pointer', this._updateKey.bind(this));
         this._keySettings = new Gio.Settings({schema_id: LOCATE_POINTER_SCHEMA});
         this._keySettings.connect('changed::locate-pointer-key', this._updateKey.bind(this));
         this._updateKey();
@@ -19,14 +20,15 @@ var locatePointer = class {
     }
 
     _updateKey() {
-        let modifierKey = this._keySettings.get_string('locate-pointer-key');
-        Main.keybindingManager.addHotKey('locate-pointer', modifierKey, () => { this.show() });
+        if (this._enabledSettings.get_boolean("locate-pointer")) {
+            let modifierKey = this._keySettings.get_string('locate-pointer-key');
+            Main.keybindingManager.addHotKey('locate-pointer', modifierKey, () => { this.show() });
+        } else {
+            Main.keybindingManager.removeHotKey('locate-pointer');
+        }
     }
 
     show() {
-        if (!this._enabledSettings.get_boolean("locate-pointer"))
-            return;
-
         let [x, y, mods] = global.get_pointer();
         this._ripples.playAnimation(x, y);
     }
