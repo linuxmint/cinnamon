@@ -14,18 +14,23 @@ function nextIndex(itemCount, numCols, currentIndex, symbol) {
 
         const rowDelta = symbol === Clutter.KEY_Down ? 1 : -1;
         let newIndex = (curRow + rowDelta) * numCols + curCol;
-        if (rowDelta >= 0) { // down
-            if (newIndex < itemCount) {
-                return newIndex;
+        if (symbol === Clutter.KEY_Down) { // down
+            if (curRow < numRows - 2) {
+                return (curRow + 1) * numCols + curCol;
             }
 
-            if (curCol < numCols - 1) {
-                // wrap to top row, one column to the right:
-                return curCol + 1;
+            let numColsLastRow = itemCount % numCols || numCols;
+            let lastRowColStart = Math.floor((numCols - numColsLastRow) / 2);
+
+            if (curRow === numRows - 1) {
+                let actualCurCol = curCol + lastRowColStart;
+                return (actualCurCol < numCols - 1) ? actualCurCol + 1 : 0;
             }
 
-            // wrap to top row, left-most column:
-            return 0;
+            if (curCol >= lastRowColStart && curCol < lastRowColStart + numColsLastRow)
+                return (curRow + 1) * numCols + curCol - lastRowColStart;
+
+            return (curCol < numCols - 1) ? curCol + 1 : 0;
         }
         else { // up
             let numFullRows = Math.floor(itemCount/numCols);
