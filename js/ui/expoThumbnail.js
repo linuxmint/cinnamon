@@ -1605,7 +1605,7 @@ ExpoThumbnailsBox.prototype = {
         let childBox = new Clutter.ActorBox();
         
         let calcPaddingX = function(nCols) {
-            let neededX = (thumbnailWidth * nCols) + totalSpacingX + (spacing * 2);
+            let neededX = (thumbnailWidth * nCols) + (spacing * (nCols + 1));
             let extraSpaceX = (box.x2 - box.x1) - neededX;
             return spacing + extraSpaceX/2;
         };
