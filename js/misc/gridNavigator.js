@@ -12,8 +12,6 @@ function nextIndex(itemCount, numCols, currentIndex, symbol) {
         let curRow = Math.floor(currentIndex/numCols);
         let curCol = currentIndex % numCols;
 
-        const rowDelta = symbol === Clutter.KEY_Down ? 1 : -1;
-        let newIndex = (curRow + rowDelta) * numCols + curCol;
         if (symbol === Clutter.KEY_Down) { // down
             if (curRow < numRows - 2) {
                 return (curRow + 1) * numCols + curCol;
@@ -27,32 +25,33 @@ function nextIndex(itemCount, numCols, currentIndex, symbol) {
                 return (actualCurCol < numCols - 1) ? actualCurCol + 1 : 0;
             }
 
-            if (curCol >= lastRowColStart && curCol < lastRowColStart + numColsLastRow)
+            if (curCol >= lastRowColStart && curCol < lastRowColStart + numColsLastRow) {
                 return (curRow + 1) * numCols + curCol - lastRowColStart;
+            }
 
             return (curCol < numCols - 1) ? curCol + 1 : 0;
         }
         else { // up
-            let numFullRows = Math.floor(itemCount/numCols);
-            let numIOILR = itemCount % numCols; //num Items on Incompl. Last Row
-            if (newIndex >= 0) {
-                return newIndex;
+            if (curRow > 0 && curRow < numRows - 1) {
+                return (curRow - 1) * numCols + curCol;
+            }
+
+            let numColsLastRow = itemCount % numCols || numCols;
+            let lastRowColStart = Math.floor((numCols - numColsLastRow) / 2);
+
+            if (curRow === numRows - 1) {
+                return (curRow - 1) * numCols + curCol + lastRowColStart;
             }
 
             if (curCol === 0) {
-                // Wrap to the bottom of the right-most column, may not be on last row:
-                return (numFullRows * numCols) - 1;
+                return (numColsLastRow === numCols) ? itemCount - 1 : (numRows - 1) * numCols - 1;
             }
 
-            /* If we're on the 
-            top row but not in the first column, we want to move to the bottom of the
-            column to the left, even though that may not be the bottom of the grid.
-            */
-            if (numIOILR && curCol > numIOILR) {
-                return ((numFullRows - 1) * numCols) + curCol - 1;
+            if (curCol > lastRowColStart && curCol <= lastRowColStart + numColsLastRow) {
+                return (numRows - 1) * numCols + curCol - 1 - lastRowColStart;
             }
 
-            return ((numRows - 1) * numCols) + curCol - 1;
+            return (numRows - 2) * numCols + curCol - 1;
         }
     }
     else if (symbol === Clutter.KEY_Left || symbol === Clutter.KEY_Up) {
