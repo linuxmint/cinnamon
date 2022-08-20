@@ -58,10 +58,10 @@ function nextIndex(itemCount, numCols, currentIndex, symbol) {
             return (numRows - 2) * numCols + curCol - 1;
         }
     }
-    else if (symbol === Clutter.KEY_Left || symbol === Clutter.KEY_Up) {
+    else if (symbol === Clutter.KEY_Left || symbol === Clutter.KEY_Down) {
         result = (currentIndex < 1 ? itemCount : currentIndex) - 1;
     }
-    else if (symbol === Clutter.KEY_Right || symbol === Clutter.KEY_Down) {
+    else if (symbol === Clutter.KEY_Right || symbol === Clutter.KEY_Up) {
         result = (currentIndex + 1) % itemCount;
     }
     else if (symbol === Clutter.KEY_Home) {
