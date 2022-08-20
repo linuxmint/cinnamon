@@ -304,10 +304,6 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.signals.connect(global.display, 'window-demands-attention', (...args) => this.updateAttentionState(...args));
         this.signals.connect(global.display, 'window-created', (...args) => this.onWindowCreated(...args));
         this.signals.connect(global.settings, 'changed::panel-edit-mode', (...args) => this.on_panel_edit_mode_changed(...args));
-        this.signals.connect(Main.overview, 'showing', (...args) => this.onOverviewShow(...args));
-        this.signals.connect(Main.overview, 'hiding', (...args) => this.onOverviewHide(...args));
-        this.signals.connect(Main.expo, 'showing', (...args) => this.onOverviewShow(...args));
-        this.signals.connect(Main.expo, 'hiding', (...args) => this.onOverviewHide(...args));
         this.signals.connect(Main.themeManager, 'theme-set', (...args) => this.refreshCurrentAppList(...args));
     }
 
@@ -981,14 +977,6 @@ class GroupedWindowListApplet extends Applet.Applet {
     onUIScaleChange() {
         this.state.set({thumbnailCloseButtonOffset: global.ui_scale > 1 ? -10 : 0});
         this.refreshAllAppLists();
-    }
-
-    onOverviewShow() {
-        this.actor.hide();
-    }
-
-    onOverviewHide() {
-        this.actor.show();
     }
 }
 
