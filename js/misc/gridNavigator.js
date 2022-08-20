@@ -12,13 +12,13 @@ function nextIndex(itemCount, numCols, currentIndex, symbol) {
         let curRow = Math.floor(currentIndex/numCols);
         let curCol = currentIndex % numCols;
 
+        let numColsLastRow = itemCount % numCols || numCols;
+        let lastRowColStart = Math.floor((numCols - numColsLastRow) / 2);
+
         if (symbol === Clutter.KEY_Down) {
             if (curRow < numRows - 2) {
                 return (curRow + 1) * numCols + curCol;
             }
-
-            let numColsLastRow = itemCount % numCols || numCols;
-            let lastRowColStart = Math.floor((numCols - numColsLastRow) / 2);
 
             if (curRow === numRows - 1) {
                 let actualCurCol = curCol + lastRowColStart;
@@ -39,9 +39,6 @@ function nextIndex(itemCount, numCols, currentIndex, symbol) {
             if (curRow > 0 && curRow < numRows - 1) {
                 return (curRow - 1) * numCols + curCol;
             }
-
-            let numColsLastRow = itemCount % numCols || numCols;
-            let lastRowColStart = Math.floor((numCols - numColsLastRow) / 2);
 
             if (curRow === numRows - 1) {
                 return (curRow - 1) * numCols + curCol + lastRowColStart;
