@@ -501,7 +501,22 @@
       <summary>If true, Cinnamon will no longer attempt to be the session notification handler.</summary>
     </key>
 
-    <child name="theme" schema="org.cinnamon.theme"/>   
+    <key type="b" name="system-icon-enabled">
+      <default>true</default>
+      <summary>If true, Cinnamon will show the system icon in the "System Info" settings app.</summary>
+    </key>
+
+    <key type="s" name="system-icon-path">
+      <default>"/usr/share/icons/vendor/scalable/emblems/emblem-vendor.svg"</default>
+      <summary>The logo to use in the system info settings</summary>
+      <description>
+        An icon name or absolute path to an icon, which will be used for the system icon in the "System Info" settings app.
+        The default path is the emblem-vendor image stored in /usr/share/icons/vendor.
+        Requires the "system-icon-enabled" schema to be set to true.
+      </description>
+    </key>
+
+    <child name="theme" schema="org.cinnamon.theme"/>
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
     <child name="desklets" schema="org.cinnamon.desklets" />
