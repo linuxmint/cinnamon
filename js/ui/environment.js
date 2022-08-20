@@ -68,6 +68,16 @@ function _makeEaseCallback(params, cleanup) {
     };
 }
 
+function _makeFrameCallback(params) {
+    let onUpdate = params.onUpdate;
+    delete params.onUpdate;
+
+    return (transition, timeIndex) => {
+        if (onUpdate)
+            onUpdate(transition, timeIndex);
+    };
+}
+
 function _getPropertyTarget(actor, propName) {
     if (!propName.startsWith('@'))
         return [actor, propName];
@@ -119,6 +129,7 @@ function _easeActor(actor, params) {
 
     let cleanup = () => Meta.enable_unredirect_for_display(global.display);
     let callback = _makeEaseCallback(params, cleanup);
+    let updateCallback = _makeFrameCallback(params);
 
     // cancel overwritten transitions
     let animatedProps = Object.keys(params).map(p => p.replace('_', '-', 'g'));
@@ -139,6 +150,7 @@ function _easeActor(actor, params) {
     if (transition) {
         transition.set({ repeatCount, autoReverse });
         transition.connect('stopped', (t, finished) => callback(finished));
+        transition.connect('new-frame', (t, timeIndex) => updateCallback(t, timeIndex));
     } else {
         callback(true);
     }
