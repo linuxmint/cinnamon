@@ -330,7 +330,11 @@ var WindowManager = class WindowManager {
         // shown once. If they start minimized, monitor them until they've
         // been shown for the first time. (See windowUtils.js)
         const handleSeen = (metaWindow) => {
-            if (metaWindow === null || !Main.isInteresting(metaWindow)) {
+            if (this.windowSeen(metaWindow) || metaWindow === null || !Main.isInteresting(metaWindow)) {
+                return;
+            }
+
+            if (metaWindow.get_workspace().index() !== global.workspace_manager.get_active_workspace_index()) {
                 return;
             }
 
@@ -354,6 +358,11 @@ var WindowManager = class WindowManager {
 
         global.display.connect("window-created", (display, metaWindow) => {
             handleSeen(metaWindow);
+        });
+
+        global.workspace_manager.connect("workspace-switched", (from, to, direction) => {
+            const allWindowActors = Meta.get_window_actors(global.display);
+            allWindowActors.forEach((actor) => handleSeen(actor.meta_window));
         });
 
         const allWindowActors = Meta.get_window_actors(global.display);
