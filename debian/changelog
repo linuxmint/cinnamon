@@ -1,3 +1,21 @@
+cinnamon (5.4.11) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * keybindings.js: Use bindings.get() - this.bindings is a Map.
+  * Re-add soup 2.4 bindings as a runtime-only dependency, and add a version requirement to cinnamon's environment.
+
+  [ JosephMcc ]
+  * Reimplement the locate pointer functionality
+
+  [ Michael Webster ]
+  * cs_sound.py: Add some more sound ids to ignore.
+  * keybindings.js: Fix incorrect check.
+  * screenshot.js: Improve button event handling, listen to stage events during rubber-banding.
+  * st-theme-node.c: Fix a leak when falling back to the default theme on 'important' ui elements.
+  * locatePointer: Only grab the keybinding if the feature is enabled.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 21 Aug 2022 12:13:03 +0200
+
 cinnamon (5.4.10) vanessa; urgency=medium
 
   [ Michael Webster ]
