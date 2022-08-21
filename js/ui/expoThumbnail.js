@@ -12,6 +12,7 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const ModalDialog = imports.ui.modalDialog;
 const Tooltips = imports.ui.tooltips;
+const PointerTracker = imports.misc.pointerTracker;
 const SignalManager = imports.misc.signalManager;
 const GridNavigator = imports.misc.gridNavigator;
 const WindowUtils = imports.misc.windowUtils;
@@ -72,14 +73,16 @@ ExpoWindowClone.prototype = {
             return true;
         }));
 
+        let pointerTracker = new PointerTracker.PointerTracker();
+
         this.actor.connect('motion-event', Lang.bind(this, function (actor, event) {
-            if (Main.pointerTracker.hasMoved()) {
+            if (pointerTracker.hasMoved()) {
                 this.emit('hovering', true);
             }
             return false;
         }));
         this.actor.connect('leave-event', Lang.bind(this, function (actor, event) {
-            if (Main.pointerTracker.hasMoved()) {
+            if (pointerTracker.hasMoved()) {
                 this.emit('hovering', false);
             }
             return false;
@@ -1290,8 +1293,9 @@ ExpoThumbnailsBox.prototype = {
 
             // We want to ignore spurious events caused by animations
             // (when the contents are moving and not the pointer).
+            let pointerTracker = new PointerTracker.PointerTracker();
             thumbnail.actor.connect('motion-event', Lang.bind(this, function (actor, event) {
-                if (!Main.pointerTracker.hasMoved()) {return;}
+                if (!pointerTracker.hasMoved()) {return;}
                 if (!thumbnail.hovering) {
                     thumbnail.hovering = true;
                     this.lastHovered = thumbnail; 
@@ -1307,7 +1311,7 @@ ExpoThumbnailsBox.prototype = {
             }));
              
             thumbnail.actor.connect('leave-event', Lang.bind(this, function (actor, event) {
-                if (!Main.pointerTracker.hasMoved()) {return;}
+                if (!pointerTracker.hasMoved()) {return;}
                 if (this.isShowingModalDialog()) {return;}
                 if (thumbnail.hovering && !isInternalEvent(thumbnail, actor, event)) {
                     thumbnail.hovering = false;
