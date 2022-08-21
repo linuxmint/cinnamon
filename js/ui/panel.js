@@ -3682,11 +3682,13 @@ Panel.prototype = {
     disable: function() {
         this._disabled = true;
         this._leavePanel();
-        Tweener.addTween(this.actor, {
+        this.actor.ease({
             opacity: 0,
-            time: AUTOHIDE_ANIMATION_TIME,
-            transition: 'easeOutQuad',
-            onComplete: this.actor.hide
+            duration: AUTOHIDE_ANIMATION_TIME * 1000,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this.actor.hide();
+            }
         });
     },
 
@@ -3698,10 +3700,10 @@ Panel.prototype = {
     enable: function() {
         this._disabled = false;
         this.actor.show();
-        Tweener.addTween(this.actor, {
+        this.actor.ease({
             opacity: 255,
-            time: AUTOHIDE_ANIMATION_TIME,
-            transition: 'easeOutQuad'
+            duration: AUTOHIDE_ANIMATION_TIME * 1000,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
     },
 

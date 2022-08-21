@@ -23,10 +23,10 @@ let MAX_THUMBNAIL_SCALE = 0.9;
 const POINTER_LEAVE_MILLISECONDS_GRACE = 500;
 const POINTER_ENTER_MILLISECONDS_GRACE = 150;
 const RESCALE_ANIMATION_TIME = 0.2;
-const SLIDE_ANIMATION_TIME = 0.3;
+const SLIDE_ANIMATION_TIME = 300;
 const INACTIVE_OPACITY = 120;
-const REARRANGE_TIME_ON = 0.1;
-const REARRANGE_TIME_OFF = 0.3;
+const REARRANGE_TIME_ON = 100;
+const REARRANGE_TIME_OFF = 300;
 const ICON_OPACITY = Math.round(255 * 0.9);
 const ICON_SIZE = 128;
 const ICON_OFFSET = -5;
@@ -364,8 +364,10 @@ ExpoWorkspaceThumbnail.prototype = {
                                      can_focus: true });                
         this.title._spacing = 0; 
         this.titleText = this.title.clutter_text;        
+        this.titleText.editable = false;
         this.titleText.connect('key-press-event', Lang.bind(this, this.onTitleKeyPressEvent)); 
         this.titleText.connect('key-focus-in', Lang.bind(this, function() {
+            this.titleText.editable = true;
             this.origTitle = Main.getWorkspaceName(this.metaWorkspace.index());
         })); 
         this.titleText.connect('key-focus-out', Lang.bind(this, function() {
@@ -774,7 +776,13 @@ ExpoWorkspaceThumbnail.prototype = {
                 windows.push(window);
             }
             else {
-                Tweener.addTween(window.actor, {scale_x: 0, scale_y: 0, time: REARRANGE_TIME_ON, transition: 'easeOutQuad', onComplete: window.actor.hide});
+                window.actor.ease({
+                    scale_x: 0,
+                    scale_y: 0,
+                    duration: REARRANGE_TIME_ON,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => window.actor.hide()
+                });
             }
         }, this);
 
@@ -812,14 +820,18 @@ ExpoWorkspaceThumbnail.prototype = {
                 window.icon.set_scale(iconScale, iconScale);
                 let [iconX, iconY] = [ICON_OFFSET / this.box.scale/scale, ICON_OFFSET / this.box.scale/scale];
                 window.icon.set_position(iconX, iconY);
-                Tweener.addTween(window.actor, {
-                    x: x, y: y, scale_x: scale, scale_y: scale,
+                window.actor.ease({
+                    x: x,
+                    y: y,
+                    scale_x: scale,
+                    scale_y: scale,
                     opacity: 255,
-                    time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
-                    onComplete: function() {
+                    duration: REARRANGE_TIME_ON,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => {
                         window.actor.show();
                         window.icon.show();
-                        }
+                    }
                 });
                 col++;
                 if (col > nCols){
@@ -851,12 +863,13 @@ ExpoWorkspaceThumbnail.prototype = {
                 window.showUrgencyState();
                 window.icon.hide();
                 window.actor.show();
-                Tweener.addTween(window.actor, {
+                window.actor.ease({
                     x: window.origX,
                     y: window.origY,
                     scale_x: 1, scale_y: 1,
                     opacity: window.metaWindow.showing_on_its_workspace() ? 255 : 127,
-                    time: rearrangeTime, transition: 'easeOutQuad'
+                    duration: rearrangeTime,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
                 });
             }, this);
         }, this);
@@ -889,12 +902,21 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     shade : function (force){
-        if (!this.isSelected || force)
-            Tweener.addTween(this.shader, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
+        if (!this.isSelected || force) {
+            this.shader.ease({
+                opacity: INACTIVE_OPACITY,
+                duration: SLIDE_ANIMATION_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD
+            });
+        }
     },
 
     highlight : function (){
-        Tweener.addTween(this.shader, {opacity: 0, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
+        this.shader.ease({
+            opacity: 0,
+            duration: SLIDE_ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
+        });
     },
 
     remove : function (){
@@ -1028,7 +1050,6 @@ ExpoThumbnailsBox.prototype = {
                                                   request_mode: Clutter.RequestMode.WIDTH_FOR_HEIGHT });
         this.actor.connect('get-preferred-width', Lang.bind(this, this.getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this.getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this.allocate));
 
         // When we animate the scale, we don't animate the requested size of the thumbnails, rather
         // we ask for our final size and then animate within that size. This slightly simplifies the
@@ -1142,6 +1163,8 @@ ExpoThumbnailsBox.prototype = {
             this.stateCounts[ThumbnailState[key]] = 0;
 
         this.addThumbnails(0, global.workspace_manager.n_workspaces);
+        this.actor.connect('allocate', Lang.bind(this, this.allocate));
+
         this.button.raise_top();
 
         global.stage.set_key_focus(this.actor);
@@ -1389,7 +1412,7 @@ ExpoThumbnailsBox.prototype = {
 
                 Tweener.addTween(thumbnail,
                                  { slidePosition: 1,
-                                   time: SLIDE_ANIMATION_TIME,
+                                   time: SLIDE_ANIMATION_TIME / 1000,
                                    transition: 'linear',
                                    onComplete: function() {
                                        this.setThumbnailState(thumbnail, ThumbnailState.ANIMATED_OUT);
@@ -1448,7 +1471,7 @@ ExpoThumbnailsBox.prototype = {
                 this.setThumbnailState(thumbnail, ThumbnailState.ANIMATING_IN);
                 Tweener.addTween(thumbnail,
                                  { slidePosition: 0,
-                                   time: SLIDE_ANIMATION_TIME,
+                                   time: SLIDE_ANIMATION_TIME / 1000,
                                    transition: 'easeOutQuad',
                                    onComplete: function() {
                                        this.setThumbnailState(thumbnail, ThumbnailState.NORMAL);
@@ -1698,9 +1721,7 @@ ExpoThumbnailsBox.prototype = {
         
         this.button.allocate(childBox, flags);
 
-        if (this.targetScale === this._scale) {
-            this.emit('allocated');
-        }
+        this.emit('allocated');
     },
 
     activeWorkspaceChanged: function(wm, from, to, direction) {

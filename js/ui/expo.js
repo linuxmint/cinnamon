@@ -321,7 +321,13 @@ Expo.prototype = {
                         scale_x: activeWorkspaceActor.get_scale()[0] , 
                         scale_y: activeWorkspaceActor.get_scale()[1], 
                         duration: ANIMATION_TIME,
-                        mode: Clutter.AnimationMode.EASE_OUT_QUAD, 
+                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                        onUpdate: (t, timeIndex) => {
+                            clone.get_transition("x")?.set_to(Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1);
+                            clone.get_transition("y")?.set_to(Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1);
+                            clone.get_transition("scale-x")?.set_to(activeWorkspaceActor.get_scale()[0]);
+                            clone.get_transition("scale-y")?.set_to(activeWorkspaceActor.get_scale()[1]);
+                        },
                         onComplete: () => {
                             global.overlay_group.remove_actor(clone);
                             clone.destroy();
@@ -355,6 +361,8 @@ Expo.prototype = {
             this._background.dim_factor = 0.4;
         }
 
+        activeWorkspace.setOverviewMode(true);
+
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('showing');
@@ -367,8 +375,8 @@ Expo.prototype = {
         if (!this._shown)
             return;
 
-        this._shown = false;
         this._animateNotVisible(options);
+        this._shown = false;
         this._syncInputMode();
     },
 
