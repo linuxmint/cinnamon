@@ -15,9 +15,3 @@ assignees: ''
 
 ### Additional context
 
-### Checklist
-- [ ] Would it be useful for most people?
-- [ ] Would it be easy to use?
-- [ ] Is it necesarry?
-
-_If not, then it should be a spice._
