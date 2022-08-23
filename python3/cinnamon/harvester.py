@@ -92,8 +92,8 @@ class SpiceUpdate():
         self.author = ""
         try:
             author = index_node["author_user"]
-            if name not in ("none", "unknown"):
-                self.author = name
+            if author not in ("none", "unknown"):
+                self.author = author
         except:
             pass
 
