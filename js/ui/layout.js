@@ -712,6 +712,9 @@ Chrome.prototype = {
             if (!(actorData.affectsInputRegion && wantsInputRegion) && !actorData.affectsStruts)
                 continue;
 
+            if(!actorData.actor)
+                continue;
+
             let [x, y] = actorData.actor.get_transformed_position();
             let [w, h] = actorData.actor.get_transformed_size();
 
