@@ -109,7 +109,7 @@ function getCloneOrContent(windowActor, width = -1, height = -1) {
 
         clone = new Clutter.Actor({
             name: `TextureWindowClone ${windowActor.toString()}`,
-            content: Cinnamon.util_get_content_for_window_actor(windowActor, meta_window.get_frame_rect()),
+            content: windowActor.get_texture(),
             width: width,
             height: height
         });
