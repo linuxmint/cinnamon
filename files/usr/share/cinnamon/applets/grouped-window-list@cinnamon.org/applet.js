@@ -444,8 +444,10 @@ class GroupedWindowListApplet extends Applet.Applet {
     onWindowMonitorChanged(screen, metaWindow, metaWorkspace) {
         if (this.state.monitorWatchList.length !== this.numberOfMonitors) {
             let appList = this.getCurrentAppList();
-            appList.windowRemoved(metaWorkspace, metaWindow);
-            appList.windowAdded(metaWorkspace, metaWindow);
+            if (appList !== null) {
+                appList.windowRemoved(metaWorkspace, metaWindow);
+                appList.windowAdded(metaWorkspace, metaWindow);
+            }
         }
     }
 
