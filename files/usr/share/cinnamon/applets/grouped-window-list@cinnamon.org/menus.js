@@ -709,17 +709,24 @@ class WindowThumbnail {
         }
         if (this.metaWindowActor && !this.metaWindowActor.is_finalized()) {
             this.signals.connect(this.metaWindow, 'unmanaging', () => this.disconnectSizeNotify());
-            this.signals.connect(this.metaWindowActor, 'notify::size', () => this.refreshThumbnail());
+
+            let texture = this.metaWindowActor.get_texture();
+            if (texture == null) {
+                return;
+            }
+
+            this.signals.connect(texture, 'size-changed', () => this.refreshThumbnail());
 
             let [width, height] = this.metaWindowActor.get_size();
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
             height = Math.round(height * scale);
-            if (this.thumbnailActor.child) {
-                this.thumbnailActor.child.destroy()
+            if (this.thumbnailActor.child == null || (this.thumbnailActor.child.name?.startsWith("TextureWindowClone"))) {
+                if (this.thumbnailActor.child != null) {
+                    this.thumbnailActor.child.destroy()
+                }
+                this.thumbnailActor.child = WindowUtils.getCloneOrContent(this.metaWindowActor, width, height);
             }
-
-            this.thumbnailActor.child = WindowUtils.getCloneOrContent(this.metaWindowActor, width, height);
         } else if (this.groupState.isFavoriteApp) {
             this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
         }

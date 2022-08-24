@@ -94,7 +94,7 @@ function getCloneOrContent(windowActor, width = -1, height = -1) {
     var clone = null;
     if (Main.wm.windowSeen(windowActor.meta_window)) {
         clone = new Clutter.Clone({
-            name: `MetaWindowClone ${windowActor.toString()}`,
+            name: `RealWindowClone ${windowActor.toString()}`,
             source: windowActor,
             width: width,
             height: height
@@ -108,7 +108,7 @@ function getCloneOrContent(windowActor, width = -1, height = -1) {
         }
 
         clone = new Clutter.Actor({
-            name: `MetaWindowClone ${windowActor.toString()}`,
+            name: `TextureWindowClone ${windowActor.toString()}`,
             content: Cinnamon.util_get_content_for_window_actor(windowActor, meta_window.get_frame_rect()),
             width: width,
             height: height
