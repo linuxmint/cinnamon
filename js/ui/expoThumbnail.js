@@ -779,7 +779,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 window.actor.ease({
                     scale_x: 0,
                     scale_y: 0,
-                    duration: REARRANGE_TIME_ON,
+                    duration: Main.animations_enabled ? REARRANGE_TIME_ON : 0,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onComplete: () => window.actor.hide()
                 });
@@ -826,7 +826,7 @@ ExpoWorkspaceThumbnail.prototype = {
                     scale_x: scale,
                     scale_y: scale,
                     opacity: 255,
-                    duration: REARRANGE_TIME_ON,
+                    duration: Main.animations_enabled ? REARRANGE_TIME_ON : 0,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onComplete: () => {
                         window.actor.show();
@@ -868,7 +868,7 @@ ExpoWorkspaceThumbnail.prototype = {
                     y: window.origY,
                     scale_x: 1, scale_y: 1,
                     opacity: window.metaWindow.showing_on_its_workspace() ? 255 : 127,
-                    duration: rearrangeTime,
+                    duration: Main.animations_enabled ? rearrangeTime : 0,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD
                 });
             }, this);
@@ -905,7 +905,7 @@ ExpoWorkspaceThumbnail.prototype = {
         if (!this.isSelected || force) {
             this.shader.ease({
                 opacity: INACTIVE_OPACITY,
-                duration: SLIDE_ANIMATION_TIME,
+                duration: Main.animations_enabled ? SLIDE_ANIMATION_TIME : 0,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD
             });
         }
@@ -914,7 +914,7 @@ ExpoWorkspaceThumbnail.prototype = {
     highlight : function (){
         this.shader.ease({
             opacity: 0,
-            duration: SLIDE_ANIMATION_TIME,
+            duration: Main.animations_enabled ? SLIDE_ANIMATION_TIME : 0,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
     },

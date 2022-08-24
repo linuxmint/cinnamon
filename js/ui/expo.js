@@ -238,7 +238,7 @@ Expo.prototype = {
         this._windowCloseArea.show();
         this._windowCloseArea.ease({
             y: primary.height - this._windowCloseArea.height,
-            duration: ANIMATION_TIME,
+            duration: Main.animations_enabled ? ANIMATION_TIME : 0,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
     },
@@ -247,7 +247,7 @@ Expo.prototype = {
         let primary = Main.layoutManager.primaryMonitor;
         this._windowCloseArea.ease({
             y: primary.height,
-            duration: ANIMATION_TIME,
+            duration: Main.animations_enabled ? ANIMATION_TIME : 0,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
     },
@@ -299,67 +299,52 @@ Expo.prototype = {
         let activeWorkspace = this._expo.lastActiveWorkspace;
         let activeWorkspaceActor = activeWorkspace.actor;
 
-        // should not create new actors and work with them within an allocation cycle
-        let clones = [];
-        Main.layoutManager.monitors.forEach(function(monitor,index) {
-            let clone = new Clutter.Clone({source: activeWorkspaceActor});
-            global.overlay_group.add_actor(clone);
-            clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
-            clones.push(clone);
-        }, this);
-        let animate = Main.animations_enabled;
         //We need to allocate activeWorkspace before we begin its clone animation
-        this._expo.actor.queue_relayout();
         let allocateID = this._expo.connect('allocated', Lang.bind(this, function() {
             this._expo.disconnect(allocateID);
+
+            let clones = [];
+            Main.layoutManager.monitors.forEach(function(monitor,index) {
+                let clone = new Clutter.Clone({source: activeWorkspaceActor});
+                global.overlay_group.add_actor(clone);
+                clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+                clones.push(clone);
+            }, this);
+
             Main.layoutManager.monitors.forEach(function(monitor,index) {
                 let clone = clones[index];
-                if (animate) {
-                    clone.ease({
-                        x: Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1,
-                        y: Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1,
-                        scale_x: activeWorkspaceActor.get_scale()[0] , 
-                        scale_y: activeWorkspaceActor.get_scale()[1], 
-                        duration: ANIMATION_TIME,
-                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                        onUpdate: (t, timeIndex) => {
-                            clone.get_transition("x")?.set_to(Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1);
-                            clone.get_transition("y")?.set_to(Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1);
-                            clone.get_transition("scale-x")?.set_to(activeWorkspaceActor.get_scale()[0]);
-                            clone.get_transition("scale-y")?.set_to(activeWorkspaceActor.get_scale()[1]);
-                        },
-                        onComplete: () => {
-                            global.overlay_group.remove_actor(clone);
-                            clone.destroy();
-                            if (index == Main.layoutManager.monitors.length < 1) {
-                                this._showDone();
-                            }
+                clone.ease({
+                    x: Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1,
+                    y: Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1,
+                    scale_x: activeWorkspaceActor.get_scale()[0] , 
+                    scale_y: activeWorkspaceActor.get_scale()[1], 
+                    duration: Main.animations_enabled ? ANIMATION_TIME : 0,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onUpdate: (t, timeIndex) => {
+                        clone.get_transition("x")?.set_to(Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1);
+                        clone.get_transition("y")?.set_to(Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1);
+                        clone.get_transition("scale-x")?.set_to(activeWorkspaceActor.get_scale()[0]);
+                        clone.get_transition("scale-y")?.set_to(activeWorkspaceActor.get_scale()[1]);
+                    },
+                    onComplete: () => {
+                        global.overlay_group.remove_actor(clone);
+                        clone.destroy();
+                        if (index == Main.layoutManager.monitors.length - 1) {
+                            this._showDone();
                         }
-                    });
-                }
-                else {
-                    global.overlay_group.remove_actor(clone);
-                    clone.destroy();
-                    if (index == Main.layoutManager.monitors.length < 1) {
-                        this._showDone();
                     }
-                }
+                });
             }, this);
         }));
         this._gradient.show();
         Main.panelManager.disablePanels();
 
-        if (animate) {
-            this._background.dim_factor = 1;
-            this._background.ease({
-                dim_factor: 0.4,
-                duration: ANIMATION_TIME,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD
-            });
-        }
-        else {
-            this._background.dim_factor = 0.4;
-        }
+        this._background.dim_factor = 1;
+        this._background.ease({
+            dim_factor: 0.4,
+            duration: Main.animations_enabled ? ANIMATION_TIME : 0,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
+        });
 
         activeWorkspace.setOverviewMode(true);
 
@@ -405,7 +390,8 @@ Expo.prototype = {
             }
         } else {
             if (this._modal) {
-                Main.popModal(this._group);
+                if (this._group != null)
+                    Main.popModal(this._group);
                 this._modal = false;
             }
             else if (global.stage_input_mode == Cinnamon.StageInputMode.FULLSCREEN)
@@ -454,12 +440,12 @@ Expo.prototype = {
                 y: 0,
                 scale_x: 1,
                 scale_y: 1,
-                duration: ANIMATION_TIME,
+                duration: Main.animations_enabled ? ANIMATION_TIME : 0,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 onComplete: () => {
                     global.overlay_group.remove_actor(cover);
                     cover.destroy();
-                    if (index == Main.layoutManager.monitors.length < 1) {
+                    if (index == Main.layoutManager.monitors.length - 1) {
                         this._group.hide();
                         this._hideDone();
                     }
