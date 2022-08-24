@@ -938,7 +938,7 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     _onSwitchWorkspace() {
         if (!this.state) return;
-        this.state.set({currentWs: global.screen.get_active_workspace_index()});
+        this.state.set({currentWs: global.workspace_manager.get_active_workspace_index()});
         let metaWorkspace = global.screen.get_workspace_by_index(this.state.currentWs);
 
         // If the workspace we switched to isn't in our list,
@@ -961,6 +961,7 @@ class GroupedWindowListApplet extends Applet.Applet {
 
         this.actor.remove_all_children();
         this.actor.add_child(this.appLists[refWorkspace].actor);
+        this.actor.queue_relayout();
     }
 
     onWindowSkipTaskbarChanged(screen, metaWindow) {
