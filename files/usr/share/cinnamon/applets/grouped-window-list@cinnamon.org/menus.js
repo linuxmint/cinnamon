@@ -715,8 +715,6 @@ class WindowThumbnail {
                 return;
             }
 
-            this.signals.connect(texture, 'size-changed', () => this.refreshThumbnail());
-
             let [width, height] = this.metaWindowActor.get_size();
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
@@ -725,7 +723,14 @@ class WindowThumbnail {
                 if (this.thumbnailActor.child != null) {
                     this.thumbnailActor.child.destroy()
                 }
+
                 this.thumbnailActor.child = WindowUtils.getCloneOrContent(this.metaWindowActor, width, height);
+
+                if (this.thumbnailActor.child.name?.startsWith("TextureWindowClone")) {
+                    global.logTrace();
+                    this.signals.connect(texture, 'size-changed', () => this.refreshThumbnail());
+                    this.signals.connect(this.metaWindow, 'notify::minimized', () => this.refreshThumbnail());
+                }
             }
         } else if (this.groupState.isFavoriteApp) {
             this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
@@ -734,7 +739,12 @@ class WindowThumbnail {
 
     disconnectSizeNotify(actor) {
         this.signals.disconnect('unmanaging', this.metaWindow);
-        this.signals.disconnect('notify::size', this.metaWindowActor);
+
+        let texture = this.metaWindowActor.get_texture();
+        if (texture) {
+            this.signals.disconnect("size-changed", texture);
+        }
+        this.signals.disconnect("notify::minimized", this.metaWindow);
     }
 
     refreshThumbnail() {
