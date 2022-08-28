@@ -715,6 +715,8 @@ class WindowThumbnail {
                 return;
             }
 
+            this.signals.connect(texture, 'size-changed', () => this.refreshThumbnail());
+
             let [width, height] = this.metaWindowActor.get_size();
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
@@ -727,10 +729,13 @@ class WindowThumbnail {
                 this.thumbnailActor.child = WindowUtils.getCloneOrContent(this.metaWindowActor, width, height);
 
                 if (this.thumbnailActor.child.name?.startsWith("TextureWindowClone")) {
-                    global.logTrace();
-                    this.signals.connect(texture, 'size-changed', () => this.refreshThumbnail());
                     this.signals.connect(this.metaWindow, 'notify::minimized', () => this.refreshThumbnail());
                 }
+            } else {
+                this.thumbnailActor.child.width = width;
+                this.thumbnailActor.child.height = height;
+                this.thumbnailActor.queue_relayout();
+
             }
         } else if (this.groupState.isFavoriteApp) {
             this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
