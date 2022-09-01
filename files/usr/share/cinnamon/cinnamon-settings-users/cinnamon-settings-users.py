@@ -121,7 +121,7 @@ class DimmedTable (Gtk.Table):
 class EditableEntry (Gtk.Notebook):
 
     __gsignals__ = {
-        'changed': (GObject.SIGNAL_RUN_FIRST, None,
+        'changed': (GObject.SignalFlags.RUN_FIRST, None,
                     (str,))
     }
 
