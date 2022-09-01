@@ -1523,8 +1523,7 @@ function getTabList(workspaceOpt, screenOpt) {
 
     let windows = []; // the array to return
 
-    let allwindows = display.get_tab_list(Meta.TabList.NORMAL_ALL, screen,
-                                       workspace);
+    let allwindows = display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
     let registry = {}; // to avoid duplicates
 
     for (let i = 0; i < allwindows.length; ++i) {
