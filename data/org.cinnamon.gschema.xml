@@ -428,10 +428,7 @@
 
     <key name="bring-windows-to-current-workspace" type="b">
       <default>false</default>
-      <summary>Brings windows requiring attention to the current workspace</summary>
-      <description>
-        When enabled, if a window requires attention, it is brought to the current workspace.
-      </description>
+      <summary>not used - lives in org.cinnamon.muffin now</summary>
     </key>
 
     <key name="prevent-focus-stealing" type="b">
