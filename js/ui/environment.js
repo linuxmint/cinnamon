@@ -135,7 +135,7 @@ function _easeActor(actor, params) {
     let animatedProps = Object.keys(params).map(p => p.replace('_', '-', 'g'));
     animatedProps.forEach(p => actor.remove_transition(p));
 
-    if (actor.get_easing_duration() > 0 || !isReversed)
+    if (actor && (actor.get_easing_duration() > 0 || !isReversed))
         actor.set(params);
     actor.restore_easing_state();
 
@@ -289,7 +289,7 @@ function init() {
     // Override destroy so it checks if its finalized before calling the real destroy method.
     Clutter.Actor.prototype._destroy = Clutter.Actor.prototype.destroy;
     Clutter.Actor.prototype.destroy = function destroy() {
-        if (!this.is_finalized()) {
+        if (this && !this.is_finalized()) {
             this._destroy();
         }
     };
