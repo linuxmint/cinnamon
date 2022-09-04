@@ -1,10 +1,13 @@
 const Applet = imports.ui.applet;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
+const Main = imports.ui.main;
 const St = imports.gi.St;
 const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
 const GnomeSession = imports.misc.gnomeSession;
+const Settings = imports.ui.settings;
+const Util = imports.misc.util;
 
 const INHIBIT_IDLE_FLAG = 8;
 const INHIBIT_SLEEP_FLAG = 4;
@@ -368,6 +371,11 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
 
         this.menu.addMenuItem(this.notificationsSwitch);
         
+        this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
+        this.settings.bind("keyPower", "keyPower", this._setKeybinding);
+        this.settings.bind("keyNotifications", "keyNotifications", this._setKeybinding);
+        this._setKeybinding();
+
         this._createInhibitorMenuSection(orientation);
     }
     
@@ -386,11 +394,30 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         }
     }
 
+    _setKeybinding() {
+        Main.keybindingManager.addHotKey("inhibit-power-" + this.instance_id,
+            this.keyPower,
+            Lang.bind(this, this.toggle_inhibit_power));
+        Main.keybindingManager.addHotKey("inhibit-notifications-" + this.instance_id,
+            this.keyNotifications,
+            Lang.bind(this, this.toggle_inhibit_notifications));
+    }
+
     on_applet_clicked(event) {
         this.menu.toggle();
     }
 
+    on_btn_open_system_power_settings_clicked() {
+        Util.spawnCommandLine("cinnamon-settings power");
+    }
+
+    on_btn_open_system_notification_settings_clicked() {
+        Util.spawnCommandLine("cinnamon-settings notifications");
+    }
+
     on_applet_removed_from_panel() {
+        Main.keybindingManager.removeHotKey("inhibit-power-" + this.instance_id);
+        Main.keybindingManager.removeHotKey("inhibit-notifications-" + this.instance_id);
         this.inhibitSwitch.kill();
     }
     
@@ -404,6 +431,27 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         this.inhibitSwitch.updateStatus();
     }
     
+    toggle_inhibit_power() {
+        this.inhibitSwitch._switch.toggle();
+        this.inhibitSwitch.toggled(this.inhibitSwitch._switch.state);
+
+        let _symbol = this.inhibitSwitch._switch.state ?
+            "inhibit-symbolic" :
+            "inhibit-active-symbolic";
+
+        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(_symbol));
+    }
+
+    toggle_inhibit_notifications() {
+        this.notificationsSwitch.toggle();
+
+        let _symbol = this.notificationsSwitch._switch.state ?
+            "inhibit-notification-symbolic" :
+            "inhibit-notification-active-symbolic";
+
+        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(_symbol));
+    }
+
     get inhibitors() {
         return this._inhibitorMenuSection;
     }
