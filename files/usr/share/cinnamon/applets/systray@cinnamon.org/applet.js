@@ -157,6 +157,12 @@ class CinnamonSystrayApplet extends Applet.Applet {
             icon.visible = false;
             icon.opacity = 0;
             GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+                if (icon.is_finalized()) {
+                    button.destroy();
+                    return GLib.SOURCE_REMOVE;
+                }
+
+                icon.reactive = true;
                 icon.visible = true;
                 icon.set_size(this.icon_size, this.icon_size);
                 icon.ease({
@@ -164,39 +170,44 @@ class CinnamonSystrayApplet extends Applet.Applet {
                     duration: 400,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 });
+
+                icon.connect("event", (actor, event) => this._onEvent(actor, event));
                 return GLib.SOURCE_REMOVE;
-            });
-
-            icon.reactive = true;
-
-            icon.connect("event", (actor, event) => {
-                let etype = event.type();
-
-                if (etype === Clutter.EventType.BUTTON_PRESS) {
-                    global.begin_modal(Meta.ModalOptions.POINTER_ALREADY_GRABBED, event.time);
-                }
-                else
-                if (etype === Clutter.EventType.ENTER) {
-                    button.add_style_pseudo_class("hover");
-                }
-                else
-                if (etype === Clutter.EventType.LEAVE) {
-                    button.remove_style_pseudo_class("hover");
-                }
-
-                let ret = icon.handle_event(etype, event);
-
-                if (etype === Clutter.EventType.BUTTON_PRESS) {
-                    global.end_modal(event.time);
-                }
-
-                return ret;
             });
 
             this.button_box.insert_child_at_index(button, 0);
         } catch (e) {
             global.logError(e);
         }
+    }
+
+    _onEvent(icon, event) {
+        let etype = event.type();
+        const button = icon.get_parent();
+
+        if (button == null) {
+            return GLib.SOURCE_REMOVE;
+        }
+
+        if (etype === Clutter.EventType.BUTTON_PRESS) {
+            global.begin_modal(Meta.ModalOptions.POINTER_ALREADY_GRABBED, event.time);
+        }
+        else
+        if (etype === Clutter.EventType.ENTER) {
+            button.add_style_pseudo_class("hover");
+        }
+        else
+        if (etype === Clutter.EventType.LEAVE) {
+            button.remove_style_pseudo_class("hover");
+        }
+
+        let ret = icon.handle_event(etype, event);
+
+        if (etype === Clutter.EventType.BUTTON_PRESS) {
+            global.end_modal(event.time);
+        }
+
+        return ret;
     }
 
     _onTrayIconRemoved(o, icon) {
