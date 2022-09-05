@@ -1,3 +1,44 @@
+cinnamon (5.4.12) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * environment: Add an onUpdate parameter for easing.
+  * Don't hide gwl when opening overview and expo.
+  * expo: Use unique pointer trackers for motion tracking.
+  * expo: Fix opening transition.
+  * feature_request.md: Checklist is unnecessary.
+
+  [ Asghwor ]
+  * Fix workspaces grid layout (#11094)
+
+  [ Michael Webster ]
+  * grouped-window-list: Don't create a new clone each time getThumbnail is called, don't connect to notify::size.
+  * windowUtils: Use the window actor's texture instead of a cairo surface for static clones.
+  * expo: Don't create monitor clones until the ExpoThumbnailBox is allocated.
+  * gwl: Redo the layout when switching workspaces.
+  * gwl: Fix a warning.
+  * windowManager.js: Filter out non-current-workspace windows when determining 'seen' windows.
+  * gwl: Only monitor size-changed while using textures, along with minimized state. Remove once all and no longer monitor once a clone can be used.
+  * gwl: Monitor clones, but only to update size.
+  * environment.js: Fix is_finalized() check.
+
+  [ Fabio Fantoni ]
+  * Fix 2 man pages
+
+  [ Michael Webster ]
+  * layout.js: Connect to tracked actors' destroy signal.
+  * cs_windows: Use 'bring-windows-to-current-workspace' in its new location, mark the old dconf key as unused.
+
+  [ anaximeno ]
+  * fix: fix use of undeclared variable
+
+  [ Attila Greguss ]
+  * Fix getTabList in js.main
+
+  [ Michael Webster ]
+  * systray applet: Don't continue processing an icon if it gets destroyed before we can show it.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 05 Sep 2022 15:13:05 +0100
+
 cinnamon (5.4.11) vanessa; urgency=medium
 
   [ Michael Webster ]
