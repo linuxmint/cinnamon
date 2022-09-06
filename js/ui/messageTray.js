@@ -940,9 +940,9 @@ MessageTray.prototype = {
         this._notificationBin.opacity = 0;
 
         let monitor = Main.layoutManager.primaryMonitor;
-        let topPanel = Main.panelManager.getPanel(0, 0);
-        let bottomPanel = Main.panelManager.getPanel(0, 1);
-        let rightPanel = Main.panelManager.getPanel(0, 3);
+        let topPanel = Main.panelManager.getPanel(monitor.index, 0);
+        let bottomPanel = Main.panelManager.getPanel(monitor.index, 1);
+        let rightPanel = Main.panelManager.getPanel(monitor.index, 3);
         let topGap = 10;
         let bottomGap = 10;
         let rightGap = 0;
