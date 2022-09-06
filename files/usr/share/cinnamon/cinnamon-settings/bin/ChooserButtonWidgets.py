@@ -124,7 +124,7 @@ class PictureChooserButton(BaseChooserButton):
                 message = "Could not load pixbuf from '%s': %s" % (path, e.message)
                 error = True
 
-            if pixbuf != None:
+            if pixbuf is not None:
                 h = pixbuf.get_height()
                 w = pixbuf.get_width()
 
@@ -176,7 +176,7 @@ class PictureChooserButton(BaseChooserButton):
                 message = "Could not load pixbuf from '%s': %s" % (path, e.message)
                 error = True
 
-            if pixbuf != None:
+            if pixbuf is not None:
                 h = pixbuf.get_height()
                 w = pixbuf.get_width()
 

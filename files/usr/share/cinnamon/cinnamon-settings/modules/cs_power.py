@@ -806,7 +806,7 @@ class GSettings2ComboBox(SettingsWidget):
 
     def on_my_value_changed(self, widget):
         tree_iter = widget.get_active_iter()
-        if tree_iter != None:
+        if tree_iter is not None:
             self.settings[widget.key] = self.model[tree_iter][0]
 
     def on_my_setting_changed1(self, *args):

@@ -163,7 +163,7 @@ class ScrollMethodCombo(ComboBox):
 
     def on_my_value_changed(self, combo):
         tree_iter = combo.get_active_iter()
-        if tree_iter != None:
+        if tree_iter is not None:
             self.value = self.model[tree_iter][0]
             self.set_value(self.value)
 

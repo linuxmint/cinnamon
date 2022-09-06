@@ -220,7 +220,7 @@ class AutostartApp():
         try:
             key_file = GLib.KeyFile.new()
 
-            if self.user_position == None:
+            if self.user_position is None:
                 self.user_position = os.path.join(GLib.get_user_config_dir(), "autostart")
                 self.path = os.path.join(self.user_position, self.basename)
                 key_file.load_from_file(os.path.join(self.system_position, self.basename), KEYFILE_FLAGS)
@@ -471,7 +471,7 @@ class AutostartBox(Gtk.Box):
         self.on_edit_button_clicked(list_box)
 
     def on_run_button_clicked(self, button):
-        if self.infobar_holder.get_child() != None:
+        if self.infobar_holder.get_child() is not None:
             self.infobar_holder.get_child().destroy()
 
         row = self.list_box.get_selected_row()

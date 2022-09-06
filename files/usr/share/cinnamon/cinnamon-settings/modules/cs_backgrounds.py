@@ -144,7 +144,7 @@ class ColorsWidget(SettingsWidget):
 
     def on_combo_changed(self, widget, key):
         tree_iter = widget.get_active_iter()
-        if tree_iter != None:
+        if tree_iter is not None:
             value = widget.get_model()[tree_iter][0]
             self.settings.set_string(key, value)
             self.show_or_hide_color2(value)
@@ -372,7 +372,7 @@ class Module:
             self.remove_folder_button.set_sensitive(True)
 
             if image_source != "" and "://" in image_source:
-                while tree_iter != None:
+                while tree_iter is not None:
                     if collection_source == image_source:
                         tree_path = self.collection_store.get_path(tree_iter)
                         self.folder_tree.set_cursor(tree_path)
@@ -763,7 +763,7 @@ class ThreadedIconView(Gtk.IconView):
                 if filename.endswith(".xml"):
                     filename = self.getFirstFileFromBackgroundXml(filename)
                 pix = PIX_CACHE.get_pix(filename, BACKGROUND_ICONS_SIZE)
-                if pix != None:
+                if pix is not None:
                     if "name" in to_load:
                         label = to_load["name"]
                     else:
