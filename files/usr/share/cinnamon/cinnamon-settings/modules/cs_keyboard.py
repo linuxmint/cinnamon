@@ -397,7 +397,7 @@ class Module:
             longest_cat_label = " "
 
             for category in self.main_store:
-                if category.parent == None:
+                if category.parent is None:
                     cat_iters[category.int_name] = self.cat_store.append(None)
                 else:
                     cat_iters[category.int_name] = self.cat_store.append(cat_iters[category.parent])

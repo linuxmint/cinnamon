@@ -755,7 +755,7 @@ def put_palette(image_to, image_from, palette=None):
     :param palette: image palette
     :type palette: sequence of (r, g, b) tuples or None
     """
-    if palette == None:
+    if palette is None:
         palette = get_palette(image_from)
     image_to.putpalette(flatten(palette))
     if 'transparency' in image_from.info:
@@ -853,7 +853,7 @@ def paste(destination, source, box=(0, 0), mask=None, force=False):
             source_without_alpha = remove_alpha(source)
             # paste on top of the opaque destination pixels
             destination.paste(source_without_alpha, box, source)
-            if invert_alpha != None:
+            if invert_alpha is not None:
                 # the alpha channel is ok now, so save it
                 destination_alpha = get_alpha(destination)
                 # paste on top of the transparant destination pixels

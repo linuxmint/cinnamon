@@ -566,7 +566,7 @@ class MainWindow(Gio.Application):
         min_width_pixels = 0
         icon_view = Gtk.IconView()
         iter = model.get_iter_first()
-        while iter != None:
+        while iter is not None:
             string = model.get_value(iter, 0)
             split_by_word = string.split(" ")
             for word in split_by_word:

@@ -27,7 +27,7 @@ from . import logger
 from . import proxygsettings
 
 DEBUG = False
-if os.getenv("DEBUG") != None:
+if os.getenv("DEBUG") is not None:
     DEBUG = True
 def debug(msg):
     if DEBUG:
@@ -443,7 +443,7 @@ class Harvester():
             else:
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(paths.thumb_local_path, 24 * ui_scale, 24 * ui_scale, True)
 
-            if pixbuf == None:
+            if pixbuf is None:
                 raise Exception
 
             surf = Gdk.cairo_surface_create_from_pixbuf(pixbuf, ui_scale, None)

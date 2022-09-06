@@ -377,7 +377,7 @@ class CustomAppChooserButton(Gtk.AppChooserButton):
 
     def getPreference(self, settings_key):
         strv = self.media_settings.get_strv(settings_key)
-        return strv != None and self.get_content_type() in strv
+        return strv is not None and self.get_content_type() in strv
 
     def getPreferences(self):
         pref_start_app = self.getPreference( PREF_MEDIA_AUTORUN_X_CONTENT_START_APP)
@@ -456,7 +456,7 @@ class OtherTypeDialog(Gtk.Dialog):
                     description = s
                 break
 
-        if description == None:
+        if description is None:
             print("Content type '%s' is missing from the info panel" % content_type)
             return Gio.content_type_get_description(content_type)
 
@@ -476,7 +476,7 @@ class OtherTypeDialog(Gtk.Dialog):
 
     def doHide(self):
         self.hide()
-        if self.application_combo != None:
+        if self.application_combo is not None:
             self.application_combo.destroy()
             self.application_combo = None
             self.table.forgetRow()
@@ -497,7 +497,7 @@ class OtherTypeDialog(Gtk.Dialog):
         heading = model.get_value(iter, 0)
 
         action_container = Gtk.HBox()
-        if self.application_combo != None:
+        if self.application_combo is not None:
             self.application_combo.destroy()
             self.table.forgetRow()
 

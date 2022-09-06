@@ -28,7 +28,7 @@ class BinFileMonitor(GObject.GObject):
 
         env = GLib.getenv("PATH")
 
-        if env == None:
+        if env is None:
             env = "/bin:/usr/bin:."
 
         self.paths = env.split(":")
@@ -58,7 +58,7 @@ file_monitor = None
 def get_file_monitor():
     global file_monitor
 
-    if file_monitor == None:
+    if file_monitor is None:
         file_monitor = BinFileMonitor()
 
     return file_monitor
@@ -196,7 +196,7 @@ class SidePage(object):
         self.topWindow = None
         self.builder = None
         self.stack = None
-        if self.module != None:
+        if self.module is not None:
             self.module.loaded = False
 
     def add_widget(self, widget):

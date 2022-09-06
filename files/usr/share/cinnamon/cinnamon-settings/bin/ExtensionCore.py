@@ -995,7 +995,7 @@ class DownloadSpicesPage(SettingsPage):
 
     def build_list(self, *args):
         spices_data = self.spices.get_cache()
-        if spices_data == None:
+        if spices_data is None:
             return
 
         if len(self.extension_rows) > 0:
