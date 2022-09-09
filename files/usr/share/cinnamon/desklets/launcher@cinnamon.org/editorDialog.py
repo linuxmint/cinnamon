@@ -28,7 +28,7 @@ class EditorDialog:
             for item in launcher_list:
                 if item.split(":")[0] == str(self.desklet_id):
                     launcher = item.split(":")[1][:-8]
-                    break;
+                    break
 
             self.name = launcher
             if self.name[:24] == "cinnamon-custom-launcher":
@@ -155,10 +155,10 @@ class EditorDialog:
             i = i + 1
             fileRec = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH + 'cinnamon-custom-launcher-' + str(i) + '.desktop')
 
-        return i;
+        return i
 
     def write_custom_application(self):
-        i = self.get_custom_id();
+        i = self.get_custom_id()
 
         file_name = "cinnamon-custom-launcher-" + str(i) + ".desktop"
         file_path = CUSTOM_LAUNCHERS_PATH + file_name

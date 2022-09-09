@@ -17,7 +17,7 @@ class EyeDropper(Gtk.HBox):
         self.button.set_tooltip_text(_("Click the eyedropper, then click a color anywhere on your screen to select that color"))
         self.button.set_image(Gtk.Image().new_from_stock(Gtk.STOCK_COLOR_PICKER, Gtk.IconSize.BUTTON))
         self.button.get_property('image').show()
-        self.button.set_events(Gdk.EventMask.POINTER_MOTION_MASK | Gdk.EventMask.POINTER_MOTION_HINT_MASK);
+        self.button.set_events(Gdk.EventMask.POINTER_MOTION_MASK | Gdk.EventMask.POINTER_MOTION_HINT_MASK)
 
         self.pack_start(self.button, False, False, 2)
 
@@ -47,7 +47,7 @@ class EyeDropper(Gtk.HBox):
 
         window = self.grab_widget.get_window()
 
-        picker_cursor = Gdk.Cursor(screen.get_display(), Gdk.CursorType.CROSSHAIR);
+        picker_cursor = Gdk.Cursor(screen.get_display(), Gdk.CursorType.CROSSHAIR)
 
         grab_status = self.device.grab(window, Gdk.GrabOwnership.APPLICATION, False,
                                        Gdk.EventMask.BUTTON_RELEASE_MASK | Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.POINTER_MOTION_MASK,
