@@ -412,7 +412,7 @@ class Harvester():
 
     def write_to_log(self, uuid, action):
         new_version = "<none>"
-        old_verison = "<none>"
+        old_version = "<none>"
 
         try:
             remote_item = self.index_cache[uuid]
