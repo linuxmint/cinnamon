@@ -249,7 +249,7 @@ class Module:
                     dump = True
 
                 if theme_path == None:
-                    continue;
+                    continue
 
                 if os.path.exists(theme_path):
                     chooser.add_picture(theme_path, callback, title=theme, id=theme)

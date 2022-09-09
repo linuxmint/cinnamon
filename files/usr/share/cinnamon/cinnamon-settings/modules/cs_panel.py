@@ -86,7 +86,7 @@ class PanelSettingsPage(SettingsPage):
             [left_switcher_label, "left"],
             [center_switcher_label, "center"],
             [right_switcher_label, "right"]
-        ];
+        ]
 
         for [zone, label] in (["left", left_switcher_label],
                               ["center", center_switcher_label],

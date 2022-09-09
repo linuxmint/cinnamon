@@ -105,7 +105,7 @@ class MenuEditor(object):
 
         item_iter = parent.iter()
         item_type = item_iter.next()
-        items = [];
+        items = []
         while item_type != CMenu.TreeItemType.INVALID:
             if item_type == CMenu.TreeItemType.DIRECTORY:
                 item = item_iter.get_directory()
