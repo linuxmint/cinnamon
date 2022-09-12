@@ -140,7 +140,16 @@ function overrideMeta() {
     }
 
     Meta.WindowActor.prototype.get_workspace = function() {
-        return this.meta_window ? this.meta_window.get_workspace().workspace_index : 0;
+        if (!this.meta_window) {
+            return -1;
+        }
+
+        const ws = this.meta_window.get_workspace();
+        if (ws == null) {
+            return -1;
+        }
+
+        return ws.workspace_index;
     }
 }
 
