@@ -891,6 +891,7 @@ class AppGroup {
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
             this.signals.connect(metaWindow, 'notify::gtk-application-id', (w) => this.onAppChange(w));
             this.signals.connect(metaWindow, 'notify::wm-class', (w) => this.onAppChange(w));
+            this.signals.connect(metaWindow, 'unmanaged', (w) => this.onAppChange(w));
 
             this.signals.connect(metaWindow, 'notify::icon', (w) => this.setIcon(w));
 

@@ -52,7 +52,6 @@ class AppList {
         // Connect all the signals
         this.signals.connect(global.screen, 'window-workspace-changed', (...args) => this.windowWorkspaceChanged(...args));
         // Ugly change: refresh the removed app instances from all workspaces
-        this.signals.connect(global.screen, 'window-removed', (...args) => this.windowRemoved(...args));
         this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
         this.signals.connect(global.window_manager, 'switch-workspace' , (...args) => this.reloadList(...args));
         this.on_orientation_changed(null, true);
@@ -347,7 +346,7 @@ class AppList {
             // should always remain indexed on all workspaces while its mapped.
             // if (!metaWindow.showing_on_its_workspace()) return;
             if ((this.state.settings.showAllWorkspaces) && (metaWindow.has_focus()
-            && global.screen.get_active_workspace_index()
+            && global.workspace_manager.get_active_workspace_index()
             !== metaWorkspace.index())) return;
             this.state.removingWindowFromWorkspaces = true;
             this.state.trigger('removeWindowFromAllWorkspaces', metaWindow);
