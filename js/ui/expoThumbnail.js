@@ -626,8 +626,14 @@ ExpoWorkspaceThumbnail.prototype = {
 
         // We might have the window in our list already if it was on all workspaces and
         // now was moved to this workspace
-        if (this.lookupIndex (metaWin) != -1)
+        let winCloneIndex = this.lookupIndex(metaWin);
+        if (winCloneIndex !== -1) {
+            // the window's position on the workspace may have changed (dragging to a different monitor)
+            // update its original location so overview on/off position correctly.
+            this.windows[winCloneIndex].origX = win.x;
+            this.windows[winCloneIndex].origY = win.y;
             return;
+        }
 
         if (!this.isMyWindow(win) || !this.isExpoWindow(win))
             return;
