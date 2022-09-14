@@ -15,16 +15,16 @@ jobs:
     with:
       commit_id: master
       ############################## Comma separated list - like 'linuxmint/xapp, linuxmint/cinnamon-desktop'
-      dependencies: >
-        linuxmint/cinnamon-control-center,
-        linuxmint/cinnamon-desktop,
-        linuxmint/cinnamon-menus,
-        linuxmint/cinnamon-screensaver,
-        linuxmint/cinnamon-session,
-        linuxmint/cinnamon-settings-daemon,
-        linuxmint/cinnamon-translations,
-        linuxmint/cjs,
-        linuxmint/muffin,
-        linuxmint/nemo,
+      dependencies: |
+        linuxmint/cinnamon-control-center,  \
+        linuxmint/cinnamon-desktop,         \
+        linuxmint/cinnamon-menus,           \
+        linuxmint/cinnamon-screensaver,     \
+        linuxmint/cinnamon-session,         \
+        linuxmint/cinnamon-settings-daemon, \
+        linuxmint/cinnamon-translations,    \
+        linuxmint/cjs,                      \
+        linuxmint/muffin,                   \
+        linuxmint/nemo,                     \
         linuxmint/xapp
       ##############################
