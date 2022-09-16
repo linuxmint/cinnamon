@@ -96,11 +96,11 @@ def getProcInfos():
 def getSystemIcon():
     schema = Gio.Settings(schema="org.cinnamon")
 
-    if schema.get_boolean("system-icon-enabled"):
-        iconPath = schema.get_string("system-icon-path")
-        return iconPath
-    else:
-        return
+    iconPath = schema.get_string("system-icon-path")
+    if iconPath is None:
+        return None
+
+    return iconPath
 
 
 def createSystemInfos():
@@ -215,8 +215,10 @@ class Module:
                 settings.add_row(widget)
 
             systemIconPath = getSystemIcon()
-            systemIcon = Gtk.Image.new_from_file(systemIconPath)
-            page.add(systemIcon)
+            if systemIconPath is not None:
+                systemIcon = Gtk.Image.new_from_file(systemIconPath)
+                page.add(systemIcon)
+
     
     def on_copy_clipboard_button_clicked(self, button):
         try:
