@@ -21,7 +21,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gio', '2.0')
-from gi.repository import Gdk, Gtk, Gio
+from gi.repository import Gdk, Gtk, Gio, GLib
 
 from . import logger
 from . import proxygsettings
@@ -71,7 +71,7 @@ TIMEOUT_DOWNLOAD_ZIP = 120
 
 home = os.path.expanduser("~")
 locale_inst = '%s/.local/share/locale' % home
-settings_dir = '%s/.cinnamon/configs/' % home
+settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
 
 activity_logger = logger.ActivityLogger()
 

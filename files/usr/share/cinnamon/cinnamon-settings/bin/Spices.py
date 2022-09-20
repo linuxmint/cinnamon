@@ -24,7 +24,8 @@ except ImportError:
 
 home = os.path.expanduser("~")
 locale_inst = '%s/.local/share/locale' % home
-settings_dir = '%s/.cinnamon/configs/' % home
+settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
+old_settings_dir = '%s/.cinnamon/configs/' % home
 
 URL_SPICES_HOME = "https://cinnamon-spices.linuxmint.com"
 URL_MAP = {
@@ -697,6 +698,8 @@ class Spice_Harvester(GObject.Object):
                 # Uninstall settings file, if any
                 if (os.path.exists(os.path.join(settings_dir, uuid))):
                     shutil.rmtree(os.path.join(settings_dir, uuid))
+                if (os.path.exists(os.path.join(old_settings_dir, uuid))):
+                    shutil.rmtree(os.path.join(old_settings_dir, uuid))
             shutil.rmtree(os.path.join(self.install_folder, uuid))
         except Exception as detail:
             self.errorMessage(_("A problem occurred while removing %s.") % job['uuid'], str(detail))
