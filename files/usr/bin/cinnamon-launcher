@@ -12,7 +12,7 @@ import psutil
 import threading
 import gi
 gi.require_version('Gtk', '3.0')  # noqa
-from gi.repository import Gtk, GLib, Gio
+from gi.repository import Gtk, GLib, Gio, GLib
 
 FALLBACK_COMMAND = "metacity"
 FALLBACK_ARGS = ("--replace",)
@@ -113,7 +113,7 @@ class Launcher():
         os.execvp(sys.argv[0], sys.argv)
 
     def log_kill(self, memory, limit, delay):
-        directory = os.path.expanduser("~/.cinnamon")
+        directory = os.path.join(GLib.get_user_state_dir(), 'cinnamon')
         string = "%s - Usage: %d MB - Limit: %d MB - Freq: %s sec" % (time.strftime("%Y.%m.%d %H:%M:%S"), memory, limit, delay)
         if not os.path.exists(directory):
             os.mkdir(directory)
