@@ -62,6 +62,9 @@ class Module:
         switch = GSettingsSwitch(_("Show notifications on the bottom side of the screen"), "org.cinnamon.desktop.notifications", "bottom-notifications")
         settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
 
+        spin = GSettingsSpinButton(_("Notification duration"), "org.cinnamon.desktop.notifications", "notification-duration", _("seconds"), 1, 60, 1, 1)
+        settings.add_reveal_row(spin, "org.cinnamon.desktop.notifications", "display-notifications")
+
         button = Button(_("Display a test notification"), self.send_test)
         settings.add_reveal_row(button, "org.cinnamon.desktop.notifications", "display-notifications")
 

@@ -21,7 +21,6 @@ const Util = imports.misc.util;
 const AppletManager = imports.ui.appletManager;
 
 var ANIMATION_TIME = 0.2;
-var NOTIFICATION_TIMEOUT = 4;
 var NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET = 10;
 var SUMMARY_TIMEOUT = 1;
 var LONGER_SUMMARY_TIMEOUT = 4;
@@ -1015,9 +1014,10 @@ MessageTray.prototype = {
 
     _showNotificationCompleted: function() {
         this._updateNotificationTimeout(0);
+        this.notificationDuration = this.settings.get_int("notification-duration");
 
         if (this._notification.urgency != Urgency.CRITICAL) {
-            this._updateNotificationTimeout(NOTIFICATION_TIMEOUT * 1000);
+            this._updateNotificationTimeout(this.notificationDuration * 1000);
         } else if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
             this._updateNotificationTimeout(NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET * 1000);
         }
