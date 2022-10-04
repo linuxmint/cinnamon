@@ -51,7 +51,7 @@ KeybindingManager.prototype = {
          *
          * This dict will contain [name, bindings, callback] and keyed on the id returned by
          * add_custom_keybinding. */
-        this.bindings = {};
+        this.bindings = new Map();
         this.kb_schema = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA);
         this.setup_custom_keybindings();
         this.kb_schema.connect("changed::custom-list", Lang.bind(this, this.on_customs_changed));
@@ -74,8 +74,8 @@ KeybindingManager.prototype = {
 
     _lookupEntry: function(name) {
         let found = 0;
-        for (let action_id in this.bindings) {
-            let entry = this.bindings[action_id];
+        for (const action_id of this.bindings.keys()) {
+            let entry = this.bindings.get(action_id);
             if (entry !== undefined && entry.name === name) {
                 return [action_id, entry];
             }
@@ -92,7 +92,7 @@ KeybindingManager.prototype = {
                 return true;
             }
             global.display.remove_keybinding(name);
-            this.bindings[existing_action_id] = undefined
+            this.bindings.delete(existing_action_id);
         }
 
         if (!bindings) {
@@ -116,12 +116,11 @@ KeybindingManager.prototype = {
             global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
             return false;
         }
-
-        this.bindings[action_id] = {
+        this.bindings.set(action_id, {
             "name"    : name,
             "bindings": bindings,
             "callback": callback
-        };
+        });
 
         return true;
     },
@@ -134,7 +133,7 @@ KeybindingManager.prototype = {
         }
 
         global.display.remove_keybinding(name);
-        this.bindings[action_id] = undefined;
+        this.bindings.delete(action_id);
     },
 
     setup_custom_keybindings: function() {
@@ -157,9 +156,11 @@ KeybindingManager.prototype = {
     },
 
     remove_custom_keybindings: function() {
-        for (let i in this.bindings) {
-            if (i.indexOf("custom") > -1) {
-                this.removeHotKey(i);
+        for (const action_id of this.bindings.keys()) {
+            name = this.bindings.get(action_id).name;
+            if (name && name.indexOf("custom") > -1) {
+                global.display.remove_keybinding(name);
+                this.bindings.delete(action_id);
             }
         }
     },
@@ -201,8 +202,8 @@ KeybindingManager.prototype = {
     },
 
     invoke_keybinding_action_by_id: function(id) {
-        if (this.bindings[id] !== undefined) {
-            const binding = this.bindings[id];
+        const binding = this.bindings.get(id);
+        if (binding !== undefined) {
             // log(`invoke_keybinding_action_by_id: ${binding.name}, bindings: ${binding.bindings} - action id: ${id}`);
             binding.callback(null, null, null);
         }

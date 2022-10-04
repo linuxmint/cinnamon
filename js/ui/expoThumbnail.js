@@ -12,6 +12,7 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const ModalDialog = imports.ui.modalDialog;
 const Tooltips = imports.ui.tooltips;
+const PointerTracker = imports.misc.pointerTracker;
 const SignalManager = imports.misc.signalManager;
 const GridNavigator = imports.misc.gridNavigator;
 const WindowUtils = imports.misc.windowUtils;
@@ -22,10 +23,10 @@ let MAX_THUMBNAIL_SCALE = 0.9;
 const POINTER_LEAVE_MILLISECONDS_GRACE = 500;
 const POINTER_ENTER_MILLISECONDS_GRACE = 150;
 const RESCALE_ANIMATION_TIME = 0.2;
-const SLIDE_ANIMATION_TIME = 0.3;
+const SLIDE_ANIMATION_TIME = 300;
 const INACTIVE_OPACITY = 120;
-const REARRANGE_TIME_ON = 0.1;
-const REARRANGE_TIME_OFF = 0.3;
+const REARRANGE_TIME_ON = 100;
+const REARRANGE_TIME_OFF = 300;
 const ICON_OPACITY = Math.round(255 * 0.9);
 const ICON_SIZE = 128;
 const ICON_OFFSET = -5;
@@ -72,14 +73,16 @@ ExpoWindowClone.prototype = {
             return true;
         }));
 
+        let pointerTracker = new PointerTracker.PointerTracker();
+
         this.actor.connect('motion-event', Lang.bind(this, function (actor, event) {
-            if (Main.pointerTracker.hasMoved()) {
+            if (pointerTracker.hasMoved()) {
                 this.emit('hovering', true);
             }
             return false;
         }));
         this.actor.connect('leave-event', Lang.bind(this, function (actor, event) {
-            if (Main.pointerTracker.hasMoved()) {
+            if (pointerTracker.hasMoved()) {
                 this.emit('hovering', false);
             }
             return false;
@@ -361,8 +364,10 @@ ExpoWorkspaceThumbnail.prototype = {
                                      can_focus: true });                
         this.title._spacing = 0; 
         this.titleText = this.title.clutter_text;        
+        this.titleText.editable = false;
         this.titleText.connect('key-press-event', Lang.bind(this, this.onTitleKeyPressEvent)); 
         this.titleText.connect('key-focus-in', Lang.bind(this, function() {
+            this.titleText.editable = true;
             this.origTitle = Main.getWorkspaceName(this.metaWorkspace.index());
         })); 
         this.titleText.connect('key-focus-out', Lang.bind(this, function() {
@@ -621,8 +626,14 @@ ExpoWorkspaceThumbnail.prototype = {
 
         // We might have the window in our list already if it was on all workspaces and
         // now was moved to this workspace
-        if (this.lookupIndex (metaWin) != -1)
+        let winCloneIndex = this.lookupIndex(metaWin);
+        if (winCloneIndex !== -1) {
+            // the window's position on the workspace may have changed (dragging to a different monitor)
+            // update its original location so overview on/off position correctly.
+            this.windows[winCloneIndex].origX = win.x;
+            this.windows[winCloneIndex].origY = win.y;
             return;
+        }
 
         if (!this.isMyWindow(win) || !this.isExpoWindow(win))
             return;
@@ -771,7 +782,13 @@ ExpoWorkspaceThumbnail.prototype = {
                 windows.push(window);
             }
             else {
-                Tweener.addTween(window.actor, {scale_x: 0, scale_y: 0, time: REARRANGE_TIME_ON, transition: 'easeOutQuad', onComplete: window.actor.hide});
+                window.actor.ease({
+                    scale_x: 0,
+                    scale_y: 0,
+                    duration: Main.animations_enabled ? REARRANGE_TIME_ON : 0,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => window.actor.hide()
+                });
             }
         }, this);
 
@@ -809,14 +826,18 @@ ExpoWorkspaceThumbnail.prototype = {
                 window.icon.set_scale(iconScale, iconScale);
                 let [iconX, iconY] = [ICON_OFFSET / this.box.scale/scale, ICON_OFFSET / this.box.scale/scale];
                 window.icon.set_position(iconX, iconY);
-                Tweener.addTween(window.actor, {
-                    x: x, y: y, scale_x: scale, scale_y: scale,
+                window.actor.ease({
+                    x: x,
+                    y: y,
+                    scale_x: scale,
+                    scale_y: scale,
                     opacity: 255,
-                    time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
-                    onComplete: function() {
+                    duration: Main.animations_enabled ? REARRANGE_TIME_ON : 0,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => {
                         window.actor.show();
                         window.icon.show();
-                        }
+                    }
                 });
                 col++;
                 if (col > nCols){
@@ -848,12 +869,13 @@ ExpoWorkspaceThumbnail.prototype = {
                 window.showUrgencyState();
                 window.icon.hide();
                 window.actor.show();
-                Tweener.addTween(window.actor, {
+                window.actor.ease({
                     x: window.origX,
                     y: window.origY,
                     scale_x: 1, scale_y: 1,
                     opacity: window.metaWindow.showing_on_its_workspace() ? 255 : 127,
-                    time: rearrangeTime, transition: 'easeOutQuad'
+                    duration: Main.animations_enabled ? rearrangeTime : 0,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
                 });
             }, this);
         }, this);
@@ -886,12 +908,21 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     shade : function (force){
-        if (!this.isSelected || force)
-            Tweener.addTween(this.shader, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
+        if (!this.isSelected || force) {
+            this.shader.ease({
+                opacity: INACTIVE_OPACITY,
+                duration: Main.animations_enabled ? SLIDE_ANIMATION_TIME : 0,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD
+            });
+        }
     },
 
     highlight : function (){
-        Tweener.addTween(this.shader, {opacity: 0, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
+        this.shader.ease({
+            opacity: 0,
+            duration: Main.animations_enabled ? SLIDE_ANIMATION_TIME : 0,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
+        });
     },
 
     remove : function (){
@@ -1025,7 +1056,6 @@ ExpoThumbnailsBox.prototype = {
                                                   request_mode: Clutter.RequestMode.WIDTH_FOR_HEIGHT });
         this.actor.connect('get-preferred-width', Lang.bind(this, this.getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this.getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this.allocate));
 
         // When we animate the scale, we don't animate the requested size of the thumbnails, rather
         // we ask for our final size and then animate within that size. This slightly simplifies the
@@ -1139,6 +1169,8 @@ ExpoThumbnailsBox.prototype = {
             this.stateCounts[ThumbnailState[key]] = 0;
 
         this.addThumbnails(0, global.workspace_manager.n_workspaces);
+        this.actor.connect('allocate', Lang.bind(this, this.allocate));
+
         this.button.raise_top();
 
         global.stage.set_key_focus(this.actor);
@@ -1290,8 +1322,9 @@ ExpoThumbnailsBox.prototype = {
 
             // We want to ignore spurious events caused by animations
             // (when the contents are moving and not the pointer).
+            let pointerTracker = new PointerTracker.PointerTracker();
             thumbnail.actor.connect('motion-event', Lang.bind(this, function (actor, event) {
-                if (!Main.pointerTracker.hasMoved()) {return;}
+                if (!pointerTracker.hasMoved()) {return;}
                 if (!thumbnail.hovering) {
                     thumbnail.hovering = true;
                     this.lastHovered = thumbnail; 
@@ -1307,7 +1340,7 @@ ExpoThumbnailsBox.prototype = {
             }));
              
             thumbnail.actor.connect('leave-event', Lang.bind(this, function (actor, event) {
-                if (!Main.pointerTracker.hasMoved()) {return;}
+                if (!pointerTracker.hasMoved()) {return;}
                 if (this.isShowingModalDialog()) {return;}
                 if (thumbnail.hovering && !isInternalEvent(thumbnail, actor, event)) {
                     thumbnail.hovering = false;
@@ -1385,7 +1418,7 @@ ExpoThumbnailsBox.prototype = {
 
                 Tweener.addTween(thumbnail,
                                  { slidePosition: 1,
-                                   time: SLIDE_ANIMATION_TIME,
+                                   time: SLIDE_ANIMATION_TIME / 1000,
                                    transition: 'linear',
                                    onComplete: function() {
                                        this.setThumbnailState(thumbnail, ThumbnailState.ANIMATED_OUT);
@@ -1444,7 +1477,7 @@ ExpoThumbnailsBox.prototype = {
                 this.setThumbnailState(thumbnail, ThumbnailState.ANIMATING_IN);
                 Tweener.addTween(thumbnail,
                                  { slidePosition: 0,
-                                   time: SLIDE_ANIMATION_TIME,
+                                   time: SLIDE_ANIMATION_TIME / 1000,
                                    transition: 'easeOutQuad',
                                    onComplete: function() {
                                        this.setThumbnailState(thumbnail, ThumbnailState.NORMAL);
@@ -1605,7 +1638,7 @@ ExpoThumbnailsBox.prototype = {
         let childBox = new Clutter.ActorBox();
         
         let calcPaddingX = function(nCols) {
-            let neededX = (thumbnailWidth * nCols) + totalSpacingX + (spacing * 2);
+            let neededX = (thumbnailWidth * nCols) + (spacing * (nCols + 1));
             let extraSpaceX = (box.x2 - box.x1) - neededX;
             return spacing + extraSpaceX/2;
         };
@@ -1694,9 +1727,7 @@ ExpoThumbnailsBox.prototype = {
         
         this.button.allocate(childBox, flags);
 
-        if (this.targetScale === this._scale) {
-            this.emit('allocated');
-        }
+        this.emit('allocated');
     },
 
     activeWorkspaceChanged: function(wm, from, to, direction) {

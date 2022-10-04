@@ -99,7 +99,6 @@ libcinnamon_deps = [
     muffin,
     pango,
     polkit,
-    soup,
     st_dep,
     xapp,
     xfixes,
@@ -188,7 +187,6 @@ cinnamon_gir_includes = [
     'CoglPango-0',
     'Cogl-0',
     'Meta-0',
-    'Soup-2.4',
     'CMenu-3.0',
     st_gir[0],
 ]

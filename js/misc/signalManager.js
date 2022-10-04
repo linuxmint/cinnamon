@@ -77,6 +77,8 @@ const _disconnect = function(results) {
  * ```
  */
 
+var debug = false;
+
 var SignalManager = class SignalManager {
     /**
      * _init:
@@ -124,6 +126,10 @@ var SignalManager = class SignalManager {
      * functions).
      */
     _connect(method, obj, sigName, callback, bind, force) {
+        if (debug) {
+            log(`SignalManager connecting to '${sigName} of ${obj}`);
+        }
+
         if (!obj || (!force && this.isConnected(sigName, obj, callback)))
             return;
 

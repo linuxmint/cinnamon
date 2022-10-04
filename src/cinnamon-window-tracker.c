@@ -409,7 +409,7 @@ get_app_from_window_group (CinnamonWindowTracker  *tracker,
  * @window: a #MetaWindow
  *
  * Check if the pid associated with @window corresponds to an
- * application we launched.
+ * application.
  *
  * Return value: (transfer full): A newly-referenced #CinnamonApp, or %NULL
  */
@@ -425,10 +425,10 @@ get_app_from_window_pid (CinnamonWindowTracker  *tracker,
 
   pid = meta_window_get_pid (window);
 
-  if (pid == -1)
+  if (pid < 1)
     return NULL;
 
-  result = g_hash_table_lookup (tracker->launched_pid_to_app, GINT_TO_POINTER (pid));
+  result = cinnamon_window_tracker_get_app_from_pid (tracker, pid);
   if (result != NULL)
     g_object_ref (result);
 

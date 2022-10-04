@@ -275,17 +275,8 @@ Overview.prototype = {
         this._coverPane.connect('event', () => true);
         this._coverPane.hide();
 
-        // All the the actors in the window group are completely obscured,
-        // hiding the group holding them while the Overview is displayed greatly
-        // increases performance of the Overview especially when there are many
-        // windows visible.
-        //
-        // If we switched to displaying the actors in the Overview rather than
-        // clones of them, this would obviously no longer be necessary.
-        //
         // Disable unredirection while in the overview
         Meta.disable_unredirect_for_screen(global.screen);
-        global.window_group.hide();
         this._group.show();
 
         this.workspacesView = new WorkspacesView.WorkspacesView();
@@ -455,8 +446,6 @@ Overview.prototype = {
 
         // Re-enable unredirection
         Meta.enable_unredirect_for_display(global.display);
-
-        global.window_group.show();
 
         this.workspacesView.destroy();
         this.workspacesView = null;

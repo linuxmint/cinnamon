@@ -241,6 +241,7 @@ var WindowManager = class WindowManager {
         this._resizePending = new Set();
         this._destroying = new Set();
         this._movingWindow = null;
+        this._seenWindows = new Set();
 
         this.wm_settings = new Gio.Settings({schema_id: 'org.cinnamon.muffin'});
 
@@ -324,6 +325,52 @@ var WindowManager = class WindowManager {
         });
 
         this._windowMenuManager = new WindowMenu.WindowMenuManager();
+
+        // Minimized windows won't be reliable clone sources until they're
+        // shown once. If they start minimized, monitor them until they've
+        // been shown for the first time. (See windowUtils.js)
+        const handleSeen = (metaWindow) => {
+            if (this.windowSeen(metaWindow) || metaWindow === null || !Main.isInteresting(metaWindow)) {
+                return;
+            }
+
+            if (metaWindow.get_workspace().index() !== global.workspace_manager.get_active_workspace_index()) {
+                return;
+            }
+
+            if (!metaWindow.minimized) {
+                this._seenWindows.add(metaWindow);
+                return;
+            }
+
+            // If not, add it when it gets unminimized.
+            let minimize_id = metaWindow.connect("notify::minimized", () => {
+                if (!metaWindow.minimized) {
+                    this._seenWindows.add(metaWindow);
+                }
+            });
+
+            metaWindow.connect("unmanaging", () => {
+                metaWindow.disconnect(minimize_id);
+                this._seenWindows.delete(metaWindow);
+            });
+        }
+
+        global.display.connect("window-created", (display, metaWindow) => {
+            handleSeen(metaWindow);
+        });
+
+        global.workspace_manager.connect("workspace-switched", (from, to, direction) => {
+            const allWindowActors = Meta.get_window_actors(global.display);
+            allWindowActors.forEach((actor) => handleSeen(actor.meta_window));
+        });
+
+        const allWindowActors = Meta.get_window_actors(global.display);
+        allWindowActors.forEach((actor) => handleSeen(actor.meta_window));
+    }
+
+    windowSeen(metaWindow) {
+        return this._seenWindows.has(metaWindow);
     }
 
     _filterKeybinding(shellwm, binding) {
@@ -373,7 +420,6 @@ var WindowManager = class WindowManager {
             case Meta.WindowType.MENU:
             case Meta.WindowType.DROPDOWN_MENU:
             case Meta.WindowType.POPUP_MENU:
-                return this.desktop_effects_menus;
             default:
                 return false;
         }
@@ -382,7 +428,7 @@ var WindowManager = class WindowManager {
     _minimizeWindow(cinnamonwm, actor) {
         Main.soundManager.play('minimize');
 
-        if (!this._shouldAnimate(actor)) {
+        if (!this._shouldAnimate(actor) || this.desktop_effects_minimize_type == "none") {
             cinnamonwm.completed_minimize(actor);
             return;
         }
@@ -476,7 +522,7 @@ var WindowManager = class WindowManager {
     _unminimizeWindow(cinnamonwm, actor) {
         Main.soundManager.play('minimize');
 
-        if (!this._shouldAnimate(actor)) {
+        if (!this._shouldAnimate(actor) || this.desktop_effects_map_type == "none") {
             cinnamonwm.completed_unminimize(actor);
             return;
         }
@@ -812,21 +858,14 @@ var WindowManager = class WindowManager {
             this._checkDimming(actor.get_meta_window().get_transient_for());
         }
 
-        if (!this._shouldAnimate(actor)) {
+        if (!this._shouldAnimate(actor) || this.desktop_effects_map_type == "none") {
             cinnamonwm.completed_map(actor);
             return;
         }
 
-        // menu effects are always fade-in/out
-        let overridden_types = [Meta.WindowType.MENU,
-                                Meta.WindowType.DROPDOWN_MENU,
-                                Meta.WindowType.POPUP_MENU    ];
-
         this._mapping.add(actor);
 
-        let adjusted_type = overridden_types.includes(actor._windowType) ? "fade" : this.desktop_effects_map_type;
-
-        switch (adjusted_type) {
+        switch (this.desktop_effects_map_type) {
             case "traditional":
             {
                 actor.orig_opacity = actor.opacity;
@@ -837,11 +876,6 @@ var WindowManager = class WindowManager {
                 actor.show();
 
                 let time = this.MAP_ANIMATION_TIME * this.window_effect_multiplier;
-
-                // Popups shouldn't be affected by the multiplier.
-                if (overridden_types.includes(actor._windowType)) {
-                    time = this.MENU_ANIMATION_TIME;
-                }
 
                 actor.ease({
                     opacity: actor.orig_opacity,
@@ -946,21 +980,14 @@ var WindowManager = class WindowManager {
                      Meta.WindowType.DIALOG,
                      Meta.WindowType.MODAL_DIALOG];
 
-        if (!this._shouldAnimate(actor, types)) {
+        if (!this._shouldAnimate(actor, types) || this.desktop_effects_close_type === "none") {
             cinnamonwm.completed_destroy(actor);
             return;
         }
 
         this._destroying.add(actor);
 
-        // menu effects are always traditional
-        let overridden_types = [Meta.WindowType.MENU,
-                                Meta.WindowType.DROPDOWN_MENU,
-                                Meta.WindowType.POPUP_MENU    ];
-
-        let adjusted_type = overridden_types.includes(actor._windowType) ? "traditional" : this.desktop_effects_close_type;
-
-        switch (adjusted_type) {
+        switch (this.desktop_effects_close_type) {
             case "fly":
             {
                 let [xSrc, ySrc] = actor.get_position();
@@ -1009,15 +1036,15 @@ var WindowManager = class WindowManager {
 
                         return;
                     }
-                    case Meta.WindowType.MENU:
-                    case Meta.WindowType.DROPDOWN_MENU:
-                    case Meta.WindowType.POPUP_MENU:
-                    // ??
                     default:
                     {
-                        this._destroyWindowDone();
+                        this._destroyWindowDone(cinnamonwm, actor);
                     }
                 }
+            }
+            default:
+            {
+                this._destroyWindowDone(cinnamonwm, actor);
             }
         }
     }
@@ -1118,7 +1145,8 @@ var WindowManager = class WindowManager {
             // Muffin 5.2 window.showing_on_its_workspace() no longer
             // ends up filtering the desktop window (If I re-add it, it
             // breaks things elsewhere that rely on the new behavior).
-            if (meta_window.get_window_type() === Meta.WindowType.DESKTOP) {
+            if (meta_window.get_window_type() === Meta.WindowType.DESKTOP ||
+                meta_window.get_window_type() === Meta.WindowType.OVERRIDE_OTHER) {
                 continue;
             }
 
@@ -1165,6 +1193,11 @@ var WindowManager = class WindowManager {
                     onComplete: () => finish_switch_workspace(window)
                 });
             }
+        }
+
+        if (to_windows.size === 0 && from_windows.size === 0) {
+            this._cinnamonwm.completed_switch_workspace();
+            return;
         }
 
         kill_id = this._cinnamonwm.connect('kill-switch-workspace', cinnamonwm => {

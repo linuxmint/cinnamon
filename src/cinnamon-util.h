@@ -6,7 +6,6 @@
 #include <gio/gio.h>
 #include <clutter/clutter.h>
 #include <meta/meta-window-actor.h>
-#include <libsoup/soup.h>
 
 G_BEGIN_DECLS
 
@@ -26,10 +25,6 @@ char    *cinnamon_util_format_date                (const char       *format,
 
 ClutterModifierType
          cinnamon_get_event_state                 (ClutterEvent     *event);
-
-void     cinnamon_write_soup_message_to_stream    (GOutputStream    *stream,
-                                                SoupMessage      *message,
-                                                GError          **error);
 
 gboolean cinnamon_write_string_to_stream          (GOutputStream    *stream,
                                                 const char       *str,

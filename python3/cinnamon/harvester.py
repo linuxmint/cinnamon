@@ -92,8 +92,8 @@ class SpiceUpdate():
         self.author = ""
         try:
             author = index_node["author_user"]
-            if name not in ("none", "unknown"):
-                self.author = name
+            if author not in ("none", "unknown"):
+                self.author = author
         except:
             pass
 
@@ -412,7 +412,7 @@ class Harvester():
 
     def write_to_log(self, uuid, action):
         new_version = "<none>"
-        old_verison = "<none>"
+        old_version = "<none>"
 
         try:
             remote_item = self.index_cache[uuid]

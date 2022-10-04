@@ -20,6 +20,7 @@
  * Muffin actors
  *
  * @magnifier (Magnifier.Magnifier): The magnifier
+ * @locatePointer (LocatePointer.LocatePointer): The locate pointer object
  * @xdndHandler (XdndHandler.XdndHandler): The X DND handler
  * @statusIconDispatcher (StatusIconDispatcher.StatusIconDispatcher): The status icon dispatcher
  * @virtualKeyboard (VirtualKeyboard.Keyboard): The keyboard object
@@ -101,6 +102,7 @@ const CinnamonDBus = imports.ui.cinnamonDBus;
 const Screenshot = imports.ui.screenshot;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
+const LocatePointer = imports.ui.locatePointer;
 const XdndHandler = imports.ui.xdndHandler;
 const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const Util = imports.misc.util;
@@ -143,6 +145,7 @@ var modalCount = 0;
 var modalActorFocusStack = [];
 var uiGroup = null;
 var magnifier = null;
+var locatePointer = null;
 var xdndHandler = null;
 var statusIconDispatcher = null;
 var virtualKeyboard = null;
@@ -158,7 +161,6 @@ var tracker = null;
 var settingsManager = null;
 var systrayManager = null;
 var wmSettings = null;
-var pointerTracker = null;
 
 var workspace_names = [];
 
@@ -386,7 +388,7 @@ function start() {
         layoutManager._prepareStartupAnimation();
     }
 
-    pointerTracker = new PointerTracker.PointerTracker();
+    let pointerTracker = new PointerTracker.PointerTracker();
     pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
@@ -408,6 +410,7 @@ function start() {
     placesManager = new PlacesManager.PlacesManager();
 
     magnifier = new Magnifier.Magnifier();
+    locatePointer = new LocatePointer.locatePointer();
 
     layoutManager.init();
     virtualKeyboard.init();
@@ -1511,8 +1514,7 @@ function getTabList(workspaceOpt, screenOpt) {
 
     let windows = []; // the array to return
 
-    let allwindows = display.get_tab_list(Meta.TabList.NORMAL_ALL, screen,
-                                       workspace);
+    let allwindows = display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
     let registry = {}; // to avoid duplicates
 
     for (let i = 0; i < allwindows.length; ++i) {

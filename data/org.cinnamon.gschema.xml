@@ -428,10 +428,7 @@
 
     <key name="bring-windows-to-current-workspace" type="b">
       <default>false</default>
-      <summary>Brings windows requiring attention to the current workspace</summary>
-      <description>
-        When enabled, if a window requires attention, it is brought to the current workspace.
-      </description>
+      <summary>not used - lives in org.cinnamon.muffin now</summary>
     </key>
 
     <key name="prevent-focus-stealing" type="b">
@@ -543,8 +540,8 @@
     </key>
 
     <key type="as" name="demands-attention-passthru-wm-classes">
-      <default>[]</default>
-      <summary>not used</summary>
+      <default>['gnome-screenshot', 'lxterminal', 'xfce4-terminal', 'firefox', 'libreoffice', 'soffice']</default>
+      <summary>WM class names to always give focus to in windowAttentionHandler.js</summary>
     </key>
     <key name="app-menu-icon-name" type="s">
       <default>"cinnamon-symbolic"</default>

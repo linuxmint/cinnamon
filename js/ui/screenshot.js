@@ -168,6 +168,9 @@ class SelectArea {
         this.left_mask = null;
         this.right_mask = null;
 
+        this.active = false;
+        this.stage_event_id = 0;
+
         this._initRubberbandColors();
 
         this._group = new St.Widget(
@@ -322,6 +325,10 @@ class SelectArea {
     }
 
     _onButtonPress(actor, event) {
+        if (this.active) {
+            return Clutter.EVENT_STOP;
+        }
+
         [this._startX, this._startY] = event.get_coords();
         this._startX = Math.floor(this._startX);
         this._startY = Math.floor(this._startY);
@@ -334,7 +341,18 @@ class SelectArea {
         this._lastX = this._startX;
         this._lastY = this._startY;
 
-        return Clutter.EVENT_PROPAGATE;
+        this.active = true;
+
+        this.stage_event_id = global.stage.connect("captured-event", (actor, event) => {
+            if (Main.modalCount === 0)
+                return false;
+
+            if (event.type() === Clutter.EventType.BUTTON_RELEASE) {
+                return this._onButtonRelease(actor, event);
+            }
+
+            return Clutter.EVENT_PROPAGATE;
+        });
     }
 
     _onButtonRelease(actor, event) {
@@ -351,6 +369,13 @@ class SelectArea {
     }
 
     _ungrab() {
+        this.active = false;
+
+        if (this.stage_event_id > 0) {
+            global.stage.disconnect(this.stage_event_id);
+            this.stage_event_id = 0;
+        }
+
         Main.popModal(this._group);
         global.unset_cursor();
         this.emit('finished', this._result);

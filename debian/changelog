@@ -1,3 +1,174 @@
+cinnamon (5.4.12) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * environment: Add an onUpdate parameter for easing.
+  * Don't hide gwl when opening overview and expo.
+  * expo: Use unique pointer trackers for motion tracking.
+  * expo: Fix opening transition.
+  * feature_request.md: Checklist is unnecessary.
+
+  [ Asghwor ]
+  * Fix workspaces grid layout (#11094)
+
+  [ Michael Webster ]
+  * grouped-window-list: Don't create a new clone each time getThumbnail is called, don't connect to notify::size.
+  * windowUtils: Use the window actor's texture instead of a cairo surface for static clones.
+  * expo: Don't create monitor clones until the ExpoThumbnailBox is allocated.
+  * gwl: Redo the layout when switching workspaces.
+  * gwl: Fix a warning.
+  * windowManager.js: Filter out non-current-workspace windows when determining 'seen' windows.
+  * gwl: Only monitor size-changed while using textures, along with minimized state. Remove once all and no longer monitor once a clone can be used.
+  * gwl: Monitor clones, but only to update size.
+  * environment.js: Fix is_finalized() check.
+
+  [ Fabio Fantoni ]
+  * Fix 2 man pages
+
+  [ Michael Webster ]
+  * layout.js: Connect to tracked actors' destroy signal.
+  * cs_windows: Use 'bring-windows-to-current-workspace' in its new location, mark the old dconf key as unused.
+
+  [ anaximeno ]
+  * fix: fix use of undeclared variable
+
+  [ Attila Greguss ]
+  * Fix getTabList in js.main
+
+  [ Michael Webster ]
+  * systray applet: Don't continue processing an icon if it gets destroyed before we can show it.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 05 Sep 2022 15:13:05 +0100
+
+cinnamon (5.4.11) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * keybindings.js: Use bindings.get() - this.bindings is a Map.
+  * Re-add soup 2.4 bindings as a runtime-only dependency, and add a version requirement to cinnamon's environment.
+
+  [ JosephMcc ]
+  * Reimplement the locate pointer functionality
+
+  [ Michael Webster ]
+  * cs_sound.py: Add some more sound ids to ignore.
+  * keybindings.js: Fix incorrect check.
+  * screenshot.js: Improve button event handling, listen to stage events during rubber-banding.
+  * st-theme-node.c: Fix a leak when falling back to the default theme on 'important' ui elements.
+  * locatePointer: Only grab the keybinding if the feature is enabled.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 21 Aug 2022 12:13:03 +0200
+
+cinnamon (5.4.10) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * live previews: Use clones when valid, and static images in certain situations when a usable clone or texture isn't guaranteed.
+  * windowAttentionHandler: Fix new window focus issue with Firefox.
+  * keybindings.js: Use a js Map to track keybindings and handle changes to custom keybindings properly.
+  * osdWindow.js: Use correct allocation size for the fill level instead of the parent width.
+
+  [ ronyala ]
+  * Remove rtl workaround for the triangle arrow direction, (#10980)
+
+  [ Michael Webster ]
+  * windowAttentionHandler: remove notification fallback, re-add all 5.2 names to the pass-thru list.
+  * windowManager.js: get rid of (non-cinnamon) popup menu animations.
+  * sound@cinnamon.org: Fix panel scrolling behavior.
+  * windowManager.js: Complete the workspace switch immediately if no windows end up being animated.
+  * panel.js: Don't create a (horizontal) panel barrier for a vertical panel if there is a horizontal panel adjacent to it.
+  * panel.js: No barriers when there is only a single monitor.
+  * panel.js: global.screen -> global.display
+
+  [ Secret-chest ]
+  * More issue templates, not everything is a bug report (#11011)
+
+  [ Michael Webster ]
+  * Fix bug remplate, remove question template.
+
+  [ Leigh Scott ]
+  * Remove unused soup (#11002)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 13 Aug 2022 12:31:37 +0200
+
+cinnamon (5.4.9) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * sound applet: Fix the context menu's input mute icon.
+
+  [ JosephMcc ]
+  * thumbails: Update the Adwaita thumbnails for cs_themes (#10968)
+
+  [ tedlava ]
+  * Imported submodule explicitly from PIL to fix bug (#10955)
+
+  [ Michael Webster ]
+  * cinnamon-gtk-embed: Clamp transparency of the tray icon's underlying MetaWindowActor.
+  * cinnamon-window-tracker: Use a different method for matching existing apps and new windows by pid.
+  * gwl: Fix updating tooltips and previews when the applet's panel is move to the top edge.
+  * windowManager: Fix a missing default case, return early when individual effects are disabled, not just when they all are.
+  * signalManager: Make it slightly easier to debug signals and access- after-destroy warnings.
+  * gwl: Disconnect size notify signals from actors when they become unmanaged.
+  * windowManager.js: Fix gtk popup menu animations.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 01 Aug 2022 16:07:57 +0200
+
+cinnamon (5.4.8) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * g-w-l/workspace-switcher: Fix random crash and errors when adding and removing workspaces.
+  * workspace-switcher: Replace global.screen with global.display.
+
+  [ JosephMcc ]
+  * overview.js: Don't hide the global.window_group while animating
+  * theme: Finish fixing the gwl thumbnail theming (#10963)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 25 Jul 2022 15:03:46 +0200
+
+cinnamon (5.4.7) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * cinnamonDbus: Have cinnamon-settings-daemon provide monitor coordinates for the showOSD method, instead of a monitor index.
+  * power applet: Use step up/down when scrolling on the brightness sliders instead of directly setting a value.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 24 Jul 2022 13:45:41 +0200
+
+cinnamon (5.4.6) vanessa; urgency=medium
+
+  [ fredcw ]
+  * Menu applet: Fix typo (#10952)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * gwl: Ignore 'smooth' scroll events when scrolling.
+  * menu applet: Strip the spaces from button search strings.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 23 Jul 2022 13:51:27 +0200
+
+cinnamon (5.4.5) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * xdnd: Change pick mode when checking for drop targets.
+  * systray.js: Fix a couple of applets missed in bf2cce2e7016.
+  * extensions: Allow an applet to assume more than one 'role'.
+  * systray applet: Fix some issues when reloading icons after panel changes.
+  * slider.js: Pass the proper arguments to _endDragging() from actor's button-release-event.
+
+  [ Cobinja ]
+  * Fix testsound volume
+
+  [ JosephMcc ]
+  * theme: Fix artifacts in the menu applet when scrolling the applications
+
+  [ Rick Calixte ]
+  * Fix .gitignore for builds
+
+  [ Michael Webster ]
+  * windowManager.js: Fix workspace switching when only-on-primary is enabled.
+  * expo: Fix some bad behavior.
+  * sound settings: Fix mic gain adjustment.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 20 Jul 2022 07:53:26 +0200
+
 cinnamon (5.4.4) vanessa; urgency=medium
 
   [ Michael Webster ]

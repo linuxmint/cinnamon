@@ -556,8 +556,13 @@ InfoOSD.prototype = {
      * primary monitor if not specified.
      */
     show: function(monitorIndex) {
-        if (!monitorIndex) monitorIndex = 0;
-        let monitor = Main.layoutManager.monitors[monitorIndex];
+        let monitor;
+
+        if (!monitorIndex) {
+            monitor = Main.layoutManager.primaryMonitor;
+        } else {
+            monitor = Main.layoutManager.monitors[monitorIndex];
+        }
 
         // The actor has to be shown first so that the width and height can be calculated properly
         this.actor.opacity = 0;

@@ -226,8 +226,8 @@ class CalendarServer(Gio.Application):
         self.current_month_start = time_since
         self.current_month_end = time_until
 
-        self.interface.set_property("since", time_since);
-        self.interface.set_property("until", time_until);
+        self.interface.set_property("since", time_since)
+        self.interface.set_property("until", time_until)
 
         for uid in self.calendars.keys():
             calendar = self.calendars[uid]
@@ -325,14 +325,14 @@ class CalendarServer(Gio.Application):
 
                 dts_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.DTSTART_PROPERTY)
                 ical_time_start = dts_prop.get_dtstart()
-                start_timet = self.ical_time_get_timet(calendar.client, ical_time_start, dts_prop);
+                start_timet = self.ical_time_get_timet(calendar.client, ical_time_start, dts_prop)
                 all_day = ical_time_start.is_date()
 
                 dte_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.DTEND_PROPERTY)
 
                 if dte_prop != None:
                     ical_time_end = dte_prop.get_dtend()
-                    end_timet = self.ical_time_get_timet(calendar.client, ical_time_end, dte_prop);
+                    end_timet = self.ical_time_get_timet(calendar.client, ical_time_end, dte_prop)
                 else:
                     end_timet = start_timet + (60 * 30) # Default to 30m if the end time is bad.
 
@@ -367,7 +367,7 @@ class CalendarServer(Gio.Application):
         else:
             summary = ""
 
-        default_zone = calendar.client.get_default_timezone ();
+        default_zone = calendar.client.get_default_timezone()
 
         dts_timezone = instance_start.get_timezone()
         if dts_timezone == None:

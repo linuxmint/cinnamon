@@ -121,7 +121,7 @@ class DimmedTable (Gtk.Table):
 class EditableEntry (Gtk.Notebook):
 
     __gsignals__ = {
-        'changed': (GObject.SIGNAL_RUN_FIRST, None,
+        'changed': (GObject.SignalFlags.RUN_FIRST, None,
                     (str,))
     }
 
@@ -137,8 +137,8 @@ class EditableEntry (Gtk.Notebook):
 
         self.button.set_alignment(0.0, 0.5)
         self.button.set_relief(Gtk.ReliefStyle.NONE)
-        self.append_page(self.button, None);
-        self.append_page(self.entry, None);
+        self.append_page(self.button, None)
+        self.append_page(self.entry, None)
         self.set_current_page(0)
         self.set_show_tabs(False)
         self.set_show_border(False)

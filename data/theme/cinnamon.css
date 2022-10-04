@@ -76,6 +76,13 @@ StScrollBar StButton#vhandle:hover {
     font-weight: normal;
     text-align: center;
 }
+.ripple-pointer-location {
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  background-color: rgba(160,160,160,0.3);
+  box-shadow: 0 0 2px 2px rgba(160,160,160,1.0);
+}
 /* ===================================================================
  * Shared button properties
  * ===================================================================*/
@@ -1547,7 +1554,7 @@ StScrollBar StButton#vhandle:hover {
     border: 2px solid rgba(165, 165, 165, 0.7)
 }
 .grouped-window-list-thumbnail-menu .item-box:selected {
-    background: rgba(255,255,255,0.33);
+    background: rgba(110,110,110,0.8);
 }
 .grouped-window-list-thumbnail-menu .thumbnail {
     width: 256px;

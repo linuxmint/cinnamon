@@ -13,6 +13,7 @@ const Mainloop = imports.mainloop;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
+const WindowUtils = imports.misc.windowUtils;
 
 const INITIAL_DELAY_TIMEOUT = 150;
 const CHECK_DESTROYED_TIMEOUT = 100;
@@ -183,7 +184,6 @@ AppSwitcher3D.prototype = {
             let metaWin = this._windows[i];
             let compositor = this._windows[i].get_compositor_private();
             if (compositor) {
-                let texture = compositor.get_texture();
                 let [width, height] = compositor.get_size();
 
                 let scale = 1.0;
@@ -205,8 +205,8 @@ AppSwitcher3D.prototype = {
                 preview.target_width_side = preview.target_width * 2/3;
                 preview.target_height_side = preview.target_height;
 
-                
-                preview.set_child(new Clutter.Actor({ content: texture, request_mode: Clutter.RequestMode.CONTENT_SIZE }));
+                let clone = WindowUtils.getCloneOrContent(compositor, preview.target_width, preview.target_height);
+                preview.set_child(clone);
                 preview.metaWindow = metaWin;
                 preview.connect('clicked', Lang.bind(this, this._cloneClicked));
 

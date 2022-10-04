@@ -5,6 +5,7 @@ imports.gi.versions.Gio = '2.0';
 imports.gi.versions.Gdk = '3.0';
 imports.gi.versions.GdkPixbuf = '2.0';
 imports.gi.versions.Gtk = '3.0';
+imports.gi.versions.Soup = '2.4';
 
 const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
@@ -67,6 +68,16 @@ function _makeEaseCallback(params, cleanup) {
     };
 }
 
+function _makeFrameCallback(params) {
+    let onUpdate = params.onUpdate;
+    delete params.onUpdate;
+
+    return (transition, timeIndex) => {
+        if (onUpdate)
+            onUpdate(transition, timeIndex);
+    };
+}
+
 function _getPropertyTarget(actor, propName) {
     if (!propName.startsWith('@'))
         return [actor, propName];
@@ -118,6 +129,7 @@ function _easeActor(actor, params) {
 
     let cleanup = () => Meta.enable_unredirect_for_display(global.display);
     let callback = _makeEaseCallback(params, cleanup);
+    let updateCallback = _makeFrameCallback(params);
 
     // cancel overwritten transitions
     let animatedProps = Object.keys(params).map(p => p.replace('_', '-', 'g'));
@@ -138,6 +150,7 @@ function _easeActor(actor, params) {
     if (transition) {
         transition.set({ repeatCount, autoReverse });
         transition.connect('stopped', (t, finished) => callback(finished));
+        transition.connect('new-frame', (t, timeIndex) => updateCallback(t, timeIndex));
     } else {
         callback(true);
     }
@@ -271,7 +284,7 @@ function init() {
     // Add method to determine if a GObject is finalized - needed to prevent accessing
     // objects that have been disposed in C code.
     GObject.Object.prototype.is_finalized = function is_finalized() {
-        return this._toString().includes('FINALIZED');
+        return this._toString().includes('DISPOSED');
     };
     // Override destroy so it checks if its finalized before calling the real destroy method.
     Clutter.Actor.prototype._destroy = Clutter.Actor.prototype.destroy;

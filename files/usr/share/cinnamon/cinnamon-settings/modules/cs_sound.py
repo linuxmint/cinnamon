@@ -778,9 +778,15 @@ class Module:
 
             # FIXME: We use to filter out by PA_PROP_APPLICATION_ID.  But
             # most streams report this as null now... why??
-            if name in ("speech-dispatcher", "libcanberra"):
-                # speech-dispatcher: orca/speechd/spd-say
-                # libcanberra: cinnamon effects, test sounds
+            if name in ("cinnamon-settings.py",
+                        "speech-dispatcher",
+                        "speech-dispatcher-dummy",
+                        "libcanberra",
+                        "Muffin"):
+                # cinnamon-settings.py: test sounds
+                # speech-dispatcher[-dummy]: orca/speechd/spd-say
+                # libcanberra: cinnamon effects, test sounds - don't think this is needed any more?
+                # Muffin: window effects, some other cinnamon effects.
                 return
 
             if deviceId in self.appList.keys():

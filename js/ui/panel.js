@@ -845,7 +845,7 @@ PanelManager.prototype = {
 
         metaList[ID] = [monitorIndex, panelPosition];  // Note:  metaList [i][0] is the monitor index, metaList [i][1] is the panelPosition
 
-        if (monitorIndex < 0 || monitorIndex >= global.screen.get_n_monitors()) {
+        if (monitorIndex < 0 || monitorIndex >= global.display.get_n_monitors()) {
             global.log("Monitor " + monitorIndex + " not found. Not creating panel");
             return null;
         }
@@ -857,7 +857,7 @@ PanelManager.prototype = {
     },
 
     _checkCanAdd: function() {
-        let monitorCount = global.screen.get_n_monitors();
+        let monitorCount = global.display.get_n_monitors();
         let panelCount = (monitorCount * 4) - this.panelCount;          // max of 4 panels on a monitor, one per edge
 
         this.canAdd = panelCount > 0;
@@ -1066,7 +1066,7 @@ PanelManager.prototype = {
     },
 
     _onMonitorsChanged: function() {
-        let monitorCount = global.screen.get_n_monitors();
+        let monitorCount = global.display.get_n_monitors();
         let drawcorner = [false, false];
 
         let panelProperties = getPanelsEnabledList()
@@ -1166,7 +1166,7 @@ PanelManager.prototype = {
      * shows the dummy panels
      */
     _showDummyPanels: function(callback) {
-        let monitorCount = global.screen.get_n_monitors();
+        let monitorCount = global.display.get_n_monitors();
         this.dummyCallback = callback;
         this.dummyPanels = [];
 
@@ -1237,7 +1237,7 @@ PanelDummy.prototype = {
         this.monitorIndex = monitorIndex;
         this.panelPosition = panelPosition;
         this.callback = callback;
-        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
+        this.monitor = global.display.get_monitor_geometry(monitorIndex);
         let defaultheight = 40 * global.ui_scale;
 
         this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
@@ -2026,7 +2026,7 @@ Panel.prototype = {
         this.panelId = id;
         this.drawcorner = drawcorner;
         this.monitorIndex = monitorIndex;
-        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
+        this.monitor = global.display.get_monitor_geometry(monitorIndex);
         this.panelPosition = panelPosition;
         this.toppanelHeight = toppanelHeight;
         this.bottompanelHeight = bottompanelHeight;
@@ -2204,7 +2204,7 @@ Panel.prototype = {
         this.panelPosition = panelPosition;
         this._positionChanged = true;
 
-        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
+        this.monitor = global.display.get_monitor_geometry(monitorIndex);
         //
         // If there are any corners then remove them - they may or may not be required
         // in the new position, so we cannot just move them
@@ -2459,7 +2459,9 @@ Panel.prototype = {
 
         if (this._destroyed)  // ensure we do not try to set barriers if panel is being destroyed
             return;
-        if (this.monitorIndex < 0 || this.monitorIndex >= global.screen.get_n_monitors())  // skip panels that never got created
+
+        let n_monitors = global.display.get_n_monitors();
+        if (n_monitors == 1 || this.monitorIndex < 0 || this.monitorIndex >= n_monitors)  // skip panels that never got created
             return;
 
         let screen_width  = global.screen_width;
@@ -2522,25 +2524,29 @@ Panel.prototype = {
                             global.log("updatePanelBarriers - unrecognised panel position "+this.panelPosition);
                     }
                     if (panelRight != panelLeft) {
-                        let y_coord = this.monitor.y + Math.floor(this.toppanelHeight) + this.margin_top;
-                        if (y_coord > 0) {                                  // if there is a monitor above or top of panel offset into monitor
-                            this._topPanelBarrier = new Meta.Barrier({
-                                display: global.display,
-                                x1: panelLeft, y1: y_coord,
-                                x2: panelRight, y2: y_coord,
-                                directions: Meta.BarrierDirection.POSITIVE_Y  // permit moving in positive y direction for a top barrier
-                            });
+                        if (this.toppanelHeight === 0) {
+                            let y_coord = this.monitor.y + Math.floor(this.toppanelHeight) + this.margin_top;
+                            if (y_coord > 0) {                                  // if there is a monitor above or top of panel offset into monitor
+                                this._topPanelBarrier = new Meta.Barrier({
+                                    display: global.display,
+                                    x1: panelLeft, y1: y_coord,
+                                    x2: panelRight, y2: y_coord,
+                                    directions: Meta.BarrierDirection.POSITIVE_Y  // permit moving in positive y direction for a top barrier
+                                });
+                            }
                         }
 
-                        y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
-                        if (screen_height > this.monitor.y + this.monitor.height         // if there is a monitor below
-                            || this.bottompanelHeight > 0 || this.margin_bottom > 0) {   
-                            this._bottomPanelBarrier = new Meta.Barrier({
-                                display: global.display,
-                                x1: panelLeft, y1: y_coord,
-                                x2: panelRight, y2: y_coord,
-                                directions: Meta.BarrierDirection.NEGATIVE_Y
-                            });
+                        if (this.bottompanelHeight === 0) {
+                            y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
+                            if (screen_height > this.monitor.y + this.monitor.height         // if there is a monitor below
+                                || this.bottompanelHeight > 0 || this.margin_bottom > 0) {
+                                this._bottomPanelBarrier = new Meta.Barrier({
+                                    display: global.display,
+                                    x1: panelLeft, y1: y_coord,
+                                    x2: panelRight, y2: y_coord,
+                                    directions: Meta.BarrierDirection.NEGATIVE_Y
+                                });
+                            }
                         }
                     }
                 }
@@ -2798,7 +2804,7 @@ Panel.prototype = {
         // NB If you want to use margin to inset the panels within a monitor, then you can't just set it here
         // else full screen windows will then go right to the edge with the panels floating over
         //
-        this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
+        this.monitor = global.display.get_monitor_geometry(this.monitorIndex);
         let horizontal_panel = (!!((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)));
 
         // this stands for width on vertical panels, and height on horizontal panels
@@ -3676,11 +3682,13 @@ Panel.prototype = {
     disable: function() {
         this._disabled = true;
         this._leavePanel();
-        Tweener.addTween(this.actor, {
+        this.actor.ease({
             opacity: 0,
-            time: AUTOHIDE_ANIMATION_TIME,
-            transition: 'easeOutQuad',
-            onComplete: this.actor.hide
+            duration: AUTOHIDE_ANIMATION_TIME * 1000,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this.actor.hide();
+            }
         });
     },
 
@@ -3692,10 +3700,10 @@ Panel.prototype = {
     enable: function() {
         this._disabled = false;
         this.actor.show();
-        Tweener.addTween(this.actor, {
+        this.actor.ease({
             opacity: 255,
-            time: AUTOHIDE_ANIMATION_TIME,
-            transition: 'easeOutQuad'
+            duration: AUTOHIDE_ANIMATION_TIME * 1000,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
     },
 

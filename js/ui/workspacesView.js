@@ -164,6 +164,15 @@ WorkspacesView.prototype = {
     },
 
     destroy: function() {
+        if (this._swipeScrollBeginId > 0) {
+            Main.overview.disconnect(this._swipeScrollBeginId);
+            this._swipeScrollBeginId = 0;
+        }
+        if (this._swipeScrollEndId > 0) {
+            Main.overview.disconnect(this._swipeScrollEndId);
+            this._swipeScrollEndId = 0;
+        }
+
         for (let w = 0; w < this._workspaces.length; w++) {
             this._workspaces[w].disconnectAll();
             this._workspaces[w].destroy();
@@ -310,9 +319,6 @@ WorkspacesView.prototype = {
                                                              Lang.bind(this, this._swipeScrollBegin));
             this._swipeScrollEndId = Main.overview.connect('swipe-scroll-end',
                                                            Lang.bind(this, this._swipeScrollEnd));
-        } else {
-            Main.overview.disconnect(this._swipeScrollBeginId);
-            Main.overview.disconnect(this._swipeScrollEndId);
         }
     },
 

@@ -377,6 +377,11 @@ LayoutManager.prototype = {
         return this._chrome.findMonitorIndexForActor(actor);
     },
 
+    findMonitorIndexAt: function(x, y) {
+        let [index, monitor] = this._chrome._findMonitorForRect(x, y, 1, 1)
+        return index;
+    },
+
     /**
      * isTrackingChrome:
      * @actor (Clutter.Actor): the actor to check
@@ -522,8 +527,11 @@ Chrome.prototype = {
                                                Lang.bind(this, this._queueUpdateRegions));
         actorData.parentSetId = actor.connect('parent-set',
                                               Lang.bind(this, this._actorReparented));
-        // Note that destroying actor will unset its parent, so we don't
-        // need to connect to 'destroy' too.
+        // Note that destroying actor unsets its parent, but does not emit
+        // parent-set during destruction.
+        // https://gitlab.gnome.org/GNOME/mutter/-/commit/f376a318ba90fc29d3d661df4f55698459f31cfa
+        actorData.destroyId = actor.connect('destroy',
+                                            Lang.bind(this, this._untrackActor));
 
         this._trackedActors.push(actorData);
         this._queueUpdateRegions();
@@ -540,6 +548,7 @@ Chrome.prototype = {
         actor.disconnect(actorData.visibleId);
         actor.disconnect(actorData.allocationId);
         actor.disconnect(actorData.parentSetId);
+        actor.disconnect(actorData.destroyId);
 
         this._queueUpdateRegions();
     },
