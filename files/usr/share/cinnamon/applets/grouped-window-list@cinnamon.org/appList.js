@@ -287,10 +287,13 @@ class AppList {
             let refFav = findIndex(this.state.trigger('getFavorites'), (favorite) => {
                 return favorite.app === app;
             });
-            if (refFav > -1) transientFavorite = true;
+            if (refFav > -1) {
+                isFavoriteApp = true;
+                transientFavorite = true; 
+            } 
         }
 
-        let initApp = () => {
+        let initApp = (idx) => { 
             let appGroup = new AppGroup({
                 state: this.state,
                 listState: this.listState,
@@ -300,20 +303,27 @@ class AppList {
                 metaWindow,
                 appId
             });
-            this.actor.add_child(appGroup.actor);
-            this.appList.push(appGroup);
+
+            if(idx > -1) {
+                this.actor.insert_child_at_index(appGroup.actor, idx);
+                this.appList.splice(idx, 0, appGroup);
+            }
+            else {
+                this.actor.add_child(appGroup.actor);
+                this.appList.push(appGroup);
+            }
             appGroup.windowAdded(metaWindow);
         };
 
         if (refApp === -1) {
-            initApp(metaWindow);
+            initApp(-1);
         } else if (metaWindow) {
             if (this.state.settings.groupApps) {
                 this.appList[refApp].windowAdded(metaWindow);
             } else if (transientFavorite && this.appList[refApp].groupState.metaWindows.length === 0) {
                 this.appList[refApp].windowAdded(metaWindow);
             } else if (refWindow === -1) {
-                initApp();
+                initApp(refApp+1);
             }
         }
     }
