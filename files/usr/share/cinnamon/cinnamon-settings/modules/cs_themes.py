@@ -370,11 +370,26 @@ class Module:
             print(detail)
         return True
 
+    def get_theme_sort_key(self, name):
+        name = name.lower()
+        legacy = 0
+        darker = 0
+        dark = 0
+        if "legacy" in name:
+            legacy = 1
+        if "darker" in name:
+            darker = 1
+        if "dark" in name and "darker" not in name:
+            dark = 1
+        name = name.replace("darker", "").replace("dark", "").replace("legacy", "")
+        name = f"{dark}{darker}{legacy}{name}"
+        return name
+
     def _load_gtk_themes(self):
         """ Only shows themes that have variations for gtk+-3 and gtk+-2 """
         dirs = THEME_FOLDERS
         valid = walk_directories(dirs, self.filter_func_gtk_dir, return_directories=True)
-        valid.sort(key=lambda a: a[0].lower())
+        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
         res = []
         for i in valid:
             for j in res:
@@ -413,7 +428,7 @@ class Module:
                 except Exception as e:
                     print (e)
 
-        valid.sort(key=lambda a: a[0].lower())
+        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
         res = []
         for i in valid:
             for j in res:
@@ -428,7 +443,7 @@ class Module:
     def _load_cursor_themes(self):
         dirs = ICON_FOLDERS
         valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True)
-        valid.sort(key=lambda a: a[0].lower())
+        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
         res = []
         for i in valid:
             for j in res:
@@ -443,7 +458,7 @@ class Module:
     def _load_cinnamon_themes(self):
         dirs = THEME_FOLDERS
         valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "cinnamon")), return_directories=True)
-        valid.sort(key=lambda a: a[0].lower())
+        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
         res = []
         for i in valid:
             for j in res:
