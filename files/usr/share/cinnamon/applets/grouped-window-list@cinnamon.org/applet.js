@@ -32,11 +32,6 @@ class PinnedFavs {
     reload() {
         const {state, signals, settings} = this.params;
         const appSystem = state.trigger('getAppSystem');
-        if (signals.isConnected('changed::pinned-apps', settings)) {
-            signals.disconnect('changed::pinned-apps', settings);
-        }
-        let cb = () => this.onFavoritesChange();
-        signals.connect(settings, 'changed::pinned-apps', cb);
         this._favorites = [];
         let ids = [];
         ids = settings.getValue('pinned-apps');
@@ -150,6 +145,7 @@ class PinnedFavs {
         }
 
         this.saveFavorites();
+        this.onFavoritesChange();
         return true;
     }
 
@@ -171,6 +167,7 @@ class PinnedFavs {
         this.triggerUpdate(appId, false);
         this._favorites.splice(refFav, 1);
         this.saveFavorites();
+        this.onFavoritesChange();
         return true;
     }
 }
@@ -790,11 +787,18 @@ class GroupedWindowListApplet extends Applet.Applet {
         let pos = 0;
         while(pos < this.state.dragging.posList.length && axis[0] > this.state.dragging.posList[pos])
             pos++;
+        
+        let favLength = 0;
+        each(appList.appList, (appGroup, i) => {
+            if(appGroup.groupState.isFavoriteApp)
+                favLength++;
+            else return false;
+        });
 
         // keep pinned and unpinned items separate
-        if((this.state.dragging.isForeign && pos > this.pinnedFavorites._favorites.length) ||
-            (!this.state.dragging.isForeign && source.groupState.isFavoriteApp && pos >= this.pinnedFavorites._favorites.length) ||
-            (!this.state.dragging.isForeign && !source.groupState.isFavoriteApp && pos < this.pinnedFavorites._favorites.length))
+        if((this.state.dragging.isForeign && pos > favLength) ||
+            (!this.state.dragging.isForeign && source.groupState.isFavoriteApp && pos >= favLength) ||
+            (!this.state.dragging.isForeign && !source.groupState.isFavoriteApp && pos < favLength))
             return DND.DragMotionResult.NO_DROP;
 
         // handle position change
@@ -880,11 +884,11 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     moveLauncher(source) {
-        let pos = this.state.dragging.pos;
+        let appList = this.getCurrentAppList();
         this.clearDragParameters();
 
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
-            this.getCurrentAppList().updateAppGroupIndexes();
+            appList.updateAppGroupIndexes();
             // Refresh the group's thumbnails so hoverMenu is aware of the position change
             // In the case of dragging a group that has a delay before Cinnamon can grab its
             // thumbnail texture, e.g., LibreOffice, defer the refresh.
@@ -894,14 +898,26 @@ class GroupedWindowListApplet extends Applet.Applet {
 
             // Handle favoriting if pin on drag is enabled
             if (!source.groupState.app.is_window_backed()) {
-                let opts = {
-                    appId: source.groupState.appId,
-                    app: source.groupState.app,
-                    pos
-                };
+
                 let refFav = findIndex(this.pinnedFavorites._favorites, (favorite) => favorite.id === source.groupState.appId);
                 if (refFav > -1) {
-                    this.pinnedFavorites.moveFavoriteToPos(opts);
+                    
+                    let pinned = []; //pinned apps found before source
+                    each(appList.appList, (appGroup, i) => {
+                        if(appGroup.groupState.appId == source.groupState.appId)//
+                            return false;
+                        else if(!pinned.includes(appGroup.groupState.appId))
+                                pinned.push(appGroup.groupState.appId);
+                    });
+   
+                    let opts = {
+                        appId: source.groupState.appId,
+                        app: source.groupState.app,
+                        pos : pinned.length
+                    };
+
+                    if(pinned.length != refFav)
+                        this.pinnedFavorites.moveFavoriteToPos(opts);
                 }
             }
 
