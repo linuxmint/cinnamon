@@ -97,7 +97,7 @@ def getSystemIcon():
     schema = Gio.Settings(schema="org.cinnamon")
 
     iconPath = schema.get_string("system-icon-path")
-    if iconPath is None:
+    if iconPath is "":  # left empty, so its disabled
         return None
 
     return iconPath
