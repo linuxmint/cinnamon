@@ -421,9 +421,10 @@ class Spice_Harvester(GObject.Object):
                         metadata['writable'] = os.access(subdirectory, os.W_OK)
                         self.meta_map[uuid] = metadata
                     except Exception as detail:
-                        print(detail)
-                        print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
-            elif (directory == self.install_folder):
+                        if not self.themes:
+                            print(detail)
+                            print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
+            elif(directory == self.install_folder):
                 print("%s does not exist! Creating it now." % directory)
                 subprocess.call(["mkdir", "-p", directory])
             else:
