@@ -83,7 +83,7 @@ class CinnamonBarApplet extends Applet.Applet {
 
             this.actor.remove_style_class_name('vertical');
 
-            this._line = new St.BoxLayout({ style_class: 'applet-cornerbar', reactive: true, track_hover: true});
+            this._line = new St.BoxLayout({ style_class: 'applet-cornerbar' });
             this.actor.add(this._line, { y_align: Clutter.ActorAlign.CENTER, x_align: Clutter.ActorAlign.CENTER, y_fill: true, y_expand: true});
         } else {
             if (this._line) {
