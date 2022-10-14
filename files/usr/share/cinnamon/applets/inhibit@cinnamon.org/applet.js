@@ -23,10 +23,10 @@ class InhibitAppletIcon {
 
     getAppletIcon() {
         let appletIcon = this.icon_name;
-        if (this.notificationStatus) {
+        if (this.inhibitStatus) {
             appletIcon += '-active';
         }
-        if (this.inhibitStatus) {
+        if (this.notificationStatus) {
             appletIcon += '-notif-disabled';
         }
         return appletIcon;
