@@ -94,7 +94,10 @@
       <summary>The interval between each possible grid position when desklets "snap"</summary>
       <description>If desklet-snap is enabled, the possible positions of desklets will be all integer multiples of the value of "desklet-snap-size"</description>
     </key>
-
+    <key name="lock-desklets" type="b">
+      <default>false</default>
+      <summary> Locks the current position of all desklets and prevents dragging</summary>
+    </key>
     <key name="panels-enabled" type="as">
       <default>['1:0:bottom']</default>
       <summary>List of panels used</summary>
