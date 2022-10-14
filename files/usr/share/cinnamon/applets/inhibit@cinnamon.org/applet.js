@@ -22,6 +22,11 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
                                            icon_type: St.IconType.SYMBOLIC,
                                            icon_name: "dialog-warning-symbolic",
                                           reactive: true});
+        this.appletIconInfo = {
+            name: 'inhibit',
+            inhibitStatus: false,
+            notificationStatus: false
+        }
 
         this._switch = new PopupMenu.Switch(true);
 
@@ -60,6 +65,31 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
         }));
     }
 
+    setAppletIcon() {
+        this._applet.set_applet_icon_symbolic_name(this.getAppletIcon());
+    }
+
+    getAppletIcon() {
+        let appletIcon = this.appletIconInfo.name;
+        if (this.appletIconInfo.inhibitStatus) {
+            appletIcon += '-active';
+        }
+        if (this.appletIconInfo.notificationStatus) {
+            appletIcon += '-notif-disabled';
+        }
+        return appletIcon;
+    }
+
+    toggleAppletIconNotificationStatus() {
+        this.appletIconInfo.notificationStatus = !this.appletIconInfo.notificationStatus;
+        this.setAppletIcon();
+    }
+
+    toggleAppletIconInhibitStatus(status) {
+        this.appletIconInfo.inhibitStatus = status;
+        this.setAppletIcon();
+    }
+
     activate(event) {
         if (this._switch.actor.mapped) {
             this._switch.toggle();
@@ -75,10 +105,10 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
 
         if (current_state & INHIBIT_IDLE_FLAG ||
             current_state & INHIBIT_SLEEP_FLAG) {
-            this._applet.set_applet_icon_symbolic_name('inhibit-active');
+            this.toggleAppletIconInhibitStatus(true);
             this._applet.set_applet_tooltip(_("Power management: inhibited"));
         } else {
-            this._applet.set_applet_icon_symbolic_name('inhibit');
+            this.toggleAppletIconInhibitStatus(false);
             this._applet.set_applet_tooltip(_("Power management: active"));
         }
 
@@ -353,7 +383,7 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         this.inhibitSwitch = new InhibitSwitch(this);
         this.menu.addMenuItem(this.inhibitSwitch);
 
-        this.set_applet_icon_symbolic_name('inhibit');
+        this.set_applet_icon_symbolic_name(this.inhibitSwitch.getAppletIcon());
         this.set_applet_tooltip(_("Inhibit applet"));
 
         this.notif_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
@@ -364,6 +394,7 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         }));
         this.notificationsSwitch.connect('toggled', Lang.bind(this, function() {
             this.notif_settings.set_boolean("display-notifications", this.notificationsSwitch.state);
+            this.inhibitSwitch.toggleAppletIconNotificationStatus();
         }));
 
         this.menu.addMenuItem(this.notificationsSwitch);
