@@ -56,7 +56,7 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
                                            icon_type: St.IconType.SYMBOLIC,
                                            icon_name: "dialog-warning-symbolic",
                                           reactive: true});
-        
+
         this._switch = new PopupMenu.Switch(true);
 
         this.addActor(this.label);
