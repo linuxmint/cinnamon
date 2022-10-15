@@ -29,7 +29,7 @@ class EditorDialog:
             for item in launcher_list:
                 if item.split(":")[0] == str(self.desklet_id):
                     launcher = item.split(":")[1][:-8]
-                    break;
+                    break
 
             self.name = launcher
             if self.name[:24] == "cinnamon-custom-launcher":

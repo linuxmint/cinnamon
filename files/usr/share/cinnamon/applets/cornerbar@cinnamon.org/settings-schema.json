@@ -1,0 +1,64 @@
+{
+    "head" : {
+        "type" : "header",
+        "description" : "Settings"
+    },
+    "click-action": {
+        "type": "combobox",
+        "description": "Click action",
+        "default": "show_desktop",
+        "options" : {
+            "Show the desktop": "show_desktop",
+            "Show the desklets": "show_desklets",
+            "Show the workspace selector (Expo)": "show_expo",
+            "Show the window selector (Scale)": "show_scale"
+        }
+    },
+    "middle-click-action": {
+        "type": "combobox",
+        "description": "Middle click action",
+        "default": "show_desklets",
+        "options" : {
+            "Show the desktop": "show_desktop",
+            "Show the desklets": "show_desklets",
+            "Show the workspace selector (Expo)": "show_expo",
+            "Show the window selector (Scale)": "show_scale"
+        }
+    },
+    "peek-at-desktop" : {
+        "type" : "switch",
+        "default" : false,
+        "description": "Peek at the desktop on hover",
+        "tooltip": "Peek at the desktop when hovering the applet"
+    },
+    "peek-blur" : {
+    "type" : "switch",
+    "default" : false,
+    "dependency" : "peek-at-desktop",
+    "description" : "Blur effect",
+    "tooltip" : "Blur windows when peeking at the desktop"
+    },
+    "peek-delay" : {
+        "type": "spinbutton",
+        "default" : 400,
+        "min" : 0,
+        "max" : 1000,
+        "step" : 50,
+        "units" : "milliseconds",
+        "dependency" : "peek-at-desktop",
+        "description": "Hover delay",
+        "tooltip": "Delay before Peek shows desktop"
+    },
+    "peek-opacity": {
+        "type": "scale",
+        "default" : 5,
+        "units": "%",
+        "digits": 0,
+        "min" : 0,
+        "max" : 100,
+        "step" : 5,
+        "dependency" : "peek-at-desktop",
+        "description" : "Window opacity",
+        "tooltip" : "Change the opacity of windows when peeking at the desktop"
+    }
+}

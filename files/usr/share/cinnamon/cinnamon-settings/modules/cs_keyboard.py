@@ -211,12 +211,12 @@ DUMMY_CUSTOM_ENTRY = "__dummy__"
 
 def ensureCustomListIsValid(custom_list):
     if len(custom_list) > 1:
-        return;
+        return
 
     if DUMMY_CUSTOM_ENTRY in custom_list:
-        return;
+        return
 
-    custom_list.append(DUMMY_CUSTOM_ENTRY);
+    custom_list.append(DUMMY_CUSTOM_ENTRY)
 
 class Module:
     comment = _("Manage keyboard settings and shortcuts")
@@ -549,7 +549,7 @@ class Module:
 
         new_str = "custom" + str(i)
         array.append(new_str)
-        ensureCustomListIsValid(array);
+        ensureCustomListIsValid(array)
         parent.set_strv("custom-list", array)
 
         new_path = CUSTOM_KEYS_BASENAME + "/custom" + str(i) + "/"
@@ -620,7 +620,7 @@ class Module:
 
                 keybinding.label = dialog.name_entry.get_text()
                 keybinding.action = dialog.command_entry.get_text().replace("%20", "\ ")
-                keybinding.writeSettings();
+                keybinding.writeSettings()
 
                 i = 0
                 for cat in self.cat_store:
@@ -762,7 +762,7 @@ class CustomKeyBinding():
         parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
         custom_list = parent.get_strv("custom-list")
         custom_list.reverse()
-        ensureCustomListIsValid(custom_list);
+        ensureCustomListIsValid(custom_list)
         parent.set_strv("custom-list", custom_list)
 
 class AddCustomDialog(Gtk.Dialog):

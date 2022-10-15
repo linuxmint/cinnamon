@@ -38,6 +38,7 @@ const DESKLET_SNAP_KEY = 'desklet-snap';
 const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
 const KEYBINDING_SCHEMA = 'org.cinnamon.desktop.keybindings';
 const SHOW_DESKLETS_KEY = 'show-desklets';
+const LOCK_DESKLETS_KEY = "lock-desklets";
 
 function initEnabledDesklets() {
     for (let i = 0; i < definitions.length; i++) {
@@ -445,6 +446,8 @@ DeskletContainer.prototype = {
                 this.lower();
             }
         });
+
+        global.settings.connect('changed::' + LOCK_DESKLETS_KEY, () => this.onDeskletsLockedChanged());
     },
 
     applyKeyBindings: function() {
@@ -463,6 +466,7 @@ DeskletContainer.prototype = {
      */
     addDesklet: function(actor){
         this.actor.add_actor(actor);
+        actor._delegate._draggable.inhibit = global.settings.get_boolean(LOCK_DESKLETS_KEY);
     },
 
     /**
@@ -475,6 +479,12 @@ DeskletContainer.prototype = {
      */
     contains: function(actor){
         return this.actor.contains(actor);
+    },
+
+    onDeskletsLockedChanged: function(settings, key) {
+        this.actor.get_children().forEach((deskletActor) => {
+            deskletActor._delegate._draggable.inhibit = global.settings.get_boolean(LOCK_DESKLETS_KEY);
+        });
     },
 
     handleDragOver: function(source, actor, x, y, time) {
