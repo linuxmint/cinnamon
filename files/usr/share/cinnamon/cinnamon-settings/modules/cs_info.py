@@ -93,6 +93,16 @@ def getProcInfos():
     return result
 
 
+def getSystemIcon():
+    schema = Gio.Settings(schema="org.cinnamon")
+
+    iconPath = schema.get_string("system-icon-path")
+    if iconPath is "":  # left empty, so its disabled
+        return None
+
+    return iconPath
+
+
 def createSystemInfos():
     procInfos = getProcInfos()
     infos = []
@@ -203,6 +213,12 @@ class Module:
                 button.connect("clicked", self.on_copy_clipboard_button_clicked)
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
+
+            systemIconPath = getSystemIcon()
+            if systemIconPath is not None:
+                systemIcon = Gtk.Image.new_from_file(systemIconPath)
+                page.add(systemIcon)
+
     
     def on_copy_clipboard_button_clicked(self, button):
         try:
