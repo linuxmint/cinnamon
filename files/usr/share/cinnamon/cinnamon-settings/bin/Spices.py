@@ -149,7 +149,7 @@ class Spice_Harvester(GObject.Object):
         self.total_jobs = 0
         self.download_total_files = 0
         self.download_current_file = 0
-        self.cache_folder = '%s/.cinnamon/spices.cache/%s/' % (home, self.collection_type)
+        self.cache_folder = os.path.join(GLib.get_user_cache_dir(), 'cinnamon', 'spices', self.collection_type)
 
         if self.themes:
             self.settings = Gio.Settings.new('org.cinnamon.theme')
