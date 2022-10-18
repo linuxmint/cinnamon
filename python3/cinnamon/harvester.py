@@ -21,7 +21,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gio', '2.0')
-from gi.repository import Gdk, Gtk, Gio
+from gi.repository import Gdk, Gtk, Gio, GLib
 
 from . import logger
 from . import proxygsettings
@@ -125,7 +125,7 @@ class SpiceUpdate():
 
 class SpicePathSet():
     def __init__(self, cache_item, spice_type):
-        cache_folder = Path('%s/.cinnamon/spices.cache/%s/' % (home, spice_type))
+        cache_folder = os.path.join(GLib.get_user_cache_dir(), 'cinnamon', 'spices', spice_type)
 
         is_theme = spice_type == "theme"
 

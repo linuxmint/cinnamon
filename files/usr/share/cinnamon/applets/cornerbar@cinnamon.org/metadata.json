@@ -1,0 +1,7 @@
+{
+ "uuid": "cornerbar@cinnamon.org",
+ "name": "Corner bar",
+ "description": "A bar designed to be placed in the corner, used to show the desktop, desklets, the workspace selector or the window selector.",
+ "icon": "cs-applets",
+ "max-instances": -1
+}

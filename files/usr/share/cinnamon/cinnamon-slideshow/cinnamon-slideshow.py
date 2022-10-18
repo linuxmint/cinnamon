@@ -129,15 +129,15 @@ class CinnamonSlideshow(dbus.service.Object):
 
     def ensure_file_is_image(self, file_list):
         for item in file_list:
-            file_type = item.get_file_type();
+            file_type = item.get_file_type()
             if file_type is not Gio.FileType.DIRECTORY:
-                file_contents = item.get_content_type();
+                file_contents = item.get_content_type()
                 if file_contents.startswith("image"):
                     self.add_image_to_playlist(self.collection_path + "/" + item.get_name())
 
     def add_image_to_playlist(self, file_path):
         image = Gio.file_new_for_path(file_path)
-        image_uri = image.get_uri();
+        image_uri = image.get_uri()
         self.image_playlist.append(image_uri)
         if self.collection_type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
             self.image_playlist.sort()
@@ -166,7 +166,7 @@ class CinnamonSlideshow(dbus.service.Object):
     def on_monitored_folder_changed(self, monitor, file1, file2, event_type):
         try:
             if event_type == Gio.FileMonitorEvent.DELETED:
-                file_uri = file1.get_uri();
+                file_uri = file1.get_uri()
                 if self.image_playlist.count(file_uri) > 0:
                     index_to_remove = self.image_playlist.index(file_uri)
                     del self.image_playlist[index_to_remove]
@@ -179,7 +179,7 @@ class CinnamonSlideshow(dbus.service.Object):
                 file_info = file1.query_info("standard::type,standard::content-type", Gio.FileQueryInfoFlags.NONE, None)
                 file_type = file_info.get_file_type()
                 if file_type is not Gio.FileType.DIRECTORY:
-                    file_contents = file_info.get_content_type();
+                    file_contents = file_info.get_content_type()
                     if file_contents.startswith("image"):
                         self.add_image_to_playlist(file_path)
         except:

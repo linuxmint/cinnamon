@@ -7,7 +7,7 @@ import gettext
 import datetime
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf
+from gi.repository import Gtk, GdkPixbuf, GLib
 
 usage = """
 usage : xlet-about-dialog applets/desklets/extensions uuid
@@ -81,7 +81,7 @@ class AboutDialog(Gtk.AboutDialog):
 
     def get_spices_id(self):
         try:
-            cache_path = os.path.join(home, '.cinnamon', 'spices.cache', self.stype[0:-1], 'index.json')
+            cache_path = os.path.join(GLib.get_user_cache_dir(), 'cinnamon', 'spices', self.stype[0:-1], 'index.json'),
             if os.path.exists(cache_path):
                 with open(cache_path, 'r') as cache_file:
                     index_cache = json.load(cache_file)
@@ -89,7 +89,7 @@ class AboutDialog(Gtk.AboutDialog):
                         return index_cache[self.metadata['uuid']]['spices-id']
             return None
         except Exception as e:
-            print('Failed to load/parse index.json');
+            print('Failed to load/parse index.json')
             print(e)
             return None
 
