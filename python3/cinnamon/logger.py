@@ -7,7 +7,10 @@ from pathlib import Path
 from gi.repository import GLib
 
 # Share among multiple Harvesters
-logfile = os.path.join(GLib.get_user_state_dir(), 'cinnamon', 'harvester.log')
+try:
+    logfile = os.path.join(GLib.get_user_state_dir(), 'cinnamon', 'harvester.log')
+except AttributeError:
+    logfile = '%s/.cinnamon/harvester.log' % os.path.expanduser("~")
 
 class ActivityLogger():
     def __init__(self):
