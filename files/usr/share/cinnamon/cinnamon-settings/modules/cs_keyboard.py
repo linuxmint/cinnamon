@@ -267,6 +267,7 @@ class Module:
             vbox.set_border_width(6)
             vbox.set_spacing(6)
             self.sidePage.stack.add_titled(vbox, "shortcuts", _("Shortcuts"))
+            self.sidePage.stack.connect("notify::visible-child-name", self.stack_page_changed)
 
             headingbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
@@ -281,10 +282,17 @@ class Module:
 
             paned.add1(left_vbox)
 
+            right_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            paned.add2(right_box)
+
+            self.kb_search_entry = Gtk.Entry(placeholder_text=_("Type to search"))
+            right_box.pack_start(self.kb_search_entry, False, False, 2)
+            self.kb_search_handler_id = self.kb_search_entry.connect("changed", self.on_kb_search_changed)
+
             right_scroller = Gtk.ScrolledWindow.new(None, None)
             right_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
             right_scroller.add(right_vbox)
-            paned.add2(right_scroller)
+            right_box.pack_start(right_scroller, True, True, 2)
 
             category_scroller = Gtk.ScrolledWindow.new(None, None)
             category_scroller.set_shadow_type(Gtk.ShadowType.IN)
@@ -298,9 +306,9 @@ class Module:
             right_vbox.pack_start(kb_name_scroller, True, True, 2)
             right_vbox.pack_start(entry_scroller, True, True, 2)
             kb_name_scroller.set_property('min-content-height', 150)
-            self.cat_tree = Gtk.TreeView.new()
-            self.kb_tree = Gtk.TreeView.new()
-            self.entry_tree = Gtk.TreeView.new()
+            self.cat_tree = Gtk.TreeView(enable_search=False, search_column=-1)
+            self.kb_tree = Gtk.TreeView(enable_search=False, search_column=-1)
+            self.entry_tree = Gtk.TreeView(enable_search=False, search_column=-1)
 
             self.kb_tree.connect('row-activated', self.onCustomKeyBindingEdited)
             self.kb_tree.connect('button-press-event', self.onContextMenuPopup)
@@ -331,9 +339,11 @@ class Module:
             self.cat_store = Gtk.TreeStore(str,     # Icon name or None
                                            str,     # The category name
                                            object)  # The category object
+            self.kb_root_store = Gtk.ListStore( str,   # Keybinding name
+                                                object)# The keybinding object
 
-            self.kb_store = Gtk.ListStore( str,   # Keybinding name
-                                           object)# The keybinding object
+            self.kb_store = Gtk.TreeModelFilter(child_model=self.kb_root_store)
+            self.kb_store.set_visible_func(self.kb_store_visible_func)
 
             self.entry_store = Gtk.ListStore(str) # Accel string
 
@@ -350,7 +360,6 @@ class Module:
             cat_column.set_property('min-width', 200)
 
             self.cat_tree.append_column(cat_column)
-            self.cat_tree.set_search_column(1)
             self.cat_tree.connect("cursor-changed", self.onCategoryChanged)
 
             kb_name_cell = Gtk.CellRendererText()
@@ -371,7 +380,7 @@ class Module:
             self.entry_tree.append_column(entry_column)
 
             self.entry_tree.set_tooltip_text(CellRendererKeybinding.TOOLTIP_TEXT)
-
+            self.current_category = None
             self.main_store = []
 
             for cat in CATEGORIES:
@@ -402,10 +411,11 @@ class Module:
 
             paned.set_position(max(w, 200))
 
-            self.loadCustoms()
             self.cat_tree.set_model(self.cat_store)
             self.kb_tree.set_model(self.kb_store)
             self.entry_tree.set_model(self.entry_store)
+
+            self.populate_kb_tree()
 
             vbox.pack_start(headingbox, True, True, 0)
 
@@ -425,27 +435,75 @@ class Module:
                 widget.show()
                 vbox.pack_start(cheat_box, True, True, 0)
 
+            self.kb_search_entry.grab_focus()
+
+    def stack_page_changed(self, stack, pspec, data=None):
+        if stack.get_visible_child_name() == "shortcuts":
+            self.kb_search_entry.grab_focus()
+
     def addNotebookTab(self, tab):
         self.notebook.append_page(tab.tab, Gtk.Label.new(tab.name))
         self.tabs.append(tab)
 
     def onCategoryChanged(self, tree):
-        self.kb_store.clear()
+        self.kb_search_entry.handler_block(self.kb_search_handler_id)
+        self.kb_search_entry.set_text("")
+        self.kb_search_entry.handler_unblock(self.kb_search_handler_id)
+
         if tree.get_selection() is not None:
             categories, iter = tree.get_selection().get_selected()
             if iter:
                 category = categories[iter][2]
-                if category.int_name != "custom":
-                    for keybinding in category.keybindings:
-                        self.kb_store.append((keybinding.label, keybinding))
-                else:
-                    self.loadCustoms()
+                self.current_category = category
+                self.kb_store.refilter()
+
             self.remove_custom_button.set_property('sensitive', False)
 
-    def loadCustoms(self):
+    def on_kb_search_changed(self, entry, data=None):
+        self.cat_tree.get_selection().unselect_all()
+        self.current_category = None
+        self.kb_store.refilter()
+
+    def populate_kb_tree(self):
+        self.kb_root_store.clear()
+        self.current_category = None
+        self.kb_search_entry.handler_block(self.kb_search_handler_id)
+        self.kb_search_entry.set_text("")
+        self.kb_search_entry.handler_unblock(self.kb_search_handler_id)
+
         for category in self.main_store:
-            if category.int_name == "custom":
-                category.clear()
+            for keybinding in category.keybindings:
+                self.kb_root_store.append((keybinding.label, keybinding))
+        self.loadCustoms()
+
+    def kb_store_visible_func(self, model, iter, data=None):
+        if self.current_category is None and self.kb_search_entry.get_text == "":
+            print("empty")
+            return False
+
+        keybinding = self.kb_root_store.get_value(iter, 1)
+
+        search = self.kb_search_entry.get_text().lower().strip()
+        if search != "":
+            return search in keybinding.label.lower().strip()
+
+        if self.current_category is not None:
+            return keybinding.category == self.current_category.int_name
+
+    def loadCustoms(self):
+        iter = self.kb_root_store.get_iter_first()
+
+        while iter:
+            # Removing a row moves the iter to the next row, which may also be
+            # custom, so we don't want to call iter_next() until we hit a row
+            # that isn't, otherwise we may skip one.
+            keybinding = self.kb_root_store.get_value(iter, 1)
+            if keybinding.category == "custom":
+                if not self.kb_root_store.remove(iter):
+                    break
+                continue
+
+            iter = self.kb_root_store.iter_next(iter)
 
         parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
         custom_list = parent.get_strv("custom-list")
@@ -460,10 +518,7 @@ class Module:
                                          schema.get_string("name"),
                                          schema.get_string("command"),
                                          schema.get_strv("binding"))
-            self.kb_store.append((custom_kb.label, custom_kb))
-            for category in self.main_store:
-                if category.int_name == "custom":
-                    category.add(custom_kb)
+            self.kb_root_store.append((custom_kb.label, custom_kb))
 
     def onKeyBindingChanged(self, tree):
         self.entry_store.clear()
@@ -477,7 +532,6 @@ class Module:
                 self.remove_custom_button.set_property('sensitive', isinstance(keybinding, CustomKeyBinding))
 
     def onEntryChanged(self, cell, path, accel_string, accel_label, entry_store):
-        iter = entry_store.get_iter(path)
         keybindings, kb_iter = self.kb_tree.get_selection().get_selected()
         if kb_iter:
             current_keybinding = keybindings[kb_iter][1]
@@ -513,7 +567,6 @@ class Module:
         self.entry_tree.get_selection().select_path(path)
 
     def onEntryCleared(self, cell, path, entry_store):
-        iter = entry_store.get_iter(path)
         keybindings, kb_iter = self.kb_tree.get_selection().get_selected()
         if kb_iter:
             current_keybinding = keybindings[kb_iter][1]
@@ -557,6 +610,10 @@ class Module:
         new_schema.set_string("name", dialog.name_entry.get_text())
         new_schema.set_string("command", dialog.command_entry.get_text().replace("%20", "\ "))
         new_schema.set_strv("binding", ())
+
+        self.loadCustoms()
+        self.kb_store.refilter()
+
         i = 0
         for cat in self.cat_store:
             if cat[2].int_name == "custom":
@@ -596,13 +653,11 @@ class Module:
                 ensureCustomListIsValid(array)
                 parent_settings.set_strv("custom-list", array)
 
-        i = 0
-        for cat in self.cat_store:
-            if cat[2].int_name == "custom":
-                self.cat_tree.set_cursor(str(i), self.cat_tree.get_column(0), False)
-            i += 1
+        self.loadCustoms()
+        self.kb_store.refilter()
 
     def onCustomKeyBindingEdited(self, kb_treeview, column, kb_column):
+        print("what")
         keybindings, iter = kb_treeview.get_selection().get_selected()
         if iter:
             keybinding = keybindings[iter][1]
@@ -622,11 +677,6 @@ class Module:
                 keybinding.action = dialog.command_entry.get_text().replace("%20", "\ ")
                 keybinding.writeSettings()
 
-                i = 0
-                for cat in self.cat_store:
-                    if cat[2].int_name == "custom":
-                        self.cat_tree.set_cursor(str(i), self.cat_tree.get_column(0), False)
-                    i += 1
                 i = 0
                 for keybinding in self.kb_store:
                     if keybinding[0] == dialog.name_entry.get_text():
@@ -685,6 +735,7 @@ class KeyBindingCategory():
 class KeyBinding():
     def __init__(self, label, schema, key, category):
         self.key = key
+        self.category = category
         self.label = label
         self.entries = [ ]
         self.settings = Gio.Settings.new(schema)
@@ -724,6 +775,7 @@ class KeyBinding():
 
 class CustomKeyBinding():
     def __init__(self, path, label, action, binding):
+        self.category = "custom"
         self.path = path
         self.label = label
         self.action = action
