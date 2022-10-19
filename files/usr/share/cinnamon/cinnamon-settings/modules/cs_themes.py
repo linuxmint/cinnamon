@@ -11,7 +11,7 @@ from ChooserButtonWidgets import PictureChooserButton
 from ExtensionCore import DownloadSpicesPage
 from Spices import Spice_Harvester
 
-import glob
+from pathlib import Path
 
 ICON_SIZE = 48
 
@@ -387,13 +387,12 @@ class Module:
         return res
 
     def filter_func_gtk_dir(self, directory):
-        # returns whether a directory is a valid GTK theme
-        if os.path.exists(os.path.join(directory, "gtk-2.0")):
-            if os.path.exists(os.path.join(directory, "gtk-3.0")):
+        theme_dir = Path(directory)
+
+        for gtk3_dir in theme_dir.glob("gtk-3.*"):
+            # Skip gtk key themes
+            if os.path.exists(os.path.join(gtk3_dir, "gtk.css")):
                 return True
-            else:
-                for subdir in glob.glob("%s/gtk-3.*" % directory):
-                    return True
         return False
 
     def _load_icon_themes(self):
