@@ -1,18 +1,61 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*
 /* exported WindowMenuManager */
 
-const { GLib, Meta, St, Gtk } = imports.gi;
+const { Clutter, GLib, Meta, St, Gtk } = imports.gi;
 
-const BoxPointer = imports.ui.boxpointer;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
-const Lang = imports.lang;
 const CheckBox = imports.ui.checkBox;
 const RadioButton = imports.ui.radioButton;
 
-var LeftOrnamentedMenuItem = class LeftOrnamentedMenuItem extends PopupMenu.PopupBaseMenuItem {
-    _init (text, params) {
+var BaseMnemonicMenuItem = class BaseMnemonicMenuItem extends PopupMenu.PopupBaseMenuItem {
+    _init (label, params) {
         super._init.call(this, params);
+
+        this.mnemonicInit(label);
+    }
+
+    mnemonicInit(label) {
+        this.origLabel = label;
+        this.plain = null;
+        this.mnemonized = null;
+        this.showing_mnemonic = false;
+    }
+
+    _setLabels() {
+        let markup = null;
+        let plain = null;
+        let mnemonic = undefined;
+        let title_pieces = this.origLabel.split("_");
+
+        if (title_pieces.length === 2) {
+            this.mnemonic = title_pieces[1][0].toLowerCase();
+            this.mnemonized = `${title_pieces[0]}<u>${title_pieces[1][0]}</u>${title_pieces[1].substring(1)}`;
+            this.plain = `${title_pieces[0]}${title_pieces[1]}`; 
+        } else {
+            this.plain = this.origLabel;
+            this.mnemonized = this.origLabel;
+        }
+
+        this.label.clutter_text.set_markup(this.plain);
+    }
+
+    toggleMnemonic() {
+        if (!this.showing_mnemonic) {
+            this.label.clutter_text.set_markup(this.mnemonized);
+            this.showing_mnemonic = true;
+        } else {
+            this.label.clutter_text.set_markup(this.plain);
+            this.showing_mnemonic = false;
+        }
+
+        this.label.clutter_text.queue_relayout();
+    }
+}
+
+var MnemonicLeftOrnamentedMenuItem = class MnemonicLeftOrnamentedMenuItem extends BaseMnemonicMenuItem {
+    _init (label, params) {
+        super._init.call(this, label, params);
 
         this._ornament = new St.Bin();
         this._icon = new St.Icon({ style_class: 'popup-menu-icon', icon_type: St.IconType.SYMBOLIC });
@@ -21,14 +64,11 @@ var LeftOrnamentedMenuItem = class LeftOrnamentedMenuItem extends PopupMenu.Popu
         this._ornament.child._delegate = this._ornament;
         this.addActor(this._ornament, {span: 1});
 
-        this.label = new St.Label({ text: text });
+        this.label = new St.Label();
         this.addActor(this.label);
         this.actor.label_actor = this.label;
 
-    }
-
-    setLabel(label) {
-        this.label.set_text(label);
+        this._setLabels();
     }
 
     setIcon(icon_name) {
@@ -71,6 +111,20 @@ var LeftOrnamentedMenuItem = class LeftOrnamentedMenuItem extends PopupMenu.Popu
     }
 }
 
+var MnemonicSubMenuMenuItem = class MnemonicSubMenuMenuItem extends PopupMenu.PopupSubMenuMenuItem {
+    _init (label, params) {
+        super._init.call(this, label);
+        BaseMnemonicMenuItem.prototype.mnemonicInit.call(this, label);
+
+        // to help align with left side ornaments
+        let filler = new St.Icon({ style_class: 'popup-menu-icon', icon_type: St.IconType.SYMBOLIC });
+        this.addActor(filler, { span: 1, position: 0 });
+
+        this._setLabels();
+    }
+}
+MnemonicSubMenuMenuItem.prototype.toggleMnemonic = BaseMnemonicMenuItem.prototype.toggleMnemonic;
+MnemonicSubMenuMenuItem.prototype._setLabels = BaseMnemonicMenuItem.prototype._setLabels;
 
 var WindowMenu = class extends PopupMenu.PopupMenu {
     constructor(window, sourceActor) {
@@ -81,16 +135,52 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
 
+        this.actor.connect('key-press-event', this._windowMenuKeypress.bind(this));
+
+        this._items = [];
         this._buildMenu(window);
     }
 
+    _windowMenuKeypress(actor, event) {
+        if (this._onKeyPressEvent(actor, event) === Clutter.EVENT_STOP) {
+            return Clutter.EVENT_STOP;
+        }
+
+        if (event.get_key_symbol() === Clutter.KEY_Alt_R || event.get_key_symbol() === Clutter.KEY_Alt_L) {
+            let items = this._getMenuItems();
+
+            for (let item of this._items) {
+                if (item.mnemonic !== undefined) {
+                    item.toggleMnemonic();
+                }
+            }
+            return Clutter.EVENT_STOP;
+        }
+
+        let items = this._getMenuItems();
+        for (let item of this._items) {
+            if (!item.sensitive) {
+                continue;
+            }
+
+            if (item.mnemonic != undefined && item.mnemonic[0] === String.fromCharCode(event.get_key_symbol()).toLowerCase()) {
+                item.activate(event);
+                return Clutter.EVENT_STOP;
+            }
+        }
+
+        return Clutter.EVENT_PROPAGATE;
+    }
+
     addAction(to_menu, title, callback) {
-        let menuItem = new LeftOrnamentedMenuItem(title);
+        let menuItem = new MnemonicLeftOrnamentedMenuItem(title);
         to_menu.addMenuItem(menuItem);
 
         menuItem.connect('activate', (o, event) => {
             callback(event);
         });
+
+        this._items.push(menuItem);
 
         return menuItem;
     }
@@ -100,7 +190,9 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
 
         let item;
 
-        item = this.addAction(this, _("Minimize"), () => {
+        // Translators: If a language-specific mnemonic doesn't make sense, add one after the label itself:
+        // i.e. <translated>(_n). See https://github.com/linuxmint/muffin/blob/b9a6f3fe43e/po .po files
+        item = this.addAction(this, _("Mi_nimize"), () => {
             window.minimize();
         });
         item.setIcon("window-minimize-symbolic");
@@ -109,11 +201,15 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
             item.setSensitive(false);
 
         if (window.get_maximized()) {
-            item = this.addAction(this, _("Unmaximize"), () => {
+            // Translators: If a language-specific mnemonic doesn't make sense, add one after the label itself:
+            // i.e. <translated>(_n). See https://github.com/linuxmint/muffin/blob/b9a6f3fe43e/po .po files
+            item = this.addAction(this, _("Unma_ximize"), () => {
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
             });
         } else {
-            item = this.addAction(this, _("Maximize"), () => {
+            // Translators: If a language-specific mnemonic doesn't make sense, add one after the label itself:
+            // i.e. <translated>(_n). See https://github.com/linuxmint/muffin/blob/b9a6f3fe43e/po .po files
+            item = this.addAction(this, _("Ma_ximize"), () => {
                 window.maximize(Meta.MaximizeFlags.BOTH);
             });
             item.setIcon("window-maximize-symbolic");
@@ -121,19 +217,25 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
         if (!window.can_maximize())
             item.setSensitive(false);
 
-        item = this.addAction(this, _("Move"), event => {
+        // Translators: If a language-specific mnemonic doesn't make sense, add one after the label itself:
+        // i.e. <translated>(_n). See https://github.com/linuxmint/muffin/blob/b9a6f3fe43e/po .po files
+        item = this.addAction(this, _("_Move"), event => {
             this._grabAction(window, Meta.GrabOp.KEYBOARD_MOVING, event.get_time());
         });
         if (!window.allows_move())
             item.setSensitive(false);
 
-        item = this.addAction(this, _("Resize"), event => {
+        // Translators: If a language-specific mnemonic doesn't make sense, add one after the label itself:
+        // i.e. <translated>(_n). See https://github.com/linuxmint/muffin/blob/b9a6f3fe43e/po .po files
+        item = this.addAction(this, _("_Resize"), event => {
             this._grabAction(window, Meta.GrabOp.KEYBOARD_RESIZING_UNKNOWN, event.get_time());
         });
         if (!window.allows_resize())
             item.setSensitive(false);
 
         if (!window.titlebar_is_onscreen() && type != Meta.WindowType.DOCK && type != Meta.WindowType.DESKTOP) {
+            // Translators: If a language-specific mnemonic doesn't make sense, add one after the label itself:
+            // i.e. <translated>(_n). See https://github.com/linuxmint/muffin/blob/b9a6f3fe43e/po .po files
             this.addAction(this, _("Move Titlebar Onscreen"), () => {
                 window.shove_titlebar_onscreen();
             });
@@ -141,7 +243,9 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        item = this.addAction(this, _("Always on Top"), () => {
+        // Translators: If a language-specific mnemonic doesn't make sense, add one after the label itself:
+        // i.e. <translated>(_n). See https://github.com/linuxmint/muffin/blob/b9a6f3fe43e/po .po files
+        item = this.addAction(this, _("Always on _Top"), () => {
             if (window.is_above())
                 window.unmake_above();
             else
@@ -161,12 +265,14 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
              window.is_on_primary_monitor())) {
             let isSticky = window.is_on_all_workspaces();
 
-            this.sticky_action = this.addAction(this, _("Always on Visible Workspace"), () => {
-                log("stick");
+            // Translators: If a language-specific mnemonic doesn't make sense, add one after the label itself:
+            // i.e. <translated>(_n). See https://github.com/linuxmint/muffin/blob/b9a6f3fe43e/po .po files
+            this.sticky_action = this.addAction(this, _("_Always on Visible Workspace"), () => {
                 window.stick();
             });
-            this.unsticky_action = this.addAction(this, _("Only on This Workspace"), () => {
-                log("unstick");
+            // Translators: If a language-specific mnemonic doesn't make sense, add one after the label itself:
+            // i.e. <translated>(_n). See https://github.com/linuxmint/muffin/blob/b9a6f3fe43e/po .po files
+            this.unsticky_action = this.addAction(this, _("_Only on This Workspace"), () => {
                 window.unstick();
             });
             this.sticky_action.setOrnament(PopupMenu.OrnamentType.DOT, isSticky);
@@ -177,17 +283,48 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
                 this.unsticky_action.setSensitive(false);
             }
 
-            let ws_sub = new PopupMenu.PopupSubMenuMenuItem(_("Move to Another Workspace"));
-            let filler = new St.Icon({ style_class: 'popup-menu-icon', icon_type: St.IconType.SYMBOLIC });
-            ws_sub.addActor(filler, { span: 1, position: 0 });
-
+            // Translators: If a language-specific mnemonic doesn't make sense, add one after the label itself:
+            // i.e. <translated>(_n). See https://github.com/linuxmint/muffin/blob/b9a6f3fe43e/po .po files
+            let ws_sub = new MnemonicSubMenuMenuItem(_("Move to Another _Workspace"));
             this.addMenuItem(ws_sub);
+            this._items.push(ws_sub);
 
             let curr_index = window.get_workspace().index();
+            let used_nums = {};
+            let name = null;
+
             for (let i = 0; i < global.workspace_manager.get_n_workspaces(); i++) {
-                let j = i;
-                let name = Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i);
-                item = this.addAction(ws_sub.menu, name, () => window.change_workspace(global.workspace_manager.get_workspace_by_index(j)))
+                if (used_nums[i + 1]) {
+                    continue;
+                }
+
+                let name = Main.workspace_names[i];
+
+                if (name === undefined || name === '') {
+                    name = Main.getWorkspaceName(i);
+                }
+
+                let end = name.substring(name.length - 2).replace("_", "");
+                let number = parseInt(end);
+
+                if (!isNaN(number) && used_nums[number] == undefined) {
+                    if (number == 10) {
+                        name = name.replace("10", "1_0");
+                        used_nums[10] = true;
+                    }
+                    else
+                    if (number < 10) {
+                        name = name.replace(number.toString(), "_" + number.toString());
+                        used_nums[number] = true;
+                    }
+                }
+                else
+                {
+                    name = `${name} (_${i + 1})`
+                    used_nums[i + 1] = true;
+                }
+
+                item = this.addAction(ws_sub.menu, name, () => window.change_workspace(global.workspace_manager.get_workspace_by_index(i)))
 
                 if (i == curr_index)
                     item.setSensitive(false);
@@ -196,7 +333,9 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        item = this.addAction(this, _("Close"), event => {
+        // Translators: If a language-specific mnemonic doesn't make sense, add one after the label itself:
+        // i.e. <translated>(_n). See https://github.com/linuxmint/muffin/blob/b9a6f3fe43e/po .po files
+        item = this.addAction(this, _("_Close"), event => {
             window.delete(event.get_time());
         });
         item.setIcon("window-close-symbolic");
