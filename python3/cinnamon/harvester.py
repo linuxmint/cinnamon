@@ -125,7 +125,7 @@ class SpiceUpdate():
 
 class SpicePathSet():
     def __init__(self, cache_item, spice_type):
-        cache_folder = os.path.join(GLib.get_user_cache_dir(), 'cinnamon', 'spices', spice_type)
+        cache_folder = Path(os.path.join(GLib.get_user_cache_dir(), 'cinnamon', 'spices', spice_type))
 
         is_theme = spice_type == "theme"
 
