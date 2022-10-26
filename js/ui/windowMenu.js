@@ -376,11 +376,18 @@ var WindowMenuManager = class {
         this.dummyCursor = new St.Widget({ width: 0, height: 0, opacity: 0 });
         Main.uiGroup.add_actor(this.dummyCursor);
         this.actor = this.dummyCursor;
+
+        this.current_menu = null;
+        this.current_window = null;
+        this.destroyId = 0;
     }
 
     showWindowMenuForWindow(window, type, rect) {
         if (type != Meta.WindowMenuType.WM)
             throw new Error('Unsupported window menu type');
+
+        this.destroyMenu();
+
         let menu = new WindowMenu(window, this._sourceActor);
 
         this._manager.addMenu(menu);
@@ -389,11 +396,11 @@ var WindowMenuManager = class {
             window.check_alive(global.get_current_time());
         });
         menu.connect('menu-animated-closed', () => {
-            menu.destroy()
+            this.destroyMenu();
         });
 
         let destroyId = window.connect('unmanaged', () => {
-            menu.close();
+            this.destroyMenu();
         });
 
         this._sourceActor.set_size(Math.max(1, rect.width), Math.max(1, rect.height));
@@ -407,11 +414,24 @@ var WindowMenuManager = class {
         menu.open();
         menu.actor.navigate_focus(null, Gtk.DirectionType.TAB_FORWARD, false);
         menu.connect('open-state-changed', (menu_, isOpen) => {
-            if (isOpen)
-                return;
-
-            this._sourceActor.hide();
-            window.disconnect(destroyId);
+            this.destroyMenu();
         });
+
+        this.current_menu = menu;
+        this.current_window = window;
+    }
+
+    destroyMenu() {
+        this._sourceActor.hide();
+
+        if (this.destroyId > 0) {
+            this.current_window.disconnect(destroyId);
+            this.destroyId = 0;
+        }
+
+        if (this.current_menu) {
+            this.current_menu.destroy();
+            this.current_menu = null;
+        }
     }
 };
