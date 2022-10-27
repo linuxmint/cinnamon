@@ -56,6 +56,8 @@ KEYBINDINGS = [
     [_("Show Desklets"), CINNAMON_SCHEMA, "show-desklets", "general"],
     [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows", "general"],
     [_("Cycle backwards through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward", "general"],
+    [_("Cycle through windows from all workspaces"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-panels", "general"],
+    [_("Cycle backwards through windows from all workspaces"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-panels-backward", "general"],
     [_("Cycle through open windows of the same application"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-group", "general"],
     [_("Cycle backwards through open windows of the same application"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-group-backward", "general"],
     [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog", "general"],
