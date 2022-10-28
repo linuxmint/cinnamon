@@ -2,6 +2,7 @@
 
 const { Clutter, Gio, GLib, St } = imports.gi;
 const Ripples = imports.ui.ripples;
+const Lang = imports.lang;
 const Main = imports.ui.main;
 
 const LOCATE_POINTER_ENABLED_SCHEMA = "org.cinnamon.desktop.peripherals.mouse"
@@ -21,8 +22,8 @@ var locatePointer = class {
 
     _updateKey() {
         if (this._enabledSettings.get_boolean("locate-pointer")) {
-            let modifierKey = this._keySettings.get_string('locate-pointer-key');
-            Main.keybindingManager.addHotKey('locate-pointer', modifierKey, () => { this.show() });
+            let modifierKeys = this._keySettings.get_strv('locate-pointer-key');
+            Main.keybindingManager.addHotKeyArray('locate-pointer', modifierKeys, Lang.bind(this, this.show));
         } else {
             Main.keybindingManager.removeHotKey('locate-pointer');
         }
