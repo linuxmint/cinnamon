@@ -38,6 +38,7 @@ foreach desktop_file : desktop_files
 endforeach
 
 subdir('xsessions')
+subdir('services')
 
 install_data(
     'org.cinnamon.gschema.xml',
