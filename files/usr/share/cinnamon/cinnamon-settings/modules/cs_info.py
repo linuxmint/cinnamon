@@ -218,9 +218,12 @@ class Module:
 
             systemIconPath = getSystemIcon()
             if systemIconPath is not None:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale (systemIconPath, -1, 160, True)
-                systemIcon = Gtk.Image.new_from_pixbuf(pixbuf)
-                page.add(systemIcon)
+                try:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale (systemIconPath, -1, 160, True)
+                    systemIcon = Gtk.Image.new_from_pixbuf(pixbuf)
+                    page.add(systemIcon)
+                except GLib.GError:
+                    pass
 
     
     def on_copy_clipboard_button_clicked(self, button):
