@@ -502,7 +502,7 @@
     </key>
 
     <key type="s" name="system-icon-path">
-      <default>"/usr/share/icons/vendor/scalable/emblems/emblem-vendor.svg"</default>
+      <default>""</default>
       <summary>The logo to use in the system info settings</summary>
       <description>
         An icon name or absolute path to an icon, which will be used for the system icon in the "System Info" settings app.
