@@ -2,8 +2,6 @@
 
 import requests
 import os
-import time
-import math
 import subprocess
 import json
 import locale
