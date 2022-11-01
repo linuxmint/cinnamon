@@ -244,7 +244,7 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
 
             #Web
             if self.content_type == "x-scheme-handler/http":
-                if info.set_as_default_for_type ("x-scheme-handler/https") == False:
+                if not info.set_as_default_for_type("x-scheme-handler/https"):
                     print("  Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https"))
 
 class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this to change the x-terminal-emulator default to allow it to be a more global change rather then just cinnamon/nemo
