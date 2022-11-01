@@ -68,7 +68,7 @@ class CinnamonSlideshow(dbus.service.Object):
 
     def format_source(self, type, path):
         # returns 'type://path'
-        return ("%s://%s" % (type, path))
+        return "%s://%s" % (type, path)
 
     def load_settings(self):
         self.random_order = self.slideshow_settings.get_boolean("random-order")

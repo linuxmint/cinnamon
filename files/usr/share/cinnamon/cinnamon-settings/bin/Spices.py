@@ -161,7 +161,7 @@ class Spice_Harvester(GObject.Object):
 
         if self.themes:
             self.install_folder = os.path.join(GLib.get_user_data_dir(), 'themes')
-            old_install_folder = '%s/.themes/' % (home)
+            old_install_folder = '%s/.themes/' % home
             self.spices_directories = (self.install_folder, old_install_folder)
         else:
             self.install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
@@ -302,7 +302,7 @@ class Spice_Harvester(GObject.Object):
             text = "%s %i/%i" % (_("Downloading images:"), current, total)
             self._set_progressbar_text(text)
         else:
-            fraction = count * blockSize / float((totalSize / blockSize + 1) * (blockSize))
+            fraction = count * blockSize / float((totalSize / blockSize + 1) * blockSize)
 
         self._set_progressbar_fraction(fraction)
 
@@ -425,7 +425,7 @@ class Spice_Harvester(GObject.Object):
                         if not self.themes:
                             print(detail)
                             print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
-            elif(directory == self.install_folder):
+            elif directory == self.install_folder:
                 print("%s does not exist! Creating it now." % directory)
                 subprocess.call(["mkdir", "-p", directory])
             else:
@@ -693,7 +693,7 @@ class Spice_Harvester(GObject.Object):
             uuid = job['uuid']
             if not self.themes:
                 # Uninstall spice localization files, if any
-                if (os.path.exists(locale_inst)):
+                if os.path.exists(locale_inst):
                     i19_folders = os.listdir(locale_inst)
                     for i19_folder in i19_folders:
                         if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', '%s.mo' % uuid)):
@@ -702,7 +702,7 @@ class Spice_Harvester(GObject.Object):
                         removeEmptyFolders(os.path.join(locale_inst, i19_folder))
 
                 # Uninstall settings file, if any
-                if (os.path.exists(os.path.join(settings_dir, uuid))):
+                if os.path.exists(os.path.join(settings_dir, uuid)):
                     shutil.rmtree(os.path.join(settings_dir, uuid))
                 if (os.path.exists(os.path.join(old_settings_dir, uuid))):
                     shutil.rmtree(os.path.join(old_settings_dir, uuid))
@@ -766,7 +766,7 @@ class Spice_Harvester(GObject.Object):
             screen = Gdk.Screen.get_default()
             primary = screen.get_primary_monitor()
             primary_rect = screen.get_monitor_geometry(primary)
-            enabled.append(('%s:%d:%d:%d') % (uuid, desklet_id, primary_rect.x + 100, primary_rect.y + 100))
+            enabled.append('%s:%d:%d:%d' % (uuid, desklet_id, primary_rect.x + 100, primary_rect.y + 100))
 
             self.settings.set_strv(self.enabled_key, enabled)
 

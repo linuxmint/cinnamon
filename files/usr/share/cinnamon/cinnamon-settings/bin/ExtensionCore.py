@@ -245,7 +245,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
                 icon = None
 
         if icon is None:
-            icon = Gtk.Image.new_from_icon_name('cs-%ss' % (extension_type), 3)
+            icon = Gtk.Image.new_from_icon_name('cs-%ss' % extension_type, 3)
 
         grid.attach_next_to(icon, enabled_box, Gtk.PositionType.RIGHT, 1, 1)
 
@@ -589,7 +589,7 @@ class ManageSpicesPage(SettingsPage):
     def remove_all_instances(self, *args):
         extension_row = self.list_box.get_selected_row()
 
-        if (extension_row.enabled > 1):
+        if extension_row.enabled > 1:
             msg = _("There are multiple instances enabled. Are you sure you want to remove all of them?")
             if not show_prompt(msg, self.window):
                 return
@@ -598,7 +598,7 @@ class ManageSpicesPage(SettingsPage):
 
     def uninstall_extension(self, *args):
         extension_row = self.list_box.get_selected_row()
-        if not show_prompt(_("Are you sure you want to completely remove %s?") % (extension_row.uuid), self.window):
+        if not show_prompt(_("Are you sure you want to completely remove %s?") % extension_row.uuid, self.window):
             return
         self.spices.disable_extension(extension_row.uuid)
 
@@ -983,7 +983,7 @@ class DownloadSpicesPage(SettingsPage):
 
     def uninstall(self, *args):
         extension_row = self.list_box.get_selected_row()
-        if not show_prompt(_("Are you sure you want to completely remove %s?") % (extension_row.uuid), self.window):
+        if not show_prompt(_("Are you sure you want to completely remove %s?") % extension_row.uuid, self.window):
             return
 
         self.spices.disable_extension(extension_row.uuid)

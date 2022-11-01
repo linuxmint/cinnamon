@@ -100,7 +100,7 @@ class MenuEditor(object):
 
     def getMenus(self, parent):
         if parent is None:
-            yield (self.tree.get_root_directory(), True)
+            yield self.tree.get_root_directory(), True
             return
 
         item_iter = parent.iter()
@@ -113,7 +113,7 @@ class MenuEditor(object):
             item_type = item_iter.next()
         items.sort(key=util.menuSortKey)
         for item in items:
-            yield (item, self.isVisible(item))
+            yield item, self.isVisible(item)
 
     def getContents(self, item):
         contents = []
@@ -152,7 +152,7 @@ class MenuEditor(object):
                 item = item_iter.get_alias()
             elif item_type == CMenu.TreeItemType.SEPARATOR:
                 item = item_iter.get_separator()
-            yield (item, self.isVisible(item))
+            yield item, self.isVisible(item)
             item_type = item_iter.next()
 
     def canRevert(self, item):
@@ -249,12 +249,12 @@ class MenuEditor(object):
         file_path = item.get_desktop_file_path()
         copy_buffer = GLib.KeyFile()
         copy_buffer.load_from_file(file_path, util.KEY_FILE_FLAGS)
-        return (copy_buffer, None)
+        return copy_buffer, None
 
     def cutItem(self, item):
         copy_buffer, file_id = self.copyItem(item)
         file_id = self.deleteItem(item)
-        return (copy_buffer, file_id)
+        return copy_buffer, file_id
 
     def pasteItem(self, cut_copy_buffer, menu, file_id = None):
         try:

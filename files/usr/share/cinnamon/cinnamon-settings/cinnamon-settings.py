@@ -652,7 +652,7 @@ class MainWindow(Gio.Application):
             if (final_y > 0) and ((final_y + rect.height) < page):
                 return
 
-            if ((final_y + rect.height) > page):
+            if (final_y + rect.height) > page:
                 adj.set_value(current_pos + final_y + rect.height - page + 10)
             elif final_y < 0:
                 # We can just add a negative here (since final_y < 0), but it's less

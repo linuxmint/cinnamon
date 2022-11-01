@@ -165,7 +165,7 @@ class EditableEntry (Gtk.Notebook):
         self.button.set_label(entry.get_text())
 
     def set_editable(self, editable):
-        if (editable):
+        if editable:
             self.set_current_page(EditableEntry.PAGE_ENTRY)
         else:
             self.set_current_page(EditableEntry.PAGE_BUTTON)
@@ -553,7 +553,7 @@ class Module:
                         menuitem.connect('activate', self._on_face_menuitem_activated, path)
                         self.menu.attach(menuitem, col, col+1, row, row+1)
                         col = (col+1) % num_cols
-                        if (col == 0):
+                        if col == 0:
                             row = row + 1
 
             row = row + 1
@@ -764,7 +764,7 @@ class Module:
         y += widget.get_allocation().height
 
         push_in = True # push_in is True so all menu is always inside screen
-        return (x, y, push_in)
+        return x, y, push_in
 
     def on_accounts_service_loaded(self, user, param):
         self.load_users()

@@ -720,7 +720,7 @@ class Module:
         keybinding.resetDefaults()
         self.onKeyBindingChanged(self.kb_tree)
 
-class KeyBindingCategory():
+class KeyBindingCategory:
     def __init__(self, label, int_name, parent, icon):
         self.label = label
         self.parent = parent
@@ -734,7 +734,7 @@ class KeyBindingCategory():
     def clear(self):
         del self.keybindings[:]
 
-class KeyBinding():
+class KeyBinding:
     def __init__(self, label, schema, key, category):
         self.key = key
         self.category = category
@@ -752,7 +752,7 @@ class KeyBinding():
 
         for entry in raw_array:
             result.append(entry)
-        while (len(result) < 3):
+        while len(result) < 3:
             result.append("")
 
         return result
@@ -775,7 +775,7 @@ class KeyBinding():
         self.settings.reset(self.key)
         self.loadSettings()
 
-class CustomKeyBinding():
+class CustomKeyBinding:
     def __init__(self, path, label, action, binding):
         self.category = "custom"
         self.path = path
@@ -788,7 +788,7 @@ class CustomKeyBinding():
 
         for entry in raw_array:
             result.append(entry)
-        while (len(result) < 3):
+        while len(result) < 3:
             result.append("")
         return result
 

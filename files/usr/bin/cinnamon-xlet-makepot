@@ -187,7 +187,7 @@ def do_install(uuid, dir):
 
 def do_remove(uuid):
     files_removed = 0
-    if (os.path.exists(LOCALE_DIR)):
+    if os.path.exists(LOCALE_DIR):
         locale_names = os.listdir(LOCALE_DIR)
         for locale_name in locale_names:
             lang_locale_dir = os.path.join(LOCALE_DIR, locale_name)

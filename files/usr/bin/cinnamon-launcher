@@ -46,7 +46,7 @@ def idle_function(func):
         GLib.idle_add(func, *args)
     return wrapper
 
-class Launcher():
+class Launcher:
 
     def __init__(self):
         self.fb_pid = 0

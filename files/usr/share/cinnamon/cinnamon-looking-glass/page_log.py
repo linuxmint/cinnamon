@@ -4,7 +4,7 @@ import datetime
 from gi.repository import Gtk
 import pageutils
 
-class LogEntry():
+class LogEntry:
     def __init__(self, category, time, message):
         self.category = category
         self.time = int(time)

@@ -369,7 +369,7 @@ def fill_background_color(image, color):
     else:
         mode = 'RGB'
     back = Image.new(mode, image.size, color)
-    if (image.mode == 'P' and mode == 'RGBA'):
+    if image.mode == 'P' and mode == 'RGBA':
         image = image.convert('RGBA')
     if has_alpha(image):
         paste(back, image, mask=image)

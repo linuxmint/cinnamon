@@ -154,7 +154,7 @@ class ColorsWidget(SettingsWidget):
             self.show_or_hide_color2(value)
 
     def show_or_hide_color2(self, value):
-        if (value == 'solid'):
+        if value == 'solid':
             self.color2_button.hide()
         else:
             self.color2_button.show()
@@ -365,7 +365,7 @@ class Module:
 
     def format_source(self, type, path):
         # returns 'type://path'
-        return ("%s://%s" % (type, path))
+        return "%s://%s" % (type, path)
 
     def get_initial_path(self):
         try:
