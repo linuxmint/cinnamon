@@ -577,16 +577,18 @@ class Spice_Harvester(GObject.Object):
         self._advance_queue()
         self.emit('cache-loaded')
 
-    # checks for corrupt images in the cache so we can redownload them the next time we refresh
-    def _is_bad_image(self, path):
+    # checks for corrupt images in the cache, so we can redownload them the next time we refresh
+    @staticmethod
+    def _is_bad_image(path):
         try:
             Image.open(path)
-        except IOError as detail:
+        except IOError:
             return True
         return False
 
     # make sure the thumbnail fits the correct format (we are expecting it to be <uuid>.png
-    def _sanitize_thumb(self, basename):
+    @staticmethod
+    def _sanitize_thumb(basename):
         return basename.replace("jpg", "png").replace("JPG", "png").replace("PNG", "png")
 
     def install(self, uuid):
