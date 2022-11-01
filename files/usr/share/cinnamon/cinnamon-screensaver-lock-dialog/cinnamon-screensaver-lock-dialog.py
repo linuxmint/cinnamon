@@ -17,7 +17,7 @@ gettext.install("cinnamon", "/usr/share/locale")
 
 class MainWindow:
 
-    ''' Create the UI '''
+    """ Create the UI """
 
     def __init__(self):
 

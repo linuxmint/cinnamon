@@ -1180,11 +1180,11 @@ def checkboard(size, delta=8, fg=(128, 128, 128), bg=(204, 204, 204)):
         n = int(dim / delta) + 1  # FIXME: now acts like square->nx, ny
 
         def sq_start(i):
-            "Return the x/y start coord of the square at column/row i."
+            """Return the x/y start coord of the square at column/row i."""
             return i * delta
 
         def square(i, j):
-            "Return the square corners"
+            """Return the square corners"""
             return map(sq_start, [i, j, i + 1, j + 1])
 
         image = Image.new("RGB", size, bg)
