@@ -159,8 +159,9 @@ class Spice_Harvester(GObject.Object):
             self.enabled_key = 'enabled-%ss' % self.collection_type
 
         if self.themes:
-            self.install_folder = '%s/.themes/' % (home)
-            self.spices_directories = (self.install_folder, )
+            self.install_folder = os.path.join(GLib.get_user_data_dir(), 'themes')
+            old_install_folder = '%s/.themes/' % (home)
+            self.spices_directories = (self.install_folder, old_install_folder)
         else:
             self.install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
             self.spices_directories = ('/usr/share/cinnamon/%ss/' % self.collection_type, self.install_folder)
@@ -423,9 +424,11 @@ class Spice_Harvester(GObject.Object):
                         if not self.themes:
                             print(detail)
                             print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
-            else:
+            elif(directory == self.install_folder):
                 print("%s does not exist! Creating it now." % directory)
                 subprocess.call(["mkdir", "-p", directory])
+            else:
+                print("%s does not exist! Skipping" % directory)
 
     def _directory_changed(self, *args):
         self._load_metadata()
