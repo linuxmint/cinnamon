@@ -71,7 +71,7 @@ TIMEOUT_DOWNLOAD_ZIP = 120
 
 home = os.path.expanduser("~")
 locale_inst = '%s/.local/share/locale' % home
-settings_dir = '%s/.cinnamon/configs/' % home
+settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
 
 activity_logger = logger.ActivityLogger()
 
