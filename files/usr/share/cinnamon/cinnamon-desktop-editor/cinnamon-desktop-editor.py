@@ -26,7 +26,8 @@ gettext.install("cinnamon", "/usr/share/locale")
 
 #_ = gettext.gettext # bug !!! _ is already defined by gettext.install!
 home = os.path.expanduser("~")
-PANEL_LAUNCHER_PATH = os.path.join(home, ".cinnamon", "panel-launchers")
+PANEL_LAUNCHER_PATH = os.path.join(GLib.get_user_data_dir(), "cinnamon", "panel-launchers")
+OLD_PANEL_LAUNCHER_PATH = os.path.join(home, ".cinnamon", "panel-launchers")
 
 EXTENSIONS = (".png", ".xpm", ".svg")
 
@@ -270,8 +271,10 @@ class CinnamonLauncherEditor(ItemEditor):
             i = 1
             while True:
                 name = os.path.join(PANEL_LAUNCHER_PATH, 'cinnamon-custom-launcher-' + str(i) + '.desktop')
+                old_name = os.path.join(OLD_PANEL_LAUNCHER_PATH, 'cinnamon-custom-launcher-' + str(i) + '.desktop')
                 file = Gio.file_parse_name(name)
-                if not file.query_exists(None):
+                old_file = Gio.file_parse_name(old_name)
+                if not file.query_exists(None) and not old_file.query_exists(None):
                     break
                 i += 1
             self.item_path = name
@@ -395,7 +398,8 @@ class Main:
         self.search_menu_sys()
         if self.orig_file is None:
             panel_launchers = glob.glob(os.path.join(PANEL_LAUNCHER_PATH, "*.desktop"))
-            for launcher in panel_launchers:
+            old_panel_launchers = glob.glob(os.path.join(OLD_PANEL_LAUNCHER_PATH, "*.desktop"))
+            for launcher in (panel_launchers + old_panel_launchers):
                 if os.path.split(launcher)[1] == self.desktop_file:
                     self.orig_file = launcher
 

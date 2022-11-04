@@ -20,7 +20,8 @@ const SignalManager = imports.misc.signalManager;
 const PANEL_EDIT_MODE_KEY = 'panel-edit-mode';
 const PANEL_LAUNCHERS_KEY = 'panel-launchers';
 
-const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers';
+const CUSTOM_LAUNCHERS_PATH = GLib.get_user_data_dir() + "/cinnamon/panel-launchers/";
+const OLD_CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers/';
 
 let pressLauncher = null;
 
@@ -578,7 +579,11 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
         let app = appSys.lookup_app(path);
         let appinfo = null;
         if (!app) {
-            appinfo = CMenu.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+path);
+            appinfo = CMenu.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH + path);
+            // Fallback to old launcher folder
+            if (!appinfo) {
+                appinfo = CMenu.DesktopAppInfo.new_from_filename(OLD_CUSTOM_LAUNCHERS_PATH + path);
+            }
             if (!appinfo) {
                 global.logWarning(`Failed to add launcher from path: ${path}`);
                 return null;
@@ -641,8 +646,10 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
         }
         if (delete_file) {
             let appid = launcher.getId();
-            let file = Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH+"/"+appid);
+            let file = Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH + appid);
             if (file.query_exists(null)) file.delete(null);
+            let old_file = Gio.file_new_for_path(OLD_CUSTOM_LAUNCHERS_PATH + appid);
+            if (old_file.query_exists(null)) old_file.delete(null);
         }
 
         this.sync_settings_proxy_to_settings();
