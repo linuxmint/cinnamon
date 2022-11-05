@@ -343,27 +343,9 @@ function start() {
     keybindingManager = new Keybindings.KeybindingManager();
     deskletContainer = new DeskletManager.DeskletContainer();
 
-    // Set up stage hierarchy to group all UI actors under one container.
-    uiGroup = new Cinnamon.GenericContainer({ name: 'uiGroup' });
-    // see https://gitlab.gnome.org/GNOME/gnome-shell/-/commit/73d8c82640f6125cfbf80
-    this.uiGroup.set_flags(Clutter.ActorFlags.NO_LAYOUT);
+    uiGroup = new Layout.UiActor({ name: 'uiGroup' });
+    uiGroup.set_flags(Clutter.ActorFlags.NO_LAYOUT);
 
-    uiGroup.connect('allocate',
-                    function (actor, box, flags) {
-                        let children = uiGroup.get_children();
-                        for (let i = 0; i < children.length; i++)
-                            children[i].allocate_preferred_size(flags);
-                    });
-    uiGroup.connect('get-preferred-width',
-                    function(actor, forHeight, alloc) {
-                        let width = global.stage.width;
-                        [alloc.min_size, alloc.natural_size] = [width, width];
-                    });
-    uiGroup.connect('get-preferred-height',
-                    function(actor, forWidth, alloc) {
-                        let height = global.stage.height;
-                        [alloc.min_size, alloc.natural_size] = [height, height];
-                    });
     global.background_actor.hide();
     global.reparentActor(global.window_group, uiGroup);
     global.reparentActor(global.overlay_group, uiGroup);
