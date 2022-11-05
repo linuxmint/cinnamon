@@ -66,10 +66,12 @@ function getWindowsForBinding(binding) {
 
     switch(binding.get_name()) {
         case 'switch-panels':
+        case 'switch-panels-backward':
             // Switch between windows of all workspaces
             windows = windows.filter( matchSkipTaskbar );
             break;
         case 'switch-group':
+        case 'switch-group-backward':
             // Switch between windows of the same application
             let focused = global.display.focus_window ? global.display.focus_window : windows[0];
             windows = windows.filter( matchWmClass, focused.get_wm_class() );

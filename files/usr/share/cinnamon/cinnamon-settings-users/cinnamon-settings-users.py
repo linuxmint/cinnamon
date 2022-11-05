@@ -104,7 +104,7 @@ class DimmedTable (Gtk.Table):
     def add_labels(self, texts):
         row = 0
         for text in texts:
-            if text != None:
+            if text is not None:
                 label = Gtk.Label(text)
                 label.set_alignment(1, 0.5)
                 label.get_style_context().add_class("dim-label")
@@ -611,14 +611,14 @@ class Module:
 
     def _on_password_button_clicked(self, widget):
         model, treeiter = self.users_treeview.get_selection().get_selected()
-        if treeiter != None:
+        if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
             dialog = PasswordDialog(user, self.password_mask, self.groups_label, self.window)
             response = dialog.run()
 
     def _on_groups_button_clicked(self, widget):
         model, treeiter = self.users_treeview.get_selection().get_selected()
-        if treeiter != None:
+        if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
             dialog = GroupsDialog(user.get_user_name(), self.window)
             response = dialog.run()
@@ -631,7 +631,7 @@ class Module:
 
     def _on_accounttype_changed(self, combobox):
         model, treeiter = self.users_treeview.get_selection().get_selected()
-        if treeiter != None:
+        if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
             if self.account_type_combo.get_active() == 1:
                 user.set_account_type(AccountsService.UserAccountType.ADMINISTRATOR)
@@ -647,7 +647,7 @@ class Module:
 
     def _on_realname_changed(self, widget, text):
         model, treeiter = self.users_treeview.get_selection().get_selected()
-        if treeiter != None:
+        if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
             user.set_real_name(text)
             description = "<b>%s</b>\n%s" % (text, user.get_user_name())
@@ -655,7 +655,7 @@ class Module:
 
     def _on_face_browse_menuitem_activated(self, menuitem):
         model, treeiter = self.users_treeview.get_selection().get_selected()
-        if treeiter != None:
+        if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
             dialog = Gtk.FileChooserDialog(None, None, Gtk.FileChooserAction.OPEN, (_("Cancel"), Gtk.ResponseType.CANCEL, _("Open"), Gtk.ResponseType.OK))
             filter = Gtk.FileFilter()
@@ -722,7 +722,7 @@ class Module:
     def _on_face_menuitem_activated(self, menuitem, path):
         if os.path.exists(path):
             model, treeiter = self.users_treeview.get_selection().get_selected()
-            if treeiter != None:
+            if treeiter is not None:
                 user = model[treeiter][INDEX_USER_OBJECT]
                 user.set_icon_file(path)
                 self.face_image.set_from_file(path)
@@ -796,7 +796,7 @@ class Module:
         self.password_button.set_tooltip_text("")
 
         model, treeiter = selection.get_selected()
-        if treeiter != None:
+        if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
             self.builder.get_object("button_delete_user").set_sensitive(True)
             self.realname_entry.set_text(user.get_real_name())
@@ -824,7 +824,7 @@ class Module:
                     message = "Could not load pixbuf from '%s': %s" % (path, e.message)
                     error = True
 
-                if pixbuf != None:
+                if pixbuf is not None:
                     if pixbuf.get_height() > 96 or pixbuf.get_width() > 96:
                         try:
                             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 96, 96)
@@ -866,7 +866,7 @@ class Module:
 
     def on_user_deletion(self, event):
         model, treeiter = self.users_treeview.get_selection().get_selected()
-        if treeiter != None:
+        if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
             message = _("Are you sure you want to permanently delete %s and all the files associated with this user?") % user.get_user_name()
             d = Gtk.MessageDialog(self.window,
@@ -909,14 +909,14 @@ class Module:
 
     def on_user_edition(self, event):
         model, treeiter = self.users_treeview.get_selection().get_selected()
-        if treeiter != None:
+        if treeiter is not None:
             print("Editing user %s" % model[treeiter][INDEX_USER_OBJECT].get_user_name())
 
 # GROUPS CALLBACKS
 
     def on_group_selection(self, selection):
         model, treeiter = selection.get_selected()
-        if treeiter != None:
+        if treeiter is not None:
             self.builder.get_object("button_edit_group").set_sensitive(True)
             self.builder.get_object("button_delete_group").set_sensitive(True)
             self.builder.get_object("button_delete_group").set_tooltip_text("")
@@ -936,7 +936,7 @@ class Module:
 
     def on_group_deletion(self, event):
         model, treeiter = self.groups_treeview.get_selection().get_selected()
-        if treeiter != None:
+        if treeiter is not None:
             group = model[treeiter][INDEX_GROUPNAME]
             message = _("Are you sure you want to permanently delete %s?") % group
             d = Gtk.MessageDialog(self.window,
@@ -962,7 +962,7 @@ class Module:
 
     def on_group_edition(self, event):
         model, treeiter = self.groups_treeview.get_selection().get_selected()
-        if treeiter != None:
+        if treeiter is not None:
             group = model[treeiter][INDEX_GROUPNAME]
             dialog = GroupDialog(_("Group Name"), group, self.window)
             response = dialog.run()

@@ -86,7 +86,7 @@ class PanelSettingsPage(SettingsPage):
             [left_switcher_label, "left"],
             [center_switcher_label, "center"],
             [right_switcher_label, "right"]
-        ];
+        ]
 
         for [zone, label] in (["left", left_switcher_label],
                               ["center", center_switcher_label],
@@ -578,5 +578,5 @@ class PanelRange(Range, PanelWidgetBackend):
 
     def on_setting_changed(self, *args):
         value = self.get_value()
-        if value != None and value != int(self.bind_object.get_value()):
+        if value is not None and value != int(self.bind_object.get_value()):
             self.bind_object.set_value(value)

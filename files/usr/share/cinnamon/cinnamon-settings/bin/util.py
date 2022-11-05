@@ -20,19 +20,19 @@ gsound_context = None
 
 def _get_gsound_context():
     global gsound_context
-    if (gsound_context == None):
+    if gsound_context is None:
         gsound_context = GSound.Context()
         gsound_context.init()
     return gsound_context
 
 def play_sound_name(name, channel = None):
     params = {GSound.ATTR_EVENT_ID: name, GSound.ATTR_MEDIA_ROLE: "test"}
-    if channel != None:
+    if channel is not None:
         params[GSound.ATTR_CANBERRA_FORCE_CHANNEL] = channel
     _get_gsound_context().play_simple(params)
 
 def play_sound_file(path, channel = None):
     params = {GSound.ATTR_MEDIA_FILENAME: path, GSound.ATTR_MEDIA_ROLE: "test"}
-    if channel != None:
+    if channel is not None:
         params[GSound.ATTR_CANBERRA_FORCE_CHANNEL] = channel
     _get_gsound_context().play_simple(params)

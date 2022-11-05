@@ -21,13 +21,13 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gio', '2.0')
-from gi.repository import Gdk, Gtk, Gio
+from gi.repository import Gdk, Gtk, Gio, GLib
 
 from . import logger
 from . import proxygsettings
 
 DEBUG = False
-if os.getenv("DEBUG") != None:
+if os.getenv("DEBUG") is not None:
     DEBUG = True
 def debug(msg):
     if DEBUG:
@@ -71,7 +71,7 @@ TIMEOUT_DOWNLOAD_ZIP = 120
 
 home = os.path.expanduser("~")
 locale_inst = '%s/.local/share/locale' % home
-settings_dir = '%s/.cinnamon/configs/' % home
+settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
 
 activity_logger = logger.ActivityLogger()
 
@@ -125,7 +125,7 @@ class SpiceUpdate():
 
 class SpicePathSet():
     def __init__(self, cache_item, spice_type):
-        cache_folder = Path('%s/.cinnamon/spices.cache/%s/' % (home, spice_type))
+        cache_folder = Path(os.path.join(GLib.get_user_cache_dir(), 'cinnamon', 'spices', spice_type))
 
         is_theme = spice_type == "theme"
 
@@ -443,7 +443,7 @@ class Harvester():
             else:
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(paths.thumb_local_path, 24 * ui_scale, 24 * ui_scale, True)
 
-            if pixbuf == None:
+            if pixbuf is None:
                 raise Exception
 
             surf = Gdk.cairo_surface_create_from_pixbuf(pixbuf, ui_scale, None)

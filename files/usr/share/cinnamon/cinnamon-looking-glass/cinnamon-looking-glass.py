@@ -146,7 +146,6 @@ class NewLogDialog(Gtk.Dialog):
         box.add(label)
 
         self.store = Gtk.ListStore(str, str)
-        self.store.append(["glass.log", "~/.cinnamon/glass.log"])
         self.store.append(["custom", "<Select file>"])
 
         self.combo = Gtk.ComboBox.new_with_model(self.store)

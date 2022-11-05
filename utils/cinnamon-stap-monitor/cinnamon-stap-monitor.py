@@ -151,7 +151,7 @@ class Main:
     def lookup_name_or_new(self, name):
         row_iter = self.model.get_iter_first()
 
-        while row_iter != None:
+        while row_iter is not None:
             existing_name = self.model.get_value(row_iter, 0)
             if name == existing_name:
                 return [False, row_iter]

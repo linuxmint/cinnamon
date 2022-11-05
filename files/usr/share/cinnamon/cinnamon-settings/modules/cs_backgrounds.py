@@ -43,6 +43,10 @@ BACKGROUND_ICONS_SIZE = 100
 BACKGROUND_COLLECTION_TYPE_DIRECTORY = "directory"
 BACKGROUND_COLLECTION_TYPE_XML = "xml"
 
+CONFIG_FOLDER = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'backgrounds')
+OLD_CONFIG_FOLDER = os.path.expanduser("~/.cinnamon/backgrounds")
+USER_FOLDERS_FILE_NAME = 'user-folders.lst'
+
 # even though pickle supports higher protocol versions, we want to version 2 because it's the latest
 # version supported by python2 which (at this time) is still used by older versions of Cinnamon.
 # When those versions are no longer supported, we can consider using a newer version.
@@ -144,7 +148,7 @@ class ColorsWidget(SettingsWidget):
 
     def on_combo_changed(self, widget, key):
         tree_iter = widget.get_active_iter()
-        if tree_iter != None:
+        if tree_iter is not None:
             value = widget.get_model()[tree_iter][0]
             self.settings.set_string(key, value)
             self.show_or_hide_color2(value)
@@ -340,7 +344,9 @@ class Module:
 
     def get_user_backgrounds(self):
         self.user_backgrounds = []
-        path = os.path.expanduser("~/.cinnamon/backgrounds/user-folders.lst")
+        path = os.path.join(CONFIG_FOLDER, USER_FOLDERS_FILE_NAME)
+        old_path = os.path.join(OLD_CONFIG_FOLDER, USER_FOLDERS_FILE_NAME)
+        path = path if os.path.exists(path) else old_path
         if os.path.exists(path):
             with open(path) as f:
                 folders = f.readlines()
@@ -372,7 +378,7 @@ class Module:
             self.remove_folder_button.set_sensitive(True)
 
             if image_source != "" and "://" in image_source:
-                while tree_iter != None:
+                while tree_iter is not None:
                     if collection_source == image_source:
                         tree_path = self.collection_store.get_path(tree_iter)
                         self.folder_tree.set_cursor(tree_path)
@@ -463,10 +469,10 @@ class Module:
                         break
 
     def update_folder_list(self):
-        path = os.path.expanduser("~/.cinnamon/backgrounds")
+        path = CONFIG_FOLDER
         if not os.path.exists(path):
             os.makedirs(path, mode=0o755, exist_ok=True)
-        path = os.path.expanduser("~/.cinnamon/backgrounds/user-folders.lst")
+        path = os.path.join(CONFIG_FOLDER, USER_FOLDERS_FILE_NAME)
         if len(self.user_backgrounds) == 0:
             file_data = ""
         else:
@@ -763,7 +769,7 @@ class ThreadedIconView(Gtk.IconView):
                 if filename.endswith(".xml"):
                     filename = self.getFirstFileFromBackgroundXml(filename)
                 pix = PIX_CACHE.get_pix(filename, BACKGROUND_ICONS_SIZE)
-                if pix != None:
+                if pix is not None:
                     if "name" in to_load:
                         label = to_load["name"]
                     else:

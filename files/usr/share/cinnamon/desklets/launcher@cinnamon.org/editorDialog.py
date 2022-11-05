@@ -6,13 +6,14 @@ import os.path
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, GLib
 
 SCHEMAS = "org.cinnamon.desklets.launcher"
 LAUNCHER_KEY = "launcher-list"
 
 HOME_DIR = os.path.expanduser("~")+"/"
-CUSTOM_LAUNCHERS_PATH = HOME_DIR + ".cinnamon/panel-launchers/"
+CUSTOM_LAUNCHERS_PATH = os.path.join(GLib.get_user_data_dir(), "cinnamon", "panel-launchers")
+OLD_CUSTOM_LAUNCHERS_PATH = HOME_DIR + ".cinnamon/panel-launchers/"
 EDITOR_DIALOG_UI_PATH = "/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui"
 
 class EditorDialog:
@@ -28,7 +29,7 @@ class EditorDialog:
             for item in launcher_list:
                 if item.split(":")[0] == str(self.desklet_id):
                     launcher = item.split(":")[1][:-8]
-                    break;
+                    break
 
             self.name = launcher
             if self.name[:24] == "cinnamon-custom-launcher":
@@ -110,10 +111,9 @@ class EditorDialog:
         self.dialog.destroy()
 
     def on_edit_ok_clicked(self, widget):
-        if not self.name_entry.get_text():
-            return None
-
         if (self.launcher_type == "Application"):
+            if not self.name_entry.get_text():
+                return None
             launcher_name = self.name_entry.get_text() + ".desktop"
         elif (self.launcher_type == "Custom Application"):
             launcher_name = self.write_custom_application()
@@ -144,24 +144,23 @@ class EditorDialog:
 
         self.dialog.destroy()
 
-    def get_custom_id(self):
-        i = 1
+    def get_custom_path(self):
         directory = Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH)
         if not directory.query_exists(None):
             directory.make_directory_with_parents(None)
 
-        fileRec = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH + 'cinnamon-custom-launcher-' + str(i) + '.desktop')
-        while fileRec.query_exists(None):
-            i = i + 1
-            fileRec = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH + 'cinnamon-custom-launcher-' + str(i) + '.desktop')
+        i = 1
+        while True:
+            name = 'cinnamon-custom-launcher-' + str(i) + '.desktop'
+            path = os.path.join(CUSTOM_LAUNCHERS_PATH, name)
+            oldPath = os.path.join(OLD_CUSTOM_LAUNCHERS_PATH, name)
+            if not os.path.exists(path) and not os.path.exists(oldPath):
+                return (name, path)
 
-        return i;
+            i = i + 1
 
     def write_custom_application(self):
-        i = self.get_custom_id();
-
-        file_name = "cinnamon-custom-launcher-" + str(i) + ".desktop"
-        file_path = CUSTOM_LAUNCHERS_PATH + file_name
+        file_name, file_path = self.get_custom_path()
 
         title = self.title_entry.get_text()
         command = self.command_entry.get_text()
@@ -184,8 +183,12 @@ class Application:
         self.title = None
         self.command = None
 
-        if (os.path.exists(CUSTOM_LAUNCHERS_PATH + file_name)):
-            self._path = CUSTOM_LAUNCHERS_PATH + file_name
+        custom_path = os.path.join(CUSTOM_LAUNCHERS_PATH, file_name)
+        old_custom_path = os.path.join(OLD_CUSTOM_LAUNCHERS_PATH, file_name)
+        if (os.path.exists(custom_path)):
+            self._path = custom_path
+        elif (os.path.exists(old_custom_path)):
+            self._path = old_custom_path
         elif (os.path.exists("/usr/share/applications/" + file_name)):
             self._path = "/usr/share/applications/" + file_name
 

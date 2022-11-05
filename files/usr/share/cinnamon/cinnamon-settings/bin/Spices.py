@@ -24,7 +24,8 @@ except ImportError:
 
 home = os.path.expanduser("~")
 locale_inst = '%s/.local/share/locale' % home
-settings_dir = '%s/.cinnamon/configs/' % home
+settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
+old_settings_dir = '%s/.cinnamon/configs/' % home
 
 URL_SPICES_HOME = "https://cinnamon-spices.linuxmint.com"
 URL_MAP = {
@@ -149,7 +150,7 @@ class Spice_Harvester(GObject.Object):
         self.total_jobs = 0
         self.download_total_files = 0
         self.download_current_file = 0
-        self.cache_folder = '%s/.cinnamon/spices.cache/%s/' % (home, self.collection_type)
+        self.cache_folder = os.path.join(GLib.get_user_cache_dir(), 'cinnamon', 'spices', self.collection_type)
 
         if self.themes:
             self.settings = Gio.Settings.new('org.cinnamon.theme')
@@ -159,8 +160,9 @@ class Spice_Harvester(GObject.Object):
             self.enabled_key = 'enabled-%ss' % self.collection_type
 
         if self.themes:
-            self.install_folder = '%s/.themes/' % (home)
-            self.spices_directories = (self.install_folder, )
+            self.install_folder = os.path.join(GLib.get_user_data_dir(), 'themes')
+            old_install_folder = '%s/.themes/' % (home)
+            self.spices_directories = (self.install_folder, old_install_folder)
         else:
             self.install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
             self.spices_directories = ('/usr/share/cinnamon/%ss/' % self.collection_type, self.install_folder)
@@ -423,9 +425,11 @@ class Spice_Harvester(GObject.Object):
                         if not self.themes:
                             print(detail)
                             print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
-            else:
+            elif(directory == self.install_folder):
                 print("%s does not exist! Creating it now." % directory)
                 subprocess.call(["mkdir", "-p", directory])
+            else:
+                print("%s does not exist! Skipping" % directory)
 
     def _directory_changed(self, *args):
         self._load_metadata()
@@ -698,6 +702,8 @@ class Spice_Harvester(GObject.Object):
                 # Uninstall settings file, if any
                 if (os.path.exists(os.path.join(settings_dir, uuid))):
                     shutil.rmtree(os.path.join(settings_dir, uuid))
+                if (os.path.exists(os.path.join(old_settings_dir, uuid))):
+                    shutil.rmtree(os.path.join(old_settings_dir, uuid))
             shutil.rmtree(os.path.join(self.install_folder, uuid))
         except Exception as detail:
             self.errorMessage(_("A problem occurred while removing %s.") % job['uuid'], str(detail))

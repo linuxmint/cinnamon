@@ -1,10 +1,13 @@
 const Applet = imports.ui.applet;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
+const Main = imports.ui.main;
 const St = imports.gi.St;
 const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
 const GnomeSession = imports.misc.gnomeSession;
+const Settings = imports.ui.settings;
+const Util = imports.misc.util;
 
 const INHIBIT_IDLE_FLAG = 8;
 const INHIBIT_SLEEP_FLAG = 4;
@@ -52,10 +55,12 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
 
         this.actor.label_actor = this.label;
 
-        this._statusIcon = new St.Icon({ style_class: 'popup-menu-icon',
-                                           icon_type: St.IconType.SYMBOLIC,
-                                           icon_name: "dialog-warning-symbolic",
-                                          reactive: true});
+        this._statusIcon = new St.Icon({
+            style_class: 'popup-menu-icon',
+            icon_type: St.IconType.SYMBOLIC,
+            icon_name: "dialog-warning-symbolic",
+            reactive: true
+        });
 
         this._switch = new PopupMenu.Switch(true);
 
@@ -81,12 +86,12 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
             this.sessionProxy = proxy;
             this.actor.show();
             this.updateStatus();
-            
+
             this.sigAddedId = this.sessionProxy.connectSignal(
-                "InhibitorAdded", 
+                "InhibitorAdded",
                 Lang.bind(this, this.updateStatus)
             );
-            
+
             this.sigRemovedId = this.sessionProxy.connectSignal(
                 "InhibitorRemoved",
                 Lang.bind(this, this.updateStatus)
@@ -131,13 +136,13 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
     toggled(active) {
         if (!active && !this.sessionCookie) {
             this.sessionProxy.InhibitRemote("inhibit@cinnamon.org",
-                                            0,
-                                            "prevent idle functions like screen blanking and dimming",
-                                            INHIBIT_IDLE_FLAG,
-                                            Lang.bind(this, function(cookie) {
-                                                this.sessionCookie = cookie;
-                                                this.updateStatus();
-                                            }));
+                0,
+                "prevent idle functions like screen blanking and dimming",
+                INHIBIT_IDLE_FLAG,
+                Lang.bind(this, function(cookie) {
+                    this.sessionCookie = cookie;
+                    this.updateStatus();
+                }));
         } else if (active && this.sessionCookie) {
             this.sessionProxy.UninhibitRemote(this.sessionCookie, Lang.bind(this, this.updateStatus));
             this.sessionCookie = null;
@@ -156,7 +161,7 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
         if (this.sigAddedId) {
             this.sessionProxy.disconnectSignal(this.sigAddedId);
         }
-        
+
         if (this.sigRemovedId) {
             this.sessionProxy.disconnectSignal(this.sigRemovedId);
         }
@@ -166,18 +171,18 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
 class InhibitingAppMenuItem extends PopupMenu.PopupIconMenuItem {
     constructor(appId) {
         super(
-            appId, 
-            "dialog-information-symbolic", 
-            St.IconType.SYMBOLIC, 
+            appId,
+            "dialog-information-symbolic",
+            St.IconType.SYMBOLIC,
             { activate: false, hover: false }
         );
-        
+
         this.appId = appId;
         this._reasonsByObjPath = {};
         this._inhibitorCount = 0;
         this._tooltip = new Tooltips.Tooltip(this.actor, "");
     }
-    
+
     addInhibitor(objectPath, reason) {
         if (!(objectPath in this._reasonsByObjPath)) {
             this._reasonsByObjPath[objectPath] = reason;
@@ -185,14 +190,14 @@ class InhibitingAppMenuItem extends PopupMenu.PopupIconMenuItem {
             this._updateTooltip();
         }
     }
-    
+
     updateInhibitor(objectPath, reason) {
         if (objectPath in this._reasonsByObjPath) {
             this._reasonsByObjPath[objectPath] = reason;
             this._updateTooltip();
         }
     }
-    
+
     removeInhibitor(objectPath) {
         if (objectPath in this._reasonsByObjPath) {
             delete this._reasonsByObjPath[objectPath];
@@ -200,18 +205,18 @@ class InhibitingAppMenuItem extends PopupMenu.PopupIconMenuItem {
             this._updateTooltip();
         }
     }
-    
+
     hasInhibitor() {
         return !!this._inhibitorCount;
     }
-    
+
     _updateTooltip() {
         let reasons = Object.values(this._reasonsByObjPath)
             .map(r => r && r.trim()) // Remove extraneous whitespace.
             .filter(Boolean); // Discard null/empty reasons.
-            
+
         reasons = Array.from(new Set(reasons)); // Keep only unique reasons.
-        
+
         this._tooltip.set_text(reasons.join("\n"));
     }
 }
@@ -219,74 +224,74 @@ class InhibitingAppMenuItem extends PopupMenu.PopupIconMenuItem {
 class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
     constructor() {
         super();
-        
+
         // Menu items indexed by app ID e.g. "org.gnome.Rhythmbox3".
         // Each menu item is associated with exactly one app ID and vice versa.
         this._itemsByAppId = {};
-        
+
         // Menu items indexed by object path e.g. "/org/gnome/SessionManager/Inhibitor42".
         // Multiple paths may point to the same item if an app creates multiple inhibitors.
         this._itemsByObjPath = {};
-        
+
         this._itemCount = 0;
         this._updateId = 0; // light-weight way to abort an in-progress update (by incrementing)
-        
+
         this._createHeading();
-        
+
         this.actor.hide();
     }
-    
+
     _createHeading() {
         let headingText = _("Apps inhibiting power management:");
         let heading = new PopupMenu.PopupMenuItem(headingText, { reactive: false });
         this.addMenuItem(heading);
     }
-    
+
     resetInhibitors() {
         // Abort any in-progress update or else it may continue to add menu items 
         // even after we've cleared them.
         this._updateId++;
-        
+
         if (this._itemCount) {
             this._itemsByAppId = {};
             this._itemsByObjPath = {};
             this._itemCount = 0;
-            
+
             // Clear all, but make sure we still have a heading for next time we're shown.
             this.removeAll();
             this._createHeading();
-            
+
             this.actor.hide();
         }
     }
-    
+
     updateInhibitors(sessionProxy) {
         // Grab a new ID for this update while at the same time aborting any other in-progress 
         // update. We don't want to end up with duplicate menu items!
         let updateId = ++this._updateId;
-        
+
         sessionProxy.GetInhibitorsRemote(Lang.bind(this, function(objectPaths) {
             if (updateId != this._updateId) {
                 return;
             }
-            
+
             objectPaths = String(objectPaths).split(','); // Given object, convert to string[].
-            
+
             // Add menu items for any paths we haven't seen before, and keep track of the paths
             // iterated so we can figure out which of our existing paths are no longer present.
-            
+
             let pathsPresent = {};
-            
+
             for (let objectPath of objectPaths) {
                 if (objectPath) {
                     pathsPresent[objectPath] = true;
-                    
+
                     if (!(objectPath in this._itemsByObjPath)) {
                         this._addInhibitor(objectPath, updateId);
                     }
                 }
             }
-            
+
             // Remove menu items for those paths no longer present.
             for (let objectPath in this._itemsByObjPath) {
                 if (!(objectPath in pathsPresent)) {
@@ -295,33 +300,33 @@ class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
             }
         }));
     }
-    
+
     // Precondition: objectPath not already in _itemsByObjPath
     _addInhibitor(objectPath, updateId) {
         GnomeSession.Inhibitor(objectPath, Lang.bind(this, function(inhibitorProxy, error) {
             if (error || updateId != this._updateId) {
                 return;
             }
-            
+
             inhibitorProxy.GetFlagsRemote(Lang.bind(this, function(flags) {
                 if (updateId != this._updateId) {
                     return;
                 }
-                
+
                 flags = parseInt(flags, 10); // Given object, convert to integer.
-                
+
                 // Only include those inhibiting sleep, idle, or both.
                 if (flags < INHIBIT_SLEEP_FLAG) {
                     return;
                 }
-                
+
                 inhibitorProxy.GetAppIdRemote(Lang.bind(this, function(appId) {
                     if (updateId != this._updateId) {
                         return;
                     }
-                    
+
                     appId = String(appId); // Given object, convert to string.
-                    
+
                     // Get/create the menu item for this app.
                     let menuItem;
                     if (appId in this._itemsByAppId) {
@@ -330,23 +335,23 @@ class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
                         menuItem = new InhibitingAppMenuItem(appId);
                         this._itemsByAppId[appId] = menuItem;
                         this.addMenuItem(menuItem);
-                        
+
                         // Show the menu section upon adding the first menu item.
                         if (!(this._itemCount++)) {
                             this.actor.show();
                         }
                     }
-                    
+
                     this._itemsByObjPath[objectPath] = menuItem;
-                    
+
                     // Go ahead and add the inhibitor to the item now and fill in the reason later.
                     menuItem.addInhibitor(objectPath);
-                    
+
                     inhibitorProxy.GetReasonRemote(Lang.bind(this, function(reason) {
                         if (updateId != this._updateId) {
                             return;
                         }
-                        
+
                         reason = String(reason); // Given object, convert to string.
                         menuItem.updateInhibitor(objectPath, reason);
                     }));
@@ -354,18 +359,18 @@ class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
             }));
         }));
     }
-    
+
     // Precondition: objectPath already in _itemsByObjPath
     _removeInhibitor(objectPath) {
         let menuItem = this._itemsByObjPath[objectPath];
         delete this._itemsByObjPath[objectPath];
         menuItem.removeInhibitor(objectPath);
-        
+
         // Remove the menu item if the last inhibitor for the app has been removed.
         if (!menuItem.hasInhibitor()) {
             delete this._itemsByAppId[menuItem.appId];
             menuItem.destroy();
-            
+
             // Hide the menu section upon removing the last menu item.
             if (!(--this._itemCount)) {
                 this.actor.hide();
@@ -404,14 +409,19 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         }));
 
         this.menu.addMenuItem(this.notificationsSwitch);
-        
+
+        this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
+        this.settings.bind("keyPower", "keyPower", this._setKeybinding);
+        this.settings.bind("keyNotifications", "keyNotifications", this._setKeybinding);
+        this._setKeybinding();
+
         this._createInhibitorMenuSection(orientation);
     }
-    
+
     _createInhibitorMenuSection(orientation) {
         this._inhibitorMenuSection = new InhibitorMenuSection();
         this._inhibitorSeparator = new PopupMenu.PopupSeparatorMenuItem();
-        
+
         if (orientation == St.Side.BOTTOM) {
             // Add above the switches.
             this.menu.addMenuItem(this._inhibitorSeparator, 0);
@@ -423,24 +433,64 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         }
     }
 
+    _setKeybinding() {
+        Main.keybindingManager.addHotKey("inhibit-power-" + this.instance_id,
+            this.keyPower,
+            Lang.bind(this, this.toggle_inhibit_power));
+        Main.keybindingManager.addHotKey("inhibit-notifications-" + this.instance_id,
+            this.keyNotifications,
+            Lang.bind(this, this.toggle_inhibit_notifications));
+    }
+
     on_applet_clicked(event) {
         this.menu.toggle();
     }
 
+    on_btn_open_system_power_settings_clicked() {
+        Util.spawnCommandLine("cinnamon-settings power");
+    }
+
+    on_btn_open_system_notification_settings_clicked() {
+        Util.spawnCommandLine("cinnamon-settings notifications");
+    }
+
     on_applet_removed_from_panel() {
+        Main.keybindingManager.removeHotKey("inhibit-power-" + this.instance_id);
+        Main.keybindingManager.removeHotKey("inhibit-notifications-" + this.instance_id);
         this.inhibitSwitch.kill();
     }
-    
+
     on_orientation_changed(orientation) {
         this._inhibitorMenuSection.destroy();
         this._inhibitorSeparator.destroy();
-        
+
         this._createInhibitorMenuSection(orientation);
-        
+
         // Will put the inhibitor menu section into the correct state.
         this.inhibitSwitch.updateStatus();
     }
-    
+
+    toggle_inhibit_power() {
+        this.inhibitSwitch._switch.toggle();
+        this.inhibitSwitch.toggled(this.inhibitSwitch._switch.state);
+
+        let _symbol = this.inhibitSwitch._switch.state ?
+            "inhibit-symbolic" :
+            "inhibit-active-symbolic";
+
+        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(_symbol));
+    }
+
+    toggle_inhibit_notifications() {
+        this.notificationsSwitch.toggle();
+
+        let _symbol = this.notificationsSwitch._switch.state ?
+            "inhibit-notification-symbolic" :
+            "inhibit-notification-active-symbolic";
+
+        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(_symbol));
+    }
+
     get inhibitors() {
         return this._inhibitorMenuSection;
     }

@@ -689,10 +689,21 @@ XletSettingsBase.prototype = {
     },
 
     _ensureSettingsFiles: function() {
-        let configPath = [GLib.get_home_dir(), ".cinnamon", "configs", this.uuid].join("/");
+        let configPath = [GLib.get_user_config_dir(), "cinnamon", "spices", this.uuid].join("/");
         let configDir = Gio.file_new_for_path(configPath);
         if (!configDir.query_exists(null)) configDir.make_directory_with_parents(null);
-        this.file = configDir.get_child(this.instanceId + ".json");
+
+        let configFile = configDir.get_child(this.instanceId + ".json")
+
+        let oldConfigDir = Gio.file_new_for_path([GLib.get_home_dir(), ".cinnamon", "configs", this.uuid].join("/"));
+        let oldConfigFile = oldConfigDir.get_child(this.instanceId + ".json");
+
+        // We only use the config under the old path if it's the only one for backwards compatibility
+        if (oldConfigFile.query_exists(null) && !configFile.query_exists(null))
+            this.file = oldConfigFile;
+        else 
+            this.file = configFile;
+
         this.monitor = this.file.monitor_file(Gio.FileMonitorFlags.NONE, null);
 
         // If the settings have already been installed previously we need to check if the schema

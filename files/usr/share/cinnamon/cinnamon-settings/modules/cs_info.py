@@ -8,9 +8,10 @@ import re
 import threading
 from json import loads
 
+from gi.repository import GdkPixbuf
+
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
-
 
 def killProcess(process):
     process.kill()
@@ -93,6 +94,16 @@ def getProcInfos():
     return result
 
 
+def getSystemIcon():
+    schema = Gio.Settings(schema="org.cinnamon")
+
+    iconPath = schema.get_string("system-icon-path")
+    if iconPath == "":  # left empty, so its disabled
+        return None
+
+    return iconPath
+
+
 def createSystemInfos():
     procInfos = getProcInfos()
     infos = []
@@ -167,6 +178,7 @@ class Module:
             infos = createSystemInfos()
 
             page = SettingsPage()
+            page.set_spacing(10)
             self.sidePage.add_widget(page)
 
             settings = page.add_section(_("System info"))
@@ -203,6 +215,16 @@ class Module:
                 button.connect("clicked", self.on_copy_clipboard_button_clicked)
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
+
+            systemIconPath = getSystemIcon()
+            if systemIconPath is not None:
+                try:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale (systemIconPath, -1, 160, True)
+                    systemIcon = Gtk.Image.new_from_pixbuf(pixbuf)
+                    page.add(systemIcon)
+                except GLib.GError:
+                    pass
+
     
     def on_copy_clipboard_button_clicked(self, button):
         try:
