@@ -704,7 +704,7 @@ class Spice_Harvester(GObject.Object):
                 # Uninstall settings file, if any
                 if os.path.exists(os.path.join(settings_dir, uuid)):
                     shutil.rmtree(os.path.join(settings_dir, uuid))
-                if (os.path.exists(os.path.join(old_settings_dir, uuid))):
+                if os.path.exists(os.path.join(old_settings_dir, uuid)):
                     shutil.rmtree(os.path.join(old_settings_dir, uuid))
             shutil.rmtree(os.path.join(self.install_folder, uuid))
         except Exception as detail:
