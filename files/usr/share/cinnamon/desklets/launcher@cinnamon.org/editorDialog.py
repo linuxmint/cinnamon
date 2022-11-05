@@ -155,7 +155,7 @@ class EditorDialog:
             path = os.path.join(CUSTOM_LAUNCHERS_PATH, name)
             oldPath = os.path.join(OLD_CUSTOM_LAUNCHERS_PATH, name)
             if not os.path.exists(path) and not os.path.exists(oldPath):
-                return (name, path)
+                return name, path
 
             i = i + 1
 
