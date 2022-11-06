@@ -1,4 +1,3 @@
-"use strict";
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 /**
 * DOCINFO
@@ -13,15 +12,22 @@
 *  - The "changed" signal sent by DocSystem is delayed via idle_timeout, so your applet doesn't rebuild immediately when Gtk.RecentManager sends its signal (which could potentially reduce the speed at which apps are launched)
 *  - DocInfo provides decoded URIs and the ability to quickly create the icon so your applet doesn't need to do that itself.
 */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DocManager = exports.getDocManager = exports.DocInfo = void 0;
+
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Signals = imports.signals;
 const Gio = imports.gi.Gio;
-class DocInfo {
-    constructor(recentInfo) {
+
+export class DocInfo {
+
+    public readonly gicon: any;
+    public readonly name: string;
+    public readonly uri: string;
+    public readonly mimeType: string;
+    public readonly uriDecoded: string;
+
+    constructor(recentInfo: imports.gi.Gtk.RecentInfo) {
         this.gicon = recentInfo.get_gicon();
         this.name = recentInfo.get_display_name();
         this.uri = recentInfo.get_uri();
@@ -34,29 +40,39 @@ class DocInfo {
         }
         this.mimeType = recentInfo.get_mime_type();
     }
-    createIcon(size) {
+
+    public createIcon(size: number): imports.gi.St.Icon {
         return new St.Icon({ gicon: this.gicon, icon_size: size });
     }
 }
-exports.DocInfo = DocInfo;
-var docManagerInstance = null;
-function getDocManager() {
+
+var docManagerInstance: DocManager | null = null;
+
+export function getDocManager(): DocManager {
     if (docManagerInstance == null)
         docManagerInstance = new DocManager();
     return docManagerInstance;
 }
-exports.getDocManager = getDocManager;
+
+
+type DocManagerSignals = Signal<"changed", []>;
+export interface DocManager extends DocManagerSignals {}
+
 /**
  * DocManager wraps the DocSystem, primarily to expose DocInfo objects.
  */
-class DocManager {
+export class DocManager {
+    protected _docSystem: imports.gi.Cinnamon.DocSystem;
+    protected _infosByTimestamp: DocInfo[];
+
     constructor() {
         this._docSystem = Cinnamon.DocSystem.get_default();
         this._infosByTimestamp = [];
         this._load();
         this._docSystem.connect('changed', Lang.bind(this, this._reload));
     }
-    _load() {
+
+    protected _load() {
         let docs = this._docSystem.get_all();
         this._infosByTimestamp = [];
         let i = 0;
@@ -67,10 +83,11 @@ class DocManager {
             i++;
         }
     }
-    _reload() {
+
+    protected _reload() {
         this._load();
         this.emit('changed');
     }
 }
-exports.DocManager = DocManager;
+
 Signals.addSignalMethods(DocManager.prototype);
