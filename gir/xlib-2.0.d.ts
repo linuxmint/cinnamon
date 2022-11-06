@@ -103,5 +103,4 @@ declare namespace imports.gi.xlib {
 	type Pixmap = number;
 
 	function open_display(): void;
-
 }

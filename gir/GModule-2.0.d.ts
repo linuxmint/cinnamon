@@ -196,19 +196,15 @@ declare namespace imports.gi.GModule {
 	 *     prefix and suffix. This should be freed when no longer needed
 	 */
 	function module_build_path(directory: string | null, module_name: string): string;
-
 	/**
 	 * Gets a string describing the last module error.
 	 * @returns a string describing the last module error
 	 */
 	function module_error(): string;
-
 	function module_error_quark(): GLib.Quark;
-
 	/**
 	 * Checks if modules are supported on the current platform.
 	 * @returns %TRUE if modules are supported
 	 */
 	function module_supported(): boolean;
-
 }

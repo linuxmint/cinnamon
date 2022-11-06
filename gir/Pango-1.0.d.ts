@@ -5876,7 +5876,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_allow_breaks_new(allow_breaks: boolean): Attribute;
-
 	/**
 	 * Create a new background alpha attribute.
 	 * @param alpha the alpha value, between 1 and 65536
@@ -5885,7 +5884,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_background_alpha_new(alpha: number): Attribute;
-
 	/**
 	 * Create a new background color attribute.
 	 * @param red the red value (ranging from 0 to 65535)
@@ -5896,7 +5894,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_background_new(red: number, green: number, blue: number): Attribute;
-
 	/**
 	 * Create a new font fallback attribute.
 	 * 
@@ -5911,7 +5908,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_fallback_new(enable_fallback: boolean): Attribute;
-
 	/**
 	 * Create a new font family attribute.
 	 * @param family the family or comma-separated list of families
@@ -5920,7 +5916,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_family_new(family: string): Attribute;
-
 	/**
 	 * Create a new font description attribute.
 	 * 
@@ -5932,7 +5927,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_font_desc_new(desc: FontDescription): Attribute;
-
 	/**
 	 * Create a new font features tag attribute.
 	 * 
@@ -5945,7 +5939,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_font_features_new(features: string): Attribute;
-
 	/**
 	 * Create a new foreground alpha attribute.
 	 * @param alpha the alpha value, between 1 and 65536
@@ -5954,7 +5947,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_foreground_alpha_new(alpha: number): Attribute;
-
 	/**
 	 * Create a new foreground color attribute.
 	 * @param red the red value (ranging from 0 to 65535)
@@ -5965,7 +5957,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_foreground_new(red: number, green: number, blue: number): Attribute;
-
 	/**
 	 * Create a new gravity hint attribute.
 	 * @param hint the gravity hint value
@@ -5974,7 +5965,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_gravity_hint_new(hint: GravityHint): Attribute;
-
 	/**
 	 * Create a new gravity attribute.
 	 * @param gravity the gravity value; should not be %PANGO_GRAVITY_AUTO
@@ -5983,7 +5973,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_gravity_new(gravity: Gravity): Attribute;
-
 	/**
 	 * Create a new insert-hyphens attribute.
 	 * 
@@ -5996,7 +5985,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_insert_hyphens_new(insert_hyphens: boolean): Attribute;
-
 	/**
 	 * Create a new language tag attribute.
 	 * @param language language tag
@@ -6005,7 +5993,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_language_new(language: Language): Attribute;
-
 	/**
 	 * Create a new letter-spacing attribute.
 	 * @param letter_spacing amount of extra space to add between
@@ -6015,7 +6002,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_letter_spacing_new(letter_spacing: number): Attribute;
-
 	/**
 	 * Create a new overline color attribute.
 	 * 
@@ -6029,7 +6015,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_overline_color_new(red: number, green: number, blue: number): Attribute;
-
 	/**
 	 * Create a new overline-style attribute.
 	 * @param overline the overline style
@@ -6038,7 +6023,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_overline_new(overline: Overline): Attribute;
-
 	/**
 	 * Create a new baseline displacement attribute.
 	 * @param rise the amount that the text should be displaced vertically,
@@ -6048,7 +6032,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_rise_new(rise: number): Attribute;
-
 	/**
 	 * Create a new font size scale attribute.
 	 * 
@@ -6060,7 +6043,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_scale_new(scale_factor: number): Attribute;
-
 	/**
 	 * Create a new shape attribute.
 	 * 
@@ -6075,7 +6057,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_shape_new(ink_rect: Rectangle, logical_rect: Rectangle): Attribute;
-
 	/**
 	 * Creates a new shape attribute.
 	 * 
@@ -6095,7 +6076,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_shape_new_with_data(ink_rect: Rectangle, logical_rect: Rectangle, data: any | null, copy_func: AttrDataCopyFunc | null, destroy_func: GLib.DestroyNotify | null): Attribute;
-
 	/**
 	 * Create a new attribute that influences how invisible
 	 * characters are rendered.
@@ -6105,7 +6085,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_show_new(flags: ShowFlags): Attribute;
-
 	/**
 	 * Create a new font-size attribute in fractional points.
 	 * @param size the font size, in %PANGO_SCALE-ths of a point
@@ -6114,7 +6093,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_size_new(size: number): Attribute;
-
 	/**
 	 * Create a new font-size attribute in device units.
 	 * @param size the font size, in %PANGO_SCALE-ths of a device unit
@@ -6123,7 +6101,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_size_new_absolute(size: number): Attribute;
-
 	/**
 	 * Create a new font stretch attribute.
 	 * @param stretch the stretch
@@ -6132,7 +6109,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_stretch_new(stretch: Stretch): Attribute;
-
 	/**
 	 * Create a new strikethrough color attribute.
 	 * 
@@ -6146,7 +6122,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_strikethrough_color_new(red: number, green: number, blue: number): Attribute;
-
 	/**
 	 * Create a new strike-through attribute.
 	 * @param strikethrough %TRUE if the text should be struck-through
@@ -6155,7 +6130,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_strikethrough_new(strikethrough: boolean): Attribute;
-
 	/**
 	 * Create a new font slant style attribute.
 	 * @param style the slant style
@@ -6164,7 +6138,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_style_new(style: Style): Attribute;
-
 	/**
 	 * Fetches the attribute type name.
 	 * 
@@ -6181,7 +6154,6 @@ declare namespace imports.gi.Pango {
 	 *   attribute type or invalid.
 	 */
 	function attr_type_get_name(type: AttrType): string | null;
-
 	/**
 	 * Allocate a new attribute type ID.
 	 * 
@@ -6191,7 +6163,6 @@ declare namespace imports.gi.Pango {
 	 * @returns the new type ID.
 	 */
 	function attr_type_register(name: string): AttrType;
-
 	/**
 	 * Create a new underline color attribute.
 	 * 
@@ -6205,7 +6176,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_underline_color_new(red: number, green: number, blue: number): Attribute;
-
 	/**
 	 * Create a new underline-style attribute.
 	 * @param underline the underline style
@@ -6214,7 +6184,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_underline_new(underline: Underline): Attribute;
-
 	/**
 	 * Create a new font variant attribute (normal or small caps).
 	 * @param variant the variant
@@ -6222,7 +6191,6 @@ declare namespace imports.gi.Pango {
 	 *   which should be freed with [method#Pango.Attribute.destroy].
 	 */
 	function attr_variant_new(variant: Variant): Attribute;
-
 	/**
 	 * Create a new font weight attribute.
 	 * @param weight the weight
@@ -6231,7 +6199,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Attribute.destroy]
 	 */
 	function attr_weight_new(weight: Weight): Attribute;
-
 	/**
 	 * Determines the bidirectional type of a character.
 	 * 
@@ -6243,7 +6210,6 @@ declare namespace imports.gi.Pango {
 	 * Unicode bidirectional algorithm.
 	 */
 	function bidi_type_for_unichar(ch: string): BidiType;
-
 	/**
 	 * Determines possible line, word, and character breaks
 	 * for a string of Unicode text with a single analysis.
@@ -6257,7 +6223,6 @@ declare namespace imports.gi.Pango {
 	 * @param attrs_len size of the array passed as #attrs
 	 */
 	// function break(text: string, length: number, analysis: Analysis, attrs: LogAttr[], attrs_len: number): void;
-
 	/**
 	 * This is the default break algorithm.
 	 * 
@@ -6273,7 +6238,6 @@ declare namespace imports.gi.Pango {
 	 * @param attrs_len size of the array passed as #attrs
 	 */
 	function default_break(text: string, length: number, analysis: Analysis | null, attrs: LogAttr, attrs_len: number): void;
-
 	/**
 	 * Converts extents from Pango units to device units.
 	 * 
@@ -6296,7 +6260,6 @@ declare namespace imports.gi.Pango {
 	 * @param nearest rectangle to round to nearest pixels
 	 */
 	function extents_to_pixels(inclusive: Rectangle | null, nearest: Rectangle | null): void;
-
 	/**
 	 * Searches a string the first character that has a strong
 	 * direction, according to the Unicode bidirectional algorithm.
@@ -6306,7 +6269,6 @@ declare namespace imports.gi.Pango {
 	 *   If no such character is found, then %PANGO_DIRECTION_NEUTRAL is returned.
 	 */
 	function find_base_dir(text: string, length: number): Direction;
-
 	/**
 	 * Locates a paragraph boundary in #text.
 	 * 
@@ -6331,7 +6293,6 @@ declare namespace imports.gi.Pango {
 	 *   paragraph
 	 */
 	function find_paragraph_boundary(text: string, length: number): [ paragraph_delimiter_index: number, next_paragraph_start: number ];
-
 	/**
 	 * Creates a new font description from a string representation.
 	 * 
@@ -6380,7 +6341,6 @@ declare namespace imports.gi.Pango {
 	 * @returns a new `PangoFontDescription`.
 	 */
 	function font_description_from_string(str: string): FontDescription;
-
 	/**
 	 * Computes a `PangoLogAttr` for each character in #text.
 	 * 
@@ -6400,7 +6360,6 @@ declare namespace imports.gi.Pango {
 	 * @param attrs_len length of #log_attrs array
 	 */
 	function get_log_attrs(text: string, length: number, level: number, language: Language, log_attrs: LogAttr[], attrs_len: number): void;
-
 	/**
 	 * Returns the mirrored character of a Unicode character.
 	 * 
@@ -6411,7 +6370,6 @@ declare namespace imports.gi.Pango {
 	 * filled in, %FALSE otherwise
 	 */
 	function get_mirror_char(ch: string, mirrored_ch: string): boolean;
-
 	/**
 	 * Finds the gravity that best matches the rotation component
 	 * in a `PangoMatrix`.
@@ -6420,7 +6378,6 @@ declare namespace imports.gi.Pango {
 	 * %PANGO_GRAVITY_AUTO, or %PANGO_GRAVITY_SOUTH if #matrix is %NULL
 	 */
 	function gravity_get_for_matrix(matrix: Matrix | null): Gravity;
-
 	/**
 	 * Returns the gravity to use in laying out a `PangoItem`.
 	 * 
@@ -6436,7 +6393,6 @@ declare namespace imports.gi.Pango {
 	 * with #script
 	 */
 	function gravity_get_for_script(script: Script, base_gravity: Gravity, hint: GravityHint): Gravity;
-
 	/**
 	 * Returns the gravity to use in laying out a single character
 	 * or `PangoItem`.
@@ -6461,7 +6417,6 @@ declare namespace imports.gi.Pango {
 	 * with #script and #wide.
 	 */
 	function gravity_get_for_script_and_width(script: Script, wide: boolean, base_gravity: Gravity, hint: GravityHint): Gravity;
-
 	/**
 	 * Converts a `PangoGravity` value to its natural rotation in radians.
 	 * 
@@ -6472,7 +6427,6 @@ declare namespace imports.gi.Pango {
 	 * @returns the rotation value corresponding to #gravity.
 	 */
 	function gravity_to_rotation(gravity: Gravity): number;
-
 	/**
 	 * Checks if a character that should not be normally rendered.
 	 * 
@@ -6483,7 +6437,6 @@ declare namespace imports.gi.Pango {
 	 * @returns %TRUE if #ch is a zero-width character, %FALSE otherwise
 	 */
 	function is_zero_width(ch: string): boolean;
-
 	/**
 	 * Breaks a piece of text into segments with consistent directional
 	 * level and font.
@@ -6510,7 +6463,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Item.free] probably in combination with {@link G.list_free_full}.
 	 */
 	function itemize(context: Context, text: string, start_index: number, length: number, attrs: AttrList, cached_iter: AttrIterator | null): Item[];
-
 	/**
 	 * Like {@link `pango.itemize}`, but with an explicitly specified base direction.
 	 * 
@@ -6531,7 +6483,6 @@ declare namespace imports.gi.Pango {
 	 *   [method#Pango.Item.free] probably in combination with {@link G.list_free_full}.
 	 */
 	function itemize_with_base_dir(context: Context, base_dir: Direction, text: string, start_index: number, length: number, attrs: AttrList, cached_iter: AttrIterator | null): Item[];
-
 	/**
 	 * Convert a language tag to a `PangoLanguage`.
 	 * 
@@ -6549,7 +6500,6 @@ declare namespace imports.gi.Pango {
 	 * @returns a `PangoLanguage`
 	 */
 	function language_from_string(language: string | null): Language | null;
-
 	/**
 	 * Returns the `PangoLanguage` for the current locale of the process.
 	 * 
@@ -6581,7 +6531,6 @@ declare namespace imports.gi.Pango {
 	 * @returns the default language as a `PangoLanguage`
 	 */
 	function language_get_default(): Language;
-
 	/**
 	 * Returns the list of languages that the user prefers.
 	 * 
@@ -6598,7 +6547,6 @@ declare namespace imports.gi.Pango {
 	 *   of `PangoLanguage`*
 	 */
 	function language_get_preferred(): Language | null;
-
 	/**
 	 * Return the bidirectional embedding levels of the input paragraph.
 	 * 
@@ -6617,7 +6565,6 @@ declare namespace imports.gi.Pango {
 	 *   character (not byte), that should be freed using {@link G.free}.
 	 */
 	function log2vis_get_embedding_levels(text: string, length: number, pbase_dir: Direction): number;
-
 	/**
 	 * Finishes parsing markup.
 	 * 
@@ -6635,7 +6582,6 @@ declare namespace imports.gi.Pango {
 	 * address of return location for accelerator char
 	 */
 	function markup_parser_finish(context: GLib.MarkupParseContext): [ boolean, AttrList | null, string | null, string | null ];
-
 	/**
 	 * Incrementally parses marked-up text to create a plain-text string
 	 * and an attribute list.
@@ -6664,7 +6610,6 @@ declare namespace imports.gi.Pango {
 	 * destroyed with {@link G.markup_parse_context_free}.
 	 */
 	function markup_parser_new(accel_marker: string): GLib.MarkupParseContext;
-
 	/**
 	 * Parses an enum type and stores the result in #value.
 	 * 
@@ -6687,7 +6632,6 @@ declare namespace imports.gi.Pango {
 	 *   values on failure
 	 */
 	function parse_enum(type: GObject.Type, str: string | null, warn: boolean): [ boolean, number | null, string | null ];
-
 	/**
 	 * Parses marked-up text to create a plain-text string and an attribute list.
 	 * 
@@ -6718,7 +6662,6 @@ declare namespace imports.gi.Pango {
 	 * address of return location for accelerator char
 	 */
 	function parse_markup(markup_text: string, length: number, accel_marker: string): [ boolean, AttrList | null, string | null, string | null ];
-
 	/**
 	 * Parses a font stretch.
 	 * 
@@ -6734,7 +6677,6 @@ declare namespace imports.gi.Pango {
 	 * a `PangoStretch` to store the result in.
 	 */
 	function parse_stretch(str: string, warn: boolean): [ boolean, Stretch ];
-
 	/**
 	 * Parses a font style.
 	 * 
@@ -6748,7 +6690,6 @@ declare namespace imports.gi.Pango {
 	 * a `PangoStyle` to store the result in.
 	 */
 	function parse_style(str: string, warn: boolean): [ boolean, Style ];
-
 	/**
 	 * Parses a font variant.
 	 * 
@@ -6761,7 +6702,6 @@ declare namespace imports.gi.Pango {
 	 * a `PangoVariant` to store the result in.
 	 */
 	function parse_variant(str: string, warn: boolean): [ boolean, Variant ];
-
 	/**
 	 * Parses a font weight.
 	 * 
@@ -6775,7 +6715,6 @@ declare namespace imports.gi.Pango {
 	 * a `PangoWeight` to store the result in.
 	 */
 	function parse_weight(str: string, warn: boolean): [ boolean, Weight ];
-
 	/**
 	 * Quantizes the thickness and position of a line to whole device pixels.
 	 * 
@@ -6787,7 +6726,6 @@ declare namespace imports.gi.Pango {
 	 * of rounding.
 	 */
 	function quantize_line_geometry(): void;
-
 	/**
 	 * Reads an entire line from a file into a buffer.
 	 * 
@@ -6804,7 +6742,6 @@ declare namespace imports.gi.Pango {
 	 *   a line number counter which doesn't combine lines with '\')
 	 */
 	function read_line(stream: any | null, str: GLib.String): number;
-
 	/**
 	 * Reorder items from logical order to visual order.
 	 * 
@@ -6820,7 +6757,6 @@ declare namespace imports.gi.Pango {
 	 *   of `PangoItem` structures in visual order.
 	 */
 	function reorder_items(logical_items: Item[]): Item[];
-
 	/**
 	 * Scans an integer.
 	 * 
@@ -6830,7 +6766,6 @@ declare namespace imports.gi.Pango {
 	 * an int into which to write the result
 	 */
 	function scan_int(): [ boolean, number ];
-
 	/**
 	 * Scans a string into a `GString` buffer.
 	 * 
@@ -6841,7 +6776,6 @@ declare namespace imports.gi.Pango {
 	 * @returns %FALSE if a parse error occurred
 	 */
 	function scan_string(out: GLib.String): boolean;
-
 	/**
 	 * Scans a word into a `GString` buffer.
 	 * 
@@ -6851,7 +6785,6 @@ declare namespace imports.gi.Pango {
 	 * @returns %FALSE if a parse error occurred
 	 */
 	function scan_word(out: GLib.String): boolean;
-
 	/**
 	 * Looks up the script for a particular character.
 	 * 
@@ -6867,7 +6800,6 @@ declare namespace imports.gi.Pango {
 	 * @returns the `PangoScript` for the character.
 	 */
 	function script_for_unichar(ch: string): Script;
-
 	/**
 	 * Finds a language tag that is reasonably representative of #script.
 	 * 
@@ -6903,7 +6835,6 @@ declare namespace imports.gi.Pango {
 	 *   of the script
 	 */
 	function script_get_sample_language(script: Script): Language | null;
-
 	/**
 	 * Convert the characters in #text into glyphs.
 	 * 
@@ -6925,7 +6856,6 @@ declare namespace imports.gi.Pango {
 	 * @param glyphs glyph string in which to store results
 	 */
 	function shape(text: string, length: number, analysis: Analysis, glyphs: GlyphString): void;
-
 	/**
 	 * Convert the characters in #text into glyphs.
 	 * 
@@ -6951,7 +6881,6 @@ declare namespace imports.gi.Pango {
 	 * @param glyphs glyph string in which to store results.
 	 */
 	function shape_full(item_text: string, item_length: number, paragraph_text: string | null, paragraph_length: number, analysis: Analysis, glyphs: GlyphString): void;
-
 	/**
 	 * Convert the characters in #text into glyphs.
 	 * 
@@ -6979,14 +6908,12 @@ declare namespace imports.gi.Pango {
 	 * @param flags flags influencing the shaping process
 	 */
 	function shape_with_flags(item_text: string, item_length: number, paragraph_text: string | null, paragraph_length: number, analysis: Analysis, glyphs: GlyphString, flags: ShapeFlags): void;
-
 	/**
 	 * Skips 0 or more characters of white space.
 	 * @returns %FALSE if skipping the white space leaves
 	 *   the position at a '\0' character.
 	 */
 	function skip_space(): boolean;
-
 	/**
 	 * Splits a %G_SEARCHPATH_SEPARATOR-separated list of files, stripping
 	 * white space and substituting ~/ with $HOME/.
@@ -6995,7 +6922,6 @@ declare namespace imports.gi.Pango {
 	 *   strings to be freed with {@link G.strfreev}
 	 */
 	function split_file_list(str: string): string[];
-
 	/**
 	 * Apply language-specific tailoring to the breaks
 	 * in #log_attrs.
@@ -7015,14 +6941,12 @@ declare namespace imports.gi.Pango {
 	 * @param log_attrs_len length of #log_attrs array
 	 */
 	function tailor_break(text: string, length: number, analysis: Analysis, offset: number, log_attrs: LogAttr[], log_attrs_len: number): void;
-
 	/**
 	 * Trims leading and trailing whitespace from a string.
 	 * @param str a string
 	 * @returns A newly-allocated string that must be freed with {@link G.free}
 	 */
 	function trim_string(str: string): string;
-
 	/**
 	 * Determines the inherent direction of a character.
 	 * 
@@ -7037,7 +6961,6 @@ declare namespace imports.gi.Pango {
 	 * @returns the direction of the character.
 	 */
 	function unichar_direction(ch: string): Direction;
-
 	/**
 	 * Converts a floating-point number to Pango units.
 	 * 
@@ -7047,7 +6970,6 @@ declare namespace imports.gi.Pango {
 	 * @returns the value in Pango units.
 	 */
 	function units_from_double(d: number): number;
-
 	/**
 	 * Converts a number in Pango units to floating-point.
 	 * 
@@ -7056,7 +6978,6 @@ declare namespace imports.gi.Pango {
 	 * @returns the double value.
 	 */
 	function units_to_double(i: number): number;
-
 	/**
 	 * Returns the encoded version of Pango available at run-time.
 	 * 
@@ -7066,7 +6987,6 @@ declare namespace imports.gi.Pango {
 	 * @returns The encoded version of Pango library available at run time.
 	 */
 	function version(): number;
-
 	/**
 	 * Checks that the Pango library in use is compatible with the
 	 * given version.
@@ -7094,7 +7014,6 @@ declare namespace imports.gi.Pango {
 	 *   be modified or freed.
 	 */
 	function version_check(required_major: number, required_minor: number, required_micro: number): string | null;
-
 	/**
 	 * Returns the version of Pango available at run-time.
 	 * 
@@ -7105,7 +7024,6 @@ declare namespace imports.gi.Pango {
 	 *   be modified or freed.
 	 */
 	function version_string(): string;
-
 	/**
 	 * Whether the segment should be shifted to center around the baseline.
 	 * 

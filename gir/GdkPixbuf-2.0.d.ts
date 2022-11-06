@@ -274,23 +274,12 @@ declare namespace imports.gi.GdkPixbuf {
 		 * 
 		 * Please see the section on [image data](#image-data) for information
 		 * about how the pixel data is stored in memory.
-		 * @returns A pointer to the pixbuf's pixel data.
-		 */
-		get_pixels(): number[];
-		/**
-		 * Queries a pointer to the pixel data of a pixbuf.
-		 * 
-		 * This function will cause an implicit copy of the pixbuf data if the
-		 * pixbuf was created from read-only data.
-		 * 
-		 * Please see the section on [image data](#image-data) for information
-		 * about how the pixel data is stored in memory.
 		 * @returns A pointer to the pixbuf's
 		 * pixel data.
 		 * 
 		 * The length of the binary data.
 		 */
-		get_pixels_with_length(): [ number[], number ];
+		get_pixels(): [ number[], number ];
 		/**
 		 * Queries the rowstride of a pixbuf, which is the number of bytes between
 		 * the start of a row and the start of the next row.
@@ -2496,7 +2485,6 @@ declare namespace imports.gi.GdkPixbuf {
 	}
 
 	function pixbuf_error_quark(): GLib.Quark;
-
 	/**
 	 * Major version of gdk-pixbuf library, that is the "0" in
 	 * "0.8.2" for example.

@@ -24855,18 +24855,17 @@ declare namespace imports.gi.Gtk {
 		 */
 		reorder(new_order: number[]): void;
 		/**
-		 * Sets the value of one or more cells in the row referenced by #iter.
-		 * The variable argument list should contain integer column numbers,
-		 * each column number followed by the value to be set.
-		 * The list is terminated by a -1. For example, to set column 0 with type
-		 * %G_TYPE_STRING to “Foo”, you would write `gtk_list_store_set (store, iter,
-		 * 0, "Foo", -1)`.
-		 * 
-		 * The value will be referenced by the store if it is a %G_TYPE_OBJECT, and it
-		 * will be copied if it is a %G_TYPE_STRING or %G_TYPE_BOXED.
-		 * @param iter row iterator
+		 * A variant of {@link Gtk.ListStore.set_valist} which
+		 * takes the columns and values as two arrays, instead of
+		 * varargs. This function is mainly intended for
+		 * language-bindings and in case the number of columns to
+		 * change is not known until run-time.
+		 * @param iter A valid {@link TreeIter} for the row being modified
+		 * @param columns an array of column numbers
+		 * @param values an array of GValues
+		 * @param n_values the length of the #columns and #values arrays
 		 */
-		set(iter: TreeIter): void;
+		set(iter: TreeIter, columns: number[], values: GObject.Value[], n_values: number): void;
 		/**
 		 * This function is meant primarily for #GObjects that inherit from {@link ListStore},
 		 * and should only be used when constructing a new #GtkListStore.  It will not
@@ -24892,18 +24891,6 @@ declare namespace imports.gi.Gtk {
 		 * @param value new value for the cell
 		 */
 		set_value(iter: TreeIter, column: number, value: GObject.Value): void;
-		/**
-		 * A variant of {@link Gtk.ListStore.set_valist} which
-		 * takes the columns and values as two arrays, instead of
-		 * varargs. This function is mainly intended for
-		 * language-bindings and in case the number of columns to
-		 * change is not known until run-time.
-		 * @param iter A valid {@link TreeIter} for the row being modified
-		 * @param columns an array of column numbers
-		 * @param values an array of GValues
-		 * @param n_values the length of the #columns and #values arrays
-		 */
-		set_valuesv(iter: TreeIter, columns: number[], values: GObject.Value[], n_values: number): void;
 		/**
 		 * Swaps #a and #b in #store. Note that this function only works with
 		 * unsorted stores.
@@ -25065,24 +25052,12 @@ declare namespace imports.gi.Gtk {
 	class ListStore {
 		public constructor(options?: Partial<ListStoreInitOptions>);
 		/**
-		 * Creates a new list store as with #n_columns columns each of the types passed
-		 * in.  Note that only types derived from standard GObject fundamental types
-		 * are supported.
-		 * 
-		 * As an example, `gtk_list_store_new (3, G_TYPE_INT, G_TYPE_STRING,
-		 * GDK_TYPE_PIXBUF);` will create a new {@link ListStore} with three columns, of type
-		 * int, string and #GdkPixbuf respectively.
-		 * @param n_columns number of columns in the list store
-		 * @returns a new {@link ListStore}
-		 */
-		public static new(n_columns: number): ListStore;
-		/**
 		 * Non-vararg creation function.  Used primarily by language bindings.
 		 * @param n_columns number of columns in the list store
 		 * @param types an array of #GType types for the columns, from first to last
 		 * @returns a new {@link ListStore}
 		 */
-		public static newv(n_columns: number, types: GObject.Type[]): ListStore;
+		public static new(n_columns: number, types: GObject.Type[]): ListStore;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -46171,30 +46146,6 @@ declare namespace imports.gi.Gtk {
 		 */
 		insert_before(parent: TreeIter | null, sibling: TreeIter | null): TreeIter;
 		/**
-		 * Creates a new row at #position. #iter will be changed to point to this
-		 * new row. If #position is -1, or larger than the number of rows on the list, then
-		 * the new row will be appended to the list. The row will be filled with
-		 * the values given to this function.
-		 * 
-		 * Calling
-		 * `gtk_tree_store_insert_with_values (tree_store, iter, position, ...)`
-		 * has the same effect as calling
-		 * |[<!-- language="C" -->
-		 * gtk_tree_store_insert (tree_store, iter, position);
-		 * gtk_tree_store_set (tree_store, iter, ...);
-		 * ]|
-		 * with the different that the former will only emit a row_inserted signal,
-		 * while the latter will emit row_inserted, row_changed and if the tree store
-		 * is sorted, rows_reordered.  Since emitting the rows_reordered signal
-		 * repeatedly can affect the performance of the program,
-		 * {@link Gtk.TreeStore.insert_with_values} should generally be preferred when
-		 * inserting rows in a sorted tree store.
-		 * @param parent A valid {@link TreeIter}, or %NULL
-		 * @param position position to insert the new row, or -1 to append after existing rows
-		 * @returns An unset {@link TreeIter} to set the new row, or %NULL.
-		 */
-		insert_with_values(parent: TreeIter | null, position: number): TreeIter | null;
-		/**
 		 * A variant of {@link Gtk.TreeStore.insert_with_values} which takes
 		 * the columns and values as two arrays, instead of varargs.  This
 		 * function is mainly intended for language bindings.
@@ -46205,7 +46156,7 @@ declare namespace imports.gi.Gtk {
 		 * @param n_values the length of the #columns and #values arrays
 		 * @returns An unset {@link TreeIter} to set the new row, or %NULL.
 		 */
-		insert_with_valuesv(parent: TreeIter | null, position: number, columns: number[], values: GObject.Value[], n_values: number): TreeIter | null;
+		insert_with_values(parent: TreeIter | null, position: number, columns: number[], values: GObject.Value[], n_values: number): TreeIter | null;
 		/**
 		 * Returns %TRUE if #iter is an ancestor of #descendant.  That is, #iter is the
 		 * parent (or grandparent or great-grandparent) of #descendant.
@@ -46277,18 +46228,16 @@ declare namespace imports.gi.Gtk {
 		 */
 		reorder(parent: TreeIter | null, new_order: number[]): void;
 		/**
-		 * Sets the value of one or more cells in the row referenced by #iter.
-		 * The variable argument list should contain integer column numbers,
-		 * each column number followed by the value to be set.
-		 * The list is terminated by a -1. For example, to set column 0 with type
-		 * %G_TYPE_STRING to “Foo”, you would write
-		 * `gtk_tree_store_set (store, iter, 0, "Foo", -1)`.
-		 * 
-		 * The value will be referenced by the store if it is a %G_TYPE_OBJECT, and it
-		 * will be copied if it is a %G_TYPE_STRING or %G_TYPE_BOXED.
+		 * A variant of {@link Gtk.TreeStore.set_valist} which takes
+		 * the columns and values as two arrays, instead of varargs.  This
+		 * function is mainly intended for language bindings or in case
+		 * the number of columns to change is not known until run-time.
 		 * @param iter A valid {@link TreeIter} for the row being modified
+		 * @param columns an array of column numbers
+		 * @param values an array of GValues
+		 * @param n_values the length of the #columns and #values arrays
 		 */
-		set(iter: TreeIter): void;
+		set(iter: TreeIter, columns: number[], values: GObject.Value[], n_values: number): void;
 		/**
 		 * This function is meant primarily for #GObjects that inherit from
 		 * {@link TreeStore}, and should only be used when constructing a new
@@ -46314,17 +46263,6 @@ declare namespace imports.gi.Gtk {
 		 * @param value new value for the cell
 		 */
 		set_value(iter: TreeIter, column: number, value: GObject.Value): void;
-		/**
-		 * A variant of {@link Gtk.TreeStore.set_valist} which takes
-		 * the columns and values as two arrays, instead of varargs.  This
-		 * function is mainly intended for language bindings or in case
-		 * the number of columns to change is not known until run-time.
-		 * @param iter A valid {@link TreeIter} for the row being modified
-		 * @param columns an array of column numbers
-		 * @param values an array of GValues
-		 * @param n_values the length of the #columns and #values arrays
-		 */
-		set_valuesv(iter: TreeIter, columns: number[], values: GObject.Value[], n_values: number): void;
 		/**
 		 * Swaps #a and #b in the same level of #tree_store. Note that this function
 		 * only works with unsorted stores.
@@ -46375,24 +46313,12 @@ declare namespace imports.gi.Gtk {
 	class TreeStore {
 		public constructor(options?: Partial<TreeStoreInitOptions>);
 		/**
-		 * Creates a new tree store as with #n_columns columns each of the types passed
-		 * in.  Note that only types derived from standard GObject fundamental types
-		 * are supported.
-		 * 
-		 * As an example, `gtk_tree_store_new (3, G_TYPE_INT, G_TYPE_STRING,
-		 * GDK_TYPE_PIXBUF);` will create a new {@link TreeStore} with three columns, of type
-		 * #gint, #gchararray, and #GdkPixbuf respectively.
-		 * @param n_columns number of columns in the tree store
-		 * @returns a new {@link TreeStore}
-		 */
-		public static new(n_columns: number): TreeStore;
-		/**
 		 * Non vararg creation function.  Used primarily by language bindings.
 		 * @param n_columns number of columns in the tree store
 		 * @param types an array of #GType types for the columns, from first to last
 		 * @returns a new {@link TreeStore}
 		 */
-		public static newv(n_columns: number, types: GObject.Type[]): TreeStore;
+		public static new(n_columns: number, types: GObject.Type[]): TreeStore;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -57925,22 +57851,17 @@ declare namespace imports.gi.Gtk {
 		 */
 		public free(): void;
 		/**
-		 * Retrieves the raw data of the selection.
-		 * @returns the raw data of the selection.
-		 */
-		public get_data(): number[];
-		/**
-		 * Retrieves the data type of the selection.
-		 * @returns the data type of the selection.
-		 */
-		public get_data_type(): Gdk.Atom;
-		/**
 		 * Retrieves the raw data of the selection along with its length.
 		 * @returns the raw data of the selection
 		 * 
 		 * return location for length of the data segment
 		 */
-		public get_data_with_length(): [ number[], number ];
+		public get_data(): [ number[], number ];
+		/**
+		 * Retrieves the data type of the selection.
+		 * @returns the data type of the selection.
+		 */
+		public get_data_type(): Gdk.Atom;
 		/**
 		 * Retrieves the display of the selection.
 		 * @returns the display of the selection.
@@ -59697,18 +59618,12 @@ declare namespace imports.gi.Gtk {
 		 */
 		public static new_first(): TreePath;
 		/**
-		 * Creates a new path with #first_index and #varargs as indices.
-		 * @param first_index first integer
-		 * @returns A newly created {@link TreePath_struct}
-		 */
-		public static new_from_indices(first_index: number): TreePath;
-		/**
 		 * Creates a new path with the given #indices array of #length.
 		 * @param indices array of indices
 		 * @param length length of #indices array
 		 * @returns A newly created {@link TreePath_struct}
 		 */
-		public static new_from_indicesv(indices: number[], length: number): TreePath;
+		public static new_from_indices(indices: number[], length: number): TreePath;
 		/**
 		 * Creates a new {@link TreePath_struct} initialized to #path.
 		 * 
@@ -59760,16 +59675,6 @@ declare namespace imports.gi.Gtk {
 		 * Returns the current indices of #path.
 		 * 
 		 * This is an array of integers, each representing a node in a tree.
-		 * This value should not be freed.
-		 * 
-		 * The length of the array can be obtained with {@link Gtk.TreePath.get_depth}.
-		 * @returns The current indices, or %NULL
-		 */
-		public get_indices(): number;
-		/**
-		 * Returns the current indices of #path.
-		 * 
-		 * This is an array of integers, each representing a node in a tree.
 		 * It also returns the number of elements in the array.
 		 * The array should not be freed.
 		 * @returns The current
@@ -59778,7 +59683,7 @@ declare namespace imports.gi.Gtk {
 		 * return location for number of elements
 		 *     returned in the integer array, or %NULL
 		 */
-		public get_indices_with_depth(): [ number[], number | null ];
+		public get_indices(): [ number[], number | null ];
 		/**
 		 * Returns %TRUE if #descendant is a descendant of #path.
 		 * @param descendant another {@link TreePath_struct}
@@ -64089,20 +63994,6 @@ declare namespace imports.gi.Gtk {
 		 * reordered.
 		 * @param path a {@link TreePath_struct} pointing to the tree node whose children
 		 *     have been reordered
-		 * @param iter a valid {@link TreeIter_struct} pointing to the node whose children
-		 *     have been reordered, or %NULL if the depth of #path is 0
-		 * @param new_order an array of integers mapping the current position of
-		 *     each child to its old position before the re-ordering,
-		 *     i.e. #new_order`[newpos] = oldpos`
-		 */
-		rows_reordered(path: TreePath, iter: TreeIter, new_order: number): void;
-		/**
-		 * Emits the {@link TreeModel.rows_reordered} signal on #tree_model.
-		 * 
-		 * This should be called by models when their rows have been
-		 * reordered.
-		 * @param path a {@link TreePath_struct} pointing to the tree node whose children
-		 *     have been reordered
 		 * @param iter a valid {@link TreeIter_struct} pointing to the node
 		 *     whose children have been reordered, or %NULL if the depth
 		 *     of #path is 0
@@ -64112,7 +64003,7 @@ declare namespace imports.gi.Gtk {
 		 *     i.e. #new_order`[newpos] = oldpos`
 		 * @param length length of #new_order array
 		 */
-		rows_reordered_with_length(path: TreePath, iter: TreeIter | null, new_order: number[], length: number): void;
+		rows_reordered(path: TreePath, iter: TreeIter | null, new_order: number[], length: number): void;
 		/**
 		 * Lets the tree unref the node.
 		 * 
@@ -69215,7 +69106,6 @@ declare namespace imports.gi.Gtk {
 	 *     this keypress
 	 */
 	function accel_groups_activate(object: GObject.Object, accel_key: number, accel_mods: Gdk.ModifierType): boolean;
-
 	/**
 	 * Gets a list of all accel groups which are attached to #object.
 	 * @param object a #GObject, usually a {@link Window}
@@ -69223,7 +69113,6 @@ declare namespace imports.gi.Gtk {
 	 *     all accel groups which are attached to #object
 	 */
 	function accel_groups_from_object(object: GObject.Object): AccelGroup[];
-
 	/**
 	 * Gets the modifier mask.
 	 * 
@@ -69232,7 +69121,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns the default accelerator modifier mask
 	 */
 	function accelerator_get_default_mod_mask(): Gdk.ModifierType;
-
 	/**
 	 * Converts an accelerator keyval and modifier mask into a string
 	 * which can be used to represent the accelerator to the user.
@@ -69241,7 +69129,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a newly-allocated string representing the accelerator.
 	 */
 	function accelerator_get_label(accelerator_key: number, accelerator_mods: Gdk.ModifierType): string;
-
 	/**
 	 * Converts an accelerator keyval and modifier mask
 	 * into a (possibly translated) string that can be displayed to
@@ -69257,7 +69144,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a newly-allocated string representing the accelerator.
 	 */
 	function accelerator_get_label_with_keycode(display: Gdk.Display | null, accelerator_key: number, keycode: number, accelerator_mods: Gdk.ModifierType): string;
-
 	/**
 	 * Converts an accelerator keyval and modifier mask into a string
 	 * parseable by {@link Gtk.accelerator.parse}. For example, if you pass in
@@ -69270,7 +69156,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a newly-allocated accelerator name
 	 */
 	function accelerator_name(accelerator_key: number, accelerator_mods: Gdk.ModifierType): string;
-
 	/**
 	 * Converts an accelerator keyval and modifier mask
 	 * into a string parseable by {@link Gtk.accelerator.parse_with_keycode},
@@ -69284,7 +69169,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a newly allocated accelerator name.
 	 */
 	function accelerator_name_with_keycode(display: Gdk.Display | null, accelerator_key: number, keycode: number, accelerator_mods: Gdk.ModifierType): string;
-
 	/**
 	 * Parses a string representing an accelerator. The format looks like
 	 * “<Control>a” or “<Shift><Alt>F1” or “<Release>z” (the last one is
@@ -69306,7 +69190,6 @@ declare namespace imports.gi.Gtk {
 	 *     modifier mask, %NULL
 	 */
 	function accelerator_parse(accelerator: string): [ accelerator_key: number | null, accelerator_mods: Gdk.ModifierType | null ];
-
 	/**
 	 * Parses a string representing an accelerator, similarly to
 	 * {@link Gtk.accelerator.parse} but handles keycodes as well. This is only
@@ -69332,7 +69215,6 @@ declare namespace imports.gi.Gtk {
 	 *     modifier mask, %NULL
 	 */
 	function accelerator_parse_with_keycode(accelerator: string): [ number | null, number[] | null, Gdk.ModifierType | null ];
-
 	/**
 	 * Sets the modifiers that will be considered significant for keyboard
 	 * accelerators. The default mod mask depends on the GDK backend in use,
@@ -69349,7 +69231,6 @@ declare namespace imports.gi.Gtk {
 	 * @param default_mod_mask accelerator modifier mask
 	 */
 	function accelerator_set_default_mod_mask(default_mod_mask: Gdk.ModifierType): void;
-
 	/**
 	 * Determines whether a given keyval and modifier mask constitute
 	 * a valid keyboard accelerator. For example, the #GDK_KEY_a keyval
@@ -69361,7 +69242,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE if the accelerator is valid
 	 */
 	function accelerator_valid(keyval: number, modifiers: Gdk.ModifierType): boolean;
-
 	/**
 	 * Returns %TRUE if dialogs are expected to use an alternative
 	 * button order on the screen #screen. See
@@ -69376,7 +69256,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns Whether the alternative button order should be used
 	 */
 	function alternative_dialog_button_order(screen: Gdk.Screen | null): boolean;
-
 	/**
 	 * Parses a signal description from #signal_desc and incorporates
 	 * it into #binding_set.
@@ -69403,7 +69282,6 @@ declare namespace imports.gi.Gtk {
 	 *     the expected token otherwise
 	 */
 	function binding_entry_add_signal_from_string(binding_set: BindingSet, signal_desc: string): GLib.TokenType;
-
 	/**
 	 * Override or install a new key binding for #keyval with #modifiers on
 	 * #binding_set.
@@ -69415,7 +69293,6 @@ declare namespace imports.gi.Gtk {
 	 *     list of {@link BindingArg} signal arguments
 	 */
 	function binding_entry_add_signall(binding_set: BindingSet, keyval: number, modifiers: Gdk.ModifierType, signal_name: string, binding_args: BindingArg[]): void;
-
 	/**
 	 * Remove a binding previously installed via
 	 * {@link Gtk.BindingEntry.add_signal} on #binding_set.
@@ -69424,7 +69301,6 @@ declare namespace imports.gi.Gtk {
 	 * @param modifiers key modifier of binding to remove
 	 */
 	function binding_entry_remove(binding_set: BindingSet, keyval: number, modifiers: Gdk.ModifierType): void;
-
 	/**
 	 * Install a binding on #binding_set which causes key lookups
 	 * to be aborted, to prevent bindings from lower priority sets
@@ -69434,7 +69310,6 @@ declare namespace imports.gi.Gtk {
 	 * @param modifiers key modifier of binding to skip
 	 */
 	function binding_entry_skip(binding_set: BindingSet, keyval: number, modifiers: Gdk.ModifierType): void;
-
 	/**
 	 * This function returns the binding set named after the type name of
 	 * the passed in class structure. New binding sets are created on
@@ -69444,7 +69319,6 @@ declare namespace imports.gi.Gtk {
 	 *     #object_class
 	 */
 	function binding_set_by_class(object_class: any | null): BindingSet;
-
 	/**
 	 * Find a binding set by its globally unique name.
 	 * 
@@ -69454,7 +69328,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns %NULL or the specified binding set
 	 */
 	function binding_set_find(set_name: string): BindingSet | null;
-
 	/**
 	 * GTK+ maintains a global list of binding sets. Each binding set has
 	 * a unique name which needs to be specified upon creation.
@@ -69462,7 +69335,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns new binding set
 	 */
 	function binding_set_new(set_name: string): BindingSet;
-
 	/**
 	 * Find a key binding matching #keyval and #modifiers and activate the
 	 * binding on #object.
@@ -69472,7 +69344,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE if a binding was found and activated
 	 */
 	function bindings_activate(object: GObject.Object, keyval: number, modifiers: Gdk.ModifierType): boolean;
-
 	/**
 	 * Looks up key bindings for #object to find one matching
 	 * #event, and if one was found, activate it.
@@ -69481,9 +69352,7 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE if a matching key binding was found
 	 */
 	function bindings_activate_event(object: GObject.Object, event: Gdk.EventKey): boolean;
-
 	function builder_error_quark(): GLib.Quark;
-
 	/**
 	 * This function is supposed to be called in {@link Widget.draw}
 	 * implementations for widgets that support multiple windows.
@@ -69500,7 +69369,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE if #window should be drawn
 	 */
 	function cairo_should_draw_window(cr: cairo.Context, window: Gdk.Window): boolean;
-
 	/**
 	 * Transforms the given cairo context #cr that from #widget-relative
 	 * coordinates to #window-relative coordinates.
@@ -69516,7 +69384,6 @@ declare namespace imports.gi.Gtk {
 	 * @param window the window to transform the context to
 	 */
 	function cairo_transform_to_window(cr: cairo.Context, widget: Widget, window: Gdk.Window): void;
-
 	/**
 	 * Checks that the GTK+ library in use is compatible with the
 	 * given version. Generally you would pass in the constants
@@ -69549,9 +69416,7 @@ declare namespace imports.gi.Gtk {
 	 *   or freed.
 	 */
 	function check_version(required_major: number, required_minor: number, required_micro: number): string | null;
-
 	function css_provider_error_quark(): GLib.Quark;
-
 	/**
 	 * Adds a GTK+ grab on #device, so all the events on #device and its
 	 * associated pointer or keyboard (if any) are delivered to #widget.
@@ -69562,7 +69427,6 @@ declare namespace imports.gi.Gtk {
 	 * @param block_others %TRUE to prevent other devices to interact with #widget.
 	 */
 	function device_grab_add(widget: Widget, device: Gdk.Device, block_others: boolean): void;
-
 	/**
 	 * Removes a device grab from the given widget.
 	 * 
@@ -69572,7 +69436,6 @@ declare namespace imports.gi.Gtk {
 	 * @param device a #GdkDevice
 	 */
 	function device_grab_remove(widget: Widget, device: Gdk.Device): void;
-
 	/**
 	 * Prevents gtk_init(), gtk_init_check(), gtk_init_with_args() and
 	 * gtk_parse_args() from automatically
@@ -69584,7 +69447,6 @@ declare namespace imports.gi.Gtk {
 	 * Most programs should not need to call this function.
 	 */
 	function disable_setlocale(): void;
-
 	/**
 	 * Distributes #extra_space to child #sizes by bringing smaller
 	 * children up to natural size first.
@@ -69601,7 +69463,6 @@ declare namespace imports.gi.Gtk {
 	 * to #sizes.
 	 */
 	function distribute_natural_allocation(extra_space: number, n_requested_sizes: number, sizes: RequestedSize): number;
-
 	/**
 	 * Cancels an ongoing drag operation on the source side.
 	 * 
@@ -69618,7 +69479,6 @@ declare namespace imports.gi.Gtk {
 	 * @param context a #GdkDragContext, as e.g. returned by {@link Gtk.drag_begin_with_coordinates}
 	 */
 	function drag_cancel(context: Gdk.DragContext): void;
-
 	/**
 	 * Informs the drag source that the drop is finished, and
 	 * that the data of the drag will no longer be required.
@@ -69629,7 +69489,6 @@ declare namespace imports.gi.Gtk {
 	 * @param time_ the timestamp from the {@link Widget.drag_drop} signal
 	 */
 	function drag_finish(context: Gdk.DragContext, success: boolean, del: boolean, time_: number): void;
-
 	/**
 	 * Determines the source widget for a drag.
 	 * @param context a (destination side) drag context
@@ -69638,7 +69497,6 @@ declare namespace imports.gi.Gtk {
 	 *     Otherwise, %NULL.
 	 */
 	function drag_get_source_widget(context: Gdk.DragContext): Widget | null;
-
 	/**
 	 * Sets the icon for a particular drag to the default
 	 * icon.
@@ -69646,7 +69504,6 @@ declare namespace imports.gi.Gtk {
 	 *     with a  context for the source side of a drag)
 	 */
 	function drag_set_icon_default(context: Gdk.DragContext): void;
-
 	/**
 	 * Sets the icon for a given drag from the given #icon.
 	 * See the documentation for {@link Gtk.drag.set_icon_name}
@@ -69658,7 +69515,6 @@ declare namespace imports.gi.Gtk {
 	 * @param hot_y the Y offset of the hotspot within the icon
 	 */
 	function drag_set_icon_gicon(context: Gdk.DragContext, icon: Gio.Icon, hot_x: number, hot_y: number): void;
-
 	/**
 	 * Sets the icon for a given drag from a named themed icon. See
 	 * the docs for {@link IconTheme} for more details. Note that the
@@ -69672,7 +69528,6 @@ declare namespace imports.gi.Gtk {
 	 * @param hot_y the Y offset of the hotspot within the icon
 	 */
 	function drag_set_icon_name(context: Gdk.DragContext, icon_name: string, hot_x: number, hot_y: number): void;
-
 	/**
 	 * Sets #pixbuf as the icon for a given drag.
 	 * @param context the context for a drag (This must be called
@@ -69682,7 +69537,6 @@ declare namespace imports.gi.Gtk {
 	 * @param hot_y the Y offset within #widget of the hotspot
 	 */
 	function drag_set_icon_pixbuf(context: Gdk.DragContext, pixbuf: GdkPixbuf.Pixbuf, hot_x: number, hot_y: number): void;
-
 	/**
 	 * Sets the icon for a given drag from a stock ID.
 	 * @param context the context for a drag (This must be called
@@ -69692,7 +69546,6 @@ declare namespace imports.gi.Gtk {
 	 * @param hot_y the Y offset within the icon of the hotspot
 	 */
 	function drag_set_icon_stock(context: Gdk.DragContext, stock_id: string, hot_x: number, hot_y: number): void;
-
 	/**
 	 * Sets #surface as the icon for a given drag. GTK+ retains
 	 * references for the arguments, and will release them when
@@ -69707,7 +69560,6 @@ declare namespace imports.gi.Gtk {
 	 * @param surface the surface to use as icon
 	 */
 	function drag_set_icon_surface(context: Gdk.DragContext, surface: cairo.Surface): void;
-
 	/**
 	 * Changes the icon for drag operation to a given widget.
 	 * GTK+ will not destroy the widget, so if you don’t want
@@ -69720,7 +69572,6 @@ declare namespace imports.gi.Gtk {
 	 * @param hot_y the Y offset within #widget of the hotspot
 	 */
 	function drag_set_icon_widget(context: Gdk.DragContext, widget: Widget, hot_x: number, hot_y: number): void;
-
 	/**
 	 * Draws a text caret on #cr at #location. This is not a style function
 	 * but merely a convenience function for drawing the standard cursor shape.
@@ -69734,7 +69585,6 @@ declare namespace imports.gi.Gtk {
 	 *        cursor. Should be %FALSE unless the cursor is split.
 	 */
 	function draw_insertion_cursor(widget: Widget, cr: cairo.Context, location: Gdk.Rectangle, is_primary: boolean, direction: TextDirection, draw_arrow: boolean): void;
-
 	/**
 	 * Checks if any events are pending.
 	 * 
@@ -69754,20 +69604,17 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE if any events are pending, %FALSE otherwise
 	 */
 	function events_pending(): boolean;
-
 	/**
 	 * Analogical to gtk_true(), this function does nothing
 	 * but always returns %FALSE.
 	 * @returns %FALSE
 	 */
 	// function false(): boolean;
-
 	/**
 	 * Registers an error quark for {@link FileChooser} if necessary.
 	 * @returns The error quark used for {@link FileChooser} errors.
 	 */
 	function file_chooser_error_quark(): GLib.Quark;
-
 	/**
 	 * Returns the binary age as passed to `libtool`
 	 * when building the GTK+ library the process is running against.
@@ -69776,7 +69623,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns the binary age of the GTK+ library
 	 */
 	function get_binary_age(): number;
-
 	/**
 	 * Obtains a copy of the event currently being processed by GTK+.
 	 * 
@@ -69788,14 +69634,12 @@ declare namespace imports.gi.Gtk {
 	 *     freed with {@link Gdk.Event.free}.
 	 */
 	function get_current_event(): Gdk.Event | null;
-
 	/**
 	 * If there is a current event and it has a device, return that
 	 * device, otherwise return %NULL.
 	 * @returns a #GdkDevice, or %NULL
 	 */
 	function get_current_event_device(): Gdk.Device | null;
-
 	/**
 	 * If there is a current event and it has a state field, place
 	 * that state field in #state and return %TRUE, otherwise return
@@ -69806,7 +69650,6 @@ declare namespace imports.gi.Gtk {
 	 * a location to store the state of the current event
 	 */
 	function get_current_event_state(): [ boolean, Gdk.ModifierType ];
-
 	/**
 	 * If there is a current event and it has a timestamp,
 	 * return that timestamp, otherwise return %GDK_CURRENT_TIME.
@@ -69814,7 +69657,6 @@ declare namespace imports.gi.Gtk {
 	 *     or %GDK_CURRENT_TIME.
 	 */
 	function get_current_event_time(): number;
-
 	/**
 	 * Returns the GTK+ debug flags.
 	 * 
@@ -69823,7 +69665,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns the GTK+ debug flags.
 	 */
 	function get_debug_flags(): number;
-
 	/**
 	 * Returns the #PangoLanguage for the default language currently in
 	 * effect. (Note that this can change over the life of an
@@ -69837,7 +69678,6 @@ declare namespace imports.gi.Gtk {
 	 *     must not be freed
 	 */
 	function get_default_language(): Pango.Language;
-
 	/**
 	 * If #event is %NULL or the event was not associated with any widget,
 	 * returns %NULL, otherwise returns the widget that received the event
@@ -69847,7 +69687,6 @@ declare namespace imports.gi.Gtk {
 	 *     received #event, or %NULL
 	 */
 	function get_event_widget(event: Gdk.Event): Widget | null;
-
 	/**
 	 * Returns the interface age as passed to `libtool`
 	 * when building the GTK+ library the process is running against.
@@ -69856,7 +69695,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns the interface age of the GTK+ library
 	 */
 	function get_interface_age(): number;
-
 	/**
 	 * Get the direction of the current locale. This is the expected
 	 * reading direction for text and UI.
@@ -69882,7 +69720,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns the {@link TextDirection} of the current locale
 	 */
 	function get_locale_direction(): TextDirection;
-
 	/**
 	 * Returns the major version number of the GTK+ library.
 	 * (e.g. in GTK+ version 3.1.5 this is 3.)
@@ -69894,7 +69731,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns the major version number of the GTK+ library
 	 */
 	function get_major_version(): number;
-
 	/**
 	 * Returns the micro version number of the GTK+ library.
 	 * (e.g. in GTK+ version 3.1.5 this is 5.)
@@ -69906,7 +69742,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns the micro version number of the GTK+ library
 	 */
 	function get_micro_version(): number;
-
 	/**
 	 * Returns the minor version number of the GTK+ library.
 	 * (e.g. in GTK+ version 3.1.5 this is 1.)
@@ -69918,7 +69753,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns the minor version number of the GTK+ library
 	 */
 	function get_minor_version(): number;
-
 	/**
 	 * Returns a #GOptionGroup for the commandline arguments recognized
 	 * by GTK+ and GDK.
@@ -69932,21 +69766,18 @@ declare namespace imports.gi.Gtk {
 	 *     arguments recognized by GTK+
 	 */
 	function get_option_group(open_default_display: boolean): GLib.OptionGroup;
-
 	/**
 	 * Queries the current grab of the default window group.
 	 * @returns The widget which currently
 	 *     has the grab or %NULL if no grab is active
 	 */
 	function grab_get_current(): Widget | null;
-
 	/**
 	 * Looks up the icon size associated with #name.
 	 * @param name the name to look up.
 	 * @returns the icon size ({@link IconSize})
 	 */
 	function icon_size_from_name(name: string): number;
-
 	/**
 	 * Gets the canonical name of the given icon size. The returned string
 	 * is statically allocated and should not be freed.
@@ -69954,7 +69785,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns the name of the given icon size.
 	 */
 	function icon_size_get_name(size: number): string;
-
 	/**
 	 * Obtains the pixel size of a semantic icon size #size:
 	 * #GTK_ICON_SIZE_MENU, #GTK_ICON_SIZE_BUTTON, etc.  This function
@@ -69972,7 +69802,6 @@ declare namespace imports.gi.Gtk {
 	 * location to store icon height
 	 */
 	function icon_size_lookup(size: number): [ boolean, number | null, number | null ];
-
 	/**
 	 * Obtains the pixel size of a semantic icon size, possibly
 	 * modified by user preferences for a particular
@@ -69994,7 +69823,6 @@ declare namespace imports.gi.Gtk {
 	 * location to store icon height
 	 */
 	function icon_size_lookup_for_settings(settings: Settings, size: number): [ boolean, number | null, number | null ];
-
 	/**
 	 * Registers a new icon size, along the same lines as #GTK_ICON_SIZE_MENU,
 	 * etc. Returns the integer value for the size.
@@ -70004,7 +69832,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns integer value representing the size ({@link IconSize})
 	 */
 	function icon_size_register(name: string, width: number, height: number): number;
-
 	/**
 	 * Registers #alias as another name for #target.
 	 * So calling {@link Gtk.icon.size_from_name} with #alias as argument
@@ -70013,9 +69840,7 @@ declare namespace imports.gi.Gtk {
 	 * @param target an existing icon size ({@link IconSize})
 	 */
 	function icon_size_register_alias(alias: string, target: number): void;
-
 	function icon_theme_error_quark(): GLib.Quark;
-
 	/**
 	 * Call this function before using any other GTK+ functions in your GUI
 	 * applications.  It will initialize everything needed to operate the
@@ -70051,7 +69876,6 @@ declare namespace imports.gi.Gtk {
 	 * similar things.
 	 */
 	function init(): void;
-
 	/**
 	 * This function does the same work as gtk_init() with only a single
 	 * change: It does not terminate the program if the commandline
@@ -70069,7 +69893,6 @@ declare namespace imports.gi.Gtk {
 	 *     otherwise
 	 */
 	function init_check(): boolean;
-
 	/**
 	 * This function does the same work as {@link Gtk.init.check}.
 	 * Additionally, it allows you to add your own commandline options,
@@ -70089,7 +69912,6 @@ declare namespace imports.gi.Gtk {
 	 *     %FALSE otherwise
 	 */
 	function init_with_args(parameter_string: string | null, entries: GLib.OptionEntry[], translation_domain: string | null): boolean;
-
 	/**
 	 * Installs a key snooper function, which will get called on all
 	 * key events before delivering them normally.
@@ -70099,13 +69921,11 @@ declare namespace imports.gi.Gtk {
 	 *    {@link Gtk.key.snooper_remove}.
 	 */
 	function key_snooper_install(snooper: KeySnoopFunc, func_data: any | null): number;
-
 	/**
 	 * Removes the key snooper function with the given id.
 	 * @param snooper_handler_id Identifies the key snooper to remove
 	 */
 	function key_snooper_remove(snooper_handler_id: number): void;
-
 	/**
 	 * Runs the main loop until {@link Gtk.main.quit} is called.
 	 * 
@@ -70113,7 +69933,6 @@ declare namespace imports.gi.Gtk {
 	 * will make the innermost invocation of the main loop return.
 	 */
 	function main(): void;
-
 	/**
 	 * Processes a single GDK event.
 	 * 
@@ -70154,7 +69973,6 @@ declare namespace imports.gi.Gtk {
 	 * @param event An event to process (normally passed by GDK)
 	 */
 	function main_do_event(event: Gdk.Event): void;
-
 	/**
 	 * Runs a single iteration of the mainloop.
 	 * 
@@ -70166,7 +69984,6 @@ declare namespace imports.gi.Gtk {
 	 *     innermost mainloop
 	 */
 	function main_iteration(): boolean;
-
 	/**
 	 * Runs a single iteration of the mainloop.
 	 * If no events are available either return or block depending on
@@ -70176,20 +69993,17 @@ declare namespace imports.gi.Gtk {
 	 *     innermost mainloop
 	 */
 	function main_iteration_do(blocking: boolean): boolean;
-
 	/**
 	 * Asks for the current nesting level of the main loop.
 	 * @returns the nesting level of the current invocation
 	 *     of the main loop
 	 */
 	function main_level(): number;
-
 	/**
 	 * Makes the innermost invocation of the main loop return
 	 * when it regains control.
 	 */
 	function main_quit(): void;
-
 	/**
 	 * Draws an arrow in the given rectangle on #cr using the given
 	 * parameters. #arrow_type determines the direction of the arrow.
@@ -70207,7 +70021,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height height of the rectangle to draw the arrow in
 	 */
 	function paint_arrow(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, arrow_type: ArrowType, fill: boolean, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Draws a box on #cr with the given parameters.
 	 * @param style a {@link Style}
@@ -70222,7 +70035,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height the height of the box
 	 */
 	function paint_box(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Draws a box in #cr using the given style and state and shadow type,
 	 * leaving a gap in one side.
@@ -70241,7 +70053,6 @@ declare namespace imports.gi.Gtk {
 	 * @param gap_width width of the gap
 	 */
 	function paint_box_gap(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number, gap_side: PositionType, gap_x: number, gap_width: number): void;
-
 	/**
 	 * Draws a check button indicator in the given rectangle on #cr with
 	 * the given parameters.
@@ -70257,7 +70068,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height the height of the rectangle to draw the check in
 	 */
 	function paint_check(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Draws a diamond in the given rectangle on #window using the given
 	 * parameters.
@@ -70273,7 +70083,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height height of the rectangle to draw the diamond in
 	 */
 	function paint_diamond(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Draws an expander as used in {@link TreeView}. #x and #y specify the
 	 * center the expander. The size of the expander is determined by the
@@ -70296,7 +70105,6 @@ declare namespace imports.gi.Gtk {
 	 *   intermediate state.
 	 */
 	function paint_expander(style: Style, cr: cairo.Context, state_type: StateType, widget: Widget | null, detail: string | null, x: number, y: number, expander_style: ExpanderStyle): void;
-
 	/**
 	 * Draws an extension, i.e. a notebook tab.
 	 * @param style a {@link Style}
@@ -70312,7 +70120,6 @@ declare namespace imports.gi.Gtk {
 	 * @param gap_side the side on to which the extension is attached
 	 */
 	function paint_extension(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number, gap_side: PositionType): void;
-
 	/**
 	 * Draws a flat box on #cr with the given parameters.
 	 * @param style a {@link Style}
@@ -70327,7 +70134,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height the height of the box
 	 */
 	function paint_flat_box(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Draws a focus indicator around the given rectangle on #cr using the
 	 * given style.
@@ -70342,7 +70148,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height the height of the rectangle around which to draw a focus indicator
 	 */
 	function paint_focus(style: Style, cr: cairo.Context, state_type: StateType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Draws a handle as used in {@link HandleBox} and #GtkPaned.
 	 * @param style a {@link Style}
@@ -70358,7 +70163,6 @@ declare namespace imports.gi.Gtk {
 	 * @param orientation the orientation of the handle
 	 */
 	function paint_handle(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number, orientation: Orientation): void;
-
 	/**
 	 * Draws a horizontal line from (#x1, #y) to (#x2, #y) in #cr
 	 * using the given style and state.
@@ -70372,7 +70176,6 @@ declare namespace imports.gi.Gtk {
 	 * @param y the y coordinate
 	 */
 	function paint_hline(style: Style, cr: cairo.Context, state_type: StateType, widget: Widget | null, detail: string | null, x1: number, x2: number, y: number): void;
-
 	/**
 	 * Draws a layout on #cr using the given parameters.
 	 * @param style a {@link Style}
@@ -70387,7 +70190,6 @@ declare namespace imports.gi.Gtk {
 	 * @param layout the layout to draw
 	 */
 	function paint_layout(style: Style, cr: cairo.Context, state_type: StateType, use_text: boolean, widget: Widget | null, detail: string | null, x: number, y: number, layout: Pango.Layout): void;
-
 	/**
 	 * Draws a radio button indicator in the given rectangle on #cr with
 	 * the given parameters.
@@ -70403,7 +70205,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height the height of the rectangle to draw the option in
 	 */
 	function paint_option(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Draws a resize grip in the given rectangle on #cr using the given
 	 * parameters.
@@ -70419,7 +70220,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height the height of the rectangle in which to draw the resize grip
 	 */
 	function paint_resize_grip(style: Style, cr: cairo.Context, state_type: StateType, widget: Widget | null, detail: string | null, edge: Gdk.WindowEdge, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Draws a shadow around the given rectangle in #cr
 	 * using the given style and state and shadow type.
@@ -70435,7 +70235,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height width of the rectangle
 	 */
 	function paint_shadow(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Draws a shadow around the given rectangle in #cr
 	 * using the given style and state and shadow type, leaving a
@@ -70455,7 +70254,6 @@ declare namespace imports.gi.Gtk {
 	 * @param gap_width width of the gap
 	 */
 	function paint_shadow_gap(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number, gap_side: PositionType, gap_x: number, gap_width: number): void;
-
 	/**
 	 * Draws a slider in the given rectangle on #cr using the
 	 * given style and orientation.
@@ -70472,7 +70270,6 @@ declare namespace imports.gi.Gtk {
 	 * @param orientation the orientation to be used
 	 */
 	function paint_slider(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number, orientation: Orientation): void;
-
 	/**
 	 * Draws a spinner on #window using the given parameters.
 	 * @param style a {@link Style}
@@ -70487,7 +70284,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height the height of the rectangle in which to draw the spinner
 	 */
 	function paint_spinner(style: Style, cr: cairo.Context, state_type: StateType, widget: Widget | null, detail: string | null, step: number, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Draws an option menu tab (i.e. the up and down pointing arrows)
 	 * in the given rectangle on #cr using the given parameters.
@@ -70503,7 +70299,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height the height of the rectangle to draw the tab in
 	 */
 	function paint_tab(style: Style, cr: cairo.Context, state_type: StateType, shadow_type: ShadowType, widget: Widget | null, detail: string | null, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Draws a vertical line from (#x, #y1_) to (#x, #y2_) in #cr
 	 * using the given style and state.
@@ -70517,7 +70312,6 @@ declare namespace imports.gi.Gtk {
 	 * @param x the x coordinate
 	 */
 	function paint_vline(style: Style, cr: cairo.Context, state_type: StateType, widget: Widget | null, detail: string | null, y1_: number, y2_: number, x: number): void;
-
 	/**
 	 * Returns the name of the default paper size, which
 	 * depends on the current locale.
@@ -70525,7 +70319,6 @@ declare namespace imports.gi.Gtk {
 	 * is owned by GTK+ and should not be modified.
 	 */
 	function paper_size_get_default(): string;
-
 	/**
 	 * Creates a list of known paper sizes.
 	 * @param include_custom whether to include custom paper sizes
@@ -70534,7 +70327,6 @@ declare namespace imports.gi.Gtk {
 	 *    allocated {@link PaperSize} objects
 	 */
 	function paper_size_get_paper_sizes(include_custom: boolean): PaperSize[];
-
 	/**
 	 * Parses command line arguments, and initializes global
 	 * attributes of GTK+, but does not actually open a connection
@@ -70552,13 +70344,11 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE if initialization succeeded, otherwise %FALSE
 	 */
 	function parse_args(): boolean;
-
 	/**
 	 * Registers an error quark for {@link PrintOperation} if necessary.
 	 * @returns The error quark used for {@link PrintOperation} errors.
 	 */
 	function print_error_quark(): GLib.Quark;
-
 	/**
 	 * Runs a page setup dialog, letting the user modify the values from
 	 * #page_setup. If the user cancels the dialog, the returned {@link PageSetup}
@@ -70574,7 +70364,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a new {@link PageSetup}
 	 */
 	function print_run_page_setup_dialog(parent: Window | null, page_setup: PageSetup | null, settings: PrintSettings): PageSetup;
-
 	/**
 	 * Runs a page setup dialog, letting the user modify the values from #page_setup.
 	 * 
@@ -70589,7 +70378,6 @@ declare namespace imports.gi.Gtk {
 	 * @param data user data to pass to #done_cb
 	 */
 	function print_run_page_setup_dialog_async(parent: Window | null, page_setup: PageSetup | null, settings: PrintSettings, done_cb: PageSetupDoneFunc, data: any | null): void;
-
 	/**
 	 * Sends an event to a widget, propagating the event to parent widgets
 	 * if the event remains unhandled.
@@ -70613,7 +70401,6 @@ declare namespace imports.gi.Gtk {
 	 * @param event an event
 	 */
 	function propagate_event(widget: Widget, event: Gdk.Event): void;
-
 	/**
 	 * Adds a file to the list of files to be parsed at the
 	 * end of gtk_init().
@@ -70621,7 +70408,6 @@ declare namespace imports.gi.Gtk {
 	 *    is not absolute, it is searched in the current directory.
 	 */
 	function rc_add_default_file(filename: string): void;
-
 	/**
 	 * Searches for a theme engine in the GTK+ search path. This function
 	 * is not useful for applications and should not be used.
@@ -70630,7 +70416,6 @@ declare namespace imports.gi.Gtk {
 	 *   freed with {@link G.free}), otherwise %NULL.
 	 */
 	function rc_find_module_in_path(module_file: string): string;
-
 	/**
 	 * Looks up a file in pixmap path for the specified {@link Settings}.
 	 * If the file is not found, it outputs a warning message using
@@ -70642,7 +70427,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns the filename.
 	 */
 	function rc_find_pixmap_in_path(settings: Settings, scanner: GLib.Scanner, pixmap_file: string): string;
-
 	/**
 	 * Retrieves the current list of RC files that will be parsed
 	 * at the end of gtk_init().
@@ -70652,7 +70436,6 @@ declare namespace imports.gi.Gtk {
 	 *     to store this information, you should make a copy.
 	 */
 	function rc_get_default_files(): string[];
-
 	/**
 	 * Obtains the path to the IM modules file. See the documentation
 	 * of the `GTK_IM_MODULE_FILE`
@@ -70661,7 +70444,6 @@ declare namespace imports.gi.Gtk {
 	 *    name of the file listing the IM modules available for loading
 	 */
 	function rc_get_im_module_file(): string;
-
 	/**
 	 * Obtains the path in which to look for IM modules. See the documentation
 	 * of the `GTK_PATH`
@@ -70672,7 +70454,6 @@ declare namespace imports.gi.Gtk {
 	 *    path in which to look for IM modules.
 	 */
 	function rc_get_im_module_path(): string;
-
 	/**
 	 * Returns a directory in which GTK+ looks for theme engines.
 	 * For full information about the search for theme engines,
@@ -70680,7 +70461,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns the directory. (Must be freed with {@link G.free})
 	 */
 	function rc_get_module_dir(): string;
-
 	/**
 	 * Finds all matching RC styles for a given widget,
 	 * composites them together, and then creates a
@@ -70694,7 +70474,6 @@ declare namespace imports.gi.Gtk {
 	 *   you should add a reference yourself.
 	 */
 	function rc_get_style(widget: Widget): Style;
-
 	/**
 	 * Creates up a {@link Style} from styles defined in a RC file by providing
 	 * the raw components used in matching. This function may be useful
@@ -70725,7 +70504,6 @@ declare namespace imports.gi.Gtk {
 	 *     keep a reference to it.
 	 */
 	function rc_get_style_by_paths(settings: Settings, widget_path: string | null, class_path: string | null, type: GObject.Type): Style | null;
-
 	/**
 	 * Returns the standard directory in which themes should
 	 * be installed. (GTK+ does not actually use this directory
@@ -70733,14 +70511,12 @@ declare namespace imports.gi.Gtk {
 	 * @returns The directory (must be freed with {@link G.free}).
 	 */
 	function rc_get_theme_dir(): string;
-
 	/**
 	 * Parses a given resource file.
 	 * @param filename the filename of a file to parse. If #filename is not absolute, it
 	 *  is searched in the current directory.
 	 */
 	function rc_parse(filename: string): void;
-
 	/**
 	 * Parses a color in the format expected
 	 * in a RC file.
@@ -70755,7 +70531,6 @@ declare namespace imports.gi.Gtk {
 	 *     the result
 	 */
 	function rc_parse_color(scanner: GLib.Scanner): [ number, Gdk.Color ];
-
 	/**
 	 * Parses a color in the format expected
 	 * in a RC file. If #style is not %NULL, it will be consulted to resolve
@@ -70769,7 +70544,6 @@ declare namespace imports.gi.Gtk {
 	 *     the result
 	 */
 	function rc_parse_color_full(scanner: GLib.Scanner, style: RcStyle | null): [ number, Gdk.Color ];
-
 	/**
 	 * Parses a {@link PathPriorityType} variable from the format expected
 	 * in a RC file.
@@ -70780,7 +70554,6 @@ declare namespace imports.gi.Gtk {
 	 *   that was expected but not found.
 	 */
 	function rc_parse_priority(scanner: GLib.Scanner, priority: PathPriorityType): number;
-
 	/**
 	 * Parses a {@link StateType} variable from the format expected
 	 * in a RC file.
@@ -70792,13 +70565,11 @@ declare namespace imports.gi.Gtk {
 	 *  store the result.
 	 */
 	function rc_parse_state(scanner: GLib.Scanner): [ number, StateType ];
-
 	/**
 	 * Parses resource information directly from a string.
 	 * @param rc_string a string to parse.
 	 */
 	function rc_parse_string(rc_string: string): void;
-
 	/**
 	 * A {@link RcPropertyParser} for use with {@link Gtk.Settings.install_property_parser}
 	 * or gtk_widget_class_install_style_property_parser() which parses
@@ -70812,7 +70583,6 @@ declare namespace imports.gi.Gtk {
 	 * has been set to the resulting {@link Border}.
 	 */
 	function rc_property_parse_border(pspec: GObject.ParamSpec, gstring: GLib.String, property_value: GObject.Value): boolean;
-
 	/**
 	 * A {@link RcPropertyParser} for use with {@link Gtk.Settings.install_property_parser}
 	 * or gtk_widget_class_install_style_property_parser() which parses a
@@ -70827,7 +70597,6 @@ declare namespace imports.gi.Gtk {
 	 * has been set to the resulting #GdkColor.
 	 */
 	function rc_property_parse_color(pspec: GObject.ParamSpec, gstring: GLib.String, property_value: GObject.Value): boolean;
-
 	/**
 	 * A {@link RcPropertyParser} for use with {@link Gtk.Settings.install_property_parser}
 	 * or gtk_widget_class_install_style_property_parser() which parses a single
@@ -70843,7 +70612,6 @@ declare namespace imports.gi.Gtk {
 	 * has been set to the resulting #GEnumValue.
 	 */
 	function rc_property_parse_enum(pspec: GObject.ParamSpec, gstring: GLib.String, property_value: GObject.Value): boolean;
-
 	/**
 	 * A {@link RcPropertyParser} for use with {@link Gtk.Settings.install_property_parser}
 	 * or gtk_widget_class_install_style_property_parser() which parses flags.
@@ -70858,7 +70626,6 @@ declare namespace imports.gi.Gtk {
 	 * has been set to the resulting flags value.
 	 */
 	function rc_property_parse_flags(pspec: GObject.ParamSpec, gstring: GLib.String, property_value: GObject.Value): boolean;
-
 	/**
 	 * A {@link RcPropertyParser} for use with {@link Gtk.Settings.install_property_parser}
 	 * or gtk_widget_class_install_style_property_parser() which parses a
@@ -70871,7 +70638,6 @@ declare namespace imports.gi.Gtk {
 	 * has been set to the resulting {@link Requisition}.
 	 */
 	function rc_property_parse_requisition(pspec: GObject.ParamSpec, gstring: GLib.String, property_value: GObject.Value): boolean;
-
 	/**
 	 * If the modification time on any previously read file for the
 	 * default {@link Settings} has changed, discard all style information
@@ -70879,7 +70645,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE if the files were reread.
 	 */
 	function rc_reparse_all(): boolean;
-
 	/**
 	 * If the modification time on any previously read file
 	 * for the given {@link Settings} has changed, discard all style information
@@ -70889,7 +70654,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE if the files were reread.
 	 */
 	function rc_reparse_all_for_settings(settings: Settings, force_load: boolean): boolean;
-
 	/**
 	 * This function recomputes the styles for all widgets that use a
 	 * particular {@link Settings} object. (There is one #GtkSettings object
@@ -70904,9 +70668,7 @@ declare namespace imports.gi.Gtk {
 	 * @param settings a {@link Settings}
 	 */
 	function rc_reset_styles(settings: Settings): void;
-
 	function rc_scanner_new(): GLib.Scanner;
-
 	/**
 	 * Sets the list of files that GTK+ will read at the
 	 * end of gtk_init().
@@ -70914,11 +70676,8 @@ declare namespace imports.gi.Gtk {
 	 *     %NULL-terminated list of filenames.
 	 */
 	function rc_set_default_files(filenames: string[]): void;
-
 	function recent_chooser_error_quark(): GLib.Quark;
-
 	function recent_manager_error_quark(): GLib.Quark;
-
 	/**
 	 * Renders an activity indicator (such as in {@link Spinner}).
 	 * The state %GTK_STATE_FLAG_CHECKED determines whether there is
@@ -70931,7 +70690,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height rectangle height
 	 */
 	function render_activity(context: StyleContext, cr: cairo.Context, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Renders an arrow pointing to #angle.
 	 * 
@@ -70946,7 +70704,6 @@ declare namespace imports.gi.Gtk {
 	 * @param size square side for render area
 	 */
 	function render_arrow(context: StyleContext, cr: cairo.Context, angle: number, x: number, y: number, size: number): void;
-
 	/**
 	 * Renders the background of an element.
 	 * 
@@ -70962,7 +70719,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height rectangle height
 	 */
 	function render_background(context: StyleContext, cr: cairo.Context, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Returns the area that will be affected (i.e. drawn to) when
 	 * calling {@link Gtk.render.background} for the given #context and
@@ -70975,7 +70731,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns return location for the clip
 	 */
 	function render_background_get_clip(context: StyleContext, x: number, y: number, width: number, height: number): Gdk.Rectangle;
-
 	/**
 	 * Renders a checkmark (as in a {@link CheckButton}).
 	 * 
@@ -70994,7 +70749,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height rectangle height
 	 */
 	function render_check(context: StyleContext, cr: cairo.Context, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Renders an expander (as used in {@link TreeView} and #GtkExpander) in the area
 	 * defined by #x, #y, #width, #height. The state %GTK_STATE_FLAG_CHECKED
@@ -71011,7 +70765,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height rectangle height
 	 */
 	function render_expander(context: StyleContext, cr: cairo.Context, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Renders a extension (as in a {@link Notebook} tab) in the rectangle
 	 * defined by #x, #y, #width, #height. The side where the extension
@@ -71029,7 +70782,6 @@ declare namespace imports.gi.Gtk {
 	 * @param gap_side side where the gap is
 	 */
 	function render_extension(context: StyleContext, cr: cairo.Context, x: number, y: number, width: number, height: number, gap_side: PositionType): void;
-
 	/**
 	 * Renders a focus indicator on the rectangle determined by #x, #y, #width, #height.
 	 * 
@@ -71044,7 +70796,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height rectangle height
 	 */
 	function render_focus(context: StyleContext, cr: cairo.Context, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Renders a frame around the rectangle defined by #x, #y, #width, #height.
 	 * 
@@ -71060,7 +70811,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height rectangle height
 	 */
 	function render_frame(context: StyleContext, cr: cairo.Context, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Renders a frame around the rectangle defined by (#x, #y, #width, #height),
 	 * leaving a gap on one side. #xy0_gap and #xy1_gap will mean X coordinates
@@ -71081,7 +70831,6 @@ declare namespace imports.gi.Gtk {
 	 * @param xy1_gap end coordinate (X or Y depending on #gap_side) for the gap
 	 */
 	function render_frame_gap(context: StyleContext, cr: cairo.Context, x: number, y: number, width: number, height: number, gap_side: PositionType, xy0_gap: number, xy1_gap: number): void;
-
 	/**
 	 * Renders a handle (as in {@link HandleBox}, #GtkPaned and
 	 * #GtkWindow’s resize grip), in the rectangle
@@ -71098,7 +70847,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height rectangle height
 	 */
 	function render_handle(context: StyleContext, cr: cairo.Context, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Renders the icon in #pixbuf at the specified #x and #y coordinates.
 	 * 
@@ -71115,7 +70863,6 @@ declare namespace imports.gi.Gtk {
 	 * @param y Y position for the #pixbuf
 	 */
 	function render_icon(context: StyleContext, cr: cairo.Context, pixbuf: GdkPixbuf.Pixbuf, x: number, y: number): void;
-
 	/**
 	 * Renders the icon specified by #source at the given #size, returning the result
 	 * in a pixbuf.
@@ -71127,7 +70874,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a newly-created #GdkPixbuf containing the rendered icon
 	 */
 	function render_icon_pixbuf(context: StyleContext, source: IconSource, size: number): GdkPixbuf.Pixbuf;
-
 	/**
 	 * Renders the icon in #surface at the specified #x and #y coordinates.
 	 * @param context a {@link StyleContext}
@@ -71137,7 +70883,6 @@ declare namespace imports.gi.Gtk {
 	 * @param y Y position for the #incon
 	 */
 	function render_icon_surface(context: StyleContext, cr: cairo.Context, surface: cairo.Surface, x: number, y: number): void;
-
 	/**
 	 * Draws a text caret on #cr at the specified index of #layout.
 	 * @param context a {@link StyleContext}
@@ -71149,7 +70894,6 @@ declare namespace imports.gi.Gtk {
 	 * @param direction the #PangoDirection of the text
 	 */
 	function render_insertion_cursor(context: StyleContext, cr: cairo.Context, x: number, y: number, layout: Pango.Layout, index: number, direction: Pango.Direction): void;
-
 	/**
 	 * Renders #layout on the coordinates #x, #y
 	 * @param context a {@link StyleContext}
@@ -71159,7 +70903,6 @@ declare namespace imports.gi.Gtk {
 	 * @param layout the #PangoLayout to render
 	 */
 	function render_layout(context: StyleContext, cr: cairo.Context, x: number, y: number, layout: Pango.Layout): void;
-
 	/**
 	 * Renders a line from (x0, y0) to (x1, y1).
 	 * @param context a {@link StyleContext}
@@ -71170,7 +70913,6 @@ declare namespace imports.gi.Gtk {
 	 * @param y1 Y coordinate for the end of the line
 	 */
 	function render_line(context: StyleContext, cr: cairo.Context, x0: number, y0: number, x1: number, y1: number): void;
-
 	/**
 	 * Renders an option mark (as in a {@link RadioButton}), the %GTK_STATE_FLAG_CHECKED
 	 * state will determine whether the option is on or off, and
@@ -71187,7 +70929,6 @@ declare namespace imports.gi.Gtk {
 	 * @param height rectangle height
 	 */
 	function render_option(context: StyleContext, cr: cairo.Context, x: number, y: number, width: number, height: number): void;
-
 	/**
 	 * Renders a slider (as in {@link Scale}) in the rectangle defined by #x, #y,
 	 * #width, #height. #orientation defines whether the slider is vertical
@@ -71205,7 +70946,6 @@ declare namespace imports.gi.Gtk {
 	 * @param orientation orientation of the slider
 	 */
 	function render_slider(context: StyleContext, cr: cairo.Context, x: number, y: number, width: number, height: number, orientation: Orientation): void;
-
 	/**
 	 * Converts a color from RGB space to HSV.
 	 * 
@@ -71221,7 +70961,6 @@ declare namespace imports.gi.Gtk {
 	 * Return value for the value component
 	 */
 	function rgb_to_hsv(r: number, g: number, b: number): [ h: number, s: number, v: number ];
-
 	/**
 	 * Appends a specified target to the list of supported targets for a
 	 * given widget and selection.
@@ -71231,7 +70970,6 @@ declare namespace imports.gi.Gtk {
 	 * @param info A unsigned integer which will be passed back to the application.
 	 */
 	function selection_add_target(widget: Widget, selection: Gdk.Atom, target: Gdk.Atom, info: number): void;
-
 	/**
 	 * Prepends a table of targets to the list of supported targets
 	 * for a given widget and selection.
@@ -71241,7 +70979,6 @@ declare namespace imports.gi.Gtk {
 	 * @param ntargets number of entries in #targets
 	 */
 	function selection_add_targets(widget: Widget, selection: Gdk.Atom, targets: TargetEntry[], ntargets: number): void;
-
 	/**
 	 * Remove all targets registered for the given selection for the
 	 * widget.
@@ -71249,7 +70986,6 @@ declare namespace imports.gi.Gtk {
 	 * @param selection an atom representing a selection
 	 */
 	function selection_clear_targets(widget: Widget, selection: Gdk.Atom): void;
-
 	/**
 	 * Requests the contents of a selection. When received,
 	 * a “selection-received” signal will be generated.
@@ -71263,7 +70999,6 @@ declare namespace imports.gi.Gtk {
 	 *          this widget).
 	 */
 	function selection_convert(widget: Widget, selection: Gdk.Atom, target: Gdk.Atom, time_: number): boolean;
-
 	/**
 	 * Claims ownership of a given selection for a particular widget,
 	 * or, if #widget is %NULL, release ownership of the selection.
@@ -71273,7 +71008,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE if the operation succeeded
 	 */
 	function selection_owner_set(widget: Widget | null, selection: Gdk.Atom, time_: number): boolean;
-
 	/**
 	 * Claim ownership of a given selection for a particular widget, or,
 	 * if #widget is %NULL, release ownership of the selection.
@@ -71284,7 +71018,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns TRUE if the operation succeeded
 	 */
 	function selection_owner_set_for_display(display: Gdk.Display, widget: Widget | null, selection: Gdk.Atom, time_: number): boolean;
-
 	/**
 	 * Removes all handlers and unsets ownership of all
 	 * selections for a widget. Called when widget is being
@@ -71293,13 +71026,11 @@ declare namespace imports.gi.Gtk {
 	 * @param widget a {@link Widget}
 	 */
 	function selection_remove_all(widget: Widget): void;
-
 	/**
 	 * Sets the GTK+ debug flags.
 	 * @param flags
 	 */
 	function set_debug_flags(flags: number): void;
-
 	/**
 	 * This is a convenience function for showing an application’s about box.
 	 * The constructed dialog is associated with the parent window and
@@ -71308,7 +71039,6 @@ declare namespace imports.gi.Gtk {
 	 * @param first_property_name the name of the first property
 	 */
 	function show_about_dialog(parent: Window | null, first_property_name: string): void;
-
 	/**
 	 * A convenience function for launching the default application
 	 * to show the uri. Like {@link Gtk.show.uri_on_window}, but takes a screen
@@ -71324,7 +71054,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE on success, %FALSE on error
 	 */
 	function show_uri(screen: Gdk.Screen | null, uri: string, timestamp: number): boolean;
-
 	/**
 	 * This is a convenience function for launching the default application
 	 * to show the uri. The uri must be of a form understood by GIO (i.e. you
@@ -71347,7 +71076,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE on success, %FALSE on error
 	 */
 	function show_uri_on_window(parent: Window | null, uri: string, timestamp: number): boolean;
-
 	/**
 	 * Registers each of the stock items in #items. If an item already
 	 * exists with the same stock ID as one of the #items, the old item
@@ -71359,7 +71087,6 @@ declare namespace imports.gi.Gtk {
 	 * @param n_items number of {@link StockItem} in #items
 	 */
 	function stock_add(items: StockItem[], n_items: number): void;
-
 	/**
 	 * Same as {@link Gtk.stock.add}, but doesn’t copy #items, so
 	 * #items must persist until application exit.
@@ -71367,7 +71094,6 @@ declare namespace imports.gi.Gtk {
 	 * @param n_items number of items
 	 */
 	function stock_add_static(items: StockItem[], n_items: number): void;
-
 	/**
 	 * Retrieves a list of all known stock IDs added to a {@link IconFactory}
 	 * or registered with {@link Gtk.stock.add}. The list must be freed with g_slist_free(),
@@ -71375,7 +71101,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a list of known stock IDs
 	 */
 	function stock_list_ids(): string[];
-
 	/**
 	 * Fills #item with the registered values for #stock_id, returning %TRUE
 	 * if #stock_id was known.
@@ -71385,7 +71110,6 @@ declare namespace imports.gi.Gtk {
 	 * stock item to initialize with values
 	 */
 	function stock_lookup(stock_id: string): [ boolean, StockItem ];
-
 	/**
 	 * Sets a function to be used for translating the #label of
 	 * a stock item.
@@ -71428,7 +71152,6 @@ declare namespace imports.gi.Gtk {
 	 *   no longer needed
 	 */
 	function stock_set_translate_func(domain: string, func: TranslateFunc, data: any | null, notify: GLib.DestroyNotify): void;
-
 	/**
 	 * This function frees a target table as returned by
 	 * {@link Gtk.target.table_new_from_list}
@@ -71436,7 +71159,6 @@ declare namespace imports.gi.Gtk {
 	 * @param n_targets the number of entries in the array
 	 */
 	function target_table_free(targets: TargetEntry[], n_targets: number): void;
-
 	/**
 	 * This function creates an {@link TargetEntry} array that contains the
 	 * same targets as the passed %list. The returned table is newly
@@ -71448,7 +71170,6 @@ declare namespace imports.gi.Gtk {
 	 * return location for the number ot targets in the table
 	 */
 	function target_table_new_from_list(list: TargetList): [ TargetEntry[], number ];
-
 	/**
 	 * Determines if any of the targets in #targets can be used to
 	 * provide a #GdkPixbuf.
@@ -71460,7 +71181,6 @@ declare namespace imports.gi.Gtk {
 	 *   otherwise %FALSE.
 	 */
 	function targets_include_image(targets: Gdk.Atom[], n_targets: number, writable: boolean): boolean;
-
 	/**
 	 * Determines if any of the targets in #targets can be used to
 	 * provide rich text.
@@ -71471,7 +71191,6 @@ declare namespace imports.gi.Gtk {
 	 *               otherwise %FALSE.
 	 */
 	function targets_include_rich_text(targets: Gdk.Atom[], n_targets: number, buffer: TextBuffer): boolean;
-
 	/**
 	 * Determines if any of the targets in #targets can be used to
 	 * provide text.
@@ -71481,7 +71200,6 @@ declare namespace imports.gi.Gtk {
 	 *   otherwise %FALSE.
 	 */
 	function targets_include_text(targets: Gdk.Atom[], n_targets: number): boolean;
-
 	/**
 	 * Determines if any of the targets in #targets can be used to
 	 * provide an uri list.
@@ -71491,7 +71209,6 @@ declare namespace imports.gi.Gtk {
 	 *   otherwise %FALSE.
 	 */
 	function targets_include_uri(targets: Gdk.Atom[], n_targets: number): boolean;
-
 	/**
 	 * Create a simple window with window title #window_title and
 	 * text contents #dialog_text.
@@ -71502,7 +71219,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a widget pointer to the newly created GtkWindow.
 	 */
 	function test_create_simple_window(window_title: string, dialog_text: string): Widget;
-
 	/**
 	 * This function wraps {@link GObject.new} for widget types.
 	 * It’ll automatically show all created non window widgets, also
@@ -71513,7 +71229,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a newly created widget.
 	 */
 	function test_create_widget(widget_type: GObject.Type, first_property_name: string | null): Widget;
-
 	/**
 	 * Create a window with window title #window_title, text contents #dialog_text,
 	 * and a number of buttons, according to the paired argument list given
@@ -71530,7 +71245,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a widget pointer to the newly created GtkWindow.
 	 */
 	function test_display_button_window(window_title: string, dialog_text: string): Widget;
-
 	/**
 	 * This function will search #widget and all its descendants for a GtkLabel
 	 * widget with a text string matching #label_pattern.
@@ -71544,7 +71258,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a GtkLabel widget if any is found.
 	 */
 	function test_find_label(widget: Widget, label_pattern: string): Widget;
-
 	/**
 	 * This function will search siblings of #base_widget and siblings of its
 	 * ancestors for all widgets matching #widget_type.
@@ -71558,7 +71271,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a widget of type #widget_type if any is found.
 	 */
 	function test_find_sibling(base_widget: Widget, widget_type: GObject.Type): Widget;
-
 	/**
 	 * This function will search the descendants of #widget for a widget
 	 * of type #widget_type that has a label matching #label_pattern next
@@ -71573,7 +71285,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns a valid widget if any is found or %NULL.
 	 */
 	function test_find_widget(widget: Widget, label_pattern: string, widget_type: GObject.Type): Widget | null;
-
 	/**
 	 * This function is used to initialize a GTK+ test program.
 	 * 
@@ -71587,7 +71298,6 @@ declare namespace imports.gi.Gtk {
 	 * processed and stripped from #argc and #argv.
 	 */
 	function test_init(): void;
-
 	/**
 	 * Return the type ids that have been registered after
 	 * calling {@link Gtk.test.register_all_types}.
@@ -71597,14 +71307,12 @@ declare namespace imports.gi.Gtk {
 	 * location to store number of types
 	 */
 	function test_list_all_types(): [ GObject.Type[], number ];
-
 	/**
 	 * Force registration of all core Gtk+ and Gdk object types.
 	 * This allowes to refer to any of those object types via
 	 * {@link G.type_from_name} after calling this function.
 	 */
 	function test_register_all_types(): void;
-
 	/**
 	 * Retrive the literal adjustment value for GtkRange based
 	 * widgets and spin buttons. Note that the value returned by
@@ -71615,7 +71323,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns gtk_adjustment_get_value (adjustment) for an adjustment belonging to #widget.
 	 */
 	function test_slider_get_value(widget: Widget): number;
-
 	/**
 	 * This function will adjust the slider position of all GtkRange
 	 * based widgets, such as scrollbars or scales, it’ll also adjust
@@ -71626,7 +71333,6 @@ declare namespace imports.gi.Gtk {
 	 * @param percentage value between 0 and 100.
 	 */
 	function test_slider_set_perc(widget: Widget, percentage: number): void;
-
 	/**
 	 * This function will generate a #button click in the upwards or downwards
 	 * spin button arrow areas, usually leading to an increase or decrease of
@@ -71637,7 +71343,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns whether all actions neccessary for the button click simulation were carried out successfully.
 	 */
 	function test_spin_button_click(spinner: SpinButton, button: number, upwards: boolean): boolean;
-
 	/**
 	 * Retrive the text string of #widget if it is a GtkLabel,
 	 * GtkEditable (entry and text widgets) or GtkTextView.
@@ -71645,7 +71350,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns new 0-terminated C string, needs to be released with {@link G.free}.
 	 */
 	function test_text_get(widget: Widget): string;
-
 	/**
 	 * Set the text string of #widget to #string if it is a GtkLabel,
 	 * GtkEditable (entry and text widgets) or GtkTextView.
@@ -71653,7 +71357,6 @@ declare namespace imports.gi.Gtk {
 	 * @param string a 0-terminated C string
 	 */
 	function test_text_set(widget: Widget, string: string): void;
-
 	/**
 	 * This function will generate a #button click (button press and button
 	 * release event) in the middle of the first GdkWindow found that belongs
@@ -71670,7 +71373,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns whether all actions neccessary for the button click simulation were carried out successfully.
 	 */
 	function test_widget_click(widget: Widget, button: number, modifiers: Gdk.ModifierType): boolean;
-
 	/**
 	 * This function will generate keyboard press and release events in
 	 * the middle of the first GdkWindow found that belongs to #widget.
@@ -71686,7 +71388,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns whether all actions neccessary for the key event simulation were carried out successfully.
 	 */
 	function test_widget_send_key(widget: Widget, keyval: number, modifiers: Gdk.ModifierType): boolean;
-
 	/**
 	 * Enters the main loop and waits for #widget to be “drawn”. In this
 	 * context that means it waits for the frame clock of #widget to have
@@ -71698,7 +71399,6 @@ declare namespace imports.gi.Gtk {
 	 * @param widget the widget to wait for
 	 */
 	function test_widget_wait_for_draw(widget: Widget): void;
-
 	/**
 	 * Obtains a #tree_model and #path from selection data of target type
 	 * %GTK_TREE_MODEL_ROW. Normally called from a drag_data_received handler.
@@ -71718,7 +71418,6 @@ declare namespace imports.gi.Gtk {
 	 * row in #tree_model
 	 */
 	function tree_get_row_drag_data(selection_data: SelectionData): [ boolean, TreeModel | null, TreePath | null ];
-
 	/**
 	 * Lets a set of row reference created by
 	 * {@link Gtk.TreeRowReference.new_proxy} know that the
@@ -71727,7 +71426,6 @@ declare namespace imports.gi.Gtk {
 	 * @param path the path position that was deleted
 	 */
 	function tree_row_reference_deleted(proxy: GObject.Object, path: TreePath): void;
-
 	/**
 	 * Lets a set of row reference created by
 	 * {@link Gtk.TreeRowReference.new_proxy} know that the
@@ -71736,7 +71434,6 @@ declare namespace imports.gi.Gtk {
 	 * @param path the row position that was inserted
 	 */
 	function tree_row_reference_inserted(proxy: GObject.Object, path: TreePath): void;
-
 	/**
 	 * Lets a set of row reference created by
 	 * {@link Gtk.TreeRowReference.new_proxy} know that the
@@ -71747,7 +71444,6 @@ declare namespace imports.gi.Gtk {
 	 * @param new_order the new order of rows
 	 */
 	function tree_row_reference_reordered(proxy: GObject.Object, path: TreePath, iter: TreeIter, new_order: number[]): void;
-
 	/**
 	 * Sets selection data of target type %GTK_TREE_MODEL_ROW. Normally used
 	 * in a drag_data_get handler.
@@ -71757,7 +71453,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE if the {@link SelectionData} had the proper target type to allow us to set a tree row
 	 */
 	function tree_set_row_drag_data(selection_data: SelectionData, tree_model: TreeModel, path: TreePath): boolean;
-
 	/**
 	 * All this function does it to return %TRUE.
 	 * 
@@ -71803,7 +71498,6 @@ declare namespace imports.gi.Gtk {
 	 * @returns %TRUE
 	 */
 	// function true(): boolean;
-
 	/**
 	 * Like {@link Gtk.get.binary_age}, but from the headers used at
 	 * application compile time, rather than from the library linked

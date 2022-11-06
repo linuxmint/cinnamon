@@ -9301,9 +9301,7 @@ declare namespace imports.gi.WebKit2 {
 	}
 
 	function download_error_quark(): GLib.Quark;
-
 	function favicon_database_error_quark(): GLib.Quark;
-
 	/**
 	 * Returns the major version number of the WebKit library.
 	 * (e.g. in WebKit version 1.8.3 this is 1.)
@@ -9315,7 +9313,6 @@ declare namespace imports.gi.WebKit2 {
 	 * @returns the major version number of the WebKit library
 	 */
 	function get_major_version(): number;
-
 	/**
 	 * Returns the micro version number of the WebKit library.
 	 * (e.g. in WebKit version 1.8.3 this is 3.)
@@ -9327,7 +9324,6 @@ declare namespace imports.gi.WebKit2 {
 	 * @returns the micro version number of the WebKit library
 	 */
 	function get_micro_version(): number;
-
 	/**
 	 * Returns the minor version number of the WebKit library.
 	 * (e.g. in WebKit version 1.8.3 this is 8.)
@@ -9339,26 +9335,18 @@ declare namespace imports.gi.WebKit2 {
 	 * @returns the minor version number of the WebKit library
 	 */
 	function get_minor_version(): number;
-
 	function javascript_error_quark(): GLib.Quark;
-
 	/**
 	 * Get the key system for which access permission is being requested.
 	 * @param request a #WebKitMediaKeySystemPermissionRequest
 	 * @returns the key system name for #request
 	 */
 	function media_key_system_permission_get_name(request: MediaKeySystemPermissionRequest): string;
-
 	function network_error_quark(): GLib.Quark;
-
 	function plugin_error_quark(): GLib.Quark;
-
 	function policy_error_quark(): GLib.Quark;
-
 	function print_error_quark(): GLib.Quark;
-
 	function snapshot_error_quark(): GLib.Quark;
-
 	/**
 	 * Use this function to format a URI for display. The URIs used internally by
 	 * WebKit may contain percent-encoded characters or Punycode, which are not
@@ -9370,15 +9358,10 @@ declare namespace imports.gi.WebKit2 {
 	 *    case of error.
 	 */
 	function uri_for_display(uri: string): string | null;
-
 	function user_content_filter_error_quark(): GLib.Quark;
-
 	function user_media_permission_is_for_audio_device(request: UserMediaPermissionRequest): boolean;
-
 	function user_media_permission_is_for_video_device(request: UserMediaPermissionRequest): boolean;
-
 	function user_message_error_quark(): GLib.Quark;
-
 	/**
 	 * The copy clipboard command. Copies the current selection inside
 	 * a #WebKitWebView to the clipboard.

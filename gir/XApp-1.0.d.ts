@@ -1921,7 +1921,6 @@ declare namespace imports.gi.XApp {
 	 * @returns the css compatible font string or %NULL if the conversion failed.
 	 */
 	function pango_font_string_to_css(pango_font_string: string): string;
-
 	/**
 	 * Sets the icon name hint for a window manager (like muffin) to make
 	 * available when applications want to change their icons during runtime
@@ -1932,7 +1931,6 @@ declare namespace imports.gi.XApp {
 	 * @param file_name The icon path to set, or %NULL to unset.
 	 */
 	function set_window_icon_from_file(window: Gtk.Window, file_name: string | null): void;
-
 	/**
 	 * Sets the icon name hint for a window manager (like muffin) to make
 	 * available when applications want to change their icons during runtime
@@ -1945,7 +1943,6 @@ declare namespace imports.gi.XApp {
 	 * @param icon_name The icon name to set, or %NULL to unset.
 	 */
 	function set_window_icon_name(window: Gtk.Window, icon_name: string | null): void;
-
 	/**
 	 * Sets the progress hint for a window manager (like muffin) to make
 	 * available when applications want to display the application's progress
@@ -1962,7 +1959,6 @@ declare namespace imports.gi.XApp {
 	 * @param progress The value to set for progress.
 	 */
 	function set_window_progress(window: Gtk.Window, progress: number): void;
-
 	/**
 	 * Sets the progress pulse hint hint for a window manager (like muffin)
 	 * to make available when applications want to display indeterminate or
@@ -1977,7 +1973,6 @@ declare namespace imports.gi.XApp {
 	 * @param pulse Whether to have pulsing set or not.
 	 */
 	function set_window_progress_pulse(window: Gtk.Window, pulse: boolean): void;
-
 	/**
 	 * Sets the icon name hint for a window manager (like muffin) to make
 	 * available when applications want to change their icons during runtime
@@ -1989,7 +1984,6 @@ declare namespace imports.gi.XApp {
 	 * @param file_name The icon path to set, or %NULL to unset.
 	 */
 	function set_xid_icon_from_file(xid: number, file_name: string | null): void;
-
 	/**
 	 * Sets the icon name hint for a window manager (like muffin) to make
 	 * available when applications want to change their icons during runtime
@@ -2001,7 +1995,6 @@ declare namespace imports.gi.XApp {
 	 * @param icon_name The icon name to set, or %NULL to unset.
 	 */
 	function set_xid_icon_name(xid: number, icon_name: string | null): void;
-
 	/**
 	 * Sets the progress hint for a window manager (like muffin) to make
 	 * available when applications want to display the application's progress
@@ -2021,7 +2014,6 @@ declare namespace imports.gi.XApp {
 	 * @param progress The value to set for progress.
 	 */
 	function set_xid_progress(xid: number, progress: number): void;
-
 	/**
 	 * Sets the progress pulse hint hint for a window manager (like muffin)
 	 * to make available when applications want to display indeterminate or
@@ -2036,13 +2028,11 @@ declare namespace imports.gi.XApp {
 	 * @param pulse Whether to have pulsing set or not.
 	 */
 	function set_xid_progress_pulse(xid: number, pulse: boolean): void;
-
 	/**
 	 * Gets a machine-readable description of the <link linkend="gdbus-interface-org-x-StatusIcon.top_of_page">org.x.StatusIcon</link> D-Bus interface.
 	 * @returns A #GDBusInterfaceInfo. Do not free.
 	 */
 	function status_icon_interface_interface_info(): Gio.DBusInterfaceInfo;
-
 	/**
 	 * Overrides all #GObject properties in the {@link StatusIconInterface} interface for a concrete class.
 	 * The properties are overridden in the order they are defined.
@@ -2051,18 +2041,15 @@ declare namespace imports.gi.XApp {
 	 * @returns The last property id.
 	 */
 	function status_icon_interface_override_properties(klass: any, property_id_begin: number): number;
-
 	/**
 	 * Check if the Session Manager is currently in the "Running" phase.
 	 * @returns %TRUE if the session is running.
 	 */
 	function util_get_session_is_running(): boolean;
-
 	/**
 	 * Performs a check to see if on-demand mode for discrete graphics
 	 * is supported.
 	 * @returns %TRUE if supported.
 	 */
 	function util_gpu_offload_supported(): boolean;
-
 }

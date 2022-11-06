@@ -321,5 +321,4 @@ declare namespace imports.gi.cairo {
 	}
 
 	function image_surface_create(): void;
-
 }

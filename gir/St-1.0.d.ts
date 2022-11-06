@@ -10,7 +10,19 @@ declare namespace imports.gi.St {
 		step_increment: number;
 		upper: number;
 		value: number;
+		add_transition(name: string, transition: Clutter.Transition): void;
+		/**
+		 * Adjusts the adjustment using delta values from a scroll event.
+		 * You should use this instead of using {@link St.Adjustment.set_value}
+		 * as this method will tweak the values directly using the same
+		 * math as GTK+, to ensure that scrolling is consistent across
+		 * the environment.
+		 * @param delta A delta, retrieved directly from {@link Clutter.event.get_scroll_delta}
+		 *   or similar.
+		 */
+		adjust_for_scroll_event(delta: number): void;
 		clamp_page(lower: number, upper: number): void;
+		get_transition(name: string): Clutter.Transition | null;
 		get_value(): number;
 		/**
 		 * Gets all of #adjustment's values at once.
@@ -27,6 +39,7 @@ declare namespace imports.gi.St {
 		 * the page size
 		 */
 		get_values(): [ value: number, lower: number, upper: number, step_increment: number, page_increment: number, page_size: number ];
+		remove_transition(name: string): void;
 		set_value(value: number): void;
 		set_values(value: number, lower: number, upper: number, step_increment: number, page_increment: number, page_size: number): void;
 		/**
@@ -48,7 +61,7 @@ declare namespace imports.gi.St {
 
 	}
 
-	type AdjustmentInitOptionsMixin = GObject.ObjectInitOptions & 
+	type AdjustmentInitOptionsMixin = GObject.ObjectInitOptions & Clutter.AnimatableInitOptions & 
 	Pick<IAdjustment,
 		"lower" |
 		"page_increment" |
@@ -62,104 +75,13 @@ declare namespace imports.gi.St {
 	/** This construct is only for enabling class multi-inheritance,
 	 * use {@link Adjustment} instead.
 	 */
-	type AdjustmentMixin = IAdjustment & GObject.Object;
+	type AdjustmentMixin = IAdjustment & GObject.Object & Clutter.Animatable;
 
-	/**
-	 * Class for handling an interval between to values. The contents of
-	 * the {@link Adjustment} are private and should be accessed using the
-	 * public API.
-	 */
 	interface Adjustment extends AdjustmentMixin {}
 
 	class Adjustment {
 		public constructor(options?: Partial<AdjustmentInitOptions>);
 		public static new(value: number, lower: number, upper: number, step_increment: number, page_increment: number, page_size: number): Adjustment;
-	}
-
-	/** This construct is only for enabling class multi-inheritance,
-	 * use {@link BackgroundEffect} instead.
-	 */
-	interface IBackgroundEffect {
-		bumpmap: string;
-		readonly actor: Clutter.Actor;
-		readonly bg_texture: Cogl.Handle;
-		readonly bg_sub_texture: Cogl.Handle;
-		readonly bg_bumpmap: Cogl.Handle;
-		readonly bumpmap_location: string;
-		readonly pixel_step_uniform0: number;
-		readonly pixel_step_uniform1: number;
-		readonly pixel_step_uniform2: number;
-		readonly BumpTex_uniform: number;
-		readonly bump_step_uniform: number;
-		readonly bg_posx_i: number;
-		readonly bg_posy_i: number;
-		readonly bg_width_i: number;
-		readonly bg_height_i: number;
-		readonly fg_width_i: number;
-		readonly fg_height_i: number;
-		readonly bumptex_width_i: number;
-		readonly bumptex_height_i: number;
-		readonly posx_old: number;
-		readonly posy_old: number;
-		readonly width_old: number;
-		readonly height_old: number;
-		readonly pipeline0: any;
-		readonly pipeline1: any;
-		readonly pipeline2: any;
-		readonly pipeline3: any;
-		readonly pipeline4: any;
-		readonly old_time: number;
-		readonly opacity: number;
-
-		connect(signal: "notify::bumpmap", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::actor", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::bg_texture", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::bg_sub_texture", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::bg_bumpmap", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::bumpmap_location", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::pixel_step_uniform0", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::pixel_step_uniform1", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::pixel_step_uniform2", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::BumpTex_uniform", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::bump_step_uniform", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::bg_posx_i", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::bg_posy_i", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::bg_width_i", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::bg_height_i", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::fg_width_i", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::fg_height_i", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::bumptex_width_i", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::bumptex_height_i", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::posx_old", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::posy_old", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::width_old", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::height_old", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::pipeline0", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::pipeline1", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::pipeline2", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::pipeline3", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::pipeline4", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::old_time", callback: (owner: this, ...args: any) => void): number;
-		connect(signal: "notify::opacity", callback: (owner: this, ...args: any) => void): number;
-
-	}
-
-	type BackgroundEffectInitOptionsMixin = Clutter.OffscreenEffectInitOptions & 
-	Pick<IBackgroundEffect,
-		"bumpmap">;
-
-	export interface BackgroundEffectInitOptions extends BackgroundEffectInitOptionsMixin {}
-
-	/** This construct is only for enabling class multi-inheritance,
-	 * use {@link BackgroundEffect} instead.
-	 */
-	type BackgroundEffectMixin = IBackgroundEffect & Clutter.OffscreenEffect;
-
-	interface BackgroundEffect extends BackgroundEffectMixin {}
-
-	class BackgroundEffect {
-		public constructor(options?: Partial<BackgroundEffectInitOptions>);
-		public static new(): Clutter.Effect;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -340,7 +262,7 @@ declare namespace imports.gi.St {
 
 	}
 
-	type BoxLayoutInitOptionsMixin = WidgetInitOptions & Atk.ImplementorIfaceInitOptions & Clutter.AnimatableInitOptions & Clutter.ContainerInitOptions & Clutter.ScriptableInitOptions & ScrollableInitOptions & 
+	type BoxLayoutInitOptionsMixin = ViewportInitOptions & Atk.ImplementorIfaceInitOptions & Clutter.AnimatableInitOptions & Clutter.ContainerInitOptions & Clutter.ScriptableInitOptions & ScrollableInitOptions & 
 	Pick<IBoxLayout,
 		"pack_start" |
 		"vertical">;
@@ -350,7 +272,7 @@ declare namespace imports.gi.St {
 	/** This construct is only for enabling class multi-inheritance,
 	 * use {@link BoxLayout} instead.
 	 */
-	type BoxLayoutMixin = IBoxLayout & Widget & Atk.ImplementorIface & Clutter.Animatable & Clutter.Container & Clutter.Scriptable & Scrollable;
+	type BoxLayoutMixin = IBoxLayout & Viewport & Atk.ImplementorIface & Clutter.Animatable & Clutter.Container & Clutter.Scriptable & Scrollable;
 
 	/**
 	 * The contents of this structure are private and should only be accessed
@@ -808,33 +730,6 @@ declare namespace imports.gi.St {
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
-	 * use {@link IMText} instead.
-	 */
-	interface IIMText {
-		set_autoshow_im(autoshow: boolean): void;
-	}
-
-	type IMTextInitOptionsMixin = Clutter.TextInitOptions & Atk.ImplementorIfaceInitOptions & Clutter.AnimatableInitOptions & Clutter.ContainerInitOptions & Clutter.ScriptableInitOptions
-	export interface IMTextInitOptions extends IMTextInitOptionsMixin {}
-
-	/** This construct is only for enabling class multi-inheritance,
-	 * use {@link IMText} instead.
-	 */
-	type IMTextMixin = IIMText & Clutter.Text & Atk.ImplementorIface & Clutter.Animatable & Clutter.Container & Clutter.Scriptable;
-
-	interface IMText extends IMTextMixin {}
-
-	class IMText {
-		public constructor(options?: Partial<IMTextInitOptions>);
-		/**
-		 * Create a new {@link IMText} with the specified text
-		 * @param text text to set  to
-		 * @returns a new #ClutterActor
-		 */
-		public static new(text: string): Clutter.Actor;
-	}
-
-	/** This construct is only for enabling class multi-inheritance,
 	 * use {@link Icon} instead.
 	 */
 	interface IIcon {
@@ -906,6 +801,44 @@ declare namespace imports.gi.St {
 		 * @returns A newly allocated {@link Icon}
 		 */
 		public static new(): Clutter.Actor;
+	}
+
+	/** This construct is only for enabling class multi-inheritance,
+	 * use {@link ImageContent} instead.
+	 */
+	interface IImageContent {
+		preferred_height: number;
+		preferred_width: number;
+
+		connect(signal: "notify::preferred-height", callback: (owner: this, ...args: any) => void): number;
+		connect(signal: "notify::preferred-width", callback: (owner: this, ...args: any) => void): number;
+
+	}
+
+	type ImageContentInitOptionsMixin = Clutter.ImageInitOptions & Clutter.ContentInitOptions & 
+	Pick<IImageContent,
+		"preferred_height" |
+		"preferred_width">;
+
+	export interface ImageContentInitOptions extends ImageContentInitOptionsMixin {}
+
+	/** This construct is only for enabling class multi-inheritance,
+	 * use {@link ImageContent} instead.
+	 */
+	type ImageContentMixin = IImageContent & Clutter.Image & Clutter.Content;
+
+	interface ImageContent extends ImageContentMixin {}
+
+	class ImageContent {
+		public constructor(options?: Partial<ImageContentInitOptions>);
+		/**
+		 * Creates a new {@link ImageContent}, a simple content for sized images.
+		 * @param width The preferred width to be used when drawing the content
+		 * @param height The preferred width to be used when drawing the content
+		 * @returns the newly created {@link ImageContent} content
+		 *   Use {@link GObject.unref} when done.
+		 */
+		public static new_with_preferred_size(width: number, height: number): Clutter.Content;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -1073,40 +1006,59 @@ declare namespace imports.gi.St {
 		enable_auto_scrolling: boolean;
 		enable_mouse_scrolling: boolean;
 		readonly hscroll: ScrollBar;
-		hscrollbar_policy: Gtk.PolicyType;
+		hscrollbar_policy: PolicyType;
 		readonly hscrollbar_visible: boolean;
+		overlay_scrollbars: boolean;
 		readonly vscroll: ScrollBar;
-		vscrollbar_policy: Gtk.PolicyType;
+		vscrollbar_policy: PolicyType;
 		readonly vscrollbar_visible: boolean;
 		get_auto_scrolling(): boolean;
 		get_column_size(): number;
 		/**
 		 * Gets the horizontal scrollbar of the scrollbiew
-		 * @returns the horizontal {@link Scrollbar}
+		 * @returns the horizontal {@link ScrollBar}
 		 */
 		get_hscroll_bar(): ScrollBar;
 		get_mouse_scrolling(): boolean;
+		/**
+		 * Gets the value set by {@link St.ScrollView.set_overlay_scrollbars}.
+		 * @returns 
+		 */
+		get_overlay_scrollbars(): boolean;
 		get_row_size(): number;
 		/**
 		 * Gets the vertical scrollbar of the scrollbiew
-		 * @returns the vertical {@link Scrollbar}
+		 * @returns the vertical {@link ScrollBar}
 		 */
 		get_vscroll_bar(): ScrollBar;
 		set_auto_scrolling(enabled: boolean): void;
 		set_column_size(column_size: number): void;
 		set_mouse_scrolling(enabled: boolean): void;
 		/**
+		 * Sets whether scrollbars are painted on top of the content.
+		 * @param enabled Whether to enable overlay scrollbars
+		 */
+		set_overlay_scrollbars(enabled: boolean): void;
+		/**
 		 * Set the scroll policy.
 		 * @param hscroll Whether to enable horizontal scrolling
 		 * @param vscroll Whether to enable vertical scrolling
 		 */
-		set_policy(hscroll: Gtk.PolicyType, vscroll: Gtk.PolicyType): void;
+		set_policy(hscroll: PolicyType, vscroll: PolicyType): void;
 		set_row_size(row_size: number): void;
+		/**
+		 * Sets the height of the fade area area in pixels. A value of 0
+		 * disables the effect.
+		 * @param vfade_offset The length of the veritcal fade effect, in pixels.
+		 * @param hfade_offset The length of the horizontal fade effect, in pixels.
+		 */
+		update_fade_effect(vfade_offset: number, hfade_offset: number): void;
 		connect(signal: "notify::enable-auto-scrolling", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::enable-mouse-scrolling", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::hscroll", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::hscrollbar-policy", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::hscrollbar-visible", callback: (owner: this, ...args: any) => void): number;
+		connect(signal: "notify::overlay-scrollbars", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::vscroll", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::vscrollbar-policy", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::vscrollbar-visible", callback: (owner: this, ...args: any) => void): number;
@@ -1118,6 +1070,7 @@ declare namespace imports.gi.St {
 		"enable_auto_scrolling" |
 		"enable_mouse_scrolling" |
 		"hscrollbar_policy" |
+		"overlay_scrollbars" |
 		"vscrollbar_policy">;
 
 	export interface ScrollViewInitOptions extends ScrollViewInitOptionsMixin {}
@@ -1142,27 +1095,48 @@ declare namespace imports.gi.St {
 	 * use {@link ScrollViewFade} instead.
 	 */
 	interface IScrollViewFade {
-		fade_offset: number;
+		/**
+		 * Whether the faded area should extend to the edges of the {@link ScrollViewFade}.
+		 */
+		fade_edges: boolean;
+		/**
+		 * The height of area which is faded at the left and right edges of the
+		 * {@link ScrollViewFade}.
+		 */
+		hfade_offset: number;
+		/**
+		 * The height of area which is faded at the top and bottom edges of the
+		 * {@link ScrollViewFade}.
+		 */
+		vfade_offset: number;
 
-		connect(signal: "notify::fade-offset", callback: (owner: this, ...args: any) => void): number;
+		connect(signal: "notify::fade-edges", callback: (owner: this, ...args: any) => void): number;
+		connect(signal: "notify::hfade-offset", callback: (owner: this, ...args: any) => void): number;
+		connect(signal: "notify::vfade-offset", callback: (owner: this, ...args: any) => void): number;
 
 	}
 
-	type ScrollViewFadeInitOptionsMixin = Clutter.OffscreenEffectInitOptions & 
+	type ScrollViewFadeInitOptionsMixin = Clutter.ShaderEffectInitOptions & 
 	Pick<IScrollViewFade,
-		"fade_offset">;
+		"fade_edges" |
+		"hfade_offset" |
+		"vfade_offset">;
 
 	export interface ScrollViewFadeInitOptions extends ScrollViewFadeInitOptionsMixin {}
 
 	/** This construct is only for enabling class multi-inheritance,
 	 * use {@link ScrollViewFade} instead.
 	 */
-	type ScrollViewFadeMixin = IScrollViewFade & Clutter.OffscreenEffect;
+	type ScrollViewFadeMixin = IScrollViewFade & Clutter.ShaderEffect;
 
 	interface ScrollViewFade extends ScrollViewFadeMixin {}
 
 	class ScrollViewFade {
 		public constructor(options?: Partial<ScrollViewFadeInitOptions>);
+		/**
+		 * Create a new {@link ScrollViewFade}.
+		 * @returns a new {@link ScrollViewFade}
+		 */
 		public static new(): Clutter.Effect;
 	}
 
@@ -1171,8 +1145,12 @@ declare namespace imports.gi.St {
 	 */
 	interface ISettings {
 		readonly font_name: string;
+		readonly gtk_icon_theme: string;
+		readonly magnifier_active: boolean;
 
 		connect(signal: "notify::font-name", callback: (owner: this, ...args: any) => void): number;
+		connect(signal: "notify::gtk-icon-theme", callback: (owner: this, ...args: any) => void): number;
+		connect(signal: "notify::magnifier-active", callback: (owner: this, ...args: any) => void): number;
 
 	}
 
@@ -1426,6 +1404,19 @@ declare namespace imports.gi.St {
 	 */
 	interface ITextureCache {
 		/**
+		 * Create a #ClutterActor which tracks the #cairo_surface_t value of a GObject property
+		 * named by #property_name.  Unlike other methods in StTextureCache, the underlying
+		 * #CoglTexture is not shared by default with other invocations to this method.
+		 * 
+		 * If the source object is destroyed, the texture will continue to show the last
+		 * value of the property.
+		 * @param object A #GObject with a property #property_name of type #GdkPixbuf
+		 * @param property_name Name of a property
+		 * @param size
+		 * @returns A new {@link Widget}
+		 */
+		bind_cairo_surface_property(object: GObject.Object, property_name: string, size: number): Widget;
+		/**
 		 * Load an arbitrary texture, caching it.  The string chosen for #key
 		 * should be of the form "type-prefix:type-uuid".  For example,
 		 * "url:file:///usr/share/icons/hicolor/48x48/apps/firefox.png", or
@@ -1437,6 +1428,18 @@ declare namespace imports.gi.St {
 		 * @returns A newly-referenced handle to the texture
 		 */
 		load(key: string, policy: TextureCachePolicy, load: TextureCacheLoader, data: any | null): Cogl.Texture;
+		/**
+		 * Asynchronously load an image.   Initially, the returned texture will have a natural
+		 * size of zero.  At some later point, either the image will be loaded successfully
+		 * and at that point size will be negotiated, or upon an error, no image will be set.
+		 * @param file a #GFile of the image file from which to create a pixbuf
+		 * @param available_width available width for the image, can be -1 if not limited
+		 * @param available_height available height for the image, can be -1 if not limited
+		 * @param paint_scale scale factor of the display
+		 * @param resource_scale Resource scale factor
+		 * @returns A new #ClutterActor with no image loaded initially.
+		 */
+		load_file_async(file: Gio.File, available_width: number, available_height: number, paint_scale: number, resource_scale: number): Clutter.Actor;
 		/**
 		 * Synchronously load an image into a texture.  The texture will be cached
 		 * indefinitely.  On error, this function returns an empty texture and prints a warning.
@@ -1474,6 +1477,26 @@ declare namespace imports.gi.St {
 		 */
 		load_from_raw(data: number[], len: number, has_alpha: boolean, width: number, height: number, rowstride: number, size: number): Clutter.Actor;
 		/**
+		 * This function synchronously loads the given file path
+		 * into a cairo surface.  On error, a warning is emitted
+		 * and %NULL is returned.
+		 * @param file A #GFile in supported image format
+		 * @param paint_scale Scale factor of the display
+		 * @param resource_scale Resource scale factor
+		 * @returns a new #cairo_surface_t
+		 */
+		load_gfile_to_cairo_surface(file: Gio.File, paint_scale: number, resource_scale: number): cairo.Surface;
+		/**
+		 * This function synchronously loads the given file path
+		 * into a COGL texture.  On error, a warning is emitted
+		 * and %NULL is returned.
+		 * @param file A #GFile in supported image format
+		 * @param paint_scale Scale factor of the display
+		 * @param resource_scale Resource scale factor
+		 * @returns a new #CoglTexture
+		 */
+		load_gfile_to_cogl_texture(file: Gio.File, paint_scale: number, resource_scale: number): Cogl.Texture;
+		/**
 		 * This method returns a new #ClutterActor for a given #GIcon. If the
 		 * icon isn't loaded already, the texture will be filled
 		 * asynchronously.
@@ -1485,6 +1508,19 @@ declare namespace imports.gi.St {
 		 * if none was found.
 		 */
 		load_gicon(theme_node: ThemeNode | null, icon: Gio.Icon, size: number): Clutter.Actor;
+		/**
+		 * This method returns a new #ClutterActor for a given #GIcon. If the
+		 * icon isn't loaded already, the texture will be filled
+		 * asynchronously.
+		 * @param theme_node The {@link ThemeNode} to use for colors, or NULL
+		 *                            if the icon must not be recolored
+		 * @param icon the #GIcon to load
+		 * @param size Size of themed
+		 * @param paint_scale Scale factor of display
+		 * @param resource_scale Resource scale factor
+		 * @returns A new #ClutterActor for the icon, or %NULL if not found
+		 */
+		load_gicon_with_scale(theme_node: ThemeNode | null, icon: Gio.Icon, size: number, paint_scale: number, resource_scale: number): Clutter.Actor;
 		/**
 		 * Load a themed icon into a texture. See the {@link IconType} documentation
 		 * for an explanation of how #icon_type affects the returned icon. The
@@ -1501,12 +1537,17 @@ declare namespace imports.gi.St {
 		 * mostly useful for situations where you want to load an image asynchronously, but don't
 		 * want the actor back until it's fully loaded and sized (as opposed to load_uri_async,
 		 * which provides no callback function, and leaves size negotiation to its own devices.)
+		 * 
+		 * The image's aspect ratio is always maintained and if both width and height are > 0
+		 * the image will never exceed these dimensions.
 		 * @param path Path to a filename
 		 * @param width Width in pixels (or -1 to leave unconstrained)
 		 * @param height Height in pixels (or -1 to leave unconstrained)
 		 * @param callback Function called when the image is loaded (required)
+		 * @returns A handle that can be used to verify the actor issued in the callback
+		 * is the expected one.
 		 */
-		load_image_from_file_async(path: string, width: number, height: number, callback: TextureCacheLoadImageCallback): void;
+		load_image_from_file_async(path: string, width: number, height: number, callback: TextureCacheLoadImageCallback): number;
 		/**
 		 * This function reads a single image file which contains multiple images internally.
 		 * The image file will be divided using #grid_width and #grid_height;
@@ -1520,6 +1561,20 @@ declare namespace imports.gi.St {
 		 */
 		load_sliced_image(path: string, grid_width: number, grid_height: number, load_callback: GLib.Func | null): Clutter.Actor;
 		/**
+		 * This function reads a single image file which contains multiple images internally.
+		 * The image file will be divided using #grid_width and #grid_height;
+		 * note that the dimensions of the image loaded from #path
+		 * should be a multiple of the specified grid dimensions.
+		 * @param file A #GFile
+		 * @param grid_width Width in pixels
+		 * @param grid_height Height in pixels
+		 * @param paint_scale Scale factor of the display
+		 * @param resource_scale
+		 * @param load_callback Function called when the image is loaded, or %NULL
+		 * @returns A new #ClutterActor
+		 */
+		load_sliced_image_file(file: Gio.File, grid_width: number, grid_height: number, paint_scale: number, resource_scale: number, load_callback: GLib.Func | null): Clutter.Actor;
+		/**
 		 * Asynchronously load an image.   Initially, the returned texture will have a natural
 		 * size of zero.  At some later point, either the image will be loaded successfully
 		 * and at that point size will be negotiated, or upon an error, no image will be set.
@@ -1529,21 +1584,9 @@ declare namespace imports.gi.St {
 		 * @returns A new #ClutterActor with no image loaded initially.
 		 */
 		load_uri_async(uri: string, available_width: number, available_height: number): Clutter.Actor;
-		/**
-		 * Synchronously load an image from a uri.  The image is scaled down to fit the
-		 * available width and height imensions, but the image is never scaled up beyond
-		 * its actual size. The pixbuf is rotated according to the associated orientation
-		 * setting.
-		 * @param policy Requested lifecycle of cached data
-		 * @param uri uri of the image file from which to create a pixbuf
-		 * @param available_width available width for the image, can be -1 if not limited
-		 * @param available_height available height for the image, can be -1 if not limited
-		 * @returns A new #ClutterActor with the image file loaded if it was
-		 *               generated successfully, %NULL otherwise
-		 */
-		load_uri_sync(policy: TextureCachePolicy, uri: string, available_width: number, available_height: number): Clutter.Actor;
+		rescan_icon_theme(): boolean;
 		connect(signal: "icon-theme-changed", callback: (owner: this) => void): number;
-		connect(signal: "texture-file-changed", callback: (owner: this, object: string) => void): number;
+		connect(signal: "texture-file-changed", callback: (owner: this, object: Gio.File) => void): number;
 
 	}
 
@@ -1709,6 +1752,7 @@ declare namespace imports.gi.St {
 		 * @returns the singleton theme context for the stage
 		 */
 		public static get_for_stage(stage: Clutter.Stage): ThemeContext;
+		public static get_scale_for_stage(): number;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -1886,6 +1930,7 @@ declare namespace imports.gi.St {
 		get_element_id(): string;
 		get_element_type(): GObject.Type;
 		get_font(): Pango.FontDescription;
+		get_font_features(): string;
 		/**
 		 * Returns #node's foreground color.
 		 * @returns location to store the color
@@ -1904,6 +1949,7 @@ declare namespace imports.gi.St {
 		 * @returns the icon colors to use for this theme node
 		 */
 		get_icon_colors(): IconColors;
+		get_icon_style(): IconStyle;
 		/**
 		 * Generically looks up a property containing a single length value. When
 		 * specific getters (like {@link St.ThemeNode.get_border_width}) exist, they
@@ -1919,6 +1965,12 @@ declare namespace imports.gi.St {
 		 * @returns the length, in pixels, or 0 if the property was not found.
 		 */
 		get_length(property_name: string): number;
+		/**
+		 * Gets the value for the letter-spacing style property, in pixels.
+		 * @returns the value of the letter-spacing property, if
+		 *   found, or zero if such property has not been found.
+		 */
+		get_letter_spacing(): number;
 		get_margin(side: Side): number;
 		get_max_height(): number;
 		get_max_width(): number;
@@ -2074,7 +2126,7 @@ declare namespace imports.gi.St {
 		 * location to store the shadow
 		 */
 		lookup_shadow(property_name: string, inherit: boolean): [ boolean, Shadow ];
-		paint(framebuffer: any, box: Clutter.ActorBox, paint_opacity: number): void;
+		paint(framebuffer: Cogl.Framebuffer, box: Clutter.ActorBox, paint_opacity: number): void;
 		/**
 		 * Check if {@link St.ThemeNode.paint} will paint identically for #node as it does
 		 * for #other. Note that in some cases this function may return %TRUE even
@@ -2120,6 +2172,30 @@ declare namespace imports.gi.St {
 		 * @returns the theme node
 		 */
 		public static new(context: ThemeContext, parent_node: ThemeNode | null, theme: Theme | null, element_type: GObject.Type, element_id: string | null, element_class: string | null, pseudo_class: string | null, inline_style: string, important: boolean): ThemeNode;
+	}
+
+	/** This construct is only for enabling class multi-inheritance,
+	 * use {@link Viewport} instead.
+	 */
+	interface IViewport {
+
+	}
+
+	type ViewportInitOptionsMixin = WidgetInitOptions & Atk.ImplementorIfaceInitOptions & Clutter.AnimatableInitOptions & Clutter.ContainerInitOptions & Clutter.ScriptableInitOptions & ScrollableInitOptions
+	export interface ViewportInitOptions extends ViewportInitOptionsMixin {}
+
+	/** This construct is only for enabling class multi-inheritance,
+	 * use {@link Viewport} instead.
+	 */
+	type ViewportMixin = IViewport & Widget & Atk.ImplementorIface & Clutter.Animatable & Clutter.Container & Clutter.Scriptable & Scrollable;
+
+	/**
+	 * The {@link Viewport} struct contains only private data
+	 */
+	interface Viewport extends ViewportMixin {}
+
+	class Viewport {
+		public constructor(options?: Partial<ViewportInitOptions>);
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -2365,8 +2441,9 @@ declare namespace imports.gi.St {
 		 * Paint the background of the widget. This is meant to be called by
 		 * subclasses of StWiget that need to paint the background without
 		 * painting children.
+		 * @param paint_context
 		 */
-		paint_background(): void;
+		paint_background(paint_context: Clutter.PaintContext): void;
 		/**
 		 * Returns the theme node for the widget if it has already been
 		 * computed, %NULL if the widget hasn't been added to a  stage or the theme
@@ -2754,6 +2831,33 @@ declare namespace imports.gi.St {
 		public unref(): void;
 	}
 
+	export interface ShadowHelperInitOptions {}
+	interface ShadowHelper {}
+	class ShadowHelper {
+		public constructor(options?: Partial<ShadowHelperInitOptions>);
+		/**
+		 * Builds a {@link ShadowHelper} that will build a drop shadow
+		 * using #source as the mask.
+		 * @param shadow a {@link Shadow} representing the shadow properties
+		 * @returns a new {@link ShadowHelper}
+		 */
+		public static new(shadow: Shadow): ShadowHelper;
+		public copy(): ShadowHelper;
+		/**
+		 * Free resources associated with #helper.
+		 */
+		public free(): void;
+		/**
+		 * Paints the shadow associated with #helper This must only
+		 * be called from the implementation of ClutterActor::paint().
+		 * @param framebuffer a #CoglFramebuffer
+		 * @param actor_box the bounding box of the shadow
+		 * @param paint_opacity the opacity at which the shadow is painted
+		 */
+		public paint(framebuffer: Cogl.Framebuffer, actor_box: Clutter.ActorBox, paint_opacity: number): void;
+		public update(source: Clutter.Actor): void;
+	}
+
 	/** This construct is only for enabling class multi-inheritance,
 	 * use {@link Scrollable} instead.
 	 */
@@ -2818,38 +2922,24 @@ declare namespace imports.gi.St {
 		RADIAL = 3
 	}
 
-	/**
-	 * Describes what style of icon is desired in a call to
-	 * {@link St.TextureCache.load_icon_name} or st_texture_cache_load_gicon().
-	 * Use %ST_ICON_SYMBOLIC for symbolic icons (eg, for the panel and
-	 * much of the rest of Cinnamon chrome) or %ST_ICON_FULLCOLOR for a
-	 * full-color icon.
-	 * 
-	 * If you know that the requested icon is either an application icon
-	 * or a document type icon, you should use %ST_ICON_APPLICATION or
-	 * %ST_ICON_DOCUMENT, which may do a better job of selecting the
-	 * correct theme icon for those types. If you are unsure what kind of
-	 * icon you are loading, use %ST_ICON_FULLCOLOR.
-	 */
+	enum IconStyle {
+		REQUESTED = 0,
+		REGULAR = 1,
+		SYMBOLIC = 2
+	}
+
 	enum IconType {
-		/**
-		 * a symbolic (ie, mostly monochrome) icon
-		 */
 		SYMBOLIC = 0,
-		/**
-		 * a full-color icon
-		 */
 		FULLCOLOR = 1,
-		/**
-		 * a full-color icon, which is expected
-		 *   to be an application icon
-		 */
 		APPLICATION = 2,
-		/**
-		 * a full-color icon, which is expected
-		 *   to be a document (MIME type) icon
-		 */
 		DOCUMENT = 3
+	}
+
+	enum PolicyType {
+		ALWAYS = 0,
+		AUTOMATIC = 1,
+		NEVER = 2,
+		EXTERNAL = 3
 	}
 
 	enum Side {
@@ -2941,15 +3031,18 @@ declare namespace imports.gi.St {
 	}
 
 	/**
-	 * Callback from st_texture_cache_load_image_from_file_async
+	 * Callback from st_texture_cache_load_image_from_file_async. The handle should match
+	 * the one returned by _load_image_from_file_async.
 	 */
 	interface TextureCacheLoadImageCallback {
 		/**
-		 * Callback from st_texture_cache_load_image_from_file_async
+		 * Callback from st_texture_cache_load_image_from_file_async. The handle should match
+		 * the one returned by _load_image_from_file_async.
 		 * @param cache a {@link TextureCache}
+		 * @param handle the handle returned to the caller in the original call.
 		 * @param actor the actor containing the loaded image
 		 */
-		(cache: TextureCache, actor: Clutter.Actor): void;
+		(cache: TextureCache, handle: number, actor: Clutter.Actor): void;
 	}
 
 	/**
@@ -2969,44 +3062,6 @@ declare namespace imports.gi.St {
 	}
 
 	/**
-	 * Decides whether to use the newer (apparently safer)
-	 * cogl_texture_2d_new_from_data or the older cogl_texture_new_from_data
-	 * depending on if the GPU supports it.
-	 * @param width
-	 * @param height
-	 * @param flags
-	 * @param format
-	 * @param internal_format
-	 * @param rowstride
-	 * @param data
-	 * @returns 
-	 */
-	function cogl_texture_new_from_data_wrapper(width: number, height: number, flags: Cogl.TextureFlags, format: Cogl.PixelFormat, internal_format: Cogl.PixelFormat, rowstride: number, data: number): Cogl.Texture;
-
-	/**
-	 * Decides whether to use the newer (apparently safer)
-	 * cogl_texture_2d_new_from_file or the older cogl_texture_new_from_file
-	 * depending on if the GPU supports it.
-	 * @param filename
-	 * @param flags
-	 * @param internal_format
-	 * @returns 
-	 */
-	function cogl_texture_new_from_file_wrapper(filename: string, flags: Cogl.TextureFlags, internal_format: Cogl.PixelFormat): Cogl.Texture;
-
-	/**
-	 * Decides whether to use the newer (apparently safer)
-	 * cogl_texture_2d_new_with_size or the older cogl_texture_new_with_size
-	 * depending on if the GPU supports it.
-	 * @param width
-	 * @param height
-	 * @param flags
-	 * @param internal_format
-	 * @returns 
-	 */
-	function cogl_texture_new_with_size_wrapper(width: number, height: number, flags: Cogl.TextureFlags, internal_format: Cogl.PixelFormat): Cogl.Texture;
-
-	/**
 	 * Creates a string describing #actor, for use in debugging. This
 	 * includes the class name and actor name (if any), plus if #actor
 	 * is an {@link Widget}, its style class and pseudo class names.
@@ -3014,19 +3069,16 @@ declare namespace imports.gi.St {
 	 * @returns the debug name.
 	 */
 	function describe_actor(actor: Clutter.Actor): string;
-
-	function get_cogl_context(): any;
-
 	function get_slow_down_factor(): number;
-
 	/**
 	 * Set a global factor applied to all animation durations
 	 * @param factor new slow-down factor
 	 */
 	function set_slow_down_factor(factor: number): void;
-
 	const PARAM_READABLE: number;
 
 	const PARAM_READWRITE: number;
+
+	const PARAM_WRITABLE: number;
 
 }

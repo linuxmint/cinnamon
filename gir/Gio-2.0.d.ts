@@ -3028,53 +3028,6 @@ declare namespace imports.gi.Gio {
 		 */
 		is_closed(): boolean;
 		/**
-		 * Registers callbacks for exported objects at #object_path with the
-		 * D-Bus interface that is described in #interface_info.
-		 * 
-		 * Calls to functions in #vtable (and #user_data_free_func) will happen
-		 * in the
-		 * [thread-default main context][g-main-context-push-thread-default]
-		 * of the thread you are calling this method from.
-		 * 
-		 * Note that all #GVariant values passed to functions in #vtable will match
-		 * the signature given in #interface_info - if a remote caller passes
-		 * incorrect values, the `org.freedesktop.DBus.Error.InvalidArgs`
-		 * is returned to the remote caller.
-		 * 
-		 * Additionally, if the remote caller attempts to invoke methods or
-		 * access properties not mentioned in #interface_info the
-		 * `org.freedesktop.DBus.Error.UnknownMethod` resp.
-		 * `org.freedesktop.DBus.Error.InvalidArgs` errors
-		 * are returned to the caller.
-		 * 
-		 * It is considered a programming error if the
-		 * #GDBusInterfaceGetPropertyFunc function in #vtable returns a
-		 * #GVariant of incorrect type.
-		 * 
-		 * If an existing callback is already registered at #object_path and
-		 * #interface_name, then #error is set to #G_IO_ERROR_EXISTS.
-		 * 
-		 * GDBus automatically implements the standard D-Bus interfaces
-		 * org.freedesktop.DBus.Properties, org.freedesktop.DBus.Introspectable
-		 * and org.freedesktop.Peer, so you don't have to implement those for the
-		 * objects you export. You can implement org.freedesktop.DBus.Properties
-		 * yourself, e.g. to handle getting and setting of properties asynchronously.
-		 * 
-		 * Note that the reference count on #interface_info will be
-		 * incremented by 1 (unless allocated statically, e.g. if the
-		 * reference count is -1, see {@link G.dbus_interface_info_ref}) for as long
-		 * as the object is exported. Also note that #vtable will be copied.
-		 * 
-		 * See this [server][gdbus-server] for an example of how to use this method.
-		 * @param object_path the object path to register at
-		 * @param interface_info introspection data for the interface
-		 * @param vtable a #GDBusInterfaceVTable to call into or %NULL
-		 * @param user_data_free_func function to call when the object path is unregistered
-		 * @returns 0 if #error is set, otherwise a registration id (never 0)
-		 *     that can be used with {@link G.dbus_connection_unregister_object}
-		 */
-		register_object(object_path: string, interface_info: DBusInterfaceInfo, vtable: DBusInterfaceVTable | null, user_data_free_func: GLib.DestroyNotify): number;
-		/**
 		 * Version of {@link G.dbus_connection_register_object} using closures instead of a
 		 * #GDBusInterfaceVTable for easier binding in other languages.
 		 * @param object_path The object path to register at.
@@ -3085,7 +3038,7 @@ declare namespace imports.gi.Gio {
 		 * @returns 0 if #error is set, otherwise a registration ID (never 0)
 		 * that can be used with {@link G.dbus_connection_unregister_object} .
 		 */
-		register_object_with_closures(object_path: string, interface_info: DBusInterfaceInfo, method_call_closure: GObject.Closure | null, get_property_closure: GObject.Closure | null, set_property_closure: GObject.Closure | null): number;
+		register_object(object_path: string, interface_info: DBusInterfaceInfo, method_call_closure: GObject.Closure | null, get_property_closure: GObject.Closure | null, set_property_closure: GObject.Closure | null): number;
 		/**
 		 * Registers a whole subtree of dynamic objects.
 		 * 
@@ -11036,26 +10989,13 @@ declare namespace imports.gi.Gio {
 		 * Adds a button to #notification that activates #action when clicked.
 		 * #action must be an application-wide action (it must start with "app.").
 		 * 
-		 * If #target_format is given, it is used to collect remaining
-		 * positional parameters into a #GVariant instance, similar to
-		 * {@link G.variant_new}. #action will be activated with that #GVariant as its
-		 * parameter.
-		 * @param label label of the button
-		 * @param action an action name
-		 * @param target_format a #GVariant format string, or %NULL
-		 */
-		add_button_with_target(label: string, action: string, target_format: string | null): void;
-		/**
-		 * Adds a button to #notification that activates #action when clicked.
-		 * #action must be an application-wide action (it must start with "app.").
-		 * 
 		 * If #target is non-%NULL, #action will be activated with #target as
 		 * its parameter.
 		 * @param label label of the button
 		 * @param action an action name
 		 * @param target a #GVariant to use as #action's parameter, or %NULL
 		 */
-		add_button_with_target_value(label: string, action: string, target: GLib.Variant | null): void;
+		add_button_with_target(label: string, action: string, target: GLib.Variant | null): void;
 		/**
 		 * Sets the body of #notification to #body.
 		 * @param body the new body for #notification, or %NULL
@@ -11089,22 +11029,6 @@ declare namespace imports.gi.Gio {
 		/**
 		 * Sets the default action of #notification to #action. This action is
 		 * activated when the notification is clicked on. It must be an
-		 * application-wide action (it must start with "app.").
-		 * 
-		 * If #target_format is given, it is used to collect remaining
-		 * positional parameters into a #GVariant instance, similar to
-		 * {@link G.variant_new}. #action will be activated with that #GVariant as its
-		 * parameter.
-		 * 
-		 * When no default action is set, the application that the notification
-		 * was sent on is activated.
-		 * @param action an action name
-		 * @param target_format a #GVariant format string, or %NULL
-		 */
-		set_default_action_and_target(action: string, target_format: string | null): void;
-		/**
-		 * Sets the default action of #notification to #action. This action is
-		 * activated when the notification is clicked on. It must be an
 		 * application-wide action (start with "app.").
 		 * 
 		 * If #target is non-%NULL, #action will be activated with #target as
@@ -11115,7 +11039,7 @@ declare namespace imports.gi.Gio {
 		 * @param action an action name
 		 * @param target a #GVariant to use as #action's parameter, or %NULL
 		 */
-		set_default_action_and_target_value(action: string, target: GLib.Variant | null): void;
+		set_default_action_and_target(action: string, target: GLib.Variant | null): void;
 		/**
 		 * Sets the icon of #notification to #icon.
 		 * @param icon the icon to be shown in #notification, as a #GIcon
@@ -17596,21 +17520,6 @@ declare namespace imports.gi.Gio {
 	class Subprocess {
 		public constructor(options?: Partial<SubprocessInitOptions>);
 		/**
-		 * Create a new process with the given flags and varargs argument
-		 * list.  By default, matching the {@link G.spawn_async} defaults, the
-		 * child's stdin will be set to the system null device, and
-		 * stdout/stderr will be inherited from the parent.  You can use
-		 * #flags to control this behavior.
-		 * 
-		 * The argument list must be terminated with %NULL.
-		 * @param flags flags that define the behaviour of the subprocess
-		 * @param error return location for an error, or %NULL
-		 * @param argv0 first commandline argument to pass to the subprocess
-		 * @returns A newly created #GSubprocess, or %NULL on error (and #error
-		 *   will be set)
-		 */
-		public static new(flags: SubprocessFlags, error: GLib.Error | null, argv0: string): Subprocess;
-		/**
 		 * Create a new process with the given flags and argument list.
 		 * 
 		 * The argument list is expected to be %NULL-terminated.
@@ -17619,7 +17528,7 @@ declare namespace imports.gi.Gio {
 		 * @returns A newly created #GSubprocess, or %NULL on error (and #error
 		 *   will be set)
 		 */
-		public static newv(argv: string[], flags: SubprocessFlags): Subprocess;
+		public static new(argv: string[], flags: SubprocessFlags): Subprocess;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -26351,12 +26260,6 @@ declare namespace imports.gi.Gio {
 	 */
 	interface IDBusInterface {
 		/**
-		 * Gets the #GDBusObject that #interface_ belongs to, if any.
-		 * @returns A #GDBusObject or %NULL. The returned
-		 * reference should be freed with {@link GObject.unref}.
-		 */
-		dup_object(): DBusObject | null;
-		/**
 		 * Gets D-Bus introspection information for the D-Bus interface
 		 * implemented by #interface_.
 		 * @returns A #GDBusInterfaceInfo. Do not free.
@@ -26364,12 +26267,8 @@ declare namespace imports.gi.Gio {
 		get_info(): DBusInterfaceInfo;
 		/**
 		 * Gets the #GDBusObject that #interface_ belongs to, if any.
-		 * 
-		 * It is not safe to use the returned object if #interface_ or
-		 * the returned object is being used from other threads. See
-		 * {@link G.dbus_interface_dup_object} for a thread-safe alternative.
 		 * @returns A #GDBusObject or %NULL. The returned
-		 *     reference belongs to #interface_ and should not be freed.
+		 * reference should be freed with {@link GObject.unref}.
 		 */
 		get_object(): DBusObject | null;
 		/**
@@ -30467,9 +30366,9 @@ declare namespace imports.gi.Gio {
 		 * %NULL is never returned for an index that is smaller than the length
 		 * of the list.  See {@link G.list_model_get_n_items}.
 		 * @param position the position of the item to fetch
-		 * @returns the item at #position.
+		 * @returns the object at #position.
 		 */
-		get_item(position: number): any | null;
+		get_item(position: number): GObject.Object | null;
 		/**
 		 * Gets the type of the items in #list. All items returned from
 		 * {@link G.list_model_get_type} are of that type or a subtype, or are an
@@ -30489,16 +30388,6 @@ declare namespace imports.gi.Gio {
 		 * @returns the number of items in #list.
 		 */
 		get_n_items(): number;
-		/**
-		 * Get the item at #position. If #position is greater than the number of
-		 * items in #list, %NULL is returned.
-		 * 
-		 * %NULL is never returned for an index that is smaller than the length
-		 * of the list.  See {@link G.list_model_get_n_items}.
-		 * @param position the position of the item to fetch
-		 * @returns the object at #position.
-		 */
-		get_object(position: number): GObject.Object | null;
 		/**
 		 * Emits the #GListModel::items-changed signal on #list.
 		 * 
@@ -36033,7 +35922,6 @@ declare namespace imports.gi.Gio {
 	 * @returns %TRUE if #action_name is valid
 	 */
 	function action_name_is_valid(action_name: string): boolean;
-
 	/**
 	 * Parses a detailed action name into its separate name and target
 	 * components.
@@ -36067,7 +35955,6 @@ declare namespace imports.gi.Gio {
 	 * the target value, or %NULL for no target
 	 */
 	function action_parse_detailed_name(detailed_name: string): [ boolean, string, GLib.Variant ];
-
 	/**
 	 * Formats a detailed action name from #action_name and #target_value.
 	 * 
@@ -36084,7 +35971,6 @@ declare namespace imports.gi.Gio {
 	 * @returns a detailed format string
 	 */
 	function action_print_detailed_name(action_name: string, target_value: GLib.Variant | null): string;
-
 	/**
 	 * Creates a new #GAppInfo from the given information.
 	 * 
@@ -36099,7 +35985,6 @@ declare namespace imports.gi.Gio {
 	 * @returns new #GAppInfo for given command.
 	 */
 	function app_info_create_from_commandline(commandline: string, application_name: string | null, flags: AppInfoCreateFlags): AppInfo;
-
 	/**
 	 * Gets a list of all of the applications currently registered
 	 * on this system.
@@ -36112,7 +35997,6 @@ declare namespace imports.gi.Gio {
 	 * @returns a newly allocated #GList of references to #GAppInfos.
 	 */
 	function app_info_get_all(): AppInfo[];
-
 	/**
 	 * Gets a list of all #GAppInfos for a given content type,
 	 * including the recommended and fallback #GAppInfos. See
@@ -36123,7 +36007,6 @@ declare namespace imports.gi.Gio {
 	 *     for given #content_type or %NULL on error.
 	 */
 	function app_info_get_all_for_type(content_type: string): AppInfo[];
-
 	/**
 	 * Gets the default #GAppInfo for a given content type.
 	 * @param content_type the content type to find a #GAppInfo for
@@ -36133,7 +36016,6 @@ declare namespace imports.gi.Gio {
 	 *     %NULL on error.
 	 */
 	function app_info_get_default_for_type(content_type: string, must_support_uris: boolean): AppInfo | null;
-
 	/**
 	 * Gets the default application for handling URIs with
 	 * the given URI scheme. A URI scheme is the initial part
@@ -36144,7 +36026,6 @@ declare namespace imports.gi.Gio {
 	 *     %NULL on error.
 	 */
 	function app_info_get_default_for_uri_scheme(uri_scheme: string): AppInfo | null;
-
 	/**
 	 * Gets a list of fallback #GAppInfos for a given content type, i.e.
 	 * those applications which claim to support the given content type
@@ -36154,7 +36035,6 @@ declare namespace imports.gi.Gio {
 	 *     for given #content_type or %NULL on error.
 	 */
 	function app_info_get_fallback_for_type(content_type: string): AppInfo[];
-
 	/**
 	 * Gets a list of recommended #GAppInfos for a given content type, i.e.
 	 * those applications which claim to support the given content type exactly,
@@ -36167,7 +36047,6 @@ declare namespace imports.gi.Gio {
 	 *     for given #content_type or %NULL on error.
 	 */
 	function app_info_get_recommended_for_type(content_type: string): AppInfo[];
-
 	/**
 	 * Utility function that launches the default application
 	 * registered to handle the specified uri. Synchronous I/O
@@ -36182,7 +36061,6 @@ declare namespace imports.gi.Gio {
 	 * @returns %TRUE on success, %FALSE on error.
 	 */
 	function app_info_launch_default_for_uri(uri: string, context: AppLaunchContext | null): boolean;
-
 	/**
 	 * Async version of {@link G.app_info_launch_default_for_uri}.
 	 * 
@@ -36200,14 +36078,12 @@ declare namespace imports.gi.Gio {
 	 * @param callback a #GAsyncReadyCallback to call when the request is done
 	 */
 	function app_info_launch_default_for_uri_async(uri: string, context: AppLaunchContext | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
-
 	/**
 	 * Finishes an asynchronous launch-default-for-uri operation.
 	 * @param result a #GAsyncResult
 	 * @returns %TRUE if the launch was successful, %FALSE if #error is set
 	 */
 	function app_info_launch_default_for_uri_finish(result: AsyncResult): boolean;
-
 	/**
 	 * Removes all changes to the type associations done by
 	 * {@link G.app_info_set_as_default_for_type},
@@ -36217,7 +36093,6 @@ declare namespace imports.gi.Gio {
 	 * @param content_type a content type
 	 */
 	function app_info_reset_type_associations(content_type: string): void;
-
 	/**
 	 * Helper function for constructing #GAsyncInitable object. This is
 	 * similar to {@link GObject.newv} but also initializes the object asynchronously.
@@ -36234,7 +36109,6 @@ declare namespace imports.gi.Gio {
 	 *     finished
 	 */
 	function async_initable_newv_async(object_type: GObject.Type, n_parameters: number, parameters: GObject.Parameter, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
-
 	/**
 	 * Asynchronously connects to the message bus specified by #bus_type.
 	 * 
@@ -36248,7 +36122,6 @@ declare namespace imports.gi.Gio {
 	 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 	 */
 	function bus_get(bus_type: BusType, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
-
 	/**
 	 * Finishes an operation started with {@link G.bus_get}.
 	 * 
@@ -36266,7 +36139,6 @@ declare namespace imports.gi.Gio {
 	 *     Free with {@link GObject.unref}.
 	 */
 	function bus_get_finish(res: AsyncResult): DBusConnection;
-
 	/**
 	 * Synchronously connects to the message bus specified by #bus_type.
 	 * Note that the returned object may shared with other callers,
@@ -36290,98 +36162,6 @@ declare namespace imports.gi.Gio {
 	 *     Free with {@link GObject.unref}.
 	 */
 	function bus_get_sync(bus_type: BusType, cancellable: Cancellable | null): DBusConnection;
-
-	/**
-	 * Starts acquiring #name on the bus specified by #bus_type and calls
-	 * #name_acquired_handler and #name_lost_handler when the name is
-	 * acquired respectively lost. Callbacks will be invoked in the
-	 * [thread-default main context][g-main-context-push-thread-default]
-	 * of the thread you are calling this function from.
-	 * 
-	 * You are guaranteed that one of the #name_acquired_handler and #name_lost_handler
-	 * callbacks will be invoked after calling this function - there are three
-	 * possible cases:
-	 * 
-	 * - #name_lost_handler with a %NULL connection (if a connection to the bus
-	 *   can't be made).
-	 * 
-	 * - #bus_acquired_handler then #name_lost_handler (if the name can't be
-	 *   obtained)
-	 * 
-	 * - #bus_acquired_handler then #name_acquired_handler (if the name was
-	 *   obtained).
-	 * 
-	 * When you are done owning the name, just call {@link G.bus_unown_name}
-	 * with the owner id this function returns.
-	 * 
-	 * If the name is acquired or lost (for example another application
-	 * could acquire the name if you allow replacement or the application
-	 * currently owning the name exits), the handlers are also invoked.
-	 * If the #GDBusConnection that is used for attempting to own the name
-	 * closes, then #name_lost_handler is invoked since it is no longer
-	 * possible for other processes to access the process.
-	 * 
-	 * You cannot use g_bus_own_name() several times for the same name (unless
-	 * interleaved with calls to g_bus_unown_name()) - only the first call
-	 * will work.
-	 * 
-	 * Another guarantee is that invocations of #name_acquired_handler
-	 * and #name_lost_handler are guaranteed to alternate; that
-	 * is, if #name_acquired_handler is invoked then you are
-	 * guaranteed that the next time one of the handlers is invoked, it
-	 * will be #name_lost_handler. The reverse is also true.
-	 * 
-	 * If you plan on exporting objects (using e.g.
-	 * g_dbus_connection_register_object()), note that it is generally too late
-	 * to export the objects in #name_acquired_handler. Instead, you can do this
-	 * in #bus_acquired_handler since you are guaranteed that this will run
-	 * before #name is requested from the bus.
-	 * 
-	 * This behavior makes it very simple to write applications that wants
-	 * to [own names][gdbus-owning-names] and export objects.
-	 * Simply register objects to be exported in #bus_acquired_handler and
-	 * unregister the objects (if any) in #name_lost_handler.
-	 * @param bus_type the type of bus to own a name on
-	 * @param name the well-known name to own
-	 * @param flags a set of flags from the #GBusNameOwnerFlags enumeration
-	 * @param bus_acquired_handler handler to invoke when connected to the bus of type #bus_type or %NULL
-	 * @param name_acquired_handler handler to invoke when #name is acquired or %NULL
-	 * @param name_lost_handler handler to invoke when #name is lost or %NULL
-	 * @param user_data_free_func function for freeing #user_data or %NULL
-	 * @returns an identifier (never 0) that can be used with
-	 *     {@link G.bus_unown_name} to stop owning the name.
-	 */
-	function bus_own_name(bus_type: BusType, name: string, flags: BusNameOwnerFlags, bus_acquired_handler: BusAcquiredCallback | null, name_acquired_handler: BusNameAcquiredCallback | null, name_lost_handler: BusNameLostCallback | null, user_data_free_func: GLib.DestroyNotify | null): number;
-
-	/**
-	 * Like {@link G.bus_own_name} but takes a #GDBusConnection instead of a
-	 * #GBusType.
-	 * @param connection a #GDBusConnection
-	 * @param name the well-known name to own
-	 * @param flags a set of flags from the #GBusNameOwnerFlags enumeration
-	 * @param name_acquired_handler handler to invoke when #name is acquired or %NULL
-	 * @param name_lost_handler handler to invoke when #name is lost or %NULL
-	 * @param user_data_free_func function for freeing #user_data or %NULL
-	 * @returns an identifier (never 0) that can be used with
-	 *     {@link G.bus_unown_name} to stop owning the name
-	 */
-	function bus_own_name_on_connection(connection: DBusConnection, name: string, flags: BusNameOwnerFlags, name_acquired_handler: BusNameAcquiredCallback | null, name_lost_handler: BusNameLostCallback | null, user_data_free_func: GLib.DestroyNotify | null): number;
-
-	/**
-	 * Version of {@link G.bus_own_name_on_connection} using closures instead of
-	 * callbacks for easier binding in other languages.
-	 * @param connection a #GDBusConnection
-	 * @param name the well-known name to own
-	 * @param flags a set of flags from the #GBusNameOwnerFlags enumeration
-	 * @param name_acquired_closure #GClosure to invoke when #name is
-	 *     acquired or %NULL
-	 * @param name_lost_closure #GClosure to invoke when #name is lost
-	 *     or %NULL
-	 * @returns an identifier (never 0) that can be used with
-	 *     {@link G.bus_unown_name} to stop owning the name.
-	 */
-	function bus_own_name_on_connection_with_closures(connection: DBusConnection, name: string, flags: BusNameOwnerFlags, name_acquired_closure: GObject.Closure | null, name_lost_closure: GObject.Closure | null): number;
-
 	/**
 	 * Version of {@link G.bus_own_name} using closures instead of callbacks for
 	 * easier binding in other languages.
@@ -36397,8 +36177,21 @@ declare namespace imports.gi.Gio {
 	 * @returns an identifier (never 0) that can be used with
 	 *     {@link G.bus_unown_name} to stop owning the name.
 	 */
-	function bus_own_name_with_closures(bus_type: BusType, name: string, flags: BusNameOwnerFlags, bus_acquired_closure: GObject.Closure | null, name_acquired_closure: GObject.Closure | null, name_lost_closure: GObject.Closure | null): number;
-
+	function bus_own_name(bus_type: BusType, name: string, flags: BusNameOwnerFlags, bus_acquired_closure: GObject.Closure | null, name_acquired_closure: GObject.Closure | null, name_lost_closure: GObject.Closure | null): number;
+	/**
+	 * Version of {@link G.bus_own_name_on_connection} using closures instead of
+	 * callbacks for easier binding in other languages.
+	 * @param connection a #GDBusConnection
+	 * @param name the well-known name to own
+	 * @param flags a set of flags from the #GBusNameOwnerFlags enumeration
+	 * @param name_acquired_closure #GClosure to invoke when #name is
+	 *     acquired or %NULL
+	 * @param name_lost_closure #GClosure to invoke when #name is lost
+	 *     or %NULL
+	 * @returns an identifier (never 0) that can be used with
+	 *     {@link G.bus_unown_name} to stop owning the name.
+	 */
+	function bus_own_name_on_connection(connection: DBusConnection, name: string, flags: BusNameOwnerFlags, name_acquired_closure: GObject.Closure | null, name_lost_closure: GObject.Closure | null): number;
 	/**
 	 * Stops owning a name.
 	 * 
@@ -36411,7 +36204,6 @@ declare namespace imports.gi.Gio {
 	 * @param owner_id an identifier obtained from {@link G.bus_own_name}
 	 */
 	function bus_unown_name(owner_id: number): void;
-
 	/**
 	 * Stops watching a name.
 	 * 
@@ -36424,77 +36216,6 @@ declare namespace imports.gi.Gio {
 	 * @param watcher_id An identifier obtained from {@link G.bus_watch_name}
 	 */
 	function bus_unwatch_name(watcher_id: number): void;
-
-	/**
-	 * Starts watching #name on the bus specified by #bus_type and calls
-	 * #name_appeared_handler and #name_vanished_handler when the name is
-	 * known to have an owner respectively known to lose its
-	 * owner. Callbacks will be invoked in the
-	 * [thread-default main context][g-main-context-push-thread-default]
-	 * of the thread you are calling this function from.
-	 * 
-	 * You are guaranteed that one of the handlers will be invoked after
-	 * calling this function. When you are done watching the name, just
-	 * call {@link G.bus_unwatch_name} with the watcher id this function
-	 * returns.
-	 * 
-	 * If the name vanishes or appears (for example the application owning
-	 * the name could restart), the handlers are also invoked. If the
-	 * #GDBusConnection that is used for watching the name disconnects, then
-	 * #name_vanished_handler is invoked since it is no longer
-	 * possible to access the name.
-	 * 
-	 * Another guarantee is that invocations of #name_appeared_handler
-	 * and #name_vanished_handler are guaranteed to alternate; that
-	 * is, if #name_appeared_handler is invoked then you are
-	 * guaranteed that the next time one of the handlers is invoked, it
-	 * will be #name_vanished_handler. The reverse is also true.
-	 * 
-	 * This behavior makes it very simple to write applications that want
-	 * to take action when a certain [name exists][gdbus-watching-names].
-	 * Basically, the application should create object proxies in
-	 * #name_appeared_handler and destroy them again (if any) in
-	 * #name_vanished_handler.
-	 * @param bus_type The type of bus to watch a name on.
-	 * @param name The name (well-known or unique) to watch.
-	 * @param flags Flags from the #GBusNameWatcherFlags enumeration.
-	 * @param name_appeared_handler Handler to invoke when #name is known to exist or %NULL.
-	 * @param name_vanished_handler Handler to invoke when #name is known to not exist or %NULL.
-	 * @param user_data_free_func Function for freeing #user_data or %NULL.
-	 * @returns An identifier (never 0) that can be used with
-	 * {@link G.bus_unwatch_name} to stop watching the name.
-	 */
-	function bus_watch_name(bus_type: BusType, name: string, flags: BusNameWatcherFlags, name_appeared_handler: BusNameAppearedCallback | null, name_vanished_handler: BusNameVanishedCallback | null, user_data_free_func: GLib.DestroyNotify | null): number;
-
-	/**
-	 * Like {@link G.bus_watch_name} but takes a #GDBusConnection instead of a
-	 * #GBusType.
-	 * @param connection A #GDBusConnection.
-	 * @param name The name (well-known or unique) to watch.
-	 * @param flags Flags from the #GBusNameWatcherFlags enumeration.
-	 * @param name_appeared_handler Handler to invoke when #name is known to exist or %NULL.
-	 * @param name_vanished_handler Handler to invoke when #name is known to not exist or %NULL.
-	 * @param user_data_free_func Function for freeing #user_data or %NULL.
-	 * @returns An identifier (never 0) that can be used with
-	 * {@link G.bus_unwatch_name} to stop watching the name.
-	 */
-	function bus_watch_name_on_connection(connection: DBusConnection, name: string, flags: BusNameWatcherFlags, name_appeared_handler: BusNameAppearedCallback | null, name_vanished_handler: BusNameVanishedCallback | null, user_data_free_func: GLib.DestroyNotify | null): number;
-
-	/**
-	 * Version of {@link G.bus_watch_name_on_connection} using closures instead of callbacks for
-	 * easier binding in other languages.
-	 * @param connection A #GDBusConnection.
-	 * @param name The name (well-known or unique) to watch.
-	 * @param flags Flags from the #GBusNameWatcherFlags enumeration.
-	 * @param name_appeared_closure #GClosure to invoke when #name is known
-	 * to exist or %NULL.
-	 * @param name_vanished_closure #GClosure to invoke when #name is known
-	 * to not exist or %NULL.
-	 * @returns An identifier (never 0) that can be used with
-	 * {@link G.bus_unwatch_name} to stop watching the name.
-	 */
-	function bus_watch_name_on_connection_with_closures(connection: DBusConnection, name: string, flags: BusNameWatcherFlags, name_appeared_closure: GObject.Closure | null, name_vanished_closure: GObject.Closure | null): number;
-
 	/**
 	 * Version of {@link G.bus_watch_name} using closures instead of callbacks for
 	 * easier binding in other languages.
@@ -36508,8 +36229,21 @@ declare namespace imports.gi.Gio {
 	 * @returns An identifier (never 0) that can be used with
 	 * {@link G.bus_unwatch_name} to stop watching the name.
 	 */
-	function bus_watch_name_with_closures(bus_type: BusType, name: string, flags: BusNameWatcherFlags, name_appeared_closure: GObject.Closure | null, name_vanished_closure: GObject.Closure | null): number;
-
+	function bus_watch_name(bus_type: BusType, name: string, flags: BusNameWatcherFlags, name_appeared_closure: GObject.Closure | null, name_vanished_closure: GObject.Closure | null): number;
+	/**
+	 * Version of {@link G.bus_watch_name_on_connection} using closures instead of callbacks for
+	 * easier binding in other languages.
+	 * @param connection A #GDBusConnection.
+	 * @param name The name (well-known or unique) to watch.
+	 * @param flags Flags from the #GBusNameWatcherFlags enumeration.
+	 * @param name_appeared_closure #GClosure to invoke when #name is known
+	 * to exist or %NULL.
+	 * @param name_vanished_closure #GClosure to invoke when #name is known
+	 * to not exist or %NULL.
+	 * @returns An identifier (never 0) that can be used with
+	 * {@link G.bus_unwatch_name} to stop watching the name.
+	 */
+	function bus_watch_name_on_connection(connection: DBusConnection, name: string, flags: BusNameWatcherFlags, name_appeared_closure: GObject.Closure | null, name_vanished_closure: GObject.Closure | null): number;
 	/**
 	 * Checks if a content type can be executable. Note that for instance
 	 * things like text files can be executables (i.e. scripts and batch files).
@@ -36518,7 +36252,6 @@ declare namespace imports.gi.Gio {
 	 *     can be executable, %FALSE otherwise.
 	 */
 	function content_type_can_be_executable(type: string): boolean;
-
 	/**
 	 * Compares two content types for equality.
 	 * @param type1 a content type string
@@ -36527,7 +36260,6 @@ declare namespace imports.gi.Gio {
 	 *     %FALSE otherwise.
 	 */
 	function content_type_equals(type1: string, type2: string): boolean;
-
 	/**
 	 * Tries to find a content type based on the mime type name.
 	 * @param mime_type a mime type string
@@ -36535,7 +36267,6 @@ declare namespace imports.gi.Gio {
 	 *     %NULL. Free with {@link G.free}
 	 */
 	function content_type_from_mime_type(mime_type: string): string | null;
-
 	/**
 	 * Gets the human readable description of the content type.
 	 * @param type a content type string
@@ -36543,7 +36274,6 @@ declare namespace imports.gi.Gio {
 	 *     returned string with {@link G.free}
 	 */
 	function content_type_get_description(type: string): string;
-
 	/**
 	 * Gets the generic icon name for a content type.
 	 * 
@@ -36555,7 +36285,6 @@ declare namespace imports.gi.Gio {
 	 *     or %NULL if unknown. Free with {@link G.free}
 	 */
 	function content_type_get_generic_icon_name(type: string): string | null;
-
 	/**
 	 * Gets the icon for a content type.
 	 * @param type a content type string
@@ -36563,7 +36292,6 @@ declare namespace imports.gi.Gio {
 	 *     object with {@link GObject.unref}
 	 */
 	function content_type_get_icon(type: string): Icon;
-
 	/**
 	 * Get the list of directories which MIME data is loaded from. See
 	 * {@link G.content_type_set_mime_dirs} for details.
@@ -36572,7 +36300,6 @@ declare namespace imports.gi.Gio {
 	 *    and with the first directory to try listed first
 	 */
 	function content_type_get_mime_dirs(): string[];
-
 	/**
 	 * Gets the mime type for the content type, if one is registered.
 	 * @param type a content type string
@@ -36580,7 +36307,6 @@ declare namespace imports.gi.Gio {
 	 *     given #type, or %NULL if unknown; free with {@link G.free}.
 	 */
 	function content_type_get_mime_type(type: string): string | null;
-
 	/**
 	 * Gets the symbolic icon for a content type.
 	 * @param type a content type string
@@ -36588,7 +36314,6 @@ declare namespace imports.gi.Gio {
 	 *     Free the returned object with {@link GObject.unref}
 	 */
 	function content_type_get_symbolic_icon(type: string): Icon;
-
 	/**
 	 * Guesses the content type based on example data. If the function is
 	 * uncertain, #result_uncertain will be set to %TRUE. Either #filename
@@ -36604,7 +36329,6 @@ declare namespace imports.gi.Gio {
 	 *     of the result, or %NULL
 	 */
 	function content_type_guess(filename: string | null, data: number[] | null, data_size: number): [ string, boolean | null ];
-
 	/**
 	 * Tries to guess the type of the tree with root #root, by
 	 * looking at the files it contains. The result is an array
@@ -36623,7 +36347,6 @@ declare namespace imports.gi.Gio {
 	 *     array of zero or more content types. Free with {@link G.strfreev}
 	 */
 	function content_type_guess_for_tree(root: File): string[];
-
 	/**
 	 * Determines if #type is a subset of #supertype.
 	 * @param type a content type string
@@ -36632,7 +36355,6 @@ declare namespace imports.gi.Gio {
 	 *     %FALSE otherwise.
 	 */
 	function content_type_is_a(type: string, supertype: string): boolean;
-
 	/**
 	 * Determines if #type is a subset of #mime_type.
 	 * Convenience wrapper around {@link G.content_type_is_a}.
@@ -36642,7 +36364,6 @@ declare namespace imports.gi.Gio {
 	 *     %FALSE otherwise.
 	 */
 	function content_type_is_mime_type(type: string, mime_type: string): boolean;
-
 	/**
 	 * Checks if the content type is the generic "unknown" type.
 	 * On UNIX this is the "application/octet-stream" mimetype,
@@ -36652,7 +36373,6 @@ declare namespace imports.gi.Gio {
 	 * @returns %TRUE if the type is the unknown type.
 	 */
 	function content_type_is_unknown(type: string): boolean;
-
 	/**
 	 * Set the list of directories used by GIO to load the MIME database.
 	 * If #dirs is %NULL, the directories used are the default:
@@ -36682,7 +36402,6 @@ declare namespace imports.gi.Gio {
 	 *    and with the first directory to try listed first
 	 */
 	function content_type_set_mime_dirs(dirs: string[] | null): void;
-
 	/**
 	 * Gets a list of strings containing all the registered content types
 	 * known to the system. The list and its data should be freed using
@@ -36691,7 +36410,6 @@ declare namespace imports.gi.Gio {
 	 *     content types
 	 */
 	function content_types_get_registered(): string[];
-
 	/**
 	 * Escape #string so it can appear in a D-Bus address as the value
 	 * part of a key-value pair.
@@ -36706,7 +36424,6 @@ declare namespace imports.gi.Gio {
 	 *     non-optionally-escaped bytes escaped
 	 */
 	function dbus_address_escape_value(string: string): string;
-
 	/**
 	 * Synchronously looks up the D-Bus address for the well-known message
 	 * bus instance specified by #bus_type. This may involve using various
@@ -36720,7 +36437,6 @@ declare namespace imports.gi.Gio {
 	 *     %NULL if #error is set
 	 */
 	function dbus_address_get_for_bus_sync(bus_type: BusType, cancellable: Cancellable | null): string;
-
 	/**
 	 * Asynchronously connects to an endpoint specified by #address and
 	 * sets up the connection so it is in a state to run the client-side
@@ -36738,7 +36454,6 @@ declare namespace imports.gi.Gio {
 	 * @param callback A #GAsyncReadyCallback to call when the request is satisfied.
 	 */
 	function dbus_address_get_stream(address: string, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
-
 	/**
 	 * Finishes an operation started with {@link G.dbus_address_get_stream}.
 	 * 
@@ -36750,7 +36465,6 @@ declare namespace imports.gi.Gio {
 	 * %NULL or return location to store the GUID extracted from #address, if any.
 	 */
 	function dbus_address_get_stream_finish(res: AsyncResult): [ IOStream, string | null ];
-
 	/**
 	 * Synchronously connects to an endpoint specified by #address and
 	 * sets up the connection so it is in a state to run the client-side
@@ -36769,7 +36483,6 @@ declare namespace imports.gi.Gio {
 	 * %NULL or return location to store the GUID extracted from #address, if any.
 	 */
 	function dbus_address_get_stream_sync(address: string, cancellable: Cancellable | null): [ IOStream, string | null ];
-
 	/**
 	 * Looks up the value of an annotation.
 	 * 
@@ -36779,7 +36492,6 @@ declare namespace imports.gi.Gio {
 	 * @returns The value or %NULL if not found. Do not free, it is owned by #annotations.
 	 */
 	function dbus_annotation_info_lookup(annotations: DBusAnnotationInfo[] | null, name: string): string | null;
-
 	/**
 	 * Creates a D-Bus error name to use for #error. If #error matches
 	 * a registered error (cf. {@link G.dbus_error_register_error}), the corresponding
@@ -36797,7 +36509,6 @@ declare namespace imports.gi.Gio {
 	 *     Free with {@link G.free}.
 	 */
 	function dbus_error_encode_gerror(error: GLib.Error): string;
-
 	/**
 	 * Gets the D-Bus error name used for #error, if any.
 	 * 
@@ -36810,7 +36521,6 @@ declare namespace imports.gi.Gio {
 	 *     D-Bus error name could not be found. Free with {@link G.free}.
 	 */
 	function dbus_error_get_remote_error(error: GLib.Error): string | null;
-
 	/**
 	 * Checks if #error represents an error received via D-Bus from a remote peer. If so,
 	 * use {@link G.dbus_error_get_remote_error} to get the name of the error.
@@ -36819,7 +36529,6 @@ declare namespace imports.gi.Gio {
 	 * %FALSE otherwise.
 	 */
 	function dbus_error_is_remote_error(error: GLib.Error): boolean;
-
 	/**
 	 * Creates a #GError based on the contents of #dbus_error_name and
 	 * #dbus_error_message.
@@ -36852,9 +36561,7 @@ declare namespace imports.gi.Gio {
 	 * @returns An allocated #GError. Free with {@link G.error_free}.
 	 */
 	function dbus_error_new_for_dbus_error(dbus_error_name: string, dbus_error_message: string): GLib.Error;
-
 	function dbus_error_quark(): GLib.Quark;
-
 	/**
 	 * Creates an association to map between #dbus_error_name and
 	 * #GErrors specified by #error_domain and #error_code.
@@ -36868,7 +36575,6 @@ declare namespace imports.gi.Gio {
 	 * exists.
 	 */
 	function dbus_error_register_error(error_domain: GLib.Quark, error_code: number, dbus_error_name: string): boolean;
-
 	/**
 	 * Helper function for associating a #GError error domain with D-Bus error names.
 	 * 
@@ -36880,7 +36586,6 @@ declare namespace imports.gi.Gio {
 	 * @param num_entries Number of items to register.
 	 */
 	function dbus_error_register_error_domain(error_domain_quark_name: string, quark_volatile: number, entries: DBusErrorEntry[], num_entries: number): void;
-
 	/**
 	 * Looks for extra information in the error message used to recover
 	 * the D-Bus error name and strips it if found. If stripped, the
@@ -36892,7 +36597,6 @@ declare namespace imports.gi.Gio {
 	 * @returns %TRUE if information was stripped, %FALSE otherwise.
 	 */
 	function dbus_error_strip_remote_error(error: GLib.Error): boolean;
-
 	/**
 	 * Destroys an association previously set up with {@link G.dbus_error_register_error}.
 	 * @param error_domain A #GQuark for an error domain.
@@ -36901,14 +36605,12 @@ declare namespace imports.gi.Gio {
 	 * @returns %TRUE if the association was destroyed, %FALSE if it wasn't found.
 	 */
 	function dbus_error_unregister_error(error_domain: GLib.Quark, error_code: number, dbus_error_name: string): boolean;
-
 	/**
 	 * This is a language binding friendly version of {@link G.dbus_escape_object_path_bytestring}.
 	 * @param s the string to escape
 	 * @returns an escaped version of #s. Free with {@link G.free}.
 	 */
 	function dbus_escape_object_path(s: string): string;
-
 	/**
 	 * Escapes #bytes for use in a D-Bus object path component.
 	 * #bytes is an array of zero or more nonzero bytes in an
@@ -36930,7 +36632,6 @@ declare namespace imports.gi.Gio {
 	 * @returns an escaped version of #bytes. Free with {@link G.free}.
 	 */
 	function dbus_escape_object_path_bytestring(bytes: number[]): string;
-
 	/**
 	 * Generate a D-Bus GUID that can be used with
 	 * e.g. {@link G.dbus_connection_new}.
@@ -36946,7 +36647,6 @@ declare namespace imports.gi.Gio {
 	 * @returns A valid D-Bus GUID. Free with {@link G.free}.
 	 */
 	function dbus_generate_guid(): string;
-
 	/**
 	 * Converts a #GValue to a #GVariant of the type indicated by the #type
 	 * parameter.
@@ -36983,7 +36683,6 @@ declare namespace imports.gi.Gio {
 	 *     in case of failure. Free with {@link G.variant_unref}.
 	 */
 	function dbus_gvalue_to_gvariant(gvalue: GObject.Value, type: GLib.VariantType): GLib.Variant;
-
 	/**
 	 * Converts a #GVariant to a #GValue. If #value is floating, it is consumed.
 	 * 
@@ -37000,7 +36699,6 @@ declare namespace imports.gi.Gio {
 	 * @returns Return location pointing to a zero-filled (uninitialized) #GValue.
 	 */
 	function dbus_gvariant_to_gvalue(value: GLib.Variant): GObject.Value;
-
 	/**
 	 * Checks if #string is a
 	 * [D-Bus address](https://dbus.freedesktop.org/doc/dbus-specification.html#addresses).
@@ -37012,7 +36710,6 @@ declare namespace imports.gi.Gio {
 	 * @returns %TRUE if #string is a valid D-Bus address, %FALSE otherwise.
 	 */
 	function dbus_is_address(string: string): boolean;
-
 	/**
 	 * Check whether #string is a valid D-Bus error name.
 	 * 
@@ -37023,7 +36720,6 @@ declare namespace imports.gi.Gio {
 	 * @returns %TRUE if valid, %FALSE otherwise.
 	 */
 	function dbus_is_error_name(string: string): boolean;
-
 	/**
 	 * Checks if #string is a D-Bus GUID.
 	 * 
@@ -37033,28 +36729,24 @@ declare namespace imports.gi.Gio {
 	 * @returns %TRUE if #string is a GUID, %FALSE otherwise.
 	 */
 	function dbus_is_guid(string: string): boolean;
-
 	/**
 	 * Checks if #string is a valid D-Bus interface name.
 	 * @param string The string to check.
 	 * @returns %TRUE if valid, %FALSE otherwise.
 	 */
 	function dbus_is_interface_name(string: string): boolean;
-
 	/**
 	 * Checks if #string is a valid D-Bus member (e.g. signal or method) name.
 	 * @param string The string to check.
 	 * @returns %TRUE if valid, %FALSE otherwise.
 	 */
 	function dbus_is_member_name(string: string): boolean;
-
 	/**
 	 * Checks if #string is a valid D-Bus bus name (either unique or well-known).
 	 * @param string The string to check.
 	 * @returns %TRUE if valid, %FALSE otherwise.
 	 */
 	function dbus_is_name(string: string): boolean;
-
 	/**
 	 * Like {@link G.dbus_is_address} but also checks if the library supports the
 	 * transports in #string and that key/value pairs for each transport
@@ -37065,14 +36757,12 @@ declare namespace imports.gi.Gio {
 	 * supported by this library, %FALSE if #error is set.
 	 */
 	function dbus_is_supported_address(string: string): boolean;
-
 	/**
 	 * Checks if #string is a valid D-Bus unique bus name.
 	 * @param string The string to check.
 	 * @returns %TRUE if valid, %FALSE otherwise.
 	 */
 	function dbus_is_unique_name(string: string): boolean;
-
 	/**
 	 * Unescapes an string that was previously escaped with
 	 * {@link G.dbus_escape_object_path}. If the string is in a format that could
@@ -37088,7 +36778,6 @@ declare namespace imports.gi.Gio {
 	 *   from {@link G.dbus_escape_object_path}. Free with g_free().
 	 */
 	function dbus_unescape_object_path(s: string): number[] | null;
-
 	/**
 	 * Creates a new #GDtlsClientConnection wrapping #base_socket which is
 	 * assumed to communicate with the server identified by #server_identity.
@@ -37098,7 +36787,6 @@ declare namespace imports.gi.Gio {
 	 *   #GDtlsClientConnection, or %NULL on error
 	 */
 	function dtls_client_connection_new(base_socket: DatagramBased, server_identity: SocketConnectable | null): DtlsClientConnection;
-
 	/**
 	 * Creates a new #GDtlsServerConnection wrapping #base_socket.
 	 * @param base_socket the #GDatagramBased to wrap
@@ -37107,7 +36795,6 @@ declare namespace imports.gi.Gio {
 	 *   #GDtlsServerConnection, or %NULL on error
 	 */
 	function dtls_server_connection_new(base_socket: DatagramBased, certificate: TlsCertificate | null): DtlsServerConnection;
-
 	/**
 	 * Creates a #GFile with the given argument from the command line.
 	 * The value of #arg can be either a URI, an absolute path or a
@@ -37128,7 +36815,6 @@ declare namespace imports.gi.Gio {
 	 *    Free the returned object with {@link GObject.unref}.
 	 */
 	function file_new_for_commandline_arg(arg: string): File;
-
 	/**
 	 * Creates a #GFile with the given argument from the command line.
 	 * 
@@ -37146,7 +36832,6 @@ declare namespace imports.gi.Gio {
 	 * @returns a new #GFile
 	 */
 	function file_new_for_commandline_arg_and_cwd(arg: string, cwd: string): File;
-
 	/**
 	 * Constructs a #GFile for a given path. This operation never
 	 * fails, but the returned object might not support any I/O
@@ -37157,7 +36842,6 @@ declare namespace imports.gi.Gio {
 	 *   Free the returned object with {@link GObject.unref}.
 	 */
 	function file_new_for_path(path: string): File;
-
 	/**
 	 * Constructs a #GFile for a given URI. This operation never
 	 * fails, but the returned object might not support any I/O
@@ -37168,7 +36852,6 @@ declare namespace imports.gi.Gio {
 	 *     Free the returned object with {@link GObject.unref}.
 	 */
 	function file_new_for_uri(uri: string): File;
-
 	/**
 	 * Opens a file in the preferred directory for temporary files (as
 	 * returned by {@link G.get_tmp_dir}) and returns a #GFile and
@@ -37188,7 +36871,6 @@ declare namespace imports.gi.Gio {
 	 * on return, a #GFileIOStream for the created file
 	 */
 	function file_new_tmp(tmpl: string | null): [ File, FileIOStream ];
-
 	/**
 	 * Constructs a #GFile with the given #parse_name (i.e. something
 	 * given by {@link G.file_get_parse_name}). This operation never fails,
@@ -37198,14 +36880,12 @@ declare namespace imports.gi.Gio {
 	 * @returns a new #GFile.
 	 */
 	function file_parse_name(parse_name: string): File;
-
 	/**
 	 * Deserializes a #GIcon previously serialized using {@link G.icon_serialize}.
 	 * @param value a #GVariant created with {@link G.icon_serialize}
 	 * @returns a #GIcon, or %NULL when deserialization fails.
 	 */
 	function icon_deserialize(value: GLib.Variant): Icon | null;
-
 	/**
 	 * Gets a hash for an icon.
 	 * @param icon #gconstpointer to an icon object.
@@ -37213,7 +36893,6 @@ declare namespace imports.gi.Gio {
 	 * use in a #GHashTable or similar data structure.
 	 */
 	function icon_hash(icon: any): number;
-
 	/**
 	 * Generate a #GIcon instance from #str. This function can fail if
 	 * #str is not valid - see {@link G.icon_to_string} for discussion.
@@ -37226,7 +36905,6 @@ declare namespace imports.gi.Gio {
 	 *          interface or %NULL if #error is set.
 	 */
 	function icon_new_for_string(str: string): Icon;
-
 	/**
 	 * Helper function for constructing #GInitable object. This is
 	 * similar to {@link GObject.newv} but also initializes the object
@@ -37239,7 +36917,6 @@ declare namespace imports.gi.Gio {
 	 *      #GObject, or %NULL on error
 	 */
 	function initable_newv(object_type: GObject.Type, n_parameters: number, parameters: GObject.Parameter[], cancellable: Cancellable | null): GObject.Object;
-
 	/**
 	 * Converts errno.h error codes into GIO error codes. The fallback
 	 * value %G_IO_ERROR_FAILED is returned for error codes not currently
@@ -37252,13 +36929,11 @@ declare namespace imports.gi.Gio {
 	 * @returns #GIOErrorEnum value for the given errno.h error number.
 	 */
 	function io_error_from_errno(err_no: number): IOErrorEnum;
-
 	/**
 	 * Gets the GIO Error Quark.
 	 * @returns a #GQuark.
 	 */
 	function io_error_quark(): GLib.Quark;
-
 	/**
 	 * Registers #type as extension for the extension point with name
 	 * #extension_point_name.
@@ -37272,7 +36947,6 @@ declare namespace imports.gi.Gio {
 	 * @returns a #GIOExtension object for #GType
 	 */
 	function io_extension_point_implement(extension_point_name: string, type: GObject.Type, extension_name: string, priority: number): IOExtension;
-
 	/**
 	 * Looks up an existing extension point.
 	 * @param name the name of the extension point
@@ -37280,7 +36954,6 @@ declare namespace imports.gi.Gio {
 	 *    is no registered extension point with the given name.
 	 */
 	function io_extension_point_lookup(name: string): IOExtensionPoint;
-
 	/**
 	 * Registers an extension point.
 	 * @param name The name of the extension point
@@ -37288,7 +36961,6 @@ declare namespace imports.gi.Gio {
 	 *    owned by GIO and should not be freed.
 	 */
 	function io_extension_point_register(name: string): IOExtensionPoint;
-
 	/**
 	 * Loads all the modules in the specified directory.
 	 * 
@@ -37305,7 +36977,6 @@ declare namespace imports.gi.Gio {
 	 *      with g_list_free().
 	 */
 	function io_modules_load_all_in_directory(dirname: string): IOModule[];
-
 	/**
 	 * Loads all the modules in the specified directory.
 	 * 
@@ -37323,7 +36994,6 @@ declare namespace imports.gi.Gio {
 	 *      with g_list_free().
 	 */
 	function io_modules_load_all_in_directory_with_scope(dirname: string, scope: IOModuleScope): IOModule[];
-
 	/**
 	 * Scans all the modules in the specified directory, ensuring that
 	 * any extension point implemented by a module is registered.
@@ -37340,7 +37010,6 @@ declare namespace imports.gi.Gio {
 	 *     to scan.
 	 */
 	function io_modules_scan_all_in_directory(dirname: string): void;
-
 	/**
 	 * Scans all the modules in the specified directory, ensuring that
 	 * any extension point implemented by a module is registered.
@@ -37358,7 +37027,6 @@ declare namespace imports.gi.Gio {
 	 * @param scope a scope to use when scanning the modules
 	 */
 	function io_modules_scan_all_in_directory_with_scope(dirname: string, scope: IOModuleScope): void;
-
 	/**
 	 * Cancels all cancellable I/O jobs.
 	 * 
@@ -37366,7 +37034,6 @@ declare namespace imports.gi.Gio {
 	 * {@link G.io_scheduler_push_job}.
 	 */
 	function io_scheduler_cancel_all_jobs(): void;
-
 	/**
 	 * Schedules the I/O job to run in another thread.
 	 * 
@@ -37383,7 +37050,6 @@ declare namespace imports.gi.Gio {
 	 * @param cancellable optional #GCancellable object, %NULL to ignore.
 	 */
 	function io_scheduler_push_job(job_func: IOSchedulerJobFunc, notify: GLib.DestroyNotify | null, io_priority: number, cancellable: Cancellable | null): void;
-
 	/**
 	 * Creates a keyfile-backed #GSettingsBackend.
 	 * 
@@ -37441,13 +37107,11 @@ declare namespace imports.gi.Gio {
 	 * @returns a keyfile-backed #GSettingsBackend
 	 */
 	function keyfile_settings_backend_new(filename: string, root_path: string, root_group: string | null): SettingsBackend;
-
 	/**
 	 * Gets a reference to the default #GMemoryMonitor for the system.
 	 * @returns a new reference to the default #GMemoryMonitor
 	 */
 	function memory_monitor_dup_default(): MemoryMonitor;
-
 	/**
 	 * Creates a memory-backed #GSettingsBackend.
 	 * 
@@ -37457,14 +37121,12 @@ declare namespace imports.gi.Gio {
 	 * @returns a newly created #GSettingsBackend
 	 */
 	function memory_settings_backend_new(): SettingsBackend;
-
 	/**
 	 * Gets the default #GNetworkMonitor for the system.
 	 * @returns a #GNetworkMonitor, which will be
 	 *     a dummy object if no network monitor is available
 	 */
 	function network_monitor_get_default(): NetworkMonitor;
-
 	/**
 	 * Initializes the platform networking libraries (eg, on Windows, this
 	 * calls WSAStartup()). GLib will call this itself if it is needed, so
@@ -37472,7 +37134,6 @@ declare namespace imports.gi.Gio {
 	 * functions (without calling any GLib networking functions first).
 	 */
 	function networking_init(): void;
-
 	/**
 	 * Creates a readonly #GSettingsBackend.
 	 * 
@@ -37481,7 +37142,6 @@ declare namespace imports.gi.Gio {
 	 * @returns a newly created #GSettingsBackend
 	 */
 	function null_settings_backend_new(): SettingsBackend;
-
 	/**
 	 * Utility method for #GPollableInputStream and #GPollableOutputStream
 	 * implementations. Creates a new #GSource that expects a callback of
@@ -37492,7 +37152,6 @@ declare namespace imports.gi.Gio {
 	 * @returns the new #GSource.
 	 */
 	function pollable_source_new(pollable_stream: GObject.Object): GLib.Source;
-
 	/**
 	 * Utility method for #GPollableInputStream and #GPollableOutputStream
 	 * implementations. Creates a new #GSource, as with
@@ -37505,7 +37164,6 @@ declare namespace imports.gi.Gio {
 	 * @returns the new #GSource.
 	 */
 	function pollable_source_new_full(pollable_stream: GObject.Object, child_source: GLib.Source | null, cancellable: Cancellable | null): GLib.Source;
-
 	/**
 	 * Tries to read from #stream, as with {@link G.input_stream_read} (if
 	 * #blocking is %TRUE) or g_pollable_input_stream_read_nonblocking()
@@ -37525,7 +37183,6 @@ declare namespace imports.gi.Gio {
 	 * @returns the number of bytes read, or -1 on error.
 	 */
 	function pollable_stream_read(stream: InputStream, buffer: number[], count: number, blocking: boolean, cancellable: Cancellable | null): number;
-
 	/**
 	 * Tries to write to #stream, as with {@link G.output_stream_write} (if
 	 * #blocking is %TRUE) or g_pollable_output_stream_write_nonblocking()
@@ -37546,7 +37203,6 @@ declare namespace imports.gi.Gio {
 	 * @returns the number of bytes written, or -1 on error.
 	 */
 	function pollable_stream_write(stream: OutputStream, buffer: number[], count: number, blocking: boolean, cancellable: Cancellable | null): number;
-
 	/**
 	 * Tries to write #count bytes to #stream, as with
 	 * {@link G.output_stream_write_all}, but using g_pollable_stream_write()
@@ -37578,13 +37234,11 @@ declare namespace imports.gi.Gio {
 	 *   written to the stream
 	 */
 	function pollable_stream_write_all(stream: OutputStream, buffer: number[], count: number, blocking: boolean, cancellable: Cancellable | null): [ boolean, number ];
-
 	/**
 	 * Gets a reference to the default #GPowerProfileMonitor for the system.
 	 * @returns a new reference to the default #GPowerProfileMonitor
 	 */
 	function power_profile_monitor_dup_default(): PowerProfileMonitor;
-
 	/**
 	 * Find the `gio-proxy` extension point for a proxy implementation that supports
 	 * the specified protocol.
@@ -37593,26 +37247,22 @@ declare namespace imports.gi.Gio {
 	 *               is not supported.
 	 */
 	function proxy_get_default_for_protocol(protocol: string): Proxy | null;
-
 	/**
 	 * Gets the default #GProxyResolver for the system.
 	 * @returns the default #GProxyResolver, which
 	 *     will be a dummy object if no proxy resolver is available
 	 */
 	function proxy_resolver_get_default(): ProxyResolver;
-
 	/**
 	 * Gets the #GResolver Error Quark.
 	 * @returns a #GQuark.
 	 */
 	function resolver_error_quark(): GLib.Quark;
-
 	/**
 	 * Gets the #GResource Error Quark.
 	 * @returns a #GQuark
 	 */
 	function resource_error_quark(): GLib.Quark;
-
 	/**
 	 * Loads a binary resource bundle and creates a #GResource representation of it, allowing
 	 * you to query it for data.
@@ -37628,7 +37278,6 @@ declare namespace imports.gi.Gio {
 	 * @returns a new #GResource, or %NULL on error
 	 */
 	function resource_load(filename: string): Resource;
-
 	/**
 	 * Returns all the names of children at the specified #path in the set of
 	 * globally registered resources.
@@ -37641,7 +37290,6 @@ declare namespace imports.gi.Gio {
 	 * @returns an array of constant strings
 	 */
 	function resources_enumerate_children(path: string, lookup_flags: ResourceLookupFlags): string[];
-
 	/**
 	 * Looks for a file at the specified #path in the set of
 	 * globally registered resources and if found returns information about it.
@@ -37658,7 +37306,6 @@ declare namespace imports.gi.Gio {
 	 *    or %NULL if the flags are not needed
 	 */
 	function resources_get_info(path: string, lookup_flags: ResourceLookupFlags): [ boolean, number | null, number | null ];
-
 	/**
 	 * Looks for a file at the specified #path in the set of
 	 * globally registered resources and returns a #GBytes that
@@ -37680,7 +37327,6 @@ declare namespace imports.gi.Gio {
 	 *     Free the returned object with {@link G.bytes_unref}
 	 */
 	function resources_lookup_data(path: string, lookup_flags: ResourceLookupFlags): GLib.Bytes;
-
 	/**
 	 * Looks for a file at the specified #path in the set of
 	 * globally registered resources and returns a #GInputStream
@@ -37693,7 +37339,6 @@ declare namespace imports.gi.Gio {
 	 *     Free the returned object with {@link GObject.unref}
 	 */
 	function resources_open_stream(path: string, lookup_flags: ResourceLookupFlags): InputStream;
-
 	/**
 	 * Registers the resource with the process-global set of resources.
 	 * Once a resource is registered the files in it can be accessed
@@ -37701,13 +37346,11 @@ declare namespace imports.gi.Gio {
 	 * @param resource A #GResource
 	 */
 	function resources_register(resource: Resource): void;
-
 	/**
 	 * Unregisters the resource from the process-global set of resources.
 	 * @param resource A #GResource
 	 */
 	function resources_unregister(resource: Resource): void;
-
 	/**
 	 * Gets the default system schema source.
 	 * 
@@ -37725,7 +37368,6 @@ declare namespace imports.gi.Gio {
 	 * @returns the default schema source
 	 */
 	function settings_schema_source_get_default(): SettingsSchemaSource | null;
-
 	/**
 	 * Reports an error in an asynchronous function in an idle function by
 	 * directly setting the contents of the #GAsyncResult with the given error
@@ -37737,7 +37379,6 @@ declare namespace imports.gi.Gio {
 	 * @param format a formatted error reporting string.
 	 */
 	function simple_async_report_error_in_idle(object: GObject.Object | null, callback: AsyncReadyCallback | null, domain: GLib.Quark, code: number, format: string): void;
-
 	/**
 	 * Reports an error in an idle function. Similar to
 	 * {@link G.simple_async_report_error_in_idle}, but takes a #GError rather
@@ -37747,7 +37388,6 @@ declare namespace imports.gi.Gio {
 	 * @param error the #GError to report
 	 */
 	function simple_async_report_gerror_in_idle(object: GObject.Object | null, callback: AsyncReadyCallback | null, error: GLib.Error): void;
-
 	/**
 	 * Reports an error in an idle function. Similar to
 	 * {@link G.simple_async_report_gerror_in_idle}, but takes over the caller's
@@ -37757,27 +37397,23 @@ declare namespace imports.gi.Gio {
 	 * @param error the #GError to report
 	 */
 	function simple_async_report_take_gerror_in_idle(object: GObject.Object | null, callback: AsyncReadyCallback | null, error: GLib.Error): void;
-
 	/**
 	 * Sorts #targets in place according to the algorithm in RFC 2782.
 	 * @param targets a #GList of #GSrvTarget
 	 * @returns the head of the sorted list.
 	 */
 	function srv_target_list_sort(targets: any[]): any[];
-
 	/**
 	 * Gets the default #GTlsBackend for the system.
 	 * @returns a #GTlsBackend, which will be a
 	 *     dummy object if no TLS backend is available
 	 */
 	function tls_backend_get_default(): TlsBackend;
-
 	/**
 	 * Gets the TLS channel binding error quark.
 	 * @returns a #GQuark.
 	 */
 	function tls_channel_binding_error_quark(): GLib.Quark;
-
 	/**
 	 * Creates a new #GTlsClientConnection wrapping #base_io_stream (which
 	 * must have pollable input and output streams) which is assumed to
@@ -37792,13 +37428,11 @@ declare namespace imports.gi.Gio {
 	 * #GTlsClientConnection, or %NULL on error
 	 */
 	function tls_client_connection_new(base_io_stream: IOStream, server_identity: SocketConnectable | null): TlsClientConnection;
-
 	/**
 	 * Gets the TLS error quark.
 	 * @returns a #GQuark.
 	 */
 	function tls_error_quark(): GLib.Quark;
-
 	/**
 	 * Creates a new #GTlsFileDatabase which uses anchor certificate authorities
 	 * in #anchors to verify certificate chains.
@@ -37809,7 +37443,6 @@ declare namespace imports.gi.Gio {
 	 * #GTlsFileDatabase, or %NULL on error
 	 */
 	function tls_file_database_new(anchors: string): TlsFileDatabase;
-
 	/**
 	 * Creates a new #GTlsServerConnection wrapping #base_io_stream (which
 	 * must have pollable input and output streams).
@@ -37823,7 +37456,6 @@ declare namespace imports.gi.Gio {
 	 * #GTlsServerConnection, or %NULL on error
 	 */
 	function tls_server_connection_new(base_io_stream: IOStream, certificate: TlsCertificate | null): TlsServerConnection;
-
 	/**
 	 * Determines if #mount_path is considered an implementation of the
 	 * OS. This is primarily used for hiding mountable and mounted volumes
@@ -37834,7 +37466,6 @@ declare namespace imports.gi.Gio {
 	 *     of the OS.
 	 */
 	function unix_is_mount_path_system_internal(mount_path: string): boolean;
-
 	/**
 	 * Determines if #device_path is considered a block device path which is only
 	 * used in implementation of the OS. This is primarily used for hiding
@@ -37848,7 +37479,6 @@ declare namespace imports.gi.Gio {
 	 *    the OS.
 	 */
 	function unix_is_system_device_path(device_path: string): boolean;
-
 	/**
 	 * Determines if #fs_type is considered a type of file system which is only
 	 * used in implementation of the OS. This is primarily used for hiding
@@ -37861,7 +37491,6 @@ declare namespace imports.gi.Gio {
 	 * @returns %TRUE if #fs_type is considered an implementation detail of the OS.
 	 */
 	function unix_is_system_fs_type(fs_type: string): boolean;
-
 	/**
 	 * Gets a #GUnixMountEntry for a given mount path. If #time_read
 	 * is set, it will be filled with a unix timestamp for checking
@@ -37877,7 +37506,6 @@ declare namespace imports.gi.Gio {
 	 * guint64 to contain a timestamp.
 	 */
 	function unix_mount_at(mount_path: string): [ UnixMountEntry | null, number | null ];
-
 	/**
 	 * Compares two unix mounts.
 	 * @param mount1 first #GUnixMountEntry to compare.
@@ -37886,14 +37514,12 @@ declare namespace imports.gi.Gio {
 	 * or less than #mount2, respectively.
 	 */
 	function unix_mount_compare(mount1: UnixMountEntry, mount2: UnixMountEntry): number;
-
 	/**
 	 * Makes a copy of #mount_entry.
 	 * @param mount_entry a #GUnixMountEntry.
 	 * @returns a new #GUnixMountEntry
 	 */
 	function unix_mount_copy(mount_entry: UnixMountEntry): UnixMountEntry;
-
 	/**
 	 * Gets a #GUnixMountEntry for a given file path. If #time_read
 	 * is set, it will be filled with a unix timestamp for checking
@@ -37910,34 +37536,29 @@ declare namespace imports.gi.Gio {
 	 * guint64 to contain a timestamp.
 	 */
 	function unix_mount_for(file_path: string): [ UnixMountEntry | null, number | null ];
-
 	/**
 	 * Frees a unix mount.
 	 * @param mount_entry a #GUnixMountEntry.
 	 */
 	function unix_mount_free(mount_entry: UnixMountEntry): void;
-
 	/**
 	 * Gets the device path for a unix mount.
 	 * @param mount_entry a #GUnixMount.
 	 * @returns a string containing the device path.
 	 */
 	function unix_mount_get_device_path(mount_entry: UnixMountEntry): string;
-
 	/**
 	 * Gets the filesystem type for the unix mount.
 	 * @param mount_entry a #GUnixMount.
 	 * @returns a string containing the file system type.
 	 */
 	function unix_mount_get_fs_type(mount_entry: UnixMountEntry): string;
-
 	/**
 	 * Gets the mount path for a unix mount.
 	 * @param mount_entry input #GUnixMountEntry to get the mount path for.
 	 * @returns the mount path for #mount_entry.
 	 */
 	function unix_mount_get_mount_path(mount_entry: UnixMountEntry): string;
-
 	/**
 	 * Gets a comma-separated list of mount options for the unix mount. For example,
 	 * `rw,relatime,seclabel,data=ordered`.
@@ -37949,7 +37570,6 @@ declare namespace imports.gi.Gio {
 	 * available.
 	 */
 	function unix_mount_get_options(mount_entry: UnixMountEntry): string | null;
-
 	/**
 	 * Gets the root of the mount within the filesystem. This is useful e.g. for
 	 * mounts created by bind operation, or btrfs subvolumes.
@@ -37961,21 +37581,18 @@ declare namespace imports.gi.Gio {
 	 * @returns a string containing the root, or %NULL if not supported.
 	 */
 	function unix_mount_get_root_path(mount_entry: UnixMountEntry): string | null;
-
 	/**
 	 * Guesses whether a Unix mount can be ejected.
 	 * @param mount_entry a #GUnixMountEntry
 	 * @returns %TRUE if #mount_entry is deemed to be ejectable.
 	 */
 	function unix_mount_guess_can_eject(mount_entry: UnixMountEntry): boolean;
-
 	/**
 	 * Guesses the icon of a Unix mount.
 	 * @param mount_entry a #GUnixMountEntry
 	 * @returns a #GIcon
 	 */
 	function unix_mount_guess_icon(mount_entry: UnixMountEntry): Icon;
-
 	/**
 	 * Guesses the name of a Unix mount.
 	 * The result is a translated string.
@@ -37984,28 +37601,24 @@ declare namespace imports.gi.Gio {
 	 *     be freed with {@link G.free}
 	 */
 	function unix_mount_guess_name(mount_entry: UnixMountEntry): string;
-
 	/**
 	 * Guesses whether a Unix mount should be displayed in the UI.
 	 * @param mount_entry a #GUnixMountEntry
 	 * @returns %TRUE if #mount_entry is deemed to be displayable.
 	 */
 	function unix_mount_guess_should_display(mount_entry: UnixMountEntry): boolean;
-
 	/**
 	 * Guesses the symbolic icon of a Unix mount.
 	 * @param mount_entry a #GUnixMountEntry
 	 * @returns a #GIcon
 	 */
 	function unix_mount_guess_symbolic_icon(mount_entry: UnixMountEntry): Icon;
-
 	/**
 	 * Checks if a unix mount is mounted read only.
 	 * @param mount_entry a #GUnixMount.
 	 * @returns %TRUE if #mount_entry is read only.
 	 */
 	function unix_mount_is_readonly(mount_entry: UnixMountEntry): boolean;
-
 	/**
 	 * Checks if a Unix mount is a system mount. This is the Boolean OR of
 	 * {@link G.unix_is_system_fs_type}, g_unix_is_system_device_path() and
@@ -38017,7 +37630,6 @@ declare namespace imports.gi.Gio {
 	 * @returns %TRUE if the unix mount is for a system path.
 	 */
 	function unix_mount_is_system_internal(mount_entry: UnixMountEntry): boolean;
-
 	/**
 	 * Gets a #GUnixMountPoint for a given mount path. If #time_read is set, it
 	 * will be filled with a unix timestamp for checking if the mount points have
@@ -38032,14 +37644,12 @@ declare namespace imports.gi.Gio {
 	 * guint64 to contain a timestamp.
 	 */
 	function unix_mount_point_at(mount_path: string): [ UnixMountPoint | null, number | null ];
-
 	/**
 	 * Checks if the unix mount points have changed since a given unix time.
 	 * @param time guint64 to contain a timestamp.
 	 * @returns %TRUE if the mount points have changed since #time.
 	 */
 	function unix_mount_points_changed_since(time: number): boolean;
-
 	/**
 	 * Gets a #GList of #GUnixMountPoint containing the unix mount points.
 	 * If #time_read is set, it will be filled with the mount timestamp,
@@ -38051,14 +37661,12 @@ declare namespace imports.gi.Gio {
 	 * guint64 to contain a timestamp.
 	 */
 	function unix_mount_points_get(): [ UnixMountPoint[], number | null ];
-
 	/**
 	 * Checks if the unix mounts have changed since a given unix time.
 	 * @param time guint64 to contain a timestamp.
 	 * @returns %TRUE if the mounts have changed since #time.
 	 */
 	function unix_mounts_changed_since(time: number): boolean;
-
 	/**
 	 * Gets a #GList of #GUnixMountEntry containing the unix mounts.
 	 * If #time_read is set, it will be filled with the mount
@@ -38070,7 +37678,6 @@ declare namespace imports.gi.Gio {
 	 * guint64 to contain a timestamp, or %NULL
 	 */
 	function unix_mounts_get(): [ UnixMountEntry[], number | null ];
-
 	/**
 	 * The value returned by handlers of the signals generated by
 	 * the `gdbus-codegen` tool to indicate that a method call has been

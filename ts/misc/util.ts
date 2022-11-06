@@ -201,8 +201,6 @@ export function spawnCommandLineAsync(command_line: string, callback?: () => voi
     // @ts-expect-error the GLib typings are
     pid = trySpawn(argv, true);
 
-    // FIXME: incorrect GLib types, shadowed-by is not respected
-    // @ts-expect-error GLib types are incorrect
     GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, function (pid: number, status: number) {
         GLib.spawn_close_pid(pid);
 
@@ -215,7 +213,7 @@ export function spawnCommandLineAsync(command_line: string, callback?: () => voi
                 callback();
             }
         }
-    });
+    }, null, null);
 }
 
 export interface CommandLineAsyncIOOptions {

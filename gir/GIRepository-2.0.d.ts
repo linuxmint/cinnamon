@@ -1163,7 +1163,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns index of the user data argument or -1 if there is none
 	 */
 	function arg_info_get_closure(info: ArgInfo): number;
-
 	/**
 	 * Obtains the index of the #GDestroyNotify argument. This is only valid
 	 * for arguments which are callbacks.
@@ -1171,7 +1170,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns index of the #GDestroyNotify argument or -1 if there is none
 	 */
 	function arg_info_get_destroy(info: ArgInfo): number;
-
 	/**
 	 * Obtain the direction of the argument. Check #GIDirection for possible
 	 * direction values.
@@ -1179,7 +1177,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the direction
 	 */
 	function arg_info_get_direction(info: ArgInfo): Direction;
-
 	/**
 	 * Obtain the ownership transfer for this argument.
 	 * #GITransfer contains a list of possible values.
@@ -1187,7 +1184,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the transfer
 	 */
 	function arg_info_get_ownership_transfer(info: ArgInfo): Transfer;
-
 	/**
 	 * Obtain the scope type for this argument. The scope type explains
 	 * how a callback is going to be invoked, most importantly when
@@ -1197,7 +1193,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the scope type
 	 */
 	function arg_info_get_scope(info: ArgInfo): ScopeType;
-
 	/**
 	 * Obtain the type information for #info.
 	 * @param info a #GIArgInfo
@@ -1206,7 +1201,6 @@ declare namespace imports.gi.GIRepository {
 	 *   when done.
 	 */
 	function arg_info_get_type(info: ArgInfo): TypeInfo;
-
 	/**
 	 * Obtain if the argument is a pointer to a struct or object that will
 	 * receive an output of a function.  The default assumption for
@@ -1216,7 +1210,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if caller is required to have allocated the argument
 	 */
 	function arg_info_is_caller_allocates(info: ArgInfo): boolean;
-
 	/**
 	 * Obtain if the argument is optional.  For 'out' arguments this means
 	 * that you can pass %NULL in order to ignore the result.
@@ -1224,7 +1217,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if it is an optional argument
 	 */
 	function arg_info_is_optional(info: ArgInfo): boolean;
-
 	/**
 	 * Obtain if the argument is a return value. It can either be a
 	 * parameter or a return value.
@@ -1232,14 +1224,12 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if it is a return value
 	 */
 	function arg_info_is_return_value(info: ArgInfo): boolean;
-
 	/**
 	 * Obtain if an argument is only useful in C.
 	 * @param info a #GIArgInfo
 	 * @returns %TRUE if argument is only useful in C.
 	 */
 	function arg_info_is_skip(info: ArgInfo): boolean;
-
 	/**
 	 * Obtain information about a the type of given argument #info; this
 	 * function is a variant of {@link G.arg_info_get_type} designed for stack
@@ -1250,7 +1240,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns Initialized with information about type of #info
 	 */
 	function arg_info_load_type(info: ArgInfo): TypeInfo;
-
 	/**
 	 * Obtain if the type of the argument includes the possibility of %NULL.
 	 * For 'in' values this means that %NULL is a valid value.  For 'out'
@@ -1261,14 +1250,12 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if the value may be %NULL
 	 */
 	function arg_info_may_be_null(info: ArgInfo): boolean;
-
 	/**
 	 * TODO
 	 * @param info a #GICallableInfo
 	 * @returns %TRUE if this #GICallableInfo can throw a #GError
 	 */
 	function callable_info_can_throw_gerror(info: CallableInfo): boolean;
-
 	/**
 	 * Obtain information about a particular argument of this callable.
 	 * @param info a #GICallableInfo
@@ -1277,7 +1264,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function callable_info_get_arg(info: CallableInfo, n: number): ArgInfo;
-
 	/**
 	 * See whether the caller owns the return value of this callable.
 	 * #GITransfer contains a list of possible transfer values.
@@ -1285,7 +1271,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the transfer mode for the return value of the callable
 	 */
 	function callable_info_get_caller_owns(info: CallableInfo): Transfer;
-
 	/**
 	 * Obtains the ownership transfer for the instance argument.
 	 * #GITransfer contains a list of possible transfer values.
@@ -1293,14 +1278,12 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the transfer mode of the instance argument
 	 */
 	function callable_info_get_instance_ownership_transfer(info: CallableInfo): Transfer;
-
 	/**
 	 * Obtain the number of arguments (both IN and OUT) for this callable.
 	 * @param info a #GICallableInfo
 	 * @returns The number of arguments this callable expects.
 	 */
 	function callable_info_get_n_args(info: CallableInfo): number;
-
 	/**
 	 * Retrieve an arbitrary attribute associated with the return value.
 	 * @param info a #GICallableInfo
@@ -1308,7 +1291,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns The value of the attribute, or %NULL if no such attribute exists
 	 */
 	function callable_info_get_return_attribute(info: CallableInfo, name: string): string;
-
 	/**
 	 * Obtain the return type of a callable item as a #GITypeInfo.
 	 * @param info a #GICallableInfo
@@ -1316,7 +1298,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function callable_info_get_return_type(info: CallableInfo): TypeInfo;
-
 	/**
 	 * TODO
 	 * @param info TODO
@@ -1331,7 +1312,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns 
 	 */
 	function callable_info_invoke(info: CallableInfo, _function: any | null, in_args: Argument[], n_in_args: number, out_args: Argument[], n_out_args: number, return_value: Argument, is_method: boolean, _throws: boolean): boolean;
-
 	/**
 	 * Determines if the callable info is a method. For #GIVFuncInfo<!-- -->s,
 	 * #GICallbackInfo<!-- -->s, and #GISignalInfo<!-- -->s,
@@ -1346,7 +1326,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if #info is a method, %FALSE otherwise
 	 */
 	function callable_info_is_method(info: CallableInfo): boolean;
-
 	/**
 	 * Iterate over all attributes associated with the return value.  The
 	 * iterator structure is typically stack allocated, and must have its
@@ -1365,7 +1344,6 @@ declare namespace imports.gi.GIRepository {
 	 * Returned name, must not be freed
 	 */
 	function callable_info_iterate_return_attributes(info: CallableInfo): [ boolean, string, string ];
-
 	/**
 	 * Obtain information about a particular argument of this callable; this
 	 * function is a variant of {@link G.callable_info_get_arg} designed for stack
@@ -1377,7 +1355,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns Initialize with argument number #n
 	 */
 	function callable_info_load_arg(info: CallableInfo, n: number): ArgInfo;
-
 	/**
 	 * Obtain information about a return value of callable; this
 	 * function is a variant of {@link G.callable_info_get_return_type} designed for stack
@@ -1388,30 +1365,25 @@ declare namespace imports.gi.GIRepository {
 	 * @returns Initialized with return type of #info
 	 */
 	function callable_info_load_return_type(info: CallableInfo): TypeInfo;
-
 	/**
 	 * See if a callable could return %NULL.
 	 * @param info a #GICallableInfo
 	 * @returns %TRUE if callable could return %NULL
 	 */
 	function callable_info_may_return_null(info: CallableInfo): boolean;
-
 	/**
 	 * See if a callable's return value is only useful in C.
 	 * @param info a #GICallableInfo
 	 * @returns %TRUE if return value is only useful in C.
 	 */
 	function callable_info_skip_return(info: CallableInfo): boolean;
-
 	function cclosure_marshal_generic(closure: GObject.Closure, return_gvalue: GObject.Value, n_param_values: number, param_values: GObject.Value, invocation_hint: any | null, marshal_data: any | null): void;
-
 	/**
 	 * Free the value returned from {@link G.constant_info_get_value}.
 	 * @param info a #GIConstantInfo
 	 * @param value the argument
 	 */
 	function constant_info_free_value(info: ConstantInfo, value: Argument): void;
-
 	/**
 	 * Obtain the type of the constant as a #GITypeInfo.
 	 * @param info a #GIConstantInfo
@@ -1419,7 +1391,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function constant_info_get_type(info: ConstantInfo): TypeInfo;
-
 	/**
 	 * Obtain the value associated with the #GIConstantInfo and store it in the
 	 * #value parameter. #argument needs to be allocated before passing it in.
@@ -1431,7 +1402,6 @@ declare namespace imports.gi.GIRepository {
 	 * an argument
 	 */
 	function constant_info_get_value(info: ConstantInfo): [ number, Argument ];
-
 	/**
 	 * Obtain the string form of the quark for the error domain associated with
 	 * this enum, if any.
@@ -1440,7 +1410,6 @@ declare namespace imports.gi.GIRepository {
 	 * with this enum, or %NULL.
 	 */
 	function enum_info_get_error_domain(info: EnumInfo): string;
-
 	/**
 	 * Obtain an enum type method at index #n.
 	 * @param info a #GIEnumInfo
@@ -1449,21 +1418,18 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function enum_info_get_method(info: EnumInfo, n: number): FunctionInfo;
-
 	/**
 	 * Obtain the number of methods that this enum type has.
 	 * @param info a #GIEnumInfo
 	 * @returns number of methods
 	 */
 	function enum_info_get_n_methods(info: EnumInfo): number;
-
 	/**
 	 * Obtain the number of values this enumeration contains.
 	 * @param info a #GIEnumInfo
 	 * @returns the number of enumeration values
 	 */
 	function enum_info_get_n_values(info: EnumInfo): number;
-
 	/**
 	 * Obtain the tag of the type used for the enum in the C ABI. This will
 	 * will be a signed or unsigned integral type.
@@ -1475,7 +1441,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the storage type for the enumeration
 	 */
 	function enum_info_get_storage_type(info: EnumInfo): TypeTag;
-
 	/**
 	 * Obtain a value for this enumeration.
 	 * @param info a #GIEnumInfo
@@ -1484,7 +1449,6 @@ declare namespace imports.gi.GIRepository {
 	 * free the struct with {@link G.base_info_unref} when done.
 	 */
 	function enum_info_get_value(info: EnumInfo, n: number): ValueInfo;
-
 	/**
 	 * Reads a field identified by a #GIFieldInfo from a C structure or
 	 * union.  This only handles fields of simple C types. It will fail
@@ -1496,7 +1460,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if reading the field succeeded, otherwise %FALSE
 	 */
 	function field_info_get_field(field_info: FieldInfo, mem: any | null, value: Argument): boolean;
-
 	/**
 	 * Obtain the flags for this #GIFieldInfo. See #GIFieldInfoFlags for possible
 	 * flag values.
@@ -1504,7 +1467,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the flags
 	 */
 	function field_info_get_flags(info: FieldInfo): FieldInfoFlags;
-
 	/**
 	 * Obtain the offset in bytes of the field member, this is relative
 	 * to the beginning of the struct or union.
@@ -1512,7 +1474,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the field offset
 	 */
 	function field_info_get_offset(info: FieldInfo): number;
-
 	/**
 	 * Obtain the size in bits of the field member, this is how
 	 * much space you need to allocate to store the field.
@@ -1520,7 +1481,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the field size
 	 */
 	function field_info_get_size(info: FieldInfo): number;
-
 	/**
 	 * Obtain the type of a field as a #GITypeInfo.
 	 * @param info a #GIFieldInfo
@@ -1528,7 +1488,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function field_info_get_type(info: FieldInfo): TypeInfo;
-
 	/**
 	 * Writes a field identified by a #GIFieldInfo to a C structure or
 	 * union.  This only handles fields of simple C types. It will fail
@@ -1542,14 +1501,12 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if writing the field succeeded, otherwise %FALSE
 	 */
 	function field_info_set_field(field_info: FieldInfo, mem: any | null, value: Argument): boolean;
-
 	/**
 	 * Obtain the #GIFunctionInfoFlags for the #info.
 	 * @param info a #GIFunctionInfo
 	 * @returns the flags
 	 */
 	function function_info_get_flags(info: FunctionInfo): FunctionInfoFlags;
-
 	/**
 	 * Obtain the property associated with this #GIFunctionInfo.
 	 * Only #GIFunctionInfo with the flag %GI_FUNCTION_IS_GETTER or
@@ -1560,7 +1517,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function function_info_get_property(info: FunctionInfo): PropertyInfo;
-
 	/**
 	 * Obtain the symbol of the function. The symbol is the name of the
 	 * exported function, suitable to be used as an argument to
@@ -1569,7 +1525,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the symbol
 	 */
 	function function_info_get_symbol(info: FunctionInfo): string;
-
 	/**
 	 * Obtain the virtual function associated with this #GIFunctionInfo.
 	 * Only #GIFunctionInfo with the flag %GI_FUNCTION_WRAPS_VFUNC has
@@ -1579,7 +1534,6 @@ declare namespace imports.gi.GIRepository {
 	 * Free it by calling {@link G.base_info_unref} when done.
 	 */
 	function function_info_get_vfunc(info: FunctionInfo): VFuncInfo;
-
 	/**
 	 * Invokes the function described in #info with the given
 	 * arguments. Note that inout parameters must appear in both
@@ -1602,28 +1556,24 @@ declare namespace imports.gi.GIRepository {
 	 *   error occurred.
 	 */
 	function function_info_invoke(info: FunctionInfo, in_args: Argument[], n_in_args: number, out_args: Argument[], n_out_args: number, return_value: Argument): boolean;
-
 	/**
 	 * Returns the major version number of the girepository library.
 	 * (e.g. in version 1.58.2 this is 1.)
 	 * @returns the major version number of the girepository library
 	 */
 	function get_major_version(): number;
-
 	/**
 	 * Returns the micro version number of the girepository library.
 	 * (e.g. in version 1.58.2 this is 2.)
 	 * @returns the micro version number of the girepository library
 	 */
 	function get_micro_version(): number;
-
 	/**
 	 * Returns the minor version number of the girepository library.
 	 * (e.g. in version 1.58.2 this is 58.)
 	 * @returns the minor version number of the girepository library
 	 */
 	function get_minor_version(): number;
-
 	/**
 	 * TODO
 	 * @param type TODO
@@ -1633,14 +1583,12 @@ declare namespace imports.gi.GIRepository {
 	 * @returns TODO
 	 */
 	function info_new(type: InfoType, container: BaseInfo, typelib: Typelib, offset: number): BaseInfo;
-
 	/**
 	 * Obtain a string representation of #type
 	 * @param type the info type
 	 * @returns the string
 	 */
 	function info_type_to_string(type: InfoType): string;
-
 	/**
 	 * Obtain a method of the interface type given a #name. %NULL will be
 	 * returned if there's no method available with that name.
@@ -1650,7 +1598,6 @@ declare namespace imports.gi.GIRepository {
 	 * Free the struct by calling {@link G.base_info_unref} when done.
 	 */
 	function interface_info_find_method(info: InterfaceInfo, name: string): FunctionInfo;
-
 	/**
 	 * TODO
 	 * @param info a #GIInterfaceInfo
@@ -1659,7 +1606,6 @@ declare namespace imports.gi.GIRepository {
 	 * %NULL on failure.
 	 */
 	function interface_info_find_signal(info: InterfaceInfo, name: string): SignalInfo;
-
 	/**
 	 * Locate a virtual function slot with name #name. See the documentation
 	 * for {@link GObject.info_find_vfunc} for more information on virtuals.
@@ -1669,7 +1615,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function interface_info_find_vfunc(info: InterfaceInfo, name: string): VFuncInfo;
-
 	/**
 	 * Obtain an interface type constant at index #n.
 	 * @param info a #GIInterfaceInfo
@@ -1678,7 +1623,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function interface_info_get_constant(info: InterfaceInfo, n: number): ConstantInfo;
-
 	/**
 	 * Returns the layout C structure associated with this #GInterface.
 	 * @param info a #GIInterfaceInfo
@@ -1686,7 +1630,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function interface_info_get_iface_struct(info: InterfaceInfo): StructInfo;
-
 	/**
 	 * Obtain an interface type method at index #n.
 	 * @param info a #GIInterfaceInfo
@@ -1695,21 +1638,18 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function interface_info_get_method(info: InterfaceInfo, n: number): FunctionInfo;
-
 	/**
 	 * Obtain the number of constants that this interface type has.
 	 * @param info a #GIInterfaceInfo
 	 * @returns number of constants
 	 */
 	function interface_info_get_n_constants(info: InterfaceInfo): number;
-
 	/**
 	 * Obtain the number of methods that this interface type has.
 	 * @param info a #GIInterfaceInfo
 	 * @returns number of methods
 	 */
 	function interface_info_get_n_methods(info: InterfaceInfo): number;
-
 	/**
 	 * Obtain the number of prerequisites for this interface type.
 	 * A prerequisites is another interface that needs to be implemented for
@@ -1718,28 +1658,24 @@ declare namespace imports.gi.GIRepository {
 	 * @returns number of prerequisites
 	 */
 	function interface_info_get_n_prerequisites(info: InterfaceInfo): number;
-
 	/**
 	 * Obtain the number of properties that this interface type has.
 	 * @param info a #GIInterfaceInfo
 	 * @returns number of properties
 	 */
 	function interface_info_get_n_properties(info: InterfaceInfo): number;
-
 	/**
 	 * Obtain the number of signals that this interface type has.
 	 * @param info a #GIInterfaceInfo
 	 * @returns number of signals
 	 */
 	function interface_info_get_n_signals(info: InterfaceInfo): number;
-
 	/**
 	 * Obtain the number of virtual functions that this interface type has.
 	 * @param info a #GIInterfaceInfo
 	 * @returns number of virtual functions
 	 */
 	function interface_info_get_n_vfuncs(info: InterfaceInfo): number;
-
 	/**
 	 * Obtain an interface type prerequisites index #n.
 	 * @param info a #GIInterfaceInfo
@@ -1748,7 +1684,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function interface_info_get_prerequisite(info: InterfaceInfo, n: number): BaseInfo;
-
 	/**
 	 * Obtain an interface type property at index #n.
 	 * @param info a #GIInterfaceInfo
@@ -1757,7 +1692,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function interface_info_get_property(info: InterfaceInfo, n: number): PropertyInfo;
-
 	/**
 	 * Obtain an interface type signal at index #n.
 	 * @param info a #GIInterfaceInfo
@@ -1766,7 +1700,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function interface_info_get_signal(info: InterfaceInfo, n: number): SignalInfo;
-
 	/**
 	 * Obtain an interface type virtual function at index #n.
 	 * @param info a #GIInterfaceInfo
@@ -1775,13 +1708,11 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function interface_info_get_vfunc(info: InterfaceInfo, n: number): VFuncInfo;
-
 	/**
 	 * TODO
 	 * @returns TODO
 	 */
 	function invoke_error_quark(): GLib.Quark;
-
 	/**
 	 * Obtain a method of the object type given a #name. %NULL will be
 	 * returned if there's no method available with that name.
@@ -1791,7 +1722,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function object_info_find_method(info: ObjectInfo, name: string): FunctionInfo | null;
-
 	/**
 	 * Obtain a method of the object given a #name, searching both the
 	 * object #info and any interfaces it implements.  %NULL will be
@@ -1807,7 +1737,6 @@ declare namespace imports.gi.GIRepository {
 	 * The implementor of the interface
 	 */
 	function object_info_find_method_using_interfaces(info: ObjectInfo, name: string): [ FunctionInfo | null, ObjectInfo ];
-
 	/**
 	 * TODO
 	 * @param info a #GIObjectInfo
@@ -1815,7 +1744,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns Info for the signal with name #name in #info, or %NULL on failure.
 	 */
 	function object_info_find_signal(info: ObjectInfo, name: string): SignalInfo | null;
-
 	/**
 	 * Locate a virtual function slot with name #name. Note that the namespace
 	 * for virtuals is distinct from that of methods; there may or may not be
@@ -1830,7 +1758,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function object_info_find_vfunc(info: ObjectInfo, name: string): VFuncInfo | null;
-
 	/**
 	 * Locate a virtual function slot with name #name, searching both the object
 	 * #info and any interfaces it implements.  Note that the namespace for
@@ -1849,7 +1776,6 @@ declare namespace imports.gi.GIRepository {
 	 * The implementor of the interface
 	 */
 	function object_info_find_vfunc_using_interfaces(info: ObjectInfo, name: string): [ VFuncInfo | null, ObjectInfo ];
-
 	/**
 	 * Obtain if the object type is an abstract type, eg if it cannot be
 	 * instantiated
@@ -1857,7 +1783,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if the object type is abstract
 	 */
 	function object_info_get_abstract(info: ObjectInfo): boolean;
-
 	/**
 	 * Every #GObject has two structures; an instance structure and a class
 	 * structure.  This function returns the metadata for the class structure.
@@ -1866,7 +1791,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function object_info_get_class_struct(info: ObjectInfo): StructInfo | null;
-
 	/**
 	 * Obtain an object type constant at index #n.
 	 * @param info a #GIObjectInfo
@@ -1875,7 +1799,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function object_info_get_constant(info: ObjectInfo, n: number): ConstantInfo;
-
 	/**
 	 * Obtain an object type field at index #n.
 	 * @param info a #GIObjectInfo
@@ -1884,7 +1807,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function object_info_get_field(info: ObjectInfo, n: number): FieldInfo;
-
 	/**
 	 * Checks whether the object type is a final type, i.e. if it cannot
 	 * be derived
@@ -1892,7 +1814,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if the object type is final
 	 */
 	function object_info_get_final(info: ObjectInfo): boolean;
-
 	/**
 	 * Obtain if the object type is of a fundamental type which is not
 	 * G_TYPE_OBJECT. This is mostly for supporting GstMiniObject.
@@ -1900,7 +1821,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if the object type is a fundamental type
 	 */
 	function object_info_get_fundamental(info: ObjectInfo): boolean;
-
 	/**
 	 * Obtain the symbol name of the function that should be called to convert
 	 * an object instance pointer of this object type to a GValue.
@@ -1911,7 +1831,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the symbol or %NULL
 	 */
 	function object_info_get_get_value_function(info: ObjectInfo): string | null;
-
 	/**
 	 * Obtain a pointer to a function which can be used to
 	 * extract an instance of this object type out of a GValue.
@@ -1921,7 +1840,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the function pointer or %NULL
 	 */
 	function object_info_get_get_value_function_pointer(info: ObjectInfo): ObjectInfoGetValueFunction | null;
-
 	/**
 	 * Obtain an object type interface at index #n.
 	 * @param info a #GIObjectInfo
@@ -1930,7 +1848,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function object_info_get_interface(info: ObjectInfo, n: number): InterfaceInfo;
-
 	/**
 	 * Obtain an object type method at index #n.
 	 * @param info a #GIObjectInfo
@@ -1939,56 +1856,48 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function object_info_get_method(info: ObjectInfo, n: number): FunctionInfo;
-
 	/**
 	 * Obtain the number of constants that this object type has.
 	 * @param info a #GIObjectInfo
 	 * @returns number of constants
 	 */
 	function object_info_get_n_constants(info: ObjectInfo): number;
-
 	/**
 	 * Obtain the number of fields that this object type has.
 	 * @param info a #GIObjectInfo
 	 * @returns number of fields
 	 */
 	function object_info_get_n_fields(info: ObjectInfo): number;
-
 	/**
 	 * Obtain the number of interfaces that this object type has.
 	 * @param info a #GIObjectInfo
 	 * @returns number of interfaces
 	 */
 	function object_info_get_n_interfaces(info: ObjectInfo): number;
-
 	/**
 	 * Obtain the number of methods that this object type has.
 	 * @param info a #GIObjectInfo
 	 * @returns number of methods
 	 */
 	function object_info_get_n_methods(info: ObjectInfo): number;
-
 	/**
 	 * Obtain the number of properties that this object type has.
 	 * @param info a #GIObjectInfo
 	 * @returns number of properties
 	 */
 	function object_info_get_n_properties(info: ObjectInfo): number;
-
 	/**
 	 * Obtain the number of signals that this object type has.
 	 * @param info a #GIObjectInfo
 	 * @returns number of signals
 	 */
 	function object_info_get_n_signals(info: ObjectInfo): number;
-
 	/**
 	 * Obtain the number of virtual functions that this object type has.
 	 * @param info a #GIObjectInfo
 	 * @returns number of virtual functions
 	 */
 	function object_info_get_n_vfuncs(info: ObjectInfo): number;
-
 	/**
 	 * Obtain the parent of the object type.
 	 * @param info a #GIObjectInfo
@@ -1996,7 +1905,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function object_info_get_parent(info: ObjectInfo): ObjectInfo | null;
-
 	/**
 	 * Obtain an object type property at index #n.
 	 * @param info a #GIObjectInfo
@@ -2005,7 +1913,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function object_info_get_property(info: ObjectInfo, n: number): PropertyInfo;
-
 	/**
 	 * Obtain the symbol name of the function that should be called to ref this
 	 * object type. It's mainly used fundamental types. The type signature for
@@ -2015,7 +1922,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the symbol or %NULL
 	 */
 	function object_info_get_ref_function(info: ObjectInfo): string | null;
-
 	/**
 	 * Obtain a pointer to a function which can be used to
 	 * increase the reference count an instance of this object type.
@@ -2025,7 +1931,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the function pointer or %NULL
 	 */
 	function object_info_get_ref_function_pointer(info: ObjectInfo): ObjectInfoRefFunction | null;
-
 	/**
 	 * Obtain the symbol name of the function that should be called to convert
 	 * set a GValue giving an object instance pointer of this object type.
@@ -2036,7 +1941,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the symbol or %NULL
 	 */
 	function object_info_get_set_value_function(info: ObjectInfo): string | null;
-
 	/**
 	 * Obtain a pointer to a function which can be used to
 	 * set a GValue given an instance of this object type.
@@ -2046,7 +1950,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the function pointer or %NULL
 	 */
 	function object_info_get_set_value_function_pointer(info: ObjectInfo): ObjectInfoSetValueFunction | null;
-
 	/**
 	 * Obtain an object type signal at index #n.
 	 * @param info a #GIObjectInfo
@@ -2055,7 +1958,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function object_info_get_signal(info: ObjectInfo, n: number): SignalInfo;
-
 	/**
 	 * Obtain the function which when called will return the GType
 	 * function for which this object type is registered.
@@ -2063,14 +1965,12 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the type init function
 	 */
 	function object_info_get_type_init(info: ObjectInfo): string;
-
 	/**
 	 * Obtain the name of the objects class/type.
 	 * @param info a #GIObjectInfo
 	 * @returns name of the objects type
 	 */
 	function object_info_get_type_name(info: ObjectInfo): string;
-
 	/**
 	 * Obtain the symbol name of the function that should be called to unref this
 	 * object type. It's mainly used fundamental types. The type signature for
@@ -2080,7 +1980,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the symbol or %NULL
 	 */
 	function object_info_get_unref_function(info: ObjectInfo): string | null;
-
 	/**
 	 * Obtain a pointer to a function which can be used to
 	 * decrease the reference count an instance of this object type.
@@ -2090,7 +1989,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the function pointer or %NULL
 	 */
 	function object_info_get_unref_function_pointer(info: ObjectInfo): ObjectInfoUnrefFunction | null;
-
 	/**
 	 * Obtain an object type virtual function at index #n.
 	 * @param info a #GIObjectInfo
@@ -2099,7 +1997,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function object_info_get_vfunc(info: ObjectInfo, n: number): VFuncInfo;
-
 	/**
 	 * Obtain the flags for this property info. See #GParamFlags for
 	 * more information about possible flag values.
@@ -2107,7 +2004,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the flags
 	 */
 	function property_info_get_flags(info: PropertyInfo): GObject.ParamFlags;
-
 	/**
 	 * Obtains the getter function associated with this #GIPropertyInfo.
 	 * 
@@ -2117,7 +2013,6 @@ declare namespace imports.gi.GIRepository {
 	 *   Free it with {@link G.base_info_unref} when done.
 	 */
 	function property_info_get_getter(info: PropertyInfo): FunctionInfo | null;
-
 	/**
 	 * Obtain the ownership transfer for this property. See #GITransfer for more
 	 * information about transfer values.
@@ -2125,7 +2020,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the transfer
 	 */
 	function property_info_get_ownership_transfer(info: PropertyInfo): Transfer;
-
 	/**
 	 * Obtains the setter function associated with this #GIPropertyInfo.
 	 * 
@@ -2136,7 +2030,6 @@ declare namespace imports.gi.GIRepository {
 	 *   Free it with {@link G.base_info_unref} when done.
 	 */
 	function property_info_get_setter(info: PropertyInfo): FunctionInfo | null;
-
 	/**
 	 * Obtain the type information for the property #info.
 	 * @param info a #GIPropertyInfo
@@ -2144,7 +2037,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function property_info_get_type(info: PropertyInfo): TypeInfo;
-
 	/**
 	 * Obtain the #GType for this registered type or G_TYPE_NONE which a special meaning.
 	 * It means that either there is no type information associated with this #info or
@@ -2154,7 +2046,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the #GType.
 	 */
 	function registered_type_info_get_g_type(info: RegisteredTypeInfo): GObject.Type;
-
 	/**
 	 * Obtain the type init function for #info. The type init function is the
 	 * function which will register the GType within the GObject type system.
@@ -2165,7 +2056,6 @@ declare namespace imports.gi.GIRepository {
 	 * passing into {@link GModule.symbol}.
 	 */
 	function registered_type_info_get_type_init(info: RegisteredTypeInfo): string;
-
 	/**
 	 * Obtain the type name of the struct within the GObject type system.
 	 * This type can be passed to {@link G.type_name} to get a #GType.
@@ -2173,7 +2063,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the type name
 	 */
 	function registered_type_info_get_type_name(info: RegisteredTypeInfo): string;
-
 	/**
 	 * Obtain the class closure for this signal if one is set. The class
 	 * closure is a virtual function on the type that the signal belongs to.
@@ -2182,7 +2071,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the class closure or %NULL
 	 */
 	function signal_info_get_class_closure(info: SignalInfo): VFuncInfo;
-
 	/**
 	 * Obtain the flags for this signal info. See #GSignalFlags for
 	 * more information about possible flag values.
@@ -2190,7 +2078,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the flags
 	 */
 	function signal_info_get_flags(info: SignalInfo): GObject.SignalFlags;
-
 	/**
 	 * Obtain if the returning true in the signal handler will
 	 * stop the emission of the signal.
@@ -2198,7 +2085,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if returning true stops the signal emission
 	 */
 	function signal_info_true_stops_emit(info: SignalInfo): boolean;
-
 	/**
 	 * Obtain the type information for field named #name.
 	 * @param info a #GIStructInfo
@@ -2207,7 +2093,6 @@ declare namespace imports.gi.GIRepository {
 	 * free it with {@link G.base_info_unref} when done.
 	 */
 	function struct_info_find_field(info: StructInfo, name: string): FieldInfo;
-
 	/**
 	 * Obtain the type information for method named #name.
 	 * @param info a #GIStructInfo
@@ -2216,14 +2101,12 @@ declare namespace imports.gi.GIRepository {
 	 * when done.
 	 */
 	function struct_info_find_method(info: StructInfo, name: string): FunctionInfo;
-
 	/**
 	 * Obtain the required alignment of the structure.
 	 * @param info a #GIStructInfo
 	 * @returns required alignment in bytes
 	 */
 	function struct_info_get_alignment(info: StructInfo): number;
-
 	/**
 	 * Obtain the type information for field with specified index.
 	 * @param info a #GIStructInfo
@@ -2232,7 +2115,6 @@ declare namespace imports.gi.GIRepository {
 	 * when done.
 	 */
 	function struct_info_get_field(info: StructInfo, n: number): FieldInfo;
-
 	/**
 	 * Obtain the type information for method with specified index.
 	 * @param info a #GIStructInfo
@@ -2241,35 +2123,30 @@ declare namespace imports.gi.GIRepository {
 	 * when done.
 	 */
 	function struct_info_get_method(info: StructInfo, n: number): FunctionInfo;
-
 	/**
 	 * Obtain the number of fields this structure has.
 	 * @param info a #GIStructInfo
 	 * @returns number of fields
 	 */
 	function struct_info_get_n_fields(info: StructInfo): number;
-
 	/**
 	 * Obtain the number of methods this structure has.
 	 * @param info a #GIStructInfo
 	 * @returns number of methods
 	 */
 	function struct_info_get_n_methods(info: StructInfo): number;
-
 	/**
 	 * Obtain the total size of the structure.
 	 * @param info a #GIStructInfo
 	 * @returns size of the structure in bytes
 	 */
 	function struct_info_get_size(info: StructInfo): number;
-
 	/**
 	 * TODO
 	 * @param info TODO
 	 * @returns TODO
 	 */
 	function struct_info_is_foreign(info: StructInfo): boolean;
-
 	/**
 	 * Return true if this structure represents the "class structure" for some
 	 * #GObject or #GInterface.  This function is mainly useful to hide this kind of structure
@@ -2278,7 +2155,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if this is a class struct, %FALSE otherwise
 	 */
 	function struct_info_is_gtype_struct(info: StructInfo): boolean;
-
 	/**
 	 * GLib data structures, such as #GList, #GSList, and #GHashTable, all store
 	 * data pointers.
@@ -2296,7 +2172,6 @@ declare namespace imports.gi.GIRepository {
 	 * @param arg A #GIArgument to fill in
 	 */
 	function type_info_argument_from_hash_pointer(info: TypeInfo, hash_pointer: any | null, arg: Argument): void;
-
 	/**
 	 * Obtain the fixed array size of the type. The type tag must be a
 	 * #GI_TYPE_TAG_ARRAY or -1 will be returned.
@@ -2304,7 +2179,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the size or -1 if it's not an array
 	 */
 	function type_info_get_array_fixed_size(info: TypeInfo): number;
-
 	/**
 	 * Obtain the position of the argument which gives the array length of the type.
 	 * The type tag must be a #GI_TYPE_TAG_ARRAY or -1 will be returned.
@@ -2312,7 +2186,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the array length, or -1 if the type is not an array
 	 */
 	function type_info_get_array_length(info: TypeInfo): number;
-
 	/**
 	 * Obtain the array type for this type. See #GIArrayType for a list of
 	 * possible values. If the type tag of this type is not array, -1 will be
@@ -2321,7 +2194,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the array type or -1
 	 */
 	function type_info_get_array_type(info: TypeInfo): ArrayType;
-
 	/**
 	 * For types which have #GI_TYPE_TAG_INTERFACE such as GObjects and boxed values,
 	 * this function returns full information about the referenced type.  You can then
@@ -2332,7 +2204,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function type_info_get_interface(info: TypeInfo): BaseInfo;
-
 	/**
 	 * Obtain the parameter type #n.
 	 * @param info a #GITypeInfo
@@ -2340,7 +2211,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the param type info
 	 */
 	function type_info_get_param_type(info: TypeInfo, n: number): TypeInfo;
-
 	/**
 	 * Obtain the type tag corresponding to the underlying storage type in C for
 	 * the type.
@@ -2349,7 +2219,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the type tag
 	 */
 	function type_info_get_storage_type(info: TypeInfo): TypeTag;
-
 	/**
 	 * Obtain the type tag for the type. See #GITypeTag for a list
 	 * of type tags.
@@ -2357,7 +2226,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the type tag
 	 */
 	function type_info_get_tag(info: TypeInfo): TypeTag;
-
 	/**
 	 * GLib data structures, such as #GList, #GSList, and #GHashTable, all store
 	 * data pointers.
@@ -2375,7 +2243,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns A stuffed pointer, that can be stored in a #GHashTable, for example
 	 */
 	function type_info_hash_pointer_from_argument(info: TypeInfo, arg: Argument): any | null;
-
 	/**
 	 * Obtain if the type is passed as a reference.
 	 * 
@@ -2387,7 +2254,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if it is a pointer
 	 */
 	function type_info_is_pointer(info: TypeInfo): boolean;
-
 	/**
 	 * Obtain if the last element of the array is %NULL. The type tag must be a
 	 * #GI_TYPE_TAG_ARRAY or %FALSE will be returned.
@@ -2395,7 +2261,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns %TRUE if zero terminated
 	 */
 	function type_info_is_zero_terminated(info: TypeInfo): boolean;
-
 	/**
 	 * GLib data structures, such as #GList, #GSList, and #GHashTable, all store
 	 * data pointers.
@@ -2413,7 +2278,6 @@ declare namespace imports.gi.GIRepository {
 	 * @param arg A #GIArgument to fill in
 	 */
 	function type_tag_argument_from_hash_pointer(storage_type: TypeTag, hash_pointer: any | null, arg: Argument): void;
-
 	/**
 	 * GLib data structures, such as #GList, #GSList, and #GHashTable, all store
 	 * data pointers.
@@ -2431,14 +2295,12 @@ declare namespace imports.gi.GIRepository {
 	 * @returns A stuffed pointer, that can be stored in a #GHashTable, for example
 	 */
 	function type_tag_hash_pointer_from_argument(storage_type: TypeTag, arg: Argument): any | null;
-
 	/**
 	 * Obtain a string representation of #type
 	 * @param type the type_tag
 	 * @returns the string
 	 */
 	function type_tag_to_string(type: TypeTag): string;
-
 	/**
 	 * Obtain the type information for method named #name.
 	 * @param info a #GIUnionInfo
@@ -2447,14 +2309,12 @@ declare namespace imports.gi.GIRepository {
 	 * when done.
 	 */
 	function union_info_find_method(info: UnionInfo, name: string): FunctionInfo;
-
 	/**
 	 * Obtain the required alignment of the union.
 	 * @param info a #GIUnionInfo
 	 * @returns required alignment in bytes
 	 */
 	function union_info_get_alignment(info: UnionInfo): number;
-
 	/**
 	 * Obtain discriminator value assigned for n-th union field, i.e. n-th
 	 * union field is the active one if discriminator contains this
@@ -2465,14 +2325,12 @@ declare namespace imports.gi.GIRepository {
 	 * when done.
 	 */
 	function union_info_get_discriminator(info: UnionInfo, n: number): ConstantInfo;
-
 	/**
 	 * Returns offset of the discriminator field in the structure.
 	 * @param info a #GIUnionInfo
 	 * @returns offset in bytes of the discriminator
 	 */
 	function union_info_get_discriminator_offset(info: UnionInfo): number;
-
 	/**
 	 * Obtain the type information of the union discriminator.
 	 * @param info a #GIUnionInfo
@@ -2480,7 +2338,6 @@ declare namespace imports.gi.GIRepository {
 	 * when done.
 	 */
 	function union_info_get_discriminator_type(info: UnionInfo): TypeInfo;
-
 	/**
 	 * Obtain the type information for field with specified index.
 	 * @param info a #GIUnionInfo
@@ -2489,7 +2346,6 @@ declare namespace imports.gi.GIRepository {
 	 * when done.
 	 */
 	function union_info_get_field(info: UnionInfo, n: number): FieldInfo;
-
 	/**
 	 * Obtain the type information for method with specified index.
 	 * @param info a #GIUnionInfo
@@ -2498,35 +2354,30 @@ declare namespace imports.gi.GIRepository {
 	 * when done.
 	 */
 	function union_info_get_method(info: UnionInfo, n: number): FunctionInfo;
-
 	/**
 	 * Obtain the number of fields this union has.
 	 * @param info a #GIUnionInfo
 	 * @returns number of fields
 	 */
 	function union_info_get_n_fields(info: UnionInfo): number;
-
 	/**
 	 * Obtain the number of methods this union has.
 	 * @param info a #GIUnionInfo
 	 * @returns number of methods
 	 */
 	function union_info_get_n_methods(info: UnionInfo): number;
-
 	/**
 	 * Obtain the total size of the union.
 	 * @param info a #GIUnionInfo
 	 * @returns size of the union in bytes
 	 */
 	function union_info_get_size(info: UnionInfo): number;
-
 	/**
 	 * Return true if this union contains discriminator field.
 	 * @param info a #GIUnionInfo
 	 * @returns %TRUE if this is a discriminated union, %FALSE otherwise
 	 */
 	function union_info_is_discriminated(info: UnionInfo): boolean;
-
 	/**
 	 * Obtain the enumeration value of the #GIValueInfo.
 	 * @param info a #GIValueInfo
@@ -2535,7 +2386,6 @@ declare namespace imports.gi.GIRepository {
 	 *   return type is to allow both.
 	 */
 	function value_info_get_value(info: ValueInfo): number;
-
 	/**
 	 * This method will look up where inside the type struct of #implementor_gtype
 	 * is the implementation for #info.
@@ -2544,7 +2394,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns address to a function or %NULL if an error happened
 	 */
 	function vfunc_info_get_address(info: VFuncInfo, implementor_gtype: GObject.Type): any | null;
-
 	/**
 	 * Obtain the flags for this virtual function info. See #GIVFuncInfoFlags for
 	 * more information about possible flag values.
@@ -2552,7 +2401,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the flags
 	 */
 	function vfunc_info_get_flags(info: VFuncInfo): VFuncInfoFlags;
-
 	/**
 	 * If this virtual function has an associated invoker method, this
 	 * method will return it.  An invoker method is a C entry point.
@@ -2563,7 +2411,6 @@ declare namespace imports.gi.GIRepository {
 	 * {@link G.base_info_unref} when done.
 	 */
 	function vfunc_info_get_invoker(info: VFuncInfo): FunctionInfo;
-
 	/**
 	 * Obtain the offset of the function pointer in the class struct. The value
 	 * 0xFFFF indicates that the struct offset is unknown.
@@ -2571,7 +2418,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the struct offset or 0xFFFF if it's unknown
 	 */
 	function vfunc_info_get_offset(info: VFuncInfo): number;
-
 	/**
 	 * Obtain the signal for the virtual function if one is set.
 	 * The signal comes from the object or interface to which
@@ -2580,7 +2426,6 @@ declare namespace imports.gi.GIRepository {
 	 * @returns the signal or %NULL if none set
 	 */
 	function vfunc_info_get_signal(info: VFuncInfo): SignalInfo;
-
 	/**
 	 * Invokes the function described in #info with the given
 	 * arguments. Note that inout parameters must appear in both
@@ -2602,7 +2447,6 @@ declare namespace imports.gi.GIRepository {
 	 *   error occurred.
 	 */
 	function vfunc_info_invoke(info: VFuncInfo, implementor: GObject.Type, in_args: Argument[], n_in_args: number, out_args: Argument[], n_out_args: number, return_value: Argument): boolean;
-
 	/**
 	 * The major version number of the girepository library.
 	 * @returns The major version number of the girepository library.
