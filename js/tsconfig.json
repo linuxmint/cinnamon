@@ -1,7 +1,11 @@
 {
-    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "allowJs": true,
+        "outDir": "./dist"
+    },
     "include": [
         "../gir/**/*",
         "./**/*",
+        "../ts/imports.d.ts"
     ]
 }

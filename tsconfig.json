@@ -13,13 +13,5 @@
         "moduleResolution": "node",
         "moduleDetection": "force",
         "rootDir": "ts",
-    },
-    "include": [
-        "./ts/**/*",
-        "./tests/**/*",
-        "./gir/**/*",
-    ],
-    "files": [
-        "./ts/imports.d.ts"
-    ]
+    }
 }
