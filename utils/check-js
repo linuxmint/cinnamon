@@ -36,13 +36,11 @@ def check_file_for_dupe_lets(file):
             let_start = line.index(" let ")
             index = let_start + 5
             for i in line[index:]:
-                match_found = False
                 if i != " ":
                     index += 1
                     continue
 
                 let_var = line[let_start + 5 : index]
-                match_found = True
 
                 for obj in scope_vars:
                     if obj.depth == depth:
