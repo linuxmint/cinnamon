@@ -235,7 +235,7 @@ export interface CommandLineAsyncIOOptions {
  *
  * Returns (object): a Gio.Subprocess instance
  */
-export function spawnCommandLineAsyncIO(command: string, callback: (stdout: string, stderr: string, exitCode: number) => void, opts: CommandLineAsyncIOOptions = {}): imports.gi.Gio.Subprocess {
+export function spawnCommandLineAsyncIO(command: string, callback: (stdout: string | null, stderr: string | null, exitCode: number) => void, opts: CommandLineAsyncIOOptions = {}): imports.gi.Gio.Subprocess {
     let { argv, flags, input } = opts;
     if (!input) input = null;
 
@@ -249,14 +249,19 @@ export function spawnCommandLineAsyncIO(command: string, callback: (stdout: stri
     subprocess.init(null);
     let cancellable = new Gio.Cancellable();
 
+    // TODO: fix AsyncReadyCallback signature
     subprocess.communicate_utf8_async(input, cancellable, (obj, res) => {
-        let success: boolean, stdout: string | null = null, stderr: string | null = null, exitCode: number;
+        let success: boolean = false;
+        let stdout: string | null = null;
+        let stderr: string | null = null;
+        let exitCode: number = -1;
         // This will throw on cancel with "Gio.IOErrorEnum: Operation was cancelled"
         tryFn(() => [success, stdout, stderr] = (obj as any as imports.gi.Gio.Subprocess).communicate_utf8_finish(res));
 
         if (typeof callback === 'function' && !cancellable.is_cancelled()) {
-            if (stderr && stderr.indexOf('bash: ') > -1) {
-                stderr = stderr.replace(/bash: /, '');
+            // TODO: TryFn breaks typechecking
+            if (stderr && (stderr as string).indexOf('bash: ') > -1) {
+                stderr = (stderr as string).replace(/bash: /, '');
             }
             exitCode = success ? subprocess.get_exit_status() : -1;
             callback(stdout, stderr, exitCode);
@@ -520,9 +525,9 @@ export function find<T>(arr: T[], callback: (item: T, i: number, array: T[]) => 
  *
  * Iteratee functions may exit iteration early by explicitly returning false.
  */
-export function each<T extends any[]>(obj: T, callback: (item: T[keyof T], i: number | string) => boolean | void): void;
-export function each<T extends {}>(obj: T, callback: (item: T[keyof T], i: number | string) => void): void;
-export function each<T extends {} | any[]>(obj: T, callback: (item: T[keyof T], i: number | string) => boolean | void): void {
+export function each<T extends any[]>(obj: T, callback: (item: T[keyof T], i: number) => boolean | void): void;
+export function each<T extends {}>(obj: T, callback: (item: T[keyof T], i: string | symbol) => void): void;
+export function each<T extends {} | any[]>(obj: T, callback: (item: T[keyof T], i: number | string | symbol) => boolean | void): void {
     if (Array.isArray(obj)) {
         for (let i = 0, len = obj.length; i < len; i++) {
             if (callback(obj[i], i) === false) {
@@ -530,7 +535,7 @@ export function each<T extends {} | any[]>(obj: T, callback: (item: T[keyof T], 
             }
         }
     } else {
-        let keys = Object.keys(obj);
+        let keys = Object.keys(obj) as (keyof T)[];
         for (let i = 0, len = keys.length; i < len; i++) {
             let key = keys[i];
             callback(obj[key], key);
@@ -610,8 +615,8 @@ export function tryFn(callback: () => void, errCallback?: (err: unknown) => void
  *
  * Returns (number): The ID of the loop.
  */
-export function setTimeout(callback: () => void, ms: number): number {
-    let args = [];
+export function setTimeout(callback: (...args: any[]) => void, ms: number): number {
+    let args: any[] = [];
     if (arguments.length > 2) {
         args = args.slice.call(arguments, 2);
     }
@@ -619,7 +624,7 @@ export function setTimeout(callback: () => void, ms: number): number {
     let id = Mainloop.timeout_add(ms, () => {
         callback.call(null, ...args);
         return false; // Stop repeating
-    }, null);
+    });
 
     return id;
 };
@@ -677,13 +682,12 @@ export function clearInterval(id: number): void {
  *
  * Returns (any): The output of @callback.
  */
-export function throttle<T, TT extends any[]>(callback: (...args: TT) => T, interval: number, callFirst: boolean): () => T | undefined {
+export function throttle<T, TT extends any[]>(callback: (...arg: TT) => T, interval: number, callFirst: boolean): (...arg: TT) => T | undefined {
     let wait = false;
     let callNow = false;
-    return function () {
+    return function (this: any, ...args: TT) {
         callNow = callFirst && !wait;
         let context = this;
-        let args = arguments;
         if (!wait) {
             wait = true;
             setTimeout(function () {
@@ -695,7 +699,7 @@ export function throttle<T, TT extends any[]>(callback: (...args: TT) => T, inte
         }
         if (callNow) {
             callNow = false;
-            return callback.apply(this, arguments);
+            return callback.apply(this, args);
         }
     };
 }
@@ -727,8 +731,8 @@ export function unref(object: any, reserved: string[] = []): void {
 
 // MIT © Petka Antonov, Benjamin Gruenbaum, John-David Dalton, Sindre Sorhus
 // https://github.com/sindresorhus/to-fast-properties
-let fastProto: typeof FastObject | null = null;
-const FastObject = function (o?: any) {
+let fastProto: any | null = null;
+const FastObject: any = function (o?: any) {
     if (fastProto !== null && typeof fastProto.property) {
         const result = fastProto;
         fastProto = FastObject.prototype = null;
@@ -738,7 +742,7 @@ const FastObject = function (o?: any) {
     return new FastObject;
 }
 FastObject();
-export function toFastProperties(obj: any) {
+export function toFastProperties<T extends object>(obj: T): void {
     each(obj, function (value) {
         if (value && !Array.isArray(value)) FastObject(value);
     });
@@ -747,7 +751,7 @@ export function toFastProperties(obj: any) {
 const READWRITE = GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE;
 
 // Based on https://gist.github.com/ptomato/c4245c77d375022a43c5
-function _getWritablePropertyNamesForObjectInfo(info): string[] {
+function _getWritablePropertyNamesForObjectInfo(info: imports.gi.GIRepository.BaseInfo): string[] {
     let propertyNames: string[] = [];
     let propertyCount = Gir.object_info_get_n_properties(info);
     for (let i = 0; i < propertyCount; i++) {
@@ -767,13 +771,13 @@ function _getWritablePropertyNamesForObjectInfo(info): string[] {
  *
  * Returns (object): JS representation of the passed GObject
  */
-export function getGObjectPropertyValues(obj: imports.gi.GObject.Object, r: number = 0): any {
+export function getGObjectPropertyValues<T extends imports.gi.GObject.Object>(obj: T, r: number = 0): any {
     let repository = Gir.Repository.get_default();
     // TODO: inject find %gtype
     let baseInfo = repository.find_by_gtype(obj.constructor.$gtype);
-    let propertyNames: string[] = [];
-    for (let info = baseInfo; info !== null; info = Gir.object_info_get_parent(info)) {
-        propertyNames = [...propertyNames, ..._getWritablePropertyNamesForObjectInfo(info)];
+    let propertyNames: (keyof T)[] = [];
+    for (let info = baseInfo; info !== null; info = Gir.object_info_get_parent(info)!) {
+        propertyNames = [...propertyNames, ..._getWritablePropertyNamesForObjectInfo(info) as (keyof T)[]];
     }
     if (r > 0 && propertyNames.length === 0) {
         return obj.toString();
