@@ -136,7 +136,7 @@ class Module:
                                                 self.zoom_stack_get,
                                                 None)
 
-            if (self.mag_settings.get_boolean("lens-mode")):
+            if self.mag_settings.get_boolean("lens-mode"):
                 self.zoom_stack.set_visible_child_name("shape")
             else:
                 self.zoom_stack.set_visible_child_name("screen")

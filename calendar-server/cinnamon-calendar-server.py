@@ -64,7 +64,7 @@ class CalendarInfo(GObject.Object):
         self.color = self.extension.get_color()
         self.emit("color-changed")
 
-class Event():
+class Event:
     def __init__(self, uid, color, summary, all_day, start_timet, end_timet, mod_timet):
         self.__dict__.update(locals())
 
@@ -293,7 +293,7 @@ class CalendarServer(Gio.Application):
         self.handle_removed_objects(view, component_ids, calendar)
 
     def handle_new_or_modified_objects(self, view, objects, calendar):
-        if (calendar.view_cancellable.is_cancelled()):
+        if calendar.view_cancellable.is_cancelled():
             return
 
         self.hold()

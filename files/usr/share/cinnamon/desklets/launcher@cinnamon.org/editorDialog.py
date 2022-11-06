@@ -72,14 +72,14 @@ class EditorDialog:
 
     def update_sensitivity(self):
         sensitive = True
-        if (self.launcher_type == "Application"):
+        if self.launcher_type == "Application":
             sensitive = False
 
         self.name_entry.set_sensitive(not sensitive)
         self.title_entry.set_sensitive(sensitive)
         self.command_entry.set_sensitive(sensitive)
         self.icon_name_entry.set_sensitive(sensitive)
-        if (self.launcher_type == "Application"):
+        if self.launcher_type == "Application":
             self.name_entry.grab_focus()
         else:
             self.title_entry.grab_focus()
@@ -93,7 +93,7 @@ class EditorDialog:
         self.launcher_icon.set_from_icon_name(self.icon_name_entry.get_text(), 48)
 
     def on_name_changed(self, widget):
-        if (self.launcher_type == "Application"):
+        if self.launcher_type == "Application":
             self.set_fields_by_name()
 
     def set_fields_by_name(self):
@@ -111,11 +111,11 @@ class EditorDialog:
         self.dialog.destroy()
 
     def on_edit_ok_clicked(self, widget):
-        if (self.launcher_type == "Application"):
+        if self.launcher_type == "Application":
             if not self.name_entry.get_text():
                 return None
             launcher_name = self.name_entry.get_text() + ".desktop"
-        elif (self.launcher_type == "Custom Application"):
+        elif self.launcher_type == "Custom Application":
             launcher_name = self.write_custom_application()
 
         enabled_desklets = None
@@ -155,7 +155,7 @@ class EditorDialog:
             path = os.path.join(CUSTOM_LAUNCHERS_PATH, name)
             oldPath = os.path.join(OLD_CUSTOM_LAUNCHERS_PATH, name)
             if not os.path.exists(path) and not os.path.exists(oldPath):
-                return (name, path)
+                return name, path
 
             i = i + 1
 
@@ -185,11 +185,11 @@ class Application:
 
         custom_path = os.path.join(CUSTOM_LAUNCHERS_PATH, file_name)
         old_custom_path = os.path.join(OLD_CUSTOM_LAUNCHERS_PATH, file_name)
-        if (os.path.exists(custom_path)):
+        if os.path.exists(custom_path):
             self._path = custom_path
-        elif (os.path.exists(old_custom_path)):
+        elif os.path.exists(old_custom_path):
             self._path = old_custom_path
-        elif (os.path.exists("/usr/share/applications/" + file_name)):
+        elif os.path.exists("/usr/share/applications/" + file_name):
             self._path = "/usr/share/applications/" + file_name
 
         if self._path:
@@ -199,13 +199,13 @@ class Application:
                 if len(line)==0:
                     break
 
-                if (line.find("Name") == 0 and (not "[" in line)):
+                if line.find("Name") == 0 and (not "[" in line):
                     self.title = line.replace("Name","").replace("=","").replace("\n","")
 
-                if (line.find("Icon") == 0):
+                if line.find("Icon") == 0:
                     self.icon_name = line.replace("Icon","").replace(" ","").replace("=","").replace("\n","")
 
-                if (line.find("Exec") == 0):
+                if line.find("Exec") == 0:
                     self.command = line.replace("Exec","").replace("=","").replace("\n","")
 
                 if self.icon_name and self.title and self.command:

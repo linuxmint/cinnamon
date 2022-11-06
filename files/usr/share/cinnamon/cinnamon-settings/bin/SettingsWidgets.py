@@ -127,7 +127,7 @@ class DependencyCheckInstallButton(Gtk.Box):
         self.progress_source_id = GLib.timeout_add(200, self.pulse_progress)
 
     def cancel_pulse(self):
-        if (self.progress_source_id > 0):
+        if self.progress_source_id > 0:
             GLib.source_remove(self.progress_source_id)
             self.progress_source_id = 0
 
@@ -172,7 +172,7 @@ class GSettingsDependencySwitch(SettingsWidget):
             pkg_string += pkg
 
         self.dep_button = DependencyCheckInstallButton(_("Checking dependencies"),
-                                                       _("Please install: %s") % (pkg_string),
+                                                       _("Please install: %s") % pkg_string,
                                                        binfiles,
                                                        self.switch)
         self.content_widget.add(self.dep_button)
@@ -208,7 +208,7 @@ class SidePage(object):
         for widget in widgets:
             self.content_box.remove(widget)
 
-        if (self.module is not None):
+        if self.module is not None:
             self.module.on_module_selected()
             self.module.loaded = True
 
@@ -388,7 +388,7 @@ class SoundFileChooser(SettingsWidget):
         sound_filter.set_name(_("Sound files"))
         dialog.add_filter(sound_filter)
 
-        if (dialog.run() == Gtk.ResponseType.ACCEPT):
+        if dialog.run() == Gtk.ResponseType.ACCEPT:
             name = dialog.get_filename()
             self.set_value(name)
             self.update_button_label(name)

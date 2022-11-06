@@ -111,7 +111,7 @@ class Module:
                 AUTOSTART_APPS[key] = AutostartApp(sys_app,
                                                    system_position=os.path.dirname(sys_app))
 
-class AutostartApp():
+class AutostartApp:
     def __init__(self, app, user_position=None, system_position=None):
         self.app = app
         self.user_position = user_position
@@ -360,7 +360,7 @@ class AutostartApp():
 
         return current_locale
 
-class SaveMask():
+class SaveMask:
     def __init__(self):
         self.contents = []
         self.all = ["enabled", "no-display", "hidden", "name", "comment", "command", "delay"]
@@ -657,7 +657,7 @@ class AutostartBox(Gtk.Box):
         y = window_y + wrect.y + wrect.height
 
         push_in = True
-        return (x, y, push_in)
+        return x, y, push_in
 
 class AutostartRow(Gtk.ListBoxRow):
     def __init__(self, app):

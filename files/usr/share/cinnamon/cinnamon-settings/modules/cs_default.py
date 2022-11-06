@@ -259,19 +259,19 @@ class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this
         self.key_value = self.settings.get_string("exec")
         count_up = 0
 
-        while (self.this_item is not None and count_up < len(apps)):
+        while self.this_item is not None and count_up < len(apps):
             self.this_item = apps[count_up]
             cat_val = Gio.DesktopAppInfo.get_categories(self.this_item)
             exec_val = Gio.DesktopAppInfo.get_string(self.this_item, "Exec")
             name_val = Gio.DesktopAppInfo.get_string(self.this_item, "Name")
             icon_val = Gio.DesktopAppInfo.get_string(self.this_item, "Icon")
             #terminals don't have mime types, so we check for "TerminalEmulator" under the "Category" key in desktop files
-            if (cat_val is not None and "TerminalEmulator" in cat_val):
+            if cat_val is not None and "TerminalEmulator" in cat_val:
                 #this crazy if statement makes sure remaining desktop file info is not empty, then prevents root terminals from showing, then prevents repeating terminals from trying to being added which leave a blank space and Gtk-WARNING's
-                if (exec_val is not None and name_val is not None and icon_val is not None and not "gksu" in exec_val and exec_val not in self.active_items):
+                if exec_val is not None and name_val is not None and icon_val is not None and not "gksu" in exec_val and exec_val not in self.active_items:
                     self.append_custom_item(exec_val, name_val, Gio.ThemedIcon.new(icon_val))
                     self.active_items.append(exec_val)
-                    if (self.key_value == exec_val):
+                    if self.key_value == exec_val:
                         self.set_active_custom_item(self.key_value)
             count_up += 1
 
@@ -291,7 +291,7 @@ class DefaultCalculatorButton(Gtk.AppChooserButton):
         self.connect("changed", self.onChanged)
         count_up = 0
 
-        while (self.this_item is not None and count_up < len(apps)):
+        while self.this_item is not None and count_up < len(apps):
             self.this_item = apps[count_up]
             cat_val = Gio.DesktopAppInfo.get_categories(self.this_item)
             exec_val = Gio.DesktopAppInfo.get_string(self.this_item, "Exec")
@@ -304,14 +304,14 @@ class DefaultCalculatorButton(Gtk.AppChooserButton):
                (name_val is not None and "alculator" in name_val.lower()) or \
                (comment_val is not None and "alculator" in comment_val.lower()):
                 #this if statement makes sure remaining desktop file info is not empty
-                if (exec_val is not None and name_val is not None and icon_val is not None):
+                if exec_val is not None and name_val is not None and icon_val is not None:
                     if os.path.exists(icon_val):
                         icon = Gio.FileIcon.new(Gio.File.new_for_path(icon_val))
                     else:
                         icon = Gio.ThemedIcon.new(icon_val)
                     self.append_custom_item(exec_val, name_val, icon)
                     self.active_items.append(exec_val)
-                    if (self.key_value == exec_val):
+                    if self.key_value == exec_val:
                         self.set_active_custom_item(self.key_value)
             count_up += 1
 
@@ -384,7 +384,7 @@ class CustomAppChooserButton(Gtk.AppChooserButton):
         pref_ignore = self.getPreference(PREF_MEDIA_AUTORUN_X_CONTENT_IGNORE)
         pref_open_folder = self.getPreference(PREF_MEDIA_AUTORUN_X_CONTENT_OPEN_FOLDER)
 
-        return (pref_start_app, pref_ignore, pref_open_folder)
+        return pref_start_app, pref_ignore, pref_open_folder
 
     def setPreference(self, pref_value, settings_key):
         array = self.media_settings.get_strv(settings_key)

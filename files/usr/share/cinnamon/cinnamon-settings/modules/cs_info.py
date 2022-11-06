@@ -39,7 +39,7 @@ def getGraphicsInfos():
     count = 0
     envpath = os.environ["PATH"]
     os.environ["PATH"] = envpath + ":/usr/local/sbin:/usr/sbin:/sbin"
-    for card in getProcessOut(("lspci")):
+    for card in getProcessOut("lspci"):
         if not "VGA" in card:
             continue
         cardId = card.split()[0]
@@ -49,7 +49,7 @@ def getGraphicsInfos():
                 cardName = (line.split(":")[2].split("(rev")[0].strip())
 
         if cardName:
-            cards[count] = (cardName)
+            cards[count] = cardName
             count += 1
     os.environ["PATH"] = envpath
     return cards
@@ -146,7 +146,7 @@ def createSystemInfos():
         infos.append((_("Memory"), procInfos['mem_total']))
 
     diskSize, multipleDisks = getDiskSize()
-    if (multipleDisks):
+    if multipleDisks:
         diskText = _("Hard Drives")
     else:
         diskText = _("Hard Drive")

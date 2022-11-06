@@ -309,7 +309,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                 msg = _("\nThis key combination, \'<b>%s</b>\' should not be used because it would become impossible to type using this key. ")
                 msg += _("Please try again using a modifier key such as Control, Alt or Super (Windows key).\n\n")
                 msg += _("Continue only if you are certain this is what you want, otherwise press cancel.\n")
-                dialog.set_markup(msg % (accel_label))
+                dialog.set_markup(msg % accel_label)
                 dialog.show_all()
                 response = dialog.run()
                 dialog.destroy()

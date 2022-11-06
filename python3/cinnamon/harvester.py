@@ -81,7 +81,7 @@ def get_current_timestamp():
     seconds = datetime.datetime.utcnow().timestamp()
     return int(seconds // (TIMESTAMP_LIFETIME_MINUTES * 60))
 
-class SpiceUpdate():
+class SpiceUpdate:
     def __init__(self, spice_type, uuid, index_node, meta_node):
 
         self.uuid = uuid
@@ -121,7 +121,7 @@ class SpiceUpdate():
         self.link = "%s/%ss/view/%s" % (URL_SPICES_HOME, spice_type, index_node["spices-id"])
         self.size = index_node['file_size']
 
-class SpicePathSet():
+class SpicePathSet:
     def __init__(self, cache_item, spice_type):
         cache_folder = Path(os.path.join(GLib.get_user_cache_dir(), 'cinnamon', 'spices', spice_type))
 
@@ -139,7 +139,7 @@ class SpicePathSet():
         self.thumb_local_path = cache_folder.joinpath(self.thumb_basename)
         self.zip_download_url = URL_SPICES_HOME + cache_item['file']
 
-class Harvester():
+class Harvester:
     def __init__(self, spice_type):
         self.spice_type = spice_type
 

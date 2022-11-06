@@ -154,7 +154,7 @@ class JSONSettingsHandler(object):
         try:
             settings = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
         except:
-            raise Exception("Failed to parse settings JSON data for file %s" % (self.filepath))
+            raise Exception("Failed to parse settings JSON data for file %s" % self.filepath)
         return settings
 
     def save_settings(self):
@@ -206,7 +206,7 @@ class JSONSettingsHandler(object):
         try:
             settings = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
         except:
-            raise Exception("Failed to parse settings JSON data for file %s" % (self.filepath))
+            raise Exception("Failed to parse settings JSON data for file %s" % self.filepath)
 
         for key in self.settings:
             if "value" not in self.settings[key]:

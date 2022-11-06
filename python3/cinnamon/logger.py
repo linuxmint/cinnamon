@@ -12,7 +12,7 @@ try:
 except AttributeError:
     logfile = '%s/.cinnamon/harvester.log' % os.path.expanduser("~")
 
-class ActivityLogger():
+class ActivityLogger:
     def __init__(self):
         self.queue = queue.SimpleQueue()
         self.thread = threading.Thread(target=self.write_to_file_thread, daemon=True)

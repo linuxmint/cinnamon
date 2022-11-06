@@ -642,7 +642,7 @@ class Module:
         self.maxVolume.label.set_label(_("Maximum volume: %d") % newValue + "%")
         self.outVolume.adjustment.set_upper(newValue)
         self.outVolume.slider.clear_marks()
-        if (newValue > 100):
+        if newValue > 100:
             self.outVolume.setMark(100)
 
     def inializeController(self):
@@ -696,7 +696,7 @@ class Module:
                 icon = lookup.load_icon()
 
         if icon is None:
-            if (iconName is not None and "bluetooth" in iconName):
+            if iconName is not None and "bluetooth" in iconName:
                 icon = iconTheme.load_icon("bluetooth", 32, 0)
             elif iconTheme.has_icon("audio-card"):
                 # The audio-card icon was removed from adwaita, so may be absent in the current theme
