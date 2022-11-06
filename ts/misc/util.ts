@@ -525,8 +525,8 @@ export function find<T>(arr: T[], callback: (item: T, i: number, array: T[]) => 
  *
  * Iteratee functions may exit iteration early by explicitly returning false.
  */
-export function each<T extends any[]>(obj: T, callback: (item: T[keyof T], i: number) => boolean | void): void;
-export function each<T extends {}>(obj: T, callback: (item: T[keyof T], i: string | symbol) => void): void;
+// export function each<T extends {}>(obj: T, callback: (item: T[keyof T], i: string) => void): void;
+// export function each<T extends any[]>(obj: T, callback: (item: T[keyof T], i: number) => boolean | void): void;
 export function each<T extends {} | any[]>(obj: T, callback: (item: T[keyof T], i: number | string | symbol) => boolean | void): void {
     if (Array.isArray(obj)) {
         for (let i = 0, len = obj.length; i < len; i++) {
