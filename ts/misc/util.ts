@@ -97,7 +97,8 @@ export function spawn(argv: string[]): number | null | undefined {
     try {
         pid = trySpawn(argv);
     } catch (err) {
-        _handleSpawnError(argv[0], err);
+        // TODO: Assert this properly if needed
+        _handleSpawnError(argv[0], err as Error);
     }
 
     return pid;
@@ -134,7 +135,8 @@ export function spawnCommandLine(command_line: string): number | null | undefine
         // @ts-expect-error the GLib typings are incorrect
         pid = trySpawn(argv);
     } catch (err) {
-        _handleSpawnError(command_line, err);
+        // TODO: Assert this properly if needed
+        _handleSpawnError(command_line, err as Error);
     }
 
     return pid;
@@ -250,9 +252,7 @@ export function spawnCommandLineAsyncIO(command: string, callback: (stdout: stri
     subprocess.communicate_utf8_async(input, cancellable, (obj, res) => {
         let success: boolean, stdout: string | null = null, stderr: string | null = null, exitCode: number;
         // This will throw on cancel with "Gio.IOErrorEnum: Operation was cancelled"
-        tryFn(() => {
-            [success, stdout, stderr] = (obj as any as imports.gi.Gio.Subprocess).communicate_utf8_finish(res)
-        });
+        tryFn(() => [success, stdout, stderr] = (obj as any as imports.gi.Gio.Subprocess).communicate_utf8_finish(res));
 
         if (typeof callback === 'function' && !cancellable.is_cancelled()) {
             if (stderr && stderr.indexOf('bash: ') > -1) {
@@ -268,7 +268,7 @@ export function spawnCommandLineAsyncIO(command: string, callback: (stdout: stri
     return subprocess;
 }
 
-function _handleSpawnError(command, err) {
+export function _handleSpawnError(command: string, err: Error) {
     let title = _("Execution of '%s' failed:").format(command);
     Main.notifyError(title, err.message);
 }
@@ -280,7 +280,7 @@ function _handleSpawnError(command, err) {
  * Kills @processName. If no process with the given name is found,
  * this will fail silently.
  */
-function killall(processName) {
+export function killall(processName: string): void {
     try {
         // pkill is more portable than killall, but on Linux at least
         // it won't match if you pass more than 15 characters of the
@@ -348,7 +348,7 @@ const _IGNORED_PHRASES = [
     '(PC-Suite Mode)'
 ];
 
-function fixupPCIDescription(desc) {
+export function fixupPCIDescription(desc: string): string {
     desc = desc.replace(/[_,]/, ' ');
 
     /* Remove any parenthesized info longer than 2 chars (which
@@ -369,7 +369,7 @@ function fixupPCIDescription(desc) {
 
     /* Attmept to shorten ID by ignoring certain individual words */
     let words = desc.split(' ');
-    let out = [];
+    let out: string[] = [];
     for (let i = 0; i < words.length; i++) {
         let item = words[i];
 
@@ -443,14 +443,16 @@ const _LATINISE_REGEX = {
  *
  * Returns (string): @string, replaced accented chars
  */
-function latinise(string) {
+export function latinise(string: string): string {
     //call every regex to replace chars
-    for (var i in _LATINISE_REGEX) {
+    let i: keyof typeof _LATINISE_REGEX;
+    for (i in _LATINISE_REGEX) {
         string = string.replace(_LATINISE_REGEX[i], i);
     }
     return string;
 }
 
+//TODO: convert this to a generic type
 /**
  * queryCollection:
  * @collection (array): an array of objects to query
@@ -461,7 +463,7 @@ function latinise(string) {
  * Returns (object|null): the matched object, or null if no object
  * in the collection matches all conditions of the query.
  */
-function queryCollection(collection, query, indexOnly = false) {
+export function queryCollection(collection: any[], query: any, indexOnly: boolean = false): any | number | null {
     let queryKeys = Object.keys(query);
     for (let i = 0; i < collection.length; i++) {
         let matches = 0;
@@ -485,7 +487,7 @@ function queryCollection(collection, query, indexOnly = false) {
  *
  * Returns (number): the index of @array, else -1.
  */
-function findIndex(array, callback) {
+export function findIndex<T>(array: T[], callback: (item: T, i: number, array: T[]) => boolean): number {
     for (let i = 0, len = array.length; i < len; i++) {
         if (array[i] && callback(array[i], i, array)) {
             return i;
@@ -502,7 +504,7 @@ function findIndex(array, callback) {
  *
  * Returns (any): Returns the matched element, else null.
  */
-function find(arr, callback) {
+export function find<T>(arr: T[], callback: (item: T, i: number, array: T[]) => boolean): T | null {
     for (let i = 0, len = arr.length; i < len; i++) {
         if (callback(arr[i], i, arr)) {
             return arr[i];
@@ -518,7 +520,9 @@ function find(arr, callback) {
  *
  * Iteratee functions may exit iteration early by explicitly returning false.
  */
-function each(obj, callback) {
+export function each<T extends any[]>(obj: T, callback: (item: T[keyof T], i: number | string) => boolean | void): void;
+export function each<T extends {}>(obj: T, callback: (item: T[keyof T], i: number | string) => void): void;
+export function each<T extends {} | any[]>(obj: T, callback: (item: T[keyof T], i: number | string) => boolean | void): void {
     if (Array.isArray(obj)) {
         for (let i = 0, len = obj.length; i < len; i++) {
             if (callback(obj[i], i) === false) {
@@ -541,8 +545,8 @@ function each(obj, callback) {
  *
  * Returns (array): Returns the new filtered array.
  */
-function filter(arr, callback) {
-    let result = [];
+export function filter<T>(arr: T[], callback: (item: T, i: number, array: T[]) => boolean): T[] {
+    let result: T[] = [];
     for (let i = 0, len = arr.length; i < len; i++) {
         if (callback(arr[i], i, arr)) {
             result.push(arr[i]);
@@ -558,13 +562,13 @@ function filter(arr, callback) {
  *
  * Returns (array): Returns the new mapped array.
  */
-function map(arr, callback) {
+export function map<T, TT>(arr: T[] | null, callback: (item: T, i: number, array: T[]) => TT): TT[] {
     if (arr == null) {
         return [];
     }
 
     let len = arr.length;
-    let out = Array(len);
+    let out: TT[] = Array(len);
 
     for (let i = 0; i < len; i++) {
         out[i] = callback(arr[i], i, arr);
@@ -606,7 +610,7 @@ export function tryFn(callback: () => void, errCallback?: (err: unknown) => void
  *
  * Returns (number): The ID of the loop.
  */
-function setTimeout(callback, ms) {
+export function setTimeout(callback: () => void, ms: number): number {
     let args = [];
     if (arguments.length > 2) {
         args = args.slice.call(arguments, 2);
@@ -626,7 +630,7 @@ function setTimeout(callback, ms) {
  *
  * Convenience wrapper for Mainloop.source_remove.
  */
-function clearTimeout(id) {
+export function clearTimeout(id: number): void {
     if (id) Mainloop.source_remove(id);
 };
 
@@ -641,8 +645,8 @@ function clearTimeout(id) {
  *
  * Returns (number): The ID of the loop.
  */
-function setInterval(callback, ms) {
-    let args = [];
+export function setInterval(callback: (...args: any[]) => void, ms: number): number {
+    let args: any[] = [];
     if (arguments.length > 2) {
         args = args.slice.call(arguments, 2);
     }
@@ -650,7 +654,7 @@ function setInterval(callback, ms) {
     let id = Mainloop.timeout_add(ms, () => {
         callback.call(null, ...args);
         return true; // Repeat
-    }, null);
+    });
 
     return id;
 };
@@ -661,7 +665,7 @@ function setInterval(callback, ms) {
  *
  * Convenience wrapper for Mainloop.source_remove.
  */
-function clearInterval(id) {
+export function clearInterval(id: number): void {
     if (id) Mainloop.source_remove(id);
 };
 
@@ -673,7 +677,7 @@ function clearInterval(id) {
  *
  * Returns (any): The output of @callback.
  */
-function throttle(callback, interval, callFirst) {
+export function throttle<T, TT extends any[]>(callback: (...args: TT) => T, interval: number, callFirst: boolean): () => T | undefined {
     let wait = false;
     let callNow = false;
     return function () {
@@ -708,7 +712,7 @@ function throttle(callback, interval, callFirst) {
  * classes that do not reconstruct very frequently, as GC thrashing can
  * reduce performance.
  */
-function unref(object, reserved = []) {
+export function unref(object: any, reserved: string[] = []): void {
     // Some actors being destroyed have a cascading effect (e.g. PopupMenu items),
     // so it is safest to wait for the next 'tick' before removing references.
     setTimeout(() => {
@@ -723,8 +727,8 @@ function unref(object, reserved = []) {
 
 // MIT © Petka Antonov, Benjamin Gruenbaum, John-David Dalton, Sindre Sorhus
 // https://github.com/sindresorhus/to-fast-properties
-let fastProto = null;
-const FastObject = function (o) {
+let fastProto: typeof FastObject | null = null;
+const FastObject = function (o?: any) {
     if (fastProto !== null && typeof fastProto.property) {
         const result = fastProto;
         fastProto = FastObject.prototype = null;
@@ -734,7 +738,7 @@ const FastObject = function (o) {
     return new FastObject;
 }
 FastObject();
-function toFastProperties(obj) {
+export function toFastProperties(obj: any) {
     each(obj, function (value) {
         if (value && !Array.isArray(value)) FastObject(value);
     });
@@ -743,8 +747,8 @@ function toFastProperties(obj) {
 const READWRITE = GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE;
 
 // Based on https://gist.github.com/ptomato/c4245c77d375022a43c5
-function _getWritablePropertyNamesForObjectInfo(info) {
-    let propertyNames = [];
+function _getWritablePropertyNamesForObjectInfo(info): string[] {
+    let propertyNames: string[] = [];
     let propertyCount = Gir.object_info_get_n_properties(info);
     for (let i = 0; i < propertyCount; i++) {
         let propertyInfo = Gir.object_info_get_property(info, i);
@@ -763,17 +767,18 @@ function _getWritablePropertyNamesForObjectInfo(info) {
  *
  * Returns (object): JS representation of the passed GObject
  */
-function getGObjectPropertyValues(obj, r = 0) {
+export function getGObjectPropertyValues(obj: imports.gi.GObject.Object, r: number = 0): any {
     let repository = Gir.Repository.get_default();
+    // TODO: inject find %gtype
     let baseInfo = repository.find_by_gtype(obj.constructor.$gtype);
-    let propertyNames = [];
+    let propertyNames: string[] = [];
     for (let info = baseInfo; info !== null; info = Gir.object_info_get_parent(info)) {
         propertyNames = [...propertyNames, ..._getWritablePropertyNamesForObjectInfo(info)];
     }
     if (r > 0 && propertyNames.length === 0) {
         return obj.toString();
     }
-    let jsRepresentation = {};
+    let jsRepresentation: any = {};
     for (let i = 0; i < propertyNames.length; i++) {
         try {
             let value = obj[propertyNames[i]];
@@ -789,7 +794,7 @@ function getGObjectPropertyValues(obj, r = 0) {
     return jsRepresentation;
 }
 
-function version_exceeds(version, min_version) {
+export function version_exceeds(version: string, min_version: string): boolean {
     let our_version = version.split(".");
     let cmp_version = min_version.split(".");
     let i;
@@ -869,7 +874,7 @@ const DESKTOP_ACTION_ICON_NAMES = {
  *
  * Returns (string|null): Name of the icon associated with this action or null if not found
  */
-function getDesktopActionIcon(action) {
+export function getDesktopActionIcon(action: string) {
     let actionID = '';
     if (action.toUpperCase() === action) {
         actionID = action.toLowerCase();
@@ -881,7 +886,7 @@ function getDesktopActionIcon(action) {
     actionID = actionID.replace(/-/g, '_');
 
     if (DESKTOP_ACTION_ICON_NAMES.hasOwnProperty(actionID))
-        return DESKTOP_ACTION_ICON_NAMES[actionID];
+        return DESKTOP_ACTION_ICON_NAMES[actionID as keyof typeof DESKTOP_ACTION_ICON_NAMES];
     else return null;
 }
 
