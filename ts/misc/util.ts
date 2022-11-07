@@ -91,8 +91,8 @@ export function findUrls(str: string): { url: string; pos: number; }[] {
  * Runs @argv in the background, handling any errors that occur
  * when trying to start the program.
  */
-export function spawn(argv: string[]): number | null | undefined {
-    let pid;
+export function spawn(argv: string[]): number | null {
+    let pid: number | null = null;
 
     try {
         pid = trySpawn(argv);
@@ -127,8 +127,8 @@ export function spawn_async(args: string[], callback: (stdout: string) => void):
  * Runs @command_line in the background, handling any errors that
  * occur when trying to parse or start the program.
  */
-export function spawnCommandLine(command_line: string): number | null | undefined {
-    let pid;
+export function spawnCommandLine(command_line: string): number | null {
+    let pid: number | null = null;
 
     try {
         let [success, argv] = GLib.shell_parse_argv(command_line);
@@ -149,7 +149,7 @@ export function spawnCommandLine(command_line: string): number | null | undefine
  * Runs @argv in the background. If launching @argv fails,
  * this will throw an error.
  */
-export function trySpawn(argv: string[], doNotReap?: boolean): number | null | undefined {
+export function trySpawn(argv: string[], doNotReap?: boolean): number | null {
     let spawn_flags = GLib.SpawnFlags.SEARCH_PATH
         | GLib.SpawnFlags.STDOUT_TO_DEV_NULL
         | GLib.SpawnFlags.STDERR_TO_DEV_NULL;
@@ -169,7 +169,7 @@ export function trySpawn(argv: string[], doNotReap?: boolean): number | null | u
  * Runs @command_line in the background. If launching @command_line
  * fails, this will throw an error.
  */
-export function trySpawnCommandLine(command_line: string): number | null | undefined {
+export function trySpawnCommandLine(command_line: string): number | null {
     let pid;
 
     let [success, argv] = GLib.shell_parse_argv(command_line);
