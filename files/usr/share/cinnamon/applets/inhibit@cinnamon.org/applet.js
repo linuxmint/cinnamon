@@ -171,7 +171,6 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
     toggle() {
         this._switch.toggle();
         this.toggled(this._switch.state);
-        this._applet.icon.toggleInhibitStatus(this._switch.state);
     }
 }
 
