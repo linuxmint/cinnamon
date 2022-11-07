@@ -19,7 +19,6 @@ pkglibdir = join_paths(libdir, meson.project_name().to_lower())
 servicedir = join_paths(datadir, 'dbus-1', 'services')
 pkgdatadir = join_paths(datadir, meson.project_name().to_lower())
 po_dir = join_paths(meson.source_root(), 'po')
-dbus_services_dir = dependency('dbus-1').get_pkgconfig_variable('session_bus_services_dir', define_variable: ['datadir', datadir])
 
 # dependencies
 cjs = dependency('cjs-1.0', version: '>= 4.8.0')

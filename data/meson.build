@@ -13,6 +13,7 @@ install_subdir(
 
 desktop_conf = configuration_data()
 desktop_conf.set('bindir', join_paths(prefix, bindir))
+desktop_conf.set('libexecdir', join_paths(prefix, libexecdir))
 desktop_conf.set('VERSION', meson.project_version())
 
 desktop_files = [

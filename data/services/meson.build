@@ -1,4 +1,6 @@
 service_files = [
+  'org.cinnamon.CalendarServer.service',
+  'org.Cinnamon.HotplugSniffer.service',
   'org.Cinnamon.Melange.service',
   'org.Cinnamon.Slideshow.service',
 ]
