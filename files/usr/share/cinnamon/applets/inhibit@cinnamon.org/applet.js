@@ -167,6 +167,12 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
             this.sessionProxy.disconnectSignal(this.sigRemovedId);
         }
     }
+
+    toggle() {
+        this._switch.toggle();
+        this.toggled(this._switch.state);
+        this._applet.icon.toggleInhibitStatus(this._switch.state);
+    }
 }
 
 class InhibitingAppMenuItem extends PopupMenu.PopupIconMenuItem {
@@ -482,15 +488,12 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
     }
 
     toggle_inhibit_power() {
-        this.inhibitSwitch._switch.toggle();
-        this.inhibitSwitch.toggled(this.inhibitSwitch._switch.state);
-        this.icon.toggleInhibitStatus(this.inhibitSwitch._switch.state);
+        this.inhibitSwitch.toggle();
         Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(this.icon.getAppletIcon()));
     }
 
     toggle_inhibit_notifications() {
         this.notificationsSwitch.toggle();
-        this.icon.toggleNotificationStatus(this.notificationsSwitch._switch.state);
         Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(this.icon.getAppletIcon()));
     }
 
