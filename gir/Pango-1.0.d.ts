@@ -94,7 +94,7 @@ declare namespace imports.gi.Pango {
 		 * @returns a `PangoFontMetrics` object. The caller must call
 		 *   [method#Pango.FontMetrics.unref] when finished using the object.
 		 */
-		get_metrics(desc: FontDescription | null, language: Language | null): FontMetrics;
+		get_metrics(desc?: FontDescription | null, language?: Language | null): FontMetrics;
 		/**
 		 * Returns whether font rendering with this context should
 		 * round glyph positions and widths.
@@ -122,10 +122,8 @@ declare namespace imports.gi.Pango {
 		 * @returns location
 		 *   to store a pointer to an array of `PangoFontFamily`. This array should
 		 *   be freed with {@link G.free}.
-		 * 
-		 * location to store the number of elements in #descs
 		 */
-		list_families(): [ FontFamily[], number ];
+		list_families(): FontFamily[];
 		/**
 		 * Loads the font in one of the fontmaps in the context
 		 * that is the closest match for #desc.
@@ -207,7 +205,7 @@ declare namespace imports.gi.Pango {
 		 * @param matrix a `PangoMatrix`, or %NULL to unset any existing
 		 * matrix. (No matrix set is the same as setting the identity matrix.)
 		 */
-		set_matrix(matrix: Matrix | null): void;
+		set_matrix(matrix?: Matrix | null): void;
 		/**
 		 * Sets whether font rendering with this context should
 		 * round glyph positions and widths to integral positions,
@@ -308,10 +306,8 @@ declare namespace imports.gi.Pango {
 		 * Convert a `PangoCoverage` structure into a flat binary format.
 		 * @returns 
 		 *   location to store result (must be freed with {@link G.free})
-		 * 
-		 * location to store size of result
 		 */
-		to_bytes(): [ number[], number ];
+		to_bytes(): number[];
 		/**
 		 * Decrease the reference count on the `PangoCoverage` by one.
 		 * 
@@ -357,10 +353,9 @@ declare namespace imports.gi.Pango {
 		 * back to a `PangoCoverage`.
 		 * @param bytes binary data
 		 *   representing a `PangoCoverage`
-		 * @param n_bytes the size of #bytes in bytes
 		 * @returns a newly allocated `PangoCoverage`
 		 */
-		public static from_bytes(bytes: number[], n_bytes: number): Coverage | null;
+		public static from_bytes(bytes: number[]): Coverage | null;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -404,10 +399,8 @@ declare namespace imports.gi.Pango {
 		 * Note that this does not include OpenType features which the
 		 * rendering system enables by default.
 		 * @returns Array to features in
-		 * 
-		 * the length of #features
 		 */
-		get_features(): [ HarfBuzz.feature_t[], number ];
+		get_features(): HarfBuzz.feature_t[];
 		/**
 		 * Gets the font map for which the font was created.
 		 * 
@@ -467,7 +460,7 @@ declare namespace imports.gi.Pango {
 		 * @returns a `PangoFontMetrics` object. The caller must call
 		 *   [method#Pango.FontMetrics.unref] when finished using the object.
 		 */
-		get_metrics(language: Language | null): FontMetrics;
+		get_metrics(language?: Language | null): FontMetrics;
 		/**
 		 * Returns whether the font provides a glyph for this character.
 		 * 
@@ -498,9 +491,8 @@ declare namespace imports.gi.Pango {
 		 * Frees an array of font descriptions.
 		 * @param descs a pointer
 		 *   to an array of `PangoFontDescription`, may be %NULL
-		 * @param n_descs number of font descriptions in #descs
 		 */
-		public static descriptions_free(descs: FontDescription[] | null, n_descs: number): void;
+		public static descriptions_free(descs?: FontDescription[] | null): void;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -546,10 +538,8 @@ declare namespace imports.gi.Pango {
 		 * @returns 
 		 *   location to store a pointer to an array of int. This array
 		 *   should be freed with {@link G.free}.
-		 * 
-		 * location to store the number of elements in #sizes
 		 */
-		list_sizes(): [ number[] | null, number ];
+		list_sizes(): number[] | null;
 	}
 
 	type FontFaceInitOptionsMixin = GObject.ObjectInitOptions
@@ -582,7 +572,7 @@ declare namespace imports.gi.Pango {
 		 * @returns the `PangoFontFace`,
 		 *   or %NULL if no face with the given name exists.
 		 */
-		get_face(name: string | null): FontFace | null;
+		get_face(name?: string | null): FontFace | null;
 		/**
 		 * Gets the name of the family.
 		 * 
@@ -626,10 +616,8 @@ declare namespace imports.gi.Pango {
 		 *   location to store an array of pointers to `PangoFontFace` objects,
 		 *   or %NULL. This array should be freed with {@link G.free} when it is no
 		 *   longer needed.
-		 * 
-		 * location to store number of elements in #faces.
 		 */
-		list_faces(): [ FontFace[] | null, number ];
+		list_faces(): FontFace[] | null;
 	}
 
 	type FontFamilyInitOptionsMixin = GObject.ObjectInitOptions
@@ -708,10 +696,8 @@ declare namespace imports.gi.Pango {
 		 * @returns location to
 		 *   store a pointer to an array of `PangoFontFamily` *.
 		 *   This array should be freed with {@link G.free}.
-		 * 
-		 * location to store the number of elements in #families
 		 */
-		list_families(): [ FontFamily[], number ];
+		list_families(): FontFamily[];
 		/**
 		 * Load the font in the fontmap that is the closest match for #desc.
 		 * @param context the `PangoContext` the font will be used with
@@ -763,9 +749,8 @@ declare namespace imports.gi.Pango {
 		 * 
 		 * If #func returns %TRUE, that stops the iteration.
 		 * @param func Callback function
-		 * @param data data to pass to the callback function
 		 */
-		foreach(func: FontsetForeachFunc, data: any | null): void;
+		foreach(func: FontsetForeachFunc): void;
 		/**
 		 * Returns the font in the fontset that contains the best glyph for a
 		 * Unicode character.
@@ -1053,14 +1038,8 @@ declare namespace imports.gi.Pango {
 		 * @returns 
 		 *   location to store a pointer to an array of logical attributes.
 		 *   This value must be freed with {@link G.free}.
-		 * 
-		 * location to store the number of the attributes in the
-		 *   array. (The stored value will be one more than the total number
-		 *   of characters in the layout, since there need to be attributes
-		 *   corresponding to both the position before the first character
-		 *   and the position after the last character.)
 		 */
-		get_log_attrs(): [ LogAttr[], number ];
+		get_log_attrs(): LogAttr[];
 		/**
 		 * Retrieves an array of logical attributes for each character in
 		 * the #layout.
@@ -1287,7 +1266,7 @@ declare namespace imports.gi.Pango {
 		 * References #attrs, so the caller can unref its reference.
 		 * @param attrs a `PangoAttrList`
 		 */
-		set_attributes(attrs: AttrList | null): void;
+		set_attributes(attrs?: AttrList | null): void;
 		/**
 		 * Sets whether to calculate the base direction
 		 * for the layout according to its contents.
@@ -1336,7 +1315,7 @@ declare namespace imports.gi.Pango {
 		 * @param desc the new `PangoFontDescription`
 		 *   to unset the current font description
 		 */
-		set_font_description(desc: FontDescription | null): void;
+		set_font_description(desc?: FontDescription | null): void;
 		/**
 		 * Sets the height to which the `PangoLayout` should be ellipsized at.
 		 * 
@@ -1486,7 +1465,7 @@ declare namespace imports.gi.Pango {
 		 * you must free your copy of #tabs yourself.
 		 * @param tabs a `PangoTabArray`
 		 */
-		set_tabs(tabs: TabArray | null): void;
+		set_tabs(tabs?: TabArray | null): void;
 		/**
 		 * Sets the text of the layout.
 		 * 
@@ -1823,13 +1802,13 @@ declare namespace imports.gi.Pango {
 		 * @param part the part to change the color of
 		 * @param color the new color or %NULL to unset the current color
 		 */
-		set_color(part: RenderPart, color: Color | null): void;
+		set_color(part: RenderPart, color?: Color | null): void;
 		/**
 		 * Sets the transformation matrix that will be applied when rendering.
 		 * @param matrix a `PangoMatrix`, or %NULL to unset any existing matrix
 		 *  (No matrix set is the same as setting the identity matrix.)
 		 */
-		set_matrix(matrix: Matrix | null): void;
+		set_matrix(matrix?: Matrix | null): void;
 		connect(signal: "notify::matrix", callback: (owner: this, ...args: any) => void): number;
 
 	}
@@ -2215,12 +2194,11 @@ declare namespace imports.gi.Pango {
 		 * inserts them into a new list.
 		 * @param func callback function;
 		 *   returns %TRUE if an attribute should be filtered out
-		 * @param data Data to be passed to #func
 		 * @returns the new
 		 *   `PangoAttrList` or %NULL if no attributes of the
 		 *   given types were found
 		 */
-		public filter(func: AttrFilterFunc, data: any | null): AttrList | null;
+		public filter(func: AttrFilterFunc): AttrList | null;
 		/**
 		 * Gets a list of all attributes in #list.
 		 * @returns 
@@ -2344,13 +2322,11 @@ declare namespace imports.gi.Pango {
 		 * @param copy_func function to copy #data when the
 		 *   attribute is copied. If %NULL, #data is simply copied
 		 *   as a pointer
-		 * @param destroy_func function to free #data when the
-		 *   attribute is freed
 		 * @returns the newly allocated
 		 *   `PangoAttribute`, which should be freed with
 		 *   [method#Pango.Attribute.destroy]
 		 */
-		public static new_with_data(ink_rect: Rectangle, logical_rect: Rectangle, data: any | null, copy_func: AttrDataCopyFunc | null, destroy_func: GLib.DestroyNotify | null): Attribute;
+		public static new_with_data(ink_rect: Rectangle, logical_rect: Rectangle, data?: any | null, copy_func?: AttrDataCopyFunc | null): Attribute;
 		/**
 		 * the common portion of the attribute
 		 */
@@ -3619,7 +3595,7 @@ declare namespace imports.gi.Pango {
 		 * @param language a string representing a language tag
 		 * @returns a `PangoLanguage`
 		 */
-		public static from_string(language: string | null): Language | null;
+		public static from_string(language?: string | null): Language | null;
 		/**
 		 * Returns the `PangoLanguage` for the current locale of the process.
 		 * 
@@ -4048,10 +4024,8 @@ declare namespace imports.gi.Pango {
 		 *   width `(*ranges)[2*n + 1] - (*ranges)[2*n]`. This array must be freed
 		 *   with {@link G.free}. The coordinates are relative to the layout and are in
 		 *   Pango units.
-		 * 
-		 * The number of ranges stored in #ranges
 		 */
-		public get_x_ranges(start_index: number, end_index: number): [ number[], number ];
+		public get_x_ranges(start_index: number, end_index: number): number[];
 		/**
 		 * Converts an index within a line to a X position.
 		 * @param index_ byte offset of a grapheme within the layout
@@ -6069,13 +6043,11 @@ declare namespace imports.gi.Pango {
 	 * @param copy_func function to copy #data when the
 	 *   attribute is copied. If %NULL, #data is simply copied
 	 *   as a pointer
-	 * @param destroy_func function to free #data when the
-	 *   attribute is freed
 	 * @returns the newly allocated
 	 *   `PangoAttribute`, which should be freed with
 	 *   [method#Pango.Attribute.destroy]
 	 */
-	function attr_shape_new_with_data(ink_rect: Rectangle, logical_rect: Rectangle, data: any | null, copy_func: AttrDataCopyFunc | null, destroy_func: GLib.DestroyNotify | null): Attribute;
+	function attr_shape_new_with_data(ink_rect: Rectangle, logical_rect: Rectangle, data: any | null, copy_func: AttrDataCopyFunc | null): Attribute;
 	/**
 	 * Create a new attribute that influences how invisible
 	 * characters are rendered.
@@ -6220,9 +6192,8 @@ declare namespace imports.gi.Pango {
 	 * @param length length of #text in bytes (may be -1 if #text is nul-terminated)
 	 * @param analysis `PangoAnalysis` structure for #text
 	 * @param attrs an array to store character information in
-	 * @param attrs_len size of the array passed as #attrs
 	 */
-	// function break(text: string, length: number, analysis: Analysis, attrs: LogAttr[], attrs_len: number): void;
+	// function break(text: string, length: number, analysis: Analysis, attrs: LogAttr[]): void;
 	/**
 	 * This is the default break algorithm.
 	 * 
@@ -6357,9 +6328,8 @@ declare namespace imports.gi.Pango {
 	 * @param language language tag
 	 * @param log_attrs array with one `PangoLogAttr`
 	 *   per character in #text, plus one extra, to be filled in
-	 * @param attrs_len length of #log_attrs array
 	 */
-	function get_log_attrs(text: string, length: number, level: number, language: Language, log_attrs: LogAttr[], attrs_len: number): void;
+	function get_log_attrs(text: string, length: number, level: number, language: Language, log_attrs: LogAttr[]): void;
 	/**
 	 * Returns the mirrored character of a Unicode character.
 	 * 
@@ -6938,9 +6908,8 @@ declare namespace imports.gi.Pango {
 	 *   paragraph, or -1 to ignore attributes from #analysis
 	 * @param log_attrs array with one `PangoLogAttr`
 	 *   per character in #text, plus one extra, to be filled in
-	 * @param log_attrs_len length of #log_attrs array
 	 */
-	function tailor_break(text: string, length: number, analysis: Analysis, offset: number, log_attrs: LogAttr[], log_attrs_len: number): void;
+	function tailor_break(text: string, length: number, analysis: Analysis, offset: number, log_attrs: LogAttr[]): void;
 	/**
 	 * Trims leading and trailing whitespace from a string.
 	 * @param str a string

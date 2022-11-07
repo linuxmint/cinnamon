@@ -132,7 +132,6 @@ export function spawnCommandLine(command_line: string): number | null | undefine
 
     try {
         let [success, argv] = GLib.shell_parse_argv(command_line);
-        // @ts-expect-error the GLib typings are incorrect
         pid = trySpawn(argv);
     } catch (err) {
         // TODO: Assert this properly if needed

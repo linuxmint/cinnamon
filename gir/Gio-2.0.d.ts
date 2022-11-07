@@ -218,7 +218,7 @@ declare namespace imports.gi.Gio {
 		 * @param arg_description the placeholder to use for the extra argument
 		 *    parsed by the option in `--help` output
 		 */
-		add_main_option(long_name: string, short_name: string, flags: GLib.OptionFlags, arg: GLib.OptionArg, description: string, arg_description: string | null): void;
+		add_main_option(long_name: string, short_name: string, flags: GLib.OptionFlags, arg: GLib.OptionArg, description: string, arg_description?: string | null): void;
 		/**
 		 * Adds main option entries to be handled by #application.
 		 * 
@@ -449,10 +449,9 @@ declare namespace imports.gi.Gio {
 		 * The application must be registered before calling this function
 		 * and it must have the %G_APPLICATION_HANDLES_OPEN flag set.
 		 * @param files an array of #GFiles to open
-		 * @param n_files the length of the #files array
 		 * @param hint a hint (or ""), but never %NULL
 		 */
-		open(files: File[], n_files: number, hint: string): void;
+		open(files: File[], hint: string): void;
 		/**
 		 * Immediately quits the application.
 		 * 
@@ -503,7 +502,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns %TRUE if registration succeeded
 		 */
-		register(cancellable: Cancellable | null): boolean;
+		register(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Decrease the use count of #application.
 		 * 
@@ -589,12 +588,11 @@ declare namespace imports.gi.Gio {
 		 * should not be used from applications like editors that need precise
 		 * control over when processes invoked via the commandline will exit and
 		 * what their exit status will be.
-		 * @param argc the argc from main() (or 0 if #argv is %NULL)
 		 * @param argv 
 		 *     the argv from main(), or %NULL
 		 * @returns the exit status
 		 */
-		run(argc: number, argv: string[] | null): number;
+		run(argv?: string[] | null): number;
 		/**
 		 * Sends a notification on behalf of #application to the desktop shell.
 		 * There is no guarantee that the notification is displayed immediately,
@@ -638,7 +636,7 @@ declare namespace imports.gi.Gio {
 		 * Now there is #GActionMap for that.
 		 * @param action_group a #GActionGroup, or %NULL
 		 */
-		set_action_group(action_group: ActionGroup | null): void;
+		set_action_group(action_group?: ActionGroup | null): void;
 		/**
 		 * Sets the unique identifier for #application.
 		 * 
@@ -649,7 +647,7 @@ declare namespace imports.gi.Gio {
 		 * {@link G.application_id_is_valid}.
 		 * @param application_id the identifier for #application
 		 */
-		set_application_id(application_id: string | null): void;
+		set_application_id(application_id?: string | null): void;
 		/**
 		 * Sets or unsets the default application for the process, as returned
 		 * by {@link G.application_get_default}.
@@ -688,7 +686,7 @@ declare namespace imports.gi.Gio {
 		 * @param description a string to be shown in `--help` output
 		 *  after the list of options, or %NULL
 		 */
-		set_option_context_description(description: string | null): void;
+		set_option_context_description(description?: string | null): void;
 		/**
 		 * Sets the parameter string to be used by the commandline handling of #application.
 		 * 
@@ -699,7 +697,7 @@ declare namespace imports.gi.Gio {
 		 * @param parameter_string a string which is displayed
 		 *   in the first line of `--help` output, after the usage summary `programname [OPTION...]`.
 		 */
-		set_option_context_parameter_string(parameter_string: string | null): void;
+		set_option_context_parameter_string(parameter_string?: string | null): void;
 		/**
 		 * Adds a summary to the #application option context.
 		 * 
@@ -707,7 +705,7 @@ declare namespace imports.gi.Gio {
 		 * @param summary a string to be shown in `--help` output
 		 *  before the list of options, or %NULL
 		 */
-		set_option_context_summary(summary: string | null): void;
+		set_option_context_summary(summary?: string | null): void;
 		/**
 		 * Sets (or unsets) the base resource path of #application.
 		 * 
@@ -744,7 +742,7 @@ declare namespace imports.gi.Gio {
 		 * before chaining up to the parent implementation.
 		 * @param resource_path the resource path to use
 		 */
-		set_resource_base_path(resource_path: string | null): void;
+		set_resource_base_path(resource_path?: string | null): void;
 		/**
 		 * Destroys a binding between #property and the busy state of
 		 * #application that was previously created with
@@ -880,12 +878,11 @@ declare namespace imports.gi.Gio {
 		 * @param callback Callback function
 		 *  - owner: owner of the emitted event 
 		 *  - files: an array of #GFiles 
-		 *  - n_files: the length of #files 
 		 *  - hint: a hint provided by the calling instance 
 		 * 
 		 * @returns Callback ID
 		 */
-		connect(signal: "open", callback: (owner: this, files: File[], n_files: number, hint: string) => void): number;
+		connect(signal: "open", callback: (owner: this, files: File[], hint: string) => void): number;
 		/**
 		 * The ::shutdown signal is emitted only on the registered primary instance
 		 * immediately after the main loop terminates.
@@ -1513,7 +1510,7 @@ declare namespace imports.gi.Gio {
 		 * @returns the number of bytes read into #stream's buffer, up to #count,
 		 *     or -1 on error.
 		 */
-		fill(count: number, cancellable: Cancellable | null): number;
+		fill(count: number, cancellable?: Cancellable | null): number;
 		/**
 		 * Reads data into #stream's buffer asynchronously, up to #count size.
 		 * #io_priority can be used to prioritize reads. For the synchronous
@@ -1526,7 +1523,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object
 		 * @param callback a #GAsyncReadyCallback
 		 */
-		fill_async(count: number, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		fill_async(count: number, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous read.
 		 * @param result a #GAsyncResult
@@ -1549,10 +1546,9 @@ declare namespace imports.gi.Gio {
 		 * @param buffer a pointer to
 		 *   an allocated chunk of memory
 		 * @param offset a #gsize
-		 * @param count a #gsize
 		 * @returns a #gsize of the number of bytes peeked, or -1 on error.
 		 */
-		peek(buffer: number[], offset: number, count: number): number;
+		peek(buffer: number[], offset: number): number;
 		/**
 		 * Returns the buffer with the currently available bytes. The returned
 		 * buffer must not be modified and will become invalid when reading from
@@ -1580,7 +1576,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @returns the byte read from the #stream, or -1 on end of stream or error.
 		 */
-		read_byte(cancellable: Cancellable | null): number;
+		read_byte(cancellable?: Cancellable | null): number;
 		/**
 		 * Sets the size of the internal buffer of #stream to #size, or to the
 		 * size of the contents of the buffer. The buffer can never be resized
@@ -1813,12 +1809,10 @@ declare namespace imports.gi.Gio {
 		 * earlier GLib versions which now makes it easier to write cleanup
 		 * code that unconditionally invokes e.g. {@link G.cancellable_cancel}.
 		 * @param callback The #GCallback to connect.
-		 * @param data Data to pass to #callback.
-		 * @param data_destroy_func Free function for #data or %NULL.
 		 * @returns The id of the signal handler or 0 if #cancellable has already
 		 *          been cancelled.
 		 */
-		connect(callback: GObject.Callback, data: any | null, data_destroy_func: GLib.DestroyNotify | null): number;
+		connect(callback: GObject.Callback): number;
 		/**
 		 * Disconnects a handler from a cancellable instance similar to
 		 * {@link G.signal_handler_disconnect}.  Additionally, in the event that a
@@ -2393,7 +2387,7 @@ declare namespace imports.gi.Gio {
 		 * @param credentials Credentials received from the peer or %NULL.
 		 * @returns %TRUE if the peer is authorized, %FALSE if not.
 		 */
-		authorize_authenticated_peer(stream: IOStream, credentials: Credentials | null): boolean;
+		authorize_authenticated_peer(stream: IOStream, credentials?: Credentials | null): boolean;
 		/**
 		 * Emitted to check if #mechanism is allowed to be used.
 		 * @param signal 
@@ -2600,12 +2594,10 @@ declare namespace imports.gi.Gio {
 		 * filter is removed, and may be called after #connection has been
 		 * destroyed.)
 		 * @param filter_function a filter function
-		 * @param user_data_free_func function to free #user_data with when filter
-		 *     is removed or %NULL
 		 * @returns a filter identifier that can be used with
 		 *     {@link G.dbus_connection_remove_filter}
 		 */
-		add_filter(filter_function: DBusMessageFilterFunction, user_data_free_func: GLib.DestroyNotify): number;
+		add_filter(filter_function: DBusMessageFilterFunction): number;
 		/**
 		 * Asynchronously invokes the #method_name method on the
 		 * #interface_name D-Bus interface on the remote object at
@@ -2669,7 +2661,7 @@ declare namespace imports.gi.Gio {
 		 *     is satisfied or %NULL if you don't care about the result of the
 		 *     method invocation
 		 */
-		call(bus_name: string | null, object_path: string, interface_name: string, method_name: string, parameters: GLib.Variant | null, reply_type: GLib.VariantType | null, flags: DBusCallFlags, timeout_msec: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		call(bus_name: string | null, object_path: string, interface_name: string, method_name: string, parameters: GLib.Variant | null, reply_type: GLib.VariantType | null, flags: DBusCallFlags, timeout_msec: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an operation started with {@link G.dbus_connection_call}.
 		 * @param res a #GAsyncResult obtained from the #GAsyncReadyCallback passed to {@link G.dbus_connection_call}
@@ -2729,7 +2721,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %NULL if #error is set. Otherwise a non-floating
 		 *     #GVariant tuple with return values. Free with {@link G.variant_unref}.
 		 */
-		call_sync(bus_name: string | null, object_path: string, interface_name: string, method_name: string, parameters: GLib.Variant | null, reply_type: GLib.VariantType | null, flags: DBusCallFlags, timeout_msec: number, cancellable: Cancellable | null): GLib.Variant;
+		call_sync(bus_name: string | null, object_path: string, interface_name: string, method_name: string, parameters: GLib.Variant | null, reply_type: GLib.VariantType | null, flags: DBusCallFlags, timeout_msec: number, cancellable?: Cancellable | null): GLib.Variant;
 		/**
 		 * Like {@link G.dbus_connection_call} but also takes a #GUnixFDList object.
 		 * 
@@ -2763,7 +2755,7 @@ declare namespace imports.gi.Gio {
 		 *     satisfied or %NULL if you don't * care about the result of the
 		 *     method invocation
 		 */
-		call_with_unix_fd_list(bus_name: string | null, object_path: string, interface_name: string, method_name: string, parameters: GLib.Variant | null, reply_type: GLib.VariantType | null, flags: DBusCallFlags, timeout_msec: number, fd_list: UnixFDList | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		call_with_unix_fd_list(bus_name: string | null, object_path: string, interface_name: string, method_name: string, parameters: GLib.Variant | null, reply_type: GLib.VariantType | null, flags: DBusCallFlags, timeout_msec: number, fd_list?: UnixFDList | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an operation started with {@link G.dbus_connection_call_with_unix_fd_list}.
 		 * 
@@ -2809,7 +2801,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * return location for a #GUnixFDList or %NULL
 		 */
-		call_with_unix_fd_list_sync(bus_name: string | null, object_path: string, interface_name: string, method_name: string, parameters: GLib.Variant | null, reply_type: GLib.VariantType | null, flags: DBusCallFlags, timeout_msec: number, fd_list: UnixFDList | null, cancellable: Cancellable | null): [ GLib.Variant, UnixFDList | null ];
+		call_with_unix_fd_list_sync(bus_name: string | null, object_path: string, interface_name: string, method_name: string, parameters: GLib.Variant | null, reply_type: GLib.VariantType | null, flags: DBusCallFlags, timeout_msec: number, fd_list?: UnixFDList | null, cancellable?: Cancellable | null): [ GLib.Variant, UnixFDList | null ];
 		/**
 		 * Closes #connection. Note that this never causes the process to
 		 * exit (this might only happen if the other end of a shared message
@@ -2839,7 +2831,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call when the request is
 		 *     satisfied or %NULL if you don't care about the result
 		 */
-		close(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		close(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an operation started with {@link G.dbus_connection_close}.
 		 * @param res a #GAsyncResult obtained from the #GAsyncReadyCallback passed
@@ -2855,7 +2847,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable or %NULL
 		 * @returns %TRUE if the operation succeeded, %FALSE if #error is set
 		 */
-		close_sync(cancellable: Cancellable | null): boolean;
+		close_sync(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Emits a signal.
 		 * 
@@ -2873,7 +2865,7 @@ declare namespace imports.gi.Gio {
 		 *              or %NULL if not passing parameters
 		 * @returns %TRUE unless #error is set
 		 */
-		emit_signal(destination_bus_name: string | null, object_path: string, interface_name: string, signal_name: string, parameters: GLib.Variant | null): boolean;
+		emit_signal(destination_bus_name: string | null, object_path: string, interface_name: string, signal_name: string, parameters?: GLib.Variant | null): boolean;
 		/**
 		 * Exports #action_group on #connection at #object_path.
 		 * 
@@ -2938,7 +2930,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call when the
 		 *     request is satisfied or %NULL if you don't care about the result
 		 */
-		flush(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		flush(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an operation started with {@link G.dbus_connection_flush}.
 		 * @param res a #GAsyncResult obtained from the #GAsyncReadyCallback passed
@@ -2954,7 +2946,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable or %NULL
 		 * @returns %TRUE if the operation succeeded, %FALSE if #error is set
 		 */
-		flush_sync(cancellable: Cancellable | null): boolean;
+		flush_sync(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Gets the capabilities negotiated with the remote peer
 		 * @returns zero or more flags from the #GDBusCapabilityFlags enumeration
@@ -3038,7 +3030,7 @@ declare namespace imports.gi.Gio {
 		 * @returns 0 if #error is set, otherwise a registration ID (never 0)
 		 * that can be used with {@link G.dbus_connection_unregister_object} .
 		 */
-		register_object(object_path: string, interface_info: DBusInterfaceInfo, method_call_closure: GObject.Closure | null, get_property_closure: GObject.Closure | null, set_property_closure: GObject.Closure | null): number;
+		register_object(object_path: string, interface_info: DBusInterfaceInfo, method_call_closure?: GObject.Closure | null, get_property_closure?: GObject.Closure | null, set_property_closure?: GObject.Closure | null): number;
 		/**
 		 * Registers a whole subtree of dynamic objects.
 		 * 
@@ -3078,11 +3070,11 @@ declare namespace imports.gi.Gio {
 		 * @param vtable a #GDBusSubtreeVTable to enumerate, introspect and
 		 *     dispatch nodes in the subtree
 		 * @param flags flags used to fine tune the behavior of the subtree
-		 * @param user_data_free_func function to call when the subtree is unregistered
+		 * @param user_data data to pass to functions in #vtable
 		 * @returns 0 if #error is set, otherwise a subtree registration ID (never 0)
 		 * that can be used with {@link G.dbus_connection_unregister_subtree}
 		 */
-		register_subtree(object_path: string, vtable: DBusSubtreeVTable, flags: DBusSubtreeFlags, user_data_free_func: GLib.DestroyNotify): number;
+		register_subtree(object_path: string, vtable: DBusSubtreeVTable, flags: DBusSubtreeFlags, user_data?: any | null): number;
 		/**
 		 * Removes a filter.
 		 * 
@@ -3166,7 +3158,7 @@ declare namespace imports.gi.Gio {
 		 * @returns return location for serial number assigned
 		 *     to #message when sending it or %NULL
 		 */
-		send_message_with_reply(message: DBusMessage, flags: DBusSendMessageFlags, timeout_msec: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): number | null;
+		send_message_with_reply(message: DBusMessage, flags: DBusSendMessageFlags, timeout_msec: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): number | null;
 		/**
 		 * Finishes an operation started with {@link G.dbus_connection_send_message_with_reply}.
 		 * 
@@ -3225,7 +3217,7 @@ declare namespace imports.gi.Gio {
 		 * return location for serial number
 		 *     assigned to #message when sending it or %NULL
 		 */
-		send_message_with_reply_sync(message: DBusMessage, flags: DBusSendMessageFlags, timeout_msec: number, cancellable: Cancellable | null): [ DBusMessage, number | null ];
+		send_message_with_reply_sync(message: DBusMessage, flags: DBusSendMessageFlags, timeout_msec: number, cancellable?: Cancellable | null): [ DBusMessage, number | null ];
 		/**
 		 * Sets whether the process should be terminated when #connection is
 		 * closed by the remote peer. See #GDBusConnection:exit-on-close for
@@ -3304,11 +3296,9 @@ declare namespace imports.gi.Gio {
 		 * @param flags #GDBusSignalFlags describing how arg0 is used in subscribing to the
 		 *     signal
 		 * @param callback callback to invoke when there is a signal matching the requested data
-		 * @param user_data_free_func function to free #user_data with when
-		 *     subscription is removed or %NULL
 		 * @returns a subscription identifier that can be used with {@link G.dbus_connection_signal_unsubscribe}
 		 */
-		signal_subscribe(sender: string | null, interface_name: string | null, member: string | null, object_path: string | null, arg0: string | null, flags: DBusSignalFlags, callback: DBusSignalCallback, user_data_free_func: GLib.DestroyNotify | null): number;
+		signal_subscribe(sender: string | null, interface_name: string | null, member: string | null, object_path: string | null, arg0: string | null, flags: DBusSignalFlags, callback: DBusSignalCallback): number;
 		/**
 		 * Unsubscribes from signals.
 		 * 
@@ -3515,7 +3505,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a #GDBusConnection or %NULL if #error is set.
 		 *     Free with {@link GObject.unref}.
 		 */
-		public static new_for_address_sync(address: string, flags: DBusConnectionFlags, observer: DBusAuthObserver | null, cancellable: Cancellable | null): DBusConnection;
+		public static new_for_address_sync(address: string, flags: DBusConnectionFlags, observer?: DBusAuthObserver | null, cancellable?: Cancellable | null): DBusConnection;
 		/**
 		 * Synchronously sets up a D-Bus connection for exchanging D-Bus messages
 		 * with the end represented by #stream.
@@ -3540,7 +3530,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a #GDBusConnection or %NULL if #error is set.
 		 *     Free with {@link GObject.unref}.
 		 */
-		public static new_sync(stream: IOStream, guid: string | null, flags: DBusConnectionFlags, observer: DBusAuthObserver | null, cancellable: Cancellable | null): DBusConnection;
+		public static new_sync(stream: IOStream, guid: string | null, flags: DBusConnectionFlags, observer?: DBusAuthObserver | null, cancellable?: Cancellable | null): DBusConnection;
 		/**
 		 * Asynchronously sets up a D-Bus connection for exchanging D-Bus messages
 		 * with the end represented by #stream.
@@ -3569,7 +3559,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable or %NULL
 		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 		 */
-		public static new(stream: IOStream, guid: string | null, flags: DBusConnectionFlags, observer: DBusAuthObserver | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		public static new(stream: IOStream, guid: string | null, flags: DBusConnectionFlags, observer?: DBusAuthObserver | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Asynchronously connects and sets up a D-Bus client connection for
 		 * exchanging D-Bus messages with an endpoint specified by #address
@@ -3599,7 +3589,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable or %NULL
 		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 		 */
-		public static new_for_address(address: string, flags: DBusConnectionFlags, observer: DBusAuthObserver | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		public static new_for_address(address: string, flags: DBusConnectionFlags, observer?: DBusAuthObserver | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -4037,7 +4027,7 @@ declare namespace imports.gi.Gio {
 		 * Convenience setter for the %G_DBUS_MESSAGE_HEADER_FIELD_DESTINATION header field.
 		 * @param value The value to set.
 		 */
-		set_destination(value: string | null): void;
+		set_destination(value?: string | null): void;
 		/**
 		 * Convenience setter for the %G_DBUS_MESSAGE_HEADER_FIELD_ERROR_NAME header field.
 		 * @param value The value to set.
@@ -4056,17 +4046,17 @@ declare namespace imports.gi.Gio {
 		 * @param header_field A 8-bit unsigned integer (typically a value from the #GDBusMessageHeaderField enumeration)
 		 * @param value A #GVariant to set the header field or %NULL to clear the header field.
 		 */
-		set_header(header_field: DBusMessageHeaderField, value: GLib.Variant | null): void;
+		set_header(header_field: DBusMessageHeaderField, value?: GLib.Variant | null): void;
 		/**
 		 * Convenience setter for the %G_DBUS_MESSAGE_HEADER_FIELD_INTERFACE header field.
 		 * @param value The value to set.
 		 */
-		set_interface(value: string | null): void;
+		set_interface(value?: string | null): void;
 		/**
 		 * Convenience setter for the %G_DBUS_MESSAGE_HEADER_FIELD_MEMBER header field.
 		 * @param value The value to set.
 		 */
-		set_member(value: string | null): void;
+		set_member(value?: string | null): void;
 		/**
 		 * Sets #message to be of #type.
 		 * @param type A 8-bit unsigned integer (typically a value from the #GDBusMessageType enumeration).
@@ -4081,7 +4071,7 @@ declare namespace imports.gi.Gio {
 		 * Convenience setter for the %G_DBUS_MESSAGE_HEADER_FIELD_PATH header field.
 		 * @param value The value to set.
 		 */
-		set_path(value: string | null): void;
+		set_path(value?: string | null): void;
 		/**
 		 * Convenience setter for the %G_DBUS_MESSAGE_HEADER_FIELD_REPLY_SERIAL header field.
 		 * @param value The value to set.
@@ -4091,7 +4081,7 @@ declare namespace imports.gi.Gio {
 		 * Convenience setter for the %G_DBUS_MESSAGE_HEADER_FIELD_SENDER header field.
 		 * @param value The value to set.
 		 */
-		set_sender(value: string | null): void;
+		set_sender(value?: string | null): void;
 		/**
 		 * Sets the serial for #message.
 		 * @param serial A #guint32.
@@ -4101,7 +4091,7 @@ declare namespace imports.gi.Gio {
 		 * Convenience setter for the %G_DBUS_MESSAGE_HEADER_FIELD_SIGNATURE header field.
 		 * @param value The value to set.
 		 */
-		set_signature(value: string | null): void;
+		set_signature(value?: string | null): void;
 		/**
 		 * Sets the UNIX file descriptors associated with #message. As a
 		 * side-effect the %G_DBUS_MESSAGE_HEADER_FIELD_NUM_UNIX_FDS header
@@ -4116,7 +4106,7 @@ declare namespace imports.gi.Gio {
 		 * %G_VARIANT_TYPE_HANDLE in the body of the message.
 		 * @param fd_list A #GUnixFDList or %NULL.
 		 */
-		set_unix_fd_list(fd_list: UnixFDList | null): void;
+		set_unix_fd_list(fd_list?: UnixFDList | null): void;
 		/**
 		 * Serializes #message to a blob. The byte order returned by
 		 * {@link G.dbus_message_get_byte_order} will be used.
@@ -4172,12 +4162,11 @@ declare namespace imports.gi.Gio {
 		 * If the #blob cannot be parsed, contains invalid fields, or contains invalid
 		 * headers, %G_IO_ERROR_INVALID_ARGUMENT will be returned.
 		 * @param blob A blob representing a binary D-Bus message.
-		 * @param blob_len The length of #blob.
 		 * @param capabilities A #GDBusCapabilityFlags describing what protocol features are supported.
 		 * @returns A new #GDBusMessage or %NULL if #error is set. Free with
 		 * {@link GObject.unref}.
 		 */
-		public static new_from_blob(blob: number[], blob_len: number, capabilities: DBusCapabilityFlags): DBusMessage;
+		public static new_from_blob(blob: number[], capabilities: DBusCapabilityFlags): DBusMessage;
 		/**
 		 * Creates a new #GDBusMessage for a method call.
 		 * @param name A valid D-Bus name or %NULL.
@@ -4199,12 +4188,11 @@ declare namespace imports.gi.Gio {
 		 * Utility function to calculate how many bytes are needed to
 		 * completely deserialize the D-Bus message stored at #blob.
 		 * @param blob A blob representing a binary D-Bus message.
-		 * @param blob_len The length of #blob (must be at least 16).
 		 * @returns Number of bytes needed or -1 if #error is set (e.g. if
 		 * #blob contains invalid data or not enough data is available to
 		 * determine the size).
 		 */
-		public static bytes_needed(blob: number[], blob_len: number): number;
+		public static bytes_needed(blob: number[]): number;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -4394,7 +4382,7 @@ declare namespace imports.gi.Gio {
 		 * specification).
 		 * @param parameters A #GVariant tuple with out parameters for the method or %NULL if not passing any parameters.
 		 */
-		return_value(parameters: GLib.Variant | null): void;
+		return_value(parameters?: GLib.Variant | null): void;
 		/**
 		 * Like {@link G.dbus_method_invocation_return_value} but also takes a #GUnixFDList.
 		 * 
@@ -4406,7 +4394,7 @@ declare namespace imports.gi.Gio {
 		 * @param parameters A #GVariant tuple with out parameters for the method or %NULL if not passing any parameters.
 		 * @param fd_list A #GUnixFDList or %NULL.
 		 */
-		return_value_with_unix_fd_list(parameters: GLib.Variant | null, fd_list: UnixFDList | null): void;
+		return_value_with_unix_fd_list(parameters?: GLib.Variant | null, fd_list?: UnixFDList | null): void;
 		/**
 		 * Like {@link G.dbus_method_invocation_return_gerror} but takes ownership
 		 * of #error so the caller does not need to free it.
@@ -4692,14 +4680,12 @@ declare namespace imports.gi.Gio {
 		 * @param name The owner of the control object (unique or well-known name).
 		 * @param object_path The object path of the control object.
 		 * @param get_proxy_type_func A #GDBusProxyTypeFunc function or %NULL to always construct #GDBusProxy proxies.
-		 * @param get_proxy_type_user_data User data to pass to #get_proxy_type_func.
-		 * @param get_proxy_type_destroy_notify Free function for #get_proxy_type_user_data or %NULL.
 		 * @param cancellable A #GCancellable or %NULL
 		 * @returns A
 		 *   #GDBusObjectManagerClient object or %NULL if #error is set. Free
 		 *   with {@link GObject.unref}.
 		 */
-		public static new_for_bus_sync(bus_type: BusType, flags: DBusObjectManagerClientFlags, name: string, object_path: string, get_proxy_type_func: DBusProxyTypeFunc | null, get_proxy_type_user_data: any | null, get_proxy_type_destroy_notify: GLib.DestroyNotify | null, cancellable: Cancellable | null): DBusObjectManagerClient;
+		public static new_for_bus_sync(bus_type: BusType, flags: DBusObjectManagerClientFlags, name: string, object_path: string, get_proxy_type_func?: DBusProxyTypeFunc | null, cancellable?: Cancellable | null): DBusObjectManagerClient;
 		/**
 		 * Creates a new #GDBusObjectManagerClient object.
 		 * 
@@ -4711,14 +4697,12 @@ declare namespace imports.gi.Gio {
 		 * @param name The owner of the control object (unique or well-known name), or %NULL when not using a message bus connection.
 		 * @param object_path The object path of the control object.
 		 * @param get_proxy_type_func A #GDBusProxyTypeFunc function or %NULL to always construct #GDBusProxy proxies.
-		 * @param get_proxy_type_user_data User data to pass to #get_proxy_type_func.
-		 * @param get_proxy_type_destroy_notify Free function for #get_proxy_type_user_data or %NULL.
 		 * @param cancellable A #GCancellable or %NULL
 		 * @returns A
 		 *   #GDBusObjectManagerClient object or %NULL if #error is set. Free
 		 *   with {@link GObject.unref}.
 		 */
-		public static new_sync(connection: DBusConnection, flags: DBusObjectManagerClientFlags, name: string | null, object_path: string, get_proxy_type_func: DBusProxyTypeFunc | null, get_proxy_type_user_data: any | null, get_proxy_type_destroy_notify: GLib.DestroyNotify | null, cancellable: Cancellable | null): DBusObjectManagerClient;
+		public static new_sync(connection: DBusConnection, flags: DBusObjectManagerClientFlags, name: string | null, object_path: string, get_proxy_type_func?: DBusProxyTypeFunc | null, cancellable?: Cancellable | null): DBusObjectManagerClient;
 		/**
 		 * Asynchronously creates a new #GDBusObjectManagerClient object.
 		 * 
@@ -4733,12 +4717,10 @@ declare namespace imports.gi.Gio {
 		 * @param name The owner of the control object (unique or well-known name).
 		 * @param object_path The object path of the control object.
 		 * @param get_proxy_type_func A #GDBusProxyTypeFunc function or %NULL to always construct #GDBusProxy proxies.
-		 * @param get_proxy_type_user_data User data to pass to #get_proxy_type_func.
-		 * @param get_proxy_type_destroy_notify Free function for #get_proxy_type_user_data or %NULL.
 		 * @param cancellable A #GCancellable or %NULL
 		 * @param callback A #GAsyncReadyCallback to call when the request is satisfied.
 		 */
-		public static new(connection: DBusConnection, flags: DBusObjectManagerClientFlags, name: string, object_path: string, get_proxy_type_func: DBusProxyTypeFunc | null, get_proxy_type_user_data: any | null, get_proxy_type_destroy_notify: GLib.DestroyNotify | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		public static new(connection: DBusConnection, flags: DBusObjectManagerClientFlags, name: string, object_path: string, get_proxy_type_func?: DBusProxyTypeFunc | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Like {@link G.dbus_object_manager_client_new} but takes a #GBusType instead of a
 		 * #GDBusConnection.
@@ -4754,12 +4736,10 @@ declare namespace imports.gi.Gio {
 		 * @param name The owner of the control object (unique or well-known name).
 		 * @param object_path The object path of the control object.
 		 * @param get_proxy_type_func A #GDBusProxyTypeFunc function or %NULL to always construct #GDBusProxy proxies.
-		 * @param get_proxy_type_user_data User data to pass to #get_proxy_type_func.
-		 * @param get_proxy_type_destroy_notify Free function for #get_proxy_type_user_data or %NULL.
 		 * @param cancellable A #GCancellable or %NULL
 		 * @param callback A #GAsyncReadyCallback to call when the request is satisfied.
 		 */
-		public static new_for_bus(bus_type: BusType, flags: DBusObjectManagerClientFlags, name: string, object_path: string, get_proxy_type_func: DBusProxyTypeFunc | null, get_proxy_type_user_data: any | null, get_proxy_type_destroy_notify: GLib.DestroyNotify | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		public static new_for_bus(bus_type: BusType, flags: DBusObjectManagerClientFlags, name: string, object_path: string, get_proxy_type_func?: DBusProxyTypeFunc | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -4814,7 +4794,7 @@ declare namespace imports.gi.Gio {
 		 * #connection is %NULL, stops exporting objects.
 		 * @param connection A #GDBusConnection or %NULL.
 		 */
-		set_connection(connection: DBusConnection | null): void;
+		set_connection(connection?: DBusConnection | null): void;
 		/**
 		 * If #manager has an object at #path, removes the object. Otherwise
 		 * does nothing.
@@ -5156,7 +5136,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback A #GAsyncReadyCallback to call when the request is satisfied or %NULL if you don't
 		 * care about the result of the method invocation.
 		 */
-		call(method_name: string, parameters: GLib.Variant | null, flags: DBusCallFlags, timeout_msec: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		call(method_name: string, parameters: GLib.Variant | null, flags: DBusCallFlags, timeout_msec: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an operation started with {@link G.dbus_proxy_call}.
 		 * @param res A #GAsyncResult obtained from the #GAsyncReadyCallback passed to {@link G.dbus_proxy_call}.
@@ -5209,7 +5189,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %NULL if #error is set. Otherwise a #GVariant tuple with
 		 * return values. Free with {@link G.variant_unref}.
 		 */
-		call_sync(method_name: string, parameters: GLib.Variant | null, flags: DBusCallFlags, timeout_msec: number, cancellable: Cancellable | null): GLib.Variant;
+		call_sync(method_name: string, parameters: GLib.Variant | null, flags: DBusCallFlags, timeout_msec: number, cancellable?: Cancellable | null): GLib.Variant;
 		/**
 		 * Like {@link G.dbus_proxy_call} but also takes a #GUnixFDList object.
 		 * 
@@ -5224,7 +5204,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback A #GAsyncReadyCallback to call when the request is satisfied or %NULL if you don't
 		 * care about the result of the method invocation.
 		 */
-		call_with_unix_fd_list(method_name: string, parameters: GLib.Variant | null, flags: DBusCallFlags, timeout_msec: number, fd_list: UnixFDList | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		call_with_unix_fd_list(method_name: string, parameters: GLib.Variant | null, flags: DBusCallFlags, timeout_msec: number, fd_list?: UnixFDList | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an operation started with {@link G.dbus_proxy_call_with_unix_fd_list}.
 		 * @param res A #GAsyncResult obtained from the #GAsyncReadyCallback passed to {@link G.dbus_proxy_call_with_unix_fd_list}.
@@ -5251,7 +5231,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * Return location for a #GUnixFDList or %NULL.
 		 */
-		call_with_unix_fd_list_sync(method_name: string, parameters: GLib.Variant | null, flags: DBusCallFlags, timeout_msec: number, fd_list: UnixFDList | null, cancellable: Cancellable | null): [ GLib.Variant, UnixFDList | null ];
+		call_with_unix_fd_list_sync(method_name: string, parameters: GLib.Variant | null, flags: DBusCallFlags, timeout_msec: number, fd_list?: UnixFDList | null, cancellable?: Cancellable | null): [ GLib.Variant, UnixFDList | null ];
 		/**
 		 * Looks up the value for a property from the cache. This call does no
 		 * blocking IO.
@@ -5365,7 +5345,7 @@ declare namespace imports.gi.Gio {
 		 * @param property_name Property name.
 		 * @param value Value for the property or %NULL to remove it from the cache.
 		 */
-		set_cached_property(property_name: string, value: GLib.Variant | null): void;
+		set_cached_property(property_name: string, value?: GLib.Variant | null): void;
 		/**
 		 * Sets the timeout to use if -1 (specifying default timeout) is
 		 * passed as #timeout_msec in the {@link G.dbus_proxy_call} and
@@ -5382,7 +5362,7 @@ declare namespace imports.gi.Gio {
 		 * @param info Minimum interface this proxy conforms to
 		 *    or %NULL to unset.
 		 */
-		set_interface_info(info: DBusInterfaceInfo | null): void;
+		set_interface_info(info?: DBusInterfaceInfo | null): void;
 		/**
 		 * Emitted when one or more D-Bus properties on #proxy changes. The
 		 * local cache has already been updated when this signal fires. Note
@@ -5525,7 +5505,7 @@ declare namespace imports.gi.Gio {
 		 * @returns A #GDBusProxy or %NULL if error is set.
 		 *    Free with {@link GObject.unref}.
 		 */
-		public static new_for_bus_sync(bus_type: BusType, flags: DBusProxyFlags, info: DBusInterfaceInfo | null, name: string, object_path: string, interface_name: string, cancellable: Cancellable | null): DBusProxy;
+		public static new_for_bus_sync(bus_type: BusType, flags: DBusProxyFlags, info: DBusInterfaceInfo | null, name: string, object_path: string, interface_name: string, cancellable?: Cancellable | null): DBusProxy;
 		/**
 		 * Creates a proxy for accessing #interface_name on the remote object
 		 * at #object_path owned by #name at #connection and synchronously
@@ -5559,7 +5539,7 @@ declare namespace imports.gi.Gio {
 		 * @returns A #GDBusProxy or %NULL if error is set.
 		 *    Free with {@link GObject.unref}.
 		 */
-		public static new_sync(connection: DBusConnection, flags: DBusProxyFlags, info: DBusInterfaceInfo | null, name: string | null, object_path: string, interface_name: string, cancellable: Cancellable | null): DBusProxy;
+		public static new_sync(connection: DBusConnection, flags: DBusProxyFlags, info: DBusInterfaceInfo | null, name: string | null, object_path: string, interface_name: string, cancellable?: Cancellable | null): DBusProxy;
 		/**
 		 * Creates a proxy for accessing #interface_name on the remote object
 		 * at #object_path owned by #name at #connection and asynchronously
@@ -5597,7 +5577,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable A #GCancellable or %NULL.
 		 * @param callback Callback function to invoke when the proxy is ready.
 		 */
-		public static new(connection: DBusConnection, flags: DBusProxyFlags, info: DBusInterfaceInfo | null, name: string | null, object_path: string, interface_name: string, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		public static new(connection: DBusConnection, flags: DBusProxyFlags, info: DBusInterfaceInfo | null, name: string | null, object_path: string, interface_name: string, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Like {@link G.dbus_proxy_new} but takes a #GBusType instead of a #GDBusConnection.
 		 * 
@@ -5611,7 +5591,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable A #GCancellable or %NULL.
 		 * @param callback Callback function to invoke when the proxy is ready.
 		 */
-		public static new_for_bus(bus_type: BusType, flags: DBusProxyFlags, info: DBusInterfaceInfo | null, name: string, object_path: string, interface_name: string, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		public static new_for_bus(bus_type: BusType, flags: DBusProxyFlags, info: DBusInterfaceInfo | null, name: string, object_path: string, interface_name: string, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -5786,7 +5766,7 @@ declare namespace imports.gi.Gio {
 		 * @returns A #GDBusServer or %NULL if #error is set. Free with
 		 * {@link GObject.unref}.
 		 */
-		public static new_sync(address: string, flags: DBusServerFlags, guid: string, observer: DBusAuthObserver | null, cancellable: Cancellable | null): DBusServer;
+		public static new_sync(address: string, flags: DBusServerFlags, guid: string, observer?: DBusAuthObserver | null, cancellable?: Cancellable | null): DBusServer;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -5820,7 +5800,7 @@ declare namespace imports.gi.Gio {
 		 * @returns an unsigned 8-bit/1-byte value read from the #stream or `0`
 		 * if an error occurred.
 		 */
-		read_byte(cancellable: Cancellable | null): number;
+		read_byte(cancellable?: Cancellable | null): number;
 		/**
 		 * Reads a 16-bit/2-byte value from #stream.
 		 * 
@@ -5830,7 +5810,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a signed 16-bit/2-byte value read from #stream or `0` if
 		 * an error occurred.
 		 */
-		read_int16(cancellable: Cancellable | null): number;
+		read_int16(cancellable?: Cancellable | null): number;
 		/**
 		 * Reads a signed 32-bit/4-byte value from #stream.
 		 * 
@@ -5844,7 +5824,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a signed 32-bit/4-byte value read from the #stream or `0` if
 		 * an error occurred.
 		 */
-		read_int32(cancellable: Cancellable | null): number;
+		read_int32(cancellable?: Cancellable | null): number;
 		/**
 		 * Reads a 64-bit/8-byte value from #stream.
 		 * 
@@ -5858,7 +5838,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a signed 64-bit/8-byte value read from #stream or `0` if
 		 * an error occurred.
 		 */
-		read_int64(cancellable: Cancellable | null): number;
+		read_int64(cancellable?: Cancellable | null): number;
 		/**
 		 * Reads a line from the data input stream.  Note that no encoding
 		 * checks or conversion is performed; the input is not guaranteed to
@@ -5877,7 +5857,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * a #gsize to get the length of the data read in.
 		 */
-		read_line(cancellable: Cancellable | null): [ number[] | null, number | null ];
+		read_line(cancellable?: Cancellable | null): [ number[] | null, number | null ];
 		/**
 		 * The asynchronous version of {@link G.data_input_stream_read_line}.  It is
 		 * an error to have two outstanding calls to this function.
@@ -5889,7 +5869,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback callback to call when the request is satisfied.
 		 */
-		read_line_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		read_line_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finish an asynchronous call started by
 		 * {@link G.data_input_stream_read_line_async}.  Note the warning about
@@ -5937,7 +5917,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * a #gsize to get the length of the data read in.
 		 */
-		read_line_utf8(cancellable: Cancellable | null): [ string | null, number | null ];
+		read_line_utf8(cancellable?: Cancellable | null): [ string | null, number | null ];
 		/**
 		 * Reads an unsigned 16-bit/2-byte value from #stream.
 		 * 
@@ -5947,7 +5927,7 @@ declare namespace imports.gi.Gio {
 		 * @returns an unsigned 16-bit/2-byte value read from the #stream or `0` if
 		 * an error occurred.
 		 */
-		read_uint16(cancellable: Cancellable | null): number;
+		read_uint16(cancellable?: Cancellable | null): number;
 		/**
 		 * Reads an unsigned 32-bit/4-byte value from #stream.
 		 * 
@@ -5961,7 +5941,7 @@ declare namespace imports.gi.Gio {
 		 * @returns an unsigned 32-bit/4-byte value read from the #stream or `0` if
 		 * an error occurred.
 		 */
-		read_uint32(cancellable: Cancellable | null): number;
+		read_uint32(cancellable?: Cancellable | null): number;
 		/**
 		 * Reads an unsigned 64-bit/8-byte value from #stream.
 		 * 
@@ -5975,7 +5955,7 @@ declare namespace imports.gi.Gio {
 		 * @returns an unsigned 64-bit/8-byte read from #stream or `0` if
 		 * an error occurred.
 		 */
-		read_uint64(cancellable: Cancellable | null): number;
+		read_uint64(cancellable?: Cancellable | null): number;
 		/**
 		 * @deprecated
 		 * Use {@link G.data_input_stream_read_upto} instead, which has more
@@ -6001,7 +5981,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * a #gsize to get the length of the data read in.
 		 */
-		read_until(stop_chars: string, cancellable: Cancellable | null): [ string, number | null ];
+		read_until(stop_chars: string, cancellable?: Cancellable | null): [ string, number | null ];
 		/**
 		 * @deprecated
 		 * Use {@link G.data_input_stream_read_upto_async} instead, which
@@ -6027,7 +6007,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback callback to call when the request is satisfied.
 		 */
-		read_until_async(stop_chars: string, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		read_until_async(stop_chars: string, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * @deprecated
 		 * Use {@link G.data_input_stream_read_upto_finish} instead, which
@@ -6068,7 +6048,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * a #gsize to get the length of the data read in
 		 */
-		read_upto(stop_chars: string, stop_chars_len: number, cancellable: Cancellable | null): [ string, number | null ];
+		read_upto(stop_chars: string, stop_chars_len: number, cancellable?: Cancellable | null): [ string, number | null ];
 		/**
 		 * The asynchronous version of {@link G.data_input_stream_read_upto}.
 		 * It is an error to have two outstanding calls to this function.
@@ -6091,7 +6071,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback callback to call when the request is satisfied
 		 */
-		read_upto_async(stop_chars: string, stop_chars_len: number, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		read_upto_async(stop_chars: string, stop_chars_len: number, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finish an asynchronous call started by
 		 * {@link G.data_input_stream_read_upto_async}.
@@ -6178,56 +6158,56 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns %TRUE if #data was successfully added to the #stream.
 		 */
-		put_byte(data: number, cancellable: Cancellable | null): boolean;
+		put_byte(data: number, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Puts a signed 16-bit integer into the output stream.
 		 * @param data a #gint16.
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns %TRUE if #data was successfully added to the #stream.
 		 */
-		put_int16(data: number, cancellable: Cancellable | null): boolean;
+		put_int16(data: number, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Puts a signed 32-bit integer into the output stream.
 		 * @param data a #gint32.
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns %TRUE if #data was successfully added to the #stream.
 		 */
-		put_int32(data: number, cancellable: Cancellable | null): boolean;
+		put_int32(data: number, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Puts a signed 64-bit integer into the stream.
 		 * @param data a #gint64.
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns %TRUE if #data was successfully added to the #stream.
 		 */
-		put_int64(data: number, cancellable: Cancellable | null): boolean;
+		put_int64(data: number, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Puts a string into the output stream.
 		 * @param str a string.
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns %TRUE if #string was successfully added to the #stream.
 		 */
-		put_string(str: string, cancellable: Cancellable | null): boolean;
+		put_string(str: string, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Puts an unsigned 16-bit integer into the output stream.
 		 * @param data a #guint16.
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns %TRUE if #data was successfully added to the #stream.
 		 */
-		put_uint16(data: number, cancellable: Cancellable | null): boolean;
+		put_uint16(data: number, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Puts an unsigned 32-bit integer into the stream.
 		 * @param data a #guint32.
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns %TRUE if #data was successfully added to the #stream.
 		 */
-		put_uint32(data: number, cancellable: Cancellable | null): boolean;
+		put_uint32(data: number, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Puts an unsigned 64-bit integer into the stream.
 		 * @param data a #guint64.
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns %TRUE if #data was successfully added to the #stream.
 		 */
-		put_uint64(data: number, cancellable: Cancellable | null): boolean;
+		put_uint64(data: number, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Sets the byte order of the data output stream to #order.
 		 * @param order a %GDataStreamByteOrder.
@@ -6356,7 +6336,7 @@ declare namespace imports.gi.Gio {
 		 * `OnlyShowIn` and `NotShowIn` keys, %FALSE
 		 * otherwise.
 		 */
-		get_show_in(desktop_env: string | null): boolean;
+		get_show_in(desktop_env?: string | null): boolean;
 		/**
 		 * Retrieves the StartupWMClass field from #info. This represents the
 		 * WM_CLASS property of the main window of the application, if launched
@@ -6413,7 +6393,7 @@ declare namespace imports.gi.Gio {
 		 *   {@link G.desktop_app_info_list_actions}
 		 * @param launch_context a #GAppLaunchContext
 		 */
-		launch_action(action_name: string, launch_context: AppLaunchContext | null): void;
+		launch_action(action_name: string, launch_context?: AppLaunchContext | null): void;
 		/**
 		 * This function performs the equivalent of {@link G.app_info_launch_uris},
 		 * but is intended primarily for operating system components that
@@ -6433,14 +6413,9 @@ declare namespace imports.gi.Gio {
 		 * @param uris List of URIs
 		 * @param launch_context a #GAppLaunchContext
 		 * @param spawn_flags #GSpawnFlags, used for each process
-		 * @param user_setup a #GSpawnChildSetupFunc, used once
-		 *     for each process.
-		 * @param user_setup_data User data for #user_setup
-		 * @param pid_callback Callback for child processes
-		 * @param pid_callback_data User data for #callback
 		 * @returns %TRUE on successful launch, %FALSE otherwise.
 		 */
-		launch_uris_as_manager(uris: string[], launch_context: AppLaunchContext | null, spawn_flags: GLib.SpawnFlags, user_setup: GLib.SpawnChildSetupFunc | null, user_setup_data: any | null, pid_callback: DesktopAppLaunchCallback | null, pid_callback_data: any | null): boolean;
+		launch_uris_as_manager(uris: string[], launch_context: AppLaunchContext | null, spawn_flags: GLib.SpawnFlags): boolean;
 		/**
 		 * Equivalent to {@link G.desktop_app_info_launch_uris_as_manager} but allows
 		 * you to pass in file descriptors for the stdin, stdout and stderr streams
@@ -6451,17 +6426,12 @@ declare namespace imports.gi.Gio {
 		 * @param uris List of URIs
 		 * @param launch_context a #GAppLaunchContext
 		 * @param spawn_flags #GSpawnFlags, used for each process
-		 * @param user_setup a #GSpawnChildSetupFunc, used once
-		 *     for each process.
-		 * @param user_setup_data User data for #user_setup
-		 * @param pid_callback Callback for child processes
-		 * @param pid_callback_data User data for #callback
 		 * @param stdin_fd file descriptor to use for child's stdin, or -1
 		 * @param stdout_fd file descriptor to use for child's stdout, or -1
 		 * @param stderr_fd file descriptor to use for child's stderr, or -1
 		 * @returns %TRUE on successful launch, %FALSE otherwise.
 		 */
-		launch_uris_as_manager_with_fds(uris: string[], launch_context: AppLaunchContext | null, spawn_flags: GLib.SpawnFlags, user_setup: GLib.SpawnChildSetupFunc | null, user_setup_data: any | null, pid_callback: DesktopAppLaunchCallback | null, pid_callback_data: any | null, stdin_fd: number, stdout_fd: number, stderr_fd: number): boolean;
+		launch_uris_as_manager_with_fds(uris: string[], launch_context: AppLaunchContext | null, spawn_flags: GLib.SpawnFlags, stdin_fd: number, stdout_fd: number, stderr_fd: number): boolean;
 		/**
 		 * Returns the list of "additional application actions" supported on the
 		 * desktop file, as per the desktop file specification.
@@ -6694,7 +6664,7 @@ declare namespace imports.gi.Gio {
 		 * @param emblem a #GEmblem, or %NULL
 		 * @returns a new #GIcon
 		 */
-		public static new(icon: Icon, emblem: Emblem | null): EmblemedIcon;
+		public static new(icon: Icon, emblem?: Emblem | null): EmblemedIcon;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -6711,7 +6681,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns #TRUE on success or #FALSE on error.
 		 */
-		close(cancellable: Cancellable | null): boolean;
+		close(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Asynchronously closes the file enumerator.
 		 * 
@@ -6723,7 +6693,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 		 */
-		close_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		close_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes closing a file enumerator, started from {@link G.file_enumerator_close_async}.
 		 * 
@@ -6816,7 +6786,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * Output location for the next #GFile, or %NULL
 		 */
-		iterate(cancellable: Cancellable | null): [ boolean, FileInfo | null, File | null ];
+		iterate(cancellable?: Cancellable | null): [ boolean, FileInfo | null, File | null ];
 		/**
 		 * Returns information for the next file in the enumerated object.
 		 * Will block until the information is available. The #GFileInfo
@@ -6834,7 +6804,7 @@ declare namespace imports.gi.Gio {
 		 *    or end of enumerator.  Free the returned object with
 		 *    {@link GObject.unref} when no longer needed.
 		 */
-		next_file(cancellable: Cancellable | null): FileInfo | null;
+		next_file(cancellable?: Cancellable | null): FileInfo | null;
 		/**
 		 * Request information for a number of files from the enumerator asynchronously.
 		 * When all i/o for the operation is finished the #callback will be called with
@@ -6860,7 +6830,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 		 */
-		next_files_async(num_files: number, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		next_files_async(num_files: number, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes the asynchronous operation started with {@link G.file_enumerator_next_files_async}.
 		 * @param result a #GAsyncResult.
@@ -6951,7 +6921,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns a #GFileInfo for the #stream, or %NULL on error.
 		 */
-		query_info(attributes: string, cancellable: Cancellable | null): FileInfo;
+		query_info(attributes: string, cancellable?: Cancellable | null): FileInfo;
 		/**
 		 * Asynchronously queries the #stream for a #GFileInfo. When completed,
 		 * #callback will be called with a #GAsyncResult which can be used to
@@ -6964,7 +6934,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback callback to call when the request is satisfied
 		 */
-		query_info_async(attributes: string, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		query_info_async(attributes: string, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finalizes the asynchronous query started
 		 * by {@link G.file_io_stream_query_info_async}.
@@ -7329,7 +7299,7 @@ declare namespace imports.gi.Gio {
 		 * null-terminated array of strings of all of the possible attribute
 		 * types for the given #name_space, or %NULL on error.
 		 */
-		list_attributes(name_space: string | null): string[] | null;
+		list_attributes(name_space?: string | null): string[] | null;
 		/**
 		 * Removes all cases of #attribute from #info if it exists.
 		 * @param attribute a file attribute key.
@@ -7601,7 +7571,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns a #GFileInfo, or %NULL on error.
 		 */
-		query_info(attributes: string, cancellable: Cancellable | null): FileInfo;
+		query_info(attributes: string, cancellable?: Cancellable | null): FileInfo;
 		/**
 		 * Queries the stream information asynchronously.
 		 * When the operation is finished #callback will be called.
@@ -7619,7 +7589,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback callback to call when the request is satisfied
 		 */
-		query_info_async(attributes: string, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		query_info_async(attributes: string, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous info query operation.
 		 * @param result a #GAsyncResult.
@@ -7800,7 +7770,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns a #GFileInfo for the #stream, or %NULL on error.
 		 */
-		query_info(attributes: string, cancellable: Cancellable | null): FileInfo;
+		query_info(attributes: string, cancellable?: Cancellable | null): FileInfo;
 		/**
 		 * Asynchronously queries the #stream for a #GFileInfo. When completed,
 		 * #callback will be called with a #GAsyncResult which can be used to
@@ -7813,7 +7783,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback callback to call when the request is satisfied
 		 */
-		query_info_async(attributes: string, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		query_info_async(attributes: string, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finalizes the asynchronous query started
 		 * by {@link G.file_output_stream_query_info_async}.
@@ -8169,7 +8139,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @returns %TRUE on success, %FALSE on failure
 		 */
-		close(cancellable: Cancellable | null): boolean;
+		close(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Requests an asynchronous close of the stream, releasing resources
 		 * related to it. When the operation is finished #callback will be
@@ -8185,7 +8155,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional cancellable object
 		 * @param callback callback to call when the request is satisfied
 		 */
-		close_async(io_priority: number | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		close_async(io_priority: number | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Closes a stream.
 		 * @param result a #GAsyncResult
@@ -8237,7 +8207,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback.
 		 */
-		splice_async(stream2: IOStream, flags: IOStreamSpliceFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		splice_async(stream2: IOStream, flags: IOStreamSpliceFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		connect(signal: "notify::closed", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::input-stream", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::output-stream", callback: (owner: this, ...args: any) => void): number;
@@ -8739,7 +8709,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns %TRUE on success, %FALSE on failure
 		 */
-		close(cancellable: Cancellable | null): boolean;
+		close(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Requests an asynchronous closes of the stream, releasing resources related to it.
 		 * When the operation is finished #callback will be called.
@@ -8755,7 +8725,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional cancellable object
 		 * @param callback callback to call when the request is satisfied
 		 */
-		close_async(io_priority: number | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		close_async(io_priority: number | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes closing a stream asynchronously, started from {@link G.input_stream_close_async}.
 		 * @param result a #GAsyncResult.
@@ -8794,14 +8764,13 @@ declare namespace imports.gi.Gio {
 		 * partial result will be returned, without an error.
 		 * 
 		 * On error -1 is returned and #error is set accordingly.
-		 * @param count the number of bytes that will be read from the stream
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns Number of bytes read, or -1 on error, or 0 on end of file.
 		 * 
 		 * 
 		 *     a buffer to read data into (which should be at least count bytes long).
 		 */
-		read(count: number, cancellable: Cancellable | null): [ number, number[] ];
+		read(cancellable?: Cancellable | null): [ number, number[] ];
 		/**
 		 * Tries to read #count bytes from the stream into the buffer starting at
 		 * #buffer. Will block during this read.
@@ -8822,7 +8791,6 @@ declare namespace imports.gi.Gio {
 		 * read before the error was encountered.  This functionality is only
 		 * available from C.  If you need it from another language then you must
 		 * write your own loop around g_input_stream_read().
-		 * @param count the number of bytes that will be read from the stream
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns %TRUE on success, %FALSE if there was an error
 		 * 
@@ -8831,7 +8799,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * location to store the number of bytes that was read from the stream
 		 */
-		read_all(count: number, cancellable: Cancellable | null): [ boolean, number[], number ];
+		read_all(cancellable?: Cancellable | null): [ boolean, number[], number ];
 		/**
 		 * Request an asynchronous read of #count bytes from the stream into the
 		 * buffer starting at #buffer.
@@ -8843,14 +8811,13 @@ declare namespace imports.gi.Gio {
 		 * Any outstanding I/O request with higher priority (lower numerical
 		 * value) will be executed before an outstanding request with lower
 		 * priority. Default priority is %G_PRIORITY_DEFAULT.
-		 * @param count the number of bytes that will be read from the stream
 		 * @param io_priority the [I/O priority][io-priority] of the request
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback callback to call when the request is satisfied
 		 * @returns 
 		 *     a buffer to read data into (which should be at least count bytes long)
 		 */
-		read_all_async(count: number, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): number[];
+		read_all_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): number[];
 		/**
 		 * Finishes an asynchronous stream read operation started with
 		 * {@link G.input_stream_read_all_async}.
@@ -8891,7 +8858,6 @@ declare namespace imports.gi.Gio {
 		 * The asynchronous methods have a default fallback that uses threads to implement
 		 * asynchronicity, so they are optional for inheriting classes. However, if you
 		 * override one you must override all.
-		 * @param count the number of bytes that will be read from the stream
 		 * @param io_priority the [I/O priority][io-priority]
 		 * of the request.
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
@@ -8899,7 +8865,7 @@ declare namespace imports.gi.Gio {
 		 * @returns 
 		 *     a buffer to read data into (which should be at least count bytes long).
 		 */
-		read_async(count: number, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): number[];
+		read_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): number[];
 		/**
 		 * Like {@link G.input_stream_read}, this tries to read #count bytes from
 		 * the stream in a blocking fashion. However, rather than reading into
@@ -8929,7 +8895,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns a new #GBytes, or %NULL on error
 		 */
-		read_bytes(count: number, cancellable: Cancellable | null): GLib.Bytes;
+		read_bytes(count: number, cancellable?: Cancellable | null): GLib.Bytes;
 		/**
 		 * Request an asynchronous read of #count bytes from the stream into a
 		 * new #GBytes. When the operation is finished #callback will be
@@ -8956,7 +8922,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback callback to call when the request is satisfied
 		 */
-		read_bytes_async(count: number, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		read_bytes_async(count: number, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous stream read-into-#GBytes operation.
 		 * @param result a #GAsyncResult.
@@ -8995,7 +8961,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns Number of bytes skipped, or -1 on error
 		 */
-		skip(count: number, cancellable: Cancellable | null): number;
+		skip(count: number, cancellable?: Cancellable | null): number;
 		/**
 		 * Request an asynchronous skip of #count bytes from the stream.
 		 * When the operation is finished #callback will be called.
@@ -9025,7 +8991,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback callback to call when the request is satisfied
 		 */
-		skip_async(count: number, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		skip_async(count: number, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes a stream skip operation.
 		 * @param result a #GAsyncResult.
@@ -9169,9 +9135,8 @@ declare namespace imports.gi.Gio {
 		 * @param position the position at which to make the change
 		 * @param n_removals the number of items to remove
 		 * @param additions the items to add
-		 * @param n_additions the number of items to add
 		 */
-		splice(position: number, n_removals: number, additions: GObject.Object[], n_additions: number): void;
+		splice(position: number, n_removals: number, additions: GObject.Object[]): void;
 		connect(signal: "notify::item-type", callback: (owner: this, ...args: any) => void): number;
 
 	}
@@ -9219,10 +9184,8 @@ declare namespace imports.gi.Gio {
 		/**
 		 * Appends #data to data that can be read from the input stream
 		 * @param data input data
-		 * @param len length of the data, may be -1 if #data is a nul-terminated string
-		 * @param destroy function that is called to free #data, or %NULL
 		 */
-		add_data(data: number[], len: number, destroy: GLib.DestroyNotify | null): void;
+		add_data(data: number[]): void;
 	}
 
 	type MemoryInputStreamInitOptionsMixin = InputStreamInitOptions & PollableInputStreamInitOptions & SeekableInitOptions
@@ -9258,11 +9221,9 @@ declare namespace imports.gi.Gio {
 		/**
 		 * Creates a new #GMemoryInputStream with data in memory of a given size.
 		 * @param data input data
-		 * @param len length of the data, may be -1 if #data is a nul-terminated string
-		 * @param destroy function that is called to free #data, or %NULL
 		 * @returns new #GInputStream read from #data of #len bytes.
 		 */
-		public static new_from_data(data: number[], len: number, destroy: GLib.DestroyNotify | null): InputStream;
+		public static new_from_data(data: number[]): InputStream;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -9419,11 +9380,9 @@ declare namespace imports.gi.Gio {
 		 * @param size the size of #data
 		 * @param realloc_function a function with realloc() semantics (like g_realloc())
 		 *     to be called when #data needs to be grown, or %NULL
-		 * @param destroy_function a function to be called on #data when the stream is
-		 *     finalized, or %NULL
 		 * @returns A newly created #GMemoryOutputStream object.
 		 */
-		public static new(data: any | null, size: number, realloc_function: ReallocFunc | null, destroy_function: GLib.DestroyNotify | null): OutputStream;
+		public static new(data: any | null, size: number, realloc_function?: ReallocFunc | null): OutputStream;
 		/**
 		 * Creates a new #GMemoryOutputStream, using {@link G.realloc} and g_free()
 		 * for memory allocation.
@@ -9443,7 +9402,7 @@ declare namespace imports.gi.Gio {
 		 * @param label the section label, or %NULL
 		 * @param detailed_action the detailed action string, or %NULL
 		 */
-		append(label: string | null, detailed_action: string | null): void;
+		append(label?: string | null, detailed_action?: string | null): void;
 		/**
 		 * Appends #item to the end of #menu.
 		 * 
@@ -9486,7 +9445,7 @@ declare namespace imports.gi.Gio {
 		 * @param label the section label, or %NULL
 		 * @param detailed_action the detailed action string, or %NULL
 		 */
-		insert(position: number, label: string | null, detailed_action: string | null): void;
+		insert(position: number, label?: string | null, detailed_action?: string | null): void;
 		/**
 		 * Inserts #item into #menu.
 		 * 
@@ -9534,7 +9493,7 @@ declare namespace imports.gi.Gio {
 		 * @param label the section label, or %NULL
 		 * @param detailed_action the detailed action string, or %NULL
 		 */
-		prepend(label: string | null, detailed_action: string | null): void;
+		prepend(label?: string | null, detailed_action?: string | null): void;
 		/**
 		 * Prepends #item to the start of #menu.
 		 * 
@@ -9715,7 +9674,7 @@ declare namespace imports.gi.Gio {
 		 * @param expected_type the expected type of the attribute
 		 * @returns the attribute value, or %NULL
 		 */
-		get_attribute_value(attribute: string, expected_type: GLib.VariantType | null): GLib.Variant | null;
+		get_attribute_value(attribute: string, expected_type?: GLib.VariantType | null): GLib.Variant | null;
 		/**
 		 * Queries the named #link on #menu_item.
 		 * @param link the link name to query
@@ -9745,7 +9704,7 @@ declare namespace imports.gi.Gio {
 		 * @param action the name of the action for this item
 		 * @param format_string a GVariant format string
 		 */
-		set_action_and_target(action: string | null, format_string: string | null): void;
+		set_action_and_target(action?: string | null, format_string?: string | null): void;
 		/**
 		 * Sets or unsets the "action" and "target" attributes of #menu_item.
 		 * 
@@ -9786,7 +9745,7 @@ declare namespace imports.gi.Gio {
 		 * @param action the name of the action for this item
 		 * @param target_value a #GVariant to use as the action target
 		 */
-		set_action_and_target_value(action: string | null, target_value: GLib.Variant | null): void;
+		set_action_and_target_value(action?: string | null, target_value?: GLib.Variant | null): void;
 		/**
 		 * Sets or unsets an attribute on #menu_item.
 		 * 
@@ -9808,7 +9767,7 @@ declare namespace imports.gi.Gio {
 		 * @param attribute the attribute to set
 		 * @param format_string a #GVariant format string, or %NULL
 		 */
-		set_attribute(attribute: string, format_string: string | null): void;
+		set_attribute(attribute: string, format_string?: string | null): void;
 		/**
 		 * Sets or unsets an attribute on #menu_item.
 		 * 
@@ -9832,7 +9791,7 @@ declare namespace imports.gi.Gio {
 		 * @param attribute the attribute to set
 		 * @param value a #GVariant to use as the value, or %NULL
 		 */
-		set_attribute_value(attribute: string, value: GLib.Variant | null): void;
+		set_attribute_value(attribute: string, value?: GLib.Variant | null): void;
 		/**
 		 * Sets the "action" and possibly the "target" attribute of #menu_item.
 		 * 
@@ -9871,7 +9830,7 @@ declare namespace imports.gi.Gio {
 		 * it is %NULL then the label attribute is unset.
 		 * @param label the label to set, or %NULL to unset
 		 */
-		set_label(label: string | null): void;
+		set_label(label?: string | null): void;
 		/**
 		 * Creates a link from #menu_item to #model if non-%NULL, or unsets it.
 		 * 
@@ -9886,7 +9845,7 @@ declare namespace imports.gi.Gio {
 		 * @param link type of link to establish or unset
 		 * @param model the #GMenuModel to link to (or %NULL to unset)
 		 */
-		set_link(link: string, model: MenuModel | null): void;
+		set_link(link: string, model?: MenuModel | null): void;
 		/**
 		 * Sets or unsets the "section" link of #menu_item to #section.
 		 * 
@@ -9897,7 +9856,7 @@ declare namespace imports.gi.Gio {
 		 * section.
 		 * @param section a #GMenuModel, or %NULL
 		 */
-		set_section(section: MenuModel | null): void;
+		set_section(section?: MenuModel | null): void;
 		/**
 		 * Sets or unsets the "submenu" link of #menu_item to #submenu.
 		 * 
@@ -9908,7 +9867,7 @@ declare namespace imports.gi.Gio {
 		 * exactly as it sounds.
 		 * @param submenu a #GMenuModel, or %NULL
 		 */
-		set_submenu(submenu: MenuModel | null): void;
+		set_submenu(submenu?: MenuModel | null): void;
 	}
 
 	type MenuItemInitOptionsMixin = GObject.ObjectInitOptions
@@ -9940,7 +9899,7 @@ declare namespace imports.gi.Gio {
 		 * @param detailed_action the detailed action string, or %NULL
 		 * @returns a new #GMenuItem
 		 */
-		public static new(label: string | null, detailed_action: string | null): MenuItem;
+		public static new(label?: string | null, detailed_action?: string | null): MenuItem;
 		/**
 		 * Creates a #GMenuItem as an exact copy of an existing menu item in a
 		 * #GMenuModel.
@@ -10148,7 +10107,7 @@ declare namespace imports.gi.Gio {
 		 *     %NULL
 		 * @returns the value of the attribute
 		 */
-		get_item_attribute_value(item_index: number, attribute: string, expected_type: GLib.VariantType | null): GLib.Variant | null;
+		get_item_attribute_value(item_index: number, attribute: string, expected_type?: GLib.VariantType | null): GLib.Variant | null;
 		/**
 		 * Queries the item at position #item_index in #model for the link
 		 * specified by #link.
@@ -10493,7 +10452,7 @@ declare namespace imports.gi.Gio {
 		 * Sets the mount operation's domain.
 		 * @param domain the domain to set.
 		 */
-		set_domain(domain: string | null): void;
+		set_domain(domain?: string | null): void;
 		/**
 		 * Sets the mount operation to use a hidden volume if #hidden_volume is %TRUE.
 		 * @param hidden_volume boolean value.
@@ -10508,7 +10467,7 @@ declare namespace imports.gi.Gio {
 		 * Sets the mount operation's password to #password.
 		 * @param password password to set.
 		 */
-		set_password(password: string | null): void;
+		set_password(password?: string | null): void;
 		/**
 		 * Sets the state of saving passwords for the mount operation.
 		 * @param save a set of #GPasswordSave flags.
@@ -10523,7 +10482,7 @@ declare namespace imports.gi.Gio {
 		 * Sets the user name within #op to #username.
 		 * @param username input username.
 		 */
-		set_username(username: string | null): void;
+		set_username(username?: string | null): void;
 		/**
 		 * Emitted by the backend when e.g. a device becomes unavailable
 		 * while a mount operation is in progress.
@@ -10995,12 +10954,12 @@ declare namespace imports.gi.Gio {
 		 * @param action an action name
 		 * @param target a #GVariant to use as #action's parameter, or %NULL
 		 */
-		add_button_with_target(label: string, action: string, target: GLib.Variant | null): void;
+		add_button_with_target(label: string, action: string, target?: GLib.Variant | null): void;
 		/**
 		 * Sets the body of #notification to #body.
 		 * @param body the new body for #notification, or %NULL
 		 */
-		set_body(body: string | null): void;
+		set_body(body?: string | null): void;
 		/**
 		 * Sets the type of #notification to #category. Categories have a main
 		 * type like `email`, `im` or `device` and can have a detail separated
@@ -11010,7 +10969,7 @@ declare namespace imports.gi.Gio {
 		 * Standard categories are [listed in the specification](https://specifications.freedesktop.org/notification-spec/latest/ar01s06.html).
 		 * @param category the category for #notification, or %NULL for no category
 		 */
-		set_category(category: string | null): void;
+		set_category(category?: string | null): void;
 		/**
 		 * Sets the default action of #notification to #detailed_action. This
 		 * action is activated when the notification is clicked on.
@@ -11039,7 +10998,7 @@ declare namespace imports.gi.Gio {
 		 * @param action an action name
 		 * @param target a #GVariant to use as #action's parameter, or %NULL
 		 */
-		set_default_action_and_target(action: string, target: GLib.Variant | null): void;
+		set_default_action_and_target(action: string, target?: GLib.Variant | null): void;
 		/**
 		 * Sets the icon of #notification to #icon.
 		 * @param icon the icon to be shown in #notification, as a #GIcon
@@ -11179,7 +11138,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional cancellable object
 		 * @returns %TRUE on success, %FALSE on failure
 		 */
-		close(cancellable: Cancellable | null): boolean;
+		close(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Requests an asynchronous close of the stream, releasing resources
 		 * related to it. When the operation is finished #callback will be
@@ -11195,7 +11154,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional cancellable object
 		 * @param callback callback to call when the request is satisfied
 		 */
-		close_async(io_priority: number | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		close_async(io_priority: number | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Closes an output stream.
 		 * @param result a #GAsyncResult.
@@ -11215,7 +11174,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional cancellable object
 		 * @returns %TRUE on success, %FALSE on error
 		 */
-		flush(cancellable: Cancellable | null): boolean;
+		flush(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Forces an asynchronous write of all user-space buffered data for
 		 * the given #stream.
@@ -11228,7 +11187,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 		 */
-		flush_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		flush_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes flushing an output stream.
 		 * @param result a GAsyncResult.
@@ -11293,7 +11252,7 @@ declare namespace imports.gi.Gio {
 		 *     returned, and there is no way to determine the actual number
 		 *     of bytes spliced.
 		 */
-		splice(source: InputStream, flags: OutputStreamSpliceFlags, cancellable: Cancellable | null): number;
+		splice(source: InputStream, flags: OutputStreamSpliceFlags, cancellable?: Cancellable | null): number;
 		/**
 		 * Splices a stream asynchronously.
 		 * When the operation is finished #callback will be called.
@@ -11308,7 +11267,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback.
 		 */
-		splice_async(source: InputStream, flags: OutputStreamSpliceFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		splice_async(source: InputStream, flags: OutputStreamSpliceFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous stream splice operation.
 		 * @param result a #GAsyncResult.
@@ -11366,7 +11325,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional cancellable object
 		 * @returns Number of bytes written, or -1 on error
 		 */
-		write(buffer: number[], cancellable: Cancellable | null): number;
+		write(buffer: number[], cancellable?: Cancellable | null): number;
 		/**
 		 * Tries to write #count bytes from #buffer into the stream. Will block
 		 * during the operation.
@@ -11394,7 +11353,7 @@ declare namespace imports.gi.Gio {
 		 * location to store the number of bytes that was
 		 *     written to the stream
 		 */
-		write_all(buffer: number[], cancellable: Cancellable | null): [ boolean, number | null ];
+		write_all(buffer: number[], cancellable?: Cancellable | null): [ boolean, number | null ];
 		/**
 		 * Request an asynchronous write of #count bytes from #buffer into
 		 * the stream. When the operation is finished #callback will be called.
@@ -11416,7 +11375,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback callback to call when the request is satisfied
 		 */
-		write_all_async(buffer: number[], io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		write_all_async(buffer: number[], io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous stream write operation started with
 		 * {@link G.output_stream_write_all_async}.
@@ -11475,7 +11434,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback callback to call when the request is satisfied
 		 */
-		write_async(buffer: number[], io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		write_async(buffer: number[], io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * A wrapper function for {@link G.output_stream_write} which takes a
 		 * #GBytes as input.  This can be more convenient for use by language
@@ -11492,7 +11451,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional cancellable object
 		 * @returns Number of bytes written, or -1 on error
 		 */
-		write_bytes(bytes: GLib.Bytes, cancellable: Cancellable | null): number;
+		write_bytes(bytes: GLib.Bytes, cancellable?: Cancellable | null): number;
 		/**
 		 * This function is similar to {@link G.output_stream_write_async}, but
 		 * takes a #GBytes as input.  Due to the refcounted nature of #GBytes,
@@ -11512,7 +11471,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback callback to call when the request is satisfied
 		 */
-		write_bytes_async(bytes: GLib.Bytes, io_priority: number | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		write_bytes_async(bytes: GLib.Bytes, io_priority: number | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes a stream write-from-#GBytes operation.
 		 * @param result a #GAsyncResult.
@@ -11550,14 +11509,13 @@ declare namespace imports.gi.Gio {
 		 * are exceeded. For example, when writing to a local file on UNIX platforms,
 		 * the aggregate buffer size must not exceed %G_MAXSSIZE bytes.
 		 * @param vectors the buffer containing the #GOutputVectors to write.
-		 * @param n_vectors the number of vectors to write
 		 * @param cancellable optional cancellable object
 		 * @returns %TRUE on success, %FALSE if there was an error
 		 * 
 		 * location to store the number of bytes that were
 		 *     written to the stream
 		 */
-		writev(vectors: OutputVector[], n_vectors: number, cancellable: Cancellable | null): [ boolean, number | null ];
+		writev(vectors: OutputVector[], cancellable?: Cancellable | null): [ boolean, number | null ];
 		/**
 		 * Tries to write the bytes contained in the #n_vectors #vectors into the
 		 * stream. Will block during the operation.
@@ -11582,14 +11540,13 @@ declare namespace imports.gi.Gio {
 		 * The content of the individual elements of #vectors might be changed by this
 		 * function.
 		 * @param vectors the buffer containing the #GOutputVectors to write.
-		 * @param n_vectors the number of vectors to write
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns %TRUE on success, %FALSE if there was an error
 		 * 
 		 * location to store the number of bytes that were
 		 *     written to the stream
 		 */
-		writev_all(vectors: OutputVector[], n_vectors: number, cancellable: Cancellable | null): [ boolean, number | null ];
+		writev_all(vectors: OutputVector[], cancellable?: Cancellable | null): [ boolean, number | null ];
 		/**
 		 * Request an asynchronous write of the bytes contained in the #n_vectors #vectors into
 		 * the stream. When the operation is finished #callback will be called.
@@ -11608,12 +11565,11 @@ declare namespace imports.gi.Gio {
 		 * until #callback is called. The content of the individual elements
 		 * of #vectors might be changed by this function.
 		 * @param vectors the buffer containing the #GOutputVectors to write.
-		 * @param n_vectors the number of vectors to write
 		 * @param io_priority the I/O priority of the request
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback callback to call when the request is satisfied
 		 */
-		writev_all_async(vectors: OutputVector[], n_vectors: number, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		writev_all_async(vectors: OutputVector[], io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous stream write operation started with
 		 * {@link G.output_stream_writev_all_async}.
@@ -11663,12 +11619,11 @@ declare namespace imports.gi.Gio {
 		 * Note that no copy of #vectors will be made, so it must stay valid
 		 * until #callback is called.
 		 * @param vectors the buffer containing the #GOutputVectors to write.
-		 * @param n_vectors the number of vectors to write
 		 * @param io_priority the I/O priority of the request.
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback callback to call when the request is satisfied
 		 */
-		writev_async(vectors: OutputVector[], n_vectors: number, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		writev_async(vectors: OutputVector[], io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes a stream writev operation.
 		 * @param result a #GAsyncResult.
@@ -11744,7 +11699,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns %TRUE if the permission was successfully acquired
 		 */
-		acquire(cancellable: Cancellable | null): boolean;
+		acquire(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Attempts to acquire the permission represented by #permission.
 		 * 
@@ -11753,7 +11708,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback the #GAsyncReadyCallback to call when done
 		 */
-		acquire_async(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		acquire_async(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Collects the result of attempting to acquire the permission
 		 * represented by #permission.
@@ -11815,7 +11770,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns %TRUE if the permission was successfully released
 		 */
-		release(cancellable: Cancellable | null): boolean;
+		release(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Attempts to release the permission represented by #permission.
 		 * 
@@ -11824,7 +11779,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback the #GAsyncReadyCallback to call when done
 		 */
-		release_async(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		release_async(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Collects the result of attempting to release the permission
 		 * represented by #permission.
@@ -12115,7 +12070,7 @@ declare namespace imports.gi.Gio {
 		 *     (or %NULL).
 		 * @returns a new #GProxyAddress
 		 */
-		public static new(inetaddr: InetAddress, port: number, protocol: string, dest_hostname: string, dest_port: number, username: string | null, password: string | null): SocketAddress;
+		public static new(inetaddr: InetAddress, port: number, protocol: string, dest_hostname: string, dest_port: number, username?: string | null, password?: string | null): SocketAddress;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -12191,7 +12146,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a hostname (either ASCII-only, or in ASCII-encoded
 		 *     form), or %NULL on error.
 		 */
-		lookup_by_address(address: InetAddress, cancellable: Cancellable | null): string;
+		lookup_by_address(address: InetAddress, cancellable?: Cancellable | null): string;
 		/**
 		 * Begins asynchronously reverse-resolving #address to determine its
 		 * associated hostname, and eventually calls #callback, which must
@@ -12200,7 +12155,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call after resolution completes
 		 */
-		lookup_by_address_async(address: InetAddress, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		lookup_by_address_async(address: InetAddress, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Retrieves the result of a previous call to
 		 * {@link G.resolver_lookup_by_address_async}.
@@ -12244,7 +12199,7 @@ declare namespace imports.gi.Gio {
 		 * must unref each of the addresses and free the list when you are
 		 * done with it. (You can use {@link G.resolver_free_addresses} to do this.)
 		 */
-		lookup_by_name(hostname: string, cancellable: Cancellable | null): InetAddress[];
+		lookup_by_name(hostname: string, cancellable?: Cancellable | null): InetAddress[];
 		/**
 		 * Begins asynchronously resolving #hostname to determine its
 		 * associated IP address(es), and eventually calls #callback, which
@@ -12254,7 +12209,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call after resolution completes
 		 */
-		lookup_by_name_async(hostname: string, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		lookup_by_name_async(hostname: string, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Retrieves the result of a call to
 		 * {@link G.resolver_lookup_by_name_async}.
@@ -12280,7 +12235,7 @@ declare namespace imports.gi.Gio {
 		 * must unref each of the addresses and free the list when you are
 		 * done with it. (You can use {@link G.resolver_free_addresses} to do this.)
 		 */
-		lookup_by_name_with_flags(hostname: string, flags: ResolverNameLookupFlags, cancellable: Cancellable | null): InetAddress[];
+		lookup_by_name_with_flags(hostname: string, flags: ResolverNameLookupFlags, cancellable?: Cancellable | null): InetAddress[];
 		/**
 		 * Begins asynchronously resolving #hostname to determine its
 		 * associated IP address(es), and eventually calls #callback, which
@@ -12291,7 +12246,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call after resolution completes
 		 */
-		lookup_by_name_with_flags_async(hostname: string, flags: ResolverNameLookupFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		lookup_by_name_with_flags_async(hostname: string, flags: ResolverNameLookupFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Retrieves the result of a call to
 		 * {@link G.resolver_lookup_by_name_with_flags_async}.
@@ -12324,7 +12279,7 @@ declare namespace imports.gi.Gio {
 		 * when you are done with it. (You can use {@link G.list_free_full} with
 		 * g_variant_unref() to do this.)
 		 */
-		lookup_records(rrname: string, record_type: ResolverRecordType, cancellable: Cancellable | null): GLib.Variant[];
+		lookup_records(rrname: string, record_type: ResolverRecordType, cancellable?: Cancellable | null): GLib.Variant[];
 		/**
 		 * Begins asynchronously performing a DNS lookup for the given
 		 * #rrname, and eventually calls #callback, which must call
@@ -12335,7 +12290,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call after resolution completes
 		 */
-		lookup_records_async(rrname: string, record_type: ResolverRecordType, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		lookup_records_async(rrname: string, record_type: ResolverRecordType, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Retrieves the result of a previous call to
 		 * {@link G.resolver_lookup_records_async}. Returns a non-empty list of records as
@@ -12383,7 +12338,7 @@ declare namespace imports.gi.Gio {
 		 * list when you are done with it. (You can use {@link G.resolver_free_targets} to do
 		 * this.)
 		 */
-		lookup_service(service: string, protocol: string, domain: string, cancellable: Cancellable | null): SrvTarget[];
+		lookup_service(service: string, protocol: string, domain: string, cancellable?: Cancellable | null): SrvTarget[];
 		/**
 		 * Begins asynchronously performing a DNS SRV lookup for the given
 		 * #service and #protocol in the given #domain, and eventually calls
@@ -12396,7 +12351,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call after resolution completes
 		 */
-		lookup_service_async(service: string, protocol: string, domain: string, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		lookup_service_async(service: string, protocol: string, domain: string, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Retrieves the result of a previous call to
 		 * {@link G.resolver_lookup_service_async}.
@@ -12588,9 +12543,8 @@ declare namespace imports.gi.Gio {
 		 *     from #settings to #object, or %NULL to use the default GIO mapping
 		 * @param set_mapping a function that gets called to convert values
 		 *     from #object to #settings, or %NULL to use the default GIO mapping
-		 * @param destroy #GDestroyNotify function for #user_data
 		 */
-		bind_with_mapping(key: string, object: GObject.Object, property: string, flags: SettingsBindFlags, get_mapping: SettingsBindGetMapping, set_mapping: SettingsBindSetMapping, destroy: GLib.DestroyNotify): void;
+		bind_with_mapping(key: string, object: GObject.Object, property: string, flags: SettingsBindFlags, get_mapping: SettingsBindGetMapping, set_mapping: SettingsBindSetMapping): void;
 		/**
 		 * Create a binding between the writability of #key in the
 		 * #settings object and the property #property of #object.
@@ -13088,7 +13042,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if setting the key succeeded,
 		 *     %FALSE if the key was not writable
 		 */
-		set_strv(key: string, value: string[] | null): boolean;
+		set_strv(key: string, value?: string[] | null): boolean;
 		/**
 		 * Sets #key in #settings to #value.
 		 * 
@@ -13152,13 +13106,12 @@ declare namespace imports.gi.Gio {
 		 *  - owner: owner of the emitted event 
 		 *  - keys: 
 		 *        an array of #GQuarks for the changed keys, or %NULL 
-		 *  - n_keys: the length of the #keys array, or 0 
 		 *  - returns %TRUE to stop other handlers from being invoked for the
 		 *          event. FALSE to propagate the event further. 
 		 * 
 		 * @returns Callback ID
 		 */
-		connect(signal: "change-event", callback: (owner: this, keys: GLib.Quark[] | null, n_keys: number) => boolean): number;
+		connect(signal: "change-event", callback: (owner: this, keys: GLib.Quark[] | null) => boolean): number;
 		/**
 		 * The "changed" signal is emitted when a key has potentially changed.
 		 * You should call one of the {@link G.settings_get} calls to check the new
@@ -13589,7 +13542,7 @@ declare namespace imports.gi.Gio {
 		 * @param path the path to use
 		 * @returns a new #GSettings object
 		 */
-		public static new_full(schema: SettingsSchema, backend: SettingsBackend | null, path: string | null): Settings;
+		public static new_full(schema: SettingsSchema, backend?: SettingsBackend | null, path?: string | null): Settings;
 		/**
 		 * Creates a new #GSettings object with the schema specified by
 		 * #schema_id and a given #GSettingsBackend.
@@ -13713,7 +13666,7 @@ declare namespace imports.gi.Gio {
 		 * @param key the name of the key
 		 * @param origin_tag the origin tag
 		 */
-		changed(key: string, origin_tag: any | null): void;
+		changed(key: string, origin_tag?: any | null): void;
 		/**
 		 * This call is a convenience wrapper.  It gets the list of changes from
 		 * #tree, computes the longest common prefix and calls
@@ -13721,7 +13674,7 @@ declare namespace imports.gi.Gio {
 		 * @param tree a #GTree containing the changes
 		 * @param origin_tag the origin tag
 		 */
-		changed_tree(tree: GLib.Tree, origin_tag: any | null): void;
+		changed_tree(tree: GLib.Tree, origin_tag?: any | null): void;
 		/**
 		 * Signals that a list of keys have possibly changed.  Backend
 		 * implementations should call this if keys have possibly changed their
@@ -13748,7 +13701,7 @@ declare namespace imports.gi.Gio {
 		 * @param items the %NULL-terminated list of changed keys
 		 * @param origin_tag the origin tag
 		 */
-		keys_changed(path: string, items: string[], origin_tag: any | null): void;
+		keys_changed(path: string, items: string[], origin_tag?: any | null): void;
 		/**
 		 * Signals that all keys below a given path may have possibly changed.
 		 * Backend implementations should call this if an entire path of keys
@@ -13774,7 +13727,7 @@ declare namespace imports.gi.Gio {
 		 * @param path the path containing the changes
 		 * @param origin_tag the origin tag
 		 */
-		path_changed(path: string, origin_tag: any | null): void;
+		path_changed(path: string, origin_tag?: any | null): void;
 		/**
 		 * Signals that the writability of all keys below a given path may have
 		 * changed.
@@ -13925,7 +13878,7 @@ declare namespace imports.gi.Gio {
 		 * action state hints.
 		 * @param state_hint a #GVariant representing the state hint
 		 */
-		set_state_hint(state_hint: GLib.Variant | null): void;
+		set_state_hint(state_hint?: GLib.Variant | null): void;
 		/**
 		 * Indicates that the action was just activated.
 		 * 
@@ -14035,7 +13988,7 @@ declare namespace imports.gi.Gio {
 		 *   handlers for the #GSimpleAction::activate signal, or %NULL for no parameter
 		 * @returns a new #GSimpleAction
 		 */
-		public static new(name: string, parameter_type: GLib.VariantType | null): SimpleAction;
+		public static new(name: string, parameter_type?: GLib.VariantType | null): SimpleAction;
 		/**
 		 * Creates a new stateful action.
 		 * 
@@ -14064,9 +14017,9 @@ declare namespace imports.gi.Gio {
 		 * and adding them to the action group.
 		 * @param entries a pointer to the first item in
 		 *           an array of #GActionEntry structs
-		 * @param n_entries the length of #entries, or -1
+		 * @param user_data the user data for signal connections
 		 */
-		add_entries(entries: ActionEntry[], n_entries: number): void;
+		add_entries(entries: ActionEntry[], user_data?: any | null): void;
 		/**
 		 * @deprecated
 		 * Use {@link G.action_map_add_action}
@@ -14216,7 +14169,7 @@ declare namespace imports.gi.Gio {
 		 * @param io_priority the io priority of the request.
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 */
-		run_in_thread(func: SimpleAsyncThreadFunc, io_priority: number, cancellable: Cancellable | null): void;
+		run_in_thread(func: SimpleAsyncThreadFunc, io_priority: number, cancellable?: Cancellable | null): void;
 		/**
 		 * @deprecated
 		 * Use #GTask instead.
@@ -14238,7 +14191,7 @@ declare namespace imports.gi.Gio {
 		 * unrelated g_simple_async_result_set_handle_cancellation() function.
 		 * @param check_cancellable a #GCancellable to check, or %NULL to unset
 		 */
-		set_check_cancellable(check_cancellable: Cancellable | null): void;
+		set_check_cancellable(check_cancellable?: Cancellable | null): void;
 		/**
 		 * @deprecated
 		 * Use #GTask and {@link G.task_return_new_error} instead.
@@ -14292,9 +14245,8 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * Sets the operation result within the asynchronous result to a pointer.
 		 * @param op_res a pointer result from an asynchronous function.
-		 * @param destroy_op_res a #GDestroyNotify function.
 		 */
-		set_op_res_gpointer(op_res: any | null, destroy_op_res: GLib.DestroyNotify): void;
+		set_op_res_gpointer(op_res?: any | null): void;
 		/**
 		 * @deprecated
 		 * Use #GTask and {@link G.task_return_int} instead.
@@ -14513,7 +14465,7 @@ declare namespace imports.gi.Gio {
 		 * @param source_tag the asynchronous function.
 		 * @returns a #GSimpleAsyncResult.
 		 */
-		public static new(source_object: GObject.Object | null, callback: AsyncReadyCallback | null, source_tag: any | null): SimpleAsyncResult;
+		public static new(source_object?: GObject.Object | null, callback?: AsyncReadyCallback | null, source_tag?: any | null): SimpleAsyncResult;
 		/**
 		 * @deprecated
 		 * Use {@link G.task_new} and g_task_return_new_error() instead.
@@ -14571,7 +14523,7 @@ declare namespace imports.gi.Gio {
 		 * @param source_tag the asynchronous function.
 		 * @returns #TRUE if all checks passed or #FALSE if any failed.
 		 */
-		public static is_valid(result: AsyncResult, source: GObject.Object | null, source_tag: any | null): boolean;
+		public static is_valid(result: AsyncResult, source?: GObject.Object | null, source_tag?: any | null): boolean;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -14783,7 +14735,7 @@ declare namespace imports.gi.Gio {
 		 *     to not use a proxy for.
 		 * @returns a new #GSimpleProxyResolver
 		 */
-		public static new(default_proxy: string | null, ignore_hosts: string | null): ProxyResolver;
+		public static new(default_proxy?: string | null, ignore_hosts?: string | null): ProxyResolver;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -14834,7 +14786,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a new #GSocket, or %NULL on error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		accept(cancellable: Cancellable | null): Socket;
+		accept(cancellable?: Cancellable | null): Socket;
 		/**
 		 * When a socket is created it is attached to an address family, but it
 		 * doesn't have an address in this family. {@link G.socket_bind} assigns the
@@ -14948,7 +14900,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns %TRUE if the condition was met, %FALSE otherwise
 		 */
-		condition_timed_wait(condition: GLib.IOCondition, timeout_us: number, cancellable: Cancellable | null): boolean;
+		condition_timed_wait(condition: GLib.IOCondition, timeout_us: number, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Waits for #condition to become true on #socket. When the condition
 		 * is met, %TRUE is returned.
@@ -14964,7 +14916,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns %TRUE if the condition was met, %FALSE otherwise
 		 */
-		condition_wait(condition: GLib.IOCondition, cancellable: Cancellable | null): boolean;
+		condition_wait(condition: GLib.IOCondition, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Connect the socket to the specified remote address.
 		 * 
@@ -14986,7 +14938,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a %GCancellable or %NULL
 		 * @returns %TRUE if connected, %FALSE on error.
 		 */
-		connect(address: SocketAddress, cancellable: Cancellable | null): boolean;
+		connect(address: SocketAddress, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Creates a #GSocketConnection subclass of the right type for
 		 * #socket.
@@ -15018,7 +14970,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a %GCancellable or %NULL
 		 * @returns a newly allocated %GSource, free with {@link G.source_unref}.
 		 */
-		create_source(condition: GLib.IOCondition, cancellable: Cancellable | null): GLib.Source;
+		create_source(condition: GLib.IOCondition, cancellable?: Cancellable | null): GLib.Source;
 		/**
 		 * Get the amount of data pending in the OS input buffer, without blocking.
 		 * 
@@ -15210,7 +15162,7 @@ declare namespace imports.gi.Gio {
 		 * @param iface Name of the interface to use, or %NULL
 		 * @returns %TRUE on success, %FALSE on error.
 		 */
-		join_multicast_group(group: InetAddress, source_specific: boolean, iface: string | null): boolean;
+		join_multicast_group(group: InetAddress, source_specific: boolean, iface?: string | null): boolean;
 		/**
 		 * Registers #socket to receive multicast messages sent to #group.
 		 * #socket must be a %G_SOCKET_TYPE_DATAGRAM socket, and must have
@@ -15233,7 +15185,7 @@ declare namespace imports.gi.Gio {
 		 * @param iface Name of the interface to use, or %NULL
 		 * @returns %TRUE on success, %FALSE on error.
 		 */
-		join_multicast_group_ssm(group: InetAddress, source_specific: InetAddress | null, iface: string | null): boolean;
+		join_multicast_group_ssm(group: InetAddress, source_specific?: InetAddress | null, iface?: string | null): boolean;
 		/**
 		 * Removes #socket from the multicast group defined by #group, #iface,
 		 * and #source_specific (which must all have the same values they had
@@ -15249,7 +15201,7 @@ declare namespace imports.gi.Gio {
 		 * @param iface Interface used
 		 * @returns %TRUE on success, %FALSE on error.
 		 */
-		leave_multicast_group(group: InetAddress, source_specific: boolean, iface: string | null): boolean;
+		leave_multicast_group(group: InetAddress, source_specific: boolean, iface?: string | null): boolean;
 		/**
 		 * Removes #socket from the multicast group defined by #group, #iface,
 		 * and #source_specific (which must all have the same values they had
@@ -15263,7 +15215,7 @@ declare namespace imports.gi.Gio {
 		 * @param iface Name of the interface to use, or %NULL
 		 * @returns %TRUE on success, %FALSE on error.
 		 */
-		leave_multicast_group_ssm(group: InetAddress, source_specific: InetAddress | null, iface: string | null): boolean;
+		leave_multicast_group_ssm(group: InetAddress, source_specific?: InetAddress | null, iface?: string | null): boolean;
 		/**
 		 * Marks the socket as a server socket, i.e. a socket that is used
 		 * to accept incoming requests using {@link G.socket_accept}.
@@ -15306,10 +15258,8 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * 
 		 *     a buffer to read data into (which should be at least #size bytes long).
-		 * 
-		 * the number of bytes you want to read from the socket
 		 */
-		receive(cancellable: Cancellable | null): [ number, number[], number ];
+		receive(cancellable?: Cancellable | null): [ number, number[] ];
 		/**
 		 * Receive data (up to #size bytes) from a socket.
 		 * 
@@ -15327,10 +15277,8 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * 
 		 *     a buffer to read data into (which should be at least #size bytes long).
-		 * 
-		 * the number of bytes you want to read from the socket
 		 */
-		receive_from(cancellable: Cancellable | null): [ number, SocketAddress | null, number[], number ];
+		receive_from(cancellable?: Cancellable | null): [ number, SocketAddress | null, number[] ];
 		/**
 		 * Receive data from a socket.  For receiving multiple messages, see
 		 * {@link G.socket_receive_messages}; for easier use, see
@@ -15392,7 +15340,6 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * On error -1 is returned and #error is set accordingly.
 		 * @param vectors an array of #GInputVector structs
-		 * @param num_vectors the number of elements in #vectors, or -1
 		 * @param cancellable a %GCancellable or %NULL
 		 * @returns Number of bytes read, or 0 if the connection was closed by
 		 * the peer, or -1 on error
@@ -15402,11 +15349,8 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * a pointer
 		 *    which may be filled with an array of #GSocketControlMessages, or %NULL
-		 * 
-		 * a pointer which will be filled with the number of
-		 *    elements in #messages, or %NULL
 		 */
-		receive_message(vectors: InputVector[], num_vectors: number, cancellable: Cancellable | null): [ number, SocketAddress | null, SocketControlMessage[] | null, number ];
+		receive_message(vectors: InputVector[], cancellable?: Cancellable | null): [ number, SocketAddress | null, SocketControlMessage[] | null ];
 		/**
 		 * Receive multiple data messages from #socket in one go.  This is the most
 		 * complicated and fully-featured version of this call. For easier use, see
@@ -15457,7 +15401,6 @@ declare namespace imports.gi.Gio {
 		 * be returned if zero messages could be received; otherwise the number of
 		 * messages successfully received before the error will be returned.
 		 * @param messages an array of #GInputMessage structs
-		 * @param num_messages the number of elements in #messages
 		 * @param flags an int containing #GSocketMsgFlags flags for the overall operation,
 		 *    which may additionally contain
 		 *    [other platform specific flags](http://man7.org/linux/man-pages/man2/recv.2.html)
@@ -15468,7 +15411,7 @@ declare namespace imports.gi.Gio {
 		 *     was larger than `UIO_MAXIOV` (1024), in which case the caller may re-try
 		 *     to receive the remaining messages.
 		 */
-		receive_messages(messages: InputMessage[], num_messages: number, flags: number, cancellable: Cancellable | null): number;
+		receive_messages(messages: InputMessage[], flags: number, cancellable?: Cancellable | null): number;
 		/**
 		 * This behaves exactly the same as {@link G.socket_receive}, except that
 		 * the choice of blocking or non-blocking behavior is determined by
@@ -15480,10 +15423,8 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * 
 		 *     a buffer to read data into (which should be at least #size bytes long).
-		 * 
-		 * the number of bytes you want to read from the socket
 		 */
-		receive_with_blocking(blocking: boolean, cancellable: Cancellable | null): [ number, number[], number ];
+		receive_with_blocking(blocking: boolean, cancellable?: Cancellable | null): [ number, number[] ];
 		/**
 		 * Tries to send #size bytes from #buffer on the socket. This is
 		 * mainly used by connection-oriented sockets; it is identical to
@@ -15501,12 +15442,11 @@ declare namespace imports.gi.Gio {
 		 * On error -1 is returned and #error is set accordingly.
 		 * @param buffer the buffer
 		 *     containing the data to send.
-		 * @param size the number of bytes to send
 		 * @param cancellable a %GCancellable or %NULL
 		 * @returns Number of bytes written (which may be less than #size), or -1
 		 * on error
 		 */
-		send(buffer: number[], size: number, cancellable: Cancellable | null): number;
+		send(buffer: number[], cancellable?: Cancellable | null): number;
 		/**
 		 * Send data to #address on #socket.  For sending multiple messages see
 		 * {@link G.socket_send_messages}; for easier use, see
@@ -15552,17 +15492,15 @@ declare namespace imports.gi.Gio {
 		 * On error -1 is returned and #error is set accordingly.
 		 * @param address a #GSocketAddress, or %NULL
 		 * @param vectors an array of #GOutputVector structs
-		 * @param num_vectors the number of elements in #vectors, or -1
 		 * @param messages a pointer to an
 		 *   array of #GSocketControlMessages, or %NULL.
-		 * @param num_messages number of elements in #messages, or -1.
 		 * @param flags an int containing #GSocketMsgFlags flags, which may additionally
 		 *    contain [other platform specific flags](http://man7.org/linux/man-pages/man2/recv.2.html)
 		 * @param cancellable a %GCancellable or %NULL
 		 * @returns Number of bytes written (which may be less than #size), or -1
 		 * on error
 		 */
-		send_message(address: SocketAddress | null, vectors: OutputVector[], num_vectors: number, messages: SocketControlMessage[] | null, num_messages: number, flags: number, cancellable: Cancellable | null): number;
+		send_message(address: SocketAddress | null, vectors: OutputVector[], messages: SocketControlMessage[] | null, flags: number, cancellable?: Cancellable | null): number;
 		/**
 		 * This behaves exactly the same as {@link G.socket_send_message}, except that
 		 * the choice of timeout behavior is determined by the #timeout_us argument
@@ -15573,10 +15511,8 @@ declare namespace imports.gi.Gio {
 		 * returned. #bytes_written will contain 0 in both cases.
 		 * @param address a #GSocketAddress, or %NULL
 		 * @param vectors an array of #GOutputVector structs
-		 * @param num_vectors the number of elements in #vectors, or -1
 		 * @param messages a pointer to an
 		 *   array of #GSocketControlMessages, or %NULL.
-		 * @param num_messages number of elements in #messages, or -1.
 		 * @param flags an int containing #GSocketMsgFlags flags, which may additionally
 		 *    contain [other platform specific flags](http://man7.org/linux/man-pages/man2/recv.2.html)
 		 * @param timeout_us the maximum time (in microseconds) to wait, or -1
@@ -15587,7 +15523,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * location to store the number of bytes that were written to the socket
 		 */
-		send_message_with_timeout(address: SocketAddress | null, vectors: OutputVector[], num_vectors: number, messages: SocketControlMessage[] | null, num_messages: number, flags: number, timeout_us: number, cancellable: Cancellable | null): [ PollableReturn, number | null ];
+		send_message_with_timeout(address: SocketAddress | null, vectors: OutputVector[], messages: SocketControlMessage[] | null, flags: number, timeout_us: number, cancellable?: Cancellable | null): [ PollableReturn, number | null ];
 		/**
 		 * Send multiple data messages from #socket in one go.  This is the most
 		 * complicated and fully-featured version of this call. For easier use, see
@@ -15624,7 +15560,6 @@ declare namespace imports.gi.Gio {
 		 * be returned if zero messages could be sent; otherwise the number of messages
 		 * successfully sent before the error will be returned.
 		 * @param messages an array of #GOutputMessage structs
-		 * @param num_messages the number of elements in #messages
 		 * @param flags an int containing #GSocketMsgFlags flags, which may additionally
 		 *    contain [other platform specific flags](http://man7.org/linux/man-pages/man2/recv.2.html)
 		 * @param cancellable a %GCancellable or %NULL
@@ -15633,7 +15568,7 @@ declare namespace imports.gi.Gio {
 		 *     non-blocking or if #num_messages was larger than UIO_MAXIOV (1024),
 		 *     in which case the caller may re-try to send the remaining messages.
 		 */
-		send_messages(messages: OutputMessage[], num_messages: number, flags: number, cancellable: Cancellable | null): number;
+		send_messages(messages: OutputMessage[], flags: number, cancellable?: Cancellable | null): number;
 		/**
 		 * Tries to send #size bytes from #buffer to #address. If #address is
 		 * %NULL then the message is sent to the default receiver (set by
@@ -15643,25 +15578,23 @@ declare namespace imports.gi.Gio {
 		 * @param address a #GSocketAddress, or %NULL
 		 * @param buffer the buffer
 		 *     containing the data to send.
-		 * @param size the number of bytes to send
 		 * @param cancellable a %GCancellable or %NULL
 		 * @returns Number of bytes written (which may be less than #size), or -1
 		 * on error
 		 */
-		send_to(address: SocketAddress | null, buffer: number[], size: number, cancellable: Cancellable | null): number;
+		send_to(address: SocketAddress | null, buffer: number[], cancellable?: Cancellable | null): number;
 		/**
 		 * This behaves exactly the same as {@link G.socket_send}, except that
 		 * the choice of blocking or non-blocking behavior is determined by
 		 * the #blocking argument rather than by #socket's properties.
 		 * @param buffer the buffer
 		 *     containing the data to send.
-		 * @param size the number of bytes to send
 		 * @param blocking whether to do blocking or non-blocking I/O
 		 * @param cancellable a %GCancellable or %NULL
 		 * @returns Number of bytes written (which may be less than #size), or -1
 		 * on error
 		 */
-		send_with_blocking(buffer: number[], size: number, blocking: boolean, cancellable: Cancellable | null): number;
+		send_with_blocking(buffer: number[], blocking: boolean, cancellable?: Cancellable | null): number;
 		/**
 		 * Sets the blocking mode of the socket. In blocking mode
 		 * all operations (which don’t take an explicit blocking parameter) block until
@@ -16033,7 +15966,7 @@ declare namespace imports.gi.Gio {
 		 *     error (in which case *#error will be set) or if there are no
 		 *     more addresses.
 		 */
-		next(cancellable: Cancellable | null): SocketAddress;
+		next(cancellable?: Cancellable | null): SocketAddress;
 		/**
 		 * Asynchronously retrieves the next #GSocketAddress from #enumerator
 		 * and then calls #callback, which must call
@@ -16044,7 +15977,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call when the request
 		 *     is satisfied
 		 */
-		next_async(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		next_async(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Retrieves the result of a completed call to
 		 * {@link G.socket_address_enumerator_next_async}. See
@@ -16150,7 +16083,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns a #GSocketConnection on success, %NULL on error.
 		 */
-		connect(connectable: SocketConnectable, cancellable: Cancellable | null): SocketConnection;
+		connect(connectable: SocketConnectable, cancellable?: Cancellable | null): SocketConnection;
 		/**
 		 * This is the asynchronous version of {@link G.socket_client_connect}.
 		 * 
@@ -16170,7 +16103,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback a #GAsyncReadyCallback
 		 */
-		connect_async(connectable: SocketConnectable, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		connect_async(connectable: SocketConnectable, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an async connect operation. See {@link G.socket_client_connect_async}
 		 * @param result a #GAsyncResult.
@@ -16213,7 +16146,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns a #GSocketConnection on success, %NULL on error.
 		 */
-		connect_to_host(host_and_port: string, default_port: number, cancellable: Cancellable | null): SocketConnection;
+		connect_to_host(host_and_port: string, default_port: number, cancellable?: Cancellable | null): SocketConnection;
 		/**
 		 * This is the asynchronous version of {@link G.socket_client_connect_to_host}.
 		 * 
@@ -16225,7 +16158,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback a #GAsyncReadyCallback
 		 */
-		connect_to_host_async(host_and_port: string, default_port: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		connect_to_host_async(host_and_port: string, default_port: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an async connect operation. See {@link G.socket_client_connect_to_host_async}
 		 * @param result a #GAsyncResult.
@@ -16252,7 +16185,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns a #GSocketConnection if successful, or %NULL on error
 		 */
-		connect_to_service(domain: string, service: string, cancellable: Cancellable | null): SocketConnection;
+		connect_to_service(domain: string, service: string, cancellable?: Cancellable | null): SocketConnection;
 		/**
 		 * This is the asynchronous version of
 		 * {@link G.socket_client_connect_to_service}.
@@ -16261,7 +16194,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback a #GAsyncReadyCallback
 		 */
-		connect_to_service_async(domain: string, service: string, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		connect_to_service_async(domain: string, service: string, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an async connect operation. See {@link G.socket_client_connect_to_service_async}
 		 * @param result a #GAsyncResult.
@@ -16295,7 +16228,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns a #GSocketConnection on success, %NULL on error.
 		 */
-		connect_to_uri(uri: string, default_port: number, cancellable: Cancellable | null): SocketConnection;
+		connect_to_uri(uri: string, default_port: number, cancellable?: Cancellable | null): SocketConnection;
 		/**
 		 * This is the asynchronous version of {@link G.socket_client_connect_to_uri}.
 		 * 
@@ -16307,7 +16240,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback a #GAsyncReadyCallback
 		 */
-		connect_to_uri_async(uri: string, default_port: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		connect_to_uri_async(uri: string, default_port: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an async connect operation. See {@link G.socket_client_connect_to_uri_async}
 		 * @param result a #GAsyncResult.
@@ -16406,7 +16339,7 @@ declare namespace imports.gi.Gio {
 		 * a specific interface.
 		 * @param address a #GSocketAddress, or %NULL
 		 */
-		set_local_address(address: SocketAddress | null): void;
+		set_local_address(address?: SocketAddress | null): void;
 		/**
 		 * Sets the protocol of the socket client.
 		 * The sockets created by this object will use of the specified
@@ -16428,7 +16361,7 @@ declare namespace imports.gi.Gio {
 		 * @param proxy_resolver a #GProxyResolver, or %NULL for the
 		 *   default.
 		 */
-		set_proxy_resolver(proxy_resolver: ProxyResolver | null): void;
+		set_proxy_resolver(proxy_resolver?: ProxyResolver | null): void;
 		/**
 		 * Sets the socket type of the socket client.
 		 * The sockets created by this object will be of the specified
@@ -16607,7 +16540,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a %GCancellable or %NULL
 		 * @returns %TRUE if the connection succeeded, %FALSE on error
 		 */
-		connect(address: SocketAddress, cancellable: Cancellable | null): boolean;
+		connect(address: SocketAddress, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Asynchronously connect #connection to the specified remote address.
 		 * 
@@ -16619,7 +16552,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a %GCancellable or %NULL
 		 * @param callback a #GAsyncReadyCallback
 		 */
-		connect_async(address: SocketAddress, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		connect_async(address: SocketAddress, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Gets the result of a {@link G.socket_connection_connect_async} call.
 		 * @param result the #GAsyncResult
@@ -16797,11 +16730,10 @@ declare namespace imports.gi.Gio {
 		 * will be returned.
 		 * @param level a socket level
 		 * @param type a socket control message type for the given #level
-		 * @param size the size of the data in bytes
 		 * @param data pointer to the message data
 		 * @returns the deserialized message or %NULL
 		 */
-		public static deserialize(level: number, type: number, size: number, data: number[]): SocketControlMessage;
+		public static deserialize(level: number, type: number, data: number[]): SocketControlMessage;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -16826,7 +16758,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * location where #GObject pointer will be stored, or %NULL
 		 */
-		accept(cancellable: Cancellable | null): [ SocketConnection, GObject.Object | null ];
+		accept(cancellable?: Cancellable | null): [ SocketConnection, GObject.Object | null ];
 		/**
 		 * This is the asynchronous version of {@link G.socket_listener_accept}.
 		 * 
@@ -16836,7 +16768,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback a #GAsyncReadyCallback
 		 */
-		accept_async(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		accept_async(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an async accept operation. See {@link G.socket_listener_accept_async}
 		 * @param result a #GAsyncResult.
@@ -16865,7 +16797,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * location where #GObject pointer will be stored, or %NULL.
 		 */
-		accept_socket(cancellable: Cancellable | null): [ Socket, GObject.Object | null ];
+		accept_socket(cancellable?: Cancellable | null): [ Socket, GObject.Object | null ];
 		/**
 		 * This is the asynchronous version of {@link G.socket_listener_accept_socket}.
 		 * 
@@ -16875,7 +16807,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback a #GAsyncReadyCallback
 		 */
-		accept_socket_async(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		accept_socket_async(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an async accept operation. See {@link G.socket_listener_accept_socket_async}
 		 * @param result a #GAsyncResult.
@@ -16916,7 +16848,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * location to store the address that was bound to, or %NULL.
 		 */
-		add_address(address: SocketAddress, type: SocketType, protocol: SocketProtocol, source_object: GObject.Object | null): [ boolean, SocketAddress | null ];
+		add_address(address: SocketAddress, type: SocketType, protocol: SocketProtocol, source_object?: GObject.Object | null): [ boolean, SocketAddress | null ];
 		/**
 		 * Listens for TCP connections on any available port number for both
 		 * IPv6 and IPv4 (if each is available).
@@ -16931,7 +16863,7 @@ declare namespace imports.gi.Gio {
 		 * @param source_object Optional #GObject identifying this source
 		 * @returns the port number, or 0 in case of failure.
 		 */
-		add_any_inet_port(source_object: GObject.Object | null): number;
+		add_any_inet_port(source_object?: GObject.Object | null): number;
 		/**
 		 * Helper function for {@link G.socket_listener_add_address} that
 		 * creates a TCP/IP socket listening on IPv4 and IPv6 (if
@@ -16949,7 +16881,7 @@ declare namespace imports.gi.Gio {
 		 * @param source_object Optional #GObject identifying this source
 		 * @returns %TRUE on success, %FALSE on error.
 		 */
-		add_inet_port(port: number, source_object: GObject.Object | null): boolean;
+		add_inet_port(port: number, source_object?: GObject.Object | null): boolean;
 		/**
 		 * Adds #socket to the set of sockets that we try to accept
 		 * new clients from. The socket must be bound to a local
@@ -16968,7 +16900,7 @@ declare namespace imports.gi.Gio {
 		 * @param source_object Optional #GObject identifying this source
 		 * @returns %TRUE on success, %FALSE on error.
 		 */
-		add_socket(socket: Socket, source_object: GObject.Object | null): boolean;
+		add_socket(socket: Socket, source_object?: GObject.Object | null): boolean;
 		/**
 		 * Closes all the sockets in the listener.
 		 */
@@ -17219,7 +17151,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * data read from the subprocess stderr
 		 */
-		communicate(stdin_buf: GLib.Bytes | null, cancellable: Cancellable | null): [ boolean, GLib.Bytes | null, GLib.Bytes | null ];
+		communicate(stdin_buf?: GLib.Bytes | null, cancellable?: Cancellable | null): [ boolean, GLib.Bytes | null, GLib.Bytes | null ];
 		/**
 		 * Asynchronous version of {@link G.subprocess_communicate}.  Complete
 		 * invocation with g_subprocess_communicate_finish().
@@ -17227,7 +17159,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable Cancellable
 		 * @param callback Callback
 		 */
-		communicate_async(stdin_buf: GLib.Bytes | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		communicate_async(stdin_buf?: GLib.Bytes | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Complete an invocation of {@link G.subprocess_communicate_async}.
 		 * @param result Result
@@ -17252,7 +17184,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * data read from the subprocess stderr
 		 */
-		communicate_utf8(stdin_buf: string | null, cancellable: Cancellable | null): [ boolean, string | null, string | null ];
+		communicate_utf8(stdin_buf?: string | null, cancellable?: Cancellable | null): [ boolean, string | null, string | null ];
 		/**
 		 * Asynchronous version of {@link G.subprocess_communicate_utf8}.  Complete
 		 * invocation with g_subprocess_communicate_utf8_finish().
@@ -17260,7 +17192,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable Cancellable
 		 * @param callback Callback
 		 */
-		communicate_utf8_async(stdin_buf: string | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		communicate_utf8_async(stdin_buf?: string | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Complete an invocation of {@link G.subprocess_communicate_utf8_async}.
 		 * @param result Result
@@ -17411,7 +17343,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable
 		 * @returns %TRUE on success, %FALSE if #cancellable was cancelled
 		 */
-		wait(cancellable: Cancellable | null): boolean;
+		wait(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Wait for the subprocess to terminate.
 		 * 
@@ -17419,14 +17351,14 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback a #GAsyncReadyCallback to call when the operation is complete
 		 */
-		wait_async(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		wait_async(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Combines {@link G.subprocess_wait} with g_spawn_check_wait_status().
 		 * @param cancellable a #GCancellable
 		 * @returns %TRUE on success, %FALSE if process exited abnormally, or
 		 * #cancellable was cancelled
 		 */
-		wait_check(cancellable: Cancellable | null): boolean;
+		wait_check(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Combines {@link G.subprocess_wait_async} with g_spawn_check_wait_status().
 		 * 
@@ -17434,7 +17366,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback a #GAsyncReadyCallback to call when the operation is complete
 		 */
-		wait_check_async(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		wait_check_async(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Collects the result of a previous call to
 		 * {@link G.subprocess_wait_check_async}.
@@ -17574,9 +17506,8 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * Child setup functions are only available on UNIX.
 		 * @param child_setup a #GSpawnChildSetupFunc to use as the child setup function
-		 * @param destroy_notify a #GDestroyNotify for #user_data
 		 */
-		set_child_setup(child_setup: GLib.SpawnChildSetupFunc, destroy_notify: GLib.DestroyNotify): void;
+		set_child_setup(child_setup: GLib.SpawnChildSetupFunc): void;
 		/**
 		 * Sets the current working directory that processes will be launched
 		 * with.
@@ -17643,7 +17574,7 @@ declare namespace imports.gi.Gio {
 		 * This feature is only available on UNIX.
 		 * @param path a filename or %NULL
 		 */
-		set_stderr_file_path(path: string | null): void;
+		set_stderr_file_path(path?: string | null): void;
 		/**
 		 * Sets the file path to use as the stdin for spawned processes.
 		 * 
@@ -17672,7 +17603,7 @@ declare namespace imports.gi.Gio {
 		 * This feature is only available on UNIX.
 		 * @param path a filename or %NULL
 		 */
-		set_stdout_file_path(path: string | null): void;
+		set_stdout_file_path(path?: string | null): void;
 		/**
 		 * Sets the environment variable #variable in the environment of
 		 * processes launched from this launcher.
@@ -18041,9 +17972,8 @@ declare namespace imports.gi.Gio {
 		 * reference on it.
 		 * @param result the pointer result of a task
 		 *     function
-		 * @param result_destroy a #GDestroyNotify function.
 		 */
-		return_pointer(result: any | null, result_destroy: GLib.DestroyNotify | null): void;
+		return_pointer(result?: any | null): void;
 		/**
 		 * Sets #task's result to #result (by copying it) and completes the task.
 		 * 
@@ -18056,7 +17986,7 @@ declare namespace imports.gi.Gio {
 		 * @param result the #GValue result of
 		 *                                      a task function
 		 */
-		return_value(result: GObject.Value | null): void;
+		return_value(result?: GObject.Value | null): void;
 		/**
 		 * Runs #task_func in another thread. When #task_func returns, #task's
 		 * #GAsyncReadyCallback will be invoked in #task's #GMainContext.
@@ -18124,7 +18054,7 @@ declare namespace imports.gi.Gio {
 		 * other than the one it was constructed in.
 		 * @param name a human readable name for the task, or %NULL to unset it
 		 */
-		set_name(name: string | null): void;
+		set_name(name?: string | null): void;
 		/**
 		 * Sets #task's priority. If you do not call this, it will default to
 		 * %G_PRIORITY_DEFAULT.
@@ -18181,13 +18111,12 @@ declare namespace imports.gi.Gio {
 		 * particular place.
 		 * @param source_tag an opaque pointer indicating the source of this task
 		 */
-		set_source_tag(source_tag: any | null): void;
+		set_source_tag(source_tag?: any | null): void;
 		/**
 		 * Sets #task's task data (freeing the existing task data, if any).
 		 * @param task_data task-specific data
-		 * @param task_data_destroy #GDestroyNotify for #task_data
 		 */
-		set_task_data(task_data: any | null, task_data_destroy: GLib.DestroyNotify | null): void;
+		set_task_data(task_data?: any | null): void;
 		connect(signal: "notify::completed", callback: (owner: this, ...args: any) => void): number;
 
 	}
@@ -18722,10 +18651,9 @@ declare namespace imports.gi.Gio {
 		 *   this task, or %NULL.
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback.
-		 * @param callback_data user data passed to #callback.
 		 * @returns a #GTask.
 		 */
-		public static new(source_object: GObject.Object | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null, callback_data: any | null): Task;
+		public static new(source_object?: GObject.Object | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): Task;
 		/**
 		 * Checks that #result is a #GTask, and that #source_object is its
 		 * source object (or that #source_object is %NULL and #result has no
@@ -18736,7 +18664,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if #result and #source_object are valid, %FALSE
 		 * if not
 		 */
-		public static is_valid(result: AsyncResult, source_object: GObject.Object | null): boolean;
+		public static is_valid(result: AsyncResult, source_object?: GObject.Object | null): boolean;
 		/**
 		 * Creates a #GTask and then immediately calls {@link G.task_return_error}
 		 * on it. Use this in the wrapper function of an asynchronous method
@@ -18749,11 +18677,10 @@ declare namespace imports.gi.Gio {
 		 * @param source_object the #GObject that owns
 		 *   this task, or %NULL.
 		 * @param callback a #GAsyncReadyCallback.
-		 * @param callback_data user data passed to #callback.
 		 * @param source_tag an opaque pointer indicating the source of this task
 		 * @param error error to report
 		 */
-		public static report_error(source_object: GObject.Object | null, callback: AsyncReadyCallback | null, callback_data: any | null, source_tag: any | null, error: GLib.Error): void;
+		public static report_error(source_object: GObject.Object | null, callback: AsyncReadyCallback | null, source_tag: any | null, error: GLib.Error): void;
 		/**
 		 * Creates a #GTask and then immediately calls
 		 * {@link G.task_return_new_error} on it. Use this in the wrapper function
@@ -18767,13 +18694,12 @@ declare namespace imports.gi.Gio {
 		 * @param source_object the #GObject that owns
 		 *   this task, or %NULL.
 		 * @param callback a #GAsyncReadyCallback.
-		 * @param callback_data user data passed to #callback.
 		 * @param source_tag an opaque pointer indicating the source of this task
 		 * @param domain a #GQuark.
 		 * @param code an error code.
 		 * @param format a string with format characters.
 		 */
-		public static report_new_error(source_object: GObject.Object | null, callback: AsyncReadyCallback | null, callback_data: any | null, source_tag: any | null, domain: GLib.Quark, code: number, format: string): void;
+		public static report_new_error(source_object: GObject.Object | null, callback: AsyncReadyCallback | null, source_tag: any | null, domain: GLib.Quark, code: number, format: string): void;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -19120,11 +19046,9 @@ declare namespace imports.gi.Gio {
 		/**
 		 * Creates a new themed icon for #iconnames.
 		 * @param iconnames an array of strings containing icon names.
-		 * @param len the length of the #iconnames array, or -1 if #iconnames is
-		 *     %NULL-terminated
 		 * @returns a new #GThemedIcon
 		 */
-		public static new_from_names(iconnames: string[], len: number): ThemedIcon;
+		public static new_from_names(iconnames: string[]): ThemedIcon;
 		/**
 		 * Creates a new themed icon for #iconname, and all the names
 		 * that can be created by shortening #iconname at '-' characters.
@@ -19414,7 +19338,7 @@ declare namespace imports.gi.Gio {
 		 * @param trusted_ca the certificate of a trusted authority
 		 * @returns the appropriate #GTlsCertificateFlags
 		 */
-		verify(identity: SocketConnectable | null, trusted_ca: TlsCertificate | null): TlsCertificateFlags;
+		verify(identity?: SocketConnectable | null, trusted_ca?: TlsCertificate | null): TlsCertificateFlags;
 		connect(signal: "notify::certificate", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::certificate-pem", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::dns-names", callback: (owner: this, ...args: any) => void): number;
@@ -19548,7 +19472,7 @@ declare namespace imports.gi.Gio {
 		 * @param private_key_pkcs11_uri A PKCS \#11 URI
 		 * @returns the new certificate, or %NULL on error
 		 */
-		public static new_from_pkcs11_uris(pkcs11_uri: string, private_key_pkcs11_uri: string | null): TlsCertificate;
+		public static new_from_pkcs11_uris(pkcs11_uri: string, private_key_pkcs11_uri?: string | null): TlsCertificate;
 		/**
 		 * Creates one or more #GTlsCertificates from the PEM-encoded
 		 * data in #file. If #file cannot be read or parsed, the function will
@@ -19808,7 +19732,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns success or failure
 		 */
-		handshake(cancellable: Cancellable | null): boolean;
+		handshake(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Asynchronously performs a TLS handshake on #conn. See
 		 * {@link G.tls_connection_handshake} for more information.
@@ -19816,7 +19740,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call when the handshake is complete
 		 */
-		handshake_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		handshake_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finish an asynchronous TLS handshake operation. See
 		 * {@link G.tls_connection_handshake} for more information.
@@ -19839,7 +19763,7 @@ declare namespace imports.gi.Gio {
 		 * @param protocols a %NULL-terminated
 		 *   array of ALPN protocol names (eg, "http/1.1", "h2"), or %NULL
 		 */
-		set_advertised_protocols(protocols: string[] | null): void;
+		set_advertised_protocols(protocols?: string[] | null): void;
 		/**
 		 * This sets the certificate that #conn will present to its peer
 		 * during the TLS handshake. For a #GTlsServerConnection, it is
@@ -19873,7 +19797,7 @@ declare namespace imports.gi.Gio {
 		 * #GTlsClientConnection:validation-flags).
 		 * @param database a #GTlsDatabase
 		 */
-		set_database(database: TlsDatabase | null): void;
+		set_database(database?: TlsDatabase | null): void;
 		/**
 		 * Set the object that will be used to interact with the user. It will be used
 		 * for things like prompting the user for passwords.
@@ -19883,7 +19807,7 @@ declare namespace imports.gi.Gio {
 		 * should occur for this connection.
 		 * @param interaction an interaction object, or %NULL
 		 */
-		set_interaction(interaction: TlsInteraction | null): void;
+		set_interaction(interaction?: TlsInteraction | null): void;
 		/**
 		 * @deprecated
 		 * Changing the rehandshake mode is no longer
@@ -20076,7 +20000,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a newly allocated
 		 * #GTlsCertificate, or %NULL. Use {@link GObject.unref} to release the certificate.
 		 */
-		lookup_certificate_for_handle(handle: string, interaction: TlsInteraction | null, flags: TlsDatabaseLookupFlags, cancellable: Cancellable | null): TlsCertificate | null;
+		lookup_certificate_for_handle(handle: string, interaction: TlsInteraction | null, flags: TlsDatabaseLookupFlags, cancellable?: Cancellable | null): TlsCertificate | null;
 		/**
 		 * Asynchronously look up a certificate by its handle in the database. See
 		 * {@link G.tls_database_lookup_certificate_for_handle} for more information.
@@ -20086,7 +20010,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call when the operation completes
 		 */
-		lookup_certificate_for_handle_async(handle: string, interaction: TlsInteraction | null, flags: TlsDatabaseLookupFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		lookup_certificate_for_handle_async(handle: string, interaction: TlsInteraction | null, flags: TlsDatabaseLookupFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finish an asynchronous lookup of a certificate by its handle. See
 		 * {@link G.tls_database_lookup_certificate_for_handle} for more information.
@@ -20126,7 +20050,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a newly allocated issuer #GTlsCertificate,
 		 * or %NULL. Use {@link GObject.unref} to release the certificate.
 		 */
-		lookup_certificate_issuer(certificate: TlsCertificate, interaction: TlsInteraction | null, flags: TlsDatabaseLookupFlags, cancellable: Cancellable | null): TlsCertificate;
+		lookup_certificate_issuer(certificate: TlsCertificate, interaction: TlsInteraction | null, flags: TlsDatabaseLookupFlags, cancellable?: Cancellable | null): TlsCertificate;
 		/**
 		 * Asynchronously look up the issuer of #certificate in the database. See
 		 * {@link G.tls_database_lookup_certificate_issuer} for more information.
@@ -20136,7 +20060,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call when the operation completes
 		 */
-		lookup_certificate_issuer_async(certificate: TlsCertificate, interaction: TlsInteraction | null, flags: TlsDatabaseLookupFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		lookup_certificate_issuer_async(certificate: TlsCertificate, interaction: TlsInteraction | null, flags: TlsDatabaseLookupFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finish an asynchronous lookup issuer operation. See
 		 * {@link G.tls_database_lookup_certificate_issuer} for more information.
@@ -20157,7 +20081,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a newly allocated list of #GTlsCertificate
 		 * objects. Use {@link GObject.unref} on each certificate, and g_list_free() on the release the list.
 		 */
-		lookup_certificates_issued_by(issuer_raw_dn: number[], interaction: TlsInteraction | null, flags: TlsDatabaseLookupFlags, cancellable: Cancellable | null): TlsCertificate[];
+		lookup_certificates_issued_by(issuer_raw_dn: number[], interaction: TlsInteraction | null, flags: TlsDatabaseLookupFlags, cancellable?: Cancellable | null): TlsCertificate[];
 		/**
 		 * Asynchronously look up certificates issued by this issuer in the database. See
 		 * {@link G.tls_database_lookup_certificates_issued_by} for more information.
@@ -20171,7 +20095,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call when the operation completes
 		 */
-		lookup_certificates_issued_by_async(issuer_raw_dn: number[], interaction: TlsInteraction | null, flags: TlsDatabaseLookupFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		lookup_certificates_issued_by_async(issuer_raw_dn: number[], interaction: TlsInteraction | null, flags: TlsDatabaseLookupFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finish an asynchronous lookup of certificates. See
 		 * {@link G.tls_database_lookup_certificates_issued_by} for more information.
@@ -20242,7 +20166,7 @@ declare namespace imports.gi.Gio {
 		 * @returns the appropriate #GTlsCertificateFlags which represents the
 		 * result of verification.
 		 */
-		verify_chain(chain: TlsCertificate, purpose: string, identity: SocketConnectable | null, interaction: TlsInteraction | null, flags: TlsDatabaseVerifyFlags, cancellable: Cancellable | null): TlsCertificateFlags;
+		verify_chain(chain: TlsCertificate, purpose: string, identity: SocketConnectable | null, interaction: TlsInteraction | null, flags: TlsDatabaseVerifyFlags, cancellable?: Cancellable | null): TlsCertificateFlags;
 		/**
 		 * Asynchronously determines the validity of a certificate chain after
 		 * looking up and adding any missing certificates to the chain. See
@@ -20255,7 +20179,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call when the operation completes
 		 */
-		verify_chain_async(chain: TlsCertificate, purpose: string, identity: SocketConnectable | null, interaction: TlsInteraction | null, flags: TlsDatabaseVerifyFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		verify_chain_async(chain: TlsCertificate, purpose: string, identity: SocketConnectable | null, interaction: TlsInteraction | null, flags: TlsDatabaseVerifyFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finish an asynchronous verify chain operation. See
 		 * {@link G.tls_database_verify_chain} for more information.
@@ -20322,7 +20246,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable an optional #GCancellable cancellation object
 		 * @returns The status of the ask password interaction.
 		 */
-		ask_password(password: TlsPassword, cancellable: Cancellable | null): TlsInteractionResult;
+		ask_password(password: TlsPassword, cancellable?: Cancellable | null): TlsInteractionResult;
 		/**
 		 * Run asynchronous interaction to ask the user for a password. In general,
 		 * {@link G.tls_interaction_invoke_ask_password} should be used instead of this
@@ -20343,7 +20267,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable an optional #GCancellable cancellation object
 		 * @param callback will be called when the interaction completes
 		 */
-		ask_password_async(password: TlsPassword, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		ask_password_async(password: TlsPassword, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Complete an ask password user interaction request. This should be once
 		 * the {@link G.tls_interaction_ask_password_async} completion callback is called.
@@ -20382,7 +20306,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable an optional #GCancellable cancellation object
 		 * @returns The status of the ask password interaction.
 		 */
-		invoke_ask_password(password: TlsPassword, cancellable: Cancellable | null): TlsInteractionResult;
+		invoke_ask_password(password: TlsPassword, cancellable?: Cancellable | null): TlsInteractionResult;
 		/**
 		 * Invoke the interaction to ask the user to choose a certificate to
 		 * use with the connection. It invokes this interaction in the main
@@ -20409,7 +20333,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable an optional #GCancellable cancellation object
 		 * @returns The status of the certificate request interaction.
 		 */
-		invoke_request_certificate(connection: TlsConnection, flags: TlsCertificateRequestFlags, cancellable: Cancellable | null): TlsInteractionResult;
+		invoke_request_certificate(connection: TlsConnection, flags: TlsCertificateRequestFlags, cancellable?: Cancellable | null): TlsInteractionResult;
 		/**
 		 * Run synchronous interaction to ask the user to choose a certificate to use
 		 * with the connection. In general, {@link G.tls_interaction_invoke_request_certificate}
@@ -20432,7 +20356,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable an optional #GCancellable cancellation object
 		 * @returns The status of the request certificate interaction.
 		 */
-		request_certificate(connection: TlsConnection, flags: TlsCertificateRequestFlags, cancellable: Cancellable | null): TlsInteractionResult;
+		request_certificate(connection: TlsConnection, flags: TlsCertificateRequestFlags, cancellable?: Cancellable | null): TlsInteractionResult;
 		/**
 		 * Run asynchronous interaction to ask the user for a certificate to use with
 		 * the connection. In general, {@link G.tls_interaction_invoke_request_certificate} should
@@ -20447,7 +20371,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable an optional #GCancellable cancellation object
 		 * @param callback will be called when the interaction completes
 		 */
-		request_certificate_async(connection: TlsConnection, flags: TlsCertificateRequestFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		request_certificate_async(connection: TlsConnection, flags: TlsCertificateRequestFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Complete a request certificate user interaction request. This should be once
 		 * the {@link G.tls_interaction_request_certificate_async} completion callback is called.
@@ -20555,9 +20479,8 @@ declare namespace imports.gi.Gio {
 		 * calculated automatically. (Note that the terminating nul is not
 		 * considered part of the password in this case.)
 		 * @param value the new password value
-		 * @param length the length of the password, or -1
 		 */
-		set_value(value: number[], length: number): void;
+		set_value(value: number[]): void;
 		/**
 		 * Provide the value for this password.
 		 * 
@@ -20569,10 +20492,8 @@ declare namespace imports.gi.Gio {
 		 * calculated automatically. (Note that the terminating nul is not
 		 * considered part of the password in this case.)
 		 * @param value the value for the password
-		 * @param length the length of the password, or -1
-		 * @param destroy a function to use to free the password.
 		 */
-		set_value_full(value: number[], length: number, destroy: GLib.DestroyNotify | null): void;
+		set_value_full(value: number[]): void;
 		/**
 		 * Set a user readable translated warning. Usually this warning is a
 		 * representation of the password flags returned from
@@ -20642,7 +20563,7 @@ declare namespace imports.gi.Gio {
 		 * @returns Received credentials on success (free with
 		 * {@link GObject.unref}), %NULL if #error is set.
 		 */
-		receive_credentials(cancellable: Cancellable | null): Credentials;
+		receive_credentials(cancellable?: Cancellable | null): Credentials;
 		/**
 		 * Asynchronously receive credentials.
 		 * 
@@ -20654,7 +20575,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 		 */
-		receive_credentials_async(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		receive_credentials_async(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous receive credentials operation started with
 		 * {@link G.unix_connection_receive_credentials_async}.
@@ -20674,7 +20595,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @returns a file descriptor on success, -1 on error.
 		 */
-		receive_fd(cancellable: Cancellable | null): number;
+		receive_fd(cancellable?: Cancellable | null): number;
 		/**
 		 * Passes the credentials of the current user the receiving side
 		 * of the connection. The receiving end has to call
@@ -20698,7 +20619,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable A #GCancellable or %NULL.
 		 * @returns %TRUE on success, %FALSE if #error is set.
 		 */
-		send_credentials(cancellable: Cancellable | null): boolean;
+		send_credentials(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Asynchronously send credentials.
 		 * 
@@ -20710,7 +20631,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 		 */
-		send_credentials_async(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		send_credentials_async(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous send credentials operation started with
 		 * {@link G.unix_connection_send_credentials_async}.
@@ -20730,7 +20651,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns a %TRUE on success, %NULL on error.
 		 */
-		send_fd(fd: number, cancellable: Cancellable | null): boolean;
+		send_fd(fd: number, cancellable?: Cancellable | null): boolean;
 	}
 
 	type UnixConnectionInitOptionsMixin = SocketConnectionInitOptions
@@ -20954,10 +20875,9 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * If #n_fds is -1 then #fds must be terminated with -1.
 		 * @param fds the initial list of file descriptors
-		 * @param n_fds the length of #fds, or -1
 		 * @returns a new #GUnixFDList
 		 */
-		public static new_from_array(fds: number[], n_fds: number): UnixFDList;
+		public static new_from_array(fds: number[]): UnixFDList;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -21388,10 +21308,9 @@ declare namespace imports.gi.Gio {
 		 * Creates a new %G_UNIX_SOCKET_ADDRESS_ABSTRACT_PADDED
 		 * #GUnixSocketAddress for #path.
 		 * @param path the abstract name
-		 * @param path_len the length of #path, or -1
 		 * @returns a new #GUnixSocketAddress
 		 */
-		public static new_abstract(path: string[], path_len: number): SocketAddress;
+		public static new_abstract(path: string[]): SocketAddress;
 		/**
 		 * Creates a new #GUnixSocketAddress of type #type with name #path.
 		 * 
@@ -21425,11 +21344,10 @@ declare namespace imports.gi.Gio {
 		 * use the appropriate type corresponding to how that process created
 		 * its listening socket.
 		 * @param path the name
-		 * @param path_len the length of #path, or -1
 		 * @param type a #GUnixSocketAddressType
 		 * @returns a new #GUnixSocketAddress
 		 */
-		public static new_with_type(path: string[], path_len: number, type: UnixSocketAddressType): SocketAddress;
+		public static new_with_type(path: string[], type: UnixSocketAddressType): SocketAddress;
 		/**
 		 * Checks if abstract UNIX domain socket names are supported.
 		 * @returns %TRUE if supported, %FALSE otherwise
@@ -21504,20 +21422,11 @@ declare namespace imports.gi.Gio {
 		 * a custom URI scheme, use g_vfs_unregister_uri_scheme().
 		 * @param scheme an URI scheme, e.g. "http"
 		 * @param uri_func a #GVfsFileLookupFunc
-		 * @param uri_data custom data passed to be passed to #uri_func, or %NULL
-		 * @param uri_destroy function to be called when unregistering the
-		 *     URI scheme, or when #vfs is disposed, to free the resources used
-		 *     by the URI lookup function
 		 * @param parse_name_func a #GVfsFileLookupFunc
-		 * @param parse_name_data custom data passed to be passed to
-		 *     #parse_name_func, or %NULL
-		 * @param parse_name_destroy function to be called when unregistering the
-		 *     URI scheme, or when #vfs is disposed, to free the resources used
-		 *     by the parse name lookup function
 		 * @returns %TRUE if #scheme was successfully registered, or %FALSE if a handler
 		 *     for #scheme already exists.
 		 */
-		register_uri_scheme(scheme: string, uri_func: VfsFileLookupFunc | null, uri_data: any | null, uri_destroy: GLib.DestroyNotify | null, parse_name_func: VfsFileLookupFunc | null, parse_name_data: any | null, parse_name_destroy: GLib.DestroyNotify | null): boolean;
+		register_uri_scheme(scheme: string, uri_func?: VfsFileLookupFunc | null, parse_name_func?: VfsFileLookupFunc | null): boolean;
 		/**
 		 * Unregisters the URI handler for #scheme previously registered with
 		 * {@link G.vfs_register_uri_scheme}.
@@ -21826,7 +21735,7 @@ declare namespace imports.gi.Gio {
 		 * or after resetting it with {@link G.converter_reset}.
 		 * @param file_info a #GFileInfo
 		 */
-		set_file_info(file_info: FileInfo | null): void;
+		set_file_info(file_info?: FileInfo | null): void;
 		connect(signal: "notify::file-info", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::format", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::level", callback: (owner: this, ...args: any) => void): number;
@@ -21971,7 +21880,7 @@ declare namespace imports.gi.Gio {
 		public get_action_state_hint: {(action_group: ActionGroup, action_name: string): GLib.Variant | null;};
 		public get_action_state: {(action_group: ActionGroup, action_name: string): GLib.Variant | null;};
 		public change_action_state: {(action_group: ActionGroup, action_name: string, value: GLib.Variant): void;};
-		public activate_action: {(action_group: ActionGroup, action_name: string, parameter: GLib.Variant | null): void;};
+		public activate_action: {(action_group: ActionGroup, action_name: string, parameter?: GLib.Variant | null): void;};
 		public action_added: {(action_group: ActionGroup, action_name: string): void;};
 		public action_removed: {(action_group: ActionGroup, action_name: string): void;};
 		public action_enabled_changed: {(action_group: ActionGroup, action_name: string, enabled: boolean): void;};
@@ -21994,7 +21903,7 @@ declare namespace imports.gi.Gio {
 		public get_enabled: {(action: Action): boolean;};
 		public get_state: {(action: Action): GLib.Variant | null;};
 		public change_state: {(action: Action, value: GLib.Variant): void;};
-		public activate: {(action: Action, parameter: GLib.Variant | null): void;};
+		public activate: {(action: Action, parameter?: GLib.Variant | null): void;};
 	}
 
 	export interface ActionMapInterfaceInitOptions {}
@@ -22028,10 +21937,10 @@ declare namespace imports.gi.Gio {
 		public get_description: {(appinfo: AppInfo): string | null;};
 		public get_executable: {(appinfo: AppInfo): string;};
 		public get_icon: {(appinfo: AppInfo): Icon | null;};
-		public launch: {(appinfo: AppInfo, files: File[] | null, context: AppLaunchContext | null): boolean;};
+		public launch: {(appinfo: AppInfo, files?: File[] | null, context?: AppLaunchContext | null): boolean;};
 		public supports_uris: {(appinfo: AppInfo): boolean;};
 		public supports_files: {(appinfo: AppInfo): boolean;};
-		public launch_uris: {(appinfo: AppInfo, uris: string[] | null, context: AppLaunchContext | null): boolean;};
+		public launch_uris: {(appinfo: AppInfo, uris?: string[] | null, context?: AppLaunchContext | null): boolean;};
 		public should_show: {(appinfo: AppInfo): boolean;};
 		public set_as_default_for_type: {(appinfo: AppInfo, content_type: string): boolean;};
 		public set_as_default_for_extension: {(appinfo: AppInfo, extension: string): boolean;};
@@ -22044,7 +21953,7 @@ declare namespace imports.gi.Gio {
 		public get_display_name: {(appinfo: AppInfo): string;};
 		public set_as_last_used_for_type: {(appinfo: AppInfo, content_type: string): boolean;};
 		public get_supported_types: {(appinfo: AppInfo): string[];};
-		public launch_uris_async: {(appinfo: AppInfo, uris: string[] | null, context: AppLaunchContext | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public launch_uris_async: {(appinfo: AppInfo, uris?: string[] | null, context?: AppLaunchContext | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public launch_uris_finish: {(appinfo: AppInfo, result: AsyncResult): boolean;};
 	}
 
@@ -22060,7 +21969,7 @@ declare namespace imports.gi.Gio {
 		 * The parent interface.
 		 */
 		public readonly g_iface: GObject.TypeInterface;
-		public init_async: {(initable: AsyncInitable, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public init_async: {(initable: AsyncInitable, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public init_finish: {(initable: AsyncInitable, res: AsyncResult): boolean;};
 	}
 
@@ -22077,7 +21986,7 @@ declare namespace imports.gi.Gio {
 		public readonly g_iface: GObject.TypeInterface;
 		public get_user_data: {(res: AsyncResult): any | null;};
 		public get_source_object: {(res: AsyncResult): GObject.Object | null;};
-		public is_tagged: {(res: AsyncResult, source_tag: any | null): boolean;};
+		public is_tagged: {(res: AsyncResult, source_tag?: any | null): boolean;};
 	}
 
 	export interface ConverterIfaceInitOptions {}
@@ -22093,7 +22002,7 @@ declare namespace imports.gi.Gio {
 		 * The parent interface.
 		 */
 		public readonly g_iface: GObject.TypeInterface;
-		public convert: {(converter: Converter, inbuf: number[] | null, inbuf_size: number, outbuf: number[] | null, outbuf_size: number, flags: ConverterFlags): [ ConverterResult, number, number ];};
+		public convert: {(converter: Converter, inbuf: number[] | null, outbuf: number[] | null, flags: ConverterFlags): [ ConverterResult, number, number ];};
 		public reset: {(converter: Converter): void;};
 	}
 
@@ -22210,7 +22119,7 @@ declare namespace imports.gi.Gio {
 		public readonly parent_iface: GObject.TypeInterface;
 		public get_info: {(interface_: DBusInterface): DBusInterfaceInfo;};
 		public get_object: {(interface_: DBusInterface): DBusObject | null;};
-		public set_object: {(interface_: DBusInterface, object: DBusObject | null): void;};
+		public set_object: {(interface_: DBusInterface, object?: DBusObject | null): void;};
 		public dup_object: {(interface_: DBusInterface): DBusObject | null;};
 	}
 
@@ -22645,11 +22554,11 @@ declare namespace imports.gi.Gio {
 		 * The parent interface.
 		 */
 		public readonly g_iface: GObject.TypeInterface;
-		public receive_messages: {(datagram_based: DatagramBased, messages: InputMessage[], num_messages: number, flags: number, timeout: number, cancellable: Cancellable | null): number;};
-		public send_messages: {(datagram_based: DatagramBased, messages: OutputMessage[], num_messages: number, flags: number, timeout: number, cancellable: Cancellable | null): number;};
-		public create_source: {(datagram_based: DatagramBased, condition: GLib.IOCondition, cancellable: Cancellable | null): GLib.Source;};
+		public receive_messages: {(datagram_based: DatagramBased, messages: InputMessage[], flags: number, timeout: number, cancellable?: Cancellable | null): number;};
+		public send_messages: {(datagram_based: DatagramBased, messages: OutputMessage[], flags: number, timeout: number, cancellable?: Cancellable | null): number;};
+		public create_source: {(datagram_based: DatagramBased, condition: GLib.IOCondition, cancellable?: Cancellable | null): GLib.Source;};
 		public condition_check: {(datagram_based: DatagramBased, condition: GLib.IOCondition): GLib.IOCondition;};
-		public condition_wait: {(datagram_based: DatagramBased, condition: GLib.IOCondition, timeout: number, cancellable: Cancellable | null): boolean;};
+		public condition_wait: {(datagram_based: DatagramBased, condition: GLib.IOCondition, timeout: number, cancellable?: Cancellable | null): boolean;};
 	}
 
 	export interface DesktopAppInfoLookupIfaceInitOptions {}
@@ -22687,22 +22596,22 @@ declare namespace imports.gi.Gio {
 		public is_media_check_automatic: {(drive: Drive): boolean;};
 		public can_eject: {(drive: Drive): boolean;};
 		public can_poll_for_media: {(drive: Drive): boolean;};
-		public eject: {(drive: Drive, flags: MountUnmountFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public eject: {(drive: Drive, flags: MountUnmountFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public eject_finish: {(drive: Drive, result: AsyncResult): boolean;};
-		public poll_for_media: {(drive: Drive, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public poll_for_media: {(drive: Drive, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public poll_for_media_finish: {(drive: Drive, result: AsyncResult): boolean;};
 		public get_identifier: {(drive: Drive, kind: string): string | null;};
 		public enumerate_identifiers: {(drive: Drive): string[];};
 		public get_start_stop_type: {(drive: Drive): DriveStartStopType;};
 		public can_start: {(drive: Drive): boolean;};
 		public can_start_degraded: {(drive: Drive): boolean;};
-		public start: {(drive: Drive, flags: DriveStartFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public start: {(drive: Drive, flags: DriveStartFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public start_finish: {(drive: Drive, result: AsyncResult): boolean;};
 		public can_stop: {(drive: Drive): boolean;};
-		public stop: {(drive: Drive, flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public stop: {(drive: Drive, flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public stop_finish: {(drive: Drive, result: AsyncResult): boolean;};
 		public stop_button: {(drive: Drive): void;};
-		public eject_with_operation: {(drive: Drive, flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public eject_with_operation: {(drive: Drive, flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public eject_with_operation_finish: {(drive: Drive, result: AsyncResult): boolean;};
 		public get_sort_key: {(drive: Drive): string | null;};
 		public get_symbolic_icon: {(drive: Drive): Icon;};
@@ -22734,13 +22643,13 @@ declare namespace imports.gi.Gio {
 		 */
 		public readonly g_iface: GObject.TypeInterface;
 		public accept_certificate: {(connection: DtlsConnection, peer_cert: TlsCertificate, errors: TlsCertificateFlags): boolean;};
-		public handshake: {(conn: DtlsConnection, cancellable: Cancellable | null): boolean;};
-		public handshake_async: {(conn: DtlsConnection, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public handshake: {(conn: DtlsConnection, cancellable?: Cancellable | null): boolean;};
+		public handshake_async: {(conn: DtlsConnection, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public handshake_finish: {(conn: DtlsConnection, result: AsyncResult): boolean;};
-		public shutdown: {(conn: DtlsConnection, shutdown_read: boolean, shutdown_write: boolean, cancellable: Cancellable | null): boolean;};
-		public shutdown_async: {(conn: DtlsConnection, shutdown_read: boolean, shutdown_write: boolean, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public shutdown: {(conn: DtlsConnection, shutdown_read: boolean, shutdown_write: boolean, cancellable?: Cancellable | null): boolean;};
+		public shutdown_async: {(conn: DtlsConnection, shutdown_read: boolean, shutdown_write: boolean, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public shutdown_finish: {(conn: DtlsConnection, result: AsyncResult): boolean;};
-		public set_advertised_protocols: {(conn: DtlsConnection, protocols: string[] | null): void;};
+		public set_advertised_protocols: {(conn: DtlsConnection, protocols?: string[] | null): void;};
 		public get_negotiated_protocol: {(conn: DtlsConnection): string | null;};
 		public get_binding_data: {(conn: DtlsConnection, type: TlsChannelBindingType, data: number[]): boolean;};
 	}
@@ -22914,7 +22823,7 @@ declare namespace imports.gi.Gio {
 		 * @returns A file attribute matcher matching all attributes of
 		 *     #matcher that are not matched by #subtract
 		 */
-		public subtract(subtract: FileAttributeMatcher | null): FileAttributeMatcher | null;
+		public subtract(subtract?: FileAttributeMatcher | null): FileAttributeMatcher | null;
 		/**
 		 * Prints what the matcher is matching against. The format will be
 		 * equal to the format passed to {@link G.file_attribute_matcher_new}.
@@ -22975,92 +22884,92 @@ declare namespace imports.gi.Gio {
 		public get_relative_path: {(parent: File, descendant: File): string | null;};
 		public resolve_relative_path: {(file: File, relative_path: string): File;};
 		public get_child_for_display_name: {(file: File, display_name: string): File;};
-		public enumerate_children: {(file: File, attributes: string, flags: FileQueryInfoFlags, cancellable: Cancellable | null): FileEnumerator;};
-		public enumerate_children_async: {(file: File, attributes: string, flags: FileQueryInfoFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public enumerate_children: {(file: File, attributes: string, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): FileEnumerator;};
+		public enumerate_children_async: {(file: File, attributes: string, flags: FileQueryInfoFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public enumerate_children_finish: {(file: File, res: AsyncResult): FileEnumerator;};
-		public query_info: {(file: File, attributes: string, flags: FileQueryInfoFlags, cancellable: Cancellable | null): FileInfo;};
-		public query_info_async: {(file: File, attributes: string, flags: FileQueryInfoFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public query_info: {(file: File, attributes: string, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): FileInfo;};
+		public query_info_async: {(file: File, attributes: string, flags: FileQueryInfoFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public query_info_finish: {(file: File, res: AsyncResult): FileInfo;};
-		public query_filesystem_info: {(file: File, attributes: string, cancellable: Cancellable | null): FileInfo;};
-		public query_filesystem_info_async: {(file: File, attributes: string, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public query_filesystem_info: {(file: File, attributes: string, cancellable?: Cancellable | null): FileInfo;};
+		public query_filesystem_info_async: {(file: File, attributes: string, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public query_filesystem_info_finish: {(file: File, res: AsyncResult): FileInfo;};
-		public find_enclosing_mount: {(file: File, cancellable: Cancellable | null): Mount;};
-		public find_enclosing_mount_async: {(file: File, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public find_enclosing_mount: {(file: File, cancellable?: Cancellable | null): Mount;};
+		public find_enclosing_mount_async: {(file: File, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public find_enclosing_mount_finish: {(file: File, res: AsyncResult): Mount;};
-		public set_display_name: {(file: File, display_name: string, cancellable: Cancellable | null): File;};
-		public set_display_name_async: {(file: File, display_name: string, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public set_display_name: {(file: File, display_name: string, cancellable?: Cancellable | null): File;};
+		public set_display_name_async: {(file: File, display_name: string, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public set_display_name_finish: {(file: File, res: AsyncResult): File;};
-		public query_settable_attributes: {(file: File, cancellable: Cancellable | null): FileAttributeInfoList;};
+		public query_settable_attributes: {(file: File, cancellable?: Cancellable | null): FileAttributeInfoList;};
 		public _query_settable_attributes_async: {(): void;};
 		public _query_settable_attributes_finish: {(): void;};
-		public query_writable_namespaces: {(file: File, cancellable: Cancellable | null): FileAttributeInfoList;};
+		public query_writable_namespaces: {(file: File, cancellable?: Cancellable | null): FileAttributeInfoList;};
 		public _query_writable_namespaces_async: {(): void;};
 		public _query_writable_namespaces_finish: {(): void;};
-		public set_attribute: {(file: File, attribute: string, type: FileAttributeType, value_p: any | null, flags: FileQueryInfoFlags, cancellable: Cancellable | null): boolean;};
-		public set_attributes_from_info: {(file: File, info: FileInfo, flags: FileQueryInfoFlags, cancellable: Cancellable | null): boolean;};
-		public set_attributes_async: {(file: File, info: FileInfo, flags: FileQueryInfoFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public set_attribute: {(file: File, attribute: string, type: FileAttributeType, value_p: any | null, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): boolean;};
+		public set_attributes_from_info: {(file: File, info: FileInfo, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): boolean;};
+		public set_attributes_async: {(file: File, info: FileInfo, flags: FileQueryInfoFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public set_attributes_finish: {(file: File, result: AsyncResult): [ boolean, FileInfo ];};
-		public read_fn: {(file: File, cancellable: Cancellable | null): FileInputStream;};
-		public read_async: {(file: File, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public read_fn: {(file: File, cancellable?: Cancellable | null): FileInputStream;};
+		public read_async: {(file: File, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public read_finish: {(file: File, res: AsyncResult): FileInputStream;};
-		public append_to: {(file: File, flags: FileCreateFlags, cancellable: Cancellable | null): FileOutputStream;};
-		public append_to_async: {(file: File, flags: FileCreateFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public append_to: {(file: File, flags: FileCreateFlags, cancellable?: Cancellable | null): FileOutputStream;};
+		public append_to_async: {(file: File, flags: FileCreateFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public append_to_finish: {(file: File, res: AsyncResult): FileOutputStream;};
-		public create: {(file: File, flags: FileCreateFlags, cancellable: Cancellable | null): FileOutputStream;};
-		public create_async: {(file: File, flags: FileCreateFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public create: {(file: File, flags: FileCreateFlags, cancellable?: Cancellable | null): FileOutputStream;};
+		public create_async: {(file: File, flags: FileCreateFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public create_finish: {(file: File, res: AsyncResult): FileOutputStream;};
-		public replace: {(file: File, etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable: Cancellable | null): FileOutputStream;};
-		public replace_async: {(file: File, etag: string | null, make_backup: boolean, flags: FileCreateFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public replace: {(file: File, etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable?: Cancellable | null): FileOutputStream;};
+		public replace_async: {(file: File, etag: string | null, make_backup: boolean, flags: FileCreateFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public replace_finish: {(file: File, res: AsyncResult): FileOutputStream;};
-		public delete_file: {(file: File, cancellable: Cancellable | null): boolean;};
-		public delete_file_async: {(file: File, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public delete_file: {(file: File, cancellable?: Cancellable | null): boolean;};
+		public delete_file_async: {(file: File, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public delete_file_finish: {(file: File, result: AsyncResult): boolean;};
-		public trash: {(file: File, cancellable: Cancellable | null): boolean;};
-		public trash_async: {(file: File, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public trash: {(file: File, cancellable?: Cancellable | null): boolean;};
+		public trash_async: {(file: File, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public trash_finish: {(file: File, result: AsyncResult): boolean;};
-		public make_directory: {(file: File, cancellable: Cancellable | null): boolean;};
-		public make_directory_async: {(file: File, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public make_directory: {(file: File, cancellable?: Cancellable | null): boolean;};
+		public make_directory_async: {(file: File, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public make_directory_finish: {(file: File, result: AsyncResult): boolean;};
-		public make_symbolic_link: {(file: File, symlink_value: string, cancellable: Cancellable | null): boolean;};
+		public make_symbolic_link: {(file: File, symlink_value: string, cancellable?: Cancellable | null): boolean;};
 		public _make_symbolic_link_async: {(): void;};
 		public _make_symbolic_link_finish: {(): void;};
-		public copy: {(source: File, destination: File, flags: FileCopyFlags, cancellable: Cancellable | null, progress_callback: FileProgressCallback | null, progress_callback_data: any | null): boolean;};
-		public copy_async: {(source: File, destination: File, flags: FileCopyFlags, io_priority: number, cancellable: Cancellable | null, progress_callback: FileProgressCallback | null, progress_callback_data: any | null, callback: AsyncReadyCallback | null): void;};
+		public copy: {(source: File, destination: File, flags: FileCopyFlags, cancellable?: Cancellable | null, progress_callback?: FileProgressCallback | null): boolean;};
+		public copy_async: {(source: File, destination: File, flags: FileCopyFlags, io_priority: number, cancellable?: Cancellable | null): void;};
 		public copy_finish: {(file: File, res: AsyncResult): boolean;};
-		public move: {(source: File, destination: File, flags: FileCopyFlags, cancellable: Cancellable | null, progress_callback: FileProgressCallback | null, progress_callback_data: any | null): boolean;};
+		public move: {(source: File, destination: File, flags: FileCopyFlags, cancellable?: Cancellable | null, progress_callback?: FileProgressCallback | null): boolean;};
 		public _move_async: {(): void;};
 		public _move_finish: {(): void;};
-		public mount_mountable: {(file: File, flags: MountMountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public mount_mountable: {(file: File, flags: MountMountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public mount_mountable_finish: {(file: File, result: AsyncResult): File;};
-		public unmount_mountable: {(file: File, flags: MountUnmountFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public unmount_mountable: {(file: File, flags: MountUnmountFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public unmount_mountable_finish: {(file: File, result: AsyncResult): boolean;};
-		public eject_mountable: {(file: File, flags: MountUnmountFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public eject_mountable: {(file: File, flags: MountUnmountFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public eject_mountable_finish: {(file: File, result: AsyncResult): boolean;};
-		public mount_enclosing_volume: {(location: File, flags: MountMountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public mount_enclosing_volume: {(location: File, flags: MountMountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public mount_enclosing_volume_finish: {(location: File, result: AsyncResult): boolean;};
-		public monitor_dir: {(file: File, flags: FileMonitorFlags, cancellable: Cancellable | null): FileMonitor;};
-		public monitor_file: {(file: File, flags: FileMonitorFlags, cancellable: Cancellable | null): FileMonitor;};
-		public open_readwrite: {(file: File, cancellable: Cancellable | null): FileIOStream;};
-		public open_readwrite_async: {(file: File, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public monitor_dir: {(file: File, flags: FileMonitorFlags, cancellable?: Cancellable | null): FileMonitor;};
+		public monitor_file: {(file: File, flags: FileMonitorFlags, cancellable?: Cancellable | null): FileMonitor;};
+		public open_readwrite: {(file: File, cancellable?: Cancellable | null): FileIOStream;};
+		public open_readwrite_async: {(file: File, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public open_readwrite_finish: {(file: File, res: AsyncResult): FileIOStream;};
-		public create_readwrite: {(file: File, flags: FileCreateFlags, cancellable: Cancellable | null): FileIOStream;};
-		public create_readwrite_async: {(file: File, flags: FileCreateFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public create_readwrite: {(file: File, flags: FileCreateFlags, cancellable?: Cancellable | null): FileIOStream;};
+		public create_readwrite_async: {(file: File, flags: FileCreateFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public create_readwrite_finish: {(file: File, res: AsyncResult): FileIOStream;};
-		public replace_readwrite: {(file: File, etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable: Cancellable | null): FileIOStream;};
-		public replace_readwrite_async: {(file: File, etag: string | null, make_backup: boolean, flags: FileCreateFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public replace_readwrite: {(file: File, etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable?: Cancellable | null): FileIOStream;};
+		public replace_readwrite_async: {(file: File, etag: string | null, make_backup: boolean, flags: FileCreateFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public replace_readwrite_finish: {(file: File, res: AsyncResult): FileIOStream;};
-		public start_mountable: {(file: File, flags: DriveStartFlags, start_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public start_mountable: {(file: File, flags: DriveStartFlags, start_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public start_mountable_finish: {(file: File, result: AsyncResult): boolean;};
-		public stop_mountable: {(file: File, flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public stop_mountable: {(file: File, flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public stop_mountable_finish: {(file: File, result: AsyncResult): boolean;};
-		public unmount_mountable_with_operation: {(file: File, flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public unmount_mountable_with_operation: {(file: File, flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public unmount_mountable_with_operation_finish: {(file: File, result: AsyncResult): boolean;};
-		public eject_mountable_with_operation: {(file: File, flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public eject_mountable_with_operation: {(file: File, flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public eject_mountable_with_operation_finish: {(file: File, result: AsyncResult): boolean;};
-		public poll_mountable: {(file: File, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public poll_mountable: {(file: File, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public poll_mountable_finish: {(file: File, result: AsyncResult): boolean;};
-		public measure_disk_usage: {(file: File, flags: FileMeasureFlags, cancellable: Cancellable | null, progress_callback: FileMeasureProgressCallback | null, progress_data: any | null): [ boolean, number | null, number | null, number | null ];};
-		public measure_disk_usage_async: {(file: File, flags: FileMeasureFlags, io_priority: number, cancellable: Cancellable | null, progress_callback: FileMeasureProgressCallback | null, progress_data: any | null, callback: AsyncReadyCallback | null): void;};
+		public measure_disk_usage: {(file: File, flags: FileMeasureFlags, cancellable?: Cancellable | null, progress_callback?: FileMeasureProgressCallback | null): [ boolean, number | null, number | null, number | null ];};
+		public measure_disk_usage_async: {(file: File, flags: FileMeasureFlags, io_priority: number, cancellable?: Cancellable | null, progress_callback?: FileMeasureProgressCallback | null, callback?: AsyncReadyCallback | null): void;};
 		public measure_disk_usage_finish: {(file: File, result: AsyncResult): [ boolean, number | null, number | null, number | null ];};
 	}
 
@@ -23212,10 +23121,9 @@ declare namespace imports.gi.Gio {
 		 * that the job was started from, waiting for the result (and thus
 		 * blocking the I/O job).
 		 * @param func a #GSourceFunc callback that will be called in the original thread
-		 * @param notify a #GDestroyNotify for #user_data, or %NULL
 		 * @returns The return value of #func
 		 */
-		public send_to_mainloop(func: GLib.SourceFunc, notify: GLib.DestroyNotify | null): boolean;
+		public send_to_mainloop(func: GLib.SourceFunc): boolean;
 		/**
 		 * @deprecated
 		 * Use {@link G.main_context_invoke}.
@@ -23230,9 +23138,8 @@ declare namespace imports.gi.Gio {
 		 * #func is called, either by passing %NULL as #notify to
 		 * g_io_scheduler_push_job() or by using refcounting for #user_data.
 		 * @param func a #GSourceFunc callback that will be called in the original thread
-		 * @param notify a #GDestroyNotify for #user_data, or %NULL
 		 */
-		public send_to_mainloop_async(func: GLib.SourceFunc, notify: GLib.DestroyNotify | null): void;
+		public send_to_mainloop_async(func: GLib.SourceFunc): void;
 	}
 
 	export interface IOStreamAdapterInitOptions {}
@@ -23255,7 +23162,7 @@ declare namespace imports.gi.Gio {
 		 */
 		public readonly g_iface: GObject.TypeInterface;
 		public hash: {(icon: Icon): number;};
-		public equal: {(icon1: Icon | null, icon2: Icon | null): boolean;};
+		public equal: {(icon1?: Icon | null, icon2?: Icon | null): boolean;};
 		public to_tokens: {(icon: Icon, tokens: any[], out_version: number): boolean;};
 		public from_tokens: {(tokens: string, num_tokens: number, version: number): Icon;};
 		public serialize: {(icon: Icon): GLib.Variant | null;};
@@ -23273,7 +23180,7 @@ declare namespace imports.gi.Gio {
 		 * The parent interface.
 		 */
 		public readonly g_iface: GObject.TypeInterface;
-		public init: {(initable: Initable, cancellable: Cancellable | null): boolean;};
+		public init: {(initable: Initable, cancellable?: Cancellable | null): boolean;};
 	}
 
 	export interface InputMessageInitOptions {}
@@ -23384,8 +23291,8 @@ declare namespace imports.gi.Gio {
 		 * The parent interface.
 		 */
 		public readonly g_iface: GObject.TypeInterface;
-		public load: {(icon: LoadableIcon, size: number, cancellable: Cancellable | null): [ InputStream, string | null ];};
-		public load_async: {(icon: LoadableIcon, size: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public load: {(icon: LoadableIcon, size: number, cancellable?: Cancellable | null): [ InputStream, string | null ];};
+		public load_async: {(icon: LoadableIcon, size: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public load_finish: {(icon: LoadableIcon, res: AsyncResult): [ InputStream, string | null ];};
 	}
 
@@ -23424,19 +23331,19 @@ declare namespace imports.gi.Gio {
 		public get_drive: {(mount: Mount): Drive | null;};
 		public can_unmount: {(mount: Mount): boolean;};
 		public can_eject: {(mount: Mount): boolean;};
-		public unmount: {(mount: Mount, flags: MountUnmountFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public unmount: {(mount: Mount, flags: MountUnmountFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public unmount_finish: {(mount: Mount, result: AsyncResult): boolean;};
-		public eject: {(mount: Mount, flags: MountUnmountFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public eject: {(mount: Mount, flags: MountUnmountFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public eject_finish: {(mount: Mount, result: AsyncResult): boolean;};
-		public remount: {(mount: Mount, flags: MountMountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public remount: {(mount: Mount, flags: MountMountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public remount_finish: {(mount: Mount, result: AsyncResult): boolean;};
-		public guess_content_type: {(mount: Mount, force_rescan: boolean, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public guess_content_type: {(mount: Mount, force_rescan: boolean, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public guess_content_type_finish: {(mount: Mount, result: AsyncResult): string[];};
-		public guess_content_type_sync: {(mount: Mount, force_rescan: boolean, cancellable: Cancellable | null): string[];};
+		public guess_content_type_sync: {(mount: Mount, force_rescan: boolean, cancellable?: Cancellable | null): string[];};
 		public pre_unmount: {(mount: Mount): void;};
-		public unmount_with_operation: {(mount: Mount, flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public unmount_with_operation: {(mount: Mount, flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public unmount_with_operation_finish: {(mount: Mount, result: AsyncResult): boolean;};
-		public eject_with_operation: {(mount: Mount, flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public eject_with_operation: {(mount: Mount, flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public eject_with_operation_finish: {(mount: Mount, result: AsyncResult): boolean;};
 		public get_default_location: {(mount: Mount): File;};
 		public get_sort_key: {(mount: Mount): string | null;};
@@ -23455,8 +23362,8 @@ declare namespace imports.gi.Gio {
 		 */
 		public readonly g_iface: GObject.TypeInterface;
 		public network_changed: {(monitor: NetworkMonitor, network_available: boolean): void;};
-		public can_reach: {(monitor: NetworkMonitor, connectable: SocketConnectable, cancellable: Cancellable | null): boolean;};
-		public can_reach_async: {(monitor: NetworkMonitor, connectable: SocketConnectable, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public can_reach: {(monitor: NetworkMonitor, connectable: SocketConnectable, cancellable?: Cancellable | null): boolean;};
+		public can_reach_async: {(monitor: NetworkMonitor, connectable: SocketConnectable, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public can_reach_finish: {(monitor: NetworkMonitor, result: AsyncResult): boolean;};
 	}
 
@@ -23543,8 +23450,8 @@ declare namespace imports.gi.Gio {
 		public readonly g_iface: GObject.TypeInterface;
 		public can_poll: {(stream: PollableInputStream): boolean;};
 		public is_readable: {(stream: PollableInputStream): boolean;};
-		public create_source: {(stream: PollableInputStream, cancellable: Cancellable | null): GLib.Source;};
-		public read_nonblocking: {(stream: PollableInputStream, count: number): [ number, number[] | null ];};
+		public create_source: {(stream: PollableInputStream, cancellable?: Cancellable | null): GLib.Source;};
+		public read_nonblocking: {(stream: PollableInputStream): [ number, number[] | null ];};
 	}
 
 	export interface PollableOutputStreamInterfaceInitOptions {}
@@ -23575,9 +23482,9 @@ declare namespace imports.gi.Gio {
 		public readonly g_iface: GObject.TypeInterface;
 		public can_poll: {(stream: PollableOutputStream): boolean;};
 		public is_writable: {(stream: PollableOutputStream): boolean;};
-		public create_source: {(stream: PollableOutputStream, cancellable: Cancellable | null): GLib.Source;};
-		public write_nonblocking: {(stream: PollableOutputStream, buffer: number[] | null, count: number): number;};
-		public writev_nonblocking: {(stream: PollableOutputStream, vectors: OutputVector[], n_vectors: number): [ PollableReturn, number | null ];};
+		public create_source: {(stream: PollableOutputStream, cancellable?: Cancellable | null): GLib.Source;};
+		public write_nonblocking: {(stream: PollableOutputStream, buffer?: number[] | null): number;};
+		public writev_nonblocking: {(stream: PollableOutputStream, vectors: OutputVector[]): [ PollableReturn, number | null ];};
 	}
 
 	export interface PowerProfileMonitorInterfaceInitOptions {}
@@ -23604,8 +23511,8 @@ declare namespace imports.gi.Gio {
 		 * The parent interface.
 		 */
 		public readonly g_iface: GObject.TypeInterface;
-		public connect: {(proxy: Proxy, connection: IOStream, proxy_address: ProxyAddress, cancellable: Cancellable | null): IOStream;};
-		public connect_async: {(proxy: Proxy, connection: IOStream, proxy_address: ProxyAddress, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public connect: {(proxy: Proxy, connection: IOStream, proxy_address: ProxyAddress, cancellable?: Cancellable | null): IOStream;};
+		public connect_async: {(proxy: Proxy, connection: IOStream, proxy_address: ProxyAddress, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public connect_finish: {(proxy: Proxy, result: AsyncResult): IOStream;};
 		public supports_hostname: {(proxy: Proxy): boolean;};
 	}
@@ -23622,8 +23529,8 @@ declare namespace imports.gi.Gio {
 		 */
 		public readonly g_iface: GObject.TypeInterface;
 		public is_supported: {(resolver: ProxyResolver): boolean;};
-		public lookup: {(resolver: ProxyResolver, uri: string, cancellable: Cancellable | null): string[];};
-		public lookup_async: {(resolver: ProxyResolver, uri: string, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public lookup: {(resolver: ProxyResolver, uri: string, cancellable?: Cancellable | null): string[];};
+		public lookup_async: {(resolver: ProxyResolver, uri: string, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public lookup_finish: {(resolver: ProxyResolver, result: AsyncResult): string[];};
 	}
 
@@ -23913,9 +23820,9 @@ declare namespace imports.gi.Gio {
 		public readonly g_iface: GObject.TypeInterface;
 		public tell: {(seekable: Seekable): number;};
 		public can_seek: {(seekable: Seekable): boolean;};
-		public seek: {(seekable: Seekable, offset: number, type: GLib.SeekType, cancellable: Cancellable | null): boolean;};
+		public seek: {(seekable: Seekable, offset: number, type: GLib.SeekType, cancellable?: Cancellable | null): boolean;};
 		public can_truncate: {(seekable: Seekable): boolean;};
-		public truncate_fn: {(seekable: Seekable, offset: number, cancellable: Cancellable | null): boolean;};
+		public truncate_fn: {(seekable: Seekable, offset: number, cancellable?: Cancellable | null): boolean;};
 	}
 
 	export interface SettingsSchemaInitOptions {}
@@ -24633,15 +24540,15 @@ declare namespace imports.gi.Gio {
 		public get_mount: {(volume: Volume): Mount | null;};
 		public can_mount: {(volume: Volume): boolean;};
 		public can_eject: {(volume: Volume): boolean;};
-		public mount_fn: {(volume: Volume, flags: MountMountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public mount_fn: {(volume: Volume, flags: MountMountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public mount_finish: {(volume: Volume, result: AsyncResult): boolean;};
-		public eject: {(volume: Volume, flags: MountUnmountFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public eject: {(volume: Volume, flags: MountUnmountFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public eject_finish: {(volume: Volume, result: AsyncResult): boolean;};
 		public get_identifier: {(volume: Volume, kind: string): string | null;};
 		public enumerate_identifiers: {(volume: Volume): string[];};
 		public should_automount: {(volume: Volume): boolean;};
 		public get_activation_root: {(volume: Volume): File | null;};
-		public eject_with_operation: {(volume: Volume, flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;};
+		public eject_with_operation: {(volume: Volume, flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;};
 		public eject_with_operation_finish: {(volume: Volume, result: AsyncResult): boolean;};
 		public get_sort_key: {(volume: Volume): string | null;};
 		public get_symbolic_icon: {(volume: Volume): Icon;};
@@ -24688,7 +24595,7 @@ declare namespace imports.gi.Gio {
 		 * If the #parameter GVariant is floating, it is consumed.
 		 * @param parameter the parameter to the activation
 		 */
-		activate(parameter: GLib.Variant | null): void;
+		activate(parameter?: GLib.Variant | null): void;
 		/**
 		 * Request for the state of #action to be changed to #value.
 		 * 
@@ -24889,7 +24796,7 @@ declare namespace imports.gi.Gio {
 		 * @param target_value a #GVariant target value, or %NULL
 		 * @returns a detailed format string
 		 */
-		public static print_detailed_name(action_name: string, target_value: GLib.Variant | null): string;
+		public static print_detailed_name(action_name: string, target_value?: GLib.Variant | null): string;
 	}
 
 
@@ -24965,7 +24872,7 @@ declare namespace imports.gi.Gio {
 		 * @param action_name the name of the action to activate
 		 * @param parameter parameters to the activation
 		 */
-		activate_action(action_name: string, parameter: GLib.Variant | null): void;
+		activate_action(action_name: string, parameter?: GLib.Variant | null): void;
 		/**
 		 * Request for the state of the named action within #action_group to be
 		 * changed to #value.
@@ -25289,9 +25196,9 @@ declare namespace imports.gi.Gio {
 		 * ]|
 		 * @param entries a pointer to
 		 *           the first item in an array of #GActionEntry structs
-		 * @param n_entries the length of #entries, or -1 if #entries is %NULL-terminated
+		 * @param user_data the user data for signal connections
 		 */
-		add_action_entries(entries: ActionEntry[], n_entries: number): void;
+		add_action_entries(entries: ActionEntry[], user_data?: any | null): void;
 		/**
 		 * Looks up the action with the name #action_name in #action_map.
 		 * 
@@ -25474,7 +25381,7 @@ declare namespace imports.gi.Gio {
 		 * @param context a #GAppLaunchContext or %NULL
 		 * @returns %TRUE on successful launch, %FALSE otherwise.
 		 */
-		launch(files: File[] | null, context: AppLaunchContext | null): boolean;
+		launch(files?: File[] | null, context?: AppLaunchContext | null): boolean;
 		/**
 		 * Launches the application. This passes the #uris to the launched application
 		 * as arguments, using the optional #context to get information
@@ -25490,7 +25397,7 @@ declare namespace imports.gi.Gio {
 		 * @param context a #GAppLaunchContext or %NULL
 		 * @returns %TRUE on successful launch, %FALSE otherwise.
 		 */
-		launch_uris(uris: string[] | null, context: AppLaunchContext | null): boolean;
+		launch_uris(uris?: string[] | null, context?: AppLaunchContext | null): boolean;
 		/**
 		 * Async version of {@link G.app_info_launch_uris}.
 		 * 
@@ -25503,7 +25410,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable
 		 * @param callback a #GAsyncReadyCallback to call when the request is done
 		 */
-		launch_uris_async(uris: string[] | null, context: AppLaunchContext | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		launch_uris_async(uris?: string[] | null, context?: AppLaunchContext | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes a {@link G.app_info_launch_uris_async} operation.
 		 * @param result a #GAsyncResult
@@ -25707,7 +25614,7 @@ declare namespace imports.gi.Gio {
 		 * @param context an optional #GAppLaunchContext
 		 * @returns %TRUE on success, %FALSE on error.
 		 */
-		public static launch_default_for_uri(uri: string, context: AppLaunchContext | null): boolean;
+		public static launch_default_for_uri(uri: string, context?: AppLaunchContext | null): boolean;
 		/**
 		 * Async version of {@link G.app_info_launch_default_for_uri}.
 		 * 
@@ -25724,7 +25631,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable
 		 * @param callback a #GAsyncReadyCallback to call when the request is done
 		 */
-		public static launch_default_for_uri_async(uri: string, context: AppLaunchContext | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		public static launch_default_for_uri_async(uri: string, context?: AppLaunchContext | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous launch-default-for-uri operation.
 		 * @param result a #GAsyncResult
@@ -25789,7 +25696,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 		 */
-		init_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		init_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes asynchronous initialization and returns the result.
 		 * See {@link G.async_initable_init_async}.
@@ -25936,7 +25843,7 @@ declare namespace imports.gi.Gio {
 		 * @param first_property_name the name of the first property, or %NULL if no
 		 *     properties
 		 */
-		public static new_async(object_type: GObject.Type, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null, first_property_name: string | null): void;
+		public static new_async(object_type: GObject.Type, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null, first_property_name?: string | null): void;
 		/**
 		 * Helper function for constructing #GAsyncInitable object. This is
 		 * similar to {@link GObject.new_valist} but also initializes the object
@@ -25954,7 +25861,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call when the initialization is
 		 *     finished
 		 */
-		public static new_valist_async(object_type: GObject.Type, first_property_name: string, var_args: any[], io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		public static new_valist_async(object_type: GObject.Type, first_property_name: string, var_args: any[], io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * @deprecated
 		 * Use {@link GObject.new_with_properties} and
@@ -25974,7 +25881,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call when the initialization is
 		 *     finished
 		 */
-		public static newv_async(object_type: GObject.Type, n_parameters: number, parameters: GObject.Parameter, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		public static newv_async(object_type: GObject.Type, n_parameters: number, parameters: GObject.Parameter, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 	}
 
 
@@ -26001,7 +25908,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if #res has the indicated #source_tag, %FALSE if
 		 *   not.
 		 */
-		is_tagged(source_tag: any | null): boolean;
+		is_tagged(source_tag?: any | null): boolean;
 		/**
 		 * If #res is a #GSimpleAsyncResult, this is equivalent to
 		 * {@link G.simple_async_result_propagate_error}. Otherwise it returns
@@ -26210,10 +26117,8 @@ declare namespace imports.gi.Gio {
 		 * (typically %G_IO_ERROR_PARTIAL_INPUT).
 		 * @param inbuf the buffer
 		 *         containing the data to convert.
-		 * @param inbuf_size the number of bytes in #inbuf
 		 * @param outbuf a buffer to write
 		 *    converted data in.
-		 * @param outbuf_size the number of bytes in #outbuf, must be at least one
 		 * @param flags a #GConverterFlags controlling the conversion details
 		 * @returns a #GConverterResult, %G_CONVERTER_ERROR on error.
 		 * 
@@ -26221,7 +26126,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * will be set to the number of bytes written to #outbuf on success
 		 */
-		convert(inbuf: number[], inbuf_size: number, outbuf: number[], outbuf_size: number, flags: ConverterFlags): [ ConverterResult, number, number ];
+		convert(inbuf: number[], outbuf: number[], flags: ConverterFlags): [ ConverterResult, number, number ];
 		/**
 		 * Resets all internal state in the converter, making it behave
 		 * as if it was just created. If the converter has any internal
@@ -26277,7 +26182,7 @@ declare namespace imports.gi.Gio {
 		 * Note that #interface_ will hold a weak reference to #object.
 		 * @param object A #GDBusObject or %NULL.
 		 */
-		set_object(object: DBusObject | null): void;
+		set_object(object?: DBusObject | null): void;
 	}
 
 	type DBusInterfaceInitOptionsMixin  = {};
@@ -26537,7 +26442,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable
 		 * @returns %TRUE if the condition was met, %FALSE otherwise
 		 */
-		// condition_wait(condition: GLib.IOCondition, timeout: number, cancellable: Cancellable | null): boolean;
+		// condition_wait(condition: GLib.IOCondition, timeout: number, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Creates a #GSource that can be attached to a #GMainContext to monitor for
 		 * the availability of the specified #condition on the #GDatagramBased. The
@@ -26557,7 +26462,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable
 		 * @returns a newly allocated #GSource
 		 */
-		create_source(condition: GLib.IOCondition, cancellable: Cancellable | null): GLib.Source;
+		create_source(condition: GLib.IOCondition, cancellable?: Cancellable | null): GLib.Source;
 		/**
 		 * Receive one or more data messages from #datagram_based in one go.
 		 * 
@@ -26610,7 +26515,6 @@ declare namespace imports.gi.Gio {
 		 * #cancellable is cancelled, %G_IO_ERROR_CANCELLED is returned as with any
 		 * other error.
 		 * @param messages an array of #GInputMessage structs
-		 * @param num_messages the number of elements in #messages
 		 * @param flags an int containing #GSocketMsgFlags flags for the overall operation
 		 * @param timeout the maximum time (in microseconds) to wait, 0 to not block, or -1
 		 *   to block indefinitely
@@ -26621,7 +26525,7 @@ declare namespace imports.gi.Gio {
 		 *     was larger than `UIO_MAXIOV` (1024), in which case the caller may re-try
 		 *     to receive the remaining messages.
 		 */
-		// receive_messages(messages: InputMessage[], num_messages: number, flags: number, timeout: number, cancellable: Cancellable | null): number;
+		// receive_messages(messages: InputMessage[], flags: number, timeout: number, cancellable?: Cancellable | null): number;
 		/**
 		 * Send one or more data messages from #datagram_based in one go.
 		 * 
@@ -26665,7 +26569,6 @@ declare namespace imports.gi.Gio {
 		 * successfully sent before the error will be returned. If #cancellable is
 		 * cancelled, %G_IO_ERROR_CANCELLED is returned as with any other error.
 		 * @param messages an array of #GOutputMessage structs
-		 * @param num_messages the number of elements in #messages
 		 * @param flags an int containing #GSocketMsgFlags flags
 		 * @param timeout the maximum time (in microseconds) to wait, 0 to not block, or -1
 		 *   to block indefinitely
@@ -26675,7 +26578,7 @@ declare namespace imports.gi.Gio {
 		 *     or positive, or if #num_messages was larger than `UIO_MAXIOV` (1024), in
 		 *     which case the caller may re-try to send the remaining messages.
 		 */
-		// send_messages(messages: OutputMessage[], num_messages: number, flags: number, timeout: number, cancellable: Cancellable | null): number;
+		// send_messages(messages: OutputMessage[], flags: number, timeout: number, cancellable?: Cancellable | null): number;
 	}
 
 	type DatagramBasedInitOptionsMixin  = {};
@@ -26830,7 +26733,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback, or %NULL.
 		 */
-		eject(flags: MountUnmountFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		eject(flags: MountUnmountFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * @deprecated
 		 * Use {@link G.drive_eject_with_operation_finish} instead.
@@ -26851,7 +26754,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback, or %NULL.
 		 */
-		eject_with_operation(flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		eject_with_operation(flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes ejecting a drive. If any errors occurred during the operation,
 		 * #error will be set to contain the errors and %FALSE will be returned.
@@ -26952,7 +26855,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback, or %NULL.
 		 */
-		poll_for_media(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		poll_for_media(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an operation started with {@link G.drive_poll_for_media} on a drive.
 		 * @param result a #GAsyncResult.
@@ -26972,7 +26875,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback, or %NULL.
 		 */
-		start(flags: DriveStartFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		start(flags: DriveStartFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes starting a drive.
 		 * @param result a #GAsyncResult.
@@ -26992,7 +26895,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback, or %NULL.
 		 */
-		stop(flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		stop(flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes stopping a drive.
 		 * @param result a #GAsyncResult.
@@ -27199,7 +27102,7 @@ declare namespace imports.gi.Gio {
 		 * @returns the new
 		 *   #GDtlsClientConnection, or %NULL on error
 		 */
-		public static new(base_socket: DatagramBased, server_identity: SocketConnectable | null): DtlsClientConnection;
+		public static new(base_socket: DatagramBased, server_identity?: SocketConnectable | null): DtlsClientConnection;
 	}
 
 
@@ -27303,7 +27206,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns %TRUE on success, %FALSE otherwise
 		 */
-		close(cancellable: Cancellable | null): boolean;
+		close(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Asynchronously close the DTLS connection. See {@link G.dtls_connection_close} for
 		 * more information.
@@ -27311,7 +27214,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call when the close operation is complete
 		 */
-		close_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		close_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finish an asynchronous TLS close operation. See {@link G.dtls_connection_close}
 		 * for more information.
@@ -27462,7 +27365,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns success or failure
 		 */
-		handshake(cancellable: Cancellable | null): boolean;
+		handshake(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Asynchronously performs a TLS handshake on #conn. See
 		 * {@link G.dtls_connection_handshake} for more information.
@@ -27470,7 +27373,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call when the handshake is complete
 		 */
-		handshake_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		handshake_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finish an asynchronous TLS handshake operation. See
 		 * {@link G.dtls_connection_handshake} for more information.
@@ -27493,7 +27396,7 @@ declare namespace imports.gi.Gio {
 		 * @param protocols a %NULL-terminated
 		 *   array of ALPN protocol names (eg, "http/1.1", "h2"), or %NULL
 		 */
-		set_advertised_protocols(protocols: string[] | null): void;
+		set_advertised_protocols(protocols?: string[] | null): void;
 		/**
 		 * This sets the certificate that #conn will present to its peer
 		 * during the TLS handshake. For a #GDtlsServerConnection, it is
@@ -27527,7 +27430,7 @@ declare namespace imports.gi.Gio {
 		 * #GDtlsClientConnection:validation-flags).
 		 * @param database a #GTlsDatabase
 		 */
-		set_database(database: TlsDatabase | null): void;
+		set_database(database?: TlsDatabase | null): void;
 		/**
 		 * Set the object that will be used to interact with the user. It will be used
 		 * for things like prompting the user for passwords.
@@ -27537,7 +27440,7 @@ declare namespace imports.gi.Gio {
 		 * should occur for this connection.
 		 * @param interaction an interaction object, or %NULL
 		 */
-		set_interaction(interaction: TlsInteraction | null): void;
+		set_interaction(interaction?: TlsInteraction | null): void;
 		/**
 		 * @deprecated
 		 * Changing the rehandshake mode is no longer
@@ -27602,7 +27505,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns %TRUE on success, %FALSE otherwise
 		 */
-		shutdown(shutdown_read: boolean, shutdown_write: boolean, cancellable: Cancellable | null): boolean;
+		shutdown(shutdown_read: boolean, shutdown_write: boolean, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Asynchronously shut down part or all of the DTLS connection. See
 		 * {@link G.dtls_connection_shutdown} for more information.
@@ -27612,7 +27515,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call when the shutdown operation is complete
 		 */
-		shutdown_async(shutdown_read: boolean, shutdown_write: boolean, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		shutdown_async(shutdown_read: boolean, shutdown_write: boolean, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finish an asynchronous TLS shutdown operation. See
 		 * {@link G.dtls_connection_shutdown} for more information.
@@ -27769,7 +27672,7 @@ declare namespace imports.gi.Gio {
 		 * @returns the new
 		 *   #GDtlsServerConnection, or %NULL on error
 		 */
-		public static new(base_socket: DatagramBased, certificate: TlsCertificate | null): DtlsServerConnection;
+		public static new(base_socket: DatagramBased, certificate?: TlsCertificate | null): DtlsServerConnection;
 	}
 
 
@@ -27802,7 +27705,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a #GFileOutputStream, or %NULL on error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		append_to(flags: FileCreateFlags, cancellable: Cancellable | null): FileOutputStream;
+		append_to(flags: FileCreateFlags, cancellable?: Cancellable | null): FileOutputStream;
 		/**
 		 * Asynchronously opens #file for appending.
 		 * 
@@ -27819,7 +27722,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		append_to_async(flags: FileCreateFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		append_to_async(flags: FileCreateFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous file append operation started with
 		 * {@link G.file_append_to_async}.
@@ -27845,7 +27748,7 @@ declare namespace imports.gi.Gio {
 		 * @returns an attribute query string for {@link G.file_query_info},
 		 *     or %NULL if an error occurs.
 		 */
-		build_attribute_list_for_copy(flags: FileCopyFlags, cancellable: Cancellable | null): string;
+		build_attribute_list_for_copy(flags: FileCopyFlags, cancellable?: Cancellable | null): string;
 		/**
 		 * Copies the file #source to the location specified by #destination.
 		 * Can not handle recursive copies of directories.
@@ -27893,10 +27796,9 @@ declare namespace imports.gi.Gio {
 		 *     %NULL to ignore
 		 * @param progress_callback function to callback with
 		 *     progress information, or %NULL if progress information is not needed
-		 * @param progress_callback_data user data to pass to #progress_callback
 		 * @returns %TRUE on success, %FALSE otherwise.
 		 */
-		copy(destination: File, flags: FileCopyFlags, cancellable: Cancellable | null, progress_callback: FileProgressCallback | null, progress_callback_data: any | null): boolean;
+		copy(destination: File, flags: FileCopyFlags, cancellable?: Cancellable | null, progress_callback?: FileProgressCallback | null): boolean;
 		/**
 		 * Copies the file #source to the location specified by #destination
 		 * asynchronously. For details of the behaviour, see {@link G.file_copy}.
@@ -27913,12 +27815,8 @@ declare namespace imports.gi.Gio {
 		 * @param io_priority the [I/O priority][io-priority] of the request
 		 * @param cancellable optional #GCancellable object,
 		 *     %NULL to ignore
-		 * @param progress_callback function to callback with progress
-		 *     information, or %NULL if progress information is not needed
-		 * @param progress_callback_data user data to pass to #progress_callback
-		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 		 */
-		copy_async(destination: File, flags: FileCopyFlags, io_priority: number, cancellable: Cancellable | null, progress_callback: FileProgressCallback | null, progress_callback_data: any | null, callback: AsyncReadyCallback | null): void;
+		copy_async(destination: File, flags: FileCopyFlags, io_priority: number, cancellable?: Cancellable | null): void;
 		/**
 		 * Copies the file attributes from #source to #destination.
 		 * 
@@ -27935,7 +27833,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if the attributes were copied successfully,
 		 *     %FALSE otherwise.
 		 */
-		copy_attributes(destination: File, flags: FileCopyFlags, cancellable: Cancellable | null): boolean;
+		copy_attributes(destination: File, flags: FileCopyFlags, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Finishes copying the file started with {@link G.file_copy_async}.
 		 * @param res a #GAsyncResult
@@ -27969,7 +27867,7 @@ declare namespace imports.gi.Gio {
 		 *     file, or %NULL on error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		create(flags: FileCreateFlags, cancellable: Cancellable | null): FileOutputStream;
+		create(flags: FileCreateFlags, cancellable?: Cancellable | null): FileOutputStream;
 		/**
 		 * Asynchronously creates a new file and returns an output stream
 		 * for writing to it. The file must not already exist.
@@ -27987,7 +27885,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		create_async(flags: FileCreateFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		create_async(flags: FileCreateFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous file create operation started with
 		 * {@link G.file_create_async}.
@@ -28027,7 +27925,7 @@ declare namespace imports.gi.Gio {
 		 *     file, or %NULL on error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		create_readwrite(flags: FileCreateFlags, cancellable: Cancellable | null): FileIOStream;
+		create_readwrite(flags: FileCreateFlags, cancellable?: Cancellable | null): FileIOStream;
 		/**
 		 * Asynchronously creates a new file and returns a stream
 		 * for reading and writing to it. The file must not already exist.
@@ -28045,7 +27943,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		create_readwrite_async(flags: FileCreateFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		create_readwrite_async(flags: FileCreateFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous file create operation started with
 		 * {@link G.file_create_readwrite_async}.
@@ -28080,7 +27978,7 @@ declare namespace imports.gi.Gio {
 		 *     %NULL to ignore
 		 * @returns %TRUE if the file was deleted. %FALSE otherwise.
 		 */
-		delete(cancellable: Cancellable | null): boolean;
+		delete(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Asynchronously delete a file. If the #file is a directory, it will
 		 * only be deleted if it is empty.  This has the same semantics as
@@ -28091,7 +27989,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		delete_async(io_priority: number | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		delete_async(io_priority: number | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes deleting a file started with {@link G.file_delete_async}.
 		 * @param result a #GAsyncResult
@@ -28131,7 +28029,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied, or %NULL
 		 */
-		eject_mountable(flags: MountUnmountFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		eject_mountable(flags: MountUnmountFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * @deprecated
 		 * Use {@link G.file_eject_mountable_with_operation_finish}
@@ -28161,7 +28059,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied, or %NULL
 		 */
-		eject_mountable_with_operation(flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		eject_mountable_with_operation(flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous eject operation started by
 		 * {@link G.file_eject_mountable_with_operation}.
@@ -28201,7 +28099,7 @@ declare namespace imports.gi.Gio {
 		 * @returns A #GFileEnumerator if successful,
 		 *     %NULL on error. Free the returned object with {@link GObject.unref}.
 		 */
-		enumerate_children(attributes: string, flags: FileQueryInfoFlags, cancellable: Cancellable | null): FileEnumerator;
+		enumerate_children(attributes: string, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): FileEnumerator;
 		/**
 		 * Asynchronously gets the requested information about the files
 		 * in a directory. The result is a #GFileEnumerator object that will
@@ -28221,7 +28119,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call when the
 		 *     request is satisfied
 		 */
-		enumerate_children_async(attributes: string, flags: FileQueryInfoFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		enumerate_children_async(attributes: string, flags: FileQueryInfoFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an async enumerate children operation.
 		 * See {@link G.file_enumerate_children_async}.
@@ -28259,7 +28157,7 @@ declare namespace imports.gi.Gio {
 		 *     or %NULL on error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		find_enclosing_mount(cancellable: Cancellable | null): Mount;
+		find_enclosing_mount(cancellable?: Cancellable | null): Mount;
 		/**
 		 * Asynchronously gets the mount for the file.
 		 * 
@@ -28275,7 +28173,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		find_enclosing_mount_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		find_enclosing_mount_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous find mount request.
 		 * See {@link G.file_find_enclosing_mount_async}.
@@ -28420,7 +28318,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if #file is an immediate child of #parent (or any parent in
 		 *          the case that #parent is %NULL).
 		 */
-		has_parent(parent: File | null): boolean;
+		has_parent(parent?: File | null): boolean;
 		/**
 		 * Checks whether #file has the prefix specified by #prefix.
 		 * 
@@ -28494,7 +28392,7 @@ declare namespace imports.gi.Gio {
 		 * a location to place the current
 		 *     entity tag for the file, or %NULL if the entity tag is not needed
 		 */
-		load_bytes(cancellable: Cancellable | null): [ GLib.Bytes, string | null ];
+		load_bytes(cancellable?: Cancellable | null): [ GLib.Bytes, string | null ];
 		/**
 		 * Asynchronously loads the contents of #file as #GBytes.
 		 * 
@@ -28510,7 +28408,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call when the
 		 *     request is satisfied
 		 */
-		load_bytes_async(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		load_bytes_async(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Completes an asynchronous request to {@link G.file_load_bytes_async}.
 		 * 
@@ -28543,13 +28441,10 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * a location to place the contents of the file
 		 * 
-		 * a location to place the length of the contents of the file,
-		 *    or %NULL if the length is not needed
-		 * 
 		 * a location to place the current entity tag for the file,
 		 *    or %NULL if the entity tag is not needed
 		 */
-		load_contents(cancellable: Cancellable | null): [success: boolean, contents: Uint8Array];
+		load_contents(cancellable?: Cancellable | null): [success: boolean, contents: Uint8Array];
 		/**
 		 * Starts an asynchronous load of the #file's contents.
 		 * 
@@ -28567,7 +28462,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 		 */
-		load_contents_async(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		load_contents_async(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous load of the #file's contents.
 		 * The contents are placed in #contents, and #length is set to the
@@ -28580,13 +28475,10 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * a location to place the contents of the file
 		 * 
-		 * a location to place the length of the contents of the file,
-		 *     or %NULL if the length is not needed
-		 * 
 		 * a location to place the current entity tag for the file,
 		 *     or %NULL if the entity tag is not needed
 		 */
-		load_contents_finish(res: AsyncResult): [ boolean, number[], number | null, string | null ];
+		load_contents_finish(res: AsyncResult): [ boolean, number[], string | null ];
 		/**
 		 * Reads the partial contents of a file. A #GFileReadMoreCallback should
 		 * be used to stop reading from the file when appropriate, else this
@@ -28606,7 +28498,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		load_partial_contents_async(cancellable: Cancellable | null, read_more_callback: FileReadMoreCallback, callback: AsyncReadyCallback | null): void;
+		load_partial_contents_async(cancellable: Cancellable | null, read_more_callback: FileReadMoreCallback, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous partial load operation that was started
 		 * with {@link G.file_load_partial_contents_async}. The data is always
@@ -28619,13 +28511,10 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * a location to place the contents of the file
 		 * 
-		 * a location to place the length of the contents of the file,
-		 *     or %NULL if the length is not needed
-		 * 
 		 * a location to place the current entity tag for the file,
 		 *     or %NULL if the entity tag is not needed
 		 */
-		load_partial_contents_finish(res: AsyncResult): [ boolean, number[], number | null, string | null ];
+		load_partial_contents_finish(res: AsyncResult): [ boolean, number[], string | null ];
 		/**
 		 * Creates a directory. Note that this will only create a child directory
 		 * of the immediate parent directory of the path or URI given by the #GFile.
@@ -28645,7 +28534,7 @@ declare namespace imports.gi.Gio {
 		 *     %NULL to ignore
 		 * @returns %TRUE on successful creation, %FALSE otherwise.
 		 */
-		make_directory(cancellable: Cancellable | null): boolean;
+		make_directory(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Asynchronously creates a directory.
 		 * @param io_priority the [I/O priority][io-priority] of the request
@@ -28654,7 +28543,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		make_directory_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		make_directory_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous directory creation, started with
 		 * {@link G.file_make_directory_async}.
@@ -28681,7 +28570,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if all directories have been successfully created, %FALSE
 		 * otherwise.
 		 */
-		make_directory_with_parents(cancellable: Cancellable | null): boolean;
+		make_directory_with_parents(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Creates a symbolic link named #file which contains the string
 		 * #symlink_value.
@@ -28695,7 +28584,7 @@ declare namespace imports.gi.Gio {
 		 *     %NULL to ignore
 		 * @returns %TRUE on the creation of a new symlink, %FALSE otherwise.
 		 */
-		make_symbolic_link(symlink_value: string, cancellable: Cancellable | null): boolean;
+		make_symbolic_link(symlink_value: string, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Recursively measures the disk usage of #file.
 		 * 
@@ -28718,7 +28607,6 @@ declare namespace imports.gi.Gio {
 		 * @param flags #GFileMeasureFlags
 		 * @param cancellable optional #GCancellable
 		 * @param progress_callback a #GFileMeasureProgressCallback
-		 * @param progress_data user_data for #progress_callback
 		 * @returns %TRUE if successful, with the out parameters set.
 		 *          %FALSE otherwise, with #error set.
 		 * 
@@ -28728,7 +28616,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * the number of non-directories encountered
 		 */
-		measure_disk_usage(flags: FileMeasureFlags, cancellable: Cancellable | null, progress_callback: FileMeasureProgressCallback | null, progress_data: any | null): [ boolean, number | null, number | null, number | null ];
+		measure_disk_usage(flags: FileMeasureFlags, cancellable?: Cancellable | null, progress_callback?: FileMeasureProgressCallback | null): [ boolean, number | null, number | null, number | null ];
 		/**
 		 * Recursively measures the disk usage of #file.
 		 * 
@@ -28738,10 +28626,9 @@ declare namespace imports.gi.Gio {
 		 * @param io_priority the [I/O priority][io-priority] of the request
 		 * @param cancellable optional #GCancellable
 		 * @param progress_callback a #GFileMeasureProgressCallback
-		 * @param progress_data user_data for #progress_callback
 		 * @param callback a #GAsyncReadyCallback to call when complete
 		 */
-		measure_disk_usage_async(flags: FileMeasureFlags, io_priority: number, cancellable: Cancellable | null, progress_callback: FileMeasureProgressCallback | null, progress_data: any | null, callback: AsyncReadyCallback | null): void;
+		measure_disk_usage_async(flags: FileMeasureFlags, io_priority: number, cancellable?: Cancellable | null, progress_callback?: FileMeasureProgressCallback | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Collects the results from an earlier call to
 		 * {@link G.file_measure_disk_usage_async}.  See g_file_measure_disk_usage() for
@@ -28771,7 +28658,7 @@ declare namespace imports.gi.Gio {
 		 *     or %NULL on error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		monitor(flags: FileMonitorFlags, cancellable: Cancellable | null): FileMonitor;
+		monitor(flags: FileMonitorFlags, cancellable?: Cancellable | null): FileMonitor;
 		/**
 		 * Obtains a directory monitor for the given file.
 		 * This may fail if directory monitoring is not supported.
@@ -28792,7 +28679,7 @@ declare namespace imports.gi.Gio {
 		 *     or %NULL on error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		monitor_directory(flags: FileMonitorFlags, cancellable: Cancellable | null): FileMonitor;
+		monitor_directory(flags: FileMonitorFlags, cancellable?: Cancellable | null): FileMonitor;
 		/**
 		 * Obtains a file monitor for the given file. If no file notification
 		 * mechanism exists, then regular polling of the file is used.
@@ -28815,7 +28702,7 @@ declare namespace imports.gi.Gio {
 		 *     or %NULL on error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		monitor_file(flags: FileMonitorFlags, cancellable: Cancellable | null): FileMonitor;
+		monitor_file(flags: FileMonitorFlags, cancellable?: Cancellable | null): FileMonitor;
 		/**
 		 * Starts a #mount_operation, mounting the volume that contains
 		 * the file #location.
@@ -28835,7 +28722,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied, or %NULL
 		 */
-		mount_enclosing_volume(flags: MountMountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		mount_enclosing_volume(flags: MountMountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes a mount operation started by {@link G.file_mount_enclosing_volume}.
 		 * @param result a #GAsyncResult
@@ -28864,7 +28751,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied, or %NULL
 		 */
-		mount_mountable(flags: MountMountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		mount_mountable(flags: MountMountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes a mount operation. See {@link G.file_mount_mountable} for details.
 		 * 
@@ -28915,11 +28802,9 @@ declare namespace imports.gi.Gio {
 		 *     %NULL to ignore
 		 * @param progress_callback #GFileProgressCallback
 		 *     function for updates
-		 * @param progress_callback_data gpointer to user data for
-		 *     the callback function
 		 * @returns %TRUE on successful move, %FALSE otherwise.
 		 */
-		move(destination: File, flags: FileCopyFlags, cancellable: Cancellable | null, progress_callback: FileProgressCallback | null, progress_callback_data: any | null): boolean;
+		move(destination: File, flags: FileCopyFlags, cancellable?: Cancellable | null, progress_callback?: FileProgressCallback | null): boolean;
 		/**
 		 * Opens an existing file for reading and writing. The result is
 		 * a #GFileIOStream that can be used to read and write the contents
@@ -28941,7 +28826,7 @@ declare namespace imports.gi.Gio {
 		 * @returns #GFileIOStream or %NULL on error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		open_readwrite(cancellable: Cancellable | null): FileIOStream;
+		open_readwrite(cancellable?: Cancellable | null): FileIOStream;
 		/**
 		 * Asynchronously opens #file for reading and writing.
 		 * 
@@ -28957,7 +28842,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		open_readwrite_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		open_readwrite_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous file read operation started with
 		 * {@link G.file_open_readwrite_async}.
@@ -28992,7 +28877,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied, or %NULL
 		 */
-		poll_mountable(cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		poll_mountable(cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes a poll operation. See {@link G.file_poll_mountable} for details.
 		 * 
@@ -29015,14 +28900,14 @@ declare namespace imports.gi.Gio {
 		 *     %NULL if there were errors.
 		 *     When you are done with it, release it with {@link GObject.unref}
 		 */
-		query_default_handler(cancellable: Cancellable | null): AppInfo;
+		query_default_handler(cancellable?: Cancellable | null): AppInfo;
 		/**
 		 * Async version of {@link G.file_query_default_handler}.
 		 * @param io_priority the [I/O priority][io-priority] of the request
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback a #GAsyncReadyCallback to call when the request is done
 		 */
-		query_default_handler_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		query_default_handler_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes a {@link G.file_query_default_handler_async} operation.
 		 * @param result a #GAsyncResult
@@ -29059,7 +28944,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if the file exists (and can be detected without error),
 		 *     %FALSE otherwise (or if cancelled).
 		 */
-		query_exists(cancellable: Cancellable | null): boolean;
+		query_exists(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Utility function to inspect the #GFileType of a file. This is
 		 * implemented using {@link G.file_query_info} and as such does blocking I/O.
@@ -29072,7 +28957,7 @@ declare namespace imports.gi.Gio {
 		 * @returns The #GFileType of the file and #G_FILE_TYPE_UNKNOWN
 		 *     if the file does not exist
 		 */
-		query_file_type(flags: FileQueryInfoFlags, cancellable: Cancellable | null): FileType;
+		query_file_type(flags: FileQueryInfoFlags, cancellable?: Cancellable | null): FileType;
 		/**
 		 * Similar to {@link G.file_query_info}, but obtains information
 		 * about the filesystem the #file is on, rather than the file itself.
@@ -29105,7 +28990,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a #GFileInfo or %NULL if there was an error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		query_filesystem_info(attributes: string, cancellable: Cancellable | null): FileInfo;
+		query_filesystem_info(attributes: string, cancellable?: Cancellable | null): FileInfo;
 		/**
 		 * Asynchronously gets the requested information about the filesystem
 		 * that the specified #file is on. The result is a #GFileInfo object
@@ -29125,7 +29010,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		query_filesystem_info_async(attributes: string, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		query_filesystem_info_async(attributes: string, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous filesystem info query.
 		 * See {@link G.file_query_filesystem_info_async}.
@@ -29173,7 +29058,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a #GFileInfo for the given #file, or %NULL
 		 *     on error. Free the returned object with {@link GObject.unref}.
 		 */
-		query_info(attributes: string, flags: FileQueryInfoFlags, cancellable: Cancellable | null): FileInfo;
+		query_info(attributes: string, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): FileInfo;
 		/**
 		 * Asynchronously gets the requested information about specified #file.
 		 * The result is a #GFileInfo object that contains key-value attributes
@@ -29192,7 +29077,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call when the
 		 *     request is satisfied
 		 */
-		query_info_async(attributes: string, flags: FileQueryInfoFlags, io_priority: number | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		query_info_async(attributes: string, flags: FileQueryInfoFlags, io_priority: number | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous file info query.
 		 * See {@link G.file_query_info_async}.
@@ -29219,7 +29104,7 @@ declare namespace imports.gi.Gio {
 		 *     When you are done with it, release it with
 		 *     {@link G.file_attribute_info_list_unref}
 		 */
-		query_settable_attributes(cancellable: Cancellable | null): FileAttributeInfoList;
+		query_settable_attributes(cancellable?: Cancellable | null): FileAttributeInfoList;
 		/**
 		 * Obtain the list of attribute namespaces where new attributes
 		 * can be created by a user. An example of this is extended
@@ -29234,7 +29119,7 @@ declare namespace imports.gi.Gio {
 		 *     When you are done with it, release it with
 		 *     {@link G.file_attribute_info_list_unref}
 		 */
-		query_writable_namespaces(cancellable: Cancellable | null): FileAttributeInfoList;
+		query_writable_namespaces(cancellable?: Cancellable | null): FileAttributeInfoList;
 		/**
 		 * Opens a file for reading. The result is a #GFileInputStream that
 		 * can be used to read the contents of the file.
@@ -29251,7 +29136,7 @@ declare namespace imports.gi.Gio {
 		 * @returns #GFileInputStream or %NULL on error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		read(cancellable: Cancellable | null): FileInputStream;
+		read(cancellable?: Cancellable | null): FileInputStream;
 		/**
 		 * Asynchronously opens #file for reading.
 		 * 
@@ -29267,7 +29152,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		read_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		read_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous file read operation started with
 		 * {@link G.file_read_async}.
@@ -29327,7 +29212,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a #GFileOutputStream or %NULL on error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		replace(etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable: Cancellable | null): FileOutputStream;
+		replace(etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable?: Cancellable | null): FileOutputStream;
 		/**
 		 * Asynchronously overwrites the file, replacing the contents,
 		 * possibly creating a backup copy of the file first.
@@ -29348,7 +29233,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		replace_async(etag: string | null, make_backup: boolean, flags: FileCreateFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		replace_async(etag: string | null, make_backup: boolean, flags: FileCreateFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Replaces the contents of #file with #contents of #length bytes.
 		 * 
@@ -29379,7 +29264,7 @@ declare namespace imports.gi.Gio {
 		 *      for the document. This should be freed with {@link G.free} when no longer
 		 *      needed, or %NULL
 		 */
-		replace_contents(contents: string, etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable: Cancellable | null): [ boolean, string | null ];
+		replace_contents(contents: string, etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable?: Cancellable | null): [ boolean, string | null ];
 		/**
 		 * Starts an asynchronous replacement of #file with the given
 		 * #contents of #length bytes. #etag will replace the document's
@@ -29401,14 +29286,13 @@ declare namespace imports.gi.Gio {
 		 * for a #GBytes version that will automatically hold a reference to the
 		 * contents (without copying) for the duration of the call.
 		 * @param contents string of contents to replace the file with
-		 * @param length the length of #contents in bytes
 		 * @param etag a new [entity tag][gfile-etag] for the #file, or %NULL
 		 * @param make_backup %TRUE if a backup should be created
 		 * @param flags a set of #GFileCreateFlags
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 		 */
-		replace_contents_async(contents: number[], length: number, etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		replace_contents_async(contents: number[], etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Same as {@link G.file_replace_contents_async} but takes a #GBytes input instead.
 		 * This function will keep a ref on #contents until the operation is done.
@@ -29425,7 +29309,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied
 		 */
-		replace_contents_bytes_async(contents: GLib.Bytes, etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		replace_contents_bytes_async(contents: GLib.Bytes, etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous replace of the given #file. See
 		 * {@link G.file_replace_contents_async}. Sets #new_etag to the new entity
@@ -29466,7 +29350,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a #GFileIOStream or %NULL on error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		replace_readwrite(etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable: Cancellable | null): FileIOStream;
+		replace_readwrite(etag: string | null, make_backup: boolean, flags: FileCreateFlags, cancellable?: Cancellable | null): FileIOStream;
 		/**
 		 * Asynchronously overwrites the file in read-write mode,
 		 * replacing the contents, possibly creating a backup copy
@@ -29488,7 +29372,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		replace_readwrite_async(etag: string | null, make_backup: boolean, flags: FileCreateFlags | null, io_priority: number | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		replace_readwrite_async(etag: string | null, make_backup: boolean, flags: FileCreateFlags | null, io_priority: number | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous file replace operation started with
 		 * {@link G.file_replace_readwrite_async}.
@@ -29525,7 +29409,7 @@ declare namespace imports.gi.Gio {
 		 *     %NULL to ignore
 		 * @returns %TRUE if the attribute was set, %FALSE otherwise.
 		 */
-		set_attribute(attribute: string, type: FileAttributeType, value_p: any | null, flags: FileQueryInfoFlags, cancellable: Cancellable | null): boolean;
+		set_attribute(attribute: string, type: FileAttributeType, value_p: any | null, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Sets #attribute of type %G_FILE_ATTRIBUTE_TYPE_BYTE_STRING to #value.
 		 * If #attribute is of a different type, this operation will fail,
@@ -29542,7 +29426,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if the #attribute was successfully set to #value
 		 *     in the #file, %FALSE otherwise.
 		 */
-		set_attribute_byte_string(attribute: string, value: string, flags: FileQueryInfoFlags, cancellable: Cancellable | null): boolean;
+		set_attribute_byte_string(attribute: string, value: string, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Sets #attribute of type %G_FILE_ATTRIBUTE_TYPE_INT32 to #value.
 		 * If #attribute is of a different type, this operation will fail.
@@ -29558,7 +29442,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if the #attribute was successfully set to #value
 		 *     in the #file, %FALSE otherwise.
 		 */
-		set_attribute_int32(attribute: string, value: number, flags: FileQueryInfoFlags, cancellable: Cancellable | null): boolean;
+		set_attribute_int32(attribute: string, value: number, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Sets #attribute of type %G_FILE_ATTRIBUTE_TYPE_INT64 to #value.
 		 * If #attribute is of a different type, this operation will fail.
@@ -29573,7 +29457,7 @@ declare namespace imports.gi.Gio {
 		 *     %NULL to ignore
 		 * @returns %TRUE if the #attribute was successfully set, %FALSE otherwise.
 		 */
-		set_attribute_int64(attribute: string, value: number, flags: FileQueryInfoFlags, cancellable: Cancellable | null): boolean;
+		set_attribute_int64(attribute: string, value: number, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Sets #attribute of type %G_FILE_ATTRIBUTE_TYPE_STRING to #value.
 		 * If #attribute is of a different type, this operation will fail.
@@ -29588,7 +29472,7 @@ declare namespace imports.gi.Gio {
 		 *     %NULL to ignore
 		 * @returns %TRUE if the #attribute was successfully set, %FALSE otherwise.
 		 */
-		set_attribute_string(attribute: string, value: string, flags: FileQueryInfoFlags, cancellable: Cancellable | null): boolean;
+		set_attribute_string(attribute: string, value: string, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Sets #attribute of type %G_FILE_ATTRIBUTE_TYPE_UINT32 to #value.
 		 * If #attribute is of a different type, this operation will fail.
@@ -29604,7 +29488,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if the #attribute was successfully set to #value
 		 *     in the #file, %FALSE otherwise.
 		 */
-		set_attribute_uint32(attribute: string, value: number, flags: FileQueryInfoFlags, cancellable: Cancellable | null): boolean;
+		set_attribute_uint32(attribute: string, value: number, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Sets #attribute of type %G_FILE_ATTRIBUTE_TYPE_UINT64 to #value.
 		 * If #attribute is of a different type, this operation will fail.
@@ -29620,7 +29504,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if the #attribute was successfully set to #value
 		 *     in the #file, %FALSE otherwise.
 		 */
-		set_attribute_uint64(attribute: string, value: number, flags: FileQueryInfoFlags, cancellable: Cancellable | null): boolean;
+		set_attribute_uint64(attribute: string, value: number, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Asynchronously sets the attributes of #file with #info.
 		 * 
@@ -29637,7 +29521,7 @@ declare namespace imports.gi.Gio {
 		 *     %NULL to ignore
 		 * @param callback a #GAsyncReadyCallback
 		 */
-		set_attributes_async(info: FileInfo, flags: FileQueryInfoFlags, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		set_attributes_async(info: FileInfo, flags: FileQueryInfoFlags, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes setting an attribute started in {@link G.file_set_attributes_async}.
 		 * @param result a #GAsyncResult
@@ -29665,7 +29549,7 @@ declare namespace imports.gi.Gio {
 		 *     %NULL to ignore
 		 * @returns %FALSE if there was any error, %TRUE otherwise.
 		 */
-		set_attributes_from_info(info: FileInfo, flags: FileQueryInfoFlags, cancellable: Cancellable | null): boolean;
+		set_attributes_from_info(info: FileInfo, flags: FileQueryInfoFlags, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Renames #file to the specified display name.
 		 * 
@@ -29689,7 +29573,7 @@ declare namespace imports.gi.Gio {
 		 *     or %NULL if there was an error.
 		 *     Free the returned object with {@link GObject.unref}.
 		 */
-		set_display_name(display_name: string, cancellable: Cancellable | null): File;
+		set_display_name(display_name: string, cancellable?: Cancellable | null): File;
 		/**
 		 * Asynchronously sets the display name for a given #GFile.
 		 * 
@@ -29706,7 +29590,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		set_display_name_async(display_name: string, io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		set_display_name_async(display_name: string, io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes setting a display name started with
 		 * {@link G.file_set_display_name_async}.
@@ -29732,7 +29616,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback a #GAsyncReadyCallback to call when the request is satisfied, or %NULL
 		 */
-		start_mountable(flags: DriveStartFlags, start_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		start_mountable(flags: DriveStartFlags, start_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes a start operation. See {@link G.file_start_mountable} for details.
 		 * 
@@ -29761,7 +29645,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied, or %NULL
 		 */
-		stop_mountable(flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		stop_mountable(flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes a stop operation, see {@link G.file_stop_mountable} for details.
 		 * 
@@ -29795,7 +29679,7 @@ declare namespace imports.gi.Gio {
 		 *     %NULL to ignore
 		 * @returns %TRUE on successful trash, %FALSE otherwise.
 		 */
-		trash(cancellable: Cancellable | null): boolean;
+		trash(cancellable?: Cancellable | null): boolean;
 		/**
 		 * Asynchronously sends #file to the Trash location, if possible.
 		 * @param io_priority the [I/O priority][io-priority] of the request
@@ -29804,7 +29688,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied
 		 */
-		trash_async(io_priority: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		trash_async(io_priority: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous file trashing operation, started with
 		 * {@link G.file_trash_async}.
@@ -29831,7 +29715,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied, or %NULL
 		 */
-		unmount_mountable(flags: MountUnmountFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		unmount_mountable(flags: MountUnmountFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * @deprecated
 		 * Use {@link G.file_unmount_mountable_with_operation_finish}
@@ -29864,7 +29748,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call
 		 *     when the request is satisfied, or %NULL
 		 */
-		unmount_mountable_with_operation(flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		unmount_mountable_with_operation(flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an unmount operation,
 		 * see {@link G.file_unmount_mountable_with_operation} for details.
@@ -30058,7 +29942,7 @@ declare namespace imports.gi.Gio {
 		 * 
 		 * on return, a #GFileIOStream for the created file
 		 */
-		public static new_tmp(tmpl: string | null): [ File, FileIOStream ];
+		public static new_tmp(tmpl?: string | null): [ File, FileIOStream ];
 		/**
 		 * Constructs a #GFile with the given #parse_name (i.e. something
 		 * given by {@link G.file_get_parse_name}). This operation never fails,
@@ -30116,7 +30000,7 @@ declare namespace imports.gi.Gio {
 		 * @param icon2 pointer to the second #GIcon.
 		 * @returns %TRUE if #icon1 is equal to #icon2. %FALSE otherwise.
 		 */
-		equal(icon2: Icon | null): boolean;
+		equal(icon2?: Icon | null): boolean;
 		/**
 		 * Serializes a #GIcon into a #GVariant. An equivalent #GIcon can be retrieved
 		 * back by calling {@link G.icon_deserialize} on the returned value.
@@ -30267,7 +30151,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if successful. If an error has occurred, this function will
 		 *     return %FALSE and set #error appropriately if present.
 		 */
-		init(cancellable: Cancellable | null): boolean;
+		init(cancellable?: Cancellable | null): boolean;
 	}
 
 	type InitableInitOptionsMixin  = {};
@@ -30321,7 +30205,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a newly allocated
 		 *      #GObject, or %NULL on error
 		 */
-		public static new(object_type: GObject.Type, cancellable: Cancellable | null, error: GLib.Error, first_property_name: string | null): GObject.Object;
+		public static new(object_type: GObject.Type, cancellable: Cancellable | null, error: GLib.Error, first_property_name?: string | null): GObject.Object;
 		/**
 		 * Helper function for constructing #GInitable object. This is
 		 * similar to {@link GObject.new_valist} but also initializes the object
@@ -30334,7 +30218,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a newly allocated
 		 *      #GObject, or %NULL on error
 		 */
-		public static new_valist(object_type: GObject.Type, first_property_name: string, var_args: any[], cancellable: Cancellable | null): GObject.Object;
+		public static new_valist(object_type: GObject.Type, first_property_name: string, var_args: any[], cancellable?: Cancellable | null): GObject.Object;
 		/**
 		 * @deprecated
 		 * Use {@link GObject.new_with_properties} and
@@ -30344,13 +30228,12 @@ declare namespace imports.gi.Gio {
 		 * similar to {@link GObject.newv} but also initializes the object
 		 * and returns %NULL, setting an error on failure.
 		 * @param object_type a #GType supporting #GInitable.
-		 * @param n_parameters the number of parameters in #parameters
 		 * @param parameters the parameters to use to construct the object
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @returns a newly allocated
 		 *      #GObject, or %NULL on error
 		 */
-		public static newv(object_type: GObject.Type, n_parameters: number, parameters: GObject.Parameter[], cancellable: Cancellable | null): GObject.Object;
+		public static newv(object_type: GObject.Type, parameters: GObject.Parameter[], cancellable?: Cancellable | null): GObject.Object;
 	}
 
 
@@ -30514,7 +30397,7 @@ declare namespace imports.gi.Gio {
 		 * a location to store the type of the loaded
 		 * icon, %NULL to ignore.
 		 */
-		load(size: number, cancellable: Cancellable | null): [ InputStream, string | null ];
+		load(size: number, cancellable?: Cancellable | null): [ InputStream, string | null ];
 		/**
 		 * Loads an icon asynchronously. To finish this function, see
 		 * {@link G.loadable_icon_load_finish}. For the synchronous, blocking
@@ -30524,7 +30407,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call when the
 		 *            request is satisfied
 		 */
-		load_async(size: number, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		load_async(size: number, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an asynchronous icon load started in {@link G.loadable_icon_load_async}.
 		 * @param res a #GAsyncResult.
@@ -30671,7 +30554,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback, or %NULL.
 		 */
-		eject(flags: MountUnmountFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		eject(flags: MountUnmountFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * @deprecated
 		 * Use {@link G.mount_eject_with_operation_finish} instead.
@@ -30692,7 +30575,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback, or %NULL.
 		 */
-		eject_with_operation(flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		eject_with_operation(flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes ejecting a mount. If any errors occurred during the operation,
 		 * #error will be set to contain the errors and %FALSE will be returned.
@@ -30789,7 +30672,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback a #GAsyncReadyCallback
 		 */
-		guess_content_type(force_rescan: boolean, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		guess_content_type(force_rescan: boolean, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes guessing content types of #mount. If any errors occurred
 		 * during the operation, #error will be set to contain the errors and
@@ -30817,7 +30700,7 @@ declare namespace imports.gi.Gio {
 		 * @returns a %NULL-terminated array of content types or %NULL on error.
 		 *     Caller should free this array with {@link G.strfreev} when done with it.
 		 */
-		guess_content_type_sync(force_rescan: boolean, cancellable: Cancellable | null): string[];
+		guess_content_type_sync(force_rescan: boolean, cancellable?: Cancellable | null): string[];
 		/**
 		 * Determines if #mount is shadowed. Applications or libraries should
 		 * avoid displaying #mount in the user interface if it is shadowed.
@@ -30861,7 +30744,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback, or %NULL.
 		 */
-		remount(flags: MountMountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		remount(flags: MountMountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes remounting a mount. If any errors occurred during the operation,
 		 * #error will be set to contain the errors and %FALSE will be returned.
@@ -30887,7 +30770,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback, or %NULL.
 		 */
-		unmount(flags: MountUnmountFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		unmount(flags: MountUnmountFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * @deprecated
 		 * Use {@link G.mount_unmount_with_operation_finish} instead.
@@ -30908,7 +30791,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 * @param callback a #GAsyncReadyCallback, or %NULL.
 		 */
-		unmount_with_operation(flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		unmount_with_operation(flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes unmounting a mount. If any errors occurred during the operation,
 		 * #error will be set to contain the errors and %FALSE will be returned.
@@ -31069,7 +30952,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns %TRUE if #connectable is reachable, %FALSE if not.
 		 */
-		can_reach(connectable: SocketConnectable, cancellable: Cancellable | null): boolean;
+		can_reach(connectable: SocketConnectable, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Asynchronously attempts to determine whether or not the host
 		 * pointed to by #connectable can be reached, without actually
@@ -31085,7 +30968,7 @@ declare namespace imports.gi.Gio {
 		 * @param callback a #GAsyncReadyCallback to call when the
 		 *     request is satisfied
 		 */
-		can_reach_async(connectable: SocketConnectable, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		can_reach_async(connectable: SocketConnectable, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes an async network connectivity test.
 		 * See {@link G.network_monitor_can_reach_async}.
@@ -31204,7 +31087,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns a new #GSource
 		 */
-		create_source(cancellable: Cancellable | null): GLib.Source;
+		create_source(cancellable?: Cancellable | null): GLib.Source;
 		/**
 		 * Checks if #stream can be read.
 		 * 
@@ -31232,7 +31115,6 @@ declare namespace imports.gi.Gio {
 		 * if #cancellable has already been cancelled when you call, which
 		 * may happen if you call this method after a source triggers due
 		 * to having been cancelled.
-		 * @param count the number of bytes you want to read
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns the number of bytes read, or -1 on error (including
 		 *   %G_IO_ERROR_WOULD_BLOCK).
@@ -31240,7 +31122,7 @@ declare namespace imports.gi.Gio {
 		 * a
 		 *     buffer to read data into (which should be at least #count bytes long).
 		 */
-		read_nonblocking(count: number, cancellable: Cancellable | null): [ number, number[] ];
+		read_nonblocking(cancellable?: Cancellable | null): [ number, number[] ];
 	}
 
 	type PollableInputStreamInitOptionsMixin  = {};
@@ -31292,7 +31174,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns a new #GSource
 		 */
-		create_source(cancellable: Cancellable | null): GLib.Source;
+		create_source(cancellable?: Cancellable | null): GLib.Source;
 		/**
 		 * Checks if #stream can be written.
 		 * 
@@ -31326,12 +31208,11 @@ declare namespace imports.gi.Gio {
 		 * #count in the next write call.
 		 * @param buffer a buffer to write
 		 *     data from
-		 * @param count the number of bytes you want to write
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns the number of bytes written, or -1 on error (including
 		 *   %G_IO_ERROR_WOULD_BLOCK).
 		 */
-		write_nonblocking(buffer: number[], count: number, cancellable: Cancellable | null): number;
+		write_nonblocking(buffer: number[], cancellable?: Cancellable | null): number;
 		/**
 		 * Attempts to write the bytes contained in the #n_vectors #vectors to #stream,
 		 * as with {@link G.output_stream_writev}. If #stream is not currently writable,
@@ -31350,7 +31231,6 @@ declare namespace imports.gi.Gio {
 		 * transports like D/TLS require that you re-send the same #vectors and
 		 * #n_vectors in the next write call.
 		 * @param vectors the buffer containing the #GOutputVectors to write.
-		 * @param n_vectors the number of vectors to write
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @returns %#G_POLLABLE_RETURN_OK on success, %G_POLLABLE_RETURN_WOULD_BLOCK
 		 * if the stream is not currently writable (and #error is *not* set), or
@@ -31360,7 +31240,7 @@ declare namespace imports.gi.Gio {
 		 * location to store the number of bytes that were
 		 *     written to the stream
 		 */
-		writev_nonblocking(vectors: OutputVector[], n_vectors: number, cancellable: Cancellable | null): [ PollableReturn, number | null ];
+		writev_nonblocking(vectors: OutputVector[], cancellable?: Cancellable | null): [ PollableReturn, number | null ];
 	}
 
 	type PollableOutputStreamInitOptionsMixin  = {};
@@ -31467,7 +31347,7 @@ declare namespace imports.gi.Gio {
 		 *               be the same as #connection, in which case a reference
 		 *               will be added.
 		 */
-		connect(connection: IOStream, proxy_address: ProxyAddress, cancellable: Cancellable | null): IOStream;
+		connect(connection: IOStream, proxy_address: ProxyAddress, cancellable?: Cancellable | null): IOStream;
 		/**
 		 * Asynchronous version of {@link G.proxy_connect}.
 		 * @param connection a #GIOStream
@@ -31475,7 +31355,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable
 		 * @param callback a #GAsyncReadyCallback
 		 */
-		connect_async(connection: IOStream, proxy_address: ProxyAddress, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		connect_async(connection: IOStream, proxy_address: ProxyAddress, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * See {@link G.proxy_connect}.
 		 * @param result a #GAsyncResult
@@ -31560,7 +31440,7 @@ declare namespace imports.gi.Gio {
 		 *               NULL-terminated array of proxy URIs. Must be freed
 		 *               with {@link G.strfreev}.
 		 */
-		lookup(uri: string, cancellable: Cancellable | null): string[];
+		lookup(uri: string, cancellable?: Cancellable | null): string[];
 		/**
 		 * Asynchronous lookup of proxy. See {@link G.proxy_resolver_lookup} for more
 		 * details.
@@ -31568,7 +31448,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable a #GCancellable, or %NULL
 		 * @param callback callback to call after resolution completes
 		 */
-		lookup_async(uri: string, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		lookup_async(uri: string, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Call this function to obtain the array of proxy URIs when
 		 * {@link G.proxy_resolver_lookup_async} is complete. See
@@ -31724,7 +31604,7 @@ declare namespace imports.gi.Gio {
 		 *     has occurred, this function will return %FALSE and set #error
 		 *     appropriately if present.
 		 */
-		seek(offset: number, type: GLib.SeekType, cancellable: Cancellable | null): boolean;
+		seek(offset: number, type: GLib.SeekType, cancellable?: Cancellable | null): boolean;
 		/**
 		 * Tells the current position within the stream.
 		 * @returns the (positive or zero) offset from the beginning of the
@@ -31747,7 +31627,7 @@ declare namespace imports.gi.Gio {
 		 *     has occurred, this function will return %FALSE and set #error
 		 *     appropriately if present.
 		 */
-		truncate(offset: number, cancellable: Cancellable | null): boolean;
+		truncate(offset: number, cancellable?: Cancellable | null): boolean;
 	}
 
 	type SeekableInitOptionsMixin  = {};
@@ -31946,7 +31826,7 @@ declare namespace imports.gi.Gio {
 		 * database as if g_tls_backend_set_default_database() had never been called.
 		 * @param database the #GTlsDatabase
 		 */
-		set_default_database(database: TlsDatabase | null): void;
+		set_default_database(database?: TlsDatabase | null): void;
 		/**
 		 * Checks if DTLS is supported. DTLS support may not be available even if TLS
 		 * support is available, and vice-versa.
@@ -32170,7 +32050,7 @@ declare namespace imports.gi.Gio {
 		 * @returns the new
 		 * #GTlsClientConnection, or %NULL on error
 		 */
-		public static new(base_io_stream: IOStream, server_identity: SocketConnectable | null): TlsClientConnection;
+		public static new(base_io_stream: IOStream, server_identity?: SocketConnectable | null): TlsClientConnection;
 	}
 
 
@@ -32269,7 +32149,7 @@ declare namespace imports.gi.Gio {
 		 * @returns the new
 		 * #GTlsServerConnection, or %NULL on error
 		 */
-		public static new(base_io_stream: IOStream, certificate: TlsCertificate | null): TlsServerConnection;
+		public static new(base_io_stream: IOStream, certificate?: TlsCertificate | null): TlsServerConnection;
 	}
 
 
@@ -32299,7 +32179,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback a #GAsyncReadyCallback, or %NULL
 		 */
-		eject(flags: MountUnmountFlags, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		eject(flags: MountUnmountFlags, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * @deprecated
 		 * Use {@link G.volume_eject_with_operation_finish} instead.
@@ -32320,7 +32200,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback a #GAsyncReadyCallback, or %NULL
 		 */
-		eject_with_operation(flags: MountUnmountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		eject_with_operation(flags: MountUnmountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes ejecting a volume. If any errors occurred during the operation,
 		 * #error will be set to contain the errors and %FALSE will be returned.
@@ -32435,7 +32315,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable optional #GCancellable object, %NULL to ignore
 		 * @param callback a #GAsyncReadyCallback, or %NULL
 		 */
-		mount(flags: MountMountFlags, mount_operation: MountOperation | null, cancellable: Cancellable | null, callback: AsyncReadyCallback | null): void;
+		mount(flags: MountMountFlags, mount_operation?: MountOperation | null, cancellable?: Cancellable | null, callback?: AsyncReadyCallback | null): void;
 		/**
 		 * Finishes mounting a volume. If any errors occurred during the operation,
 		 * #error will be set to contain the errors and %FALSE will be returned.
@@ -35219,7 +35099,7 @@ declare namespace imports.gi.Gio {
 		 * @param cancellable the #GCancellable
 		 * @returns it should return %FALSE if the source should be removed.
 		 */
-		(cancellable: Cancellable | null): boolean;
+		(cancellable?: Cancellable | null): boolean;
 	}
 
 	/**
@@ -35434,7 +35314,7 @@ declare namespace imports.gi.Gio {
 		 *   must be a #GDBusProxy or #GDBusObjectProxy -derived
 		 *   type.
 		 */
-		(manager: DBusObjectManagerClient, object_path: string, interface_name: string | null): GObject.Type;
+		(manager: DBusObjectManagerClient, object_path: string, interface_name?: string | null): GObject.Type;
 	}
 
 	/**
@@ -35688,10 +35568,9 @@ declare namespace imports.gi.Gio {
 		 * should be read, or %FALSE otherwise.
 		 * @param file_contents the data as currently read.
 		 * @param file_size the size of the data currently read.
-		 * @param callback_data data passed to the callback.
 		 * @returns %TRUE if more data should be read back. %FALSE otherwise.
 		 */
-		(file_contents: string, file_size: number, callback_data: any | null): boolean;
+		(file_contents: string, file_size: number): boolean;
 	}
 
 	/**
@@ -35711,7 +35590,7 @@ declare namespace imports.gi.Gio {
 		 * @returns %TRUE if this function should be called again to
 		 *    complete the job, %FALSE if the job is complete (or cancelled)
 		 */
-		(job: IOSchedulerJob, cancellable: Cancellable | null): boolean;
+		(job: IOSchedulerJob, cancellable?: Cancellable | null): boolean;
 	}
 
 	/**
@@ -35826,7 +35705,7 @@ declare namespace imports.gi.Gio {
 		 * @param object a #GObject.
 		 * @param cancellable optional #GCancellable object, %NULL to ignore.
 		 */
-		(res: SimpleAsyncResult, object: GObject.Object, cancellable: Cancellable | null): void;
+		(res: SimpleAsyncResult, object: GObject.Object, cancellable?: Cancellable | null): void;
 	}
 
 	/**
@@ -35883,7 +35762,7 @@ declare namespace imports.gi.Gio {
 		 * @param task_data #task's task data
 		 * @param cancellable #task's #GCancellable, or %NULL
 		 */
-		(task: Task, source_object: GObject.Object, task_data: any | null, cancellable: Cancellable | null): void;
+		(task: Task, source_object: GObject.Object, task_data?: any | null, cancellable?: Cancellable | null): void;
 	}
 
 	/**
@@ -36321,14 +36200,13 @@ declare namespace imports.gi.Gio {
 	 * on the other argument.
 	 * @param filename a string, or %NULL
 	 * @param data a stream of data, or %NULL
-	 * @param data_size the size of #data
 	 * @returns a string indicating a guessed content type for the
 	 *     given data. Free with {@link G.free}
 	 * 
 	 * return location for the certainty
 	 *     of the result, or %NULL
 	 */
-	function content_type_guess(filename: string | null, data: number[] | null, data_size: number): [ string, boolean | null ];
+	function content_type_guess(filename: string | null, data: number[] | null): [ string, boolean | null ];
 	/**
 	 * Tries to guess the type of the tree with root #root, by
 	 * looking at the files it contains. The result is an array
@@ -36583,9 +36461,8 @@ declare namespace imports.gi.Gio {
 	 * @param error_domain_quark_name The error domain name.
 	 * @param quark_volatile A pointer where to store the #GQuark.
 	 * @param entries A pointer to #num_entries #GDBusErrorEntry struct items.
-	 * @param num_entries Number of items to register.
 	 */
-	function dbus_error_register_error_domain(error_domain_quark_name: string, quark_volatile: number, entries: DBusErrorEntry[], num_entries: number): void;
+	function dbus_error_register_error_domain(error_domain_quark_name: string, quark_volatile: number, entries: DBusErrorEntry[]): void;
 	/**
 	 * Looks for extra information in the error message used to recover
 	 * the D-Bus error name and strips it if found. If stripped, the
@@ -36910,13 +36787,12 @@ declare namespace imports.gi.Gio {
 	 * similar to {@link GObject.newv} but also initializes the object
 	 * and returns %NULL, setting an error on failure.
 	 * @param object_type a #GType supporting #GInitable.
-	 * @param n_parameters the number of parameters in #parameters
 	 * @param parameters the parameters to use to construct the object
 	 * @param cancellable optional #GCancellable object, %NULL to ignore.
 	 * @returns a newly allocated
 	 *      #GObject, or %NULL on error
 	 */
-	function initable_newv(object_type: GObject.Type, n_parameters: number, parameters: GObject.Parameter[], cancellable: Cancellable | null): GObject.Object;
+	function initable_newv(object_type: GObject.Type, parameters: GObject.Parameter[], cancellable: Cancellable | null): GObject.Object;
 	/**
 	 * Converts errno.h error codes into GIO error codes. The fallback
 	 * value %G_IO_ERROR_FAILED is returned for error codes not currently
@@ -37044,12 +36920,11 @@ declare namespace imports.gi.Gio {
 	 * by calling {@link G.cancellable_cancel} or by calling
 	 * g_io_scheduler_cancel_all_jobs().
 	 * @param job_func a #GIOSchedulerJobFunc.
-	 * @param notify a #GDestroyNotify for #user_data, or %NULL
 	 * @param io_priority the [I/O priority][io-priority]
 	 * of the request.
 	 * @param cancellable optional #GCancellable object, %NULL to ignore.
 	 */
-	function io_scheduler_push_job(job_func: IOSchedulerJobFunc, notify: GLib.DestroyNotify | null, io_priority: number, cancellable: Cancellable | null): void;
+	function io_scheduler_push_job(job_func: IOSchedulerJobFunc, io_priority: number, cancellable: Cancellable | null): void;
 	/**
 	 * Creates a keyfile-backed #GSettingsBackend.
 	 * 
@@ -37177,12 +37052,11 @@ declare namespace imports.gi.Gio {
 	 * @param stream a #GInputStream
 	 * @param buffer a buffer to
 	 *   read data into
-	 * @param count the number of bytes to read
 	 * @param blocking whether to do blocking I/O
 	 * @param cancellable optional #GCancellable object, %NULL to ignore.
 	 * @returns the number of bytes read, or -1 on error.
 	 */
-	function pollable_stream_read(stream: InputStream, buffer: number[], count: number, blocking: boolean, cancellable: Cancellable | null): number;
+	function pollable_stream_read(stream: InputStream, buffer: number[], blocking: boolean, cancellable: Cancellable | null): number;
 	/**
 	 * Tries to write to #stream, as with {@link G.output_stream_write} (if
 	 * #blocking is %TRUE) or g_pollable_output_stream_write_nonblocking()
@@ -37197,12 +37071,11 @@ declare namespace imports.gi.Gio {
 	 * @param stream a #GOutputStream.
 	 * @param buffer the buffer
 	 *   containing the data to write.
-	 * @param count the number of bytes to write
 	 * @param blocking whether to do blocking I/O
 	 * @param cancellable optional #GCancellable object, %NULL to ignore.
 	 * @returns the number of bytes written, or -1 on error.
 	 */
-	function pollable_stream_write(stream: OutputStream, buffer: number[], count: number, blocking: boolean, cancellable: Cancellable | null): number;
+	function pollable_stream_write(stream: OutputStream, buffer: number[], blocking: boolean, cancellable: Cancellable | null): number;
 	/**
 	 * Tries to write #count bytes to #stream, as with
 	 * {@link G.output_stream_write_all}, but using g_pollable_stream_write()
@@ -37225,7 +37098,6 @@ declare namespace imports.gi.Gio {
 	 * @param stream a #GOutputStream.
 	 * @param buffer the buffer
 	 *   containing the data to write.
-	 * @param count the number of bytes to write
 	 * @param blocking whether to do blocking I/O
 	 * @param cancellable optional #GCancellable object, %NULL to ignore.
 	 * @returns %TRUE on success, %FALSE if there was an error
@@ -37233,7 +37105,7 @@ declare namespace imports.gi.Gio {
 	 * location to store the number of bytes that was
 	 *   written to the stream
 	 */
-	function pollable_stream_write_all(stream: OutputStream, buffer: number[], count: number, blocking: boolean, cancellable: Cancellable | null): [ boolean, number ];
+	function pollable_stream_write_all(stream: OutputStream, buffer: number[], blocking: boolean, cancellable: Cancellable | null): [ boolean, number ];
 	/**
 	 * Gets a reference to the default #GPowerProfileMonitor for the system.
 	 * @returns a new reference to the default #GPowerProfileMonitor

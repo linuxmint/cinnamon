@@ -453,7 +453,7 @@ declare namespace imports.gi.Atk {
 		 * to create an instance of a subclass of #AtkObject
 		 * @param data a #gpointer which identifies the object for which the AtkObject was created.
 		 */
-		initialize(data: any | null): void;
+		initialize(data?: any | null): void;
 		/**
 		 * Emits a state-change signal for the specified state.
 		 * 
@@ -936,12 +936,11 @@ declare namespace imports.gi.Atk {
 		 * of targets.  See also {@link Atk.Object.add_relationship}.
 		 * @param targets an array of pointers to
 		 *  {@link Objects}
-		 * @param n_targets number of {@link Objects} pointed to by #targets
 		 * @param relationship an {@link RelationType} with which to create the new
 		 *  #AtkRelation
 		 * @returns a pointer to a new {@link Relation}
 		 */
-		public static new(targets: Object[], n_targets: number, relationship: RelationType): Relation;
+		public static new(targets: Object[], relationship: RelationType): Relation;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -1136,9 +1135,8 @@ declare namespace imports.gi.Atk {
 		 * #atk_object_ref_state_set. It should not be used to modify the existing state
 		 * of an object. See also #atk_object_notify_state_change.
 		 * @param types an array of {@link StateType}
-		 * @param n_types The number of elements in the array
 		 */
-		add_states(types: StateType[], n_types: number): void;
+		add_states(types: StateType[]): void;
 		/**
 		 * Constructs the intersection of the two sets, returning %NULL if the
 		 * intersection is empty.
@@ -1161,10 +1159,9 @@ declare namespace imports.gi.Atk {
 		 * Checks whether the states for all the specified types are in the
 		 * specified set.
 		 * @param types an array of {@link StateType}
-		 * @param n_types The number of elements in the array
 		 * @returns %TRUE if all the states for #type are in #set.
 		 */
-		contains_states(types: StateType[], n_types: number): boolean;
+		contains_states(types: StateType[]): boolean;
 		/**
 		 * Checks whether the state set is empty, i.e. has no states set.
 		 * @returns %TRUE if #set has no states set, otherwise %FALSE
@@ -5557,11 +5554,9 @@ declare namespace imports.gi.Atk {
 	 *        when a key event occurs.  The #data element will be passed to the
 	 *        {@link KeySnoopFunc} (#listener) as the #func_data param, on notification.
 	 * @param listener the listener to notify
-	 * @param data a #gpointer that points to a block of data that should be sent to the registered listeners,
-	 *        along with the event notification, when it occurs.
 	 * @returns added event listener id, or 0 on failure.
 	 */
-	function add_key_event_listener(listener: KeySnoopFunc, data: any | null): number;
+	function add_key_event_listener(listener: KeySnoopFunc): number;
 	/**
 	 * Frees the memory used by an {@link AttributeSet}, including all its
 	 * #AtkAttributes.

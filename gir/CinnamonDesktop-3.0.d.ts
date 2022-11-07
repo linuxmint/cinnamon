@@ -651,7 +651,7 @@ declare namespace imports.gi.CinnamonDesktop {
 		 * @param format_string
 		 * @returns Whether or not the format string was valid and accepted.
 		 */
-		set_format_string(format_string: string | null): boolean;
+		set_format_string(format_string?: string | null): boolean;
 		connect(signal: "notify::clock", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::format-string", callback: (owner: this, ...args: any) => void): number;
 		connect(signal: "notify::parent_object", callback: (owner: this, ...args: any) => void): number;
@@ -685,7 +685,7 @@ declare namespace imports.gi.CinnamonDesktop {
 		 * @param format_string
 		 * @returns The translated format string.
 		 */
-		public static lctime_format(gettext_domain: string | null, format_string: string | null): string;
+		public static lctime_format(gettext_domain?: string | null, format_string?: string | null): string;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,

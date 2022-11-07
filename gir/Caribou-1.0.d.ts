@@ -12,9 +12,9 @@ declare namespace imports.gi.Caribou {
 		mod_latch(mask: number): void;
 		mod_unlatch(mask: number): void;
 		get_current_group(): [ number, string, string ];
-		get_groups(): [ string[], number, string[], number ];
-		register_key_func(keyval: number, func: Caribou.KeyButtonCallback | null, func_target: any | null): void;
-		register_button_func(button: number, func: Caribou.KeyButtonCallback | null, func_target: any | null): void;
+		get_groups(): [ string[], string[] ];
+		register_key_func(keyval: number, func?: Caribou.KeyButtonCallback | null): void;
+		register_button_func(button: number, func?: Caribou.KeyButtonCallback | null): void;
 		get_display(): Gdk.Display;
 		connect(signal: "modifiers-changed", callback: (owner: this, modifiers: number) => void): number;
 		connect(signal: "group-changed", callback: (owner: this, gid: number, group: string, variant: string) => void): number;
@@ -318,7 +318,7 @@ declare namespace imports.gi.Caribou {
 
 	class KeyModel {
 		public constructor(options?: Partial<KeyModelInitOptions>);
-		public static new(name: string, text: string | null): Caribou.KeyModel;
+		public static new(name: string, text?: string | null): Caribou.KeyModel;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,

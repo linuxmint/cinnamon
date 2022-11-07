@@ -95,7 +95,7 @@ declare namespace imports.gi.CMenu {
 		 * `OnlyShowIn` and `NotShowIn` keys, %FALSE
 		 * otherwise.
 		 */
-		get_show_in(desktop_env: string | null): boolean;
+		get_show_in(desktop_env?: string | null): boolean;
 		/**
 		 * Retrieves the StartupWMClass field from #info. This represents the
 		 * WM_CLASS property of the main window of the application, if launched
@@ -143,7 +143,7 @@ declare namespace imports.gi.CMenu {
 		 *   {@link Gio.DesktopAppInfo.list_actions}
 		 * @param launch_context a #GAppLaunchContext
 		 */
-		launch_action(action_name: string, launch_context: Gio.AppLaunchContext | null): void;
+		launch_action(action_name: string, launch_context?: Gio.AppLaunchContext | null): void;
 		/**
 		 * This function performs the equivalent of {@link Gio.AppInfo.launch_uris},
 		 * but is intended primarily for operating system components that
@@ -163,14 +163,9 @@ declare namespace imports.gi.CMenu {
 		 * @param uris List of URIs
 		 * @param launch_context a #GAppLaunchContext
 		 * @param spawn_flags #GSpawnFlags, used for each process
-		 * @param user_setup a #GSpawnChildSetupFunc, used once
-		 *     for each process.
-		 * @param user_setup_data User data for #user_setup
-		 * @param pid_callback Callback for child processes
-		 * @param pid_callback_data User data for #callback
 		 * @returns %TRUE on successful launch, %FALSE otherwise.
 		 */
-		launch_uris_as_manager(uris: string[], launch_context: Gio.AppLaunchContext | null, spawn_flags: GLib.SpawnFlags, user_setup: GLib.SpawnChildSetupFunc | null, user_setup_data: any | null, pid_callback: Gio.DesktopAppLaunchCallback | null, pid_callback_data: any | null): boolean;
+		launch_uris_as_manager(uris: string[], launch_context: Gio.AppLaunchContext | null, spawn_flags: GLib.SpawnFlags): boolean;
 		/**
 		 * Returns the list of "additional application actions" supported on the
 		 * desktop file, as per the desktop file specification.
@@ -288,8 +283,8 @@ declare namespace imports.gi.CMenu {
 		public constructor(options?: Partial<TreeInitOptions>);
 		public static new(menu_basename: string, flags: TreeFlags): Tree;
 		public static new_for_path(menu_path: string, flags: TreeFlags): Tree;
-		public static item_ref(item: any | null): any | null;
-		public static item_unref(item: any | null): void;
+		public static item_ref(item?: any | null): any | null;
+		public static item_unref(item?: any | null): void;
 	}
 
 	export interface TreeAliasInitOptions {}

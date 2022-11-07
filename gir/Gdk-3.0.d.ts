@@ -36,7 +36,7 @@ declare namespace imports.gi.Gdk {
 		 * See also {@link Gdk.AppLaunchContext.set_icon_name}.
 		 * @param icon a #GIcon, or %NULL
 		 */
-		set_icon(icon: Gio.Icon | null): void;
+		set_icon(icon?: Gio.Icon | null): void;
 		/**
 		 * Sets the icon for applications that are launched with this context.
 		 * The #icon_name will be interpreted in the same way as the Icon field
@@ -48,7 +48,7 @@ declare namespace imports.gi.Gdk {
 		 * for the launched application itself.
 		 * @param icon_name an icon name, or %NULL
 		 */
-		set_icon_name(icon_name: string | null): void;
+		set_icon_name(icon_name?: string | null): void;
 		/**
 		 * Sets the screen on which applications will be launched when
 		 * using this context. See also {@link Gdk.AppLaunchContext.set_display}.
@@ -463,11 +463,8 @@ declare namespace imports.gi.Gdk {
 		 * 
 		 *   location to store a newly-allocated array of {@link TimeCoord}, or
 		 *   %NULL
-		 * 
-		 * location to store the length of
-		 *   #events, or %NULL
 		 */
-		get_history(window: Window, start: number, stop: number): [ boolean, TimeCoord[] | null, number | null ];
+		get_history(window: Window, start: number, stop: number): [ boolean, TimeCoord[] | null ];
 		/**
 		 * If #index_ has a valid keyval, this function will return %TRUE
 		 * and fill in #keyval and #modifiers with the keyval settings.
@@ -562,7 +559,7 @@ declare namespace imports.gi.Gdk {
 		 * the axes of #device in, or %NULL.
 		 * @returns location to store the modifiers, or %NULL.
 		 */
-		get_state(window: Window, axes: number[] | null): ModifierType | null;
+		get_state(window: Window, axes?: number[] | null): ModifierType | null;
 		/**
 		 * Returns the vendor ID of this device, or %NULL if this information couldn't
 		 * be obtained. This ID is retrieved from the device, and is thus constant for
@@ -822,9 +819,8 @@ declare namespace imports.gi.Gdk {
 		/**
 		 * Frees an array of {@link TimeCoord} that was returned by {@link Gdk.Device.get_history}.
 		 * @param events an array of {@link TimeCoord}.
-		 * @param n_events the length of the array.
 		 */
-		public static free_history(events: TimeCoord[], n_events: number): void;
+		public static free_history(events: TimeCoord[]): void;
 		/**
 		 * @deprecated
 		 * The symbol was never meant to be used outside
@@ -1429,9 +1425,8 @@ declare namespace imports.gi.Gdk {
 		 * @param targets an array of targets
 		 *                    that should be saved, or %NULL
 		 *                    if all available targets should be saved.
-		 * @param n_targets length of the #targets array
 		 */
-		store_clipboard(clipboard_window: Window, time_: number, targets: Atom[] | null, n_targets: number): void;
+		store_clipboard(clipboard_window: Window, time_: number, targets?: Atom[] | null): void;
 		/**
 		 * Returns whether the speicifed display supports clipboard
 		 * persistance; i.e. if it’s possible to store the clipboard data after an
@@ -2514,10 +2509,8 @@ declare namespace imports.gi.Gdk {
 		 * 
 		 * return
 		 *     location for array of keyvals, or %NULL
-		 * 
-		 * length of #keys and #keyvals
 		 */
-		get_entries_for_keycode(hardware_keycode: number): [ boolean, KeymapKey[] | null, number[] | null, number ];
+		get_entries_for_keycode(hardware_keycode: number): [ boolean, KeymapKey[] | null, number[] | null ];
 		/**
 		 * Obtains a list of keycode/group/level combinations that will
 		 * generate #keyval. Groups and levels are two kinds of keyboard mode;
@@ -2535,10 +2528,8 @@ declare namespace imports.gi.Gdk {
 		 * 
 		 * return location
 		 *     for an array of {@link KeymapKey}
-		 * 
-		 * return location for number of elements in returned array
 		 */
-		get_entries_for_keyval(keyval: number): [ boolean, KeymapKey[], number ];
+		get_entries_for_keyval(keyval: number): [ boolean, KeymapKey[] ];
 		/**
 		 * Returns the modifier mask the #keymap’s windowing system backend
 		 * uses for a particular purpose.
@@ -3210,7 +3201,7 @@ declare namespace imports.gi.Gdk {
 		 * @param options a #cairo_font_options_t, or %NULL to unset any
 		 *   previously set default font options.
 		 */
-		set_font_options(options: cairo.FontOptions | null): void;
+		set_font_options(options?: cairo.FontOptions | null): void;
 		/**
 		 * Sets the resolution for font handling on the screen. This is a
 		 * scale factor between points specified in a #PangoFontDescription
@@ -3418,10 +3409,9 @@ declare namespace imports.gi.Gdk {
 		 * @param prepare_func function to
 		 *                prepare the window to be grabbed, it can be %NULL if #window is
 		 *                visible before this call.
-		 * @param prepare_func_data user data to pass to #prepare_func
 		 * @returns %GDK_GRAB_SUCCESS if the grab was successful.
 		 */
-		grab(window: Window, capabilities: SeatCapabilities, owner_events: boolean, cursor: Cursor | null, event: Event | null, prepare_func: SeatGrabPrepareFunc | null, prepare_func_data: any | null): GrabStatus;
+		grab(window: Window, capabilities: SeatCapabilities, owner_events: boolean, cursor?: Cursor | null, event?: Event | null, prepare_func?: SeatGrabPrepareFunc | null): GrabStatus;
 		/**
 		 * Releases a grab added through {@link Gdk.Seat.grab}.
 		 */
@@ -3711,9 +3701,8 @@ declare namespace imports.gi.Gdk {
 		 * XGetEventData() has been already called on the event, and
 		 * XFreeEventData() must not be called within #function.
 		 * @param _function filter callback
-		 * @param data data to pass to filter callback
 		 */
-		add_filter(_function: FilterFunc, data: any | null): void;
+		add_filter(_function: FilterFunc): void;
 		/**
 		 * Emits a short beep associated to #window in the appropriate
 		 * display, if supported. Otherwise, emits a short beep on
@@ -4153,10 +4142,11 @@ declare namespace imports.gi.Gdk {
 		 * 
 		 * The list is returned in (relative) stacking order, i.e. the
 		 * lowest window is first.
+		 * @param user_data user data to look for
 		 * @returns 
 		 *     list of child windows inside #window
 		 */
-		get_children_with_user_data(): Window[];
+		get_children_with_user_data(user_data?: any | null): Window[];
 		/**
 		 * Computes the region of a window that potentially can be written
 		 * to by drawing primitives. This region may not take into account
@@ -4626,7 +4616,7 @@ declare namespace imports.gi.Gdk {
 		 * @param child_func function to use to decide if to
 		 *     recurse to a child, %NULL means never recurse.
 		 */
-		invalidate_maybe_recurse(region: cairo.Region, child_func: WindowChildFunc | null): void;
+		invalidate_maybe_recurse(region: cairo.Region, child_func?: WindowChildFunc | null): void;
 		/**
 		 * A convenience wrapper around {@link Gdk.Window.invalidate_region} which
 		 * invalidates a rectangular region. See
@@ -4844,9 +4834,8 @@ declare namespace imports.gi.Gdk {
 		/**
 		 * Remove a filter previously added with {@link Gdk.Window.add_filter}.
 		 * @param _function previously-added filter function
-		 * @param data user data for previously-added filter function
 		 */
-		remove_filter(_function: FilterFunc, data: any | null): void;
+		remove_filter(_function: FilterFunc): void;
 		/**
 		 * Reparents #window into the given #new_parent. The window being
 		 * reparented will be unmapped as a side effect.
@@ -4935,7 +4924,7 @@ declare namespace imports.gi.Gdk {
 		 * when the window is obscured then exposed.
 		 * @param pattern a pattern to use, or %NULL
 		 */
-		set_background_pattern(pattern: cairo.Pattern | null): void;
+		set_background_pattern(pattern?: cairo.Pattern | null): void;
 		/**
 		 * @deprecated
 		 * Don't use this function
@@ -5002,7 +4991,7 @@ declare namespace imports.gi.Gdk {
 		 * should use this default.
 		 * @param cursor a cursor
 		 */
-		set_cursor(cursor: Cursor | null): void;
+		set_cursor(cursor?: Cursor | null): void;
 		/**
 		 * “Decorations” are the features the window manager adds to a toplevel {@link Window}.
 		 * This function sets the traditional Motif window manager hints that tell the
@@ -5156,7 +5145,7 @@ declare namespace imports.gi.Gdk {
 		 * if your application pretends to be multiple applications.
 		 * @param leader group leader window, or %NULL to restore the default group leader window
 		 */
-		set_group(leader: Window | null): void;
+		set_group(leader?: Window | null): void;
 		/**
 		 * Sets a list of icons for the window. One of these will be used
 		 * to represent the window when it has been iconified. The icon is
@@ -5186,7 +5175,7 @@ declare namespace imports.gi.Gdk {
 		 * Note that some platforms don't support window icons.
 		 * @param name name of window while iconified (minimized)
 		 */
-		set_icon_name(name: string | null): void;
+		set_icon_name(name?: string | null): void;
 		/**
 		 * Registers an invalidate handler for a specific window. This
 		 * will get called whenever a region in the window or its children
@@ -5276,7 +5265,7 @@ declare namespace imports.gi.Gdk {
 		 * property in your #GtkWidget::style-updated handler.
 		 * @param region a region, or %NULL
 		 */
-		set_opaque_region(region: cairo.Region | null): void;
+		set_opaque_region(region?: cairo.Region | null): void;
 		/**
 		 * An override redirect window is not under the control of the window manager.
 		 * This means it won’t have a titlebar, won’t be minimizable, etc. - it will
@@ -5445,8 +5434,9 @@ declare namespace imports.gi.Gdk {
 		 * this function for that. If GTK+ receives an event for a #GdkWindow,
 		 * and the user data for the window is non-%NULL, GTK+ will assume the
 		 * user data is a #GtkWidget, and forward the event to that widget.
+		 * @param user_data user data
 		 */
-		set_user_data(): void;
+		set_user_data(user_data?: GObject.Object | null): void;
 		/**
 		 * Makes pixels in #window outside #shape_region be transparent,
 		 * so that the window may be nonrectangular.
@@ -9914,10 +9904,8 @@ declare namespace imports.gi.Gdk {
 		 * Specifies the type of function passed to {@link Gdk.event.handler_set} to
 		 * handle all GDK events.
 		 * @param event the {@link Event} to process.
-		 * @param data user data set when the event handler was installed with
-		 *   {@link Gdk.event.handler_set}.
 		 */
-		(event: Event, data: any | null): void;
+		(event: Event): void;
 	}
 
 	/**
@@ -9942,10 +9930,9 @@ declare namespace imports.gi.Gdk {
 		 * continue, it should return %GDK_FILTER_TRANSLATE.
 		 * @param xevent the native event to filter.
 		 * @param event the GDK event to which the X event will be translated.
-		 * @param data user data set when the filter was installed.
 		 * @returns a {@link FilterReturn} value.
 		 */
-		(xevent: XEvent, event: Event, data: any | null): FilterReturn;
+		(xevent: XEvent, event: Event): FilterReturn;
 	}
 
 	/**
@@ -10391,7 +10378,7 @@ declare namespace imports.gi.Gdk {
 		 * Sets the device tool for this event, should be rarely used.
 		 * @param tool tool to set on the event, or %NULL
 		 */
-		set_device_tool(tool: DeviceTool | null): void;
+		set_device_tool(tool?: DeviceTool | null): void;
 		/**
 		 * Sets the screen for #event to #screen. The event must
 		 * have been allocated by GTK+, for instance, by
@@ -10542,11 +10529,8 @@ declare namespace imports.gi.Gdk {
 		 * can call this function then call {@link Gtk.main.do_event} to pass
 		 * events to GTK+.)
 		 * @param func the function to call to handle events from GDK.
-		 * @param data user data to pass to the function.
-		 * @param notify the function to call when the handler function is removed, i.e. when
-		 *          {@link Gdk.event.handler_set} is called with another event handler.
 		 */
-		public static handler_set(func: EventFunc, data: any | null, notify: GLib.DestroyNotify): void;
+		public static handler_set(func: EventFunc): void;
 		/**
 		 * If there is an event waiting in the event queue of some open
 		 * display, returns a copy of it. See {@link Gdk.Display.peek_event}.
@@ -11006,11 +10990,8 @@ declare namespace imports.gi.Gdk {
 	 * can call this function then call {@link Gtk.main.do_event} to pass
 	 * events to GTK+.)
 	 * @param func the function to call to handle events from GDK.
-	 * @param data user data to pass to the function.
-	 * @param notify the function to call when the handler function is removed, i.e. when
-	 *          {@link Gdk.event.handler_set} is called with another event handler.
 	 */
-	function event_handler_set(func: EventFunc, data: any | null, notify: GLib.DestroyNotify): void;
+	function event_handler_set(func: EventFunc): void;
 	/**
 	 * If there is an event waiting in the event queue of some open
 	 * display, returns a copy of it. See {@link Gdk.Display.peek_event}.
@@ -11589,18 +11570,11 @@ declare namespace imports.gi.Gdk {
 	 * location to store the actual return format of the
 	 *   data; either 8, 16 or 32 bits.
 	 * 
-	 * location to store the length of the retrieved data, in
-	 *   bytes.  Data returned in the 32 bit format is stored
-	 *   in a long variable, so the actual number of 32 bit
-	 *   elements should be be calculated via
-	 *   #actual_length / sizeof(glong) to ensure portability to
-	 *   64 bit systems.
-	 * 
 	 * location
 	 *   to store a pointer to the data. The retrieved data should be
 	 *   freed with {@link G.free} when you are finished using it.
 	 */
-	function property_get(window: Window, property: Atom, type: Atom, offset: number, length: number, pdelete: number): [ boolean, Atom, number, number, number[] ];
+	function property_get(window: Window, property: Atom, type: Atom, offset: number, length: number, pdelete: number): [ boolean, Atom, number, number[] ];
 	/**
 	 * This function returns the available bit depths for the default
 	 * screen. It’s equivalent to listing the visuals
@@ -11610,10 +11584,8 @@ declare namespace imports.gi.Gdk {
 	 * The array returned by this function should not be freed.
 	 * @returns return
 	 *     location for available depths
-	 * 
-	 * return location for number of available depths
 	 */
-	function query_depths(): [ number[], number ];
+	function query_depths(): number[];
 	/**
 	 * This function returns the available visual types for the default
 	 * screen. It’s equivalent to listing the visuals
@@ -11623,10 +11595,8 @@ declare namespace imports.gi.Gdk {
 	 * The array returned by this function should not be freed.
 	 * @returns return
 	 *     location for the available visual types
-	 * 
-	 * return location for the number of available visual types
 	 */
-	function query_visual_types(): [ VisualType[], number ];
+	function query_visual_types(): VisualType[];
 	/**
 	 * Retrieves the contents of a selection in a given
 	 * form.
@@ -11870,14 +11840,13 @@ declare namespace imports.gi.Gdk {
 	 * @param encoding an atom representing the encoding of the text
 	 * @param format the format of the property
 	 * @param text the text to convert
-	 * @param length the length of #text, in bytes
 	 * @returns the number of strings in the resulting list
 	 * 
 	 * location to store the list
 	 *            of strings or %NULL. The list should be freed with
 	 *            {@link G.strfreev}.
 	 */
-	function text_property_to_utf8_list_for_display(display: Display, encoding: Atom, format: number, text: number[], length: number): [ number, string[] ];
+	function text_property_to_utf8_list_for_display(display: Display, encoding: Atom, format: number, text: number[]): [ number, string[] ];
 	/**
 	 * Adds a function to be called whenever there are no higher priority
 	 * events pending.  If the function returns %FALSE it is automatically
@@ -11923,11 +11892,9 @@ declare namespace imports.gi.Gdk {
 	 * @param priority the priority of the idle source. Typically this will be in the
 	 *            range between #G_PRIORITY_DEFAULT_IDLE and #G_PRIORITY_HIGH_IDLE
 	 * @param _function function to call
-	 * @param data data to pass to #function
-	 * @param notify function to call when the idle is removed, or %NULL
 	 * @returns the ID (greater than 0) of the event source.
 	 */
-	function threads_add_idle(priority: number, _function: GLib.SourceFunc, data: any | null, notify: GLib.DestroyNotify | null): number;
+	function threads_add_idle(priority: number, _function: GLib.SourceFunc): number;
 	/**
 	 * Sets a function to be called at regular intervals holding the GDK lock,
 	 * with the given priority.  The function is called repeatedly until it
@@ -11977,11 +11944,9 @@ declare namespace imports.gi.Gdk {
 	 * @param interval the time between calls to the function, in milliseconds
 	 *             (1/1000ths of a second)
 	 * @param _function function to call
-	 * @param data data to pass to #function
-	 * @param notify function to call when the timeout is removed, or %NULL
 	 * @returns the ID (greater than 0) of the event source.
 	 */
-	function threads_add_timeout(priority: number, interval: number, _function: GLib.SourceFunc, data: any | null, notify: GLib.DestroyNotify | null): number;
+	function threads_add_timeout(priority: number, interval: number, _function: GLib.SourceFunc): number;
 	/**
 	 * A variant of {@link Gdk.threads.add_timeout_full} with second-granularity.
 	 * See g_timeout_add_seconds_full() for a discussion of why it is
@@ -11990,11 +11955,9 @@ declare namespace imports.gi.Gdk {
 	 *            range between #G_PRIORITY_DEFAULT_IDLE and #G_PRIORITY_HIGH_IDLE.
 	 * @param interval the time between calls to the function, in seconds
 	 * @param _function function to call
-	 * @param data data to pass to #function
-	 * @param notify function to call when the timeout is removed, or %NULL
 	 * @returns the ID (greater than 0) of the event source.
 	 */
-	function threads_add_timeout_seconds(priority: number, interval: number, _function: GLib.SourceFunc, data: any | null, notify: GLib.DestroyNotify | null): number;
+	function threads_add_timeout_seconds(priority: number, interval: number, _function: GLib.SourceFunc): number;
 	/**
 	 * This function marks the beginning of a critical section in which
 	 * GDK and GTK+ functions can be called safely and without causing race

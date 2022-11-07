@@ -120,11 +120,9 @@ declare namespace imports.gi.GIRepository {
 		 * returning a concrete class of #GLocalFile, which is a #GType we
 		 * see at runtime, but not statically.
 		 * @param gtype a #GType whose fundamental type is G_TYPE_OBJECT
-		 * @returns Number of interfaces
-		 * 
-		 * Interfaces for #gtype
+		 * @returns Interfaces for #gtype
 		 */
-		get_object_gtype_interfaces(gtype: GObject.Type): [ number, InterfaceInfo[] ];
+		get_object_gtype_interfaces(gtype: GObject.Type): InterfaceInfo[];
 		/**
 		 * This function returns a comma-separated list of paths to the
 		 * shared C libraries associated with the given namespace #namespace_.
@@ -168,7 +166,7 @@ declare namespace imports.gi.GIRepository {
 		 * @param version Required version, may be %NULL for latest
 		 * @returns %TRUE if namespace-version is loaded, %FALSE otherwise
 		 */
-		is_registered(namespace_: string, version: string | null): boolean;
+		is_registered(namespace_: string, version?: string | null): boolean;
 		/**
 		 * TODO
 		 * @param typelib TODO
@@ -444,7 +442,7 @@ declare namespace imports.gi.GIRepository {
 		public static new_from_memory(memory: number, len: number): Typelib;
 		public free(): void;
 		public get_namespace(): string;
-		public symbol(symbol_name: string, symbol: any | null): boolean;
+		public symbol(symbol_name: string, symbol?: any | null): boolean;
 	}
 
 	export interface UnresolvedInfoInitOptions {}
@@ -891,7 +889,7 @@ declare namespace imports.gi.GIRepository {
 		 * @param object object instance pointer
 		 * @returns the object instance
 		 */
-		(object: any | null): any | null;
+		(object?: any | null): any | null;
 	}
 
 	/**
@@ -903,7 +901,7 @@ declare namespace imports.gi.GIRepository {
 		 * @param value a #GValue
 		 * @param object object instance pointer
 		 */
-		(value: GObject.Value, object: any | null): void;
+		(value: GObject.Value, object?: any | null): void;
 	}
 
 	/**
@@ -914,7 +912,7 @@ declare namespace imports.gi.GIRepository {
 		 * Decreases the reference count of an object instance.
 		 * @param object object instance pointer
 		 */
-		(object: any | null): void;
+		(object?: any | null): void;
 	}
 
 	/** This construct is only for enabling class multi-inheritance,
@@ -1303,15 +1301,13 @@ declare namespace imports.gi.GIRepository {
 	 * @param info TODO
 	 * @param _function TODO
 	 * @param in_args TODO
-	 * @param n_in_args TODO
 	 * @param out_args TODO
-	 * @param n_out_args TODO
 	 * @param return_value TODO
 	 * @param is_method TODO
 	 * @param _throws TODO
 	 * @returns 
 	 */
-	function callable_info_invoke(info: CallableInfo, _function: any | null, in_args: Argument[], n_in_args: number, out_args: Argument[], n_out_args: number, return_value: Argument, is_method: boolean, _throws: boolean): boolean;
+	function callable_info_invoke(info: CallableInfo, _function: any | null, in_args: Argument[], out_args: Argument[], return_value: Argument, is_method: boolean, _throws: boolean): boolean;
 	/**
 	 * Determines if the callable info is a method. For #GIVFuncInfo<!-- -->s,
 	 * #GICallbackInfo<!-- -->s, and #GISignalInfo<!-- -->s,
@@ -1545,17 +1541,15 @@ declare namespace imports.gi.GIRepository {
 	 * @param in_args an array of #GIArgument<!-- -->s, one for each in
 	 *    parameter of #info. If there are no in parameter, #in_args
 	 *    can be %NULL
-	 * @param n_in_args the length of the #in_args array
 	 * @param out_args an array of #GIArgument<!-- -->s, one for each out
 	 *    parameter of #info. If there are no out parameters, #out_args
 	 *    may be %NULL
-	 * @param n_out_args the length of the #out_args array
 	 * @param return_value return location for the return value of the
 	 *    function.
 	 * @returns %TRUE if the function has been invoked, %FALSE if an
 	 *   error occurred.
 	 */
-	function function_info_invoke(info: FunctionInfo, in_args: Argument[], n_in_args: number, out_args: Argument[], n_out_args: number, return_value: Argument): boolean;
+	function function_info_invoke(info: FunctionInfo, in_args: Argument[], out_args: Argument[], return_value: Argument): boolean;
 	/**
 	 * Returns the major version number of the girepository library.
 	 * (e.g. in version 1.58.2 this is 1.)
@@ -2435,18 +2429,16 @@ declare namespace imports.gi.GIRepository {
 	 * @param in_args an array of #GIArgument<!-- -->s, one for each in
 	 *    parameter of #info. If there are no in parameter, #in_args
 	 *    can be %NULL
-	 * @param n_in_args the length of the #in_args array
 	 * @param out_args an array of #GIArgument<!-- -->s, one for each out
 	 *    parameter of #info. If there are no out parameters, #out_args
 	 *    may be %NULL
-	 * @param n_out_args the length of the #out_args array
 	 * @param return_value return location for the return value of the
 	 *    function. If the function returns void, #return_value may be
 	 *    %NULL
 	 * @returns %TRUE if the function has been invoked, %FALSE if an
 	 *   error occurred.
 	 */
-	function vfunc_info_invoke(info: VFuncInfo, implementor: GObject.Type, in_args: Argument[], n_in_args: number, out_args: Argument[], n_out_args: number, return_value: Argument): boolean;
+	function vfunc_info_invoke(info: VFuncInfo, implementor: GObject.Type, in_args: Argument[], out_args: Argument[], return_value: Argument): boolean;
 	/**
 	 * The major version number of the girepository library.
 	 * @returns The major version number of the girepository library.
