@@ -16,8 +16,9 @@ class InhibitAppletIcon {
     constructor(applet) {
         this._applet = applet;
         this.icon_name = 'inhibit';
-        this.notificationStatus = true;
-        this.inhibitStatus = true;
+        this.notificationStatus = applet.notificationsSwitch.state;
+        this.inhibitStatus = applet.inhibitSwitch.state;
+        this.setAppletIcon();
     }
 
     setAppletIcon() {
@@ -379,6 +380,28 @@ class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
     }
 }
 
+class NotificationsSwitch extends PopupMenu.PopupSwitchMenuItem {
+    constructor(applet) {
+        super(_("Notifications"));
+
+        this._applet = applet;
+        this._notif_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
+        this._setToggleState();
+
+        this._notif_settings.connect('changed::display-notifications', Lang.bind(this, function () {
+            this._setToggleState();
+            this._applet.icon.toggleNotificationStatus(this.state);
+        }));
+        this.connect('toggled', Lang.bind(this, function () {
+            this._notif_settings.set_boolean("display-notifications", this.state);
+        }));
+    }
+
+    _setToggleState() {
+        this.setToggleState(this._notif_settings.get_boolean("display-notifications"));
+    }
+}
+
 class CinnamonInhibitApplet extends Applet.IconApplet {
     constructor(metadata, orientation, panel_height, instanceId) {
         super(orientation, panel_height, instanceId);
@@ -388,29 +411,15 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
-
-        this.icon = new InhibitAppletIcon(this);
+        this.set_applet_tooltip(_("Inhibit applet"));
 
         this.inhibitSwitch = new InhibitSwitch(this);
         this.menu.addMenuItem(this.inhibitSwitch);
 
-        this.icon.setAppletIcon();
-        this.set_applet_tooltip(_("Inhibit applet"));
-
-        this.notif_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
-        let _notif_status = this.notif_settings.get_boolean("display-notifications");
-        this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Notifications"), _notif_status);
-        this.icon.toggleNotificationStatus(_notif_status);
-
-        this.notif_settings.connect('changed::display-notifications', Lang.bind(this, function() {
-            this.notificationsSwitch.setToggleState(this.notif_settings.get_boolean("display-notifications"));
-        }));
-        this.notificationsSwitch.connect('toggled', Lang.bind(this, function() {
-            this.notif_settings.set_boolean("display-notifications", this.notificationsSwitch.state);
-            this.icon.toggleNotificationStatus(this.notificationsSwitch.state);
-        }));
-
+        this.notificationsSwitch = new NotificationsSwitch(this);        
         this.menu.addMenuItem(this.notificationsSwitch);
+
+        this.icon = new InhibitAppletIcon(this);
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
         this.settings.bind("keyPower", "keyPower", this._setKeybinding);
