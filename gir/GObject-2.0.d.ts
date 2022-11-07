@@ -679,10 +679,8 @@ declare namespace imports.gi.GObject {
 		 * @param newval the new value
 		 * @returns %TRUE if the existing value for #key was replaced
 		 *  by #newval, %FALSE otherwise.
-		 * 
-		 * destroy notify for the existing value
 		 */
-		replace_data(key: string, oldval?: any | null, newval?: any | null): [ boolean, GLib.DestroyNotify | null ];
+		replace_data(key: string, oldval?: any | null, newval?: any | null): boolean;
 		/**
 		 * Compares the user data for the key #quark on #object with
 		 * #oldval, and if they are the same, replaces #oldval with
@@ -702,10 +700,8 @@ declare namespace imports.gi.GObject {
 		 * @param newval the new value
 		 * @returns %TRUE if the existing value for #quark was replaced
 		 *  by #newval, %FALSE otherwise.
-		 * 
-		 * destroy notify for the existing value
 		 */
-		replace_qdata(quark: GLib.Quark, oldval?: any | null, newval?: any | null): [ boolean, GLib.DestroyNotify | null ];
+		replace_qdata(quark: GLib.Quark, oldval?: any | null, newval?: any | null): boolean;
 		/**
 		 * Releases all references to other objects. This can be used to break
 		 * reference cycles.

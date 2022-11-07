@@ -172,10 +172,8 @@ export function trySpawn(argv: string[], doNotReap?: boolean): number | null | u
 export function trySpawnCommandLine(command_line: string): number | null | undefined {
     let pid;
 
-    // FIXME: incorrect GLib types
     let [success, argv] = GLib.shell_parse_argv(command_line);
 
-    // @ts-expect-error the GLib typings are
     pid = trySpawn(argv);
 
     return pid;
@@ -194,10 +192,8 @@ export function trySpawnCommandLine(command_line: string): number | null | undef
 export function spawnCommandLineAsync(command_line: string, callback?: () => void, errback?: () => void ): void {
     let pid;
 
-    // FIXME: incorrect GLib types
     let [success, argv] = GLib.shell_parse_argv(command_line);
 
-    // @ts-expect-error the GLib typings are
     pid = trySpawn(argv, true);
 
     GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, function (pid: number, status: number) {
@@ -212,7 +208,7 @@ export function spawnCommandLineAsync(command_line: string, callback?: () => voi
                 callback();
             }
         }
-    }, null, null);
+    });
 }
 
 export interface CommandLineAsyncIOOptions {

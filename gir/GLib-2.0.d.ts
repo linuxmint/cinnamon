@@ -198,9 +198,8 @@ declare namespace imports.gi.GLib {
 		 * g_array_free (garray, TRUE);
 		 * ]|
 		 * @param array A #GArray
-		 * @param clear_func a function to clear an element of #array
 		 */
-		public static set_clear_func(array: any[], clear_func: DestroyNotify): void;
+		public static set_clear_func(array: any[]): void;
 		/**
 		 * Sets the size of the array, expanding it if necessary. If the array
 		 * was created with #clear_ set to %TRUE, the new elements are set to 0.
@@ -312,10 +311,9 @@ declare namespace imports.gi.GLib {
 		 * Creates a new asynchronous queue and sets up a destroy notify
 		 * function that is used to free any remaining queue items when
 		 * the queue is destroyed after the final unref.
-		 * @param item_free_func function to free queue elements
 		 * @returns a new #GAsyncQueue. Free with {@link G.async_queue_unref}
 		 */
-		public static new_full(item_free_func?: DestroyNotify | null): AsyncQueue;
+		public static new_full(): AsyncQueue;
 		/**
 		 * Returns the length of the queue.
 		 * 
@@ -1474,11 +1472,10 @@ declare namespace imports.gi.GLib {
 		 * #data may be %NULL if #size is 0.
 		 * @param data 
 		 *        the data to be used for the bytes
-		 * @param free_func the function to call to release the data
 		 * @param user_data data to pass to #free_func
 		 * @returns a new #GBytes
 		 */
-		public static new_with_free_func(data: number[] | null, free_func: DestroyNotify, user_data?: any | null): Bytes;
+		public static new_with_free_func(data?: number[] | null, user_data?: any | null): Bytes;
 		/**
 		 * Compares the two #GBytes values.
 		 * 
@@ -3484,15 +3481,9 @@ declare namespace imports.gi.GLib {
 		 * g_hash_table_unref().
 		 * @param hash_func a function to create a hash value from a key
 		 * @param key_equal_func a function to check two keys for equality
-		 * @param key_destroy_func a function to free the memory allocated for the key
-		 *     used when removing the entry from the #GHashTable, or %NULL
-		 *     if you don't want to supply such a function.
-		 * @param value_destroy_func a function to free the memory allocated for the
-		 *     value used when removing the entry from the #GHashTable, or %NULL
-		 *     if you don't want to supply such a function.
 		 * @returns a new #GHashTable
 		 */
-		public static new_full(hash_func: HashFunc, key_equal_func: EqualFunc, key_destroy_func?: DestroyNotify | null, value_destroy_func?: DestroyNotify | null): any[];
+		public static new_full(hash_func: HashFunc, key_equal_func: EqualFunc): any[];
 		/**
 		 * Atomically increments the reference count of #hash_table by one.
 		 * This function is MT-safe and may be called from any thread.
@@ -5288,9 +5279,8 @@ declare namespace imports.gi.GLib {
 		 * g_list_free_full (g_steal_pointer (&list_of_owned_things), g_object_unref);
 		 * ]|
 		 * @param list the first link of a #GList
-		 * @param free_func the function to be called to free each element's data
 		 */
-		public static free_full(list: any[], free_func: DestroyNotify): void;
+		public static free_full(list: any[]): void;
 		/**
 		 * Gets the position of the element containing
 		 * the given data (starting from 0).
@@ -5722,9 +5712,8 @@ declare namespace imports.gi.GLib {
 		 * thread or with any particular context acquired.
 		 * @param priority the priority at which to run #function
 		 * @param _function function to call
-		 * @param notify a function to call when #data is no longer in use, or %NULL.
 		 */
-		public invoke_full(priority: number, _function: SourceFunc, notify?: DestroyNotify | null): void;
+		public invoke_full(priority: number, _function: SourceFunc): void;
 		/**
 		 * Determines whether this thread holds the (recursive)
 		 * ownership of this #GMainContext. This is useful to
@@ -6088,11 +6077,9 @@ declare namespace imports.gi.GLib {
 		 * @param parser a #GMarkupParser
 		 * @param flags one or more #GMarkupParseFlags
 		 * @param user_data user data to pass to #GMarkupParser functions
-		 * @param user_data_dnotify user data destroy notifier called when
-		 *     the parse context is freed
 		 * @returns a new #GMarkupParseContext
 		 */
-		public static new(parser: MarkupParser, flags: MarkupParseFlags, user_data: any | null, user_data_dnotify: DestroyNotify): MarkupParseContext;
+		public static new(parser: MarkupParser, flags: MarkupParseFlags, user_data?: any | null): MarkupParseContext;
 		/**
 		 * Signals to the #GMarkupParseContext that all data has been
 		 * fed into the parse context with {@link G.markup_parse_context_parse}.
@@ -7116,9 +7103,8 @@ declare namespace imports.gi.GLib {
 		 * If you are using gettext(), you only need to set the translation
 		 * domain, see g_option_context_set_translation_domain().
 		 * @param func the #GTranslateFunc, or %NULL
-		 * @param destroy_notify a function which gets called to free #data, or %NULL
 		 */
-		public set_translate_func(func?: TranslateFunc | null, destroy_notify?: DestroyNotify | null): void;
+		public set_translate_func(func?: TranslateFunc | null): void;
 		/**
 		 * A convenience function to use gettext() for translating
 		 * user-visible strings.
@@ -7219,11 +7205,10 @@ declare namespace imports.gi.GLib {
 		 *   of the group
 		 * @param user_data user data that will be passed to the pre- and post-parse hooks,
 		 *   the error hook and to callbacks of %G_OPTION_ARG_CALLBACK options, or %NULL
-		 * @param destroy a function that will be called to free #user_data, or %NULL
 		 * @returns a newly created option group. It should be added
 		 *   to a #GOptionContext or freed with {@link G.option_group_unref}.
 		 */
-		public static new(name: string, description: string, help_description: string, user_data?: any | null, destroy?: DestroyNotify | null): OptionGroup;
+		public static new(name: string, description: string, help_description: string, user_data?: any | null): OptionGroup;
 		/**
 		 * Adds the options specified in #entries to #group.
 		 * @param entries a %NULL-terminated array of #GOptionEntrys
@@ -7271,9 +7256,8 @@ declare namespace imports.gi.GLib {
 		 * If you are using gettext(), you only need to set the translation
 		 * domain, see g_option_group_set_translation_domain().
 		 * @param func the #GTranslateFunc, or %NULL
-		 * @param destroy_notify a function which gets called to free #data, or %NULL
 		 */
-		public set_translate_func(func?: TranslateFunc | null, destroy_notify?: DestroyNotify | null): void;
+		public set_translate_func(func?: TranslateFunc | null): void;
 		/**
 		 * A convenience function to use gettext() for translating
 		 * user-visible strings.
@@ -7586,21 +7570,17 @@ declare namespace imports.gi.GLib {
 		 * {@link G.ptr_array_unref}, when g_ptr_array_free() is called with
 		 * #free_segment set to %TRUE or when removing elements.
 		 * @param reserved_size number of pointers preallocated
-		 * @param element_free_func A function to free elements with
-		 *     destroy #array or %NULL
 		 * @returns A new #GPtrArray
 		 */
-		public static new_full(reserved_size: number, element_free_func?: DestroyNotify | null): any[];
+		public static new_full(reserved_size: number): any[];
 		/**
 		 * Creates a new #GPtrArray with a reference count of 1 and use
 		 * #element_free_func for freeing each element when the array is destroyed
 		 * either via {@link G.ptr_array_unref}, when g_ptr_array_free() is called with
 		 * #free_segment set to %TRUE or when removing elements.
-		 * @param element_free_func A function to free elements with
-		 *     destroy #array or %NULL
 		 * @returns A new #GPtrArray
 		 */
-		public static new_with_free_func(element_free_func?: DestroyNotify | null): any[];
+		public static new_with_free_func(): any[];
 		/**
 		 * Atomically increments the reference count of #array by one.
 		 * This function is thread-safe and may be called from any thread.
@@ -7676,10 +7656,8 @@ declare namespace imports.gi.GLib {
 		 * either via {@link G.ptr_array_unref}, when g_ptr_array_free() is called
 		 * with #free_segment set to %TRUE or when removing elements.
 		 * @param array A #GPtrArray
-		 * @param element_free_func A function to free elements with
-		 *     destroy #array or %NULL
 		 */
-		public static set_free_func(array: any[], element_free_func?: DestroyNotify | null): void;
+		public static set_free_func(array: any[]): void;
 		/**
 		 * Sets the size of the array. When making the array larger,
 		 * newly-added elements will be set to %NULL. When making it smaller,
@@ -7919,9 +7897,8 @@ declare namespace imports.gi.GLib {
 		/**
 		 * Convenience method, which frees all the memory used by a #GQueue,
 		 * and calls the provided #free_func on each item in the #GQueue.
-		 * @param free_func the function to be called to free memory allocated
 		 */
-		public clear_full(free_func?: DestroyNotify | null): void;
+		public clear_full(): void;
 		/**
 		 * Copies a #queue. Note that is a shallow copy. If the elements in the
 		 * queue consist of pointers to data, the pointers are copied, but the
@@ -7978,9 +7955,8 @@ declare namespace imports.gi.GLib {
 		 * 
 		 * #free_func should not modify the queue (eg, by removing the freed
 		 * element from it).
-		 * @param free_func the function to be called to free each element's data
 		 */
-		public free_full(free_func: DestroyNotify): void;
+		public free_full(): void;
 		/**
 		 * Returns the number of items in #queue.
 		 * @returns the number of items in #queue
@@ -9299,9 +9275,8 @@ declare namespace imports.gi.GLib {
 		 * g_slist_free_full (g_steal_pointer (&list_of_owned_things), g_object_unref);
 		 * ]|
 		 * @param list the first link of a #GSList
-		 * @param free_func the function to be called to free each element's data
 		 */
-		public static free_full(list: any[], free_func: DestroyNotify): void;
+		public static free_full(list: any[]): void;
 		/**
 		 * Gets the position of the element containing
 		 * the given data (starting from 0).
@@ -9947,10 +9922,9 @@ declare namespace imports.gi.GLib {
 		 * Creates a new GSequence. The #data_destroy function, if non-%NULL will
 		 * be called on all items when the sequence is destroyed and on items that
 		 * are removed from the sequence.
-		 * @param data_destroy a #GDestroyNotify function, or %NULL
 		 * @returns a new #GSequence
 		 */
-		public static new(data_destroy?: DestroyNotify | null): Sequence;
+		public static new(): Sequence;
 		/**
 		 * Finds an iterator somewhere in the range (#begin, #end). This
 		 * iterator will be close to the middle of the range, but is not
@@ -10712,9 +10686,8 @@ declare namespace imports.gi.GLib {
 		 * Note that g_source_destroy() for a currently attached source has the effect
 		 * of also unsetting the callback.
 		 * @param func a callback function
-		 * @param notify a function to call when #data is no longer in use, or %NULL.
 		 */
-		public set_callback(func: SourceFunc, notify?: DestroyNotify | null): void;
+		public set_callback(func: SourceFunc): void;
 		/**
 		 * Sets the callback function storing the data as a refcounted callback
 		 * "object". This is used internally. Note that calling
@@ -11707,14 +11680,12 @@ declare namespace imports.gi.GLib {
 		 * to g_thread_pool_push() in the case that the #GThreadPool is stopped
 		 * and freed before all tasks have been executed.
 		 * @param func a function to execute in the threads of the new thread pool
-		 * @param item_free_func used to pass as a free function to
-		 *     {@link G.async_queue_new_full}
 		 * @param max_threads the maximal number of threads to execute concurrently
 		 *     in the new thread pool, `-1` means no limit
 		 * @param exclusive should this thread pool be exclusive?
 		 * @returns the new #GThreadPool
 		 */
-		public static new_full(func: Func, item_free_func: DestroyNotify | null, max_threads: number, exclusive: boolean): ThreadPool;
+		public static new_full(func: Func, max_threads: number, exclusive: boolean): ThreadPool;
 		/**
 		 * This function will set the maximum #interval that a thread
 		 * waiting in the pool for new tasks can be idle for before
@@ -12338,15 +12309,9 @@ declare namespace imports.gi.GLib {
 		 * to free the memory allocated for the key and value that get called when
 		 * removing the entry from the #GTree.
 		 * @param key_compare_func qsort()-style comparison function
-		 * @param key_destroy_func a function to free the memory allocated for the key
-		 *   used when removing the entry from the #GTree or %NULL if you don't
-		 *   want to supply such a function
-		 * @param value_destroy_func a function to free the memory allocated for the
-		 *   value used when removing the entry from the #GTree or %NULL if you
-		 *   don't want to supply such a function
 		 * @returns a newly allocated #GTree
 		 */
-		public static new_full(key_compare_func: CompareDataFunc, key_destroy_func: DestroyNotify, value_destroy_func: DestroyNotify): Tree;
+		public static new_full(key_compare_func: CompareDataFunc): Tree;
 		/**
 		 * Creates a new #GTree with a comparison function that accepts user data.
 		 * See {@link G.tree_new} for more details.
@@ -13812,11 +13777,10 @@ declare namespace imports.gi.GLib {
 		 * @param type a definite #GVariantType
 		 * @param data the serialized data
 		 * @param trusted %TRUE if #data is definitely in normal form
-		 * @param notify function to call when #data is no longer needed
 		 * @param user_data data for #notify
 		 * @returns a new floating #GVariant of type #type
 		 */
-		public static new_from_data(type: VariantType, data: number[], trusted: boolean, notify: DestroyNotify, user_data?: any | null): Variant;
+		public static new_from_data(type: VariantType, data: number[], trusted: boolean, user_data?: any | null): Variant;
 		/**
 		 * Creates a new handle #GVariant instance.
 		 * 
@@ -21855,9 +21819,8 @@ declare namespace imports.gi.GLib {
 	 * to clear the contents of #mem_block, and then will free the
 	 * resources allocated for #mem_block.
 	 * @param mem_block a pointer to reference counted data
-	 * @param clear_func a function to call when clearing the data
 	 */
-	function atomic_rc_box_release_full(mem_block: any, clear_func: DestroyNotify): void;
+	function atomic_rc_box_release_full(mem_block: any): void;
 	/**
 	 * Atomically compares the current value of #arc with #val.
 	 * @param arc the address of an atomic reference count variable
@@ -22301,10 +22264,9 @@ declare namespace imports.gi.GLib {
 	 * @param pid process to watch. On POSIX the positive pid of a child process. On
 	 * Windows a handle for a process (which doesn't have to be a child).
 	 * @param _function function to call
-	 * @param notify function to call when the idle is removed, or %NULL
 	 * @returns the ID (greater than 0) of the event source.
 	 */
-	function child_watch_add(priority: number, pid: Pid, _function: ChildWatchFunc, notify: DestroyNotify | null): number;
+	function child_watch_add(priority: number, pid: Pid, _function: ChildWatchFunc): number;
 	/**
 	 * Creates a new child_watch source.
 	 * 
@@ -22368,9 +22330,8 @@ declare namespace imports.gi.GLib {
 	 * 
 	 * #list_ptr must be a valid pointer. If #list_ptr points to a null #GList, this does nothing.
 	 * @param list_ptr a #GList return location
-	 * @param destroy the function to pass to {@link G.list_free_full} or %NULL to not free elements
 	 */
-	function clear_list(list_ptr: any[], destroy: DestroyNotify | null): void;
+	function clear_list(list_ptr: any[]): void;
 	/**
 	 * Clears a reference to a variable.
 	 * 
@@ -22388,17 +22349,15 @@ declare namespace imports.gi.GLib {
 	 * will experience undefined behaviour.
 	 * @param pp a pointer to a variable, struct member etc. holding a
 	 *    pointer
-	 * @param destroy a function to which a gpointer can be passed, to destroy *#pp
 	 */
-	function clear_pointer(pp: any, destroy: DestroyNotify): void;
+	function clear_pointer(pp: any): void;
 	/**
 	 * Clears a pointer to a #GSList, freeing it and, optionally, freeing its elements using #destroy.
 	 * 
 	 * #slist_ptr must be a valid pointer. If #slist_ptr points to a null #GSList, this does nothing.
 	 * @param slist_ptr a #GSList return location
-	 * @param destroy the function to pass to {@link G.slist_free_full} or %NULL to not free elements
 	 */
-	function clear_slist(slist_ptr: any[], destroy: DestroyNotify | null): void;
+	function clear_slist(slist_ptr: any[]): void;
 	/**
 	 * This wraps the close() call; in case of error, %errno will be
 	 * preserved, but the error will also be stored as a #GError in #error.
@@ -22706,13 +22665,10 @@ declare namespace imports.gi.GLib {
 	 * @param key_id the #GQuark identifying a data element
 	 * @param oldval the old value to compare against
 	 * @param newval the new value to replace it with
-	 * @param destroy destroy notify for the new value
 	 * @returns %TRUE if the existing value for #key_id was replaced
 	 *  by #newval, %FALSE otherwise.
-	 * 
-	 * destroy notify for the existing value
 	 */
-	function datalist_id_replace_data(datalist: Data, key_id: Quark, oldval: any | null, newval: any | null, destroy: DestroyNotify | null): [ boolean, DestroyNotify | null ];
+	function datalist_id_replace_data(datalist: Data, key_id: Quark, oldval: any | null, newval: any | null): boolean;
 	/**
 	 * Sets the data corresponding to the given #GQuark id, and the
 	 * function to be called when the element is removed from the datalist.
@@ -22722,13 +22678,8 @@ declare namespace imports.gi.GLib {
 	 * @param key_id the #GQuark to identify the data element.
 	 * @param data the data element or %NULL to remove any previous element
 	 *        corresponding to #key_id.
-	 * @param destroy_func the function to call when the data element is
-	 *                removed. This function will be called with the data
-	 *                element and can be used to free any memory allocated
-	 *                for it. If #data is %NULL, then #destroy_func must
-	 *                also be %NULL.
 	 */
-	function datalist_id_set_data_full(datalist: Data, key_id: Quark, data: any | null, destroy_func: DestroyNotify | null): void;
+	function datalist_id_set_data_full(datalist: Data, key_id: Quark, data: any | null): void;
 	/**
 	 * Resets the datalist to %NULL. It does not free any memory or call
 	 * any destroy functions.
@@ -22804,12 +22755,8 @@ declare namespace imports.gi.GLib {
 	 * @param dataset_location the location identifying the dataset.
 	 * @param key_id the #GQuark id to identify the data element.
 	 * @param data the data element.
-	 * @param destroy_func the function to call when the data element is
-	 *                removed. This function will be called with the data
-	 *                element and can be used to free any memory allocated
-	 *                for it.
 	 */
-	function dataset_id_set_data_full(dataset_location: any, key_id: Quark, data: any | null, destroy_func: DestroyNotify): void;
+	function dataset_id_set_data_full(dataset_location: any, key_id: Quark, data: any | null): void;
 	/**
 	 * Returns the number of days in a month, taking leap
 	 * years into account.
@@ -24380,10 +24327,9 @@ declare namespace imports.gi.GLib {
 	 * @param priority the priority of the idle source. Typically this will be in the
 	 *   range between %G_PRIORITY_DEFAULT_IDLE and %G_PRIORITY_HIGH_IDLE.
 	 * @param _function function to call
-	 * @param notify function to call when the idle is removed, or %NULL
 	 * @returns the ID (greater than 0) of the event source.
 	 */
-	function idle_add(priority: number, _function: SourceFunc, notify: DestroyNotify | null): number;
+	function idle_add(priority: number, _function: SourceFunc): number;
 	/**
 	 * Removes the idle function with the given data.
 	 * @param data the data for the idle source's callback.
@@ -24485,10 +24431,9 @@ declare namespace imports.gi.GLib {
 	 * @param priority the priority of the #GIOChannel source
 	 * @param condition the condition to watch for
 	 * @param func the function to call when the condition is satisfied
-	 * @param notify the function to call when the source is removed
 	 * @returns the event source id
 	 */
-	function io_add_watch(channel: IOChannel, priority: number, condition: IOCondition, func: IOFunc, notify: DestroyNotify): number;
+	function io_add_watch(channel: IOChannel, priority: number, condition: IOCondition, func: IOFunc): number;
 	/**
 	 * Converts an `errno` error number to a #GIOChannelError.
 	 * @param en an `errno` error number, e.g. `EINVAL`
@@ -24721,10 +24666,9 @@ declare namespace imports.gi.GLib {
 	 *   the log levels with the %G_LOG_FLAG_FATAL and
 	 *   %G_LOG_FLAG_RECURSION bit flags.
 	 * @param log_func the log handler function
-	 * @param destroy destroy notify for #user_data, or %NULL
 	 * @returns the id of the new handler
 	 */
-	function log_set_handler(log_domain: string | null, log_levels: LogLevelFlags, log_func: LogFunc, destroy: DestroyNotify): number;
+	function log_set_handler(log_domain: string | null, log_levels: LogLevelFlags, log_func: LogFunc): number;
 	/**
 	 * Set a writer function which will be called to format and write out each log
 	 * message. Each program should set a writer function, or the default writer
@@ -24735,10 +24679,8 @@ declare namespace imports.gi.GLib {
 	 * log messages are formatted and outputted.
 	 * 
 	 * There can only be one writer function. It is an error to set more than one.
-	 * @param user_data_free function to free #user_data once it’s
-	 *    finished with, if non-%NULL
 	 */
-	function log_set_writer_func(user_data_free: DestroyNotify): void;
+	function log_set_writer_func(): void;
 	/**
 	 * Log a message with structured data.
 	 * 
@@ -26064,9 +26006,8 @@ declare namespace imports.gi.GLib {
 	 * to clear the contents of #mem_block, and then will free the
 	 * resources allocated for #mem_block.
 	 * @param mem_block a pointer to reference counted data
-	 * @param clear_func a function to call when clearing the data
 	 */
-	function rc_box_release_full(mem_block: any, clear_func: DestroyNotify): void;
+	function rc_box_release_full(mem_block: any): void;
 	/**
 	 * Reallocates the memory pointed to by #mem, so that it now has space for
 	 * #n_bytes bytes of memory. It returns the new address of the memory, which may
@@ -27850,9 +27791,8 @@ declare namespace imports.gi.GLib {
 	 * @param testpath /-separated test case path name for the test.
 	 * @param test_data Test data argument for the test function.
 	 * @param test_func The test function to invoke for this test.
-	 * @param data_free_func #GDestroyNotify for #test_data.
 	 */
-	function test_add_data_func_full(testpath: string, test_data: any | null, test_func: TestDataFunc, data_free_func: DestroyNotify): void;
+	function test_add_data_func_full(testpath: string, test_data: any | null, test_func: TestDataFunc): void;
 	/**
 	 * Create a new test case, similar to {@link G.test_create_case}. However
 	 * the test is assumed to use no fixture, and test suites are automatically
@@ -28220,10 +28160,9 @@ declare namespace imports.gi.GLib {
 	 * Resources are released in reverse queue order, that means enqueueing
 	 * callback A before callback B will cause B() to be called before
 	 * A() during teardown.
-	 * @param destroy_func Destroy callback for teardown phase.
 	 * @param destroy_data Destroy callback data.
 	 */
-	function test_queue_destroy(destroy_func: DestroyNotify, destroy_data: any | null): void;
+	function test_queue_destroy(destroy_data: any | null): void;
 	/**
 	 * Enqueue a pointer to be released with {@link G.free} during the next
 	 * teardown phase. This is equivalent to calling g_test_queue_destroy()
@@ -28649,10 +28588,9 @@ declare namespace imports.gi.GLib {
 	 * @param interval the time between calls to the function, in milliseconds
 	 *   (1/1000ths of a second)
 	 * @param _function function to call
-	 * @param notify function to call when the timeout is removed, or %NULL
 	 * @returns the ID (greater than 0) of the event source.
 	 */
-	function timeout_add(priority: number, interval: number, _function: SourceFunc, notify: DestroyNotify | null): number;
+	function timeout_add(priority: number, interval: number, _function: SourceFunc): number;
 	/**
 	 * Sets a function to be called at regular intervals, with #priority.
 	 * 
@@ -28697,10 +28635,9 @@ declare namespace imports.gi.GLib {
 	 *   the range between %G_PRIORITY_DEFAULT and %G_PRIORITY_HIGH.
 	 * @param interval the time between calls to the function, in seconds
 	 * @param _function function to call
-	 * @param notify function to call when the timeout is removed, or %NULL
 	 * @returns the ID (greater than 0) of the event source.
 	 */
-	function timeout_add_seconds(priority: number, interval: number, _function: SourceFunc, notify: DestroyNotify | null): number;
+	function timeout_add_seconds(priority: number, interval: number, _function: SourceFunc): number;
 	/**
 	 * Creates a new timeout source.
 	 * 
@@ -29278,10 +29215,9 @@ declare namespace imports.gi.GLib {
 	 * @param fd a file descriptor
 	 * @param condition IO conditions to watch for on #fd
 	 * @param _function a #GUnixFDSourceFunc
-	 * @param notify function to call when the idle is removed, or %NULL
 	 * @returns the ID (greater than 0) of the event source
 	 */
-	function unix_fd_add_full(priority: number, fd: number, condition: IOCondition, _function: UnixFDSourceFunc, notify: DestroyNotify): number;
+	function unix_fd_add_full(priority: number, fd: number, condition: IOCondition, _function: UnixFDSourceFunc): number;
 	/**
 	 * Creates a #GSource to watch for a particular IO condition on a file
 	 * descriptor.
@@ -29340,10 +29276,9 @@ declare namespace imports.gi.GLib {
 	 *            the range between #G_PRIORITY_DEFAULT and #G_PRIORITY_HIGH.
 	 * @param signum Signal number
 	 * @param handler Callback
-	 * @param notify #GDestroyNotify for #handler
 	 * @returns An ID (greater than 0) for the event source
 	 */
-	function unix_signal_add(priority: number, signum: number, handler: SourceFunc, notify: DestroyNotify): number;
+	function unix_signal_add(priority: number, signum: number, handler: SourceFunc): number;
 	/**
 	 * Create a #GSource that will be dispatched upon delivery of the UNIX
 	 * signal #signum.  In GLib versions before 2.36, only `SIGHUP`, `SIGINT`,
