@@ -6,6 +6,7 @@ import shlex
 import os
 import re
 import threading
+import shutil
 from json import loads
 
 from gi.repository import GdkPixbuf
@@ -195,7 +196,7 @@ class Module:
                 widget.pack_end(labelValue, False, False, 0)
                 settings.add_row(widget)
 
-            if os.path.exists("/usr/bin/upload-system-info"):
+            if shutil.which("upload-system-info"):
                 widget = SettingsWidget()
 
                 spinner = Gtk.Spinner(visible=True)
@@ -207,7 +208,7 @@ class Module:
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
 
-            if os.path.exists("/usr/bin/inxi"):
+            if shutil.which("inxi"):
                 
                 widget = SettingsWidget()
 
