@@ -416,10 +416,10 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
-        this.set_applet_tooltip(_("Inhibit applet"));
-
+        
         this.inhibitSwitch = new InhibitSwitch(this);
         this.menu.addMenuItem(this.inhibitSwitch);
+        this.set_applet_tooltip(_("Inhibit applet"));
 
         this.notificationsSwitch = new NotificationsSwitch(this);        
         this.menu.addMenuItem(this.notificationsSwitch);
