@@ -27,11 +27,11 @@ class InhibitAppletIcon {
 
     getAppletIcon() {
         let appletIcon = this.icon_name;
-        if (this.inhibitStatus) {
+        if (!this.inhibitStatus) {
             appletIcon += '-active';
         }
-        if (this.notificationStatus) {
-            appletIcon += '-notif-enabled';
+        if (!this.notificationStatus) {
+            appletIcon += '-notif-disabled';
         }
         return appletIcon;
     }
@@ -115,10 +115,10 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
 
         if (current_state & INHIBIT_IDLE_FLAG ||
             current_state & INHIBIT_SLEEP_FLAG) {
-            this._applet.icon.toggleInhibitStatus(true);
+            this._applet.icon.toggleInhibitStatus(false);
             this._applet.set_applet_tooltip(_("Power management: inhibited"));
         } else {
-            this._applet.icon.toggleInhibitStatus(false);
+            this._applet.icon.toggleInhibitStatus(true);
             this._applet.set_applet_tooltip(_("Power management: active"));
         }
 
@@ -171,6 +171,7 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
     toggle() {
         this._switch.toggle();
         this.toggled(this._switch.state);
+        this._applet.icon.toggleInhibitStatus(this._switch.state);
     }
 }
 
