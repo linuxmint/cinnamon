@@ -102,7 +102,7 @@ class ButtonKeybinding(Gtk.TreeView):
             self.entry_store.clear()
 
         self.entry_store = Gtk.ListStore(str) # Accel string
-        self.entry_store.append((self.accel_string,))
+        self.entry_store.append((self.accel_string, None))
 
         self.set_model(self.entry_store)
 
@@ -284,18 +284,18 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         # print("accel_mods: %d, keyval: %d, Storing %s as %s" % (accel_mods, keyval, accel_label, accel_string))
 
         if (accel_mods == 0 or accel_mods == Gdk.ModifierType.SHIFT_MASK) and event.hardware_keycode != 0:
-            if ((keyval >= Gdk.KEY_a                    and keyval <= Gdk.KEY_z)
-                or  (keyval >= Gdk.KEY_A                    and keyval <= Gdk.KEY_Z)
-                or  (keyval >= Gdk.KEY_0                    and keyval <= Gdk.KEY_9)
-                or  (keyval >= Gdk.KEY_kana_fullstop        and keyval <= Gdk.KEY_semivoicedsound)
-                or  (keyval >= Gdk.KEY_Arabic_comma         and keyval <= Gdk.KEY_Arabic_sukun)
-                or  (keyval >= Gdk.KEY_Serbian_dje          and keyval <= Gdk.KEY_Cyrillic_HARDSIGN)
-                or  (keyval >= Gdk.KEY_Greek_ALPHAaccent    and keyval <= Gdk.KEY_Greek_omega)
-                or  (keyval >= Gdk.KEY_hebrew_doublelowline and keyval <= Gdk.KEY_hebrew_taf)
-                or  (keyval >= Gdk.KEY_Thai_kokai           and keyval <= Gdk.KEY_Thai_lekkao)
-                or  (keyval >= Gdk.KEY_Hangul               and keyval <= Gdk.KEY_Hangul_Special)
-                or  (keyval >= Gdk.KEY_Hangul_Kiyeog        and keyval <= Gdk.KEY_Hangul_J_YeorinHieuh)
-                    or  keyval in FORBIDDEN_KEYVALS):
+            if ((Gdk.KEY_a <= keyval <= Gdk.KEY_z)
+                or (Gdk.KEY_A <= keyval <= Gdk.KEY_Z)
+                or (Gdk.KEY_0 <= keyval <= Gdk.KEY_9)
+                or (Gdk.KEY_kana_fullstop <= keyval <= Gdk.KEY_semivoicedsound)
+                or (Gdk.KEY_Arabic_comma <= keyval <= Gdk.KEY_Arabic_sukun)
+                or (Gdk.KEY_Serbian_dje <= keyval <= Gdk.KEY_Cyrillic_HARDSIGN)
+                or (Gdk.KEY_Greek_ALPHAaccent <= keyval <= Gdk.KEY_Greek_omega)
+                or (Gdk.KEY_hebrew_doublelowline <= keyval <= Gdk.KEY_hebrew_taf)
+                or (Gdk.KEY_Thai_kokai <= keyval <= Gdk.KEY_Thai_lekkao)
+                or (Gdk.KEY_Hangul <= keyval <= Gdk.KEY_Hangul_Special)
+                or (Gdk.KEY_Hangul_Kiyeog <= keyval <= Gdk.KEY_Hangul_J_YeorinHieuh)
+                    or keyval in FORBIDDEN_KEYVALS):
                 dialog = Gtk.MessageDialog(None,
                                            Gtk.DialogFlags.DESTROY_WITH_PARENT,
                                            Gtk.MessageType.WARNING,

@@ -57,7 +57,7 @@ def find_extension_subdir(directory):
 
         subdir_a = [int(part) for part in subdir.split(".")]
 
-        if subdir_a <= curr_a and largest < subdir_a:
+        if curr_a >= subdir_a > largest:
             largest = subdir_a
 
     if largest == [0]:
