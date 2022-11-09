@@ -102,7 +102,7 @@ class ButtonKeybinding(Gtk.TreeView):
             self.entry_store.clear()
 
         self.entry_store = Gtk.ListStore(str) # Accel string
-        self.entry_store.append((self.accel_string, None))
+        self.entry_store.append((self.accel_string,))
 
         self.set_model(self.entry_store)
 
