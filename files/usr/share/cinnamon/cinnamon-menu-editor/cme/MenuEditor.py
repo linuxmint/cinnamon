@@ -496,8 +496,7 @@ class MenuEditor(object):
         return element.appendChild(node)
 
     def createLayout(self, items):
-        layout = []
-        layout.append(('Merge', 'menus'))
+        layout = [('Merge', 'menus')]
         for item in items:
             if isinstance(item, CMenu.TreeDirectory):
                 layout.append(('Menuname', item.get_menu_id()))
