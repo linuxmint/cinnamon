@@ -24,7 +24,7 @@ from ChooserButtonWidgets import PictureChooserButton
 from xapp.GSettingsWidgets import *
 
 class PasswordError(Exception):
-    '''Exception raised when an incorrect password is supplied.'''
+    """Exception raised when an incorrect password is supplied."""
     pass
 
 

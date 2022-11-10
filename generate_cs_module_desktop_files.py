@@ -40,7 +40,7 @@ for module in modules:
     try:
         mod = module.Module(None)
 
-        if mod.category in ("admin"):
+        if mod.category in "admin":
             category = "Settings;System;"
         else:
             category = "Settings;"

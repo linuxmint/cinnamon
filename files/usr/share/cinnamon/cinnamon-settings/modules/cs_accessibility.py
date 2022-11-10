@@ -27,7 +27,7 @@ class Module:
     category = "prefs"
 
     def __init__(self, content_box):
-        keywords = _("magnifier, talk, access, zoom, keys, contrast");
+        keywords = _("magnifier, talk, access, zoom, keys, contrast")
         sidePage = SidePage(_("Accessibility"), "cs-universal-access", keywords, content_box, module=self)
         self.sidePage = sidePage
 
@@ -36,8 +36,8 @@ class Module:
             print("Loading Accessibility module")
 
             self.iface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
-            self.wm_settings = Gio.Settings(schema_id="org.cinnamon.desktop.wm.preferences");
-            self.mag_settings = Gio.Settings(schema_id="org.cinnamon.desktop.a11y.magnifier");
+            self.wm_settings = Gio.Settings(schema_id="org.cinnamon.desktop.wm.preferences")
+            self.mag_settings = Gio.Settings(schema_id="org.cinnamon.desktop.a11y.magnifier")
 
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)
@@ -136,7 +136,7 @@ class Module:
                                                 self.zoom_stack_get,
                                                 None)
 
-            if (self.mag_settings.get_boolean("lens-mode")):
+            if self.mag_settings.get_boolean("lens-mode"):
                 self.zoom_stack.set_visible_child_name("shape")
             else:
                 self.zoom_stack.set_visible_child_name("screen")
@@ -178,7 +178,7 @@ class Module:
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-keyboard-enabled")
 
             activation_mode_options = [["accessible", _("Show the keyboard any time something expects input")],
-                                       ["on-demand",  _("Show keyboard only when the user activates it")]];
+                                       ["on-demand",  _("Show keyboard only when the user activates it")]]
 
             widget = GSettingsComboBox(_("Activation mode"), "org.cinnamon.keyboard", "activation-mode", activation_mode_options)
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-keyboard-enabled")

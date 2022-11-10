@@ -257,7 +257,7 @@ class HotCornerConfiguration(Gtk.Box):
     def on_widget_changed(self, *args):
         def apply(self):
             iter = self.functionCombo.get_active_iter()
-            if iter != None:
+            if iter is not None:
                 function = self.functionStore.get_value(iter, 0)
                 enabled = self.enableSwitch.get_active()
                 delay = str(int(self.hoverDelaySpinner.get_value()))

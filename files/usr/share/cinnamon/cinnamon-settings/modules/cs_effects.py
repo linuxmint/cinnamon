@@ -29,7 +29,7 @@ class Module:
             switch.fill_row()
             page.add(switch)
 
-            settings = page.add_reveal_section("", "org.cinnamon", "desktop-effects-workspace");
+            settings = page.add_reveal_section("", "org.cinnamon", "desktop-effects-workspace")
 
             widget = GSettingsSwitch(_("Effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs")
             settings.add_reveal_row(widget, "org.cinnamon", "desktop-effects-workspace")

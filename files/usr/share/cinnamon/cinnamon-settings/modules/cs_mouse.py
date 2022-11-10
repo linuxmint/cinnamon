@@ -154,7 +154,7 @@ class ScrollMethodCombo(ComboBox):
 
         super(ScrollMethodCombo, self).__init__(_("Scrolling method"), options=self.scrolling_list, valtype=int)
 
-        self.touchpad_settings = Gio.Settings(schema_id="org.cinnamon.desktop.peripherals.touchpad");
+        self.touchpad_settings = Gio.Settings(schema_id="org.cinnamon.desktop.peripherals.touchpad")
         self.touchpad_settings.connect("changed::two-finger-scrolling-enabled", self.on_setting_changed)
         self.touchpad_settings.connect("changed::edge-scrolling-enabled", self.on_setting_changed)
         self.on_setting_changed(None, None)
@@ -163,7 +163,7 @@ class ScrollMethodCombo(ComboBox):
 
     def on_my_value_changed(self, combo):
         tree_iter = combo.get_active_iter()
-        if tree_iter != None:
+        if tree_iter is not None:
             self.value = self.model[tree_iter][0]
             self.set_value(self.value)
 

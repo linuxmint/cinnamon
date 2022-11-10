@@ -111,7 +111,7 @@ class Module:
                 AUTOSTART_APPS[key] = AutostartApp(sys_app,
                                                    system_position=os.path.dirname(sys_app))
 
-class AutostartApp():
+class AutostartApp:
     def __init__(self, app, user_position=None, system_position=None):
         self.app = app
         self.user_position = user_position
@@ -220,7 +220,7 @@ class AutostartApp():
         try:
             key_file = GLib.KeyFile.new()
 
-            if self.user_position == None:
+            if self.user_position is None:
                 self.user_position = os.path.join(GLib.get_user_config_dir(), "autostart")
                 self.path = os.path.join(self.user_position, self.basename)
                 key_file.load_from_file(os.path.join(self.system_position, self.basename), KEYFILE_FLAGS)
@@ -360,7 +360,7 @@ class AutostartApp():
 
         return current_locale
 
-class SaveMask():
+class SaveMask:
     def __init__(self):
         self.contents = []
         self.all = ["enabled", "no-display", "hidden", "name", "comment", "command", "delay"]
@@ -471,7 +471,7 @@ class AutostartBox(Gtk.Box):
         self.on_edit_button_clicked(list_box)
 
     def on_run_button_clicked(self, button):
-        if self.infobar_holder.get_child() != None:
+        if self.infobar_holder.get_child() is not None:
             self.infobar_holder.get_child().destroy()
 
         row = self.list_box.get_selected_row()
@@ -657,7 +657,7 @@ class AutostartBox(Gtk.Box):
         y = window_y + wrect.y + wrect.height
 
         push_in = True
-        return (x, y, push_in)
+        return x, y, push_in
 
 class AutostartRow(Gtk.ListBoxRow):
     def __init__(self, app):

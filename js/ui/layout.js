@@ -6,6 +6,7 @@
  */
 const Clutter = imports.gi.Clutter;
 const Cinnamon = imports.gi.Cinnamon;
+const GObject = imports.gi.GObject;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
@@ -50,6 +51,19 @@ Monitor.prototype = {
         return global.screen.get_monitor_in_fullscreen(this.index);
     }
 };
+
+const UiActor = GObject.registerClass(
+class UiActor extends St.Widget {
+    vfunc_get_preferred_width(_forHeight) {
+        let width = global.stage.width;
+        return [width, width];
+    }
+
+    vfunc_get_preferred_height(_forWidth) {
+        let height = global.stage.height;
+        return [height, height];
+    }
+});
 
 /**
  * #LayoutManager
@@ -594,7 +608,6 @@ Chrome.prototype = {
                 visible = false;
             else
                 visible = true;
-            Main.uiGroup.set_skip_paint(actorData.actor, !visible);
         }
         this._queueUpdateRegions();
     },
@@ -733,8 +746,7 @@ Chrome.prototype = {
 
             if (wantsInputRegion
                 && actorData.affectsInputRegion
-                && actorData.actor.get_paint_visibility()
-                && !Main.uiGroup.get_skip_paint(actorData.actor)) {
+                && actorData.actor.get_paint_visibility()) {
 
                 let rect = new Meta.Rectangle({ x: x, y: y, width: w, height: h});
 

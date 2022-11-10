@@ -57,6 +57,7 @@ Depends:
  gir1.2-cvc-1.0,
  gir1.2-ecal-2.0,
  gir1.2-edataserver-1.2,
+ gir1.2-gdkpixbuf-2.0,
  gir1.2-gkbd-3.0,
  gir1.2-goa-1.0,
  gir1.2-gsound-1.0,

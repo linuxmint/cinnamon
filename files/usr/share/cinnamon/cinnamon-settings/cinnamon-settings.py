@@ -566,7 +566,7 @@ class MainWindow(Gio.Application):
         min_width_pixels = 0
         icon_view = Gtk.IconView()
         iter = model.get_iter_first()
-        while iter != None:
+        while iter is not None:
             string = model.get_value(iter, 0)
             split_by_word = string.split(" ")
             for word in split_by_word:
@@ -652,7 +652,7 @@ class MainWindow(Gio.Application):
             if (final_y > 0) and ((final_y + rect.height) < page):
                 return
 
-            if ((final_y + rect.height) > page):
+            if (final_y + rect.height) > page:
                 adj.set_value(current_pos + final_y + rect.height - page + 10)
             elif final_y < 0:
                 # We can just add a negative here (since final_y < 0), but it's less

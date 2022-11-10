@@ -22,13 +22,3 @@ executable(
     install: true,
     install_dir: libexecdir,
 )
-
-sniffer_conf = configuration_data()
-sniffer_conf.set('pkglibexecdir', join_paths(prefix, libexecdir))
-
-configure_file(
-    input: 'org.Cinnamon.HotplugSniffer.service.in',
-    output: 'org.Cinnamon.HotplugSniffer.service',
-    configuration: sniffer_conf,
-    install_dir: servicedir,
-)

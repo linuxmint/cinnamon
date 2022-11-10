@@ -369,7 +369,7 @@ def fill_background_color(image, color):
     else:
         mode = 'RGB'
     back = Image.new(mode, image.size, color)
-    if (image.mode == 'P' and mode == 'RGBA'):
+    if image.mode == 'P' and mode == 'RGBA':
         image = image.convert('RGBA')
     if has_alpha(image):
         paste(back, image, mask=image)
@@ -755,7 +755,7 @@ def put_palette(image_to, image_from, palette=None):
     :param palette: image palette
     :type palette: sequence of (r, g, b) tuples or None
     """
-    if palette == None:
+    if palette is None:
         palette = get_palette(image_from)
     image_to.putpalette(flatten(palette))
     if 'transparency' in image_from.info:
@@ -853,7 +853,7 @@ def paste(destination, source, box=(0, 0), mask=None, force=False):
             source_without_alpha = remove_alpha(source)
             # paste on top of the opaque destination pixels
             destination.paste(source_without_alpha, box, source)
-            if invert_alpha != None:
+            if invert_alpha is not None:
                 # the alpha channel is ok now, so save it
                 destination_alpha = get_alpha(destination)
                 # paste on top of the transparant destination pixels
@@ -1180,11 +1180,11 @@ def checkboard(size, delta=8, fg=(128, 128, 128), bg=(204, 204, 204)):
         n = int(dim / delta) + 1  # FIXME: now acts like square->nx, ny
 
         def sq_start(i):
-            "Return the x/y start coord of the square at column/row i."
+            """Return the x/y start coord of the square at column/row i."""
             return i * delta
 
         def square(i, j):
-            "Return the square corners"
+            """Return the square corners"""
             return map(sq_start, [i, j, i + 1, j + 1])
 
         image = Image.new("RGB", size, bg)

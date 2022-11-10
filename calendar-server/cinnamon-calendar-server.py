@@ -53,10 +53,10 @@ class CalendarInfo(GObject.Object):
 
         self.disconnect(self.owner_color_signal_id)
 
-        if self.view_cancellable != None:
+        if self.view_cancellable is not None:
             self.view_cancellable.cancel()
 
-        if self.view != None:
+        if self.view is not None:
             self.view.stop()
         self.view = None
 
@@ -64,7 +64,7 @@ class CalendarInfo(GObject.Object):
         self.color = self.extension.get_color()
         self.emit("color-changed")
 
-class Event():
+class Event:
     def __init__(self, uid, color, summary, all_day, start_timet, end_timet, mod_timet):
         self.__dict__.update(locals())
 
@@ -111,7 +111,7 @@ class CalendarServer(Gio.Application):
     def update_timezone(self):
         location = ECal.system_timezone_get_location()
 
-        if location == None:
+        if location is None:
             self.zone = ICalGLib.Timezone.get_utc_timezone().copy()
         else:
             self.zone = ICalGLib.Timezone.get_builtin_timezone(location).copy()
@@ -243,11 +243,11 @@ class CalendarServer(Gio.Application):
     def create_view_for_calendar(self, calendar):
         self.hold()
 
-        if calendar.view_cancellable != None:
+        if calendar.view_cancellable is not None:
             calendar.view_cancellable.cancel()
         calendar.view_cancellable = Gio.Cancellable()
 
-        if calendar.view != None:
+        if calendar.view is not None:
             calendar.view.stop()
         calendar.view = None
 
@@ -293,7 +293,7 @@ class CalendarServer(Gio.Application):
         self.handle_removed_objects(view, component_ids, calendar)
 
     def handle_new_or_modified_objects(self, view, objects, calendar):
-        if (calendar.view_cancellable.is_cancelled()):
+        if calendar.view_cancellable.is_cancelled():
             return
 
         self.hold()
@@ -302,7 +302,7 @@ class CalendarServer(Gio.Application):
 
         for ical_comp in objects:
 
-            if ical_comp.get_uid() == None:
+            if ical_comp.get_uid() is None:
                 continue
 
             if (not ECal.util_component_is_instance (ical_comp)) and \
@@ -318,7 +318,7 @@ class CalendarServer(Gio.Application):
             else:
                 comp = ECal.Component.new_from_icalcomponent(ical_comp)
                 comptext = comp.get_summary()
-                if comptext != None:
+                if comptext is not None:
                     summary = comptext.get_value()
                 else:
                     summary = ""
@@ -330,7 +330,7 @@ class CalendarServer(Gio.Application):
 
                 dte_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.DTEND_PROPERTY)
 
-                if dte_prop != None:
+                if dte_prop is not None:
                     ical_time_end = dte_prop.get_dtend()
                     end_timet = self.ical_time_get_timet(calendar.client, ical_time_end, dte_prop)
                 else:
@@ -362,7 +362,7 @@ class CalendarServer(Gio.Application):
         all_objects = GLib.VariantBuilder(GLib.VariantType.new("a(sssbxx)"))
 
         comptext = comp.get_summary()
-        if comptext != None:
+        if comptext is not None:
             summary = comptext.get_value()
         else:
             summary = ""
@@ -370,11 +370,11 @@ class CalendarServer(Gio.Application):
         default_zone = calendar.client.get_default_timezone()
 
         dts_timezone = instance_start.get_timezone()
-        if dts_timezone == None:
+        if dts_timezone is None:
             dts_timezone = default_zone
 
         dte_timezone = instance_end.get_timezone()
-        if dte_timezone == None:
+        if dte_timezone is None:
             dte_timezone = default_zone
 
         all_day = instance_start.is_date()
@@ -429,12 +429,12 @@ class CalendarServer(Gio.Application):
         mod_timet = 0
 
         mod_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.LASTMODIFIED_PROPERTY)
-        if mod_prop != None:
+        if mod_prop is not None:
             ical_time_modified = mod_prop.get_lastmodified()
             mod_timet = ical_time_modified.as_timet()
         else:
             created_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.CREATED_PROPERTY)
-            if created_prop != None:
+            if created_prop is not None:
                 ical_time_created = created_prop.get_created()
                 mod_timet = ical_time_created.as_timet()
 
@@ -460,7 +460,7 @@ class CalendarServer(Gio.Application):
         return self.get_id_from_comp_id(comp_id, source_id)
 
     def get_id_from_comp_id(self, comp_id, source_id):
-        if comp_id.get_rid() != None:
+        if comp_id.get_rid() is not None:
             return "%s:%s:%s" % (source_id, comp_id.get_uid(), comp_id.get_rid())
         else:
             return "%s:%s" % (source_id, comp_id.get_uid())
@@ -482,7 +482,7 @@ class CalendarServer(Gio.Application):
             self.interface.emit_events_removed(uids_string)
 
     def exit(self):
-        if self.registry_watcher != None:
+        if self.registry_watcher is not None:
             self.registry_watcher.disconnect(self.client_appeared_id)
             self.registry_watcher.disconnect(self.client_disappeared_id)
 

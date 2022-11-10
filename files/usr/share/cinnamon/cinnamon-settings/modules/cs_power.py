@@ -369,7 +369,7 @@ class Module:
                 details = UPowerGlib.Device.state_to_string(state)
 
         desc = _("UPS")
-        if (model != "" or vendor != ""):
+        if model != "" or vendor != "":
             desc = "%s %s" % (vendor, model)
 
         widget = self.create_battery_row(device_id, "battery", desc, percentage, battery_level, details)
@@ -410,7 +410,7 @@ class Module:
                 details = UPowerGlib.Device.state_to_string(state)
 
         desc = _("Battery")
-        if (model != "" or vendor != ""):
+        if model != "" or vendor != "":
             desc = "%s %s" % (vendor, model)
 
         widget = self.create_battery_row(device_id, "battery", desc, percentage, battery_level, details)
@@ -479,7 +479,7 @@ class Module:
             icon_name = "battery"
             desc = (_("Battery"))
 
-        if (model != "" or vendor != ""):
+        if model != "" or vendor != "":
             desc = "%s %s" % (vendor, model)
 
         widget = self.create_battery_row(device_id, icon_name, desc, percentage, battery_level)
@@ -806,7 +806,7 @@ class GSettings2ComboBox(SettingsWidget):
 
     def on_my_value_changed(self, widget):
         tree_iter = widget.get_active_iter()
-        if tree_iter != None:
+        if tree_iter is not None:
             self.settings[widget.key] = self.model[tree_iter][0]
 
     def on_my_setting_changed1(self, *args):

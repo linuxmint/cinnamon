@@ -22,7 +22,7 @@ import sysconfig
 from gi.repository import Gio, GObject
 
 
-class CManager():
+class CManager:
     def __init__(self):
         self.extension_point = Gio.io_extension_point_register ("cinnamon-control-center-1")
         self.modules = []

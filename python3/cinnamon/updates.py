@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import os
-import sys
 import gi
 import gettext
 
@@ -10,7 +8,6 @@ gi.require_version('Gtk', '3.0')
 gettext.install("cinnamon", "/usr/share/locale", names=["ngettext"])
 
 from . import harvester
-from .harvester import SpiceUpdate
 
 SPICE_TYPE_APPLET = "applet"
 SPICE_TYPE_DESKLET = "desklet"
@@ -18,7 +15,7 @@ SPICE_TYPE_THEME = "theme"
 SPICE_TYPE_EXTENSION = "extension"
 SPICE_TYPES = [SPICE_TYPE_APPLET, SPICE_TYPE_DESKLET, SPICE_TYPE_THEME, SPICE_TYPE_EXTENSION]
 
-class UpdateManager():
+class UpdateManager:
     def __init__(self):
         self.harvesters = {}
         for spice_type in SPICE_TYPES:

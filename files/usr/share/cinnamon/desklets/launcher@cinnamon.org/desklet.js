@@ -11,7 +11,8 @@ const Desklet = imports.ui.desklet;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
 
-const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers/';
+const CUSTOM_LAUNCHERS_PATH = GLib.get_user_data_dir() + "/cinnamon/panel-launchers/";
+const OLD_CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers/';
 
 const ICON_SIZE = 48;
 const ANIM_ICON_SIZE = 40;
@@ -25,9 +26,6 @@ class CinnamonLauncherDesklet extends Desklet.Desklet {
         this._removing = false;
 
         this._menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this._menu.addAction(_('Add new launcher'), function() {
-            Util.spawnCommandLine('/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py');
-        });
         this._menu.addAction(
             _('Edit launcher'),
             Lang.bind(this, function() {
@@ -50,6 +48,10 @@ class CinnamonLauncherDesklet extends Desklet.Desklet {
                 app = appSys.lookup_app(desktopFile);
                 if (!app) {
                     app = CMenu.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH + desktopFile);
+                }
+                // Fallback to old launcher folder
+                if (!app) {
+                    app = CMenu.DesktopAppInfo.new_from_filename(OLD_CUSTOM_LAUNCHERS_PATH + desktopFile);
                 }
                 return app;
             }
@@ -84,8 +86,15 @@ class CinnamonLauncherDesklet extends Desklet.Desklet {
             }
         }
         if (found) {
-            settingsList.splice(i, 1);
+            let item = settingsList.splice(i, 1);
             this._launcherSettings.set_strv('launcher-list', settingsList);
+
+            // We try to remove custom launchers if they exist
+            let fileName = item[0].split(':')[1];
+            let file = Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH + fileName);
+            if (file.query_exists(null)) file.delete(null);
+            let old_file = Gio.file_new_for_path(OLD_CUSTOM_LAUNCHERS_PATH + fileName);
+            if (old_file.query_exists(null)) old_file.delete(null);
         }
 
         this._launcherSettings.disconnect(this._settingsSignalId);

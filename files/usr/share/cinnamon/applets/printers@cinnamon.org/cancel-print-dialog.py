@@ -9,7 +9,7 @@ import gettext
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
 
-class CancelPrintJob():
+class CancelPrintJob:
     def __init__(self):
         self.message_dialog = Gtk.MessageDialog(
             parent=Gtk.Window(),

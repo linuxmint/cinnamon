@@ -17,7 +17,7 @@ gettext.install("cinnamon", "/usr/share/locale")
 
 class MainWindow:
 
-    ''' Create the UI '''
+    """ Create the UI """
 
     def __init__(self):
 
@@ -56,7 +56,7 @@ class MainWindow:
 
     def lock_screen(self, data):
         message = self.entry.get_text()
-        if (message != ""):
+        if message != "":
             subprocess.call(["cinnamon-screensaver-command", "--lock", "--away-message", self.entry.get_text()])
         else:
             subprocess.call(["cinnamon-screensaver-command", "--lock"])

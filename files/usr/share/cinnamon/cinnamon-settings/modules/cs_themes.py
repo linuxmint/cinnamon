@@ -11,7 +11,7 @@ from ChooserButtonWidgets import PictureChooserButton
 from ExtensionCore import DownloadSpicesPage
 from Spices import Spice_Harvester
 
-import glob
+from pathlib import Path
 
 ICON_SIZE = 48
 
@@ -141,14 +141,14 @@ class Module:
 
             self.builder = self.sidePage.builder
 
-            for path in [os.path.expanduser("~/.themes"), os.path.expanduser("~/.icons")]:
+            for path in [THEME_FOLDERS[0], ICON_FOLDERS[0]]:
                 try:
                     os.makedirs(path)
                 except OSError:
                     pass
 
             self.monitors = []
-            for path in [os.path.expanduser("~/.themes"), "/usr/share/themes", os.path.expanduser("~/.icons"), "/usr/share/icons"]:
+            for path in (THEME_FOLDERS + ICON_FOLDERS):
                 if os.path.exists(path):
                     file_obj = Gio.File.new_for_path(path)
                     try:
@@ -248,8 +248,8 @@ class Module:
 
                     dump = True
 
-                if theme_path == None:
-                    continue;
+                if theme_path is None:
+                    continue
 
                 if os.path.exists(theme_path):
                     chooser.add_picture(theme_path, callback, title=theme, id=theme)
@@ -402,13 +402,12 @@ class Module:
         return res
 
     def filter_func_gtk_dir(self, directory):
-        # returns whether a directory is a valid GTK theme
-        if os.path.exists(os.path.join(directory, "gtk-2.0")):
-            if os.path.exists(os.path.join(directory, "gtk-3.0")):
+        theme_dir = Path(directory)
+
+        for gtk3_dir in theme_dir.glob("gtk-3.*"):
+            # Skip gtk key themes
+            if os.path.exists(os.path.join(gtk3_dir, "gtk.css")):
                 return True
-            else:
-                for subdir in glob.glob("%s/gtk-3.*" % directory):
-                    return True
         return False
 
     def _load_icon_themes(self):
@@ -471,7 +470,7 @@ class Module:
         return res
 
     def update_cursor_theme_link(self, path, name):
-        default_dir = os.path.join(os.path.expanduser("~"), ".icons", "default")
+        default_dir = os.path.join(ICON_FOLDERS[0], "default")
         index_path = os.path.join(default_dir, "index.theme")
 
         try:

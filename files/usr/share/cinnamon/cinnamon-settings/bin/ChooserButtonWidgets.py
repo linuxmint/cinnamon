@@ -50,7 +50,7 @@ class BaseChooserButton(Gtk.Button):
             y = y + ((window_y + wrect.y + wrect.height) - (y + mrect.height))
 
         push_in = True # push_in is True so all menu is always inside screen
-        return (x, y, push_in)
+        return x, y, push_in
 
     def _on_button_clicked(self, widget, event):
         if event.button == 1:
@@ -124,11 +124,11 @@ class PictureChooserButton(BaseChooserButton):
                 message = "Could not load pixbuf from '%s': %s" % (path, e.message)
                 error = True
 
-            if pixbuf != None:
+            if pixbuf is not None:
                 h = pixbuf.get_height()
                 w = pixbuf.get_width()
 
-                if (self.keep_square and (h > self.button_picture_size or w > self.button_picture_size)):
+                if self.keep_square and (h > self.button_picture_size or w > self.button_picture_size):
                     try:
                         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, self.button_picture_size * self.scale, self.button_picture_size * self.scale)
                     except GLib.Error as e:
@@ -176,7 +176,7 @@ class PictureChooserButton(BaseChooserButton):
                 message = "Could not load pixbuf from '%s': %s" % (path, e.message)
                 error = True
 
-            if pixbuf != None:
+            if pixbuf is not None:
                 h = pixbuf.get_height()
                 w = pixbuf.get_width()
 
@@ -211,7 +211,7 @@ class PictureChooserButton(BaseChooserButton):
                     menuitem.connect('activate', self._on_picture_selected, path, callback)
                 self.menu.attach(menuitem, self.col, self.col+1, self.row, self.row+1)
                 self.col = (self.col+1) % self.num_cols
-                if (self.col == 0):
+                if self.col == 0:
                     self.row = self.row + 1
 
     def add_separator(self):

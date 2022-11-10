@@ -100,7 +100,7 @@ def markup(line, obj):
 
     return line
 
-class JSThing():
+class JSThing:
     def append_description(self, desc):
         self.description += desc.replace('<', '&lt;').replace('>', '&gt;')
 

@@ -11,8 +11,9 @@ from setproctitle import setproctitle
 import psutil
 import threading
 import gi
+import shutil
 gi.require_version('Gtk', '3.0')  # noqa
-from gi.repository import Gtk, GLib, Gio
+from gi.repository import Gtk, GLib, Gio, GLib
 
 FALLBACK_COMMAND = "metacity"
 FALLBACK_ARGS = ("--replace",)
@@ -21,13 +22,13 @@ gettext.install("cinnamon", "/usr/share/locale")
 
 panel_process_name = None
 panel_cmd = None
-if os.path.exists("/usr/bin/mate-panel"):
+if shutil.which("mate-panel"):
     panel_process_name = "mate-panel"
     panel_cmd = "mate-panel --replace &"
-elif os.path.exists("/usr/bin/gnome-panel"):
+elif shutil.which("gnome-panel"):
     panel_process_name = "gnome-panel"
     panel_cmd = "gnome-panel --replace &"
-elif os.path.exists("/usr/bin/tint2"):
+elif shutil.which("tint2"):
     panel_process_name = "tint2"
     panel_cmd = "killall tint2; tint2 &"
 
@@ -46,7 +47,7 @@ def idle_function(func):
         GLib.idle_add(func, *args)
     return wrapper
 
-class Launcher():
+class Launcher:
 
     def __init__(self):
         self.fb_pid = 0
@@ -113,7 +114,11 @@ class Launcher():
         os.execvp(sys.argv[0], sys.argv)
 
     def log_kill(self, memory, limit, delay):
-        directory = os.path.expanduser("~/.cinnamon")
+        try:
+            directory = os.path.join(GLib.get_user_state_dir(), 'cinnamon')
+        except AttributeError:
+            directory = os.path.expanduser("~/.cinnamon")
+
         string = "%s - Usage: %d MB - Limit: %d MB - Freq: %s sec" % (time.strftime("%Y.%m.%d %H:%M:%S"), memory, limit, delay)
         if not os.path.exists(directory):
             os.mkdir(directory)

@@ -17,15 +17,18 @@ import gettext
 import json
 import importlib.util
 import traceback
+from pathlib import Path
 
 from JsonSettingsWidgets import *
 from ExtensionCore import find_extension_subdir
-from gi.repository import Gtk, Gio, XApp
+from gi.repository import Gtk, Gio, XApp, GLib
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
 
 home = os.path.expanduser("~")
+settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
+old_settings_dir = '%s/.cinnamon/configs/' % home
 
 translations = {}
 
@@ -283,9 +286,12 @@ class MainWindow(object):
 
     def load_instances(self):
         self.instance_info = []
-        path = "%s/.cinnamon/configs/%s" % (home, self.uuid)
+        path = Path(os.path.join(settings_dir, self.uuid))
+        old_path = Path("%s/.cinnamon/configs/%s" % (home, self.uuid))
         instances = 0
-        dir_items = sorted(os.listdir(path))
+        new_items = os.listdir(path) if path.exists() else []
+        old_items = os.listdir(old_path) if old_path.exists() else []
+        dir_items = sorted(new_items + old_items)
         try:
             multi_instance = int(self.xlet_meta["max-instances"]) != 1
         except (KeyError, ValueError):
@@ -317,7 +323,7 @@ class MainWindow(object):
                 if not instance_exists:
                     continue
 
-            settings = JSONSettingsHandler(os.path.join(path, item), self.notify_dbus)
+            settings = JSONSettingsHandler(os.path.join(path if item in new_items else old_path, item), self.notify_dbus)
             settings.instance_id = instance_id
             instance_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             self.instance_stack.add_named(instance_box, instance_id)

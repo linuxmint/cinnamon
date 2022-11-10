@@ -6,11 +6,13 @@ import shlex
 import os
 import re
 import threading
+import shutil
 from json import loads
+
+from gi.repository import GdkPixbuf
 
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
-
 
 def killProcess(process):
     process.kill()
@@ -38,7 +40,7 @@ def getGraphicsInfos():
     count = 0
     envpath = os.environ["PATH"]
     os.environ["PATH"] = envpath + ":/usr/local/sbin:/usr/sbin:/sbin"
-    for card in getProcessOut(("lspci")):
+    for card in getProcessOut("lspci"):
         if not "VGA" in card:
             continue
         cardId = card.split()[0]
@@ -48,7 +50,7 @@ def getGraphicsInfos():
                 cardName = (line.split(":")[2].split("(rev")[0].strip())
 
         if cardName:
-            cards[count] = (cardName)
+            cards[count] = cardName
             count += 1
     os.environ["PATH"] = envpath
     return cards
@@ -93,6 +95,16 @@ def getProcInfos():
     return result
 
 
+def getSystemIcon():
+    schema = Gio.Settings(schema="org.cinnamon")
+
+    iconPath = schema.get_string("system-icon-path")
+    if iconPath == "":  # left empty, so its disabled
+        return None
+
+    return iconPath
+
+
 def createSystemInfos():
     procInfos = getProcInfos()
     infos = []
@@ -135,7 +147,7 @@ def createSystemInfos():
         infos.append((_("Memory"), procInfos['mem_total']))
 
     diskSize, multipleDisks = getDiskSize()
-    if (multipleDisks):
+    if multipleDisks:
         diskText = _("Hard Drives")
     else:
         diskText = _("Hard Drive")
@@ -167,6 +179,7 @@ class Module:
             infos = createSystemInfos()
 
             page = SettingsPage()
+            page.set_spacing(10)
             self.sidePage.add_widget(page)
 
             settings = page.add_section(_("System info"))
@@ -183,7 +196,7 @@ class Module:
                 widget.pack_end(labelValue, False, False, 0)
                 settings.add_row(widget)
 
-            if os.path.exists("/usr/bin/upload-system-info"):
+            if shutil.which("upload-system-info"):
                 widget = SettingsWidget()
 
                 spinner = Gtk.Spinner(visible=True)
@@ -195,7 +208,7 @@ class Module:
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
 
-            if os.path.exists("/usr/bin/inxi"):
+            if shutil.which("inxi"):
                 
                 widget = SettingsWidget()
 
@@ -203,6 +216,16 @@ class Module:
                 button.connect("clicked", self.on_copy_clipboard_button_clicked)
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
+
+            systemIconPath = getSystemIcon()
+            if systemIconPath is not None:
+                try:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale (systemIconPath, -1, 160, True)
+                    systemIcon = Gtk.Image.new_from_pixbuf(pixbuf)
+                    page.add(systemIcon)
+                except GLib.GError:
+                    pass
+
     
     def on_copy_clipboard_button_clicked(self, button):
         try:

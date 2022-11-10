@@ -137,7 +137,7 @@
   },
   "pinned-apps": {
     "type": "generic",
-    "default": ["firefox.desktop", "org.gnome.Terminal.desktop", "nemo.desktop"]
+    "default": ["nemo.desktop", "firefox.desktop", "org.gnome.Terminal.desktop"]
   },
   "group-apps": {
     "type": "checkbox",

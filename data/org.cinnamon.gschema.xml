@@ -30,7 +30,7 @@
     </key>
 
     <key name="enabled-applets" type="as">
-      <default>['panel1:left:0:menu@cinnamon.org', 'panel1:left:1:show-desktop@cinnamon.org', 'panel1:left:2:grouped-window-list@cinnamon.org', 'panel1:right:0:systray@cinnamon.org', 'panel1:right:1:xapp-status@cinnamon.org', 'panel1:right:2:notifications@cinnamon.org', 'panel1:right:3:printers@cinnamon.org', 'panel1:right:4:removable-drives@cinnamon.org', 'panel1:right:5:keyboard@cinnamon.org', 'panel1:right:6:favorites@cinnamon.org', 'panel1:right:7:network@cinnamon.org', 'panel1:right:8:sound@cinnamon.org', 'panel1:right:9:power@cinnamon.org', 'panel1:right:10:calendar@cinnamon.org']</default>
+      <default>['panel1:left:0:menu@cinnamon.org', 'panel1:left:1:separator@cinnamon.org', 'panel1:left:2:grouped-window-list@cinnamon.org', 'panel1:right:0:systray@cinnamon.org', 'panel1:right:1:xapp-status@cinnamon.org', 'panel1:right:2:notifications@cinnamon.org', 'panel1:right:3:printers@cinnamon.org', 'panel1:right:4:removable-drives@cinnamon.org', 'panel1:right:5:keyboard@cinnamon.org', 'panel1:right:6:favorites@cinnamon.org', 'panel1:right:7:network@cinnamon.org', 'panel1:right:8:sound@cinnamon.org', 'panel1:right:9:power@cinnamon.org', 'panel1:right:10:calendar@cinnamon.org', 'panel1:right:11:cornerbar@cinnamon.org']</default>
       <summary>Uuids of applets to enable</summary>
       <description>
         Cinnamon applets have a uuid property; this key lists applets
@@ -94,7 +94,10 @@
       <summary>The interval between each possible grid position when desklets "snap"</summary>
       <description>If desklet-snap is enabled, the possible positions of desklets will be all integer multiples of the value of "desklet-snap-size"</description>
     </key>
-
+    <key name="lock-desklets" type="b">
+      <default>false</default>
+      <summary> Locks the current position of all desklets and prevents dragging</summary>
+    </key>
     <key name="panels-enabled" type="as">
       <default>['1:0:bottom']</default>
       <summary>List of panels used</summary>
@@ -498,7 +501,18 @@
       <summary>If true, Cinnamon will no longer attempt to be the session notification handler.</summary>
     </key>
 
-    <child name="theme" schema="org.cinnamon.theme"/>   
+    <key type="s" name="system-icon-path">
+      <default>""</default>
+      <summary>The logo to use in the system info settings</summary>
+      <description>
+        An icon name or absolute path to an icon, which will be used for the system icon in the "System Info" settings app.
+        The default path is the emblem-vendor image stored in /usr/share/icons/vendor.
+        .
+        Disabled if no value is set.
+      </description>
+    </key>
+
+    <child name="theme" schema="org.cinnamon.theme"/>
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
     <child name="desklets" schema="org.cinnamon.desklets" />

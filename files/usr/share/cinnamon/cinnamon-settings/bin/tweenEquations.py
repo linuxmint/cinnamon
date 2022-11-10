@@ -230,7 +230,7 @@ def easeOutElastic(t, b, c, d):
     p = d * .3
     a = c
     s = p / 4
-    return (a * pow(2, -10 * t) * math.sin((t * d - s) * 2 * math.pi / p) + c + b)
+    return a * pow(2, -10 * t) * math.sin((t * d - s) * 2 * math.pi / p) + c + b
 
 
 def easeInOutElastic(t, b, c, d):
