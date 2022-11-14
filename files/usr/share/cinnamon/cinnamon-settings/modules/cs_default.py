@@ -227,6 +227,7 @@ class MnemonicLabel(Gtk.Label):
         self.set_text_with_mnemonic(text)
         self.set_mnemonic_widget(widget)
         self.set_alignment(0.0, 0.5)
+        self.set_valign(Gtk.Align.START)
         self.set_line_wrap(True)
 
 class DefaultAppChooserButton(Gtk.AppChooserButton):
@@ -594,20 +595,6 @@ class Module:
                         settings.add_row(widget)
                 if e.lower() == "system":
                     # Add Terminal and calculator to the "System" section
-                    # Terminal
-                    widget = SettingsWidget()
-                    button = DefaultTerminalButton()
-                    label = MnemonicLabel(_("Terminal"), button)
-                    entry = TerminalExecArgEntry()
-
-                    box = Gtk.VBox()
-                    box.pack_start(button, False, False, 0)
-                    box.pack_start(entry, False, False, 0)
-                    size_group.add_widget(box)
-
-                    widget.pack_start(label, False, False, 0)
-                    widget.pack_end(box, False, False, 0)
-                    settings.add_row(widget)
 
                     # Calculator
                     widget = SettingsWidget()
@@ -617,6 +604,28 @@ class Module:
                     widget.pack_start(label, False, False, 0)
                     widget.pack_end(button, False, False, 0)
                     settings.add_row(widget)
+
+                    # Terminal
+                    widget = SettingsWidget()
+                    button = DefaultTerminalButton()
+                    label = MnemonicLabel(_("Terminal"), button)
+                    entry_label = Gtk.Label(label=_("<i>Arguments</i>"), margin_end=4, use_markup=True)
+                    entry_label.get_style_context().add_class("dim-label")
+                    entry = TerminalExecArgEntry()
+
+                    entry_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, margin_top=6)
+                    entry_box.pack_start(entry_label, False, False, 0)
+                    entry_box.pack_start(entry, True, True, 0)
+
+                    box = Gtk.VBox()
+                    box.pack_start(button, False, False, 0)
+                    box.pack_start(entry_box, False, False, 0)
+                    size_group.add_widget(box)
+
+                    widget.pack_start(label, False, False, 0)
+                    widget.pack_end(box, False, False, 0)
+                    settings.add_row(widget)
+
 
             # Removable media
 
