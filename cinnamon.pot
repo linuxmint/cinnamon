@@ -825,12 +825,15 @@ msgstr ""
 msgid "Move to another workspace"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:157
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:68
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:904
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:59
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_tiling.py:29
 msgid "Preferences"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:157
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:68
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:904
+msgid "Applet preferences"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->metadata.json->name

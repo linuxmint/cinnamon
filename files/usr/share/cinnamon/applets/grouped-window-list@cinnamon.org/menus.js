@@ -154,7 +154,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         }
 
         // Preferences
-        let subMenu = new PopupMenu.PopupSubMenuMenuItem(_('Preferences'));
+        let subMenu = new PopupMenu.PopupSubMenuMenuItem(_('Applet preferences'));
         this.addMenuItem(subMenu);
 
         item = createMenuItem({label: _('About...'), icon: 'dialog-question'});
