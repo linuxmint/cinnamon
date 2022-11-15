@@ -25,14 +25,18 @@ class InhibitAppletIcon {
         this._applet.set_applet_icon_symbolic_name(this.getAppletIcon());
     }
 
+    _getNotificationStatusTag(status) {
+        return (status ? '' : '-notif-disabled');
+    }
+
+    _getInhibitStatusTag(status) {
+        return (status ? '' : '-active');
+    }
+
     getAppletIcon() {
         let appletIcon = this.icon_name;
-        if (!this.inhibitStatus) {
-            appletIcon += '-active';
-        }
-        if (!this.notificationStatus) {
-            appletIcon += '-notif-disabled';
-        }
+        appletIcon += this._getInhibitStatusTag(this.inhibitStatus);
+        appletIcon += this._getNotificationStatusTag(this.notificationStatus);
         return appletIcon;
     }
 
@@ -44,6 +48,13 @@ class InhibitAppletIcon {
     toggleInhibitStatus(status) {
         this.inhibitStatus = status;
         this.setAppletIcon();
+    }
+
+    getNotificationStatusIcon() {
+        return this.icon_name + this._getNotificationStatusTag(this.notificationStatus);
+    }
+    getInhibitStatusIcon() {
+        return this.icon_name + this._getInhibitStatusTag(this.inhibitStatus);
     }
 }
 
@@ -422,7 +433,7 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         this.inhibitSwitch = new InhibitSwitch(this);
         this.menu.addMenuItem(this.inhibitSwitch);
 
-        this.notificationsSwitch = new NotificationsSwitch(this);        
+        this.notificationsSwitch = new NotificationsSwitch(this);
         this.menu.addMenuItem(this.notificationsSwitch);
 
         this.icon = new InhibitAppletIcon(this);
@@ -489,12 +500,12 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
 
     toggle_inhibit_power() {
         this.inhibitSwitch.toggle();
-        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(this.icon.getAppletIcon()));
+        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(this.icon.getInhibitStatusIcon()));
     }
 
     toggle_inhibit_notifications() {
         this.notificationsSwitch.toggle();
-        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(this.icon.getAppletIcon()));
+        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(this.icon.getNotificationStatusIcon()));
     }
 
     get inhibitors() {
