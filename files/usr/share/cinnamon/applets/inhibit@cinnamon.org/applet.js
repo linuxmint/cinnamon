@@ -56,6 +56,14 @@ class InhibitAppletIcon {
     getInhibitStatusIcon() {
         return this.icon_name + this._getInhibitStatusTag(this.inhibitStatus);
     }
+
+    getNotificationStatusOSDIcon() {
+        return this.icon_name + '-notification-osd' + this._getNotificationStatusTag(this.notificationStatus);
+    }
+
+    getInhibitStatusOSDIcon() {
+        return this.icon_name + '-power-osd' + this._getInhibitStatusTag(this.inhibitStatus);
+    }
 }
 
 class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
@@ -500,12 +508,12 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
 
     toggle_inhibit_power() {
         this.inhibitSwitch.toggle();
-        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(this.icon.getInhibitStatusIcon()));
+        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(this.icon.getInhibitStatusOSDIcon()));
     }
 
     toggle_inhibit_notifications() {
         this.notificationsSwitch.toggle();
-        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(this.icon.getNotificationStatusIcon()));
+        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(this.icon.getNotificationStatusOSDIcon()));
     }
 
     get inhibitors() {
