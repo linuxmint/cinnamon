@@ -608,6 +608,7 @@ Chrome.prototype = {
                 visible = false;
             else
                 visible = true;
+            actorData.actor.visible = visible;
         }
         this._queueUpdateRegions();
     },
