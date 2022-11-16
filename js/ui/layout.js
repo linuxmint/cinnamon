@@ -54,6 +54,19 @@ Monitor.prototype = {
 
 const UiActor = GObject.registerClass(
 class UiActor extends St.Widget {
+    _init() {
+        super._init();
+        this.skip_paint_actors = new Set();
+    }
+
+    set_skip_paint(child, skip) {
+        if (skip) {
+            this.skip_paint_actors.add(child);
+        } else {
+            this.skip_paint_actors.delete(child);
+        }
+    }
+
     vfunc_get_preferred_width(_forHeight) {
         let width = global.stage.width;
         return [width, width];
@@ -62,6 +75,14 @@ class UiActor extends St.Widget {
     vfunc_get_preferred_height(_forWidth) {
         let height = global.stage.height;
         return [height, height];
+    }
+
+    vfunc_paint(context) {
+        for (let child = this.get_first_child(); child != null; child = child.get_next_sibling()) {
+            if (this.skip_paint_actors.has(child))
+                continue;
+            child.paint(context);
+        }
     }
 });
 
@@ -608,7 +629,7 @@ Chrome.prototype = {
                 visible = false;
             else
                 visible = true;
-            actorData.actor.visible = visible;
+            Main.uiGroup.set_skip_paint(actorData.actor, !visible);
         }
         this._queueUpdateRegions();
     },
