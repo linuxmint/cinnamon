@@ -60,11 +60,23 @@ class UiActor extends St.Widget {
     }
 
     set_skip_paint(child, skip) {
+        var skipping = this.skip_paint_actors.has(child);
+
+        if (skipping === !!skip) {
+            return;
+        }
+
         if (skip) {
             this.skip_paint_actors.add(child);
         } else {
             this.skip_paint_actors.delete(child);
         }
+
+        this.queue_redraw();
+    }
+
+    get_skip_paint(child) {
+        return this.skip_paint_actors.has(child);
     }
 
     vfunc_get_preferred_width(_forHeight) {
@@ -82,6 +94,18 @@ class UiActor extends St.Widget {
             if (this.skip_paint_actors.has(child))
                 continue;
             child.paint(context);
+        }
+    }
+
+    vfunc_pick(context) {
+        super.vfunc_pick(context);
+
+        for (let child = this.get_first_child(); child != null; child = child.get_next_sibling()) {
+            if (this.skip_paint_actors.has(child)) {
+                continue;
+            }
+
+            child.pick(context);
         }
     }
 });
@@ -768,7 +792,8 @@ Chrome.prototype = {
 
             if (wantsInputRegion
                 && actorData.affectsInputRegion
-                && actorData.actor.get_paint_visibility()) {
+                && actorData.actor.get_paint_visibility()
+                && !Main.uiGroup.get_skip_paint(actorData.actor)) {
 
                 let rect = new Meta.Rectangle({ x: x, y: y, width: w, height: h});
 
