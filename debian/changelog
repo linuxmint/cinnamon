@@ -1,3 +1,10 @@
+cinnamon (5.6.1) vera; urgency=medium
+
+  * cs_info: Fix cosmetic issues with system icon
+  * cs_default: Fix small issues
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 18 Nov 2022 12:00:32 +0000
+
 cinnamon (5.6.0) vera; urgency=medium
 
   [ Michael Webster ]
