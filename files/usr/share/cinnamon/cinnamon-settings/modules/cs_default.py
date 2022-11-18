@@ -580,51 +580,53 @@ class Module:
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            for e in preferred_app_defs:
-                settings = page.add_section(_(e))
-                # size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
-                for d in preferred_app_defs[e]:
-                    widget = SettingsWidget()
-                    button = DefaultAppChooserButton(d[PREF_CONTENT_TYPE], d[PREF_GEN_CONTENT_TYPE])
-                    label = MnemonicLabel(d[PREF_LABEL], button)
-                    size_group.add_widget(button)
-                    widget.pack_start(label, False, False, 0)
-                    widget.pack_end(button, False, False, 0)
-                    #Hide button if there are no apps
-                    if not button.get_active():
+            for name in preferred_app_defs:
+                items = preferred_app_defs[name]
+                if len(items) > 0:
+                    settings = page.add_section(name)
+                    # size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+                    for item in items:
+                        widget = SettingsWidget()
+                        button = DefaultAppChooserButton(item[PREF_CONTENT_TYPE], item[PREF_GEN_CONTENT_TYPE])
+                        label = MnemonicLabel(item[PREF_LABEL], button)
+                        size_group.add_widget(button)
+                        widget.pack_start(label, False, False, 0)
+                        widget.pack_end(button, False, False, 0)
+                        #Hide button if there are no apps
+                        if not button.get_active():
+                            settings.add_row(widget)
+                    if name.lower() == "system":
+                        # Add Terminal and calculator to the "System" section
+
+                        # Calculator
+                        widget = SettingsWidget()
+                        button = DefaultCalculatorButton()
+                        label = MnemonicLabel(_("Calculator"), button)
+                        size_group.add_widget(button)
+                        widget.pack_start(label, False, False, 0)
+                        widget.pack_end(button, False, False, 0)
                         settings.add_row(widget)
-                if e.lower() == "system":
-                    # Add Terminal and calculator to the "System" section
 
-                    # Calculator
-                    widget = SettingsWidget()
-                    button = DefaultCalculatorButton()
-                    label = MnemonicLabel(_("Calculator"), button)
-                    size_group.add_widget(button)
-                    widget.pack_start(label, False, False, 0)
-                    widget.pack_end(button, False, False, 0)
-                    settings.add_row(widget)
+                        # Terminal
+                        widget = SettingsWidget()
+                        button = DefaultTerminalButton()
+                        label = MnemonicLabel(_("Terminal"), button)
+                        entry_label = Gtk.Label(label="<i>%s</i>" % _("Arguments"), margin_end=4, use_markup=True)
+                        entry_label.get_style_context().add_class("dim-label")
+                        entry = TerminalExecArgEntry()
 
-                    # Terminal
-                    widget = SettingsWidget()
-                    button = DefaultTerminalButton()
-                    label = MnemonicLabel(_("Terminal"), button)
-                    entry_label = Gtk.Label(label="<i>%s</i>" % _("Arguments"), margin_end=4, use_markup=True)
-                    entry_label.get_style_context().add_class("dim-label")
-                    entry = TerminalExecArgEntry()
+                        entry_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, margin_top=6)
+                        entry_box.pack_start(entry_label, False, False, 0)
+                        entry_box.pack_start(entry, True, True, 0)
 
-                    entry_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, margin_top=6)
-                    entry_box.pack_start(entry_label, False, False, 0)
-                    entry_box.pack_start(entry, True, True, 0)
+                        box = Gtk.VBox()
+                        box.pack_start(button, False, False, 0)
+                        box.pack_start(entry_box, False, False, 0)
+                        size_group.add_widget(box)
 
-                    box = Gtk.VBox()
-                    box.pack_start(button, False, False, 0)
-                    box.pack_start(entry_box, False, False, 0)
-                    size_group.add_widget(box)
-
-                    widget.pack_start(label, False, False, 0)
-                    widget.pack_end(box, False, False, 0)
-                    settings.add_row(widget)
+                        widget.pack_start(label, False, False, 0)
+                        widget.pack_end(box, False, False, 0)
+                        settings.add_row(widget)
 
 
             # Removable media
