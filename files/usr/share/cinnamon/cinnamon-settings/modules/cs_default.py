@@ -609,7 +609,7 @@ class Module:
                     widget = SettingsWidget()
                     button = DefaultTerminalButton()
                     label = MnemonicLabel(_("Terminal"), button)
-                    entry_label = Gtk.Label(label=_("<i>Arguments</i>"), margin_end=4, use_markup=True)
+                    entry_label = Gtk.Label(label="<i>%s</i>" % _("Arguments"), margin_end=4, use_markup=True)
                     entry_label.get_style_context().add_class("dim-label")
                     entry = TerminalExecArgEntry()
 
