@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 from gi.repository import Gtk, GObject, GLib, Gdk, GdkPixbuf, Gio
-import cairo
 import os
 import gettext
 import datetime
