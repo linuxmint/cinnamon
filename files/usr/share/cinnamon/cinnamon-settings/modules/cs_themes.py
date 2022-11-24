@@ -380,7 +380,7 @@ class Module:
         if "dark" in name and "darker" not in name:
             dark = 1
         name = name.replace("darker", "").replace("dark", "").replace("legacy", "")
-        name = f"{dark}{darker}{legacy}{name}"
+        name = f"{legacy}{dark}{darker}{name}"
         return name
 
     def _load_gtk_themes(self):
