@@ -1,3 +1,13 @@
+cinnamon (5.6.2) vera; urgency=medium
+
+  * cs_themes: Place legacy themes at the bottom
+  * theme: Update cinnamon thumbnails
+  * cs_themes: Reorder sections
+  * cs_themes: Update cursor thumbnails
+  * cs_themes: Sort cursor themes alphabetically
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 24 Nov 2022 22:02:06 +0000
+
 cinnamon (5.6.1) vera; urgency=medium
 
   * cs_info: Fix cosmetic issues with system icon
