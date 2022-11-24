@@ -440,7 +440,7 @@ class Module:
     def _load_cursor_themes(self):
         dirs = ICON_FOLDERS
         valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True)
-        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
+        valid.sort(key=lambda a: a[0].lower())
         res = []
         for i in valid:
             for j in res:
