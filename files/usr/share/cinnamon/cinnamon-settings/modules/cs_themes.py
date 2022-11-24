@@ -66,13 +66,13 @@ class Module:
 
             settings = page.add_section(_("Themes"))
 
-            widget = self.make_group(_("Icons"), self.icon_chooser)
+            widget = self.make_group(_("Mouse Pointer"), self.cursor_chooser)
             settings.add_row(widget)
 
             widget = self.make_group(_("Applications"), self.theme_chooser)
             settings.add_row(widget)
 
-            widget = self.make_group(_("Mouse Pointer"), self.cursor_chooser)
+            widget = self.make_group(_("Icons"), self.icon_chooser)
             settings.add_row(widget)
 
             widget = self.make_group(_("Desktop"), self.cinnamon_chooser)
