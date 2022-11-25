@@ -92,6 +92,9 @@ class Module:
             widget = GSettingsSwitch(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons")
             settings.add_row(widget)
 
+            widget = GSettingsSpinButton(_("Mouse pointer size"), "org.cinnamon.desktop.interface", "cursor-size", None, 22, 96)
+            settings.add_row(widget)
+
             try:
                 import tinycss2
             except:
