@@ -428,8 +428,17 @@ AppSwitcher.prototype = {
     },
 
     _activateSelected: function() {
-        let workspace_num = this._windows[this._currentIndex].get_workspace().index();
-        Main.activateWindow(this._windows[this._currentIndex], global.get_current_time(), workspace_num);
+        const _window = this._windows[this._currentIndex]
+        const workspace_num = _window.get_workspace().index();
+        Main.activateWindow(_window, global.get_current_time(), workspace_num);
+        this._warpMouse = global.settings.get_boolean("alttab-switcher-warp-mouse-pointer");
+        if (this._warpMouse) {
+                const rect = _window.get_frame_rect();
+                const x = rect.x + rect.width / 2;
+                const y = rect.y + rect.height / 2;
+                this._pointer = Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
+                this._pointer.notify_absolute_motion(global.get_current_time(), x, y);
+        }
         if (!this._destroyed)
             this.destroy();
     },
