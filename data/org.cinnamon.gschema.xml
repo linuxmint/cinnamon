@@ -429,6 +429,11 @@
       <summary>Show all windows from all workspaces</summary>
     </key>
 
+    <key type="b" name="alttab-switcher-warp-mouse-pointer">
+      <default>false</default>
+      <summary>Warp mouse pointer to the new focused window</summary>
+    </key>
+
     <key name="bring-windows-to-current-workspace" type="b">
       <default>false</default>
       <summary>not used - lives in org.cinnamon.muffin now</summary>

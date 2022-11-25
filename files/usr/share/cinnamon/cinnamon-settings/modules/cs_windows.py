@@ -178,3 +178,6 @@ class Module:
 
             widget = GSettingsSwitch(_("Show windows from all workspaces"), "org.cinnamon", "alttab-switcher-show-all-workspaces")
             settings.add_row(widget)
+
+            widget = GSettingsSwitch(_("Warp mouse pointer to the new focused window"), "org.cinnamon", "alttab-switcher-warp-mouse-pointer")
+            settings.add_row(widget)
