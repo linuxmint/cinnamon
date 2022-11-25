@@ -52,7 +52,7 @@ Monitor.prototype = {
     }
 };
 
-const UiActor = GObject.registerClass(
+var UiActor = GObject.registerClass(
 class UiActor extends St.Widget {
     _init() {
         super._init();
