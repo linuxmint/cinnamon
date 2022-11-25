@@ -1,3 +1,10 @@
+cinnamon (5.6.3) vera; urgency=medium
+
+  * cs_themes: Make mouse cursor size configurable
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 25 Nov 2022 14:24:34 +0000
+
 cinnamon (5.6.2) vera; urgency=medium
 
   * cs_themes: Place legacy themes at the bottom
