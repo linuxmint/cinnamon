@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-18 10:37+0000\n"
+"POT-Creation-Date: 2022-11-25 14:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3491,29 +3491,29 @@ msgstr ""
 msgid "Preferred applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:602
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:604
 msgid "Calculator"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:611
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:613
 msgid "Terminal"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:612
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:614
 msgid "Arguments"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:633
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:640
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:635
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:642
 msgid "Removable media"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:636
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:638
 msgid "Prompt or start programs on media insertion"
 msgstr ""
 
 #. FIXMEEEEEEEE??
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:656
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:658
 msgid "_Other Media..."
 msgstr ""
 
@@ -3993,75 +3993,71 @@ msgstr ""
 msgid "Unknown CPU"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:125
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:115
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:119
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:123
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:129
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:133
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:139
 msgid "Operating System"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:141
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:131
 msgid "Cinnamon Version"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:142
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:132
 msgid "Linux Kernel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:143
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:133
 msgid "Processor"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:145
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:147
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:135
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:137
 msgid "Memory"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:145
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:135
 msgid "GiB"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:151
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:141
 msgid "Hard Drives"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:153
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:143
 msgid "Hard Drive"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:155
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:145
 msgid "GB"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:160
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:150
 msgid "Graphics Card"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:168
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:158
 msgid "Display system information"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:171
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:161
 msgid "system, information, details, graphic, sound, kernel, version"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:172
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:162
 msgid "System Info"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:185
-msgid "System info"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:203
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:207
 msgid "Upload system information"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:204
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:208
 msgid "No personal information included"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:215
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:218
 msgid "Copy to clipboard"
 msgstr ""
 
@@ -5976,11 +5972,11 @@ msgid "Themes"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:69
-msgid "Icons"
+msgid "Mouse Pointer"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:75
-msgid "Mouse Pointer"
+msgid "Icons"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:82
@@ -5999,7 +5995,11 @@ msgstr ""
 msgid "Show icons on buttons"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:101
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:95
+msgid "Mouse pointer size"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:104
 msgid "Scrollbar behavior"
 msgstr ""
 
@@ -6007,23 +6007,23 @@ msgstr ""
 #. rides in.  This setting determines whether clicking in that trough
 #. somewhere
 #. jumps directly to the new position, or if it only scrolls towards it.
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:106
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:109
 msgid "Jump to position when clicking in a trough"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:109
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:112
 msgid "Use overlay scroll bars"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:114
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:117
 msgid "Override the current theme's scrollbar width"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:118
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:121
 msgid "Scrollbar width"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:139
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:142
 msgid ""
 "Changes will take effect the next time you log in and may not affect all "
 "applications."
