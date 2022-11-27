@@ -388,14 +388,14 @@ var Notification = class Notification {
                 /* FIXME: vscroll should be enabled
                  * -vfade covers too much for this size of scrollable
                  * -scrollview min-height is broken inside tray with a scrollview
-                 * 
+                 *
                  * TODO: when scrollable:
-                 * 
+                 *
                  * applet connects to this signal to enable captured-event passthru so you can grab the scrollbar:
                  * let vscroll = this._scrollArea.get_vscroll_bar();
                  * vscroll.connect('scroll-start', () => { this.emit('scrolling-changed', true) });
                  * vscroll.connect('scroll-stop', () => { this.emit('scrolling-changed', false) });
-                 * 
+                 *
                  * `enable_mouse_scrolling` makes it difficult to scroll when there are many notifications
                  * in the tray because most of the area is these smaller scrollviews which capture the event.
                  * ideally, this should only be disabled when the notification is in the tray and there are
@@ -438,7 +438,7 @@ var Notification = class Notification {
    /**
      * scrollTo:
      * @side (St.Side): St.Side.TOP or St.Side.BOTTOM
-     * 
+     *
      * Scrolls the content area (if scrollable) to the indicated edge
      */
     scrollTo(side) {
@@ -501,11 +501,11 @@ var Notification = class Notification {
      * addButton:
      * @id (number): the action ID
      * @label (string): the label for the action's button
-     * 
+     *
      * Adds a button with the given @label to the notification. All
      * action buttons will appear in a single row at the bottom of
      * the notification.
-     * 
+     *
      * If the button is clicked, the notification will emit the
      * %action-invoked signal with @id as a parameter.
      */
@@ -545,7 +545,7 @@ var Notification = class Notification {
 
     /**
      * clearButtons:
-     * 
+     *
      * Removes all buttons.
      */
     clearButtons() {
@@ -938,10 +938,21 @@ MessageTray.prototype = {
         this._notificationBin.child = this._notification.actor;
         this._notificationBin.opacity = 0;
 
-        let monitor = Main.layoutManager.primaryMonitor;
-        let topPanel = Main.panelManager.getPanel(monitor.index, 0);
-        let bottomPanel = Main.panelManager.getPanel(monitor.index, 1);
-        let rightPanel = Main.panelManager.getPanel(monitor.index, 3);
+        this._monitor = Main.layoutManager.primaryMonitor;
+        this._notificationScreenDisplay = this.settings.get_string("notification-screen-display");
+        let monitors = Main.layoutManager.monitors;
+        switch (this._notificationScreenDisplay) {
+            case "active-screen":
+                this._monitor = Main.layoutManager.currentMonitor;
+                break;
+            case "fixed-screen":
+                this._fixedScreenNum = this.settings.get_int("notification-fixed-screen");
+                if (this._fixedScreenNum <= monitors.length)
+                    this._monitor = monitors[this._fixedScreenNum - 1];
+        }
+        let topPanel = Main.panelManager.getPanel(this._monitor.index, 0);
+        let bottomPanel = Main.panelManager.getPanel(this._monitor.index, 1);
+        let rightPanel = Main.panelManager.getPanel(this._monitor.index, 3);
         let topGap = 10;
         let bottomGap = 10;
         let rightGap = 0;
@@ -954,11 +965,11 @@ MessageTray.prototype = {
             if (topPanel) {
                 topGap += topPanel.actor.get_height();
             }
-            this._notificationBin.y = monitor.y + topGap; // Notifications appear from here (for the animation)
+            this._notificationBin.y = this._monitor.y + topGap; // Notifications appear from here (for the animation)
         }
 
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');
-        this._notificationBin.x = monitor.x + monitor.width - this._notification._table.width - margin - rightGap;
+        this._notificationBin.x = this._monitor.x + this._monitor.width - this._notification._table.width - margin - rightGap;
         if (!this._notification.silent || this._notification.urgency >= Urgency.HIGH) {
             Main.soundManager.play('notification');
         }
@@ -974,7 +985,7 @@ MessageTray.prototype = {
                 bottomGap += bottomPanel.actor.get_height();
             }
             let getBottomPositionY = () => {
-                return monitor.y + monitor.height - this._notificationBin.height - bottomGap;
+                return this._monitor.y + this._monitor.height - this._notificationBin.height - bottomGap;
             };
             let shouldReturn = false;
             let initialY = getBottomPositionY();
@@ -1037,7 +1048,7 @@ MessageTray.prototype = {
     _notificationTimeout: function() {
         let [x, y, mods] = global.get_pointer();
         let distance = Math.abs(this._notificationBin.y - y);
-        if (distance < this._lastSeenMouseDistance - 50 || this._notification.actor.hover) {
+        if (distance < this._lastSeenMouseDistance - 50 || this._notification && this._notification.actor.hover) {
             // The mouse is moving towards the notification, so don't
             // hide it yet. (We just create a new timeout (and destroy
             // the old one) each time because the bookkeeping is simpler.)
@@ -1054,6 +1065,7 @@ MessageTray.prototype = {
 
     _hideNotification: function() {
         let y = Main.layoutManager.primaryMonitor.y;
+
         if (this.bottomPosition) {
             if (this.bottomPositionSignal) {
                 this._notificationBin.disconnect(this.bottomPositionSignal);
