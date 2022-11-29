@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-25 14:24+0000\n"
+"POT-Creation-Date: 2022-11-29 16:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2761,7 +2761,7 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:111
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:150
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_notifications.py:26
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:145
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:140
 msgid "Disabled"
 msgstr ""
 
@@ -5048,7 +5048,7 @@ msgstr ""
 #. cornerbar@cinnamon.org->settings-schema.json->peek-delay->units
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:54
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:57
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:175
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:176
 msgid "milliseconds"
 msgstr ""
 
@@ -5995,11 +5995,7 @@ msgstr ""
 msgid "Show icons on buttons"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:95
-msgid "Mouse pointer size"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:104
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:101
 msgid "Scrollbar behavior"
 msgstr ""
 
@@ -6007,23 +6003,23 @@ msgstr ""
 #. rides in.  This setting determines whether clicking in that trough
 #. somewhere
 #. jumps directly to the new position, or if it only scrolls towards it.
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:109
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:106
 msgid "Jump to position when clicking in a trough"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:112
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:109
 msgid "Use overlay scroll bars"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:117
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:114
 msgid "Override the current theme's scrollbar width"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:121
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:118
 msgid "Scrollbar width"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:142
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:139
 msgid ""
 "Changes will take effect the next time you log in and may not affect all "
 "applications."
@@ -6253,91 +6249,107 @@ msgid "Moving and Resizing Windows"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:136
-msgid "Center new windows"
+msgid "Automatic"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:139
-msgid "Draggable border width"
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:136
+msgid "Cursor"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:139
-msgid "Narrower"
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:136
+msgid "Manual"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:139
-msgid "Wider"
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:136
+msgid "Center"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:137
+msgid "Location of newly opened windows"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:141
-msgid ""
-"This adjusts the width of that portion of the window border used for "
-"resizing."
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:146
 msgid "Special key to move and resize windows"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:147
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:142
 msgid ""
 "While the special key is pressed, windows can be dragged with the left mouse"
 " button and resized with the right mouse button."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:153
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:155
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:145
+msgid "Draggable border width"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:145
+msgid "Narrower"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:145
+msgid "Wider"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:147
+msgid ""
+"This adjusts the width of that portion of the window border used for "
+"resizing."
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:154
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:156
 msgid "Alt-Tab"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:158
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:159
 msgid "Icons only"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:159
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:160
 msgid "Thumbnails only"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:160
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:161
 msgid "Icons and thumbnails"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:161
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:162
 msgid "Icons and window preview"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:162
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:163
 msgid "Window preview (no icons)"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:163
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:164
 msgid "Coverflow (3D)"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:164
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:165
 msgid "Timeline (3D)"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:166
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:167
 msgid "Alt-Tab switcher style"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:169
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:170
 msgid ""
 "Display the alt-tab switcher on the primary monitor instead of the active "
 "one"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:172
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:173
 msgid "Move minimized windows to the end of the alt-tab switcher"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:175
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:176
 msgid "Delay before displaying the alt-tab switcher"
 msgstr ""
 
 #. grouped-window-list@cinnamon.org->settings-schema.json->show-all-
 #. workspaces->description
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:178
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:179
 msgid "Show windows from all workspaces"
 msgstr ""
 
