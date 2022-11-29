@@ -1,3 +1,17 @@
+cinnamon (5.6.4) vera; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Revert "cs_themes: Make mouse cursor size configurable"
+  * cs_themes: Add thumbnails for Bibata Original
+
+  [ Michael Webster ]
+  * cs_windows: Restore configuration for initial window placement.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 29 Nov 2022 16:31:00 +0000
+
 cinnamon (5.6.3) vera; urgency=medium
 
   * cs_themes: Make mouse cursor size configurable
