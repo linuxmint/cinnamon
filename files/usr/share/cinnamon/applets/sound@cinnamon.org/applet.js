@@ -434,15 +434,18 @@ class StreamMenuSection extends PopupMenu.PopupMenuSection {
         }
 
         // Special cases
-        if(name === "Banshee") {
+        if (name === "Banshee") {
             iconName = "banshee";
         }
         else if (name === "Spotify") {
             iconName = "spotify";
         }
-        if(name === "VBox") {
+        else if (name === "VBox") {
             name = "Virtualbox";
             iconName = "virtualbox";
+        }
+        else if (name === "Firefox") {
+            iconName = "firefox";
         }
         else if (iconName === "audio") {
             iconName = "audio-x-generic";
