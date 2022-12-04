@@ -151,7 +151,7 @@ class Harvester:
         self.index_cache = {}
         self.cache_lock = threading.Lock()
 
-        self.cache_folder = '%s/.cinnamon/spices.cache/%s/' % (home, self.spice_type)
+        self.cache_folder = os.path.join(GLib.get_user_cache_dir(), 'cinnamon', 'spices', self.spice_type)
 
         self.index_file = os.path.join(self.cache_folder, "index.json")
 
