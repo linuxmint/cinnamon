@@ -25,6 +25,7 @@ class CinnamonBarApplet extends Applet.Applet {
         this.actor.connect('enter-event', Lang.bind(this, this._on_enter));
         this.actor.connect('leave-event', Lang.bind(this, this._on_leave));
         this.signals.connect(global.stage, 'notify::key-focus', this._on_leave, this);
+        this.actor.connect('scroll-event', Lang.bind(this, this._on_scroll_event));
 
         this._did_peek = false;
         this._peek_timeout_id = 0;
@@ -151,6 +152,16 @@ class CinnamonBarApplet extends Applet.Applet {
         if (this._peek_timeout_id > 0) {
             Mainloop.source_remove(this._peek_timeout_id);
             this._peek_timeout_id = 0;
+        }
+    }
+
+    _on_scroll_event(actor, event) {
+        //switch workspace
+        if (this._did_peek == true)
+            Mainloop.source_remove(this._peek_timeout_id);
+        var index = global.screen.get_active_workspace_index() + event.get_scroll_direction() * 2 - 1;
+        if(global.screen.get_workspace_by_index(index) != null){
+            global.screen.get_workspace_by_index(index).activate(global.get_current_time());
         }
     }
 
