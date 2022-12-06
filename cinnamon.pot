@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-29 16:30+0000\n"
+"POT-Creation-Date: 2022-12-06 14:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3058,11 +3058,15 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:366
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_effects.py:77
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:56
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:131
 msgid "Slower"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:366
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_effects.py:77
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:56
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:131
 msgid "Faster"
 msgstr ""
 
