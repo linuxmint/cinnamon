@@ -23,7 +23,7 @@ class EditorDialog:
         self.name = ""
         self.desklet_id = desklet_id
 
-        if not desklet_id == -1:
+        if desklet_id != - 1:
             launcher_list = self.launcher_settings.get_strv(LAUNCHER_KEY)
             launcher = ""
             for item in launcher_list:
@@ -199,7 +199,7 @@ class Application:
                 if len(line)==0:
                     break
 
-                if line.find("Name") == 0 and (not "[" in line):
+                if line.find("Name") == 0 and ("[" not in line):
                     self.title = line.replace("Name","").replace("=","").replace("\n","")
 
                 if line.find("Icon") == 0:
