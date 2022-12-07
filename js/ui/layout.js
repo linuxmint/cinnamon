@@ -6,6 +6,7 @@
  */
 const Clutter = imports.gi.Clutter;
 const Cinnamon = imports.gi.Cinnamon;
+const GObject = imports.gi.GObject;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
@@ -20,8 +21,7 @@ const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
 const DeskletManager = imports.ui.deskletManager;
 const Panel = imports.ui.panel;
-
-const STARTUP_ANIMATION_TIME = 0.5;
+const StartupAnimation = imports.ui.startupAnimation;
 
 function isPopupMetaWindow(actor) {
     switch(actor.meta_window.get_window_type()) {
@@ -51,6 +51,64 @@ Monitor.prototype = {
         return global.screen.get_monitor_in_fullscreen(this.index);
     }
 };
+
+const UiActor = GObject.registerClass(
+class UiActor extends St.Widget {
+    _init() {
+        super._init();
+        this.skip_paint_actors = new Set();
+    }
+
+    set_skip_paint(child, skip) {
+        var skipping = this.skip_paint_actors.has(child);
+
+        if (skipping === !!skip) {
+            return;
+        }
+
+        if (skip) {
+            this.skip_paint_actors.add(child);
+        } else {
+            this.skip_paint_actors.delete(child);
+        }
+
+        this.queue_redraw();
+    }
+
+    get_skip_paint(child) {
+        return this.skip_paint_actors.has(child);
+    }
+
+    vfunc_get_preferred_width(_forHeight) {
+        let width = global.stage.width;
+        return [width, width];
+    }
+
+    vfunc_get_preferred_height(_forWidth) {
+        let height = global.stage.height;
+        return [height, height];
+    }
+
+    vfunc_paint(context) {
+        for (let child = this.get_first_child(); child != null; child = child.get_next_sibling()) {
+            if (this.skip_paint_actors.has(child))
+                continue;
+            child.paint(context);
+        }
+    }
+
+    vfunc_pick(context) {
+        super.vfunc_pick(context);
+
+        for (let child = this.get_first_child(); child != null; child = child.get_next_sibling()) {
+            if (this.skip_paint_actors.has(child)) {
+                continue;
+            }
+
+            child.pick(context);
+        }
+    }
+});
 
 /**
  * #LayoutManager
@@ -92,7 +150,7 @@ LayoutManager.prototype = {
 
         global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEdgeFlipChanged));
         global.settings.connect("changed::edge-flip-delay", Lang.bind(this, this._onEdgeFlipChanged));
-        global.screen.connect('monitors-changed', Lang.bind(this, this._monitorsChanged));
+        Meta.MonitorManager.get().connect('monitors-changed', Lang.bind(this, this._monitorsChanged));
     },
 
     _onEdgeFlipChanged: function(){
@@ -133,20 +191,22 @@ LayoutManager.prototype = {
     },
 
     _updateMonitors: function() {
-        let screen = global.screen;
-
         this.monitors = [];
-        let nMonitors = screen.get_n_monitors();
-        for (let i = 0; i < nMonitors; i++)
-            this.monitors.push(new Monitor(i, screen.get_monitor_geometry(i)));
+        let nMonitors = global.display.get_n_monitors();
+        for (let i = 0; i < nMonitors; i++) {
+            let rect = global.display.get_monitor_geometry(i);
+            let lmon = global.display.get_monitor_index_for_rect(rect);
 
-        this.primaryIndex = screen.get_primary_monitor();
+            this.monitors.push(new Monitor(lmon, rect));
+        }
+
+        this.primaryIndex = global.display.get_primary_monitor();
         this.primaryMonitor = this.monitors[this.primaryIndex];
     },
 
     _updateBoxes: function() {
         if (this.hotCornerManager)
-            this.hotCornerManager.updatePosition(this.primaryMonitor);
+            this.hotCornerManager.update();
         this._chrome._queueUpdateRegions();
     },
 
@@ -189,44 +249,30 @@ LayoutManager.prototype = {
 
         this.keyboardBox.hide();
 
-        let monitor = this.primaryMonitor;
-        let x = monitor.x + monitor.width / 2.0;
-        let y = monitor.y + monitor.height / 2.0;
-
-        Main.uiGroup.set_pivot_point(x / global.screen_width,
-                                     y / global.screen_height);
-        Main.uiGroup.scale_x = Main.uiGroup.scale_y = 0.75;
-        Main.uiGroup.opacity = 0;
+        global.stage.hide_cursor();
         global.background_actor.show();
-        global.window_group.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+
+        this.startupAnimation = new StartupAnimation.Animation(this.primaryMonitor,
+                                                               ()=>this._startupAnimationComplete());
+        this._chrome.updateRegions();
     },
 
-    _startupAnimation: function() {
+    _doStartupAnimation: function() {
         // Don't animate the strut
         this._chrome.freezeUpdateRegions();
-        Tweener.addTween(Main.uiGroup,
-                         { scale_x: 1,
-                           scale_y: 1,
-                           opacity: 255,
-                           time: STARTUP_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._startupAnimationComplete,
-                           onCompleteScope: this });
+        this.startupAnimation.run();
     },
 
     _startupAnimationComplete: function() {
-        global.stage.no_clear_hint = true;
-        this._coverPane.destroy();
+        global.stage.show_cursor();
+        this.removeChrome(this._coverPane);
         this._coverPane = null;
-
-        global.window_group.remove_clip();
         this._chrome.thawUpdateRegions();
 
         Main.setRunState(Main.RunState.RUNNING);
     },
 
     showKeyboard: function () {
-        if (Main.messageTray) Main.messageTray.hide();
         if (this.hideIdleId > 0) {
             Mainloop.source_remove(this.hideIdleId);
             this.hideIdleId = 0;
@@ -267,8 +313,6 @@ LayoutManager.prototype = {
     },
 
     hideKeyboard: function (immediate) {
-        if (Main.messageTray) Main.messageTray.hide();
-
         this.keyboardBox.hide();
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: false });
         this._chrome.updateRegions();
@@ -392,6 +436,11 @@ LayoutManager.prototype = {
         return this._chrome.findMonitorIndexForActor(actor);
     },
 
+    findMonitorIndexAt: function(x, y) {
+        let [index, monitor] = this._chrome._findMonitorForRect(x, y, 1, 1)
+        return index;
+    },
+
     /**
      * isTrackingChrome:
      * @actor (Clutter.Actor): the actor to check
@@ -499,8 +548,8 @@ Chrome.prototype = {
             return;
         let actorData = this._trackedActors[i];
 
-        if (actorData.addToWindowgroup) global.window_group.remove_actor(actor);
-        else Main.uiGroup.remove_actor(actor);
+        if (actorData.addToWindowgroup) global.window_group.remove_child(actor);
+        else Main.uiGroup.remove_child(actor);
         this._untrackActor(actor);
     },
 
@@ -537,8 +586,11 @@ Chrome.prototype = {
                                                Lang.bind(this, this._queueUpdateRegions));
         actorData.parentSetId = actor.connect('parent-set',
                                               Lang.bind(this, this._actorReparented));
-        // Note that destroying actor will unset its parent, so we don't
-        // need to connect to 'destroy' too.
+        // Note that destroying actor unsets its parent, but does not emit
+        // parent-set during destruction.
+        // https://gitlab.gnome.org/GNOME/mutter/-/commit/f376a318ba90fc29d3d661df4f55698459f31cfa
+        actorData.destroyId = actor.connect('destroy',
+                                            Lang.bind(this, this._untrackActor));
 
         this._trackedActors.push(actorData);
         this._queueUpdateRegions();
@@ -555,6 +607,7 @@ Chrome.prototype = {
         actor.disconnect(actorData.visibleId);
         actor.disconnect(actorData.allocationId);
         actor.disconnect(actorData.parentSetId);
+        actor.disconnect(actorData.destroyId);
 
         this._queueUpdateRegions();
     },

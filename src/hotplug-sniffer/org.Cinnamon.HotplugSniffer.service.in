@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=org.Cinnamon.HotplugSniffer
-Exec=@pkglibexecdir@/cinnamon-hotplug-sniffer

@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=org.Cinnamon.Slideshow
-Exec=/usr/bin/cinnamon-slideshow

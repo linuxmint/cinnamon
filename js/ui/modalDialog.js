@@ -19,9 +19,10 @@ const Tweener = imports.ui.tweener;
 
 const Gettext = imports.gettext;
 
-const OPEN_AND_CLOSE_TIME = 0.1;
 const FADE_IN_BUTTONS_TIME = 0.33;
 const FADE_OUT_DIALOG_TIME = 1.0;
+
+var OPEN_AND_CLOSE_TIME = 0.1;
 
 var State = {
     OPENED: 0,
@@ -46,8 +47,8 @@ var State = {
  * For simple usage such as displaying a message, or asking for confirmation,
  * the #ConfirmDialog and #NotifyDialog classes may be used instead.
  */
-function ModalDialog() {
-    this._init();
+function ModalDialog(params) {
+    this._init(params);
 }
 
 ModalDialog.prototype = {
@@ -92,7 +93,8 @@ ModalDialog.prototype = {
 
         if (!this._cinnamonReactive) {
             this._lightbox = new Lightbox.Lightbox(this._group,
-                                                   { inhibitEvents: true });
+                                                   { inhibitEvents: true,
+                                                     radialEffect: true });
             this._lightbox.highlight(this._backgroundBin);
 
             let stack = new Cinnamon.Stack();
@@ -156,12 +158,12 @@ ModalDialog.prototype = {
      *     {
      *         label: _("Cancel"),
      *         action: Lang.bind(this, this.callback),
-     *         key: Clutter.Escape
+     *         key: Clutter.KEY_Escape
      *     },
      *     {
      *         label: _("OK"),
      *         action: Lang.bind(this, this.destroy),
-     *         key: Clutter.Return
+     *         key: Clutter.KEY_Return
      *     }
      * ]);
      * ```
@@ -242,15 +244,18 @@ ModalDialog.prototype = {
         let modifiers = Cinnamon.get_event_state(keyPressEvent);
         let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
         let symbol = keyPressEvent.get_key_symbol();
-        if (symbol === Clutter.Escape && !(modifiers & ctrlAltMask)) {
-            this.close();
-            return;
-        }
 
         let action = this._actionKeys[symbol];
 
-        if (action)
+        if (action) {
             action();
+            return;
+        }
+
+        if (symbol === Clutter.KEY_Escape && !(modifiers & ctrlAltMask)) {
+            this.close();
+            return;
+        }
     },
 
     _onGroupDestroy: function() {
@@ -448,6 +453,9 @@ ConfirmDialog.prototype = {
      */
     _init: function(label, callback){
         ModalDialog.prototype._init.call(this);
+        this.contentLayout.add(new St.Label({ text:        _("Confirm"),
+                                              style_class: 'confirm-dialog-title',
+                                              important:   true }));
         this.contentLayout.add(new St.Label({text: label}));
         this.callback = callback;
 
@@ -548,8 +556,13 @@ InfoOSD.prototype = {
      * primary monitor if not specified.
      */
     show: function(monitorIndex) {
-        if (!monitorIndex) monitorIndex = 0;
-        let monitor = Main.layoutManager.monitors[monitorIndex];
+        let monitor;
+
+        if (!monitorIndex) {
+            monitor = Main.layoutManager.primaryMonitor;
+        } else {
+            monitor = Main.layoutManager.monitors[monitorIndex];
+        }
 
         // The actor has to be shown first so that the width and height can be calculated properly
         this.actor.opacity = 0;
@@ -577,8 +590,8 @@ InfoOSD.prototype = {
      * Destroys the OSD
      */
     destroy: function() {
+        this.hide();
         Main.layoutManager.removeChrome(this.actor);
-        this.actor.destroy();
     },
 
     /**

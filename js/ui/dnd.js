@@ -93,6 +93,8 @@ var _Draggable = new Lang.Class({
         this.target = null;
         this.recentDropTarget = null;
 
+        this.drag_device = null
+
         if (target) {
             this.target = target;
         }
@@ -108,7 +110,7 @@ var _Draggable = new Lang.Class({
             this._actorDestroyed = true;
 
             if (this._dragInProgress && this._dragCancellable)
-                this._cancelDrag(global.get_current_time());
+                this._cancelDrag(null);
             this.disconnectAll();
         }));
         this._onEventId = null;
@@ -138,7 +140,7 @@ var _Draggable = new Lang.Class({
             return false;
 
         this._buttonDown = true;
-        this._grabActor();
+        this._grabActor(event);
 
         let [stageX, stageY] = event.get_coords();
         this._dragStartX = stageX;
@@ -147,32 +149,40 @@ var _Draggable = new Lang.Class({
         return false;
     },
 
-    _grabActor: function() {
-        Clutter.grab_pointer(this.actor);
+    _grabActor: function(event) {
+        this.drag_device = event.get_device();
+        this.drag_device.grab(this.actor);
         this._onEventId = this.actor.connect('event',
                                              Lang.bind(this, this._onEvent));
     },
 
-    _ungrabActor: function() {
+    _ungrabActor: function(event) {
         if (!this._onEventId)
             return;
 
-        Clutter.ungrab_pointer();
+        if (this.drag_device) {
+            this.drag_device.ungrab();
+        } else if (event) {
+            event.get_device().ungrab();
+        }
+
         this.actor.disconnect(this._onEventId);
         this._onEventId = null;
     },
 
-    _grabEvents: function() {
+    _grabEvents: function(event) {
         if (!this._eventsGrabbed) {
             this._eventsGrabbed = Main.pushModal(_getEventHandlerActor());
-            if (this._eventsGrabbed)
-                Clutter.grab_pointer(_getEventHandlerActor());
+            if (this._eventsGrabbed) {
+                this.drag_device = event.get_device()
+                this.drag_device.grab(_getEventHandlerActor());
+            }
         }
     },
 
     _ungrabEvents: function() {
         if (this._eventsGrabbed) {
-            Clutter.ungrab_pointer();
+            this.drag_device.ungrab();
             Main.popModal(_getEventHandlerActor());
             this._eventsGrabbed = false;
         }
@@ -189,11 +199,15 @@ var _Draggable = new Lang.Class({
                 return this._dragActorDropped(event);
             } else if (this._dragActor != null && !this._animationInProgress) {
                 // Drag must have been cancelled with Esc.
+                // Check if escaped drag was from a desklet
+                if (this.target?._delegate.acceptDrop){
+                    this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
+                }
                 this._dragComplete();
                 return true;
             } else {
                 // Drag has never started.
-                this._ungrabActor();
+                this._ungrabActor(event);
                 return false;
             }
         // We intercept MOTION event to figure out if the drag has started and to draw
@@ -208,8 +222,8 @@ var _Draggable = new Lang.Class({
         // dragging and ignore all other key presses.
         } else if (event.type() == Clutter.EventType.KEY_PRESS && this._dragInProgress) {
             let symbol = event.get_key_symbol();
-            if (symbol == Clutter.Escape) {
-                this._cancelDrag(event.get_time());
+            if (symbol === Clutter.KEY_Escape) {
+                this._cancelDrag(event);
                 return true;
             }
         }
@@ -240,7 +254,7 @@ var _Draggable = new Lang.Class({
      * This function is useful to call if you've specified manualMode
      * for the draggable.
      */
-    startDrag: function (stageX, stageY, time) {
+    startDrag: function (stageX, stageY, event) {
         currentDraggable = this;
         this._dragInProgress = true;
 
@@ -251,10 +265,10 @@ var _Draggable = new Lang.Class({
             this.actor.hover = false;
         }
 
-        this.emit('drag-begin', time);
+        this.emit('drag-begin', event.get_time());
         if (this._onEventId)
-            this._ungrabActor();
-        this._grabEvents();
+            this._ungrabActor(event);
+        this._grabEvents(event);
         global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
 
         this._dragX = this._dragStartX = stageX;
@@ -362,7 +376,7 @@ var _Draggable = new Lang.Class({
         let threshold = Gtk.Settings.get_default().gtk_dnd_drag_threshold;
         if ((Math.abs(stageX - this._dragStartX) > threshold ||
              Math.abs(stageY - this._dragStartY) > threshold)) {
-                this.startDrag(stageX, stageY, event.get_time());
+                this.startDrag(stageX, stageY, event);
                 this._updateDragPosition(event);
         }
 
@@ -522,14 +536,14 @@ var _Draggable = new Lang.Class({
                     this._dragInProgress = false;
                     global.unset_cursor();
                     this.emit('drag-end', event.get_time(), true);
-                    this._dragComplete();
+                    this._dragComplete(event);
                     return true;
                 }
             }
             target = target.get_parent();
         }
 
-        this._cancelDrag(event.get_time());
+        this._cancelDrag(event);
 
         return true;
     },
@@ -566,7 +580,13 @@ var _Draggable = new Lang.Class({
         return [x, y, scale];
     },
 
-    _cancelDrag: function(eventTime) {
+    _cancelDrag: function(event) {
+        let eventTime;
+        if (event !== null) {
+            eventTime = event.get_time();
+        } else {
+            eventTime = global.get_current_time()
+        }
         this.emit('drag-cancelled', eventTime);
         this._dragInProgress = false;
         let [snapBackX, snapBackY, snapBackScale] = this._getRestoreLocation();
@@ -635,7 +655,7 @@ var _Draggable = new Lang.Class({
     },
 
     _dragComplete: function() {
-        if (!this._actorDestroyed && !this._dragActor.is_finalized())
+        if (this._dragOrigParent)
             Cinnamon.util_set_hidden_from_pick(this._dragActor, false);
 
         this._ungrabEvents();
@@ -755,23 +775,36 @@ GenericDragItemContainer.prototype = {
         this.actor.add_actor(this.child);
     },
 
-    animateIn: function() {
-        if (this.child == null)
+    animateIn: function(onCompleteFunc) {
+        if (!this.child) {
+            if (typeof(onCompleteFunc) === 'function')
+                onCompleteFunc();
             return;
+        }
 
         this.childScale = 0;
         this.childOpacity = 0;
-        Tweener.addTween(this,
-                         { childScale: 1.0,
-                           childOpacity: 255,
-                           time: DND_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         });
+
+        let params = { childScale: 1.0,
+                       childOpacity: 255,
+                       time: DND_ANIMATION_TIME,
+                       transition: 'easeOutQuad' };
+
+        if (typeof(onCompleteFunc) === 'function')
+            params.onComplete = onCompleteFunc;
+
+        Tweener.addTween(this, params);
     },
 
-    animateOutAndDestroy: function() {
-        if (this.child == null) {
+    animateOutAndDestroy: function(onCompleteFunc) {
+        let _onComplete = () => {
+            if (typeof(onCompleteFunc) === 'function')
+                onCompleteFunc();
             this.actor.destroy();
+        };
+
+        if (!this.child) {
+            _onComplete();
             return;
         }
 
@@ -782,10 +815,7 @@ GenericDragItemContainer.prototype = {
                            childOpacity: 0,
                            time: DND_ANIMATION_TIME,
                            transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this, function() {
-                               this.actor.destroy();
-                           })
-                         });
+                           onComplete: _onComplete });
     },
 
     set childScale(scale) {
@@ -795,8 +825,10 @@ GenericDragItemContainer.prototype = {
         if (this.child == null)
             return;
 
-        this.child.set_scale_with_gravity(scale, scale,
-                                          Clutter.Gravity.CENTER);
+        this.child.pivot_point.x = 0.5;
+        this.child.pivot_point.y = 0.5;
+        this.child.scale_x = scale;
+        this.child.scale_y = scale;
         this.actor.queue_relayout();
     },
 
@@ -833,16 +865,12 @@ GenericDragPlaceholderItem.prototype = {
     }
 };
 
-function LauncherDraggable() {
-    this._init();
-}
+var LauncherDraggable = class {
+    constructor(launchersBox) {
+        this.launchersBox = launchersBox;
+    }
 
-LauncherDraggable.prototype = {
-    _init: function() {
-        this.launchersBox = null;
-    },
-
-    getId: function() {
+    getId() {
         /* Implemented by draggable launchers */
         global.logError("Could not complete drag-and-drop.  Launcher does not implement LauncherDraggable");
     }

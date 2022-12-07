@@ -14,6 +14,8 @@ const Params = imports.misc.params;
 const Search = imports.ui.search;
 const Util = imports.misc.util;
 
+const DEBUG = false;
+
 /**
  * Represents a place object, which is most normally a bookmark entry,
  * a mount/volume, or a special place like the Home Folder, Computer, and Network.
@@ -86,6 +88,10 @@ PlaceDeviceInfo.prototype = {
         this._lowerName = this.name.toLowerCase();
         this.id = 'mount:' + mount.get_root().get_uri();
         this.idDecoded = decodeURIComponent(this.id);
+
+        this.busyWaitId = 0;
+        this.destroySignalId = 0;
+        this.busyNotification = null;
     },
 
     iconFactory: function(size) {
@@ -103,34 +109,188 @@ PlaceDeviceInfo.prototype = {
     },
 
     remove: function() {
+        if (this.busyWaitId > 0) {
+            Mainloop.source_remove(this.busyWaitId);
+            this.busyWaitId = 0;
+        }
+
+        if (this.busyNotification != null) {
+            this.busyNotification.destroy();
+        }
+
+        this._tryRemove();
+    },
+
+    _tryRemove: function() {
         if (!this.isRemovable())
             return;
 
-        if (this._mount.can_eject())
-            this._mount.eject(0, null, Lang.bind(this, this._removeFinish));
-        else
-            this._mount.unmount(0, null, Lang.bind(this, this._removeFinish));
+        let mountOp = new Gio.MountOperation(this._mount);
+        let drive = this._mount.get_drive();
+        let volume = this._mount.get_volume();
+
+        if (drive &&
+            drive.get_start_stop_type() == Gio.DriveStartStopType.SHUTDOWN &&
+            drive.can_stop()) {
+            drive.stop(0, mountOp, null, Lang.bind(this, this._stopFinish));
+        } else {
+            if (drive && drive.can_eject())
+                drive.eject_with_operation(0, mountOp, null, Lang.bind(this, this._ejectFinish, true));
+            else if (volume && volume.can_eject())
+                volume.eject_with_operation(0, mountOp, null, Lang.bind(this, this._ejectFinish, false));
+            else if (this._mount.can_eject())
+                this._mount.eject_with_operation(0, mountOp, null, Lang.bind(this, this._ejectFinish, false));
+            else if (this._mount.can_unmount())
+                this._mount.unmount_with_operation(0, mountOp, null, Lang.bind(this, this._removeFinish));
+        }
+
+        this.busyWaitId = 0;
+        return false;
+    },
+
+    _sendNotification: function(msg1, msg2 = null, withButton = false, persistent = false) {
+        if (Main.messageTray) {
+            if (persistent && this.busyNotification != null) {
+                return;
+            }
+
+            if (!persistent && this.busyNotification) {
+                this.busyNotification.destroy();
+                this.busyNotification = null;
+            }
+
+            let source = new MessageTray.SystemNotificationSource();
+            Main.messageTray.add(source);
+            let notification = new MessageTray.Notification(source, msg1, msg2);
+            notification.setTransient(true);
+            notification.setUrgency(persistent ? MessageTray.Urgency.CRITICAL : MessageTray.Urgency.NORMAL);
+            if (withButton) {
+                notification.addButton('system-undo', _("Retry"));
+                notification.connect('action-invoked', Lang.bind(this, this.remove()));
+            }
+            source.notify(notification);
+            if (persistent) {
+                this.busyNotification = notification;
+                this.destroySignalId = notification.connect("destroy", () => {
+                    this.busyNotification.disconnect(this.destroySignalId);
+                    this.busyNotification = null;
+                    this.destroySignalId = 0;
+                })
+            }
+        } else {
+            if (msg2)
+                global.log(msg1 + ': ' + msg2);
+            else
+                global.log(msg1);
+        }
+    },
+
+    _stopFinish: function(drive, res) {
+        if (DEBUG) global.log("PlacesManager: **_stopFinish**");
+        let driveName = drive.get_name();  // Ex: USB Flash Drive
+        let unixDevice = drive.get_identifier('unix-device'); // Ex: /dev/sdc
+        let msg1 = _("%s (%s) has just been stopped.").format(driveName, this.name);
+        let msg2 = _("Device %s can be turned off, if necessary.").format(unixDevice);
+        let btn = false; // Show the 'Retry' button?
+        try {
+            drive.stop_finish(res);
+        } catch(e) {
+            if (e.code == Gio.IOErrorEnum.BUSY) {
+                msg1 = _("Device %s is busy, please wait.".format(drive.get_name()));
+                msg2 = _("Do not disconnect or data loss may occur.");
+
+                this._sendNotification(msg1, msg2, false, true);
+                this.busyWaitId = Mainloop.timeout_add_seconds(2, ()=>this._tryRemove());
+                return;
+            }
+            btn = true;
+            msg1 = _("Unable to stop the drive %s (%s)").format(drive.get_name(), this.name);
+            msg2 = e.message;
+        }
+        if (DEBUG) global.log(msg1 + ": " + msg2);
+        this._sendNotification(msg1, msg2, btn);
+    },
+
+    _ejectFinish: function(source, res, is_drive) {
+        if (DEBUG) global.log("PlacesManager: **_ejectFinish**");
+        let msg1;
+        let msg2 = null;
+        let btn = false;
+
+        if (is_drive) {
+            let driveName = source.get_name();  // Ex: USB Flash Drive
+            let unixDevice = source.get_identifier('unix-device'); // Ex: /dev/sdc
+            msg1 = _("%s (%s) can be safely unplugged.").format(driveName, this.name);
+            msg2 = _("Device %s can be removed.").format(unixDevice);
+        } else {
+            msg1 = _("%s (%s) has just been ejected.").format(source.get_name(), this.name);
+        }
+        try {
+            source.eject_with_operation_finish(res);
+        } catch(e) {
+            if (e.code == Gio.IOErrorEnum.BUSY) {
+                msg1 = _("Device %s is busy, please wait.".format(source.get_name()));
+                msg2 = _("Do not remove or data loss may occur.");
+
+                this._sendNotification(msg1, msg2, false, true);
+                this.busyWaitId = Mainloop.timeout_add_seconds(2, ()=>this._tryRemove());
+                return;
+            }
+            btn = true;
+            msg1 = _("Unable to eject the drive %s (%s)").format(source.get_name(), this.name);
+            msg2 = e.message;
+        }
+        if (DEBUG) global.log(msg1 + ": " + msg2);
+        this._sendNotification(msg1, msg2, btn);
     },
 
     _removeFinish: function(o, res, data) {
-        try {
-            if (this._mount.can_eject())
-                this._mount.eject_finish(res);
-            else
-                this._mount.unmount_finish(res);
-        } catch (e) {
-            let message = _("Failed to unmount '%s'").format(o.get_name());
-            let source = new MessageTray.SystemNotificationSource();
-            if (Main.messageTray) {
-                Main.messageTray.add(source);
-                let notification = new MessageTray.Notification(source, message, null);
-                notification.setTransient(true);
+        if (DEBUG) global.log("PlacesManager: **_removeFinish**");
+        let msg1 = _("Succesfully unmounted %s (%s)").format(o.get_name(), this.name);
+        let msg2 = null;
+        let btn = false;
 
-                notification.addButton('system-undo', _("Retry"));
-                notification.connect('action-invoked', Lang.bind(this, this.remove));
-                source.notify(notification);
+        // 'this._mount.can_eject()' seems to be ever false. Thus, only the 'else' part will be used.
+        // If no issues are reported, these 19 lines of code commented below can be deleted.
+        //~ if (this._mount.can_eject()) {
+            //~ msg1 = _("%s (%s) can be safely unplugged").format(o.get_name(), this.name);
+            //~ msg2 = _("Device can be removed");
+            //~ try {
+                //~ this._mount.eject_with_operation_finish(res);
+            //~ } catch(e) {
+                //~ btn = true;
+                //~ msg1 = _("Failed to eject %s (%s)").format(o.get_name(), this.name);
+                //~ msg2 = e.message;
+            //~ }
+        //~ } else {
+            //~ try {
+                //~ this._mount.unmount_with_operation_finish(res);
+            //~ } catch(e) {
+                //~ btn = true;
+                //~ msg1 = _("Failed to unmount %s (%s)").format(o.get_name(), this.name);
+                //~ msg2 = e.message;
+            //~ }
+        //~ }
+        // <--Beginning of the code replacing the 19 lines above:
+        try {
+            this._mount.unmount_with_operation_finish(res);
+        } catch(e) {
+            if (e.code == Gio.IOErrorEnum.BUSY) {
+                msg1 = _("Device %s is busy, please wait.".format(o.get_name()));
+                msg2 = _("Do not disconnect or data loss may occur.");
+
+                this._sendNotification(msg1, msg2, false, true);
+                this.busyWaitId = Mainloop.timeout_add_seconds(2, ()=>this._tryRemove());
+                return;
             }
+            btn = true;
+            msg1 = _("Failed to unmount %s (%s)").format(o.get_name(), this.name);
+            msg2 = e.message;
         }
+        // End of this code.-->
+
+        if (DEBUG) global.log(msg1 + ": " + msg2);
+        this._sendNotification(msg1, msg2, btn);
     }
 };
 
@@ -205,26 +365,40 @@ PlacesManager.prototype = {
 
         this._updateDevices();
 
-        this._bookmarksPath = GLib.build_filenamev([GLib.get_user_config_dir(), 'gtk-3.0', 'bookmarks']);
-        this._bookmarksFile = Gio.file_new_for_path(this._bookmarksPath);
+        this._bookmarksFile = null;
+        this._bookmarksPath = null;
 
-        if (!this._bookmarksFile.query_exists(null)) {
-            this._bookmarksPath = GLib.build_filenamev([GLib.get_home_dir(), '.gtk-bookmarks']);
-            this._bookmarksFile = Gio.file_new_for_path(this._bookmarksPath);
+        let bookmarksPath3 = GLib.build_filenamev([GLib.get_user_config_dir(), 'gtk-3.0', 'bookmarks']);
+        let bookmarksFile3 = Gio.file_new_for_path(bookmarksPath3);
+
+        if (!bookmarksFile3.query_exists(null)) {
+            let bookmarksPath2 = GLib.build_filenamev([GLib.get_home_dir(), '.gtk-bookmarks']);
+            let bookmarksFile2 = Gio.file_new_for_path(bookmarksPath2);
+
+            if (bookmarksFile2.query_exists(null)) {
+                this._bookmarksFile = bookmarksFile2;
+                this._bookmarksPath = bookmarksPath2;
+            }
         }
 
-        this.monitor = this._bookmarksFile.monitor_file(Gio.FileMonitorFlags.NONE, null);
+        if (this._bookmarksFile === null) {
+            this._bookmarksPath = bookmarksPath3;
+            this._bookmarksFile = bookmarksFile3;
+        }
+
         this._bookmarkTimeoutId = 0;
-        this.monitor.connect('changed', Lang.bind(this, function () {
+
+        this.monitor = this._bookmarksFile.monitor_file(Gio.FileMonitorFlags.NONE, null);
+        this.monitor.connect('changed', () => {
             if (this._bookmarkTimeoutId > 0)
                 return;
             /* Defensive event compression */
-            this._bookmarkTimeoutId = Mainloop.timeout_add(100, Lang.bind(this, function () {
+            this._bookmarkTimeoutId = Mainloop.timeout_add(100, () => {
                 this._bookmarkTimeoutId = 0;
                 this._reloadBookmarks();
-                return false;
-            }));
-        }));
+                return GLib.SOURCE_REMOVE;
+            });
+        });
 
         this._reloadBookmarks();
     },
@@ -279,7 +453,7 @@ PlacesManager.prototype = {
 
     _updateDevices: function() {
         this._deviceUpdateAwaiting = false;
-        global.log("PlacesManager: Updating devices");
+        if (DEBUG) global.log("PlacesManager: Updating devices");
         this._mounts = [];
 
         /* first go through all connected drives */
@@ -330,11 +504,17 @@ PlacesManager.prototype = {
     },
 
     _reloadBookmarks: function() {
-
+        let had_bookmarks = this._bookmarks.length > 0;
         this._bookmarks = [];
 
-        if (!GLib.file_test(this._bookmarksPath, GLib.FileTest.EXISTS))
+        if (!this._bookmarksFile.query_exists(null)) {
+            if (had_bookmarks) {
+                this.emit('bookmarks-updated');
+                this.emit('places-updated');
+            }
+
             return;
+        }
 
         let bookmarksContent = Cinnamon.get_file_contents_utf8_sync(this._bookmarksPath);
 
@@ -363,8 +543,8 @@ PlacesManager.prototype = {
                 label = Cinnamon.util_get_label_for_uri(bookmark);
             if (label == null)
                 continue;
-            
-            let item; 
+
+            let item;
             if (file.query_exists(null)) {
                 let icon = Cinnamon.util_get_icon_for_uri(bookmark);
                 item = new PlaceInfo('bookmark:' + bookmark, label,
@@ -376,19 +556,19 @@ PlacesManager.prototype = {
                         });
             } else {
                 // Assume the bookmark is an unmounted network location
-                // try to mount and open by the default file manager 
-                let icon = Gio.ThemedIcon.new('network-workgroup');          
+                // try to mount and open by the default file manager
+                let icon = Gio.ThemedIcon.new('network-workgroup');
                 item = new PlaceInfo('bookmark:' + bookmark, label,
                         function(size) {
                             return new St.Icon({ gicon: icon, icon_size: size });
                         },
                         function(params) {
                             let fileapp = Gio.app_info_get_default_for_type('inode/directory', true);
-                            if (fileapp) {    
+                            if (fileapp) {
                                 fileapp.launch_uris([bookmark], _makeLaunchContext(params));
                             }
                         });
-            }                  
+            }
             this._bookmarks.push(item);
         }
 
@@ -403,7 +583,7 @@ PlacesManager.prototype = {
     },
 
     getAllPlaces: function () {
-        return this.getDefaultPlaces().concat(this.getBookmarks(), this.getMounts());
+        return [...this.getDefaultPlaces(), ...this.getBookmarks(), ...this.getMounts()];
     },
 
     getDefaultPlaces: function () {
@@ -505,7 +685,7 @@ PlaceSearchProvider.prototype = {
         prefixResults.sort(this._compareResultMeta);
         multipleSubstringResults.sort(this._compareResultMeta);
         substringResults.sort(this._compareResultMeta);
-        return multiplePrefixResults.concat(prefixResults.concat(multipleSubstringResults.concat(substringResults)));
+        return [...multiplePrefixResults, ...prefixResults, ...multipleSubstringResults, ...substringResults];
     },
 
     getInitialResultSet: function(terms) {

@@ -1,0 +1,986 @@
+<schemalist>
+  <schema id="org.cinnamon" path="/org/cinnamon/"
+          gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="development-tools" type="b">
+      <default>true</default>
+      <summary>
+        Enable internal tools useful for developers and testers from Alt-F2
+      </summary>
+      <description>
+        Allows access to internal debugging and monitoring tools
+        using the Alt-F2 dialog.
+      </description>
+    </key>
+    <key name="enabled-extensions" type="as">
+      <default>[]</default>
+      <summary>Uuids of extensions to enable</summary>
+      <description>
+        Cinnamon extensions have a uuid property; this key lists extensions
+        which should be loaded.  disabled-extensions overrides this setting for
+        extensions that appear in both lists. Append ! in front of uuid to
+        override version check
+      </description>
+    </key>
+
+    <key name="extension-cache-updated" type="i">
+      <default>0</default>
+      <summary>[not used - obsolete]</summary>
+      <description>
+      </description>
+    </key>
+
+    <key name="enabled-applets" type="as">
+      <default>['panel1:left:0:menu@cinnamon.org', 'panel1:left:1:separator@cinnamon.org', 'panel1:left:2:grouped-window-list@cinnamon.org', 'panel1:right:0:systray@cinnamon.org', 'panel1:right:1:xapp-status@cinnamon.org', 'panel1:right:2:notifications@cinnamon.org', 'panel1:right:3:printers@cinnamon.org', 'panel1:right:4:removable-drives@cinnamon.org', 'panel1:right:5:keyboard@cinnamon.org', 'panel1:right:6:favorites@cinnamon.org', 'panel1:right:7:network@cinnamon.org', 'panel1:right:8:sound@cinnamon.org', 'panel1:right:9:power@cinnamon.org', 'panel1:right:10:calendar@cinnamon.org', 'panel1:right:11:cornerbar@cinnamon.org']</default>
+      <summary>Uuids of applets to enable</summary>
+      <description>
+        Cinnamon applets have a uuid property; this key lists applets
+        which should be loaded. Append ! in front of uuid to override version
+        check.
+      </description>
+    </key>
+
+    <key name="applet-cache-updated" type="i">
+      <default>0</default>
+      <summary>[not used - obsolete]</summary>
+      <description>
+      </description>
+    </key>
+
+    <key name="next-applet-id" type="i">
+      <default>0</default>
+      <summary>The next applet id to give the next added applet</summary>
+      <description>Do not change manually.</description>
+    </key>
+
+    <key name="next-desklet-id" type="i">
+      <default>0</default>
+      <summary>The next desklet id to give the next added desklet</summary>
+      <description>Do not change manually.</description>
+    </key>
+
+    <key name="enabled-desklets" type="as">
+      <default>[]</default>
+      <summary>Uuids of desklets to enable</summary>
+      <description>
+        Cinnamon desklets have a uuid property; this key lists desklets
+        which should be loaded. uuids should be put in the form uuid:id:x:y, where id is used to distinguish between multiple instances of the same desklet. Append ! in front of uuid to override version check.
+      </description>
+    </key>
+
+    <key name="desklet-cache-updated" type="i">
+      <default>0</default>
+      <summary>[not used - obsolete]</summary>
+      <description>
+      </description>
+    </key>
+
+    <key name="enabled-search-providers" type="as">
+      <default>[]</default>
+      <summary>Uuids of search providers to enable</summary>
+      <description>
+        Cinnamon search providers have a uuid property; this key lists search providers
+        which should be loaded.
+      </description>
+    </key>
+
+    <key name="desklet-snap" type="b">
+      <default>true</default>
+      <summary> Whether desklets "snap" to a grid position</summary>
+      <description> Enabling this allows desklets' position to be snapped into a regular grid</description>
+    </key>
+
+    <key name="desklet-snap-interval" type="i">
+      <default>25</default>
+      <summary>The interval between each possible grid position when desklets "snap"</summary>
+      <description>If desklet-snap is enabled, the possible positions of desklets will be all integer multiples of the value of "desklet-snap-size"</description>
+    </key>
+    <key name="lock-desklets" type="b">
+      <default>false</default>
+      <summary> Locks the current position of all desklets and prevents dragging</summary>
+    </key>
+    <key name="panels-enabled" type="as">
+      <default>['1:0:bottom']</default>
+      <summary>List of panels used</summary>
+      <description>
+        Panels are listed in the following format: panelID:monitor:position, where monitor is the monitor number (0 for primary), and position is either top or bottom
+      </description>
+    </key>
+
+    <key name="panels-autohide" type="as">
+      <default>['1:false']</default>
+      <summary>Auto-hide panel</summary>
+      <description>
+        Whether the panel autohides or not.
+      </description>
+    </key>
+
+    <key name="panels-show-delay" type="as">
+      <default>['1:0']</default>
+      <summary>Duration of the delay before a hidden panel is shown</summary>
+      <description>Duration of the delay (in milliseconds)</description>
+    </key>
+
+    <key name="panels-hide-delay" type="as">
+      <default>['1:0']</default>
+      <summary>Duration of the delay before a shown panel is hidden</summary>
+      <description>Duration of the delay (in milliseconds)</description>
+    </key>
+
+    <key name="panels-height" type="as">
+      <default>['1:40']</default>
+      <summary>Panel size</summary>
+      <description>
+        User-defined panel-height for panels.  Note, this value may or may not be the true value in use at runtime, depending
+        on any scaling that may be occurring (on hidpi screens, for instance).
+      </description>
+    </key>
+
+    <key type="s" name="panel-zone-icon-sizes">
+      <default>'[{"panelId": 1, "left": 0, "center": 0, "right": 24}]'</default>
+      <summary>Per-zone fullcolor icon-size configuration</summary>
+      <description>
+        Panel zone configuration objects for fullcolor icon size.
+      </description>
+    </key>
+
+    <key type="s" name="panel-zone-symbolic-icon-sizes">
+      <default>'[{"panelId": 1, "left": 28, "center": 28, "right": 16}]'</default>
+      <summary>Per-zone symbolic icon-size configuration</summary>
+      <description>
+        Panel zone configuration objects for symbolic icon size.  This is calculates size as a fraction of current color icon sizes
+      </description>
+    </key>
+
+    <key type="s" name="panel-zone-text-sizes">
+      <default>'[{"panelId": 1, "left":0.0, "center":0.0, "right":0.0}]'</default>
+      <summary>Per-zone text-size configuration, values in point</summary>
+      <description>
+        Panel zone configuration objects for text, values are expressed as points.  Setting to 0.0 will give control to the theme.
+      </description>
+    </key>
+
+    <key name="panel-scale-text-icons" type="b">
+      <default>false</default>
+      <summary>(Deprecated) Scale panel applet text and icons</summary>
+      <description>
+        (Deprecated) Retained to avoid applets who read the property from crashing Cinnamon
+      </description>
+    </key>
+
+    <key name="desktop-effects-on-dialogs" type="b">
+      <default>true</default>
+      <summary>Enable desktop effects on dialog boxes</summary>
+      <description>
+        Whether to enable desktop effects on dialog boxes.
+      </description>
+    </key>
+
+    <key name="desktop-effects-on-menus" type="b">
+      <default>true</default>
+      <summary>Enable desktop effects on Gtk menus</summary>
+      <description>
+        Whether to enable desktop effects on Gtk menus.
+      </description>
+    </key>
+
+    <key name="desktop-effects-workspace" type="b">
+      <default>true</default>
+      <summary>Enable desktop effects in the Cinnamon ui</summary>
+      <description>
+        This affects switching workspaces, expo and scale.
+      </description>
+    </key>
+
+    <key name="desktop-effects" type="b">
+      <default>true</default>
+      <summary>Enable desktop effects</summary>
+      <description>
+        Whether to enable desktop effects and window animations.
+      </description>
+    </key>
+
+    <key type="s" name="desktop-effects-close">
+      <default>"traditional"</default>
+      <summary>Effect used when closing windows</summary>
+      <description>
+       An effect: traditional, fly, none
+      </description>
+    </key>
+
+    <key type="s" name="desktop-effects-map">
+      <default>"traditional"</default>
+      <summary>Effect used when mapping windows</summary>
+      <description>
+       An effect: traditional, fly, fade, none
+      </description>
+    </key>
+
+    <key type="s" name="desktop-effects-minimize">
+      <default>"traditional"</default>
+      <summary>Effect used when minimizing windows</summary>
+      <description>
+       An effect: traditional, fly, fade, none
+      </description>
+    </key>
+
+    <key type="b" name="desktop-effects-change-size">
+      <default>true</default>
+      <summary>Whether to show an animation when unmaximizing/tiling/snapping windows</summary>
+      <description>
+      </description>
+    </key>
+
+    <key type="s" name="desktop-effects-sizechange-effect">
+      <default>"scale"</default>
+      <summary>Effect used when maximizing windows</summary>
+      <description>
+       An effect: none
+      </description>
+    </key>
+
+     <key name="desktop-effects-sizechange-transition" type="s">
+      <default>"easeInQuad"</default>
+      <summary>Transition used when maximizing windows</summary>
+      <description>
+       A Tweener transition
+      </description>
+    </key>
+
+    <key type="i" name="desktop-effects-sizechange-time">
+      <default>100</default>
+      <summary>Duration of the effect (in milliseconds)</summary>
+      <description>
+       Duration of the effect (in milliseconds)
+      </description>
+    </key>
+
+    <key type="i" name="window-effect-speed">
+      <default>1</default>
+      <range min="0" max="2"/>
+      <summary>Speed multiplier for window-effects</summary>
+    </key>
+
+    <key type="b" name="startup-animation">
+      <default>true</default>
+      <summary>Whether the startup animation is enabled</summary>
+      <description>
+       Whether the startup animation is enabled
+      </description>
+    </key>
+
+    <key name="device-aliases" type="as">
+      <default>[]</default>
+      <summary>Aliases given to battery powered fardware devices</summary>
+      <description>
+      </description>
+    </key>
+
+    <key name="desktop-layout" type="s">
+      <default>""</default>
+      <summary>(Deprecated) Layout style</summary>
+      <description>
+       (Deprecated) Layout styles - pre-2.6
+      </description>
+    </key>
+
+    <key name="date-format" type="s">
+      <default>"YYYY-MM-DD"</default>
+      <summary>Date format</summary>
+      <description>
+        Format used for dates.
+      </description>
+    </key>
+
+    <key type="i" name="number-workspaces">
+        <default>0</default>
+        <summary>(Deprecated) Number of workspaces</summary>
+      <description>(Deprecated) Number of Workspaces - pre-2.6, even though you shouldn't use it even on &lt;2.6 releases. Use org.cinnamon.desktop.wm.preferences num-workspaces instead.</description>
+    </key>
+
+    <key name="overview-corner" type="as">
+      <default>["DEPRECATED"]</default>
+      <summary>Obsolete - unused</summary>
+      <description>Obsolete - unused</description>
+    </key>
+
+    <key name="hotcorner-layout" type="as">
+      <default>['expo:false:0', 'scale:false:0', 'scale:false:0', 'desktop:false:0']</default>
+      <summary>Properties of hotcorners</summary>
+      <description>Properties of hotcorners, in the form functionality:hover-enabled:hover-delay. The order in which properties are displayed is top left, top right, bottom left, bottom right.</description>
+    </key>
+
+    <key name="panel-launchers" type="as">
+      <default>["DEPRECATED"]</default>
+      <summary>Obsolete - unused</summary>
+      <description>Obsolete - unused</description>
+    </key>
+
+    <key name="enable-app-monitoring" type="b">
+      <default>true</default>
+      <summary>Whether to collect stats about applications usage</summary>
+      <description>
+        Cinnamon normally monitors active applications in order to present
+        the most used ones (e.g. in launchers). While this data will be
+        kept private, you may want to disable this for privacy reasons.
+        Please note that doing so won't remove already saved data.
+      </description>
+    </key>
+
+    <key name="favorite-apps" type="as">
+      <default>[ 'firefox.desktop', 'mintinstall.desktop', 'cinnamon-settings.desktop', 'hexchat.desktop', 'org.gnome.Terminal.desktop', 'nemo.desktop' ]</default>
+      <summary>List of desktop file IDs for favorite applications</summary>
+      <description>
+        The applications corresponding to these identifiers
+        will be displayed in the favorites area.
+      </description>
+    </key>
+
+    <key name="workspace-name-overrides" type="as">
+      <default>['DEPRECATED']</default>
+      <summary>(Deprecated) List of non-default workspace names</summary>
+      <description>
+        (Deprecated) The user-set names of the workspaces. Deprecated since 2.6. Use org.cinnamon.desktop.wm.preferences workspace-names instead.
+      </description>
+    </key>
+
+    <key name="workspace-osd-visible" type="b">
+      <default>true</default>
+      <summary>Enable or disable the workspace OSD</summary>
+      <description>
+        Whether the name of the workspace shows up on the screen when activated or not.
+      </description>
+    </key>
+
+    <key name="workspace-expo-view-as-grid" type="b">
+      <default>false</default>
+      <summary>Display the Expo view as a grid</summary>
+      <description>
+        When enabled the Expo view will be displayed as a grid.
+      </description>
+    </key>
+
+    <key name="disabled-open-search-providers" type="as">
+      <default>[]</default>
+      <summary>disabled OpenSearch providers</summary>
+    </key>
+
+    <key name="command-history" type="as">
+      <default>[]</default>
+      <summary>History for command (Alt-F2) dialog</summary>
+    </key>
+
+    <key name="looking-glass-history" type="as">
+      <default>[]</default>
+      <summary>History for the looking glass dialog</summary>
+    </key>
+
+    <key name="saved-im-presence" type="i">
+      <default>1</default>
+      <summary></summary>
+    </key>
+
+    <key name="saved-session-presence" type="i">
+      <default>0</default>
+      <summary></summary>
+    </key>
+
+    <key name="no-adjacent-panel-barriers" type="b">
+      <default>false</default>
+      <summary>Whether to omit pointer barriers between adjacent panels.</summary>
+    </key>
+
+    <key type="b" name="panel-edit-mode">
+      <default>false</default>
+      <summary>Panel edit mode</summary>
+      <description>A mode for the user to drag and drop applets and modify the look of the desktop</description>
+    </key>
+
+    <key type="b" name="panel-launchers-draggable">
+      <default>true</default>
+      <summary>Obsolete</summary>
+    </key>
+
+    <key name="alttab-switcher-style" type="s">
+      <default>"icons+thumbnails"</default>
+      <summary>ALT-tab switcher style</summary>
+      <description>
+       Controls the style of the ALT-tab window switcher. Can be any combination of "icons", "preview" and "thumbnails", separated by "+".
+      </description>
+    </key>
+
+    <key type="b" name="alttab-switcher-enforce-primary-monitor">
+      <default>false</default>
+      <summary>Enforce displaying the alt-tab switcher on the primary monitor instead of the active one</summary>
+    </key>
+
+    <key type="b" name="alttab-minimized-aware">
+    <default>false</default>
+      <summary>Move minimized windows to the end of the appSwitcher</summary>
+    </key>
+
+    <key type="i" name="alttab-switcher-delay">
+      <default>100</default>
+      <summary>Duration of the effect (in milliseconds)</summary>
+      <description>Duration of the effect (in milliseconds)</description>
+    </key>
+
+    <key type="b" name="alttab-switcher-show-all-workspaces">
+      <default>false</default>
+      <summary>Show all windows from all workspaces</summary>
+    </key>
+
+    <key name="bring-windows-to-current-workspace" type="b">
+      <default>false</default>
+      <summary>not used - lives in org.cinnamon.muffin now</summary>
+    </key>
+
+    <key name="prevent-focus-stealing" type="b">
+      <default>false</default>
+      <summary>[unused] Prevents windows that request user attention from stealing focus</summary>
+      <description>
+        This setting is no longer used.
+      </description>
+    </key>
+
+    <key name="desklet-decorations" type="i">
+      <default>1</default>
+      <summary>The decoration level of the desklets</summary>
+      <description>The amount of decoration desklets must have.
+      0 = None;
+      1 = Borders;
+      2 = Borders and header;
+      </description>
+    </key>
+
+    <key type="b" name="enable-edge-flip">
+      <default>false</default>
+      <summary>Whether edge flip is enabled</summary>
+    </key>
+
+    <key type="i" name="edge-flip-delay">
+      <default>1000</default>
+      <summary>Duration of the delay before switching the workspace</summary>
+      <description>Duration of the delay (in milliseconds)</description>
+    </key>
+
+    <key type="b" name="cinnamon-settings-advanced">
+      <default>false</default>
+      <summary>Whether advanced mode is enabled in cinnamon-settings</summary>
+    </key>
+
+    <key type="b" name="run-dialog-show-completions">
+      <default>true</default>
+      <summary>Whether or not to show possible completions in the run dialog (Alt-F2)</summary>
+    </key>
+
+    <key type="as" name="run-dialog-aliases">
+      <default>[]</default>
+      <summary>Aliases for the Alt-F2 dialog</summary>
+      <description>Aliases for use in the Alt-F2 dialog. This is a list of strings of the form a:b, where an instance of "a" is to be replaced with "b". Replacement is only performed on the first word.</description>
+    </key>
+
+    <key type="s" name="show-media-keys-osd">
+      <default>"medium"</default>
+      <summary>Whether the media keys osd is disabled or its relative display size</summary>
+      <description>
+      Allows setting of the default size of the media keys osd or disables it completely.
+      Possible values are "small", "medium", "large", or "disabled".
+      </description>
+    </key>
+
+    <key name="startup-icon-name" type="s">
+      <default>""</default>
+      <summary>The logo to use in the startup animation</summary>
+      <description>
+       An icon name or absolute path to an icon, which will be used in the startup animation.  If this is left empty, only a black screen will display.
+      </description>
+    </key>
+
+    <key type="b" name="allow-other-notification-handlers">
+      <default>false</default>
+      <summary>If true, Cinnamon will no longer attempt to be the session notification handler.</summary>
+    </key>
+
+    <key type="s" name="system-icon">
+      <default>""</default>
+      <summary>The logo to use in the system info settings</summary>
+      <description>
+        An icon name or absolute path to an icon, which will be used for the system icon in the "System Info" settings app.
+        .
+        Disabled if no value is set.
+      </description>
+    </key>
+
+    <child name="theme" schema="org.cinnamon.theme"/>
+    <child name="recorder" schema="org.cinnamon.recorder"/>
+    <child name="keyboard" schema="org.cinnamon.keyboard"/>
+    <child name="desklets" schema="org.cinnamon.desklets" />
+    <child name="sounds" schema="org.cinnamon.sounds" />
+    <child name="launcher" schema="org.cinnamon.launcher" />
+
+    <key name="enable-vfade" type="b">
+      <default>true</default>
+      <summary>Enable the fade effect in Cinnamon scrollviews</summary>
+      <description>
+        Whether the vfade effect is enabled or not
+      </description>
+    </key>
+
+    <key name="show-snap-osd" type="b">
+      <default>true</default>
+      <summary>Show the tile/snap OSD</summary>
+      <description>
+        Hide the snap OSD.
+      </description>
+    </key>
+
+    <key name="show-tile-hud" type="b">
+      <default>true</default>
+      <summary>Show the tile HUD</summary>
+      <description>
+        Hide the tile HUD.
+      </description>
+    </key>
+
+    <key name="enable-indicators" type="b">
+      <default>false</default>
+      <summary>not used</summary>
+    </key>
+
+    <key type="as" name="demands-attention-ignored-wm-classes">
+      <default>[]</default>
+      <summary>unused</summary>
+    </key>
+
+    <key type="as" name="demands-attention-passthru-wm-classes">
+      <default>['gnome-screenshot', 'lxterminal', 'xfce4-terminal', 'firefox', 'libreoffice', 'soffice']</default>
+      <summary>WM class names to always give focus to in windowAttentionHandler.js</summary>
+    </key>
+    <key name="app-menu-icon-name" type="s">
+      <default>"cinnamon-symbolic"</default>
+      <summary>The default icon name of the application menu</summary>
+      <description>
+       Controls the default icon name used by the application menu.
+      </description>
+    </key>
+
+    <key name="app-menu-label" type="s">
+      <default>""</default>
+      <summary>The default label of the application menu</summary>
+      <description>
+       Controls the default label used by the application menu.
+      </description>
+    </key>
+    <key name="hoverclick-action" type="s">
+      <default>"single"</default>
+      <summary>The type of mouse action to be performed using hoverkey (single, double, drag, secondary)</summary>
+    </key>
+    <key name="hoverclick-layout" type="s">
+      <default>"vertical::both"</default>
+      <summary>This defines the layout for the hoverkey window - format is vertical | horizontal :: icons | text | both</summary>
+    </key>
+    <key name="hoverclick-position" type="s">
+      <default>""</default>
+      <summary>Stores the position of the hoverclick window so it can be restored there later - format is x::y</summary>
+    </key>
+  </schema>
+
+  <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
+        gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="name" type="s">
+      <default>""</default>
+      <summary>Theme name</summary>
+      <description>
+       The name of the theme
+      </description>
+    </key>
+
+    <key name="theme-cache-updated" type="i">
+      <default>0</default>
+      <summary>[not used - obsolete]</summary>
+      <description>
+      </description>
+    </key>
+
+    <key name="symbolic-relative-size" type="d">
+      <default>0.67</default>
+      <summary>Relative size of symbolic icons to the zone's icon size</summary>
+    </key>
+    <key name="gtk-version-scrollbar-multiplier" type="d">
+      <default>1.5</default>
+      <summary>Relative size of the scrollbars between gtk3 and gtk2 - the set value is multiplied by this for the gtk2 value</summary>
+    </key>
+  </schema>
+
+  <schema id="org.cinnamon.keyboard" path="/org/cinnamon/keyboard/"
+          gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="keyboard-type" type="s">
+      <default>'tablet'</default>
+      <summary>Which keyboard to use</summary>
+      <description>
+        The type of keyboard to use.
+      </description>
+    </key>
+    <key name="activation-mode" type="s">
+      <default>'on-demand'</default>
+      <summary>How the keyboard becomes activated</summary>
+      <description>
+        Can be:  on-demand: display the keyboard only at user demand, either when the applet is clicked, or a keyboard shortcut is used.  accessible: display the keyboard any time an input field becomes the desktop keyboard focus.
+      </description>
+    </key>
+    <key name="keyboard-size" type="i">
+      <default>3</default>
+      <summary>The size of the keyboard. Set this value to X for the keyboard to take 1/x of the screen.</summary>
+      <description>
+        The size of the keyboard. Set this value to X for the keyboard to take 1/x of the screen.
+      </description>
+    </key>
+    <key name="keyboard-position" type="s">
+      <default>'top'</default>
+      <summary>Keyboard position</summary>
+      <description>
+        Keyboard position.
+      </description>
+    </key>
+  </schema>
+  <schema id="org.cinnamon.recorder" path="/org/cinnamon/recorder/"
+          gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="framerate" type="i">
+      <default>15</default>
+      <summary>Framerate used for recording screencasts.</summary>
+      <description>
+        The framerate of the resulting screencast recordered
+        by Cinnamon's screencast recorder in frames-per-second.
+      </description>
+    </key>
+    <key name="pipeline" type="s">
+      <default>''</default>
+      <summary>The gstreamer pipeline used to encode the screencast</summary>
+      <description>
+        Sets the GStreamer pipeline used to encode recordings.
+        It follows the syntax used for gst-launch. The pipeline should have
+        an unconnected sink pad where the recorded video is recorded. It will
+        normally have a unconnected source pad; output from that pad
+        will be written into the output file. However the pipeline can also
+        take care of its own output - this might be used to send the output
+        to an icecast server via shout2send or similar. When unset or set
+        to an empty value, the default pipeline will be used. This is currently
+        'videorate ! vp8enc quality=10 speed=2 threads=%T ! queue ! webmmux'
+        and records to WEBM using the VP8 codec. %T is used as a placeholder
+        for a guess at the optimal thread count on the system.
+      </description>
+    </key>
+    <key name="file-extension" type="s">
+      <default>'webm'</default>
+      <summary>File extension used for storing the screencast</summary>
+      <description>
+        The filename for recorded screencasts will be a unique filename
+        based on the current date, and use this extension. It should be
+        changed when recording to a different container format.
+      </description>
+    </key>
+  </schema>
+
+  <schema id="org.cinnamon.background" path="/org/cinnamon/background/">
+    <key name="mode" type="s">
+      <default>"wallpaper"</default>
+      <summary>Background mode</summary>
+      <description>
+        This key defines the whether the desktop background shows one
+        single wallpaper, a slideshow or an online slideshow (Flickr).
+      </description>
+    </key>
+    <key name="slideshow-folder" type="s">
+      <default>""</default>
+      <summary>Folder to use for the slideshow</summary>
+      <description>
+        This key defines the folder to use for the slideshow.
+      </description>
+    </key>
+    <key name="slideshow-recursive" type="b">
+      <default>false</default>
+      <summary>Whether to list files recursively for the slideshow</summary>
+      <description>
+        This key defines whether to list files recursively for the slideshow.
+      </description>
+    </key>
+    <key name="slideshow-delay" type="i">
+      <default>15</default>
+      <summary>Delay for the slideshow</summary>
+      <description>
+        This key defines the delay for the slideshow.
+      </description>
+    </key>
+  </schema>
+
+  <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
+        gettext-domain="@GETTEXT_PACKAGE@">
+    <child name="launcher" schema="org.cinnamon.desklets.launcher" />
+  </schema>
+
+  <schema id="org.cinnamon.sounds" path="/org/cinnamon/sounds/">
+
+    <key name="switch-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when switching workspaces</summary>
+      <description>
+        Whether to play a sound when switching workspaces.
+      </description>
+    </key>
+
+    <key name="switch-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when switching workspaces</summary>
+      <description>
+        Which sound to play when switching workspaces.
+      </description>
+    </key>
+
+    <key name="close-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when closing windows</summary>
+      <description>
+        Whether to play a sound when closing windows.
+      </description>
+    </key>
+
+    <key name="close-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when closing windows</summary>
+      <description>
+        Which sound to play when closing windows.
+      </description>
+    </key>
+
+    <key name="map-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when mapping windows</summary>
+      <description>
+        Whether to play a sound when mapping windows.
+      </description>
+    </key>
+
+    <key name="map-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when mapping windows</summary>
+      <description>
+        Which sound to play when mapping windows.
+      </description>
+    </key>
+
+    <key name="minimize-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when minimizing windows</summary>
+      <description>
+        Whether to play a sound when minimizing windows.
+      </description>
+    </key>
+
+    <key name="minimize-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when minimizing windows</summary>
+      <description>
+        Which sound to play when minimizing windows.
+      </description>
+    </key>
+
+    <key name="maximize-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when maximizing windows</summary>
+      <description>
+        Whether to play a sound when maximizing windows.
+      </description>
+    </key>
+
+    <key name="maximize-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when maximizing windows</summary>
+      <description>
+        Which sound to play when maximizing windows.
+      </description>
+    </key>
+
+    <key name="unmaximize-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when unmaximizing windows</summary>
+      <description>
+        Whether to play a sound when unmaximizing windows.
+      </description>
+    </key>
+
+    <key name="unmaximize-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when unmaximizing windows</summary>
+      <description>
+        Which sound to play when unmaximizing windows.
+      </description>
+    </key>
+
+    <key name="tile-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when tiling windows</summary>
+      <description>
+        Whether to play a sound when tiling windows.
+      </description>
+    </key>
+
+    <key name="tile-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when tiling windows</summary>
+      <description>
+        Which sound to play when tiling windows.
+      </description>
+    </key>
+
+    <key name="login-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound during login</summary>
+      <description>
+        Whether to play a sound during login.
+      </description>
+    </key>
+
+    <key name="login-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when logging in</summary>
+      <description>
+        Which sound to play during login.
+      </description>
+    </key>
+
+    <key name="logout-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound during logout</summary>
+      <description>
+        Whether to play a sound during logout.
+      </description>
+    </key>
+
+    <key name="logout-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when logging out</summary>
+      <description>
+        Which sound to play during logout.
+      </description>
+    </key>
+
+    <key name="plug-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when a device is plugged</summary>
+      <description>
+        Whether to play a sound when a device is plugged.
+      </description>
+    </key>
+
+    <key name="plug-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when a device is plugged</summary>
+      <description>
+        Which sound to play when a device is plugged.
+      </description>
+    </key>
+
+    <key name="unplug-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when a device is unplugged</summary>
+      <description>
+        Whether to play a sound when a device is unplugged.
+      </description>
+    </key>
+
+    <key name="unplug-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when a device is plugged</summary>
+      <description>
+        Which sound to play when a device is unplugged.
+      </description>
+    </key>
+
+    <key name="notification-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when showing notifications</summary>
+      <description>
+        Whether to play a sound when showing notifications.
+      </description>
+    </key>
+
+    <key name="notification-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when showing notifications</summary>
+      <description>
+        Which sound to play when showing notifications.
+      </description>
+    </key>
+
+  </schema>
+
+  <schema id="org.cinnamon.desklets.launcher" path="/org/cinnamon/desklets/launcher/"
+        gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="launcher-list" type="as">
+      <default>[]</default>
+      <summary>Desktop files of the applications to be shown on desktop</summary>
+      <description>
+	The "launchers" desklet provides a method to show a launcher on the desktop
+	This list maps the desklet id to the desktop file of application.
+      </description>
+    </key>
+  </schema>
+
+  <schema id="org.cinnamon.runtime-keybindings" path="/org/cinnamon/runtime-keybindings/">
+    <key name="placeholder" type="b">
+      <default>false</default>
+    </key>
+   </schema>
+
+  <schema id="org.cinnamon.runtime-keybindings.runtime-keybinding">
+    <key name="bindings" type="as">
+      <default>[]</default>
+      <summary>Keybinding array for runtime keybinding.</summary>
+    </key>
+    <key name="action-id" type="i">
+      <default>0</default>
+      <summary>Action id for keybinding</summary>
+    </key>
+  </schema>
+
+  <schema id="org.cinnamon.keybindings.custom-keybinding">
+    <key name="name" type="s">
+      <default>''</default>
+      <summary>deprecated - moved to org.cinnamon.desktop.keybindings</summary>
+    </key>
+    <key name="binding" type="s">
+      <default>''</default>
+      <summary>deprecated - moved to org.cinnamon.desktop.keybindings</summary>
+    </key>
+    <key name="command" type="s">
+      <default>''</default>
+      <summary>deprecated - moved to org.cinnamon.desktop.keybindings</summary>
+    </key>
+  </schema>
+
+  <schema id="org.cinnamon.invalid-schema" path="/org/cinnamon/invalid-schema/">
+  </schema>
+
+  <schema id="org.cinnamon.launcher" path="/org/cinnamon/launcher/">
+
+    <key name="memory-limit-enabled" type="b">
+      <default>true</default>
+      <summary>Whether to restart Cinnamon when it reachs the memory limit</summary>
+      <description></description>
+    </key>
+
+    <key name="memory-limit" type="i">
+      <default>2048</default>
+      <summary>Memory limit (in MB)</summary>
+      <description></description>
+    </key>
+
+    <key name="check-frequency" type="i">
+      <default>300</default>
+      <summary>Time between each checks (in seconds)</summary>
+      <description></description>
+    </key>
+
+  </schema>
+
+</schemalist>

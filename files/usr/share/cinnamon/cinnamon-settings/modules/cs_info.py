@@ -6,9 +6,13 @@ import shlex
 import os
 import re
 import threading
+import shutil
+from json import loads
 
-from GSettingsWidgets import *
+from gi.repository import GdkPixbuf
 
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 def killProcess(process):
     process.kill()
@@ -36,7 +40,7 @@ def getGraphicsInfos():
     count = 0
     envpath = os.environ["PATH"]
     os.environ["PATH"] = envpath + ":/usr/local/sbin:/usr/sbin:/sbin"
-    for card in getProcessOut(("lspci")):
+    for card in getProcessOut("lspci"):
         if not "VGA" in card:
             continue
         cardId = card.split()[0]
@@ -46,7 +50,7 @@ def getGraphicsInfos():
                 cardName = (line.split(":")[2].split("(rev")[0].strip())
 
         if cardName:
-            cards[count] = (cardName)
+            cards[count] = cardName
             count += 1
     os.environ["PATH"] = envpath
     return cards
@@ -54,31 +58,40 @@ def getGraphicsInfos():
 
 def getDiskSize():
     disksize = 0
-    moreThanOnce = 0
-    for line in getProcessOut(("df", "-l")):
-        if line.startswith("/dev/"):
-            moreThanOnce += 1
-            disksize += float(line.split()[1])
+    try:
+        out = getProcessOut(("lsblk", "--json", "--output", "size", "--bytes", "--nodeps"))
+        jsonobj = loads(''.join(out))
+    except Exception:
+        return _("Unknown size"), False
 
-    if (moreThanOnce > 1):
-        return disksize, True
-    else:
-        return disksize, False
+    for blk in jsonobj['blockdevices']:
+        disksize += int(blk['size'])
+
+    return disksize, (len(jsonobj['blockdevices']) > 1)
 
 
 def getProcInfos():
+    # For some platforms, 'model name' will no longer take effect.
+    # We can try our best to detect it, but if all attempts failed just leave it to be "Unknown".
+    # Source: https://github.com/dylanaraps/neofetch/blob/6dd85d67fc0d4ede9248f2df31b2cd554cca6c2f/neofetch#L2163
+    cpudetect = ("model name", "Hardware", "Processor", "cpu model", "chip type", "cpu type")
     infos = [
-        ("/proc/cpuinfo", [("cpu_name", "model name"), ("cpu_siblings", "siblings"), ("cpu_cores", "cpu cores")]),
-        ("/proc/meminfo", [("mem_total", "MemTotal")])
+        ("/proc/cpuinfo", [("cpu_name", cpudetect), ("cpu_siblings", ("siblings",)), ("cpu_cores", ("cpu cores",))]),
+        ("/proc/meminfo", [("mem_total", ("MemTotal",))])
     ]
 
     result = {}
     for (proc, pairs) in infos:
         for line in getProcessOut(("cat", proc)):
             for (key, start) in pairs:
-                if line.startswith(start):
-                    result[key] = line.split(':', 1)[1].strip()
-                    break
+                for item in start:
+                    if line.startswith(item):
+                        result[key] = line.split(':', 1)[1].strip()
+                        break
+    if "cpu_name" not in result:
+        result["cpu_name"] = _("Unknown CPU")
+    if "mem_total" not in result:
+        result["mem_total"] = _("Unknown size")
     return result
 
 
@@ -86,7 +99,12 @@ def createSystemInfos():
     procInfos = getProcInfos()
     infos = []
     arch = platform.machine().replace("_", "-")
-    (memsize, memunit) = procInfos['mem_total'].split(" ")
+    try:
+        (memsize, memunit) = procInfos['mem_total'].split(" ")
+        memsize = float(memsize)
+    except ValueError:
+        memsize = procInfos['mem_total']
+        memunit = ""
     processorName = procInfos['cpu_name'].replace("(R)", "\u00A9").replace("(TM)", "\u2122")
     if 'cpu_cores' in procInfos:
         processorName = processorName + " \u00D7 " + procInfos['cpu_cores']
@@ -104,9 +122,10 @@ def createSystemInfos():
         title = ' '.join(contents[:2]) or "Manjaro Linux"
         infos.append((_("Operating System"), title))
     else:
-        s = '%s (%s)' % (' '.join(platform.linux_distribution()), arch)
+        import distro
+        s = '%s (%s)' % (' '.join(distro.linux_distribution()), arch)
         # Normalize spacing in distribution name
-        s = re.sub('\s{2,}', ' ', s)
+        s = re.sub(r'\s{2,}', ' ', s)
         infos.append((_("Operating System"), s))
     if 'CINNAMON_VERSION' in os.environ:
         infos.append((_("Cinnamon Version"), os.environ['CINNAMON_VERSION']))
@@ -118,12 +137,14 @@ def createSystemInfos():
         infos.append((_("Memory"), procInfos['mem_total']))
 
     diskSize, multipleDisks = getDiskSize()
-    if (multipleDisks):
+    if multipleDisks:
         diskText = _("Hard Drives")
     else:
         diskText = _("Hard Drive")
-    infos.append((diskText, '%.1f %s' % ((diskSize / (1000*1000)), _("GB"))))
-
+    try:
+        infos.append((diskText, '%.1f %s' % ((diskSize / (1000*1000*1000)), _("GB"))))
+    except:
+        infos.append((diskText, diskSize))
     cards = getGraphicsInfos()
     for card in cards:
         infos.append((_("Graphics Card"), cards[card]))
@@ -145,12 +166,27 @@ class Module:
         if not self.loaded:
             print("Loading Info module")
 
-            infos = createSystemInfos()
-
             page = SettingsPage()
+            page.set_spacing(24)
             self.sidePage.add_widget(page)
 
-            settings = page.add_section(_("System info"))
+            schema = Gio.Settings(schema="org.cinnamon")
+            systemIcon = schema.get_string("system-icon")
+            if systemIcon != "":
+                try:
+                    if "/" in systemIcon:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale (systemIconPath, -1, 100, True)
+                        systemIcon = Gtk.Image.new_from_pixbuf(pixbuf)
+                    else:
+                        systemIcon = Gtk.Image.new_from_icon_name(systemIcon, Gtk.IconSize.DIALOG)
+                        systemIcon.set_pixel_size(100)
+                    page.add(systemIcon)
+                except GLib.GError:
+                    pass
+
+            infos = createSystemInfos()
+
+            settings = page.add_section()
 
             for (key, value) in infos:
                 widget = SettingsWidget()
@@ -164,13 +200,67 @@ class Module:
                 widget.pack_end(labelValue, False, False, 0)
                 settings.add_row(widget)
 
-            if os.path.exists("/usr/bin/upload-system-info"):
+            if shutil.which("upload-system-info"):
                 widget = SettingsWidget()
-                button = Gtk.Button(_("Upload system information"))
-                button.set_tooltip_text(_("No personal information included"))
-                button.connect("clicked", self.on_button_clicked)
+
+                spinner = Gtk.Spinner(visible=True)
+                button = Gtk.Button(label=_("Upload system information"),
+                                    tooltip_text=_("No personal information included"),
+                                    always_show_image=True,
+                                    image=spinner)
+                button.connect("clicked", self.on_button_clicked, spinner)
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
 
-    def on_button_clicked(self, button):
-        subprocess.Popen(["upload-system-info"])
+            if shutil.which("inxi"):
+                widget = SettingsWidget()
+
+                button = Gtk.Button(label=_("Copy to clipboard"))
+                button.connect("clicked", self.on_copy_clipboard_button_clicked)
+                widget.pack_start(button, True, True, 0)
+                settings.add_row(widget)
+
+    def on_copy_clipboard_button_clicked(self, button):
+        try:
+            # taken from https://github.com/linuxmint/xapp/blob/master/scripts/upload-system-info
+            subproc = Gio.Subprocess.new(['inxi', '-Fxxrzc0'], Gio.SubprocessFlags.STDOUT_PIPE |  Gio.SubprocessFlags.STDERR_PIPE)
+            subproc.wait_check_async(None, self.on_copy_clipboard_complete)
+        except Exception as e:
+            print ("An error occurred while copying the system information to clipboard")
+            print (e)
+
+    def on_copy_clipboard_complete(self, subproc, result):
+        def _convert_stream_to_string(stream):
+            """Convert Gio.InputStream to string"""
+            bytes = bytearray(0)
+            buf = stream.read_bytes(1024, None).get_data()
+            while buf:
+                bytes += buf
+                buf = stream.read_bytes(1024, None).get_data()
+            stream.close()
+            content = bytes.decode("utf-8")
+            return content
+        try:
+            status = subproc.wait_check_finish(result)
+            if status:
+                clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+                clipboard.set_text(_convert_stream_to_string(subproc.get_stdout_pipe()), -1)
+        except Exception as e:
+            print("copying to clipboard failed : %s" % e.message)
+
+    def on_button_clicked(self, button, spinner):
+
+        try:
+            subproc = Gio.Subprocess.new(["upload-system-info"], Gio.SubprocessFlags.NONE)
+            subproc.wait_check_async(None, self.on_subprocess_complete, spinner)
+            spinner.start()
+        except GLib.Error as e:
+            print("upload-system-info failed to run: %s" % e.message)
+
+    def on_subprocess_complete(self, subproc, result, spinner):
+        spinner.stop()
+
+        try:
+            success = subproc.wait_check_finish(result)
+        except GLib.Error as e:
+            print("upload-system-info failed: %s" % e.message)

@@ -2,7 +2,8 @@
 
 import sys
 from ExtensionCore import ManageSpicesPage, DownloadSpicesPage
-from SettingsWidgets import SidePage, SettingsStack
+from SettingsWidgets import SidePage
+from xapp.SettingsWidgets import SettingsStack
 from Spices import Spice_Harvester
 from gi.repository import GLib, Gtk, Gdk
 
@@ -47,7 +48,7 @@ class AppletsViewSidePage(SidePage):
         self.stack.add_titled(download_applets_page, "more", _("Download"))
 
 class ManageAppletsPage(ManageSpicesPage):
-    directories = [("%s/.local/share/cinnamon/applets") % GLib.get_home_dir(), "/usr/share/cinnamon/applets"]
+    directories = ["%s/.local/share/cinnamon/applets" % GLib.get_home_dir(), "/usr/share/cinnamon/applets"]
     collection_type = "applet"
     installed_page_title = _("Installed applets")
     instance_button_text = _("Add")
@@ -60,9 +61,8 @@ class ManageAppletsPage(ManageSpicesPage):
 
         self.panels = []
         self.current_panel_index = 0
-
-        if len(sys.argv) > 2 and sys.argv[1] == "applets" and sys.argv[2][0:5] == "panel":
-            self.panel_id = int(sys.argv[2][5:])
+        if len(sys.argv) > 1 and sys.argv[1][0:5] == "panel":
+            self.panel_id = int(sys.argv[1][5:])
         else:
             self.panel_id = int(self.spices.settings.get_strv("panels-enabled")[0].split(":")[0])
 
@@ -79,8 +79,6 @@ class ManageAppletsPage(ManageSpicesPage):
         size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
         size_group.add_widget(self.previous_button)
         size_group.add_widget(self.next_button)
-
-        self.spices.send_proxy_signal('highlightPanel', '(ib)', self.panel_id, True)
 
         self.connect("map", self.restore_highlight)
         self.connect("unmap", self.remove_highlight)

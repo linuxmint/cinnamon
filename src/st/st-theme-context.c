@@ -21,6 +21,7 @@
 
 #include <config.h>
 
+#include "st-settings.h"
 #include "st-texture-cache.h"
 #include "st-theme.h"
 #include "st-theme-context.h"
@@ -42,8 +43,6 @@ struct _StThemeContextClass {
   GObjectClass parent_class;
 };
 
-#define DEFAULT_FONT "sans-serif 10"
-
 enum
 {
   PROP_0,
@@ -57,10 +56,16 @@ enum
   LAST_SIGNAL
 };
 
+static StThemeContext *stage_context = NULL;
+
 static guint signals[LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (StThemeContext, st_theme_context, G_TYPE_OBJECT);
 
+static PangoFontDescription *get_interface_font_description (void);
+static void on_font_name_changed (StSettings     *settings,
+                                  GParamSpec     *pspec,
+                                  StThemeContext *context);
 static void on_icon_theme_changed (StTextureCache *cache,
                                    StThemeContext *context);
 
@@ -80,6 +85,9 @@ st_theme_context_finalize (GObject *object)
 {
   StThemeContext *context = ST_THEME_CONTEXT (object);
 
+  g_signal_handlers_disconnect_by_func (st_settings_get (),
+                                        (gpointer) on_font_name_changed,
+                                        context);
   g_signal_handlers_disconnect_by_func (st_texture_cache_get_default (),
                                        (gpointer) on_icon_theme_changed,
                                        context);
@@ -134,8 +142,12 @@ st_theme_context_class_init (StThemeContextClass *klass)
 static void
 st_theme_context_init (StThemeContext *context)
 {
-  context->font = pango_font_description_from_string (DEFAULT_FONT);
+  context->font = get_interface_font_description ();
 
+  g_signal_connect (st_settings_get (),
+                    "notify::font-name",
+                    G_CALLBACK (on_font_name_changed),
+                    context);
   g_signal_connect (st_texture_cache_get_default (),
                     "icon-theme-changed",
                     G_CALLBACK (on_icon_theme_changed),
@@ -217,12 +229,23 @@ st_theme_context_new (void)
   return context;
 }
 
+static PangoFontDescription *
+get_interface_font_description (void)
+{
+  StSettings *settings = st_settings_get ();
+  g_autofree char *font_name = NULL;
+
+  g_object_get (settings, "font-name", &font_name, NULL);
+  return pango_font_description_from_string (font_name);
+}
+
 static void
 on_stage_destroy (ClutterStage *stage)
 {
   StThemeContext *context = st_theme_context_get_for_stage (stage);
 
   g_object_set_data (G_OBJECT (stage), "st-theme-context", NULL);
+  stage_context = NULL;
   g_object_unref (context);
 }
 
@@ -237,6 +260,17 @@ st_theme_context_changed (StThemeContext *context)
 
   if (old_root)
     g_object_unref (old_root);
+}
+
+static void
+on_font_name_changed (StSettings     *settings,
+                      GParamSpec     *pspect,
+                      StThemeContext *context)
+{
+  PangoFontDescription *font_desc = get_interface_font_description ();
+  st_theme_context_set_font (context, font_desc);
+
+  pango_font_description_free (font_desc);
 }
 
 static gboolean
@@ -279,6 +313,7 @@ st_theme_context_get_for_stage (ClutterStage *stage)
 
   context = st_theme_context_new ();
   g_object_set_data (G_OBJECT (stage), "st-theme-context", context);
+  stage_context = context;
   g_signal_connect (stage, "destroy",
                     G_CALLBACK (on_stage_destroy), NULL);
 
@@ -416,3 +451,19 @@ st_theme_context_intern_node (StThemeContext *context,
   g_hash_table_add (context->nodes, g_object_ref (node));
   return node;
 }
+
+/**
+ * st_theme_context_get_stage_scale:
+ *
+ * Gets the stage's ui scale.
+ *
+ * Return value: the ui scale
+ */
+gint
+st_theme_context_get_scale_for_stage (void)
+{
+  g_return_val_if_fail (stage_context != NULL, 1);
+  // g_printerr ("theme scale: %d\n", stage_context->scale_factor);
+  return stage_context->scale_factor;
+}
+

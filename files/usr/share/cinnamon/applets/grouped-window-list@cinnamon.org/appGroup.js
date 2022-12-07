@@ -14,11 +14,24 @@ const {createStore} = imports.misc.state;
 const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
 const {
     FLASH_INTERVAL,
+    FLASH_MAX_COUNT,
     MAX_BUTTON_WIDTH,
     BUTTON_BOX_ANIMATION_TIME,
     RESERVE_KEYS,
     TitleDisplay
 } = require('./constants');
+
+const _reLetterRtl = new RegExp("\\p{Script=Hebrew}|\\p{Script=Arabic}", "u");
+const _reLetter = new RegExp("\\p{L}", "u");
+const getTextDirection = function(text) {
+    for (const l of text) {
+        if (l.match(_reLetterRtl))
+            return Clutter.TextDirection.RTL;
+        if (l.match(_reLetter))
+            return Clutter.TextDirection.LTR;
+    }
+    return Clutter.TextDirection.None;
+}
 
 // returns [x1,x2] so that the area between x1 and x2 is
 // centered in length
@@ -71,27 +84,30 @@ class AppGroup {
             verticalThumbs: false,
             groupReady: false,
             thumbnailMenuEntered: false,
-            fileDrag: false
+            fileDrag: false,
+            pressed: true
         });
 
         this.groupState.connect({
             isFavoriteApp: () => this.handleFavorite(true),
             getActor: () => this.actor,
-            launchNewInstance: () => this.launchNewInstance(),
+            launchNewInstance: (...args) => this.launchNewInstance(...args),
             checkFocusStyle: () => this.checkFocusStyle()
         });
 
         this.signals = new SignalManager(null);
+        this.appKeyTimeout = 0;
 
         // TODO: This needs to be in state so it can be updated more reliably.
-        this.labelVisible = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
+        this.labelVisiblePref = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
+        this.drawLabel = this.labelVisiblePref;
         this.progress = 0;
 
         this.actor =  new Cinnamon.GenericContainer({
             name: 'appButton',
             style_class: 'grouped-window-list-item-box',
             important: true,
-            reactive: true,
+            reactive: !this.state.panelEditMode,
             can_focus: true,
             track_hover: true
         });
@@ -107,27 +123,22 @@ class AppGroup {
         this.actor.add_child(this.progressOverlay);
 
         // Create the app button icon, number label, and text label for titleDisplay
-        this.iconBox = new St.Bin({name: 'appMenuIcon'});
+        this.iconBox = new Cinnamon.Slicer({name: 'appMenuIcon'});
         this.actor.add_child(this.iconBox);
         this.setActorAttributes(null, params.metaWindow);
 
         this.badge = new St.BoxLayout({
             style_class: 'grouped-window-list-badge',
             important: true,
-            width: 12 * global.ui_scale,
-            height: 12 * global.ui_scale,
             x_align: St.Align.START,
             y_align: St.Align.MIDDLE,
             show_on_set_parent: false,
-            style: 'margin: 0;',
         });
         this.numberLabel = new St.Label({
-            style: 'font-size: 10px;padding: 0px;',
             style_class: 'grouped-window-list-number-label',
             important: true,
             text: '',
             anchor_x: -3 * global.ui_scale,
-            anchor_y: 1 + (global.ui_scale > 1 ? 2 : 0)
         });
         this.numberLabel.clutter_text.ellipsize = false;
         this.badge.add(this.numberLabel, {
@@ -135,19 +146,21 @@ class AppGroup {
             y_align: St.Align.START,
         });
         this.actor.add_child(this.badge);
+        this.badge.set_text_direction(St.TextDirection.LTR);
 
         this.label = new St.Label({
             style_class: 'grouped-window-list-button-label',
             important: true,
             text: '',
+            x_align: St.Align.START,
             show_on_set_parent: this.state.settings.titleDisplay > 1
         });
-        this.label.x_align = St.Align.START;
         this.actor.add_child(this.label);
 
         this.groupState.set({tooltip: new Tooltips.PanelItemTooltip({actor: this.actor}, '', this.state.orientation)});
 
         this._draggable = new DND._Draggable(this.actor);
+        this._draggable.inhibit = !this.state.settings.enableDragging;
 
         this.signals.connect(this.actor, 'get-preferred-width', (...args) => this.getPreferredWidth(...args));
         this.signals.connect(this.actor, 'get-preferred-height', (...args) => this.getPreferredHeight(...args));
@@ -158,7 +171,6 @@ class AppGroup {
         this.signals.connect(this.actor, 'button-press-event', (...args) => this.onAppButtonPress(...args));
         this.signals.connect(this._draggable, 'drag-begin', (...args) => this.onDragBegin(...args));
         this.signals.connect(this._draggable, 'drag-cancelled', (...args) => this.onDragCancelled(...args));
-        this.signals.connect(this._draggable, 'drag-end', (...args) => this.onDragEnd(...args));
 
         this.calcWindowNumber();
         this.on_orientation_changed(true);
@@ -230,20 +242,10 @@ class AppGroup {
 
         let panelHeight = this.state.trigger('getPanelHeight');
 
-        // TODO: Button width should be applied to buttons if they don't have a label set, not based on
-        // mode, but not currently sure how to unset the fixed width on the actor so it revert to a
-        // resizable state without destroying it. Otherwise, buttons with labels don't have enough padding set.
-        if (!this.state.isHorizontal
-            || this.state.settings.titleDisplay === 1
-            || this.state.settings.titleDisplay === 3 && !this.labelVisible) {
-            this.actor.width = panelHeight;
-        }
-
         if (this.state.isHorizontal) {
             this.actor.height = panelHeight;
         }
         this.setIcon(metaWindow);
-        this.updateIconBoxClip();
         this.setIconPadding(panelHeight);
         this.setMargin();
     }
@@ -255,24 +257,14 @@ class AppGroup {
     }
 
     setMargin() {
-        let direction = this.state.isHorizontal ? 'right' : 'bottom';
-        let existingStyle = this.actor.style ? this.actor.style : '';
-        this.actor.style = existingStyle + 'margin-' + direction + ':6px;';
-    }
-
-    updateIconBoxClip() {
-        let iconBottomClip = this.iconBox.style_length('app-icon-bottom-clip');
-        let allocation = this.iconBox.allocation;
-        if (iconBottomClip > 0) {
-            this.iconBox.set_clip(
-                0,
-                0,
-                allocation.x2 - allocation.x1,
-                allocation.y2 - allocation.y1 - iconBottomClip
-            );
-        } else {
-            this.iconBox.remove_clip();
+        const applet = this.state.appletActor;
+        const direction = this.state.isHorizontal ? 'right' : 'bottom';
+        const existingStyle = this.actor.style ? this.actor.style : '';
+        let spacing = parseInt(applet.get_theme_node().get_length('spacing'));
+        if (!spacing) {
+            spacing = 6;
         }
+        this.actor.style = existingStyle + 'margin-' + direction + ':' + spacing + 'px;';
     }
 
     setIcon(metaWindow) {
@@ -325,7 +317,7 @@ class AppGroup {
 
         this.actor.remove_style_pseudo_class('active');
         this.actor.add_style_class_name('grouped-window-list-item-demands-attention');
-        if (counter < 4) {
+        if (counter < FLASH_MAX_COUNT) {
             setTimeout(() => {
                 if (this.actor && this.actor.has_style_class_name('grouped-window-list-item-demands-attention')) {
                     this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
@@ -343,11 +335,24 @@ class AppGroup {
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
         // The label text starts in the center of the icon, so we should allocate the space
         // needed for the icon plus the space needed for(label - icon/2)
-        alloc.min_size = iconNaturalSize + 6;
+        alloc.min_size = 1 * global.ui_scale;
+
+        let {appId, metaWindows, lastFocused} = this.groupState;
+
+        let allocateForLabel = false;
+
+        allocateForLabel = this.labelVisiblePref ||
+                           (this.state.settings.titleDisplay == TitleDisplay.Focused &&
+                            this.listState.lastFocusedApp === appId);
+
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
-            let max = this.labelVisible && this.groupState.metaWindows.length > 0 ?
-                labelNaturalSize + iconNaturalSize + 6 : 0;
-            alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
+            if (allocateForLabel) {
+                let max = this.labelVisiblePref && this.groupState.metaWindows.length > 0 ?
+                    labelNaturalSize + iconNaturalSize + 6 : 0;
+                alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
+            } else {
+                alloc.natural_size = iconNaturalSize + 6 * global.ui_scale;
+            }
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
         }
@@ -361,39 +366,34 @@ class AppGroup {
     }
 
     allocate(actor, box, flags) {
-        let allocWidth = box.x2 - box.x1;
-        let allocHeight = box.y2 - box.y1;
-        let childBox = new Clutter.ActorBox();
-        let direction = this.actor.get_text_direction();
-        let spacing = 0;
+        const allocWidth = box.x2 - box.x1;
+        const allocHeight = box.y2 - box.y1;
+        const childBox = new Clutter.ActorBox();
+        const direction = this.actor.get_text_direction();
 
         // Set the icon to be left-justified (or right-justified) and centered vertically
-        let [minWidth, minHeight, naturalWidth, naturalHeight] = this.iconBox.get_preferred_size();
-        let yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
+        const [minWidth, minHeight, naturalWidth, naturalHeight] = this.iconBox.get_preferred_size();
+        const iconYPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
 
-        childBox.y1 = box.y1 + yPadding;
+        this.drawLabel = this.labelVisiblePref && allocWidth >= naturalWidth + 10 * global.ui_scale;
+
+        childBox.y1 = box.y1 + iconYPadding;
         childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
 
-        if (this.labelVisible && this.groupState.metaWindows.length > 0) {
-            if (direction === Clutter.TextDirection.LTR) {
-                childBox.x1 = box.x1 + 6;
-            } else {
-                childBox.x1 = Math.max(box.x1, box.x2 - naturalWidth);
-            }
-            spacing = childBox.x1;
+        if (this.drawLabel && this.groupState.metaWindows.length > 0) {
+            childBox.x1 = direction === Clutter.TextDirection.LTR ?
+                box.x1 + 6 : Math.max(box.x1, box.x2 - 6 - naturalWidth);
             childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
         } else {
-            let offset = 0;
-            if (this.state.orientation === St.Side.LEFT) {
-                offset += this.actor.style_length('border-left-width') * 2;
-            }
+            const offset = this.state.orientation === St.Side.LEFT ? this.actor.style_length('border-left-width') * 2 : 0;
             [childBox.x1, childBox.x2] = center(allocWidth + offset, naturalWidth);
         }
 
         this.iconBox.allocate(childBox, flags);
 
-        let windowCountFactor = this.groupState.windowCount > 9 ? 1.5 : 2;
-        let badgeOffset = 2 * global.ui_scale;
+        // Set badge position
+        const windowCountFactor = this.groupState.windowCount > 9 ? 1.5 : 2;
+        const badgeOffset = 2 * global.ui_scale;
         childBox.x1 = childBox.x1 - badgeOffset;
         childBox.x2 = childBox.x1 + (this.numberLabel.width * windowCountFactor);
         childBox.y1 = Math.max(childBox.y1 - badgeOffset, 0);
@@ -401,22 +401,33 @@ class AppGroup {
 
         this.badge.allocate(childBox, flags);
 
-        if (this.labelVisible) {
-            let iconSize = this.state.trigger('getPanelIconSize') * global.ui_scale;
-            spacing = iconSize - spacing;
-            [minWidth, minHeight, naturalWidth, naturalHeight] = this.label.get_preferred_size();
+        // Set label position
+        if (this.drawLabel) {
+            const textDirection = getTextDirection(this.label.get_text());
+            const labelNaturalHeight = this.label.get_preferred_size()[3];
+            const labelYPadding = Math.floor(Math.max(0, allocHeight - labelNaturalHeight) / 2);
 
-            yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
-            childBox.y1 = box.y1 + yPadding;
-            childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
+            childBox.y1 = box.y1 + labelYPadding;
+            childBox.y2 = childBox.y1 + Math.min(labelNaturalHeight, allocHeight);
+
             if (direction === Clutter.TextDirection.LTR) {
-                // Reuse the values from the previous allocation
-                childBox.x1 = Math.min(childBox.x2 + spacing, box.x2);
+                childBox.x1 = Math.min(this.iconBox.x + this.iconBox.width, box.x2);
                 childBox.x2 = box.x2;
             } else {
-                childBox.x2 = Math.max(childBox.x1 - spacing, box.x1);
                 childBox.x1 = box.x1;
+                childBox.x2 = this.iconBox.x;
             }
+
+            // Set text alignment
+            if (textDirection === St.TextDirection.LTR)
+                this.label.set_style('text-align: left;');
+            else if (textDirection === St.TextDirection.RTL)
+                this.label.set_style('text-align: right;');
+            else
+                if (direction === St.TextDirection.LTR)
+                    this.label.set_style('text-align: left;');
+                else
+                    this.label.set_style('text-align: right;');
 
             this.label.allocate(childBox, flags);
         }
@@ -426,7 +437,6 @@ class AppGroup {
             let rect = new Meta.Rectangle();
             [rect.x, rect.y] = this.actor.get_transformed_position();
             [rect.width, rect.height] = this.actor.get_transformed_size();
-
             each(this.groupState.metaWindows, (metaWindow) => {
                 if (metaWindow) {
                     metaWindow.set_icon_geometry(rect);
@@ -438,7 +448,7 @@ class AppGroup {
     }
 
     showLabel(animate = false) {
-        if (this.labelVisible
+        if (this.labelVisiblePref
             || !this.label
             || !this.state.isHorizontal
             || this.label.is_finalized()
@@ -448,12 +458,10 @@ class AppGroup {
 
         let width = MAX_BUTTON_WIDTH * global.ui_scale;
 
-        this.labelVisible = true;
+        this.labelVisiblePref = true;
         if (this.label.text == null) {
             this.label.set_text('');
         }
-        // TODO: This should be set by the theme.
-        this.label.set_style('padding-right: 4px;');
 
         if (!animate) {
             this.label.show();
@@ -477,7 +485,7 @@ class AppGroup {
         if (!this.label || this.label.is_finalized() || !this.label.realized) return;
 
         this.label.set_text('');
-        this.labelVisible = false;
+        this.labelVisiblePref = false;
         this.label.width = 1;
         this.label.hide();
     }
@@ -494,6 +502,8 @@ class AppGroup {
     }
 
     onLeave() {
+        this.groupState.pressed = false;
+
         if (this.state.panelEditMode) return false;
 
         if (this.hoverMenu) this.hoverMenu.onMenuLeave();
@@ -545,10 +555,15 @@ class AppGroup {
 
     allocateProgress(childBox = null, flags = 0) {
         if (!childBox) childBox = new Clutter.ActorBox();
-        childBox.x1 = 0;
         childBox.y1 = 0;
-        childBox.x2 = Math.max((this.actor.width) * (this.progress / 100.0), 1.0);
         childBox.y2 = this.actor.height;
+        if (St.Widget.get_default_direction() === St.TextDirection.RTL) {
+            childBox.x1 = Math.max(this.actor.width * ((100 - this.progress) / 100.0), 1.0);
+            childBox.x2 = this.actor.width;
+        } else {
+            childBox.x1 = 0;
+            childBox.x2 = Math.max(this.actor.width * (this.progress / 100.0), 1.0);
+        }
         this.progressOverlay.allocate(childBox, flags);
     }
 
@@ -620,25 +635,18 @@ class AppGroup {
             this._draggable._overrideX = Math.round(x);
             this._draggable._overrideY = null;
         }
+
+        if (this.rightClickMenu) this.rightClickMenu.close(false);
         if (this.hoverMenu) this.groupState.trigger('hoverMenuClose');
     }
 
-    onDragEnd() {
-        if (this.rightClickMenu) this.rightClickMenu.close(false);
-        if (this.hoverMenu) this.hoverMenu.close(false);
-        this.listState.trigger('updateAppGroupIndexes', this.groupState.appId);
-        this.state.trigger('clearDragPlaceholder');
-    }
-
     onDragCancelled() {
-        if (this.rightClickMenu) this.rightClickMenu.close(false);
-        if (this.hoverMenu) this.hoverMenu.close(false);
-        this.state.trigger('clearDragPlaceholder');
+        this.state.trigger('moveLauncher', this);
     }
 
     handleDragOver(source, actor, x, y, time) {
         if (!this.state.settings.enableDragging
-            || source instanceof AppGroup
+            || actor.name != "xdnd-proxy-actor"
             || this.state.panelEditMode) {
             return DND.DragMotionResult.CONTINUE;
         }
@@ -656,7 +664,7 @@ class AppGroup {
                 this.hoverMenu.open(true);
             }
         }
-        return true;
+        return DND.DragMotionResult.CONTINUE;
     }
 
     getDragActor() {
@@ -669,13 +677,29 @@ class AppGroup {
         return this.actor;
     }
 
-    launchNewInstance() {
-        this.groupState.app.open_new_window(-1);
+    showOrderLabel(number) {
+        this.numberLabel.text = (number + 1).toString();
+        this.badge.show();
+    }
+
+    launchNewInstance(offload=false) {
+        if (offload) {
+            try {
+                this.groupState.app.launch_offloaded(0, [], -1);
+            } catch (e) {
+                logError(e, "Could not launch app with dedicated gpu: ");
+            }
+        } else {
+            this.groupState.app.open_new_window(-1);
+        }
+
         this.animate();
     }
 
     onAppButtonRelease(actor, event) {
-        this.state.trigger('clearDragPlaceholder');
+        if (!this.groupState.pressed) {
+            return;
+        }
 
         let button = event.get_button();
         let nWindows = this.groupState.metaWindows.length;
@@ -718,7 +742,7 @@ class AppGroup {
                 } else {
                     this.hoverMenu.open();
                 }
-                if (this.state.overlayPreview) {
+                if (this.state.lastOverlayPreview) {
                     this.hoverMenu.appThumbnails[0].destroyOverlayPreview();
                     this.hoverMenu.close(true);
                 }
@@ -736,7 +760,24 @@ class AppGroup {
                 return;
             }
             if (this.state.settings.leftClickAction === 3 && nWindows > 1) {
-                this.state.trigger('cycleWindows', null, this.actor._delegate);
+                let foundActive = false;
+                for (let i = 0, len = nWindows; i < len; i++) {
+                    if (
+                        this.groupState.lastFocused &&
+                        this.groupState.metaWindows[i] === this.groupState.lastFocused
+                    ) {
+                        if (this.groupState.metaWindows[i].appears_focused) {
+                            this.state.trigger("cycleWindows", null, this.actor._delegate);
+                        } else {
+                            handleMinimizeToggle(this.groupState.metaWindows[i]);
+                        }
+                        foundActive = true;
+                        break;
+                    }
+                }
+                if (!foundActive) {
+                    handleMinimizeToggle(this.groupState.metaWindows[0]);
+                }
                 return;
             }
             if (this.hoverMenu) this.hoverMenu.shouldOpen = false;
@@ -763,7 +804,7 @@ class AppGroup {
             if (!this.rightClickMenu.isOpen) {
                 this.listState.trigger('closeAllRightClickMenus', () => {
                     this.listState.trigger('closeAllHoverMenus', () => {
-                        this.rightClickMenu.open();
+                        this.rightClickMenu.toggle();
                     });
                 });
             } else {
@@ -775,9 +816,40 @@ class AppGroup {
 
     onAppButtonPress(actor, event) {
         let button = event.get_button();
+        this.groupState.pressed = true;
 
         if (button === 3) return true;
+
         return false;
+    }
+
+    onAppKeyPress() {
+        if (this.groupState.isFavoriteApp && this.groupState.metaWindows.length === 0) {
+            this.launchNewInstance();
+        } else {
+            if (this.appKeyTimeout) {
+                clearTimeout(this.appKeyTimeout);
+                this.appKeyTimeout = 0;
+            }
+            if (this.groupState.metaWindows.length > 1) {
+                if (!this.hoverMenu) this.initThumbnailMenu();
+                this.hoverMenu.open(true);
+            } else {
+                this.listState.trigger('closeAllHoverMenus');
+            }
+            this.windowHandle();
+            this.appKeyTimeout = setTimeout(() => {
+                if (this.groupState.thumbnailMenuEntered) {
+                    clearTimeout(this.appKeyTimeout);
+                    this.appKeyTimeout = 0;
+                    return;
+                }
+                if (this.hoverMenu) {
+                    this.hoverMenu.close(true);
+                }
+                this.appKeyTimeout = 0;
+            }, this.state.settings.showAppsOrderTimeout);
+        }
     }
 
     windowHandle() {
@@ -819,8 +891,9 @@ class AppGroup {
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
             this.signals.connect(metaWindow, 'notify::gtk-application-id', (w) => this.onAppChange(w));
             this.signals.connect(metaWindow, 'notify::wm-class', (w) => this.onAppChange(w));
+            this.signals.connect(metaWindow, 'unmanaged', (w) => this.onAppChange(w));
 
-            this.signals.connect(metaWindow, 'icon-changed', (w) => this.setIcon(w));
+            this.signals.connect(metaWindow, 'notify::icon', (w) => this.setIcon(w));
 
             if (metaWindow.progress !== undefined) {
                 // Check if GWL is starting with pre-existing windows that have progress,
@@ -841,6 +914,10 @@ class AppGroup {
                 metaWindows.push(metaWindow);
                 if (this.hoverMenu) trigger('addThumbnailToMenu', metaWindow);
             }
+
+            // update icon using recent window for cases when the first window of an app doesn't have an icon. e.g: VirtualBox VM
+            this.setIcon(metaWindow)
+
             this.calcWindowNumber();
             this.onFocusChange();
         }
@@ -1019,11 +1096,10 @@ class AppGroup {
     handleTitleDisplayChange() {
         each(this.groupState.metaWindows, (win) => {
             this.onWindowTitleChanged(win, true);
-            this.handleButtonLabel(win);
         });
     }
 
-    animate(step = 0) {
+    animate() {
         let effect = this.state.settings.launcherAnimationEffect;
 
         if (effect === 1) return;
@@ -1031,24 +1107,22 @@ class AppGroup {
             this.iconBox.set_z_rotation_from_gravity(0.0, Clutter.Gravity.CENTER);
             Tweener.addTween(this.iconBox, {
                 opacity: 70,
-                time: 1.0,
+                time: 0.2,
                 transition: 'linear',
                 onCompleteScope: this,
                 onComplete() {
                     Tweener.addTween(this.iconBox, {
                         opacity: 255,
-                        time: 0.5,
+                        time: 0.2,
                         transition: 'linear'
                     });
                 }
             });
         } else if (effect === 3) {
-            if (step >= 3) return;
-
             this.iconBox.set_pivot_point(0.5, 0.5);
             Tweener.addTween(this.iconBox, {
-                scale_x: 0.7,
-                scale_y: 0.7,
+                scale_x: 0.8,
+                scale_y: 0.8,
                 time: 0.2,
                 transition: 'easeOutQuad',
                 onComplete: () => {
@@ -1056,10 +1130,7 @@ class AppGroup {
                         scale_x: 1.0,
                         scale_y: 1.0,
                         time: 0.2,
-                        transition: 'easeOutQuad',
-                        onComplete: () => {
-                            this.animate(step + 1);
-                        }
+                        transition: 'easeOutQuad'
                     });
                 }
             });
@@ -1076,7 +1147,12 @@ class AppGroup {
             }
             this.rightClickMenu.destroy();
         }
-        if (this.hoverMenu) this.hoverMenu.destroy();
+
+        if (this.hoverMenu) {
+            Main.layoutManager.removeChrome(this.hoverMenu.actor);
+            this.hoverMenu.destroy();
+        }
+
         this.listState.trigger('removeChild', this.actor);
         this.actor.destroy();
 

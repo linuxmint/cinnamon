@@ -38,12 +38,14 @@ const DESKLET_SNAP_KEY = 'desklet-snap';
 const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
 const KEYBINDING_SCHEMA = 'org.cinnamon.desktop.keybindings';
 const SHOW_DESKLETS_KEY = 'show-desklets';
+const LOCK_DESKLETS_KEY = "lock-desklets";
 
 function initEnabledDesklets() {
     for (let i = 0; i < definitions.length; i++) {
         promises.push(Extension.loadExtension(definitions[i].uuid, Extension.Type.DESKLET))
     }
     return Promise.all(promises).then(function() {
+        Main.cinnamonDBusService.EmitXletsLoadedComplete();
         promises = [];
     });
 }
@@ -59,15 +61,15 @@ function unloadRemovedDesklets(removedDeskletUUIDs) {
  *
  * Initialize desklet manager
  */
-function init(){
-    let startTime = new Date().getTime();
+function init() {
+    const startTime = new Date().getTime();
     try {
         desklets = imports.desklets;
     } catch (e) {
         desklets = {};
     }
     deskletMeta = Extension.Type.DESKLET.legacyMeta;
-    deskletsLoaded = false
+    deskletsLoaded = false;
 
     definitions = getDefinitions();
 
@@ -199,7 +201,7 @@ function prepareExtensionReload(extension) {
         if (extension.uuid === definitions[i].uuid) {
             let {desklet, desklet_id} = definitions[i];
             if (!desklet) continue;
-            global.log(`Reloading desklet: ${extension.uuid}/${desklet_id}`);
+            global.log("Reloading desklet: " + extension.uuid + "/" + desklet_id);
             desklet.on_desklet_reloaded();
             return;
         }
@@ -274,17 +276,20 @@ function _unloadDesklet(deskletDefinition, deleteConfig) {
 }
 
 function _removeDeskletConfigFile(uuid, instanceId) {
-    let config_path = (GLib.get_home_dir() + "/" +
-                               ".cinnamon" + "/" +
-                                 "configs" + "/" +
-                                      uuid + "/" +
-                                instanceId + ".json");
-    let file = Gio.File.new_for_path(config_path);
-    if (file.query_exists(null)) {
-        try {
-            file.delete(null);
-        } catch (e) {
-            global.logError("Problem removing desklet config file during cleanup.  UUID is " + uuid + " and filename is " + config_path);
+    let config_paths = [
+        [GLib.get_home_dir(), ".cinnamon", "configs", uuid, instanceId + ".json"].join("/"),
+        [GLib.get_user_config_dir(), "cinnamon", "spices", uuid, instanceId + ".json"].join("/")
+    ];
+
+    for (let i = 0; i < config_paths.length; i++) {
+        const config_path = array[i];
+        let file = Gio.File.new_for_path(config_path);
+        if (file.query_exists(null)) {
+            try {
+                file.delete(null);
+            } catch (e) {
+                global.logError("Problem removing desklet config file during cleanup.  UUID is " + uuid + " and filename is " + config_path);
+            }
         }
     }
 }
@@ -424,7 +429,7 @@ function DeskletContainer(){
 
 DeskletContainer.prototype = {
     _init: function(){
-        this.actor = new Clutter.Group();
+        this.actor = global.desklet_container;
         this.actor._delegate = this;
 
         this.last_x = -1;
@@ -444,6 +449,8 @@ DeskletContainer.prototype = {
                 this.lower();
             }
         });
+
+        global.settings.connect('changed::' + LOCK_DESKLETS_KEY, () => this.onDeskletsLockedChanged());
     },
 
     applyKeyBindings: function() {
@@ -462,6 +469,7 @@ DeskletContainer.prototype = {
      */
     addDesklet: function(actor){
         this.actor.add_actor(actor);
+        actor._delegate._draggable.inhibit = global.settings.get_boolean(LOCK_DESKLETS_KEY);
     },
 
     /**
@@ -474,6 +482,12 @@ DeskletContainer.prototype = {
      */
     contains: function(actor){
         return this.actor.contains(actor);
+    },
+
+    onDeskletsLockedChanged: function(settings, key) {
+        this.actor.get_children().forEach((deskletActor) => {
+            deskletActor._delegate._draggable.inhibit = global.settings.get_boolean(LOCK_DESKLETS_KEY);
+        });
     },
 
     handleDragOver: function(source, actor, x, y, time) {
@@ -549,6 +563,8 @@ DeskletContainer.prototype = {
                 if (global.settings.get_boolean(DESKLET_SNAP_KEY)){
                     elements[2] = this._dragPlaceholder.x
                     elements[3] = this._dragPlaceholder.y;
+                    actor.set_x(this._dragPlaceholder.x);
+                    actor.set_y(this._dragPlaceholder.y);
                 }
                 definition = elements.join(":");
                 enabledDesklets[i] = definition;
@@ -615,9 +631,8 @@ DeskletContainer.prototype = {
     handleStageEvent: function(actor, event) {
         let target = event.get_source();
         let type = event.type();
-
         if ((type === Clutter.EventType.BUTTON_PRESS || type === Clutter.EventType.BUTTON_RELEASE)
-            && target.toString().indexOf('ClutterStage') > -1) {
+            && target.get_parent() instanceof Meta.WindowActor) {
             this.lower();
         }
 
@@ -628,12 +643,12 @@ DeskletContainer.prototype = {
         if (this.actor.get_children().length === 0) {
             return;
         }
-        this.actor.get_parent().set_child_above_sibling(this.actor, null);
+        global.display.set_desklets_above(true);
         this.setModal();
     },
 
     lower: function() {
-        this.actor.get_parent().set_child_below_sibling(this.actor, global.window_group);
+        global.display.set_desklets_above(false);
         this.unsetModal();
     },
 

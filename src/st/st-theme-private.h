@@ -21,7 +21,7 @@
 #ifndef __ST_THEME_PRIVATE_H__
 #define __ST_THEME_PRIVATE_H__
 
-#include <libcroco/libcroco.h>
+#include "croco/libcroco.h"
 #include "st-theme.h"
 
 G_BEGIN_DECLS
@@ -30,7 +30,8 @@ GPtrArray *_st_theme_get_matched_properties (StTheme       *theme,
                                              StThemeNode   *node);
 
 GPtrArray *_st_theme_get_matched_properties_fallback (StTheme       *theme,
-                                                      StThemeNode   *node);
+                                                      StThemeNode   *node,
+                                                      GPtrArray     *props);
 
 /* Resolve an URL from the stylesheet to a filename */
 GFile *_st_theme_resolve_url (StTheme      *theme,

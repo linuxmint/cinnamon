@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import os
 import sys
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -8,7 +7,7 @@ import _thread
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
-from gi.repository import Gdk, Gtk, GObject, GLib, Pango, GdkPixbuf, Gio
+from gi.repository import Gdk, Gtk, GObject, GLib, Pango
 
 import time
 from datetime import timedelta
@@ -152,7 +151,7 @@ class Main:
     def lookup_name_or_new(self, name):
         row_iter = self.model.get_iter_first()
 
-        while row_iter != None:
+        while row_iter is not None:
             existing_name = self.model.get_value(row_iter, 0)
             if name == existing_name:
                 return [False, row_iter]

@@ -44,16 +44,36 @@ const PANEL_PEEK_TIME = 1500;
 const EDIT_MODE_MIN_BOX_SIZE = 25;
 const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48];
 
+/*** These are defaults for a new panel added */
+const DEFAULT_PANEL_VALUES = {"panels-autohide": "false",
+                        "panels-show-delay": "0",
+                        "panels-hide-delay": "0",
+                        "panels-height": "40"};
+
+const DEFAULT_FULLCOLOR_ICON_SIZE_VALUES = {"left":   0,
+                                            "center": 0,
+                                            "right":  0};
+
+const DEFAULT_SYMBOLIC_ICON_SIZE_VALUES = {"left":   28,
+                                           "center": 28,
+                                           "right":  28};
+const MIN_SYMBOLIC_SIZE_PX = 10;
+const MAX_SYMBOLIC_SIZE_PX = 50;
+
+const DEFAULT_TEXT_SIZE_VALUES = {"left":   0.0,
+                                  "center": 0.0,
+                                  "right":  0.0};
+const MIN_TEXT_SIZE_PTS = 6.0;
+const MAX_TEXT_SIZE_PTS = 16.0;
+/*** Defaults ***/
+
 const PANEL_AUTOHIDE_KEY = "panels-autohide";
 const PANEL_SHOW_DELAY_KEY = "panels-show-delay";
 const PANEL_HIDE_DELAY_KEY = "panels-hide-delay";
 const PANEL_HEIGHT_KEY = "panels-height";
 const PANEL_ZONE_ICON_SIZES = "panel-zone-icon-sizes";
-
-const DEFAULT_VALUES = {"panels-autohide": "false",
-                        "panels-show-delay": "0",
-                        "panels-hide-delay": "0",
-                        "panels-height": "40"};
+const PANEL_ZONE_SYMBOLIC_ICON_SIZES = "panel-zone-symbolic-icon-sizes";
+const PANEL_ZONE_TEXT_SIZES = "panel-zone-text-sizes";
 
 const Direction = {
     LEFT  : 0,
@@ -153,10 +173,10 @@ function checkPanelUpgrade()
 
     switch (oldLayout) {
         case "flipped":
-            global.settings.set_strv("panels-enabled", ["1:0:top"]);
+            setPanelsEnabledList(["1:0:top"]);
             break;
         case "classic":
-            global.settings.set_strv("panels-enabled", ["1:0:top", "2:0:bottom"]);
+            setPanelsEnabledList(["1:0:top", "2:0:bottom"]);
             break;
         case "traditional": /* Default (explicitly set) - no processing needed */
         default:
@@ -239,20 +259,6 @@ function toStandardIconSize(maxSize) {
     return 48;
 }
 
-/**
- * getSymbolicIconSize:
- * @iconSize (integer): an icon size
- * @settings (Gio.Settings): the settings
- *
- * Gets the symbolic icon size for a given fullcolor icon size.
- *
- * Returns: an integer, the icon size
- */
-function getSymbolicIconSize(iconSize, settings) {
-    iconSize = Math.floor(iconSize);
-    return Math.floor(iconSize * settings.get_double("symbolic-relative-size"))
-}
-
 function setHeightForPanel(panel) {
     let height;
 
@@ -263,6 +269,92 @@ function setHeightForPanel(panel) {
     if (height < 20) height = 40;
 
     return height;
+}
+
+function convertSettingsXMonToLMon(strv) {
+    let out = [];
+
+    for (let i = 0; i < strv.length; i++) {
+        let elements = strv[i].split(":");
+
+        if (elements.length !== 3)
+            continue;
+
+        let [id, xmon, pos] = elements;
+
+        if (xmon > global.display.get_n_monitors() - 1) {
+            // log("Skipping panel enabled info for monitor we don't have: " + strv[i]);
+            out.push(strv[i]);
+            continue;
+        }
+
+        let l_mon = global.display.xinerama_index_to_logical_index(xmon);
+        out.push(`${id}:${l_mon}:${pos}`);
+
+        // log(`xmon: ${id}:${xmon}:${pos}  to lmon: ${id}:${l_mon}:${pos}`);
+    }
+
+    return out;
+}
+
+function convertSettingsLMonToXMon(strv) {
+    let out = [];
+
+    for (let i = 0; i < strv.length; i++) {
+        let elements = strv[i].split(":");
+
+        if (elements.length !== 3)
+            continue;
+
+        let [id, lmon, pos] = elements;
+
+        let x_mon = global.display.logical_index_to_xinerama_index(lmon);
+        out.push(`${id}:${x_mon}:${pos}`);
+
+        // log(`l_mon: ${id}:${l_mon}:${pos}  to xmon: ${id}:${x_mon}:${pos}`);
+    }
+
+    return out;
+}
+
+function getPanelsEnabledList() {
+    let panelProperties = global.settings.get_strv("panels-enabled");
+    return convertSettingsXMonToLMon(panelProperties);
+}
+
+function setPanelsEnabledList(list) {
+    let converted = convertSettingsLMonToXMon(list)
+    let panelProperties = global.settings.set_strv("panels-enabled", converted);
+}
+
+function updatePanelsMeta(meta, panel_props) {
+    let changed = false;
+
+    // panelMeta is [panel_id, monitor]
+    // Find matching panel ids and update their monitor value if necessary.
+
+    for (let i = 0; i < meta.length; i++) {
+        if (!meta[i])
+            continue;
+
+        panel_props.forEach(prop => {
+            let elements = prop.split(":");
+            let [id_str, lmon_str, pos_str] = elements;
+
+            let id = parseInt(id_str);
+
+            if (id === i) {
+                let l_mon = parseInt(lmon_str);
+
+                if (meta[i][0] !== l_mon) {
+                    meta[i][0] = l_mon;
+                    changed = true;
+                }
+            }
+        });
+    }
+
+    return changed;
 }
 
 /**
@@ -297,7 +389,7 @@ PanelManager.prototype = {
 
         this._panelsEnabledId   = global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
         this._panelEditModeId   = global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
-        this._monitorsChangedId = global.screen.connect("monitors-changed", Lang.bind(this, this._onMonitorsChanged));
+        this._monitorsChangedId = Main.layoutManager.connect("monitors-changed", Lang.bind(this, this._onMonitorsChanged));
 
         this._addOsd  = new ModalDialog.InfoOSD(_("Select position of new panel. Esc to cancel."));
         this._moveOsd = new ModalDialog.InfoOSD(_("Select new position of panel. Esc to cancel."));
@@ -317,7 +409,6 @@ PanelManager.prototype = {
      *                 between horizontal ones
      */
     _fullPanelLoad : function () {
-
         let monitor = 0;
         let stash = [];     // panel id, monitor, panel type
 
@@ -325,7 +416,7 @@ PanelManager.prototype = {
         let panels_used = []; // [monitor] [top, bottom, left, right].  Used to keep track of which panel types are in use,
                               // as we need knowledge of the combinations in order to instruct the correct panel to create a corner
 
-        let panelProperties = global.settings.get_strv("panels-enabled");
+        let panelProperties = getPanelsEnabledList();
         //
         // First pass through just to count the monitors, as there is no ordering to rely on
         //
@@ -502,14 +593,15 @@ PanelManager.prototype = {
      */
     removePanel: function(panelId) {
         this.panelCount -= 1;
-        let list = global.settings.get_strv("panels-enabled");
+        let list = getPanelsEnabledList();
         for (let i = 0, len = list.length; i < len; i++) {
             if (list[i].split(":")[0] == panelId) {
                 list.splice(i, 1);
                 break;
             }
         }
-        global.settings.set_strv("panels-enabled", list);
+
+        setPanelsEnabledList(list);
     },
 
     /**
@@ -520,7 +612,7 @@ PanelManager.prototype = {
      * Adds a new panel to the specified position
      */
     addPanel: function(monitorIndex, panelPosition) {
-        let list = global.settings.get_strv("panels-enabled");
+        let list = getPanelsEnabledList();
         let i = 0; // Start counting at 1 for compatibility
 
         // Magic: Keep recursing until there is a free panel id
@@ -530,14 +622,14 @@ PanelManager.prototype = {
 
         // Add default values
         outerLoop:
-        for (let key in DEFAULT_VALUES) {
+        for (let key in DEFAULT_PANEL_VALUES) {
             let settings = global.settings.get_strv(key);
             for (let j = 0; j < settings.length; j++){
                 if (settings[j].split(":")[0] == i){
                     continue outerLoop;
                 }
             }
-            settings.push(i + ":" + DEFAULT_VALUES[key]);
+            settings.push(i + ":" + DEFAULT_PANEL_VALUES[key]);
             global.settings.set_strv(key, settings);
         }
 
@@ -558,7 +650,7 @@ PanelManager.prototype = {
             default:
                 global.log("addPanel - unrecognised panel position "+panelPosition);
         }
-        global.settings.set_strv("panels-enabled", list);
+        setPanelsEnabledList(list);
 
         // Delete all panel dummies
         if (this.addPanelMode)
@@ -573,7 +665,7 @@ PanelManager.prototype = {
      * Moves the panel of id this.moveId to the specified position
      */
     movePanel: function(monitorIndex, panelPosition) {
-        let list = global.settings.get_strv("panels-enabled");
+        let list = getPanelsEnabledList();
         let i = -1;
 
         for (let i = 0, len = list.length; i < len; i++) {
@@ -599,7 +691,7 @@ PanelManager.prototype = {
             }
         }
 
-        global.settings.set_strv("panels-enabled", list);
+        setPanelsEnabledList(list);
 
         // Delete all panel dummies
         if (this.addPanelMode)
@@ -628,8 +720,7 @@ PanelManager.prototype = {
         this.addPanelMode = false;
         this._addOsd.hide();
         this._moveOsd.hide();
-        if (Main.keybindingManager.bindings['close-add-panel'])
-            Main.keybindingManager.removeHotKey('close-add-panel');
+        Main.keybindingManager.removeHotKey('close-add-panel');
     },
 
     /**
@@ -754,7 +845,7 @@ PanelManager.prototype = {
 
         metaList[ID] = [monitorIndex, panelPosition];  // Note:  metaList [i][0] is the monitor index, metaList [i][1] is the panelPosition
 
-        if (monitorIndex < 0 || monitorIndex >= global.screen.get_n_monitors()) {
+        if (monitorIndex < 0 || monitorIndex >= global.display.get_n_monitors()) {
             global.log("Monitor " + monitorIndex + " not found. Not creating panel");
             return null;
         }
@@ -766,7 +857,7 @@ PanelManager.prototype = {
     },
 
     _checkCanAdd: function() {
-        let monitorCount = global.screen.get_n_monitors();
+        let monitorCount = global.display.get_n_monitors();
         let panelCount = (monitorCount * 4) - this.panelCount;          // max of 4 panels on a monitor, one per edge
 
         this.canAdd = panelCount > 0;
@@ -791,7 +882,8 @@ PanelManager.prototype = {
         let newMeta = new Array(this.panels.length);
         let drawcorner = [false,false];
 
-        let panelProperties = global.settings.get_strv("panels-enabled");
+        let panelProperties = getPanelsEnabledList();
+
 
         for (let i = 0; i < panelProperties.length; i ++) {
 
@@ -974,13 +1066,18 @@ PanelManager.prototype = {
     },
 
     _onMonitorsChanged: function() {
-        let monitorCount = global.screen.get_n_monitors();
+        let monitorCount = global.display.get_n_monitors();
         let drawcorner = [false, false];
+
+        let panelProperties = getPanelsEnabledList()
+        // adjust any changes to logical/xinerama monitor relationships
+        let monitors_changed = updatePanelsMeta(this.panelsMeta, panelProperties);
 
         for (let i = 0, len = this.panelsMeta.length; i < len; i++) {
             if (!this.panelsMeta[i]) {
                 continue;
             }
+
             if (!this.panels[i]) { // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again
                                                          // - the monitor may just have been reconnected
                 if (this.panelsMeta[i][0] < monitorCount)  // just check that the monitor is there
@@ -991,14 +1088,21 @@ PanelManager.prototype = {
                 }
             } else if (this.panelsMeta[i][0] >= monitorCount) { // Monitor of the panel went missing.  Meta is [monitor,panel] array
                 if (this.panels[i]) {
-                    this.panels[i].destroy();
+                    this.panels[i].destroy(false); // destroy panel, but don't remove icon size settings
                     delete this.panels[i];
                     this.panelCount -= 1;
                 }
 
-            } else { // Nothing happens. Re-allocate panel
+            } else {
                 this.panels[i]._monitorsChanged = true;
-                this.panels[i]._moveResizePanel();
+
+                if (monitors_changed) {
+                    this.panels[i].updatePosition(...this.panelsMeta[i]);
+                    this.emit("monitors-changed");
+                } else {
+                     // Nothing happens. Re-allocate panel
+                    this.panels[i]._moveResizePanel();
+                }
             }
         }
 
@@ -1012,7 +1116,7 @@ PanelManager.prototype = {
             if (this.panels[i])
                 this.panels[i]._destroycorners();
         }
-        let panelProperties = global.settings.get_strv("panels-enabled");
+
         this._fullCornerLoad(panelProperties);
 
         this._setMainPanel();
@@ -1062,7 +1166,7 @@ PanelManager.prototype = {
      * shows the dummy panels
      */
     _showDummyPanels: function(callback) {
-        let monitorCount = global.screen.get_n_monitors();
+        let monitorCount = global.display.get_n_monitors();
         this.dummyCallback = callback;
         this.dummyPanels = [];
 
@@ -1114,6 +1218,8 @@ PanelManager.prototype = {
     }
 
 };  // end of panel manager
+Signals.addSignalMethods(PanelManager.prototype);
+
 
 /**
  * #PanelDummy
@@ -1131,7 +1237,7 @@ PanelDummy.prototype = {
         this.monitorIndex = monitorIndex;
         this.panelPosition = panelPosition;
         this.callback = callback;
-        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
+        this.monitor = global.display.get_monitor_geometry(monitorIndex);
         let defaultheight = 40 * global.ui_scale;
 
         this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
@@ -1198,7 +1304,7 @@ PanelDummy.prototype = {
      * Destroys panel dummy actor
      */
     destroy: function() {
-        this.actor.destroy();
+        Main.layoutManager.removeChrome(this.actor);
     }
 }
 
@@ -1571,10 +1677,14 @@ PanelContextMenu.prototype = {
             global.settings.set_boolean("panel-edit-mode", item.state);
         });
         menu.addMenuItem(panelEditMode);        // menu item for panel edit mode
-        global.settings.connect('changed::panel-edit-mode', function() {
+        this.panel_edit_setting_id = global.settings.connect('changed::panel-edit-mode', function() {
             panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
         });
 
+        this.connect("destroy", Lang.bind(this, function() {
+            global.settings.disconnect(this.panel_edit_setting_id);
+            this.panel_edit_setting_id = 0;
+        }))
 
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
 
@@ -1587,7 +1697,11 @@ PanelContextMenu.prototype = {
 
         let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove"), "list-remove", St.IconType.SYMBOLIC);  // submenu item remove panel
         menuItem.activate = Lang.bind(menu, function() {
-            Main.panelManager.removePanel(panelId);
+            let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to remove this panel?"),
+                    function() {
+                        Main.panelManager.removePanel(panelId);
+                    });
+            confirm.open();
         });
         menu.addMenuItem(menuItem);
 
@@ -1635,7 +1749,7 @@ PanelContextMenu.prototype = {
 
         menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
         menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
-            global.reexec_self();
+            Main.restartCinnamon(true);
         });
 
         menu.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
@@ -1646,7 +1760,7 @@ PanelContextMenu.prototype = {
             let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to restore all settings to default?\n\n"),
                     function() {
                         Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
-                        global.reexec_self();
+                        Main.restartCinnamon(true);
                     });
             confirm.open();
         });
@@ -1654,7 +1768,7 @@ PanelContextMenu.prototype = {
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
         menu.addMenuItem(menu.troubleshootItem);
 
-        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "preferences-system"));
+        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "preferences-desktop"));
     },
 
     open: function(animate) {
@@ -1706,6 +1820,7 @@ PanelZoneDNDHandler.prototype = {
 
         let vertical_panel = this._panelZone.get_parent()._delegate.is_vertical;
         let children = this._panelZone.get_children();
+        let horizontal_rtl = St.Widget.get_default_direction () === St.TextDirection.RTL && !vertical_panel;
 
         if (this._origAppletCenters == null) {
             this._origAppletCenters = [];
@@ -1724,25 +1839,23 @@ PanelZoneDNDHandler.prototype = {
 
                 this._origAppletCenters.push(center);
             }
+
+            if(horizontal_rtl) {
+                this._origAppletCenters.reverse();
+            }
         }
 
-        let pos = 0;
-        let i = 0;
+        let dragPos = vertical_panel ? y : x;
+        let pos = 0, i = 0;
 
-        while (i < this._origAppletCenters.length) {
-            if (vertical_panel) {
-                if (y > (this._origAppletCenters[i])) {
-                    pos = ++i;
-                } else {
-                    break;
-                }
-            } else {
-                if (x > (this._origAppletCenters[i])) {
-                    pos = ++i;
-                } else {
-                    break;
-                }
-            }
+        while (i < this._origAppletCenters.length && dragPos > this._origAppletCenters[i]) {
+            i++;
+        }
+
+        if(horizontal_rtl) {
+            pos = this._origAppletCenters.length - i;
+        } else {
+            pos = i;
         }
 
         if (pos != this._dragPlaceholderPos) {
@@ -1826,7 +1939,6 @@ PanelZoneDNDHandler.prototype = {
         let sourcebox = source.actor._applet._panelLocation; /* this is the panel box providing the applet */
 
         this._clearDragPlaceholder();
-        actor.destroy();
         AppletManager.saveAppletsPositions();
 
         /* this._panelZone is the panel box being dropped into. Note that the style class name will
@@ -1914,7 +2026,7 @@ Panel.prototype = {
         this.panelId = id;
         this.drawcorner = drawcorner;
         this.monitorIndex = monitorIndex;
-        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
+        this.monitor = global.display.get_monitor_geometry(monitorIndex);
         this.panelPosition = panelPosition;
         this.toppanelHeight = toppanelHeight;
         this.bottompanelHeight = bottompanelHeight;
@@ -1939,7 +2051,7 @@ Panel.prototype = {
         this._topPanelBarrier = 0;
         this._bottomPanelBarrier = 0;
         this._shadowBox = null;
-        this._panelZoneIconSizes = null;
+        this._panelZoneSizes = this._createEmptyZoneSizes();
         this._peeking = false;
 
         this.themeSettings = new Gio.Settings({ schema_id: 'org.cinnamon.theme' });
@@ -1989,13 +2101,13 @@ Panel.prototype = {
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);
-        this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_ICON_SIZES, this._onPanelZoneIconSizesChanged, this);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_ICON_SIZES, this._onPanelZoneSizesChanged, this);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_SYMBOLIC_ICON_SIZES, this._onPanelZoneSizesChanged, this);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_TEXT_SIZES, this._onPanelZoneSizesChanged, this);
         this._signalManager.connect(global.settings, "changed::panel-edit-mode", this._onPanelEditModeChanged, this);
         this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers, this);
 
-        this._signalManager.connect(this.themeSettings, "changed::symbolic-relative-size", this._onPanelZoneIconSizesChanged, this);
-
-        this._onPanelZoneIconSizesChanged();
+        this._onPanelZoneSizesChanged();
     },
 
     drawCorners: function(drawcorner)
@@ -2061,18 +2173,22 @@ Panel.prototype = {
 
         if (this.actor.is_finalized()) return;
 
-        if (this._leftCorner && !this._leftCorner.actor.is_finalized())
+        if (this._leftCorner)
             this.actor.add_actor(this._leftCorner.actor);
-        if (this._rightCorner && !this._rightCorner.actor.is_finalized())
+        if (this._rightCorner)
             this.actor.add_actor(this._rightCorner.actor);
     },
 
     _destroycorners: function()
     {
-    if (this._leftCorner)
+    if (this._leftCorner) {
         this._leftCorner.actor.destroy();
-    if (this._rightCorner)
+        this._leftCorner = null;
+    }
+    if (this._rightCorner) {
         this._rightCorner.actor.destroy();
+        this._rightCorner = null;
+    }
     this.drawcorner = [false,false];
     },
 
@@ -2088,7 +2204,7 @@ Panel.prototype = {
         this.panelPosition = panelPosition;
         this._positionChanged = true;
 
-        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
+        this.monitor = global.display.get_monitor_geometry(monitorIndex);
         //
         // If there are any corners then remove them - they may or may not be required
         // in the new position, so we cannot just move them
@@ -2172,15 +2288,22 @@ Panel.prototype = {
 
     /**
      * destroy:
+     * @removeIconSizes (boolean): (optional) whether to remove zone icon size settings. Default value is true.
      *
      * Destroys the panel
      */
-    destroy: function() {
+    destroy: function(removeIconSizes = true) {
         if (this._destroyed) return;
         this._destroyed = true;    // set this early so that any routines triggered during
                                    // the destroy process can test it
 
-        this._removeZoneIconSizes();
+        Main.layoutManager.removeChrome(this.actor);
+
+        if (removeIconSizes) this._removeZoneIconSizes();
+        // remove icon size settings if requested
+        // settings should be removed except when panel is destroyed due to monitor change
+        // this prevents settings from being reset every time a monitor is disconnected
+
         this._clearPanelBarriers();
         AppletManager.unloadAppletsOnPanel(this.panelId);
         this._context_menu.close();
@@ -2190,8 +2313,6 @@ Panel.prototype = {
         this._centerBox.destroy();
         this._rightBox.destroy();
         this._destroycorners();
-
-        this.actor.destroy();
 
         this._signalManager.disconnectAllSignals()
 
@@ -2265,7 +2386,7 @@ Panel.prototype = {
             }
         }
         if (!property) {
-            property = DEFAULT_VALUES[key];
+            property = DEFAULT_PANEL_VALUES[key];
             values.push(this.panelId + ":" + property);
             global.settings.set_strv(key, values);
         }
@@ -2338,7 +2459,9 @@ Panel.prototype = {
 
         if (this._destroyed)  // ensure we do not try to set barriers if panel is being destroyed
             return;
-        if (this.monitorIndex < 0 || this.monitorIndex >= global.screen.get_n_monitors())  // skip panels that never got created
+
+        let n_monitors = global.display.get_n_monitors();
+        if (n_monitors == 1 || this.monitorIndex < 0 || this.monitorIndex >= n_monitors)  // skip panels that never got created
             return;
 
         let screen_width  = global.screen_width;
@@ -2369,18 +2492,22 @@ Panel.prototype = {
                     if (panelTop != panelBottom && x_coord >= 0)
                     {
                         if (screen_width > this.monitor.x + this.monitor.width - this.margin_right) {    // if there is a monitor to the right or panel offset into monitor
-                            this._rightPanelBarrier = global.create_pointer_barrier( // permit moving in negative x direction for a right hand barrier
-                                                  x_coord, panelTop,
-                                                  x_coord, panelBottom,
-                                                  4 /* BarrierNegativeX (value 1 << 2) */);
+                            this._rightPanelBarrier = new Meta.Barrier({
+                                display: global.display,
+                                x1: x_coord, y1: panelTop,
+                                x2: x_coord, y2: panelBottom,
+                                directions: Meta.BarrierDirection.NEGATIVE_X  // permit moving in positive y direction for a top barrier
+                            });
                         }
 
                         x_coord = this.monitor.x + this.margin_left;
                         if (x_coord > 0) {                                    // if there is a monitor to the left or panel offset into monitor
-                            this._leftPanelBarrier = global.create_pointer_barrier(  // permit moving in positive x direction for a left hand barrier
-                                                 x_coord, panelTop,
-                                                 x_coord, panelBottom,
-                                                 1 /* BarrierPositiveX   (value  1 << 0) */);
+                            this._leftPanelBarrier = new Meta.Barrier({
+                                display: global.display,
+                                x1: x_coord, y1: panelTop,
+                                x2: x_coord, y2: panelBottom,
+                                directions: Meta.BarrierDirection.POSITIVE_X  // permit moving in positive y direction for a top barrier
+                            });
                         }
                     }
                 } else {
@@ -2397,21 +2524,29 @@ Panel.prototype = {
                             global.log("updatePanelBarriers - unrecognised panel position "+this.panelPosition);
                     }
                     if (panelRight != panelLeft) {
-                        let y_coord = this.monitor.y + Math.floor(this.toppanelHeight) + this.margin_top;
-                        if (y_coord > 0) {                                  // if there is a monitor above or top of panel offset into monitor
-                            this._topPanelBarrier = global.create_pointer_barrier( // permit moving in positive y direction for a top barrier
-                                                panelLeft,  y_coord ,
-                                                panelRight, y_coord ,
-                                                2 /* BarrierPositiveY (value  1 << 1) */);
+                        if (this.toppanelHeight === 0) {
+                            let y_coord = this.monitor.y + Math.floor(this.toppanelHeight) + this.margin_top;
+                            if (y_coord > 0) {                                  // if there is a monitor above or top of panel offset into monitor
+                                this._topPanelBarrier = new Meta.Barrier({
+                                    display: global.display,
+                                    x1: panelLeft, y1: y_coord,
+                                    x2: panelRight, y2: y_coord,
+                                    directions: Meta.BarrierDirection.POSITIVE_Y  // permit moving in positive y direction for a top barrier
+                                });
+                            }
                         }
-                        y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
 
-                        if (screen_height > this.monitor.y + this.monitor.height         // if there is a monitor below
-                            || this.bottompanelHeight > 0 || this.margin_bottom > 0) {   // or the bottom of the panel is offset into the monitor
-                            this._bottomPanelBarrier = global.create_pointer_barrier( // permit moving in negative y direction for a bottom barrier
-                                                   panelLeft,  y_coord,
-                                                   panelRight, y_coord,
-                                                   8 /* BarrierNegativeY (value 1 << 3) */);
+                        if (this.bottompanelHeight === 0) {
+                            y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
+                            if (screen_height > this.monitor.y + this.monitor.height         // if there is a monitor below
+                                || this.bottompanelHeight > 0 || this.margin_bottom > 0) {
+                                this._bottomPanelBarrier = new Meta.Barrier({
+                                    display: global.display,
+                                    x1: panelLeft, y1: y_coord,
+                                    x2: panelRight, y2: y_coord,
+                                    directions: Meta.BarrierDirection.NEGATIVE_Y
+                                });
+                            }
                         }
                     }
                 }
@@ -2425,18 +2560,18 @@ Panel.prototype = {
 
     _clearPanelBarriers: function() {
         if (this._leftPanelBarrier)
-            global.destroy_pointer_barrier(this._leftPanelBarrier);
+            this._leftPanelBarrier.destroy();
         if (this._rightPanelBarrier)
-            global.destroy_pointer_barrier(this._rightPanelBarrier);
+            this._rightPanelBarrier.destroy();
         if (this._topPanelBarrier)
-            global.destroy_pointer_barrier(this._topPanelBarrier);
+            this._topPanelBarrier.destroy();
         if (this._bottomPanelBarrier)
-            global.destroy_pointer_barrier(this._bottomPanelBarrier);
+            this._bottomPanelBarrier.destroy();
 
-        this._leftPanelBarrier = 0;
-        this._rightPanelBarrier = 0;
-        this._topPanelBarrier = 0;
-        this._bottomPanelBarrier = 0;
+        this._leftPanelBarrier = null;
+        this._rightPanelBarrier = null;
+        this._topPanelBarrier = null;
+        this._bottomPanelBarrier = null;
     },
 
     _onPanelEditModeChanged: function() {
@@ -2494,8 +2629,6 @@ Panel.prototype = {
         if (event.get_button() == 3) {  // right click
             try {
                 let [x, y] = event.get_coords();
-                let xe = x;
-                let ye = y;
                 let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
 
                 // NB test on parent fails with centre aligned vertical box, but works for the test against the actor
@@ -2525,7 +2658,7 @@ Panel.prototype = {
 
     _onFocusChanged: function() {
         if (global.display.focus_window && this._focusWindow !== undefined &&
-            this._focusWindow == global.display.focus_window.get_compositor_private())
+            this._focusWindow == global.display.focus_window)
             return;
 
         this._signalManager.disconnect("position-changed");
@@ -2534,7 +2667,7 @@ Panel.prototype = {
         if (!global.display.focus_window)
             return;
 
-        this._focusWindow = global.display.focus_window.get_compositor_private();
+        this._focusWindow = global.display.focus_window;
         this._signalManager.connect(this._focusWindow, "position-changed", this._updatePanelVisibility, this);
         this._signalManager.connect(this._focusWindow, "size-changed", this._updatePanelVisibility, this);
         this._updatePanelVisibility();
@@ -2671,7 +2804,7 @@ Panel.prototype = {
         // NB If you want to use margin to inset the panels within a monitor, then you can't just set it here
         // else full screen windows will then go right to the edge with the panels floating over
         //
-        this.monitor = global.screen.get_monitor_geometry(this.monitorIndex);
+        this.monitor = global.display.get_monitor_geometry(this.monitorIndex);
         let horizontal_panel = (!!((this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom)));
 
         // this stands for width on vertical panels, and height on horizontal panels
@@ -2828,7 +2961,6 @@ Panel.prototype = {
     },
 
     _set_vertical_panel_style: function() {
-
         this._leftBox.add_style_class_name('vertical');
         this._leftBox.set_vertical(true);
         this._leftBox.set_x_align(Clutter.ActorAlign.FILL);
@@ -2846,11 +2978,9 @@ Panel.prototype = {
     },
 
     _set_horizontal_panel_style: function() {
-        let rtl = this.actor.get_direction() === St.TextDirection.RTL;
-
         this._leftBox.remove_style_class_name('vertical');
         this._leftBox.set_vertical(false);
-        this._leftBox.set_x_align(rtl ? Clutter.ActorAlign.END : Clutter.ActorAlign.START);
+        this._leftBox.set_x_align(Clutter.ActorAlign.START);
         this._leftBox.set_y_align(Clutter.ActorAlign.FILL);
 
         this._centerBox.remove_style_class_name('vertical');
@@ -2860,7 +2990,7 @@ Panel.prototype = {
 
         this._rightBox.remove_style_class_name('vertical');
         this._rightBox.set_vertical(false);
-        this._rightBox.set_x_align(rtl ? Clutter.ActorAlign.START : Clutter.ActorAlign.END);
+        this._rightBox.set_x_align(Clutter.ActorAlign.END);
         this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
     },
 
@@ -2871,98 +3001,145 @@ Panel.prototype = {
         this.height = height;
 
         // In case icon sizes are responding to panel height
-        this._onPanelZoneIconSizesChanged();
+        this._onPanelZoneSizesChanged();
 
         this.emit('size-changed', height);
     },
 
-    _onPanelZoneIconSizesChanged: function(value, key) {
+    _createEmptyZoneSizes: function() {
+        let typeStruct = {
+            "left" : 0,
+            "center" : 0,
+            "right" : 0
+        };
+
+        let sizes = {
+            "fullcolor" : typeStruct,
+            "symbolic" : typeStruct,
+            "text" : typeStruct
+        };
+
+        return sizes;
+    },
+
+    _onPanelZoneSizesChanged: function(value, key) {
         if (this._destroyed) return;
 
-        let panelZoneIconSizes = this._getJSONProperty(PANEL_ZONE_ICON_SIZES);
-
-        if (!panelZoneIconSizes) return;
-
         let changed = false;
-        let cached = this._panelZoneIconSizes;
+        let oldZoneSizes = this._panelZoneSizes;
 
-        Util.each(panelZoneIconSizes, (iconSizes, i) => {
-            if (iconSizes.panelId !== this.panelId) return;
+        let sizeSets = [
+            ["fullcolor", PANEL_ZONE_ICON_SIZES, (a,b,c,d) => this._clampPanelZoneColorIconSize(a,b,c,d), DEFAULT_FULLCOLOR_ICON_SIZE_VALUES],
+            ["symbolic", PANEL_ZONE_SYMBOLIC_ICON_SIZES, (a,b,c,d) => this._clampPanelZoneSymbolicIconSize(a,b,c,d), DEFAULT_SYMBOLIC_ICON_SIZE_VALUES],
+            ["text", PANEL_ZONE_TEXT_SIZES, (a,b,c,d) => this._clampPanelZoneTextSize(a,b,c,d), DEFAULT_TEXT_SIZE_VALUES]
+        ];
 
-            // Validate sizes
-            if (!VALID_ICON_SIZE_VALUES.includes(iconSizes.left)) {
-                iconSizes.left = toStandardIconSize(iconSizes.left);
-            }
-            if (!VALID_ICON_SIZE_VALUES.includes(iconSizes.center)) {
-                iconSizes.center = toStandardIconSize(iconSizes.center);
-            }
-            if (!VALID_ICON_SIZE_VALUES.includes(iconSizes.right)) {
-                iconSizes.right = toStandardIconSize(iconSizes.right);
-            }
-            if (cached && (iconSizes.left !== cached.left
-                || iconSizes.center !== cached.center
-                || iconSizes.right !== cached.right)) {
-                changed = true;
+        /* Iterate thru the sizeSets to get our sizes for all 3 types */
+        Util.each(sizeSets, (set, i) => {
+            let [typeString, settingKey, getSizeFunc, defaults] = set;
+
+            let settingsArray = this._getJSONProperty(settingKey);
+
+            /* Temporarily disconnect setting handler, so we don't trigger for our own update */
+            this._signalManager.disconnect("changed::" + settingKey);
+
+            /* If one of the sizing key contains nothing, reset them to default before continuing */
+            if (!settingsArray) {
+                log(`Panel zone size settings invalid, resetting org.cinnamon "${settingKey}"`);
+                global.settings.reset(settingKey);
+                settingsArray = this._getJSONProperty(settingKey);
             }
 
-            iconSizes.cache = {
-                left: {
-                    symbolic: this._calculatePanelZoneIconSize(iconSizes.left, true),
-                    fullColor: this._calculatePanelZoneIconSize(iconSizes.left, false),
-                },
-                center: {
-                    symbolic: this._calculatePanelZoneIconSize(iconSizes.center, true),
-                    fullColor: this._calculatePanelZoneIconSize(iconSizes.center, false),
-                },
-                right: {
-                    symbolic: this._calculatePanelZoneIconSize(iconSizes.right, true),
-                    fullColor: this._calculatePanelZoneIconSize(iconSizes.right, false),
+            let haveSettings = false;
+
+            /* Now, iterate thru the individual set's values (an individual setting key's array of panel sizes),
+             * then compute their display sizes and stick them in this._panelZoneSizes for the current type. */
+            Util.each(settingsArray, (sizes, i) => {
+                if (sizes.panelId !== this.panelId) return;
+
+                haveSettings = true;
+
+                sizes.left = getSizeFunc(sizes, typeString, "left", defaults);
+                sizes.center = getSizeFunc(sizes, typeString, "center", defaults);
+                sizes.right = getSizeFunc(sizes, typeString, "right", defaults);
+
+                let zoneCache = oldZoneSizes[typeString];
+
+                if (sizes.left !== zoneCache.left ||
+                    sizes.center !== zoneCache.center ||
+                    sizes.right !== zoneCache.right) {
+                    changed = true;
                 }
-            };
 
-            this._panelZoneIconSizes = iconSizes;
+                this._panelZoneSizes[typeString] = sizes;
+            });
+
+            /* If there are no settings for this panel (it's either new, or the settings key has been reset to defaults),
+             * generate default display values for adding to this._panelZoneSizes, as well as a default item to add to
+             * gsettings. */
+            if (!haveSettings) {
+                let panelHeight = this.height * global.ui_scale;
+
+                let defaultForCache = {
+                    "left": getSizeFunc(defaults, typeString, "left", null),
+                    "center": getSizeFunc(defaults, typeString, "center", null),
+                    "right": getSizeFunc(defaults, typeString, "right", null)
+                };
+
+                this._panelZoneSizes[typeString] = defaultForCache;
+
+                let defaultSet = defaults;
+
+                defaultSet["panelId"] = this.panelId;
+                settingsArray.push(defaultSet);
+                global.settings.set_string(settingKey, JSON.stringify(settingsArray));
+           }
+
+           this._signalManager.connect(global.settings, "changed::" + settingKey, this._onPanelZoneSizesChanged, this);
         });
 
-        if (!this._panelZoneIconSizes) {
-            let defaultSymbolicSize = this._calculatePanelZoneIconSize(0, true);
-            let defaultFullColorSize = this._calculatePanelZoneIconSize(0, false);
+        let zones = [
+            [this._leftBox, "left"],
+            [this._centerBox, "center"],
+            [this._rightBox, "right"]
+        ];
 
-            let defaultZoneConfig = {
-                panelId: this.panelId,
-                left: 0,
-                center: 0,
-                right: 0
-            };
+        Util.each(zones, (zone, i) => {
+            let [actor, zoneString] = zone;
 
-            panelZoneIconSizes.push(defaultZoneConfig);
-            global.settings.set_string(PANEL_ZONE_ICON_SIZES, JSON.stringify(panelZoneIconSizes));
+            let value = this._panelZoneSizes["text"][zoneString];
 
-            defaultZoneConfig.cache = {
-                left: {
-                    symbolic: defaultSymbolicSize,
-                    fullColor: defaultFullColorSize
-                },
-                center: {
-                    symbolic: defaultSymbolicSize,
-                    fullColor: defaultFullColorSize
-                },
-                right: {
-                    symbolic: defaultSymbolicSize,
-                    fullColor: defaultFullColorSize
-                }
-            };
-
-            this._panelZoneIconSizes = defaultZoneConfig;
-
-            global.log(`[Panel ${this.panelId}] Creating a new zone configuration`);
-        }
-
-        if (typeof key === 'string' && key.includes('symbolic-relative-size')) changed = true;
+            if (value > 0.0) {
+                actor.set_style("font-size: %.1fpt;".format(value));
+            } else {
+                actor.set_style(null);
+            }
+        });
 
         if (changed) this.emit('icon-size-changed');
     },
 
-    _calculatePanelZoneIconSize: function(iconSize, isSymbolic = false) {
+    _clampPanelZoneTextSize: function(panelZoneSizeSet, typeString, zoneString, defaults) {
+        let iconSize = panelZoneSizeSet.maybeGet(zoneString);
+
+        if (iconSize == undefined) {
+            iconSize = defaults[zoneString];
+        }
+
+        if (iconSize !== 0.0) {
+            return iconSize.clamp(MIN_TEXT_SIZE_PTS, MAX_TEXT_SIZE_PTS);
+        }
+
+        return iconSize;
+    },
+
+    _clampPanelZoneColorIconSize: function(panelZoneSizeSet, typeString, zoneString, defaults) {
+        let iconSize = panelZoneSizeSet.maybeGet(zoneString);
+
+        if (iconSize == undefined) {
+            iconSize = defaults[zoneString];
+        }
+
         let height = this.height / global.ui_scale;
 
         if (iconSize === -1) { // Legacy: Scale to panel size
@@ -2971,43 +3148,63 @@ Panel.prototype = {
             iconSize = toStandardIconSize(height);
         }
 
-        // Always re-adjust symbolics
-        if (isSymbolic) {
-            iconSize = getSymbolicIconSize(iconSize, this.themeSettings);
-        }
-
         return iconSize; // Always return a value above 0 or St will spam the log.
     },
 
+    _clampPanelZoneSymbolicIconSize: function(panelZoneSizeSet, typeString, zoneString, defaults) {
+        let iconSize = panelZoneSizeSet.maybeGet(zoneString);
+
+        if (iconSize == undefined) {
+            iconSize = defaults[zoneString];
+        }
+
+        let panelHeight = this.height / global.ui_scale;
+
+        let new_size = iconSize.clamp(MIN_SYMBOLIC_SIZE_PX, Math.min(MAX_SYMBOLIC_SIZE_PX, panelHeight));
+        return new_size;
+    },
+
     getPanelZoneIconSize: function(locationLabel, iconType) {
-        let zoneConfig = this._panelZoneIconSizes;
-        let symbolic = iconType === St.IconType.SYMBOLIC;
+        let zoneConfig = this._panelZoneSizes;
+        let typeString = "fullcolor";
 
-        if (!zoneConfig) {
-            global.logError(`[Panel ${this.panelId}] Unable to find zone configuration`);
-            return this._calculatePanelZoneIconSize(0, symbolic);
+        if (iconType == St.IconType.SYMBOLIC) {
+            typeString = "symbolic";
         }
 
-        if (symbolic) {
-            return zoneConfig.cache[locationLabel].symbolic;
-        }
-
-        return zoneConfig.cache[locationLabel].fullColor;
+        return this._panelZoneSizes[typeString][locationLabel];
     },
 
     _removeZoneIconSizes: function() {
-        let panelZoneIconSizes = this._getJSONProperty(PANEL_ZONE_ICON_SIZES);
-        let zoneIndex = Util.findIndex(panelZoneIconSizes, (obj) => {
-            return obj.panelId === this.panelId;
+        let sizeSets = [
+            ["fullcolor", PANEL_ZONE_ICON_SIZES],
+            ["symbolic", PANEL_ZONE_SYMBOLIC_ICON_SIZES],
+            ["text", PANEL_ZONE_TEXT_SIZES]
+        ];
+
+        Util.each(sizeSets, (set, i) => {
+            let [typeString, settingKey] = set;
+
+            let settingsArray = this._getJSONProperty(settingKey);
+
+            /* Temporarily disconnect setting handler, so we don't trigger for our own update */
+            this._signalManager.disconnect("changed::" + settingKey);
+
+            let zoneIndex = Util.findIndex(settingsArray, (obj) => {
+                return obj.panelId === this.panelId;
+            });
+
+            if (zoneIndex >= 0) {
+                settingsArray.splice(zoneIndex, 1);
+
+                this._panelZoneSizes = null;
+
+                global.settings.set_string(settingKey, JSON.stringify(settingsArray));
+
+                this._signalManager.connect(global.settings, "changed::" + settingKey, this._onPanelZoneSizesChanged, this);
+            }
         });
 
-        if (zoneIndex < 0) return;
-
-        panelZoneIconSizes.splice(zoneIndex, 1);
-
-        this._panelZoneIconSizes = null;
-
-        global.settings.set_string(PANEL_ZONE_ICON_SIZES, JSON.stringify(panelZoneIconSizes));
         global.log(`[Panel ${this.panelId}] Removing zone configuration`);
     },
 
@@ -3403,7 +3600,7 @@ Panel.prototype = {
                     }
 
                     let a = this.actor;
-                    let b = global.display.focus_window.get_compositor_private();
+                    let b = global.display.focus_window.get_frame_rect();
                     /* Magic to check whether the panel position overlaps with the
                     * current focused window */
                     if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
@@ -3449,14 +3646,31 @@ Panel.prototype = {
         }
     },
 
-    _enterPanel: function() {
+    _enterPanel: function(actor=null, event=null) {
         this._mouseEntered = true;
         this._updatePanelVisibility();
     },
 
-    _leavePanel:function() {
+    _leavePanel:function(actor=null, event=null) {
+        if (event !== null && this._eventOnPanelStrip(...event.get_coords())) {
+            return;
+        }
+
         this._mouseEntered = false;
         this._updatePanelVisibility();
+    },
+
+    _eventOnPanelStrip: function(x, y) {
+        switch (this.panelPosition) {
+            case PanelLoc.top:
+                return y === this.monitor.y;
+            case PanelLoc.bottom:
+                return y === this.monitor.y + this.monitor.height - 1;
+            case PanelLoc.left:
+                return x === this.monitor.x;
+            case PanelLoc.right:
+                return x === this.monitor.x + this.monitor.width - 1;
+        }
     },
 
     /**
@@ -3468,11 +3682,13 @@ Panel.prototype = {
     disable: function() {
         this._disabled = true;
         this._leavePanel();
-        Tweener.addTween(this.actor, {
+        this.actor.ease({
             opacity: 0,
-            time: AUTOHIDE_ANIMATION_TIME,
-            transition: 'easeOutQuad',
-            onComplete: this.actor.hide
+            duration: AUTOHIDE_ANIMATION_TIME * 1000,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this.actor.hide();
+            }
         });
     },
 
@@ -3484,10 +3700,10 @@ Panel.prototype = {
     enable: function() {
         this._disabled = false;
         this.actor.show();
-        Tweener.addTween(this.actor, {
+        this.actor.ease({
             opacity: 255,
-            time: AUTOHIDE_ANIMATION_TIME,
-            transition: 'easeOutQuad'
+            duration: AUTOHIDE_ANIMATION_TIME * 1000,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
     },
 

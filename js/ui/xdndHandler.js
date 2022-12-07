@@ -5,6 +5,7 @@ const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const DND = imports.ui.dnd;
+const Meta = imports.gi.Meta;
 
 function XdndHandler() {
     this._init();
@@ -17,22 +18,14 @@ XdndHandler.prototype = {
         this._cursorWindowClone = null;
 
         // Used as a drag actor in case we don't have a cursor window clone
-        this._dummy = new Clutter.Rectangle({ width: 1, height: 1, opacity: 0 });
+        this._dummy = new Clutter.Rectangle({ width: 1, height: 1, opacity: 0, name: 'xdnd-proxy-actor' });
         global.stage.add_actor(this._dummy);
         this._dummy.hide();
 
-        // Muffin delays the creation of the output window as long
-        // as possible to avoid flicker. In case a plugin wants to
-        // access it directly it has to connect to the stage's show
-        // signal. (see comment in compositor.c:meta_compositor_manage_screen)
-        global.stage.connect('show', function () {
-                                        global.init_xdnd();
-                                        return false;
-                                      });
-
-        global.connect('xdnd-enter', Lang.bind(this, this._onEnter));
-        global.connect('xdnd-position-changed', Lang.bind(this, this._onPositionChanged));
-        global.connect('xdnd-leave', Lang.bind(this, this._onLeave));
+        var dnd = Meta.get_backend().get_dnd();
+        dnd.connect('dnd-enter', Lang.bind(this, this._onEnter));
+        dnd.connect('dnd-position-change', Lang.bind(this, this._onPositionChanged));
+        dnd.connect('dnd-leave', Lang.bind(this, this._onLeave));
 
         this._windowGroupVisibilityHandlerId = 0;
     },
@@ -89,7 +82,7 @@ XdndHandler.prototype = {
     },
 
     _onPositionChanged: function(obj, x, y) {
-        let pickedActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
+        let pickedActor = global.stage.get_actor_at_pos(Clutter.PickMode.NONE, x, y);
 
         // Make sure that the cursor window is on top
         if (this._cursorWindowClone)

@@ -9,7 +9,6 @@ const Mainloop = imports.mainloop;
 const Main = imports.ui.main;
 const Cinnamon = imports.gi.Cinnamon;
 
-const CHECK_DESTROYED_TIMEOUT = 100;
 const DISABLE_HOVER_TIMEOUT = 500; // milliseconds
 
 function sortWindowsByUserTime(win1, win2) {
@@ -67,10 +66,12 @@ function getWindowsForBinding(binding) {
 
     switch(binding.get_name()) {
         case 'switch-panels':
+        case 'switch-panels-backward':
             // Switch between windows of all workspaces
             windows = windows.filter( matchSkipTaskbar );
             break;
         case 'switch-group':
+        case 'switch-group-backward':
             // Switch between windows of the same application
             let focused = global.display.focus_window ? global.display.focus_window : windows[0];
             windows = windows.filter( matchWmClass, focused.get_wm_class() );
@@ -107,7 +108,6 @@ AppSwitcher.prototype = {
         this._haveModal = false;
         this._destroyed = false;
         this._motionTimeoutId = 0;
-        this._checkDestroyedTimeoutId = 0;
         this._currentIndex = this._windows.indexOf(global.display.focus_window);
         if (this._currentIndex < 0) {
             this._currentIndex = 0;
@@ -131,7 +131,7 @@ AppSwitcher.prototype = {
             this._haveModal = Main.pushModal(this.actor, global.get_current_time(), Meta.ModalOptions.POINTER_ALREADY_GRABBED);
         }
         if (!this._haveModal)
-            this._activateSelected();
+            this._failedGrabAction();
         else {
             // Initially disable hover so we ignore the enter-event if
             // the switcher appears underneath the current pointer location
@@ -149,7 +149,7 @@ AppSwitcher.prototype = {
             // selection.)
             let [x, y, mods] = global.get_pointer();
             if (!(mods & this._modifierMask)) {
-                this._activateSelected();
+                this._failedGrabAction();
                 return false;
             }
 
@@ -257,46 +257,39 @@ AppSwitcher.prototype = {
 
         // Switch workspace
         if (modifiers & Clutter.ModifierType.CONTROL_MASK &&
-           (symbol === Clutter.Right || symbol === Clutter.Left)) {
+           (symbol === Clutter.KEY_Right || symbol === Clutter.KEY_Left)) {
             if (this._switchWorkspace(symbol))
                 return true;
         }
 
         // Extra keys
         switch (symbol) {
-            case Clutter.Escape:
+            case Clutter.KEY_Escape:
                 // Esc -> Close switcher
                 this.destroy();
                 return true;
 
-            case Clutter.Return:
+            case Clutter.KEY_Return:
+            case Clutter.KEY_KP_Enter:
                 // Enter -> Select active window
                 this._activateSelected();
                 return true;
 
-            case Clutter.d:
-            case Clutter.D:
+            case Clutter.KEY_d:
+            case Clutter.KEY_D:
                 // D -> Show desktop
                 this._showDesktop();
                 return true;
 
-            case Clutter.q:
-            case Clutter.Q:
-                // Q -> Close window
-                this._windows[this._currentIndex].delete(global.get_current_time());
-                this._checkDestroyedTimeoutId = Mainloop.timeout_add(CHECK_DESTROYED_TIMEOUT,
-                        Lang.bind(this, this._checkDestroyed, this._windows[this._currentIndex]));
-                return true;
-
-            case Clutter.Right:
-            case Clutter.Down:
+            case Clutter.KEY_Right:
+            case Clutter.KEY_Down:
                 // Right/Down -> navigate to next preview
                 if(this._checkSwitchTime())
                     this._next();
                 return true;
 
-            case Clutter.Left:
-            case Clutter.Up:
+            case Clutter.KEY_Left:
+            case Clutter.KEY_Up:
                 // Left/Up -> navigate to previous preview
                 if(this._checkSwitchTime())
                     this._previous();
@@ -340,6 +333,12 @@ AppSwitcher.prototype = {
         return true;
     },
 
+    _failedGrabAction: function() {
+        if (!["coverflow", "timeline"].includes(global.settings.get_string('alttab-switcher-style'))) {
+            this._keyReleaseEvent(null, null);
+        }
+    },
+
     // allow navigating by mouse-wheel scrolling
     _scrollEvent: function(actor, event) {
         if(this._checkSwitchTime()) {
@@ -373,9 +372,9 @@ AppSwitcher.prototype = {
 
         let current = global.screen.get_active_workspace_index();
 
-        if (direction === Clutter.Left)
+        if (direction === Clutter.KEY_Left)
             Main.wm.actionMoveWorkspaceLeft();
-        else if (direction === Clutter.Right)
+        else if (direction === Clutter.KEY_Right)
             Main.wm.actionMoveWorkspaceRight();
         else
             return false;
@@ -390,11 +389,6 @@ AppSwitcher.prototype = {
 
     _windowDestroyed: function(wm, actor) {
         this._removeDestroyedWindow(actor.meta_window);
-    },
-
-    _checkDestroyed: function(window) {
-        this._checkDestroyedTimeoutId = 0;
-        this._removeDestroyedWindow(window);
     },
 
     _removeDestroyedWindow: function(window) {
@@ -423,7 +417,8 @@ AppSwitcher.prototype = {
     },
 
     _activateSelected: function() {
-        Main.activateWindow(this._windows[this._currentIndex], global.get_current_time());
+        let workspace_num = this._windows[this._currentIndex].get_workspace().index();
+        Main.activateWindow(this._windows[this._currentIndex], global.get_current_time(), workspace_num);
         if (!this._destroyed)
             this.destroy();
     },
@@ -455,10 +450,6 @@ AppSwitcher.prototype = {
         if (this._motionTimeoutId != 0) {
             Mainloop.source_remove(this._motionTimeoutId);
             this._motionTimeoutId = 0;
-        }
-        if (this._checkDestroyedTimeoutId != 0) {
-            Mainloop.source_remove(this._checkDestroyedTimeoutId);
-            this._checkDestroyedTimeoutId = 0;
         }
 
         this._windowManager.disconnect(this._dcid);

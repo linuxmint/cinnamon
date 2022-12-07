@@ -1,0 +1,33 @@
+<node>
+  <interface name='org.cinnamon.CalendarServer'>
+    <method name='SetTimeRange'>
+      <!-- since, until are localized time_t -->
+      <arg type='x' name='since' direction='in'/>
+      <arg type='x' name='until' direction='in'/>
+      <arg type='b' name='force_reload' direction='in'/>
+    </method>
+    <method name='Exit'/>
+    <signal name='EventsAddedOrUpdated'>
+      <!-- array of [uid_str, color_str, summary_str, all_day_bool, start_timet, end_timet, mod_timet] -->
+      <!-- start and end times are localized, mod time is UTC -->
+      <arg type='a(sssbxxx)' name='events' direction='out'/>
+    </signal>
+    <!-- ids is a '::'-separated string of event uids.
+         this is because gdbus-codegen doesn't gi-annotate
+         gchar ** string arrays properly -->
+    <signal name='EventsRemoved'>
+      <arg type='s' name='ids' direction='out'/>
+    </signal>
+    <signal name='ClientDisappeared'>
+      <arg type='s' name='source_uid' direction='out'/>
+    </signal>
+    <!-- since, until are localized time_t -->
+    <property name='Since' type='x' access='read'/>
+    <property name='Until' type='x' access='read'/>
+    <!-- Status- enum:
+         0: unknown
+         1: no calendars
+         2: calendars -->
+    <property name='Status' type='u' access='read'/>
+  </interface>
+</node>

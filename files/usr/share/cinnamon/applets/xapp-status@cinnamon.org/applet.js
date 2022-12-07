@@ -6,24 +6,111 @@ const Clutter = imports.gi.Clutter;
 const Interfaces = imports.misc.interfaces;
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
+const Mainloop = imports.mainloop;
 const SignalManager = imports.misc.signalManager;
 const Gtk = imports.gi.Gtk;
 const XApp = imports.gi.XApp;
 const GLib = imports.gi.GLib;
+const Tooltips = imports.ui.tooltips;
+
+const HORIZONTAL_STYLE = 'padding-left: 2px; padding-right: 2px; padding-top: 0; padding-bottom: 0';
+const VERTICAL_STYLE = 'padding-left: 0; padding-right: 0; padding-top: 2px; padding-bottom: 2px';
+
+
+class RecorderIcon {
+    constructor(applet) {
+        this.applet = applet;
+        this.actor = new St.BoxLayout({
+            style_class: "applet-box",
+            reactive: false,
+            visible: false,
+            x_expand: true,
+            y_expand: true
+        });
+
+        this.icon_holder = new St.Bin();
+        this.iconSize = this.applet.getPanelIconSize(St.IconType.FULLCOLOR);
+
+        this.actor.add_actor(this.icon_holder);
+
+        this._indicator = new St.DrawingArea();
+        this._indicator.connect("repaint", (area) => this._paint(area));
+        this.icon_holder.add_actor(this._indicator);
+
+        this._recordListenerId = Main.screenRecorder.connect("recording", () => this._recordingStateChanged());
+        this._recordingStateChanged();
+    }
+
+    _recordingStateChanged() {
+        this.actor.visible = Main.screenRecorder.recording;
+        this._indicator.queue_repaint();
+    }
+
+    _paint(area) {
+        let [width, height] = area.get_surface_size();
+        let size = Math.max(width, height);
+        let node = area.get_theme_node();
+        let border = node.get_foreground_color();
+
+        let cr = area.get_context();
+
+        let color = new Clutter.Color({ red: 255, green: 0, blue: 0, alpha: 255 });
+        Clutter.cairo_set_source_color(cr, color);
+
+        cr.arc(
+            width / 2,
+            height / 2,
+            size / 4.0,
+            0.0,
+            2.0 * Math.PI
+        )
+
+        cr.fillPreserve();
+        Clutter.cairo_set_source_color(cr, border);
+        cr.stroke();
+        cr.$dispose();
+    }
+
+    refresh() {
+        this.setOrientation(this.applet.orientation);
+        this._indicator.set_size(this.iconSize, this.iconSize);
+        this._indicator.queue_repaint();
+    }
+
+    setOrientation(orientation) {
+        switch (orientation) {
+            case St.Side.TOP:
+            case St.Side.BOTTOM:
+                this.actor.vertical = false;
+                this.actor.remove_style_class_name("vertical");
+                break;
+            case St.Side.LEFT:
+            case St.Side.RIGHT:
+                this.actor.vertical = true;
+                this.actor.add_style_class_name("vertical");
+                break;
+        }
+    }
+
+    destroy() {
+        if (this._recordListenerId > 0) {
+            Main.screenRecorder.disconnect(this._recordListenerId);
+            this._recordListenerId = 0;
+        }
+    }
+}
 
 class XAppStatusIcon {
-
     constructor(applet, proxy) {
         this.name = proxy.get_name();
         this.applet = applet;
         this.proxy = proxy;
 
         this.iconName = null;
-        this.tooltipText = "";
 
         this.actor = new St.BoxLayout({
             style_class: "applet-box",
-            reactive: true,
+            reactive: !global.settings.get_boolean('panel-edit-mode'),
             track_hover: true,
             // The systray use a layout manager, we need to fill the space of the actor
             // or otherwise the menu will be displayed inside the panel.
@@ -31,19 +118,24 @@ class XAppStatusIcon {
             y_expand: true
         });
 
-        this.icon = new St.Icon();
+        this.icon_holder = new St.Bin();
+        this.iconSize = this.applet.getPanelIconSize(St.IconType.FULLCOLOR);
+
+        this.proxy.icon_size = this.iconSize;
 
         this.label = new St.Label({
             'y-align': St.Align.END,
         });
 
-        this.actor.add_actor(this.icon);
+        this.actor.add_actor(this.icon_holder);
         this.actor.add_actor(this.label);
+
+        this._tooltip = new Tooltips.PanelItemTooltip(this, "", applet.orientation);
 
         this.actor.connect('button-press-event', Lang.bind(this, this.onButtonPressEvent));
         this.actor.connect('button-release-event', Lang.bind(this, this.onButtonReleaseEvent));
+        this.actor.connect('scroll-event', (...args) => this.onScrollEvent(...args));
         this.actor.connect('enter-event', Lang.bind(this, this.onEnterEvent));
-        this.actor.connect('leave-event', Lang.bind(this, this.onLeaveEvent));
 
         this._proxy_prop_change_id = this.proxy.connect('g-properties-changed', Lang.bind(this, this.on_properties_changed))
 
@@ -65,7 +157,19 @@ class XAppStatusIcon {
         if ('Visible' in prop_names) {
             this.setVisible(proxy.visible);
         }
-
+        if ('Name' in prop_names) {
+            this.applet.sortIcons();
+        }
+        if ('PrimaryMenuIsOpen' in prop_names) {
+            if (!proxy.primary_menu_is_open) {
+                this.actor.sync_hover();
+            }
+        }
+        if ('SecondaryMenuIsOpen' in prop_names) {
+            if (!proxy.secondary_menu_is_open) {
+                this.actor.sync_hover();
+            }
+        }
         return;
     }
 
@@ -96,41 +200,67 @@ class XAppStatusIcon {
 
     setIconName(iconName) {
         if (iconName) {
+            let type, icon;
+
             if (iconName.match(/symbolic/)) {
-                this.icon.set_icon_type(St.IconType.SYMBOLIC);
+                type = St.IconType.SYMBOLIC;
             }
             else {
-                this.icon.set_icon_type(St.IconType.FULLCOLOR);
+                type = St.IconType.FULLCOLOR;
             }
 
             this.iconName = iconName;
-            this.icon.set_icon_size(this.applet.getPanelIconSize(this.icon.get_icon_type()));
+            this.iconSize = this.applet.getPanelIconSize(type);
+            this.proxy.icon_size = this.iconSize;
 
-            if (iconName.includes("/")) {
-                let file = Gio.File.new_for_path(iconName);
+            // Assume symbolic icons would always be square/suitable for an StIcon.
+            if (iconName.includes("/") && type != St.IconType.SYMBOLIC) {
+                this.icon_loader_handle = St.TextureCache.get_default().load_image_from_file_async(
+                    iconName,
+                    /* If top/bottom panel, allow the image to expand horizontally,
+                     * otherwise, restrict it to a square (but keep aspect ratio.) */
+                    this.actor.vertical ? this.iconSize : -1,
+                    this.iconSize,
+                    (...args)=>this._onImageLoaded(...args)
+                );
 
-                let gicon = Gio.FileIcon.new(file);
-
-                this.icon.set_gicon(gicon);
+                return;
             }
             else {
-                this.icon.set_icon_name(iconName);
+                icon = new St.Icon( { "icon-type": type, "icon-size": this.iconSize, "icon-name": iconName });
+                this.icon_holder.show();
+                this.icon_holder.child = icon;
             }
-
-            this.icon.show();
         }
         else {
             this.iconName = null;
-            this.icon.hide();
+            this.icon_holder.hide();
         }
+    }
+
+    _onImageLoaded(cache, handle, actor, data=null) {
+        if (handle !== this.icon_loader_handle) {
+            global.logError(`xapp-status@cinnamon.org: Icon or image seems out of sync (${this.name}`);
+            return;
+        }
+
+        this.icon_holder.child = actor;
+        this.icon_holder.show();
     }
 
     setTooltipText(tooltipText) {
         if (tooltipText) {
-            this.tooltipText = tooltipText;
+            this._tooltip.preventShow = false;
         }
         else {
-            this.tooltipText = "";
+            tooltipText = "";
+            this._tooltip.preventShow = true;
+        }
+        this._tooltip.set_markup(tooltipText);
+        // If the tooltip is currently visible, then we might need to trigger a realignment of the tooltip after changing the text length
+        if (this._tooltip.visible) {
+           this._tooltip.hide();
+           this._tooltip.show();
         }
     }
 
@@ -157,11 +287,7 @@ class XAppStatusIcon {
     }
 
     onEnterEvent(actor, event) {
-        this.applet.set_applet_tooltip(this.tooltipText);
-    }
-
-    onLeaveEvent(actor, event) {
-        this.applet.set_applet_tooltip("");
+        this._tooltip.preventShow = false;
     }
 
     getEventPositionInfo(actor) {
@@ -202,13 +328,18 @@ class XAppStatusIcon {
     }
 
     onButtonPressEvent(actor, event) {
-        this.applet.set_applet_tooltip("");
+        this._tooltip.hide();
+        this._tooltip.preventShow = true;
+
+        if (event.get_button() == Clutter.BUTTON_SECONDARY && event.get_state() & Clutter.ModifierType.CONTROL_MASK) {
+            return Clutter.EVENT_PROPAGATE;
+        }
 
         let [x, y, o] = this.getEventPositionInfo(actor);
 
         this.proxy.call_button_press(x, y, event.get_button(), event.get_time(), o, null, null);
 
-        return true;
+        return Clutter.EVENT_STOP;
     }
 
     onButtonReleaseEvent(actor, event) {
@@ -216,12 +347,40 @@ class XAppStatusIcon {
 
         this.proxy.call_button_release(x, y, event.get_button(), event.get_time(), o, null, null);
 
-        return true;
+        return Clutter.EVENT_STOP;
+    }
+
+    onScrollEvent(actor, event) {
+        let direction = event.get_scroll_direction();
+
+        if (direction != Clutter.ScrollDirection.SMOOTH) {
+            let x_dir = XApp.ScrollDirection.UP;
+            let delta = 0;
+
+            if (direction == Clutter.ScrollDirection.UP) {
+                x_dir = XApp.ScrollDirection.UP;
+                delta = -1;
+            } else if (direction == Clutter.ScrollDirection.DOWN) {
+                x_dir = XApp.ScrollDirection.DOWN;
+                delta = 1;
+            } else if (direction == Clutter.ScrollDirection.LEFT) {
+                x_dir = XApp.ScrollDirection.LEFT;
+                delta = -1;
+            } else if (direction == Clutter.ScrollDirection.RIGHT) {
+                x_dir = XApp.ScrollDirection.RIGHT;
+                delta = 1;
+            }
+
+            this.proxy.call_scroll(delta, x_dir, event.get_time(), null, null);
+        }
+
+        return Clutter.EVENT_STOP;
     }
 
     destroy() {
         this.proxy.disconnect(this._proxy_prop_change_id);
         this._proxy_prop_change_id = 0;
+        this._tooltip.destroy();
     }
 }
 
@@ -236,18 +395,17 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         this.actor.remove_style_class_name('applet-box');
         this.actor.set_important(true);  // ensure we get class details from the default theme if not present
 
-        let manager;
         if (this.orientation == St.Side.TOP || this.orientation == St.Side.BOTTOM) {
-            manager = new Clutter.BoxLayout( { spacing: 0,
-                                               orientation: Clutter.Orientation.HORIZONTAL });
+            this.manager_container = new St.BoxLayout( { vertical: false, style: HORIZONTAL_STYLE });
         } else {
-            manager = new Clutter.BoxLayout( { spacing: 0,
-                                               orientation: Clutter.Orientation.VERTICAL });
+            this.manager_container = new St.BoxLayout( { vertical: true, style: VERTICAL_STYLE });
         }
-        this.manager = manager;
-        this.manager_container = new Clutter.Actor( { layout_manager: manager } );
+
         this.actor.add_actor (this.manager_container);
         this.manager_container.show();
+
+        this._recording_indicator = new RecorderIcon(this);
+        this.manager_container.add_actor(this._recording_indicator.actor);
 
         this.statusIcons = {};
 
@@ -256,6 +414,7 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         this.ignoredProxies = {};
 
         this.signalManager = new SignalManager.SignalManager(null);
+        this._scaleUpdateId = 0;
 
         this.monitor = new XApp.StatusIconMonitor();
         this.signalManager.connect(this.monitor, "icon-added", this.onMonitorIconAdded, this);
@@ -270,38 +429,46 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
          * of the icon size matches the last type used by the applet.  Since this applet can contain both
          * types, listen to the panel signal directly, so we always receive the update. */
         this.signalManager.connect(this.panel, "icon-size-changed", this.icon_size_changed, this);
+        this.signalManager.connect(global, "scale-changed", this.ui_scale_changed, this);
+    }
+
+    getKey(icon_proxy) {
+        let proxy_name = icon_proxy.get_name();
+        let proxy_path = icon_proxy.get_object_path()
+
+        return proxy_name + proxy_path;
     }
 
     onMonitorIconAdded(monitor, icon_proxy) {
-        let proxy_name = icon_proxy.get_name();
+        let key = this.getKey(icon_proxy);
 
-        if (this.statusIcons[proxy_name]) {
+        if (this.statusIcons[key]) {
             return;
         }
 
         if (this.shouldIgnoreStatusIcon(icon_proxy)) {
-            global.log(`Hiding XAppStatusIcon (we have an applet): ${icon_proxy.name} (${i})`);
+            global.log(`Hiding XAppStatusIcon (we have an applet): ${icon_proxy.name}`);
             this.ignoreStatusIcon(icon_proxy);
 
             return;
         }
 
-        global.log(`Adding XAppStatusIcon: ${icon_proxy.name} (${proxy_name})`);
+        global.log(`Adding XAppStatusIcon: ${icon_proxy.name} (${key})`);
         this.addStatusIcon(icon_proxy);
     }
 
     onMonitorIconRemoved(monitor, icon_proxy) {
-        let proxy_name = icon_proxy.get_name();
+        let key = this.getKey(icon_proxy);
 
-        if (!this.statusIcons[proxy_name]) {
-            if (this.ignoredProxies[proxy_name]) {
-                delete this.ignoredProxies[proxy_name];
+        if (!this.statusIcons[key]) {
+            if (this.ignoredProxies[key]) {
+                delete this.ignoredProxies[key];
             }
 
             return;
         }
 
-        global.log(`Removing XAppStatusIcon: ${icon_proxy.name} (${proxy_name})`);
+        global.log(`Removing XAppStatusIcon: ${icon_proxy.name} (${key})`);
         this.removeStatusIcon(icon_proxy);
     }
 
@@ -331,44 +498,45 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
     }
 
     addStatusIcon(icon_proxy) {
-        let proxy_name = icon_proxy.get_name();
-
+        let key = this.getKey(icon_proxy);
         let statusIcon = new XAppStatusIcon(this, icon_proxy);
 
         this.manager_container.insert_child_at_index(statusIcon.actor, 0);
-        this.statusIcons[proxy_name] = statusIcon;
+        this.statusIcons[key] = statusIcon;
 
         this.sortIcons();
     }
 
     removeStatusIcon(icon_proxy) {
-        let proxy_name = icon_proxy.get_name();
+        let key = this.getKey(icon_proxy);
 
-        if (!this.statusIcons[proxy_name]) {
+        if (!this.statusIcons[key]) {
             return;
         }
 
-        this.manager_container.remove_child(this.statusIcons[proxy_name].actor);
-        this.statusIcons[proxy_name].destroy();
-        delete this.statusIcons[proxy_name];
+        this.manager_container.remove_child(this.statusIcons[key].actor);
+        this.statusIcons[key].destroy();
+        delete this.statusIcons[key];
 
         this.sortIcons();
     }
 
     ignoreStatusIcon(icon_proxy) {
-        let proxy_name = icon_proxy.get_name();
+        let key = this.getKey(icon_proxy);
 
-        if (this.ignoredProxies[proxy_name]) {
+        if (this.ignoredProxies[key]) {
             return;
         }
 
-        this.ignoredProxies[proxy_name] = icon_proxy;
+        this.ignoredProxies[key] = icon_proxy;
     }
 
     shouldIgnoreStatusIcon(icon_proxy) {
         let hiddenIcons = Main.systrayManager.getRoles();
 
-        if (hiddenIcons.indexOf(icon_proxy.name) != -1 ) {
+        let name = icon_proxy.name.toLowerCase();
+
+        if (hiddenIcons.indexOf(name) != -1 ) {
             return true;
         }
 
@@ -387,10 +555,13 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
             return -1;
         }
 
-        return GLib.utf8_collate(a.proxy.name, b.proxy.name);
+        return GLib.utf8_collate(a.proxy.name.replace("org.x.StatusIcon.", "").toLowerCase(),
+                                 b.proxy.name.replace("org.x.StatusIcon.", "").toLowerCase());
     }
 
     sortIcons() {
+        this.onSystrayRolesChanged();
+
         let icon_list = []
 
         for (let i in this.statusIcons) {
@@ -403,6 +574,8 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
         for (let icon of icon_list) {
             this.manager_container.set_child_at_index(icon.actor, 0);
         }
+
+        this.manager_container.set_child_at_index(this._recording_indicator.actor, -1);
     }
 
     refreshIcons() {
@@ -410,6 +583,8 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
             let icon = this.statusIcons[owner];
             icon.refresh();
         }
+
+        this._recording_indicator.refresh();
     }
 
     icon_size_changed() {
@@ -418,6 +593,19 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
 
     on_icon_theme_changed() {
         this.refreshIcons();
+    }
+
+    ui_scale_changed() {
+        if (this._scaleUpdateId > 0) {
+            Mainloop.source_remove(this._scaleUpdateId);
+        }
+
+        this._scaleUpdateId = Mainloop.timeout_add(1500, () => {
+            this.refreshIcons();
+
+            this._scaleUpdateId = 0;
+            return GLib.SOURCE_REMOVE;
+        })
     }
 
     on_applet_removed_from_panel() {
@@ -432,6 +620,9 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
             delete this.ignoredProxies[key];
         };
 
+        this._recording_indicator.actor.destroy();
+        this._recording_indicator = null;
+
         this.monitor = null;
     }
 
@@ -445,10 +636,13 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
 
     on_orientation_changed(newOrientation) {
         this.orientation = newOrientation;
+
         if (newOrientation == St.Side.TOP || newOrientation == St.Side.BOTTOM) {
-            this.manager.set_vertical(false);
+            this.manager_container.vertical = false;
+            this.manager_container.style = HORIZONTAL_STYLE;
         } else {
-            this.manager.set_vertical(true);
+            this.manager_container.vertical = true;
+            this.manager_container.style = VERTICAL_STYLE;
         }
 
         this.refreshIcons();

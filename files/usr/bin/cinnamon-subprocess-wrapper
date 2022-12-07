@@ -7,8 +7,8 @@ Usage:  cinnamon-subprocess-wrapper ls ~/
 
 import subprocess
 import sys
-import dbus
 from setproctitle import setproctitle
+from gi.repository import GLib, Gio
 
 if __name__ == "__main__":
     setproctitle("cinnamon-subprocess-wrapper")
@@ -17,10 +17,21 @@ if __name__ == "__main__":
         result = subprocess.check_output(sys.argv[2:])
         success = True
     except Exception:
-        result = ""
+        result = b''
         success = False
 
-    session_bus = dbus.SessionBus()
-    dbus = session_bus.get_object("org.Cinnamon", "/org/Cinnamon")
-    PushSubprocessResult = dbus.get_dbus_method('PushSubprocessResult', 'org.Cinnamon')
-    PushSubprocessResult(process_id, result, success)
+    try:
+        connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+
+        connection.call_sync("org.Cinnamon",
+                             "/org/Cinnamon",
+                             "org.Cinnamon",
+                             "PushSubprocessResult",
+                             GLib.Variant("(isb)", (process_id, result.decode(), success)),
+                             None,
+                             Gio.DBusCallFlags.NONE,
+                             2000,
+                             None)
+    except GLib.Error as e:
+        print("Could not play test sound: %s" % e.message)
+

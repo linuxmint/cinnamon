@@ -47,8 +47,10 @@ struct _StIconPrivate
   ClutterActor *icon_texture;
   ClutterActor *pending_texture;
   guint         opacity_handler_id;
+  guint         texture_file_changed_id;
 
   GIcon        *gicon;
+  gchar        *file_uri;
   gchar        *icon_name;
   StIconType    icon_type;
   gint          prop_icon_size;  /* icon size set as property */
@@ -59,7 +61,9 @@ struct _StIconPrivate
   CoglPipeline  *shadow_pipeline;
 
   StShadow     *shadow_spec;
-  ClutterSize   shadow_size;
+
+  gfloat        shadow_width;
+  gfloat        shadow_height;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (StIcon, st_icon, ST_TYPE_WIDGET)
@@ -141,6 +145,12 @@ st_icon_dispose (GObject *gobject)
 {
   StIconPrivate *priv = ST_ICON (gobject)->priv;
 
+  if (priv->texture_file_changed_id > 0)
+    {
+      g_signal_handler_disconnect(st_texture_cache_get_default(), priv->texture_file_changed_id);
+      priv->texture_file_changed_id = 0;
+    }
+
   if (priv->icon_texture)
     {
       clutter_actor_destroy (priv->icon_texture);
@@ -153,6 +163,9 @@ st_icon_dispose (GObject *gobject)
       g_object_unref (priv->pending_texture);
       priv->pending_texture = NULL;
     }
+
+  g_free (priv->file_uri);
+  priv->file_uri = NULL;
 
   g_clear_object (&priv->gicon);
 
@@ -178,12 +191,13 @@ st_icon_finalize (GObject *gobject)
 }
 
 static void
-st_icon_paint (ClutterActor *actor)
+st_icon_paint (ClutterActor        *actor,
+               ClutterPaintContext *paint_context)
 {
   StIcon *icon = ST_ICON (actor);
   StIconPrivate *priv = icon->priv;
 
-  st_widget_paint_background (ST_WIDGET (actor));
+  st_widget_paint_background (ST_WIDGET (actor), paint_context);
 
   if (priv->icon_texture)
     {
@@ -191,7 +205,7 @@ st_icon_paint (ClutterActor *actor)
       if (priv->shadow_pipeline)
         {
           ClutterActorBox allocation;
-          CoglFramebuffer *fb = cogl_get_draw_framebuffer();
+          CoglFramebuffer *fb = clutter_paint_context_get_framebuffer (paint_context);
 
           clutter_actor_get_allocation_box (priv->icon_texture, &allocation);
 
@@ -202,7 +216,7 @@ st_icon_paint (ClutterActor *actor)
                                          clutter_actor_get_paint_opacity (priv->icon_texture));
         }
 
-      clutter_actor_paint (priv->icon_texture);
+      clutter_actor_paint (priv->icon_texture, paint_context);
     }
 }
 
@@ -295,6 +309,8 @@ st_icon_init (StIcon *self)
   self->priv->shadow_pipeline = NULL;
 
   self->priv->icon_scale = 1;
+
+  self->priv->file_uri = NULL;
 }
 
 static void
@@ -303,7 +319,8 @@ st_icon_clear_shadow_pipeline (StIcon *icon)
   StIconPrivate *priv = icon->priv;
 
   g_clear_pointer (&priv->shadow_pipeline, cogl_object_unref);
-  clutter_size_init (&priv->shadow_size, 0, 0);
+  priv->shadow_width = 0.0;
+  priv->shadow_height = 0.0;
 }
 
 static void
@@ -320,8 +337,8 @@ st_icon_update_shadow_pipeline (StIcon *icon)
       clutter_actor_box_get_size (&box, &width, &height);
 
       if (priv->shadow_pipeline == NULL ||
-          priv->shadow_size.width != width ||
-          priv->shadow_size.height != height)
+          priv->shadow_width != width ||
+          priv->shadow_height != height)
         {
           st_icon_clear_shadow_pipeline (icon);
 
@@ -330,17 +347,29 @@ st_icon_update_shadow_pipeline (StIcon *icon)
                                                    priv->icon_texture);
 
           if (priv->shadow_pipeline)
-            clutter_size_init (&priv->shadow_size, width, height);
+          {
+            priv->shadow_width = width;
+            priv->shadow_height = height;
+          }
         }
     }
 }
 
+// static void
+// on_pixbuf_changed (ClutterTexture *texture,
+//                    StIcon         *icon)
+// {
+//   st_icon_clear_shadow_pipeline (icon);
+//   clutter_actor_queue_redraw (CLUTTER_ACTOR (icon));
+// }
+
 static void
-on_pixbuf_changed (ClutterTexture *texture,
-                   StIcon         *icon)
+on_texture_file_cb (StTextureCache *cache,
+                         char *uri,
+                         StIcon *icon)
 {
-  st_icon_clear_shadow_pipeline (icon);
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (icon));
+  if (g_strcmp0 (uri, icon->priv->file_uri) == 0)
+    st_icon_update (icon);
 }
 
 static void
@@ -368,8 +397,8 @@ st_icon_finish_update (StIcon *icon)
       st_icon_clear_shadow_pipeline (icon);
 
       /* "pixbuf-change" is actually a misnomer for "texture-changed" */
-      g_signal_connect (priv->icon_texture, "pixbuf-change",
-                        G_CALLBACK (on_pixbuf_changed), icon);
+      // g_signal_connect (priv->icon_texture, "pixbuf-change",
+      //                   G_CALLBACK (on_pixbuf_changed), icon);
     }
 }
 
@@ -393,9 +422,6 @@ st_icon_update (StIcon *icon)
   StIconPrivate *priv = icon->priv;
   StThemeNode *theme_node;
   StTextureCache *cache;
-  gint scale;
-  ClutterActor *stage;
-  StThemeContext *context;
 
   if (priv->pending_texture)
     {
@@ -409,11 +435,7 @@ st_icon_update (StIcon *icon)
   if (theme_node == NULL)
     return;
 
-  stage = clutter_actor_get_stage (CLUTTER_ACTOR (icon));
-  context = st_theme_context_get_for_stage (CLUTTER_STAGE (stage));
-  g_object_get (context, "scale-factor", &scale, NULL);
-
-  priv->icon_scale = scale;
+  priv->icon_scale = st_theme_context_get_scale_for_stage ();
 
   cache = st_texture_cache_get_default ();
   if (priv->gicon)
@@ -467,15 +489,11 @@ st_icon_update_icon_size (StIcon *icon)
   else if (priv->theme_icon_size > 0)
     {
       gint scale;
-      ClutterActor *stage;
-      StThemeContext *context;
 
       /* The theme will give us an already-scaled size, so we
        * undo it here, as priv->icon_size is in unscaled pixels.
        */
-      stage = clutter_actor_get_stage (CLUTTER_ACTOR (icon));
-      context = st_theme_context_get_for_stage (CLUTTER_STAGE (stage));
-      g_object_get (context, "scale-factor", &scale, NULL);
+      scale = st_theme_context_get_scale_for_stage ();
       new_size = (gint) (priv->theme_icon_size / scale);
     }
   else
@@ -531,7 +549,14 @@ st_icon_set_icon_name (StIcon      *icon,
 
   if (priv->gicon)
     {
+      if (icon->priv->texture_file_changed_id > 0)
+      {
+        g_signal_handler_disconnect(st_texture_cache_get_default(), icon->priv->texture_file_changed_id);
+        icon->priv->texture_file_changed_id = 0;
+      }
       g_object_unref (priv->gicon);
+      g_free (icon->priv->file_uri);
+      icon->priv->file_uri = NULL;
       priv->gicon = NULL;
       g_object_notify (G_OBJECT (icon), "gicon");
     }
@@ -609,20 +634,36 @@ st_icon_get_gicon (StIcon *icon)
 void
 st_icon_set_gicon (StIcon *icon, GIcon *gicon)
 {
+  StTextureCache *cache = st_texture_cache_get_default();
   g_return_if_fail (ST_IS_ICON (icon));
   g_return_if_fail (G_IS_ICON (gicon));
 
   if (icon->priv->gicon == gicon) /* do nothing */
     return;
 
+  if (icon->priv->texture_file_changed_id > 0)
+  {
+    g_signal_handler_disconnect(cache, icon->priv->texture_file_changed_id);
+    icon->priv->texture_file_changed_id = 0;
+  }
+
   if (icon->priv->gicon)
     {
       g_object_unref (icon->priv->gicon);
       icon->priv->gicon = NULL;
+      g_free (icon->priv->file_uri);
+      icon->priv->file_uri = NULL;
     }
 
-  if (gicon)
+  if (gicon) {
     icon->priv->gicon = g_object_ref (gicon);
+    if (G_IS_FILE_ICON (gicon))
+    {
+      GFile *file = g_file_icon_get_file (G_FILE_ICON(gicon));
+      icon->priv->file_uri = g_file_get_uri (file);
+    }
+    icon->priv->texture_file_changed_id = g_signal_connect (cache, "texture-file-changed", G_CALLBACK (on_texture_file_cb), icon);
+  }
 
   if (icon->priv->icon_name)
     {

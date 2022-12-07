@@ -66,7 +66,7 @@ WindowClone.prototype = {
 
         this._stackAbove = null;
 
-        let sizeChangedId = this.realWindow.connect('size-changed',
+        let sizeChangedId = this.realWindow.connect('notify::size',
                 this._onRealWindowSizeChanged.bind(this));
         let workspaceChangedId = this.metaWindow.connect('workspace-changed',
                 (w, oldws) => this.emit('workspace-changed', oldws));
@@ -91,7 +91,7 @@ WindowClone.prototype = {
     refreshClone: function(withTransients) {
         this.actor.destroy_all_children();
 
-        let {x, y, width, height} = this.metaWindow.get_outer_rect();
+        let {x, y, width, height} = this.metaWindow.get_frame_rect();
         let clones = WindowUtils.createWindowClone(this.metaWindow, 0, 0, withTransients);
         let leftGap, topGap;
         for (let clone of clones) {
@@ -680,7 +680,7 @@ WorkspaceMonitor.prototype = {
      */
     _computeWindowLayout: function(metaWindow, slot) {
         let [x, y, width, height] = this._getSlotGeometry(slot);
-        let rect = metaWindow.get_outer_rect();
+        let rect = metaWindow.get_frame_rect();
         let topBorder = 0, bottomBorder = 0, leftBorder = 0, rightBorder = 0;
 
         if (this._windows.length) {
@@ -893,7 +893,7 @@ WorkspaceMonitor.prototype = {
             else
                 this._updateEmptyPlaceholder();
         } else {
-            let animate = Main.wm.settingsState['desktop-effects'];
+            let animate = Main.animations_enabled;
             this.positionWindows(animate ? WindowPositionFlags.ANIMATE : 0);
         }
 
@@ -932,7 +932,7 @@ WorkspaceMonitor.prototype = {
 
         if (this.actor.get_stage()) {
             clone._is_new_window = true;
-            let animate = Main.wm.settingsState['desktop-effects'];
+            let animate = Main.animations_enabled;
             this.positionWindows(animate ? WindowPositionFlags.ANIMATE : 0);
         }
     },
@@ -971,7 +971,7 @@ WorkspaceMonitor.prototype = {
 
     // Animate the full-screen to Overview transition.
     zoomToOverview : function() {
-        let animate = Main.wm.settingsState['desktop-effects'];
+        let animate = Main.animations_enabled;
         // Position and scale the windows.
         if (Main.overview.animationInProgress && animate)
             this.positionWindows(WindowPositionFlags.ANIMATE | WindowPositionFlags.INITIAL);
@@ -995,7 +995,7 @@ WorkspaceMonitor.prototype = {
         if (this.metaWorkspace != null && this.metaWorkspace != currentWorkspace)
             return;
 
-        let animate = Main.wm.settingsState['desktop-effects'];
+        let animate = Main.animations_enabled;
         if (!animate)
             return;
 
@@ -1206,7 +1206,8 @@ WindowContextMenu.prototype = {
             monitorItems.push(new PopupMenu.PopupSeparatorMenuItem());
         }
 
-        let items = monitorItems.concat([
+        let items = [
+            ...monitorItems,
             itemMoveToNewWorkspace,
             this.itemOnAllWorkspaces,
             this.itemMoveToLeftWorkspace,
@@ -1215,7 +1216,7 @@ WindowContextMenu.prototype = {
             this.itemMinimizeWindow,
             this.itemMaximizeWindow,
             this.itemCloseWindow
-        ]);
+        ];
         (orientation == St.Side.BOTTOM ? items : items.reverse()).forEach(item => {
             this.addMenuItem(item);
         });
@@ -1295,13 +1296,15 @@ WindowContextMenu.prototype = {
 
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
-        if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
+        if (symbol === Clutter.KEY_space ||
+            symbol === Clutter.KEY_Return ||
+            symbol === Clutter.KEY_KP_Enter) {
             this.menu.toggle();
             return true;
-        } else if (symbol == Clutter.KEY_Escape && this.menu.isOpen) {
+        } else if (symbol === Clutter.KEY_Escape && this.menu.isOpen) {
             this.menu.close();
             return true;
-        } else if (symbol == Clutter.KEY_Down) {
+        } else if (symbol === Clutter.KEY_Down) {
             if (!this.menu.isOpen)
                 this.menu.toggle();
             this.menu.actor.navigate_focus(this.actor, Gtk.DirectionType.DOWN, false);
@@ -1385,15 +1388,15 @@ Workspace.prototype = {
         // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
         let action = global.display.get_keybinding_action(keycode, modifiers);
 
-        if ((symbol === Clutter.ISO_Left_Tab || symbol === Clutter.Tab)  && !(modifiers & ctrlAltMask)) {
-            let increment = symbol === Clutter.ISO_Left_Tab ? -1 : 1;
+        if ((symbol === Clutter.KEY_ISO_Left_Tab || symbol === Clutter.KEY_Tab)  && !(modifiers & ctrlAltMask)) {
+            let increment = symbol === Clutter.KEY_ISO_Left_Tab ? -1 : 1;
             this.selectNextNonEmptyMonitor(this.currentMonitorIndex, increment);
             return true;
         }
 
         let activeMonitor = this._monitors[this.currentMonitorIndex];
 
-        if ((symbol === Clutter.m  || symbol === Clutter.M || symbol === Clutter.KEY_space) &&
+        if ((symbol === Clutter.KEY_m  || symbol === Clutter.KEY_M || symbol === Clutter.KEY_space) &&
             (modifiers & Clutter.ModifierType.MOD1_MASK) && !(modifiers & Clutter.ModifierType.CONTROL_MASK))
         {
             activeMonitor.showMenuForSelectedWindow();
@@ -1401,17 +1404,19 @@ Workspace.prototype = {
         }
 
         if (action === Meta.KeyBindingAction.CLOSE ||
-            symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            symbol === Clutter.KEY_w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             activeMonitor.closeSelectedWindow();
             return true;
         }
 
-        if ((symbol === Clutter.m || symbol === Clutter.M) && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+        if ((symbol === Clutter.KEY_m || symbol === Clutter.KEY_M) && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             activeMonitor.moveSelectedWindowToNextMonitor();
             return true;
         }
 
-        if (symbol === Clutter.Return || symbol === Clutter.KEY_space || symbol === Clutter.KP_Enter) {
+        if (symbol === Clutter.KEY_Return ||
+            symbol === Clutter.KEY_KP_Enter ||
+            symbol === Clutter.KEY_space) {
             if (activeMonitor.activateSelectedWindow()) {
                 return true;
             }

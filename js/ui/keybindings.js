@@ -14,6 +14,15 @@ const CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding";
 
 const MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys";
 
+const OBSOLETE_MEDIA_KEYS = [
+    MK.VIDEO_OUT,
+    MK.ROTATE_VIDEO
+]
+
+function is_obsolete_mk(key_enum) {
+    return OBSOLETE_MEDIA_KEYS.includes(key_enum);
+};
+
 const iface = "\
     <node> \
       <interface name='org.cinnamon.SettingsDaemon.KeybindingHandler'> \
@@ -36,7 +45,13 @@ KeybindingManager.prototype = {
                                 'org.cinnamon.SettingsDaemon.KeybindingHandler',
                                 '/org/cinnamon/SettingsDaemon/KeybindingHandler');
 
-        this.bindings = [];
+        /* Keep track of bindings so we can a) check if they've change (and avoid the work
+         * if the haven't), b) handle the callbacks when the keystrokes are captured by
+         * Main._stageEventHandler.
+         *
+         * This dict will contain [name, bindings, callback] and keyed on the id returned by
+         * add_custom_keybinding. */
+        this.bindings = new Map();
         this.kb_schema = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA);
         this.setup_custom_keybindings();
         this.kb_schema.connect("changed::custom-list", Lang.bind(this, this.on_customs_changed));
@@ -57,12 +72,27 @@ KeybindingManager.prototype = {
         return this.addHotKeyArray(name, bindings_string.split("::"), callback);
     },
 
-    addHotKeyArray: function(name, bindings, callback) {
-        if (this.bindings[name]) {
-            if (this.bindings[name].toString() === bindings.toString()) {
-              return true;
+    _lookupEntry: function(name) {
+        let found = 0;
+        for (const action_id of this.bindings.keys()) {
+            let entry = this.bindings.get(action_id);
+            if (entry !== undefined && entry.name === name) {
+                return [action_id, entry];
             }
-            global.display.remove_custom_keybinding(name);
+        }
+
+        return [Meta.KeyBindingAction.NONE, undefined];
+    },
+
+    addHotKeyArray: function(name, bindings, callback) {
+        let [existing_action_id, entry] = this._lookupEntry(name);
+
+        if (entry !== undefined) {
+            if (entry.bindings.toString() === bindings.toString()) {
+                return true;
+            }
+            global.display.remove_keybinding(name);
+            this.bindings.delete(existing_action_id);
         }
 
         if (!bindings) {
@@ -76,36 +106,44 @@ KeybindingManager.prototype = {
         }
 
         if (empty) {
-            if (this.bindings[name])
-                this.bindings[name] = undefined;
-            global.display.rebuild_keybindings();
             return true;
         }
 
-        if (!global.display.add_custom_keybinding(name, bindings, callback)) {
-            global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
-            global.display.rebuild_keybindings();
-            return false;
-        } else {
-            this.bindings[name] = bindings;
-        }
+        action_id = global.display.add_custom_keybinding(name, bindings, callback);
+        // log(`set keybinding: ${name}, bindings: ${bindings} - action id: ${action_id}`);
 
-        global.display.rebuild_keybindings();
+        if (action_id === Meta.KeyBindingAction.NONE) {
+            global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
+            return false;
+        }
+        this.bindings.set(action_id, {
+            "name"    : name,
+            "bindings": bindings,
+            "callback": callback
+        });
+
         return true;
     },
 
     removeHotKey: function(name) {
-        if (this.bindings[name] == undefined)
+        let [action_id, entry] = this._lookupEntry(name);
+
+        if (entry === undefined) {
             return;
-        global.display.remove_custom_keybinding(name);
-        global.display.rebuild_keybindings();
-        this.bindings[name] = undefined;
+        }
+
+        global.display.remove_keybinding(name);
+        this.bindings.delete(action_id);
     },
 
     setup_custom_keybindings: function() {
         let list = this.kb_schema.get_strv("custom-list");
 
         for (let i = 0; i < list.length; i++) {
+            if (list[i] === "__dummy__") {
+                continue;
+            }
+
             let custom_path = CUSTOM_KEYS_BASENAME + "/" + list[i] + "/";
             let schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path);
             let command = schema.get_string("command");
@@ -118,15 +156,21 @@ KeybindingManager.prototype = {
     },
 
     remove_custom_keybindings: function() {
-        for (let i in this.bindings) {
-            if (i.indexOf("custom") > -1) {
-                this.removeHotKey(i);
+        for (const action_id of this.bindings.keys()) {
+            name = this.bindings.get(action_id).name;
+            if (name && name.indexOf("custom") > -1) {
+                global.display.remove_keybinding(name);
+                this.bindings.delete(action_id);
             }
         }
     },
 
     setup_media_keys: function() {
         for (let i = 0; i < MK.SEPARATOR; i++) {
+            if (is_obsolete_mk(i)) {
+                continue;
+            }
+
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
             this.addHotKeyArray("media-keys-" + i.toString(),
                            bindings,
@@ -134,6 +178,10 @@ KeybindingManager.prototype = {
         }
 
         for (let i = MK.SEPARATOR + 1; i < MK.LAST; i++) {
+            if (is_obsolete_mk(i)) {
+                continue;
+            }
+
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
             this.addHotKeyArray("media-keys-" + i.toString(),
                            bindings,
@@ -142,13 +190,23 @@ KeybindingManager.prototype = {
         return true;
     },
 
-    on_global_media_key_pressed: function(display, screen, event, kb, action) {
+    on_global_media_key_pressed: function(display, window, kb, action) {
+        // log(`global media key ${display}, ${window}, ${kb}, ${action}`);
         this._proxy.HandleKeybindingRemote(action);
     },
 
-    on_media_key_pressed: function(display, screen, event, kb, action) {
+    on_media_key_pressed: function(display, window, kb, action) {
+        // log(`media key ${display}, ${window}, ${kb}, ${action}`);
         if (Main.modalCount == 0 && !Main.overview.visible && !Main.expo.visible)
             this._proxy.HandleKeybindingRemote(action);
+    },
+
+    invoke_keybinding_action_by_id: function(id) {
+        const binding = this.bindings.get(id);
+        if (binding !== undefined) {
+            // log(`invoke_keybinding_action_by_id: ${binding.name}, bindings: ${binding.bindings} - action id: ${id}`);
+            binding.callback(null, null, null);
+        }
     }
 };
 Signals.addSignalMethods(KeybindingManager.prototype);

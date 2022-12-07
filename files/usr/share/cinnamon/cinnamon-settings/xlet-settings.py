@@ -1,9 +1,14 @@
 #!/usr/bin/python3
 import getopt
+
+from bin import util
+util.strip_syspath_locals()
+
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
 
+import os
 import sys
 from setproctitle import setproctitle
 import config
@@ -12,15 +17,18 @@ import gettext
 import json
 import importlib.util
 import traceback
+from pathlib import Path
 
 from JsonSettingsWidgets import *
 from ExtensionCore import find_extension_subdir
-from gi.repository import Gtk, Gio, XApp
+from gi.repository import Gtk, Gio, XApp, GLib
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
 
 home = os.path.expanduser("~")
+settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
+old_settings_dir = '%s/.cinnamon/configs/' % home
 
 translations = {}
 
@@ -40,9 +48,8 @@ XLET_SETTINGS_WIDGETS = {
     "fontchooser"       :   "JSONSettingsFontButton",
     "soundfilechooser"  :   "JSONSettingsSoundFileChooser",
     "iconfilechooser"   :   "JSONSettingsIconChooser",
-    "tween"             :   "JSONSettingsTweenChooser",
-    "effect"            :   "JSONSettingsEffectChooser",
     "datechooser"       :   "JSONSettingsDateChooser",
+    "timechooser"       :   "JSONSettingsTimeChooser",
     "keybinding"        :   "JSONSettingsKeybinding",
     "list"              :   "JSONSettingsList"
 }
@@ -77,7 +84,7 @@ def translate(uuid, string):
 
         try:
             result = result.decode("utf-8")
-        except:
+        except (AttributeError, UnicodeDecodeError):
             result = result
 
         if result != string:
@@ -109,7 +116,7 @@ class MainWindow(object):
         opts = []
         try:
             instance_id = int(instance_id[0])
-        except:
+        except (TypeError, ValueError, IndexError):
             instance_id = None
             try:
                 if len(sys.argv) > 3:
@@ -157,7 +164,7 @@ class MainWindow(object):
         except dbus.exceptions.DBusException as e:
             print(e)
 
-    def _on_proxy_ready (self, object, result, data=None):
+    def _on_proxy_ready (self, obj, result, data=None):
         global proxy
         proxy = Gio.DBusProxy.new_for_bus_finish(result)
 
@@ -245,28 +252,46 @@ class MainWindow(object):
         self.menu_button.set_popup(menu)
 
         scw = Gtk.ScrolledWindow()
-        scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
         main_box.pack_start(scw, True, True, 0)
         self.instance_stack = Gtk.Stack()
         scw.add(self.instance_stack)
 
         if "icon" in self.xlet_meta:
             self.window.set_icon_name(self.xlet_meta["icon"])
+
+        icon_path = os.path.join(self.xlet_dir, "icon.svg")
+        if os.path.exists(icon_path):
+            self.window.set_icon_from_file(icon_path)
         else:
             icon_path = os.path.join(self.xlet_dir, "icon.png")
             if os.path.exists(icon_path):
                 self.window.set_icon_from_file(icon_path)
+
         self.window.set_title(translate(self.uuid, self.xlet_meta["name"]))
 
+        def check_sizing(widget, data=None):
+            natreq = self.window.get_preferred_size()[1]
+            monitor = Gdk.Display.get_default().get_monitor_at_window(self.window.get_window())
+
+            height = monitor.get_workarea().height
+            if natreq.height > height - 100:
+                self.window.resize(800, 600)
+                scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+
         self.window.connect("destroy", self.quit)
+        self.window.connect("realize", check_sizing)
         self.prev_button.connect("clicked", self.previous_instance)
         self.next_button.connect("clicked", self.next_instance)
 
     def load_instances(self):
         self.instance_info = []
-        path = "%s/.cinnamon/configs/%s" % (home, self.uuid)
+        path = Path(os.path.join(settings_dir, self.uuid))
+        old_path = Path("%s/.cinnamon/configs/%s" % (home, self.uuid))
         instances = 0
-        dir_items = sorted(os.listdir(path))
+        new_items = os.listdir(path) if path.exists() else []
+        old_items = os.listdir(old_path) if old_path.exists() else []
+        dir_items = sorted(new_items + old_items)
         try:
             multi_instance = int(self.xlet_meta["max-instances"]) != 1
         except (KeyError, ValueError):
@@ -284,7 +309,8 @@ class MainWindow(object):
             if multi_instance:
                 try:
                     int(instance_id)
-                except:
+                except (TypeError, ValueError):
+                    traceback.print_exc()
                     continue # multi-instance should have file names of the form [instance-id].json
 
                 instance_exists = False
@@ -297,7 +323,7 @@ class MainWindow(object):
                 if not instance_exists:
                     continue
 
-            settings = JSONSettingsHandler(os.path.join(path, item), self.notify_dbus)
+            settings = JSONSettingsHandler(os.path.join(path if item in new_items else old_path, item), self.notify_dbus)
             settings.instance_id = instance_id
             instance_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             self.instance_stack.add_named(instance_box, instance_id)
@@ -316,8 +342,8 @@ class MainWindow(object):
                         if key in ("description", "tooltip", "units"):
                             try:
                                 settings_map[setting][key] = translate(self.uuid, settings_map[setting][key])
-                            except:
-                                pass
+                            except (KeyError, ValueError):
+                                traceback.print_exc()
                         elif key in "options":
                             new_opt_data = collections.OrderedDict()
                             opt_data = settings_map[setting][key]
@@ -363,8 +389,8 @@ class MainWindow(object):
                 page = self.create_custom_widget(page_def, info['settings'])
                 if page is None:
                     continue
-                elif not isinstance(widget, SettingsPage):
-                    print('widget is not of type SettingsPage')
+                elif not isinstance(page, SettingsPage):
+                    print('page is not of type SettingsPage')
                     continue
             else:
                 page = SettingsPage()
@@ -456,7 +482,7 @@ class MainWindow(object):
                 spec.loader.exec_module(module)
                 self.custom_modules[file_name] = module
 
-        except Exception as e:
+        except KeyError:
             traceback.print_exc()
             print('problem loading custom widget')
             return None
@@ -495,8 +521,8 @@ class MainWindow(object):
             index +=1
         self.set_instance(self.instance_info[index])
 
-    def unpack_args(self, props):
-        args = {}
+    # def unpack_args(self, args):
+    #    args = {}
 
     def backup(self, *args):
         dialog = Gtk.FileChooserDialog(_("Select or enter file to export to"),
@@ -564,6 +590,6 @@ if __name__ == "__main__":
         print("Error: Invalid xlet type %s", sys.argv[1])
         quit()
     uuid = sys.argv[2]
-    window = MainWindow(xlet_type, *sys.argv[2:])
+    window = MainWindow(xlet_type, uuid, *sys.argv[3:])
     signal.signal(signal.SIGINT, window.quit)
     Gtk.main()

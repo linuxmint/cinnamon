@@ -145,7 +145,7 @@
         The type of a property specified will be automatically converted to a link to the documentation of that type, if available.
       </listitem>
       <listitem>
-        In the description of itmes, <code>@word</code> will be automatically converted to code format, ie. enclosed within <code>&lt;code&gt;</code> tags.
+        In the description of items, <code>@word</code> will be automatically converted to code format, ie. enclosed within <code>&lt;code&gt;</code> tags.
       </listitem>
       <listitem>
         In the description of items, <code>*text more text*</code> will be shown in italics and <code>**text more text**</code> will be shown in bold. Note that using <code>_underlines to highlight_</code> is not supported since the parser will confuse it with private variables.

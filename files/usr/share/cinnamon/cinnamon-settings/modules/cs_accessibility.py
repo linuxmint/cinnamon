@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 
+import subprocess
 import gi
 gi.require_version("Gtk", "3.0")
-gi.require_version('CDesktopEnums', '3.0')
 
-from gi.repository import Gtk, CDesktopEnums
-from GSettingsWidgets import *
+from gi.repository import Gtk
+from SettingsWidgets import SidePage, GSettingsDependencySwitch, DependencyCheckInstallButton, GSettingsSoundFileChooser
+from xapp.GSettingsWidgets import *
 
 DPI_FACTOR_LARGE         = 1.25
 DPI_FACTOR_NORMAL        = 1.0
@@ -21,12 +22,12 @@ KEY_WM_THEME_BACKUP      = "theme-backup"
 
 
 class Module:
-    name = "universal-access"
+    name = "accessibility"
     comment = _("Configure accessibility features")
     category = "prefs"
 
     def __init__(self, content_box):
-        keywords = _("magnifier, talk, access, zoom, keys, contrast");
+        keywords = _("magnifier, talk, access, zoom, keys, contrast")
         sidePage = SidePage(_("Accessibility"), "cs-universal-access", keywords, content_box, module=self)
         self.sidePage = sidePage
 
@@ -35,8 +36,8 @@ class Module:
             print("Loading Accessibility module")
 
             self.iface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
-            self.wm_settings = Gio.Settings(schema_id="org.cinnamon.desktop.wm.preferences");
-            self.mag_settings = Gio.Settings(schema_id="org.cinnamon.desktop.a11y.magnifier");
+            self.wm_settings = Gio.Settings(schema_id="org.cinnamon.desktop.wm.preferences")
+            self.mag_settings = Gio.Settings(schema_id="org.cinnamon.desktop.a11y.magnifier")
 
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)
@@ -74,6 +75,12 @@ class Module:
                                                ["gnome-orca"])
             settings.add_row(switch)
 
+            def config_orca(button):
+                subprocess.Popen(['orca', '--setup'])
+
+            button = Button(_("Configure screen reader"), config_orca)
+            settings.add_reveal_row(button, "org.cinnamon.desktop.a11y.applications", "screen-reader-enabled")
+
 # Desktop Zoom
 
             settings = page.add_section(_("Desktop Zoom"))
@@ -84,7 +91,7 @@ class Module:
             spin = GSettingsSpinButton(_("Magnification"), "org.cinnamon.desktop.a11y.magnifier", "mag-factor", None, 1.0, 15.0, step=0.5)
             settings.add_reveal_row(spin, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
 
-            zoom_key_options = [["", _("Disabled")], ["<Alt>", "<Alt>"],["<Super>", "<Super>"],["<Control>", "<Control>"]]
+            zoom_key_options = [["", _("Disabled")], ["<Alt>", "<Alt>"],["<Super>", "<Super>"],["<Control>", "<Control>"], ["<Shift>", "<Shift>"]]
             widget = GSettingsComboBox(_("Mouse wheel modifier"), "org.cinnamon.desktop.wm.preferences", "mouse-button-zoom-modifier", zoom_key_options)
             widget.set_tooltip_text(_("While this modifier is pressed, mouse scrolling will increase or decrease zoom."))
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
@@ -129,7 +136,7 @@ class Module:
                                                 self.zoom_stack_get,
                                                 None)
 
-            if (self.mag_settings.get_boolean("lens-mode")):
+            if self.mag_settings.get_boolean("lens-mode"):
                 self.zoom_stack.set_visible_child_name("shape")
             else:
                 self.zoom_stack.set_visible_child_name("screen")
@@ -171,7 +178,7 @@ class Module:
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-keyboard-enabled")
 
             activation_mode_options = [["accessible", _("Show the keyboard any time something expects input")],
-                                       ["on-demand",  _("Show keyboard only when the user activates it")]];
+                                       ["on-demand",  _("Show keyboard only when the user activates it")]]
 
             widget = GSettingsComboBox(_("Activation mode"), "org.cinnamon.keyboard", "activation-mode", activation_mode_options)
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-keyboard-enabled")
@@ -361,29 +368,9 @@ class Module:
 
             settings.add_reveal_row(slider, "org.cinnamon.desktop.a11y.keyboard", "mousekeys-enable")
 
-# Dependency Checker
-
-            settings = page.add_reveal_section(_("Simulated secondary click and hover click"))
-            self.dc_section = settings
-
-            install_widget = SettingsWidget()
-
-            self.dep_button = DependencyCheckInstallButton(_("Checking dependencies"),
-                                                           _("Please install: %s") % ("mousetweaks"),
-                                                           ["mousetweaks"],
-                                                           Gtk.Alignment(),
-                                                           self.on_dep_satisfied)
-
-            install_widget.pack_start(self.dep_button, True, False, 0)
-
-            settings.add_row(install_widget)
-
-            self.dc_section._revealer.set_reveal_child(True)
-
 # Secondary click
 
-            settings = page.add_reveal_section(_("Simulated secondary click"))
-            self.ssc_section = settings
+            settings = page.add_section(_("Simulated secondary click"))
 
             switch = GSettingsSwitch(_("Trigger a secondary click by holding down the primary button"),
                                      "org.cinnamon.desktop.a11y.mouse",
@@ -402,8 +389,7 @@ class Module:
 
 # Hover Click
 
-            settings = page.add_reveal_section(_("Hover click"))
-            self.hc_section = settings
+            settings = page.add_section(_("Hover click"))
 
             switch = GSettingsSwitch(_("Trigger a click when the pointer hovers"),
                                      "org.cinnamon.desktop.a11y.mouse",
@@ -427,11 +413,6 @@ class Module:
                                     1, 30, 1, show_value=False)
 
             settings.add_reveal_row(slider, "org.cinnamon.desktop.a11y.mouse", "dwell-click-enabled")
-
-    def on_dep_satisfied(self):
-        self.ssc_section._revealer.set_reveal_child(True)
-        self.hc_section._revealer.set_reveal_child(True)
-        self.dc_section._revealer.destroy()
 
     def zoom_stack_get(self, lens_mode):
         ret = "screen"

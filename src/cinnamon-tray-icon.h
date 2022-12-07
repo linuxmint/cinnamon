@@ -31,7 +31,8 @@ struct _CinnamonTrayIconClass
 GType         cinnamon_tray_icon_get_type (void) G_GNUC_CONST;
 ClutterActor *cinnamon_tray_icon_new      (CinnamonEmbeddedWindow *window);
 
-void          cinnamon_tray_icon_click    (CinnamonTrayIcon       *icon,
-                                        ClutterEvent        *event);
+gboolean      cinnamon_tray_icon_handle_event (CinnamonTrayIcon *icon,
+                                               ClutterEventType  event_type,
+                                               ClutterEvent     *event);
 
 #endif /* __CINNAMON_TRAY_ICON_H__ */

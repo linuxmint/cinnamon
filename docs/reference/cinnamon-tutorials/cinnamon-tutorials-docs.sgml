@@ -1,0 +1,34 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC '-//OASIS//DTD DocBook XML V4.3//EN'
+'http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd'
+[
+  <!ENTITY version SYSTEM "../version.xml">
+  <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+]>
+<book id='index'>
+  <bookinfo>
+    <title>Cinnamon Tutorials</title>
+    <releaseinfo>
+      This document is for Cinnamon &version;.
+    </releaseinfo>
+  </bookinfo>
+  <part id="documentation">
+    <title>Documentation</title>
+    <xi:include href="using-documentation.xml"/>
+    <xi:include href="documenting-source.xml"/>
+    <xi:include href="documenting-tutorial.xml"/>
+  </part>
+  <xi:include href="building.xml"/>
+  <part id="cjs">
+    <title>Cjs</title>
+    <xi:include href="importer.xml"/>
+  </part>
+  <part id="extension-system">
+    <title>Extension system</title>
+    <xi:include href="write-applet.xml"/>
+    <xi:include href="xlet-versioning.xml"/>
+    <xi:include href="xlet-translating.xml"/>
+    <xi:include href="xlet-settings.xml"/>
+    <xi:include href="xlet-settings-ref.xml"/>
+  </part>
+</book>

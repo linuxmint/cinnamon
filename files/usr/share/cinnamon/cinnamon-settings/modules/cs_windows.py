@@ -2,9 +2,11 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, GObject, Gdk
+gi.require_version('CDesktopEnums', '3.0')
+from gi.repository import Gio, Gtk, CDesktopEnums
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 
 class Module:
@@ -34,8 +36,14 @@ class Module:
             settings = page.add_section(_("Buttons"))
 
             button_options = []
-            button_options.append([":minimize,maximize,close", _("Traditional style (Right)")])
-            button_options.append(["close,minimize,maximize:", _("Mac style (Left)")])
+            if Gtk.Widget.get_default_direction() == Gtk.TextDirection.RTL:
+                button_options.append([":minimize,maximize,close", _("Left")])
+                button_options.append(["close,maximize,minimize:", _("Right")])
+            else:
+                button_options.append([":minimize,maximize,close", _("Right")])
+                button_options.append(["close,maximize,minimize:", _("Left")])
+            button_options.append([":close", _("Gnome")])
+            button_options.append(["close:minimize,maximize", _("Classic Mac")])
 
             widget = GSettingsComboBox(_("Buttons layout"), "org.cinnamon.desktop.wm.preferences", "button-layout", button_options, size_group=size_group)
             settings.add_row(widget)
@@ -85,16 +93,38 @@ class Module:
             widget.revealer.settings = Gio.Settings("org.cinnamon.desktop.wm.preferences")
             widget.revealer.settings.bind_with_mapping("focus-mode", widget.revealer, "reveal-child", Gio.SettingsBindFlags.GET, lambda x: x in ("sloppy", "mouse"), None)
 
-            widget = GSettingsSwitch(_("Bring windows which require attention to the current workspace"), "org.cinnamon", "bring-windows-to-current-workspace")
+            widget = GSettingsSwitch(_("Bring windows which require attention to the current workspace"), "org.cinnamon.muffin", "bring-windows-to-current-workspace")
             settings.add_row(widget)
 
-            widget = GSettingsSwitch(_("Prevent windows which require attention from stealing focus"), "org.cinnamon", "prevent-focus-stealing")
+            # It's weird to show a combo for two items. For now this is simpler to explain as a switch...
+            widget = Switch(_("Give focus to new windows launched from a terminal"))
+            widget.set_tooltip_text(_("Normally, all windows created by the user are given initial focus. "
+                                      "This controls whether or not to include programs launched from a terminal."))
             settings.add_row(widget)
 
-            stealing_options = [["smart", _("Smart")], ["strict", _("Strict")]]
-            widget = GSettingsComboBox(_("Focus mode for new windows"), "org.cinnamon.desktop.wm.preferences", "focus-new-windows", stealing_options)
-            widget.set_tooltip_text(_("This option provides additional control over how newly created windows get focus. It has two possible values; 'smart' applies the user's normal focus mode, and 'strict' results in windows started from a terminal not being given focus."))
-            settings.add_row(widget)
+            gsettings = widget.get_settings("org.cinnamon.desktop.wm.preferences")
+            real_switch = widget.content_widget
+            self.updating = False
+
+            def update_switch(settings, key):
+                if self.updating:
+                    return
+                self.updating = True
+                real_switch.set_active(gsettings.get_enum(key) == CDesktopEnums.FocusNewWindows.SMART)
+                self.updating = False
+
+            def update_setting(widget, pspec):
+                if self.updating:
+                    return
+                self.updating = True
+                gsettings.set_enum("focus-new-windows",
+                                   CDesktopEnums.FocusNewWindows.SMART if real_switch.get_active() else CDesktopEnums.FocusNewWindows.STRICT)
+                self.updating = False
+
+            real_switch.connect("notify::active", update_setting)
+            gsettings.connect("changed::focus-new-windows", update_switch)
+            update_switch(gsettings, "focus-new-windows")
+            #######
 
             widget = GSettingsSwitch(_("Attach dialog windows to the parent window"), "org.cinnamon.muffin", "attach-modal-dialogs")
             settings.add_row(widget)
@@ -112,11 +142,10 @@ class Module:
             widget.set_tooltip_text(_("While the special key is pressed, windows can be dragged with the left mouse button and resized with the right mouse button."))
             settings.add_row(widget)
 
-            widget = GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", _("Pixels"), 1, 100, size_group=size_group)
-            settings.add_row(widget)
-
-            widget = GSettingsSwitch(_("Edge resistance with other windows and monitor boundaries"), "org.cinnamon.muffin", "edge-resistance-window")
-            widget.set_tooltip_text(_("Make window borders stick when moved or resized near other windows or monitor edges."))
+            widget = GSettingsRange(_("Draggable border width"), "org.cinnamon.muffin", "draggable-border-width", _("Narrower"), _("Wider"),
+                                    2, 64, show_value=False)
+            widget.content_widget.set_tooltip_text(_("This adjusts the width of that portion of the window border used for resizing."))
+            widget.add_mark(10, Gtk.PositionType.TOP, None)
             settings.add_row(widget)
 
             # Alt Tab

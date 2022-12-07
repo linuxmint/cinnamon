@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+_Name=Cinnamon 2D
+_Comment=Window management and application launching
+Exec=@bindir@/cinnamon2d
+Categories=GNOME;GTK;System;Core;
+OnlyShowIn=X-Cinnamon;
+NoDisplay=true
+X-GNOME-Autostart-Phase=WindowManager
+X-GNOME-Provides=panel;windowmanager;
+X-GNOME-Autostart-Notify=true
+X-GNOME-AutoRestart=true
+X-Ubuntu-Gettext-Domain=cinnamon

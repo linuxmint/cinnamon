@@ -3,7 +3,6 @@
  * ... contains a few cinnamon specific styles (rare occurrences)
  * ###################################################################*/
 stage {
-    font-family: sans, sans-serif;
 }
 .cinnamon-link {
     color: #0000ff;
@@ -24,6 +23,7 @@ StScrollView.vfade {
 StScrollView StScrollBar {
     min-width: 16px;
     min-height: 16px;
+    padding: 2px;
 }
 
 StScrollBar StBin#trough {
@@ -73,9 +73,15 @@ StScrollBar StButton#vhandle:hover {
     background-gradient-start: rgba(254,245,198,0.9);
     background-gradient-direction: vertical;
     color: #000000;
-    font-size: 8.5pt;
     font-weight: normal;
     text-align: center;
+}
+.ripple-pointer-location {
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  background-color: rgba(160,160,160,0.3);
+  box-shadow: 0 0 2px 2px rgba(160,160,160,1.0);
 }
 /* ===================================================================
  * Shared button properties
@@ -122,7 +128,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .popup-menu {
     color: #ffffff;
-    font-size: 9.5pt;
     min-width: 100px;
 }
 .menu {
@@ -131,7 +136,6 @@ StScrollBar StButton#vhandle:hover {
     border-width: 2px;
     border-color: #a5a5a5;
     color: #ffffff;
-    font-size: 9.5pt;
     min-width: 100px;
 }
 .popup-menu-arrow {
@@ -165,7 +169,6 @@ StScrollBar StButton#vhandle:hover {
     background-color: rgba(0,0,0,0.9);
     padding: 1em 0em;
     color: #ffffff;
-    font-size: 10.5pt;
     border: 1px solid #5f5f5f;
     border-radius: 9px;
 }
@@ -250,7 +253,6 @@ StScrollBar StButton#vhandle:hover {
 #panel {
     color: #ffffff;
     background-color: #555555;
-    font-size: 8.5pt;
     font-weight: normal;
     height: 26px;
     width: 32px;
@@ -342,14 +344,6 @@ StScrollBar StButton#vhandle:hover {
     padding-right: 0px;
     spacing: 0px;
     margin: 0px;
-}
-
-.system-status-icon.warning {
-    color: #e5e887;
-}
-
-.system-status-icon.error {
-    color: #fb5858;
 }
 
 .panel-corner {
@@ -458,7 +452,6 @@ StScrollBar StButton#vhandle:hover {
     padding: .5em;
     spacing: .5em;
     -cinnamon-caption-spacing: 8px;
-    font-size: 10pt;
     color: #ccc;
     max-width: 20em;
 }
@@ -499,7 +492,6 @@ StScrollBar StButton#vhandle:hover {
     border-radius: 4px;
     padding: 3px;
     border: 1px rgba(0,0,0,0);
-    font-size: 7.5pt;
     color: white;
     transition-duration: 100;
     text-align: center;
@@ -547,14 +539,179 @@ StScrollBar StButton#vhandle:hover {
 /*calendar-background allows the date applet calendar to be themed separately from other applet menus*/
 .calendar-background {
 }
+
+.calendar-main-box {
+    margin: 0 .8em 0 .8em;
+}
+
 .calendar {
-    padding: .4em 1.75em;
+    /*padding: 0 0.5em 0.4em;*/
     spacing-rows: 0px;
     spacing-columns: 0px;
 }
+
+.calendar-events-main-box {
+    height: 300px;
+    margin-right: 0.8em;
+    padding: .5em;
+    min-width: 350px;
+    border: 1px solid #666;
+    border-radius: 8px;
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(85,85,85,0.8);
+    background-gradient-end: rgba(85,85,85,0.2);
+}
+
+.calendar-events-no-events-box {
+}
+
+.calendar-events-no-events-button {
+    margin: 6px 0 6px 0;
+    padding: 6px;
+    border-radius: 4px;
+}
+
+.calendar-events-no-events-button:hover {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(255,255,255,0.2);
+    background-gradient-end: rgba(255,255,255,0.08);
+    box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+}
+
+.calendar-events-no-events-icon {
+    color: #cccccc;
+}
+
+.calendar-events-no-events-label {
+    font-size: 1.1em;
+    color: #cccccc;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.calendar-events-date-label {
+    padding: .2em 0 .75em .2em;
+    font-size: 1.1em;
+    color: #cccccc;
+    font-weight: bold;
+    text-align: center;
+}
+
+.calendar-events-event-container {
+    padding:  .1em;
+}
+
+.calendar-events-scrollbox {
+
+}
+
+.calendar-events-main-box .separator {
+    -margin-horizontal:  1em;
+    -gradient-height: 1px;
+    -gradient-start: #666666;
+    -gradient-end: #666666;
+}
+
+.calendar-event-button {
+    margin: 6px 0 6px 0;
+    border-radius: 4px;
+}
+
+.calendar-event-button:hover {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(255,255,255,0.2);
+    background-gradient-end: rgba(255,255,255,0.08);
+    box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+}
+
+.calendar-event-color-strip {
+    width: 4px;
+    border-radius: 4px 0 0 4px;
+}
+
+.calendar-event-row-content {
+    margin:  7px;
+}
+
+.calendar-event-time-past {
+    color: rgba(204,204,204,.3);
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: .6em;
+}
+
+.calendar-event-time-present {
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: .6em;
+}
+
+.calendar-event-time-present:all-day {
+    color: rgba(0,255,0,0.6);
+}
+
+.calendar-event-time-future {
+    text-align: left;
+    margin-bottom: .6em;
+}
+
+.calendar-event-countdown {
+    color: #cccccc;
+    font-weight: bold;
+    text-align: right;
+    margin-bottom: .6em;
+}
+
+.calendar-event-countdown:soon {
+    color: #ffffff;
+}
+
+.calendar-event-countdown:imminent {
+    color: rgba(255,255,0,0.6);
+}
+
+.calendar-event-countdown:current {
+    color: rgba(0,255,0,0.6);
+}
+
+.calendar-event-summary {
+    color: #cccccc;
+    text-align: left;
+    width: 200px;
+}
+
+.calendar-today-home-button,
+.calendar-today-home-button-enabled {
+    margin: 6px 0 6px 0;
+    padding: 6px;
+    border-radius: 4px;
+}
+
+.calendar-today-home-button-enabled:hover {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(255,255,255,0.2);
+    background-gradient-end: rgba(255,255,255,0.08);
+    box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+}
+
+.calendar-today-day-label {
+    font-size: 1.75em;
+    color: #cccccc;
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: .1em;
+}
+
+.calendar-today-date-label {
+    font-size: 1.1em;
+    color: #cccccc;
+    font-weight: bold;
+    text-align: center;
+}
+
 .calendar-month-label {
     color: #cccccc;
-    font-size: 7.5pt;
     padding-bottom: 8px;
     padding-top: 8px;
     font-weight: bold;
@@ -589,25 +746,34 @@ StScrollBar StButton#vhandle:hover {
 .calendar-change-month-forward:active {
     background-color: #aaaaaa;
 }
-.datemenu-date-label {
-    padding: .4em 1.75em;
-    font-size: 10.5pt;
-    color: #cccccc;
-    font-weight: bold;
+
+.calendar-day-event-dot-box {
+    margin-top: 1.75em;
+
+    /* any other way do do something like this? */
+    max-rows: 1;
 }
+
+.calendar-day-event-dot {
+    margin: 1px;
+    border-radius: 2px;
+    width: 4px;
+    height: 4px;
+}
+
 .calendar-day-base {
-    font-size: 7.5pt;
     text-align: center;
     width: 2.4em;
     height: 2.4em;
 }
 .calendar-day-base:hover {
-    background-color: #777777;
     color: #fff;
+    font-weight: bold;
 }
 .calendar-day-base:active {
-    background-color: #555555;
+    background-color: #444444;
 }
+
 .calendar-day-heading {
     color: #cccccc;
     padding-top: 1em;
@@ -619,7 +785,6 @@ StScrollBar StButton#vhandle:hover {
 /* Hack used in lieu of border-collapse - see calendar.js */
 .calendar-day:ltr {
     border: 1px solid #333333;
-    color: #cccccc;
     border-top-width: 0;
     border-left-width: 0;
 }
@@ -631,7 +796,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .calendar-day:rtl {
     border: 1px solid #333333;
-    color: #cccccc;
     border-top-width: 0;
     border-right-width: 0;
 }
@@ -647,24 +811,36 @@ StScrollBar StButton#vhandle:hover {
     background-color: rgba(128, 128, 128, 0.1);
 }
 .calendar-today {
-    background-image: url("calendar-today.svg");
-    text-shadow: black 0px 2px 2px;
-    color: #ffffff;
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(255,255,255,0.35);
+    background-gradient-end: rgba(255,255,255,0.15);
+    color: #cccccc;
     font-weight: bold;
 }
+
+.calendar-today:selected {
+    color: #fff;
+}
+
 .calendar-other-month-day {
     color: #888888;
     background-color: rgba(64, 64, 64, 0.5);
 }
-.calendar-day-with-events {
-    font-weight: bold;
+
+.calendar-not-today {
     color: #cccccc;
 }
+
+.calendar-not-today:selected {
+    color: #fff;
+    font-weight: bold;
+}
+
+
 /* ===================================================================
  * Notifications
  * ===================================================================*/
 #notification {
-    font-size: 8.5pt;
     border-radius: 8px 8px 8px 8px;
     border: 2px solid #a5a5a5;
     background-gradient-direction: vertical;
@@ -759,7 +935,6 @@ StScrollBar StButton#vhandle:hover {
     border: 2px solid #a5a5a5;
     border-radius: 8px;
     padding: 20px;
-    font-size: 9pt;
     color: white;
     text-shadow: black 0px 0px 2px;
 }
@@ -830,7 +1005,6 @@ StScrollBar StButton#vhandle:hover {
  * Modal dialogs
  * ===================================================================*/
 .modal-dialog {
-    font-size: 12pt;
     border-radius: 24px;
     background-color: rgba(85, 85, 85, 0.9);
     border: 2px solid #868686;
@@ -846,7 +1020,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .modal-dialog-button {
     border-radius: 18px;
-    font-size: 11pt;
     color: white;
     margin-left: 10px;
     margin-right: 10px;
@@ -859,9 +1032,16 @@ StScrollBar StButton#vhandle:hover {
     padding: 3px 31px 4px;
 }
 
+.confirm-dialog-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5em;
+    padding-bottom: 12px;
+}
+
 /* Info OSD popup */
 .info-osd {
-    font-size: 18pt;
+    font-size: 1.2em;
     border-radius: 24px;
     background-color: rgba(85, 85, 85, 0.9);
     border: 2px solid #868686;
@@ -873,28 +1053,34 @@ StScrollBar StButton#vhandle:hover {
     text-align: center;
 }
 
+.workspace-osd {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 3em;
+}
+
 /* ===================================================================
  * Run dialog
  * ===================================================================*/
 .run-dialog-label {
-    font-size: 9pt;
     color: white;
     padding-bottom: 15px;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
 }
-.run-dialog-error-label {
-    font-size: 9pt;
+.run-dialog-description {
     color: white;
-}
-.run-dialog-error-box {
     padding-top: 15px;
-    spacing: 5px;
+    text-align: center;
+}
+.run-dialog-description.error {
+    color: #fc4138;
 }
 .run-dialog-completion-box {
     padding-left: 15px;
-    font-size: 10px;
 }
 .run-dialog-entry {
-    font-size: 10.5pt;
     font-weight: bold;
     width: 23em;
     color: white;
@@ -912,74 +1098,6 @@ StScrollBar StButton#vhandle:hover {
     background-color: rgba(0, 0, 0, 0.4);
 }
 
-/* CinnamonMountOperation Dialogs */
-.cinnamon-mount-operation-icon {
-    icon-size: 48px;
-}
-.mount-password-reask {
-    color: red;
-}
-.show-processes-dialog,
-.mount-question-dialog {
-    spacing: 24px;
-}
-.show-processes-dialog-subject,
-.mount-question-dialog-subject {
-    font-size: 12pt;
-    font-weight: bold;
-    color: #666666;
-    padding-top: 10px;
-    padding-left: 17px;
-    padding-bottom: 6px;
-}
-.show-processes-dialog-subject:rtl,
-.mount-question-dialog-subject:rtl {
-    padding-left: 0px;
-    padding-right: 17px;
-}
-.show-processes-dialog-description,
-.mount-question-dialog-description {
-    font-size: 10pt;
-    color: white;
-    padding-left: 17px;
-    width: 28em;
-}
-.show-processes-dialog-description:rtl,
-.mount-question-dialog-description:rtl {
-    padding-right: 17px;
-}
-.show-processes-dialog-app-list {
-    font-size: 10pt;
-    max-height: 200px;
-    padding-top: 24px;
-    padding-left: 49px;
-    padding-right: 32px;
-}
-.show-processes-dialog-app-list:rtl {
-    padding-right: 49px;
-    padding-left: 32px;
-}
-.show-processes-dialog-app-list-item {
-    color: #ccc;
-}
-.show-processes-dialog-app-list-item:hover {
-    color: white;
-}
-.show-processes-dialog-app-list-item:ltr {
-    padding-right: 1em;
-}
-.show-processes-dialog-app-list-item:rtl {
-    padding-left: 1em;
-}
-.show-processes-dialog-app-list-item-icon:ltr {
-    padding-right: 17px;
-}
-.show-processes-dialog-app-list-item-icon:rtl {
-    padding-left: 17px;
-}
-.show-processes-dialog-app-list-item-name {
-    font-size: 10pt;
-}
 /* ===================================================================
  * Magnifier
  * ===================================================================*/
@@ -1010,7 +1128,7 @@ StScrollBar StButton#vhandle:hover {
     background-gradient-start: rgba(255,245,245,0.4);
     background-gradient-end: rgba(105,105,105,0.1);
     background-gradient-direction: vertical;
-    font-size: 14pt;
+    font-size: 1.2em;
     font-weight: bold;
     border-radius: 10px;
     border: 2px solid #a0a0a0;
@@ -1077,10 +1195,10 @@ StScrollBar StButton#vhandle:hover {
     padding-bottom: 10px;
 }
 .menu-applications-inner-box {
-    padding-top: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 0px;
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 0px;
 }
 .menu-applications-outer-box {
     padding-top: 10px;
@@ -1164,11 +1282,11 @@ StScrollBar StButton#vhandle:hover {
     padding-right: 30px;
     padding-left: 28px;
     text-align: right;
-    height: 30px;
+    height: 2.2em;
 }
 .menu-selected-app-box:rtl {
     padding-top: 10px;
-    height: 30px;
+    height: 2.2em;
 }
 .menu-selected-app-title {
     font-weight: bold;
@@ -1304,9 +1422,8 @@ StScrollBar StButton#vhandle:hover {
     background: rgba(80,80,80,0.8);
     border: 2px solid #a5a5a5;
     border-radius: 8px;
-    font-size: 9pt;
     color: white;
-    text-shadow: black 0px 0px 2px;
+    text-shadow: 0px 0px 2px black;
     padding: 8px;
     spacing: 4px;
 }
@@ -1315,23 +1432,32 @@ StScrollBar StButton#vhandle:hover {
  * Grouped window list (grouped-window-list@cinnamon.org)
  * ===================================================================*/
 
+.grouped-window-list-box {
+    spacing: 2px;
+}
+.grouped-window-list-box.vertical {
+    spacing: 3px;
+}
 .grouped-window-list-thumbnail-label {
     padding-left: 4px;
 }
 .grouped-window-list-number-label {
-    z-index: 99;
-    text-shadow: black 1px 0px 2px;
     font-size: 10px;
+    z-index: 99;
+    text-shadow: 1px 0px 2px black;
     color:#fff;
     padding: 0;
 }
 .grouped-window-list-badge {
     border-radius: 256px;
     background-color: #000000;
+    margin: 0;
 }
 .grouped-window-list-button-label {
-    padding-left: 4px;
+    padding-left: 6px;
+    padding-right: 6px;
 }
+
 .grouped-window-list-thumbnail-alert {
     background: rgba(255,52,52,0.3);
 }
@@ -1415,6 +1541,10 @@ StScrollBar StButton#vhandle:hover {
 .grouped-window-list-thumbnail-menu {
 }
 .grouped-window-list-thumbnail-menu .item-box {
+    background: rgba(80,80,80,0.8);
+    border: 2px solid #a5a5a5;
+    color: white;
+    text-shadow: 0px 0px 2px black;
     padding: 10px;
     border-radius: 8px;
     spacing: 4px;
@@ -1424,7 +1554,7 @@ StScrollBar StButton#vhandle:hover {
     border: 2px solid rgba(165, 165, 165, 0.7)
 }
 .grouped-window-list-thumbnail-menu .item-box:selected {
-    background: rgba(255,255,255,0.33);
+    background: rgba(110,110,110,0.8);
 }
 .grouped-window-list-thumbnail-menu .thumbnail {
     width: 256px;
@@ -1661,6 +1791,25 @@ StScrollBar StButton#vhandle:hover {
     border-bottom-width: 2px;
 }
 
+.applet-cornerbar-box {
+    padding: 4px 4px;
+    background: rgba(255,255,255,0);
+}
+
+.applet-cornerbar {
+    width: 8px;
+    background: rgba(255,255,255,0.3);
+}
+
+.applet-cornerbar.vertical {
+    height: 8px;
+}
+
+.applet-cornerbar-box:hover > .applet-cornerbar {
+    background: rgba(255,255,255,0.4);
+}
+
+
 .applet-box {
     padding-left: 3px;
     padding-right: 3px;
@@ -1742,7 +1891,6 @@ StScrollBar StButton#vhandle:hover {
 .desklet-header {
     border-radius-topleft: 12px;
     border-radius-topright: 12px;
-    font-size: 10.5pt;
     border: 2px solid #a5a5a5;
     border-bottom: 0px;
     background-color: rgba(80, 80, 80, 0.8);
@@ -1759,17 +1907,6 @@ StScrollBar StButton#vhandle:hover {
  * Clock Desklet (desklet.js)
  * ===================================================================*/
 .clock-desklet-label {
-}
-
-/* ===================================================================
- * Workspace OSD
- * ===================================================================*/
-
-.workspace-osd {
-    color: #ffffff;
-    text-shadow: black 5px 5px 5px;
-    font-weight: bold;
-    font-size: 48pt;
 }
 
 .expo-workspaces-name-entry {
@@ -1857,7 +1994,6 @@ StScrollBar StButton#vhandle:hover {
 
 .radiobutton StLabel {
     padding-top: 4px;
-    font-size: 0.9em;
     box-shadow: none;
 }
 
@@ -1950,4 +2086,13 @@ StScrollBar StButton#vhandle:hover {
  * ===================================================================*/
 .systray {
     spacing: 5px;
+}
+
+/* Pointer accessibility notifications */
+.pie-timer {
+  width: 30px;
+  height: 30px;
+  -pie-border-width: 1px;
+  -pie-border-color: rgba(200, 200, 200, 0.8);
+  -pie-background-color: rgba(140, 140, 140, 0.6);;
 }

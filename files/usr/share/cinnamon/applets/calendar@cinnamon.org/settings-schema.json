@@ -3,6 +3,12 @@
         "type": "section",
         "description": "Display"
     },
+    "show-events" : {
+        "type" : "switch",
+        "default" : true,
+        "description": "Show calendar events",
+        "tooltip": "Check this to display events in the calendar."
+    },
     "show-week-numbers" : {
         "type" : "switch",
         "default" : false,
@@ -17,18 +23,26 @@
     },
     "custom-format" : {
         "type" : "entry",
-        "default" : "%A %B %e, %H:%M",
+        "default" : "%A, %B %e, %H:%M",
         "description" : "Date format",
-        "indent": true,
         "dependency" : "use-custom-format",
         "tooltip" : "Set your custom format here."
     },
     "format-button" : {
         "type" : "button",
         "description" : "Show information on date format syntax",
-        "indent": true,
         "dependency" : "use-custom-format",
         "callback" : "on_custom_format_button_pressed",
         "tooltip" : "Click this button to know more about the syntax for date formats."
+    },
+    "section2": {
+        "type": "section",
+        "description": "Keyboard shortcuts"
+    },
+    "keyOpen": {
+        "type": "keybinding",
+        "description": "Show calendar",
+        "default": "<Super>c",
+        "tooltip" : "Set keybinding(s) to show the calendar."
     }
 }

@@ -163,7 +163,19 @@ NotificationDaemon.prototype = {
                  bitsPerSample, nChannels, data] = hints['image-data'];
             return textureCache.load_from_raw(data, hasAlpha, width, height, rowStride, size);
         } else if (hints['image-path']) {
-            return textureCache.load_uri_async(GLib.filename_to_uri(hints['image-path'], null), size, size);
+            let path = hints['image-path'];
+            if (GLib.path_is_absolute (path)) {
+                return textureCache.load_uri_async(GLib.filename_to_uri(path, null), size, size);
+            } else {
+                let icon_type = St.IconType.FULLCOLOR;
+                if (path.search("-symbolic") != -1) {
+                    icon_type = St.IconType.SYMBOLIC;
+                }
+
+                return new St.Icon({ icon_name: path,
+                                     icon_type: icon_type,
+                                     icon_size: size });
+            }
         } else {
             let stockIcon;
             switch (hints.urgency) {
@@ -224,7 +236,6 @@ NotificationDaemon.prototype = {
         if (!isForTransientNotification) {
             let source = this._lookupSource(title, pid, trayIcon);
             if (source) {
-                source.setTitle(title);
                 return source;
             }
         }
@@ -412,7 +423,7 @@ NotificationDaemon.prototype = {
         if (notification == null) {    // Create a new notification!
             notification = new MessageTray.Notification(source, summary, body,
                                                         { icon: iconActor,
-                                                          bannerMarkup: true,
+                                                          bodyMarkup: true,
                                                           silent: hints['suppress-sound'] });
             ndata.notification = notification;
             notification.connect('destroy', Lang.bind(this,
@@ -449,8 +460,7 @@ NotificationDaemon.prototype = {
                 }));
         } else {
             notification.update(summary, body, { icon: iconActor,
-                                                 bannerMarkup: true,
-                                                 clear: true,
+                                                 bodyMarkup: true,
                                                  silent: hints['suppress-sound'] });
         }
 
@@ -471,6 +481,8 @@ NotificationDaemon.prototype = {
         } else {
             notification.unsetImage();
         }
+
+        notification.clearButtons();
 
         if (actions.length) {
             notification.setUseActionIcons(hints.maybeGet('action-icons') == true);
@@ -630,37 +642,6 @@ Source.prototype = {
             this._setSummaryIcon(icon);
 
         this.notify(notification);
-    },
-
-    handleSummaryClick: function() {
-        if (!this.trayIcon)
-            return false;
-
-        let event = Clutter.get_current_event();
-        if (event.type() != Clutter.EventType.BUTTON_RELEASE)
-            return false;
-
-        // Left clicks are passed through only where there aren't unacknowledged
-        // notifications, so it possible to open them in summary mode; right
-        // clicks are always forwarded, as the right click menu is not useful for
-        // tray icons
-        if (event.get_button() == 1 &&
-            this.notifications.length > 0)
-            return false;
-
-        if (Main.overview.visible) {
-            // We can't just connect to Main.overview's 'hidden' signal,
-            // because it's emitted *before* it calls popModal()...
-            let id = global.connect('notify::stage-input-mode', Lang.bind(this,
-                function () {
-                    global.disconnect(id);
-                    this.trayIcon.click(event);
-                }));
-            Main.overview.hide();
-        } else {
-            this.trayIcon.click(event);
-        }
-        return true;
     },
 
     _getApp: function() {

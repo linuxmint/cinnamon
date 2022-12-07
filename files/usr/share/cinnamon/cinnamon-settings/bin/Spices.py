@@ -1,27 +1,21 @@
 #!/usr/bin/python3
 
 try:
-    import gettext
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib
     import tempfile
     import os
     import sys
     import zipfile
     import shutil
-    import cgi
+    import html
     import subprocess
     import threading
-    import time
-    import dbus
     from PIL import Image
     import datetime
-    import proxygsettings
+    import time
 except Exception as detail:
     print(detail)
     sys.exit(1)
-
-from http.client import HTTPSConnection
-from urllib.parse import urlparse
 
 try:
     import json
@@ -30,7 +24,8 @@ except ImportError:
 
 home = os.path.expanduser("~")
 locale_inst = '%s/.local/share/locale' % home
-settings_dir = '%s/.cinnamon/configs/' % home
+settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
+old_settings_dir = '%s/.cinnamon/configs/' % home
 
 URL_SPICES_HOME = "https://cinnamon-spices.linuxmint.com"
 URL_MAP = {
@@ -155,7 +150,7 @@ class Spice_Harvester(GObject.Object):
         self.total_jobs = 0
         self.download_total_files = 0
         self.download_current_file = 0
-        self.cache_folder = '%s/.cinnamon/spices.cache/%s/' % (home, self.collection_type)
+        self.cache_folder = os.path.join(GLib.get_user_cache_dir(), 'cinnamon', 'spices', self.collection_type)
 
         if self.themes:
             self.settings = Gio.Settings.new('org.cinnamon.theme')
@@ -163,14 +158,17 @@ class Spice_Harvester(GObject.Object):
         else:
             self.settings = Gio.Settings.new('org.cinnamon')
             self.enabled_key = 'enabled-%ss' % self.collection_type
-        self.settings.connect('changed::%s' % self.enabled_key, self._update_status)
 
         if self.themes:
-            self.install_folder = '%s/.themes/' % (home)
-            self.spices_directories = (self.install_folder, )
+            self.install_folder = os.path.join(GLib.get_user_data_dir(), 'themes')
+            old_install_folder = '%s/.themes/' % home
+            self.spices_directories = (self.install_folder, old_install_folder)
         else:
             self.install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
             self.spices_directories = ('/usr/share/cinnamon/%ss/' % self.collection_type, self.install_folder)
+            self.settings.connect('changed::%s' % self.enabled_key, self._update_status)
+
+        self._update_status()
 
         self._load_metadata()
 
@@ -191,8 +189,8 @@ class Spice_Harvester(GObject.Object):
         try:
             Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
                                       'org.Cinnamon', '/org/Cinnamon', 'org.Cinnamon', None, self._on_proxy_ready, None)
-        except dbus.exceptions.DBusException as e:
-            print(e)
+        except GLib.Error as e:
+            print(e.message)
 
     def _on_proxy_ready (self, object, result, data=None):
         try:
@@ -214,6 +212,9 @@ class Spice_Harvester(GObject.Object):
             if self._proxy.GetRunState() == 2:
                 self.send_deferred_proxy_calls()
                 return
+
+        if signal_name == "XletsLoadedComplete":
+            self._update_status()
 
         for name, callback in self._proxy_signals:
             if signal_name == name:
@@ -301,7 +302,7 @@ class Spice_Harvester(GObject.Object):
             text = "%s %i/%i" % (_("Downloading images:"), current, total)
             self._set_progressbar_text(text)
         else:
-            fraction = count * blockSize / float((totalSize / blockSize + 1) * (blockSize))
+            fraction = count * blockSize / float((totalSize / blockSize + 1) * blockSize)
 
         self._set_progressbar_fraction(fraction)
 
@@ -358,6 +359,9 @@ class Spice_Harvester(GObject.Object):
             self._directory_changed()
 
     def _download(self, out_file, url, binary=True):
+        timestamp = round(time.time())
+        url = "%s?time=%d" % (url, timestamp)
+        print("Downloading from %s" % url)
         try:
             open_args = 'wb' if binary else 'w'
             with open(out_file, open_args) as outfd:
@@ -378,28 +382,22 @@ class Spice_Harvester(GObject.Object):
         #Like the one in urllib. Unlike urllib.retrieve url_retrieve
         #can be interrupted. KeyboardInterrupt exception is raised when
         #interrupted.
+        import proxygsettings
+        import requests
+
         count = 0
         blockSize = 1024 * 8
-        parsed_url = urlparse(url)
-        host = parsed_url.netloc
+        proxy_info = proxygsettings.get_proxy_settings()
+
         try:
-            proxy = proxygsettings.get_proxy_settings()
-            if proxy and proxy.get('https'):
-                connection = HTTPSConnection(proxy.get('https'), timeout=15)
-                connection.set_tunnel(host)
-            else:
-                connection = HTTPSConnection(host, timeout=15)
-            headers = { "Accept-Encoding": "identity", "Host": host, "User-Agent": "Python/3" }
-            connection.request("GET", parsed_url.path, headers=headers)
-            urlobj = connection.getresponse()
-            assert urlobj.getcode() == 200
+            response = requests.get(url, proxies=proxy_info, stream=True, timeout=15)
+            assert response.ok
 
-            totalSize = int(urlobj.info()['content-length'])
+            totalSize = int(response.headers.get('content-length'))
 
-            while not self._is_aborted():
-                data = urlobj.read(blockSize)
+            for data in response.iter_content(chunk_size=blockSize):
                 count += 1
-                if not data:
+                if self._is_aborted():
                     break
                 if not binary:
                     data = data.decode("utf-8")
@@ -424,11 +422,14 @@ class Spice_Harvester(GObject.Object):
                         metadata['writable'] = os.access(subdirectory, os.W_OK)
                         self.meta_map[uuid] = metadata
                     except Exception as detail:
-                        print(detail)
-                        print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
-            else:
+                        if not self.themes:
+                            print(detail)
+                            print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
+            elif directory == self.install_folder:
                 print("%s does not exist! Creating it now." % directory)
                 subprocess.call(["mkdir", "-p", directory])
+            else:
+                print("%s does not exist! Skipping" % directory)
 
     def _directory_changed(self, *args):
         self._load_metadata()
@@ -459,6 +460,7 @@ class Spice_Harvester(GObject.Object):
         if not self.themes:
             enabled_list = self.settings.get_strv(self.enabled_key)
             for item in enabled_list:
+                item = item.replace("!", "")
                 if uuid in item.split(":"):
                     enabled_count += 1
         elif self.settings.get_string(self.enabled_key) == uuid:
@@ -576,23 +578,21 @@ class Spice_Harvester(GObject.Object):
         self.download_total_files = 0
         self.download_current_file = 0
         self.is_downloading_image_cache = False
-        self.settings.set_int('%s-cache-updated' % self.collection_type, time.time())
         self._advance_queue()
         self.emit('cache-loaded')
 
-    def get_cache_age(self):
-        return (time.time() - self.settings.get_int('%s-cache-updated' % self.collection_type)) / 86400
-
-    # checks for corrupt images in the cache so we can redownload them the next time we refresh
-    def _is_bad_image(self, path):
+    # checks for corrupt images in the cache, so we can redownload them the next time we refresh
+    @staticmethod
+    def _is_bad_image(path):
         try:
             Image.open(path)
-        except IOError as detail:
+        except IOError:
             return True
         return False
 
     # make sure the thumbnail fits the correct format (we are expecting it to be <uuid>.png
-    def _sanitize_thumb(self, basename):
+    @staticmethod
+    def _sanitize_thumb(basename):
         return basename.replace("jpg", "png").replace("JPG", "png").replace("PNG", "png")
 
     def install(self, uuid):
@@ -693,7 +693,7 @@ class Spice_Harvester(GObject.Object):
             uuid = job['uuid']
             if not self.themes:
                 # Uninstall spice localization files, if any
-                if (os.path.exists(locale_inst)):
+                if os.path.exists(locale_inst):
                     i19_folders = os.listdir(locale_inst)
                     for i19_folder in i19_folders:
                         if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', '%s.mo' % uuid)):
@@ -702,8 +702,10 @@ class Spice_Harvester(GObject.Object):
                         removeEmptyFolders(os.path.join(locale_inst, i19_folder))
 
                 # Uninstall settings file, if any
-                if (os.path.exists(os.path.join(settings_dir, uuid))):
+                if os.path.exists(os.path.join(settings_dir, uuid)):
                     shutil.rmtree(os.path.join(settings_dir, uuid))
+                if os.path.exists(os.path.join(old_settings_dir, uuid)):
+                    shutil.rmtree(os.path.join(old_settings_dir, uuid))
             shutil.rmtree(os.path.join(self.install_folder, uuid))
         except Exception as detail:
             self.errorMessage(_("A problem occurred while removing %s.") % job['uuid'], str(detail))
@@ -729,7 +731,7 @@ class Spice_Harvester(GObject.Object):
         markup = msg
         if detail is not None:
             markup += _("\n\nDetails:  %s") % (str(detail))
-        esc = cgi.escape(markup)
+        esc = html.escape(markup)
         dialog.set_markup(esc)
         dialog.show_all()
         response = dialog.run()
@@ -764,7 +766,7 @@ class Spice_Harvester(GObject.Object):
             screen = Gdk.Screen.get_default()
             primary = screen.get_primary_monitor()
             primary_rect = screen.get_monitor_geometry(primary)
-            enabled.append(('%s:%d:%d:%d') % (uuid, desklet_id, primary_rect.x + 100, primary_rect.y + 100))
+            enabled.append('%s:%d:%d:%d' % (uuid, desklet_id, primary_rect.x + 100, primary_rect.y + 100))
 
             self.settings.set_strv(self.enabled_key, enabled)
 

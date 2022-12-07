@@ -1,4 +1,2017 @@
-cinnamon (4.3.0) UNRELEASED; urgency=medium
+cinnamon (5.6.4) vera; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Revert "cs_themes: Make mouse cursor size configurable"
+  * cs_themes: Add thumbnails for Bibata Original
+
+  [ Michael Webster ]
+  * cs_windows: Restore configuration for initial window placement.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 29 Nov 2022 16:31:00 +0000
+
+cinnamon (5.6.3) vera; urgency=medium
+
+  * cs_themes: Make mouse cursor size configurable
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 25 Nov 2022 14:24:34 +0000
+
+cinnamon (5.6.2) vera; urgency=medium
+
+  * cs_themes: Place legacy themes at the bottom
+  * theme: Update cinnamon thumbnails
+  * cs_themes: Reorder sections
+  * cs_themes: Update cursor thumbnails
+  * cs_themes: Sort cursor themes alphabetically
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 24 Nov 2022 22:02:06 +0000
+
+cinnamon (5.6.1) vera; urgency=medium
+
+  * cs_info: Fix cosmetic issues with system icon
+  * cs_default: Fix small issues
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 18 Nov 2022 12:00:32 +0000
+
+cinnamon (5.6.0) vera; urgency=medium
+
+  [ Michael Webster ]
+  * workspacesView.js: Disconnect swipe handlers during destroy instead of unmapping.
+  * Update issue templates.
+  * messageTray.js: Don't assume the primary monitor is at index 0.
+  * modalDialog.js: Don't assume monitor 0 is the primary.
+
+  [ hdulme ]
+  * remove trailing semicolons
+  * remove trailing semicolons
+
+  [ Asghwor ]
+  * Fix inconsistent keyboard navigation in the Scale View and in the Expo View. (#11098)
+
+  [ hduelme ]
+  * fix variable name (#11152)
+
+  [ Michael Webster ]
+  * gwl: don't pass the wrong arguments to windowRemoved.
+  * expo: Update the window's starting position when an update is triggered, in case the window moved to a different monitor during a drag.
+  * overrides: Make MetaWindowActor.get_workspace always return an index;
+  * Use github instead of circleci.
+  * workflow: Fix dependency line.. maybe.
+  * workflow: Go back to folded style.
+
+  [ Clement Lefebvre ]
+  * settings: Make use of cinnamon-driver-manager shortcut
+
+  [ Monteiro ]
+  * gwl: fix reload dragging pinned apps when group windows setting is disabled (#11191)
+
+  [ hduelme ]
+  * replace deprecated use of GObject.SIGNAL_RUN_FIRST by GObject.SignalFlags.RUN_FIRST (#11128)
+
+  [ Joshua Peisach ]
+  * cs_windows.py: Properly import CDesktopEnums (#10844)
+
+  [ Clement Lefebvre ]
+  * cs_themes.py: Don't print an error if metadata.json is missing
+  * cs_themes.py: Separate light/dark/darker themes
+  * Add new cornerbar applet
+  * Panel: Replace show-desktop with cornerbar
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * corner-bar: Don't track_hover on the bar actor.
+  * desklets: Allow desklets to be locked in place.
+
+  [ hdulme ]
+  * remove trailing semicolons
+
+  [ Joshua Peisach ]
+  * cs-info: Add system icon (#11090)
+
+  [ Michael Webster ]
+  * cs_info: Keep system image a reasonable size.
+  * debian/control: Add missing dependency.
+  * data/icons/meson.build: Silence a build warning.
+
+  [ Attila Greguss ]
+  * Move spices download cache to `XDG_CACHE_HOME` directory (#11176)
+
+  [ Michael Webster ]
+  * cs_keyboard: Add an entry to allow type-to-search shortcut names.
+  * cs_themes: Don't require themes to support Gtk 2 any longer
+  * windowMenu.js: Implement mnemonic accelerators.
+  * makepot: Collect comments from js files.
+  * harvester.py: cache_folder should be a pathlib.Path.
+  * windowMenu.js: Never allow more than one menu at a time.
+  * appSwitcher.js: Account for alt-tab reverse actions in the window.
+  * cs_keyboard: Add missing switch-panels and switch-panels-backward keybindings.
+
+  [ Rick Calixte ]
+  * Support multiple key bindings for 'locate-pointer-key' (#11143)
+
+  [ Michael Webster ]
+  * cs_info: There should be no image set by default.
+
+  [ Bobby Rong ]
+  * cs-info: Don't fail with the default system-icon-path value (#11245)
+
+  [ Rick Calixte ]
+  * Add support for key bindings to Inhibit Applet
+  * Cleanup whitespace
+
+  [ hdulme ]
+  * replace equality None check with identity None check
+
+  [ Attila Greguss ]
+  * fix: Actually use `XDG_DATA_HOME` to store themes and icons instead of home (#11175)
+  * Use XDG_CONFIG_HOME to store background config files instead of .cinnamon (#11177)
+  * Use XDG_CONFIG_HOME to primarily store spices configs in (#11182)
+  * fix: use XDG_DATA_HOME to store custom launchers, also fix launcher desklet (#11185)
+  * Use `XDG_STATE_HOME` for logfiles instead of `~/.cinnamon` (#11186)
+
+  [ hdulme ]
+  * remove unused imports harvester.py
+  * remove unused imports updates.py
+
+  [ hduelme ]
+  * use @staticmethod in Spices.py (#11257)
+  * fix python docstring style (#11258)
+
+  [ hdulme ]
+  * simplify boolean check in cs_default
+
+  [ hduelme ]
+  * remove redundant parentheses (#11259)
+
+  [ Michael Webster ]
+  * Use a custom actor for the uiGroup.
+  * cs_backgrounds: Use font-size instead of font-scale to reduce the author and size markup.
+
+  [ Bobby Rong ]
+  * build: Fix some hardcode path issues (#11244)
+
+  [ hdulme ]
+  * replace equality None check with identity None check
+  * removed unused variable check-js
+
+  [ Clement Lefebvre ]
+  * GWL: Move nemo shortcut to the left
+
+  [ Rick Calixte ]
+  * Add a setting for notification duration (#11202)
+
+  [ Andrei Miculita ]
+  * Rename "Preferences" to "Applet preferences" in applets where it might be confusing (#11216)
+
+  [ Himadri Sekhar Basu ]
+  * Categorize default applications (#11287)
+
+  [ Michael Webster ]
+  * cs_default: Fix a typo, and set a default height to prevent the window from growing too tall.
+
+  [ Rick Calixte ]
+  * Add key bindings to move window to workspace up/down (#11264)
+
+  [ Michael Webster ]
+  * cs_keyboard: Improve a few keybinding descriptions.
+
+  [ sm02ll ]
+  * The middle click toggles the sound and places the microphone in the same state. #11255 (#11256)
+
+  [ veractor ]
+  * cs_default.py: Add entry for terminal exec-arg
+
+  [ Michael Webster ]
+  * Improve presentation of terminal args.
+  * layout.js: Actually change actor visibility on fullscreen monitors.
+  * Restore set_skip_paint method for the uiGroup.
+  * appletManager.js: Fix typo.
+  * layout.js: Fix picking in fullscreen.
+
+  [ hduelme ]
+  * python: optimize lists (#11281)
+
+  [ Clement Lefebvre ]
+  * Depend on libcjs0
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 18 Nov 2022 10:38:58 +0000
+
+cinnamon (5.4.12) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * environment: Add an onUpdate parameter for easing.
+  * Don't hide gwl when opening overview and expo.
+  * expo: Use unique pointer trackers for motion tracking.
+  * expo: Fix opening transition.
+  * feature_request.md: Checklist is unnecessary.
+
+  [ Asghwor ]
+  * Fix workspaces grid layout (#11094)
+
+  [ Michael Webster ]
+  * grouped-window-list: Don't create a new clone each time getThumbnail is called, don't connect to notify::size.
+  * windowUtils: Use the window actor's texture instead of a cairo surface for static clones.
+  * expo: Don't create monitor clones until the ExpoThumbnailBox is allocated.
+  * gwl: Redo the layout when switching workspaces.
+  * gwl: Fix a warning.
+  * windowManager.js: Filter out non-current-workspace windows when determining 'seen' windows.
+  * gwl: Only monitor size-changed while using textures, along with minimized state. Remove once all and no longer monitor once a clone can be used.
+  * gwl: Monitor clones, but only to update size.
+  * environment.js: Fix is_finalized() check.
+
+  [ Fabio Fantoni ]
+  * Fix 2 man pages
+
+  [ Michael Webster ]
+  * layout.js: Connect to tracked actors' destroy signal.
+  * cs_windows: Use 'bring-windows-to-current-workspace' in its new location, mark the old dconf key as unused.
+
+  [ anaximeno ]
+  * fix: fix use of undeclared variable
+
+  [ Attila Greguss ]
+  * Fix getTabList in js.main
+
+  [ Michael Webster ]
+  * systray applet: Don't continue processing an icon if it gets destroyed before we can show it.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 05 Sep 2022 15:13:05 +0100
+
+cinnamon (5.4.11) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * keybindings.js: Use bindings.get() - this.bindings is a Map.
+  * Re-add soup 2.4 bindings as a runtime-only dependency, and add a version requirement to cinnamon's environment.
+
+  [ JosephMcc ]
+  * Reimplement the locate pointer functionality
+
+  [ Michael Webster ]
+  * cs_sound.py: Add some more sound ids to ignore.
+  * keybindings.js: Fix incorrect check.
+  * screenshot.js: Improve button event handling, listen to stage events during rubber-banding.
+  * st-theme-node.c: Fix a leak when falling back to the default theme on 'important' ui elements.
+  * locatePointer: Only grab the keybinding if the feature is enabled.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 21 Aug 2022 12:13:03 +0200
+
+cinnamon (5.4.10) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * live previews: Use clones when valid, and static images in certain situations when a usable clone or texture isn't guaranteed.
+  * windowAttentionHandler: Fix new window focus issue with Firefox.
+  * keybindings.js: Use a js Map to track keybindings and handle changes to custom keybindings properly.
+  * osdWindow.js: Use correct allocation size for the fill level instead of the parent width.
+
+  [ ronyala ]
+  * Remove rtl workaround for the triangle arrow direction, (#10980)
+
+  [ Michael Webster ]
+  * windowAttentionHandler: remove notification fallback, re-add all 5.2 names to the pass-thru list.
+  * windowManager.js: get rid of (non-cinnamon) popup menu animations.
+  * sound@cinnamon.org: Fix panel scrolling behavior.
+  * windowManager.js: Complete the workspace switch immediately if no windows end up being animated.
+  * panel.js: Don't create a (horizontal) panel barrier for a vertical panel if there is a horizontal panel adjacent to it.
+  * panel.js: No barriers when there is only a single monitor.
+  * panel.js: global.screen -> global.display
+
+  [ Secret-chest ]
+  * More issue templates, not everything is a bug report (#11011)
+
+  [ Michael Webster ]
+  * Fix bug remplate, remove question template.
+
+  [ Leigh Scott ]
+  * Remove unused soup (#11002)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 13 Aug 2022 12:31:37 +0200
+
+cinnamon (5.4.9) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * sound applet: Fix the context menu's input mute icon.
+
+  [ JosephMcc ]
+  * thumbails: Update the Adwaita thumbnails for cs_themes (#10968)
+
+  [ tedlava ]
+  * Imported submodule explicitly from PIL to fix bug (#10955)
+
+  [ Michael Webster ]
+  * cinnamon-gtk-embed: Clamp transparency of the tray icon's underlying MetaWindowActor.
+  * cinnamon-window-tracker: Use a different method for matching existing apps and new windows by pid.
+  * gwl: Fix updating tooltips and previews when the applet's panel is move to the top edge.
+  * windowManager: Fix a missing default case, return early when individual effects are disabled, not just when they all are.
+  * signalManager: Make it slightly easier to debug signals and access- after-destroy warnings.
+  * gwl: Disconnect size notify signals from actors when they become unmanaged.
+  * windowManager.js: Fix gtk popup menu animations.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 01 Aug 2022 16:07:57 +0200
+
+cinnamon (5.4.8) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * g-w-l/workspace-switcher: Fix random crash and errors when adding and removing workspaces.
+  * workspace-switcher: Replace global.screen with global.display.
+
+  [ JosephMcc ]
+  * overview.js: Don't hide the global.window_group while animating
+  * theme: Finish fixing the gwl thumbnail theming (#10963)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 25 Jul 2022 15:03:46 +0200
+
+cinnamon (5.4.7) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * cinnamonDbus: Have cinnamon-settings-daemon provide monitor coordinates for the showOSD method, instead of a monitor index.
+  * power applet: Use step up/down when scrolling on the brightness sliders instead of directly setting a value.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 24 Jul 2022 13:45:41 +0200
+
+cinnamon (5.4.6) vanessa; urgency=medium
+
+  [ fredcw ]
+  * Menu applet: Fix typo (#10952)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * gwl: Ignore 'smooth' scroll events when scrolling.
+  * menu applet: Strip the spaces from button search strings.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 23 Jul 2022 13:51:27 +0200
+
+cinnamon (5.4.5) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * xdnd: Change pick mode when checking for drop targets.
+  * systray.js: Fix a couple of applets missed in bf2cce2e7016.
+  * extensions: Allow an applet to assume more than one 'role'.
+  * systray applet: Fix some issues when reloading icons after panel changes.
+  * slider.js: Pass the proper arguments to _endDragging() from actor's button-release-event.
+
+  [ Cobinja ]
+  * Fix testsound volume
+
+  [ JosephMcc ]
+  * theme: Fix artifacts in the menu applet when scrolling the applications
+
+  [ Rick Calixte ]
+  * Fix .gitignore for builds
+
+  [ Michael Webster ]
+  * windowManager.js: Fix workspace switching when only-on-primary is enabled.
+  * expo: Fix some bad behavior.
+  * sound settings: Fix mic gain adjustment.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 20 Jul 2022 07:53:26 +0200
+
+cinnamon (5.4.4) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * xapp status icon: Remove missing import.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 15 Jul 2022 17:09:33 +0200
+
+cinnamon (5.4.3) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * xapp status applet: Use markup for tooltips.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * a11y: Add missing icons to support 28099e62ea98bb0
+  * notifications: Decode html entities in a notification's title and body.
+
+  [ fredcw ]
+  * Some slight improvements to app sorting..
+  * Remove redundant call toLowerCase()
+
+  [ Michael Webster ]
+  * panel.js: Fix autohide and intellihide (partially).
+  * panel.js: Get the window coordinates from the MetaWindow instead of the window actor.
+  * panel.js: _enterPanel and _leavePanel will not always receive any arguments.
+  * recorder: Use a more filesystem-friendly date format, get rid of some useless code.
+  * cinnamon-tray-icon.c: Fix interaction with tray icons when the panel is auto- or intelli-hide.
+  * systray: Fix reloading during panel-edit or adding/removing applets.
+  * windowManager.js: Fix hiding the tile preview, and use actor.ease.
+  * windowManager.js: Use easing for workspace switching, make sure all windows are animated.
+  * windowManager.js: Use easing for window effects, fix fallback path for invalid effect names.
+
+  [ JosephMcc ]
+  * st: Move slow-down-factor into settings
+
+  [ Michael Webster ]
+  * keybindings: Fix arguments sent by invoke_keybinding_action_by_id.
+
+  [ JosephMcc ]
+  * theme: Restore the styling of gwl window thumbnails
+
+  [ Michael Webster ]
+  * util.js: let decodeHTML() handle null strings gracefully.
+  * systray: Rename a couple of methods in SystrayManager
+  * windowAttentionHandler: remove filtering (no longer necessary)
+
+  [ JosephMcc ]
+  * windowManager: Check whether metaWindow is NULL after destroy animation
+
+  [ Michael Webster ]
+  * panels: Fix relayout problem when a monitor is removed or added.
+
+  [ JosephMcc ]
+  * gwl: Restore the hover peek functionality
+
+  [ Michael Webster ]
+  * placesManager: Monitor the gtk3 bookmarks path if no bookmark files exist, not gtk2.
+  * panels: listen to the layout manager for monitor changes, fix how layout.Monitors are constructed.
+
+  [ JosephMcc ]
+  * windowManager.js: Port the dimmer to the new ease() functions
+
+  [ Michael Webster ]
+  * Fix direct launching of accessibility settings.
+  * hidpi: Refresh xapp and systray icons when the scale changes.
+
+  [ Cobinja ]
+  * Fix testsound channel usage
+
+  [ Michael Webster ]
+  * cinnamon settings: Display blueman-manager as 'Bluetooth'.
+  * theme settings: Rename Controls to Applications.
+  * recorder: Display a recording indicator in the xapp applet.
+  * cs_sound: Fix testing window effect sounds.
+  * st-scroll-view: Have the fade effect respect the master effects setting as well as its individual one.
+  * windowManager: Distinguish between size-change types for sound effects.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 15 Jul 2022 15:05:57 +0200
+
+cinnamon (5.4.2) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * osdWindow: Fix wrong variable from refactor (e322977633)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 21 Jun 2022 16:59:18 +0200
+
+cinnamon (5.4.1) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * st-texture-cache: Fix error check in load_from_raw, don't make a new actor twice in load_from_pixbuf.
+  * Restore st_texture_cache_load_file_simple().
+  * osdWindow.js: Fix destruction during screen changes.
+  * tooltips.js: Remove the hide idle source when destroying a tooltip.
+  * calendar applet: Listen for eds to appear on the session bus at startup.
+
+  [ Cobinja ]
+  * Don't disconnect signal ids that aren't connected
+
+  [ Michael Webster ]
+  * main.js: set the uiGroup as NO_LAYOUT.
+  * xapp applet: Monitor popup menu states and sync the hover state when one closes.
+  * cinnamon-global.c: remove dead code.
+
+  [ Cobinja ]
+  * Change style class name creation in popup menus
+
+  [ Michael Webster ]
+  * cinnamon-global: Clean up the notification presence during shutdown.
+  * popupMenu.js: Don't update the menu's position during its allocation cycle when menu effects are disabled.
+  * a11y: add a hoverkey action window, add missing items to applet, remove mousetweaks check in cs_accessibility.
+  * windowMenu.js: Fix logic for 'all workspaces' item.
+  * a11y: Add timeout indicator for hoverkeys.
+  * Add missing file from 28099e62e.
+  * windowMenu: Improve appearance compared to gtk menu.
+
+  [ JosephMcc ]
+  * runDialog.js: Don't hardcode the size of the dialog content
+
+  [ Michael Webster ]
+  * Fix panel intellihide mode.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 20 Jun 2022 10:20:54 +0200
+
+cinnamon (5.4.0) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * Adapt to muffin 5.3 changes.
+  * Implement resize popup (for terminals).
+  * Use Meta.Barrier for pointer barriers.
+  * Use gtk window-kill and display confirmation dialogs.
+  * Simplify hotcorner setup, add corner barriers.
+
+  [ Stephen Collins ]
+  * tooltip.js: trigger a relayout after triggering a reallocation
+
+  [ Michael Webster ]
+  * Fix show-desktop applet, fix implementation of raise/lower desklet layer.
+  * Update fractional scale switch backend.
+  * Small change in cs_sound for updated Cvc on cinnamon-desktop.
+  * calendar: Fix DateTimeMechanism interface path.
+  * Adapt to using logical monitors, where the primary monitor is not always 0.
+
+  [ Stephen Collins ]
+  * windowManager.js: fix window placement after workspace switch animation
+  * popupMenu.js: bring back the call to actor.destroy()
+  * Fix docs and re-enable
+
+  [ Michael Webster ]
+  * popup menus: Add a new signal to be fired when a menu finishes animating closed.
+  * tooltips: Round event mouse positions.
+  * Fix recorder, minus the recording indicator for the moment.
+  * Disable 'hover' effect for display module background.
+  * Fix some keybindings. Snap is no more, display rotate and switch have moved to a different schema.
+  * Rework xrandr applet to use muffin api.
+  * Disable some media keys - they're handled internally by muffin now.
+
+  [ Nurgazy Nazhimidinov ]
+  * add system info copy to clipboard (#10428)
+
+  [ Michael Webster ]
+  * st-texture-cache: Restore a couple of missing methods.
+  * close dialog: Fix a vertical spacing issue.
+
+  [ Clement Lefebvre ]
+  * CI: Update targets
+
+  [ Michael Webster ]
+  * makepot: Scan all of files/usr/bin
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * debian/control: Add python3-requests dependency.
+  * cs_themes.py: Don't show 'gnome' or 'hicolor' themes in the icon theme picker.
+  * cinnamon.css: Use em units for the calendar dot position.
+  * menu applet: Fix keyboard navigation when category-hover is disabled.
+  * window-list: Improve overflow issue when there are lots of windows.
+  * grouped-window-list: Improve overflow issue when there are lots of windows.
+  * window-list: Use the initial label preference in the getPreferred* methods.
+  * osdWindow.c: Scale some elements down for low resolution monitors.
+  * calendar events: Check if evolution-data-server is running before enabling events.
+  * calendar-server: Add return after calling app.quit()
+  * window lists: Improve icon geometry updates.
+
+  [ Eli Schwartz ]
+  * gtkdoc: remove dependencies on custom target files (#10606)
+  * Revert "build: disable gir install via list to pacify meson >= 0.60.2 (#10489)" (#10596)
+
+  [ Michael Webster ]
+  * cinnamon-app: Don't try to offload PrefersNonDefaultGPU if offloading isn't currently supported.
+
+  [ fredcw ]
+  * Use same icon used in cinnamon-settings... (#10685)
+
+  [ AxXxB ]
+  * deskletManager.js: correct loading time logging (#10672)
+
+  [ Michael Webster ]
+  * keybindings: Warn, but don't forbid assigning normal keys for shortcuts.
+
+  [ Jonathan Heard ]
+  * FIX #10618 (#10619)
+
+  [ Ross Brattain ]
+  * cinnamon-settings: pop sys.argv args before Gio
+
+  [ dasaleph ]
+  * Fix a typo #9756
+
+  [ Michael Webster ]
+  * calendar: Set a reasonable limit on the frequency of user setDate events.
+
+  [ Justin ]
+  * single day event now shows end time (#10734)
+
+  [ AxXxB ]
+  * keyboard applet refactoring (#10671)
+
+  [ ronyalaluf ]
+  * PopupMenu: fix arrow icon direction on rtl layout
+  * Popup Menu Slider: Fix direction and handling in rtl layout
+  * Sound applet: Update VolumeSlider for rtl layout
+  * PopupMenu: Invert right-left keyboard navigation on rtl layout
+
+  [ Michael Webster ]
+  * window-list: zero a source id when destroying an app button.
+
+  [ AxXxB ]
+  * Add _flashTimer property to AppMenuButton (#10457)
+
+  [ ronyalaluf ]
+  * Slider.js: Make inverted when in rtl layout
+  * Sound applet: Do not invert media progress bar in rtl layout
+
+  [ Jonathan Heard ]
+  * remove _hook from applet.js (#10547)
+
+  [ Steve Grubb ]
+  * Fix a couple typos in latest code (#10569)
+
+  [ Michael Webster ]
+  * cinnamon-settings: Fix specifying initial panel from the command line.
+
+  [ AxXxB ]
+  * grouped-window-list: spacing between items is now defined by CSS (#10669)
+
+  [ Andreas Müller ]
+  * Do not crash on systemd/tzdata reporting Univeral timezone
+
+  [ slowscript ]
+  * Menu applet: show application actions
+  * Menu applet: Add icons to application actions
+
+  [ Xushen ]
+  * photoframe: Avoid showing hidden files or files under hidden directories. (#10760)
+
+  [ Kevin Langman ]
+  * Fix the XApp Status Applet tooltip placement on vertical panels
+
+  [ Michael Webster ]
+  * keyboard applet: Don't check for ibus too soon.
+  * Fix keyboard applet when there's only a single layout.
+  * Fix an introspection issue in cinnamon-xfixes-cursor.c.
+
+  [ okaestne ]
+  * ExtensionCore: defer loading of cinnamon version & fix comparison
+  * cs_privacy: defer init of NM.Client
+  * cs_backgrounds: defer import of imtools module
+  * Spices: defer import of requests module
+  * cs: fix print_timing; remove stale touch function
+  * cs: lazy load python modules, when passed as arg
+
+  [ Michael Webster ]
+  * menu: Fix sort when app names include diacritical marks.
+
+  [ AxXxB ]
+  * power applet: fix device duplicates (#10670)
+
+  [ Nate Simon ]
+  * Fix: Missing icon causes output sound device to not show in list (#10794)
+
+  [ ronyala ]
+  * Sound applet: Hide microphone mute toggle if mic is not being used (#10620)
+
+  [ kimimaru4000 ]
+  * Show brightness text and value when dragging slider on power applet (#10630)
+
+  [ Michael Webster ]
+  * xapp status applet: Recheck applet roles when an icon's name id changes.
+  * cinnamon-settings.py: Replace hyphens with underscores when looking for a specific python settings module.
+
+  [ ronyala ]
+  * GWL: fix rtl layout issues (#10631)
+
+  [ martj42 ]
+  * Option to change the button width in the window list (#10575)
+
+  [ Michael Webster ]
+  * Adapt to new plugin, meta, clutter, cogl api.
+
+  [ Fabio Fantoni ]
+  * debian/ changes
+
+  [ Michael Webster ]
+  * Implement resize popup (for terminals).
+  * Use Meta.Barrier for pointer barriers.
+  * Use gtk window-kill and display confirmation dialogs.
+  * Simplify hotcorner setup, add corner barriers.
+
+  [ Stephen Collins ]
+  * tooltip.js: trigger a relayout after triggering a reallocation
+
+  [ Michael Webster ]
+  * Fix show-desktop applet, fix implementation of raise/lower desklet layer.
+  * Update fractional scale switch backend.
+  * Small change in cs_sound for updated Cvc on cinnamon-desktop.
+  * calendar: Fix DateTimeMechanism interface path.
+  * Adapt to using logical monitors, where the primary monitor is not always 0.
+
+  [ Stephen Collins ]
+  * windowManager.js: fix window placement after workspace switch animation
+  * popupMenu.js: bring back the call to actor.destroy()
+  * Fix docs and re-enable
+
+  [ Michael Webster ]
+  * popup menus: Add a new signal to be fired when a menu finishes animating closed.
+  * tooltips: Round event mouse positions.
+  * Fix recorder, minus the recording indicator for the moment.
+  * Disable 'hover' effect for display module background.
+  * Fix some keybindings. Snap is no more, display rotate and switch have moved to a different schema.
+  * Rework xrandr applet to use muffin api.
+  * Disable some media keys - they're handled internally by muffin now.
+
+  [ Nurgazy Nazhimidinov ]
+  * add system info copy to clipboard (#10428)
+
+  [ Michael Webster ]
+  * st-texture-cache: Restore a couple of missing methods.
+  * close dialog: Fix a vertical spacing issue.
+
+  [ Clement Lefebvre ]
+  * CI: Update targets
+
+  [ Michael Webster ]
+  * makepot: Scan all of files/usr/bin
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 10 Jun 2022 15:55:03 +0200
+
+cinnamon (5.2.7) una; urgency=medium
+
+  [ Michael Webster ]
+  * cs_calendar.py: Update gnome's 24h preference when ours gets updated.
+  * settings api demo: Fix dependency example to match description.
+  * notification applet: Remove leftover log statement.
+  * power applet: Show a generic panel icon even if there's only a single coarse-level device attached.
+  * screenshot.js: Add SelectArea method.
+  * calendar applet: Improve event dot positioning.
+
+  [ Cobinja ]
+  * [calendar applet] Make new dates translatable (#10560)
+
+  [ Michael Webster ]
+  * calendar applet: Re-organize multi-day string construction.
+  * calendar applet: Use the ► unicode symbol in place of '->' for event times.
+
+  [ BaptisteMiq ]
+  * Checking None values to prevent crashes (#10552)
+
+  [ Michael Webster ]
+  * Fix minimize effect when there is no icon geometry set by a window- list.
+  * events: Actual time should be used with time_format, not a date-only.
+  * calendar events: Clicking on the selected date over the event list will open gnome-calendar.
+  * screenshot.js: Cancel an area selection op if the rubberbanding is completed with a width or height of 0.
+
+  [ Matt Turnbull ]
+  * Fix warning about using var for module exports. (#10568)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 31 Dec 2021 11:26:30 +0000
+
+cinnamon (5.2.6) una; urgency=medium
+
+  [ Michael Webster ]
+  * calendar: Have the 'no events' icon/label open gnome-calendar when clicked.
+  * calendar: Fix theme typo, close the calendar popup when launching gnome-calendar.
+  * calendar: some default theme improvements for buttons.
+  * screenshot.js: Adjust area coordinates by the ui scale.
+  * cinnamon-calendar-server.py: Don't assume that an event will have a last-modified property.
+
+  [ Clement Lefebvre ]
+  * cinnamon-calendar-server: Fix typo
+
+  [ Michael Webster ]
+  * calendar applet: Handle multi-day events.
+  * Calendar applet: Fix a few translation and date-format issues.
+  * calendar applet: some cleanup.
+  * calendar applet: Enable opening gnome-calendar to a specific day when the 'no events' button is clicked.
+
+  [ Thomas Kemmer ]
+  * calendar: Fix missing prefix in bindir path for D-Bus service
+
+  [ Michael Webster ]
+  * build: Don't hardcode the libexec path for the cinnamon-calendar- server bin file.
+  * cinnamon-screenshot.c: Fall back to a full screenshot when there is no default focus window.
+  * cinnamon-screenshot.c: Don't take a screenshot of the "Desktop" window when taking a 'window' screenshot.
+  * calendar applet: Show countdown text for multiday events that start today on any day the event will be active.
+
+  [ Clement Lefebvre ]
+  * l10n: Generate files
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 16 Dec 2021 09:05:23 +0000
+
+cinnamon (5.2.5) una; urgency=medium
+
+  [ Michael Webster ]
+  * calendar: Remove using GOA for calendar source discovery.
+  * runDialog.js: Take the global.ui_scale into account when setting the dialog width.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 09 Dec 2021 11:25:23 +0000
+
+cinnamon (5.2.4) una; urgency=medium
+
+  [ Michael Webster ]
+  * window effects: Fix maximize effect.
+  * notificationDaemon.js: Remove call to non-existant Source method.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 07 Dec 2021 17:44:17 +0000
+
+cinnamon (5.2.3) una; urgency=medium
+
+  [ Michael Webster ]
+  * Add org.gnome.Shell.Screensaver service for taking screenshots.
+  * flashspot.js: Improve effect.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 06 Dec 2021 16:56:15 +0000
+
+cinnamon (5.2.2) una; urgency=medium
+
+  [ Jan Beich ]
+  * build: disable gir install via list to pacify meson >= 0.60.2 (#10489)
+
+  [ Michael Webster ]
+  * JsonSettingsWidgets.py: Don't escape non-ascii characters when saving the json file.
+  * flashspot.js: Use class expression to fix subclassing of Lightbox.
+  * appletManager.js: Fix highlighting when adding an applet to a panel.
+  * Add "ReloadTheme" to available dbus commands.
+  * calendar applet: Change a few style classes.
+  * calendar applet: Update the default theme for some calendar changes.
+  * cinnamon-app.c: Unref the launch context if offloading setup fails.
+  * calendar: Don't try to override vfade in the default theme.
+  * cinnamon.css: Improve some spacing in the calendar, change how selected/current days are displayed.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 03 Dec 2021 15:33:29 +0000
+
+cinnamon (5.2.1) una; urgency=medium
+
+  [ Clement Lefebvre ]
+  * l10n: Rename mgsid in calendar applet
+  * calendar applet: Add an icon when no events are available
+
+  [ Michael Webster ]
+  * calendar: remove unintentional setting.
+  * calendar: Don't use the new string format style for translatable strings.
+  * calendar applet: Reset the periodic timer when settings change.
+  * cinnamon.css: Move height element to affect the events box only.
+  * Make cinnamon-settings a minimal GApplication to accomodate webkit.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * cinnamon-launcher: use os.WIFEXITED to interpret the status code when cinnamon exits.
+  * calendar events: update when the applet is opened only, and update events incrementally, to reduce ui relayouts.
+  * cinnamon-app.c: Don't allow offloaded programs to be dbus-activated.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 28 Nov 2021 14:03:33 +0000
+
+cinnamon (5.2.0) una; urgency=medium
+
+  [ Michael Webster ]
+  * menu applet.js: Use localeCompare for the fallback sort.
+  * cinnamon-settings: Remove ~/.local and /usr/local from python's module search paths.
+
+  [ Ammako ]
+  * Properly hide JavaEmbeddedFrame on Grouped Window List
+
+  [ Michael Webster ]
+  * menu applet: Check first if we should show items that are refreshed while the menu is open.
+  * menu applet: Hide app buttons by default, and when the menu closes.
+  * cinnamon-subprocess-wrapper: Set the exception result as bytes, not a string.
+
+  [ Joshua Peisach ]
+  * meson girs: Export gir names as a package Fixes an issue with the package tag in the gir not being generated.
+
+  [ fredcw ]
+  * Change method of making "Clear list" label bold.. (#10178)
+
+  [ Michael Webster ]
+  * spices update module: Add a way to check if a spice is currently enabled.
+  * cinnamon-launcher: Don't call Gtk.main_quit() when showing the restart dialog.
+  * cinnamon-launcher: prevent defunct metacity process when restarting via the dialog, fix 'cinnamon --replace --replace' after crashes.
+  * main.js: Fix activateWindow so it will respect the workspace index if provided.
+  * main.js: Be strict about the workspace argument in activateWindow.
+
+  [ Odyseus ]
+  * Documentation corrections
+
+  [ Anderson André Ferreira Gomes ]
+  * Small grammar corrections in README.md (#10292)
+
+  [ Michael Webster ]
+  * cinnamon-global.c: Allow disabling cinnamon as the default notifications handler.
+
+  [ JosephMcc ]
+  * GWL: Don't force the "New Window" option to show
+  * sound-applet: use insensitive not disabled
+
+  [ Benjamin Owen ]
+  * Fix window ordering with vertical panels (#10297)
+
+  [ Michael Webster ]
+  * menu applet: Only show completion results when filesystem path entry is enabled.
+
+  [ fredcw ]
+  * Add confirmation dialog when removing a panel (#10340)
+
+  [ JosephMcc ]
+  * ui: Make the confirm dialog look a bit more like a real dialog
+  * ui: Add some styling to the run dialog
+
+  [ David Yang ]
+  * Fix type to search boilerplate text not being automatically cleared (#10248)
+
+  [ Leigh Scott ]
+  * Fix menu-editor with python-3.10 (#10370)
+
+  [ Michael Webster ]
+  * gwl: Remove redundant check for skip-taskbar. Main.isInteresting does this and more.
+
+  [ Joshua Peisach ]
+  * Stop using GTimeVal/g_get_current_time (#10043)
+
+  [ Michael Webster ]
+  * Fix previous commit - you can't call g_free on an autopointer.
+
+  [ Clement Lefebvre ]
+  * Simplify window animations (#10389)
+
+  [ Michael Webster ]
+  * harvester.py: Catch request timeout errors.
+  * harvester.py: Don't use a unique timestamp for every request from the spices server.
+
+  [ Steve Grubb ]
+  * Fix memory leaks on error paths (#10406)
+  * Fix a typo (#10405)
+
+  [ 404oops ]
+  * Spotify fixed the album art issue (#10433)
+
+  [ Michael Martin ]
+  * Add an option to disable scrolling in the workspace-switcher applet (#10427)
+
+  [ Benjamin Owen ]
+  * Add toggle for window labels on/off (#10343)
+
+  [ Clement Lefebvre ]
+  * window-list: Rename newly added option
+
+  [ Alexander ]
+  * sound applet: added processing base64 code for art url data (#10226)
+
+  [ JosephMcc ]
+  * Lightbox: Add a radial shader effect (#10344)
+
+  [ AxXxB ]
+  * notifications applet: Add new setting "Don't show notification count in tray" (#10166)
+
+  [ Clement Lefebvre ]
+  * notification applet: Rephrase newly added option
+  * menu applet: Give all applications a symbolic icon
+
+  [ ronyala ]
+  * Sound applet: Fix media control buttons having reverse order on RTL layouts (#10443)
+  * Sound applet: Fix player status label being  aligned to the left on an rtl layout (#10446)
+  * Menu applet: Improve keyboard navigation with RTL layout (#10376)
+  * GWL: Fix issue #10401; Update AppGroup icon every time a new window is added (#10439)
+
+  [ AxXxB ]
+  * keyboard applet: Change 'let' to 'const' where possible (#10167)
+
+  [ ronyala ]
+  * Window button layout setting: improve rtl handling (#10441)
+  * GWL: Fix window preview issue when fade-out effect is used (#10263)
+
+  [ Levi Bard ]
+  * Respect PrefersNonDefaultGPU desktop entry when launching apps (#10411)
+
+  [ Oliver Kästner ]
+  * Spices.py: simplify _url_retrieve (#10327)
+  * capi.py: support non-i386/x86_64 architectures (#10426)
+
+  [ Jason Lee ]
+  * sound-applet: hide "Unknown Artist" on panel (#10326)
+
+  [ James Ross ]
+  * notifications: Simplify source code (#10144)
+
+  [ AxXxB ]
+  * keyboard applet: Remove unneccesary 'if' in offsets calculation (#10168)
+  * JsonSettingsWidgets.py: remove keyword argument `encoding` (#10458)
+  * keyboard applet: Respect "icon-size" when panel is vertical (#10456)
+
+  [ Michael Webster ]
+  * calendar applet: Add support for evolution-data-server (#10453)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+  * l10n: Generate files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 17 Nov 2021 10:07:19 +0000
+
+cinnamon (5.0.5) uma; urgency=medium
+
+  [ Michael Webster ]
+  * util.js: Remove long parenthesized text in network device labels.
+  * org.cinnamon.gschema.xml: Add lxterminal and xfce4-terminal to focus passthru list.
+  * org.cinnamon.gschema.xml: Add firefox to focus passthru list.
+  * window list applet: Track urgent/demanding attention separately from other-workspace transience during initial window item creation.
+  * menu applet: Restore a max button width constraint, and the old width calculations for the application box.
+  * menu applet: Fix the fallback sort method for search results.
+  * org.cinnamon.gschema.xml: Add libreoffice to focus passthru list.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 14 Jul 2021 15:23:16 +0100
+
+cinnamon (5.0.4) uma; urgency=medium
+
+  * GWL: Remove Super+space shortcut
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 02 Jul 2021 16:18:53 +0100
+
+cinnamon (5.0.3) uma; urgency=medium
+
+  [ Michael Webster ]
+  * meson: Make install dir of the python spice modules configurable.
+  * menu applet: Don't strip the search pattern before sending it to custom search providers.
+
+  [ Stephen Collins ]
+  * xapp status applet: update the tooltip text immediately (#10130)
+
+  [ itzexor ]
+  * lookingGlass.js: work around actor property access error
+  * lookingGlass.js: delay and aggregate window tracker updates
+  * lookingGlass.js: modernizations and cleanups
+
+  [ Peter ]
+  * Add basic proxy auth for spices manager
+  * Update Spices.py
+
+  [ Michael Webster ]
+  * main.js: Simplify activateWindow and let muffin handle workspace activation.
+
+  [ itzexor ]
+  * cinnamon-killer-daemon: user cinnamon-launcher instead
+  * cinnamon-launcher: fix fallback recovery code
+
+  [ Michael Webster ]
+  * cinnamon-launcher: Show restart confirmation even if memory limiting is disabled.
+  * Restore the window attention handler, but with a reversed role.
+  * window-list applet: Don't rely on muffin signals for marking new windows as urgent.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 25 Jun 2021 16:57:58 +0100
+
+cinnamon (5.0.2) uma; urgency=medium
+
+  [ Michael Webster ]
+  * power applet: Don't add a cinnamon style class to critical and warning battery icons on top of the color the icons already have.
+  * network applet: Disable connectivity check, it is too unreliable.
+  * cs_display.py: Add new setting to control visibility of fractional scaling controls.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 04 Jun 2021 12:22:26 +0100
+
+cinnamon (5.0.1) uma; urgency=medium
+
+  [ Leigh Scott ]
+  * Use new screensaver name for required components
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 01 Jun 2021 14:11:59 +0100
+
+cinnamon (5.0.0) uma; urgency=medium
+
+  [ José Gadelha ]
+  * GWL-fixes: move window to another workspace
+
+  [ Michael Webster ]
+  * st-texture-cache.c: Don't return from a GTask twice.
+  * menu applet: Decode favorite uris used for display.
+  * src/meson.build: Include st enum header file to executable sources as well.
+  * power applet: Fix _devicesChanged so that calls to csd-power are handled sequentially.
+  * power applet: When 'always show all batteries' is enabled, only display devices that will have a valid percentage.
+
+  [ JosephMcc ]
+  * cs_startup: Improve ellipsizing of description labels
+
+  [ Sparky Bluefang ]
+  * build: gstreamer only used by recorder, so make it conditional.
+
+  [ Clement Lefebvre ]
+  * Spices: Show UUID in management/download tabs (#9911)
+
+  [ Stephen Collins ]
+  * cinnamon-settings xlets: ignore multiversion when looking for an icon (#9908)
+
+  [ Clement Lefebvre ]
+  * Applets: Fix some of the icons
+  * Spices: Prefer icon.png over metadata
+  * Desklets: Fix icons
+  * Spices: Translate download tab content
+  * Spices: Show the author
+  * Spices: Add search by author
+  * Spices: Improve layout
+
+  [ Michael Webster ]
+  * appSwitcher.js: If the initial grab fails, or the modifier key is released before pushModal (as explained in the old bug mentioned in the comments), still perform a single switch, rather than doing nothing at all.
+
+  [ Ivan Koveshnikov ]
+  * windows-quick-list applet: avoid fixed popup size
+  *  windows-quick-list applet: remove extra padding
+  * favorites applet: remove extra padding and avoid setting constant height
+
+  [ Michael Webster ]
+  * appSwitcher3D.js: Don't fail completely if the window actor is gone when removing previews.
+  * Remove windowAttentionHandler and some associated items - this will be handled in muffin.
+  * power applet: Adjust warning and critical levels to match the correctly colored icons in the set.
+  * power applet: Fix handling of the panel info display to filter out non-percentage devices when multi-device is enabled.
+  * meson.build: Re-enable build with pointer barriers support.
+  * menu applet: Only count alpha-numeric characters in search matching.
+  * menu applet: sort all search result types equally.
+  * power applet: Fix icon style class logic.
+  * meson.build: Restore some more missing config definitions from pre-meson builds.
+  * window list: Keep track of window positions in the list so the order can be restored between restarts.
+
+  [ ronyalaluf ]
+  * Grouped-Window-List: fix list refreshing when closing a window (4c1aa69) Fix #9802, fix #9845, fix #9900
+
+  [ Michael Webster ]
+  * Move cinnamon-dbus-command into /usr/bin.
+
+  [ Attila Greguss ]
+  * Fix cinnamon-xlet-makepot so it always gives the same output on every system (#9956)
+
+  [ Stephen Collins ]
+  * cinnamon-xlet-makepot: ignore keywords if they're used as settings keys (#9939)
+
+  [ Clement Lefebvre ]
+  * Add a memory limit mechanism to Cinnamon (#9923)
+
+  [ Michael Webster ]
+  * Eliminate use of python-dbus in most places.
+  * accessibility: Rename caps and numlock indicators to be cinnamon- specific so they're acceptable in the hicolor theme, change the OSD handler to use icons with these as fallback names.
+
+  [ NikoKrause ]
+  * cinnamon-xlet-makepot: Add header and metadata to .pot file (#9964)
+
+  [ ronyala ]
+  *  Grouped-Window-List: Fix finishing a launcher move outside of applet area not saving changes; misc cleanup (#9858)
+
+  [ Joshua Peisach ]
+  * cinnamon-settings-users: Check if user exists before user creation.
+
+  [ Michael Webster ]
+  * cinnamon-settings-users.py: Fix new string for localization.
+  * util.js: Add a version comparison function.
+  * network applet: Perform a periodic connectivity check to indicate on the panel when there is no internet (global) access.
+  * a11y: Fix screen reader for popupMenu.js classes and the StButton class.
+
+  [ NikoKrause ]
+  * menu applet: use scrollbox for categories
+
+  [ Michael Webster ]
+  * menu applet: Refactor layout to allow allocation and scrollbar behavior to occur 'naturally' for both favorites and categories.
+  * xlets: remove unused "indent" setting properties.
+  * cs_startup.py: Don't write an invalid override desktop file the second time it's created in the same process.
+  * menu applet: Limit the width of the menu and keep the selected app box from expanding when long text is displayed.
+
+  [ Hezkore ]
+  * fix empty artist in sound applet
+
+  [ JosephMcc ]
+  * cs_windows: Fix the button layout when placing icons on the right
+
+  [ Michael Webster ]
+  * accessibility.js: Only use cinnamon-specific icons for caps- and num-lock indicators.
+
+  [ Philipp Keck ]
+  * Remove window-close action on Alt-Tab Q shortcut (#10031)
+
+  [ Michael Webster ]
+  * cinnamon-dbus-command: make executable.
+  * menu applet: Use a different method of calculating the application box's width.
+  * network applet: Report full connectivity when a tunnel connection is active, even if the primary device only reports 'limited'.
+
+  [ Clement Lefebvre ]
+  * Provide python3 and CLI interfaces to manage Cinnamon spice updates (#10032)
+
+  [ Tobias Kortkamp ]
+  * Attempt to fix parallel build
+
+  [ Michael Webster ]
+  * window list applets: Disable the maximize menu item if the window has resizing disabled.
+
+  [ icarter09 ]
+  * Issue 9097. Removes signal connect. Adds signal to be emitted when applets, desklets, and extensions are finished loading.
+
+  [ Michael Webster ]
+  * Revert "Issue 9097. Removes signal connect. Adds signal to be emitted when applets, desklets, and extensions are finished loading."
+
+  [ David Schaefer ]
+  * fix window-list drag+drop for windows from other desktops
+
+  [ sphh ]
+  * Add additional information to the sound@cinnamon.org applet tooltip (#9954)
+
+  [ Joshua Peisach ]
+  * hotplug-sniffer: drop volatile
+
+  [ Michael Webster ]
+  * menu applet: Use unicode categories to find whitespace and separators.
+
+  [ icarter09 ]
+  * Issue 9097. Removes signal connect. Adds signal to be emitted when applets, desklets, and extensions are finished loading.
+
+  [ Lurux ]
+  * Implement optional "switch categories by clicking" in menu applet
+  * Update settings shema with new "switch categories by hovering" toggle
+
+  [ Lars Mueller ]
+  * Fix a flatpak window mismatch
+
+  [ Mikhail Bodrov ]
+  * Use spread operator instead of concat
+
+  [ Michael Webster ]
+  * Revert new layout introduced in 146083fcfab8fd.
+
+  [ Albert Pool ]
+  * Display spaces instead of underscores in time zone selector
+
+  [ José Gadelha ]
+  * Fix scale effect on unmaximizing windows
+
+  [ icarter09 ]
+  * Issue 10089. Cancels escaped drag on desklets
+
+  [ hacker1024 ]
+  * Change "some issue" to "some issues" in the README
+
+  [ icarter09 ]
+  * Issue 9834. Desklets snap functionality works as expected
+
+  [ Mikhail Bodrov ]
+  * Refactor dbusMenu to es class
+
+  [ Clement Lefebvre ]
+  * l10n: Generate files
+  * l10n: don't delete pot file in cinnamon-xlet-makepot when run from makepot
+  * l10n: Fix makepot error
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 01 Jun 2021 11:41:24 +0100
+
+cinnamon (4.8.6) ulyssa; urgency=medium
+
+  [ Fabio Fantoni ]
+  * Remove executable from xapp-status applet files (#9820)
+
+  [ Michael Webster ]
+  * messageTray.js: Remove call to nonexistant method.
+
+  [ Clement Lefebvre ]
+  * spices: Fix URL timestamp not being used
+
+  [ Joshua Peisach ]
+  * cinnamon-file-dialog: Import GTK properly (#9843)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 13 Jan 2021 14:22:09 +0000
+
+cinnamon (4.8.5) ulyssa; urgency=medium
+
+  [ icarter09 ]
+  * Adds Cycle Apps functionality back
+
+  [ JosephMcc ]
+  * cs_power.py: Remove a status icon
+
+  [ Joshua Peisach ]
+  * Power applet: Use spaces after commas.
+
+  [ forever-and-a-day ]
+  * New ICON_NAMES Entries for Tilix terminal actions
+
+  [ Michael Webster ]
+  * osdWindow.js: Hide the level label as well as the level itself when not used.
+
+  [ Lars Mueller ]
+  * Fix for desktop files in subfolders: use the desktop id generated in cinnamon-menus
+
+  [ Dan Dascalescu ]
+  * Github issue template: Simplify path to .xsession-errors (#9788)
+
+  [ claudiux ]
+  * Docs: Update xlet-settings-ref.xml (#9813)
+
+  [ NikoKrause ]
+  * removable-drives applet: use drive-removable-media icon (#9818)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 02 Jan 2021 18:23:24 +0000
+
+cinnamon (4.8.4) ulyssa; urgency=medium
+
+  [ Michael Webster ]
+  * js/ui/settings.js: Return the default value of a setting if no 'value' field exists.
+
+  [ Lars Mueller ]
+  * meson: fix order-only dependency on generated headers for cinnamon-enum-types-h
+
+  [ Michael Webster ]
+  * cinnamon-app.c: Never return NULL for the flatpak app id.
+
+  [ Clement Lefebvre ]
+  * Icons: Add cinnamon-virtual-keyboard.svg
+
+  [ Michael Webster ]
+  * src/meson.build: Include the generated enum header in the other build targets that use libcinnamon.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 23 Dec 2020 13:27:59 +0000
+
+cinnamon (4.8.3) ulyssa; urgency=medium
+
+  [ Michael Webster ]
+  * menu applet: Don't destroy the favorite category when rebuilding the application list.
+
+  [ Cinhi Young ]
+  * cs_info: fix crash caused by missing key under getProcInfo (#9755)
+
+  [ Eli Schwartz ]
+  * Proper fix for builds with networkmanager disabled. (#9757)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+  * Don't show a notification when a spice settings file is corrupt.
+
+  [ Michael Webster ]
+  * favorites applet: remove debug line.
+  * favorites applet: Use the global XAppFavorites instance.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 13 Dec 2020 12:15:19 +0000
+
+cinnamon (4.8.2) ulyssa; urgency=medium
+
+  * Favorites applet: Fix papercuts
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 08 Dec 2020 12:56:15 +0000
+
+cinnamon (4.8.1) ulyssa; urgency=medium
+
+  [ Michael Webster ]
+  * cr-utils.c: Fix copy/paste error.
+  * debian/control: add cinnamon-desktop-dev back into the build deps.
+  * cinnamon-window-tracker.c: Remove window role check when identifying chromium web apps.
+
+  [ Eli Schwartz ]
+  * meson: fix order-only dependency on generated headers
+
+  [ Leigh Scott ]
+  * Add muffin rpath to cinnamon executable
+  * Add libexecdir to meson
+
+  [ JosephMcc ]
+  * meson: Fix build when network manager is disabled
+
+  [ ronyalaluf ]
+  * Grouped-Window-List: fix hoverMenu stuck after menu cycle (fix #9067); Continuation of PR #9710
+
+  [ Michael Webster ]
+  * build: bump minimum version of glib.
+
+  [ brownsr ]
+  * extension.js: remove superfluous line causing warnings
+
+  [ claudiux ]
+  * Display entire stream name when its length <= 20 characters
+
+  [ Michael Webster ]
+  * sound applet: Listen for changes to certain properties on the org.mpris.MediaPlayer2 interface.
+  * cinnamon-window-tracker.c: Skip the browser-app check if wm_instance and wm_class are NULL.
+  * cinnamon-window-tracker.c: Revert unnecessary change in previous commit, do a better job explaining the desktop-less webapp check.
+  * src/meson.build: Fix log domain for cinnamon.
+  * sound applet: Fix displaying the tooltip when mouse-scrolling to change the volume.
+
+  [ nkreer ]
+  * Include shift as magnifier shortcut
+
+  [ NikoKrause ]
+  * menu-applet: change favorites category icon
+
+  [ Michael Webster ]
+  * favorites applet: Use correct favorites icon.
+  * favorites applet: Hide on panel if there aren't any favorites, fix stuck visibility of the favorites category in the menu applet.
+  * menu applet: Follow-up to previous commit, the categoryId for favorites is actually 'favorite' for 'an individual favorite', so we should look for that, not the plural.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 08 Dec 2020 10:37:58 +0000
+
+cinnamon (4.8.0) ulyssa; urgency=medium
+
+  [ miniskipper ]
+  * implement suspend-then-hibernate (issue #237)
+
+  [ ronyalaluf ]
+  * fix #2519
+
+  [ ronyala ]
+  * fix RTL bug in panel-edit-mode
+  * fix bug when dragging windows in RTL
+  * fix dragging launchers in RTL
+  * change round to floor in position calculation
+
+  [ Eli Schwartz ]
+  * remove build dependency on dbus-glib
+  * configure.ac: remove pkg-config module checks which are never used
+
+  [ Chase Wright ]
+  * Add Percentage Label to OSD for Volume Control (#9532)
+
+  [ Leigh Scott ]
+  * Bundle libcroco
+  * cr-rgb: remove handling of "inherit" and "transparent"
+  * Fix always-true condition
+  * croco: Remove duplicated conditions
+  * libcroco: Limit recursion in block and any productions CVE-2020-12825)
+  * Handle "color: inherit" directly in get_color_from_term(), not in libcroco
+
+  [ Michael Webster ]
+  * network applet: Make sure there's always a menu item for the active connection.
+  * xapp status applet: Store icons using a unique key based on the icon name and object path.
+  * xapp applet: Go back to using icon 'name' property, not the constructed key, to do applet role checking.
+
+  [ Unknown ]
+  * menu applet: Added option to display panel when the menu is opened
+
+  [ Michael Webster ]
+  * menu applet: Default new 'force show panel' preference to true, move it to the panel behavior group.
+
+  [ Helmut Stult ]
+  * Update cinnamon-xlet-makepot
+
+  [ Stephen Collins ]
+  * systray manager: make all role comparisons lower case
+
+  [ Ammako ]
+  * Fix linuxmint#6243
+
+  [ claudiux ]
+  * [sound@cinnamon.org] Update applet.js - Fixes #9283 (#9490)
+
+  [ Kimimaru ]
+  * Display volume tooltip while scrolling with the mouse for sound@cinnamon.org
+
+  [ Lars Mueller ]
+  * js/misc/utils.js Fix latinise()
+
+  [ Michael Webster ]
+  * menu@cinnamon.org: Allow items to be re-ordered to better reflect the search outcome.
+
+  [ claudiux ]
+  * Update cs_panel.py: Fixes #9487
+  * Add show-buttons option to the TreeList Widgets, align titles as contents and update doc
+
+  [ NikoKrause ]
+  * menu applet: search for words inbetween
+
+  [ Michael Webster ]
+  * cinnamon-menu-editor: refactor ui file layout, add button to open a selected item's desktop file.
+
+  [ NikoKrause ]
+  * menu applet: fix broken search, if no recent documents
+
+  [ ronyalaluf ]
+  * fix issue #9546
+
+  [ Bomdia ]
+  * add applet uuid formatted as style class name
+
+  [ Mirko Girgenti ]
+  * Fix Typo
+
+  [ icarter09 ]
+  * Fix for issue9229
+
+  [ Michael Webster ]
+  * Revert "add applet uuid formatted as style class name"
+  * js/ui/scripting.js: Refactor invalid catch statement (not allowed with mozjs78).
+
+  [ ronyalaluf ]
+  * Fixed applet not responding to fast workspace switches. due to the 100ms throttle, the applet shows the wrong window list for current workspace if more than 1 switch happens in a 100ms timespan (for example, when switching from workspace 1 to 3 very fast).
+  * update throttle, see #9606; fix #9567
+
+  [ claudiux ]
+  * Update xlet-settings.py: Code debug
+
+  [ Contribucious ]
+  * Clutter.KeyName -> Clutter.KEY_KeyName
+  * " == Clutter.KEY_" -> " === Clutter.KEY_"
+  * workspace-switcher applet: Standardization
+  * workspace-switcher applet: New option: "Reverse scrolling direction"
+
+  [ Michael Webster ]
+  * windows-quick-list applet: Support scrolling, place the icons before the labels to be more consistent with the rest of cinnamon.
+
+  [ Stephen Collins ]
+  * Port to meson
+
+  [ Michael Webster ]
+  * Port to mozjs78 (#9624)
+
+  [ Fabio Fantoni ]
+  * Replace deprecated gvfs-bin calls with gio-tool
+  * Add 2 man pages from debian packages
+
+  [ Clement Lefebvre ]
+  * Fix ./test
+
+  [ Michael Webster ]
+  * meson.build: Fix gettext domain (Cinnamon -> cinnamon), fix incorrect version check for cjs.
+
+  [ Stephen Collins ]
+  * debian build: use debhelper >= 11 for meson support
+  * build: re-add missing defines to suppress some extra noise in the logs.
+
+  [ Michael Webster ]
+  * Debian cleanup.
+
+  [ Contribucious ]
+  * "KEY_KP_Enter" as an alternative to "KEY_Return" everywhere
+
+  [ Clement Lefebvre ]
+  * Simplify spice version checks (#9664)
+  * Spices: Bypass global proxy
+
+  [ Michael Webster ]
+  * sound@cinnamon.org: Fix spotify artwork url.
+
+  [ Grzegorz Sobczyk ]
+  * network@cinnamon.org - add keybinding to show applet menu
+
+  [ claudiux ]
+  * Update xlet-settings.py: Take into account icon.svg prior to icon.png. Until now, when viewing an applet's settings, the icon.png icon was displayed in the panel, which could contrast with the applet icon itself and confuse the user. From now on, if an icon.svg icon exists then this one is displayed first.
+
+  [ Fabio Fantoni ]
+  * Add Blueman to the possible icon in cinnamon settings
+  * fix lmde4 build
+
+  [ icarter09 ]
+  * Removed logic that was keeping icons around after window closed
+
+  [ claudiux ]
+  * GWL appList.js: Fix issues #9650 #9219 #8377
+
+  [ Lars Mueller ]
+  * Make building the reference documentation optional
+
+  [ ronyalaluf ]
+  * fix placeholder size not scaling to ui
+
+  [ James Tattersall ]
+  * Fix monitor disconnect resetting icon sizes
+
+  [ Timon de Groot ]
+  * grouped-window-list: Add FLASH_MAX_COUNT constant
+
+  [ ronyalaluf ]
+  * Improve dragging of items * fix juddring of windows while dragging (fix #8639). * change dragging animation. * fix problems with dragging icon showing incorrect operation. * add checks to keep pinned and unpinned items separate while dragging. * add support for dragging new launchers into middle of window list.
+  * add name to proxy drag actor so it can be detected
+  * update drag logic to test for 'xdnd-proxy-actor'
+
+  [ Michael Webster ]
+  * Add a favorites applet.
+  * menu applet: Add a favorites category.
+
+  [ Joshua Peisach ]
+  * Solve a deprecation problem in an if statement
+
+  [ Timon de Groot ]
+  * window-list applet: Add FLASH_MAX_COUNT constant (#9698)
+
+  [ Leigh Scott ]
+  * Add missing GdkPixbuf import
+
+  [ Michael Webster ]
+  * menu@cinnamon.org: lengthen the bit mask for the RefreshFlags.
+  * cinnamon-window-tracker.c: Try to identify web apps in certain situations so that the correct icon can be used.
+
+  [ claudiux ]
+  * applet.js: adapt configureApplet to xlet-settings
+  * desklet.js: adapt configureDesklet to xlet-settings
+
+  [ Mikhail Bodrov ]
+  * checkBox: refactor from prototype to es class (#9692)
+
+  [ Michael Webster ]
+  * cinnamon-window-tracker.c: Remove leftover debugging line.
+
+  [ Bert Hekman ]
+  * Add mic mute keyboard shortcut option
+
+  [ ronyalaluf ]
+  * fix apps being reactive during panel-edit-mode
+  * Fix tooltip lables stuck on after menu cycle
+
+  [ Lars Mueller ]
+  * Improve integration of flatpak apps for side-by-side installations
+
+  [ ronyalaluf ]
+  * fix icon getting hidden in panel-edit-mode when toggling show-empty-tray setting
+
+  [ Mirko Girgenti ]
+  * [FEAUTURE] [BETTER THEMING] Add applet uuid formatted as style class name (#9677)
+
+  [ Clement Lefebvre ]
+  * Icons: Make system settings use preferences-desktop instead of preferences-system
+
+  [ Michael Webster ]
+  * debian/control, meson: Update some dependencies.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT and fix l10n issues
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 26 Nov 2020 15:17:04 +0000
+
+cinnamon (4.6.7) ulyana; urgency=medium
+
+  [ Michael Webster ]
+  * xapp-status@cinnamon.org: Fix visibility for items when an icon is set after having it explicitly un-set.
+  * keybindings: revisit #9375, keybindings not updating.
+
+  [ Vincent Vermeulen ]
+  * Correct Disks icon in System Settings
+
+  [ Michael Webster ]
+  * keyboard applet: Account for the ui scale when adjusting the flag icon size.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 11 Aug 2020 12:38:07 +0100
+
+cinnamon (4.6.6) ulyana; urgency=medium
+
+  [ Michael Webster ]
+  * cs_keyboard.py: Reverse the custom keybinding path suffix each time a change occurs in the subfolders.
+  * cinnamon-app-system.c: Ignore apps in the menu tree that don't have an appinfo instance.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 24 Jun 2020 13:45:07 +0100
+
+cinnamon (4.6.5) ulyana; urgency=medium
+
+  [ Michael Webster ]
+  * cs_calendar.py: Don't try to set an invalid timezone on the tz selector.
+
+  [ Clement Lefebvre ]
+  * Users and groups: Add missing vendor info in polkit policy
+
+  [ Michael Webster ]
+  * cs_desktop.py: move gi.require call into the try/except block for importing nemo.
+
+  [ NikoKrause ]
+  * menu applet: add missing l10n string (#9377)
+
+  [ fredcw ]
+  * cinnamon theme: use em's instead of px's (#9370)
+
+  [ sidorsett ]
+  * Add (non)work-day style classes to the header (#9362)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 21 Jun 2020 13:40:45 +0100
+
+cinnamon (4.6.4) ulyana; urgency=medium
+
+  [ fredcw ]
+  * Update applet.js
+
+  [ yparitcher ]
+  * Fix workspace OSD
+
+  [ Leigh Scott ]
+  * Remove encoding=None
+
+  [ Michael Webster ]
+  * menu@cinnamon.org: Fix interference between panel icon size handling and the menu applet's icon handling.
+
+  [ Clement Lefebvre ]
+  * Menu applet: Fix description for standard places
+  * Notification applet: Fix ngettext translations
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 17 Jun 2020 15:38:54 +0100
+
+cinnamon (4.6.3) ulyana; urgency=medium
+
+  [ Michael Webster ]
+  * windowManager.js: Fix some runtime warnings, operate on the InfoOSD's actor, not the InfoOSD itself.
+
+  [ Mihail Bodrov ]
+  * edgeFlip: refactor from prototype to es class
+
+  [ Clement Lefebvre ]
+  * CI: Use explicit tags
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 06 Jun 2020 14:50:51 +0100
+
+cinnamon (4.6.2) ulyana; urgency=medium
+
+  [ Eli Schwartz ]
+  * cs_info: delay import of 'distro' module until it is used
+
+  [ Michael Webster ]
+  * xapp status applet: Fix image handling in a vertical panel.
+  * xapp status applet: Use markup for tooltips.
+  * menu applet: Fix reference error caused by 9aed706da69a9c8.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 27 May 2020 12:36:30 +0100
+
+cinnamon (4.6.1) ulyana; urgency=medium
+
+  [ Leigh Scott ]
+  * Readd import, fixes #9305
+
+  [ Michael Webster ]
+  * applets: Fix force-loading of out-of-date applets.
+
+  [ Clement Lefebvre ]
+  * Keyboard applet: Cycle layouts on middle-click
+  * CI: Target Mint 20 and LMDE 4
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 21 May 2020 11:16:06 +0100
+
+cinnamon (4.6.0) ulyana; urgency=medium
+
+  [ Eli Schwartz ]
+  * python 3.8: fix all flake8 F632 errors
+
+  [ JosephMcc ]
+  * popupMenu.js: Use a simpler animation for open and close
+
+  [ claudiux ]
+  * Remove multicore-sys-monitor@ccadeptic23 of knownCinnamon4Conflicts list
+
+  [ Clement Lefebvre ]
+  * Calendar applet: Initiate this.clock a little sooner
+
+  [ zbouba ]
+  * Add 2-second lock delay option
+
+  [ okaestne ]
+  * ExtensionCore.py: use Gio library for resetting settings instead on os.system
+
+  [ Michael Webster ]
+  * ExtensionCore.py: Don't set a default size for the message dialog, just allow gtk to decide the proper size based on its content.
+  * main.js: Skip the startup animation unconditionally if cinnamon-session is already in the 'running' state (like it would be when restarting cinnamon).
+  * Show a popup when cinnamon restarts
+  * runDialog.js: Delay execution of dev commands until the run dialog has animated out.
+
+  [ Clement Lefebvre ]
+  * Packaging: Remove version on gnome-icon-theme dependency
+
+  [ JosephMcc ]
+  * St: Make the theme follow the default font
+  * cs_windows: Add a couple more button layout options
+  * cs_backgrounds.py: Remove "screenshot" from the keywords
+
+  [ Michael Webster ]
+  * st-texture-cache: Add an async image-loading method that provides a callback that supplies the actor, which has been explicitly made the same size as the loaded image.
+  * xapp status applet: Support irregularly-shaped images.
+  * grouped window list: When a new appgroup is added, sync its actor's reactivity to the current state of panel-edit-mode.  This prevents any windows added while panel edit mode is active from breaking DND.
+  * st-texture-cache.c: Account for ui scale in st_texture_cache_load_image_from_file_async.
+  * texture-cache: Stop using 'active-display-scale', remove setting key.
+
+  [ JosephMcc ]
+  * modalDialog: Quiet an ES6 warning
+  * theme: Remove all hardcoded font sizing
+  * restart-osd: Add an additional style class
+  * workspace-osd: Simplify and reuse the InfoOSD
+
+  [ claudiux ]
+  * notifications: add button in applet settings, to open system settings
+  * placesManager.js: Adapt messages to different cases of unmounting/ejection of volumes/drives/media.
+
+  [ Michael Webster ]
+  * placesManager.js: Display persistent message when attempting to remove a device and a busy error is received, then poll periodically and try again until it succeeds (or another io error occurs).
+  * cinnamonDBus.js: Add a method to restart cinnamon, with optional osd display.
+
+  [ Stephen Collins ]
+  * Sound applet: close the menu when a player is launched
+
+  [ Clement Lefebvre ]
+  * Update project URL
+  * Remove obsolete links
+
+  [ claudiux ]
+  * close the menu when the eject button is activated
+
+  [ Michael Webster ]
+  * cs_display: Remove the ui scale setting from the second page.
+  * cinnamon-settings: Fix hiding of the display panel's monitor labels when navigating back to the icon view.
+  * cinnamon-desktop-editor.py: Make the ask dialog modal, and let its size be determined by its content.
+
+  [ Đoàn Trần Công Danh ]
+  * Makefile.am: simplify libcinnamon's dependendies
+
+  [ Michael Webster ]
+  * notificationDaemon.js: Allow icon names via the "image-path" hint.
+
+  [ Malek ]
+  * python 3.8 compatibility fix for platform.linux_distribution()
+
+  [ JosephMcc ]
+  * cs_display: Remove the margins from the settings widget
+
+  [ Stephen Collins ]
+  * JsonSettingsWidgets: don't call callback on the widget that was changed
+
+  [ Michael Webster ]
+  * grouped-window-list: Fix some errors when using super-<num> for switching apps.
+
+  [ Artem Vasilyev ]
+  * Support disabling super+number in grouped-window-list applet
+
+  [ Clement Lefebvre ]
+  * cs_themes: Don't refresh on every filemonitor event
+
+  [ Michael Webster ]
+  * Add scroll support, and set the icon size hint for xapp-sn-watcher.
+  * Remove indicator support (fully supported in xapp status applet now).
+  * Update some dependencies for 20.04 base.
+  * grouped window list: Prevent button dragging from starting if dnd is disabled in the applet's settings.
+  * grouped window list: Record button press regardless of what we do with it.
+
+  [ okaestne ]
+  * cs_info: fix disk size calculation
+  * cs_info: optimize lsblk output
+
+  [ Lars Mueller ]
+  * cinnamon-util.c: Fix icon fetching for known folders
+
+  [ Kacper Paczos ]
+  * Added new keywords
+  * Remove 's' from headphone.
+
+  [ Nick Lowery ]
+  * Fix "shutdown" typos (#9243)
+
+  [ Simon Epskamp ]
+  * Change `cycle` to first focust last window when switching apps
+
+  [ NikoKrause ]
+  * Fix translation of "Remove xlet" dialog
+  * xlet-about-dialog: fix spices translations
+
+  [ James Ross ]
+  * hotCorner.js: only create corner actors when they are enabled
+  * hotCorner.js: modernize classes and bound callbacks
+  * hotCorner.js: fix codacy complaints
+
+  [ Michael Webster ]
+  * xlet-settings.py: Allow the settings window height to dynamically  increase to accomodate translations.
+
+  [ steve ]
+  * calendar@cinnamon.org - add keybinding to show calendar
+  * notifications@cinnamon.org - add keybindings to open menu and clear notifications
+  * sound@cinnamon.org - don't hide launch player item when another player is active
+
+  [ James Ross ]
+  * messageTray: remove unused/obsolete code
+  * all: remove CinnamonMountOperation
+  * notification system: notification UI reworks
+  * notifications: misc fixes
+
+  [ marguerite ]
+  * port tinycss to tinycss2
+
+  [ Michael Webster ]
+  * calendar applet: Change translatable string to match existing ones.
+  * Work around dependency problem with tinycss2 in mint 19.3.
+
+  [ Clement Lefebvre ]
+  * Menu applet: Introduce a custom icon size
+
+  [ steve ]
+  * sound@cinnamon.org - add keybinding to show applet menu
+  * sound@cinnamon.org - add settings-schema.json change for keybinding to open menu
+  * menu@cinnamon.org - allow end-user control of favorite, category and application icon sizes
+
+  [ Michael Webster ]
+  * sound applet: Always initialize the look and shuffle controls - the player may not initialize them until later.  The can be hidden/shown according to both the player capabilities and the setting.
+  * Support nvidia on-demand app launching in the menu, panel launcher, and gwl applets.
+  * grouped-window-list: Don't show the offload menu item if the app already has windows.
+
+  [ Eli Schwartz ]
+  * flake8: remove useless double or unneeded imports
+
+  [ Mihail Bodrov ]
+  * backgroundManager: refactor from prototype to es class
+
+  [ Garry Filakhtov ]
+  * Fixing gtk-doc build without cinnamon-recorder
+
+  [ Michael Webster ]
+  * cs_desktop.py: Remove stray print statement.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+  * l10n: Generate files
+  * l10n: Generate module files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 13 May 2020 14:11:56 +0100
+
+cinnamon (4.4.8) tricia; urgency=medium
+
+  * Calendar applet: Fix clock format msgid
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 07 Jan 2020 09:41:42 +0000
+
+cinnamon (4.4.7) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * window-list applet: thumbnails - only fetch the window actor once, instead of each time it's used.
+  * cs_themes.py: theme_path is not guaranteed to be non-null so it needs to be checked before using os.path.exists() (which isn't null-safe).
+  * runDialog.js: Don't test a null string when attempting absolute path execution.
+  * runDialog.js: Restore implicit home folder location when the entry starts with neither a ~ or /.
+
+  [ Clement Lefebvre ]
+  * l10n: Adjust date format
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 06 Jan 2020 10:26:35 +0000
+
+cinnamon (4.4.6) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * grouped-window-list: Add listener for workspace changes that do not precede the MetaDisplay's 'window-created' signal.
+  * cs_info.py: Show a busy indicator on the Upload button while the upload-system-info script is running.
+  * runDialog.js: allow navigating completions using the arrow keys.
+  * runDialog.js: When the completion list is open and enter is hit, only execute the line immediately if the path is to a folder, otherwise close the completion list while leaving the last selected completion appended to the original entry contents.  This allows arguments to be added by the user.
+  * runDialog.js: Expand ~ to the home path when tabbing for completions, and when executing the command line, expand ~ always.
+  * cs_themes.py: Change how the gtk3 css override file is handled.
+  * issue template: Add a section to attach xlet configuration if relevant.
+
+  [ JosephMcc ]
+  * cs_sound.py: Allow previewing the sound even when disabled
+
+  [ Clement Lefebvre ]
+  * Revert "GWL: Remove hotkeys"
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 28 Dec 2019 12:01:06 +0000
+
+cinnamon (4.4.5) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * launchers, window list applets: Use the same applet removal confirmation that other applets use.
+  * menu applet: Override the default key-press-handler for the popup menu so pressing escape to close the menu doesn't animate.
+
+  [ Stephen Collins ]
+  * Settings: add missing widget import (#9016)
+
+  [ Clement Lefebvre ]
+  * Panel: Raise text size upper limit to 16pt
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 12 Dec 2019 11:46:55 +0000
+
+cinnamon (4.4.4) tricia; urgency=medium
+
+  [ James Ross ]
+  * menu-applet: fix order of places
+
+  [ Michael Webster ]
+  * cinnamonEntry.js: Fixes for the copy/paste popup.
+  * runDialog.js: Don't do anything if enter is pressed with an entry that is empty (or has only whitespace).
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 10 Dec 2019 10:17:37 +0000
+
+cinnamon (4.4.3) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * grouped-window-list@cinnamon.org: Listen to MetaDisplay's window-created signal for adding new windows.
+  * grouped-window-list@cinnamon.org: Simplify updating when the pinned apps list changes.
+  * grouped-window-list@cinnamon-org: Apply title-display pref changes to all workspaces.
+  * cs_startup.py: Make certain that icons are the correct size - when an icon doesn't exist except as a larger size, it can sometimes ignore the GtkIconSize request.
+  * cs_startup.py: Scroll to and select the new row when an entry is added.
+  * cinnamon-settings: Use the 'gnome-disks' icon for the Disks utility.
+  * i18n: run generate_additional_files.py to update a couple of desktop file translations.
+
+  [ Ellis Hoag ]
+  * cinnamon-settings: Fix missing backgrounds issue (#8996)
+
+  [ Michael Webster ]
+  * xapp-status@cinnamon.org: Switch to a themeable container and give (#8997)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 04 Dec 2019 16:22:09 +0000
+
+cinnamon (4.4.2) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * settings@cinnamon.org: Fix applet, Panel.populateSettingsMenu was removed during work on the panel menu.
+  * window-list@cinnamon.org: Don't fetch the metaWindow's actor until it's needed, it isn't always there initially.  This also allows recovery on subsequent attempts if null is returned once.
+
+  [ Stephen Collins ]
+  * SettingsWidgets.py: remove duplicate IconChooser widget
+
+  [ Clement Lefebvre ]
+  * cs_backgrounds: Use symbolic icons in sidebar
+
+  [ Stephen Collins ]
+  * GWL: fix focus stealing when the previews are showing (#8984)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 28 Nov 2019 20:07:50 +0000
+
+cinnamon (4.4.1) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * startup: Change the startup effect, and allow a logo icon name or path to be displayed based on a settings key.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 25 Nov 2019 16:22:07 +0000
+
+cinnamon (4.4.0) tricia; urgency=medium
 
   [ Steve M ]
   * Stock theme - improve modal and run dialog layout (#8740)
@@ -56,7 +2069,241 @@ cinnamon (4.3.0) UNRELEASED; urgency=medium
   [ Clement Lefebvre ]
   * Fix cs_privacy in LMDE3
 
- -- Clement Lefebvre <root@linuxmint.com>  Wed, 04 Sep 2019 10:49:36 +0100
+  [ JosephMcc ]
+  * Add a display settings python module (#8829)
+
+  [ Sander Steenhuis ]
+  * cin-debug: Fix time code (#8812)
+
+  [ claudiux ]
+  * xlet-settings.py - Adding option to reload the xlet in the burger menu of its configuration screen (#8818)
+
+  [ Germán Franco ]
+  * Notifications: add support for silent notifications (#8825)
+  * Enable management of system-wide extensions through the spices settings UI (#8827)
+  * Spices.py: don't try to load themes twice (#8828)
+
+  [ Clement Lefebvre ]
+  * Panel: Rework context menu
+  * Remove unecessary npm/gulp files
+
+  [ Simon Brown ]
+  * panel: minor corrections after context menu change (#8840)
+
+  [ Stephen Collins ]
+  * cs_default.py: fix missing declaration causing crash when desc not found (#8855)
+
+  [ Clement Lefebvre ]
+  * Panel context menu: Re-add system settings
+
+  [ Michael Webster ]
+  * xapp-status applet: Update to utilize XAppStatusIconMonitor.
+  * system tray: Keep the _NET_SYSTEM_TRAY_ORIENTATION window property in sync with the orientation of the panel our systray applet resides on.
+  * xapp-status applet: Hide icon labels in a vertical panel.
+  * xapp-status applet: Display icons in a consistent order.
+  * xapp-status applet: sort symbolic after color icons.
+
+  [ claudiux ]
+  * Fix translation issues (#8739)
+
+  [ Simon Brown ]
+  * Workspace switcher : remove arbitrary cutover to buttons (#8757)
+
+  [ itzexor ]
+  * menu applet: break out app loading into its own file
+
+  [ James Ross ]
+  * menu applet: remove some pointless state tracking
+  * menu applet: code cleanup
+  * menu applet: always reuse vectorBox actor
+  * menu applet: SimpleMenuItem docs/helper funcs
+  * menu applet: finish adding SMI type strings
+  * menu applet: small searching optimizations
+  * menu applet: don't close context menu when deleting favorite
+  * menu applet: refreshless and more consistent icon settings
+  * menu applet: rework refreshing
+  * menu applet: allow turning off recent category
+
+  [ itzexor ]
+  * window-list: use SignalManager more
+  * panel-launchers: add destroy() to launcher object
+
+  [ Pyroxar ]
+  * System Settings: Add gnome-disks (#8839)
+
+  [ Germán Franco ]
+  * Calc search provider example: copy result on activate (#8847)
+
+  [ James Ross ]
+  * main.js: remove dead code and style cleanup (#8848)
+
+  [ Clement Lefebvre ]
+  * GWL: Remove list-monitor-windows
+  * GWL: Remove show-pinned
+  * GWL: Remove system favorites
+  * GWL: Remove show-alert
+  * GWL: Remove icon spacing
+  * GWL: Remove hotkeys
+
+  [ Michael Webster ]
+  * xapp-status applet: Refactor/optimize for better readability.
+
+  [ dutta64 ]
+  * Fix window closing for windows quick list applet. Truncate titles. (#8844)
+
+  [ Michael Webster ]
+  * cs_mouse: Expose disable-with-external-mouse touchpad setting.
+  * popupMenu.js: Update the position of a menu even when not animating.
+
+  [ Stephen Collins ]
+  * Expose new features in the XAppIconChooserDialog to the settings widget (#8885)
+
+  [ Clement Lefebvre ]
+  * SettingsWidgets: Rename custom to icon_categories
+  * SettingsWidgets: Add a default_category for icon_chooser widgets
+  * Calendar applet: Fix date format
+
+  [ Michael Webster ]
+  * xapp-status@cinnamon.org: Add proper style classes to the default theme, Fix some spacing issues in horizontal and vertical orientations, fix icon sizing, some general refactoring.
+  * xapp-status@cinnamon.org: Use applet-box style class for individual icons.
+
+  [ Clement Lefebvre ]
+  * Configuration: Remove bluetooth@cinnamon.org from enabled-applets
+
+  [ James Ross ]
+  * window-list: fixups (#8894)
+
+  [ Steve M ]
+  * cs_info: Wrap labels (#8869)
+
+  [ Michael Webster ]
+  * xapp-status@cinnamon.org: clean up leftover style class  (removed in 5c87fd7f8d).
+
+  [ claudiux ]
+  * ExtensionCore.py: Add a sort by available update (#8902)
+
+  [ Norbert Preining ]
+  * cinnamon-launcher: Allow to disable user spices (#8873)
+
+  [ Clement Lefebvre ]
+  * cinnamon-launcher: Beautify dialog and msgids
+  * GWL: Switch launch animation to scale
+
+  [ claudiux ]
+  * cinnamon-settings: add 'update' to --sort option available values (#8927)
+
+  [ James Ross ]
+  * dnd.js: add animation done callback support to placeholder (#8868)
+  * extension.js: fix variable scope regression (#8930)
+
+  [ Stephen Collins ]
+  * settings.js: allow distributions to override individual settings keys (#8919)
+
+  [ Michael Webster ]
+  * network applet: Remove the rescan button, instead trigger a scan when the menu is opened.
+
+  [ James Ross ]
+  * menu-applet: don't show user-hidden categories
+  * window-list: don't flash focused windows
+
+  [ itzexor ]
+  * util: add escapeRegExp utility function
+
+  [ James Ross ]
+  * menu-applet: escape user input before using in RegExp
+
+  [ Lars Mueller ]
+  * Fix: Handle GFileIcon file changes This monitors file changes for GFileIcon and updates the StIcon accordingly
+
+  [ Michael Webster ]
+  * cinnamon-global: Notify muffin when the ui_scale changes, so window decorations and pointer size can be updated properly.
+  * xapp-status applet: Remove an invalid comment argument.
+  * js: Use global.ui_scale instead of checking the theme context for the scale factor.
+
+  [ hipoloco ]
+  * Apply HighContrast theme in WM (#8939)
+
+  [ itzexor ]
+  * panel-launchers: add support for add/move without reload
+  * dnd/applets: don't use two names for one thing
+  * panel-launchers: rework DND
+
+  [ Eli Schwartz ]
+  * Cinnamon-0.1.typelib: do not link to libnm typelib
+
+  [ Michael Webster ]
+  * panel-launcher applet: Add a slight transition effect for dragging items.
+
+  [ Stephen Collins ]
+  * cs_calendar.py Port the remaining date/time settings to python
+
+  [ Michael Webster ]
+  * accessibility settings: Add some padding around dependency labels.
+
+  [ Clement Lefebvre ]
+  * Python: Switch cgi.escape to html.escape
+
+  [ hipoloco ]
+  * a11y applet: don't display "Screen reader" button when gnome-orca is not installed (#8954)
+
+  [ OneQuid ]
+  * Dialog: Treat Escape key as Gtk.Response.NO (#8960)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+  * l10n: Generate files
+
+  [ Michael Webster ]
+  * messageTray.js: remove an old hack that was messing up notification timeout accounting.
+  * window-list applet: Remove window-actor check during window-monitor- changed.
+  * messageTray.js: Cancel a timeout instead of just zeroing out the id, this can cause the callback to issue well after the notification has been destroyed.
+
+  [ James Ross ]
+  * window-list: proper fix for incorrect flashing (#8968)
+
+  [ Stephen Collins ]
+  * cs_themes.py: speed up loading of the icon for the icon theme widget
+
+  [ Garry Filakhtov ]
+  * Make the libnm library optional (#8617)
+
+  [ Michael Webster ]
+  * Panel: Configurable size per zone for text and symbolic icons (#8971)
+
+  [ okaestne ]
+  * cinnamon-settings.py: fix ctrl+c
+  * cinnamon-settings.py: remove unused vars and formatting
+  * ExtensionCore.py: replace GtkDialog with GtkInfoBar for outdated cache
+  * ExtensionCore.py: generate download spices tab on demand
+
+  [ Eli Schwartz ]
+  * Revert the incorrect and problematic addition of overlinking in Cinnamon-0.1.gir (#8972)
+
+  [ James Ross ]
+  * sound-applet: don't error when missing input or output
+  * sound-applet: dbus fixes
+  * sound-applet: clean up callbacks
+  * sound-applet: default next/previous controls to unsupported
+  * sound-applet: consume event properly on button press
+
+  [ Michael Webster ]
+  * sound applet: Remove call to nonexistent method.
+
+  [ Stephen Collins ]
+  * cinnamon-settings: migrate to using python-xapp widgets and remove dups
+
+  [ Michael Webster ]
+  * control: Add python3-xapp dependency.
+  * SettingsWidgets.py: Re-apply 9cc821bd9793 due to refactoring from python-xapp move (be7fd9da917322).
+  * cs_calendar.py: Use python3.5-compatible api for localizing time for lmde3.
+
+  [ Eli Schwartz ]
+  * fix regression in ExtensionCore not working when updates are available (#8964)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 22 Nov 2019 21:18:09 +0000
 
 cinnamon (4.2.3) tina; urgency=medium
 

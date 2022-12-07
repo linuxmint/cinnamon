@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 
 class Module:
@@ -24,10 +25,6 @@ class Module:
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            sync_method = [["none", _("None")], ["fallback", "Fallback"], ["swap_throttling", "Swap Throttling"], ["presentation_time", "Presentation Time"]]
-            widget = GSettingsComboBox(_("VSync method"), "org.cinnamon.muffin", "sync-method", sync_method, size_group=size_group)
-            settings.add_row(widget)
-
             switch = GSettingsSwitch(_("Disable compositing for full-screen windows"), "org.cinnamon.muffin", "unredirect-fullscreen-windows")
             switch.set_tooltip_text(_("Select this option to let full-screen applications skip the compositing manager and run at maximum speed. Unselect it if you're experiencing screen-tearing in full screen mode."))
             settings.add_row(switch)
@@ -40,5 +37,13 @@ class Module:
             spin = GSettingsSpinButton(_("Timer delay"), "org.cinnamon.SessionManager", "quit-time-delay", _("seconds"), 0, 36000, 1, 60)
             settings.add_reveal_row(spin, "org.cinnamon.SessionManager", "quit-delay-toggle")
 
-            switch = GSettingsSwitch(_("Enable support for indicators (Requires Cinnamon restart)"), "org.cinnamon", "enable-indicators")
+            settings = page.add_section(_("Memory limit"))
+
+            switch = GSettingsSwitch(_("Restart Cinnamon when it uses too much memory"), "org.cinnamon.launcher", "memory-limit-enabled")
             settings.add_row(switch)
+
+            spin = GSettingsSpinButton(_("Memory limit"), "org.cinnamon.launcher", "memory-limit", _("MB"), 1024, 36000, 1, 100)
+            settings.add_reveal_row(spin, "org.cinnamon.launcher", "memory-limit-enabled")
+
+            spin = GSettingsSpinButton(_("Check frequency"), "org.cinnamon.launcher", "check-frequency", _("seconds"), 1, 86400, 1, 60)
+            settings.add_reveal_row(spin, "org.cinnamon.launcher", "memory-limit-enabled")

@@ -23,10 +23,10 @@ let MAX_THUMBNAIL_SCALE = 0.9;
 const POINTER_LEAVE_MILLISECONDS_GRACE = 500;
 const POINTER_ENTER_MILLISECONDS_GRACE = 150;
 const RESCALE_ANIMATION_TIME = 0.2;
-const SLIDE_ANIMATION_TIME = 0.3;
+const SLIDE_ANIMATION_TIME = 300;
 const INACTIVE_OPACITY = 120;
-const REARRANGE_TIME_ON = 0.1;
-const REARRANGE_TIME_OFF = 0.3;
+const REARRANGE_TIME_ON = 100;
+const REARRANGE_TIME_OFF = 300;
 const ICON_OPACITY = Math.round(255 * 0.9);
 const ICON_SIZE = 128;
 const ICON_OFFSET = -5;
@@ -52,7 +52,7 @@ ExpoWindowClone.prototype = {
         this.refreshClone();
         this._signalManager = new SignalManager.SignalManager(null);
 
-        this._signalManager.connect(this.realWindow, 'size-changed', this.onSizeChanged, this);
+        this._signalManager.connect(this.realWindow, 'notify::size', this.onSizeChanged, this);
         this._signalManager.connect(this.metaWindow, 'workspace-changed', function(w, oldws) {
             this.emit('workspace-changed', oldws);
         }, this);
@@ -74,6 +74,7 @@ ExpoWindowClone.prototype = {
         }));
 
         let pointerTracker = new PointerTracker.PointerTracker();
+
         this.actor.connect('motion-event', Lang.bind(this, function (actor, event) {
             if (pointerTracker.hasMoved()) {
                 this.emit('hovering', true);
@@ -219,7 +220,7 @@ ExpoWindowClone.prototype = {
         this.killUrgencyTimeout();
         this.disconnectAttentionSignals();
         this.actor.destroy();
-        this.icon.destroy();
+        this.icon = null;
     },
 
     onPositionChanged: function() {
@@ -244,12 +245,19 @@ ExpoWindowClone.prototype = {
     },
 
     onButtonRelease : function (actor, event) {
-        if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK) ||
-            (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK))
+        const state = Cinnamon.get_event_state(event);
+
+        if (state !== 0) {
+            return true;
+        }
+
+        const button = event.get_button();
+
+        if ([Clutter.BUTTON_PRIMARY, Clutter.BUTTON_SECONDARY].includes(button))
         {
             this.emit('selected', event.get_time());
         }
-        if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK))
+        else if (button == Clutter.BUTTON_MIDDLE)
         {
             this.emit('middle-button-release', event.get_time());
         }
@@ -331,15 +339,20 @@ ExpoWorkspaceThumbnail.prototype = {
                 if (timeElapsed > 500) {
                     return true;
                 }
-                let evstate = Cinnamon.get_event_state(event);
-                if ((evstate & Clutter.ModifierType.BUTTON1_MASK) ||
-                        (evstate & Clutter.ModifierType.BUTTON3_MASK))
+
+                const state = Cinnamon.get_event_state(event);
+                if (state !== 0) {
+                    return false;
+                }
+
+                const button = event.get_button();
+                if ([Clutter.BUTTON_PRIMARY, Clutter.BUTTON_SECONDARY].includes(button))
                 {
-                   this.activate(null, event.get_time());
+                    this.activate(null, event.get_time());
                     return true;
-                } else if (evstate & Clutter.ModifierType.BUTTON2_MASK) {
+                } else if (button === Clutter.BUTTON_MIDDLE) {
                     this.remove();
-                    return true;                
+                    return true;
                 }
                 return false;
             }));
@@ -351,8 +364,10 @@ ExpoWorkspaceThumbnail.prototype = {
                                      can_focus: true });                
         this.title._spacing = 0; 
         this.titleText = this.title.clutter_text;        
+        this.titleText.editable = false;
         this.titleText.connect('key-press-event', Lang.bind(this, this.onTitleKeyPressEvent)); 
         this.titleText.connect('key-focus-in', Lang.bind(this, function() {
+            this.titleText.editable = true;
             this.origTitle = Main.getWorkspaceName(this.metaWorkspace.index());
         })); 
         this.titleText.connect('key-focus-out', Lang.bind(this, function() {
@@ -375,7 +390,7 @@ ExpoWorkspaceThumbnail.prototype = {
         this.background = new Clutter.Group();
         this.contents.add_actor(this.background);
 
-        let desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
+        let desktopBackground = Meta.X11BackgroundActor.new_for_display(global.display);
         this.background.add_actor(desktopBackground);
 
         let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
@@ -389,7 +404,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this.shader.opacity = INACTIVE_OPACITY;
 
-        if (metaWorkspace == global.screen.get_active_workspace())
+        if (metaWorkspace == global.workspace_manager.get_active_workspace())
             this.shader.opacity = 0;
 
         let windows = global.get_window_actors().filter(this.isMyWindow, this);
@@ -407,9 +422,9 @@ ExpoWorkspaceThumbnail.prototype = {
                                                           Lang.bind(this, this.windowAdded));
         let windowRemovedId = this.metaWorkspace.connect('window-removed',
                                                            Lang.bind(this, this.windowRemoved));
-        let windowEnteredMonitorId = global.screen.connect('window-entered-monitor',
+        let windowEnteredMonitorId = global.display.connect('window-entered-monitor',
             Lang.bind(this, this.windowEnteredMonitor));
-        let windowLeftMonitorId = global.screen.connect('window-left-monitor',
+        let windowLeftMonitorId = global.display.connect('window-left-monitor',
             Lang.bind(this, this.windowLeftMonitor));
 
         let setOverviewModeId = box.connect('set-overview-mode', Lang.bind(this, function(box, turnOn) {
@@ -419,16 +434,16 @@ ExpoWorkspaceThumbnail.prototype = {
         let stickyAddedId = box.connect('sticky-detected', Lang.bind(this, function(box, metaWindow) {
             this.doAddWindow(metaWindow);
         }));
-        let restackedNotifyId = global.screen.connect('restacked', Lang.bind(this, this.onRestack));
+        let restackedNotifyId = global.display.connect('restacked', Lang.bind(this, this.onRestack));
 
         this.disconnectOtherSignals = function() {
-            global.screen.disconnect(restackedNotifyId);
+            global.display.disconnect(restackedNotifyId);
             this.box.disconnect(setOverviewModeId);
             this.box.disconnect(stickyAddedId);
             this.metaWorkspace.disconnect(windowAddedId);
             this.metaWorkspace.disconnect(windowRemovedId);
-            global.screen.disconnect(windowEnteredMonitorId);
-            global.screen.disconnect(windowLeftMonitorId);
+            global.display.disconnect(windowEnteredMonitorId);
+            global.display.disconnect(windowLeftMonitorId);
         };
         
         this.isActive = false;
@@ -484,8 +499,10 @@ ExpoWorkspaceThumbnail.prototype = {
     onTitleKeyPressEvent: function(actor, event) {
         this.undoTitleEdit = false;
         let symbol = event.get_key_symbol();
-        if (symbol === Clutter.Return || symbol === Clutter.Escape) {
-            if (symbol === Clutter.Escape) {
+        if (symbol === Clutter.KEY_Return ||
+            symbol === Clutter.KEY_KP_Enter ||
+            symbol === Clutter.KEY_Escape) {
+            if (symbol === Clutter.KEY_Escape) {
                 this.undoTitleEdit = true;
             }
             global.stage.set_key_focus(this.actor);
@@ -495,7 +512,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
    
     activateWorkspace: function() {
-        if (this.metaWorkspace != global.screen.get_active_workspace())
+        if (this.metaWorkspace != global.workspace_manager.get_active_workspace())
             this.metaWorkspace.activate(global.get_current_time());
         Main.expo.hide();
     },
@@ -609,8 +626,14 @@ ExpoWorkspaceThumbnail.prototype = {
 
         // We might have the window in our list already if it was on all workspaces and
         // now was moved to this workspace
-        if (this.lookupIndex (metaWin) != -1)
+        let winCloneIndex = this.lookupIndex(metaWin);
+        if (winCloneIndex !== -1) {
+            // the window's position on the workspace may have changed (dragging to a different monitor)
+            // update its original location so overview on/off position correctly.
+            this.windows[winCloneIndex].origX = win.x;
+            this.windows[winCloneIndex].origY = win.y;
             return;
+        }
 
         if (!this.isMyWindow(win) || !this.isExpoWindow(win))
             return;
@@ -759,7 +782,13 @@ ExpoWorkspaceThumbnail.prototype = {
                 windows.push(window);
             }
             else {
-                Tweener.addTween(window.actor, {scale_x: 0, scale_y: 0, time: REARRANGE_TIME_ON, transition: 'easeOutQuad', onComplete: window.actor.hide});
+                window.actor.ease({
+                    scale_x: 0,
+                    scale_y: 0,
+                    duration: Main.animations_enabled ? REARRANGE_TIME_ON : 0,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => window.actor.hide()
+                });
             }
         }, this);
 
@@ -797,14 +826,18 @@ ExpoWorkspaceThumbnail.prototype = {
                 window.icon.set_scale(iconScale, iconScale);
                 let [iconX, iconY] = [ICON_OFFSET / this.box.scale/scale, ICON_OFFSET / this.box.scale/scale];
                 window.icon.set_position(iconX, iconY);
-                Tweener.addTween(window.actor, {
-                    x: x, y: y, scale_x: scale, scale_y: scale,
+                window.actor.ease({
+                    x: x,
+                    y: y,
+                    scale_x: scale,
+                    scale_y: scale,
                     opacity: 255,
-                    time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
-                    onComplete: function() {
+                    duration: Main.animations_enabled ? REARRANGE_TIME_ON : 0,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => {
                         window.actor.show();
                         window.icon.show();
-                        }
+                    }
                 });
                 col++;
                 if (col > nCols){
@@ -836,12 +869,13 @@ ExpoWorkspaceThumbnail.prototype = {
                 window.showUrgencyState();
                 window.icon.hide();
                 window.actor.show();
-                Tweener.addTween(window.actor, {
+                window.actor.ease({
                     x: window.origX,
                     y: window.origY,
                     scale_x: 1, scale_y: 1,
                     opacity: window.metaWindow.showing_on_its_workspace() ? 255 : 127,
-                    time: rearrangeTime, transition: 'easeOutQuad'
+                    duration: Main.animations_enabled ? rearrangeTime : 0,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
                 });
             }, this);
         }, this);
@@ -868,18 +902,27 @@ ExpoWorkspaceThumbnail.prototype = {
         if (clone && clone.metaWindow != null){
             Main.activateWindow(clone.metaWindow, time, this.metaWorkspace.index());
         }
-        if (this.metaWorkspace != global.screen.get_active_workspace())
+        if (this.metaWorkspace != global.workspace_manager.get_active_workspace())
             this.metaWorkspace.activate(time);
         Main.expo.hide();
     },
 
     shade : function (force){
-        if (!this.isSelected || force)
-            Tweener.addTween(this.shader, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
+        if (!this.isSelected || force) {
+            this.shader.ease({
+                opacity: INACTIVE_OPACITY,
+                duration: Main.animations_enabled ? SLIDE_ANIMATION_TIME : 0,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD
+            });
+        }
     },
 
     highlight : function (){
-        Tweener.addTween(this.shader, {opacity: 0, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
+        this.shader.ease({
+            opacity: 0,
+            duration: Main.animations_enabled ? SLIDE_ANIMATION_TIME : 0,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
+        });
     },
 
     remove : function (){
@@ -887,7 +930,7 @@ ExpoWorkspaceThumbnail.prototype = {
             // this workspace is already being removed
             return;
         }
-        if (global.screen.n_workspaces <= 1) {
+        if (global.workspace_manager.n_workspaces <= 1) {
             return;
         }
         let removeAction = Lang.bind(this, function() {
@@ -1013,7 +1056,6 @@ ExpoThumbnailsBox.prototype = {
                                                   request_mode: Clutter.RequestMode.WIDTH_FOR_HEIGHT });
         this.actor.connect('get-preferred-width', Lang.bind(this, this.getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this.getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this.allocate));
 
         // When we animate the scale, we don't animate the requested size of the thumbnails, rather
         // we ask for our final size and then animate within that size. This slightly simplifies the
@@ -1072,14 +1114,14 @@ ExpoThumbnailsBox.prototype = {
             height: global.screen_height
             };
 
-        this.kbThumbnailIndex = global.screen.get_active_workspace_index();
+        this.kbThumbnailIndex = global.workspace_manager.get_active_workspace_index();
         
         // apparently we get no direct call to show the initial
         // view, so we must force an explicit overviewMode On/Off display
         // after it has been allocated
-        let allocId = this.connect('allocated', Lang.bind(this, function() {
+        let allocId = this.connect('notify::allocation', Lang.bind(this, function() {
             this.disconnect(allocId);
-            Mainloop.timeout_add(0, Lang.bind(this, function() {
+            Mainloop.timeout_add(100, Lang.bind(this, function() {
                 this.emit('set-overview-mode', forceOverviewMode === 1);
                 this.thumbnails[this.kbThumbnailIndex].showKeyboardSelectedState(true);
             }));
@@ -1090,7 +1132,8 @@ ExpoThumbnailsBox.prototype = {
             this.emit('set-overview-mode', forceOverviewMode === 1);
         };
         this.actor.connect('button-release-event', Lang.bind(this, function(actor, event) {
-            if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
+            if (Cinnamon.get_event_state(event) === 0 &&
+                    event.get_button() == Clutter.BUTTON_MIDDLE) {
                 this.toggleGlobalOverviewMode();
             }
         }));
@@ -1101,16 +1144,16 @@ ExpoThumbnailsBox.prototype = {
             global.window_manager.connect('switch-workspace',
                                           Lang.bind(this, this.activeWorkspaceChanged));
 
-        this.workspaceAddedId = global.screen.connect('workspace-added', Lang.bind(this, function(screen, index) {
+        this.workspaceAddedId = global.workspace_manager.connect('workspace-added', Lang.bind(this, function(screen, index) {
             this.addThumbnails(index, 1);
         }));
-        this.workspaceRemovedId = global.screen.connect('workspace-removed', Lang.bind(this, function() {
+        this.workspaceRemovedId = global.workspace_manager.connect('workspace-removed', Lang.bind(this, function() {
             this.button.hide();
 
             // just handling the single workspace removed is not enough
             let removedCount = 0;
             this.thumbnails.forEach(function(thumbnail, i) {
-                let metaWorkspace = global.screen.get_workspace_by_index(i-removedCount);
+                let metaWorkspace = global.workspace_manager.get_workspace_by_index(i-removedCount);
                 if (thumbnail.metaWorkspace != metaWorkspace) {
                     ++removedCount;
                     if (thumbnail.state <= ThumbnailState.NORMAL) {
@@ -1125,7 +1168,9 @@ ExpoThumbnailsBox.prototype = {
         for (let key in ThumbnailState)
             this.stateCounts[ThumbnailState[key]] = 0;
 
-        this.addThumbnails(0, global.screen.n_workspaces);
+        this.addThumbnails(0, global.workspace_manager.n_workspaces);
+        this.actor.connect('allocate', Lang.bind(this, this.allocate));
+
         this.button.raise_top();
 
         global.stage.set_key_focus(this.actor);
@@ -1135,18 +1180,19 @@ ExpoThumbnailsBox.prototype = {
         let modifiers = Cinnamon.get_event_state(event);
         let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
         let symbol = event.get_key_symbol();
-        if (symbol === Clutter.Return || symbol === Clutter.KEY_space 
-            || symbol === Clutter.KP_Enter)
+        if (symbol === Clutter.KEY_Return ||
+            symbol === Clutter.KEY_KP_Enter ||
+            symbol === Clutter.KEY_space)
         {
             this.activateSelectedWorkspace();
             return true;
         }
-        if (symbol === Clutter.F2) {
+        if (symbol === Clutter.KEY_F2) {
             this.editWorkspaceTitle();
             return true;
         }
 
-        if ((symbol === Clutter.o || symbol === Clutter.O) && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+        if ((symbol === Clutter.KEY_o || symbol === Clutter.KEY_O) && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             this.toggleGlobalOverviewMode();
             return true;
         }
@@ -1184,7 +1230,7 @@ ExpoThumbnailsBox.prototype = {
                 // OK
             }
             else {
-                index = symbol - Clutter.KP_1; // convert Num-pad '1' to index 0, etc
+                index = symbol - Clutter.KEY_KP_1; // convert Num-pad '1' to index 0, etc
                 if (index < 0 || index > 9) {
                     return false; // not handled
                 }
@@ -1207,8 +1253,8 @@ ExpoThumbnailsBox.prototype = {
 
     hide: function() {
         global.window_manager.disconnect(this.switchWorkspaceNotifyId);
-        global.screen.disconnect(this.workspaceAddedId);
-        global.screen.disconnect(this.workspaceRemovedId);
+        global.workspace_manager.disconnect(this.workspaceAddedId);
+        global.workspace_manager.disconnect(this.workspaceRemovedId);
 
         for (let w = 0; w < this.thumbnails.length; w++) {
             this.thumbnails[w].destroy();
@@ -1217,7 +1263,7 @@ ExpoThumbnailsBox.prototype = {
     },
 
     showButton: function(){
-        if (global.screen.n_workspaces <= 1)
+        if (global.workspace_manager.n_workspaces <= 1)
             return false;
         this.actor.queue_relayout();
         this.button.raise_top();
@@ -1231,11 +1277,11 @@ ExpoThumbnailsBox.prototype = {
                 thumbnail.actor.contains(event.get_related());
         }
         for (let k = start; k < start + count; k++) {
-            let metaWorkspace = global.screen.get_workspace_by_index(k);
+            let metaWorkspace = global.workspace_manager.get_workspace_by_index(k);
             let thumbnail = new ExpoWorkspaceThumbnail(metaWorkspace, this);
                                   
             this.thumbnails.push(thumbnail);
-            if (metaWorkspace == global.screen.get_active_workspace()) {
+            if (metaWorkspace == global.workspace_manager.get_active_workspace()) {
                 this.lastActiveWorkspace = thumbnail;
                 thumbnail.setActive(true);
             }
@@ -1372,7 +1418,7 @@ ExpoThumbnailsBox.prototype = {
 
                 Tweener.addTween(thumbnail,
                                  { slidePosition: 1,
-                                   time: SLIDE_ANIMATION_TIME,
+                                   time: SLIDE_ANIMATION_TIME / 1000,
                                    transition: 'linear',
                                    onComplete: function() {
                                        this.setThumbnailState(thumbnail, ThumbnailState.ANIMATED_OUT);
@@ -1431,7 +1477,7 @@ ExpoThumbnailsBox.prototype = {
                 this.setThumbnailState(thumbnail, ThumbnailState.ANIMATING_IN);
                 Tweener.addTween(thumbnail,
                                  { slidePosition: 0,
-                                   time: SLIDE_ANIMATION_TIME,
+                                   time: SLIDE_ANIMATION_TIME / 1000,
                                    transition: 'easeOutQuad',
                                    onComplete: function() {
                                        this.setThumbnailState(thumbnail, ThumbnailState.NORMAL);
@@ -1500,7 +1546,7 @@ ExpoThumbnailsBox.prototype = {
             return;
 
         let spacing = this.actor.get_theme_node().get_length('spacing');
-        let nWorkspaces = global.screen.n_workspaces;
+        let nWorkspaces = global.workspace_manager.n_workspaces;
         let totalSpacing = (nWorkspaces - 1) * spacing;
 
         let avail = Main.layoutManager.primaryMonitor.width - totalSpacing;
@@ -1525,7 +1571,7 @@ ExpoThumbnailsBox.prototype = {
         // to the actual number of current workspaces, we just animate within that
 
         let spacing = this.actor.get_theme_node().get_length('spacing');
-        let nWorkspaces = global.screen.n_workspaces;
+        let nWorkspaces = global.workspace_manager.n_workspaces;
         let totalSpacing = (nWorkspaces - 1) * spacing;
 
         let avail = Main.layoutManager.primaryMonitor.width - totalSpacing;
@@ -1592,7 +1638,7 @@ ExpoThumbnailsBox.prototype = {
         let childBox = new Clutter.ActorBox();
         
         let calcPaddingX = function(nCols) {
-            let neededX = (thumbnailWidth * nCols) + totalSpacingX + (spacing * 2);
+            let neededX = (thumbnailWidth * nCols) + (spacing * (nCols + 1));
             let extraSpaceX = (box.x2 - box.x1) - neededX;
             return spacing + extraSpaceX/2;
         };
@@ -1680,16 +1726,17 @@ ExpoThumbnailsBox.prototype = {
         childBox.y2 = childBox.y1 + buttonHeight;
         
         this.button.allocate(childBox, flags);
+
         this.emit('allocated');
     },
 
     activeWorkspaceChanged: function(wm, from, to, direction) {
         this.thumbnails[this.kbThumbnailIndex].showKeyboardSelectedState(false);
-        this.kbThumbnailIndex = global.screen.get_active_workspace_index();
+        this.kbThumbnailIndex = global.workspace_manager.get_active_workspace_index();
         this.thumbnails[this.kbThumbnailIndex].showKeyboardSelectedState(true);
 
         let thumbnail;
-        let activeWorkspace = global.screen.get_active_workspace();
+        let activeWorkspace = global.workspace_manager.get_active_workspace();
         for (let i = 0; i < this.thumbnails.length; i++) {
             if (this.thumbnails[i].metaWorkspace == activeWorkspace) {
                 thumbnail = this.thumbnails[i];

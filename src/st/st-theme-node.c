@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "st-settings.h"
 #include "st-theme-private.h"
 #include "st-theme-context.h"
 #include "st-theme-node-private.h"
@@ -39,8 +40,6 @@ static const ClutterColor DEFAULT_WARNING_COLOR = { 0xf5, 0x79, 0x3e, 0xff };
 static const ClutterColor DEFAULT_ERROR_COLOR = { 0xcc, 0x00, 0x00, 0xff };
 
 static double resolution = -1.0;
-
-extern gfloat st_slow_down_factor;
 
 G_DEFINE_TYPE (StThemeNode, st_theme_node, G_TYPE_OBJECT)
 
@@ -469,8 +468,10 @@ ensure_properties (StThemeNode *node)
       if (node->theme)
         {
           properties = _st_theme_get_matched_properties (node->theme, node);
-          if ((!properties || properties->len == 0) && node->important)
-            properties = _st_theme_get_matched_properties_fallback (node->theme, node);
+          if (properties->len == 0 && node->important)
+            {
+              properties = _st_theme_get_matched_properties_fallback (node->theme, node, properties);
+            }
         }
 
       if (node->inline_style)
@@ -658,10 +659,14 @@ get_color_from_term (StThemeNode  *node,
   CRRgb rgb;
   enum CRStatus status;
 
+  if (term_is_inherit (term))
+    {
+      return VALUE_INHERIT;
+    }
   /* Since libcroco doesn't know about rgba colors, it can't handle
    * the transparent keyword
    */
-  if (term_is_transparent (term))
+  else if (term_is_transparent (term))
     {
       *color = TRANSPARENT_COLOR;
       return VALUE_FOUND;
@@ -689,9 +694,6 @@ get_color_from_term (StThemeNode  *node,
   status = cr_rgb_set_from_term (&rgb, term);
   if (status != CR_OK)
     return VALUE_NOT_FOUND;
-
-  if (rgb.inherit)
-    return VALUE_INHERIT;
 
   if (rgb.is_percentage)
     cr_rgb_compute_from_percentage (&rgb);
@@ -2304,19 +2306,65 @@ st_theme_node_get_margin (StThemeNode *node,
 int
 st_theme_node_get_transition_duration (StThemeNode *node)
 {
-  gdouble value;
+  StSettings *settings;
+  gdouble value = 0.0;
+  gdouble factor;
 
   g_return_val_if_fail (ST_IS_THEME_NODE (node), 0);
 
-  if (node->transition_duration > -1)
-    return st_slow_down_factor * node->transition_duration;
+  settings = st_settings_get ();
+  g_object_get (settings, "slow-down-factor", &factor, NULL);
 
-  value = 0.0;
+  if (node->transition_duration > -1)
+    return factor * node->transition_duration;
+
   st_theme_node_lookup_double (node, "transition-duration", FALSE, &value);
 
   node->transition_duration = (int)value;
 
-  return st_slow_down_factor * node->transition_duration;
+  return factor * node->transition_duration;
+}
+
+StIconStyle
+st_theme_node_get_icon_style (StThemeNode *node)
+{
+  int i;
+
+  ensure_properties (node);
+
+  for (i = node->n_properties - 1; i >= 0; i--)
+    {
+      CRDeclaration *decl = node->properties[i];
+
+      if (strcmp (decl->property->stryng->str, "-st-icon-style") == 0)
+        {
+          CRTerm *term;
+
+          for (term = decl->value; term; term = term->next)
+            {
+              if (term->type != TERM_IDENT)
+                goto next_decl;
+
+              if (strcmp (term->content.str->stryng->str, "requested") == 0)
+                return ST_ICON_STYLE_REQUESTED;
+              else if (strcmp (term->content.str->stryng->str, "regular") == 0)
+                return ST_ICON_STYLE_REGULAR;
+              else if (strcmp (term->content.str->stryng->str, "symbolic") == 0)
+                return ST_ICON_STYLE_SYMBOLIC;
+              else
+                g_warning ("Unknown -st-icon-style \"%s\"",
+                           term->content.str->stryng->str);
+            }
+        }
+
+    next_decl:
+      ;
+    }
+
+  if (node->parent_node)
+    return st_theme_node_get_icon_style (node->parent_node);
+
+  return ST_ICON_STYLE_REQUESTED;
 }
 
 StTextDecoration
@@ -2431,6 +2479,28 @@ st_theme_node_get_text_align(StThemeNode *node)
   if(node->parent_node)
     return st_theme_node_get_text_align(node->parent_node);
   return ST_TEXT_ALIGN_LEFT;
+}
+
+/**
+ * st_theme_node_get_letter_spacing:
+ * @node: a #StThemeNode
+ *
+ * Gets the value for the letter-spacing style property, in pixels.
+ *
+ * Return value: the value of the letter-spacing property, if
+ *   found, or zero if such property has not been found.
+ */
+gdouble
+st_theme_node_get_letter_spacing (StThemeNode *node)
+{
+  gdouble spacing = 0.;
+
+  g_return_val_if_fail (ST_IS_THEME_NODE (node), spacing);
+
+  ensure_properties (node);
+
+  st_theme_node_lookup_length (node, "letter-spacing", FALSE, &spacing);
+  return spacing;
 }
 
 static gboolean
@@ -2886,6 +2956,39 @@ st_theme_node_get_font (StThemeNode *node)
     pango_font_description_set_variant (node->font_desc, variant);
 
   return node->font_desc;
+}
+
+gchar *
+st_theme_node_get_font_features (StThemeNode *node)
+{
+  int i;
+
+  ensure_properties (node);
+
+  for (i = node->n_properties - 1; i >= 0; i--)
+    {
+      CRDeclaration *decl = node->properties[i];
+
+      if (strcmp (decl->property->stryng->str, "font-feature-settings") == 0)
+        {
+          CRTerm *term = decl->value;
+
+          if (!term->next && term->type == TERM_IDENT)
+            {
+              gchar *ident = term->content.str->stryng->str;
+
+              if (strcmp (ident, "inherit") == 0)
+                break;
+
+              if (strcmp (ident, "normal") == 0)
+                return NULL;
+            }
+
+          return (gchar *)cr_term_to_string (term);
+        }
+    }
+
+  return node->parent_node ? st_theme_node_get_font_features (node->parent_node) : NULL;
 }
 
 /**

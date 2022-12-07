@@ -8,14 +8,14 @@ const Tweener = imports.ui.tweener;
 const PopupMenu = imports.ui.popupMenu;
 const Applet = imports.ui.applet;
 const SignalManager = imports.misc.signalManager;
+const WindowUtils = imports.misc.windowUtils;
 
-const {each, findIndex, tryFn, unref, trySpawnCommandLine, spawn_async} = imports.misc.util;
+const {each, findIndex, tryFn, unref, trySpawnCommandLine, spawn_async, getDesktopActionIcon} = imports.misc.util;
 const {
     CLOSE_BTN_SIZE,
     CLOSED_BUTTON_STYLE,
     OPACITY_OPAQUE,
     RESERVE_KEYS,
-    ICON_NAMES,
     FavType,
     autoStartStrDir
 } = require('./constants');
@@ -107,7 +107,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 }
             }
             // Workspace
-            if ((length = global.screen.n_workspaces) > 1) {
+            if ((length = global.workspace_manager.n_workspaces) > 1) {
                 if (this.groupState.lastFocused && this.groupState.lastFocused.is_on_all_workspaces()) {
                     item = createMenuItem({label: _('Only on this workspace')});
                     this.signals.connect(item, 'activate', () => {
@@ -131,7 +131,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
                     let connectWorkspaceEvent = (ws, j) => {
                         this.signals.connect(ws, 'activate', () => {
-                            this.groupState.lastFocused.change_workspace(global.screen.get_workspace_by_index(j));
+                            this.groupState.lastFocused.change_workspace(global.workspace_manager.get_workspace_by_index(j));
                         });
                     };
                     for (let i = 0; i < length; i++) {
@@ -154,7 +154,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         }
 
         // Preferences
-        let subMenu = new PopupMenu.PopupSubMenuMenuItem(_('Preferences'));
+        let subMenu = new PopupMenu.PopupSubMenuMenuItem(_('Applet preferences'));
         this.addMenuItem(subMenu);
 
         item = createMenuItem({label: _('About...'), icon: 'dialog-question'});
@@ -166,9 +166,8 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         subMenu.menu.addMenuItem(item);
 
         item = createMenuItem({label: _("Remove '%s'").format(_("Grouped window list")), icon: 'edit-delete'});
-        this.signals.connect(item, 'activate', () => {
-            AppletManager._removeAppletFromPanel(this.state.uuid, this.state.instance_id);
-        });
+        this.signals.connect(item, 'activate', (actor, event) => this.state.trigger('removeApplet', event));
+
         subMenu.menu.addMenuItem(item);
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -181,7 +180,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 let defualtPlaces = this.listDefaultPlaces();
                 let bookmarks = this.listBookmarks();
                 let devices = this.listDevices();
-                let places = defualtPlaces.concat(bookmarks).concat(devices);
+                let places = [...defualtPlaces, ...bookmarks, ...devices];
                 let handlePlaceLaunch = (item, i) => {
                     this.signals.connect(item, 'activate', () => places[i].launch());
                 };
@@ -227,6 +226,15 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             }
         }
 
+        if (Main.gpu_offload_supported && !hasWindows) {
+            item = createMenuItem({label: _("Run with NVIDIA GPU"), icon: 'cpu'});
+
+            this.signals.connect(item, 'activate', () => this.groupState.trigger('launchNewInstance', true));
+
+            this.addMenuItem(item);
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        }
+
         // Actions
         tryFn(() => {
             if (!this.groupState.appInfo) return;
@@ -234,21 +242,9 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             if (actions) {
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
                 let handleAction = (action) => {
-                    let actionID = '';
-                    if (action.toUpperCase() === action) {
-                        actionID = action.toLowerCase();
-                    } else {
-                        // first letter lowercase, replace uppercase with _+lowercase
-                        actionID = action.charAt(0).toLowerCase() + action.slice(1);
-                        actionID = actionID.replace(/([A-Z])/g, '_$1').toLowerCase();
-                    }
-                    actionID = actionID.replace(/-/g, '_');
-
-                    let icon = 'application-x-executable';
-
-                    if (ICON_NAMES.hasOwnProperty(actionID)) {
-                        icon = ICON_NAMES[actionID];
-                    }
+                    let icon = getDesktopActionIcon(action);
+                    if (icon == null)
+                        icon = 'application-x-executable';
 
                     item = createMenuItem({
                         label: _(this.groupState.appInfo.get_action_name(action)),
@@ -265,14 +261,6 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                     this.addMenuItem(item);
                 }
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            }
-            if (this.state.settings.launchNewInstance && (!actions || actions.length === 0) && !isWindowBacked) {
-                item = createMenuItem({label: _('New Window'), icon: 'window-new'});
-                this.signals.connect(item, 'activate', () => this.groupState.trigger('launchNewInstance'));
-                this.addMenuItem(item);
-                if (!actions || actions.length === 0) {
-                    this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-                }
             }
         }, () => {
             if (isWindowBacked) {
@@ -344,6 +332,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 });
             }
             this.addMenuItem(item);
+            item.setSensitive(this.groupState.lastFocused.can_maximize());
 
             if (this.groupState.metaWindows && this.groupState.metaWindows.length > 1) {
                 // Close others
@@ -382,11 +371,15 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
     onToggled(actor, isOpening) {
         this.state.set({menuOpen: this.isOpen});
+    }
 
-        if (!isOpening) return;
+    toggle() {
+        if (!this.isOpen) {
+            this.removeAll();
+            this.populateMenu();
+        }
 
-        this.removeAll();
-        this.populateMenu();
+        Applet.AppletPopupMenu.prototype.toggle.call(this);
     }
 
     toggleAutostart() {
@@ -497,6 +490,21 @@ class HoverMenuController extends PopupMenu.PopupMenuManager {
         this.groupState.disconnect(this.connectId);
         super.destroy();
     }
+
+    _onMenuOpenState(menu, open) {
+        if (open) {
+            if (this._activeMenu && this._activeMenu.isChildMenu(menu)) {
+                this._menuStack.push(this._activeMenu);
+            }
+            this._activeMenu = menu;
+        } else {
+            if (this._menuStack.length > 0) {
+                this._activeMenu = this._menuStack.pop();
+                if (menu.sourceActor)
+                    this._didPop = true;
+            }
+        }
+    }
 }
 
 class WindowThumbnail {
@@ -504,9 +512,7 @@ class WindowThumbnail {
         this.state = params.state;
         this.stateConnectId = this.state.connect({
             scrollActive: () => {
-                if (this.state.overlayPreview) {
-                    this.destroyOverlayPreview();
-                }
+                this.destroyOverlayPreview();
             },
             thumbnailCloseButtonOffset: ({thumbnailCloseButtonOffset}) => {
                 this.button.style = CLOSED_BUTTON_STYLE + `position: ${thumbnailCloseButtonOffset}px -2px;`;
@@ -600,25 +606,17 @@ class WindowThumbnail {
     onEnter(a, e) {
         this.entered = true;
 
-        // Cluter.CrossingEvent will always fire on every child actor of the actor connected to the signal, so we have
-        // to filter the bogus child hover events so the hoverpeek effect only occurs once while inside this.actor.
-
         this.actor.add_style_pseudo_class('selected');
         this.button.set_opacity(255);
 
         if (!e) return;
 
-        let actorString = e.get_source().toString();
-        if (actorString.indexOf('this.actor') > -1
-            && (!this.lastEnterActor
-                || (this.lastEnterActor.indexOf('StButton') === -1)
-                    && this.lastEnterActor.indexOf('ClutterClone') === -1)) {
-            if (this.state.overlayPreview) {
-                this.destroyOverlayPreview();
-            }
-            this.hoverPeek(this.state.settings.peekOpacity);
+        if (e.get_related() === this.button) {
+            return;
         }
-        this.lastEnterActor = actorString;
+
+        this.destroyOverlayPreview();
+        this.hoverPeek(this.state.settings.peekOpacity);
     }
 
     onLeave() {
@@ -664,7 +662,6 @@ class WindowThumbnail {
     handleCloseClick() {
         this.onLeave();
         this.stopClick = true;
-        this.hoverPeek(OPACITY_OPAQUE);
 
         this.metaWindow.delete(global.get_current_time());
         if (!this.groupState.metaWindows || this.groupState.metaWindows.length <= 1) {
@@ -706,36 +703,53 @@ class WindowThumbnail {
         }
         // Create our own thumbnail if it doesn't exist
         if (this.metaWindowActor) {
-            this.signals.disconnect('size-changed', this.metaWindowActor);
+            this.disconnectSizeNotify();
         } else {
             this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
         if (this.metaWindowActor && !this.metaWindowActor.is_finalized()) {
-            this.signals.connect(this.metaWindowActor, 'size-changed', () => this.refreshThumbnail());
+            this.signals.connect(this.metaWindow, 'unmanaging', () => this.disconnectSizeNotify());
 
-            let windowTexture = this.metaWindowActor.get_texture();
-            if (!windowTexture) return;
-            let [width, height] = windowTexture.get_size();
+            let texture = this.metaWindowActor.get_texture();
+            if (texture == null) {
+                return;
+            }
+
+            this.signals.connect(texture, 'size-changed', () => this.refreshThumbnail());
+
+            let [width, height] = this.metaWindowActor.get_size();
             let scale = Math.min(1.0, thumbnailWidth / width, thumbnailHeight / height) * global.ui_scale;
             width = Math.round(width * scale);
             height = Math.round(height * scale);
-            if (this.thumbnailActor.child) {
-                this.thumbnailActor.height = height;
-                this.thumbnailActor.width = width;
-                this.thumbnailActor.child.source = windowTexture;
+            if (this.thumbnailActor.child == null || (this.thumbnailActor.child.name?.startsWith("TextureWindowClone"))) {
+                if (this.thumbnailActor.child != null) {
+                    this.thumbnailActor.child.destroy()
+                }
+
+                this.thumbnailActor.child = WindowUtils.getCloneOrContent(this.metaWindowActor, width, height);
+
+                if (this.thumbnailActor.child.name?.startsWith("TextureWindowClone")) {
+                    this.signals.connect(this.metaWindow, 'notify::minimized', () => this.refreshThumbnail());
+                }
+            } else {
                 this.thumbnailActor.child.width = width;
                 this.thumbnailActor.child.height = height;
-            } else {
-                this.thumbnailActor.child = new Clutter.Clone({
-                    source: windowTexture,
-                    reactive: true,
-                    width,
-                    height
-                });
+                this.thumbnailActor.queue_relayout();
+
             }
         } else if (this.groupState.isFavoriteApp) {
             this.groupState.trigger('removeThumbnailFromMenu', this.metaWindow);
         }
+    }
+
+    disconnectSizeNotify(actor) {
+        this.signals.disconnect('unmanaging', this.metaWindow);
+
+        let texture = this.metaWindowActor.get_texture();
+        if (texture) {
+            this.signals.disconnect("size-changed", texture);
+        }
+        this.signals.disconnect("notify::minimized", this.metaWindow);
     }
 
     refreshThumbnail() {
@@ -812,7 +826,6 @@ class WindowThumbnail {
 
     hoverPeek(opacity) {
         if (!this.state.settings.enablePeek
-            || this.state.overlayPreview
             || this.state.scrollActive
             || (this.metaWindowActor && this.metaWindowActor.is_finalized())) {
             return;
@@ -820,38 +833,43 @@ class WindowThumbnail {
         if (!this.metaWindowActor) {
             this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
-        this.state.set({
-            overlayPreview: new Clutter.Clone({
-                source: this.metaWindowActor.get_texture(),
-                opacity: 0
-            })
-        });
+
+        const preview = WindowUtils.getCloneOrContent(this.metaWindowActor);
+        preview.opacity = 0;
+        this.state.set({ lastOverlayPreview: preview });
+
         let [x, y] = this.metaWindowActor.get_position();
-        this.state.overlayPreview.set_position(x, y);
-        global.overlay_group.add_child(this.state.overlayPreview);
-        global.overlay_group.set_child_above_sibling(this.state.overlayPreview, null);
-        setOpacity(this.state.settings.peekTimeIn, this.state.overlayPreview, opacity);
+        let [width, height] = this.metaWindowActor.get_size();
+        this.state.lastOverlayPreview.set_position(x, y);
+        this.state.lastOverlayPreview.set_size(width, height);
+        global.overlay_group.add_child(this.state.lastOverlayPreview);
+        global.overlay_group.set_child_above_sibling(this.state.lastOverlayPreview, null);
+        setOpacity(this.state.settings.peekTimeIn, this.state.lastOverlayPreview, opacity);
     }
 
     destroyOverlayPreview() {
-        if (!this.state.overlayPreview) return;
+        if (!this.state.lastOverlayPreview) return;
 
         if (this.state.settings.peekTimeOut) {
+            let currOverlayPreview = this.state.lastOverlayPreview;
             setOpacity(
                 this.state.settings.peekTimeOut,
-                this.state.overlayPreview,
+                currOverlayPreview,
                 0,
-                () => this._destroyOverlayPreview()
+                () => this._destroyOverlayPreview(currOverlayPreview)
             );
         } else {
-            this._destroyOverlayPreview();
+            this._destroyOverlayPreview(this.state.lastOverlayPreview);
         }
     }
 
-    _destroyOverlayPreview() {
-        global.overlay_group.remove_child(this.state.overlayPreview);
-        this.state.overlayPreview.destroy();
-        this.state.set({overlayPreview: null});
+    _destroyOverlayPreview(overlayPreview) {
+        global.overlay_group.remove_child(overlayPreview);
+        overlayPreview.destroy();
+
+        if(overlayPreview === this.state.lastOverlayPreview) {
+            this.state.set({lastOverlayPreview: null});
+        }
     }
 
     destroy() {
@@ -873,6 +891,8 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         super._init.call(this, groupState.trigger('getActor'), state.orientation, 0.5);
         this.state = state;
         this.groupState = groupState;
+        this.shouldClose = true;
+        this.isOpen = false;
         this.setCustomStyleClass("grouped-window-list-thumbnail-menu");
 
         this.connectId = this.groupState.connect({
@@ -897,11 +917,10 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             },
             addThumbnailToMenu: (win) => {
                 if (this.isOpen) {
-                    this.close(true);
                     this.addThumbnail(win);
-                    this.open(true);
                     return;
                 }
+
                 this.queuedWindows.push(win);
             },
             removeThumbnailFromMenu: (win) => {
@@ -1108,7 +1127,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             } else {
                 index = this.appThumbnails.length - 1;
             }
-        } else if (symbol === Clutter.KEY_Return && entered) {
+        } else if ((symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) && entered) {
             this.appThumbnails[i].connectToWindow(null, 1);
         } else if (symbol === closeArg) {
             this.appThumbnails[i].onLeave();

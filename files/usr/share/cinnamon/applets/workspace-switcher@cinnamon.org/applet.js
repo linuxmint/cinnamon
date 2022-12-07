@@ -18,7 +18,7 @@ class WorkspaceButton {
     constructor(index, applet) {
         this.index = index;
         this.applet = applet;
-        this.workspace = global.screen.get_workspace_by_index(this.index);
+        this.workspace = global.workspace_manager.get_workspace_by_index(this.index);
         this.workspace_name = Main.getWorkspaceName(index);
         this.actor = null; // defined in subclass
 
@@ -26,14 +26,22 @@ class WorkspaceButton {
 
         this.ws_signals.connect(this.workspace, "window-added", this.update, this);
         this.ws_signals.connect(this.workspace, "window-removed", this.update, this);
+
+        // Connect after Main or else we'll end up with stale names.
+        this.ws_signals.connect_after(Main.wmSettings, "changed::workspace-names", this.updateName, this);
     }
 
     show() {
         this.actor.connect('button-release-event', Lang.bind(this, this.onClicked));
         this._tooltip = new Tooltips.PanelItemTooltip(this, this.workspace_name, this.applet.orientation);
-        if (this.index === global.screen.get_active_workspace_index()) {
+        if (this.index === global.workspace_manager.get_active_workspace_index()) {
             this.activate(true);
         }
+    }
+
+    updateName() {
+        this.workspace_name = Main.getWorkspaceName(this.index);
+        this._tooltip.set_text(this.workspace_name);
     }
 
     onClicked(actor, event) {
@@ -91,8 +99,7 @@ class WorkspaceGraph extends WorkspaceButton {
     }
 
     setGraphSize () {
-        this.workspace_size = new Meta.Rectangle();
-        this.workspace.get_work_area_all_monitors(this.workspace_size);
+        this.workspace_size = this.workspace.get_work_area_all_monitors();
 
         let height, width;
         if (this.panelApplet.orientation == St.Side.LEFT ||
@@ -134,7 +141,7 @@ class WorkspaceGraph extends WorkspaceButton {
         let windowBackgroundColor;
         let windowBorderColor;
 
-        let scaled_rect = this.scale(metaWindow.get_outer_rect(), this.workspace_size);
+        let scaled_rect = this.scale(metaWindow.get_buffer_rect(), this.workspace_size);
 
         if (metaWindow.has_focus()) {
             windowBorderColor = themeNode.get_color('-active-window-border');
@@ -265,18 +272,19 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this._last_switch_direction = 0;
         this.createButtonsQueued = false;
 
-        this._focusWindow = 0;
+        this._focusWindow = null;
         if (global.display.focus_window)
-            this._focusWindow = global.display.focus_window.get_compositor_private();
+            this._focusWindow = global.display.focus_window;
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
-        this.settings.bind("display_type", "display_type", this.queueCreateButtons);
+        this.settings.bind("display-type", "display_type", this.queueCreateButtons);
+        this.settings.bind("scroll-behavior", "scroll_behavior");
 
         this.actor.connect('scroll-event', this.hook.bind(this));
 
         this.queueCreateButtons();
-        global.screen.connect('notify::n-workspaces', Lang.bind(this, this.onNumberOfWorkspacesChanged));
-        global.screen.connect('workareas-changed', Lang.bind(this, this.queueCreateButtons));
+        global.workspace_manager.connect('notify::n-workspaces', () => { this.onWorkspacesUpdated() });
+        global.workspace_manager.connect('workspaces-reordered', () => { this.onWorkspacesUpdated() });
         global.window_manager.connect('switch-workspace', this._onWorkspaceChanged.bind(this));
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
 
@@ -298,21 +306,21 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             this.removeWorkspace();
         }));
         this._applet_context_menu.addMenuItem(this.removeWorkspaceMenuItem);
-        this.removeWorkspaceMenuItem.setSensitive(global.screen.n_workspaces > 1);
+        this.removeWorkspaceMenuItem.setSensitive(global.workspace_manager.n_workspaces > 1);
     }
 
-    onNumberOfWorkspacesChanged() {
-        this.removeWorkspaceMenuItem.setSensitive(global.screen.n_workspaces > 1);
-        this.queueCreateButtons();
+    onWorkspacesUpdated() {
+        this.removeWorkspaceMenuItem.setSensitive(global.workspace_manager.n_workspaces > 1);
+        this._createButtons();
     }
 
     removeWorkspace  (){
-        if (global.screen.n_workspaces <= 1) {
+        if (global.workspace_manager.n_workspaces <= 1) {
             return;
         }
-        this.workspace_index = global.screen.get_active_workspace_index();
+        this.workspace_index = global.workspace_manager.get_active_workspace_index();
         let removeAction = Lang.bind(this, function() {
-            Main._removeWorkspace(global.screen.get_active_workspace());
+            Main._removeWorkspace(global.workspace_manager.get_active_workspace());
         });
         if (!Main.hasDefaultWorkspaceName(this.workspace_index)) {
             let prompt = _("Are you sure you want to remove workspace \"%s\"?\n\n").format(
@@ -353,6 +361,9 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
     }
 
     hook(actor, event) {
+        if (this.scroll_behavior == "disabled")
+            return;
+
         let now = (new Date()).getTime();
         let direction = event.get_scroll_direction();
 
@@ -364,8 +375,11 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         if ((now - this._last_switch) > MIN_SWITCH_INTERVAL_MS ||
             direction !== this._last_switch_direction) {
 
-            if (direction == 0) Main.wm.actionMoveWorkspaceLeft();
-            else if (direction == 1) Main.wm.actionMoveWorkspaceRight();
+            // XOR used to determine the effective direction
+            if ((direction == 0) == (this.scroll_behavior == "normal"))
+                Main.wm.actionMoveWorkspaceLeft();
+            else
+                Main.wm.actionMoveWorkspaceRight();
 
             this._last_switch = now;
             this._last_switch_direction = direction;
@@ -393,7 +407,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.actor.set_important(true);
 
         this.buttons = [];
-        for (let i = 0; i < global.screen.n_workspaces; ++i) {
+        for (let i = 0; i < global.workspace_manager.n_workspaces; ++i) {
             if (this.display_type == "visual")
                 this.buttons[i] = new WorkspaceGraph(i, this);
             else
@@ -413,7 +427,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
     _onFocusChanged() {
         if (global.display.focus_window &&
-            this._focusWindow == global.display.focus_window.get_compositor_private())
+            this._focusWindow == global.display.focus_window)
             return;
 
         this.signals.disconnect("position-changed");
@@ -422,14 +436,14 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         if (!global.display.focus_window)
             return;
 
-        this._focusWindow = global.display.focus_window.get_compositor_private();
+        this._focusWindow = global.display.focus_window;
         this.signals.connect(this._focusWindow, "position-changed", Lang.bind(this, this._onPositionChanged), this);
         this.signals.connect(this._focusWindow, "size-changed", Lang.bind(this, this._onPositionChanged), this);
         this._onPositionChanged();
     }
 
     _onPositionChanged() {
-        let button = this.buttons[global.screen.get_active_workspace_index()];
+        let button = this.buttons[global.workspace_manager.get_active_workspace_index()];
         button.update();
     }
 

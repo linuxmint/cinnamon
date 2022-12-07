@@ -27,7 +27,7 @@
 
 G_BEGIN_DECLS
 
-#include <st/st-bin.h>
+#include "st-bin.h"
 
 #define ST_TYPE_BUTTON                (st_button_get_type ())
 #define ST_BUTTON(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), ST_TYPE_BUTTON, StButton))

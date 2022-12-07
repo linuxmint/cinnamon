@@ -5,6 +5,7 @@
 #include "cinnamon-util.h"
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
+#include <libxapp/xapp-util.h>
 
 #ifdef HAVE__NL_TIME_FIRST_WEEKDAY
 #include <langinfo.h>
@@ -203,17 +204,23 @@ cinnamon_util_get_icon_for_uri_known_folders (const char *uri)
 
   path = g_filename_from_uri (uri, NULL, NULL);
 
-  len = strlen (path);
-  if (path[len] == '/')
-    path[len] = '\0';
+  if (!path)
+    return NULL;
 
   if (strcmp (path, "/") == 0)
     icon = "drive-harddisk";
-  else if (strcmp (path, g_get_home_dir ()) == 0)
-    icon = "user-home";
-  else if (strcmp (path, g_get_user_special_dir (G_USER_DIRECTORY_DESKTOP))
-      == 0)
-    icon = "user-desktop";
+  else {
+    if (g_str_has_suffix (path, "/")) {
+      len = strlen (path);
+      path[len - 1] = '\0';
+    }
+
+    if (strcmp (path, g_get_home_dir ()) == 0)
+      icon = "user-home";
+    else if (strcmp (path, g_get_user_special_dir (G_USER_DIRECTORY_DESKTOP))
+        == 0)
+      icon = "user-desktop";
+  }
 
   g_free (path);
 
@@ -467,7 +474,7 @@ cinnamon_util_get_transformed_allocation (ClutterActor    *actor,
   /* Code adapted from clutter-actor.c:
    * Copyright 2006, 2007, 2008 OpenedHand Ltd
    */
-  ClutterVertex v[4];
+  graphene_point3d_t v[4];
   gfloat x_min, x_max, y_min, y_max;
   guint i;
 
@@ -522,13 +529,9 @@ cinnamon_util_format_date (const char *format,
                         gint64      time_ms)
 {
   GDateTime *datetime;
-  GTimeVal tv;
   char *result;
 
-  tv.tv_sec = time_ms / 1000;
-  tv.tv_usec = (time_ms % 1000) * 1000;
-
-  datetime = g_date_time_new_from_timeval_local (&tv);
+  datetime = g_date_time_new_from_unix_local (time_ms / 1000);
   if (!datetime) /* time_ms is out of range of GDateTime */
     return g_strdup ("");
 
@@ -621,30 +624,10 @@ ClutterModifierType
 cinnamon_get_event_state (ClutterEvent *event)
 {
   ClutterModifierType state = clutter_event_get_state (event);
-  return state & CLUTTER_MODIFIER_MASK;
-}
-
-/**
- * cinnamon_write_soup_message_to_stream:
- * @stream: a #GOutputStream
- * @message: a #SoupMessage
- * @error: location to store GError
- *
- * Write a string to a GOutputStream as binary data. This is a
- * workaround for the lack of proper binary strings in GJS.
- */
-void
-cinnamon_write_soup_message_to_stream (GOutputStream *stream,
-                                    SoupMessage   *message,
-                                    GError       **error)
-{
-  SoupMessageBody *body;
-
-  body = message->response_body;
-
-  g_output_stream_write_all (stream,
-                             body->data, body->length,
-                             NULL, NULL, error);
+  state &= ~CLUTTER_MOD2_MASK;
+  state &= ~CLUTTER_LOCK_MASK;
+  state &= CLUTTER_MODIFIER_MASK;
+  return state;
 }
 
 /**
@@ -794,6 +777,103 @@ cinnamon_get_file_contents_utf8         (const char                   *path,
   g_task_run_in_thread (task, get_file_contents_utf8_thread);
 
   g_object_unref (task);
+}
+
+static gboolean
+canvas_draw_cb (ClutterContent *content,
+                cairo_t        *cr,
+                gint            width,
+                gint            height,
+                gpointer        user_data)
+{
+  cairo_surface_t *surface = user_data;
+
+  cairo_set_source_surface (cr, surface, 0, 0);
+  cairo_paint (cr);
+
+  return FALSE;
+}
+
+/**
+ * cinnamon_util_get_content_for_window_actor:
+ * @window_actor: a #MetaWindowActor
+ * @window_rect: a #MetaRectangle
+ *
+ * Returns: (transfer full) (nullable): a new #ClutterContent
+ */
+ClutterContent *
+cinnamon_util_get_content_for_window_actor (MetaWindowActor *window_actor,
+                                            MetaRectangle   *window_rect)
+{
+  ClutterContent *content;
+  cairo_surface_t *surface;
+  cairo_rectangle_int_t clip;
+  gfloat actor_x, actor_y;
+
+  clutter_actor_get_position (CLUTTER_ACTOR (window_actor), &actor_x, &actor_y);
+
+  clip.x = window_rect->x - (gint) actor_x;
+  clip.y = window_rect->y - (gint) actor_y;
+  clip.width = window_rect->width;
+  clip.height = window_rect->height;
+
+  surface = meta_window_actor_get_image (window_actor, &clip);
+
+  if (!surface)
+    return NULL;
+
+  content = clutter_canvas_new ();
+  clutter_canvas_set_size (CLUTTER_CANVAS (content),
+                           cairo_image_surface_get_width (surface),
+                           cairo_image_surface_get_height (surface));
+  g_signal_connect (content, "draw",
+                    G_CALLBACK (canvas_draw_cb), surface);
+  clutter_content_invalidate (content);
+  cairo_surface_destroy (surface);
+
+  return content;
+}
+
+cairo_surface_t *
+cinnamon_util_composite_capture_images (ClutterCapture  *captures,
+                                        int              n_captures,
+                                        int              x,
+                                        int              y,
+                                        int              target_width,
+                                        int              target_height,
+                                        float            target_scale)
+{
+  int i;
+  cairo_format_t format;
+  cairo_surface_t *image;
+  cairo_t *cr;
+
+  g_assert (n_captures > 0);
+  g_assert (target_scale > 0.0f);
+
+  format = cairo_image_surface_get_format (captures[0].image);
+  image = cairo_image_surface_create (format, target_width, target_height);
+  cairo_surface_set_device_scale (image, target_scale, target_scale);
+
+  cr = cairo_create (image);
+
+  for (i = 0; i < n_captures; i++)
+    {
+      ClutterCapture *capture = &captures[i];
+
+      cairo_save (cr);
+
+      cairo_translate (cr,
+                       capture->rect.x - x,
+                       capture->rect.y - y);
+      cairo_set_source_surface (cr, capture->image, 0, 0);
+      cairo_paint (cr);
+
+      cairo_restore (cr);
+    }
+  cairo_destroy (cr);
+
+  return image;
 }
 
 /**
@@ -962,4 +1042,28 @@ cinnamon_shader_effect_set_double_uniform (ClutterShaderEffect *effect,
   clutter_shader_effect_set_uniform_value (effect,
                                            name,
                                            &gvalue);
+}
+
+/**
+ * cinnamon_get_gpu_offload_supported:
+ *
+ * Performs a check to see if on-demand mode for discrete graphics
+ * is supported.
+ *
+ * Returns: %TRUE if supported.
+ */
+gboolean
+cinnamon_get_gpu_offload_supported (void)
+{
+    static gboolean offload_supported = FALSE;
+    static gsize once_init_value = 0;
+
+    if (g_once_init_enter (&once_init_value))
+    {
+        offload_supported = xapp_util_gpu_offload_supported ();
+
+        g_once_init_leave (&once_init_value, 1);
+    }
+
+    return offload_supported;
 }

@@ -26,7 +26,7 @@
 #define __ST_SCROLLABLE_H__
 
 #include <glib-object.h>
-#include <st/st-adjustment.h>
+#include "st-adjustment.h"
 
 G_BEGIN_DECLS
 

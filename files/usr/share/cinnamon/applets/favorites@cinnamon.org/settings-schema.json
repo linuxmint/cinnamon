@@ -1,0 +1,12 @@
+{
+ "head" : {
+    "type" : "header",
+    "description" : "Settings"
+ },
+ "show-full-uri": {
+    "type": "switch",
+    "default" : false,
+    "description" : "Display full paths in the list"
+ }
+}
+

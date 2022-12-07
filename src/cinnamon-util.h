@@ -5,7 +5,7 @@
 
 #include <gio/gio.h>
 #include <clutter/clutter.h>
-#include <libsoup/soup.h>
+#include <meta/meta-window-actor.h>
 
 G_BEGIN_DECLS
 
@@ -26,10 +26,6 @@ char    *cinnamon_util_format_date                (const char       *format,
 ClutterModifierType
          cinnamon_get_event_state                 (ClutterEvent     *event);
 
-void     cinnamon_write_soup_message_to_stream    (GOutputStream    *stream,
-                                                SoupMessage      *message,
-                                                GError          **error);
-
 gboolean cinnamon_write_string_to_stream          (GOutputStream    *stream,
                                                 const char       *str,
                                                 GError          **error);
@@ -37,6 +33,7 @@ gboolean cinnamon_write_string_to_stream          (GOutputStream    *stream,
 char    *cinnamon_get_file_contents_utf8_sync     (const char       *path,
                                                 GError          **error);
 
+gboolean cinnamon_get_gpu_offload_supported        (void);
 /**
  * CinnamonFileContentsCallback:
  * @utf8_contents: The contents of the file
@@ -52,6 +49,17 @@ typedef void (* CinnamonFileContentsCallback) (const gchar *utf8_contents,
 void     cinnamon_get_file_contents_utf8         (const char                   *path,
                                                   CinnamonFileContentsCallback  callback,
                                                   gpointer                      user_data);
+
+ClutterContent * cinnamon_util_get_content_for_window_actor (MetaWindowActor *window_actor,
+                                                             MetaRectangle   *window_rect);
+
+cairo_surface_t * cinnamon_util_composite_capture_images (ClutterCapture  *captures,
+                                                          int              n_captures,
+                                                          int              x,
+                                                          int              y,
+                                                          int              target_width,
+                                                          int              target_height,
+                                                          float            target_scale);
 
 void     cinnamon_breakpoint                      (void);
 

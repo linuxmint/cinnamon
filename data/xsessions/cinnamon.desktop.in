@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Cinnamon
+Comment=This session logs you into Cinnamon
+Exec=cinnamon-session-cinnamon
+TryExec=@bindir@/cinnamon
+Icon=
+Type=Application
+

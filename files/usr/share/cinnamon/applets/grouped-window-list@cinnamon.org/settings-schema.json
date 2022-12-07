@@ -5,7 +5,7 @@
     "generalPage": {
       "type" : "page",
       "title" : "General",
-      "sections": ["generalSection"]
+      "sections": ["generalSection", "hotKeysSection"]
     },
     "panelPage": {
       "type" : "page",
@@ -44,6 +44,16 @@
         "enable-app-button-dragging"
       ]
     },
+    "hotKeysSection": {
+      "type" : "section",
+      "title" : "Hot Keys",
+      "keys": [
+        "cycleMenusHotkey",
+        "show-apps-order-hotkey",
+        "show-apps-order-timeout",
+        "super-num-hotkeys"
+      ]
+    },
     "thumbnailsSection": {
       "type" : "section",
       "title" : "Thumbnails",
@@ -75,7 +85,6 @@
       "keys": [
         "show-recent",
         "autostart-menu-item",
-        "launch-new-instance-menu-item",
         "monitor-move-all-windows"
       ]
     }
@@ -128,7 +137,7 @@
   },
   "pinned-apps": {
     "type": "generic",
-    "default": ["firefox.desktop", "org.gnome.Terminal.desktop", "nemo.desktop"]
+    "default": ["nemo.desktop", "firefox.desktop", "org.gnome.Terminal.desktop"]
   },
   "group-apps": {
     "type": "checkbox",
@@ -147,13 +156,37 @@
   },
   "launcher-animation-effect": {
     "type": "combobox",
-    "default": 1,
+    "default": 3,
     "description": "Launcher animation",
     "options": {
       "None": 1,
       "Fade": 2,
       "Scale": 3
     }
+  },
+  "cycleMenusHotkey": {
+    "type": "keybinding",
+    "default": "",
+    "description": "Global hotkey for cycling through thumbnail menus"
+  },
+  "show-apps-order-hotkey": {
+    "type": "keybinding",
+    "default": "<Super>grave",
+    "description": "Global hotkey to show the order of apps"
+  },
+  "show-apps-order-timeout": {
+    "type": "spinbutton",
+    "default": 2500,
+    "min": 100,
+    "max": 10000,
+    "step": 10,
+    "units": "milliseconds",
+    "description": "Duration of the apps order display on hotkey press"
+  },
+  "super-num-hotkeys": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Enable Super+<number> shortcut to switch/open apps"
   },
   "thumbnail-timeout": {
     "dependency": "!onclick-thumbnails",
@@ -221,12 +254,6 @@
     "type": "checkbox",
     "default": false,
     "description": "Show autostart option"
-  },
-  "launch-new-instance-menu-item": {
-    "type": "checkbox",
-    "default": true,
-    "description": "Show new window option",
-    "tooltip": "Shows the \"New Window\" option in an app's context menu if it doesn't already have one from the app's own action menu items."
   },
   "monitor-move-all-windows": {
     "type": "checkbox",

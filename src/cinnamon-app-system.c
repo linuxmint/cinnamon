@@ -7,6 +7,8 @@
 
 #include <gio/gio.h>
 #include <glib/gi18n.h>
+#define GMENU_I_KNOW_THIS_IS_UNSTABLE
+#include <gmenu-desktopappinfo.h>
 
 #include "cinnamon-app-private.h"
 #include "cinnamon-window-tracker-private.h"
@@ -52,6 +54,7 @@ struct _CinnamonAppSystemPrivate {
   GHashTable *running_apps;
   GHashTable *id_to_app;
   GHashTable *startup_wm_class_to_app;
+  GHashTable *flatpak_id_to_app;
 
   GSList *known_vendor_prefixes;
 };
@@ -131,6 +134,9 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
                                                          NULL,
                                                          (GDestroyNotify)g_object_unref);
 
+  priv->flatpak_id_to_app = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                         g_free,
+                                                         (GDestroyNotify)g_object_unref);
 /* According to desktop spec, since our menu file is called 'cinnamon-applications', our
  * merged menu folders need to be called 'cinnamon-applications-merged'.  We'll setup the folder
  * 'applications-merged' if it doesn't exist yet, and a symlink pointing to it in the
@@ -158,6 +164,7 @@ cinnamon_app_system_finalize (GObject *object)
   g_hash_table_destroy (priv->running_apps);
   g_hash_table_destroy (priv->id_to_app);
   g_hash_table_destroy (priv->startup_wm_class_to_app);
+  g_hash_table_destroy (priv->flatpak_id_to_app);
   g_slist_free_full (priv->known_vendor_prefixes, g_free);
   priv->known_vendor_prefixes = NULL;
 
@@ -319,13 +326,12 @@ rename_app (CinnamonApp *app,
 {
   RenameAppData *data;
   const gchar *common_name;
-  gchar *unique_name, *basename, *dirname, *capitalized_exec;
+  gchar *unique_name, *basename, *capitalized_exec;
   guint i;
 
   data = (RenameAppData *) user_data;
 
   common_name = data->key;
-  dirname = g_path_get_dirname (_cinnamon_app_get_desktop_path (app));
 
   if (_cinnamon_app_get_unique_name (app) != NULL)
     {
@@ -336,7 +342,7 @@ rename_app (CinnamonApp *app,
       return;
     }
 
-  if (g_strstr_len (dirname, -1, "flatpak"))
+  if (cinnamon_app_get_is_flatpak (app))
     {
       unique_name = g_strdup_printf ("%s (Flatpak)",
                                      common_name);
@@ -347,8 +353,6 @@ rename_app (CinnamonApp *app,
 
       _cinnamon_app_set_unique_name (app, unique_name);
     }
-
-  g_free (dirname);
 
   if (flatpak_iteration)
     {
@@ -492,10 +496,17 @@ get_flattened_entries_recurse (GMenuTreeDirectory *dir,
         case GMENU_TREE_ITEM_ENTRY:
           {
             GMenuTreeEntry *entry;
+            GMenuDesktopAppInfo *info;
             item = entry = gmenu_tree_iter_get_entry (iter);
+            info = gmenu_tree_entry_get_app_info (entry);
             /* Key is owned by entry */
+
+            if (info == NULL)
+              {
+                break;
+              }
             g_hash_table_replace (entry_set,
-                                  (char*)gmenu_tree_entry_get_desktop_file_id (entry),
+                                  (char *) gmenu_tree_entry_get_desktop_file_id (entry),
                                   gmenu_tree_item_ref (entry));
           }
           break;
@@ -584,9 +595,8 @@ on_apps_tree_changed_cb (GMenuTree *tree,
       char *prefix;
       CinnamonApp *app;
 
-      GDesktopAppInfo *info;
+      GMenuDesktopAppInfo *info;
       const char *startup_wm_class;
-
       prefix = get_prefix_for_entry (entry);
 
       if (prefix != NULL
@@ -610,7 +620,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
 #if DEBUG_APPSYS_RENAMING
           if (g_strcmp0 (_cinnamon_app_get_desktop_path (app),
-                         g_desktop_app_info_get_filename (gmenu_tree_entry_get_app_info (entry))) == 0)
+                         gmenu_desktopappinfo_get_filename (gmenu_tree_entry_get_app_info (entry))) == 0)
             {
               DEBUG_RENAMING ("Existing match found for app: '%s'.  Source unchanged ('%s')\n",
                               _cinnamon_app_get_common_name (app),
@@ -622,7 +632,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
               DEBUG_RENAMING ("Existing match found for app: '%s'.  Source is changing from '%s' to '%s'\n",
                               _cinnamon_app_get_common_name (app),
                               _cinnamon_app_get_desktop_path (app),
-                              g_desktop_app_info_get_filename (gmenu_tree_entry_get_app_info (entry)));
+                              gmenu_desktopappinfo_get_filename (gmenu_tree_entry_get_app_info (entry)));
             }
 #endif
 
@@ -640,22 +650,27 @@ on_apps_tree_changed_cb (GMenuTree *tree,
                           _cinnamon_app_get_desktop_path (app));
 
         }
-      /* Note that "id" is owned by app->entry.  Since we're always
+      /* Note that "id" and "flatpak_app_id" are owned by app->entry.  Since we're always
        * setting a new entry, even if the app already exists in the
-       * hash table we need to replace the key so that the new id
-       * string is pointed to.
+       * hash tables we need to replace the keys so that the new id and flatpak app id
+       * string are pointed to.
        */
       g_hash_table_replace (self->priv->id_to_app, (char*)id, app);
+
+      if (cinnamon_app_get_is_flatpak (app))
+      {
+        g_hash_table_replace (self->priv->flatpak_id_to_app, cinnamon_app_get_flatpak_app_id (app), g_object_ref (app));
+      }
       // if (!gmenu_tree_entry_get_is_nodisplay_recurse (entry))
       //    g_hash_table_replace (self->priv->visible_id_to_app, (char*)id, app);
 
       if (old_entry)
         {
-          GDesktopAppInfo *old_info;
+          GMenuDesktopAppInfo *old_info;
           const gchar *old_startup_wm_class;
 
           old_info = gmenu_tree_entry_get_app_info (old_entry);
-          old_startup_wm_class = g_desktop_app_info_get_startup_wm_class (old_info);
+          old_startup_wm_class = gmenu_desktopappinfo_get_startup_wm_class (old_info);
 
           if (old_startup_wm_class)
             g_hash_table_remove (self->priv->startup_wm_class_to_app, old_startup_wm_class);
@@ -664,7 +679,7 @@ on_apps_tree_changed_cb (GMenuTree *tree,
       info = cinnamon_app_get_app_info (app);
       if (info)
         {
-          startup_wm_class = g_desktop_app_info_get_startup_wm_class (info);
+          startup_wm_class = gmenu_desktopappinfo_get_startup_wm_class (info);
           if (startup_wm_class)
             g_hash_table_replace (self->priv->startup_wm_class_to_app,
                                   (char*)startup_wm_class, g_object_ref (app));
@@ -824,6 +839,18 @@ lookup_heuristic_basename (CinnamonAppSystem *system,
 }
 
 gchar *
+strip_flatpak_suffix (gchar *wm_class)
+{
+  char *result;
+    if (g_str_has_suffix (wm_class, GMENU_DESKTOPAPPINFO_FLATPAK_SUFFIX)) {
+            result = g_strndup (wm_class, strlen (wm_class) - strlen (GMENU_DESKTOPAPPINFO_FLATPAK_SUFFIX));
+    } else {
+        result = g_strdup (wm_class);
+    }
+    return result;
+}
+
+gchar *
 strip_extension (gchar *wm_class)
 {
     char *result;
@@ -835,6 +862,8 @@ strip_extension (gchar *wm_class)
     }
     return result;
 }
+
+
 
 /**
  * cinnamon_app_system_lookup_desktop_wmclass:
@@ -851,25 +880,36 @@ cinnamon_app_system_lookup_desktop_wmclass (CinnamonAppSystem *system,
                                             const char        *wmclass)
 {
   char *canonicalized;
+  char *after_flatpak_strip;
   char *desktop_file;
   char *stripped_name;
+  gboolean is_flatpak;
   CinnamonApp *app;
 
   if (wmclass == NULL)
     return NULL;
 
+  is_flatpak = g_str_has_suffix (wmclass, GMENU_DESKTOPAPPINFO_FLATPAK_SUFFIX);
+
   canonicalized = g_ascii_strdown (wmclass, -1);
 
-  stripped_name = strip_extension(canonicalized);
+  after_flatpak_strip = strip_flatpak_suffix (canonicalized);
+
+  stripped_name = strip_extension(after_flatpak_strip);
 
   /* This handles "Fedora Eclipse", probably others.
    * Note g_strdelimit is modify-in-place. */
   g_strdelimit (stripped_name, " ", '-');
 
-  desktop_file = g_strconcat (stripped_name, ".desktop", NULL);
-
+  if (is_flatpak)
+  {
+    desktop_file = g_strconcat (stripped_name, ".desktop", GMENU_DESKTOPAPPINFO_FLATPAK_SUFFIX, NULL);
+  } else {
+    desktop_file = g_strconcat (stripped_name, ".desktop", NULL);
+  }
   app = lookup_heuristic_basename (system, desktop_file);
 
+  g_free (after_flatpak_strip);
   g_free (canonicalized);
   g_free (stripped_name);
   g_free (desktop_file);
@@ -898,6 +938,23 @@ cinnamon_app_system_lookup_startup_wmclass (CinnamonAppSystem *system,
 }
 
 /**
+ * cinnamon_app_system_lookup_flatpak_app_id:
+ *
+ * Find a #CinnamonApp corresponding to a flatpak app id.
+ *
+ * Return value: (transfer none): The #CinnamonApp for app_id, or %NULL if none
+ */
+CinnamonApp *
+cinnamon_app_system_lookup_flatpak_app_id (CinnamonAppSystem *system,
+                                           const char        *app_id)
+{
+  if (app_id == NULL)
+    return NULL;
+
+  return g_hash_table_lookup (system->priv->flatpak_id_to_app, app_id);
+}
+
+/**
  * cinnamon_app_system_get_all:
  * @system:
  *
@@ -915,7 +972,7 @@ cinnamon_app_system_get_all (CinnamonAppSystem  *self)
     {
       CinnamonApp *app = value;
 
-      if (!g_desktop_app_info_get_nodisplay (cinnamon_app_get_app_info (app)))
+      if (!gmenu_desktopappinfo_get_nodisplay (cinnamon_app_get_app_info (app)))
         result = g_slist_prepend (result, app);
     }
   return result;

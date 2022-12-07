@@ -173,7 +173,6 @@ var Applet = class Applet {
 
         this.instance_id = instance_id; // Needed by appletSettings
         this._uuid = null;      // Defined in gsettings, set by Cinnamon.
-        this._hook = null;      // Defined in metadata.json, set by appletManager
         this._meta = null;      // set by appletManager
         this._dragging = false;
         this._draggable = DND.makeDraggable(this.actor);
@@ -199,6 +198,10 @@ var Applet = class Applet {
         } else {
             setTimeout(() => this._getPanelInfo(), 0);
         }
+    }
+
+    _addStyleClass(className){
+        this.actor.add_style_class_name(className);
     }
 
     _getPanelInfo(instance_id) {
@@ -290,13 +293,19 @@ var Applet = class Applet {
     /**
      * set_applet_tooltip:
      * @text (string): the tooltip text to be set
+     * @use_markup (boolean): parse the text as markup if true
      *
      * Sets the tooltip of the applet
      */
-    set_applet_tooltip (text) {
+    set_applet_tooltip (text, use_markup=false) {
         if (text != this._applet_tooltip_text) {
             this._applet_tooltip_text = text;
-            this._applet_tooltip.set_text(text);
+
+            if (use_markup) {
+                this._applet_tooltip.set_markup(text);
+            } else {
+                this._applet_tooltip.set_text(text);
+            }
         }
         if (text === "") {
             this._applet_tooltip.hide();
@@ -552,6 +561,18 @@ var Applet = class Applet {
         // Implemented byApplets
     }
 
+    confirmRemoveApplet (event) {
+        if (Clutter.ModifierType.CONTROL_MASK & Cinnamon.get_event_state(event)) {
+            AppletManager._removeAppletFromPanel(this._uuid, this.instance_id);
+        } else {
+            let dialog = new ModalDialog.ConfirmDialog(
+                _("Are you sure you want to remove '%s'?").format(this._(this._meta.name)),
+                () => AppletManager._removeAppletFromPanel(this._uuid, this.instance_id)
+            );
+            dialog.open();
+        }
+    }
+
     finalizeContextMenu () {
 
         // Add default context menus if we're in panel edit mode, ensure their removal if we're not
@@ -562,17 +583,7 @@ var Applet = class Applet {
                 .format(this._(this._meta.name)),
                    "edit-delete",
                    St.IconType.SYMBOLIC);
-            this.context_menu_item_remove.connect('activate', Lang.bind(this, function(actor, event) {
-                if (Clutter.ModifierType.CONTROL_MASK & Cinnamon.get_event_state(event)) {
-                    AppletManager._removeAppletFromPanel(this._uuid, this.instance_id);
-                } else {
-                    let dialog = new ModalDialog.ConfirmDialog(
-                        _("Are you sure you want to remove %s?").format(this._meta.name),
-                        () => AppletManager._removeAppletFromPanel(this._uuid, this.instance_id)
-                    );
-                    dialog.open();
-                }
-            }));
+            this.context_menu_item_remove.connect('activate', (actor, event) => this.confirmRemoveApplet(event));
         }
 
         if (this.context_menu_item_about == null) {
@@ -634,8 +645,8 @@ var Applet = class Applet {
         Util.spawnCommandLine("xlet-about-dialog applets " + this._uuid);
     }
 
-    configureApplet() {
-        Util.spawnCommandLine("xlet-settings applet " + this._uuid + " " + this.instance_id);
+    configureApplet(tab=0) {
+        Util.spawnCommandLine("xlet-settings applet " + this._uuid + " -i " + this.instance_id + " -t " + tab);
     }
 
     get _panelHeight() {

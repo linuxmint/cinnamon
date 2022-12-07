@@ -58,6 +58,7 @@ Available types of sort, and corresponding numbers:
 import getopt
 import os
 import sys
+import shutil
 
 def usage():
     print("""Usage:
@@ -78,6 +79,7 @@ Module options:
                                 'score' or 1 (by default)
                                 'date' or 2
                                 'installed' or 3
+                                'update' or 4
 Example:
     $ cinnamon-settings applets -t download -s date
 
@@ -119,9 +121,9 @@ if len(sys.argv) > 1:
             os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", (" ",) + tuple(sys.argv[1:]))
     elif os.path.exists("/usr/share/cinnamon/cinnamon-settings/modules/cs_%s.py" % module):
         os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", (" ",) + tuple(sys.argv[1:]))
-    elif os.path.exists("/usr/bin/cinnamon-control-center"):
+    elif shutil.which("cinnamon-control-center"):
         os.execvp("/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py", (" ",) + tuple(sys.argv[1:]))
-    elif os.path.exists("/usr/bin/gnome-control-center"):
+    elif shutil.which("gnome-control-center"):
         print ("Unknown module %s, calling gnome-control-center" % module)
         os.execvp("gnome-control-center", (" ",) + tuple(sys.argv[1:]))
     else:

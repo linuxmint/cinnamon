@@ -60,7 +60,7 @@
         "section6": {
             "type": "section",
             "title": "Other choosers",
-            "keys": ["font-select", "date-select"]
+            "keys": ["font-select", "date-select", "time-select"]
         },
         "section7": {
             "type": "section",
@@ -75,7 +75,7 @@
         "section9": {
             "type": "section",
             "title": "Dependencies section",
-            "dependency": "!show-deps-section",
+            "dependency": "show-deps-section",
             "keys": ["deps-info", "dep-combo", "dep-combo-info1", "dep-combo-info2", "dep-spin", "dep-spin-info1", "dep-spin-info2"]
         }
     },
@@ -137,7 +137,6 @@
         "type" : "entry",
         "default" : "custom",
         "description" : "Custom Applet Label",
-        "indent": true,
         "dependency" : "use-custom-label",
         "tooltip" : "Set your custom label here.  This field is unavailable unless the switch above is enabled"
     },
@@ -207,6 +206,15 @@
             "y" : 2000
         }
     },
+    "time-select" : {
+        "type" : "timechooser",
+        "description" : "Choose a Time",
+        "default" : {
+            "h" : 12,
+            "m" : 0,
+            "s" : 0
+        }
+    },
     "tree" : {
         "type" : "list",
         "description" : "Custom tree widget",
@@ -228,7 +236,7 @@
     },
     "show-deps-section" : {
         "type" : "switch",
-        "default" : false,
+        "default" : true,
         "description": "Show the dependencies section",
         "tooltip": "Checking this box shows the Dependencies section below. Unchecking hides it."
     },

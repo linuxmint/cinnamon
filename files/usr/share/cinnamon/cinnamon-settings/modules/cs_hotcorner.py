@@ -5,7 +5,8 @@ import math
 
 from gi.repository import Gio, GLib
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 _270_DEG = 270.0 * (math.pi/180.0)
 _180_DEG = 180.0 * (math.pi/180.0)
@@ -256,7 +257,7 @@ class HotCornerConfiguration(Gtk.Box):
     def on_widget_changed(self, *args):
         def apply(self):
             iter = self.functionCombo.get_active_iter()
-            if iter != None:
+            if iter is not None:
                 function = self.functionStore.get_value(iter, 0)
                 enabled = self.enableSwitch.get_active()
                 delay = str(int(self.hoverDelaySpinner.get_value()))

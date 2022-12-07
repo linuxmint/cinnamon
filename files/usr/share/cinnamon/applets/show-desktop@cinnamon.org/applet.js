@@ -49,14 +49,19 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
         for(let i = 0; i < windows.length; i++){
             let window = windows[i].meta_window;
             let compositor = windows[i];
-            if(window.get_title() == "Desktop"){
-                Tweener.addTween(compositor, { opacity: 255, time: time, transition: "easeOutSine" });
-            }
+
+            Tweener.addTween(compositor,
+                {
+                    opacity: 255,
+                    time: time,
+                    transition: "easeOutSine"
+                }
+            );
+
             if (this.peek_blur && compositor.eff) {
                 compositor.remove_effect(compositor.eff);
             }
         }
-        Tweener.addTween(global.window_group, { opacity: 255, time: time, transition: "easeOutSine" });
     }
 
     _on_enter(event) {
@@ -72,19 +77,29 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
                     !this._applet_context_menu.isOpen &&
                     !global.settings.get_boolean("panel-edit-mode")) {
 
-                    Tweener.addTween(global.window_group,
-                                     {opacity: this.peek_opacity, time: 0.275, transition: "easeInSine"});
-
                     let windows = global.get_window_actors();
+
                     for (let i = 0; i < windows.length; i++) {
+                        let window = windows[i].meta_window;
                         let compositor = windows[i];
 
-                        if (this.peek_blur) {
-                            if (!compositor.eff)
-                                compositor.eff = new Clutter.BlurEffect();
-                            compositor.add_effect_with_name('peek-blur', compositor.eff);
+                        if (window.get_title() !== "Desktop") {
+                            if (this.peek_blur) {
+                                if (!compositor.eff)
+                                    compositor.eff = new Clutter.BlurEffect();
+                                compositor.add_effect_with_name('peek-blur', compositor.eff);
+                            }
+
+                            Tweener.addTween(compositor,
+                                {
+                                    opacity: this.peek_opacity / 100 * 255,
+                                    time: 0.275,
+                                    transition: "easeInSine"
+                                }
+                            );
                         }
                     }
+
                     this._did_peek = true;
                 }
                 this._peek_timeout_id = 0;
@@ -105,7 +120,7 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
     }
 
     on_applet_clicked(event) {
-        global.screen.toggle_desktop(global.get_current_time());
+        global.workspace_manager.toggle_desktop(global.get_current_time());
         this.show_all_windows(0);
         if (this._peek_timeout_id > 0) {
             Mainloop.source_remove(this._peek_timeout_id);

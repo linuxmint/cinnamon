@@ -1,5 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+const Main = imports.ui.main;
 const Extension = imports.ui.extension;
 const {getModuleByIndex} = imports.misc.fileUtils;
 
@@ -111,6 +112,7 @@ function initEnabledExtensions() {
         promises.push(Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION))
     }
     return Promise.all(promises).then(function() {
+        Main.cinnamonDBusService.EmitXletsLoadedComplete();
         promises = [];
     });
 }

@@ -21,6 +21,16 @@ const _balancedParens = '\\([^\\s()<>]+\\)';
 const _leadingJunk = '[\\s`(\\[{\'\\"<\u00AB\u201C\u2018]';
 const _notTrailingJunk = '[^\\s`!()\\[\\]{};:\'\\".,<>?\u00AB\u00BB\u201C\u201D\u2018\u2019]';
 
+function decodeHTML(str=null) {
+    if (str === null) {
+        return null;
+    }
+
+    return str.replace(/&#(\d+);/g, function(match, dec) {
+        return String.fromCharCode(dec);
+    });
+}
+
 const _urlRegexp = new RegExp(
     '(^|' + _leadingJunk + ')' +
     '(' +
@@ -42,6 +52,20 @@ const _urlRegexp = new RegExp(
             _notTrailingJunk +                    // last non-junk char
         ')' +
     ')', 'gi');
+
+
+/**
+ * escapeRegExp:
+ * @str: (String) a string to escape
+ *
+ * Escapes a string for use within a regular expression.
+ *
+ * Returns: (String) the escaped string
+ */
+function escapeRegExp(str) {
+    // from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
 
 /**
  * findUrls:
@@ -92,7 +116,7 @@ var subprocess_callbacks = {};
 function spawn_async(args, callback) {
     subprocess_id++;
     subprocess_callbacks[subprocess_id] = callback;
-    spawn(new Array("cinnamon-subprocess-wrapper", subprocess_id.toString()).concat(args));
+    spawn(["cinnamon-subprocess-wrapper", subprocess_id.toString(), ...args]);
 }
 
 /**
@@ -308,6 +332,11 @@ const _IGNORED_PHRASES = [
 function fixupPCIDescription(desc) {
     desc = desc.replace(/[_,]/, ' ');
 
+    /* Remove any parenthesized info longer than 2 chars (which
+       may be disambiguating numbers if there are multiple identical
+       cards present) */
+    desc = desc.replace(/\([\s\S][^\(\)]{2,}\)/, '');
+
     /* Attempt to shorten ID by ignoring certain phrases */
     for (let i = 0; i < _IGNORED_PHRASES.length; i++) {
         let item = _IGNORED_PHRASES[i];
@@ -351,7 +380,7 @@ const _LATINISE_REGEX = {
     IJ: /\u0132/g,
     J: /[\u012E\u0134]/g,
     K: /\u0136/g,
-    L: /[\u0139\u013B\u013D\u0130F\u0141]/g,
+    L: /[\u0139\u013B\u013D\u013F\u0141]/g,
     N: /[\xD1\u0143\u0145\u0147\u014A]/g,
     O: /[\xD2-\xD6\xD8\u014C\u014E\u0150]/g,
     OE: /\u0152/g,
@@ -720,7 +749,7 @@ function getGObjectPropertyValues(obj, r = 0) {
     let baseInfo = repository.find_by_gtype(obj.constructor.$gtype);
     let propertyNames = [];
     for (let info = baseInfo; info !== null; info = Gir.object_info_get_parent(info)) {
-        propertyNames = propertyNames.concat(_getWritablePropertyNamesForObjectInfo(info));
+        propertyNames = [...propertyNames, ..._getWritablePropertyNamesForObjectInfo(info)];
     }
     if (r > 0 && propertyNames.length === 0) {
         return obj.toString();
@@ -740,3 +769,100 @@ function getGObjectPropertyValues(obj, r = 0) {
     }
     return jsRepresentation;
 }
+
+function version_exceeds(version, min_version) {
+    let our_version = version.split(".");
+    let cmp_version = min_version.split(".");
+    let i;
+
+    for (i = 0; i < our_version.length && i < cmp_version.length; i++) {
+        let our_part = parseInt(our_version[i]);
+        let cmp_part = parseInt(cmp_version[i]);
+
+        if (isNaN(our_part) || isNaN(cmp_part)) {
+            return false;
+        }
+
+        if (our_part < cmp_part) {
+            return false;
+        } else
+        if (our_part > cmp_part) {
+            return true;
+        }
+    }
+
+    if (our_version.length < cmp_version.length) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+// Maps .desktop action name to an icon
+const DESKTOP_ACTION_ICON_NAMES = {
+    area_shot: 'screenshot-area',
+    base: 'x-office-database',
+    big_picture: 'view-fullscreen',
+    calc: 'x-office-spreadsheet',
+    community: 'system-users',
+    compose: 'text-editor',
+    contacts: 'x-office-address-book',
+    document: 'document-new',
+    draw: 'x-office-drawing',
+    friends: 'user-available',
+    fullscreen: 'view-fullscreen',
+    impress: 'x-office-presentation',
+    library: 'accessories-dictionary',
+    math: 'x-office-math',
+    mute: 'audio-volume-muted',
+    new_document: 'document-new',
+    new_private_window: 'view-private',
+    new_root_window: 'dialog-password',
+    news: 'news',
+    new_session: 'tab-new-symbolic',
+    new_window: 'window-new',
+    next: 'media-skip-forward',
+    open_computer: 'computer',
+    open_home: 'user-home',
+    open_trash: 'user-trash',
+    play: 'media-playback-start',
+    play_pause: 'media-playback-start',
+    preferences: 'preferences-other',
+    prefs: 'preferences-other',
+    previous: 'media-skip-backward',
+    screen_shot: 'screenshot-fullscreen',
+    screenshots: 'applets-screenshooter',
+    servers: 'network-server',
+    settings: 'preferences-other',
+    ssa: 'screenshot-area',
+    ssf: 'screenshot-fullscreen',
+    ssw: 'screenshot-window',
+    stop_quit: 'media-playback-stop',
+    store: 'store',
+    window: 'window-new',
+    window_shot: 'screenshot-window',
+    writer: 'x-office-document',
+};
+
+/**
+ * getDesktopActionIcon:
+ * @action (string): Action name
+ *
+ * Returns (string|null): Name of the icon associated with this action or null if not found
+ */
+function getDesktopActionIcon(action) {
+    let actionID = '';
+    if (action.toUpperCase() === action) {
+        actionID = action.toLowerCase();
+    } else {
+        // first letter lowercase, replace uppercase with _+lowercase
+        actionID = action.charAt(0).toLowerCase() + action.slice(1);
+        actionID = actionID.replace(/([A-Z])/g, '_$1').toLowerCase();
+    }
+    actionID = actionID.replace(/-/g, '_');
+    
+    if (DESKTOP_ACTION_ICON_NAMES.hasOwnProperty(actionID))
+        return DESKTOP_ACTION_ICON_NAMES[actionID];
+    else return null;
+}
+

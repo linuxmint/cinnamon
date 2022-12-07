@@ -5,6 +5,7 @@ imports.gi.versions.Gio = '2.0';
 imports.gi.versions.Gdk = '3.0';
 imports.gi.versions.GdkPixbuf = '2.0';
 imports.gi.versions.Gtk = '3.0';
+imports.gi.versions.Soup = '2.4';
 
 const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
@@ -48,6 +49,180 @@ function _patchContainerClass(containerClass) {
 function readOnlyError(property) {
     global.logError(`The ${property} object is read-only.`);
 };
+
+
+function _makeEaseCallback(params, cleanup) {
+    let onComplete = params.onComplete;
+    delete params.onComplete;
+
+    let onStopped = params.onStopped;
+    delete params.onStopped;
+
+    return isFinished => {
+        cleanup();
+
+        if (onStopped)
+            onStopped(isFinished);
+        if (onComplete && isFinished)
+            onComplete();
+    };
+}
+
+function _makeFrameCallback(params) {
+    let onUpdate = params.onUpdate;
+    delete params.onUpdate;
+
+    return (transition, timeIndex) => {
+        if (onUpdate)
+            onUpdate(transition, timeIndex);
+    };
+}
+
+function _getPropertyTarget(actor, propName) {
+    if (!propName.startsWith('@'))
+        return [actor, propName];
+
+    let [type, name, prop] = propName.split('.');
+    switch (type) {
+    case '@layout':
+        return [actor.layout_manager, name];
+    case '@actions':
+        return [actor.get_action(name), prop];
+    case '@constraints':
+        return [actor.get_constraint(name), prop];
+    case '@effects':
+        return [actor.get_effect(name), prop];
+    }
+
+    throw new Error(`Invalid property name ${propName}`);
+}
+
+function _easeActor(actor, params) {
+    actor.save_easing_state();
+
+    if (params.duration != undefined)
+        actor.set_easing_duration(params.duration);
+    delete params.duration;
+
+    if (params.delay != undefined)
+        actor.set_easing_delay(params.delay);
+    delete params.delay;
+
+    let repeatCount = 0;
+    if (params.repeatCount != undefined)
+        repeatCount = params.repeatCount;
+    delete params.repeatCount;
+
+    let autoReverse = false;
+    if (params.autoReverse != undefined)
+        autoReverse = params.autoReverse;
+    delete params.autoReverse;
+
+    // repeatCount doesn't include the initial iteration
+    const numIterations = repeatCount + 1;
+    // whether the transition should finish where it started
+    const isReversed = autoReverse && numIterations % 2 === 0;
+
+    if (params.mode != undefined)
+        actor.set_easing_mode(params.mode);
+    delete params.mode;
+
+    let cleanup = () => Meta.enable_unredirect_for_display(global.display);
+    let callback = _makeEaseCallback(params, cleanup);
+    let updateCallback = _makeFrameCallback(params);
+
+    // cancel overwritten transitions
+    let animatedProps = Object.keys(params).map(p => p.replace('_', '-', 'g'));
+    animatedProps.forEach(p => actor.remove_transition(p));
+
+    if (actor.get_easing_duration() > 0 || !isReversed)
+        actor.set(params);
+    actor.restore_easing_state();
+
+    let transition = animatedProps.map(p => actor.get_transition(p))
+        .find(t => t !== null);
+
+    if (transition && transition.delay)
+        transition.connect('started', () => Meta.disable_unredirect_for_display(global.display));
+    else
+        Meta.disable_unredirect_for_display(global.display);
+
+    if (transition) {
+        transition.set({ repeatCount, autoReverse });
+        transition.connect('stopped', (t, finished) => callback(finished));
+        transition.connect('new-frame', (t, timeIndex) => updateCallback(t, timeIndex));
+    } else {
+        callback(true);
+    }
+}
+
+function _easeActorProperty(actor, propName, target, params) {
+    // Avoid pointless difference with ease()
+    if (params.mode)
+        params.progress_mode = params.mode;
+    delete params.mode;
+
+    if (params.duration)
+        params.duration = adjustAnimationTime(params.duration);
+    let duration = Math.floor(params.duration || 0);
+
+    let repeatCount = 0;
+    if (params.repeatCount != undefined)
+        repeatCount = params.repeatCount;
+    delete params.repeatCount;
+
+    let autoReverse = false;
+    if (params.autoReverse != undefined)
+        autoReverse = params.autoReverse;
+    delete params.autoReverse;
+
+    // repeatCount doesn't include the initial iteration
+    const numIterations = repeatCount + 1;
+    // whether the transition should finish where it started
+    const isReversed = autoReverse && numIterations % 2 === 0;
+
+    // Copy Clutter's behavior for implicit animations, see
+    // should_skip_implicit_transition()
+    if (actor instanceof Clutter.Actor && !actor.mapped)
+        duration = 0;
+
+    let cleanup = () => Meta.enable_unredirect_for_display(global.display);
+    let callback = _makeEaseCallback(params, cleanup);
+
+    // cancel overwritten transition
+    actor.remove_transition(propName);
+
+    if (duration == 0) {
+        let [obj, prop] = _getPropertyTarget(actor, propName);
+
+        if (!isReversed)
+            obj[prop] = target;
+
+        Meta.disable_unredirect_for_display(global.display);
+        callback(true);
+
+        return;
+    }
+
+    let pspec = actor.find_property(propName);
+    let transition = new Clutter.PropertyTransition(Object.assign({
+        property_name: propName,
+        interval: new Clutter.Interval({ value_type: pspec.value_type }),
+        remove_on_complete: true,
+        repeat_count: repeatCount,
+        auto_reverse: autoReverse,
+    }, params));
+    actor.add_transition(propName, transition);
+
+    transition.set_to(target);
+
+    if (transition.delay)
+        transition.connect('started', () => Meta.disable_unredirect_for_display(global.display));
+    else
+        Meta.disable_unredirect_for_display(global.display);
+
+    transition.connect('stopped', (t, finished) => callback(finished));
+}
 
 function init() {
     // Add some bindings to the global JS namespace; (gjs keeps the web
@@ -109,7 +284,7 @@ function init() {
     // Add method to determine if a GObject is finalized - needed to prevent accessing
     // objects that have been disposed in C code.
     GObject.Object.prototype.is_finalized = function is_finalized() {
-        return this._toString().includes('FINALIZED');
+        return this._toString().includes('DISPOSED');
     };
     // Override destroy so it checks if its finalized before calling the real destroy method.
     Clutter.Actor.prototype._destroy = Clutter.Actor.prototype.destroy;
@@ -133,6 +308,12 @@ function init() {
         return this.themeNode.get_length(property);
     };
 
+    St.set_slow_down_factor = function(factor) {
+        let { stack } = new Error();
+        log(`St.set_slow_down_factor() is deprecated, use St.Settings.slow_down_factor\n${stack}`);
+        St.Settings.get().slow_down_factor = factor;
+    };
+
     let origToString = Object.prototype.toString;
     Object.prototype.toString = function() {
         let base = origToString.call(this);
@@ -146,6 +327,27 @@ function init() {
         }
     };
 
+    let origSetEasingDuration = Clutter.Actor.prototype.set_easing_duration;
+    Clutter.Actor.prototype.set_easing_duration = function (msecs) {
+        origSetEasingDuration.call(this, adjustAnimationTime(msecs));
+    };
+    let origSetEasingDelay = Clutter.Actor.prototype.set_easing_delay;
+    Clutter.Actor.prototype.set_easing_delay = function (msecs) {
+        origSetEasingDelay.call(this, adjustAnimationTime(msecs));
+    };
+
+    Clutter.Actor.prototype.ease = function (props) {
+        _easeActor(this, props);
+    };
+    Clutter.Actor.prototype.ease_property = function (propName, target, params) {
+        _easeActorProperty(this, propName, target, params);
+    };
+    St.Adjustment.prototype.ease = function (target, params) {
+        // we're not an actor of course, but we implement the same
+        // transition API as Clutter.Actor, so this works anyway
+        _easeActorProperty(this, 'value', target, params);
+    };
+
     // Work around https://bugzilla.mozilla.org/show_bug.cgi?id=508783
     Date.prototype.toLocaleFormat = function(format) {
         return Cinnamon.util_format_date(format, this.getTime());
@@ -155,7 +357,7 @@ function init() {
     if (slowdownEnv) {
         let factor = parseFloat(slowdownEnv);
         if (!isNaN(factor) && factor > 0.0)
-            St.set_slow_down_factor(factor);
+            St.Settings.get().slow_down_factor = factor;
     }
 
     // OK, now things are initialized enough that we can import cinnamon JS
@@ -166,4 +368,18 @@ function init() {
     String.prototype.format = Format.format;
 
     Overrides.init();
+}
+
+
+// adjustAnimationTime:
+// @msecs: time in milliseconds
+//
+// Adjust @msecs to account for St's enable-animations
+// and slow-down-factor settings
+function adjustAnimationTime(msecs) {
+    let settings = St.Settings.get();
+
+    // if (!settings.enable_animations)
+    //     return 1;
+    return settings.slow_down_factor * msecs;
 }

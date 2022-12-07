@@ -2,6 +2,8 @@ const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 const Gio = imports.gi.Gio;
+const Clutter = imports.gi.Clutter;
+const GLib = imports.gi.GLib;
 
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
@@ -67,19 +69,36 @@ TooltipBase.prototype = {
         this.signals.connect(item, 'button-press-event', this._hide, this);
         this.signals.connect(item, 'button-release-event', this._hide, this);
         this.signals.connect(item, 'destroy', this.destroy, this);
-        this.signals.connect(item, 'allocation-changed', function() {
-            // An allocation change could mean that the actor has moved,
-            // so hide, but wait until after the allocation cycle.
-            Mainloop.idle_add(Lang.bind(this, function() {
-                this._hide();
-            }));
-        }, this);
+
+        this._allocate_idle_id = 0;
+        this.signals.connect(item, 'notify::allocation', this._allocation_changed.bind(this));
 
         this._showTimer = null;
         this.visible = false;
         this.item = item;
         this.preventShow = false;
         this.mousePosition = null;
+    },
+
+    _allocation_changed: function(item, pspec) {
+        // An allocation change could mean that the actor has moved,
+        // so hide, but wait until after the allocation cycle.
+        if (this._allocate_idle_id > 0) {
+            Mainloop.source_remove(this._allocate_idle_id);
+        }
+
+        this._allocate_idle_id = Mainloop.idle_add(Lang.bind(this, function() {
+            this._allocate_idle_id = 0;
+            this._hide();
+            return GLib.SOURCE_REMOVE;
+        }));
+    },
+
+    _roundedMousePosition: function(event) {
+        let [x, y] = event.get_coords();
+        let rmp = [Math.round(x), Math.round(y)];
+
+        return rmp;
     },
 
     _onMotionEvent: function(actor, event) {
@@ -95,7 +114,7 @@ TooltipBase.prototype = {
 
         if (!this.visible) {
             this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onShowTimerComplete));
-            this.mousePosition = event.get_coords();
+            this.mousePosition = this._roundedMousePosition(event);
         } else {
             this._hideTimer = Mainloop.timeout_add(500, Lang.bind(this, this._onHideTimerComplete));
         }
@@ -104,7 +123,7 @@ TooltipBase.prototype = {
     _onEnterEvent: function(actor, event) {
         if (!this._showTimer) {
             this._showTimer = Mainloop.timeout_add(300, Lang.bind(this, this._onShowTimerComplete));
-            this.mousePosition = event.get_coords();
+            this.mousePosition = this._roundedMousePosition(event);
         }
     },
 
@@ -129,14 +148,14 @@ TooltipBase.prototype = {
     },
 
     _hide: function(actor, event) {
-        if (this._showTimer) {
+        if (this._showTimer > 0) {
             Mainloop.source_remove(this._showTimer);
-            this._showTimer = null;
+            this._showTimer = 0;
         }
 
-        if (this._hideTimer) {
+        if (this._hideTimer > 0) {
             Mainloop.source_remove(this._hideTimer);
-            this._hideTimer = null;
+            this._hideTimer = 0;
         }
 
         this.hide();
@@ -148,14 +167,19 @@ TooltipBase.prototype = {
      * Destroys the tooltip.
      */
     destroy: function() {
-        if (this._showTimer) {
-            Mainloop.source_remove(this._showTimer);
-            this._showTimer = null;
+        if (this._allocate_idle_id > 0) {
+            Mainloop.source_remove(this._allocate_idle_id);
+            this._allocate_idle_id = 0;
         }
 
-        if (this._hideTimer) {
+        if (this._showTimer > 0) {
+            Mainloop.source_remove(this._showTimer);
+            this._showTimer = 0;
+        }
+
+        if (this._hideTimer > 0) {
             Mainloop.source_remove(this._hideTimer);
-            this._hideTimer = null;
+            this._hideTimer = 0;
         }
 
         this.signals.disconnectAllSignals();
@@ -243,6 +267,26 @@ Tooltip.prototype = {
      */
     set_text: function(text) {
         this._tooltip.set_text(text);
+        this._tooltip.clutter_text.set_use_markup(false);
+        this._tooltip.clutter_text.allocate_preferred_size(Clutter.AllocationFlags.NONE);
+        // we need to trigger a reallocation to make the tooltip the right size, but this can lead to the text getting
+        // off-center in some situations, so also trigger a relayout.
+        this._tooltip.queue_relayout();
+    },
+
+    /**
+     * set_markup:
+     * @text (string): new text to display
+     *
+     * Sets the text to display to @markup.
+     */
+    set_markup: function(markup) {
+        this._tooltip.set_text(markup);
+        this._tooltip.clutter_text.set_use_markup(true);
+        this._tooltip.clutter_text.allocate_preferred_size(Clutter.AllocationFlags.NONE);
+        // we need to trigger a reallocation to make the tooltip the right size, but this can lead to the text getting
+        // off-center in some situations, so also trigger a relayout.
+        this._tooltip.queue_relayout();
     },
 
     _destroy: function() {

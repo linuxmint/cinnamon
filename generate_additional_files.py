@@ -2,7 +2,6 @@
 
 import os
 import gettext
-import sys
 from mintcommon import additionalfiles
 
 DOMAIN = "cinnamon"
@@ -13,7 +12,7 @@ gettext.install(DOMAIN, PATH)
 
 prefix = """[Desktop Entry]
 Exec=cinnamon-settings
-Icon=preferences-system
+Icon=preferences-desktop
 Terminal=false
 Type=Application
 Categories=Settings;
@@ -39,7 +38,7 @@ additionalfiles.generate(DOMAIN, PATH, "files/usr/share/applications/cinnamon-se
 
 prefix = """[Desktop Entry]
 Exec=dbus-send --print-reply --dest=org.Cinnamon /org/Cinnamon org.Cinnamon.ToggleKeyboard
-Icon=input-keyboard
+Icon=cinnamon-virtual-keyboard
 Terminal=false
 Type=Application
 Categories=Utility;

@@ -4,12 +4,16 @@ const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 const Gdk = imports.gi.Gdk;
+const GLib = imports.gi.GLib;
 
-const A11Y_SCHEMA = 'org.cinnamon.desktop.a11y.keyboard';
+const A11Y_KEYBOARD_SCHEMA = 'org.cinnamon.desktop.a11y.keyboard';
+const A11Y_MOUSE_SCHEMA = 'org.cinnamon.desktop.a11y.mouse';
 const KEY_STICKY_KEYS_ENABLED = 'stickykeys-enable';
 const KEY_BOUNCE_KEYS_ENABLED = 'bouncekeys-enable';
 const KEY_SLOW_KEYS_ENABLED   = 'slowkeys-enable';
 const KEY_MOUSE_KEYS_ENABLED  = 'mousekeys-enable';
+const KEY_SEC_CLICK_ENABLED = 'secondary-click-enabled';
+const KEY_DWELL_CLICK_ENABLED = 'dwell-click-enabled';
 
 const APPLICATIONS_SCHEMA = 'org.cinnamon.desktop.a11y.applications';
 
@@ -19,6 +23,9 @@ const DESKTOP_INTERFACE_SCHEMA = 'org.cinnamon.desktop.interface';
 const KEY_GTK_THEME      = 'gtk-theme';
 const KEY_ICON_THEME     = 'icon-theme';
 const KEY_TEXT_SCALING_FACTOR = 'text-scaling-factor';
+
+const WM_PREFERENCES_SCHEMA  = 'org.cinnamon.desktop.wm.preferences';
+const KEY_WM_THEME        = 'theme';
 
 const HIGH_CONTRAST_THEME = 'HighContrast';
 
@@ -32,7 +39,7 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
 
         try {
             this.metadata = metadata;
-            Main.systrayManager.registerRole("a11y", metadata.uuid);
+            Main.systrayManager.registerTrayIconReplacement("a11y", metadata.uuid);
 
             this.set_applet_icon_symbolic_name("preferences-desktop-accessibility");
             this.set_applet_tooltip(_("Accessibility"));
@@ -51,30 +58,42 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
             let textZoom = this._buildFontItem();
             this.menu.addMenuItem(textZoom);
 
-            let screenReader = this._buildItem(_("Screen Reader"), APPLICATIONS_SCHEMA,
-                                                                  'screen-reader-enabled');
-            this.menu.addMenuItem(screenReader);
+            if (GLib.file_test("/usr/bin/orca", GLib.FileTest.EXISTS)) {
+                let screenReader = this._buildItem(_("Screen Reader"), APPLICATIONS_SCHEMA,
+                                                                      'screen-reader-enabled');
+                this.menu.addMenuItem(screenReader);
+            }
 
             let screenKeyboard = this._buildItem(_("Screen Keyboard"), APPLICATIONS_SCHEMA,
                                                                        'screen-keyboard-enabled');
             this.menu.addMenuItem(screenKeyboard);
 
-            let stickyKeys = this._buildItem(_("Sticky Keys"), A11Y_SCHEMA, KEY_STICKY_KEYS_ENABLED);
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+            let stickyKeys = this._buildItem(_("Sticky Keys"), A11Y_KEYBOARD_SCHEMA, KEY_STICKY_KEYS_ENABLED);
             this.menu.addMenuItem(stickyKeys);
 
-            let slowKeys = this._buildItem(_("Slow Keys"), A11Y_SCHEMA, KEY_SLOW_KEYS_ENABLED);
+            let slowKeys = this._buildItem(_("Slow Keys"), A11Y_KEYBOARD_SCHEMA, KEY_SLOW_KEYS_ENABLED);
             this.menu.addMenuItem(slowKeys);
 
-            let bounceKeys = this._buildItem(_("Bounce Keys"), A11Y_SCHEMA, KEY_BOUNCE_KEYS_ENABLED);
+            let bounceKeys = this._buildItem(_("Bounce Keys"), A11Y_KEYBOARD_SCHEMA, KEY_BOUNCE_KEYS_ENABLED);
             this.menu.addMenuItem(bounceKeys);
 
-            let mouseKeys = this._buildItem(_("Mouse Keys"), A11Y_SCHEMA, KEY_MOUSE_KEYS_ENABLED);
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+            let mouseKeys = this._buildItem(_("Mouse Keys"), A11Y_KEYBOARD_SCHEMA, KEY_MOUSE_KEYS_ENABLED);
             this.menu.addMenuItem(mouseKeys);
+
+            let simClick = this._buildItem(_("Simulated secondary click"), A11Y_MOUSE_SCHEMA, KEY_SEC_CLICK_ENABLED);
+            this.menu.addMenuItem(simClick);
+
+            let hoverClick = this._buildItem(_("Hover click"), A11Y_MOUSE_SCHEMA, KEY_DWELL_CLICK_ENABLED);
+            this.menu.addMenuItem(hoverClick);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Universal Access Settings"), 'universal-access');
 
-            this.a11y_settings = new Gio.Settings({ schema_id: A11Y_SCHEMA });
+            this.a11y_settings = new Gio.Settings({ schema_id: A11Y_KEYBOARD_SCHEMA });
 
             this._keyboardStateChangedId = Keymap.connect('state-changed', Lang.bind(this, this._handleStateChange));
             this.set_show_label_in_vertical_panels(false);
@@ -158,23 +177,28 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
 
     _buildHCItem() {
         let settings = new Gio.Settings({ schema_id: DESKTOP_INTERFACE_SCHEMA });
+        let settingsWM = new Gio.Settings({ schema_id: WM_PREFERENCES_SCHEMA });
         let gtkTheme = settings.get_string(KEY_GTK_THEME);
         let iconTheme = settings.get_string(KEY_ICON_THEME);
+        let wmTheme = settingsWM.get_string(KEY_WM_THEME);
         let hasHC = (gtkTheme == HIGH_CONTRAST_THEME);
         let highContrast = this._buildItemExtended(
             _("High Contrast"),
             hasHC,
-            settings.is_writable(KEY_GTK_THEME) && settings.is_writable(KEY_ICON_THEME),
+            settings.is_writable(KEY_GTK_THEME) && settings.is_writable(KEY_ICON_THEME) && settingsWM.is_writable(KEY_WM_THEME),
             function (enabled) {
                 if (enabled) {
                     settings.set_string(KEY_GTK_THEME, HIGH_CONTRAST_THEME);
                     settings.set_string(KEY_ICON_THEME, HIGH_CONTRAST_THEME);
+                    settingsWM.set_string(KEY_WM_THEME, HIGH_CONTRAST_THEME);
                 } else if(!hasHC) {
                     settings.set_string(KEY_GTK_THEME, gtkTheme);
                     settings.set_string(KEY_ICON_THEME, iconTheme);
+                    settingsWM.set_string(KEY_WM_THEME, wmTheme);
                 } else {
                     settings.reset(KEY_GTK_THEME);
                     settings.reset(KEY_ICON_THEME);
+                    settingsWM.reset(KEY_WM_THEME);
                 }
             });
         settings.connect('changed::' + KEY_GTK_THEME, function() {
@@ -190,6 +214,11 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
             let value = settings.get_string(KEY_ICON_THEME);
             if (value != HIGH_CONTRAST_THEME)
                 iconTheme = value;
+        });
+        settingsWM.connect('changed::' + KEY_WM_THEME, function() {
+            let value = settingsWM.get_string(KEY_WM_THEME);
+            if (value != HIGH_CONTRAST_THEME)
+                wmTheme = value;
         });
         return highContrast;
     }
@@ -218,7 +247,7 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel() {
-        Main.systrayManager.unregisterRole("a11y", this.metadata.uuid);
+        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
     }
 }
 

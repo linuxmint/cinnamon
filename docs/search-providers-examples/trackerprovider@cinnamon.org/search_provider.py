@@ -1,6 +1,5 @@
 # -*- coding=utf-8 -*-
 
-import subprocess
 import sys
 import gettext
 import json
@@ -39,11 +38,11 @@ if __name__ == "__main__":
             #If we have no defined file type or no file url, skip
             continue
         result_types = cursor.get_string(7)[0].split(",")
-        while len(result_types) > 0 and defined_type == None:
+        while len(result_types) > 0 and defined_type is None:
             t = result_types.pop()
             if t in CONVERT_TYPES:
                 defined_type = CONVERT_TYPES[t]
-        if defined_type == None:
+        if defined_type is None:
             defined_type = "files"
         if len(results.setdefault(defined_type, [])) < 10:
             results.setdefault(defined_type, []).append({

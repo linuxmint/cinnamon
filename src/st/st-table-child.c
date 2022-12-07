@@ -22,8 +22,8 @@
 #include "st-table-child.h"
 #include "st-table-private.h"
 #include "st-enum-types.h"
-#include <st/st-widget.h>
-#include <st/st-table.h>
+#include "st-widget.h"
+#include "st-table.h"
 
 /*
  * ClutterChildMeta Implementation

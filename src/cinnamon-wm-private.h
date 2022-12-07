@@ -10,24 +10,15 @@ G_BEGIN_DECLS
 
 void _cinnamon_wm_minimize   (CinnamonWM         *wm,
                            MetaWindowActor *actor);
-void _cinnamon_wm_maximize   (CinnamonWM         *wm,
+void _cinnamon_wm_unminimize (CinnamonWM         *wm,
+                           MetaWindowActor *actor);
+void _cinnamon_wm_size_changed(CinnamonWM         *wm,
+                            MetaWindowActor *actor);
+void _cinnamon_wm_size_change(CinnamonWM         *wm,
                            MetaWindowActor *actor,
-                           gint             x,
-                           gint             y,
-                           gint             width,
-                           gint             height);
-void _cinnamon_wm_unmaximize (CinnamonWM         *wm,
-                           MetaWindowActor *actor,
-                           gint             x,
-                           gint             y,
-                           gint             width,
-                           gint             height);
-void _cinnamon_wm_tile       (CinnamonWM         *wm,
-                           MetaWindowActor *actor,
-                           gint             x,
-                           gint             y,
-                           gint             width,
-                           gint             height);
+                           MetaSizeChange   which_change,
+                           MetaRectangle   *old_frame_rect,
+                           MetaRectangle   *old_buffer_rect);
 void _cinnamon_wm_map        (CinnamonWM         *wm,
                            MetaWindowActor *actor);
 void _cinnamon_wm_destroy    (CinnamonWM         *wm,
@@ -37,23 +28,35 @@ void _cinnamon_wm_switch_workspace      (CinnamonWM             *wm,
                                       gint                 from,
                                       gint                 to,
                                       MetaMotionDirection  direction);
+void _cinnamon_wm_kill_window_effects   (CinnamonWM             *wm,
+                                      MetaWindowActor     *actor);
+void _cinnamon_wm_kill_switch_workspace (CinnamonWM             *wm);
 
 void _cinnamon_wm_show_tile_preview     (CinnamonWM         *wm,
                                          MetaWindow         *window,
                                          MetaRectangle      *tile_rect,
-                                         int                tile_monitor,
-                                         guint              snap_queued);
+                                      int                  tile_monitor);
 void _cinnamon_wm_hide_tile_preview     (CinnamonWM         *wm);
+void _cinnamon_wm_show_window_menu      (CinnamonWM             *wm,
+                                      MetaWindow          *window,
+                                      MetaWindowMenuType   menu,
+                                      int                  x,
+                                      int                  y);
+void _cinnamon_wm_show_window_menu_for_rect (CinnamonWM             *wm,
+                                          MetaWindow          *window,
+                                          MetaWindowMenuType   menu,
+                                          MetaRectangle       *rect);
 
-void _cinnamon_wm_show_hud_preview     (CinnamonWM          *wm,
-                                        guint               current_proximity_zone,
-                                        MetaRectangle       *work_area,
-                                        guint               snap_queued);
+gboolean _cinnamon_wm_filter_keybinding (CinnamonWM             *wm,
+                                      MetaKeyBinding      *binding);
 
-void _cinnamon_wm_hide_hud_preview     (CinnamonWM         *wm);
+void _cinnamon_wm_confirm_display_change (CinnamonWM            *wm);
 
-void _cinnamon_wm_kill_window_effects   (CinnamonWM             *wm,
-                                      MetaWindowActor     *actor);
+MetaCloseDialog * _cinnamon_wm_create_close_dialog (CinnamonWM     *wm,
+                                                 MetaWindow  *window);
+
+MetaInhibitShortcutsDialog * _cinnamon_wm_create_inhibit_shortcuts_dialog (CinnamonWM     *wm,
+                                                                        MetaWindow  *window);
 
 G_END_DECLS
 

@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
 from ExtensionCore import ManageSpicesPage, DownloadSpicesPage
-from SettingsWidgets import SidePage, SettingsStack
+from SettingsWidgets import SidePage
+from xapp.SettingsWidgets import SettingsStack
 from Spices import Spice_Harvester
 from gi.repository import GLib
 
@@ -47,7 +48,7 @@ class ExtensionViewSidePage(SidePage):
         self.stack.add_titled(download_extensions_page, "more", _("Download"))
 
 class ManageExtensionsPage(ManageSpicesPage):
-    directories = ['/usr/share/cinnamon/extensions', ("%s/.local/share/cinnamon/extensions") % GLib.get_home_dir()]
+    directories = ['/usr/share/cinnamon/extensions', "%s/.local/share/cinnamon/extensions" % GLib.get_home_dir()]
     collection_type = "extension"
     installed_page_title = _("Installed extensions")
     instance_button_text = _("Enable")

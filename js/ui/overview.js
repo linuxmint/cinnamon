@@ -13,9 +13,12 @@ const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Tweener = imports.ui.tweener;
 const WorkspacesView = imports.ui.workspacesView;
+// ***************
+// This shows all of the windows on the current workspace
+// ***************
 
 // Time for initial animation going into Overview mode
-var ANIMATION_TIME = 0.25;
+var ANIMATION_TIME = 0.2;
 
 const SwipeScrollDirection = WorkspacesView.SwipeScrollDirection;
 
@@ -252,7 +255,7 @@ Overview.prototype = {
         this._background.set_position(0, 0);
         this._group.add_actor(this._background);
 
-        let desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
+        let desktopBackground = Meta.X11BackgroundActor.new_for_display(global.display);
         this._background.add_actor(desktopBackground);
 
         let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
@@ -272,24 +275,15 @@ Overview.prototype = {
         this._coverPane.connect('event', () => true);
         this._coverPane.hide();
 
-        // All the the actors in the window group are completely obscured,
-        // hiding the group holding them while the Overview is displayed greatly
-        // increases performance of the Overview especially when there are many
-        // windows visible.
-        //
-        // If we switched to displaying the actors in the Overview rather than
-        // clones of them, this would obviously no longer be necessary.
-        //
         // Disable unredirection while in the overview
         Meta.disable_unredirect_for_screen(global.screen);
-        global.window_group.hide();
         this._group.show();
 
         this.workspacesView = new WorkspacesView.WorkspacesView();
         global.overlay_group.add_actor(this.workspacesView.actor);
         Main.panelManager.disablePanels();
 
-        let animate = Main.wm.settingsState['desktop-effects'];
+        let animate = Main.animations_enabled;
         if (animate) {
             this._group.opacity = 0;
             Tweener.addTween(this._group, {
@@ -408,7 +402,7 @@ Overview.prototype = {
 
         this.workspacesView.hide();
 
-        let animate = Main.wm.settingsState['desktop-effects'];
+        let animate = Main.animations_enabled;
         if (animate) {
             // Make other elements fade out.
             Tweener.addTween(this._group, {
@@ -451,9 +445,7 @@ Overview.prototype = {
         this._background = null;
 
         // Re-enable unredirection
-        Meta.enable_unredirect_for_screen(global.screen);
-
-        global.window_group.show();
+        Meta.enable_unredirect_for_display(global.display);
 
         this.workspacesView.destroy();
         this.workspacesView = null;

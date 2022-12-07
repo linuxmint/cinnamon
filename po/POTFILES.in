@@ -17,7 +17,6 @@ js/ui/polkitAuthenticationAgent.js
 js/ui/popupMenu.js
 js/ui/runDialog.js
 js/ui/cinnamonEntry.js
-js/ui/cinnamonMountOperation.js
 js/ui/windowAttentionHandler.js
 src/gvc/gvc-mixer-control.c
 src/main.c

@@ -2,6 +2,7 @@
 
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Signals = imports.signals;
@@ -9,6 +10,7 @@ const Pango = imports.gi.Pango;
 const Gettext_gtk30 = imports.gettext.domain('gtk30');
 const Cinnamon = imports.gi.Cinnamon;
 const Settings = imports.ui.settings;
+const Mainloop = imports.mainloop;
 
 const MSECS_IN_DAY = 24 * 60 * 60 * 1000;
 const WEEKDATE_HEADER_WIDTH_DIGITS = 3;
@@ -23,6 +25,13 @@ function _sameDay(dateA, dateB) {
     return (dateA.getDate() == dateB.getDate() &&
             dateA.getMonth() == dateB.getMonth() &&
             dateA.getYear() == dateB.getYear());
+}
+
+function _today(date) {
+    let today = new Date();
+    return (date.getDate() == today.getDate() &&
+            date.getMonth() == today.getMonth() &&
+            date.getYear() == today.getYear());
 }
 
 function _sameYear(dateA, dateB) {
@@ -137,15 +146,24 @@ function _dateIntervalsOverlap(a0, a1, b0, b1)
 }
 
 class Calendar {
-    constructor(settings) {
+    constructor(settings, events_manager) {
+        this.events_manager = events_manager;
         this._weekStart = Cinnamon.util_get_week_start();
         this._weekdate = NaN;
         this._digitWidth = NaN;
         this.settings = settings;
 
+        this._update_id = 0;
+        this._set_date_idle_id = 0;
+
         this.settings.bindWithObject(this, "show-week-numbers", "show_week_numbers", this._onSettingsChange);
         this.desktop_settings = new Gio.Settings({ schema_id: DESKTOP_SCHEMA });
         this.desktop_settings.connect("changed::" + FIRST_WEEKDAY_KEY, Lang.bind(this, this._onSettingsChange));
+
+        this.events_enabled = false;
+        this.events_manager.connect("events-updated", this._events_updated.bind(this));
+        this.events_manager.connect("events-manager-ready", this._update_events_enabled.bind(this));
+        this.events_manager.connect("has-calendars-changed", this._update_events_enabled.bind(this));
 
         // Find the ordering for month/year in the calendar heading
 
@@ -176,6 +194,50 @@ class Calendar {
         this._buildHeader ();
     }
 
+    _events_updated(events_manager) {
+        this._queue_update();
+    }
+
+    _cancel_update() {
+        if (this._update_id > 0) {
+            Mainloop.source_remove(this._update_id);
+            this._update_id = 0;
+        }
+    }
+
+    _queue_update() {
+        this._cancel_update();
+
+        this._update_id = Mainloop.idle_add(Lang.bind(this, this._idle_do_update));
+    }
+
+    _idle_do_update() {
+        this._update_id = 0;
+        this._update();
+
+        return GLib.SOURCE_REMOVE;
+    }
+
+    _queue_set_date_idle(date) {
+        this.setDate(date, false);
+        this._set_date_idle_id = 0;
+
+        return GLib.SOURCE_REMOVE;
+     }
+
+    queue_set_date(date) {
+        if (this._set_date_idle_id > 0) {
+            return;
+        }
+
+        this._set_date_idle_id = Mainloop.timeout_add(25, this._queue_set_date_idle.bind(this, date));
+    }
+
+    _update_events_enabled(em) {
+        this.events_enabled = this.events_manager.is_active();
+        this._queue_update();
+    }
+
     _onSettingsChange(object, key, old_val, new_val) {
         if (key == FIRST_WEEKDAY_KEY) this._weekStart = Cinnamon.util_get_week_start();
         this._buildHeader();
@@ -186,12 +248,24 @@ class Calendar {
     setDate(date, forceReload) {
         if (!_sameDay(date, this._selectedDate)) {
             this._selectedDate = date;
+            this.emit('selected-date-changed', this._selectedDate);
             this._update(forceReload);
-            this.emit('selected-date-changed', new Date(this._selectedDate));
         } else {
             if (forceReload)
                 this._update(forceReload);
         }
+    }
+
+    getSelectedDate() {
+        return this._selectedDate;
+    }
+
+    todaySelected() {
+        let today = new Date();
+
+        return this._selectedDate.getDate() == today.getDate() &&
+               this._selectedDate.getMonth() == today.getMonth() &&
+               this._selectedDate.getYear() == today.getYear();
     }
 
     _buildHeader() {
@@ -247,11 +321,16 @@ class Calendar {
         iter.setSeconds(0); // Leap second protection. Hah!
         iter.setHours(12);
         for (let i = 0; i < 7; i++) {
+            let styleClass = 'calendar-day-base calendar-day-heading';
+            if (_isWorkDay(iter))
+                styleClass += ' calendar-work-day';
+            else
+                styleClass += ' calendar-nonwork-day';
+
             // Could use iter.toLocaleFormat('%a') but that normally gives three characters
             // and we want, ideally, a single character for e.g. S M T W T F S
             let customDayAbbrev = _getCalendarDayAbbreviation(iter.getDay());
-            let label = new St.Label({ style_class: 'calendar-day-base calendar-day-heading',
-                                       text: customDayAbbrev });
+            let label = new St.Label({ style_class: styleClass, text: customDayAbbrev });
             this.actor.add(label,
                            { row: 1,
                              col: offsetCols + (7 + iter.getDay() - this._weekStart) % 7,
@@ -309,7 +388,7 @@ class Calendar {
 
         let newDate = new Date();
         newDate.setFullYear(newYear, newMonth, newDayOfMonth);
-        this.setDate(newDate, false);
+        this.queue_set_date(newDate);
     }
 
     _onPrevYearButtonClicked() {
@@ -337,7 +416,7 @@ class Calendar {
         // Remove everything but the topBox and the weekday labels
         let children = this.actor.get_children();
         for (let i = this._firstDayIndex; i < children.length; i++)
-            children[i].destroy();
+            this.actor.remove_actor(children[i]);
 
         // Start at the beginning of the week before the start of the month
         let beginDate = new Date(this._selectedDate);
@@ -349,22 +428,40 @@ class Calendar {
 
         let iter = new Date(beginDate);
         let row = 2;
-        while (true) {
-            let button = new St.Button({ label: iter.getDate().toString() });
 
-            button.reactive = false;
+        while (true) {
+            let group = new Cinnamon.Stack();
+
+            let button = new St.Button(
+                {
+                    label: iter.getDate().toString(),
+                }
+            );
+
+            group.add_actor(button);
+
+            let dot_box = new Cinnamon.GenericContainer(
+                {
+                    style_class: "calendar-day-event-dot-box",
+                }
+            );
+            dot_box.connect('allocate', this._allocate_dot_box.bind(this));
+            group.add_actor(dot_box);
 
             let iterStr = iter.toUTCString();
-            button.connect('clicked', Lang.bind(this, function() {
+            button.connect('clicked', Lang.bind(this, function(b) {
+                if (!this.events_enabled) {
+                    return;
+                }
                 let newlySelectedDate = new Date(iterStr);
                 this.setDate(newlySelectedDate, false);
             }));
 
             let styleClass = 'calendar-day-base calendar-day';
             if (_isWorkDay(iter))
-                styleClass += ' calendar-work-day'
+                styleClass += ' calendar-work-day';
             else
-                styleClass += ' calendar-nonwork-day'
+                styleClass += ' calendar-nonwork-day';
 
             // Hack used in lieu of border-collapse - see cinnamon.css
             if (row == 2)
@@ -372,18 +469,21 @@ class Calendar {
             if (iter.getDay() == this._weekStart)
                 styleClass = 'calendar-day-left ' + styleClass;
 
-            if (_sameDay(now, iter))
+            if (_today(iter))
                 styleClass += ' calendar-today';
             else if (iter.getMonth() != this._selectedDate.getMonth())
                 styleClass += ' calendar-other-month-day';
+            else
+                styleClass += ' calendar-not-today';
 
-            if (_sameDay(this._selectedDate, iter))
-                button.add_style_pseudo_class('active');
+            if (_sameDay(this._selectedDate, iter)) {
+                button.add_style_pseudo_class('selected');
+            }
 
             button.style_class = styleClass;
 
             let offsetCols = this.show_week_numbers ? 1 : 0;
-            this.actor.add(button,
+            this.actor.add(group,
                            { row: row, col: offsetCols + (7 + iter.getDay() - this._weekStart) % 7 });
 
             if (this.show_week_numbers && iter.getDay() == 4) {
@@ -391,6 +491,27 @@ class Calendar {
                                            style_class: 'calendar-day-base calendar-week-number'});
                 this.actor.add(label,
                                { row: row, col: 0, y_align: St.Align.MIDDLE });
+            }
+
+            let color_set = this.events_manager.get_colors_for_date(iter);
+
+            if (this.events_enabled && color_set !== null) {
+                let node = dot_box.get_theme_node();
+                let dot_box_width = node.get_width();
+                let dot_width = dot_box_width / color_set.length;
+
+                for (let i = 0; i < color_set.length; i++) {
+                    let color = color_set[i];
+                    let dot = new St.Bin(
+                        {
+                            style_class: "calendar-day-event-dot",
+                            style: `background-color: ${color};`,
+                            x_align: Clutter.ActorAlign.CENTER
+                        }
+                    );
+
+                    dot_box.add_actor(dot);
+                }
             }
 
             iter.setTime(iter.getTime() + MSECS_IN_DAY);
@@ -401,6 +522,57 @@ class Calendar {
                 if (row > 7) {
                     break;
                 }
+            }
+        }
+    }
+
+    _allocate_dot_box (actor, box, flags) {
+        let children = actor.get_children();
+
+        if (children.length == 0) {
+            return;
+        }
+
+        let a_dot = children[0];
+
+        let box_width = box.x2 - box.x1;
+        let box_height = box.y2 - box.y1;
+        let [mw, nw] = a_dot.get_preferred_width(-1);
+        let [mh, nh] = a_dot.get_preferred_height(-1);
+
+        let max_children_per_row = Math.trunc(box_width / nw);
+
+        let [found, max_rows] = actor.get_theme_node().lookup_double("max-rows", false);
+
+        if (found) {
+            max_rows = Math.trunc(max_rows);
+        } else {
+            max_rows = 2;
+        }
+
+        let n_rows = Math.min(max_rows, Math.ceil(children.length / max_children_per_row));
+
+        let dots_left = children.length;
+        let i = 0;
+        for (let dot_row = 0; dot_row < n_rows; dot_row++, dots_left -= max_children_per_row) {
+            let dots_this_row = Math.min(dots_left, max_children_per_row);
+            let total_child_width = nw * dots_this_row;
+
+            let start_x = Math.floor((box_width - total_child_width) / 2);
+
+            let cbox = new Clutter.ActorBox();
+            cbox.x1 = start_x;
+            cbox.y1 = dot_row * nh;
+            cbox.x2 = cbox.x1 + nw;
+            cbox.y2 = cbox.y1 + nh;
+
+            while (i < ((dot_row * max_children_per_row) + dots_this_row)) {
+                children[i].allocate(cbox, flags);
+
+                cbox.x1 += nw;
+                cbox.x2 += nw;
+
+                i++;
             }
         }
     }

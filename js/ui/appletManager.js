@@ -12,6 +12,7 @@ const ModalDialog = imports.ui.modalDialog;
 const {getModuleByIndex} = imports.misc.fileUtils;
 const {queryCollection, findIndex} = imports.misc.util;
 const Gettext = imports.gettext;
+const Panel = imports.ui.panel;
 
 // Maps uuid -> importer object (applet directory tree)
 var applets;
@@ -21,16 +22,12 @@ var appletMeta;
 var appletObj = [];
 var appletsLoaded = false;
 
-// An applet can assume a role
-// Instead of hardcoding looking for a particular applet,
-// We let applets announce that they can fill a particular
-// role, using the 'role' metadata entry.
-// For now, just notifications, but could be expanded.
-// question - should multiple applets be able to fill
-// the same role?
+// FIXME: This role stuff is checked in extension.js, why not move checks from here to there?
 var Roles = {
     NOTIFICATIONS: 'notifications',
-    PANEL_LAUNCHER: 'panellauncher'
+    PANEL_LAUNCHER: 'panellauncher',
+    WINDOW_ATTENTION_HANDLER: 'windowattentionhandler',
+    WINDOW_LIST: 'windowlist'
 };
 
 var rawDefinitions;
@@ -43,6 +40,7 @@ function initEnabledApplets() {
         promises.push(Extension.loadExtension(definitions[i].uuid, Extension.Type.APPLET))
     }
     return Promise.all(promises).then(function() {
+        Main.cinnamonDBusService.EmitXletsLoadedComplete();
         promises = [];
     });
 }
@@ -79,7 +77,7 @@ function getAppletDefinition(definition) {
 
 function filterDefinitionsByUUID(uuid) {
     return definitions.filter(function(definition) {
-        return definition.uuid === uuid;
+        return definition.real_uuid === uuid;
     })
 }
 
@@ -88,11 +86,16 @@ function finishExtensionLoad(extensionIndex) {
     // Add all applet instances for this extension
     let extension = Extension.extensions[extensionIndex];
     for (let i = 0; i < definitions.length; i++) {
-        if (definitions[i].uuid !== extension.uuid
+        if (definitions[i].real_uuid !== extension.uuid
             || definitions[i].applet != null) {
             continue;
         }
-        if (!addAppletToPanels(extension, definitions[i])) {
+        // Applets that haven't been added ever (for this process) will call
+        // addAppletToPanels here, as they are loaded from disk asynchronously.
+        // If initial applet loading has been completed, we can assume this is
+        // a user action, and flag the applet to be flashed when it is added
+        // to the panel.
+        if (!addAppletToPanels(extension, definitions[i], null, appletsLoaded)) {
             return false;
         }
     }
@@ -103,7 +106,7 @@ function finishExtensionLoad(extensionIndex) {
 function prepareExtensionUnload(extension, deleteConfig) {
     // Remove all applet instances for this extension
     for (var i = 0; i < definitions.length; i++) {
-        if (extension.uuid !== definitions[i].uuid) {
+        if (extension.uuid !== definitions[i].real_uuid) {
             continue;
         }
         removeAppletFromPanels(definitions[i], deleteConfig);
@@ -113,7 +116,7 @@ function prepareExtensionUnload(extension, deleteConfig) {
 // Callback for extension.js
 function prepareExtensionReload(extension) {
     for (var i = 0; i < definitions.length; i++) {
-        if (extension.uuid === definitions[i].uuid) {
+        if (extension.uuid === definitions[i].real_uuid) {
             let {applet, applet_id} = definitions[i];
             if (!applet) continue;
             global.log(`Reloading applet: ${extension.uuid}/${applet_id}`);
@@ -172,6 +175,7 @@ function createAppletDefinition(definition) {
             center,
             order,
             uuid: elements[3],
+            real_uuid: elements[3].replace("!", ""),
             applet_id: elements[4]
         };
 
@@ -251,8 +255,8 @@ function onEnabledAppletsChanged() {
     let unChangedApplets = [];
 
     for (let i = 0; i < definitions.length; i++) {
-        let {uuid, applet_id} = definitions[i];
-        let oldDefinition = queryCollection(oldDefinitions, {uuid, applet_id});
+        let {uuid, real_uuid, applet_id} = definitions[i];
+        let oldDefinition = queryCollection(oldDefinitions, {real_uuid, applet_id});
 
         let isEqualToOldDefinition = appletDefinitionsEqual(definitions[i], oldDefinition);
 
@@ -262,7 +266,10 @@ function onEnabledAppletsChanged() {
 
         if (!oldDefinition || !isEqualToOldDefinition) {
             let extension = Extension.getExtension(uuid);
-            addedApplets.push({extension, definition: definitions[i]});
+            // If the applet definition previously didn't exist, also assume it's a new
+            // instance. As opposed to an applet that's just getting re-loaded because something
+            // about its definition changed (maybe the position value, if a new applet was added).
+            addedApplets.push({extension, definition: definitions[i], is_new: !oldDefinition});
             continue;
         }
 
@@ -289,11 +296,17 @@ function onEnabledAppletsChanged() {
     }
 
     for (let i = 0; i < addedApplets.length; i++) {
-        let {extension, definition} = addedApplets[i];
+        let {extension, definition, is_new} = addedApplets[i];
+
+        // If this is the first instance of an applet *for the life of the process*,
+        // loading an applet fails here. In that case, expect addAppletToPanels()
+        // to be called by finishExtensionLoad instead.
         if (!extension) {
             continue;
         }
-        addAppletToPanels(extension, definition);
+
+        // is_new will get this applet flashied.
+        addAppletToPanels(extension, definition, null, appletsLoaded && is_new);
     }
 
     // Make sure all applet extensions are loaded.
@@ -333,22 +346,25 @@ function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false)
 }
 
 function _removeAppletConfigFile(uuid, instanceId) {
-    let config_path = (GLib.get_home_dir() + "/" +
-                               ".cinnamon" + "/" +
-                                 "configs" + "/" +
-                                      uuid + "/" +
-                                instanceId + ".json");
-    let file = Gio.File.new_for_path(config_path);
-    if (file.query_exists(null)) {
-        try {
-            file.delete(null);
-        } catch (e) {
-            global.logError("Problem removing applet config file during cleanup.  UUID is " + uuid + " and filename is " + config_path);
+    let config_paths = [
+        [GLib.get_home_dir(), ".cinnamon", "configs", uuid, instanceId + ".json"].join("/"),
+        [GLib.get_user_config_dir(), "cinnamon", "spices", uuid, instanceId + ".json"].join("/")
+    ];
+
+    for (let i = 0; i < config_paths.length; i++) {
+        const config_path = config_paths[i];
+        let file = Gio.File.new_for_path(config_path);
+        if (file.query_exists(null)) {
+            try {
+                file.delete(null);
+            } catch (e) {
+                global.logError("Problem removing applet config file during cleanup.  UUID is " + uuid + " and filename is " + config_path);
+            }
         }
     }
 }
 
-function addAppletToPanels(extension, appletDefinition, panel = null) {
+function addAppletToPanels(extension, appletDefinition, panel = null, user_action=false) {
     if (!appletDefinition.panelId) return true;
 
     try {
@@ -394,13 +410,13 @@ function addAppletToPanels(extension, appletDefinition, panel = null) {
 
         applet._panelLocation = location;
 
-        applet.on_applet_added_to_panel_internal(appletsLoaded);
+        applet.on_applet_added_to_panel_internal(user_action);
 
         removeAppletFromInappropriatePanel (extension, appletDefinition);
 
         return true;
     } catch (e) {
-        extension.unlockRole();
+        extension.unlockRoles();
         Extension.logError('Failed to load applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, extension.uuid, e);
         return false;
     }
@@ -498,7 +514,7 @@ function removeApplet(appletDefinition) {
 
 function moveApplet(appletDefinition, allowedLayout) {
     let panelId = null;
-    let panels = global.settings.get_strv('panels-enabled');
+    let panels = Panel.getPanelsEnabledList();
     for (let i = 0; i < panels.length; i++) {
         let panelInfo = panels[i].split(':');
         global.logWarning(allowedLayout==Applet.AllowedLayout.HORIZONTAL);
@@ -584,6 +600,9 @@ function createApplet(extension, appletDefinition, panel = null) {
         return null;
     }
 
+    //add applet style class uuid if we have one
+    _addAppletStyleClassUuid(applet, extension.meta)
+
     applet._uuid = extension.uuid;
     applet._meta = extension.meta;
     applet.instance_id = applet_id;
@@ -597,9 +616,27 @@ function createApplet(extension, appletDefinition, panel = null) {
     return applet;
 }
 
+function _addAppletStyleClassUuid(applet, metadata){
+    const appletClass = _generateAppletStyleClassUuid(metadata)
+    if(appletClass !== ''){
+        applet._addStyleClass(appletClass);
+        return true
+    }
+    return false
+}
+
+function _generateAppletStyleClassUuid(metadata){
+    if(typeof metadata === 'object' && metadata !== null && typeof metadata.uuid === 'string' && metadata.uuid.trim() !== ''){
+        return metadata.uuid.toLowerCase().replace(/([^a-z0-9]+)/gi, '-')+'-applet';
+    }else{
+        return ''
+    }
+}
+
 function _removeAppletFromPanel(uuid, applet_id) {
     Mainloop.idle_add(() => {
-        let definition = queryCollection(definitions, {uuid, applet_id});
+        let real_uuid = uuid;
+        let definition = queryCollection(definitions, {real_uuid, applet_id});
         if (definition)
             removeApplet(definition);
         return false;

@@ -2,11 +2,21 @@
 
 #include "config.h"
 
+#include <fcntl.h>
+
 #include "cinnamon-global-private.h"
+#include "cinnamon-screen.h"
+#include <meta/meta-x11-display.h>
+#include <meta/compositor-mutter.h>
+#include <meta/meta-cursor-tracker.h>
+#include <meta/meta-background-actor.h>
+#include <meta/meta-settings.h>
+#include <meta/meta-backend.h>
+#include <meta/util.h>
+#include <meta/main.h>
+#include <cogl-pango/cogl-pango.h>
 
 static CinnamonGlobal *the_object = NULL;
-
-static void grab_notify (GtkWidget *widget, gboolean is_grab, gpointer user_data);
 
 enum {
   PROP_0,
@@ -23,21 +33,21 @@ enum {
   PROP_WINDOW_GROUP,
   PROP_TOP_WINDOW_GROUP,
   PROP_BACKGROUND_ACTOR,
+  PROP_DESKLET_CONTAINER,
   PROP_WINDOW_MANAGER,
   PROP_SETTINGS,
   PROP_DATADIR,
   PROP_IMAGEDIR,
   PROP_USERDATADIR,
   PROP_FOCUS_MANAGER,
-  PROP_UI_SCALE
+  PROP_UI_SCALE,
+  PROP_SESSION_RUNNING,
+  PROP_WORKSPACE_MANAGER
 };
 
 /* Signals */
 enum
 {
- XDND_POSITION_CHANGED,
- XDND_LEAVE,
- XDND_ENTER,
  NOTIFY_ERROR,
  SCALE_CHANGED,
  SHUTDOWN,
@@ -61,6 +71,9 @@ cinnamon_global_set_property(GObject         *object,
     case PROP_STAGE_INPUT_MODE:
       cinnamon_global_set_stage_input_mode (global, g_value_get_enum (value));
       break;
+    case PROP_SESSION_RUNNING:
+      global->session_running = g_value_get_boolean (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -78,10 +91,10 @@ cinnamon_global_get_property(GObject         *object,
   switch (prop_id)
     {
     case PROP_OVERLAY_GROUP:
-      g_value_set_object (value, meta_get_overlay_group_for_screen (global->meta_screen));
+      g_value_set_object (value, meta_get_feedback_group_for_display (global->meta_display));
       break;
     case PROP_SCREEN:
-      g_value_set_object (value, global->meta_screen);
+      g_value_set_object (value, global->cinnamon_screen);
       break;
     case PROP_GDK_SCREEN:
       g_value_set_object (value, global->gdk_screen);
@@ -93,7 +106,7 @@ cinnamon_global_get_property(GObject         *object,
       {
         int width, height;
 
-        meta_screen_get_size (global->meta_screen, &width, &height);
+        meta_display_get_size (global->meta_display, &width, &height);
         g_value_set_int (value, width);
       }
       break;
@@ -101,7 +114,7 @@ cinnamon_global_get_property(GObject         *object,
       {
         int width, height;
 
-        meta_screen_get_size (global->meta_screen, &width, &height);
+        meta_display_get_size (global->meta_display, &width, &height);
         g_value_set_int (value, height);
       }
       break;
@@ -112,16 +125,19 @@ cinnamon_global_get_property(GObject         *object,
       g_value_set_enum (value, global->input_mode);
       break;
     case PROP_BOTTOM_WINDOW_GROUP:
-      g_value_set_object (value, meta_get_bottom_window_group_for_screen (global->meta_screen));
+      g_value_set_object (value, meta_get_bottom_window_group_for_display (global->meta_display));
       break;
     case PROP_WINDOW_GROUP:
-      g_value_set_object (value, meta_get_window_group_for_screen (global->meta_screen));
+      g_value_set_object (value, meta_get_window_group_for_display (global->meta_display));
       break;
     case PROP_TOP_WINDOW_GROUP:
-      g_value_set_object (value, meta_get_top_window_group_for_screen (global->meta_screen));
+      g_value_set_object (value, meta_get_top_window_group_for_display (global->meta_display));
       break;
     case PROP_BACKGROUND_ACTOR:
-      g_value_set_object (value, meta_get_background_actor_for_screen (global->meta_screen));
+      g_value_set_object (value, meta_get_x11_background_actor_for_display (global->meta_display));
+      break;
+    case PROP_DESKLET_CONTAINER:
+      g_value_set_object (value, meta_get_desklet_container_for_display (global->meta_display));
       break;
     case PROP_WINDOW_MANAGER:
       g_value_set_object (value, global->wm);
@@ -144,10 +160,49 @@ cinnamon_global_get_property(GObject         *object,
     case PROP_UI_SCALE:
       g_value_set_uint (value, global->ui_scale);
       break;
+    case PROP_SESSION_RUNNING:
+      g_value_set_boolean (value, global->session_running);
+      break;
+    case PROP_WORKSPACE_MANAGER:
+      g_value_set_object (value, global->workspace_manager);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
     }
+}
+
+static void
+failed_to_own_notifications (GDBusConnection *connection,
+                             const gchar     *name,
+                             gpointer         user_data)
+{
+    g_message ("Tried to become the session notification handler but failed. "
+               "Maybe some other process is handling it.");
+}
+
+static void
+setup_notifications_service (CinnamonGlobal *global)
+{
+  gboolean disabled;
+
+  /* notify-osd allows itself to be replaced as the notification handler. dunst does not,
+     nor does cinnamon. If we attempt to own and fail, cinnamon is still 'on deck' to take
+     over if the existing handler disappears - our owner_id is still valid. */
+
+  disabled = g_settings_get_boolean (global->settings, "allow-other-notification-handlers");
+
+  if (disabled)
+  {
+    return;
+  }
+
+  global->notif_service_id = g_bus_own_name (G_BUS_TYPE_SESSION,
+                                              "org.freedesktop.Notifications",
+                                              G_BUS_NAME_OWNER_FLAGS_REPLACE,
+                                              NULL, NULL,
+                                              (GBusNameLostCallback) failed_to_own_notifications,
+                                              global, NULL);
 }
 
 static void
@@ -180,11 +235,9 @@ cinnamon_global_init (CinnamonGlobal *global)
 
   global->settings = g_settings_new ("org.cinnamon");
 
-  global->ui_scale = 1;
+  setup_notifications_service (global);
 
-  global->grab_notifier = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
-  g_signal_connect (global->grab_notifier, "grab-notify", G_CALLBACK (grab_notify), global);
-  global->gtk_grab_active = FALSE;
+  global->ui_scale = 1;
 
   global->input_mode = CINNAMON_STAGE_INPUT_MODE_NORMAL;
 
@@ -192,6 +245,7 @@ cinnamon_global_init (CinnamonGlobal *global)
     cinnamon_js = JSDIR;
   search_path = g_strsplit (cinnamon_js, ":", -1);
   global->js_context = g_object_new (GJS_TYPE_CONTEXT,
+                                     "profiler-sigusr2", true,
                                      "search-path", search_path,
                                      NULL);
 
@@ -204,9 +258,8 @@ cinnamon_global_finalize (GObject *object)
   CinnamonGlobal *global = CINNAMON_GLOBAL (object);
   g_object_unref (global->js_context);
 
-  gtk_widget_destroy (GTK_WIDGET (global->grab_notifier));
   g_object_unref (global->settings);
-  g_object_unref (global->interface_settings);
+  g_clear_handle_id (&global->notif_service_id, g_bus_unown_name);
 
   the_object = NULL;
 
@@ -221,33 +274,6 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
   gobject_class->get_property = cinnamon_global_get_property;
   gobject_class->set_property = cinnamon_global_set_property;
   gobject_class->finalize = cinnamon_global_finalize;
-
-  /* Emitted from cinnamon-plugin.c during event handling */
-  cinnamon_global_signals[XDND_POSITION_CHANGED] =
-      g_signal_new ("xdnd-position-changed",
-                    G_TYPE_FROM_CLASS (klass),
-                    G_SIGNAL_RUN_LAST,
-                    0,
-                    NULL, NULL, NULL,
-                    G_TYPE_NONE, 2, G_TYPE_INT, G_TYPE_INT);
-
-  /* Emitted from cinnamon-plugin.c during event handling */
-  cinnamon_global_signals[XDND_LEAVE] =
-      g_signal_new ("xdnd-leave",
-                    G_TYPE_FROM_CLASS (klass),
-                    G_SIGNAL_RUN_LAST,
-                    0,
-                    NULL, NULL, NULL,
-                    G_TYPE_NONE, 0);
-
-  /* Emitted from cinnamon-plugin.c during event handling */
-  cinnamon_global_signals[XDND_ENTER] =
-      g_signal_new ("xdnd-enter",
-                    G_TYPE_FROM_CLASS (klass),
-                    G_SIGNAL_RUN_LAST,
-                    0,
-                    NULL, NULL, NULL,
-                    G_TYPE_NONE, 0);
 
   cinnamon_global_signals[NOTIFY_ERROR] =
       g_signal_new ("notify-error",
@@ -286,8 +312,8 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                    PROP_SCREEN,
                                    g_param_spec_object ("screen",
                                                         "Screen",
-                                                        "Metacity screen object for Cinnamon",
-                                                        META_TYPE_SCREEN,
+                                                        "Cinnamon screen object",
+                                                        CINNAMON_TYPE_SCREEN,
                                                         G_PARAM_READABLE));
 
   g_object_class_install_property (gobject_class,
@@ -365,6 +391,13 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                                         CLUTTER_TYPE_ACTOR,
                                                         G_PARAM_READABLE));
   g_object_class_install_property (gobject_class,
+                                   PROP_DESKLET_CONTAINER,
+                                   g_param_spec_object ("desklet-container",
+                                                        "Desklet Container",
+                                                        "Actor that will hold desklets",
+                                                        CLUTTER_TYPE_ACTOR,
+                                                        G_PARAM_READABLE));
+  g_object_class_install_property (gobject_class,
                                    PROP_WINDOW_MANAGER,
                                    g_param_spec_object ("window-manager",
                                                         "Window Manager",
@@ -414,6 +447,22 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                                       "Current UI Scale",
                                                       0, G_MAXUINT, 1,
                                                       G_PARAM_READABLE));
+
+  g_object_class_install_property (gobject_class,
+                                   PROP_SESSION_RUNNING,
+                                   g_param_spec_boolean ("session-running",
+                                                         "Session state",
+                                                         "If the session startup has already finished",
+                                                         FALSE,
+                                                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
+
+  g_object_class_install_property (gobject_class,
+                                   PROP_WORKSPACE_MANAGER,
+                                   g_param_spec_object ("workspace-manager",
+                                                        "Workspace manager",
+                                                        "Workspace manager",
+                                                        META_TYPE_WORKSPACE_MANAGER,
+                                                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 }
 
 /**
@@ -475,9 +524,7 @@ focus_window_changed (MetaDisplay *display,
 static void
 cinnamon_global_focus_stage (CinnamonGlobal *global)
 {
-  XSetInputFocus (global->xdisplay, global->stage_xwindow,
-                  RevertToPointerRoot,
-                  cinnamon_global_get_current_time (global));
+  meta_focus_stage_window (global->meta_display, cinnamon_global_get_current_time (global));
 }
 
 /**
@@ -507,20 +554,21 @@ cinnamon_global_focus_stage (CinnamonGlobal *global)
  */
 void
 cinnamon_global_set_stage_input_mode (CinnamonGlobal         *global,
-                                   CinnamonStageInputMode  mode)
+                                      CinnamonStageInputMode  mode)
 {
-  MetaScreen *screen;
+  CinnamonScreen *screen;
+  MetaX11Display *x11_display;
 
   g_return_if_fail (CINNAMON_IS_GLOBAL (global));
 
-  screen = meta_plugin_get_screen (global->plugin);
+  x11_display = meta_display_get_x11_display (global->meta_display);
 
-  if (mode == CINNAMON_STAGE_INPUT_MODE_NONREACTIVE || global->gtk_grab_active)
-    meta_empty_stage_input_region (screen);
+  if (mode == CINNAMON_STAGE_INPUT_MODE_NONREACTIVE)
+    meta_x11_display_clear_stage_input_region (x11_display);
   else if (mode == CINNAMON_STAGE_INPUT_MODE_FULLSCREEN || !global->input_region)
-    meta_set_stage_input_region (screen, None);
+    meta_x11_display_set_stage_input_region (x11_display, None);
   else
-    meta_set_stage_input_region (screen, global->input_region);
+    meta_x11_display_set_stage_input_region (x11_display, global->input_region);
 
   if (mode == CINNAMON_STAGE_INPUT_MODE_FOCUSED)
     cinnamon_global_focus_stage (global);
@@ -541,122 +589,62 @@ cinnamon_global_set_stage_input_mode (CinnamonGlobal         *global,
  */
 void
 cinnamon_global_set_cursor (CinnamonGlobal *global,
-                         CinnamonCursor type)
+                            CinnamonCursor type)
 {
-  const char *name;
-  GdkCursor *cursor;
+  MetaCursor ret_curs;
 
   switch (type)
     {
     case CINNAMON_CURSOR_DND_IN_DRAG:
-      name = "dnd-none";
+      ret_curs = META_CURSOR_DND_IN_DRAG;
       break;
     case CINNAMON_CURSOR_DND_MOVE:
-      name = "dnd-move";
+      ret_curs = META_CURSOR_DND_MOVE;
       break;
     case CINNAMON_CURSOR_DND_COPY:
-      name = "dnd-copy";
+      ret_curs = META_CURSOR_DND_COPY;
       break;
     case CINNAMON_CURSOR_DND_UNSUPPORTED_TARGET:
-      name = "X_cursor";
+      ret_curs = META_CURSOR_DND_UNSUPPORTED_TARGET;
       break;
     case CINNAMON_CURSOR_POINTING_HAND:
-      name = "hand";
+      ret_curs = META_CURSOR_POINTING_HAND;
       break;
     case CINNAMON_CURSOR_RESIZE_BOTTOM:
-      name = "bottom_side";
+      ret_curs = META_CURSOR_SOUTH_RESIZE;
       break;
     case CINNAMON_CURSOR_RESIZE_TOP:
-      name = "top_side";
+      ret_curs = META_CURSOR_NORTH_RESIZE;
       break;
     case CINNAMON_CURSOR_RESIZE_LEFT:
-      name = "left_side";
+      ret_curs = META_CURSOR_WEST_RESIZE;
       break;
     case CINNAMON_CURSOR_RESIZE_RIGHT:
-      name = "right_side";
+      ret_curs = META_CURSOR_EAST_RESIZE;
       break;
     case CINNAMON_CURSOR_RESIZE_BOTTOM_RIGHT:
-      name = "bottom_right_corner";
+      ret_curs = META_CURSOR_SE_RESIZE;
       break;
     case CINNAMON_CURSOR_RESIZE_BOTTOM_LEFT:
-      name = "bottom_left_corner";
+      ret_curs = META_CURSOR_SW_RESIZE;
       break;
     case CINNAMON_CURSOR_RESIZE_TOP_RIGHT:
-      name = "top_right_corner";
+      ret_curs = META_CURSOR_NE_RESIZE;
       break;
     case CINNAMON_CURSOR_RESIZE_TOP_LEFT:
-      name = "top_left_corner";
+      ret_curs = META_CURSOR_NW_RESIZE;
       break;
     case CINNAMON_CURSOR_CROSSHAIR:
-      name = "crosshair";
+      ret_curs = META_CURSOR_CROSSHAIR;
       break;
     case CINNAMON_CURSOR_TEXT:
-      name = "xterm";
+      ret_curs = META_CURSOR_IBEAM;
       break;
     default:
       g_return_if_reached ();
     }
 
-  cursor = gdk_cursor_new_from_name (global->gdk_display, name);
-  if (!cursor)
-    {
-      GdkCursorType cursor_type;
-      switch (type)
-        {
-        case CINNAMON_CURSOR_DND_IN_DRAG:
-          cursor_type = GDK_FLEUR;
-          break;
-        case CINNAMON_CURSOR_DND_MOVE:
-          cursor_type = GDK_TARGET;
-          break;
-        case CINNAMON_CURSOR_DND_COPY:
-          cursor_type = GDK_PLUS;
-          break;
-        case CINNAMON_CURSOR_POINTING_HAND:
-          cursor_type = GDK_HAND2;
-          break;
-        case CINNAMON_CURSOR_DND_UNSUPPORTED_TARGET:
-          cursor_type = GDK_X_CURSOR;
-          break;
-        case CINNAMON_CURSOR_RESIZE_BOTTOM:
-          cursor_type = GDK_BOTTOM_SIDE;
-          break;
-        case CINNAMON_CURSOR_RESIZE_TOP:
-          cursor_type = GDK_TOP_SIDE;
-          break;
-        case CINNAMON_CURSOR_RESIZE_LEFT:
-          cursor_type = GDK_LEFT_SIDE;
-          break;
-        case CINNAMON_CURSOR_RESIZE_RIGHT:
-          cursor_type = GDK_RIGHT_SIDE;
-          break;
-        case CINNAMON_CURSOR_RESIZE_BOTTOM_RIGHT:
-          cursor_type = GDK_BOTTOM_RIGHT_CORNER;
-          break;
-        case CINNAMON_CURSOR_RESIZE_BOTTOM_LEFT:
-          cursor_type = GDK_BOTTOM_LEFT_CORNER;
-          break;
-        case CINNAMON_CURSOR_RESIZE_TOP_RIGHT:
-          cursor_type = GDK_TOP_RIGHT_CORNER;
-          break;
-        case CINNAMON_CURSOR_RESIZE_TOP_LEFT:
-          cursor_type = GDK_TOP_LEFT_CORNER;
-          break;
-        case CINNAMON_CURSOR_CROSSHAIR:
-          cursor_type = GDK_CROSSHAIR;
-          break;
-        case CINNAMON_CURSOR_TEXT:
-          cursor_type = GDK_XTERM;
-          break;
-        default:
-          g_return_if_reached ();
-        }
-      cursor = gdk_cursor_new_for_display (gdk_display_get_default(), cursor_type);
-    }
-
-  gdk_window_set_cursor (global->stage_gdk_window, cursor);
-
-  g_object_unref (cursor);
+    meta_display_set_cursor (global->meta_display, ret_curs);
 }
 
 /**
@@ -668,7 +656,7 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
 void
 cinnamon_global_unset_cursor (CinnamonGlobal  *global)
 {
-  gdk_window_set_cursor (global->stage_gdk_window, NULL);
+  meta_display_set_cursor (global->meta_display, META_CURSOR_DEFAULT);
 }
 
 /**
@@ -729,12 +717,12 @@ cinnamon_global_get_stage (CinnamonGlobal  *global)
 /**
  * cinnamon_global_get_screen:
  *
- * Return value: (transfer none): The default #MetaScreen
+ * Return value: (transfer none): The (Meta) CinnamonScreen
  */
-MetaScreen *
+CinnamonScreen *
 cinnamon_global_get_screen (CinnamonGlobal  *global)
 {
-  return global->meta_screen;
+  return global->cinnamon_screen;
 }
 
 /**
@@ -773,7 +761,7 @@ cinnamon_global_get_window_actors (CinnamonGlobal *global)
 {
   g_return_val_if_fail (CINNAMON_IS_GLOBAL (global), NULL);
 
-  return meta_get_window_actors (global->meta_screen);
+  return meta_get_window_actors (global->meta_display);
 }
 
 static void
@@ -817,146 +805,43 @@ global_stage_after_paint (gpointer data)
 static void
 cinnamon_fonts_init (ClutterStage *stage)
 {
-  CoglPangoFontMap *fontmap;
+  PangoFontMap *fontmap;
 
   /* Disable text mipmapping; it causes problems on pre-GEM Intel
    * drivers and we should just be rendering text at the right
    * size rather than scaling it. If we do effects where we dynamically
    * zoom labels, then we might want to reconsider.
    */
-  fontmap = COGL_PANGO_FONT_MAP (clutter_get_font_map ());
-  cogl_pango_font_map_set_use_mipmapping (fontmap, FALSE);
-}
 
-/* This is an IBus workaround. The flow of events with IBus is that every time
- * it gets gets a key event, it:
- *
- *  Sends it to the daemon via D-Bus asynchronously
- *  When it gets an reply, synthesizes a new GdkEvent and puts it into the
- *   GDK event queue with gdk_event_put(), including
- *   IBUS_FORWARD_MASK = 1 << 25 in the state to prevent a loop.
- *
- * (Normally, IBus uses the GTK+ key snooper mechanism to get the key
- * events early, but since our key events aren't visible to GTK+ key snoopers,
- * IBus will instead get the events via the standard
- * GtkIMContext.filter_keypress() mechanism.)
- *
- * There are a number of potential problems here; probably the worst
- * problem is that IBus doesn't forward the timestamp with the event
- * so that every key event that gets delivered ends up with
- * GDK_CURRENT_TIME.  This creates some very subtle bugs; for example
- * if you have IBus running and a keystroke is used to trigger
- * launching an application, focus stealing prevention won't work
- * right. http://code.google.com/p/ibus/issues/detail?id=1184
- *
- * In any case, our normal flow of key events is:
- *
- *  GDK filter function => clutter_x11_handle_event => clutter actor
- *
- * So, if we see a key event that gets delivered via the GDK event handler
- * function - then we know it must be one of these synthesized events, and
- * we should push it back to clutter.
- *
- * To summarize, the full key event flow with IBus is:
- *
- *   GDK filter function
- *     => Mutter
- *     => gnome_cinnamon_plugin_xevent_filter()
- *     => clutter_x11_handle_event()
- *     => clutter event delivery to actor
- *     => gtk_im_context_filter_event()
- *     => sent to IBus daemon
- *     => response received from IBus daemon
- *     => gdk_event_put()
- *     => GDK event handler
- *     => <this function>
- *     => clutter_event_put()
- *     => clutter event delivery to actor
- *
- * Anything else we see here we just pass on to the normal GDK event handler
- * gtk_main_do_event().
- */
-static void
-gnome_cinnamon_gdk_event_handler (GdkEvent *event_gdk,
-                               gpointer  data)
-{
-  if (event_gdk->type == GDK_KEY_PRESS || event_gdk->type == GDK_KEY_RELEASE)
-    {
-      ClutterActor *stage;
-      Window stage_xwindow;
-
-      stage = CLUTTER_ACTOR (data);
-      stage_xwindow = clutter_x11_get_stage_window (CLUTTER_STAGE (stage));
-
-      if (GDK_WINDOW_XID (event_gdk->key.window) == stage_xwindow)
-        {
-          ClutterDeviceManager *device_manager = clutter_device_manager_get_default ();
-          ClutterInputDevice *keyboard = clutter_device_manager_get_core_device (device_manager,
-                                                                                 CLUTTER_KEYBOARD_DEVICE);
-
-          ClutterEvent *event_clutter = clutter_event_new ((event_gdk->type == GDK_KEY_PRESS) ?
-                                                           CLUTTER_KEY_PRESS : CLUTTER_KEY_RELEASE);
-          event_clutter->key.time = event_gdk->key.time;
-          event_clutter->key.flags = CLUTTER_EVENT_NONE;
-          event_clutter->key.stage = CLUTTER_STAGE (stage);
-          event_clutter->key.source = NULL;
-
-          /* This depends on ClutterModifierType and GdkModifierType being
-           * identical, which they are currently. (They both match the X
-           * modifier state in the low 16-bits and have the same extensions.) */
-          event_clutter->key.modifier_state = event_gdk->key.state;
-
-          event_clutter->key.keyval = event_gdk->key.keyval;
-          event_clutter->key.hardware_keycode = event_gdk->key.hardware_keycode;
-          event_clutter->key.unicode_value = gdk_keyval_to_unicode (event_clutter->key.keyval);
-          event_clutter->key.device = keyboard;
-
-          clutter_event_put (event_clutter);
-          clutter_event_free (event_clutter);
-
-          return;
-        }
-    }
-
-  gtk_main_do_event (event_gdk);
+  fontmap = clutter_get_font_map ();
+  cogl_pango_font_map_set_use_mipmapping (COGL_PANGO_FONT_MAP (fontmap), FALSE);
 }
 
 static void
-update_scale_factor (GtkSettings *settings,
-                     GParamSpec *pspec,
-                     gpointer data)
+update_scaling_factor (CinnamonGlobal  *global,
+                       MetaSettings *settings)
 {
-  guint scale = 1;
-  int xft_dpi;
-  GtkSettings *gtk_settings;
-  CinnamonGlobal *global = CINNAMON_GLOBAL (data);
   ClutterStage *stage = CLUTTER_STAGE (global->stage);
   StThemeContext *context = st_theme_context_get_for_stage (stage);
-  GValue value = G_VALUE_INIT;
+  int scaling_factor;
 
-  g_value_init (&value, G_TYPE_UINT);
-  if (gdk_screen_get_setting (global->gdk_screen, "gdk-window-scaling-factor", &value)) {
-    scale = g_value_get_uint (&value);
-    g_object_set (context, "scale-factor", scale, NULL);
+  scaling_factor = meta_settings_get_ui_scaling_factor (settings);
+  g_object_set (context, "scale-factor", scaling_factor, NULL);
 
-    if (scale != global->ui_scale) {
-        global->ui_scale = scale;
-        g_signal_emit_by_name (global, "scale-changed");
-    }
+  if (scaling_factor != global->ui_scale) {
+      global->ui_scale = scaling_factor;
+      g_object_notify (G_OBJECT (global), "ui-scale");
+      g_signal_emit_by_name (global, "scale-changed");
   }
-
-  if (g_settings_get_int (global->settings, "active-display-scale") != (int)scale) {
-    g_settings_set_int (global->settings, "active-display-scale", (int)scale);
-  }
-
-  gtk_settings = gtk_settings_get_default ();
-
-  g_object_get (gtk_settings, "gtk-xft-dpi", &xft_dpi, NULL);
-  g_object_set (clutter_settings_get_default (), "font-dpi", xft_dpi, NULL);
-
-   /* Make sure gdk scaling stays disabled */
-  gdk_x11_display_set_window_scale (gdk_display_get_default (), 1);
 }
+
+static void
+ui_scaling_factor_changed (MetaSettings *settings,
+                           CinnamonGlobal  *global)
+{
+  update_scaling_factor (global, settings);
+}
+
 
 void
 _cinnamon_global_set_plugin (CinnamonGlobal *global,
@@ -965,28 +850,25 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   g_return_if_fail (CINNAMON_IS_GLOBAL (global));
   g_return_if_fail (global->plugin == NULL);
 
+  MetaX11Display *x11_display;
+
   global->plugin = plugin;
   global->wm = cinnamon_wm_new (plugin);
 
-  global->meta_screen = meta_plugin_get_screen (plugin);
-  global->meta_display = meta_screen_get_display (global->meta_screen);
-  global->xdisplay = meta_display_get_xdisplay (global->meta_display);
+  global->meta_display = meta_plugin_get_display (plugin);
+  global->workspace_manager = meta_display_get_workspace_manager (global->meta_display);
+  global->cinnamon_screen = cinnamon_screen_new (global->meta_display);
+  x11_display = meta_display_get_x11_display (global->meta_display);
+  global->xdisplay = meta_x11_display_get_xdisplay (x11_display);
 
   global->gdk_display = gdk_x11_lookup_xdisplay (global->xdisplay);
-  global->gdk_screen = gdk_display_get_screen (global->gdk_display,
-                                               meta_screen_get_screen_number (global->meta_screen));
-
-  global->stage = CLUTTER_STAGE (meta_get_stage_for_screen (global->meta_screen));
-  global->stage_xwindow = clutter_x11_get_stage_window (global->stage);
-  global->stage_gdk_window = gdk_x11_window_foreign_new_for_display (global->gdk_display,
-                                                                     global->stage_xwindow);
+  global->gdk_screen = gdk_display_get_default_screen (global->gdk_display);
+  global->stage = CLUTTER_STAGE (meta_get_stage_for_display (global->meta_display));
 
   g_signal_connect (global->stage, "notify::width",
                     G_CALLBACK (global_stage_notify_width), global);
   g_signal_connect (global->stage, "notify::height",
                     G_CALLBACK (global_stage_notify_height), global);
-
-
 
   if (g_getenv ("CINNAMON_PERF_OUTPUT") != NULL)
     {
@@ -1011,14 +893,16 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
 
   cinnamon_fonts_init (global->stage);
 
-  g_signal_connect (gtk_settings_get_default (), "notify::gtk-xft-dpi",
-                    G_CALLBACK (update_scale_factor), global);
+  MetaBackend *backend = meta_get_backend ();
+  MetaSettings *settings = meta_backend_get_settings (backend);
+  g_signal_connect (settings, "ui-scaling-factor-changed",
+                    G_CALLBACK (ui_scaling_factor_changed), global);
 
-  gdk_event_handler_set (gnome_cinnamon_gdk_event_handler, global->stage, NULL);
+  // gdk_event_handler_set (gnome_cinnamon_gdk_event_handler, global->stage, NULL);
 
   global->focus_manager = st_focus_manager_get_for_stage (global->stage);
 
-  update_scale_factor (gtk_settings_get_default (), NULL, global);
+  update_scaling_factor (global, settings);
 }
 
 /**
@@ -1039,29 +923,78 @@ _cinnamon_global_get_gjs_context (CinnamonGlobal *global)
   return global->js_context;
 }
 
+static guint32
+get_current_time_maybe_roundtrip (CinnamonGlobal *global)
+{
+  guint32 time;
+
+  time = cinnamon_global_get_current_time (global);
+  if (time != CurrentTime)
+    return time;
+
+  return meta_display_get_current_time_roundtrip (global->meta_display);
+}
+
+static ClutterActor *
+get_key_focused_actor (CinnamonGlobal *global)
+{
+  ClutterActor *actor;
+
+  actor = clutter_stage_get_key_focus (global->stage);
+
+  /* If there's no explicit key focus, clutter_stage_get_key_focus()
+   * returns the stage. This is a terrible API. */
+  if (actor == CLUTTER_ACTOR (global->stage))
+    actor = NULL;
+
+  return actor;
+}
+
+static void
+sync_input_region (CinnamonGlobal *global)
+{
+  MetaDisplay *display = global->meta_display;
+  MetaX11Display *x11_display = meta_display_get_x11_display (display);
+
+  if (global->has_modal)
+    meta_x11_display_set_stage_input_region (x11_display, None);
+  else
+    meta_x11_display_set_stage_input_region (x11_display, global->input_region);
+}
+
 /**
  * cinnamon_global_begin_modal:
  * @global: a #CinnamonGlobal
  *
  * Grabs the keyboard and mouse to the stage window. The stage will
  * receive all keyboard and mouse events until cinnamon_global_end_modal()
- * is called. This is used to implement "modes" for Cinnamon, such as the
+ * is called. This is used to implement "modes" for the shell, such as the
  * overview mode or the "looking glass" debug overlay, that block
  * application and normal key shortcuts.
  *
- * Returns value: %TRUE if we successfully entered the mode. %FALSE if we couldn't
+ * Returns: %TRUE if we succesfully entered the mode. %FALSE if we couldn't
  *  enter the mode. Failure may occur because an application has the pointer
- *  or keyboard grabbed, because Muffin is in a mode itself like moving a
+ *  or keyboard grabbed, because Mutter is in a mode itself like moving a
  *  window or alt-Tab window selection, or because cinnamon_global_begin_modal()
  *  was previouly called.
  */
 gboolean
-cinnamon_global_begin_modal (CinnamonGlobal *global,
-                          guint32      timestamp,
+cinnamon_global_begin_modal (CinnamonGlobal       *global,
+                          guint32           timestamp,
                           MetaModalOptions  options)
 {
-  return meta_plugin_begin_modal (global->plugin, global->stage_xwindow,
-                                  None, options, timestamp);
+  if (!meta_display_get_compositor (global->meta_display))
+    return FALSE;
+
+  /* Make it an error to call begin_modal while we already
+   * have a modal active. */
+  if (global->has_modal)
+    return FALSE;
+
+  global->has_modal = meta_plugin_begin_modal (global->plugin, options, timestamp);
+  if (!meta_is_wayland_compositor ())
+    sync_input_region (global);
+  return global->has_modal;
 }
 
 /**
@@ -1074,79 +1007,220 @@ void
 cinnamon_global_end_modal (CinnamonGlobal *global,
                         guint32      timestamp)
 {
+  if (!meta_display_get_compositor (global->meta_display))
+    return;
+
+  if (!global->has_modal)
+    return;
+
   meta_plugin_end_modal (global->plugin, timestamp);
+  global->has_modal = FALSE;
+
+  /* If the stage window is unfocused, ensure that there's no
+   * actor focused on Clutter's side. */
+  if (!meta_stage_is_focused (global->meta_display))
+    clutter_stage_set_key_focus (global->stage, NULL);
+
+  /* An actor dropped key focus. Focus the default window. */
+  else if (get_key_focused_actor (global) && meta_stage_is_focused (global->meta_display))
+    meta_display_focus_default_window (global->meta_display,
+                                       get_current_time_maybe_roundtrip (global));
+
+  if (!meta_is_wayland_compositor ())
+    sync_input_region (global);
 }
 
-/**
- * cinnamon_global_create_pointer_barrier:
- * @global: a #CinnamonGlobal
- * @x1: left X coordinate
- * @y1: top Y coordinate
- * @x2: right X coordinate
- * @y2: bottom Y coordinate
- * @directions: The directions we're allowed to pass through
- *
- * If supported by X creates a pointer barrier.
- *
- * Return value: value you can pass to cinnamon_global_destroy_pointer_barrier()
- */
-guint32
-cinnamon_global_create_pointer_barrier (CinnamonGlobal *global,
-                                     int x1, int y1, int x2, int y2,
-                                     int directions)
+static int
+set_cloexec (void *data, gint fd)
 {
-#if HAVE_XFIXESCREATEPOINTERBARRIER
-  return (guint32)
-    XFixesCreatePointerBarrier (global->xdisplay,
-                                DefaultRootWindow (global->xdisplay),
-                                x1, y1,
-                                x2, y2,
-                                directions,
-                                0, NULL);
-#else
+  if (fd >= GPOINTER_TO_INT (data))
+    fcntl (fd, F_SETFD, FD_CLOEXEC);
+
   return 0;
-#endif
 }
 
-/**
- * cinnamon_global_destroy_pointer_barrier:
- * @global: a #CinnamonGlobal
- * @barrier: a pointer barrier
- *
- * Destroys the @barrier created by cinnamon_global_create_pointer_barrier().
- */
-void
-cinnamon_global_destroy_pointer_barrier (CinnamonGlobal *global, guint32 barrier)
+#ifndef HAVE_FDWALK
+static int
+fdwalk (int (*cb)(void *data, int fd), void *data)
 {
-#if HAVE_XFIXESCREATEPOINTERBARRIER
-  g_return_if_fail (barrier > 0);
+  gint open_max;
+  gint fd;
+  gint res = 0;
 
-  XFixesDestroyPointerBarrier (global->xdisplay, (PointerBarrier)barrier);
+#ifdef HAVE_SYS_RESOURCE_H
+  struct rlimit rl;
 #endif
+
+#ifdef __linux__
+  DIR *d;
+
+  if ((d = opendir("/proc/self/fd"))) {
+      struct dirent *de;
+
+      while ((de = readdir(d))) {
+          glong l;
+          gchar *e = NULL;
+
+          if (de->d_name[0] == '.')
+              continue;
+
+          errno = 0;
+          l = strtol(de->d_name, &e, 10);
+          if (errno != 0 || !e || *e)
+              continue;
+
+          fd = (gint) l;
+
+          if ((glong) fd != l)
+              continue;
+
+          if (fd == dirfd(d))
+              continue;
+
+          if ((res = cb (data, fd)) != 0)
+              break;
+        }
+
+      closedir(d);
+      return res;
+  }
+
+  /* If /proc is not mounted or not accessible we fall back to the old
+   * rlimit trick */
+
+#endif
+
+#ifdef HAVE_SYS_RESOURCE_H
+  if (getrlimit(RLIMIT_NOFILE, &rl) == 0 && rl.rlim_max != RLIM_INFINITY)
+      open_max = rl.rlim_max;
+  else
+#endif
+      open_max = sysconf (_SC_OPEN_MAX);
+
+  for (fd = 0; fd < open_max; fd++)
+      if ((res = cb (data, fd)) != 0)
+          break;
+
+  return res;
+}
+#endif
+
+static void
+pre_exec_close_fds(void)
+{
+  fdwalk (set_cloexec, GINT_TO_POINTER(3));
 }
 
 /**
  * cinnamon_global_reexec_self:
  * @global: A #CinnamonGlobal
  *
- * Restart the current process.  Only intended for development purposes.
+ * Initiates the shutdown sequence.
  */
 void
 cinnamon_global_reexec_self (CinnamonGlobal *global)
 {
-  meta_restart ();
+  meta_restart ("Restarting Cinnamon...");
 }
 
-void
-cinnamon_global_shutdown (void)
+/**
+ * cinnamon_global_real_restart:
+ * @global: A #CinnamonGlobal
+ *
+ * Restart the current process.
+ */
+void 
+cinnamon_global_real_restart (CinnamonGlobal *global)
 {
-    g_signal_emit_by_name (the_object, "shutdown");
+  GPtrArray *arr;
+  gsize len;
 
-    meta_pre_exec_close_fds ();
+#if defined __linux__ || defined __sun
+  char *buf;
+  char *buf_p;
+  char *buf_end;
+  GError *error = NULL;
 
-    meta_display_unmanage_screen (cinnamon_global_get_display (the_object),
-                                  cinnamon_global_get_screen (the_object),
-                                  cinnamon_global_get_current_time (the_object));
+  if (!g_file_get_contents ("/proc/self/cmdline", &buf, &len, &error))
+    {
+      g_warning ("failed to get /proc/self/cmdline: %s", error->message);
+      return;
+    }
+
+  buf_end = buf+len;
+  arr = g_ptr_array_new ();
+  /* The cmdline file is NUL-separated */
+  for (buf_p = buf; buf_p < buf_end; buf_p = buf_p + strlen (buf_p) + 1)
+    g_ptr_array_add (arr, buf_p);
+
+  g_ptr_array_add (arr, NULL);
+#elif defined __OpenBSD__
+  gchar **args, **args_p;
+  gint mib[] = { CTL_KERN, KERN_PROC_ARGS, getpid(), KERN_PROC_ARGV };
+
+  if (sysctl (mib, G_N_ELEMENTS (mib), NULL, &len, NULL, 0) == -1)
+    return;
+
+  args = g_malloc0 (len);
+
+  if (sysctl (mib, G_N_ELEMENTS (mib), args, &len, NULL, 0) == -1) {
+    g_warning ("failed to get command line args: %d", errno);
+    g_free (args);
+    return;
+  }
+
+  arr = g_ptr_array_new ();
+  for (args_p = args; *args_p != NULL; args_p++) {
+    g_ptr_array_add (arr, *args_p);
+  }
+
+  g_ptr_array_add (arr, NULL);
+#elif defined __FreeBSD__
+  char *buf;
+  char *buf_p;
+  char *buf_end;
+  gint mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_ARGS, getpid() };
+
+  if (sysctl (mib, G_N_ELEMENTS (mib), NULL, &len, NULL, 0) == -1)
+    return;
+
+  buf = g_malloc0 (len);
+
+  if (sysctl (mib, G_N_ELEMENTS (mib), buf, &len, NULL, 0) == -1) {
+    g_warning ("failed to get command line args: %d", errno);
+    g_free (buf);
+    return;
+  }
+
+  buf_end = buf+len;
+  arr = g_ptr_array_new ();
+  /* The value returned by sysctl is NUL-separated */
+  for (buf_p = buf; buf_p < buf_end; buf_p = buf_p + strlen (buf_p) + 1)
+    g_ptr_array_add (arr, buf_p);
+
+  g_ptr_array_add (arr, NULL);
+#else
+  return;
+#endif
+
+  /* Close all file descriptors other than stdin/stdout/stderr, otherwise
+   * they will leak and stay open after the exec. In particular, this is
+   * important for file descriptors that represent mapped graphics buffer
+   * objects.
+   */
+  pre_exec_close_fds ();
+
+  meta_display_close (global->meta_display,
+                      cinnamon_global_get_current_time (global));
+
+  execvp (arr->pdata[0], (char**)arr->pdata);
+  g_warning ("failed to reexec: %s", g_strerror (errno));
+  g_ptr_array_free (arr, TRUE);
+#if defined __linux__ || defined __FreeBSD__
+  g_free (buf);
+#elif defined __OpenBSD__
+  g_free (args);
+#endif
 }
 
 /**
@@ -1168,45 +1242,6 @@ cinnamon_global_notify_error (CinnamonGlobal  *global,
   g_signal_emit_by_name (global, "notify-error", msg, details);
 }
 
-static void
-grab_notify (GtkWidget *widget, gboolean was_grabbed, gpointer user_data)
-{
-  CinnamonGlobal *global = CINNAMON_GLOBAL (user_data);
-
-  global->gtk_grab_active = !was_grabbed;
-
-  /* Update for the new setting of gtk_grab_active */
-  cinnamon_global_set_stage_input_mode (global, global->input_mode);
-}
-
-/**
- * cinnamon_global_init_xdnd:
- * @global: the #CinnamonGlobal
- *
- * Enables tracking of Xdnd events
- */
-void cinnamon_global_init_xdnd (CinnamonGlobal *global)
-{
-  Window output_window = meta_get_overlay_window (global->meta_screen);
-  long xdnd_version = 5;
-
-  XChangeProperty (global->xdisplay, global->stage_xwindow,
-                   gdk_x11_get_xatom_by_name ("XdndAware"), XA_ATOM,
-                   32, PropModeReplace, (const unsigned char *)&xdnd_version, 1);
-
-  XChangeProperty (global->xdisplay, output_window,
-                   gdk_x11_get_xatom_by_name ("XdndProxy"), XA_WINDOW,
-                   32, PropModeReplace, (const unsigned char *)&global->stage_xwindow, 1);
-
-  /*
-   * XdndProxy is additionally set on the proxy window as verification that the
-   * XdndProxy property on the target window isn't a left-over
-   */
-  XChangeProperty (global->xdisplay, global->stage_xwindow,
-                   gdk_x11_get_xatom_by_name ("XdndProxy"), XA_WINDOW,
-                   32, PropModeReplace, (const unsigned char *)&global->stage_xwindow, 1);
-}
-
 /**
  * cinnamon_global_get_pointer:
  * @global: the #CinnamonGlobal
@@ -1225,19 +1260,13 @@ cinnamon_global_get_pointer (CinnamonGlobal         *global,
                           int                 *y,
                           ClutterModifierType *mods)
 {
-  GdkDeviceManager *gmanager;
-  GdkDevice *gdevice;
-  GdkScreen *gscreen;
-  GdkModifierType raw_mods;
+  ClutterModifierType raw_mods;
+  MetaCursorTracker *tracker;
 
-  gmanager = gdk_display_get_device_manager (global->gdk_display);
-  gdevice = gdk_device_manager_get_client_pointer (gmanager);
-  gdk_device_get_position (gdevice, &gscreen, x, y);
-  gdk_device_get_state (gdevice,
-                        gdk_screen_get_root_window (gscreen),
-                        NULL,
-                        &raw_mods);
-  *mods = raw_mods & GDK_MODIFIER_MASK;
+  tracker = meta_cursor_tracker_get_for_display (global->meta_display);
+  meta_cursor_tracker_get_pointer (tracker, x, y, &raw_mods);
+
+  *mods = raw_mods & CLUTTER_MODIFIER_MASK;
 }
 
 /**
@@ -1277,43 +1306,33 @@ void
 cinnamon_global_sync_pointer (CinnamonGlobal *global)
 {
   int x, y;
-  GdkDeviceManager *gmanager;
-  GdkDevice *gdevice;
-  GdkScreen *gscreen;
-  GdkModifierType mods;
-  ClutterMotionEvent event;
+  ClutterModifierType mods;
+  ClutterEvent *event;
+  ClutterSeat *seat;
 
-  gmanager = gdk_display_get_device_manager (global->gdk_display);
-  gdevice = gdk_device_manager_get_client_pointer (gmanager);
-  gdk_device_get_position (gdevice, &gscreen, &x, &y);
-  gdk_device_get_state (gdevice,
-                        gdk_screen_get_root_window (gscreen),
-                        NULL,
-                        &mods);
+  cinnamon_global_get_pointer (global, &x, &y, &mods);
 
-  event.type = CLUTTER_MOTION;
-  event.time = cinnamon_global_get_current_time (global);
-  event.flags = 0;
-  /* This is wrong: we should be setting event.stage to NULL if the
-   * pointer is not inside the bounds of the stage given the current
-   * stage_input_mode. For our current purposes however, this works.
-   */
-  event.stage = global->stage;
-  event.x = x;
-  event.y = y;
-  event.modifier_state = mods;
-  event.axes = NULL;
-  event.device = clutter_device_manager_get_core_device (clutter_device_manager_get_default (),
-                                                         CLUTTER_POINTER_DEVICE);
+  seat = clutter_backend_get_default_seat (clutter_get_default_backend ());
+  event = clutter_event_new (CLUTTER_MOTION);
+
+  event->motion.time = cinnamon_global_get_current_time (global);
+  event->motion.flags = CLUTTER_EVENT_FLAG_SYNTHETIC;
+  event->motion.stage = global->stage;
+  event->motion.x = x;
+  event->motion.y = y;
+  event->motion.modifier_state = mods;
+  event->motion.axes = NULL;
+  clutter_event_set_device (event, clutter_seat_get_pointer (seat));
 
   /* Leaving event.source NULL will force clutter to look it up, which
    * will generate enter/leave events as a side effect, if they are
    * needed. We need a better way to do this though... see
    * http://bugzilla.clutter-project.org/show_bug.cgi?id=2615.
    */
-  event.source = NULL;
+  clutter_event_set_source_device (event, NULL);
 
-  clutter_event_put ((ClutterEvent *)&event);
+  clutter_event_put (event);
+  clutter_event_free (event);
 }
 
 /**
@@ -1343,10 +1362,6 @@ guint32
 cinnamon_global_get_current_time (CinnamonGlobal *global)
 {
   guint32 time;
-
-  /* In case we have a xdnd timestamp use it */
-  if (global->xdnd_timestamp != 0)
-    return global->xdnd_timestamp;
 
   /* meta_display_get_current_time() will return the correct time
      when handling an X or Gdk event, but will return CurrentTime
@@ -1411,7 +1426,7 @@ cinnamon_global_create_app_launch_context (CinnamonGlobal *global)
 
   // Make sure that the app is opened on the current workspace even if
   // the user switches before it starts
-  gdk_app_launch_context_set_desktop (context, meta_screen_get_active_workspace_index (global->meta_screen));
+  gdk_app_launch_context_set_desktop (context, cinnamon_screen_get_active_workspace_index (global->cinnamon_screen));
 
   return (GAppLaunchContext *)context;
 }
@@ -1551,64 +1566,6 @@ cinnamon_global_run_at_leisure (CinnamonGlobal         *global,
     schedule_leisure_functions (global);
 }
 
-/*
- * Process Xdnd events
- *
- * We pass the position and leave events to JS via a signal
- * where the actual drag & drop handling happens.
- *
- * http://www.freedesktop.org/wiki/Specifications/XDND
- */
-gboolean _cinnamon_global_check_xdnd_event (CinnamonGlobal  *global,
-                                         XEvent       *xev)
-{
-  Window output_window = meta_get_overlay_window (global->meta_screen);
-
-  if (xev->xany.window != output_window && xev->xany.window != global->stage_xwindow)
-    return FALSE;
-
-  if (xev->xany.type == ClientMessage && xev->xclient.message_type == gdk_x11_get_xatom_by_name ("XdndPosition"))
-    {
-      XEvent xevent;
-      Window src = xev->xclient.data.l[0];
-
-      memset (&xevent, 0, sizeof(xevent));
-      xevent.xany.type = ClientMessage;
-      xevent.xany.display = global->xdisplay;
-      xevent.xclient.window = src;
-      xevent.xclient.message_type = gdk_x11_get_xatom_by_name ("XdndStatus");
-      xevent.xclient.format = 32;
-      xevent.xclient.data.l[0] = output_window;
-      /* flags: bit 0: will we accept the drop? bit 1: do we want more position messages */
-      xevent.xclient.data.l[1] = 2;
-      xevent.xclient.data.l[4] = None;
-
-      XSendEvent (global->xdisplay, src, False, 0, &xevent);
-
-      /* Store the timestamp of the xdnd position event */
-      global->xdnd_timestamp = xev->xclient.data.l[3];
-      g_signal_emit_by_name (G_OBJECT (global), "xdnd-position-changed",
-                            (int)(xev->xclient.data.l[2] >> 16), (int)(xev->xclient.data.l[2] & 0xFFFF));
-      global->xdnd_timestamp = 0;
-
-      return TRUE;
-    }
-   else if (xev->xany.type == ClientMessage && xev->xclient.message_type == gdk_x11_get_xatom_by_name ("XdndLeave"))
-    {
-      g_signal_emit_by_name (G_OBJECT (global), "xdnd-leave");
-
-      return TRUE;
-    }
-   else if (xev->xany.type == ClientMessage && xev->xclient.message_type == gdk_x11_get_xatom_by_name ("XdndEnter"))
-    {
-      g_signal_emit_by_name (G_OBJECT (global), "xdnd-enter");
-
-      return TRUE;
-    }
-
-    return FALSE;
-}
-
 /**
  * cinnamon_global_segfault:
  * @global: the #CinnamonGlobal
@@ -1620,4 +1577,33 @@ cinnamon_global_segfault (CinnamonGlobal *global)
 {
   int *ptr = NULL;
   g_strdup_printf ("%d", *ptr);
+}
+
+/**
+ * cinnamon_global_alloc_leak:
+ * @global: the #CinnamonGlobal
+ * @mb: How many mb to leak
+ *
+ * Request mb megabytes allocated. This is just for debugging.
+ */
+void
+cinnamon_global_alloc_leak (CinnamonGlobal *global, gint mb)
+{
+    gint i;
+
+    for (i = 0; i < mb * 1024; i++)
+    {
+        gchar *ptr = g_strdup_printf ("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                      "xxxxxxxxxxxxxxxxxxxxxxxx"
+        );
+    }
 }

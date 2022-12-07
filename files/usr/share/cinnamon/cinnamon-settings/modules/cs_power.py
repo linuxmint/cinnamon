@@ -1,16 +1,16 @@
 #!/usr/bin/python3
 
 import gi
-gi.require_version('CinnamonDesktop', '3.0')
 gi.require_version('UPowerGlib', '1.0')
-from gi.repository import CinnamonDesktop, Gdk, UPowerGlib
+from gi.repository import UPowerGlib
 
-from GSettingsWidgets import *
+from SettingsWidgets import SidePage
+from xapp.GSettingsWidgets import *
 
 POWER_BUTTON_OPTIONS = [
     ("blank", _("Lock the screen")),
     ("suspend", _("Suspend")),
-    ("shutdown", _("Shutdown immediately")),
+    ("shutdown", _("Shut down immediately")),
     ("hibernate", _("Hibernate")),
     ("interactive", _("Ask what to do")),
     ("nothing", _("Do nothing"))
@@ -142,7 +142,7 @@ class Module:
 
         section = power_page.add_section(_("Power Options"))
 
-        lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep = get_available_options(self.up_client)
+        lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep, can_hibernate = get_available_options(self.up_client)
 
         size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -187,9 +187,16 @@ class Module:
             section.add_row(GSettingsComboBox(_("When the battery is critically low"), CSD_SCHEMA, "critical-battery-action", critical_options, size_group=size_group))
 
         if can_suspend and can_hybrid_sleep:
-            switch = GSettingsSwitch(_("Enable Hybrid Sleep"), CSM_SCHEMA, "prefer-hybrid-sleep")
-            switch.set_tooltip_text(_("Replaces Suspend with Hybrid Sleep"))
-            section.add_row(switch)
+            self.hybrid_switch = GSettingsSwitch(_("Enable Hybrid Sleep"), CSM_SCHEMA, "prefer-hybrid-sleep")
+            self.hybrid_switch.set_tooltip_text(_("Replaces Suspend with Hybrid Sleep"))
+            self.hybrid_switch.content_widget.connect("notify::active", self.on_hybrid_toggled)
+            section.add_row(self.hybrid_switch)
+
+        if can_suspend and can_hibernate:
+            self.sth_switch = GSettingsSwitch(_("Enable Hibernate after suspend"), CSM_SCHEMA, "suspend-then-hibernate")
+            self.sth_switch.set_tooltip_text(_("First suspend the machine and hibernate it after a certain amount of time."))
+            self.sth_switch.content_widget.connect("notify::active", self.on_sth_toggled)
+            section.add_row(self.sth_switch)
 
         # Batteries
 
@@ -255,6 +262,16 @@ class Module:
             else:
                 section = page.add_section(_("Keyboard backlight"))
                 section.add_row(BrightnessSlider(section, proxy, _("Backlight brightness")))
+
+    def on_sth_toggled(self, widget, gparam):
+        active = widget.get_active()
+        if active and hasattr(self, "hybrid_switch"):
+            self.hybrid_switch.set_value(False)
+
+    def on_hybrid_toggled(self, widget, gparam):
+        active = widget.get_active()
+        if active and hasattr(self, "sth_switch"):
+            self.sth_switch.set_value(False)
 
     def build_battery_page(self, *args):
 
@@ -352,7 +369,7 @@ class Module:
                 details = UPowerGlib.Device.state_to_string(state)
 
         desc = _("UPS")
-        if (model != "" or vendor != ""):
+        if model != "" or vendor != "":
             desc = "%s %s" % (vendor, model)
 
         widget = self.create_battery_row(device_id, "battery", desc, percentage, battery_level, details)
@@ -393,7 +410,7 @@ class Module:
                 details = UPowerGlib.Device.state_to_string(state)
 
         desc = _("Battery")
-        if (model != "" or vendor != ""):
+        if model != "" or vendor != "":
             desc = "%s %s" % (vendor, model)
 
         widget = self.create_battery_row(device_id, "battery", desc, percentage, battery_level, details)
@@ -455,11 +472,14 @@ class Module:
         elif kind == UPowerGlib.DeviceKind.COMPUTER:
             icon_name = "computer"
             desc = _("Computer")
+        elif kind == UPowerGlib.DeviceKind.GAMING_INPUT:
+            icon_name = "input-gaming"
+            desc = (_("Battery"))
         else:
             icon_name = "battery"
             desc = (_("Battery"))
 
-        if (model != "" or vendor != ""):
+        if model != "" or vendor != "":
             desc = "%s %s" % (vendor, model)
 
         widget = self.create_battery_row(device_id, icon_name, desc, percentage, battery_level)
@@ -503,15 +523,8 @@ class Module:
             level_box.pack_start(level_bar, True, True, 0)
             hbox.pack_start(level_box, True, True, 0)
         else:
-            status_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-            status_icon = Gtk.Image.new_from_icon_name(self.bat_level_to_icon(battery_level), Gtk.IconSize.BUTTON)
-            status_icon.set_size_request(30, -1)
-
-            status_box.pack_start(status_icon, False, False, 15)
-
             status_label = Gtk.Label(self.bat_level_to_label(battery_level))
-            status_box.pack_end(status_label, False, False, 0)
-            hbox.pack_start(status_box, True, True, 0)
+            hbox.pack_end(status_label, False, False, 0)
 
         vbox.pack_start(hbox, False, False, 0)
 
@@ -525,16 +538,6 @@ class Module:
         widget.pack_start(vbox, True, True, 0)
 
         return widget
-
-    def bat_level_to_icon(self, level):
-        if level in (UPowerGlib.DeviceLevel.FULL, UPowerGlib.DeviceLevel.HIGH):
-            return "battery-full-symbolic"
-        elif level == UPowerGlib.DeviceLevel.NORMAL:
-            return "battery-good-symbolic"
-        elif level == UPowerGlib.DeviceLevel.LOW:
-            return "battery-low-symbolic"
-        elif level == UPowerGlib.DeviceLevel.CRITICAL:
-            return "battery-caution-symbolic"
 
     def bat_level_to_label(self, level):
         if level == UPowerGlib.DeviceLevel.FULL:
@@ -605,7 +608,7 @@ def get_available_options(up_client):
 
     lid_options = [
         ("suspend", _("Suspend")),
-        ("shutdown", _("Shutdown immediately")),
+        ("shutdown", _("Shut down immediately")),
         ("hibernate", _("Hibernate")),
         ("blank", _("Lock Screen")),
         ("nothing", _("Do nothing"))
@@ -614,14 +617,14 @@ def get_available_options(up_client):
     button_power_options = [
         ("blank", _("Lock Screen")),
         ("suspend", _("Suspend")),
-        ("shutdown", _("Shutdown immediately")),
+        ("shutdown", _("Shut down immediately")),
         ("hibernate", _("Hibernate")),
         ("interactive", _("Ask")),
         ("nothing", _("Do nothing"))
     ]
 
     critical_options = [
-        ("shutdown", _("Shutdown immediately")),
+        ("shutdown", _("Shut down immediately")),
         ("hibernate", _("Hibernate")),
         ("nothing", _("Do nothing"))
     ]
@@ -634,7 +637,7 @@ def get_available_options(up_client):
         for options in lid_options, button_power_options, critical_options:
             remove(options, "hibernate")
 
-    return lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep
+    return lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep, can_hibernate
 
 class BrightnessSlider(SettingsWidget):
     step = 5
@@ -803,7 +806,7 @@ class GSettings2ComboBox(SettingsWidget):
 
     def on_my_value_changed(self, widget):
         tree_iter = widget.get_active_iter()
-        if tree_iter != None:
+        if tree_iter is not None:
             self.settings[widget.key] = self.model[tree_iter][0]
 
     def on_my_setting_changed1(self, *args):
