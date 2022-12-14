@@ -295,7 +295,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.signals.connect(global.window_manager, 'switch-workspace', (...args) => this.onSwitchWorkspace(...args));
         this.signals.connect(global.screen, 'workspace-removed', (...args) => this.onWorkspaceRemoved(...args));
         this.signals.connect(global.screen, 'window-monitor-changed', (...args) => this.onWindowMonitorChanged(...args));
-        this.signals.connect(Main.panelManager, 'monitors-changed', (...args) => this.on_applet_instances_changed(...args));
+        this.signals.connect(Main.panelManager, 'monitors-changed', (...args) => this._onMonitorsChanged(...args));
         this.signals.connect(global.screen, 'window-skip-taskbar-changed', (...args) => this.onWindowSkipTaskbarChanged(...args));
         this.signals.connect(global.display, 'window-marked-urgent', (...args) => this.updateAttentionState(...args));
         this.signals.connect(global.display, 'window-demands-attention', (...args) => this.updateAttentionState(...args));
@@ -369,7 +369,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.state.set({appletReady: true});
     }
 
-    on_applet_instances_changed(instance) {
+    _updateState(initialUpdate) {
         if (!this.state.appletReady) {
             return;
         }
@@ -377,11 +377,19 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.numberOfMonitors = null;
         this.updateMonitorWatchlist();
 
-        if (instance && instance.instance_id === this.instance_id) {
+        if (initialUpdate) {
             this.onSwitchWorkspace();
         } else {
             this.refreshCurrentAppList();
         }
+    }
+
+    on_applet_instances_changed(instance) {
+        this._updateState(instance?.instance_id === this.instance_id);
+    }
+
+    _onMonitorsChanged(panelManager) {
+        this._updateState(false);
     }
 
     on_panel_edit_mode_changed() {
@@ -506,7 +514,7 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     updateMonitorWatchlist() {
         if (!this.numberOfMonitors) {
-            this.numberOfMonitors = Gdk.Screen.get_default().get_n_monitors();
+            this.numberOfMonitors = global.display.get_n_monitors();
         }
         let onPrimary = this.panel.monitorIndex === Main.layoutManager.primaryIndex;
         let instances = Main.AppletManager.getRunningInstancesForUuid(this.state.uuid);
@@ -541,7 +549,7 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     refreshCurrentAppList() {
         let appList = this.appLists[this.state.currentWs];
-        if (appList) setTimeout(() => appList.refreshList(), 0);
+        if (appList) appList.refreshList();
     }
 
     refreshAllAppLists() {
