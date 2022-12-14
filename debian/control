@@ -79,7 +79,7 @@ Depends:
  libcanberra-pulse,
  libcinnamon-desktop4 (>= 5.3),
  libcinnamon-menu-3-0,
- libcjs0f,
+ libcjs0,
  libglib2.0-bin,
  libmuffin0 (>= 5.3),
  mate-panel | gnome-panel | tint2,

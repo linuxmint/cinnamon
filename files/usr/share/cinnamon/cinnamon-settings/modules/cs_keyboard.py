@@ -24,7 +24,6 @@ MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys"
 CINNAMON_SCHEMA = "org.cinnamon.desktop.keybindings"
 
 CATEGORIES = [
-
     #   Label                   id                  parent
     #(child)Label                       id                  parent
 
@@ -101,6 +100,8 @@ KEYBINDINGS = [
     [_("Move window to new workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-new", "win-workspaces"],
     [_("Move window to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-left", "win-workspaces"],
     [_("Move window to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-right", "win-workspaces"],
+    [_("Move window to workspace above"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-up", "win-workspaces"],
+    [_("Move window to workspace below"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-down", "win-workspaces"],
     [_("Move window to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-1", "win-workspaces"],
     [_("Move window to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-2", "win-workspaces"],
     [_("Move window to workspace 3"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-3", "win-workspaces"],
@@ -113,11 +114,11 @@ KEYBINDINGS = [
     [_("Move window to workspace 10"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-10", "win-workspaces"],
     [_("Move window to workspace 11"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-11", "win-workspaces"],
     [_("Move window to workspace 12"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-12", "win-workspaces"],
-    #Windows - Monitor-related
+    # Windows - Monitor-related
     [_("Move window to left monitor"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-left", "win-monitors"],
     [_("Move window to right monitor"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-right", "win-monitors"],
-    [_("Move window to up monitor"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-up", "win-monitors"],
-    [_("Move window to down monitor"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-down", "win-monitors"],
+    [_("Move window to monitor above"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-up", "win-monitors"],
+    [_("Move window to monitor below"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-down", "win-monitors"],
     # Workspaces
     [_("Switch to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-left", "workspaces"],
     [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right", "workspaces"],

@@ -7,6 +7,7 @@ const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
+const Mainloop = imports.mainloop;
 const {SignalManager} = imports.misc.signalManager;
 const {each, findIndex, unref} = imports.misc.util;
 const {createStore} = imports.misc.state;
@@ -97,6 +98,7 @@ class AppGroup {
 
         this.signals = new SignalManager(null);
         this.appKeyTimeout = 0;
+        this.flashTimer = 0;
 
         // TODO: This needs to be in state so it can be updated more reliably.
         this.labelVisiblePref = this.state.settings.titleDisplay !== TitleDisplay.None && this.state.isHorizontal;
@@ -318,15 +320,18 @@ class AppGroup {
         this.actor.remove_style_pseudo_class('active');
         this.actor.add_style_class_name('grouped-window-list-item-demands-attention');
         if (counter < FLASH_MAX_COUNT) {
-            setTimeout(() => {
+            this.flashTimer = Mainloop.timeout_add(FLASH_INTERVAL, () => {
                 if (this.actor && this.actor.has_style_class_name('grouped-window-list-item-demands-attention')) {
                     this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
                     this.actor.add_style_pseudo_class('active');
                 }
-                setTimeout(() => {
+
+                this.flashTimer = Mainloop.timeout_add(FLASH_INTERVAL, () => {
                     this.flashButton(++counter);
-                }, FLASH_INTERVAL);
-            }, FLASH_INTERVAL);
+                });
+            });
+        } else {
+            this.flashTimer = 0;
         }
     }
 
@@ -1140,6 +1145,11 @@ class AppGroup {
     destroy(skipRefCleanup) {
         this.signals.disconnectAllSignals();
         this.groupState.set({willUnmount: true});
+
+        if (this.flashTimer > 0) {
+            Mainloop.source_remove(this.flashTimer);
+            this.flashTimer = 0;
+        }
 
         if (this.rightClickMenu) {
             if (this.rightClickMenu.isOpen) {

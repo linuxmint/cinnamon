@@ -151,11 +151,9 @@ class Harvester:
         self.index_cache = {}
         self.cache_lock = threading.Lock()
 
-        self.cache_folder = '%s/.cinnamon/spices.cache/%s/' % (home, self.spice_type)
+        self.cache_folder = os.path.join(GLib.get_user_cache_dir(), 'cinnamon', 'spices', self.spice_type)
 
         self.index_file = os.path.join(self.cache_folder, "index.json")
-
-        os.makedirs(self.cache_folder, mode=0o755, exist_ok=True)
 
         if self.themes:
             self.install_folder = os.path.join(home, ".themes")
@@ -174,10 +172,14 @@ class Harvester:
         except Exception as e:
             print(e)
 
-    def refresh(self):
+    def refresh(self, full):
         debug("Cache stamp: %d" % get_current_timestamp())
+
+        os.makedirs(self.cache_folder, mode=0o755, exist_ok=True)
         self._update_local_json()
-        self._update_local_thumbs()
+
+        if full:
+            self._update_local_thumbs()
 
         self._load_metadata()
         self._clean_old_thumbs()

@@ -53,7 +53,7 @@ class Module:
             widget.add_mark(24.0, Gtk.PositionType.TOP, None)
             settings.add_row(widget)
 
-            slider = GSettingsRange(_("Speed"), "org.cinnamon.desktop.peripherals.mouse", "speed", "Slower", "Faster", -1.0, 1.0, show_value=False)
+            slider = GSettingsRange(_("Speed"), "org.cinnamon.desktop.peripherals.mouse", "speed", _("Slower"), _("Faster"), -1.0, 1.0, show_value=False)
             slider.content_widget.add_mark(0.0, Gtk.PositionType.TOP, None)
 
             settings.add_row(slider)
@@ -128,7 +128,7 @@ class Module:
             settings = SettingsSection(None)
             revealer.add(settings)
 
-            slider = GSettingsRange(_("Speed"), "org.cinnamon.desktop.peripherals.touchpad", "speed", None, None, -1.0, 1.0, show_value=False)
+            slider = GSettingsRange(_("Speed"), "org.cinnamon.desktop.peripherals.touchpad", "speed", _("Slower"), _("Faster"), -1.0, 1.0, show_value=False)
             slider.content_widget.add_mark(0.0, Gtk.PositionType.TOP, None)
             settings.add_row(slider)
 

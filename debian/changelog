@@ -1,3 +1,205 @@
+cinnamon (5.6.4) vera; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Revert "cs_themes: Make mouse cursor size configurable"
+  * cs_themes: Add thumbnails for Bibata Original
+
+  [ Michael Webster ]
+  * cs_windows: Restore configuration for initial window placement.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 29 Nov 2022 16:31:00 +0000
+
+cinnamon (5.6.3) vera; urgency=medium
+
+  * cs_themes: Make mouse cursor size configurable
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 25 Nov 2022 14:24:34 +0000
+
+cinnamon (5.6.2) vera; urgency=medium
+
+  * cs_themes: Place legacy themes at the bottom
+  * theme: Update cinnamon thumbnails
+  * cs_themes: Reorder sections
+  * cs_themes: Update cursor thumbnails
+  * cs_themes: Sort cursor themes alphabetically
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 24 Nov 2022 22:02:06 +0000
+
+cinnamon (5.6.1) vera; urgency=medium
+
+  * cs_info: Fix cosmetic issues with system icon
+  * cs_default: Fix small issues
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 18 Nov 2022 12:00:32 +0000
+
+cinnamon (5.6.0) vera; urgency=medium
+
+  [ Michael Webster ]
+  * workspacesView.js: Disconnect swipe handlers during destroy instead of unmapping.
+  * Update issue templates.
+  * messageTray.js: Don't assume the primary monitor is at index 0.
+  * modalDialog.js: Don't assume monitor 0 is the primary.
+
+  [ hdulme ]
+  * remove trailing semicolons
+  * remove trailing semicolons
+
+  [ Asghwor ]
+  * Fix inconsistent keyboard navigation in the Scale View and in the Expo View. (#11098)
+
+  [ hduelme ]
+  * fix variable name (#11152)
+
+  [ Michael Webster ]
+  * gwl: don't pass the wrong arguments to windowRemoved.
+  * expo: Update the window's starting position when an update is triggered, in case the window moved to a different monitor during a drag.
+  * overrides: Make MetaWindowActor.get_workspace always return an index;
+  * Use github instead of circleci.
+  * workflow: Fix dependency line.. maybe.
+  * workflow: Go back to folded style.
+
+  [ Clement Lefebvre ]
+  * settings: Make use of cinnamon-driver-manager shortcut
+
+  [ Monteiro ]
+  * gwl: fix reload dragging pinned apps when group windows setting is disabled (#11191)
+
+  [ hduelme ]
+  * replace deprecated use of GObject.SIGNAL_RUN_FIRST by GObject.SignalFlags.RUN_FIRST (#11128)
+
+  [ Joshua Peisach ]
+  * cs_windows.py: Properly import CDesktopEnums (#10844)
+
+  [ Clement Lefebvre ]
+  * cs_themes.py: Don't print an error if metadata.json is missing
+  * cs_themes.py: Separate light/dark/darker themes
+  * Add new cornerbar applet
+  * Panel: Replace show-desktop with cornerbar
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * corner-bar: Don't track_hover on the bar actor.
+  * desklets: Allow desklets to be locked in place.
+
+  [ hdulme ]
+  * remove trailing semicolons
+
+  [ Joshua Peisach ]
+  * cs-info: Add system icon (#11090)
+
+  [ Michael Webster ]
+  * cs_info: Keep system image a reasonable size.
+  * debian/control: Add missing dependency.
+  * data/icons/meson.build: Silence a build warning.
+
+  [ Attila Greguss ]
+  * Move spices download cache to `XDG_CACHE_HOME` directory (#11176)
+
+  [ Michael Webster ]
+  * cs_keyboard: Add an entry to allow type-to-search shortcut names.
+  * cs_themes: Don't require themes to support Gtk 2 any longer
+  * windowMenu.js: Implement mnemonic accelerators.
+  * makepot: Collect comments from js files.
+  * harvester.py: cache_folder should be a pathlib.Path.
+  * windowMenu.js: Never allow more than one menu at a time.
+  * appSwitcher.js: Account for alt-tab reverse actions in the window.
+  * cs_keyboard: Add missing switch-panels and switch-panels-backward keybindings.
+
+  [ Rick Calixte ]
+  * Support multiple key bindings for 'locate-pointer-key' (#11143)
+
+  [ Michael Webster ]
+  * cs_info: There should be no image set by default.
+
+  [ Bobby Rong ]
+  * cs-info: Don't fail with the default system-icon-path value (#11245)
+
+  [ Rick Calixte ]
+  * Add support for key bindings to Inhibit Applet
+  * Cleanup whitespace
+
+  [ hdulme ]
+  * replace equality None check with identity None check
+
+  [ Attila Greguss ]
+  * fix: Actually use `XDG_DATA_HOME` to store themes and icons instead of home (#11175)
+  * Use XDG_CONFIG_HOME to store background config files instead of .cinnamon (#11177)
+  * Use XDG_CONFIG_HOME to primarily store spices configs in (#11182)
+  * fix: use XDG_DATA_HOME to store custom launchers, also fix launcher desklet (#11185)
+  * Use `XDG_STATE_HOME` for logfiles instead of `~/.cinnamon` (#11186)
+
+  [ hdulme ]
+  * remove unused imports harvester.py
+  * remove unused imports updates.py
+
+  [ hduelme ]
+  * use @staticmethod in Spices.py (#11257)
+  * fix python docstring style (#11258)
+
+  [ hdulme ]
+  * simplify boolean check in cs_default
+
+  [ hduelme ]
+  * remove redundant parentheses (#11259)
+
+  [ Michael Webster ]
+  * Use a custom actor for the uiGroup.
+  * cs_backgrounds: Use font-size instead of font-scale to reduce the author and size markup.
+
+  [ Bobby Rong ]
+  * build: Fix some hardcode path issues (#11244)
+
+  [ hdulme ]
+  * replace equality None check with identity None check
+  * removed unused variable check-js
+
+  [ Clement Lefebvre ]
+  * GWL: Move nemo shortcut to the left
+
+  [ Rick Calixte ]
+  * Add a setting for notification duration (#11202)
+
+  [ Andrei Miculita ]
+  * Rename "Preferences" to "Applet preferences" in applets where it might be confusing (#11216)
+
+  [ Himadri Sekhar Basu ]
+  * Categorize default applications (#11287)
+
+  [ Michael Webster ]
+  * cs_default: Fix a typo, and set a default height to prevent the window from growing too tall.
+
+  [ Rick Calixte ]
+  * Add key bindings to move window to workspace up/down (#11264)
+
+  [ Michael Webster ]
+  * cs_keyboard: Improve a few keybinding descriptions.
+
+  [ sm02ll ]
+  * The middle click toggles the sound and places the microphone in the same state. #11255 (#11256)
+
+  [ veractor ]
+  * cs_default.py: Add entry for terminal exec-arg
+
+  [ Michael Webster ]
+  * Improve presentation of terminal args.
+  * layout.js: Actually change actor visibility on fullscreen monitors.
+  * Restore set_skip_paint method for the uiGroup.
+  * appletManager.js: Fix typo.
+  * layout.js: Fix picking in fullscreen.
+
+  [ hduelme ]
+  * python: optimize lists (#11281)
+
+  [ Clement Lefebvre ]
+  * Depend on libcjs0
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 18 Nov 2022 10:38:58 +0000
+
 cinnamon (5.4.12) vanessa; urgency=medium
 
   [ Michael Webster ]

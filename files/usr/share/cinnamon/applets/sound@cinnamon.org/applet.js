@@ -1202,8 +1202,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         //mute or play / pause players on middle click
         if (buttonId === 2) {
             if (this.middleClickAction === "mute") {
+                if (this._output.is_muted === this._input.is_muted)
+                    this._toggle_in_mute();
                 this._toggle_out_mute();
-                this._toggle_in_mute();
             } else if (this.middleClickAction === "out_mute")
                 this._toggle_out_mute();
             else if (this.middleClickAction === "in_mute")

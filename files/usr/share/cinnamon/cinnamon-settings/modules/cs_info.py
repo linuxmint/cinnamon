@@ -6,6 +6,7 @@ import shlex
 import os
 import re
 import threading
+import shutil
 from json import loads
 
 from gi.repository import GdkPixbuf
@@ -94,16 +95,6 @@ def getProcInfos():
     return result
 
 
-def getSystemIcon():
-    schema = Gio.Settings(schema="org.cinnamon")
-
-    iconPath = schema.get_string("system-icon-path")
-    if iconPath == "":  # left empty, so its disabled
-        return None
-
-    return iconPath
-
-
 def createSystemInfos():
     procInfos = getProcInfos()
     infos = []
@@ -175,13 +166,27 @@ class Module:
         if not self.loaded:
             print("Loading Info module")
 
-            infos = createSystemInfos()
-
             page = SettingsPage()
-            page.set_spacing(10)
+            page.set_spacing(24)
             self.sidePage.add_widget(page)
 
-            settings = page.add_section(_("System info"))
+            schema = Gio.Settings(schema="org.cinnamon")
+            systemIcon = schema.get_string("system-icon")
+            if systemIcon != "":
+                try:
+                    if "/" in systemIcon:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale (systemIconPath, -1, 100, True)
+                        systemIcon = Gtk.Image.new_from_pixbuf(pixbuf)
+                    else:
+                        systemIcon = Gtk.Image.new_from_icon_name(systemIcon, Gtk.IconSize.DIALOG)
+                        systemIcon.set_pixel_size(100)
+                    page.add(systemIcon)
+                except GLib.GError:
+                    pass
+
+            infos = createSystemInfos()
+
+            settings = page.add_section()
 
             for (key, value) in infos:
                 widget = SettingsWidget()
@@ -195,7 +200,7 @@ class Module:
                 widget.pack_end(labelValue, False, False, 0)
                 settings.add_row(widget)
 
-            if os.path.exists("/usr/bin/upload-system-info"):
+            if shutil.which("upload-system-info"):
                 widget = SettingsWidget()
 
                 spinner = Gtk.Spinner(visible=True)
@@ -207,8 +212,7 @@ class Module:
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
 
-            if os.path.exists("/usr/bin/inxi"):
-                
+            if shutil.which("inxi"):
                 widget = SettingsWidget()
 
                 button = Gtk.Button(label=_("Copy to clipboard"))
@@ -216,16 +220,6 @@ class Module:
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
 
-            systemIconPath = getSystemIcon()
-            if systemIconPath is not None:
-                try:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale (systemIconPath, -1, 160, True)
-                    systemIcon = Gtk.Image.new_from_pixbuf(pixbuf)
-                    page.add(systemIcon)
-                except GLib.GError:
-                    pass
-
-    
     def on_copy_clipboard_button_clicked(self, button):
         try:
             # taken from https://github.com/linuxmint/xapp/blob/master/scripts/upload-system-info

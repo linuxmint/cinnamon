@@ -9,6 +9,7 @@ import time
 import hashlib
 import mimetypes
 import pickle
+import shutil
 from io import BytesIO
 from xml.etree import ElementTree
 
@@ -187,7 +188,7 @@ class Module:
 
             self.xdg_pictures_directory = os.path.expanduser("~/Pictures")
             xdg_config = os.path.expanduser("~/.config/user-dirs.dirs")
-            if os.path.exists(xdg_config) and os.path.exists("/usr/bin/xdg-user-dir"):
+            if os.path.exists(xdg_config) and shutil.which("xdg-user-dir"):
                 path = subprocess.check_output(["xdg-user-dir", "PICTURES"]).decode("utf-8").rstrip("\n")
                 if os.path.exists(path):
                     self.xdg_pictures_directory = path

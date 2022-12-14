@@ -12,16 +12,6 @@ launcher = configure_file(
     install_mode: 'rwxr-xr-x'
 )
 
-service_conf = configuration_data()
-service_conf.set('BINDIR', join_paths(prefix, bindir))
-
-launcher = configure_file(
-    input: 'org.cinnamon.CalendarServer.service.in',
-    output: 'org.cinnamon.CalendarServer.service',
-    configuration: service_conf,
-    install_dir: dbus_services_dir
-)
-
 install_data(
     'cinnamon-calendar-server.py',
     install_dir: libexecdir,

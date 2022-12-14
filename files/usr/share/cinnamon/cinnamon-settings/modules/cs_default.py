@@ -27,20 +27,40 @@ DEF_CONTENT_TYPE = 0
 DEF_LABEL = 1
 DEF_HEADING = 2
 
-preferred_app_defs = [
+preferred_app_defs = {}
+# Accessibility: Magnifier, Screen reader, Onscreen keyboard
+# Internet: Browser, Email Client, Instant messenger
+# Multimedia: Audio/Music player, Video player, Photos
+# Office: Word processor, Spreadsheet, Presentation, Document, Source code
+# System: file manager, Text editor, Terminal, Calculator
+
+preferred_app_defs[_("Accessibility")] = (
     # 1st mimetype is to let us find apps
     # 2nd mimetype is to set default handler for (so we handle all of that type, not just a specific format)
-    ( "inode/directory",         "inode/directory",          _("File Manager") ),
-    ( "x-scheme-handler/http",   "x-scheme-handler/http",    _("_Web") ),
-    ( "x-scheme-handler/mailto", "x-scheme-handler/mailto",  _("_Mail") ),
-    ( "application/msword",      "application/msword",       _("Documents") ),
-    ( "text/plain",              "text/plain",               _("Plain Text") ),
-    ( "audio/x-vorbis+ogg",      "audio",                    _("M_usic") ),
-    ( "video/x-ogm+ogg",         "video",                    _("_Video") ),
-    ( "image/jpeg",              "image",                    _("_Photos") ),
-    ( "text/x-python",           "text/x-python",            _("Source Code") ),
+)
+
+preferred_app_defs[_("Internet")] = (
+    ( "x-scheme-handler/http",   "x-scheme-handler/http",    _("Web") ),
+    ( "x-scheme-handler/mailto", "x-scheme-handler/mailto",  _("Mail") ),
+)
+
+preferred_app_defs[_("Multimedia")] = (
+    ( "audio/x-vorbis+ogg",      "audio",                    _("Music") ),
+    ( "video/x-ogm+ogg",         "video",                    _("Video") ),
+    ( "image/jpeg",              "image",                    _("Photos") ),
+)
+
+preferred_app_defs[_("Office")] = (
+    ( "application/msword",      "application/msword",       _("Word") ),
+    ( "application/msexcel",     "application/msexcel",      _("Spreadsheet") ),
     ( "application/pdf",         "application/pdf",          _("PDF") ),
-]
+    ( "text/x-python",           "text/x-python",            _("Source Code") ),
+)
+
+preferred_app_defs[_("System")] = (
+    ( "inode/directory",         "inode/directory",          _("File Manager") ),
+    ( "text/plain",              "text/plain",               _("Plain Text") ),
+)
 
 mimetypes = {}
 mimetypes["audio"]=[
@@ -135,12 +155,20 @@ mimetypes["application/msword"] = [
     'application/vnd.ms-works', 'application/x-abiword',
 ]
 
+mimetypes["application/vnd.ms-excel"] = [
+    'application/vnd.ms-excel', 'application/vnd.oasis.opendocument.spreadsheet',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.template',
+    'application/vnd.oasis.opendocument.spreadsheet-template',
+    'application/vnd.stardivision.calc',
+]
+
 removable_media_defs = [
-    ( "x-content/audio-cdda",       _("CD _audio") ,     _("Select an application for audio CDs")),
-    ( "x-content/video-dvd",        _("_DVD video"),     _("Select an application for video DVDs") ),
-    ( "x-content/audio-player",     _("_Music player"),  _("Select an application to run when a music player is connected") ),
-    ( "x-content/image-dcf",        _("_Photos"),        _("Select an application to run when a camera is connected") ),
-    ( "x-content/unix-software",    _("_Software"),      _("Select an application for software CDs") )
+    ( "x-content/audio-cdda",       _("CD audio") ,     _("Select an application for audio CDs")),
+    ( "x-content/video-dvd",        _("DVD video"),     _("Select an application for video DVDs") ),
+    ( "x-content/audio-player",     _("Music player"),  _("Select an application to run when a music player is connected") ),
+    ( "x-content/image-dcf",        _("Photos"),        _("Select an application to run when a camera is connected") ),
+    ( "x-content/unix-software",    _("Software"),      _("Select an application for software CDs") )
 ]
 
 other_defs = [
@@ -199,6 +227,7 @@ class MnemonicLabel(Gtk.Label):
         self.set_text_with_mnemonic(text)
         self.set_mnemonic_widget(widget)
         self.set_alignment(0.0, 0.5)
+        self.set_valign(Gtk.Align.START)
         self.set_line_wrap(True)
 
 class DefaultAppChooserButton(Gtk.AppChooserButton):
@@ -247,7 +276,8 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
                 if not info.set_as_default_for_type("x-scheme-handler/https"):
                     print("  Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https"))
 
-class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this to change the x-terminal-emulator default to allow it to be a more global change rather then just cinnamon/nemo
+class DefaultTerminalButton(Gtk.AppChooserButton):
+    #TODO: See if we can get this to change the x-terminal-emulator default to allow it to be a more global change rather then just cinnamon/nemo
     def __init__(self):
         super(DefaultTerminalButton, self).__init__()
         self.connect("changed", self.onChanged)
@@ -265,9 +295,9 @@ class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this
             exec_val = Gio.DesktopAppInfo.get_string(self.this_item, "Exec")
             name_val = Gio.DesktopAppInfo.get_string(self.this_item, "Name")
             icon_val = Gio.DesktopAppInfo.get_string(self.this_item, "Icon")
-            #terminals don't have mime types, so we check for "TerminalEmulator" under the "Category" key in desktop files
+            # terminals don't have mime types, so we check for "TerminalEmulator" under the "Category" key in desktop files
             if cat_val is not None and "TerminalEmulator" in cat_val:
-                #this crazy if statement makes sure remaining desktop file info is not empty, then prevents root terminals from showing, then prevents repeating terminals from trying to being added which leave a blank space and Gtk-WARNING's
+                # this crazy if statement makes sure remaining desktop file info is not empty, then prevents root terminals from showing, then prevents repeating terminals from trying to being added which leave a blank space and Gtk-WARNING's
                 if exec_val is not None and name_val is not None and icon_val is not None and not "gksu" in exec_val and exec_val not in self.active_items:
                     self.append_custom_item(exec_val, name_val, Gio.ThemedIcon.new(icon_val))
                     self.active_items.append(exec_val)
@@ -279,6 +309,23 @@ class DefaultTerminalButton(Gtk.AppChooserButton): #TODO: See if we can get this
         index_num = button.get_active()
         command_key = self.active_items[index_num]
         self.settings.set_string("exec", command_key)
+
+class TerminalExecArgEntry(Gtk.Entry):
+    def __init__(self):
+        super(TerminalExecArgEntry, self).__init__()
+
+        self.connect("changed", self.onChanged)
+
+        self.settings = Gio.Settings.new(TERMINAL_SCHEMA)
+        self.key_value = self.settings.get_string("exec-arg")
+
+        self.get_buffer().set_text(self.key_value, -1)
+
+        self.set_placeholder_text("exec-arg")
+        self.set_tooltip_text(_("Command-line option for your terminal to execute a passed-in command."))
+
+    def onChanged(self, entry):
+        self.settings.set_string("exec-arg", entry.get_buffer().get_text())
 
 class DefaultCalculatorButton(Gtk.AppChooserButton):
     def __init__(self):
@@ -428,7 +475,7 @@ class OtherTypeDialog(Gtk.Dialog):
         self.type_combo.set_active(False)
 
         table = ButtonTable(2)
-        table.addRow(_("_Type:"), self.type_combo)
+        table.addRow(_("Type:"), self.type_combo)
         self.table = table
 
         self.vbox.pack_start(ColumnBox(_("Select how other media should be handled"), table), True, True, 6)
@@ -513,7 +560,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autoplay, favorite, apps")
-        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, module=self)
+        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, 560, module=self)
         self.sidePage = sidePage
 
     def on_module_selected(self):
@@ -531,40 +578,56 @@ class Module:
             page = SettingsPage()
             self.sidePage.stack.add_titled(page, "preferred", _("Preferred applications"))
 
-
-            settings = page.add_section(_("Preferred applications"))
-
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            for d in preferred_app_defs:
-                widget = SettingsWidget()
-                button = DefaultAppChooserButton(d[PREF_CONTENT_TYPE], d[PREF_GEN_CONTENT_TYPE])
-                label = MnemonicLabel(d[PREF_LABEL], button)
-                size_group.add_widget(button)
-                widget.pack_start(label, False, False, 0)
-                widget.pack_end(button, False, False, 0)
-                #Hide button if there are no apps
-                if not button.get_active():
-                    settings.add_row(widget)
+            for name in preferred_app_defs:
+                items = preferred_app_defs[name]
+                if len(items) > 0:
+                    settings = page.add_section(name)
+                    # size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+                    for item in items:
+                        widget = SettingsWidget()
+                        button = DefaultAppChooserButton(item[PREF_CONTENT_TYPE], item[PREF_GEN_CONTENT_TYPE])
+                        label = MnemonicLabel(item[PREF_LABEL], button)
+                        size_group.add_widget(button)
+                        widget.pack_start(label, False, False, 0)
+                        widget.pack_end(button, False, False, 0)
+                        #Hide button if there are no apps
+                        if not button.get_active():
+                            settings.add_row(widget)
+                    if name.lower() == "system":
+                        # Add Terminal and calculator to the "System" section
 
+                        # Calculator
+                        widget = SettingsWidget()
+                        button = DefaultCalculatorButton()
+                        label = MnemonicLabel(_("Calculator"), button)
+                        size_group.add_widget(button)
+                        widget.pack_start(label, False, False, 0)
+                        widget.pack_end(button, False, False, 0)
+                        settings.add_row(widget)
 
-            # Terminal
-            widget = SettingsWidget()
-            button = DefaultTerminalButton()
-            label = MnemonicLabel(_("Te_rminal"), button)
-            size_group.add_widget(button)
-            widget.pack_start(label, False, False, 0)
-            widget.pack_end(button, False, False, 0)
-            settings.add_row(widget)
+                        # Terminal
+                        widget = SettingsWidget()
+                        button = DefaultTerminalButton()
+                        label = MnemonicLabel(_("Terminal"), button)
+                        entry_label = Gtk.Label(label="<i>%s</i>" % _("Arguments"), margin_end=4, use_markup=True)
+                        entry_label.get_style_context().add_class("dim-label")
+                        entry = TerminalExecArgEntry()
 
-            # Calculator
-            widget = SettingsWidget()
-            button = DefaultCalculatorButton()
-            label = MnemonicLabel(_("_Calculator"), button)
-            size_group.add_widget(button)
-            widget.pack_start(label, False, False, 0)
-            widget.pack_end(button, False, False, 0)
-            settings.add_row(widget)
+                        entry_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, margin_top=6)
+                        entry_box.pack_start(entry_label, False, False, 0)
+                        entry_box.pack_start(entry, True, True, 0)
+
+                        box = Gtk.VBox()
+                        box.pack_start(button, False, False, 0)
+                        box.pack_start(entry_box, False, False, 0)
+                        size_group.add_widget(box)
+
+                        widget.pack_start(label, False, False, 0)
+                        widget.pack_end(box, False, False, 0)
+                        settings.add_row(widget)
+
 
             # Removable media
 

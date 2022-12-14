@@ -66,13 +66,13 @@ class Module:
 
             settings = page.add_section(_("Themes"))
 
-            widget = self.make_group(_("Icons"), self.icon_chooser)
+            widget = self.make_group(_("Mouse Pointer"), self.cursor_chooser)
             settings.add_row(widget)
 
             widget = self.make_group(_("Applications"), self.theme_chooser)
             settings.add_row(widget)
 
-            widget = self.make_group(_("Mouse Pointer"), self.cursor_chooser)
+            widget = self.make_group(_("Icons"), self.icon_chooser)
             settings.add_row(widget)
 
             widget = self.make_group(_("Desktop"), self.cinnamon_chooser)
@@ -178,12 +178,10 @@ class Module:
         GLib.timeout_add_seconds(5, self.refresh)
 
     def refresh(self):
-        choosers = []
-        choosers.append((self.cursor_chooser, "cursors", self._load_cursor_themes(), self._on_cursor_theme_selected))
-        choosers.append((self.theme_chooser, "gtk-3.0", self._load_gtk_themes(), self._on_gtk_theme_selected))
-        # choosers.append((self.metacity_chooser, "metacity-1", self._load_metacity_themes(), self._on_metacity_theme_selected))
-        choosers.append((self.cinnamon_chooser, "cinnamon", self._load_cinnamon_themes(), self._on_cinnamon_theme_selected))
-        choosers.append((self.icon_chooser, "icons", self._load_icon_themes(), self._on_icon_theme_selected))
+        choosers = [(self.cursor_chooser, "cursors", self._load_cursor_themes(), self._on_cursor_theme_selected),
+                    (self.theme_chooser, "gtk-3.0", self._load_gtk_themes(), self._on_gtk_theme_selected),
+                    (self.cinnamon_chooser, "cinnamon", self._load_cinnamon_themes(), self._on_cinnamon_theme_selected),
+                    (self.icon_chooser, "icons", self._load_icon_themes(), self._on_icon_theme_selected)]
         for chooser in choosers:
             chooser[0].clear_menu()
             chooser[0].set_sensitive(False)
@@ -382,7 +380,7 @@ class Module:
         if "dark" in name and "darker" not in name:
             dark = 1
         name = name.replace("darker", "").replace("dark", "").replace("legacy", "")
-        name = f"{dark}{darker}{legacy}{name}"
+        name = f"{legacy}{dark}{darker}{name}"
         return name
 
     def _load_gtk_themes(self):
@@ -442,7 +440,7 @@ class Module:
     def _load_cursor_themes(self):
         dirs = ICON_FOLDERS
         valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True)
-        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
+        valid.sort(key=lambda a: a[0].lower())
         res = []
         for i in valid:
             for j in res:

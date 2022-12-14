@@ -1,4 +1,4 @@
-project('Cinnamon', 'c', version : '5.4.12', meson_version : '>=0.47.0')
+project('Cinnamon', 'c', version : '5.6.4', meson_version : '>=0.47.0')
 
 gnome = import('gnome')
 i18n = import('i18n')
@@ -13,13 +13,13 @@ libdir = join_paths(prefix, get_option('libdir'))
 includedir = get_option('includedir')
 libexecdir = get_option('libexecdir')
 desktopdir = join_paths(datadir, 'applications')
+xsessiondir = join_paths(datadir, 'xsessions')
 schemadir = join_paths(datadir, 'glib-2.0', 'schemas')
 pkglibdir = join_paths(libdir, meson.project_name().to_lower())
 girdir = join_paths(datadir, 'gir-1.0')
 servicedir = join_paths(datadir, 'dbus-1', 'services')
 pkgdatadir = join_paths(datadir, meson.project_name().to_lower())
 po_dir = join_paths(meson.source_root(), 'po')
-dbus_services_dir = dependency('dbus-1').get_pkgconfig_variable('session_bus_services_dir', define_variable: ['datadir', datadir])
 
 # dependencies
 cjs = dependency('cjs-1.0', version: '>= 4.8.0')
