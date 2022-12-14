@@ -203,7 +203,7 @@ cinnamon_gir = gnome.generate_gir(
     includes: cinnamon_gir_includes,
     install: true,
     install_dir_typelib: pkglibdir,
-    install_dir_gir: false,
+    install_dir_gir: girdir,
     extra_args: [
         '-DST_COMPILATION',
         '--quiet',
