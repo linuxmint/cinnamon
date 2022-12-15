@@ -1,3 +1,21 @@
+cinnamon (5.6.5) vera; urgency=medium
+
+  [ Tibladar ]
+  * Fix old cache folder (#11318)
+
+  [ Clement Lefebvre ]
+  * cs_mouse: Fix range labels for touchpad speed widget
+
+  [ Michael Webster ]
+  * python-updater: Download thumbs only during a 'full' update, make sure the cache folders exist every time we try to access them, not just during construction (they may have been deleted).
+  * gwl: Update instances correctly when the monitor configuration changes.
+  * python updater: Reduce json update timeout to 15s.
+
+  [ Clement Lefebvre ]
+  * Menu applet: Don't use start-here icon
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 15 Dec 2022 12:33:42 +0000
+
 cinnamon (5.6.4) vera; urgency=medium
 
   [ Clement Lefebvre ]
