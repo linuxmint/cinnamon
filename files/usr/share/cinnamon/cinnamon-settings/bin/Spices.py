@@ -706,7 +706,8 @@ class Spice_Harvester(GObject.Object):
                     shutil.rmtree(os.path.join(settings_dir, uuid))
                 if os.path.exists(os.path.join(old_settings_dir, uuid)):
                     shutil.rmtree(os.path.join(old_settings_dir, uuid))
-            shutil.rmtree(os.path.join(self.install_folder, uuid))
+            for folder in self.spices_directories:
+                shutil.rmtree(os.path.join(folder, uuid), ignore_errors=True)
         except Exception as detail:
             self.errorMessage(_("A problem occurred while removing %s.") % job['uuid'], str(detail))
 
@@ -776,6 +777,9 @@ class Spice_Harvester(GObject.Object):
             self.settings.set_strv(self.enabled_key, enabled)
 
     def disable_extension(self, uuid):
+        if self.themes:
+            return
+
         enabled_extensions = self.settings.get_strv(self.enabled_key)
         new_list = []
         for enabled_extension in enabled_extensions:

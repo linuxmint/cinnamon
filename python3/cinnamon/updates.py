@@ -27,13 +27,13 @@ class UpdateManager:
             updates += self.get_updates_of_type(spice_type)
         return updates
 
-    def refresh_all_caches(self):
+    def refresh_all_caches(self, full=False):
         for spice_type in SPICE_TYPES:
-            self.refresh_cache_for_type(spice_type)
+            self.refresh_cache_for_type(spice_type, full)
 
-    def refresh_cache_for_type(self, spice_type):
+    def refresh_cache_for_type(self, spice_type, full=False):
         harvester = self.harvesters[spice_type]
-        return harvester.refresh()
+        return harvester.refresh(full)
 
     def get_updates_of_type(self, spice_type):
         harvester = self.harvesters[spice_type]
