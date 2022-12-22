@@ -648,11 +648,14 @@ Chrome.prototype = {
                 }
             } else if (this._inOverview)
                 visible = true;
-            else if (!actorData.visibleInFullscreen &&
-                     this.findMonitorForActor(actorData.actor).inFullscreen)
-                visible = false;
-            else
-                visible = true;
+            else {
+                let monitor = this.findMonitorForActor(actorData.actor);
+                
+                if (!actorData.visibleInFullscreen && monitor && monitor.inFullscreen)
+                    visible = false;
+                else
+                    visible = true;
+            }
             Main.uiGroup.set_skip_paint(actorData.actor, !visible);
         }
         this._queueUpdateRegions();
