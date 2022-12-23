@@ -99,17 +99,17 @@ class CinnamonSystrayApplet extends Applet.Applet {
         });
     }
 
-    resizeIcons(size) {
-        this.icon_size = size * global.ui_scale;
+    resizeIcons() {
+        this.icon_size = this.getPanelIconSize() * global.ui_scale;
         Main.statusIconDispatcher.redisplay();
     }
 
     on_panel_icon_size_changed(size) {
-        this.resizeIcons(size);
+        this.resizeIcons();
     }
 
     on_panel_edit_mode_changed() {
-        this.resizeIcons(this.icon_size);
+        this.resizeIcons();
     }
 
     uiScaleChanged() {
@@ -118,7 +118,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
         }
 
         this._scaleUpdateId = Mainloop.timeout_add(1500, () => {
-            this.resizeIcons(this.getPanelIconSize());
+            this.resizeIcons();
 
             this._scaleUpdateId = 0;
             return GLib.SOURCE_REMOVE;
