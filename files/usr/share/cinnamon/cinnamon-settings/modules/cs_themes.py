@@ -313,7 +313,7 @@ class Module:
             chooser.set_picture_from_file("/usr/share/cinnamon/theme/thumbnail.png")
         elif path_suffix == "icons":
             current_theme = Gtk.IconTheme.get_default()
-            folder = current_theme.lookup_icon("folder", button_picture_size, 0)
+            folder = current_theme.lookup_icon_for_scale("folder", button_picture_size, self.window.get_scale_factor(), 0)
             if folder is not None:
                 path = folder.get_filename()
                 chooser.set_picture_from_file(path)
