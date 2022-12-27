@@ -44,6 +44,9 @@ class Module:
             switch = GSettingsSwitch(_("Emulate middle click by clicking both left and right buttons"), "org.cinnamon.desktop.peripherals.mouse", "middle-click-emulation")
             settings.add_row(switch)
 
+            switch = GSettingsSwitch(_("Paste the current selection when middle-click is pressed"), "org.cinnamon.desktop.interface", "gtk-enable-primary-paste")
+            settings.add_row(switch)
+
             spin = GSettingsSpinButton(_("Drag-and-drop threshold"), "org.cinnamon.desktop.peripherals.mouse", "drag-threshold", _("pixels"), 1, 400)
             settings.add_row(spin)
 
