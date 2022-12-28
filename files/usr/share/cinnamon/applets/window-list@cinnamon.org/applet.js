@@ -415,6 +415,10 @@ class AppMenuButton {
     _onScrollEvent(actor, event) {
         let direction = event.get_scroll_direction();
 
+        if (direction === Clutter.ScrollDirection.SMOOTH) {
+            return Clutter.EVENT_STOP;
+        }
+
         // Find the current focused window
         let windows = this.actor.get_parent().get_children()
         .filter(function(item) {
