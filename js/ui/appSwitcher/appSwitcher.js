@@ -345,7 +345,7 @@ AppSwitcher.prototype = {
             actor.set_reactive(false);
             if (event.get_scroll_direction() == Clutter.ScrollDirection.UP)
                 this._previous();
-            else
+            else if (event.get_scroll_direction() == Clutter.ScrollDirection.DOWN)
                 this._next();
             actor.set_reactive(true);
         }
