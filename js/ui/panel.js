@@ -29,6 +29,8 @@ const SignalManager = imports.misc.signalManager;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 
+const CustomPanelContextMenu = imports.ui.custom.panel.PanelContextMenu.addons;
+
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
 const ANIMATED_ICON_UPDATE_TIMEOUT = 100;
@@ -1647,7 +1649,7 @@ SettingsLauncher.prototype = {
     },
 };
 
-imports.ui.custom.panel.PanelContextMenu.a;
+CustomPanelContextMenu.a();
 
 function PanelContextMenu(launcher, orientation, panelId) {
     this._init(launcher, orientation, panelId);
@@ -1771,7 +1773,7 @@ PanelContextMenu.prototype = {
         menu.addMenuItem(menu.troubleshootItem);
 
         this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "preferences-desktop"));
-        imports.ui.custom.panel.PanelContextMenu.b;
+        CustomPanelContextMenu.b();
     },
 
     open: function(animate) {

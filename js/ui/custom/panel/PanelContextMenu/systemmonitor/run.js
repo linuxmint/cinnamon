@@ -1,3 +1,4 @@
+function a(){
 AppLauncher.prototype = {
     __proto__: PopupMenu.PopupIconMenuItem.prototype,
 
@@ -11,3 +12,9 @@ AppLauncher.prototype = {
     },
 };
 // did this thanks to https://forums.linuxmint.com/viewtopic.php?p=2163518#p2163518 who had the same desire as me
+};
+
+function b(){
+this.addMenuItem(new AppLauncher(_("System Monitor"), "gnome-system-monitor", "system-monitor-app-symbolic"));
+// did this thanks to https://forums.linuxmint.com/viewtopic.php?p=2163518#p2163518 who had the same desire as me
+};
