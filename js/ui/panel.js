@@ -1647,7 +1647,7 @@ SettingsLauncher.prototype = {
     },
 };
 
-imports.ui.custom.panel.PanelContextMenu.a
+imports.ui.custom.panel.PanelContextMenu.a;
 
 function PanelContextMenu(launcher, orientation, panelId) {
     this._init(launcher, orientation, panelId);
@@ -1771,7 +1771,7 @@ PanelContextMenu.prototype = {
         menu.addMenuItem(menu.troubleshootItem);
 
         this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "preferences-desktop"));
-        imports.ui.custom.panel.PanelContextMenu.b
+        imports.ui.custom.panel.PanelContextMenu.b;
     },
 
     open: function(animate) {
