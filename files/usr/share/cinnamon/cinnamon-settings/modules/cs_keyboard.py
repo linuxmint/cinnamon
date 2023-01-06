@@ -660,7 +660,6 @@ class Module:
         self.kb_store.refilter()
 
     def onCustomKeyBindingEdited(self, kb_treeview, column, kb_column):
-        print("what")
         keybindings, iter = kb_treeview.get_selection().get_selected()
         if iter:
             keybinding = keybindings[iter][1]
