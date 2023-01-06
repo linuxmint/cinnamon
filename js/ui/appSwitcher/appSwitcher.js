@@ -341,6 +341,8 @@ AppSwitcher.prototype = {
 
     // allow navigating by mouse-wheel scrolling
     _scrollEvent: function(actor, event) {
+        if (event.get_scroll_direction() == Clutter.ScrollDirection.SMOOTH)
+            return Clutter.EVENT_STOP;
         if(this._checkSwitchTime()) {
             actor.set_reactive(false);
             if (event.get_scroll_direction() == Clutter.ScrollDirection.UP)
