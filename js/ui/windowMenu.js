@@ -386,6 +386,10 @@ var WindowMenuManager = class {
         if (type != Meta.WindowMenuType.WM)
             throw new Error('Unsupported window menu type');
 
+        if (window.window_type === Meta.WindowType.DESKTOP) {
+            return;
+        }
+
         this.destroyMenu();
 
         let menu = new WindowMenu(window, this._sourceActor);
