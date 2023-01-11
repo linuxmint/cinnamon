@@ -1,3 +1,33 @@
+cinnamon (5.6.6) vera; urgency=medium
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * cinnamon-settings themes: Check both new and legacy theme folders when uninstalling.
+  * startupAnimation.js: Make sure the shroud actor remains the size of the stage during startup.
+  * systray applet: Use the correct panel size when reloading icons.
+  * PanelManager: Keep track of the number of monitors.
+  * ChooserButtonWidgets: Fix button and menu images in hidpi.
+  * Fix reverse mouse scroll in the app switcher.
+  * window list: Ignore smooth scroll events when mousewheel cycling is enabled.
+  * makepot: Include comments from js files.
+  * Populate desktop files with new/changed translations.
+  * harvester.py: See if any spices are installed before going online to get new metadata.
+
+  [ MDPenguin ]
+  * appSwitcher: ignore smooth scrolling
+
+  [ Michael Webster ]
+  * cs_keyboard: Remove stray print line.
+  * cs_default: Don't use translated strings as dictionary keys.
+  * windowMenu.js: Don't display for desktop windows.
+
+  [ Clement Lefebvre ]
+  * Revert "makepot: Include comments from js files."
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 11 Jan 2023 10:22:30 +0000
+
 cinnamon (5.6.5) vera; urgency=medium
 
   [ Tibladar ]
