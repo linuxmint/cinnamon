@@ -429,7 +429,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                     status = ngettext("Charging - %d hour until fully charged", "Charging - %d hours until fully charged", hours).format(hours);
                 }
                 else {
-                    /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
+                    /* Translators: this is a time string, as in "%d hours %d minutes remaining" */
                     let template = _("Charging - %d %s %d %s until fully charged");
                     status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                 }
@@ -450,7 +450,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                     status = ngettext("Using battery power - %d hour remaining", "Using battery power - %d hours remaining", hours).format(hours);
                 }
                 else {
-                    /* TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining" */
+                    /* Translators: this is a time string, as in "%d hours %d minutes remaining" */
                     let template = _("Using battery power - %d %s %d %s remaining");
                     status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                 }
