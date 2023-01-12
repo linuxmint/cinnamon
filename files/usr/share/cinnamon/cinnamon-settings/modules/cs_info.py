@@ -59,13 +59,14 @@ def getGraphicsInfos():
 def getDiskSize():
     disksize = 0
     try:
-        out = getProcessOut(("lsblk", "--json", "--output", "size", "--bytes", "--nodeps"))
+        out = getProcessOut(("lsblk", "--json", "--output", "fssIze", "--bytes"))
         jsonobj = loads(''.join(out))
     except Exception:
         return _("Unknown size"), False
 
     for blk in jsonobj['blockdevices']:
-        disksize += int(blk['size'])
+        if blk['fssize'] != None:
+            disksize += int(blk['fssize'])
 
     return disksize, (len(jsonobj['blockdevices']) > 1)
 
