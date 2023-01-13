@@ -949,8 +949,6 @@ var WindowManager = class WindowManager {
             actor.set_pivot_point(0, 0);
             actor.scale_y = 1;
             actor.scale_x = 1;
-            actor.translation_y = 0;
-            actor.translation_x = 0;
             cinnamonwm.completed_map(actor);
         }
     }
