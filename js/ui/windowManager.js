@@ -870,6 +870,7 @@ var WindowManager = class WindowManager {
             {
                 actor.orig_opacity = actor.opacity;
                 actor.set_pivot_point(0.5, 0.5);
+                actor.x -= 1;
                 actor.scale_x = 0.94;
                 actor.scale_y = 0.94;
                 actor.opacity = 0;
@@ -881,6 +882,7 @@ var WindowManager = class WindowManager {
                     opacity: actor.orig_opacity,
                     scale_x: 1,
                     scale_y: 1,
+                    x: actor.x + 1,
                     duration: time * EASING_MULTIPLIER,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onStopped: () => this._mapWindowDone(cinnamonwm, actor),
