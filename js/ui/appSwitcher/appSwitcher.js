@@ -208,6 +208,9 @@ AppSwitcher.prototype = {
     },
 
     _next: function() {
+        if (!this._windows)
+            return;
+
         if(this._windows.length <= 1) {
             this._currentIndex = 0;
             this._updateList(0);
@@ -220,6 +223,9 @@ AppSwitcher.prototype = {
     },
 
     _previous: function() {
+        if (!this._windows)
+            return;
+
         if(this._windows.length <= 1) {
             this._currentIndex = 0;
             this._updateList(0);
@@ -232,6 +238,9 @@ AppSwitcher.prototype = {
     },
 
     _select: function(index) {
+        if (!this._windows)
+            return;
+
         this._currentIndex = index;
         this._setCurrentWindow(this._windows[this._currentIndex]);
     },
@@ -454,7 +463,14 @@ AppSwitcher.prototype = {
             this._motionTimeoutId = 0;
         }
 
-        this._windowManager.disconnect(this._dcid);
-        this._windowManager.disconnect(this._mcid);
+        if (this._dcid > 0) {
+            this._windowManager.disconnect(this._dcid);
+            this._dcid = 0;
+        }
+
+        if (this._mcid > 0) {
+            this._windowManager.disconnect(this._mcid);
+            this._mcid = 0;
+        }
     }
 };
