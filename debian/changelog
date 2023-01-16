@@ -1,3 +1,19 @@
+cinnamon (5.6.7) vera; urgency=medium
+
+  [ Clement Lefebvre ]
+  * makepot: Include Translators comments for JS
+  * l10n: Update POT
+
+  [ Rick Calixte ]
+  * layout.js: Fix for ES6 compatibility
+
+  [ Michael Webster ]
+  * windowManager.js: Fix traditional mapping effect.
+  * windowManager.js: Remove some unnecessary code.
+  * classicSwitcher: Fix icon spacing when transitioning to the next smaller size.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 16 Jan 2023 14:54:11 +0000
+
 cinnamon (5.6.6) vera; urgency=medium
 
   [ Clement Lefebvre ]
