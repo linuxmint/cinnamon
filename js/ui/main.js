@@ -119,7 +119,6 @@ const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
 const ModalDialog = imports.ui.modalDialog;
 const {readOnlyError} = imports.ui.environment;
-const {installPolyfills} = imports.ui.overrides;
 const InputMethod = imports.misc.inputMethod;
 const ScreenRecorder = imports.ui.screenRecorder;
 
@@ -265,8 +264,6 @@ function start() {
     global.logWarning = _logWarning;
     global.logError = _logError;
     global.log = _logInfo;
-
-    installPolyfills(readOnlyError, _log);
 
     let cinnamonStartTime = new Date().getTime();
 
