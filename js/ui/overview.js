@@ -276,7 +276,7 @@ Overview.prototype = {
         this._coverPane.hide();
 
         // Disable unredirection while in the overview
-        Meta.disable_unredirect_for_screen(global.screen);
+        Meta.disable_unredirect_for_display(global.display);
         this._group.show();
 
         this.workspacesView = new WorkspacesView.WorkspacesView();

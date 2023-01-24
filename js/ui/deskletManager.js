@@ -105,7 +105,7 @@ function updateMouseTracking() {
 }
 
 function hasMouseWindow(){
-    let window = global.screen.get_mouse_window(null);
+    let window = global.display.get_pointer_window(null);
     return window && window.window_type !== Meta.WindowType.DESKTOP;
 }
 

@@ -145,7 +145,7 @@ OsdWindow.prototype = {
             return;
 
         if (!this.actor.visible) {
-            Meta.disable_unredirect_for_screen(global.screen);
+            Meta.disable_unredirect_for_display(global.display);
             this._level.setLevelBarHeight(this._sizeMultiplier);
             this.actor.show();
             this.actor.opacity = 0;

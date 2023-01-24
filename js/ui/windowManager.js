@@ -1235,7 +1235,7 @@ var WindowManager = class WindowManager {
     showWorkspaceOSD() {
         this._hideWorkspaceOSD(true);
         if (global.settings.get_boolean('workspace-osd-visible')) {
-            let current_workspace_index = global.screen.get_active_workspace_index();
+            let current_workspace_index = global.workspace_manager.get_active_workspace_index();
             if (this.wm_settings.get_boolean('workspaces-only-on-primary')) {
                 this._showWorkspaceOSDOnMonitor(Main.layoutManager.primaryMonitor.index, current_workspace_index);
             }
@@ -1311,8 +1311,8 @@ var WindowManager = class WindowManager {
             return;
         }
         this._movingWindow = window;
-        let workspace = global.screen.get_active_workspace().get_neighbor(direction);
-        if (workspace != global.screen.get_active_workspace()) {
+        let workspace = global.workspace_manager.get_active_workspace().get_neighbor(direction);
+        if (workspace != global.workspace_manager.get_active_workspace()) {
             window.change_workspace(workspace);
             workspace.activate_with_focus(window, global.get_current_time());
         }
@@ -1327,7 +1327,7 @@ var WindowManager = class WindowManager {
     }
 
     moveToWorkspace(workspace, direction_hint) {
-        let active = global.screen.get_active_workspace();
+        let active = global.workspace_manager.get_active_workspace();
         // if (workspace != active) {
             // if (direction_hint)
                 // workspace.activate_with_direction_hint(direction_hint, global.get_current_time());
@@ -1347,7 +1347,7 @@ var WindowManager = class WindowManager {
             return;
         }
 
-        if (global.screen.n_workspaces === 1)
+        if (global.workspace_manager.n_workspaces === 1)
             return;
 
         if (bindingName === 'switch-to-workspace-left') {
@@ -1358,7 +1358,7 @@ var WindowManager = class WindowManager {
     }
 
     actionMoveWorkspaceLeft() {
-        let active = global.screen.get_active_workspace();
+        let active = global.workspace_manager.get_active_workspace();
         let neighbor = active.get_neighbor(Meta.MotionDirection.LEFT)
         if (active != neighbor) {
             this.moveToWorkspace(neighbor, Meta.MotionDirection.LEFT);
@@ -1366,7 +1366,7 @@ var WindowManager = class WindowManager {
     }
 
     actionMoveWorkspaceRight() {
-        let active = global.screen.get_active_workspace();
+        let active = global.workspace_manager.get_active_workspace();
         let neighbor = active.get_neighbor(Meta.MotionDirection.RIGHT)
         if (active != neighbor) {
             this.moveToWorkspace(neighbor, Meta.MotionDirection.RIGHT);
@@ -1374,15 +1374,15 @@ var WindowManager = class WindowManager {
     }
 
     actionMoveWorkspaceUp() {
-        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.UP).activate(global.get_current_time());
+        global.workspace_manager.get_active_workspace().get_neighbor(Meta.MotionDirection.UP).activate(global.get_current_time());
     }
 
     actionMoveWorkspaceDown() {
-        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.DOWN).activate(global.get_current_time());
+        global.workspace_manager.get_active_workspace().get_neighbor(Meta.MotionDirection.DOWN).activate(global.get_current_time());
     }
 
     actionFlipWorkspaceLeft() {
-        let active = global.screen.get_active_workspace();
+        let active = global.workspace_manager.get_active_workspace();
         let neighbor = active.get_neighbor(Meta.MotionDirection.LEFT);
         if (active != neighbor) {
             neighbor.activate(global.get_current_time());
@@ -1392,7 +1392,7 @@ var WindowManager = class WindowManager {
     }
 
     actionFlipWorkspaceRight() {
-        let active = global.screen.get_active_workspace();
+        let active = global.workspace_manager.get_active_workspace();
         let neighbor = active.get_neighbor(Meta.MotionDirection.RIGHT);
         if (active != neighbor) {
             neighbor.activate(global.get_current_time());

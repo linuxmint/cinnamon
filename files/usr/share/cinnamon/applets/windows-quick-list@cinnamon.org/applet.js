@@ -62,10 +62,10 @@ class CinnamonWindowsQuickListApplet extends Applet.IconApplet {
         let empty_menu = true;
         let tracker = Cinnamon.WindowTracker.get_default();
 
-        for (let wks = 0; wks < global.screen.n_workspaces; ++wks) {
+        for (let wks = 0; wks < global.workspace_manager.n_workspaces; ++wks) {
             // construct a list with all windows
             let workspace_name = Main.getWorkspaceName(wks);
-            let metaWorkspace = global.screen.get_workspace_by_index(wks);
+            let metaWorkspace = global.workspace_manager.get_workspace_by_index(wks);
             let windows = metaWorkspace.list_windows();
             let sticky_windows = windows.filter(function(w) {
                 return !w.is_skip_taskbar() && w.is_on_all_workspaces();
@@ -103,12 +103,12 @@ class CinnamonWindowsQuickListApplet extends Applet.IconApplet {
                 if (wks > 0) {
                     this._addItem(new PopupMenu.PopupSeparatorMenuItem());
                 }
-                if (global.screen.n_workspaces > 1) {
+                if (global.workspace_manager.n_workspaces > 1) {
                     let item = new WindowMenuItem(null, workspace_name);
                     item.actor.reactive = false;
                     item.actor.can_focus = false;
                     item.label.add_style_class_name('popup-subtitle-menu-item');
-                    if (wks == global.screen.get_active_workspace().index()) {
+                    if (wks == global.workspace_manager.get_active_workspace().index()) {
                         item.setShowDot(true);
                     }
                     this._addItem(item);

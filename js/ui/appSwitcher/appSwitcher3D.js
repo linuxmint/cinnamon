@@ -89,7 +89,7 @@ AppSwitcher3D.prototype = {
         let monitor = this._activeMonitor;
         
         // preview windows
-        let currentWorkspace = global.screen.get_active_workspace();
+        let currentWorkspace = global.workspace_manager.get_active_workspace();
         for (let i in this._previews) {
             let preview = this._previews[i];
             let metaWin = this._windows[i];
@@ -176,7 +176,7 @@ AppSwitcher3D.prototype = {
 
     _createList: function() {
         let monitor = this._activeMonitor;
-        let currentWorkspace = global.screen.get_active_workspace();
+        let currentWorkspace = global.workspace_manager.get_active_workspace();
         
         this._previews = [];
         
@@ -316,7 +316,7 @@ AppSwitcher3D.prototype = {
     },
     
     _enableMonitorFix: function() {
-        if(global.screen.get_n_monitors() < 2)
+        if(global.display.get_n_monitors() < 2)
             return;
         
         this._monitorFix = true;

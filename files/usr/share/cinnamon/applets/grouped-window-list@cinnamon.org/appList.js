@@ -50,7 +50,7 @@ class AppList {
         this.lastFocusedApp = null;
 
         // Connect all the signals
-        this.signals.connect(global.screen, 'window-workspace-changed', (...args) => this.windowWorkspaceChanged(...args));
+        this.signals.connect(global.display, 'window-workspace-changed', (...args) => this.windowWorkspaceChanged(...args));
         // Ugly change: refresh the removed app instances from all workspaces
         this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
         this.signals.connect(global.window_manager, 'switch-workspace' , (...args) => this.reloadList(...args));
@@ -235,7 +235,7 @@ class AppList {
         && this.state.monitorWatchList.indexOf(metaWindow.get_monitor()) > -1;
     }
 
-    windowWorkspaceChanged(screen, metaWorkspace, metaWindow) {
+    windowWorkspaceChanged(display, metaWorkspace, metaWindow) {
         this.windowAdded(metaWindow, metaWorkspace);
     }
 
