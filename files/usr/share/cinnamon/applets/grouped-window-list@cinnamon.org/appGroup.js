@@ -884,8 +884,8 @@ class AppGroup {
                 this.groupState.lastFocused.unminimize();
             }
             let ws = this.groupState.lastFocused.get_workspace().index();
-            if (ws !== global.screen.get_active_workspace_index()) {
-                global.screen.get_workspace_by_index(ws).activate(global.get_current_time());
+            if (ws !== global.workspace_manager.get_active_workspace_index()) {
+                global.workspace_manager.get_workspace_by_index(ws).activate(global.get_current_time());
             }
             Main.activateWindow(this.groupState.lastFocused, global.get_current_time());
             this.actor.add_style_pseudo_class('focus');

@@ -227,7 +227,7 @@ function _addXletDirectoriesToSearchPath() {
 }
 
 function _initUserSession() {
-    global.screen.override_workspace_layout(Meta.DisplayCorner.TOPLEFT, false, 1, -1);
+    global.workspace_manager.override_workspace_layout(Meta.DisplayCorner.TOPLEFT, false, 1, -1);
 
     systrayManager = new Systray.SystrayManager();
 
@@ -570,7 +570,7 @@ function _fillWorkspaceNames(index) {
 }
 
 function _shouldTrimWorkspace(i) {
-    return i >= 0 && (i >= global.screen.n_workspaces || !workspace_names[i].length);
+    return i >= 0 && (i >= global.workspace_manager.n_workspaces || !workspace_names[i].length);
 }
 
 function _trimWorkspaceNames() {
@@ -636,12 +636,12 @@ function hasDefaultWorkspaceName(index) {
 }
 
 function _addWorkspace() {
-    global.screen.append_new_workspace(false, global.get_current_time());
+    global.workspace_manager.append_new_workspace(false, global.get_current_time());
     return true;
 }
 
 function _removeWorkspace(workspace) {
-    if (global.screen.n_workspaces == 1)
+    if (global.workspace_manager.n_workspaces == 1)
         return false;
     let index = workspace.index();
     if (index < workspace_names.length) {
@@ -649,7 +649,7 @@ function _removeWorkspace(workspace) {
     }
     _trimWorkspaceNames();
     wmSettings.set_strv("workspace-names", workspace_names);
-    global.screen.remove_workspace(workspace, global.get_current_time());
+    global.workspace_manager.remove_workspace(workspace, global.get_current_time());
     return true;
 }
 
@@ -666,16 +666,16 @@ function _removeWorkspace(workspace) {
  */
 function moveWindowToNewWorkspace(metaWindow, switchToNewWorkspace) {
     if (switchToNewWorkspace) {
-        let targetCount = global.screen.n_workspaces + 1;
-        let nnwId = global.screen.connect('notify::n-workspaces', function() {
-            global.screen.disconnect(nnwId);
-            if (global.screen.n_workspaces === targetCount) {
-                let newWs = global.screen.get_workspace_by_index(global.screen.n_workspaces - 1);
+        let targetCount = global.workspace_manager.n_workspaces + 1;
+        let nnwId = global.workspace_manager.connect('notify::n-workspaces', function() {
+            global.workspace_manager.disconnect(nnwId);
+            if (global.workspace_manager.n_workspaces === targetCount) {
+                let newWs = global.workspace_manager.get_workspace_by_index(global.workspace_manager.n_workspaces - 1);
                 newWs.activate(global.get_current_time());
             }
         });
     }
-    metaWindow.change_workspace_by_index(global.screen.n_workspaces, true, global.get_current_time());
+    metaWindow.change_workspace_by_index(global.workspace_manager.n_workspaces, true, global.get_current_time());
 }
 
 /**
@@ -1320,13 +1320,13 @@ function getRunDialog() {
  * activation will be handled in muffin.
  */
 function activateWindow(window, time, workspaceNum) {
-    let activeWorkspaceNum = global.screen.get_active_workspace_index();
+    let activeWorkspaceNum = global.workspace_manager.get_active_workspace_index();
 
     if (!time)
         time = global.get_current_time();
 
     if ((workspaceNum !== undefined) && activeWorkspaceNum !== workspaceNum) {
-        let workspace = global.screen.get_workspace_by_index(workspaceNum);
+        let workspace = global.workspace_manager.get_workspace_by_index(workspaceNum);
         workspace.activate_with_focus(window, time);
         return;
     }
@@ -1489,8 +1489,7 @@ function isInteresting(metaWindow) {
 
 /**
  * getTabList:
- * @workspaceOpt (Meta.Workspace): (optional) workspace, defaults to global.screen.get_active_workspace()
- * @screenOpt (Meta.Screen): (optional) screen, defaults to global.screen
+ * @workspaceOpt (Meta.Workspace): (optional) workspace, defaults to global.workspace_manager.get_active_workspace()
  *
  * Return a list of the interesting windows on a workspace (by default,
  * the active workspace).
@@ -1498,14 +1497,12 @@ function isInteresting(metaWindow) {
  *
  * Returns (array): list of windows
  */
-function getTabList(workspaceOpt, screenOpt) {
-    let screen = screenOpt || global.screen;
-    let display = screen.get_display();
-    let workspace = workspaceOpt || screen.get_active_workspace();
+function getTabList(workspaceOpt) {
+    let workspace = workspaceOpt || global.workspace_manager.get_active_workspace();
 
     let windows = []; // the array to return
 
-    let allwindows = display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
+    let allwindows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
     let registry = {}; // to avoid duplicates
 
     for (let i = 0; i < allwindows.length; ++i) {

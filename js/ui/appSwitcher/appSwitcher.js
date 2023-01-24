@@ -77,14 +77,14 @@ function getWindowsForBinding(binding) {
             windows = windows.filter( matchWmClass, focused.get_wm_class() );
             this._showAllWorkspaces = global.settings.get_boolean("alttab-switcher-show-all-workspaces");
             if (!this._showAllWorkspaces) {
-                windows = windows.filter( matchWorkspace, global.screen.get_active_workspace() );
+                windows = windows.filter( matchWorkspace, global.workspace_manager.get_active_workspace() );
             }
             break;
         default:
             // Switch between windows of current workspace
             this._showAllWorkspaces = global.settings.get_boolean("alttab-switcher-show-all-workspaces");
             if (!this._showAllWorkspaces) {
-                windows = windows.filter( matchWorkspace, global.screen.get_active_workspace() );
+                windows = windows.filter( matchWorkspace, global.workspace_manager.get_active_workspace() );
             }
             break;
     }
@@ -378,10 +378,10 @@ AppSwitcher.prototype = {
     },
 
     _switchWorkspace: function(direction) {
-        if (global.screen.n_workspaces < 2)
+        if (global.workspace_manager.n_workspaces < 2)
             return false;
 
-        let current = global.screen.get_active_workspace_index();
+        let current = global.workspace_manager.get_active_workspace_index();
 
         if (direction === Clutter.KEY_Left)
             Main.wm.actionMoveWorkspaceLeft();
@@ -390,10 +390,10 @@ AppSwitcher.prototype = {
         else
             return false;
 
-        if (current === global.screen.get_active_workspace_index())
+        if (current === global.workspace_manager.get_active_workspace_index())
             return false;
 
-        let workspace = global.screen.get_active_workspace();
+        let workspace = global.workspace_manager.get_active_workspace();
         this._onWorkspaceSelected(workspace);
         return true;
     },

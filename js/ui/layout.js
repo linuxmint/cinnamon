@@ -48,7 +48,7 @@ Monitor.prototype = {
     },
 
     get inFullscreen() {
-        return global.screen.get_monitor_in_fullscreen(this.index);
+        return global.display.get_monitor_in_fullscreen(this.index);
     }
 };
 
@@ -230,7 +230,7 @@ LayoutManager.prototype = {
     },
 
     get currentMonitor() {
-        let index = global.screen.get_current_monitor();
+        let index = global.display.get_current_monitor();
         return Main.layoutManager.monitors[index];
     },
 
@@ -488,13 +488,13 @@ Chrome.prototype = {
 
         this._layoutManager.connect('monitors-changed',
                                     Lang.bind(this, this._relayout));
-        global.screen.connect('restacked',
+        global.display.connect('restacked',
                               Lang.bind(this, this._windowsRestacked));
-        global.screen.connect('in-fullscreen-changed', Lang.bind(this, this._updateVisibility));
+        global.display.connect('in-fullscreen-changed', Lang.bind(this, this._updateVisibility));
         global.window_manager.connect('switch-workspace', Lang.bind(this, this._queueUpdateRegions));
 
         // Need to update struts on new workspaces when they are added
-        global.screen.connect('notify::n-workspaces',
+        global.workspace_manager.connect('notify::n-workspaces',
                               Lang.bind(this, this._queueUpdateRegions));
 
         this._relayout();
@@ -635,7 +635,7 @@ Chrome.prototype = {
             else if (global.stage_input_mode == Cinnamon.StageInputMode.FULLSCREEN) {
                 let monitor = this.findMonitorForActor(actorData.actor);
 
-                if (global.screen.get_n_monitors() == 1 || !monitor.inFullscreen) {
+                if (global.display.get_n_monitors() == 1 || !monitor.inFullscreen) {
                     visible = true;
                 } else {
                     if (Main.modalActorFocusStack.length > 0) {
@@ -863,9 +863,9 @@ Chrome.prototype = {
 
         global.set_stage_input_region(rects);
 
-        let screen = global.screen;
-        for (let w = 0; w < screen.n_workspaces; w++) {
-            let workspace = screen.get_workspace_by_index(w);
+        let ws_manager = global.workspace_manager;
+        for (let w = 0; w < ws_manager.n_workspaces; w++) {
+            let workspace = ws_manager.get_workspace_by_index(w);
             workspace.set_builtin_struts(struts);
         }
 

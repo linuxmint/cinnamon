@@ -488,7 +488,7 @@ Keyboard.prototype = {
     },
 
     _moveTemporarily: function () {
-        let currentWindow = global.screen.get_display().focus_window;
+        let currentWindow = global.display.focus_window;
         let rect = currentWindow.get_outer_rect();
 
         let newX = rect.x;

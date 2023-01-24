@@ -759,7 +759,7 @@ AppList.prototype = {
         SwitcherList.prototype._init.call(this, true, activeMonitor);
 
         // Construct the AppIcons, add to the popup
-        let activeWorkspace = global.screen.get_active_workspace();
+        let activeWorkspace = global.workspace_manager.get_active_workspace();
         let workspaceIcons = [];
         let otherIcons = [];
         for (let i = 0; i < windows.length; i++) {
@@ -899,7 +899,7 @@ ThumbnailList.prototype = {
     _init : function(windows, activeMonitor) {
         SwitcherList.prototype._init.call(this, false, activeMonitor);
 
-        let activeWorkspace = global.screen.get_active_workspace();
+        let activeWorkspace = global.workspace_manager.get_active_workspace();
 
         this._labels = new Array();
         this._thumbnailBins = new Array();

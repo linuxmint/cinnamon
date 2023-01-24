@@ -245,7 +245,7 @@ class HotCorner {
                     Main.overview.toggle();
                 break;
             case 'desktop':
-                global.screen.toggle_desktop(timestamp);
+                global.workspace_manager.toggle_desktop(timestamp);
                 break;
             default:
                 Util.spawnCommandLine(this.action);

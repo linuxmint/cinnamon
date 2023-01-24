@@ -73,7 +73,7 @@ var CloseDialog = GObject.registerClass({
             this.proc = Gio.Subprocess.new(
                 [
                 "cinnamon-close-dialog",
-                 global.screen.get_xwindow_for_window(this._window).toString(),
+                 this._window.get_xwindow().toString(),
                  this._window.get_title()
                 ],
                 0);
