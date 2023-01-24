@@ -28,6 +28,7 @@ struct _CinnamonScreenshot
 /* Used for async screenshot grabbing */
 typedef struct _screenshot_data {
   CinnamonScreenshot  *screenshot;
+  MetaWindow *window;
 
   char *filename;
 
@@ -35,6 +36,7 @@ typedef struct _screenshot_data {
   cairo_rectangle_int_t screenshot_area;
 
   gboolean include_cursor;
+  gboolean include_frame;
 
   CinnamonScreenshotCallback callback;
 } _screenshot_data;
@@ -205,15 +207,16 @@ grab_screenshot (ClutterActor        *stage,
                  ClutterPaintContext *paint_context,
                  _screenshot_data    *screenshot_data)
 {
-  CinnamonScreen *screen = cinnamon_global_get_screen (screenshot_data->screenshot->global);
-  int width, height;
+  MetaDisplay *display = cinnamon_global_get_display (screenshot_data->screenshot->global);
+  int width, height, n_monitors;
   GSimpleAsyncResult *result;
 
-  cinnamon_screen_get_size (screen, &width, &height);
+  meta_display_get_size (display, &width, &height);
 
   do_grab_screenshot (screenshot_data, paint_context, 0, 0, width, height);
 
-  if (cinnamon_screen_get_n_monitors (screen) > 1)
+  n_monitors = meta_display_get_n_monitors (display);
+  if (n_monitors > 1)
     {
       cairo_region_t *screen_region = cairo_region_create ();
       cairo_region_t *stage_region;
@@ -222,9 +225,9 @@ grab_screenshot (ClutterActor        *stage,
       int i;
       cairo_t *cr;
 
-      for (i = cinnamon_screen_get_n_monitors (screen) - 1; i >= 0; i--)
+      for (i = n_monitors - 1; i >= 0; i--)
         {
-          cinnamon_screen_get_monitor_geometry (screen, i, &monitor_rect);
+          meta_display_get_monitor_geometry (display, i, &monitor_rect);
           cairo_region_union_rectangle (screen_region, (const cairo_rectangle_int_t *) &monitor_rect);
         }
 
@@ -261,6 +264,8 @@ grab_screenshot (ClutterActor        *stage,
 
   g_signal_handlers_disconnect_by_func (stage, (void *)grab_screenshot, (gpointer)screenshot_data);
 
+  meta_enable_unredirect_for_display (display);
+
   result = g_simple_async_result_new (NULL, on_screenshot_written, (gpointer)screenshot_data, grab_screenshot);
   g_simple_async_result_run_in_thread (result, write_screenshot_thread, G_PRIORITY_DEFAULT, NULL);
   g_object_unref (result);
@@ -271,6 +276,7 @@ grab_area_screenshot (ClutterActor *stage,
                       ClutterPaintContext *paint_context,
                       _screenshot_data *screenshot_data)
 {
+  MetaDisplay *display = cinnamon_global_get_display (screenshot_data->screenshot->global);
   GSimpleAsyncResult *result;
 
   do_grab_screenshot (screenshot_data,
@@ -284,7 +290,67 @@ grab_area_screenshot (ClutterActor *stage,
     _draw_cursor_image (screenshot_data->image, screenshot_data->screenshot_area);
 
   g_signal_handlers_disconnect_by_func (stage, (void *)grab_area_screenshot, (gpointer)screenshot_data);
+
+  meta_enable_unredirect_for_display (display);
+
   result = g_simple_async_result_new (NULL, on_screenshot_written, (gpointer)screenshot_data, grab_area_screenshot);
+  g_simple_async_result_run_in_thread (result, write_screenshot_thread, G_PRIORITY_DEFAULT, NULL);
+  g_object_unref (result);
+}
+
+static void
+grab_window_screenshot (ClutterActor *stage,
+                        ClutterPaintContext *paint_context,
+                        _screenshot_data *screenshot_data)
+{
+  MetaDisplay *display = cinnamon_global_get_display (screenshot_data->screenshot->global);
+  GSimpleAsyncResult *result;
+  ClutterActor *window_actor;
+  gfloat actor_x, actor_y;
+  MetaShapedTexture *stex;
+  MetaRectangle rect;
+  cairo_rectangle_int_t clip;
+
+  g_return_if_fail (META_IS_WINDOW (screenshot_data->window));
+
+  window_actor = CLUTTER_ACTOR (meta_window_get_compositor_private (screenshot_data->window));
+  clutter_actor_get_position (window_actor, &actor_x, &actor_y);
+
+  if (screenshot_data->include_frame || !meta_window_get_frame (screenshot_data->window))
+    {
+      meta_window_get_frame_rect (screenshot_data->window, &rect);
+
+      screenshot_data->screenshot_area.x = rect.x;
+      screenshot_data->screenshot_area.y = rect.y;
+
+      clip.x = rect.x - (gint) actor_x;
+      clip.y = rect.y - (gint) actor_y;
+    }
+  else
+    {
+      meta_window_get_buffer_rect (screenshot_data->window, &rect);
+
+      screenshot_data->screenshot_area.x = (gint) actor_x + rect.x;
+      screenshot_data->screenshot_area.y = (gint) actor_y + rect.y;
+
+      clip.x = rect.x;
+      clip.y = rect.y;
+    }
+
+  clip.width = screenshot_data->screenshot_area.width = rect.width;
+  clip.height = screenshot_data->screenshot_area.height = rect.height;
+
+  stex = META_SHAPED_TEXTURE (meta_window_actor_get_texture (META_WINDOW_ACTOR (window_actor)));
+  screenshot_data->image = meta_shaped_texture_get_image (stex, &clip);
+
+  if (screenshot_data->include_cursor)
+    _draw_cursor_image (screenshot_data->image, screenshot_data->screenshot_area);
+
+  g_signal_handlers_disconnect_by_func (stage, (void *)grab_window_screenshot, (gpointer) screenshot_data);
+
+  meta_enable_unredirect_for_display (display);
+
+  result = g_simple_async_result_new (NULL, on_screenshot_written, (gpointer)screenshot_data, cinnamon_screenshot_screenshot_window);
   g_simple_async_result_run_in_thread (result, write_screenshot_thread, G_PRIORITY_DEFAULT, NULL);
   g_object_unref (result);
 }
@@ -307,6 +373,7 @@ cinnamon_screenshot_screenshot (CinnamonScreenshot *screenshot,
                              const char *filename,
                              CinnamonScreenshotCallback callback)
 {
+  MetaDisplay *display;
   ClutterActor *stage;
   _screenshot_data *data = g_new0 (_screenshot_data, 1);
 
@@ -315,10 +382,11 @@ cinnamon_screenshot_screenshot (CinnamonScreenshot *screenshot,
   data->callback = callback;
   data->include_cursor = include_cursor;
 
+  display = cinnamon_global_get_display (screenshot->global);
   stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
 
+  meta_disable_unredirect_for_display (display);
   g_signal_connect_after (stage, "paint", G_CALLBACK (grab_screenshot), (gpointer)data);
-
   clutter_actor_queue_redraw (stage);
 }
 
@@ -347,6 +415,7 @@ cinnamon_screenshot_screenshot_area (CinnamonScreenshot *screenshot,
                                   const char *filename,
                                   CinnamonScreenshotCallback callback)
 {
+  MetaDisplay *display;
   ClutterActor *stage;
   _screenshot_data *data = g_new0 (_screenshot_data, 1);
 
@@ -359,8 +428,10 @@ cinnamon_screenshot_screenshot_area (CinnamonScreenshot *screenshot,
   data->callback = callback;
   data->include_cursor = include_cursor;
 
+  display = cinnamon_global_get_display (screenshot->global);
   stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
 
+  meta_disable_unredirect_for_display (display);
   g_signal_connect_after (stage, "paint", G_CALLBACK (grab_area_screenshot), (gpointer)data);
 
   clutter_actor_queue_redraw (stage);
@@ -386,11 +457,9 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
                                     const char *filename,
                                     CinnamonScreenshotCallback callback)
 {
-  GSimpleAsyncResult *result;
-
-  CinnamonScreen *screen = cinnamon_global_get_screen (screenshot->global);
-  MetaDisplay *display = cinnamon_screen_get_display (screen);
+  MetaDisplay *display = cinnamon_global_get_display (screenshot->global);
   MetaWindow *window = meta_display_get_focus_window (display);
+  ClutterActor *stage;
 
   if (window == NULL || g_strcmp0 (meta_window_get_title (window), "Desktop") == 0)
   {
@@ -398,54 +467,22 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
     return;
   }
 
-  _screenshot_data *screenshot_data = g_new0 (_screenshot_data, 1);
+  _screenshot_data *data = g_new0 (_screenshot_data, 1);
 
-  ClutterActor *window_actor;
-  gfloat actor_x, actor_y;
-  MetaShapedTexture *stex;
-  MetaRectangle rect;
-  cairo_rectangle_int_t clip;
+  data->window = window;
+  data->screenshot = g_object_ref (screenshot);
+  data->filename = g_strdup (filename);
+  data->callback = callback;
+  data->include_cursor = include_cursor;
+  data->include_frame = include_frame;
 
-  screenshot_data->screenshot = g_object_ref (screenshot);
-  screenshot_data->filename = g_strdup (filename);
-  screenshot_data->callback = callback;
+  display = cinnamon_global_get_display (screenshot->global);
+  stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
 
-  window_actor = CLUTTER_ACTOR (meta_window_get_compositor_private (window));
-  clutter_actor_get_position (window_actor, &actor_x, &actor_y);
+  meta_disable_unredirect_for_display (display);
+  g_signal_connect_after (stage, "paint", G_CALLBACK (grab_window_screenshot), (gpointer) data);
 
-  if (include_frame || !meta_window_get_frame (window))
-    {
-      meta_window_get_frame_rect (window, &rect);
-
-      screenshot_data->screenshot_area.x = rect.x;
-      screenshot_data->screenshot_area.y = rect.y;
-
-      clip.x = rect.x - (gint) actor_x;
-      clip.y = rect.y - (gint) actor_y;
-    }
-  else
-    {
-      meta_window_get_buffer_rect (window, &rect);
-
-      screenshot_data->screenshot_area.x = (gint) actor_x + rect.x;
-      screenshot_data->screenshot_area.y = (gint) actor_y + rect.y;
-
-      clip.x = rect.x;
-      clip.y = rect.y;
-    }
-
-  clip.width = screenshot_data->screenshot_area.width = rect.width;
-  clip.height = screenshot_data->screenshot_area.height = rect.height;
-
-  stex = META_SHAPED_TEXTURE (meta_window_actor_get_texture (META_WINDOW_ACTOR (window_actor)));
-  screenshot_data->image = meta_shaped_texture_get_image (stex, &clip);
-
-  if (include_cursor)
-    _draw_cursor_image (screenshot_data->image, screenshot_data->screenshot_area);
-
-  result = g_simple_async_result_new (NULL, on_screenshot_written, (gpointer)screenshot_data, cinnamon_screenshot_screenshot_window);
-  g_simple_async_result_run_in_thread (result, write_screenshot_thread, G_PRIORITY_DEFAULT, NULL);
-  g_object_unref (result);
+  clutter_actor_queue_redraw (stage);
 }
 
 CinnamonScreenshot *
