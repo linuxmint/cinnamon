@@ -933,11 +933,12 @@ class CategoryButton extends SimpleMenuItem {
     }
 
     activate() {
-        if(this.applet.searchActive)
+        if(this.applet.searchActive || this.categoryId === this.applet.lastSelectedCategory)
             return;
-
-        this.applet._clearPrevCatSelection(this.actor, true);
         this.applet._select_category(this.categoryId);
+        this.applet._previousSelectedAppActor = null;
+        this.applet.categoriesBox.get_children().forEach(child => 
+            child.set_style_class_name("menu-category-button"));
         this.actor.style_class = "menu-category-button-selected";
     }
 }
@@ -1236,10 +1237,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._favoriteDocButtons = [];
         this._categoryButtons = [];
         this._searchProviderButtons = [];
-        this._selectedItemIndex = null;
-        this._previousSelectedActor = null;
-        this._previousVisibleIndex = null;
-        this._previousTreeSelectedActor = null;
+        this._previousSelectedAppActor = null;
+        this._previousCategoryHoverActor = null;
         this._activeContainer = null;
         this._activeActor = null;
         this._knownApps = new Set(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
@@ -1469,7 +1468,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         if (open) {
             this.actor.add_style_pseudo_class('active');
             global.stage.set_key_focus(this.searchEntry);
-            this._selectedItemIndex = null;
             this._activeContainer = null;
             this._activeActor = null;
 
@@ -1498,11 +1496,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
             this.selectedAppTitle.set_text("");
             this.selectedAppDescription.set_text("");
-            this._previousTreeSelectedActor = null;
-            this._previousSelectedActor = null;
+            this._previousCategoryHoverActor = null;
+            this._previousSelectedAppActor = null;
             this.closeContextMenu(false);
-            this._previousVisibleIndex = null;
-
+            
             this._disableVectorMask();
             this._scrollToButton(null, this.applicationsScrollBox);
             this._scrollToButton(null, this.categoriesScrollBox);
@@ -1731,7 +1728,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _onMenuKeyPress(actor, event) {
         let symbol = event.get_key_symbol();
         let item_actor;
-        let index = 0;
         this.appBoxIter.reloadVisible();
         this.catBoxIter.reloadVisible();
         this.favBoxIter.reloadVisible();
@@ -1757,8 +1753,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         if (action == Meta.KeyBindingAction.CUSTOM) {
             return true;
         }
-
-        index = this._selectedItemIndex;
 
         let ctrlKey = modifierState & Clutter.ModifierType.CONTROL_MASK;
 
@@ -1790,18 +1784,21 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         let navigationKey = true;
         let whichWay = "none";
-
+        if (this._activeContainer === null) {
+            this._setKeyFocusToCurrentCategoryButton(); 
+        }
+        
         switch (symbol) {
             case Clutter.KEY_Up:
                 whichWay = "up";
                 if (this._activeContainer === this.favoritesBox && ctrlKey &&
-                    (this.favoritesBox.get_child_at_index(index))._delegate instanceof FavoritesButton)
+                    this._activeActor._delegate instanceof FavoritesButton)
                     navigationKey = false;
                 break;
             case Clutter.KEY_Down:
                 whichWay = "down";
                 if (this._activeContainer === this.favoritesBox && ctrlKey &&
-                    (this.favoritesBox.get_child_at_index(index))._delegate instanceof FavoritesButton)
+                    this._activeActor._delegate instanceof FavoritesButton)
                     navigationKey = false;
                 break;
             case Clutter.KEY_Page_Up:
@@ -1814,7 +1811,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 if (this._activeContainer === this.applicationsBox)
                     whichWay = "none";
                 else if (this._activeContainer === this.categoriesBox && this.noRecentDocuments &&
-                         (this.categoriesBox.get_child_at_index(index))._delegate.categoryId === "recent")
+                    this._activeActor._delegate.categoryId === "recent")
                     whichWay = "none";
                 break;
             case Clutter.KEY_Left:
@@ -1822,8 +1819,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     whichWay = "left";
                 if (this._activeContainer === this.favoritesBox || this._activeContainer === this.systemButtonsBox)
                     whichWay = "none";
-                else if (!this.favBoxShow &&
-                            (this._activeContainer === this.categoriesBox || this._activeContainer === null))
+                else if (!this.favBoxShow && this._activeContainer === this.categoriesBox)
                     whichWay = "none";
                 break;
             case Clutter.KEY_Tab:
@@ -1844,189 +1840,104 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         if (navigationKey) {
             switch (this._activeContainer) {
-                case null:
-                    switch (whichWay) {
-                        case "up":
-                            this._activeContainer = this.categoriesBox;
-                            item_actor = this.catBoxIter.getLastVisible();
-                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
-                            break;
-                        case "down":
-                            this._activeContainer = this.categoriesBox;
-                            item_actor = this.catBoxIter.getFirstVisible();
-                            item_actor = this.catBoxIter.getNextVisible(item_actor);
-                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
-                            break;
-                        case "right":
-                            this._activeContainer = this.applicationsBox;
-                            item_actor = this.appBoxIter.getFirstVisible();
-                            this._scrollToButton();
-                            break;
-                        case "left":
-                            if (this.favBoxShow) {
-                                this._activeContainer = this.favoritesBox;
-                                item_actor = this.favBoxIter.getFirstVisible();
-                            } else {
-                                this._activeContainer = this.applicationsBox;
-                                item_actor = this.appBoxIter.getFirstVisible();
-                                this._scrollToButton();
-                            }
-                            break;
-                        case "top":
-                            this._activeContainer = this.categoriesBox;
-                            item_actor = this.catBoxIter.getFirstVisible();
-                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
-                            break;
-                        case "bottom":
-                            this._activeContainer = this.categoriesBox;
-                            item_actor = this.catBoxIter.getLastVisible();
-                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
-                            break;
-                    }
-                    break;
                 case this.categoriesBox:
                     switch (whichWay) {
                         case "up":
-                            this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
-                            this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getPrevVisible(this._activeActor);
-                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
                             break;
                         case "down":
-                            this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
-                            this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getNextVisible(this._activeActor);
-                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
                             break;
                         case "right":
-                            if ((this.categoriesBox.get_child_at_index(index))._delegate.categoryId === "recent" &&
+                            if (this._activeActor._delegate.categoryId === "recent" &&
                                 this.noRecentDocuments) {
                                 if(this.favBoxShow) {
-                                    this._previousSelectedActor = this.categoriesBox.get_child_at_index(index);
                                     item_actor = this.favBoxIter.getFirstVisible();
-                                } else {
-                                    item_actor = this.categoriesBox.get_child_at_index(index);
                                 }
-                            }
-                            else {
-                                item_actor = (this._previousVisibleIndex != null) ?
-                                    this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
-                                    this.appBoxIter.getFirstVisible();
+                            } else {
+                                item_actor = (this._previousSelectedAppActor != null) ?
+                                    this._previousSelectedAppActor : this.appBoxIter.getFirstVisible();
                             }
                             break;
                         case "left":
                             if(this.favBoxShow) {
-                                this._previousSelectedActor = this.categoriesBox.get_child_at_index(index);
                                 item_actor = this.favBoxIter.getFirstVisible();
-                                this._scrollToButton(null, this.favoritesScrollBox);
-                            } else {
-                                if ((this.categoriesBox.get_child_at_index(index))._delegate.categoryId === "recent" &&
-                                    this.noRecentDocuments) {
-                                    item_actor = this.categoriesBox.get_child_at_index(index);
-                                } else {
-                                    item_actor = (this._previousVisibleIndex != null) ?
-                                        this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
-                                        this.appBoxIter.getFirstVisible();
-                                }
+                            } else if (this._activeActor._delegate.categoryId != "recent" ||
+                                !this.noRecentDocuments) {
+                                item_actor = (this._previousSelectedAppActor != null) ?
+                                    this._previousSelectedAppActor :
+                                    this.appBoxIter.getFirstVisible();
                             }
                             break;
                         case "top":
-                            this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
-                            this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getFirstVisible();
-                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
                             break;
                         case "bottom":
-                            this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
-                            this._previousTreeSelectedActor._delegate.isHovered = false;
                             item_actor = this.catBoxIter.getLastVisible();
-                            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
                             break;
                     }
                     break;
                 case this.applicationsBox:
                     switch (whichWay) {
                         case "up":
-                            this._previousSelectedActor = this.applicationsBox.get_child_at_index(index);
-                            item_actor = this.appBoxIter.getPrevVisible(this._previousSelectedActor);
-                            this._previousVisibleIndex = this.appBoxIter.getVisibleIndex(item_actor);
-                            this._scrollToButton(item_actor._delegate);
+                            item_actor = this.appBoxIter.getPrevVisible(this._activeActor);
                             break;
                         case "down":
-                            this._previousSelectedActor = this.applicationsBox.get_child_at_index(index);
-                            item_actor = this.appBoxIter.getNextVisible(this._previousSelectedActor);
-                            this._previousVisibleIndex = this.appBoxIter.getVisibleIndex(item_actor);
-                            this._scrollToButton(item_actor._delegate);
+                            item_actor = this.appBoxIter.getNextVisible(this._activeActor);
                             break;
                         case "right":
-                            this._previousSelectedActor = this.applicationsBox.get_child_at_index(index);
-                            item_actor = (this._previousTreeSelectedActor != null) ?
-                                this._previousTreeSelectedActor :
-                                this.catBoxIter.getFirstVisible();
-                            this._previousTreeSelectedActor = item_actor;
-                            index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
-
                             if (this.favBoxShow) {
-                                this._buttonEnterEvent(item_actor._delegate, true);
-                                this._previousSelectedActor = this.categoriesBox.get_child_at_index(index);
                                 item_actor = this.favBoxIter.getFirstVisible();
+                            } else {
+                                item_actor = (this._previousCategoryHoverActor != null) ?
+                                    this._previousCategoryHoverActor :
+                                    this.catBoxIter.getFirstVisible();
                             }
                             break;
                         case "left":
-                            this._previousSelectedActor = this.applicationsBox.get_child_at_index(index);
-                            item_actor = (this._previousTreeSelectedActor != null) ?
-                                this._previousTreeSelectedActor :
+                            item_actor = (this._previousCategoryHoverActor != null) ?
+                                this._previousCategoryHoverActor :
                                 this.catBoxIter.getFirstVisible();
-                            this._previousTreeSelectedActor = item_actor;
                             break;
                         case "top":
                             item_actor = this.appBoxIter.getFirstVisible();
-                            this._previousVisibleIndex = this.appBoxIter.getVisibleIndex(item_actor);
-                            this._scrollToButton(item_actor._delegate);
                             break;
                         case "bottom":
                             item_actor = this.appBoxIter.getLastVisible();
-                            this._previousVisibleIndex = this.appBoxIter.getVisibleIndex(item_actor);
-                            this._scrollToButton(item_actor._delegate);
                             break;
                     }
                     break;
                 case this.favoritesBox:
                     switch (whichWay) {
                         case "up":
-                            this._previousSelectedActor = this.favoritesBox.get_child_at_index(index);
-                            if (this._previousSelectedActor === this.favBoxIter.getFirstVisible()) {
+                            if (this._activeActor === this.favBoxIter.getFirstVisible()) {
                                 item_actor = this.sysBoxIter.getLastVisible();
                             } else {
-                                item_actor = this.favBoxIter.getPrevVisible(this._previousSelectedActor);
-                                this._scrollToButton(item_actor._delegate, this.favoritesScrollBox);
+                                item_actor = this.favBoxIter.getPrevVisible(this._activeActor);
                             }
                             break;
                         case "down":
-                            this._previousSelectedActor = this.favoritesBox.get_child_at_index(index);
-                            if (this._previousSelectedActor === this.favBoxIter.getLastVisible()) {
+                            if (this._activeActor === this.favBoxIter.getLastVisible()) {
                                 item_actor = this.sysBoxIter.getFirstVisible();
                             } else {
-                                item_actor = this.favBoxIter.getNextVisible(this._previousSelectedActor);
-                                this._scrollToButton(item_actor._delegate, this.favoritesScrollBox);
+                                item_actor = this.favBoxIter.getNextVisible(this._activeActor);
                             }
                             break;
                         case "right":
-                            item_actor = (this._previousTreeSelectedActor != null) ?
-                                this._previousTreeSelectedActor :
+                            item_actor = (this._previousCategoryHoverActor != null) ?
+                                this._previousCategoryHoverActor :
                                 this.catBoxIter.getFirstVisible();
-                            this._previousTreeSelectedActor = item_actor;
                             break;
                         case "left":
-                            item_actor = (this._previousTreeSelectedActor != null) ?
-                                this._previousTreeSelectedActor :
+                            /*item_actor = (this._previousCategoryHoverActor != null) ?
+                                this._previousCategoryHoverActor :
                                 this.catBoxIter.getFirstVisible();
-                            this._previousTreeSelectedActor = item_actor;
+                            this._previousCategoryHoverActor = item_actor;
                             index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
 
-                            this._buttonEnterEvent(item_actor._delegate, true);
-                            item_actor = (this._previousVisibleIndex != null) ?
-                                this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
+                            this._buttonEnterEvent(item_actor._delegate);*/
+                            item_actor = (this._previousSelectedAppActor != null) ?
+                                this._previousSelectedAppActor :
                                 this.appBoxIter.getFirstVisible();
                             break;
                         case "top":
@@ -2040,39 +1951,34 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 case this.systemButtonsBox:
                     switch (whichWay) {
                         case "up":
-                            this._previousSelectedActor = this.systemButtonsBox.get_child_at_index(index);
-                            if (this._previousSelectedActor === this.sysBoxIter.getFirstVisible()) {
+                            if (this._activeActor === this.sysBoxIter.getFirstVisible()) {
                                 item_actor = this.favBoxIter.getLastVisible();
-                                this._scrollToButton(item_actor._delegate, this.favoritesScrollBox);
                             } else {
-                                item_actor = this.sysBoxIter.getPrevVisible(this._previousSelectedActor);
+                                item_actor = this.sysBoxIter.getPrevVisible(this._activeActor);
                             }
                             break;
                         case "down":
-                            this._previousSelectedActor = this.systemButtonsBox.get_child_at_index(index);
-                            if (this._previousSelectedActor === this.sysBoxIter.getLastVisible()) {
+                            if (this._activeActor === this.sysBoxIter.getLastVisible()) {
                                 item_actor = this.favBoxIter.getFirstVisible();
-                                this._scrollToButton(null, this.favoritesScrollBox);
                             } else {
-                                item_actor = this.sysBoxIter.getNextVisible(this._previousSelectedActor);
+                                item_actor = this.sysBoxIter.getNextVisible(this._activeActor);
                             }
                             break;
                         case "right":
-                            item_actor = (this._previousTreeSelectedActor != null) ?
-                                this._previousTreeSelectedActor :
+                            item_actor = (this._previousCategoryHoverActor != null) ?
+                                this._previousCategoryHoverActor :
                                 this.catBoxIter.getFirstVisible();
-                            this._previousTreeSelectedActor = item_actor;
                             break;
                         case "left":
-                            item_actor = (this._previousTreeSelectedActor != null) ?
-                                this._previousTreeSelectedActor :
+                            /*item_actor = (this._previousCategoryHoverActor != null) ?
+                                this._previousCategoryHoverActor :
                                 this.catBoxIter.getFirstVisible();
-                            this._previousTreeSelectedActor = item_actor;
+                            this._previousCategoryHoverActor = item_actor;
                             index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
 
-                            this._buttonEnterEvent(item_actor._delegate, true);
-                            item_actor = (this._previousVisibleIndex != null) ?
-                                this.appBoxIter.getVisibleItem(this._previousVisibleIndex) :
+                            this._buttonEnterEvent(item_actor._delegate);*/
+                            item_actor = (this._previousSelectedAppActor != null) ?
+                                this._previousSelectedAppActor :
                                 this.appBoxIter.getFirstVisible();
                             break;
                         case "top":
@@ -2088,53 +1994,49 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
             if (!item_actor)
                 return false;
-            index = item_actor.get_parent()._vis_iter.getAbsoluteIndexOfChild(item_actor);
         } else {
-            if ((this._activeContainer && this._activeContainer !== this.categoriesBox) &&
-                (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter)) {
+            if ((this._activeContainer) && (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter)) {
                 if (!ctrlKey) {
-                    item_actor = this._activeContainer.get_child_at_index(this._selectedItemIndex);
-                    item_actor._delegate.activate();
+                    this._activeActor._delegate.activate();
                 } else if (ctrlKey && this._activeContainer === this.applicationsBox) {
-                    item_actor = this.applicationsBox.get_child_at_index(this._selectedItemIndex);
-                    this.toggleContextMenu(item_actor._delegate);
+                    this._activeActor.toggleContextMenu(this._activeActor._delegate);
                 }
                 return true;
             } else if (this._activeContainer === this.applicationsBox && symbol === Clutter.KEY_Menu) {
-                item_actor = this.applicationsBox.get_child_at_index(this._selectedItemIndex);
-                this.toggleContextMenu(item_actor._delegate);
+                this._activeActor.toggleContextMenu(this._activeActor._delegate);
                 return true;
             } else if (!this.searchActive && this._activeContainer === this.favoritesBox && symbol === Clutter.KEY_Delete) {
-                item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex);
+                item_actor = this._activeActor;
+                const selectedItemIndex = this._activeContainer._vis_iter.getAbsoluteIndexOfChild(this._activeActor);
                 if (item_actor._delegate instanceof FavoritesButton) {
                     let favorites = AppFavorites.getAppFavorites().getFavorites();
                     let numFavorites = favorites.length;
                     AppFavorites.getAppFavorites().removeFavorite(item_actor._delegate.app.get_id());
-                    if (this._selectedItemIndex == (numFavorites-1))
-                        item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex-1);
+                    if (selectedItemIndex == (numFavorites-1))
+                        item_actor = this.favoritesBox.get_child_at_index(selectedItemIndex-1);
                     else
-                        item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex);
+                        item_actor = this.favoritesBox.get_child_at_index(selectedItemIndex);
                 }
             } else if (this._activeContainer === this.favoritesBox &&
                         (symbol === Clutter.KEY_Down || symbol === Clutter.KEY_Up) && ctrlKey &&
-                        (this.favoritesBox.get_child_at_index(index))._delegate instanceof FavoritesButton) {
-                item_actor = this.favoritesBox.get_child_at_index(this._selectedItemIndex);
+                        this._activeActor._delegate instanceof FavoritesButton) {
+                const selectedItemIndex = this._activeContainer._vis_iter.getAbsoluteIndexOfChild(this._activeActor);
+                item_actor = this._activeActor;
                 let id = item_actor._delegate.app.get_id();
                 let appFavorites = AppFavorites.getAppFavorites();
                 let favorites = appFavorites.getFavorites();
                 let numFavorites = favorites.length;
                 let favPos = 0;
-                if (this._selectedItemIndex == (numFavorites-1) && symbol === Clutter.KEY_Down)
+                if (selectedItemIndex == (numFavorites-1) && symbol === Clutter.KEY_Down)
                     favPos = 0;
-                else if (this._selectedItemIndex == 0 && symbol === Clutter.KEY_Up)
+                else if (selectedItemIndex == 0 && symbol === Clutter.KEY_Up)
                     favPos = numFavorites-1;
                 else if (symbol === Clutter.KEY_Down)
-                    favPos = this._selectedItemIndex + 1;
+                    favPos = selectedItemIndex + 1;
                 else
-                    favPos = this._selectedItemIndex - 1;
+                    favPos = selectedItemIndex - 1;
                 appFavorites.moveFavoriteToPos(id, favPos);
                 item_actor = this.favoritesBox.get_child_at_index(favPos);
-                this._scrollToButton(item_actor._delegate, this.favoritesScrollBox);
             } else if (this.searchFilesystem && (this._fileFolderAccessActive || symbol === Clutter.KEY_slash)) {
                 if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) {
                     if (this._run(this.searchEntry.get_text())) {
@@ -2189,124 +2091,89 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.selectedAppTitle.set_text("");
         this.selectedAppDescription.set_text("");
 
-        this._selectedItemIndex = index;
         if (!item_actor || item_actor === this.searchEntry) {
             return false;
         }
-        this._buttonEnterEvent(item_actor._delegate, true);
+
+        if (item_actor._delegate instanceof CategoryButton) {
+            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
+        } else if (item_actor._delegate instanceof FavoritesButton) {
+            this._scrollToButton(item_actor._delegate, this.favoritesScrollBox);
+        } else if (item_actor.get_parent() === this.applicationsBox) {
+            this._scrollToButton(item_actor._delegate, this.applicationsScrollBox);
+        }
+        
+        this._buttonEnterEvent(item_actor._delegate);
         return true;
     }
 
-    _buttonEnterEvent(button, synthetic=false) {
-        let parent = button.actor.get_parent();
-        if (this._activeContainer === this.categoriesBox && parent !== this._activeContainer) {
-            this._previousTreeSelectedActor = this._activeActor;
-            this._previousSelectedActor = null;
-        }
-        if (this._previousTreeSelectedActor && this._activeContainer !== this.categoriesBox &&
-                parent !== this._activeContainer && button !== this._previousTreeSelectedActor && !this.searchActive) {
-            this._previousTreeSelectedActor.style_class = "menu-category-button";
-        }
-        if (parent != this._activeContainer && parent._vis_iter) {
-            parent._vis_iter.reloadVisible();
-        }
-        let _maybePreviousActor = this._activeActor;
-        if (_maybePreviousActor && this._activeContainer !== this.categoriesBox) {
-            this._previousSelectedActor = _maybePreviousActor;
-            this._clearPrevSelection();
-        }
-        if (parent === this.categoriesBox && !this.searchActive) {
-            this._previousSelectedActor = _maybePreviousActor;
-            this._clearPrevCatSelection(null, synthetic);
-        }
-        this._activeContainer = parent;
-        this._activeActor = button.actor;
-
-        if (this._activeContainer._vis_iter) {
-            this._selectedItemIndex = this._activeContainer._vis_iter.getAbsoluteIndexOfChild(this._activeActor);
-        }
-
-        let isFav = false;
+    _buttonEnterEvent(button) {
+        this.categoriesBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
+        this.applicationsBox.get_children().forEach(child => child.set_style_class_name("menu-application-button"));
+        this.favoritesBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
+        this.systemButtonsBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
+        
         if (button instanceof CategoryButton) {
             if (this.searchActive)
                 return;
-            button.isHovered = true;
-            if (this.categoryHover || (button.categoryId !== this.lastSelectedCategory)) {
-                this._clearPrevCatSelection(button.actor, synthetic);
+            
+            if (button.categoryId !== this.lastSelectedCategory) {
+                if (this.categoryHover) {
+                    this.categoriesBox.get_children().forEach(child => 
+                        child.set_style_class_name("menu-category-button"));
+                    button.activate();
+                } else {
+                    button.actor.add_style_pseudo_class("hover");
+                }
             }
-            if (this.categoryHover || synthetic) {
-                this._select_category(button.categoryId);
-            }
+            this._previousCategoryHoverActor = button.actor;
         } else {
-            this._previousVisibleIndex = parent._vis_iter.getVisibleIndex(button.actor);
-
-            isFav = button instanceof FavoritesButton || button instanceof SystemButton;
-            if (!isFav)
-                this._clearPrevSelection(button.actor);
+            const isFav = button instanceof FavoritesButton || button instanceof SystemButton;
+            if (isFav) {
+                button.actor.add_style_pseudo_class("hover");
+            } else {
+                button.actor.set_style_class_name(`${button.styleClass}-selected`);
+                this._previousSelectedAppActor = button.actor;
+            }
             this.selectedAppTitle.set_text(button.name);
             this.selectedAppDescription.set_text(button.description);
         }
 
-        if (isFav)
-            button.actor.add_style_pseudo_class("hover");
-        else
-            button.actor.set_style_class_name(`${button.styleClass}-selected`);
+
+        let parent = button.actor.get_parent();
+        this._activeContainer = parent;
+        this._activeActor = button.actor;
     }
 
     _buttonLeaveEvent (button) {
         if (button instanceof CategoryButton) {
-            if (this._previousTreeSelectedActor === null) {
-                this._previousTreeSelectedActor = button.actor;
-            } else {
-                let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
-                let nextIdx = this.catBoxIter.getVisibleIndex(button.actor);
-
-                if (Math.abs(prevIdx - nextIdx) <= 1) {
-                    this._previousTreeSelectedActor = button.actor;
+            if (button.categoryId !== this.lastSelectedCategory) {
+                button.actor.set_style_class_name("menu-category-button");
+                if (button.actor.has_style_pseudo_class("hover")) {
+                    button.actor.remove_style_pseudo_class("hover");
                 }
             }
-            button.isHovered = false;
         } else {
-            this._previousSelectedActor = button.actor;
             this.selectedAppTitle.set_text("");
             this.selectedAppDescription.set_text("");
 
-            // category unselects are handled when the category actually changes
             if (button instanceof FavoritesButton || button instanceof SystemButton)
                 button.actor.remove_style_pseudo_class("hover");
             else
                 button.actor.set_style_class_name(button.styleClass);
         }
+
+        // This method is only called on mouse leave so return key focus to the
+        // currently active category button.
+        this._setKeyFocusToCurrentCategoryButton();
     }
 
-    _clearPrevSelection(actor) {
-        if (this._previousSelectedActor
-            && !this._previousSelectedActor.is_finalized()
-            && this._previousSelectedActor != actor) {
-            if (this._previousSelectedActor._delegate instanceof FavoritesButton ||
-                this._previousSelectedActor._delegate instanceof SystemButton)
-                this._previousSelectedActor.remove_style_pseudo_class("hover");
-            else if (!(this._previousSelectedActor._delegate instanceof CategoryButton))
-                this._previousSelectedActor.style_class = "menu-application-button";
-        }
-    }
-
-    _clearPrevCatSelection(actor, synthetic=false) {
-        if (this._previousTreeSelectedActor && this._previousTreeSelectedActor != actor &&
-            (this.categoryHover ? true : this._previousTreeSelectedActor._delegate.categoryId !== this.lastSelectedCategory)) {
-            this._previousTreeSelectedActor.style_class = "menu-category-button";
-            if (this._previousTreeSelectedActor._delegate) {
-                this._buttonLeaveEvent(this._previousTreeSelectedActor._delegate);
-            }
-
-            if (actor !== undefined) {
-                this._previousVisibleIndex = null;
-                this._previousTreeSelectedActor = actor;
-            }
-        } else {
-            if (this.categoryHover || synthetic) {
-                this.categoriesBox.get_children().forEach(child => child.style_class = "menu-category-button");
-            }
+    _setKeyFocusToCurrentCategoryButton() {
+        const currentSelectedCategoryActor = this.categoriesBox.get_children().find(child =>
+            child._delegate.categoryId === this.lastSelectedCategory);
+        if (currentSelectedCategoryActor) {
+            this._activeContainer = this.categoriesBox;
+            this._activeActor = currentSelectedCategoryActor;
         }
     }
 
@@ -2780,10 +2647,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
     }
 
-    _scrollToButton(button, scrollBox = null) {
-        if (!scrollBox)
-            scrollBox = this.applicationsScrollBox;
-
+    _scrollToButton(button, scrollBox = this.applicationsScrollBox) {
         let adj = scrollBox.get_vscroll_bar().get_adjustment();
         if (button) {
             let box = scrollBox.get_allocation_box();
@@ -2960,6 +2824,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         actors = this.categoriesBox.get_children();
         for (let i = 0; i < actors.length; i++){
             let actor = actors[i];
+            actor.remove_style_pseudo_class("hover")
             actor.style_class = "menu-category-button";
             actor.show();
         }
@@ -2997,12 +2862,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
-    _select_category (name) {
-        if (name === this.lastSelectedCategory)
+    _select_category (name = null) {
+        if (name === this.lastSelectedCategory){
             return;
+        }
         this.lastSelectedCategory = name;
         this._displayButtons(name || 'app');
         this.closeContextMenu(false);
+        this._scrollToButton(null);
     }
 
     closeContextMenu(animate) {
@@ -3214,9 +3081,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._searchTimeoutId = 0;
         this._activeContainer = null;
         this._activeActor = null;
-        this._selectedItemIndex = null;
-        this._previousTreeSelectedActor = null;
-        this._previousSelectedActor = null;
+        this._previousCategoryHoverActor = null;
 
         var acResultButtons = []; // search box autocompletion results
         var buttons = []
@@ -3241,11 +3106,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         if (buttons.length || acResultButtons.length) {
             this.appBoxIter.reloadVisible();
-            let item_actor = this.appBoxIter.getFirstVisible();
-            this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
+            this._activeActor = this.appBoxIter.getFirstVisible();
             this._activeContainer = this.applicationsBox;
-            this._scrollToButton(item_actor._delegate);
-            this._buttonEnterEvent(item_actor._delegate, true);
+            this._scrollToButton(this._activeActor._delegate);
+            this._buttonEnterEvent(this._activeActor._delegate);
         } else {
             this.selectedAppTitle.set_text("");
             this.selectedAppDescription.set_text("");
@@ -3259,13 +3123,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         let button = new SearchProviderResultButton(this, provider, results[i]);
                         this._searchProviderButtons.push(button);
                         this.applicationsBox.add_actor(button.actor);
-                        if (this._selectedItemIndex === null) {
+                        if (this._activeActor === null) {
                             this.appBoxIter.reloadVisible();
-                            let item_actor = this.appBoxIter.getFirstVisible();
-                            this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
+                            this._activeActor = this.appBoxIter.getFirstVisible();
                             this._activeContainer = this.applicationsBox;
-                            if (item_actor && item_actor != this.searchEntry) {
-                                this._buttonEnterEvent(item_actor._delegate, true);
+                            if (this._activeActor && this._activeActor != this.searchEntry) {
+                                this._buttonEnterEvent(this._activeActor._delegate);
                             }
                         }
                     }
