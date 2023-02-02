@@ -306,7 +306,7 @@ class DefaultTerminalButton(Gtk.AppChooserButton):
             # terminals don't have mime types, so we check for "TerminalEmulator" under the "Category" key in desktop files
             if cat_val is not None and "TerminalEmulator" in cat_val:
                 # this crazy if statement makes sure remaining desktop file info is not empty, then prevents root terminals from showing, then prevents repeating terminals from trying to being added which leave a blank space and Gtk-WARNING's
-                if exec_val is not None and name_val is not None and icon_val is not None and not "gksu" in exec_val and exec_val not in self.active_items:
+                if exec_val is not None and name_val is not None and icon_val is not None and "gksu" not in exec_val and exec_val not in self.active_items:
                     self.append_custom_item(exec_val, name_val, Gio.ThemedIcon.new(icon_val))
                     self.active_items.append(exec_val)
                     if self.key_value == exec_val:

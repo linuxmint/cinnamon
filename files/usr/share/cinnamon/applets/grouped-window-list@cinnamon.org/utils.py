@@ -41,7 +41,7 @@ def handle_cli():
             process = process.replace('\\u0000', ' ')
         process = json.loads(process)
 
-        if not '.exe' in process:
+        if '.exe' not in process:
             process = process[:-1]
 
         if process == 'python mainwindow.py':
