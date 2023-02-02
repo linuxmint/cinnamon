@@ -1995,15 +1995,15 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             if (!item_actor)
                 return false;
         } else {
-            if ((this._activeContainer) && (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter)) {
+            if (this._activeContainer && (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter)) {
                 if (!ctrlKey) {
                     this._activeActor._delegate.activate();
                 } else if (ctrlKey && this._activeContainer === this.applicationsBox) {
-                    this._activeActor.toggleContextMenu(this._activeActor._delegate);
+                    this.toggleContextMenu(this._activeActor._delegate);
                 }
                 return true;
             } else if (this._activeContainer === this.applicationsBox && symbol === Clutter.KEY_Menu) {
-                this._activeActor.toggleContextMenu(this._activeActor._delegate);
+                this.toggleContextMenu(this._activeActor._delegate);
                 return true;
             } else if (!this.searchActive && this._activeContainer === this.favoritesBox && symbol === Clutter.KEY_Delete) {
                 item_actor = this._activeActor;
