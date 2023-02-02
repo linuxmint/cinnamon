@@ -24,9 +24,7 @@ from gi.repository import Gdk, Gtk, Gio, GLib
 from . import logger
 from . import proxygsettings
 
-DEBUG = False
-if os.getenv("DEBUG") is not None:
-    DEBUG = True
+DEBUG = os.getenv("DEBUG") is not None
 def debug(msg):
     if DEBUG:
         print(msg)
