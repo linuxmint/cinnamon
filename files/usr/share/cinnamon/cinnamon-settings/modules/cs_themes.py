@@ -141,7 +141,7 @@ class Module:
 
             self.builder = self.sidePage.builder
 
-            for path in [THEME_FOLDERS[0], ICON_FOLDERS[0]]:
+            for path in [THEME_FOLDERS[0], ICON_FOLDERS[0], ICON_FOLDERS[1]]:
                 try:
                     os.makedirs(path)
                 except OSError:
@@ -471,15 +471,25 @@ class Module:
         default_dir = os.path.join(ICON_FOLDERS[0], "default")
         index_path = os.path.join(default_dir, "index.theme")
 
+        default_dir_compat = os.path.join(ICON_FOLDERS[1], "default")
+        index_path_compat = os.path.join(default_dir_compat, "index.theme")
+
         try:
             os.makedirs(default_dir)
+            os.makedirs(default_dir_compat)
         except os.error as e:
             pass
 
         if os.path.exists(index_path):
             os.unlink(index_path)
 
+        if os.path.exists(index_path_compat):
+            os.unlink(index_path_compat)
+
         contents = "[icon theme]\nInherits=%s\n" % name
 
         with open(index_path, "w") as f:
+            f.write(contents)
+
+        with open(index_path_compat, "w") as f:
             f.write(contents)
