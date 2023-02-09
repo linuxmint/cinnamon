@@ -319,10 +319,10 @@ class Module:
                 chooser.set_picture_from_file(path)
         else:
             try:
-                for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix),
-                             os.path.expanduser("~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix)),
+                for path in ([os.path.join(datadir, path_prefix, theme, path_suffix, "thumbnail.png") for datadir in GLib.get_system_data_dirs()]
+                             + [os.path.expanduser("~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix)),
                              "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme),
-                             "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
+                             "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]):
                     if os.path.exists(path):
                         chooser.set_picture_from_file(path)
                         break
