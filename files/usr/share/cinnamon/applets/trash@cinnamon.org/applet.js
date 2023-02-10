@@ -1,6 +1,7 @@
 const St = imports.gi.St;
 const ModalDialog = imports.ui.modalDialog;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
@@ -16,17 +17,20 @@ class CinnamonTrashApplet extends Applet.IconApplet {
         this.set_applet_icon_symbolic_name("user-trash");
         this.set_applet_tooltip(_("Trash"));
 
-        this.trash_path = 'trash:///';
-        this.trash_directory =  Gio.file_new_for_uri(this.trash_path);
-
-        this._initContextMenu();
-
         this.trash_changed_timeout = 0;
 
-        this._onTrashChange();
+        const vfs = Gio.Vfs.get_default()
+        if (vfs.get_supported_uri_schemes().includes("trash")) {
+            this._initContextMenu();
 
-        this.monitor = this.trash_directory.monitor_directory(0, null);
-        this.monitor.connect('changed', Lang.bind(this, this._onTrashChange));
+            this.trash_path = 'trash:///';
+            this.trash_directory =  Gio.file_new_for_uri(this.trash_path);
+            this._onTrashChange();
+        } else {
+            this.trash_directory = null;
+            global.logWarning("trash@cinnamon.org: No trash support, disabling.")
+            this.actor.hide();
+        }
     }
 
     _initContextMenu() {
@@ -47,6 +51,28 @@ class CinnamonTrashApplet extends Applet.IconApplet {
         this._openTrash();
     }
 
+    on_applet_added_to_panel() {
+        if (this.trash_directory == null) {
+            return;
+        }
+
+        this.monitor = this.trash_directory.monitor_directory(0, null);
+        this.monitor_changed_id = this.monitor.connect('changed', Lang.bind(this, this._onTrashChange));
+    }
+
+    on_applet_removed_from_panel() {
+        if (this.trash_directory == null) {
+            return;
+        }
+
+        if (this.monitor_changed_id > 0) {
+            this.monitor.disconnect(this.monitor_changed_id);
+            this.monitor_changed_id = 0;
+        }
+
+        this.moniitor = 0;
+    }
+
     _openTrash() {
         Gio.app_info_launch_default_for_uri(this.trash_directory.get_uri(), null);
     }
@@ -57,19 +83,40 @@ class CinnamonTrashApplet extends Applet.IconApplet {
             this.trash_changed_timeout = 0;
         }
 
-        this.trash_changed_timeout = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._onTrashChangeTimeout));
+        this.trash_changed_timeout = Mainloop.idle_add(Lang.bind(this, this._onTrashChangeTimeout), GLib.PRIORITY_LOW);
     }
 
     _onTrashChangeTimeout() {
         this.trash_changed_timeout = 0;
-        if (this.trash_directory.query_exists(null)) {
-            let children = this.trash_directory.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
-            if (children.next_file(null) == null) {
-                this.set_applet_icon_symbolic_name("user-trash");
-            } else {
-                this.set_applet_icon_symbolic_name("user-trash-full");
-            }
-            children.close(null);
+        const children = this.trash_directory.enumerate_children_async(
+            'standard::*',
+            Gio.FileQueryInfoFlags.NONE,
+            GLib.PRIORITY_LOW,
+            null,
+            (...args) => this._enumerateChildrenCallback(...args)
+        );
+
+        return GLib.SOURCE_REMOVE;
+    }
+
+    _enumerateChildrenCallback(file, result) {
+        try {
+            const child_info = file.enumerate_children_finish(result);
+            child_info.next_files_async(
+                1,
+                GLib.PRIORITY_LOW,
+                null,
+                (enumerator, res) => {
+                    file = enumerator.next_files_finish(res);
+                    if (file.length > 0) {
+                        this.set_applet_icon_symbolic_name("user-trash-full");
+                    } else {
+                        this.set_applet_icon_symbolic_name("user-trash");
+                    }
+                }
+            );
+        } catch(e) {
+            global.logWarning(`Could not check trash uri: ${e.message}`);
         }
     }
 
