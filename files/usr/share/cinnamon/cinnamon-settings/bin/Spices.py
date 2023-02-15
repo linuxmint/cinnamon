@@ -788,7 +788,7 @@ class Spice_Harvester(GObject.Object):
             elif self.collection_type == 'desklet':
                 enabled_uuid = enabled_extension.split(':')[0].strip('!')
             else:
-                enabled_uuid = enabled_extension
+                enabled_uuid = enabled_extension.strip('!')
 
             if enabled_uuid != uuid:
                 new_list.append(enabled_extension)
