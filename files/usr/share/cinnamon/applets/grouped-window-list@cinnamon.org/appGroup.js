@@ -309,7 +309,7 @@ class AppGroup {
     }
 
     flashButton() {
-        if (!this._needsAttention || !this.actor || this._flashTimer)
+        if (!this._needsAttention || !this.actor || this.flashTimer)
             return;
 
         if (!this.groupState.groupReady && this.groupState.isFavoriteApp)
