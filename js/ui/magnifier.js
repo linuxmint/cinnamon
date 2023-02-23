@@ -1088,6 +1088,8 @@ ZoomRegion.prototype = {
      * @shape:      LensShape.SQUARE, LensShape.HORIZONTAL, LensShape.VERTICAL.
      */
     setLensShape: function(shape) {
+        //Destroy the current actors for style updates
+        this._destroyActors();
         switch (shape) {
             case LensShape.SQUARE:
                 this.setSquareLens();
@@ -1099,6 +1101,8 @@ ZoomRegion.prototype = {
                 this.setVerticalLens();
                 break;
         }
+        // Recreate actors
+        this._createActors();
     },
 
     /**
@@ -1170,7 +1174,13 @@ ZoomRegion.prototype = {
     _createActors: function() {
         global.reparentActor(global.top_window_group, Main.uiGroup);
         // The root actor for the zoom region
-        this._magView = new St.Bin({ style_class: 'magnifier-zoom-region', x_fill: true, y_fill: true });
+        // Only style the zoom region if it is not fullscreen
+        // we don't want borders when in fullscreen
+        if(!this._isFullScreen()){
+            this._magView = new St.Bin({ style_class: 'magnifier-zoom-region', x_fill: true, y_fill: true });
+        } else {
+            this._magView = new St.Bin({ x_fill: true, y_fill: true });
+        }
         global.stage.add_actor(this._magView);
 
         // hide the magnified region from CLUTTER_PICK_ALL
