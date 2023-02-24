@@ -11,8 +11,11 @@ const Tooltips = imports.ui.tooltips;
 const Settings = imports.ui.settings;
 const ModalDialog = imports.ui.modalDialog;
 const Pango = imports.gi.Pango;
+const Cinnamon = imports.gi.Cinnamon;
 
 const MIN_SWITCH_INTERVAL_MS = 220;
+
+const ICON_SIZE = 16; // TODO: size according to the size of the applet (or panel)
 
 class WorkspaceButton {
     constructor(index, applet) {
@@ -82,6 +85,41 @@ class WorkspaceGraph extends WorkspaceButton {
 
         this.graphArea.set_size(1, 1);
         this.graphArea.connect('repaint', Lang.bind(this, this.onRepaint));
+
+        this.window_icons = {};
+    }
+
+    getIconForMetaWindow (metaWindow) {
+        let metaWindowId = metaWindow.get_id();
+
+        if (this.window_icons[metaWindowId])
+            return this.window_icons[metaWindowId];
+
+        let iconActor = null;
+        let app = null;
+
+        if (metaWindow._expoApp) {
+            app = metaWindow._expoApp;
+        } else {
+            let tracker = Cinnamon.WindowTracker.get_default();
+            app = tracker.get_window_app(metaWindow);
+            metaWindow._expoApp = app;
+        }
+
+        if (app) {
+            iconActor = app.create_icon_texture_for_window(ICON_SIZE, metaWindow);
+        }
+
+        if (!iconActor) {
+            iconActor = new St.Icon({
+                icon_name: 'applications-other',
+                icon_type: St.IconType.FULLCOLOR,
+                icon_size: ICON_SIZE
+            });
+        }
+
+        this.window_icons[metaWindowId] = iconActor;
+        return this.window_icons[metaWindowId];
     }
 
     getSizeAdjustment (actor, vertical) {
@@ -153,10 +191,19 @@ class WorkspaceGraph extends WorkspaceButton {
 
         Clutter.cairo_set_source_color(cr, windowBorderColor);
         cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
+
         cr.strokePreserve();
 
         Clutter.cairo_set_source_color(cr, windowBackgroundColor);
         cr.fill();
+
+        //TODO: check settings for showing icon before
+        
+        let icon = this.getIconForMetaWindow(metaWindow);
+
+        if (icon) {
+            // TODO: draw icon in the frame
+        }
     }
 
     onRepaint(area) {
@@ -209,6 +256,11 @@ class WorkspaceGraph extends WorkspaceButton {
             this.actor.add_style_pseudo_class('active');
         else
             this.actor.remove_style_pseudo_class('active');
+    }
+
+    destroy() {
+        super.destroy();
+        this.window_icons = null;
     }
 }
 
