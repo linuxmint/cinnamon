@@ -371,7 +371,7 @@ class AppMenuButton {
 
         this._signals.connect(this.metaWindow, 'notify::title', this.setDisplayTitle, this);
         this._signals.connect(this.metaWindow, "notify::minimized", this.setDisplayTitle, this);
-        this._signals.connect(this.metaWindow, "notify::tile-type", this.setDisplayTitle, this);
+        this._signals.connect(this.metaWindow, "notify::tile-mode", this.setDisplayTitle, this);
         this._signals.connect(this.metaWindow, "notify::icon", this.setIcon, this);
         this._signals.connect(this.metaWindow, "notify::appears-focused", this.onFocus, this);
         this._signals.connect(this.metaWindow, "unmanaged", this.onUnmanaged, this);
