@@ -243,16 +243,25 @@ function installPolyfills(readOnlyError) {
 
     // These abstractions around Mainloop are safer and easier
     // to use for people learning GObject introspection bindings.
-    Object.defineProperty(window, 'setTimeout', {
-        get: function() {
-            return setTimeout;
-        },
-        set: function() {
-            readOnlyError('setTimeout');
-        },
-        configurable: false,
-        enumerable: false
-    });
+
+    // Starting with mozjs 102, these polyfills are no longer needed, and will
+    // crash Cinnamon if we try to redifine them. Try to do the first one and bail
+    // if it complains (TypeError: can't redefine non-configurable property)
+    try {
+        Object.defineProperty(window, 'setTimeout', {
+            get: function() {
+                return setTimeout;
+            },
+            set: function() {
+                readOnlyError('setTimeout');
+            },
+            configurable: false,
+            enumerable: false
+        });
+    } catch (e) {
+        return;
+    }
+
     Object.defineProperty(window, 'clearTimeout', {
         get: function() {
             return clearTimeout;
