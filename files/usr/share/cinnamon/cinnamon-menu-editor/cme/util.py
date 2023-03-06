@@ -20,6 +20,8 @@ import os
 import xml.dom.minidom
 import uuid
 import sys
+from typing import Optional
+
 if sys.version_info[:2] >= (3, 8):
     from collections.abc import Sequence
 else:
@@ -78,7 +80,7 @@ def getUniqueUndoFile(filepath) -> str:
             break
     return new_filepath
 
-def getItemPath(file_id) -> str | None:
+def getItemPath(file_id) -> Optional[str]:
     for path in GLib.get_system_data_dirs():
         file_path = os.path.join(path, 'applications', file_id)
         if os.path.isfile(file_path):
@@ -91,7 +93,7 @@ def getUserItemPath() -> str:
         os.makedirs(item_dir)
     return item_dir
 
-def getDirectoryPath(file_id) -> str | None:
+def getDirectoryPath(file_id) -> Optional[str]:
     for path in GLib.get_system_data_dirs():
         file_path = os.path.join(path, 'desktop-directories', file_id)
         if os.path.isfile(file_path):
@@ -110,7 +112,7 @@ def getUserMenuPath() -> str:
         os.makedirs(menu_dir)
     return menu_dir
 
-def getSystemMenuPath(file_id) -> str | None:
+def getSystemMenuPath(file_id) -> Optional[str]:
     for path in GLib.get_system_config_dirs():
         file_path = os.path.join(path, 'menus', file_id)
         if os.path.isfile(file_path):
