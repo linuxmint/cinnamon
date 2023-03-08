@@ -155,13 +155,23 @@ class CinnamonBarApplet extends Applet.Applet {
         }
     }
 
-    _on_scroll_event(actor, event) {
-        //switch workspace
-        if (this._did_peek == true && this._peek_timeout_id > 0) {
+    _on_scroll_event(actor,event) {
+        if (this._peek_timeout_id > 0) {
             Mainloop.source_remove(this._peek_timeout_id);
+            this._peek_timeout_id = 0;
         }
-        var index = global.screen.get_active_workspace_index() + event.get_scroll_direction() * 2 - 1;
-        if(global.screen.get_workspace_by_index(index) != null){
+
+        let direction = event.get_scroll_direction();
+        let index = global.screen.get_active_workspace_index();
+
+        if (direction == Clutter.ScrollDirection.UP) {
+            index = index - 1;
+        }
+        if (direction == Clutter.ScrollDirection.DOWN) {
+            index = index + 1;
+        }
+
+        if (global.screen.get_workspace_by_index(index) != null) {
             global.screen.get_workspace_by_index(index).activate(global.get_current_time());
         }
     }
