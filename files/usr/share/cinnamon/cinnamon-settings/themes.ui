@@ -90,8 +90,8 @@
                               <object class="GtkBox">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
+                                <property name="border-width">0</property>
                                 <property name="orientation">vertical</property>
-                                <property name="spacing">6</property>
                                 <child>
                                   <object class="GtkImage">
                                     <property name="visible">True</property>
@@ -108,6 +108,7 @@
                                   <object class="GtkLabel">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
+                                    <property name="margin-bottom">3</property>
                                     <property name="label" translatable="yes">Mixed</property>
                                     <attributes>
                                       <attribute name="weight" value="bold"/>
@@ -139,7 +140,6 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="orientation">vertical</property>
-                                <property name="spacing">6</property>
                                 <child>
                                   <object class="GtkImage">
                                     <property name="visible">True</property>
@@ -156,6 +156,7 @@
                                   <object class="GtkLabel">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
+                                    <property name="margin-bottom">3</property>
                                     <property name="label" translatable="yes">Dark</property>
                                     <attributes>
                                       <attribute name="weight" value="bold"/>
@@ -187,7 +188,6 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="orientation">vertical</property>
-                                <property name="spacing">6</property>
                                 <child>
                                   <object class="GtkImage">
                                     <property name="visible">True</property>
@@ -204,6 +204,7 @@
                                   <object class="GtkLabel">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
+                                    <property name="margin-bottom">3</property>
                                     <property name="label" translatable="yes">Light</property>
                                     <attributes>
                                       <attribute name="weight" value="bold"/>
