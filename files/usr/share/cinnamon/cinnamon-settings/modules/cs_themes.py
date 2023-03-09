@@ -81,6 +81,8 @@ class Module:
             self.customize_button = builder.get_object("customize_button")
             self.preset_button = builder.get_object("preset_button")
             self.color_label = builder.get_object("color_label")
+            self.main_stack = builder.get_object("main_stack")
+            self.custom_stack = builder.get_object("custom_stack")
             self.active_style = None
             self.active_mode = None
             self.active_variant = None
@@ -112,16 +114,15 @@ class Module:
 
             self.reset_look_ui()
 
+            if self.active_variant is not None:
+                self.main_stack.set_visible_child_name("custom_page")
+
             self.mixed_button.connect("clicked", self.on_mode_button_clicked, "mixed")
             self.dark_button.connect("clicked", self.on_mode_button_clicked, "dark")
             self.light_button.connect("clicked", self.on_mode_button_clicked, "light")
             self.customize_button.connect("clicked", self.on_customize_button_clicked)
 
             self.sidePage.stack.add_named(page, "themes")
-
-
-            self.main_stack = builder.get_object("main_stack")
-            self.custom_stack = builder.get_object("custom_stack")
 
             page = SettingsPage()
             self.custom_stack.add_titled(page, "themes", _("Themes"))
