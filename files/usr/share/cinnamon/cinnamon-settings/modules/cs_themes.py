@@ -108,7 +108,6 @@ class Module:
             # Populate the style combo
             for name in sorted(self.styles.keys()):
                 self.style_combo.append_text(name)
-            self.style_combo.append_text(_("Custom"))
             self.style_combo.connect("changed", self.on_style_combo_changed)
 
             self.reset_look_ui()
@@ -279,6 +278,14 @@ class Module:
         for child in self.color_box.get_children():
             self.color_box.remove(child)
         self.color_label.hide()
+        model = self.style_combo.get_model()
+        iter = model.get_iter_first()
+        while (iter != None):
+            name = model.get_value(iter, 0)
+            if name == _("Custom"):
+                model.remove(iter)
+                break
+            iter = model.iter_next(iter)
 
     def reset_look_ui(self):
         if not self.ui_ready:
@@ -343,6 +350,7 @@ class Module:
                     button.connect("clicked", self.on_color_button_clicked, variant)
         else:
             # Position style combo on "Custom"
+            self.style_combo.append_text(_("Custom"))
             self.style_combo.set_active(len(self.styles.keys()))
         self.ui_ready = True
 
@@ -365,8 +373,6 @@ class Module:
 
     def on_style_combo_changed(self, combobox):
         selected_name = combobox.get_active_text()
-        if selected_name == _("Custom"):
-            self.cleanup_ui()
         for name in self.styles.keys():
             if name == selected_name:
                 style = self.styles[name]
