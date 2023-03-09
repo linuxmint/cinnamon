@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
 import os
+import json
 
-from gi.repository import Gtk
+from gi.repository import Gtk, GdkPixbuf
 
 from xapp.GSettingsWidgets import *
 from CinnamonGtkSettings import CssRange, CssOverrideSwitch, GtkSettingsSwitch, PreviewWidget, Gtk2ScrollbarSizeEditor
@@ -35,16 +36,18 @@ class Module:
     category = "appear"
 
     def __init__(self, content_box):
-        self.keywords = _("themes, style")
+        self.keywords = _("themes, style, look, feel")
         self.icon = "cs-themes"
         self.window = None
-        sidePage = SidePage(_("Themes"), self.icon, self.keywords, content_box, module=self)
+        sidePage = SidePage(_("Look & Feel"), self.icon, self.keywords, content_box, module=self)
         self.sidePage = sidePage
         self.refreshing = False # flag to ensure we only refresh once at any given moment
 
     def on_module_selected(self):
         if not self.loaded:
             print("Loading Themes module")
+
+            self.ui_ready = True
 
             self.spices = Spice_Harvester('theme', self.window)
 
@@ -61,10 +64,70 @@ class Module:
             self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', button_picture_size=35, menu_pictures_size=35, num_cols=4)
             self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_size=60, menu_pictures_size=60*self.scale, num_cols=4)
 
-            page = SettingsPage()
-            self.sidePage.stack.add_titled(page, "themes", _("Themes"))
+            selected_meta_theme = None
 
-            settings = page.add_section(_("Themes"))
+            gladefile = "/usr/share/cinnamon/cinnamon-settings/themes.ui"
+            builder = Gtk.Builder()
+            builder.set_translation_domain('cinnamon')
+            builder.add_from_file(gladefile)
+            page = builder.get_object("page_themes")
+            page.show()
+
+            self.style_combo = builder.get_object("style_combo")
+            self.mixed_button = builder.get_object("mixed_button")
+            self.dark_button = builder.get_object("dark_button")
+            self.light_button = builder.get_object("light_button")
+            self.color_box = builder.get_object("color_box")
+            self.customize_button = builder.get_object("customize_button")
+            self.preset_button = builder.get_object("preset_button")
+            self.color_label = builder.get_object("color_label")
+            self.active_style = None
+            self.active_mode = None
+            self.active_variant = None
+
+            self.color_dot_svg = ""
+            with open("/usr/share/cinnamon/cinnamon-settings/color_dot.svg") as f:
+                self.color_dot_svg = f.read()
+
+            # Read the JSON files
+            self.styles = {}
+
+            path = "/usr/share/cinnamon/styles.d"
+            for filename in sorted(os.listdir(path)):
+                if filename.endswith(".styles"):
+                    try:
+                        with open(os.path.join(path, filename)) as f:
+                            json_text = json.loads(f.read())
+                            for style in json_text["styles"]:
+                                name = style["name"]
+                                self.styles[name] = style
+                    except Exception as e:
+                        print(f"Failed to parse styles from {filename}.")
+                        print(e)
+
+            # Populate the style combo
+            for name in sorted(self.styles.keys()):
+                self.style_combo.append_text(name)
+            self.style_combo.append_text(_("Custom"))
+            self.style_combo.connect("changed", self.on_style_combo_changed)
+
+            self.reset_look_ui()
+
+            self.mixed_button.connect("clicked", self.on_mode_button_clicked, "mixed")
+            self.dark_button.connect("clicked", self.on_mode_button_clicked, "dark")
+            self.light_button.connect("clicked", self.on_mode_button_clicked, "light")
+            self.customize_button.connect("clicked", self.on_customize_button_clicked)
+
+            self.sidePage.stack.add_named(page, "themes")
+
+
+            self.main_stack = builder.get_object("main_stack")
+            self.custom_stack = builder.get_object("custom_stack")
+
+            page = SettingsPage()
+            self.custom_stack.add_titled(page, "themes", _("Themes"))
+
+            settings = page.add_section()
 
             widget = self.make_group(_("Mouse Pointer"), self.cursor_chooser)
             settings.add_row(widget)
@@ -78,11 +141,18 @@ class Module:
             widget = self.make_group(_("Desktop"), self.cinnamon_chooser)
             settings.add_row(widget)
 
+            button = Gtk.Button()
+            button.set_label(_("Simplified settings..."))
+            button.set_halign(Gtk.Align.END)
+            button.set_relief(Gtk.ReliefStyle.NONE)
+            button.connect("clicked", self.on_preset_button_clicked)
+            page.add(button)
+
             page = DownloadSpicesPage(self, 'theme', self.spices, self.window)
-            self.sidePage.stack.add_titled(page, 'download', _("Add/Remove"))
+            self.custom_stack.add_titled(page, 'download', _("Add/Remove"))
 
             page = SettingsPage()
-            self.sidePage.stack.add_titled(page, "options", _("Settings"))
+            self.custom_stack.add_titled(page, "options", _("Settings"))
 
             settings = page.add_section(_("Miscellaneous options"))
 
@@ -160,6 +230,160 @@ class Module:
                         print(e)
 
             self.refresh()
+
+    def get_themes_from_variant(self, variant):
+        themes = variant["themes"]
+        gtk_theme = themes
+        icon_theme = themes
+        cinnamon_theme = themes
+        cursor_theme = themes
+        if "gtk" in variant:
+            gtk_theme = variant["gtk"]
+        if "icons" in variant:
+            icon_theme = variant["icons"]
+        if "cinnamon" in variant:
+            cinnamon_theme = variant["cinnamon"]
+        if "cursor" in variant:
+            cursor_theme = variant["cursor"]
+        return [gtk_theme, icon_theme, cinnamon_theme, cursor_theme]
+
+    def is_variant_active(self, variant):
+        # returns whether or not the given variant corresponds to the currently selected themes
+        [gtk_theme, icon_theme, cinnamon_theme, cursor_theme] = self.get_themes_from_variant(variant)
+        if gtk_theme != self.settings.get_string("gtk-theme"):
+            return False
+        if icon_theme != self.settings.get_string("icon-theme"):
+            return False
+        if cinnamon_theme != self.cinnamon_settings.get_string("name"):
+            return False
+        if cursor_theme != self.settings.get_string("cursor-theme"):
+            return False
+        return True
+
+    def find_active_variant(self):
+        for name in self.styles.keys():
+            style = self.styles[name]
+            for mode in ["mixed", "dark", "light"]:
+                for variant in style[mode]:
+                    if self.is_variant_active(variant):
+                        return (style, mode, variant)
+        return (None, None, None)
+
+    def cleanup_ui(self):
+        self.mixed_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
+        self.dark_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
+        self.light_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
+        self.mixed_button.set_sensitive(False)
+        self.dark_button.set_sensitive(False)
+        self.light_button.set_sensitive(False)
+        for child in self.color_box.get_children():
+            self.color_box.remove(child)
+        self.color_label.hide()
+
+    def reset_look_ui(self):
+        if not self.ui_ready:
+            return
+
+        self.ui_ready = False
+        self.cleanup_ui()
+
+        # Find the active variant
+        self.active_style, self.active_mode, self.active_variant = self.find_active_variant()
+
+        if self.active_variant is not None:
+            print("Found active variant:", self.active_style["name"], self.active_mode, self.active_variant)
+            # Position the style combo
+            model = self.style_combo.get_model()
+            iter = model.get_iter_first()
+            while (iter != None):
+                name = model.get_value(iter, 0)
+                if name == self.active_style["name"]:
+                    self.style_combo.set_active_iter(iter)
+                    break
+                iter = model.iter_next(iter)
+            # Set the mode buttons
+            if self.active_mode == "mixed":
+                self.mixed_button.set_state_flags(Gtk.StateFlags.CHECKED, True)
+            else:
+                self.mixed_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
+            if self.active_mode == "dark":
+                self.dark_button.set_state_flags(Gtk.StateFlags.CHECKED, True)
+            else:
+                self.dark_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
+            if self.active_mode == "light":
+                self.light_button.set_state_flags(Gtk.StateFlags.CHECKED, True)
+            else:
+                self.light_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
+            self.mixed_button.set_sensitive(len(self.active_style["mixed"]) > 0)
+            self.dark_button.set_sensitive(len(self.active_style["dark"]) > 0)
+            self.light_button.set_sensitive(len(self.active_style["light"]) > 0)
+
+            variants = self.active_style[self.active_mode]
+            if len(variants) > 1:
+                # Generate the color buttons
+                self.color_label.show()
+                for variant in variants:
+                    name = variant["name"]
+                    color = variant["color"]
+                    svg = self.color_dot_svg.replace("#8cffbe", color)
+                    if "color2" in variant:
+                        svg = svg.replace("#71718e", variant["color2"])
+                    else:
+                        svg = svg.replace("#71718e", color)
+                    svg = str.encode(svg)
+                    stream = Gio.MemoryInputStream.new_from_bytes(GLib.Bytes.new(svg))
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_stream(stream, None)
+                    image = Gtk.Image.new_from_pixbuf(pixbuf)
+                    button = Gtk.ToggleButton()
+                    button.add(image)
+                    button.show_all()
+                    self.color_box.add(button)
+                    if variant == self.active_variant:
+                        button.set_state_flags(Gtk.StateFlags.CHECKED, True)
+                    button.connect("clicked", self.on_color_button_clicked, variant)
+        else:
+            # Position style combo on "Custom"
+            self.style_combo.set_active(len(self.styles.keys()))
+        self.ui_ready = True
+
+    def on_customize_button_clicked(self, button):
+        self.main_stack.set_visible_child_name("custom_page")
+
+    def on_preset_button_clicked(self, button):
+        self.reset_look_ui()
+        self.main_stack.set_visible_child_name("preset_page")
+
+    def on_color_button_clicked(self, button, variant):
+        print("color button clicked")
+        self.activate_variant(variant)
+
+    def on_mode_button_clicked(self, button, mode):
+        print("mode button clicked")
+        if self.active_style is not None:
+            variant = self.active_style[mode][0]
+            self.activate_variant(variant)
+
+    def on_style_combo_changed(self, combobox):
+        selected_name = combobox.get_active_text()
+        if selected_name == _("Custom"):
+            self.cleanup_ui()
+        for name in self.styles.keys():
+            if name == selected_name:
+                style = self.styles[name]
+                for mode in ["mixed", "light", "dark"]:
+                    if len(style[mode]) > 0:
+                        variant = style[mode][0]
+                        self.activate_variant(variant)
+                        return True
+
+    def activate_variant(self, variant):
+        print("Variant:", variant)
+        [gtk_theme, icon_theme, cinnamon_theme, cursor_theme] = self.get_themes_from_variant(variant)
+        self.settings.set_string("gtk-theme", gtk_theme)
+        self.settings.set_string("icon-theme", icon_theme)
+        self.cinnamon_settings.set_string("name", cinnamon_theme)
+        self.settings.set_string("cursor-theme", cursor_theme)
+        self.reset_look_ui()
 
     def on_css_override_active_changed(self, switch, pspec=None, data=None):
         if self.scrollbar_switch.get_active():
