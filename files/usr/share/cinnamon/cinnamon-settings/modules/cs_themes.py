@@ -468,28 +468,21 @@ class Module:
         return res
 
     def update_cursor_theme_link(self, path, name):
-        default_dir = os.path.join(ICON_FOLDERS[0], "default")
-        index_path = os.path.join(default_dir, "index.theme")
+        contents = "[icon theme]\nInherits=%s\n" % name
+        self._set_cursor_theme_at(ICON_FOLDERS[0], contents)
+        self._set_cursor_theme_at(ICON_FOLDERS[1], contents)
 
-        default_dir_compat = os.path.join(ICON_FOLDERS[1], "default")
-        index_path_compat = os.path.join(default_dir_compat, "index.theme")
+    def _set_cursor_theme_at(self, directory, contents):
+        default_dir = os.path.join(directory, "default")
+        index_path = os.path.join(default_dir, "index.theme")
 
         try:
             os.makedirs(default_dir)
-            os.makedirs(default_dir_compat)
         except os.error as e:
             pass
 
         if os.path.exists(index_path):
             os.unlink(index_path)
 
-        if os.path.exists(index_path_compat):
-            os.unlink(index_path_compat)
-
-        contents = "[icon theme]\nInherits=%s\n" % name
-
         with open(index_path, "w") as f:
-            f.write(contents)
-
-        with open(index_path_compat, "w") as f:
             f.write(contents)
