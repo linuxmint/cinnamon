@@ -2,26 +2,14 @@
   "styles": [
     {
       "name": "Adwaita",
+      "default": "mixed",
       "mixed": [
-          {
-            "name": "blue",
-            "color": "#3584e4",
-            "themes": "Adwaita",
-            "cinnamon": "cinnamon"
-          }
-        ],
+          {"default": "true", "name": "blue", "color": "#3584e4", "themes": "Adwaita", "cinnamon": "cinnamon"}
+      ],
       "dark": [
-          {
-            "name": "blue",
-            "color": "#15539e",
-            "themes": "Adwaita-dark",
-            "icons": "Adwaita",
-            "cinnamon": "cinnamon",
-            "cursor": "Adwaita"
-          }
+          {"name": "blue", "color": "#15539e", "themes": "Adwaita-dark", "icons": "Adwaita", "cinnamon": "cinnamon", "cursor": "Adwaita"}
         ],
-      "light": [
-        ]
+      "light": []
     }
   ]
 }

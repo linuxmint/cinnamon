@@ -110,17 +110,17 @@ class Module:
             # Populate the style combo
             for name in sorted(self.styles.keys()):
                 self.style_combo.append_text(name)
-            self.style_combo.connect("changed", self.on_style_combo_changed)
 
             self.reset_look_ui()
 
-            if self.active_variant is not None:
+            if self.active_variant is None:
                 self.main_stack.set_visible_child_name("custom_page")
 
             self.mixed_button.connect("clicked", self.on_mode_button_clicked, "mixed")
             self.dark_button.connect("clicked", self.on_mode_button_clicked, "dark")
             self.light_button.connect("clicked", self.on_mode_button_clicked, "light")
             self.customize_button.connect("clicked", self.on_customize_button_clicked)
+            self.style_combo.connect("changed", self.on_style_combo_changed)
 
             self.sidePage.stack.add_named(page, "themes")
 
@@ -263,10 +263,11 @@ class Module:
     def find_active_variant(self):
         for name in self.styles.keys():
             style = self.styles[name]
-            for mode in ["mixed", "dark", "light"]:
-                for variant in style[mode]:
-                    if self.is_variant_active(variant):
-                        return (style, mode, variant)
+            for mode_name in ["mixed", "dark", "light"]:
+                if mode_name in style:
+                    for variant in style[mode_name]:
+                        if self.is_variant_active(variant):
+                            return (style, mode_name, variant)
         return (None, None, None)
 
     def cleanup_ui(self):
@@ -310,21 +311,22 @@ class Module:
                     break
                 iter = model.iter_next(iter)
             # Set the mode buttons
-            if self.active_mode == "mixed":
-                self.mixed_button.set_state_flags(Gtk.StateFlags.CHECKED, True)
-            else:
-                self.mixed_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
-            if self.active_mode == "dark":
-                self.dark_button.set_state_flags(Gtk.StateFlags.CHECKED, True)
-            else:
-                self.dark_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
-            if self.active_mode == "light":
-                self.light_button.set_state_flags(Gtk.StateFlags.CHECKED, True)
-            else:
-                self.light_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
-            self.mixed_button.set_sensitive(len(self.active_style["mixed"]) > 0)
-            self.dark_button.set_sensitive(len(self.active_style["dark"]) > 0)
-            self.light_button.set_sensitive(len(self.active_style["light"]) > 0)
+            for mode_name in ["mixed", "dark", "light"]:
+                if mode_name == "mixed":
+                    button = self.mixed_button
+                elif mode_name == "dark":
+                    button = self.dark_button
+                else:
+                    button = self.light_button
+                # Set the button state
+                if self.active_mode == mode_name:
+                    button.set_state_flags(Gtk.StateFlags.CHECKED, True)
+                else:
+                    button.set_state_flags(Gtk.StateFlags.NORMAL, True)
+                if mode_name in self.active_style and len(self.active_style[mode_name]) > 0:
+                    button.set_sensitive(True)
+                else:
+                    button.set_sensitive(False)
 
             variants = self.active_style[self.active_mode]
             if len(variants) > 1:
@@ -363,28 +365,43 @@ class Module:
         self.main_stack.set_visible_child_name("preset_page")
 
     def on_color_button_clicked(self, button, variant):
-        print("color button clicked")
+        print("Color button clicked")
         self.activate_variant(variant)
 
     def on_mode_button_clicked(self, button, mode):
-        print("mode button clicked")
+        print("Mode button clicked")
         if self.active_style is not None:
-            variant = self.active_style[mode][0]
-            self.activate_variant(variant)
+            self.activate_mode(self.active_style, mode)
 
     def on_style_combo_changed(self, combobox):
         selected_name = combobox.get_active_text()
+        if selected_name == None or selected_name == _("Custom"):
+            return
+        print("Activating style:", selected_name)
         for name in self.styles.keys():
             if name == selected_name:
                 style = self.styles[name]
-                for mode in ["mixed", "light", "dark"]:
-                    if len(style[mode]) > 0:
-                        variant = style[mode][0]
-                        self.activate_variant(variant)
-                        return True
+                if "default" in style:
+                    mode_name = style["default"]
+                else:
+                    for mode_name in ["mixed", "light", "dark"]:
+                        if mode_name in style and len(style[mode_name]) > 0:
+                            break
+                self.activate_mode(style, mode_name)
+
+    def activate_mode(self, style, mode_name):
+        print("Activating mode:", mode_name)
+        variants = style[mode_name]
+        if len(variants) > 0:
+            default_variant = variants[0]
+            for variant in variants:
+                if "default" in variant:
+                    default_variant = variant
+                    break
+            self.activate_variant(default_variant)
 
     def activate_variant(self, variant):
-        print("Variant:", variant)
+        print("Activating variant:", variant)
         [gtk_theme, icon_theme, cinnamon_theme, cursor_theme] = self.get_themes_from_variant(variant)
         self.settings.set_string("gtk-theme", gtk_theme)
         self.settings.set_string("icon-theme", icon_theme)
