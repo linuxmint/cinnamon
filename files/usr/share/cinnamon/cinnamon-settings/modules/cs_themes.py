@@ -30,6 +30,24 @@ THEME_FOLDERS = [
     os.path.join(GLib.get_home_dir(), ".themes")
 ] + [os.path.join(datadir, "themes") for datadir in GLib.get_system_data_dirs()]
 
+
+class Style:
+    def __init__(self):
+        self.name = None
+        self.default_mode = None
+        self.default_variant = None
+        self.mixed = []
+        self.light = []
+        self.dark = []
+
+class Variant:
+    def __init__(self):
+        self.name = None
+        self.gtk_theme = None
+        self.icon_theme = None
+        self.cinnamon_theme = None
+        self.cursor_theme = None
+
 class Module:
     comment = _("Manage themes to change how your desktop looks")
     name = "themes"
@@ -42,10 +60,23 @@ class Module:
         sidePage = SidePage(_("Look & Feel"), self.icon, self.keywords, content_box, module=self)
         self.sidePage = sidePage
         self.refreshing = False # flag to ensure we only refresh once at any given moment
+        self.gtk_themes = []
+        self.icon_themes = []
+        self.cinnamon_themes = []
+        self.cursor_themes = []
+
+    def refresh_themes(self):
+        # Find all installed themes
+        self.gtk_themes = self._load_gtk_themes()
+        self.icon_themes = self._load_icon_themes()
+        self.cinnamon_themes = self._load_cinnamon_themes()
+        self.cursor_themes = self._load_cursor_themes()
 
     def on_module_selected(self):
         if not self.loaded:
             print("Loading Themes module")
+
+            self.refresh_themes()
 
             self.ui_ready = True
 
@@ -90,26 +121,6 @@ class Module:
             self.color_dot_svg = ""
             with open("/usr/share/cinnamon/cinnamon-settings/color_dot.svg") as f:
                 self.color_dot_svg = f.read()
-
-            # Read the JSON files
-            self.styles = {}
-
-            path = "/usr/share/cinnamon/styles.d"
-            for filename in sorted(os.listdir(path)):
-                if filename.endswith(".styles"):
-                    try:
-                        with open(os.path.join(path, filename)) as f:
-                            json_text = json.loads(f.read())
-                            for style in json_text["styles"]:
-                                name = style["name"]
-                                self.styles[name] = style
-                    except Exception as e:
-                        print(f"Failed to parse styles from {filename}.")
-                        print(e)
-
-            # Populate the style combo
-            for name in sorted(self.styles.keys()):
-                self.style_combo.append_text(name)
 
             self.reset_look_ui()
 
@@ -165,7 +176,7 @@ class Module:
             try:
                 import tinycss2
             except:
-                self.refresh()
+                self.refresh_choosers()
                 return
 
             settings = page.add_section(_("Scrollbar behavior"))
@@ -229,7 +240,7 @@ class Module:
                         # File monitors can fail when the OS runs out of file handles
                         print(e)
 
-            self.refresh()
+            self.refresh_choosers()
 
     def get_themes_from_variant(self, variant):
         themes = variant["themes"]
@@ -237,6 +248,7 @@ class Module:
         icon_theme = themes
         cinnamon_theme = themes
         cursor_theme = themes
+        # print (self.gtk_themes)
         if "gtk" in variant:
             gtk_theme = variant["gtk"]
         if "icons" in variant:
@@ -281,13 +293,7 @@ class Module:
             self.color_box.remove(child)
         self.color_label.hide()
         model = self.style_combo.get_model()
-        iter = model.get_iter_first()
-        while (iter != None):
-            name = model.get_value(iter, 0)
-            if name == _("Custom"):
-                model.remove(iter)
-                break
-            iter = model.iter_next(iter)
+        model.clear()
 
     def reset_look_ui(self):
         if not self.ui_ready:
@@ -295,6 +301,27 @@ class Module:
 
         self.ui_ready = False
         self.cleanup_ui()
+
+        # Read the JSON files
+        self.styles = {}
+        self.style_objects = {}
+
+        path = "/usr/share/cinnamon/styles.d"
+        for filename in sorted(os.listdir(path)):
+            if filename.endswith(".styles"):
+                try:
+                    with open(os.path.join(path, filename)) as f:
+                        json_text = json.loads(f.read())
+                        for style in json_text["styles"]:
+                            name = style["name"]
+                            self.styles[name] = style
+                except Exception as e:
+                    print(f"Failed to parse styles from {filename}.")
+                    print(e)
+
+        # Populate the style combo
+        for name in sorted(self.styles.keys()):
+            self.style_combo.append_text(name)
 
         # Find the active variant
         self.active_style, self.active_mode, self.active_variant = self.find_active_variant()
