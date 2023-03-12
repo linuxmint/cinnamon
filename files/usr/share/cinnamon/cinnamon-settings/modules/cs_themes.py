@@ -426,26 +426,23 @@ class Module:
         GLib.timeout_add_seconds(5, self.refresh)
 
     def refresh(self):
-        choosers = [(self.cursor_chooser, "cursors", self._load_cursor_themes(), self._on_cursor_theme_selected),
-                    (self.theme_chooser, "gtk-3.0", self._load_gtk_themes(), self._on_gtk_theme_selected),
-                    (self.cinnamon_chooser, "cinnamon", self._load_cinnamon_themes(), self._on_cinnamon_theme_selected),
-                    (self.icon_chooser, "icons", self._load_icon_themes(), self._on_icon_theme_selected)]
-        for chooser in choosers:
-            chooser[0].clear_menu()
-            chooser[0].set_sensitive(False)
-            chooser[0].progress = 0.0
+        self.refresh_themes()
+        self.refresh_choosers()
 
-            chooser_obj = chooser[0]
-            path_suffix = chooser[1]
-            themes = chooser[2]
-            callback = chooser[3]
-            payload = (chooser_obj, path_suffix, themes, callback)
-            self.refresh_chooser(payload)
+    def refresh_choosers(self):
+        array = [(self.cursor_chooser, "cursors", self.cursor_themes, self._on_cursor_theme_selected),
+                    (self.theme_chooser, "gtk-3.0", self.gtk_themes, self._on_gtk_theme_selected),
+                    (self.cinnamon_chooser, "cinnamon", self.cinnamon_themes, self._on_cinnamon_theme_selected),
+                    (self.icon_chooser, "icons", self.icon_themes, self._on_icon_theme_selected)]
+        for element in array:
+            chooser, path_suffix, themes, callback = element
+            chooser.clear_menu()
+            chooser.set_sensitive(False)
+            chooser.progress = 0.0
+            self.refresh_chooser(chooser, path_suffix, themes, callback)
         self.refreshing = False
 
-    def refresh_chooser(self, payload):
-        (chooser, path_suffix, themes, callback) = payload
-
+    def refresh_chooser(self, chooser, path_suffix, themes, callback):
         inc = 1.0
         if len(themes) > 0:
             inc = 1.0 / len(themes)
