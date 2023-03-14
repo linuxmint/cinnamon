@@ -25,6 +25,17 @@
             "Show the window selector (Scale)": "show_scale"
         }
     },
+    "scroll-behavior": {
+        "type": "combobox",
+        "default": "none",
+        "description": "Scroll wheel behavior",
+        "tooltip": ".",
+        "options": {
+            "Nothing": "nothing",
+            "Switch workspaces": "normal",
+            "Switch workspaces (reversed)": "reversed"
+        }
+    },
     "peek-at-desktop" : {
         "type" : "switch",
         "default" : false,
