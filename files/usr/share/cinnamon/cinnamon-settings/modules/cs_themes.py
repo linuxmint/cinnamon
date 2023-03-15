@@ -32,21 +32,44 @@ THEME_FOLDERS = [
 
 
 class Style:
-    def __init__(self):
-        self.name = None
+    def __init__(self, json_obj):
+        self.name = json_obj["name"]
+        self.modes = {}
         self.default_mode = None
+
+class Mode:
+    def __init__(self, name):
+        self.name = name
         self.default_variant = None
-        self.mixed = []
-        self.light = []
-        self.dark = []
+        self.variants = []
 
 class Variant:
-    def __init__(self):
-        self.name = None
+    def __init__(self, json_obj):
+        self.name = json_obj["name"]
         self.gtk_theme = None
         self.icon_theme = None
         self.cinnamon_theme = None
         self.cursor_theme = None
+        self.color = "#000000"
+        self.color2 = "#000000"
+        if "themes" in json_obj:
+            themes = json_obj["themes"]
+            self.gtk_theme = themes
+            self.icon_theme = themes
+            self.cinnamon_theme = themes
+            self.cursor_theme = themes
+        if "gtk" in json_obj:
+            self.gtk_theme = json_obj["gtk"]
+        if "icons" in json_obj:
+            self.icon_theme = json_obj["icons"]
+        if "cinnamon" in json_obj:
+            self.cinnamon_theme = json_obj["cinnamon"]
+        if "cursor" in json_obj:
+            self.cursor_theme = json_obj["cursor"]
+        self.color = json_obj["color"]
+        self.color2 = self.color
+        if "color2" in json_obj:
+            self.color2 = json_obj["color2"]
 
 class Module:
     comment = _("Manage themes to change how your desktop looks")
@@ -115,7 +138,7 @@ class Module:
             self.main_stack = builder.get_object("main_stack")
             self.custom_stack = builder.get_object("custom_stack")
             self.active_style = None
-            self.active_mode = None
+            self.active_mode_name = None
             self.active_variant = None
 
             self.color_dot_svg = ""
@@ -242,45 +265,26 @@ class Module:
 
             self.refresh_choosers()
 
-    def get_themes_from_variant(self, variant):
-        themes = variant["themes"]
-        gtk_theme = themes
-        icon_theme = themes
-        cinnamon_theme = themes
-        cursor_theme = themes
-        # print (self.gtk_themes)
-        if "gtk" in variant:
-            gtk_theme = variant["gtk"]
-        if "icons" in variant:
-            icon_theme = variant["icons"]
-        if "cinnamon" in variant:
-            cinnamon_theme = variant["cinnamon"]
-        if "cursor" in variant:
-            cursor_theme = variant["cursor"]
-        return [gtk_theme, icon_theme, cinnamon_theme, cursor_theme]
-
     def is_variant_active(self, variant):
         # returns whether or not the given variant corresponds to the currently selected themes
-        [gtk_theme, icon_theme, cinnamon_theme, cursor_theme] = self.get_themes_from_variant(variant)
-        if gtk_theme != self.settings.get_string("gtk-theme"):
+        if variant.gtk_theme != self.settings.get_string("gtk-theme"):
             return False
-        if icon_theme != self.settings.get_string("icon-theme"):
+        if variant.icon_theme != self.settings.get_string("icon-theme"):
             return False
-        if cinnamon_theme != self.cinnamon_settings.get_string("name"):
+        if variant.cinnamon_theme != self.cinnamon_settings.get_string("name"):
             return False
-        if cursor_theme != self.settings.get_string("cursor-theme"):
+        if variant.cursor_theme != self.settings.get_string("cursor-theme"):
             return False
         return True
 
-    def find_active_variant(self):
-        for name in self.styles.keys():
-            style = self.styles[name]
-            for mode_name in ["mixed", "dark", "light"]:
-                if mode_name in style:
-                    for variant in style[mode_name]:
-                        if self.is_variant_active(variant):
-                            return (style, mode_name, variant)
-        return (None, None, None)
+    def is_variant_valid(self, variant):
+        # returns whether or not the given variant is valid (i.e. made of themes which are currently installed)
+        if variant.gtk_theme is None \
+            or variant.icon_theme is None \
+            or variant.cinnamon_theme is None \
+            or variant.cursor_theme is None:
+            return False
+        return True
 
     def cleanup_ui(self):
         self.mixed_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
@@ -305,6 +309,9 @@ class Module:
         # Read the JSON files
         self.styles = {}
         self.style_objects = {}
+        self.active_style = None
+        self.active_mode_name = None
+        self.active_variant = None
 
         path = "/usr/share/cinnamon/styles.d"
         for filename in sorted(os.listdir(path)):
@@ -312,9 +319,43 @@ class Module:
                 try:
                     with open(os.path.join(path, filename)) as f:
                         json_text = json.loads(f.read())
-                        for style in json_text["styles"]:
-                            name = style["name"]
-                            self.styles[name] = style
+                        for style_json in json_text["styles"]:
+                            style = Style(style_json)
+                            for mode_name in ["mixed", "dark", "light"]:
+                                if mode_name in style_json:
+                                    mode = Mode(mode_name)
+                                    for variant_json in style_json[mode_name]:
+                                        variant = Variant(variant_json)
+                                        if self.is_variant_valid(variant):
+                                            # Add the variant to the mode
+                                            mode.variants.append(variant)
+                                            if mode.default_variant is None:
+                                                # Assign the first variant as default
+                                                mode.default_variant = variant
+                                            if "default" in variant_json and variant_json["default"] == "true":
+                                                # Override default if specified
+                                                mode.default_variant = variant
+                                            # Add the mode to the style (if not done already)
+                                            if not mode_name in style.modes:
+                                                style.modes[mode_name] = mode
+                                            # Set it as the default mode if there's no default mode
+                                            if style.default_mode is None:
+                                                style.default_mode = mode
+                                            # Set active variant variables if the variant is active
+                                            if self.is_variant_active(variant):
+                                                self.active_style= style
+                                                self.active_mode_name = mode_name
+                                                self.active_variant = variant
+                            # Override the default mode if specified
+                            if "default" in style_json:
+                                default_name = style_json["default"]
+                                if default_name in style.modes:
+                                    style.default_mode = style.modes[default_name]
+
+                            if style.default_mode is None:
+                                print ("No valid mode/variants found for style:", style.name)
+                            else:
+                                self.styles[style.name] = style
                 except Exception as e:
                     print(f"Failed to parse styles from {filename}.")
                     print(e)
@@ -323,17 +364,17 @@ class Module:
         for name in sorted(self.styles.keys()):
             self.style_combo.append_text(name)
 
-        # Find the active variant
-        self.active_style, self.active_mode, self.active_variant = self.find_active_variant()
-
         if self.active_variant is not None:
-            print("Found active variant:", self.active_style["name"], self.active_mode, self.active_variant)
+            style = self.active_style
+            mode = self.active_style.modes[self.active_mode_name]
+            variant = self.active_variant
+            print("Found active variant:", style.name, mode.name, variant.name)
             # Position the style combo
             model = self.style_combo.get_model()
             iter = model.get_iter_first()
             while (iter != None):
                 name = model.get_value(iter, 0)
-                if name == self.active_style["name"]:
+                if name == style.name:
                     self.style_combo.set_active_iter(iter)
                     break
                 iter = model.iter_next(iter)
@@ -346,27 +387,21 @@ class Module:
                 else:
                     button = self.light_button
                 # Set the button state
-                if self.active_mode == mode_name:
+                if mode_name == mode.name:
                     button.set_state_flags(Gtk.StateFlags.CHECKED, True)
                 else:
                     button.set_state_flags(Gtk.StateFlags.NORMAL, True)
-                if mode_name in self.active_style and len(self.active_style[mode_name]) > 0:
+                if mode_name in style.modes:
                     button.set_sensitive(True)
                 else:
                     button.set_sensitive(False)
 
-            variants = self.active_style[self.active_mode]
-            if len(variants) > 1:
+            if len(mode.variants) > 1:
                 # Generate the color buttons
                 self.color_label.show()
-                for variant in variants:
-                    name = variant["name"]
-                    color = variant["color"]
-                    svg = self.color_dot_svg.replace("#8cffbe", color)
-                    if "color2" in variant:
-                        svg = svg.replace("#71718e", variant["color2"])
-                    else:
-                        svg = svg.replace("#71718e", color)
+                for variant in mode.variants:
+                    svg = self.color_dot_svg.replace("#8cffbe", variant.color)
+                    svg = svg.replace("#71718e", variant.color2)
                     svg = str.encode(svg)
                     stream = Gio.MemoryInputStream.new_from_bytes(GLib.Bytes.new(svg))
                     pixbuf = GdkPixbuf.Pixbuf.new_from_stream(stream, None)
@@ -395,12 +430,15 @@ class Module:
         print("Color button clicked")
         self.activate_variant(variant)
 
-    def on_mode_button_clicked(self, button, mode):
+    def on_mode_button_clicked(self, button, mode_name):
         print("Mode button clicked")
         if self.active_style is not None:
+            mode = self.active_style.modes[mode_name]
             self.activate_mode(self.active_style, mode)
 
     def on_style_combo_changed(self, combobox):
+        if not self.ui_ready:
+            return
         selected_name = combobox.get_active_text()
         if selected_name == None or selected_name == _("Custom"):
             return
@@ -408,32 +446,19 @@ class Module:
         for name in self.styles.keys():
             if name == selected_name:
                 style = self.styles[name]
-                if "default" in style:
-                    mode_name = style["default"]
-                else:
-                    for mode_name in ["mixed", "light", "dark"]:
-                        if mode_name in style and len(style[mode_name]) > 0:
-                            break
-                self.activate_mode(style, mode_name)
+                mode = style.default_mode
+                self.activate_mode(style, mode)
 
-    def activate_mode(self, style, mode_name):
-        print("Activating mode:", mode_name)
-        variants = style[mode_name]
-        if len(variants) > 0:
-            default_variant = variants[0]
-            for variant in variants:
-                if "default" in variant:
-                    default_variant = variant
-                    break
-            self.activate_variant(default_variant)
+    def activate_mode(self, style, mode):
+        print("Activating mode:", mode.name)
+        self.activate_variant(mode.default_variant)
 
     def activate_variant(self, variant):
-        print("Activating variant:", variant)
-        [gtk_theme, icon_theme, cinnamon_theme, cursor_theme] = self.get_themes_from_variant(variant)
-        self.settings.set_string("gtk-theme", gtk_theme)
-        self.settings.set_string("icon-theme", icon_theme)
-        self.cinnamon_settings.set_string("name", cinnamon_theme)
-        self.settings.set_string("cursor-theme", cursor_theme)
+        print("Activating variant:", variant.name)
+        self.settings.set_string("gtk-theme", variant.gtk_theme)
+        self.settings.set_string("icon-theme", variant.icon_theme)
+        self.cinnamon_settings.set_string("name", variant.cinnamon_theme)
+        self.settings.set_string("cursor-theme", variant.cursor_theme)
         self.reset_look_ui()
 
     def on_css_override_active_changed(self, switch, pspec=None, data=None):
