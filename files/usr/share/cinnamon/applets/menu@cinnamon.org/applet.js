@@ -1174,7 +1174,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.menu = new Menu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
-        const edit_item = new PopupMenu.PopupIconMenuItem("Menu editor", "document-edit", St.IconType.SYMBOLIC);
+        const edit_item = new PopupMenu.PopupIconMenuItem(_("Edit menu"), "document-edit", St.IconType.SYMBOLIC);
         edit_item.connect("activate", () => Util.spawnCommandLine("cinnamon-menu-editor"));
         this._applet_context_menu.addMenuItem(edit_item);
 
