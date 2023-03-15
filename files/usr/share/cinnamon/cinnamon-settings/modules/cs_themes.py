@@ -104,7 +104,7 @@ class Module:
                         self.gtk_themes.remove(theme)
             self.gtk_theme_names.add(name)
             self.gtk_themes.append((name, path))
-        self.gtk_themes.sort(key=lambda a: self.get_theme_sort_key(a[0]))
+        self.gtk_themes.sort(key=lambda a: a[0].lower())
 
         # Cinnamon themes
         for (name, path) in walk_directories(THEME_FOLDERS, lambda d: os.path.exists(os.path.join(d, "cinnamon")), return_directories=True):
@@ -116,7 +116,7 @@ class Module:
                         self.cinnamon_themes.remove(theme)
             self.cinnamon_theme_names.add(name)
             self.cinnamon_themes.append((name, path))
-        self.cinnamon_themes.sort(key=lambda a: self.get_theme_sort_key(a[0]))
+        self.cinnamon_themes.sort(key=lambda a: a[0].lower())
 
         # Icon themes
         walked = walk_directories(ICON_FOLDERS, lambda d: os.path.isdir(d), return_directories=True)
@@ -133,7 +133,7 @@ class Module:
                             break
                 except Exception as e:
                     print (e)
-        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
+        valid.sort(key=lambda a: a[0].lower())
         for (name, path) in valid:
             if name not in self.icon_theme_names:
                 self.icon_theme_names.append(name)
@@ -738,21 +738,6 @@ class Module:
         except Exception as detail:
             print(detail)
         return True
-
-    def get_theme_sort_key(self, name):
-        name = name.lower()
-        legacy = 0
-        darker = 0
-        dark = 0
-        if "legacy" in name:
-            legacy = 1
-        if "darker" in name:
-            darker = 1
-        if "dark" in name and "darker" not in name:
-            dark = 1
-        name = name.replace("darker", "").replace("dark", "").replace("legacy", "")
-        name = f"{legacy}{dark}{darker}{name}"
-        return name
 
     def filter_func_gtk_dir(self, directory):
         theme_dir = Path(directory)
