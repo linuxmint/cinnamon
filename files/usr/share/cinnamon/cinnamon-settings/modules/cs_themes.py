@@ -77,10 +77,10 @@ class Module:
     category = "appear"
 
     def __init__(self, content_box):
-        self.keywords = _("themes, style, look, feel")
+        self.keywords = _("themes, style")
         self.icon = "cs-themes"
         self.window = None
-        sidePage = SidePage(_("Look & Feel"), self.icon, self.keywords, content_box, module=self)
+        sidePage = SidePage(_("Themes"), self.icon, self.keywords, content_box, module=self)
         self.sidePage = sidePage
         self.refreshing = False # flag to ensure we only refresh once at any given moment
 
