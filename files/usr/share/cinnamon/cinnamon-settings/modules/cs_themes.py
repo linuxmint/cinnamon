@@ -334,10 +334,29 @@ class Module:
 
     def is_variant_valid(self, variant):
         # returns whether or not the given variant is valid (i.e. made of themes which are currently installed)
-        if variant.gtk_theme is None \
-            or variant.icon_theme is None \
-            or variant.cinnamon_theme is None \
-            or variant.cursor_theme is None:
+        if variant.gtk_theme is None:
+            print("No Gtk theme defined")
+            return False
+        if variant.icon_theme is None:
+            print("No icon theme defined")
+            return False
+        if variant.cinnamon_theme is None:
+            print("No Cinnamon theme defined")
+            return False
+        if variant.cursor_theme is None:
+            print("No cursor theme defined")
+            return False
+        if variant.gtk_theme not in self.gtk_theme_names:
+            print("Gtk theme not found:", variant.gtk_theme)
+            return False
+        if variant.icon_theme not in self.icon_theme_names:
+            print("icon theme not found:", variant.icon_theme)
+            return False
+        if variant.cinnamon_theme not in self.cinnamon_theme_names and variant.cinnamon_theme != "cinnamon":
+            print("Cinnamon theme not found:", variant.cinnamon_theme)
+            return False
+        if variant.cursor_theme not in self.cursor_theme_names:
+            print("Cursor theme not found:", variant.cursor_theme)
             return False
         return True
 
