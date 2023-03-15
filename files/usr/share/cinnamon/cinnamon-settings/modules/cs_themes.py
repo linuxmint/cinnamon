@@ -83,17 +83,72 @@ class Module:
         sidePage = SidePage(_("Look & Feel"), self.icon, self.keywords, content_box, module=self)
         self.sidePage = sidePage
         self.refreshing = False # flag to ensure we only refresh once at any given moment
-        self.gtk_themes = []
-        self.icon_themes = []
-        self.cinnamon_themes = []
-        self.cursor_themes = []
 
     def refresh_themes(self):
         # Find all installed themes
-        self.gtk_themes = self._load_gtk_themes()
-        self.icon_themes = self._load_icon_themes()
-        self.cinnamon_themes = self._load_cinnamon_themes()
-        self.cursor_themes = self._load_cursor_themes()
+        self.gtk_themes = []
+        self.gtk_theme_names = set()
+        self.icon_theme_names = []
+        self.cinnamon_themes = []
+        self.cinnamon_theme_names = set()
+        self.cursor_themes = []
+        self.cursor_theme_names = set()
+
+        # Gtk themes -- Only shows themes that have variations for gtk+-3 and gtk+-2
+        for (name, path) in walk_directories(THEME_FOLDERS, self.filter_func_gtk_dir, return_directories=True):
+            for theme in self.gtk_themes:
+                if name == theme[0]:
+                    if path == THEME_FOLDERS[0]:
+                        continue
+                    else:
+                        self.gtk_themes.remove(theme)
+            self.gtk_theme_names.add(name)
+            self.gtk_themes.append((name, path))
+        self.gtk_themes.sort(key=lambda a: self.get_theme_sort_key(a[0]))
+
+        # Cinnamon themes
+        for (name, path) in walk_directories(THEME_FOLDERS, lambda d: os.path.exists(os.path.join(d, "cinnamon")), return_directories=True):
+            for theme in self.cinnamon_themes:
+                if name == theme[0]:
+                    if path == THEME_FOLDERS[0]:
+                        continue
+                    else:
+                        self.cinnamon_themes.remove(theme)
+            self.cinnamon_theme_names.add(name)
+            self.cinnamon_themes.append((name, path))
+        self.cinnamon_themes.sort(key=lambda a: self.get_theme_sort_key(a[0]))
+
+        # Icon themes
+        walked = walk_directories(ICON_FOLDERS, lambda d: os.path.isdir(d), return_directories=True)
+        valid = []
+        for directory in walked:
+            if directory[0] in ("gnome", "hicolor"):
+                continue
+            path = os.path.join(directory[1], directory[0], "index.theme")
+            if os.path.exists(path):
+                try:
+                    for line in list(open(path)):
+                        if line.startswith("Directories="):
+                            valid.append(directory)
+                            break
+                except Exception as e:
+                    print (e)
+        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
+        for (name, path) in valid:
+            if name not in self.icon_theme_names:
+                self.icon_theme_names.append(name)
+
+        # Cursor themes
+        for (name, path) in walk_directories(ICON_FOLDERS, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True):
+            for theme in self.cursor_themes:
+                if name == theme[0]:
+                    if path == ICON_FOLDERS[0]:
+                        continue
+                    else:
+                        self.cursor_themes.remove(theme)
+            self.cursor_theme_names.add(name)
+            self.cursor_themes.append((name, path))
+        self.cursor_themes.sort(key=lambda a: a[0].lower())
 
     def on_module_selected(self):
         if not self.loaded:
@@ -485,7 +540,7 @@ class Module:
         array = [(self.cursor_chooser, "cursors", self.cursor_themes, self._on_cursor_theme_selected),
                     (self.theme_chooser, "gtk-3.0", self.gtk_themes, self._on_gtk_theme_selected),
                     (self.cinnamon_chooser, "cinnamon", self.cinnamon_themes, self._on_cinnamon_theme_selected),
-                    (self.icon_chooser, "icons", self.icon_themes, self._on_icon_theme_selected)]
+                    (self.icon_chooser, "icons", self.icon_theme_names, self._on_icon_theme_selected)]
         for element in array:
             chooser, path_suffix, themes, callback = element
             chooser.clear_menu()
@@ -680,89 +735,13 @@ class Module:
         name = f"{legacy}{dark}{darker}{name}"
         return name
 
-    def _load_gtk_themes(self):
-        """ Only shows themes that have variations for gtk+-3 and gtk+-2 """
-        dirs = THEME_FOLDERS
-        valid = walk_directories(dirs, self.filter_func_gtk_dir, return_directories=True)
-        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
-        res = []
-        for i in valid:
-            for j in res:
-                if i[0] == j[0]:
-                    if i[1] == dirs[0]:
-                        continue
-                    else:
-                        res.remove(j)
-            res.append((i[0], i[1]))
-        return res
-
     def filter_func_gtk_dir(self, directory):
         theme_dir = Path(directory)
-
         for gtk3_dir in theme_dir.glob("gtk-3.*"):
             # Skip gtk key themes
             if os.path.exists(os.path.join(gtk3_dir, "gtk.css")):
                 return True
         return False
-
-    def _load_icon_themes(self):
-        dirs = ICON_FOLDERS
-        walked = walk_directories(dirs, lambda d: os.path.isdir(d), return_directories=True)
-        valid = []
-        for directory in walked:
-            if directory[0] in ("gnome", "hicolor"):
-                continue
-            path = os.path.join(directory[1], directory[0], "index.theme")
-            if os.path.exists(path):
-                try:
-                    for line in list(open(path)):
-                        if line.startswith("Directories="):
-                            valid.append(directory)
-                            break
-                except Exception as e:
-                    print (e)
-
-        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
-        res = []
-        for i in valid:
-            for j in res:
-                if i[0] == j:
-                    if i[1] == dirs[0]:
-                        continue
-                    else:
-                        res.remove(j)
-            res.append(i[0])
-        return res
-
-    def _load_cursor_themes(self):
-        dirs = ICON_FOLDERS
-        valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True)
-        valid.sort(key=lambda a: a[0].lower())
-        res = []
-        for i in valid:
-            for j in res:
-                if i[0] == j[0]:
-                    if i[1] == dirs[0]:
-                        continue
-                    else:
-                        res.remove(j)
-            res.append((i[0], i[1]))
-        return res
-
-    def _load_cinnamon_themes(self):
-        dirs = THEME_FOLDERS
-        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "cinnamon")), return_directories=True)
-        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
-        res = []
-        for i in valid:
-            for j in res:
-                if i[0] == j[0]:
-                    if i[1] == dirs[0]:
-                        continue
-                    else:
-                        res.remove(j)
-            res.append((i[0], i[1]))
-        return res
 
     def update_cursor_theme_link(self, path, name):
         default_dir = os.path.join(ICON_FOLDERS[0], "default")
