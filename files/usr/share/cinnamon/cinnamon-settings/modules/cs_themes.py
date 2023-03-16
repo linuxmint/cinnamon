@@ -494,6 +494,10 @@ class Module:
         self.ui_ready = True
 
     def on_customize_button_clicked(self, button):
+        self.set_button_chooser(self.icon_chooser, self.settings.get_string("icon-theme"), 'icons', 'icons', ICON_SIZE)
+        self.set_button_chooser(self.cursor_chooser, self.settings.get_string("cursor-theme"), 'icons', 'cursors', 32)
+        self.set_button_chooser(self.theme_chooser, self.settings.get_string("gtk-theme"), 'themes', 'gtk-3.0', 35)
+        self.set_button_chooser(self.cinnamon_chooser, self.cinnamon_settings.get_string("name"), 'themes', 'cinnamon', 60)
         self.main_stack.set_visible_child_name("custom_page")
 
     def on_preset_button_clicked(self, button):
@@ -550,10 +554,6 @@ class Module:
             return
         self.refreshing = True
         GLib.timeout_add_seconds(5, self.refresh)
-
-    def refresh(self):
-        self.refresh_themes()
-        self.refresh_choosers()
 
     def refresh_choosers(self):
         array = [(self.cursor_chooser, "cursors", self.cursor_themes, self._on_cursor_theme_selected),
@@ -678,8 +678,11 @@ class Module:
     def create_button_chooser(self, settings, key, path_prefix, path_suffix, button_picture_size, menu_pictures_size, num_cols):
         chooser = PictureChooserButton(num_cols=num_cols, button_picture_size=button_picture_size, menu_pictures_size=menu_pictures_size, has_button_label=True)
         theme = settings.get_string(key)
-        chooser.set_button_label(theme)
-        chooser.set_tooltip_text(theme)
+        self.set_button_chooser(chooser, theme, path_prefix, path_suffix, button_picture_size)
+        return chooser
+
+    def set_button_chooser(self, chooser, theme, path_prefix, path_suffix, button_picture_size):
+        self.set_button_chooser_text(chooser, theme)
         if path_suffix == "cinnamon" and theme == "cinnamon":
             chooser.set_picture_from_file("/usr/share/cinnamon/theme/thumbnail.png")
         elif path_suffix == "icons":
@@ -699,13 +702,15 @@ class Module:
                         break
             except:
                 chooser.set_picture_from_file("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix)
-        return chooser
+
+    def set_button_chooser_text(self, chooser, theme):
+        chooser.set_button_label(theme)
+        chooser.set_tooltip_text(theme)
 
     def _on_icon_theme_selected(self, path, theme):
         try:
             self.settings.set_string("icon-theme", theme)
-            self.icon_chooser.set_button_label(theme)
-            self.icon_chooser.set_tooltip_text(theme)
+            self.set_button_chooser_text(self.icon_chooser, theme)
         except Exception as detail:
             print(detail)
         return True
@@ -713,8 +718,7 @@ class Module:
     def _on_gtk_theme_selected(self, path, theme):
         try:
             self.settings.set_string("gtk-theme", theme)
-            self.theme_chooser.set_button_label(theme)
-            self.theme_chooser.set_tooltip_text(theme)
+            self.set_button_chooser_text(self.theme_chooser, theme)
         except Exception as detail:
             print(detail)
         return True
@@ -722,8 +726,7 @@ class Module:
     def _on_cursor_theme_selected(self, path, theme):
         try:
             self.settings.set_string("cursor-theme", theme)
-            self.cursor_chooser.set_button_label(theme)
-            self.cursor_chooser.set_tooltip_text(theme)
+            self.set_button_chooser_text(self.cursor_chooser, theme)
         except Exception as detail:
             print(detail)
 
@@ -733,8 +736,7 @@ class Module:
     def _on_cinnamon_theme_selected(self, path, theme):
         try:
             self.cinnamon_settings.set_string("name", theme)
-            self.cinnamon_chooser.set_button_label(theme)
-            self.cinnamon_chooser.set_tooltip_text(theme)
+            self.set_button_chooser_text(self.cinnamon_chooser, theme)
         except Exception as detail:
             print(detail)
         return True
