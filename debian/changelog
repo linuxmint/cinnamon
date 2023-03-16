@@ -1,3 +1,23 @@
+cinnamon (5.6.8) vera; urgency=medium
+
+  [ Michael Webster ]
+  * grouped-window-list: Make appGroup's flashButton sane, fix invalid source id.
+  * cinnamon-screenshot.c: Disable unredirection when taking a screenshot.
+
+  [ hdulme ]
+  * remove unused import cairo
+
+  [ Bobby Rong ]
+  * cs_themes: load theme thumbnail from XDG_DATA_DIRS (#11497)
+
+  [ Michael Webster ]
+  * gwl: Fix typo.
+  * sound applet: Clear the source ID in Seeker._timerCallback().
+  * window-list: Fix signal name for tile notifications.
+  * overrides.js: Silently fail to install polyfills.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 16 Mar 2023 13:54:55 +0000
+
 cinnamon (5.6.7) vera; urgency=medium
 
   [ Clement Lefebvre ]
