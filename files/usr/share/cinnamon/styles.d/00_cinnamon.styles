@@ -10,6 +10,13 @@
           {"name": "blue", "color": "#15539e", "themes": "Adwaita-dark", "icons": "Adwaita", "cinnamon": "cinnamon", "cursor": "Adwaita"}
         ],
       "light": []
+    },
+    {
+      "name": "HighContrast",
+      "default": "light",
+      "light": [
+          {"default": "true", "name": "contrast", "color": "#000000", "themes": "HighContrast", "cinnamon": "cinnamon", "cursor": "Adwaita"}
+      ]
     }
   ]
 }
