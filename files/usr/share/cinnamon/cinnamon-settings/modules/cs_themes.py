@@ -240,7 +240,6 @@ class Module:
             button = Gtk.Button()
             button.set_label(_("Simplified settings..."))
             button.set_halign(Gtk.Align.END)
-            button.set_relief(Gtk.ReliefStyle.NONE)
             button.connect("clicked", self.on_preset_button_clicked)
             page.add(button)
 

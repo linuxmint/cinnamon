@@ -254,7 +254,6 @@
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
                         <property name="halign">end</property>
-                        <property name="relief">none</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
