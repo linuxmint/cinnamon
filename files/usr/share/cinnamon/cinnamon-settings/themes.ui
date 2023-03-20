@@ -93,7 +93,7 @@
                                 <property name="border-width">0</property>
                                 <property name="orientation">vertical</property>
                                 <child>
-                                  <object class="GtkImage">
+                                  <object class="GtkImage" id="image_mixed">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="pixbuf">appearance-mixed.svg</property>
@@ -141,7 +141,7 @@
                                 <property name="can-focus">False</property>
                                 <property name="orientation">vertical</property>
                                 <child>
-                                  <object class="GtkImage">
+                                  <object class="GtkImage" id="image_dark">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="pixbuf">appearance-dark.svg</property>
@@ -189,7 +189,7 @@
                                 <property name="can-focus">False</property>
                                 <property name="orientation">vertical</property>
                                 <child>
-                                  <object class="GtkImage">
+                                  <object class="GtkImage" id="image_light">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="pixbuf">appearance-light.svg</property>

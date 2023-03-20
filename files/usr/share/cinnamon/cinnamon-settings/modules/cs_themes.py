@@ -196,6 +196,13 @@ class Module:
             self.active_mode_name = None
             self.active_variant = None
 
+            # HiDPI support
+            for mode in ["mixed", "dark", "light"]:
+                path = f"/usr/share/cinnamon/cinnamon-settings/appearance-{mode}.svg"
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 112*self.scale, 80*self.scale)
+                surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, self.scale)
+                builder.get_object(f"image_{mode}").set_from_surface(surface)
+
             self.color_dot_svg = ""
             with open("/usr/share/cinnamon/cinnamon-settings/color_dot.svg") as f:
                 self.color_dot_svg = f.read()
@@ -478,8 +485,9 @@ class Module:
                     svg = svg.replace("#71718e", variant.color2)
                     svg = str.encode(svg)
                     stream = Gio.MemoryInputStream.new_from_bytes(GLib.Bytes.new(svg))
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_stream(stream, None)
-                    image = Gtk.Image.new_from_pixbuf(pixbuf)
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_stream_at_scale(stream, 16*self.scale, 16*self.scale, True, None)
+                    surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, self.scale)
+                    image = Gtk.Image.new_from_surface(surface)
                     button = Gtk.ToggleButton()
                     button.add(image)
                     button.show_all()
