@@ -784,11 +784,11 @@ class Spice_Harvester(GObject.Object):
         new_list = []
         for enabled_extension in enabled_extensions:
             if self.collection_type == 'applet':
-                enabled_uuid = enabled_extension.split(':')[3].strip('!')
+                enabled_uuid = enabled_extension.split(':')[3].lstrip('!')
             elif self.collection_type == 'desklet':
-                enabled_uuid = enabled_extension.split(':')[0].strip('!')
+                enabled_uuid = enabled_extension.split(':')[0].lstrip('!')
             else:
-                enabled_uuid = enabled_extension
+                enabled_uuid = enabled_extension.lstrip('!')
 
             if enabled_uuid != uuid:
                 new_list.append(enabled_extension)
