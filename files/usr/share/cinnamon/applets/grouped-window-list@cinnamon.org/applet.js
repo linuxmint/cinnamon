@@ -459,11 +459,11 @@ class GroupedWindowListApplet extends Applet.Applet {
     bindAppKeys() {
         this.unbindAppKeys();
 
-        for (let i = 1; i < 10; i++) {
-            if (this.state.settings.SuperNumHotkeys) {
+        if (this.state.settings.SuperNumHotkeys) {
+            for (let i = 1; i < 10; i++) {
                 this.bindAppKey(i);
+                this.bindNewAppKey(i);
             }
-            this.bindNewAppKey(i);
         }
         Main.keybindingManager.addHotKey('launch-show-apps-order', this.state.settings.showAppsOrderHotkey, () =>
             this.showAppsOrder()
