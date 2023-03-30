@@ -32,8 +32,7 @@ var knownCinnamon4Conflicts = [
     'vnstat@linuxmint.com',
     'netusagemonitor@pdcurtis',
     // Desklets
-    'netusage@30yavash.com',
-    'simple-system-monitor@ariel'
+    'netusage@30yavash.com'
 ];
 
 // macro for creating extension types
