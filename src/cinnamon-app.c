@@ -188,7 +188,7 @@ get_actor_for_icon_name (CinnamonApp *app,
 
   if (icon != NULL)
   {
-    actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+    actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-type", ST_ICON_FULLCOLOR, "icon-size", size, NULL);
     g_object_unref (icon);
   }
 
@@ -199,7 +199,7 @@ static ClutterActor *
 get_failsafe_icon (int size)
 {
   GIcon *icon = g_themed_icon_new ("application-x-executable");
-  ClutterActor *actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+  ClutterActor *actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-type", ST_ICON_FULLCOLOR, "icon-size", size, NULL);
   g_object_unref (icon);
   return actor;
 }

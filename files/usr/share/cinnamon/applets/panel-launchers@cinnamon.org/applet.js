@@ -282,12 +282,22 @@ class PanelAppLauncher extends DND.LauncherDraggable {
 
     _updateIconSize() {
         let node = this._iconBox.get_theme_node();
-        let maxHeight = this._iconBox.height - node.get_vertical_padding();
-        let maxWidth = this._iconBox.width - node.get_horizontal_padding();
-        let smallestDim = Math.min(maxHeight, maxWidth) / global.ui_scale;
+        let enforcedSize = 0;
 
-        if (smallestDim < this.icon.get_icon_size()) {
-            this.icon.set_icon_size(smallestDim);
+        if (this._iconBox.height > 0) {
+            enforcedSize = this._iconBox.height - node.get_vertical_padding();
+        }
+        else
+        if (this._iconBox.width > 0) {
+            enforcedSize = this._iconBox.width - node.get_horizontal_padding();
+        }
+        else
+        {
+            enforcedSize = -1;
+        }
+
+        if (enforcedSize < this.icon.get_icon_size()) {
+            this.icon.set_icon_size(enforcedSize);
         }
     }
 
