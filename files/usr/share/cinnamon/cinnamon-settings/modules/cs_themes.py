@@ -43,6 +43,13 @@ class Mode:
         self.default_variant = None
         self.variants = []
 
+    def get_variant_by_name(self, name):
+        for variant in self.variants:
+            if name == variant.name:
+                return variant
+
+        return None
+
 class Variant:
     def __init__(self, json_obj):
         self.name = json_obj["name"]
@@ -536,7 +543,13 @@ class Module:
 
     def activate_mode(self, style, mode):
         print("Activating mode:", mode.name)
-        self.activate_variant(mode.default_variant)
+
+        if self.active_variant is not None:
+            new_same_variant = mode.get_variant_by_name(self.active_variant.name)
+            if new_same_variant is not None:
+                self.activate_variant(new_same_variant)
+        else:
+            self.activate_variant(mode.default_variant)
 
     def activate_variant(self, variant):
         print("Activating variant:", variant.name)
