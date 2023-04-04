@@ -548,8 +548,9 @@ class Module:
             new_same_variant = mode.get_variant_by_name(self.active_variant.name)
             if new_same_variant is not None:
                 self.activate_variant(new_same_variant)
-        else:
-            self.activate_variant(mode.default_variant)
+                return
+
+        self.activate_variant(mode.default_variant)
 
     def activate_variant(self, variant):
         print("Activating variant:", variant.name)
