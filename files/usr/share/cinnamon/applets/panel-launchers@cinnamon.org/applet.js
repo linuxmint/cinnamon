@@ -682,9 +682,11 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
 
     showAddLauncherDialog(timestamp, launcher){
         if (launcher) {
-            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher -f" + launcher.getId() + " " + this.settings.file.get_path());
+            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher --icon-size %d -f %s %s"
+                .format(this.icon_size, launcher.getId(), this.settings.file.get_path()));
         } else {
-            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher " + this.settings.file.get_path());
+            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher --icon-size %d %s"
+                .format(this.icon_size, this.settings.file.get_path()))
         }
     }
 
