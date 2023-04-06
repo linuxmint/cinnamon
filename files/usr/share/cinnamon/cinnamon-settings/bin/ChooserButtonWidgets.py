@@ -118,13 +118,11 @@ class PictureChooserButton(BaseChooserButton):
 
         try:
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, w, h)
+            if pixbuf:
+                return Gdk.cairo_surface_create_from_pixbuf(pixbuf, self.scale)
         except GLib.Error as e:
             print("Could not load thumbnail file '%s': %s" % (path, e.message))
-
-        if pixbuf:
-            return Gdk.cairo_surface_create_from_pixbuf(pixbuf, self.scale)
-        else:
-            return None
+        return None
 
     def set_picture_from_file (self, path):
         surface = self.create_scaled_surface(path)
