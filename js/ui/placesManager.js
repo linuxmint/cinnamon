@@ -166,7 +166,7 @@ PlaceDeviceInfo.prototype = {
             notification.setUrgency(persistent ? MessageTray.Urgency.CRITICAL : MessageTray.Urgency.NORMAL);
             if (withButton) {
                 notification.addButton('system-undo', _("Retry"));
-                notification.connect('action-invoked', Lang.bind(this, this.remove()));
+                notification.connect('action-invoked', Lang.bind(this, this.remove));
             }
             source.notify(notification);
             if (persistent) {
