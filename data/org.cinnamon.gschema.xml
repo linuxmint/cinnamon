@@ -506,7 +506,6 @@
       <summary>The logo to use in the system info settings</summary>
       <description>
         An icon name or absolute path to an icon, which will be used for the system icon in the "System Info" settings app.
-        .
         Disabled if no value is set.
       </description>
     </key>
