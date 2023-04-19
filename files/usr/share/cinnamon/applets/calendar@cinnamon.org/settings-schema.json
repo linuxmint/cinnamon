@@ -28,6 +28,13 @@
         "dependency" : "use-custom-format",
         "tooltip" : "Set your custom format here."
     },
+    "custom-tooltip-format" : {
+        "type" : "entry",
+        "default" : "%Y-%m-%dT%H:%M:%S.%f%z",
+        "description" : "Date format for tooltip",
+        "dependency" : "use-custom-format",
+        "tooltip" : "Set your custom tooltip format here."
+    },
     "format-button" : {
         "type" : "button",
         "description" : "Show information on date format syntax",
