@@ -30,7 +30,7 @@
     },
     "custom-tooltip-format" : {
         "type" : "entry",
-        "default" : "%Y-%m-%dT%H:%M:%S.%f%z",
+        "default" : "%A, %B %e, %H:%M",
         "description" : "Date format for tooltip",
         "dependency" : "use-custom-format",
         "tooltip" : "Set your custom tooltip format here."

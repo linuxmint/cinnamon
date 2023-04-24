@@ -251,8 +251,9 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
         this.set_applet_label(label_string);
 
-        let dateFormattedTooltip = this.clock.get_clock_for_format(this.custom_tooltip_format).capitalize();
+        let dateFormattedTooltip = this.clock.get_clock_for_format(DATE_FORMAT_FULL).capitalize();
         if (this.use_custom_format) {
+            dateFormattedTooltip = this.clock.get_clock_for_format(this.custom_tooltip_format).capitalize();
             if (!dateFormattedTooltip) {
                 global.logError("Calendar applet: bad tooltip time format string - check your string.");
                 dateFormattedTooltip = this.clock.get_clock_for_format("~CLOCK FORMAT ERROR~ %l:%M %p");
