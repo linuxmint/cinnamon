@@ -2197,7 +2197,9 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         this._slidePosition = -1;
 
         this.actor = new St.Bin({ style_class: 'menu',
-                                  important: true });
+                                  important: true,
+                                  y_fill: true,
+								  x_fill: true });
         this.actor._delegate = this;
         this._signals.connect(this.actor, 'key-press-event', Lang.bind(this, this._onKeyPressEvent));
 
