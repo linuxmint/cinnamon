@@ -313,7 +313,7 @@ class Module:
 
             self.builder = self.sidePage.builder
 
-            for path in [THEME_FOLDERS[0], ICON_FOLDERS[0]]:
+            for path in [THEME_FOLDERS[0], ICON_FOLDERS[0], ICON_FOLDERS[1]]:
                 try:
                     os.makedirs(path)
                 except OSError:
@@ -771,7 +771,12 @@ class Module:
         return False
 
     def update_cursor_theme_link(self, path, name):
-        default_dir = os.path.join(ICON_FOLDERS[0], "default")
+        contents = "[icon theme]\nInherits=%s\n" % name
+        self._set_cursor_theme_at(ICON_FOLDERS[0], contents)
+        self._set_cursor_theme_at(ICON_FOLDERS[1], contents)
+
+    def _set_cursor_theme_at(self, directory, contents):
+        default_dir = os.path.join(directory, "default")
         index_path = os.path.join(default_dir, "index.theme")
 
         try:
@@ -781,8 +786,6 @@ class Module:
 
         if os.path.exists(index_path):
             os.unlink(index_path)
-
-        contents = "[icon theme]\nInherits=%s\n" % name
 
         with open(index_path, "w") as f:
             f.write(contents)
