@@ -658,7 +658,7 @@ class AppMenuButton {
                 if (this._applet.buttonsUseEntireSpace) {
                     let [lminSize, lnaturalSize] = this._label.get_preferred_width(forHeight);
                     let spacing = this.actor.get_theme_node().get_length('spacing');
-                    alloc.natural_size = Math.max(150 * global.ui_scale,
+                    alloc.natural_size = Math.max(this._applet.buttonWidth * global.ui_scale,
                             naturalSize + spacing + lnaturalSize);
                 } else {
                     alloc.natural_size = this._applet.buttonWidth * global.ui_scale;
