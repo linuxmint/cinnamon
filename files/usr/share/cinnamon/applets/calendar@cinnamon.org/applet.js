@@ -135,16 +135,17 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             this.settings.bind("show-events", "show_events", this._onSettingsChanged);
             this.settings.bind("use-custom-format", "use_custom_format", this._onSettingsChanged);
             this.settings.bind("custom-format", "custom_format", this._onSettingsChanged);
+            this.settings.bind("custom-tooltip-format", "custom_tooltip_format", this._onSettingsChanged);
             this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
             this._setKeybinding();
 
             /* FIXME: Add gobject properties to the WallClock class to allow easier access from
              * its clients, and possibly a separate signal to notify of updates to these properties
              * (though GObject "changed" would be sufficient.) */
-            this.desktop_settings.connect("changed::clock-use-24h", Lang.bind(this, function(key) {
+            this.desktop_settings.connect("changed::clock-use-24h", Lang.bind(this, function (key) {
                 this._onSettingsChanged();
             }));
-            this.desktop_settings.connect("changed::clock-show-seconds", Lang.bind(this, function(key) {
+            this.desktop_settings.connect("changed::clock-show-seconds", Lang.bind(this, function (key) {
                 this._onSettingsChanged();
             }));
 
@@ -160,7 +161,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             global.logError(e);
         }
     }
-    
+
     _setKeybinding() {
         Main.keybindingManager.addHotKey("calendar-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
     }
@@ -172,7 +173,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     on_applet_clicked(event) {
         this._openMenu();
     }
-    
+
     _openMenu() {
         this.menu.toggle();
     }
@@ -250,13 +251,21 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
         this.set_applet_label(label_string);
 
-        let dateFormattedFull = this.clock.get_clock_for_format(DATE_FORMAT_FULL).capitalize();
+        let dateFormattedTooltip = this.clock.get_clock_for_format(DATE_FORMAT_FULL).capitalize();
+        if (this.use_custom_format) {
+            dateFormattedTooltip = this.clock.get_clock_for_format(this.custom_tooltip_format).capitalize();
+            if (!dateFormattedTooltip) {
+                global.logError("Calendar applet: bad tooltip time format string - check your string.");
+                dateFormattedTooltip = this.clock.get_clock_for_format("~CLOCK FORMAT ERROR~ %l:%M %p");
+            }
+        }
+
         let dateFormattedShort = this.clock.get_clock_for_format(DATE_FORMAT_SHORT).capitalize();
         let dayFormatted = this.clock.get_clock_for_format(DAY_FORMAT).capitalize();
 
         this._day.set_text(dayFormatted);
         this._date.set_text(dateFormattedShort);
-        this.set_applet_tooltip(dateFormattedFull);
+        this.set_applet_tooltip(dateFormattedTooltip);
 
         this.events_manager.select_date(this._calendar.getSelectedDate());
     }
@@ -281,12 +290,12 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         }
     }
 
-    _initContextMenu () {
+    _initContextMenu() {
         this.menu = new Applet.AppletPopupMenu(this, this.orientation);
         this.menuManager.addMenu(this.menu);
 
         // Whenever the menu is opened, select today
-        this.menu.connect('open-state-changed', Lang.bind(this, function(menu, isOpen) {
+        this.menu.connect('open-state-changed', Lang.bind(this, function (menu, isOpen) {
             if (isOpen) {
                 this._resetCalendar();
                 this.events_manager.select_date(this._calendar.getSelectedDate(), true);
@@ -294,11 +303,11 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         }));
     }
 
-    _resetCalendar () {
+    _resetCalendar() {
         this._calendar.setDate(new Date(), true);
     }
 
-    on_orientation_changed (orientation) {
+    on_orientation_changed(orientation) {
         this.orientation = orientation;
         this.menu.setOrientation(orientation);
         this._onSettingsChanged();
