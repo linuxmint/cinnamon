@@ -574,7 +574,7 @@ class Module:
         if self.refreshing:
             return
         self.refreshing = True
-        GLib.timeout_add_seconds(5, self.refresh)
+        GLib.timeout_add_seconds(5, self.refresh_choosers)
 
     def refresh_choosers(self):
         array = [(self.cursor_chooser, "cursors", self.cursor_themes, self._on_cursor_theme_selected),
