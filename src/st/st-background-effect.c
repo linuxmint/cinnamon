@@ -97,10 +97,14 @@ st_paint_background_blur_effect (StBackgroundBlurEffect *self,
                                  CoglFramebuffer *fb,
                                  const ClutterActorBox *box)
 {
+  gfloat tx, ty;
+
+  clutter_actor_get_transformed_position (self->actor, &tx, &ty);
+
   self->bg_width = ceil(box->x2 - box->x1);
   self->bg_height = ceil(box->y2 - box->y1);
-  self->bg_posx = ceil(box->x1);
-  self->bg_posy = ceil(box->y1);
+  self->bg_posx = ceil(tx);
+  self->bg_posy = ceil(ty);
 
   if (!clutter_feature_available (CLUTTER_FEATURE_SHADERS_GLSL))
     {
@@ -116,7 +120,7 @@ st_paint_background_blur_effect (StBackgroundBlurEffect *self,
       guint size;
       guint rowstride;
       /* read and stash the section of background currently displayed under the actor */
-      g_printerr ("blur: %d\n", i);
+
       size = (self->bg_width) * (self->bg_height) * 4;
 
       if (size <= 0)
@@ -278,10 +282,12 @@ st_background_blur_effect_init (StBackgroundBlurEffect *self)
 }
 
 ClutterEffect *
-st_background_blur_effect_new (void)
+st_background_blur_effect_new (ClutterActor *actor)
 {
-  return g_object_new (ST_TYPE_BACKGROUND_BLUR_EFFECT,
-                       NULL);
+  StBackgroundBlurEffect *effect = g_object_new (ST_TYPE_BACKGROUND_BLUR_EFFECT, NULL);
+  effect->actor = actor;
+
+  return CLUTTER_EFFECT (effect);
 }
 
 static void
@@ -308,11 +314,14 @@ st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
   uint8_t *data;
   guint size;
   guint rowstride;
+  gfloat tx, ty;
+
+  clutter_actor_get_transformed_position (self->actor, &tx, &ty);
 
   self->bg_width = ceil(box->x2 - box->x1);
   self->bg_height = ceil(box->y2 - box->y1);
-  self->bg_posx = ceil(box->x1);
-  self->bg_posy = ceil(box->y1);
+  self->bg_posx = ceil(tx);
+  self->bg_posy = ceil(ty);
 
   if (!clutter_feature_available (CLUTTER_FEATURE_SHADERS_GLSL))
     {
@@ -569,10 +578,12 @@ st_background_bumpmap_effect_init (StBackgroundBumpmapEffect *self)
 }
 
 ClutterEffect *
-st_background_bumpmap_effect_new (void)
+st_background_bumpmap_effect_new (ClutterActor *actor)
 {
-  return g_object_new (ST_TYPE_BACKGROUND_BUMPMAP_EFFECT,
-                       NULL);
+  StBackgroundBumpmapEffect *effect = g_object_new (ST_TYPE_BACKGROUND_BUMPMAP_EFFECT, NULL);
+  effect->actor = actor;
+
+  return CLUTTER_EFFECT (effect);
 }
 
 /*

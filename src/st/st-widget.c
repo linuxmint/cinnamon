@@ -1597,7 +1597,7 @@ StThemeNode *new_theme_node = st_widget_get_theme_node (widget);
         {
           if (widget->priv->background_blur_effect == NULL)
             {
-              widget->priv->background_blur_effect = (StBackgroundBlurEffect *) st_background_blur_effect_new ();
+              widget->priv->background_blur_effect = (StBackgroundBlurEffect *) st_background_blur_effect_new (CLUTTER_ACTOR (widget));
               widget->priv->background_blur_effect->blur_size = new_theme_node->background_blur;
               for (int i=0; i<4; i++)
                 widget->priv->background_blur_effect->border_radius[i] = new_theme_node->border_radius[i];
@@ -1609,7 +1609,7 @@ StThemeNode *new_theme_node = st_widget_get_theme_node (widget);
             {
               const char *bumpmap_path;
 
-              widget->priv->background_bumpmap_effect = (StBackgroundBumpmapEffect *) st_background_bumpmap_effect_new ();
+              widget->priv->background_bumpmap_effect = (StBackgroundBumpmapEffect *) st_background_bumpmap_effect_new (CLUTTER_ACTOR (widget));
               bumpmap_path = st_theme_node_get_background_bumpmap(new_theme_node);
               widget->priv->background_bumpmap_effect->bumpmap_path = strdup (bumpmap_path);
               for (int i=0; i<4; i++)

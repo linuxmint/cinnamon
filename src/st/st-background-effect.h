@@ -86,8 +86,8 @@ struct _StBackgroundBumpmapEffectClass
 GType   st_background_blur_effect_get_type (void) G_GNUC_CONST;
 GType   st_background_bumpmap_effect_get_type (void) G_GNUC_CONST;
 
-ClutterEffect *st_background_blur_effect_new (void);
-ClutterEffect *st_background_bumpmap_effect_new (void);
+ClutterEffect *st_background_blur_effect_new (ClutterActor *actor);
+ClutterEffect *st_background_bumpmap_effect_new (ClutterActor *actor);
 
 gboolean st_paint_background_blur_effect (StBackgroundBlurEffect *background_blur_effect,
                                      CoglFramebuffer     *fb,
