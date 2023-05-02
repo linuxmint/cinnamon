@@ -2,7 +2,8 @@
 
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
-const Mainloop = imports.mainloop;
+
+const LOGGING = false;
 
 var BackgroundManager = class {
     constructor() {
@@ -38,7 +39,7 @@ var BackgroundManager = class {
         if (oldValue != newValue) {
             let cinnamonValue = this._cinnamonSettings.get_string(key);
             if (cinnamonValue != newValue) {
-                global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
+                if (LOGGING) global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
                 this._cinnamonSettings.set_string(key, newValue);
             }
             this.color_shading_type = newValue;
@@ -51,7 +52,7 @@ var BackgroundManager = class {
         if (oldValue != newValue) {
             let cinnamonValue = this._cinnamonSettings.get_string(key);
             if (cinnamonValue != newValue) {
-                global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
+                if (LOGGING) global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
                 this._cinnamonSettings.set_string(key, newValue);
             }
             this.picture_options = newValue;
@@ -64,7 +65,7 @@ var BackgroundManager = class {
         if (oldValue != newValue) {
             let cinnamonValue = this._cinnamonSettings.get_string(key);
             if (cinnamonValue != newValue) {
-                global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
+                if (LOGGING) global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
                 this._cinnamonSettings.set_string(key, newValue);
             }
             this.picture_uri = newValue;
@@ -77,7 +78,7 @@ var BackgroundManager = class {
         if (oldValue != newValue) {
             let cinnamonValue = this._cinnamonSettings.get_string(key);
             if (cinnamonValue != newValue) {
-                global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
+                if (LOGGING) global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
                 this._cinnamonSettings.set_string(key, newValue);
             }
             this.primary_color = newValue;
@@ -90,7 +91,7 @@ var BackgroundManager = class {
         if (oldValue != newValue) {
             let cinnamonValue = this._cinnamonSettings.get_string(key);
             if (cinnamonValue != newValue) {
-                global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
+                if (LOGGING) global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
                 this._cinnamonSettings.set_string(key, newValue);
             }
             this.secondary_color = newValue;
@@ -103,7 +104,7 @@ var BackgroundManager = class {
         if (oldValue != newValue) {
             let cinnamonValue = this._cinnamonSettings.get_int(key);
             if (cinnamonValue != newValue) {
-                global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
+                if (LOGGING) global.log("BackgroundManager: %s changed (%s --> %s)".format(key, oldValue, newValue));
                 this._cinnamonSettings.set_int(key, newValue);
             }
             this.picture_opacity = newValue;
