@@ -21,13 +21,13 @@ ICON_SIZE = 48
 # but it's helpful to be aware of it.
 
 ICON_FOLDERS = [
-    os.path.join(GLib.get_user_data_dir(), "icons"),
-    os.path.join(GLib.get_home_dir(), ".icons")
+    os.path.join(GLib.get_home_dir(), ".icons"),
+    os.path.join(GLib.get_user_data_dir(), "icons")
 ] + [os.path.join(datadir, "icons") for datadir in GLib.get_system_data_dirs()]
 
 THEME_FOLDERS = [
-    os.path.join(GLib.get_user_data_dir(), "themes"),
-    os.path.join(GLib.get_home_dir(), ".themes")
+    os.path.join(GLib.get_home_dir(), ".themes"),
+    os.path.join(GLib.get_user_data_dir(), "themes")
 ] + [os.path.join(datadir, "themes") for datadir in GLib.get_system_data_dirs()]
 
 
