@@ -1,17 +1,12 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
+name: Feature request (OBSOLETE)
+about: Feature requests are no longer accepted here, please use https://github.com/orgs/linuxmint/discussions instead.
 title: ""
 labels: ["FEATURE REQUEST"]
 assignees: ''
 
 ---
 
-### Is your feature request related to a problem? Please describe.
+Please use:
 
-### Describe the solution you'd like
-
-### Describe alternatives you've considered
-
-### Additional context
-
+https://github.com/orgs/linuxmint/discussions
