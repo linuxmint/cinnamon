@@ -28,6 +28,9 @@ from bin import capi
 from bin import proxygsettings
 from bin import SettingsWidgets
 
+# which checks whether `name` is on PATH and marked as executable.
+from shutil import which
+
 # i18n
 gettext.install("cinnamon", "/usr/share/locale", names=["ngettext"])
 
@@ -103,12 +106,14 @@ TABS = {
     "mouse":            {"mouse": 0, "touchpad": 1},
     "power":            {"power": 0, "batteries": 1, "brightness": 2},
     "screensaver":      {"settings": 0, "customize": 1},
-    "screenshots":      {"autosavedir": 0},
     "sound":            {"output": 0, "input": 1, "sounds": 2, "applications": 3, "settings": 4},
     "themes":           {"themes": 0, "download": 1, "options": 2},
     "windows":          {"titlebar": 0, "behavior": 1, "alttab": 2},
     "workspaces":       {"osd": 0, "settings": 1}
 }
+
+if which("gnome-screenshot") != None:
+    TABS["screenshots"] = {"autosavedir": 0}
 
 ARG_REWRITE = {
     'universal-access': 'accessibility',
@@ -483,6 +488,9 @@ class MainWindow(Gio.Application):
         """
         # Standard setting pages... this can be expanded to include applet dirs maybe?
         mod_files = glob.glob(os.path.join(config.currentPath, 'modules', 'cs_*.py'))
+        if which("gnome-screenshot") == None:
+            screenshot_file = os.path.join(config.currentPath, 'modules', 'cs_screenshots.py')
+            mod_files.remove(screenshot_file)
         if len(mod_files) == 0:
             print("warning: no python settings modules found!!", file=sys.stderr)
             return False
