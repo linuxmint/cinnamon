@@ -515,6 +515,12 @@
       </description>
     </key>
 
+    <key type="b" name="center-warped-pointer">
+      <default>true</default>
+      <summary>Center the pointer on the new monitor</summary>
+      <description>If true, the pointer will be set to the center of the new monitor when using pointer next/previous shortcuts.</description>
+    </key>
+
     <child name="theme" schema="org.cinnamon.theme"/>
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
