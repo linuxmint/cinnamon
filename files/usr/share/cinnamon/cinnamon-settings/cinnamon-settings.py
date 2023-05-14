@@ -183,7 +183,7 @@ class MainWindow(Gio.Application):
 
     def go_to_sidepage(self, sidePage: SettingsWidgets.SidePage, user_action=True):
         sidePage.build()
-        
+
         if sidePage.is_standalone:
             return  # we're done
 
@@ -329,12 +329,12 @@ class MainWindow(Gio.Application):
         if len(sys.argv) > 1:
             if self.load_sidepage_as_standalone():
                 return
-        
+
         self.init_settings_overview()
 
     def init_settings_overview(self):
         """Load the system settings overview (default)
-        
+
         This requires to initialize all settings modules.
         """
         # 1. load all python modules
@@ -505,7 +505,7 @@ class MainWindow(Gio.Application):
             return False
 
         to_import = [os.path.splitext(os.path.basename(x))[0] for x in mod_files]
-        
+
         if only_module is not None:
             to_import = filter(lambda mod: only_module.replace("-", "_") in mod, to_import)
 
