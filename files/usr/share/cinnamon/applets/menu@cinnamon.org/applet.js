@@ -39,7 +39,10 @@ const AppUtils = require('./appUtils');
 
 let appsys = Cinnamon.AppSystem.get_default();
 
-const MAX_BUTTON_WIDTH = "max-width: 20em;";
+const POPUP_MIN_WIDTH = 500;
+const POPUP_MAX_WIDTH = 900;
+const POPUP_MIN_HEIGHT = 400;
+const POPUP_MAX_HEIGHT = 1400;
 
 const RefreshFlags = Object.freeze({
     APP:      0b000001,
@@ -177,7 +180,6 @@ class SimpleMenuItem {
         this._signals = new SignalManager.SignalManager();
 
         this.actor = new St.BoxLayout({ style_class: params.styleClass,
-                                        style: MAX_BUTTON_WIDTH,
                                         reactive: params.reactive,
                                         accessible_role: Atk.Role.MENU_ITEM });
 
@@ -1184,6 +1186,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._size_dirty = true;
         });
 
+        this._resizer = new Applet.PopupResizeHandler(this.menu.actor,
+            () => this._orientation,
+            (w,h) => this._onBoxResized(w,h),
+            () => this.popup_width * global.ui_scale,
+            () => this.popup_height * global.ui_scale);
+
         this.settings.bind("show-favorites", "showFavorites", () => this.queueRefresh(RefreshFlags.FAV_DOC));
         this.settings.bind("show-places", "showPlaces", () => this.queueRefresh(RefreshFlags.PLACE));
         this.settings.bind("show-recents", "showRecents", () => this.queueRefresh(RefreshFlags.RECENT));
@@ -1216,8 +1224,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("favbox-show", "favBoxShow", this._favboxtoggle);
         this.settings.bind("fav-icon-size", "favIconSize", () => this.queueRefresh(RefreshFlags.FAV_APP | RefreshFlags.SYSTEM));
         this.settings.bind("enable-animation", "enableAnimation", null);
-        this.settings.bind("restrict-menu-height", "restrictMenuHeight", null);
-        this.settings.bind("menu-height", "menuHeight", null);
+        this.settings.bind("popup-width", "popup_width");
+        this.settings.bind("popup-height", "popup_height");
 
         this._updateKeybinding();
 
@@ -1292,6 +1300,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             if (b.icon)
                 b.icon.visible = show;
         })
+    }
+
+    _onBoxResized(width, height) {
+        this.popup_width = (width / global.ui_scale).clamp(POPUP_MIN_WIDTH, POPUP_MAX_WIDTH);
+        this.popup_height = (height / global.ui_scale).clamp(POPUP_MIN_HEIGHT, POPUP_MAX_HEIGHT);
+        this._setMenuSize();
     }
 
     _updateKeybinding() {
@@ -1406,25 +1420,21 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         });
     }
 
-    _recalc_sizes() {
-        Util.each(this.applicationsBox.get_children(), c => c.hide());
+    _setMenuSize() {
+        //this.selectedAppBox.natural_width_set = false;
+        //this.selectedAppBox.minimum_width_set = false;
+        this.main_container.natural_height = (this.popup_height * global.ui_scale);
+        this.main_container.natural_width = (this.popup_width * global.ui_scale);
 
-        this.main_container.natural_height = 0;
-        this.main_container.natural_height_set = false;
-        this.selectedAppBox.natural_width_set = false;
-        this.selectedAppBox.minimum_width_set = false;
+        this.menu.actor.set_width(this.popup_width * global.ui_scale);
+        this.menu.actor.set_height(this.popup_height * global.ui_scale);
 
-        if (this.restrictMenuHeight) {
-            this.main_container.natural_height = this.menuHeight * global.ui_scale;
-        } else {
-            this.main_container.natural_height = this.main_container.get_preferred_height(-1)[1];
-        }
+        //this.main_container.natural_height = this.main_container.get_preferred_height(-1)[1];
 
         this._update_scroll_policy(this.favoritesBox, this.favoritesScrollBox);
         this._update_scroll_policy(this.categoriesBox, this.categoriesScrollBox);
 
-        this._resizeApplicationsBox();
-        this.selectedAppBox.width = this.selectedAppBox.width;
+        //this.selectedAppBox.width = this.selectedAppBox.width;
 
         this._size_dirty = false;
     }
@@ -1438,16 +1448,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         } else {
             scrollview.vscroll.visible = false;
         }
-    }
-
-    _resizeApplicationsBox() {
-        let width = -1;
-        Util.each(this.applicationsBox.get_children(), c => {
-            let [min, nat] = c.get_preferred_width(-1.0);
-            if (nat > width)
-                width = nat;
-        });
-        this.applicationsBox.set_width(width + 42); // The answer to life...
     }
 
     on_orientation_changed (orientation) {
@@ -1478,7 +1478,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.lastSelectedCategory = null;
 
             if (this._size_dirty) {
-                this._recalc_sizes();
+                this._setMenuSize();
             }
 
             let n = Math.min(this._applicationsButtons.length,
