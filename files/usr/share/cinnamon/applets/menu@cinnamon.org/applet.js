@@ -1303,9 +1303,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _onBoxResized(width, height) {
-        this.popup_width = (width / global.ui_scale).clamp(POPUP_MIN_WIDTH, POPUP_MAX_WIDTH);
-        this.popup_height = (height / global.ui_scale).clamp(POPUP_MIN_HEIGHT, POPUP_MAX_HEIGHT);
-        this._setMenuSize();
+        width = (width / global.ui_scale).clamp(POPUP_MIN_WIDTH, POPUP_MAX_WIDTH);
+        height = (height / global.ui_scale).clamp(POPUP_MIN_HEIGHT, POPUP_MAX_HEIGHT);
+
+        //Only update settings when resizing is completed to avoid excessive disk writes.
+        if (!this._resizer.resizingInProgress) {
+            this.popup_width = width;
+            this.popup_height = height;
+        }
+
+        this._setMenuSize(width, height);
     }
 
     _updateKeybinding() {
@@ -1420,21 +1427,15 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         });
     }
 
-    _setMenuSize() {
-        //this.selectedAppBox.natural_width_set = false;
-        //this.selectedAppBox.minimum_width_set = false;
-        this.main_container.natural_height = (this.popup_height * global.ui_scale);
-        this.main_container.natural_width = (this.popup_width * global.ui_scale);
+    _setMenuSize(width, height) {
+        this.main_container.natural_height = (height * global.ui_scale);
+        this.main_container.natural_width = (width * global.ui_scale);
 
-        this.menu.actor.set_width(this.popup_width * global.ui_scale);
-        this.menu.actor.set_height(this.popup_height * global.ui_scale);
-
-        //this.main_container.natural_height = this.main_container.get_preferred_height(-1)[1];
+        this.menu.actor.set_width(width * global.ui_scale);
+        this.menu.actor.set_height(height * global.ui_scale);
 
         this._update_scroll_policy(this.favoritesBox, this.favoritesScrollBox);
         this._update_scroll_policy(this.categoriesBox, this.categoriesScrollBox);
-
-        //this.selectedAppBox.width = this.selectedAppBox.width;
 
         this._size_dirty = false;
     }
@@ -1478,7 +1479,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.lastSelectedCategory = null;
 
             if (this._size_dirty) {
-                this._setMenuSize();
+                this._setMenuSize(this.popup_width, this.popup_height);
             }
 
             let n = Math.min(this._applicationsButtons.length,
