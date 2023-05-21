@@ -977,10 +977,11 @@ const ZONE_SIZE = 10;
 /**
  * #PopupResizeHandler:
  * @short_description: Class that allows an applet to be resized using the mouse.
- * @inhibit_resizing (Boolean): Set to false to prevent resizing
+ * @inhibit_resizing (Boolean): Set to true to prevent resizing
  * @resizingInProgress (Boolean): True when resizing is in progress
  *
- * Parameters - actor: The actor to be resized
+ * Parameters -
+ *      actor: The actor to be resized
  *      get_orientation: Function that returns the current orientation of the applet. (St.Side)
  *      resized_callback: Function that is called while resizing is in progress with the new width
  *      and height as parameters. This function should actually change the applet size. This is
@@ -1104,7 +1105,7 @@ var PopupResizeHandler = class PopupResizeHandler {
         this._drag_start_size = null;
         this.resizingInProgress = false;
         //update position again while this.resizingInProgress === false so that applet can update settings
-        this._resized_callback(this.new_user_width, this.new_user_height);
+        this._resized_callback(this._new_user_width, this._new_user_height);
     }
 
     _onEvent(actor, event) {
@@ -1225,9 +1226,9 @@ var PopupResizeHandler = class PopupResizeHandler {
             delta_height = new_height - start_h;
         }
 
-        this.new_user_width = this._init_user_width + delta_width;
-        this.new_user_height = this._init_user_height + delta_height;
-        this._resized_callback(this.new_user_width, this.new_user_height);
+        this._new_user_width = this._init_user_width + delta_width;
+        this._new_user_height = this._init_user_height + delta_height;
+        this._resized_callback(this._new_user_width, this._new_user_height);
         
         return true;
     }
