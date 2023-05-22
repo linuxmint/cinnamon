@@ -219,6 +219,7 @@ class LauncherEditor(ItemEditor):
         self.set_text('exec-entry', "Exec")
         self.set_text('comment-entry', "Comment")
         self.set_check('terminal-check', "Terminal")
+        self.set_check('offload-gpu-check', "PrefersNonDefaultGPU")
         self.set_icon("Icon")
 
     def get_keyfile_edits(self):
@@ -226,6 +227,7 @@ class LauncherEditor(ItemEditor):
                     Exec=self.builder.get_object('exec-entry').get_text(),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
+                    PrefersNonDefaultGPU=self.builder.get_object("offload-gpu-check").get_active(),
                     Icon=self.icon_chooser.get_icon(),
                     Type="Application")
 
@@ -308,6 +310,7 @@ class CinnamonLauncherEditor(ItemEditor):
         self.set_text('exec-entry', "Exec")
         self.set_text('comment-entry', "Comment")
         self.set_check('terminal-check', "Terminal")
+        self.set_check('offload-gpu-check', "PrefersNonDefaultGPU")
         self.set_icon("Icon")
 
     def get_keyfile_edits(self):
@@ -325,6 +328,7 @@ class CinnamonLauncherEditor(ItemEditor):
                     Exec=self.builder.get_object('exec-entry').get_text(),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
+                    PrefersNonDefaultGPU=self.builder.get_object("offload-gpu-check").get_active(),
                     Icon=icon,
                     Type="Application")
 

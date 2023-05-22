@@ -448,10 +448,7 @@ class GenericApplicationButton extends SimpleMenuItem {
     populateMenu(menu) {
         let menuItem;
         if (Main.gpu_offload_supported) {
-            menuItem = new ApplicationContextMenuItem(this, _("Run with NVIDIA GPU"), "offload_launch", "cpu");
-            menu.addMenuItem(menuItem);
-        } else if (this.applet._isBumblebeeInstalled) {
-            menuItem = new ApplicationContextMenuItem(this, _("Run with NVIDIA GPU"), "run_with_nvidia_gpu", "cpu");
+            menuItem = new ApplicationContextMenuItem(this, _("Run with dedicated GPU"), "offload_launch", "cpu");
             menu.addMenuItem(menuItem);
         }
 
@@ -1248,7 +1245,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._knownApps = new Set(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
         this._appsWereRefreshed = false;
         this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
-        this._isBumblebeeInstalled = GLib.file_test("/usr/bin/optirun", GLib.FileTest.EXISTS);
         this.RecentManager = DocInfo.getDocManager();
         this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
         this.noRecentDocuments = true;
