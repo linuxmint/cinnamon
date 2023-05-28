@@ -1,0 +1,9 @@
+[Desktop Entry]
+Icon=cs-gestures
+Exec=cinnamon-settings gestures
+Type=Application
+OnlyShowIn=X-Cinnamon;
+Categories=Settings;
+Name=Gestures
+Comment=Manage touch gestures
+Keywords=gesture;swipe;pinch;touch;

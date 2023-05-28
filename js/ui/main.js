@@ -53,6 +53,7 @@
  *
  * @keybindingManager (KeybindingManager.KeybindingManager): The keybinding manager
  * @systrayManager (Systray.SystrayManager): The systray manager
+ * @gesturesManager (GesturesManager.GesturesManager): Gesture support  from ToucheEgg.
  *
  * @osdWindow (OsdWindow.OsdWindow): Osd window that pops up when you use media
  * keys.
@@ -122,6 +123,7 @@ const {readOnlyError} = imports.ui.environment;
 const {installPolyfills} = imports.ui.overrides;
 const InputMethod = imports.misc.inputMethod;
 const ScreenRecorder = imports.ui.screenRecorder;
+const {GesturesManager} = imports.ui.gestures.gesturesManager;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -140,6 +142,7 @@ var overview = null;
 var expo = null;
 var runDialog = null;
 var lookingGlass = null;
+var lookingGlassUpdateID = 0;
 var wm = null;
 var a11yHandler = null;
 var messageTray = null;
@@ -169,7 +172,7 @@ var settingsManager = null;
 var systrayManager = null;
 var wmSettings = null;
 var pointerSwitcher = null;
-
+var gesturesManager = null;
 var workspace_names = [];
 
 var applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
@@ -344,6 +347,8 @@ function start() {
 
     keybindingManager = new Keybindings.KeybindingManager();
     deskletContainer = new DeskletManager.DeskletContainer();
+
+    gesturesManager = new GesturesManager();
 
     uiGroup = new Layout.UiActor({ name: 'uiGroup' });
     uiGroup.set_flags(Clutter.ActorFlags.NO_LAYOUT);
@@ -893,8 +898,22 @@ function _log(category = 'info', msg = '') {
 
     _errorLogStack.push(out);
 
-    if (lookingGlass) {
-        lookingGlass.emitLogUpdate();
+    // If the melange window is open/exists, excessive dbus traffic caused by gesture debug
+    // logging can leave the desktop unstable. We end up with lots of:
+    //
+    // Attempting to call back into JSAPI during the sweeping phase of GC...
+    //
+    // This is a hack, and how we handle logging and melange probably needs looked at.
+
+    if (lookingGlass && !gesturesManager.gesture_active()) {
+        if (lookingGlassUpdateID > 0) {
+            GLib.source_remove (lookingGlassUpdateID);
+        }
+
+        lookingGlassUpdateID = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+             lookingGlass.emitLogUpdate();
+             lookingGlassUpdateID = 0;
+        });
     }
 
     log(`[LookingGlass/${category}] ${text}`);
