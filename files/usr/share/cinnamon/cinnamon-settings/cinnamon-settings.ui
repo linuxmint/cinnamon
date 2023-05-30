@@ -1,10 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.40.0 -->
 <interface>
-  <requires lib="gtk+" version="3.0"/>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkHeaderBar" id="header_bar">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="show-close-button">True</property>
+    <child>
+      <object class="GtkButton" id="button_back">
+        <property name="label" translatable="yes">All Settings</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="focus-on-click">False</property>
+        <property name="receives-default">True</property>
+        <style>
+          <class name="raised"/>
+        </style>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSearchEntry" id="search_box">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="caps-lock-warning">False</property>
+      </object>
+      <packing>
+        <property name="pack-type">end</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+  </object>
   <object class="GtkBox" id="main_box">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkToolbar" id="top_bar">
@@ -19,86 +47,26 @@
             <child>
               <object class="GtkStack" id="header_stack">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <child>
-                  <object class="GtkBox" id="hbox2">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="border_width">1</property>
-                    <child>
-                      <object class="GtkEntry" id="search_box">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="halign">start</property>
-                        <property name="invisible_char">●</property>
-                        <property name="width_chars">25</property>
-                        <property name="caps_lock_warning">False</property>
-                        <property name="primary_icon_name">edit-find-symbolic</property>
-                        <property name="secondary_icon_name">edit-clear-symbolic</property>
-                        <property name="placeholder_text">Search...</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="pack_type">end</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="name">side_view</property>
-                    <property name="title">side_view</property>
-                  </packing>
-                </child>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkBox" id="box2">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="border_width">1</property>
-                    <child>
-                      <object class="GtkButton" id="button_back">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="focus_on_click">False</property>
-                        <property name="receives_default">True</property>
-                        <child>
-                          <object class="GtkImage" id="image1">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="icon_name">go-previous-symbolic</property>
-                          </object>
-                        </child>
-                        <style>
-                          <class name="raised"/>
-                          <class name="image-button"/>
-                        </style>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
                     <child type="center">
                       <object class="GtkStackSwitcher" id="stack_switcher">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="halign">center</property>
                       </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
-                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                   </object>
                   <packing>
                     <property name="name">content_box</property>
                     <property name="title">content_box</property>
-                    <property name="position">1</property>
                   </packing>
                 </child>
               </object>
@@ -125,26 +93,26 @@
     <child>
       <object class="GtkStack" id="main_stack">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <child>
-          <object class="GtkScrolledWindow" id="side_view_sw">
-            <property name="height_request">125</property>
+          <object class="GtkScrolledWindow" id="category_view_sw">
+            <property name="height-request">125</property>
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="hscrollbar_policy">never</property>
+            <property name="can-focus">True</property>
+            <property name="hscrollbar-policy">never</property>
             <child>
               <object class="GtkViewport" id="viewport2">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="vexpand">True</property>
-                <property name="vscroll_policy">natural</property>
-                <property name="shadow_type">none</property>
+                <property name="vscroll-policy">natural</property>
+                <property name="shadow-type">none</property>
                 <child>
                   <object class="GtkBox" id="category_box">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="valign">start</property>
-                    <property name="border_width">10</property>
+                    <property name="border-width">10</property>
                     <property name="orientation">vertical</property>
                     <child>
                       <placeholder/>
@@ -161,24 +129,24 @@
         </child>
         <child>
           <object class="GtkScrolledWindow" id="content_box_sw">
-            <property name="can_focus">True</property>
+            <property name="can-focus">True</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
-            <property name="hscrollbar_policy">never</property>
+            <property name="hscrollbar-policy">never</property>
             <child>
               <object class="GtkViewport" id="viewport1">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="vexpand">True</property>
-                <property name="shadow_type">none</property>
+                <property name="shadow-type">none</property>
                 <child>
                   <object class="GtkVBox" id="content_box">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
-                    <property name="border_width">6</property>
+                    <property name="border-width">6</property>
                     <property name="spacing">3</property>
                     <child>
                       <placeholder/>

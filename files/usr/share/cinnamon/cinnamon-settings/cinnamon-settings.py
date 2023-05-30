@@ -165,10 +165,10 @@ class MainWindow(Gio.Application):
                 self.go_to_sidepage(sidePage, user_action=True)
 
     def _on_sidepage_hide_stack(self):
-        self.stack_switcher.set_opacity(0)
+        self.top_bar.hide()
 
     def _on_sidepage_show_stack(self):
-        self.stack_switcher.set_opacity(1)
+        self.top_bar.show()
 
     def go_to_sidepage(self, sidePage: SettingsWidgets.SidePage, user_action=True):
         sidePage.build()
@@ -176,9 +176,14 @@ class MainWindow(Gio.Application):
         if sidePage.is_standalone:
             return  # we're done
 
+        self.window.set_title(sidePage.name)
         if not user_action:
-            self.window.set_title(sidePage.name)
             self.window.set_icon_name(sidePage.icon)
+            self.button_back.hide()
+        else:
+            self.button_back.show()
+
+        self.search_entry.hide()
 
         if sidePage.stack:
             self.stack_switcher.set_stack(sidePage.stack)
@@ -195,16 +200,16 @@ class MainWindow(Gio.Application):
                 else:
                     sidePage.stack.set_visible_child(l[0])
                 if sidePage.stack.get_visible():
-                    self.stack_switcher.set_opacity(1)
+                    self.top_bar.show()
                 else:
-                    self.stack_switcher.set_opacity(0)
+                    self.top_bar.hide()
                 if hasattr(sidePage, "connect_proxy"):
                     sidePage.connect_proxy("hide_stack", self._on_sidepage_hide_stack)
                     sidePage.connect_proxy("show_stack", self._on_sidepage_show_stack)
             else:
-                self.stack_switcher.set_opacity(0)
+                self.top_bar.hide()
         else:
-            self.stack_switcher.set_opacity(0)
+            self.top_bar.hide()
 
         if user_action:
             self.main_stack.set_visible_child_name("content_box_page")
@@ -214,26 +219,22 @@ class MainWindow(Gio.Application):
             self.header_stack.set_visible_child_full("content_box", Gtk.StackTransitionType.NONE)
 
         self.current_sidepage = sidePage
-        width = 0
-        for widget in self.top_bar:
-            m, n = widget.get_preferred_width()
-            width += n
-        self.top_bar.set_size_request(width + 20, -1)
         self.maybe_resize(sidePage)
 
     def maybe_resize(self, sidePage):
-        m, n = self.content_box.get_preferred_size()
-
+        m, cb_n = self.content_box.get_preferred_size()
+        m, tb_n = self.top_bar.get_preferred_size()
+        
         # Resize vertically depending on the height requested by the module
         use_height = WIN_HEIGHT
-        total_height = n.height + self.bar_heights + WIN_H_PADDING
+        total_height = cb_n.height + tb_n.height + WIN_H_PADDING
         if not sidePage.size:
             # No height requested, resize vertically if the module is taller than the window
             if total_height > WIN_HEIGHT:
                 use_height = total_height
         elif sidePage.size > 0:
             # Height hardcoded by the module
-            use_height = sidePage.size + self.bar_heights + WIN_H_PADDING
+            use_height = sidePage.size + tb_n.height + WIN_H_PADDING
         elif sidePage.size == -1:
             # Module requested the window to fit it (i.e. shrink the window if necessary)
             use_height = total_height
@@ -255,7 +256,9 @@ class MainWindow(Gio.Application):
         self.builder.add_from_file(os.path.join(config.currentPath, "cinnamon-settings.ui"))
         self.window = XApp.GtkWindow(window_position=Gtk.WindowPosition.CENTER,
                                      default_width=800, default_height=600)
-
+        self.header_bar = self.builder.get_object("header_bar")
+        self.header_bar.set_has_subtitle(False)
+        self.window.set_titlebar(self.header_bar)
         main_box = self.builder.get_object("main_box")
         self.window.add(main_box)
         self.top_bar = self.builder.get_object("top_bar")
@@ -267,18 +270,16 @@ class MainWindow(Gio.Application):
         self.header_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
         self.header_stack.set_transition_duration(150)
         self.side_view_container = self.builder.get_object("category_box")
-        self.side_view_sw = self.builder.get_object("side_view_sw")
-        context = self.side_view_sw.get_style_context()
+        self.category_view_sw = self.builder.get_object("category_view_sw")
+        context = self.category_view_sw.get_style_context()
         context.add_class("cs-category-view")
         context.add_class("view")
-        self.side_view_sw.show_all()
+        self.category_view_sw.show_all()
         self.content_box = self.builder.get_object("content_box")
         self.content_box_sw = self.builder.get_object("content_box_sw")
         self.content_box_sw.show_all()
         self.button_back = self.builder.get_object("button_back")
         self.button_back.set_tooltip_text(_("Back to all settings"))
-        button_image = self.builder.get_object("image1")
-        button_image.props.icon_size = Gtk.IconSize.MENU
 
         self.stack_switcher = self.builder.get_object("stack_switcher")
 
@@ -297,7 +298,6 @@ class MainWindow(Gio.Application):
         self.current_sidepage = None
         self.c_manager = capi.CManager()
         self.content_box.c_manager = self.c_manager
-        self.bar_heights = 0
 
         self.tab = 0  # open 'manage' tab by default
         self.sort = 1  # sorted by 'score' by default
@@ -370,13 +370,25 @@ class MainWindow(Gio.Application):
         self.window.set_title(_("System Settings"))
         self.button_back.connect('clicked', self.back_to_icon_view)
 
-        self.calculate_bar_heights()
+        self.set_headerbar_height()
+        self.button_back.hide()
+        self.top_bar.hide()
 
         self.search_entry.grab_focus()
         self.window.connect("key-press-event", self.on_keypress)
         self.window.connect("button-press-event", self.on_buttonpress)
 
         self.window.show()
+
+    def set_headerbar_height(self):
+	#Ensure headerbar doesn't change height when changing to sideview and back
+        m, n = self.search_entry.get_preferred_height()
+        max_height = n
+        m, n = self.button_back.get_preferred_height()
+        max_height = max(max_height, n)
+        
+        self.search_entry.set_size_request(-1, max_height)
+        self.button_back.set_size_request(-1, max_height)
 
     def load_sidepage_as_standalone(self) -> bool:
         """
@@ -514,7 +526,7 @@ class MainWindow(Gio.Application):
         if device.get_source() == Gdk.InputSource.KEYBOARD:
             grab = Gdk.Display.get_default().device_is_grabbed(device)
         if not grab and event.keyval == Gdk.KEY_BackSpace and (type(self.window.get_focus()) not in
-                                                               (Gtk.TreeView, Gtk.Entry, Gtk.SpinButton, Gtk.TextView)):
+                                        (Gtk.TreeView, Gtk.Entry, Gtk.SearchEntry, Gtk.SpinButton, Gtk.TextView)):
             self.back_to_icon_view(None)
             return True
         return False
@@ -524,12 +536,6 @@ class MainWindow(Gio.Application):
             self.back_to_icon_view(None)
             return True
         return False
-
-    def calculate_bar_heights(self):
-        h = 0
-        m, n = self.top_bar.get_preferred_size()
-        h += n.height
-        self.bar_heights = h
 
     def onSearchTextChanged(self, widget):
         self.displayCategories()
@@ -645,7 +651,7 @@ class MainWindow(Gio.Application):
 
             final_y = rect.y + cw_y + iv_y
 
-            adj = self.side_view_sw.get_vadjustment()
+            adj = self.category_view_sw.get_vadjustment()
             page = adj.get_page_size()
             current_pos = adj.get_value()
 
@@ -766,9 +772,11 @@ class MainWindow(Gio.Application):
                 c_widgets = child.get_children()
                 for c_widget in c_widgets:
                     c_widget.hide()
+        self.top_bar.hide()
         self.main_stack.set_visible_child_name("side_view_page")
-        self.header_stack.set_visible_child_name("side_view")
+        self.search_entry.show()
         self.search_entry.grab_focus()
+        self.button_back.hide()
 
         if self.current_sidepage.module and hasattr(self.current_sidepage.module, "on_navigate_out_of_module"):
             self.current_sidepage.module.on_navigate_out_of_module()
