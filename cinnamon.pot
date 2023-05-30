@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-11 14:14+0000\n"
+"POT-Creation-Date: 2023-05-30 13:40+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,7 +43,7 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:286
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:437
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:832
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:173
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:177
 msgid "Search"
 msgstr ""
 
@@ -79,6 +79,47 @@ msgstr ""
 msgid "The following accounts are supported in GNOME applications:"
 msgstr ""
 
+#. Display name                         ID              Show it? Always False
+#. to start              Icon
+#. menu@cinnamon.org->settings-schema.json->panel-appear->title
+#. printers@cinnamon.org->settings-schema.json->section1->description
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui.h:1
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:58
+msgid "Appearance"
+msgstr ""
+
+#. settings-example@cinnamon.org->settings-schema.json->tree->columns->title
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui.h:2
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:67
+msgid "Color"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui.h:3
+msgid ""
+"In mixed mode most applications are light. Some desktop elements are dark to"
+" create contrast."
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui.h:4
+msgid "Mixed"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui.h:5
+msgid "Dark"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui.h:6
+msgid "Light"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui.h:7
+msgid "Advanced settings..."
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui.h:8
+msgid "Style"
+msgstr ""
+
 #: files/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui.h:1
 msgid "Launcher Properties"
 msgstr ""
@@ -86,12 +127,12 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui.h:2
 #: files/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui.h:2
 #: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui.h:3
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:836
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:840
 msgid "Name:"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui.h:3
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:837
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:841
 msgid "Command:"
 msgstr ""
 
@@ -172,7 +213,7 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:389
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_applets.py:54
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_desklets.py:79
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:827
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:831
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_startup.py:425
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_startup.py:775
 msgid "Add"
@@ -292,26 +333,26 @@ msgid "Remove this desklet"
 msgstr ""
 
 #: js/ui/expoThumbnail.js:943
-#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:326
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:328
 #, javascript-format
 msgid ""
 "Are you sure you want to remove workspace \"%s\"?\n"
 "\n"
 msgstr ""
 
-#: js/ui/extension.js:508
+#: js/ui/extension.js:507
 msgid "Initializing"
 msgstr ""
 
-#: js/ui/extension.js:510
+#: js/ui/extension.js:509
 msgid "Loaded"
 msgstr ""
 
-#: js/ui/extension.js:512
+#: js/ui/extension.js:511
 msgid "Error"
 msgstr ""
 
-#: js/ui/extension.js:514
+#: js/ui/extension.js:513
 msgid "Out of date"
 msgstr ""
 
@@ -327,48 +368,48 @@ msgstr ""
 msgid "Loaded successfully"
 msgstr ""
 
-#: js/ui/main.js:516
+#: js/ui/main.js:519
 msgid "Check your video drivers"
 msgstr ""
 
-#: js/ui/main.js:517
+#: js/ui/main.js:520
 msgid "Your system is currently running without video hardware acceleration."
 msgstr ""
 
-#: js/ui/main.js:519
+#: js/ui/main.js:522
 msgid "You may experience poor performance and high CPU usage."
 msgstr ""
 
-#: js/ui/main.js:523
+#: js/ui/main.js:526
 msgid "Launch Driver Manager"
 msgstr ""
 
-#: js/ui/main.js:532
+#: js/ui/main.js:535
 msgid "Problems during Cinnamon startup"
 msgstr ""
 
-#: js/ui/main.js:533
+#: js/ui/main.js:536
 msgid ""
 "Cinnamon started successfully, but one or more applets, desklets or extensions failed to load.\n"
 "\n"
 msgstr ""
 
-#: js/ui/main.js:534
+#: js/ui/main.js:537
 msgid ""
 "Check your system log and the Cinnamon LookingGlass log for any issues.  "
 msgstr ""
 
-#: js/ui/main.js:535
+#: js/ui/main.js:538
 msgid ""
 "You can disable the offending extension(s) in Cinnamon Settings to prevent "
 "this message from recurring.  "
 msgstr ""
 
-#: js/ui/main.js:536
+#: js/ui/main.js:539
 msgid "Please contact the developer."
 msgstr ""
 
-#: js/ui/main.js:586
+#: js/ui/main.js:589
 msgid "Workspace"
 msgstr ""
 
@@ -453,7 +494,7 @@ msgid "Troubleshoot"
 msgstr ""
 
 #: js/ui/panel.js:1751
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:144
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:148
 msgid "Restart Cinnamon"
 msgstr ""
 
@@ -784,7 +825,7 @@ msgstr ""
 #. http://www.localeplanet.com/compare/date-pattern.html?pat=FULL
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:19
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:27
-#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:280
+#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:277
 msgid "%A, %B %-e, %Y"
 msgstr ""
 
@@ -833,37 +874,37 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:1015
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:1053
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/eventView.js:1075
-#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:226
+#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:223
 msgid "Today"
 msgstr ""
 
 #. Scale
 #. cornerbar@cinnamon.org->settings-schema.json->click-action->options
 #. cornerbar@cinnamon.org->settings-schema.json->middle-click-action->options
-#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:43
-#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:59
+#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:51
+#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:67
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_hotcorner.py:194
 msgid "Show the desktop"
 msgstr ""
 
 #. cornerbar@cinnamon.org->settings-schema.json->click-action->options
 #. cornerbar@cinnamon.org->settings-schema.json->middle-click-action->options
-#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:46
-#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:61
+#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:54
+#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:69
 msgid "Show the desklets"
 msgstr ""
 
 #. cornerbar@cinnamon.org->settings-schema.json->click-action->options
 #. cornerbar@cinnamon.org->settings-schema.json->middle-click-action->options
-#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:49
-#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:63
+#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:57
+#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:71
 msgid "Show the workspace selector (Expo)"
 msgstr ""
 
 #. cornerbar@cinnamon.org->settings-schema.json->click-action->options
 #. cornerbar@cinnamon.org->settings-schema.json->middle-click-action->options
-#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:52
-#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:65
+#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:60
+#: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:73
 msgid "Show the window selector (Scale)"
 msgstr ""
 
@@ -874,7 +915,7 @@ msgstr ""
 
 #. favorites@cinnamon.org->metadata.json->name
 #: files/usr/share/cinnamon/applets/favorites@cinnamon.org/applet.js:46
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2638
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2509
 msgid "Favorites"
 msgstr ""
 
@@ -904,7 +945,7 @@ msgid "Grouped window list"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:177
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2530
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2401
 msgid "Places"
 msgstr ""
 
@@ -1044,56 +1085,60 @@ msgstr ""
 #. menu@cinnamon.org->settings-schema.json->menu->title
 #. sound@cinnamon.org->settings-schema.json->section1->description
 #. network@cinnamon.org->settings-schema.json->section1->description
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1172
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1173
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:56
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2568
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1178
+msgid "Edit menu"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2439
 msgid "Recent Files"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2583
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2454
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:121
 msgid "Clear list"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2584
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2455
 msgid "Clear all recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2603
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2474
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:126
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2667
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2538
 msgid "All Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2735
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:141
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2606
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:145
 msgid "Lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2736
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2607
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:11
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2760
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2631
 msgid "Logout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2761
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2632
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2772
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2643
 msgid "Quit"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2773
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2644
 msgid "Shut down the computer"
 msgstr ""
 
@@ -1370,27 +1415,27 @@ msgid "Panel launchers"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:56
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:544
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:563
 msgid "Battery full"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:58
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:546
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:565
 msgid "Battery almost full"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:60
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:548
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:567
 msgid "Battery good"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:62
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:550
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:569
 msgid "Low battery"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:64
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:552
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:571
 msgid "Critically low battery"
 msgstr ""
 
@@ -1403,7 +1448,7 @@ msgid "Laptop battery"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:77
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:371
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:390
 msgid "UPS"
 msgstr ""
 
@@ -1413,7 +1458,7 @@ msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:81
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:334
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:81
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:84
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:85
 msgid "Mouse"
 msgstr ""
@@ -1421,7 +1466,7 @@ msgstr ""
 #. keyboard@cinnamon.org->metadata.json->name
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:83
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:147
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:231
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:235
 msgid "Keyboard"
 msgstr ""
 
@@ -1434,18 +1479,18 @@ msgid "Cell phone"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:89
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:471
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:490
 msgid "Media player"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:91
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:160
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:462
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:481
 msgid "Tablet"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:93
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:474
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:493
 msgid "Computer"
 msgstr ""
 
@@ -1466,7 +1511,7 @@ msgid "Power Settings"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:425
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:402
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:421
 msgid "Charging"
 msgstr ""
 
@@ -1510,12 +1555,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:442
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:424
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:443
 msgid "Fully charged"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:446
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:404
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:423
 msgid "Using battery power"
 msgstr ""
 
@@ -1592,7 +1637,7 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_display.py:46
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:71
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:631
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:85
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:257
 msgid "Settings"
 msgstr ""
 
@@ -1613,7 +1658,7 @@ msgid "Click to show the desktop or middle-click to show the desklets"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:35
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:55
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:56
 msgid "Show Desklets"
 msgstr ""
 
@@ -1666,149 +1711,149 @@ msgstr ""
 msgid "Stopped"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:541
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:705
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:708
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:547
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:711
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1319
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:714
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:717
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1325
 msgid "Unknown Artist"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:542
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:718
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:548
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:724
 msgid "Unknown Album"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:543
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:723
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1322
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:549
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:729
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1328
 msgid "Unknown Title"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:565
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:571
 msgid "Previous"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:568
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:793
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:574
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:799
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:180
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:805
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:184
 msgid "Play"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:571
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:577
 msgid "Stop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:574
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:580
 msgid "Next"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:588
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:825
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:594
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:831
 msgid "Consecutive Playing"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:591
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:841
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:597
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:847
 msgid "No Shuffle"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:638
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:644
 msgid "Open Player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:652
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:658
 msgid "Quit Player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:787
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:793
 msgid "Pause"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:827
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:833
 msgid "Repeat Single"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:829
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:835
 msgid "Repeat All"
 msgstr ""
 
 #. photoframe@cinnamon.org->settings-schema.json->shuffle->description
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:841
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:189
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:847
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:193
 msgid "Shuffle"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1025
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1031
 msgid "Mute output"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1026
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1032
 msgid "Mute input"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1033
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1039
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:608
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:614
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_startup.py:908
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:72
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:238
 msgid "Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1034
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1040
 msgid "Output device"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1041
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1047
 msgid "Microphone"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1043
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1049
 msgid "Input device"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1312
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1451
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1318
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1457
 msgid "Volume"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1440
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1446
 msgid "Launch player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1445
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1451
 msgid "Choose player controls"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1457
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1463
 msgid "Sound Settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:10
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:11
 msgid "Are you sure you want to delete all items from the trash?"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:10
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:11
 msgid "This operation cannot be undone."
 msgstr ""
 
 #. trash@cinnamon.org->metadata.json->name
-#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:17
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:18
 msgid "Trash"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:33
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:37
 msgid "Empty Trash"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:39
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:43
 msgid "Open Trash"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:67
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:613
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:618
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:632
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:637
 msgid "Lock Screen"
 msgstr ""
 
@@ -1834,15 +1879,15 @@ msgstr ""
 msgid "All windows"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:291
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:293
 msgid "Manage workspaces (Expo)"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:298
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:300
 msgid "Add a new workspace"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:304
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:306
 msgid "Remove the current workspace"
 msgstr ""
 
@@ -1918,39 +1963,39 @@ msgid "Virtual keyboard"
 msgstr ""
 
 #: generate_additional_files.py:49
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:198
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:202
 msgid "Turn on-screen keyboard on or off"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:89
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:106
 msgid "Valid name"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:93
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:110
 msgid "The name cannot be empty."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:98
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:115
 msgid "Valid executable"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:102
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:119
 msgid ""
 "The executable is not valid. It cannot be empty and spaces in the path must "
 "be escaped with backslash (\\)."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:168
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:186
 msgid ""
 "Cannot create the launcher at this location.  Add to the desktop instead?"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:217
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:306
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:233
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:346
 msgid "Choose a command"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:393
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py:435
 msgid ""
 "Would you like to add this launcher to the menu also?  It will be placed in "
 "the Other category initially."
@@ -1962,14 +2007,6 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:41
 msgid "Please type an away message for the lock screen"
-msgstr ""
-
-#. Display name                         ID              Show it? Always False
-#. to start              Icon
-#. menu@cinnamon.org->settings-schema.json->panel-appear->title
-#. printers@cinnamon.org->settings-schema.json->section1->description
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:58
-msgid "Appearance"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:59
@@ -1994,11 +2031,6 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:66
 msgid "network, wireless, wifi, ethernet, broadband, internet"
-msgstr ""
-
-#. settings-example@cinnamon.org->settings-schema.json->tree->columns->title
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:67
-msgid "Color"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:67
@@ -2130,7 +2162,7 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:455
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:660
 #: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:304
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:832
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:836
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_startup.py:771
 msgid "Cancel"
 msgstr ""
@@ -2434,39 +2466,39 @@ msgstr ""
 msgid "Item"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:214
+#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:211
 msgid "Select a date"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:356
+#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:353
 msgid "%R:%S"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:358
+#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:355
 msgid "%R"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:361
+#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:358
 msgid "%l:%M:%S %p"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:363
+#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:360
 msgid "%l:%M %p"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:369
+#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:366
 msgid "Select a time"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:385
+#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:382
 msgid "Hour"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:387
+#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:384
 msgid "Minute"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:393
+#: files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py:390
 msgid "Second"
 msgstr ""
 
@@ -2580,7 +2612,7 @@ msgid "Install"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:768
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:825
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:829
 msgid "Update"
 msgstr ""
 
@@ -2704,39 +2736,39 @@ msgid ""
 "little while."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:507
+#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:504
 msgid ""
 "Something went wrong with the spices download.  Please try refreshing the "
 "list again."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:522
+#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:519
 msgid "Refreshing the cache"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:601
+#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:598
 #, python-format
 msgid "Installing %s"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:626
+#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:623
 #, python-format
 msgid ""
 "An error occurred during the installation of %s. Please report this incident"
 " to its developer."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:688
+#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:689
 #, python-format
 msgid "Uninstalling %s"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:712
+#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:713
 #, python-format
 msgid "A problem occurred while removing %s."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:734
+#: files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py:735
 #, python-format
 msgid ""
 "\n"
@@ -2818,9 +2850,9 @@ msgstr ""
 #. workspace-switcher@cinnamon.org->settings-schema.json->scroll-
 #. behavior->options
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:94
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:89
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:111
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:150
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:92
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:114
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:153
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_notifications.py:26
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:140
 msgid "Disabled"
@@ -3062,16 +3094,16 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:300
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:326
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:404
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:252
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:72
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:256
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:75
 msgid "Short"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:300
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:326
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:404
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:252
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:72
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:256
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:75
 msgid "Long"
 msgstr ""
 
@@ -3119,15 +3151,15 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:366
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_effects.py:77
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:56
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:131
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:59
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:134
 msgid "Slower"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:366
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_effects.py:77
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:56
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:131
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:59
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:134
 msgid "Faster"
 msgstr ""
 
@@ -3523,9 +3555,9 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:401
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:16
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:614
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:623
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:629
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:633
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:642
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:648
 msgid "Do nothing"
 msgstr ""
 
@@ -3661,7 +3693,7 @@ msgid "desktop, home, button, trash"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_desktop.py:23
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:78
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:244
 msgid "Desktop"
 msgstr ""
 
@@ -3955,7 +3987,7 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_general.py:14
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:30
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:33
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:100
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:103
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:141
 msgid "General"
 msgstr ""
@@ -4184,661 +4216,674 @@ msgstr ""
 msgid "Custom Shortcuts"
 msgstr ""
 
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:47
+msgid "Pointer"
+msgstr ""
+
 #. KB Label                        Schema                  Key name
 #. Array?  Category
 #. General
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:52
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:53
 msgid "Show the window selection screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:53
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:54
 msgid "Show the workspace selection screen"
 msgstr ""
 
 #. show-desktop@cinnamon.org->metadata.json->name
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:54
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:55
 msgid "Show desktop"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:56
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:57
 msgid "Cycle through open windows"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:57
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:58
 msgid "Cycle backwards through open windows"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:58
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:59
 msgid "Cycle through windows from all workspaces"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:59
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:60
 msgid "Cycle backwards through windows from all workspaces"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:60
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:61
 msgid "Cycle through open windows of the same application"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:61
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:62
 msgid "Cycle backwards through open windows of the same application"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:62
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:63
 msgid "Run dialog"
 msgstr ""
 
 #. General - Troubleshooting
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:64
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:65
 msgid "Toggle Looking Glass"
 msgstr ""
 
-#. Windows
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:66
-msgid "Maximize window"
-msgstr ""
-
+#. General - Pointer
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:67
-msgid "Unmaximize window"
+msgid "Move pointer to the next monitor"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:68
-msgid "Minimize window"
+msgid "Move pointer to the previous monitor"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:69
-msgid "Close window"
-msgstr ""
-
+#. Windows
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:70
-msgid "Activate window menu"
+msgid "Maximize window"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:71
-msgid "Raise window"
+msgid "Unmaximize window"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:72
-msgid "Lower window"
+msgid "Minimize window"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:73
-msgid "Toggle maximization state"
+msgid "Close window"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:74
-msgid "Toggle fullscreen state"
+msgid "Activate window menu"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:75
-msgid "Toggle shaded state"
+msgid "Raise window"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:76
+msgid "Lower window"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:77
+msgid "Toggle maximization state"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:78
+msgid "Toggle fullscreen state"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:79
+msgid "Toggle shaded state"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:80
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:55
 msgid "Toggle always on top"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:77
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:81
 msgid "Toggle showing window on all workspaces"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:78
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:82
 msgid "Increase opacity"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:79
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:83
 msgid "Decrease opacity"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:80
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:84
 msgid "Toggle vertical maximization"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:81
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:85
 msgid "Toggle horizontal maximization"
 msgstr ""
 
 #. Windows - Positioning
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:83
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:87
 msgid "Resize window"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:84
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:88
 msgid "Move window"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:85
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:89
 msgid "Center window in screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:86
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:90
 msgid "Move window to upper-right"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:87
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:91
 msgid "Move window to upper-left"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:88
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:92
 msgid "Move window to lower-right"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:89
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:93
 msgid "Move window to lower-left"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:90
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:94
 msgid "Move window to right edge"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:91
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:95
 msgid "Move window to top edge"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:92
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:96
 msgid "Move window to bottom edge"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:93
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:97
 msgid "Move window to left edge"
 msgstr ""
 
 #. Windows - Tiling and Snapping
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:95
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:99
 msgid "Push tile left"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:96
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:100
 msgid "Push tile right"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:97
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:101
 msgid "Push tile up"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:98
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:102
 msgid "Push tile down"
 msgstr ""
 
 #. Windows - Workspace-related
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:100
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:104
 msgid "Move window to new workspace"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:101
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:105
 msgid "Move window to left workspace"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:102
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:106
 msgid "Move window to right workspace"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:103
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:107
 msgid "Move window to workspace above"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:104
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:108
 msgid "Move window to workspace below"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:105
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:109
 msgid "Move window to workspace 1"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:106
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:110
 msgid "Move window to workspace 2"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:107
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:111
 msgid "Move window to workspace 3"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:108
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:112
 msgid "Move window to workspace 4"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:109
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:113
 msgid "Move window to workspace 5"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:110
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:114
 msgid "Move window to workspace 6"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:111
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:115
 msgid "Move window to workspace 7"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:112
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:116
 msgid "Move window to workspace 8"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:113
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:117
 msgid "Move window to workspace 9"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:114
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:118
 msgid "Move window to workspace 10"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:115
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:119
 msgid "Move window to workspace 11"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:116
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:120
 msgid "Move window to workspace 12"
 msgstr ""
 
 #. Windows - Monitor-related
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:118
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:122
 msgid "Move window to left monitor"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:119
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:123
 msgid "Move window to right monitor"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:120
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:124
 msgid "Move window to monitor above"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:121
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:125
 msgid "Move window to monitor below"
 msgstr ""
 
 #. Workspaces
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:123
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:127
 msgid "Switch to left workspace"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:124
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:128
 msgid "Switch to right workspace"
 msgstr ""
 
 #. Workspaces - Direct Nav
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:126
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:130
 msgid "Switch to workspace 1"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:127
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:131
 msgid "Switch to workspace 2"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:128
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:132
 msgid "Switch to workspace 3"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:129
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:133
 msgid "Switch to workspace 4"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:130
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:134
 msgid "Switch to workspace 5"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:131
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:135
 msgid "Switch to workspace 6"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:132
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:136
 msgid "Switch to workspace 7"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:133
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:137
 msgid "Switch to workspace 8"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:134
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:138
 msgid "Switch to workspace 9"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:135
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:139
 msgid "Switch to workspace 10"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:136
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:140
 msgid "Switch to workspace 11"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:137
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:141
 msgid "Switch to workspace 12"
 msgstr ""
 
 #. System
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:139
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:143
 msgid "Log out"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:140
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:144
 msgid "Shut down"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:142
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:146
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:12
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:610
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:619
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:629
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:638
 msgid "Suspend"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:143
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:147
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:14
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:612
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:621
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:628
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:631
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:640
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:647
 msgid "Hibernate"
 msgstr ""
 
 #. System - Screenshots
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:146
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:150
 msgid "Take a screenshot of an area"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:147
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:151
 msgid "Copy a screenshot of an area to clipboard"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:148
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:152
 msgid "Take a screenshot"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:149
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:153
 msgid "Copy a screenshot to clipboard"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:150
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:154
 msgid "Take a screenshot of a window"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:151
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:155
 msgid "Copy a screenshot of a window to clipboard"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:152
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:156
 msgid "Toggle recording desktop (must restart Cinnamon)"
 msgstr ""
 
 #. System - Hardware
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:154
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:158
 msgid "Switch monitor configurations"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:155
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:159
 msgid "Rotate display"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:156
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:160
 msgid "Orientation Lock"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:157
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:161
 msgid "Increase screen brightness"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:158
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:162
 msgid "Decrease screen brightness"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:159
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:163
 msgid "Toggle keyboard backlight"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:160
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:164
 msgid "Increase keyboard backlight level"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:161
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:165
 msgid "Decrease keyboard backlight level"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:162
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:166
 msgid "Toggle touchpad state"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:163
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:167
 msgid "Turn touchpad on"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:164
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:168
 msgid "Turn touchpad off"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:165
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:169
 msgid "Show power statistics"
 msgstr ""
 
 #. Launchers
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:167
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:171
 msgid "Launch terminal"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:168
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:172
 msgid "Launch help browser"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:169
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:173
 msgid "Launch calculator"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:170
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:174
 msgid "Launch email client"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:171
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:175
 msgid "Launch web browser"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:172
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:176
 msgid "Home folder"
 msgstr ""
 
 #. Sound and Media
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:175
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:179
 msgid "Volume mute"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:176
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:180
 msgid "Volume down"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:177
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:181
 msgid "Volume up"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:178
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:182
 msgid "Mic mute"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:179
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:183
 msgid "Launch media player"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:181
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:185
 msgid "Pause playback"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:182
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:186
 msgid "Stop playback"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:183
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:187
 msgid "Previous track"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:184
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:188
 msgid "Next track"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:185
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:189
 msgid "Eject"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:186
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:190
 msgid "Rewind"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:187
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:191
 msgid "Fast-forward"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:188
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:192
 msgid "Repeat"
 msgstr ""
 
 #. Sound and Media Quiet
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:191
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:195
 msgid "Volume mute (Quiet)"
 msgstr ""
 
 #. Not sure this is even necessary
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:192
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:196
 msgid "Volume down (Quiet)"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:193
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:197
 msgid "Volume up (Quiet)"
 msgstr ""
 
 #. Universal Access
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:195
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:199
 msgid "Zoom in"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:196
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:200
 msgid "Zoom out"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:197
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:201
 msgid "Turn screen reader on or off"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:199
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:203
 msgid "Increase text size"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:200
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:204
 msgid "Decrease text size"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:201
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:205
 msgid "High contrast on or off"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:225
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:229
 msgid "Manage keyboard settings and shortcuts"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:230
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:234
 msgid "keyboard, shortcut, hotkey"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:245
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:249
 msgid "Key repeat"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:247
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:251
 msgid "Typing"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:249
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:253
 msgid "Enable key repeat"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:252
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:256
 msgid "Repeat delay:"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:255
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:259
 msgid "Repeat speed:"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:255
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:263
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:259
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:267
 msgid "Slow"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:255
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:263
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:259
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:267
 msgid "Fast"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:258
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:262
 msgid "Text cursor"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:260
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:264
 msgid "Text cursor blinks"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:263
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:267
 msgid "Blink speed:"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:272
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:276
 msgid "Shortcuts"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:278
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:282
 msgid ""
 "To edit a keyboard binding, click it and press the new keys, or press "
 "backspace to clear it."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:291
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:295
 msgid "Type to search"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:330
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:828
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:334
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:832
 msgid "Add custom shortcut"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:332
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:336
 msgid "Remove custom shortcut"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:356
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:360
 msgid "Categories"
 msgstr ""
 
 #. notifications@cinnamon.org->settings-schema.json->section3->description
 #. inhibit@cinnamon.org->settings-schema.json->section1->description
 #. calendar@cinnamon.org->settings-schema.json->section2->description
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:370
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:374
 msgid "Keyboard shortcuts"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:381
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:385
 msgid "Keyboard bindings"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:428
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:432
 msgid "Layouts"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:557
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:561
 #, python-format
 msgid ""
 "This key combination, <b>%(combination)s</b> is currently in use by "
 "<b>%(old)s</b>.  "
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:558
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:562
 #, python-format
 msgid ""
 "If you continue, the combination will be reassigned to <b>%(new)s</b>.\n"
 "\n"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:559
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:563
 msgid "Do you want to continue with this operation?"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:712
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:716
 msgid "Reset to default"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:845
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:849
 msgid "Select a file"
 msgstr ""
 
@@ -4859,7 +4904,7 @@ msgid "Left handed (mouse buttons inverted)"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:38
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:122
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:125
 msgid "Reverse scrolling direction"
 msgstr ""
 
@@ -4872,6 +4917,10 @@ msgid "Emulate middle click by clicking both left and right buttons"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:47
+msgid "Paste the current selection when middle-click is pressed"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:50
 msgid "Drag-and-drop threshold"
 msgstr ""
 
@@ -4879,119 +4928,119 @@ msgstr ""
 #. settings-example@cinnamon.org->settings-schema.json->spinner-number->units
 #. photoframe@cinnamon.org->settings-schema.json->height->units
 #. photoframe@cinnamon.org->settings-schema.json->width->units
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:47
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:50
 msgid "pixels"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:50
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:53
 msgid "Pointer size and speed"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:52
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:55
 msgid "Size"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:52
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:55
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:63
 msgid "Smaller"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:52
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:55
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:63
 msgid "Larger"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:56
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:131
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:59
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:134
 msgid "Speed"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:62
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:65
 msgid "Device default"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:63
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:66
 msgid "Constant"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:64
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:67
 msgid "Adaptive"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:67
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:70
 msgid "Acceleration"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:70
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:73
 msgid "Double-Click timeout"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:72
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:75
 msgid "Timeout"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:76
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:144
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:79
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:147
 msgid "Double-click test"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:88
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:91
 msgid "Enabled"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:90
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:93
 msgid "Disabled when a mouse is attached"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:93
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:96
 msgid "Touchpad is"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:103
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:106
 msgid "Tap to click"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:106
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:109
 msgid "Disable touchpad while typing"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:110
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:113
 msgid "Default device behavior"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:112
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:115
 msgid "Virtual button areas along bottom of touchpad"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:113
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:116
 msgid "Use multiple fingers for right and middle click"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:116
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:119
 msgid "Click actions"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:119
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:122
 msgid "Scrolling"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:135
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:138
 msgid "Touchpad"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:139
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:142
 msgid "Success!"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:151
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:154
 msgid "Two-finger scrolling"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:152
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:155
 msgid "Edge scrolling"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:155
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:158
 msgid "Scrolling method"
 msgstr ""
 
@@ -5201,9 +5250,9 @@ msgid "Allow the pointer to pass through the edges of panels"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:13
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:611
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:620
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:627
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:630
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:639
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:646
 msgid "Shut down immediately"
 msgstr ""
 
@@ -5382,8 +5431,8 @@ msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:227
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:234
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:313
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:321
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:317
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:325
 msgid "Batteries"
 msgstr ""
 
@@ -5408,83 +5457,99 @@ msgstr ""
 msgid "Backlight brightness"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:331
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:335
 msgid "Devices"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:357
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:348
+msgid "Low battery notifications"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:350
+msgid "For wireless keyboard"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:352
+msgid "For wireless mouse"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:354
+msgid "For other connected devices"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:376
 #, python-format
 msgid "Caution low UPS, %s remaining"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:359
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:378
 #, python-format
 msgid "Using UPS power - %s remaining"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:365
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:384
 msgid "Caution low UPS"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:367
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:386
 msgid "Using UPS power"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:392
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:411
 #, python-format
 msgid "Charging - %s until fully charged"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:395
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:414
 #, python-format
 msgid "Caution low battery, %s remaining"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:397
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:416
 #, python-format
 msgid "Using battery power - %s remaining"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:406
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:425
 msgid "Charging - fully charged"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:408
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:426
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:427
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:445
 msgid "Empty"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:412
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:477
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:480
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:431
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:496
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:499
 msgid "Battery"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:432
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:451
 msgid "Secondary battery"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:453
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:472
 msgid "Uninterruptible power supply"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:456
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:475
 msgid "Wireless mouse"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:459
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:478
 msgid "Wireless Keyboard"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:465
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:484
 msgid "Personal digital assistant"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:468
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:487
 msgid "Cellphone"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:622
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:641
 msgid "Ask"
 msgstr ""
 
@@ -6022,45 +6087,68 @@ msgstr ""
 msgid "Add Application"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:33
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:82
 msgid "Manage themes to change how your desktop looks"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:38
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:87
 msgid "themes, style"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:41
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:65
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:67
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:90
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:231
 msgid "Themes"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:69
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:235
 msgid "Mouse Pointer"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:75
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:241
 msgid "Icons"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:82
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:248
+msgid "Simplified settings..."
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:254
 msgid "Add/Remove"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:87
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:259
 msgid "Miscellaneous options"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:89
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:261
+msgid "Let applications decide"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:262
+msgid "Prefer light mode"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:263
+msgid "Prefer dark mode"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:264
+msgid "Dark mode"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:265
+msgid "This setting only affects applications which support dark mode"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:268
 msgid "Show icons in menus"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:92
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:271
 msgid "Show icons on buttons"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:101
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:280
 msgid "Scrollbar behavior"
 msgstr ""
 
@@ -6068,26 +6156,32 @@ msgstr ""
 #. rides in.  This setting determines whether clicking in that trough
 #. somewhere
 #. jumps directly to the new position, or if it only scrolls towards it.
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:106
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:285
 msgid "Jump to position when clicking in a trough"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:109
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:288
 msgid "Use overlay scroll bars"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:114
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:293
 msgid "Override the current theme's scrollbar width"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:118
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:297
 msgid "Scrollbar width"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:139
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:318
 msgid ""
 "Changes will take effect the next time you log in and may not affect all "
 "applications."
+msgstr ""
+
+#. Position style combo on "Custom"
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:513
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:542
+msgid "Custom"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_tiling.py:9
@@ -6221,6 +6315,7 @@ msgstr ""
 msgid "Action on title bar right-click"
 msgstr ""
 
+#. cornerbar@cinnamon.org->settings-schema.json->scroll-behavior->options
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:67
 msgid "Nothing"
 msgstr ""
@@ -6416,6 +6511,10 @@ msgstr ""
 #. workspaces->description
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:179
 msgid "Show windows from all workspaces"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:182
+msgid "Warp mouse pointer to the new focused window"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_workspaces.py:10
@@ -7148,6 +7247,7 @@ msgstr ""
 
 #. workspace-switcher@cinnamon.org->settings-schema.json->scroll-
 #. behavior->description
+#. cornerbar@cinnamon.org->settings-schema.json->scroll-behavior->description
 msgid "Scroll wheel behavior"
 msgstr ""
 
@@ -7241,6 +7341,18 @@ msgstr ""
 
 #. cornerbar@cinnamon.org->settings-schema.json->click-action->description
 msgid "Click action"
+msgstr ""
+
+#. cornerbar@cinnamon.org->settings-schema.json->scroll-behavior->tooltip
+msgid "."
+msgstr ""
+
+#. cornerbar@cinnamon.org->settings-schema.json->scroll-behavior->options
+msgid "Switch workspaces"
+msgstr ""
+
+#. cornerbar@cinnamon.org->settings-schema.json->scroll-behavior->options
+msgid "Switch workspaces (reversed)"
 msgstr ""
 
 #. window-list@cinnamon.org->metadata.json->name
@@ -7849,6 +7961,15 @@ msgstr ""
 #. calendar@cinnamon.org->settings-schema.json->custom-format->tooltip
 #. clock@cinnamon.org->settings-schema.json->date-format->tooltip
 msgid "Set your custom format here."
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->custom-tooltip-
+#. format->description
+msgid "Date format for tooltip"
+msgstr ""
+
+#. calendar@cinnamon.org->settings-schema.json->custom-tooltip-format->tooltip
+msgid "Set your custom tooltip format here."
 msgstr ""
 
 #. calendar@cinnamon.org->settings-schema.json->format-button->tooltip
