@@ -258,6 +258,13 @@ class Module:
 
             settings = page.add_section(_("Miscellaneous options"))
 
+            options = [("default", _("Let applications decide")),
+                       ("prefer-light", _("Prefer light mode")),
+                       ("prefer-dark", _("Prefer dark mode"))]
+            widget = GSettingsComboBox(_("Dark mode"), "org.x.apps.portal", "color-scheme", options)
+            widget.set_tooltip_text(_("This setting only affects applications which support dark mode"))
+            settings.add_row(widget)
+
             widget = GSettingsSwitch(_("Show icons in menus"), "org.cinnamon.settings-daemon.plugins.xsettings", "menus-have-icons")
             settings.add_row(widget)
 

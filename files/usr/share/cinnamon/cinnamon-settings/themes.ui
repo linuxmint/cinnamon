@@ -65,7 +65,7 @@
                       <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">In mixed mode most applications are light. Some desktop elements and multimedia apps are dark to create contrast.</property>
+                        <property name="label" translatable="yes">In mixed mode most applications are light. Some desktop elements are dark to create contrast.</property>
                         <property name="wrap">True</property>
                       </object>
                       <packing>
