@@ -32,5 +32,6 @@ jobs:
         linuxmint/cjs,
         linuxmint/muffin,
         linuxmint/nemo,
-        linuxmint/xapp
+        linuxmint/xapp,
+        linuxmint/xdg-desktop-portal-xapp
       ##############################
