@@ -43,8 +43,8 @@ class SidePageData(typing.NamedTuple):
 
 
 WIN_WIDTH = 800
-WIN_HEIGHT = 600
-WIN_H_PADDING = 20
+WIN_HEIGHT = 585
+WIN_V_PADDING = 10
 
 MIN_LABEL_WIDTH = 16
 MAX_LABEL_WIDTH = 25
@@ -226,20 +226,20 @@ class MainWindow(Gio.Application):
         m, tb_n = self.top_bar.get_preferred_size()
         
         # Resize vertically depending on the height requested by the module
-        use_height = WIN_HEIGHT
-        total_height = cb_n.height + tb_n.height + WIN_H_PADDING
+        use_height = 0
         if not sidePage.size:
-            # No height requested, resize vertically if the module is taller than the window
-            if total_height > WIN_HEIGHT:
-                use_height = total_height
+            # No height requested, don't change window size
+            pass
         elif sidePage.size > 0:
             # Height hardcoded by the module
-            use_height = sidePage.size + tb_n.height + WIN_H_PADDING
+            use_height = sidePage.size + tb_n.height + WIN_V_PADDING
         elif sidePage.size == -1:
             # Module requested the window to fit it (i.e. shrink the window if necessary)
-            use_height = total_height
+            use_height = cb_n.height + tb_n.height + WIN_V_PADDING
 
-        self.window.resize(WIN_WIDTH, use_height)
+        if use_height > 0:
+            self.restore_window_size = self.window.get_size()
+            self.window.resize(self.restore_window_size.width, use_height)
 
     def deselect(self, cat):
         for key in self.side_view:
@@ -249,13 +249,14 @@ class MainWindow(Gio.Application):
     # Create the UI
     def __init__(self):
         Gio.Application.__init__(self,
-                                 application_id="org.cinnamon.Settings_%d" % os.getpid(),
-                                 flags=Gio.ApplicationFlags.NON_UNIQUE | Gio.ApplicationFlags.HANDLES_OPEN)
+                        application_id="org.cinnamon.Settings_%d" % os.getpid(),
+                        flags=Gio.ApplicationFlags.NON_UNIQUE | Gio.ApplicationFlags.HANDLES_OPEN)
         self.builder = Gtk.Builder()
         self.builder.set_translation_domain('cinnamon')  # let it translate!
         self.builder.add_from_file(os.path.join(config.currentPath, "cinnamon-settings.ui"))
+
         self.window = XApp.GtkWindow(window_position=Gtk.WindowPosition.CENTER,
-                                     default_width=800, default_height=600)
+                                     default_width=WIN_WIDTH, default_height=WIN_HEIGHT)
         self.header_bar = self.builder.get_object("header_bar")
         self.header_bar.set_has_subtitle(False)
         self.window.set_titlebar(self.header_bar)
@@ -295,6 +296,7 @@ class MainWindow(Gio.Application):
         self.settings = Gio.Settings.new("org.cinnamon")
         self.current_cat_widget = None
 
+        self.restore_window_size = None
         self.current_sidepage = None
         self.c_manager = capi.CManager()
         self.content_box.c_manager = self.c_manager
@@ -764,7 +766,9 @@ class MainWindow(Gio.Application):
     def back_to_icon_view(self, widget):
         self.window.set_title(_("System Settings"))
         self.window.set_icon_name("preferences-desktop")
-        self.window.resize(WIN_WIDTH, WIN_HEIGHT)
+        if self.restore_window_size != None:
+            self.window.resize(self.restore_window_size.width, self.restore_window_size.height)
+            self.restore_window_size = None
         children = self.content_box.get_children()
         for child in children:
             child.hide()
