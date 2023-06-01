@@ -151,11 +151,10 @@ NotificationDaemon.prototype = {
                 let uri = GLib.filename_to_uri(icon, null);
                 return textureCache.load_uri_async(uri, size, size);
             } else {
-                let icon_type = St.IconType.FULLCOLOR;
-                if (icon.search("-symbolic") != -1)
-                    icon_type = St.IconType.SYMBOLIC;
+                // If an icon name is specified, try to load it
+                // in symbolic. If that fails, St reverts to fullcolor anyway
                 return new St.Icon({ icon_name: icon,
-                                     icon_type: icon_type,
+                                     icon_type: St.IconType.SYMBOLIC,
                                      icon_size: size });
             }
         } else if (hints['image-data']) {
@@ -181,14 +180,14 @@ NotificationDaemon.prototype = {
             switch (hints.urgency) {
                 case Urgency.LOW:
                 case Urgency.NORMAL:
-                    stockIcon = 'dialog-information';
+                    stockIcon = 'dialog-information-symbolic';
                     break;
                 case Urgency.CRITICAL:
-                    stockIcon = 'dialog-error';
+                    stockIcon = 'dialog-error-symbolic';
                     break;
             }
             return new St.Icon({ icon_name: stockIcon,
-                                 icon_type: St.IconType.FULLCOLOR,
+                                 icon_type: St.IconType.SYMBOLIC,
                                  icon_size: size });
         }
     },
