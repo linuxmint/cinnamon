@@ -165,10 +165,10 @@ class MainWindow(Gio.Application):
                 self.go_to_sidepage(sidePage, user_action=True)
 
     def _on_sidepage_hide_stack(self):
-        self.top_bar.hide()
+        self.header_stack.hide()
 
     def _on_sidepage_show_stack(self):
-        self.top_bar.show()
+        self.header_stack.show()
 
     def go_to_sidepage(self, sidePage: SettingsWidgets.SidePage, user_action=True):
         sidePage.build()
@@ -200,16 +200,16 @@ class MainWindow(Gio.Application):
                 else:
                     sidePage.stack.set_visible_child(l[0])
                 if sidePage.stack.get_visible():
-                    self.top_bar.show()
+                    self.header_stack.show()
                 else:
-                    self.top_bar.hide()
+                    self.header_stack.hide()
                 if hasattr(sidePage, "connect_proxy"):
                     sidePage.connect_proxy("hide_stack", self._on_sidepage_hide_stack)
                     sidePage.connect_proxy("show_stack", self._on_sidepage_show_stack)
             else:
-                self.top_bar.hide()
+                self.header_stack.hide()
         else:
-            self.top_bar.hide()
+            self.header_stack.hide()
 
         if user_action:
             self.main_stack.set_visible_child_name("content_box_page")
@@ -223,7 +223,7 @@ class MainWindow(Gio.Application):
 
     def maybe_resize(self, sidePage):
         m, cb_n = self.content_box.get_preferred_size()
-        m, tb_n = self.top_bar.get_preferred_size()
+        m, tb_n = self.header_stack.get_preferred_size()
         
         # Resize vertically depending on the height requested by the module
         use_height = 0
@@ -262,7 +262,6 @@ class MainWindow(Gio.Application):
         self.window.set_titlebar(self.header_bar)
         main_box = self.builder.get_object("main_box")
         self.window.add(main_box)
-        self.top_bar = self.builder.get_object("top_bar")
         self.side_view = {}
         self.main_stack = self.builder.get_object("main_stack")
         self.main_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
@@ -374,7 +373,7 @@ class MainWindow(Gio.Application):
 
         self.set_headerbar_height()
         self.button_back.hide()
-        self.top_bar.hide()
+        self.header_stack.hide()
 
         self.search_entry.grab_focus()
         self.window.connect("key-press-event", self.on_keypress)
@@ -776,7 +775,7 @@ class MainWindow(Gio.Application):
                 c_widgets = child.get_children()
                 for c_widget in c_widgets:
                     c_widget.hide()
-        self.top_bar.hide()
+        self.header_stack.hide()
         self.main_stack.set_visible_child_name("side_view_page")
         self.search_entry.show()
         self.search_entry.grab_focus()

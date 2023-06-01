@@ -35,60 +35,32 @@
     <property name="can-focus">False</property>
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkToolbar" id="top_bar">
+      <object class="GtkStack" id="header_stack">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="toolbar_style">icons</property>
+        <property name="can-focus">False</property>
+        <property name="margin-top">8</property>
         <child>
-          <object class="GtkToolItem" id="toolbutton1">
+          <object class="GtkBox" id="box2">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="valign">center</property>
-            <child>
-              <object class="GtkStack" id="header_stack">
+            <property name="can-focus">False</property>
+            <property name="border-width">1</property>
+            <child type="center">
+              <object class="GtkStackSwitcher" id="stack_switcher">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <child>
-                  <object class="GtkBox" id="box2">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="border_width">1</property>
-                    <child type="center">
-                      <object class="GtkStackSwitcher" id="stack_switcher">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">center</property>
-                      </object>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="name">content_box</property>
-                    <property name="title">content_box</property>
-                  </packing>
-                </child>
+                <property name="halign">center</property>
               </object>
             </child>
-            <style>
-              <class name="raised"/>
-            </style>
+            <child>
+              <placeholder/>
+            </child>
           </object>
           <packing>
-            <property name="expand">True</property>
-            <property name="homogeneous">False</property>
+            <property name="name">content_box</property>
+            <property name="title">content_box</property>
           </packing>
         </child>
-        <style>
-          <class name="primary-toolbar"/>
-        </style>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
     </child>
     <child>
       <object class="GtkStack" id="main_stack">
