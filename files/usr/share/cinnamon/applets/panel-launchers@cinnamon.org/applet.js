@@ -47,7 +47,7 @@ class PanelAppLauncherMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(item);
 
         if (Main.gpu_offload_supported) {
-            let item = new PopupMenu.PopupIconMenuItem(_("Run with NVIDIA GPU"), "cpu", St.IconType.SYMBOLIC);
+            let item = new PopupMenu.PopupIconMenuItem(_("Run with dedicated GPU"), "cpu", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', Lang.bind(this, this._onLaunchOffloadedActivate));
             this.addMenuItem(item);
         }

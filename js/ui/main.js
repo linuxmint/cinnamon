@@ -182,7 +182,7 @@ var popup_rendering_actor = null;
 
 var xlet_startup_error = false;
 
-var gpu_offload_supported = false;
+var gpuOffloadHelper = null;
 
 var RunState = {
     INIT : 0,
@@ -440,14 +440,11 @@ function start() {
 
     global.display.connect('gl-video-memory-purged', loadTheme);
 
-    try {
-        gpu_offload_supported = Cinnamon.get_gpu_offload_supported()
-    } catch (e) {
-        global.logWarning("Could not check for gpu offload support - maybe xapps isn't up to date.");
-        gpu_offload_supported = false;
-    }
-
-    log(`GPU offload supported: ${gpu_offload_supported}`);
+    gpuOffloadHelper = XApp.GpuOffloadHelper.get();
+    gpuOffloadHelper.connect("ready", (helper, success) => {
+        gpu_offload_supported = success && gpuOffloadHelper.is_offload_supported();
+        global.log(`GPU offload supported: ${gpu_offload_supported}`);
+    });
 
     // We're ready for the session manager to move to the next phase
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
