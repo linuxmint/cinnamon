@@ -226,6 +226,9 @@ class CellRendererKeybinding(Gtk.CellRendererText):
     def on_key_release(self, widget, event):
         self.ungrab()
         self.teaching = False
+
+        if self.press_event is None:
+            return True
         event = self.press_event
 
         display = widget.get_display()
