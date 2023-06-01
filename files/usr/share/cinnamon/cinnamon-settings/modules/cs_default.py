@@ -568,7 +568,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autoplay, favorite, apps")
-        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, 560, module=self)
+        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, module=self)
         self.sidePage = sidePage
 
     def on_module_selected(self):

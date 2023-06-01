@@ -17,7 +17,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("time, date, calendar, format, network, sync")
-        self.sidePage = SidePage(_("Date & Time"), "cs-date-time", keywords, content_box, 560, module=self)
+        self.sidePage = SidePage(_("Date & Time"), "cs-date-time", keywords, content_box, module=self)
 
     def on_module_selected(self):
         if not self.loaded:

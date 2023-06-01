@@ -10,7 +10,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("google, facebook, twitter, yahoo, web, online, chat, calendar, mail, contact, owncloud, kerberos, imap, smtp, pocket, readitlater, account")
-        self.sidePage = SidePage(_("Online Accounts"), "cs-online-accounts", keywords, content_box, 560, module=self)
+        self.sidePage = SidePage(_("Online Accounts"), "cs-online-accounts", keywords, content_box, module=self)
 
     def on_module_selected(self):
         if not self.loaded:
