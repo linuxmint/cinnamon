@@ -29,7 +29,10 @@ const THUMBNAIL_FADE_TIME = 0.1; // seconds
 const PREVIEW_DELAY_TIMEOUT = 0; // milliseconds
 var PREVIEW_SWITCHER_FADEOUT_TIME = 0.2; // seconds
 
-const iconSizes = [96, 64, 48];
+const iconSizes = [256, 128, 64];
+
+const thumbnailMaxSize = 1000; // maximum size of thumbnail in the thumbnail-only alt+tab window selector
+const thumbnailMinSize = 100; // minimum size of thumbnail in the thumbnail-only alt+tab window selector
 
 function mod(a, b) {
     return (a + b) % b;
@@ -803,19 +806,32 @@ AppList.prototype = {
         let availWidth = this._activeMonitor.width - parentPadding - this.actor.get_theme_node().get_horizontal_padding();
         let height = 0;
 
-        for(let i =  0; i < iconSizes.length; i++) {
-                this._iconSize = iconSizes[i];
-                height = (iconSizes[i] * global.ui_scale) + iconSpacing;
-                let w = height * this._items.length + totalSpacing;
-                if (w <= availWidth)
+        if (this._showThumbnails) {
+            if (this._items.length == 1) {
+                this._iconSize = thumbnailMaxSize;
+                height = (thumbnailMaxSize * global.ui_scale) + iconSpacing;
+            } else {
+                this._iconSize = Math.min((availWidth / this._items.length) - iconSpacing, thumbnailMaxSize);
+                this._iconSize = Math.max(this._iconSize, thumbnailMinSize);
+                height = this._iconSize * global.ui_scale;
+            }
+        } else {
+            if (this._items.length == 1) {
+                this._iconSize = iconSizes[0];
+                height = (iconSizes[0] * global.ui_scale) + iconSpacing;
+            } else {
+                for (let i = 0; i < iconSizes.length; i++) {
+                    this._iconSize = iconSizes[i];
+                    height = (iconSizes[i] * global.ui_scale) + iconSpacing;
+                    let w = height * this._items.length + totalSpacing;
+                    if (w <= availWidth)
                         break;
-        }
-        if (this._items.length == 1) {
-            this._iconSize = iconSizes[0];
-            height = (iconSizes[0] * global.ui_scale) + iconSpacing;
+                }
+            }
         }
 
-        for(let i = 0; i < this.icons.length; i++) {
+
+        for (let i = 0; i < this.icons.length; i++) {
             if (this.icons[i].icon != null)
                 break;
             this.icons[i].set_size(this._iconSize);
