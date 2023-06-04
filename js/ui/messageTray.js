@@ -757,6 +757,10 @@ MessageTray.prototype = {
         this.settings.connect("changed::bottom-notifications", () => {
             this.bottomPosition = this.settings.get_boolean("bottom-notifications");
         });
+        this.notificationMonitor = this.settings.get_int("notification-monitor");
+        this.settings.connect("changed::notification-monitor", () => {
+            this.notificationMonitor = this.settings.get_int("notification-monitor");
+        });
 
         let updateLockState = Lang.bind(this, function() {
             if (this._locked) {
@@ -938,7 +942,7 @@ MessageTray.prototype = {
         this._notificationBin.child = this._notification.actor;
         this._notificationBin.opacity = 0;
 
-        let monitor = Main.layoutManager.primaryMonitor;
+        let monitor = Main.layoutManager.monitors[this.notificationMonitor] || Main.layoutManager.primaryMonitor;
         let topPanel = Main.panelManager.getPanel(monitor.index, 0);
         let bottomPanel = Main.panelManager.getPanel(monitor.index, 1);
         let rightPanel = Main.panelManager.getPanel(monitor.index, 3);
