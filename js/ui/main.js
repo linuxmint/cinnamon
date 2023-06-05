@@ -183,6 +183,7 @@ var popup_rendering_actor = null;
 var xlet_startup_error = false;
 
 var gpuOffloadHelper = null;
+var gpu_offload_supported = false;
 
 var RunState = {
     INIT : 0,
