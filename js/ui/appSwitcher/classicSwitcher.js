@@ -29,7 +29,7 @@ const THUMBNAIL_FADE_TIME = 0.1; // seconds
 const PREVIEW_DELAY_TIMEOUT = 0; // milliseconds
 var PREVIEW_SWITCHER_FADEOUT_TIME = 0.2; // seconds
 
-const iconSizes = [256, 128, 64];
+const iconMinSize = 64; // minimum size of the icons in icon-only alt+tab window selector
 
 const thumbnailMaxSize = 1000; // maximum size of thumbnail in the thumbnail-only alt+tab window selector
 const thumbnailMinSize = 100; // minimum size of thumbnail in the thumbnail-only alt+tab window selector
@@ -783,6 +783,7 @@ AppList.prototype = {
         this._showArrows = showArrows;
         this._mouseTimeOutId = 0;
         this._activeMonitor = activeMonitor;
+        this._showThumbnails = showThumbnails;
     },
 
     _getPreferredHeight: function (actor, forWidth, alloc) {
@@ -816,18 +817,8 @@ AppList.prototype = {
                 height = this._iconSize * global.ui_scale;
             }
         } else {
-            if (this._items.length == 1) {
-                this._iconSize = iconSizes[0];
-                height = (iconSizes[0] * global.ui_scale) + iconSpacing;
-            } else {
-                for (let i = 0; i < iconSizes.length; i++) {
-                    this._iconSize = iconSizes[i];
-                    height = (iconSizes[i] * global.ui_scale) + iconSpacing;
-                    let w = height * this._items.length + totalSpacing;
-                    if (w <= availWidth)
-                        break;
-                }
-            }
+                this._iconSize = Math.max(this._activeMonitor.width / 14, iconMinHeight);
+                height = (this._iconSize * global.ui_scale) + iconSpacing;
         }
 
 
