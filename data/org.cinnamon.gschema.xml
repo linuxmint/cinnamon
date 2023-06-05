@@ -993,11 +993,4 @@
 
   </schema>
 
-  <schema id="org.cinnamon.desktop.notifications" path="/org/cinnamon/desktop/notifications/">
-    <key type="i" name="notification-monitor">
-      <default>0</default>
-      <summary>Monitor to show notifications</summary>
-    </key>
-  </schema>
-
 </schemalist>
