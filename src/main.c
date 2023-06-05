@@ -312,6 +312,8 @@ main (int argc, char **argv)
   GError *error = NULL;
   int ecode;
   gboolean session_running;
+  gchar *env_no_gail;
+  gchar *env_no_at_bridge;
 
   g_setenv ("CLUTTER_DISABLE_XINPUT", "1", TRUE);
   g_setenv ("CLUTTER_BACKEND", "x11", TRUE);
@@ -335,11 +337,25 @@ main (int argc, char **argv)
   meta_plugin_manager_set_plugin_type (cinnamon_plugin_get_type ());
 
   /* Prevent meta_init() from causing gtk to load gail and at-bridge */
+  env_no_gail = g_strdup (g_getenv ("NO_GAIL"));
+  env_no_at_bridge = g_strdup (g_getenv ("NO_AT_BRIDGE"));
   g_setenv ("NO_GAIL", "1", TRUE);
   g_setenv ("NO_AT_BRIDGE", "1", TRUE);
   meta_init ();
-  g_unsetenv ("NO_GAIL");
-  g_unsetenv ("NO_AT_BRIDGE");
+  if (env_no_gail != NULL)
+    {
+      g_setenv ("NO_GAIL", env_no_gail, TRUE);
+      g_free (env_no_gail);
+    }
+  else
+    g_unsetenv ("NO_GAIL");
+  if (env_no_at_bridge != NULL)
+    {
+      g_setenv ("NO_AT_BRIDGE", env_no_at_bridge, TRUE);
+      g_free (env_no_at_bridge);
+    }
+  else
+    g_unsetenv ("NO_AT_BRIDGE");
   g_unsetenv ("CLUTTER_DISABLE_XINPUT");
   g_unsetenv ("CLUTTER_BACKEND");
 
