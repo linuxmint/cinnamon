@@ -418,28 +418,28 @@ AppIcon.prototype = {
                                          vertical: true });
         this.icon = null;
         this._iconBin = new St.Bin();
+        this.label = new St.Label();
+        let bin = new St.Bin({ x_align: St.Align.MIDDLE });
 
         this.actor.add(this._iconBin, { x_fill: false, y_fill: false } );
         let title = window.get_title();
         if (title) {
             if (window.minimized) {
-                this.label = new St.Label({ text: "[" + title + "]"});               
+                this.label.set_text("[" + title + "]");               
                 let contrast_effect = new Clutter.BrightnessContrastEffect();                
                 contrast_effect.set_brightness_full(-0.5, -0.5, -0.5);
                 this._iconBin.add_effect(contrast_effect);                
             }
             else {
-                this.label = new St.Label({ text: title });    
+                this.label.set_text(title); 
             }
-            
-            let bin = new St.Bin({ x_align: St.Align.MIDDLE });
-            bin.add_actor(this.label);
-            this.actor.add(bin);
         }
         else {
-            this.label = new St.Label({ text: this.app ? this.app.get_name() : window.title });
-            this.actor.add(this.label, { x_fill: false });
+            this.label.set_text(this.app ? this.app.get_name() : window.title );
+            // this.actor.add(this.label, { x_fill: false });
         }
+        bin.add_actor(this.label, { x_fill: false });
+        this.actor.add(bin);
     },
 
     set_size: function(size) {
@@ -464,6 +464,8 @@ AppIcon.prototype = {
         size *= global.ui_scale;
         this._iconBin.set_size(size, size);
         this._iconBin.child = this.icon;
+        this.fontSize = Math.max(size / 16, 14 * global.ui_scale);
+        this.label.set_style("font-size: " + this.fontSize + "px;");
     }
 };
 
@@ -814,7 +816,7 @@ AppList.prototype = {
             } else {
                 this._iconSize = Math.min((availWidth / this._items.length) - iconSpacing, thumbnailMaxSize);
                 this._iconSize = Math.max(this._iconSize, thumbnailMinSize);
-                height = this._iconSize * global.ui_scale;
+                height = (this._iconSize * global.ui_scale) + iconSpacing;
             }
         } else {
                 this._iconSize = Math.max(this._activeMonitor.width / 14, iconMinHeight);
