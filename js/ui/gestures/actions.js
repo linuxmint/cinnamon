@@ -55,6 +55,18 @@ var make_action = (settings, definition, device) => {
     }
 }
 
+var cleanup = () => {
+    if (mixer != null) {
+        mixer.close();
+        mixer = null;
+    }
+
+    if (mpris_controller != null) {
+        mpris_controller.shutdown();
+        mpris_controller = null;
+    }
+}
+
 var BaseAction = class {
     constructor(definition, device, threshold) {
         this.definition = definition;
@@ -289,10 +301,6 @@ var VolumeAction = class extends BaseAction {
     constructor(definition, device, threshold) {
         super(definition, device, threshold);
 
-        if (mixer == null) {
-            init_mixer();
-        }
-
         this.ignoring = true;
 
         this.max_volume = mixer.get_vol_max_norm();
@@ -391,8 +399,14 @@ var VolumeAction = class extends BaseAction {
     }
 }
 
-// Initialize MPRIS controller immediately, so players and their properties are ready
-var mpris_controller = new MprisController();
+var mpris_controller = null;
+var init_mpris_controller = () => {
+    if (mpris_controller != null) {
+        return;
+    }
+
+    mpris_controller = new MprisController();
+}
 
 var MediaAction = class extends BaseAction {
     constructor(definition, device, threshold) {

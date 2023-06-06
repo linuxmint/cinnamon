@@ -19,11 +19,13 @@
 typedef struct
 {
     GDBusConnection *connection;
+    GCancellable *cancellable;
 
     gchar *last_signal;
     GVariant *last_params;
 
     guint  signal_listener_id;
+    guint  retry_timer_id;
 } CinnamonToucheggClientPrivate;
 
 struct _CinnamonToucheggClient
@@ -106,10 +108,12 @@ static void init_connection (CinnamonToucheggClient *client);
 static gboolean
 retry_connection (gpointer data)
 {
-    g_return_val_if_fail (CINNAMON_IS_TOUCHEGG_CLIENT (data), G_SOURCE_REMOVE);
     CinnamonToucheggClient *client = CINNAMON_TOUCHEGG_CLIENT (data);
+    CinnamonToucheggClientPrivate *priv = cinnamon_touchegg_client_get_instance_private (client);
 
     g_debug ("CinnamonToucheggClient: retrying connection");
+
+    priv->retry_timer_id = 0;
 
     init_connection (client);
 
@@ -147,7 +151,7 @@ connection_lost (GDBusConnection *connection,
         g_warning ("Connection to Touchegg daemon lost, will try to reconnect: %s", error->message);
     }
 
-    g_timeout_add_seconds (5, (GSourceFunc) retry_connection, client);
+    priv->retry_timer_id = g_timeout_add_seconds (5, (GSourceFunc) retry_connection, client);
 }
 
 static void
@@ -184,7 +188,7 @@ got_connection (GObject      *source,
     {
         g_critical ("Couldn't connect with touchegg daemon: %s", error->message);
         g_error_free (error);
-        g_timeout_add_seconds (5, (GSourceFunc) retry_connection, client);
+        priv->retry_timer_id = g_timeout_add_seconds (5, (GSourceFunc) retry_connection, client);
         return;
     }
 
@@ -197,12 +201,20 @@ got_connection (GObject      *source,
 static void
 init_connection (CinnamonToucheggClient *client)
 {
+    CinnamonToucheggClientPrivate *priv = cinnamon_touchegg_client_get_instance_private (client);
     g_debug ("CinnamonToucheggClient: init_client");
+
+    if (priv->cancellable != NULL) {
+        g_cancellable_cancel (priv->cancellable);
+        g_object_unref (priv->cancellable);
+    }
+
+    priv->cancellable = g_cancellable_new ();
 
     g_dbus_connection_new_for_address (DBUS_ADDRESS,
                                        G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT,
                                        NULL,
-                                       NULL,
+                                       priv->cancellable,
                                        (GAsyncReadyCallback) got_connection,
                                        client);
 }
@@ -219,6 +231,14 @@ cinnamon_touchegg_client_dispose (GObject *object)
     CinnamonToucheggClient *client = CINNAMON_TOUCHEGG_CLIENT (object);
     CinnamonToucheggClientPrivate *priv = cinnamon_touchegg_client_get_instance_private (client);
     g_debug ("CinnamonToucheggClient dispose (%p)", object);
+
+    g_clear_handle_id (&priv->retry_timer_id, g_source_remove);
+
+    if (priv->cancellable != NULL) {
+        g_cancellable_cancel (priv->cancellable);
+        g_object_unref (priv->cancellable);
+        priv->cancellable = NULL;
+    }
 
     if (priv->connection != NULL)
     {

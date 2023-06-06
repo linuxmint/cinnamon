@@ -116,6 +116,9 @@ var GesturesManager = class {
 
         this.setup_actions();
 
+        actions.init_mixer();
+        actions.init_mpris_controller();
+
         if (this.client == null) {
             this.kill_touchegg();
 
@@ -137,6 +140,8 @@ var GesturesManager = class {
         this.signalManager.disconnect("gesture-update");
         this.signalManager.disconnect("gesture-end");
         this.client = null;
+
+        actions.cleanup();
     }
 
     settings_or_devices_changed(settings, key) {
