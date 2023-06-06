@@ -460,8 +460,9 @@ AppIcon.prototype = {
                               icon_type: St.IconType.FULLCOLOR,
                               icon_size: size });
         }
-        this.fontSize = Math.max(size / 16, 14);
+        this.fontSize = Math.max(size / 16, 16);
         this.fontSize = Math.min(this.fontSize, 32);
+        this.fontSize *= global.ui_scale;
         this.label.set_style("font-size: " + this.fontSize + "px;");
         this.label.set_height(this.fontSize * 1.2 + this.bottomPadding);
         size *= global.ui_scale;
@@ -813,17 +814,14 @@ AppList.prototype = {
         if (this._showThumbnails) {
             if (this._items.length == 1) {
                 this._iconSize = thumbnailMaxSize;
-                height = thumbnailMaxSize;
             } else {
                 this._iconSize = Math.min((availWidth / this._items.length) - iconSpacing, thumbnailMaxSize);
                 this._iconSize = Math.max(this._iconSize, thumbnailMinSize);
-                height = this._iconSize;
             }
         } else {
                 this._iconSize = Math.max(this._activeMonitor.width / 14, iconMinHeight);
-                height = this._iconSize;
             }
-        height += iconSpacing;
+        height = this._iconSize + iconSpacing;
         this._iconSize /= global.ui_scale;
 
         for (let i = 0; i < this.icons.length; i++) {
