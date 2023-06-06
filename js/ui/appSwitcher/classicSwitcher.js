@@ -29,10 +29,10 @@ const THUMBNAIL_FADE_TIME = 0.1; // seconds
 const PREVIEW_DELAY_TIMEOUT = 0; // milliseconds
 var PREVIEW_SWITCHER_FADEOUT_TIME = 0.2; // seconds
 
-const iconMinSize = 64; // minimum size of the icons in icon-only alt+tab window selector
+const iconMinSize = 32; // minimum size of the icons in icon-only alt+tab window selector
 
 const thumbnailMaxSize = 1000; // maximum size of thumbnail in the thumbnail-only alt+tab window selector
-const thumbnailMinSize = 100; // minimum size of thumbnail in the thumbnail-only alt+tab window selector
+const thumbnailMinSize = 64; // minimum size of thumbnail in the thumbnail-only alt+tab window selector
 
 function mod(a, b) {
     return (a + b) % b;
@@ -436,7 +436,6 @@ AppIcon.prototype = {
         }
         else {
             this.label.set_text(this.app ? this.app.get_name() : window.title );
-            // this.actor.add(this.label, { x_fill: false });
         }
         bin.add_actor(this.label, { x_fill: false });
         this.actor.add(bin);
@@ -815,7 +814,6 @@ AppList.prototype = {
             if (this._items.length == 1) {
                 this._iconSize = thumbnailMaxSize;
                 height = thumbnailMaxSize;
-                // height = (thumbnailMaxSize / global.ui_scale) + iconSpacing;
             } else {
                 this._iconSize = Math.min((availWidth / this._items.length) - iconSpacing, thumbnailMaxSize);
                 this._iconSize = Math.max(this._iconSize, thumbnailMinSize);
@@ -825,7 +823,6 @@ AppList.prototype = {
                 this._iconSize = Math.max(this._activeMonitor.width / 14, iconMinHeight);
                 height = this._iconSize;
             }
-        // height *= global.ui_scale;
         height += iconSpacing;
         this._iconSize /= global.ui_scale;
 
