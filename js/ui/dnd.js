@@ -46,6 +46,8 @@ var currentDraggable = null;
 var dragMonitors = [];
 var targetMonitors = [];
 
+var currentGrabActor = null; //This is used by class PopupResizeHandler in ui/applet.js as a workaround to issue github.com/linuxmint/cinnamon/issues/11123
+
 function _getEventHandlerActor() {
     if (!eventHandlerActor) {
         eventHandlerActor = new Clutter.Actor({ width: 0, height: 0 });
@@ -154,6 +156,7 @@ var _Draggable = new Lang.Class({
         this.drag_device.grab(this.actor);
         this._onEventId = this.actor.connect('event',
                                              Lang.bind(this, this._onEvent));
+        currentGrabActor = this;
     },
 
     _ungrabActor: function(event) {
@@ -168,6 +171,7 @@ var _Draggable = new Lang.Class({
 
         this.actor.disconnect(this._onEventId);
         this._onEventId = null;
+        currentGrabActor = null;
     },
 
     _grabEvents: function(event) {
