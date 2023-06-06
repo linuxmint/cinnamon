@@ -29,7 +29,6 @@
         "type": "combobox",
         "default": "none",
         "description": "Scroll wheel behavior",
-        "tooltip": ".",
         "options": {
             "Nothing": "nothing",
             "Switch workspaces": "normal",
