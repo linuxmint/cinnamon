@@ -66,10 +66,10 @@ class Module:
             box.pack_start(image, False, False, 0)
 
             if not have_touchpad and not have_touchscreen:
-                label = Gtk.Label(label=_("<big><b>No compatible devices found</b></big>"), expand=True, use_markup=True)
+                label = Gtk.Label(label="<big><b>%s</b></big>" % _("No compatible devices found"), expand=True, use_markup=True)
                 box.pack_start(label, False, False, 0)
             else:
-                label = Gtk.Label(label=_("<big><b>Gestures are disabled</b></big>"), expand=True, use_markup=True)
+                label = Gtk.Label(label="<big><b>%s</b></big>" % _("Gestures are disabled"), expand=True, use_markup=True)
                 box.pack_start(label, False, False, 0)
                 self.disabled_page_switch = switch = Gtk.Switch(active=self.gesture_settings.get_boolean("enabled"))
                 self.disabled_page_switch.connect("notify::active", self.enabled_switch_changed)
@@ -99,17 +99,17 @@ class Module:
 
             actions = [
                 ["", _("Disabled")],
-                ["WORKSPACE_NEXT", _("Switch to the next workspace")],
-                ["WORKSPACE_PREVIOUS", _("Switch to the previous workspace")],
+                ["WORKSPACE_NEXT", _("Switch to right workspace")],
+                ["WORKSPACE_PREVIOUS", _("Switch to left workspace")],
                 # ["WORKSPACE_UP", _("Switch to the workspace above")],
                 # ["WORKSPACE_DOWN", _("Switch to the workspace below")],
-                ["TOGGLE_EXPO", _("Show the workspace selection screen")],
-                ["TOGGLE_OVERVIEW", _("Show the window selection screen")],
+                ["TOGGLE_EXPO", _("Show the workspace selector (Expo)")],
+                ["TOGGLE_OVERVIEW", _("Show the window selector (Scale)")],
                 ["MINIMIZE", _("Minimize window")],
                 ["MAXIMIZE", _("Maximize window")],
                 ["CLOSE", _("Close window")],
-                ["WINDOW_WORKSPACE_NEXT", _("Move window to the next workspace")],
-                ["WINDOW_WORKSPACE_PREVIOUS", _("Move window to the previous workspace")],
+                ["WINDOW_WORKSPACE_NEXT", _("Move window to right workspace")],
+                ["WINDOW_WORKSPACE_PREVIOUS", _("Move window to left workspace")],
                 ["FULLSCREEN", _("Make window fullscreen")],
                 ["UNFULLSCREEN", _("Exit window fullscreen")],
                 ["PUSH_TILE_UP", _("Push tile up")],
@@ -117,13 +117,13 @@ class Module:
                 ["PUSH_TILE_LEFT", _("Push tile left")],
                 ["PUSH_TILE_RIGHT", _("Push tile right")],
                 ["TOGGLE_DESKTOP", _("Show desktop")],
-                ["VOLUME_UP", _("Increase volume")],
-                ["VOLUME_DOWN", _("Decrease volume")],
-                ["TOGGLE_MUTE", _("Toggle mute")],
-                ["MEDIA_PLAY_PAUSE", _("Play or Pause media playback")],
-                ["MEDIA_NEXT", _("Skip to next track")],
-                ["MEDIA_PREVIOUS", _("Go to previous track")],
-                ["EXEC", _("Execute a command")],
+                ["VOLUME_UP", _("Volume up")],
+                ["VOLUME_DOWN", _("Volume down")],
+                ["TOGGLE_MUTE", _("Volume mute")],
+                ["MEDIA_PLAY_PAUSE", _("Toggle Play / Pause")],
+                ["MEDIA_NEXT", _("Next track")],
+                ["MEDIA_PREVIOUS", _("Previous track")],
+                ["EXEC", _("Run a command")],
             ]
 
             page = SettingsPage()
@@ -222,7 +222,7 @@ class Module:
                         section.add_row(widget)
 
             page = SettingsPage()
-            self.sidePage.stack.add_titled(page, "tweaks", _("Tweaks"))
+            self.sidePage.stack.add_titled(page, "tweaks", _("Settings"))
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -230,14 +230,13 @@ class Module:
             widget = GSettingsSwitch(_("Enable gestures"), "org.cinnamon.gestures", "enabled")
             section.add_row(widget)
 
-            section = page.add_section(_("Trigger distances"),
-                                       _("These values are the approximate length of the gesture (as a percentage of the touchpad or screen size) before "
-                                         "the action will register."))
+            section = page.add_section(_("Activation thresholds"),
+                                       _("In percentage of the touch surface"))
 
-            widget = GSettingsRange(_("Swipe threshold"), "org.cinnamon.gestures", "swipe-percent-threshold", _("20%"), _("80%"), 20, 80, step=5, show_value=True)
+            widget = GSettingsRange(_("Swipe"), "org.cinnamon.gestures", "swipe-percent-threshold", _("20%"), _("80%"), 20, 80, step=5, show_value=True)
             widget.add_mark(60, Gtk.PositionType.TOP, None)
             section.add_row(widget)
-            widget = GSettingsRange(_("Pinch threshold"), "org.cinnamon.gestures", "pinch-percent-threshold", _("20%"), _("80%"), 20, 80, step=5, show_value=True)
+            widget = GSettingsRange(_("Pinch"), "org.cinnamon.gestures", "pinch-percent-threshold", _("20%"), _("80%"), 20, 80, step=5, show_value=True)
             widget.add_mark(40, Gtk.PositionType.TOP, None)
             section.add_row(widget)
 
@@ -314,7 +313,7 @@ class GestureComboBox(SettingsWidget):
         self.content_widget = Gtk.ComboBox()
         renderer_text = Gtk.CellRendererText()
 
-        self.custom_entry = Gtk.Entry(placeholder_text=_("Enter a custom command"), no_show_all=True)
+        self.custom_entry = Gtk.Entry(placeholder_text=_("Enter a command"), no_show_all=True)
         self.content_widget.pack_start(renderer_text, True)
         self.content_widget.add_attribute(renderer_text, "text", 1)
 
