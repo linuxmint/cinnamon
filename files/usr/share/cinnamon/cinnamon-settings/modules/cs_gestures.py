@@ -209,7 +209,7 @@ class Module:
                 self.sidePage.stack.add_titled(page, "tap", _("Tap"))
                 size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-                section = page.add_section(_("Tapping"), _("Touchscreen only"))
+                section = page.add_section(_("Tap"), _("Touchscreen only"))
 
                 for fingers in range(2, 6):
                     for key in keys:

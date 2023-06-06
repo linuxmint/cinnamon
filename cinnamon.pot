@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-06 16:50+0100\n"
+"POT-Creation-Date: 2023-06-06 17:17+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4228,11 +4228,8 @@ msgid "Pinch with 5 fingers"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:209
-msgid "Tap"
-msgstr ""
-
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:212
-msgid "Tapping"
+msgid "Tap"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:230
