@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-06 17:17+0100\n"
+"POT-Creation-Date: 2023-06-06 21:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -263,26 +263,26 @@ msgstr ""
 msgid "Execution of '%s' failed:"
 msgstr ""
 
-#: js/ui/applet.js:569 js/ui/desklet.js:245
+#: js/ui/applet.js:571 js/ui/desklet.js:245
 #, javascript-format
 msgid "Are you sure you want to remove '%s'?"
 msgstr ""
 
-#: js/ui/applet.js:582
+#: js/ui/applet.js:584
 #: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:168
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:80
 #, javascript-format
 msgid "Remove '%s'"
 msgstr ""
 
-#: js/ui/applet.js:590 js/ui/desklet.js:229
+#: js/ui/applet.js:592 js/ui/desklet.js:229
 #: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:160
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:72
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:911
 msgid "About..."
 msgstr ""
 
-#: js/ui/applet.js:607 js/ui/desklet.js:234
+#: js/ui/applet.js:609 js/ui/desklet.js:234
 #: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:164
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:76
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:915
@@ -924,7 +924,7 @@ msgstr ""
 
 #. favorites@cinnamon.org->metadata.json->name
 #: files/usr/share/cinnamon/applets/favorites@cinnamon.org/applet.js:46
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2505
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2518
 msgid "Favorites"
 msgstr ""
 
@@ -954,7 +954,7 @@ msgid "Grouped window list"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:177
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2397
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2410
 msgid "Places"
 msgstr ""
 
@@ -963,7 +963,7 @@ msgid "Recent"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:230
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:451
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:453
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:50
 msgid "Run with dedicated GPU"
 msgstr ""
@@ -1050,23 +1050,23 @@ msgstr ""
 msgid "Keyboard Settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:455
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:457
 msgid "Add to panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:459
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:461
 msgid "Add to desktop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:464
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:466
 msgid "Remove from favorites"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:467
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:469
 msgid "Add to favorites"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:472
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:474
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:884
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_applets.py:56
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_desklets.py:81
@@ -1074,18 +1074,18 @@ msgstr ""
 msgid "Uninstall"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:730
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:838
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:732
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:840
 msgid "This file is no longer available"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:744
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:852
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:746
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:854
 msgid "Open with"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:790
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:898
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:792
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:900
 msgid "Other application..."
 msgstr ""
 
@@ -1093,60 +1093,60 @@ msgstr ""
 #. menu@cinnamon.org->settings-schema.json->menu->title
 #. sound@cinnamon.org->settings-schema.json->section1->description
 #. network@cinnamon.org->settings-schema.json->section1->description
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1170
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1172
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:56
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1175
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1177
 msgid "Edit menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2435
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2448
 msgid "Recent Files"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2450
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2463
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:121
 msgid "Clear list"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2451
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2464
 msgid "Clear all recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2470
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2483
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:126
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2534
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2547
 msgid "All Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2602
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2615
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:145
 msgid "Lock screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2603
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2616
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:11
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2627
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2640
 msgid "Logout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2628
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2641
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2639
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2652
 msgid "Quit"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2640
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2653
 msgid "Shut down the computer"
 msgstr ""
 
@@ -5359,7 +5359,6 @@ msgid "Symbolic icon size"
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->menu-icon-size->units
-#. menu@cinnamon.org->settings-schema.json->menu-height->units
 #. menu@cinnamon.org->settings-schema.json->category-icon-size->units
 #. menu@cinnamon.org->settings-schema.json->application-icon-size->units
 #. menu@cinnamon.org->settings-schema.json->fav-icon-size->units
@@ -6843,20 +6842,6 @@ msgstr ""
 msgid "Enter custom text to show in the panel."
 msgstr ""
 
-#. menu@cinnamon.org->settings-schema.json->restrict-menu-height->description
-msgid "Use a fixed menu height"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->restrict-menu-height->tooltip
-msgid ""
-"Keep the size of the menu the same no matter how many favorites or "
-"categories there are."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-height->description
-msgid "Menu height"
-msgstr ""
-
 #. menu@cinnamon.org->settings-schema.json->show-category-icons->description
 msgid "Show category icons"
 msgstr ""
@@ -6983,6 +6968,11 @@ msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->menu-editor-button->tooltip
 msgid "Press this button to customize your menu entries."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->reset-menu-size-
+#. button->description
+msgid "Restore the menu to its original size"
 msgstr ""
 
 #. xapp-status@cinnamon.org->metadata.json->name
