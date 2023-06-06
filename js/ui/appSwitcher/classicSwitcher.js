@@ -418,7 +418,7 @@ AppIcon.prototype = {
                                          vertical: true });
         this.icon = null;
         this._iconBin = new St.Bin();
-        this.label = new St.Label();
+        this.label = new St.Label({text: " "});
         let bin = new St.Bin({ x_align: St.Align.MIDDLE });
 
         this.actor.add(this._iconBin, { x_fill: false, y_fill: false } );
@@ -461,11 +461,13 @@ AppIcon.prototype = {
                               icon_type: St.IconType.FULLCOLOR,
                               icon_size: size });
         }
+        this.fontSize = Math.max(size / 16, 14);
+        this.fontSize = Math.min(this.fontSize, 32);
+        this.label.set_style("font-size: " + this.fontSize + "px;");
+        this.label.set_height(this.fontSize * 1.2 + this.bottomPadding);
         size *= global.ui_scale;
         this._iconBin.set_size(size, size);
         this._iconBin.child = this.icon;
-        this.fontSize = Math.max(size / 16, 14 * global.ui_scale);
-        this.label.set_style("font-size: " + this.fontSize + "px;");
     }
 };
 
@@ -812,17 +814,20 @@ AppList.prototype = {
         if (this._showThumbnails) {
             if (this._items.length == 1) {
                 this._iconSize = thumbnailMaxSize;
-                height = (thumbnailMaxSize * global.ui_scale) + iconSpacing;
+                height = thumbnailMaxSize;
+                // height = (thumbnailMaxSize / global.ui_scale) + iconSpacing;
             } else {
                 this._iconSize = Math.min((availWidth / this._items.length) - iconSpacing, thumbnailMaxSize);
                 this._iconSize = Math.max(this._iconSize, thumbnailMinSize);
-                height = (this._iconSize * global.ui_scale) + iconSpacing;
+                height = this._iconSize;
             }
         } else {
                 this._iconSize = Math.max(this._activeMonitor.width / 14, iconMinHeight);
-                height = (this._iconSize * global.ui_scale) + iconSpacing;
-        }
-
+                height = this._iconSize;
+            }
+        // height *= global.ui_scale;
+        height += iconSpacing;
+        this._iconSize /= global.ui_scale;
 
         for (let i = 0; i < this.icons.length; i++) {
             if (this.icons[i].icon != null)
