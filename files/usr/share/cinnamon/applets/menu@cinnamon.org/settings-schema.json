@@ -27,7 +27,7 @@
             "title" : "Layout and content",
             "keys" : ["show-category-icons",
                       "category-icon-size", "show-application-icons", "application-icon-size",
-                      "favbox-show", "fav-icon-size", "show-places", "show-recents", "menu-editor-button"]
+                      "favbox-show", "fav-icon-size", "show-places", "show-recents", "menu-editor-button", "reset-menu-size-button"]
         },
         "menu-behave" : {
             "type" : "section",
@@ -197,5 +197,10 @@
  "popup-height" : {
     "type" : "generic",
     "default" : 650
+ },
+ "reset-menu-size-button" : {
+    "type" : "button",
+    "description" : "Restore the menu to its original size",
+    "callback" : "_reset_menu_size"
  }
 }

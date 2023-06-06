@@ -1183,6 +1183,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._size_dirty = true;
         });
 
+        global.connect("scale-changed", () => {
+            this._size_dirty = true;
+        })
+
         this._resizer = new Applet.PopupResizeHandler(this.menu.actor,
             () => this._orientation,
             (w,h) => this._onBoxResized(w,h),
@@ -1456,10 +1460,18 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         Main.keybindingManager.removeHotKey("overlay-key-" + this.instance_id);
     }
 
-    // settings button callback
+    // settings button callbacks
     _launch_editor() {
         Util.spawnCommandLine("cinnamon-menu-editor");
     }
+
+    _reset_menu_size() {
+        this.popup_width = this.settings.getDefaultValue("popup-width");
+        this.popup_height = this.settings.getDefaultValue("popup-height");
+
+        this._setMenuSize(this.popup_width, this.popup_height);
+    }
+    //
 
     on_applet_clicked(event) {
         this.menu.toggle_with_options(this.enableAnimation);
