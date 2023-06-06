@@ -460,9 +460,9 @@ AppIcon.prototype = {
                               icon_type: St.IconType.FULLCOLOR,
                               icon_size: size });
         }
-        this.fontSize = Math.max(size / 16, 16);
-        this.fontSize = Math.min(this.fontSize, 32);
-        this.fontSize *= global.ui_scale;
+        this.fontSize = Math.max(size / 20, 10); // allow font no smaller than 12 pt
+        this.fontSize = Math.min(this.fontSize, 26); // allow font no larger than 32 pt
+        this.fontSize *= global.ui_scale; // scale fonts for ui scale
         this.label.set_style("font-size: " + this.fontSize + "px;");
         this.label.set_height(this.fontSize * 1.2 + this.bottomPadding);
         size *= global.ui_scale;
