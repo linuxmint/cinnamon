@@ -34,7 +34,7 @@ const iconMinSize = 32; // minimum size of the icons in icon-only alt+tab window
 var thumbnailMaxSize = 1000; // maximum size of thumbnail in the thumbnail-only alt+tab window selector
 const thumbnailMinSize = 32; // minimum size of thumbnail in the thumbnail-only alt+tab window selector
 
-var fontMinSize = 12; // minimum size of dynamically-sized fonts, in px
+var fontMinSize = 12; // minimum size of dynamically-sized fonts, in pt
 
 function mod(a, b) {
     return (a + b) % b;
@@ -465,7 +465,7 @@ AppIcon.prototype = {
         }
    
         this.fontSize = Math.max(size / 24, fontMinSize); // allow font no smaller than 12 pt
-        this.fontSize = Math.min(this.fontSize, 20); // allow font no larger than 26 pt
+        this.fontSize = Math.min(this.fontSize, 20); // allow font no larger than 20 pt
         this.fontSize *= global.ui_scale; // scale fonts for ui scale
         this.label.set_style("font-size: " + this.fontSize + "pt;");
         this.label.set_height(this.fontSize * 1.2 + this.bottomPadding);
