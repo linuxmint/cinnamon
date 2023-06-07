@@ -31,8 +31,10 @@ var PREVIEW_SWITCHER_FADEOUT_TIME = 0.2; // seconds
 
 const iconMinSize = 32; // minimum size of the icons in icon-only alt+tab window selector
 
-const thumbnailMaxSize = 1000; // maximum size of thumbnail in the thumbnail-only alt+tab window selector
-const thumbnailMinSize = 64; // minimum size of thumbnail in the thumbnail-only alt+tab window selector
+var thumbnailMaxSize = 1000; // maximum size of thumbnail in the thumbnail-only alt+tab window selector
+const thumbnailMinSize = 32; // minimum size of thumbnail in the thumbnail-only alt+tab window selector
+
+var fontMinSize = 12; // minimum size of dynamically-sized fonts, in px
 
 function mod(a, b) {
     return (a + b) % b;
@@ -71,7 +73,8 @@ ClassicSwitcher.prototype = {
 
         this._showThumbnails = this._thumbnailsEnabled && !this._iconsEnabled;
         this._showArrows = this._thumbnailsEnabled && this._iconsEnabled;
-        
+        fontMinSize = global.settings.get_int("alttab-switcher-text-minimum-size");
+        thumbnailMaxSize = global.settings.get_int("alttab-switcher-thumbnail-maximum-size");
         this._updateList(0);
 
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
@@ -460,10 +463,11 @@ AppIcon.prototype = {
                               icon_type: St.IconType.FULLCOLOR,
                               icon_size: size });
         }
-        this.fontSize = Math.max(size / 20, 10); // allow font no smaller than 12 pt
-        this.fontSize = Math.min(this.fontSize, 26); // allow font no larger than 32 pt
+   
+        this.fontSize = Math.max(size / 24, fontMinSize); // allow font no smaller than 12 pt
+        this.fontSize = Math.min(this.fontSize, 20); // allow font no larger than 26 pt
         this.fontSize *= global.ui_scale; // scale fonts for ui scale
-        this.label.set_style("font-size: " + this.fontSize + "px;");
+        this.label.set_style("font-size: " + this.fontSize + "pt;");
         this.label.set_height(this.fontSize * 1.2 + this.bottomPadding);
         size *= global.ui_scale;
         this._iconBin.set_size(size, size);
