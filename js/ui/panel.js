@@ -42,7 +42,7 @@ const APPLETS_DROP_ANIMATION_TIME = 0.2;
 const PANEL_PEEK_TIME = 1500;
 
 const EDIT_MODE_MIN_BOX_SIZE = 25;
-const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48];
+const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48, 64, 72, 80, 96, 128];
 
 /*** These are defaults for a new panel added */
 const DEFAULT_PANEL_VALUES = {"panels-autohide": "false",
@@ -58,13 +58,13 @@ const DEFAULT_SYMBOLIC_ICON_SIZE_VALUES = {"left":   28,
                                            "center": 28,
                                            "right":  28};
 const MIN_SYMBOLIC_SIZE_PX = 10;
-const MAX_SYMBOLIC_SIZE_PX = 50;
+const MAX_SYMBOLIC_SIZE_PX = 130;
 
 const DEFAULT_TEXT_SIZE_VALUES = {"left":   0.0,
                                   "center": 0.0,
                                   "right":  0.0};
 const MIN_TEXT_SIZE_PTS = 6.0;
-const MAX_TEXT_SIZE_PTS = 16.0;
+const MAX_TEXT_SIZE_PTS = 24.0;
 /*** Defaults ***/
 
 const PANEL_AUTOHIDE_KEY = "panels-autohide";
@@ -254,8 +254,16 @@ function toStandardIconSize(maxSize) {
     if (maxSize < 22) return 16;
     else if (maxSize < 24) return 22;
     else if (maxSize < 32) return 24;
-    else if (maxSize < 48) return 32;
-    // Panel icons reach 32 at most with the largest panel, also on hidpi
+    else if (maxSize < 40) return 32;
+    else if (maxSize < 48) return 40;
+    else if (maxSize < 56) return 48;
+    else if (maxSize < 64) return 56;
+    else if (maxSize < 72) return 64;
+    else if (maxSize < 80) return 72;
+    else if (maxSize < 96) return 80;
+    else if (maxSize < 128) return 96;
+    else if (maxSize < 160) return 128;
+    // Panel icons reach 128 at most with the largest panel, also on hidpi
     return 48;
 }
 
