@@ -39,6 +39,14 @@ except Exception as detail:
 for module in modules:
     try:
         mod = module.Module(None)
+        name = mod.name
+
+        if name == "display":
+            # skip the display module, its desktop file is provided by CCC
+            continue
+        elif name == "accessibility":
+            # rename modules which cs_*.py filename doesn't match their .desktop filename
+            name = "universal-access"
 
         if mod.category in "admin":
             category = "Settings;System;"
@@ -56,7 +64,7 @@ OnlyShowIn=X-Cinnamon;
 Categories=Settings;
 """ % {'module': mod.name, 'category': category, 'icon': mod.sidePage.icon}
 
-        additionalfiles.generate(DOMAIN, PATH, "files/usr/share/applications/cinnamon-settings-%s.desktop" % mod.name, prefix, mod.sidePage.name, mod.comment, "", None, mod.sidePage.keywords)
+        additionalfiles.generate(DOMAIN, PATH, "files/usr/share/applications/cinnamon-settings-%s.desktop" % name, prefix, mod.sidePage.name, mod.comment, "", None, mod.sidePage.keywords)
 
     except Exception:
         print("Failed to load module %s" % module)
