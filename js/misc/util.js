@@ -866,3 +866,25 @@ function getDesktopActionIcon(action) {
     else return null;
 }
 
+/**
+ * splitByGrapheme:
+ * @str (string): The string to be converted
+ *
+ * Converts a string, possibly containing multiple codepoint unicode characters (e.g. emoji), into
+ * an array of unicode graphemes. For example: "👩‍👩‍👧‍👧😃".length === 13, but splitByGrapheme("👩‍👩‍👧‍👧😃")
+ * returns ["👩‍👩‍👧‍👧", "😃"] which is length 2.
+ * 
+ * Returns (array): Array of unicode graphemes.
+ */
+ //Copied from https://stackoverflow.com/a/72072071
+function splitByGrapheme(str) { 
+    let arr = [...str]
+
+    for (i = arr.length-1; i--; i>= 0){
+        if (arr[i].charCodeAt(0) == 8205) { // find & handle special combination character
+            arr[i-1] += arr[i] + arr[i+1];
+            arr.splice(i, 2)
+        }
+    }
+    return arr;
+}
