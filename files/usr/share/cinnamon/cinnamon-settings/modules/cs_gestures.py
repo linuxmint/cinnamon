@@ -32,25 +32,28 @@ class Module:
         self.disabled_box = None
 
     def on_module_selected(self):
+        have_touchpad = DEBUG_SHOW_ALL
+        have_touchscreen =  DEBUG_SHOW_ALL
+
+        # Detect devices.
+        out = subprocess.getoutput("csd-input-helper").replace("\t", " ").split("\n")[:4]
+        for line in out:
+            if "touchpad" in line and line.endswith("yes"):
+                have_touchpad = True
+            if "touchscreen" in line and line.endswith("yes"):
+                have_touchscreen = True
+
+        installed = GLib.find_program_in_path("touchegg")
+        alive = self.test_daemon_alive()
+
+        if self.gesture_settings is None:
+            self.gesture_settings = Gio.Settings(schema_id=SCHEMA)
+            self.gesture_settings.connect("changed::enabled", self.on_enabled_changed)
+
+        enabled = self.gesture_settings.get_boolean("enabled")
+
         if not self.loaded:
             print("Loading Gestures module")
-
-            have_touchpad = DEBUG_SHOW_ALL
-            have_touchscreen =  DEBUG_SHOW_ALL
-
-            if self.gesture_settings is None:
-                self.gesture_settings = Gio.Settings(schema_id=SCHEMA)
-                self.gesture_settings.connect("changed::enabled", self.on_enabled_changed)
-
-            enabled = self.gesture_settings.get_boolean("enabled")
-
-            # Detect devices.
-            out = subprocess.getoutput("csd-input-helper").replace("\t", " ").split("\n")[:4]
-            for line in out:
-                if "touchpad" in line and line.endswith("yes"):
-                    have_touchpad = True
-                if "touchscreen" in line and line.endswith("yes"):
-                    have_touchscreen = True
 
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)
@@ -65,16 +68,16 @@ class Module:
             image = Gtk.Image(icon_name="touch-disabled-symbolic", icon_size=Gtk.IconSize.DIALOG)
             box.pack_start(image, False, False, 0)
 
-            if not have_touchpad and not have_touchscreen:
-                label = Gtk.Label(label="<big><b>%s</b></big>" % _("No compatible devices found"), expand=True, use_markup=True)
-                box.pack_start(label, False, False, 0)
-            else:
-                label = Gtk.Label(label="<big><b>%s</b></big>" % _("Gestures are disabled"), expand=True, use_markup=True)
-                box.pack_start(label, False, False, 0)
-                self.disabled_page_switch = switch = Gtk.Switch(active=self.gesture_settings.get_boolean("enabled"))
-                self.disabled_page_switch.connect("notify::active", self.enabled_switch_changed)
+            self.disabled_label = Gtk.Label(expand=True)
+            box.pack_start(self.disabled_label, False, False, 0)
+            
+            self.disabled_page_switch = Gtk.Switch(active=self.gesture_settings.get_boolean("enabled"), no_show_all=True)
+            self.disabled_page_switch.connect("notify::active", self.enabled_switch_changed)
+            box.pack_start(self.disabled_page_switch, False, False, 0)
 
-                box.pack_start(switch, False, False, 0)
+            self.disabled_retry_button = Gtk.Button(label=_("Check again"), no_show_all=True, halign=Gtk.Align.CENTER)
+            self.disabled_retry_button.connect("clicked", lambda w: self.on_module_selected())
+            box.pack_start(self.disabled_retry_button, False, False, 0)
 
             ssource = Gio.SettingsSchemaSource.get_default();
             schema = ssource.lookup(SCHEMA, True);
@@ -127,7 +130,7 @@ class Module:
             ]
 
             page = SettingsPage()
-            self.sidePage.stack.add_titled(page, "main", _("Swipe"))
+            self.sidePage.stack.add_titled(page, "swipe", _("Swipe"))
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
             if have_touchscreen:
@@ -240,14 +243,34 @@ class Module:
             widget.add_mark(40, Gtk.PositionType.TOP, None)
             section.add_row(widget)
 
-            self.sidePage.stack.set_transition_type(Gtk.StackTransitionType.NONE)
+        self.disabled_page_switch.set_visible(False)
+        self.disabled_retry_button.set_visible(False)
 
-            if not enabled or not (have_touchpad or have_touchscreen):
-                page = "disabled"
-            else:
-                page = "main"
+        if not installed:
+            text = _("The touchegg package must be installed for gesture support.")
+            self.disabled_retry_button.show()
+        elif not alive:
+            text = _("The Touchegg service is not running")
+            self.disabled_retry_button.show()
+        elif not have_touchpad and not have_touchscreen:
+            text =  _("No compatible devices found")
+            self.disabled_retry_button.show()
+        else:
+            self.disabled_page_switch.set_visible(True)
+            text = _("Gestures are disabled")
 
-            GLib.idle_add(self.set_initial_page, page)
+        self.disabled_label.set_markup("<big><b>%s</b></big>" % text)
+
+        self.sidePage.stack.set_transition_type(Gtk.StackTransitionType.NONE)
+
+        if not enabled or not (have_touchpad or have_touchscreen) or not alive or not installed:
+            Gio.Application.get_default().stack_switcher.hide()
+            page = "disabled"
+        else:
+            Gio.Application.get_default().stack_switcher.show()
+            page = "swipe"
+
+        GLib.idle_add(self.set_initial_page, page)
 
     def set_initial_page(self, page):
         self.sidePage.stack.set_visible_child_full(page, Gtk.StackTransitionType.NONE)
@@ -267,8 +290,10 @@ class Module:
         self.disabled_page_switch.set_active(enabled)
 
         if enabled:
-            self.sidePage.stack.set_visible_child_full("main", Gtk.StackTransitionType.CROSSFADE)
+            Gio.Application.get_default().stack_switcher.show()
+            self.sidePage.stack.set_visible_child_full("swipe", Gtk.StackTransitionType.CROSSFADE)
         else:
+            Gio.Application.get_default().stack_switcher.hide()
             self.sidePage.stack.set_visible_child_full("disabled", Gtk.StackTransitionType.CROSSFADE)
 
         self.disabled_page_switch.connect("notify::active", self.enabled_switch_changed)
@@ -298,6 +323,18 @@ class Module:
             return _("Tap with %d fingers") % fingers
 
         return None
+
+    def test_daemon_alive(self):
+        try:
+            conn = Gio.DBusConnection.new_for_address_sync("unix:abstract=touchegg",
+                                                           Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT,
+                                                           None, None)
+            conn.close_sync(None)
+            return True
+        except GLib.Error as e:
+            pass
+
+        return False
 
 class GestureComboBox(SettingsWidget):
     def __init__(self, label, settings=None, key=None, options=[], size_group=None):
