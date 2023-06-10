@@ -264,16 +264,19 @@ class Module:
         self.sidePage.stack.set_transition_type(Gtk.StackTransitionType.NONE)
 
         if not enabled or not (have_touchpad or have_touchscreen) or not alive or not installed:
-            Gio.Application.get_default().stack_switcher.hide()
             page = "disabled"
         else:
-            Gio.Application.get_default().stack_switcher.show()
             page = "swipe"
 
         GLib.idle_add(self.set_initial_page, page)
 
     def set_initial_page(self, page):
-        self.sidePage.stack.set_visible_child_full(page, Gtk.StackTransitionType.NONE)
+        if page == "disabled":
+            Gio.Application.get_default().stack_switcher.set_opacity(0)
+        else:
+            Gio.Application.get_default().stack_switcher.set_opacity(1.0)
+
+        self.sidePage.stack.set_visible_child_full(page, Gtk.StackTransitionType.CROSSFADE)
         self.sidePage.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
 
     def enabled_switch_changed(self, widget, pspec):
@@ -290,10 +293,10 @@ class Module:
         self.disabled_page_switch.set_active(enabled)
 
         if enabled:
-            Gio.Application.get_default().stack_switcher.show()
+            Gio.Application.get_default().stack_switcher.set_opacity(1.0)
             self.sidePage.stack.set_visible_child_full("swipe", Gtk.StackTransitionType.CROSSFADE)
         else:
-            Gio.Application.get_default().stack_switcher.hide()
+            Gio.Application.get_default().stack_switcher.set_opacity(0)
             self.sidePage.stack.set_visible_child_full("disabled", Gtk.StackTransitionType.CROSSFADE)
 
         self.disabled_page_switch.connect("notify::active", self.enabled_switch_changed)
