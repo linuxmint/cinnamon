@@ -15,7 +15,7 @@ class MessageDialogWindow(Gtk.Window):
         if self.counter < 10:
             GLib.timeout_add(1000 * (self.counter % 7), self.show_urgent)
         else:
-            self.set_urgency_hint(1==1)
+            self.set_urgency_hint(True)
 
 
 win = MessageDialogWindow()

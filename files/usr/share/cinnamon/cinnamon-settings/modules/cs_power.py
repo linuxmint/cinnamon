@@ -297,6 +297,10 @@ class Module:
         have_primary = False
         ups_as_primary = False
 
+        have_keyboard = False
+        have_mouse = False
+        have_other = False
+
         # first we look for a discharging UPS, which is promoted to the
         # primary device if it's discharging. Otherwise we use the first
         # listed laptop battery as the primary device
@@ -333,6 +337,21 @@ class Module:
                     self.show_battery_page = True
                 else:
                     secondary_settings.add_row(self.add_battery_device_secondary(device))
+                if device[UP_TYPE] == UPowerGlib.DeviceKind.KEYBOARD:
+                    have_keyboard = True
+                elif device[UP_TYPE] == UPowerGlib.DeviceKind.MOUSE:
+                    have_mouse = True
+                else:
+                    have_other = True
+
+        if have_keyboard or have_mouse or have_other:
+            notification_settings = self.battery_page.add_section(_("Low battery notifications"))
+            if have_keyboard or have_other:
+                notification_settings.add_row(GSettingsSwitch(_("For wireless keyboard"), CSD_SCHEMA, "power-notifications-for-keyboard"))
+            if have_mouse or have_other:
+                notification_settings.add_row(GSettingsSwitch(_("For wireless mouse"), CSD_SCHEMA, "power-notifications-for-mouse"))
+            if have_other:
+                notification_settings.add_row(GSettingsSwitch(_("For other connected devices"), CSD_SCHEMA, "power-notifications-for-other-devices"))
 
         #show all the widgets in this page, but not the page itself
         visible = self.battery_page.get_visible()

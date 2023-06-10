@@ -642,7 +642,7 @@ NMDevice.prototype = {
         if (active) {
             title = active._name;
         } else {
-            /* TRANSLATORS: this is the indication that a connection for another logged in user is active,
+            /* Translators: this is the indication that a connection for another logged in user is active,
                and we cannot access its settings (including the name) */
             title = _("Connected (private)");
         }
@@ -1551,7 +1551,7 @@ NMDeviceWireless.prototype = {
         let name;
         let ssid = NM.utils_ssid_to_utf8(apObj.ssid.get_data());
         if (ssid) {
-            /* TRANSLATORS: this the automatic wireless connection name (including the network name) */
+            /* Translators: this the automatic wireless connection name (including the network name) */
             name = _("Auto %s").format(ssid);
         } else
             name = _("Auto wireless");

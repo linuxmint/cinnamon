@@ -1,0 +1,91 @@
+name: Bug Report
+description: File a bug report
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### STOP! Before continuing:
+        - Please try searching for any existing report that may match the behavior you're seeing. *If you find one, add to that issue, instead of opening a new one*. Include any relevant details that may differ from the original author's.
+        - If this is related to Cinnamon, sometimes third-party xlets (applets, desklets and extensions) can cause erroneous or unexpected behavior. Try disabling these first to see if the behavior goes away. After disabling, be sure to restart Cinnamon before continuing. Right-click an empty portion of the panel, select Troubleshooting, then 'Restart Cinnamon'. Alternately, you can open the run dialog - Alt-F2, type 'r' or 'restart', and enter.
+        - Check your logs - there may be some obvious cause for your trouble - in Linux Mint you can check ~/.xsession-errors (a hidden file in your Home folder).
+        - Have you tried rebooting?
+
+        ---
+
+        Thank you for taking the time to report this issue. To allow us to work as efficiently as possible at resolving this, we need some information from you.
+
+  - type: input
+    id: distro
+    attributes:
+      label: Distribution
+      description: Which Linux distribution are you using? Please be as specific as possible.
+      placeholder: "example: Mint 21.1"
+    validations:
+      required: true
+
+  - type: input
+    id: pkgver
+    attributes:
+      label: Package version
+      description: Please provide the Cinnamon version. You can get this by running `cinnamon --version` in a terminal, or launching 'System Info" from the menu.
+      placeholder: "example: 5.6.1"
+    validations:
+      required: true
+
+  - type: input
+    id: graphics
+    attributes:
+      label: Graphics hardware in use
+      description: Please provide information about your graphics hardware, if known. If you are using a dual-gpu system please specify that also.
+      placeholder: "example: NVIDIA GeForce GTX 1660 TI"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Frequency
+      description: How often does this behavior occur?
+      options:
+        - Always
+        - Quite often
+        - Only occasionally
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Bug description
+      description: Please describe what is happening
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Please try to provide **detailed** steps on the most direct way to reproduce this issue. The chances of a bug being fixed go up **considerably** if we are able to duplicate the behavior ourselves.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: Describe what you think should happen instead of the current behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: more-info
+    attributes:
+      label: Additional information
+      description: You can add any other information you think may be relevant.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        #### By submitting this report you agree to behave respectfully and in a mature manner. If in doubt, refer to the [Golden Rule](https://en.wikipedia.org/wiki/Golden_Rule) and [Github's Community Guidelines](https://docs.github.com/en/site-policy/github-terms/github-community-guidelines).

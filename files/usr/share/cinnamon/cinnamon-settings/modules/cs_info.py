@@ -175,7 +175,7 @@ class Module:
             if systemIcon != "":
                 try:
                     if "/" in systemIcon:
-                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale (systemIconPath, -1, 100, True)
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(systemIcon, -1, 100, True)
                         systemIcon = Gtk.Image.new_from_pixbuf(pixbuf)
                     else:
                         systemIcon = Gtk.Image.new_from_icon_name(systemIcon, Gtk.IconSize.DIALOG)
@@ -226,8 +226,8 @@ class Module:
             subproc = Gio.Subprocess.new(['inxi', '-Fxxrzc0'], Gio.SubprocessFlags.STDOUT_PIPE |  Gio.SubprocessFlags.STDERR_PIPE)
             subproc.wait_check_async(None, self.on_copy_clipboard_complete)
         except Exception as e:
-            print ("An error occurred while copying the system information to clipboard")
-            print (e)
+            print("An error occurred while copying the system information to clipboard")
+            print(e)
 
     def on_copy_clipboard_complete(self, subproc, result):
         def _convert_stream_to_string(stream):

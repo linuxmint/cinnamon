@@ -36,7 +36,7 @@ if __name__ == "__main__":
         for url, title in cur.fetchall():
             url_parsed = urllib.parse.urlparse(url)
             domain = url_parsed.scheme + '://' + url_parsed.netloc
-            if not domain in domains_list:
+            if domain not in domains_list:
                 domains_list.append(domain)
             if url and title:
                 results.append({

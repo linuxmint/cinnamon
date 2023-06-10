@@ -1426,7 +1426,7 @@ cinnamon_global_create_app_launch_context (CinnamonGlobal *global)
 
   // Make sure that the app is opened on the current workspace even if
   // the user switches before it starts
-  gdk_app_launch_context_set_desktop (context, cinnamon_screen_get_active_workspace_index (global->cinnamon_screen));
+  gdk_app_launch_context_set_desktop (context, meta_workspace_manager_get_active_workspace_index (global->workspace_manager));
 
   return (GAppLaunchContext *)context;
 }

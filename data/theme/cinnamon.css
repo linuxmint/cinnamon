@@ -1244,6 +1244,11 @@ StScrollBar StButton#vhandle:hover {
     padding-right: 7px;
     padding-bottom: 7px;
 }
+.menu-category-button:hover {
+    background-color: rgba(128,128,128,0.2);
+    border-radius: 4px;
+    border-image: none;
+}
 .menu-category-button-greyed {
     padding-top: 7px;
     padding-left: 7px;
@@ -1272,9 +1277,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .menu-category-button-label:rtl {
     padding-right: 5px;
-
-}
-.menu-category-button-selected:hover {
 }
 /* Name and description of the currently hovered item in the menu
  * This appears on the bottom right hand corner of the menu*/

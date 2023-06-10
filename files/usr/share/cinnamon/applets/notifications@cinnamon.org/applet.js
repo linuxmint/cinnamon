@@ -201,7 +201,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
             if (!this.showNotificationCount) {  // Don't show notification count
                 this.set_applet_label('');
-                this.clear_action.actor.hide();
+                // this.clear_action.actor.hide();
             }
             this.menu_label.label.set_text(stringify(count));
             this._notificationbin.queue_relayout();

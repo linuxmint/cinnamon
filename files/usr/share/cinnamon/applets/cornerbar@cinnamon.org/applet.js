@@ -1,4 +1,5 @@
 const Applet = imports.ui.applet;
+const GLib = imports.gi.GLib;
 const St = imports.gi.St;
 const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
@@ -8,6 +9,8 @@ const PopupMenu = imports.ui.popupMenu;
 const SignalManager = imports.misc.signalManager;
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
+
+const SCROLL_DELAY = 200;
 
 class CinnamonBarApplet extends Applet.Applet {
     constructor(orientation, panel_height, instance_id) {
@@ -20,14 +23,19 @@ class CinnamonBarApplet extends Applet.Applet {
         this.settings.bind("peek-blur", "peek_blur");
         this.settings.bind("click-action", "click_action");
         this.settings.bind("middle-click-action", "middle_click_action");
+        this.settings.bind("scroll-behavior", "scroll_behavior");
 
         this.signals = new SignalManager.SignalManager(null);
         this.actor.connect('enter-event', Lang.bind(this, this._on_enter));
         this.actor.connect('leave-event', Lang.bind(this, this._on_leave));
         this.signals.connect(global.stage, 'notify::key-focus', this._on_leave, this);
+        this.actor.connect('scroll-event', Lang.bind(this, this._on_scroll_event));
 
         this._did_peek = false;
         this._peek_timeout_id = 0;
+
+        this._last_scroll_time = 0;
+        this._last_scroll_direction = 0;
 
         this.actor.style_class = 'applet-cornerbar-box';
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
@@ -152,6 +160,43 @@ class CinnamonBarApplet extends Applet.Applet {
             Mainloop.source_remove(this._peek_timeout_id);
             this._peek_timeout_id = 0;
         }
+    }
+
+    _on_scroll_event(actor,event) {
+        if (this.scroll_behavior == "nothing") {
+            return GLib.SOURCE_CONTINUE;
+        }
+
+        if (this._peek_timeout_id > 0) {
+            Mainloop.source_remove(this._peek_timeout_id);
+            this._peek_timeout_id = 0;
+        }
+
+        const edir = event.get_scroll_direction();
+        if (edir == Clutter.ScrollDirection.SMOOTH) {
+            return GLib.SOURCE_CONTINUE;
+        }
+
+        const etime = event.get_time();
+        if (etime > (this._last_scroll_time + SCROLL_DELAY) ||
+            edir !== this._last_scroll_direction) {
+
+            let index = global.screen.get_active_workspace_index();
+
+            if ((edir == Clutter.ScrollDirection.UP) == (this.scroll_behavior == "normal"))
+                index = index - 1;
+            else
+                index = index + 1;
+
+            if (global.screen.get_workspace_by_index(index) != null) {
+                global.screen.get_workspace_by_index(index).activate(global.get_current_time());
+            }
+
+            this._last_scroll_direction = edir;
+            this._last_scroll_time = etime;
+        }
+
+        return GLib.SOURCE_CONTINUE;
     }
 
     show_all_windows(time) {

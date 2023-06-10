@@ -429,6 +429,11 @@
       <summary>Show all windows from all workspaces</summary>
     </key>
 
+    <key type="b" name="alttab-switcher-warp-mouse-pointer">
+      <default>false</default>
+      <summary>Warp mouse pointer to the new focused window</summary>
+    </key>
+
     <key name="bring-windows-to-current-workspace" type="b">
       <default>false</default>
       <summary>not used - lives in org.cinnamon.muffin now</summary>
@@ -506,9 +511,14 @@
       <summary>The logo to use in the system info settings</summary>
       <description>
         An icon name or absolute path to an icon, which will be used for the system icon in the "System Info" settings app.
-        .
         Disabled if no value is set.
       </description>
+    </key>
+
+    <key type="b" name="center-warped-pointer">
+      <default>true</default>
+      <summary>Center the pointer on the new monitor</summary>
+      <description>If true, the pointer will be set to the center of the new monitor when using pointer next/previous shortcuts.</description>
     </key>
 
     <child name="theme" schema="org.cinnamon.theme"/>

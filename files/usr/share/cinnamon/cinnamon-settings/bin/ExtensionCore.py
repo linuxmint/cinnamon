@@ -196,7 +196,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         # otherwise we check for "external-configuration-app" in metadata and settings-schema.json in settings
         self.has_config = False
         self.ext_config_app = None
-        if not 'hide-configuration' in self.metadata or self.metadata['hide-configuration'] != True:
+        if 'hide-configuration' not in self.metadata or self.metadata['hide-configuration'] != True:
             if 'external-configuration-app' in self.metadata:
                 self.ext_config_app = os.path.join(self.metadata['path'], self.metadata['external-configuration-app'])
 

@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
 import os
+import json
 
-from gi.repository import Gtk
+from gi.repository import Gtk, GdkPixbuf
 
 from xapp.GSettingsWidgets import *
 from CinnamonGtkSettings import CssRange, CssOverrideSwitch, GtkSettingsSwitch, PreviewWidget, Gtk2ScrollbarSizeEditor
@@ -20,14 +21,62 @@ ICON_SIZE = 48
 # but it's helpful to be aware of it.
 
 ICON_FOLDERS = [
-    os.path.join(GLib.get_user_data_dir(), "icons"),
-    os.path.join(GLib.get_home_dir(), ".icons")
+    os.path.join(GLib.get_home_dir(), ".icons"),
+    os.path.join(GLib.get_user_data_dir(), "icons")
 ] + [os.path.join(datadir, "icons") for datadir in GLib.get_system_data_dirs()]
 
 THEME_FOLDERS = [
-    os.path.join(GLib.get_user_data_dir(), "themes"),
-    os.path.join(GLib.get_home_dir(), ".themes")
+    os.path.join(GLib.get_home_dir(), ".themes"),
+    os.path.join(GLib.get_user_data_dir(), "themes")
 ] + [os.path.join(datadir, "themes") for datadir in GLib.get_system_data_dirs()]
+
+
+class Style:
+    def __init__(self, json_obj):
+        self.name = json_obj["name"]
+        self.modes = {}
+        self.default_mode = None
+
+class Mode:
+    def __init__(self, name):
+        self.name = name
+        self.default_variant = None
+        self.variants = []
+
+    def get_variant_by_name(self, name):
+        for variant in self.variants:
+            if name == variant.name:
+                return variant
+
+        return None
+
+class Variant:
+    def __init__(self, json_obj):
+        self.name = json_obj["name"]
+        self.gtk_theme = None
+        self.icon_theme = None
+        self.cinnamon_theme = None
+        self.cursor_theme = None
+        self.color = "#000000"
+        self.color2 = "#000000"
+        if "themes" in json_obj:
+            themes = json_obj["themes"]
+            self.gtk_theme = themes
+            self.icon_theme = themes
+            self.cinnamon_theme = themes
+            self.cursor_theme = themes
+        if "gtk" in json_obj:
+            self.gtk_theme = json_obj["gtk"]
+        if "icons" in json_obj:
+            self.icon_theme = json_obj["icons"]
+        if "cinnamon" in json_obj:
+            self.cinnamon_theme = json_obj["cinnamon"]
+        if "cursor" in json_obj:
+            self.cursor_theme = json_obj["cursor"]
+        self.color = json_obj["color"]
+        self.color2 = self.color
+        if "color2" in json_obj:
+            self.color2 = json_obj["color2"]
 
 class Module:
     comment = _("Manage themes to change how your desktop looks")
@@ -42,9 +91,79 @@ class Module:
         self.sidePage = sidePage
         self.refreshing = False # flag to ensure we only refresh once at any given moment
 
+    def refresh_themes(self):
+        # Find all installed themes
+        self.gtk_themes = []
+        self.gtk_theme_names = set()
+        self.icon_theme_names = []
+        self.cinnamon_themes = []
+        self.cinnamon_theme_names = set()
+        self.cursor_themes = []
+        self.cursor_theme_names = set()
+
+        # Gtk themes -- Only shows themes that have variations for gtk+-3 and gtk+-2
+        for (name, path) in walk_directories(THEME_FOLDERS, self.filter_func_gtk_dir, return_directories=True):
+            for theme in self.gtk_themes:
+                if name == theme[0]:
+                    if path == THEME_FOLDERS[0]:
+                        continue
+                    else:
+                        self.gtk_themes.remove(theme)
+            self.gtk_theme_names.add(name)
+            self.gtk_themes.append((name, path))
+        self.gtk_themes.sort(key=lambda a: a[0].lower())
+
+        # Cinnamon themes
+        for (name, path) in walk_directories(THEME_FOLDERS, lambda d: os.path.exists(os.path.join(d, "cinnamon")), return_directories=True):
+            for theme in self.cinnamon_themes:
+                if name == theme[0]:
+                    if path == THEME_FOLDERS[0]:
+                        continue
+                    else:
+                        self.cinnamon_themes.remove(theme)
+            self.cinnamon_theme_names.add(name)
+            self.cinnamon_themes.append((name, path))
+        self.cinnamon_themes.sort(key=lambda a: a[0].lower())
+
+        # Icon themes
+        walked = walk_directories(ICON_FOLDERS, lambda d: os.path.isdir(d), return_directories=True)
+        valid = []
+        for directory in walked:
+            if directory[0] in ("gnome", "hicolor"):
+                continue
+            path = os.path.join(directory[1], directory[0], "index.theme")
+            if os.path.exists(path):
+                try:
+                    for line in list(open(path)):
+                        if line.startswith("Directories="):
+                            valid.append(directory)
+                            break
+                except Exception as e:
+                    print (e)
+        valid.sort(key=lambda a: a[0].lower())
+        for (name, path) in valid:
+            if name not in self.icon_theme_names:
+                self.icon_theme_names.append(name)
+
+        # Cursor themes
+        for (name, path) in walk_directories(ICON_FOLDERS, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True):
+            for theme in self.cursor_themes:
+                if name == theme[0]:
+                    if path == ICON_FOLDERS[0]:
+                        continue
+                    else:
+                        self.cursor_themes.remove(theme)
+            self.cursor_theme_names.add(name)
+            self.cursor_themes.append((name, path))
+        self.cursor_themes.sort(key=lambda a: a[0].lower())
+
     def on_module_selected(self):
         if not self.loaded:
             print("Loading Themes module")
+
+            self.refresh_themes()
+
+            self.ui_ready = True
 
             self.spices = Spice_Harvester('theme', self.window)
 
@@ -61,10 +180,57 @@ class Module:
             self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', button_picture_size=35, menu_pictures_size=35, num_cols=4)
             self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_size=60, menu_pictures_size=60*self.scale, num_cols=4)
 
-            page = SettingsPage()
-            self.sidePage.stack.add_titled(page, "themes", _("Themes"))
+            selected_meta_theme = None
 
-            settings = page.add_section(_("Themes"))
+            gladefile = "/usr/share/cinnamon/cinnamon-settings/themes.ui"
+            builder = Gtk.Builder()
+            builder.set_translation_domain('cinnamon')
+            builder.add_from_file(gladefile)
+            page = builder.get_object("page_themes")
+            page.show()
+
+            self.style_combo = builder.get_object("style_combo")
+            self.mixed_button = builder.get_object("mixed_button")
+            self.dark_button = builder.get_object("dark_button")
+            self.light_button = builder.get_object("light_button")
+            self.color_box = builder.get_object("color_box")
+            self.customize_button = builder.get_object("customize_button")
+            self.preset_button = builder.get_object("preset_button")
+            self.color_label = builder.get_object("color_label")
+            self.main_stack = builder.get_object("main_stack")
+            self.custom_stack = builder.get_object("custom_stack")
+            self.active_style = None
+            self.active_mode_name = None
+            self.active_variant = None
+
+            # HiDPI support
+            for mode in ["mixed", "dark", "light"]:
+                path = f"/usr/share/cinnamon/cinnamon-settings/appearance-{mode}.svg"
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 112*self.scale, 80*self.scale)
+                surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, self.scale)
+                builder.get_object(f"image_{mode}").set_from_surface(surface)
+
+            self.color_dot_svg = ""
+            with open("/usr/share/cinnamon/cinnamon-settings/color_dot.svg") as f:
+                self.color_dot_svg = f.read()
+
+            self.reset_look_ui()
+
+            if self.active_variant is None:
+                self.main_stack.set_visible_child_name("custom_page")
+
+            self.mixed_button.connect("clicked", self.on_mode_button_clicked, "mixed")
+            self.dark_button.connect("clicked", self.on_mode_button_clicked, "dark")
+            self.light_button.connect("clicked", self.on_mode_button_clicked, "light")
+            self.customize_button.connect("clicked", self.on_customize_button_clicked)
+            self.style_combo.connect("changed", self.on_style_combo_changed)
+
+            self.sidePage.stack.add_named(page, "themes")
+
+            page = SettingsPage()
+            self.custom_stack.add_titled(page, "themes", _("Themes"))
+
+            settings = page.add_section()
 
             widget = self.make_group(_("Mouse Pointer"), self.cursor_chooser)
             settings.add_row(widget)
@@ -78,13 +244,26 @@ class Module:
             widget = self.make_group(_("Desktop"), self.cinnamon_chooser)
             settings.add_row(widget)
 
+            button = Gtk.Button()
+            button.set_label(_("Simplified settings..."))
+            button.set_halign(Gtk.Align.END)
+            button.connect("clicked", self.on_preset_button_clicked)
+            page.add(button)
+
             page = DownloadSpicesPage(self, 'theme', self.spices, self.window)
-            self.sidePage.stack.add_titled(page, 'download', _("Add/Remove"))
+            self.custom_stack.add_titled(page, 'download', _("Add/Remove"))
 
             page = SettingsPage()
-            self.sidePage.stack.add_titled(page, "options", _("Settings"))
+            self.custom_stack.add_titled(page, "options", _("Settings"))
 
             settings = page.add_section(_("Miscellaneous options"))
+
+            options = [("default", _("Let applications decide")),
+                       ("prefer-light", _("Prefer light mode")),
+                       ("prefer-dark", _("Prefer dark mode"))]
+            widget = GSettingsComboBox(_("Dark mode"), "org.x.apps.portal", "color-scheme", options)
+            widget.set_tooltip_text(_("This setting only affects applications which support dark mode"))
+            settings.add_row(widget)
 
             widget = GSettingsSwitch(_("Show icons in menus"), "org.cinnamon.settings-daemon.plugins.xsettings", "menus-have-icons")
             settings.add_row(widget)
@@ -95,7 +274,7 @@ class Module:
             try:
                 import tinycss2
             except:
-                self.refresh()
+                self.refresh_choosers()
                 return
 
             settings = page.add_section(_("Scrollbar behavior"))
@@ -141,7 +320,7 @@ class Module:
 
             self.builder = self.sidePage.builder
 
-            for path in [THEME_FOLDERS[0], ICON_FOLDERS[0]]:
+            for path in [THEME_FOLDERS[0], ICON_FOLDERS[0], ICON_FOLDERS[1]]:
                 try:
                     os.makedirs(path)
                 except OSError:
@@ -159,7 +338,234 @@ class Module:
                         # File monitors can fail when the OS runs out of file handles
                         print(e)
 
-            self.refresh()
+            self.refresh_choosers()
+
+    def is_variant_active(self, variant):
+        # returns whether or not the given variant corresponds to the currently selected themes
+        if variant.gtk_theme != self.settings.get_string("gtk-theme"):
+            return False
+        if variant.icon_theme != self.settings.get_string("icon-theme"):
+            return False
+        if variant.cinnamon_theme != self.cinnamon_settings.get_string("name"):
+            return False
+        if variant.cursor_theme != self.settings.get_string("cursor-theme"):
+            return False
+        return True
+
+    def is_variant_valid(self, variant):
+        # returns whether or not the given variant is valid (i.e. made of themes which are currently installed)
+        if variant.gtk_theme is None:
+            print("No Gtk theme defined")
+            return False
+        if variant.icon_theme is None:
+            print("No icon theme defined")
+            return False
+        if variant.cinnamon_theme is None:
+            print("No Cinnamon theme defined")
+            return False
+        if variant.cursor_theme is None:
+            print("No cursor theme defined")
+            return False
+        if variant.gtk_theme not in self.gtk_theme_names:
+            print("Gtk theme not found:", variant.gtk_theme)
+            return False
+        if variant.icon_theme not in self.icon_theme_names:
+            print("icon theme not found:", variant.icon_theme)
+            return False
+        if variant.cinnamon_theme not in self.cinnamon_theme_names and variant.cinnamon_theme != "cinnamon":
+            print("Cinnamon theme not found:", variant.cinnamon_theme)
+            return False
+        if variant.cursor_theme not in self.cursor_theme_names:
+            print("Cursor theme not found:", variant.cursor_theme)
+            return False
+        return True
+
+    def cleanup_ui(self):
+        self.mixed_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
+        self.dark_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
+        self.light_button.set_state_flags(Gtk.StateFlags.NORMAL, True)
+        self.mixed_button.set_sensitive(False)
+        self.dark_button.set_sensitive(False)
+        self.light_button.set_sensitive(False)
+        for child in self.color_box.get_children():
+            self.color_box.remove(child)
+        self.color_label.hide()
+        model = self.style_combo.get_model()
+        model.clear()
+
+    def reset_look_ui(self):
+        if not self.ui_ready:
+            return
+
+        self.ui_ready = False
+        self.cleanup_ui()
+
+        # Read the JSON files
+        self.styles = {}
+        self.style_objects = {}
+        self.active_style = None
+        self.active_mode_name = None
+        self.active_variant = None
+
+        path = "/usr/share/cinnamon/styles.d"
+        for filename in sorted(os.listdir(path)):
+            if filename.endswith(".styles"):
+                try:
+                    with open(os.path.join(path, filename)) as f:
+                        json_text = json.loads(f.read())
+                        for style_json in json_text["styles"]:
+                            style = Style(style_json)
+                            for mode_name in ["mixed", "dark", "light"]:
+                                if mode_name in style_json:
+                                    mode = Mode(mode_name)
+                                    for variant_json in style_json[mode_name]:
+                                        variant = Variant(variant_json)
+                                        if self.is_variant_valid(variant):
+                                            # Add the variant to the mode
+                                            mode.variants.append(variant)
+                                            if mode.default_variant is None:
+                                                # Assign the first variant as default
+                                                mode.default_variant = variant
+                                            if "default" in variant_json and variant_json["default"] == "true":
+                                                # Override default if specified
+                                                mode.default_variant = variant
+                                            # Add the mode to the style (if not done already)
+                                            if not mode_name in style.modes:
+                                                style.modes[mode_name] = mode
+                                            # Set it as the default mode if there's no default mode
+                                            if style.default_mode is None:
+                                                style.default_mode = mode
+                                            # Set active variant variables if the variant is active
+                                            if self.is_variant_active(variant):
+                                                self.active_style= style
+                                                self.active_mode_name = mode_name
+                                                self.active_variant = variant
+                            # Override the default mode if specified
+                            if "default" in style_json:
+                                default_name = style_json["default"]
+                                if default_name in style.modes:
+                                    style.default_mode = style.modes[default_name]
+
+                            if style.default_mode is None:
+                                print ("No valid mode/variants found for style:", style.name)
+                            else:
+                                self.styles[style.name] = style
+                except Exception as e:
+                    print(f"Failed to parse styles from {filename}.")
+                    print(e)
+
+        # Populate the style combo
+        for name in sorted(self.styles.keys()):
+            self.style_combo.append_text(name)
+
+        if self.active_variant is not None:
+            style = self.active_style
+            mode = self.active_style.modes[self.active_mode_name]
+            variant = self.active_variant
+            print("Found active variant:", style.name, mode.name, variant.name)
+            # Position the style combo
+            model = self.style_combo.get_model()
+            iter = model.get_iter_first()
+            while (iter != None):
+                name = model.get_value(iter, 0)
+                if name == style.name:
+                    self.style_combo.set_active_iter(iter)
+                    break
+                iter = model.iter_next(iter)
+            # Set the mode buttons
+            for mode_name in ["mixed", "dark", "light"]:
+                if mode_name == "mixed":
+                    button = self.mixed_button
+                elif mode_name == "dark":
+                    button = self.dark_button
+                else:
+                    button = self.light_button
+                # Set the button state
+                if mode_name == mode.name:
+                    button.set_state_flags(Gtk.StateFlags.CHECKED, True)
+                else:
+                    button.set_state_flags(Gtk.StateFlags.NORMAL, True)
+                if mode_name in style.modes:
+                    button.set_sensitive(True)
+                else:
+                    button.set_sensitive(False)
+
+            if len(mode.variants) > 1:
+                # Generate the color buttons
+                self.color_label.show()
+                for variant in mode.variants:
+                    svg = self.color_dot_svg.replace("#8cffbe", variant.color)
+                    svg = svg.replace("#71718e", variant.color2)
+                    svg = str.encode(svg)
+                    stream = Gio.MemoryInputStream.new_from_bytes(GLib.Bytes.new(svg))
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_stream_at_scale(stream, 22*self.scale, 22*self.scale, True, None)
+                    surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, self.scale)
+                    image = Gtk.Image.new_from_surface(surface)
+                    button = Gtk.ToggleButton()
+                    button.add(image)
+                    button.show_all()
+                    self.color_box.add(button)
+                    if variant == self.active_variant:
+                        button.set_state_flags(Gtk.StateFlags.CHECKED, True)
+                    button.connect("clicked", self.on_color_button_clicked, variant)
+        else:
+            # Position style combo on "Custom"
+            self.style_combo.append_text(_("Custom"))
+            self.style_combo.set_active(len(self.styles.keys()))
+        self.ui_ready = True
+
+    def on_customize_button_clicked(self, button):
+        self.set_button_chooser(self.icon_chooser, self.settings.get_string("icon-theme"), 'icons', 'icons', ICON_SIZE)
+        self.set_button_chooser(self.cursor_chooser, self.settings.get_string("cursor-theme"), 'icons', 'cursors', 32)
+        self.set_button_chooser(self.theme_chooser, self.settings.get_string("gtk-theme"), 'themes', 'gtk-3.0', 35)
+        self.set_button_chooser(self.cinnamon_chooser, self.cinnamon_settings.get_string("name"), 'themes', 'cinnamon', 60)
+        self.main_stack.set_visible_child_name("custom_page")
+
+    def on_preset_button_clicked(self, button):
+        self.reset_look_ui()
+        self.main_stack.set_visible_child_name("preset_page")
+
+    def on_color_button_clicked(self, button, variant):
+        print("Color button clicked")
+        self.activate_variant(variant)
+
+    def on_mode_button_clicked(self, button, mode_name):
+        print("Mode button clicked")
+        if self.active_style is not None:
+            mode = self.active_style.modes[mode_name]
+            self.activate_mode(self.active_style, mode)
+
+    def on_style_combo_changed(self, combobox):
+        if not self.ui_ready:
+            return
+        selected_name = combobox.get_active_text()
+        if selected_name == None or selected_name == _("Custom"):
+            return
+        print("Activating style:", selected_name)
+        for name in self.styles.keys():
+            if name == selected_name:
+                style = self.styles[name]
+                mode = style.default_mode
+                self.activate_mode(style, mode)
+
+    def activate_mode(self, style, mode):
+        print("Activating mode:", mode.name)
+
+        if self.active_variant is not None:
+            new_same_variant = mode.get_variant_by_name(self.active_variant.name)
+            if new_same_variant is not None:
+                self.activate_variant(new_same_variant)
+                return
+
+        self.activate_variant(mode.default_variant)
+
+    def activate_variant(self, variant):
+        print("Activating variant:", variant.name)
+        self.settings.set_string("gtk-theme", variant.gtk_theme)
+        self.settings.set_string("icon-theme", variant.icon_theme)
+        self.cinnamon_settings.set_string("name", variant.cinnamon_theme)
+        self.settings.set_string("cursor-theme", variant.cursor_theme)
+        self.reset_look_ui()
 
     def on_css_override_active_changed(self, switch, pspec=None, data=None):
         if self.scrollbar_switch.get_active():
@@ -175,29 +581,22 @@ class Module:
         if self.refreshing:
             return
         self.refreshing = True
-        GLib.timeout_add_seconds(5, self.refresh)
+        GLib.timeout_add_seconds(5, self.refresh_choosers)
 
-    def refresh(self):
-        choosers = [(self.cursor_chooser, "cursors", self._load_cursor_themes(), self._on_cursor_theme_selected),
-                    (self.theme_chooser, "gtk-3.0", self._load_gtk_themes(), self._on_gtk_theme_selected),
-                    (self.cinnamon_chooser, "cinnamon", self._load_cinnamon_themes(), self._on_cinnamon_theme_selected),
-                    (self.icon_chooser, "icons", self._load_icon_themes(), self._on_icon_theme_selected)]
-        for chooser in choosers:
-            chooser[0].clear_menu()
-            chooser[0].set_sensitive(False)
-            chooser[0].progress = 0.0
-
-            chooser_obj = chooser[0]
-            path_suffix = chooser[1]
-            themes = chooser[2]
-            callback = chooser[3]
-            payload = (chooser_obj, path_suffix, themes, callback)
-            self.refresh_chooser(payload)
+    def refresh_choosers(self):
+        array = [(self.cursor_chooser, "cursors", self.cursor_themes, self._on_cursor_theme_selected),
+                    (self.theme_chooser, "gtk-3.0", self.gtk_themes, self._on_gtk_theme_selected),
+                    (self.cinnamon_chooser, "cinnamon", self.cinnamon_themes, self._on_cinnamon_theme_selected),
+                    (self.icon_chooser, "icons", self.icon_theme_names, self._on_icon_theme_selected)]
+        for element in array:
+            chooser, path_suffix, themes, callback = element
+            chooser.clear_menu()
+            chooser.set_sensitive(False)
+            chooser.progress = 0.0
+            self.refresh_chooser(chooser, path_suffix, themes, callback)
         self.refreshing = False
 
-    def refresh_chooser(self, payload):
-        (chooser, path_suffix, themes, callback) = payload
-
+    def refresh_chooser(self, chooser, path_suffix, themes, callback):
         inc = 1.0
         if len(themes) > 0:
             inc = 1.0 / len(themes)
@@ -307,34 +706,39 @@ class Module:
     def create_button_chooser(self, settings, key, path_prefix, path_suffix, button_picture_size, menu_pictures_size, num_cols):
         chooser = PictureChooserButton(num_cols=num_cols, button_picture_size=button_picture_size, menu_pictures_size=menu_pictures_size, has_button_label=True)
         theme = settings.get_string(key)
-        chooser.set_button_label(theme)
-        chooser.set_tooltip_text(theme)
+        self.set_button_chooser(chooser, theme, path_prefix, path_suffix, button_picture_size)
+        return chooser
+
+    def set_button_chooser(self, chooser, theme, path_prefix, path_suffix, button_picture_size):
+        self.set_button_chooser_text(chooser, theme)
         if path_suffix == "cinnamon" and theme == "cinnamon":
             chooser.set_picture_from_file("/usr/share/cinnamon/theme/thumbnail.png")
         elif path_suffix == "icons":
             current_theme = Gtk.IconTheme.get_default()
-            folder = current_theme.lookup_icon("folder", button_picture_size, 0)
+            folder = current_theme.lookup_icon_for_scale("folder", button_picture_size, self.window.get_scale_factor(), 0)
             if folder is not None:
                 path = folder.get_filename()
                 chooser.set_picture_from_file(path)
         else:
             try:
-                for path in ["/usr/share/%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix),
-                             os.path.expanduser("~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix)),
+                for path in ([os.path.join(datadir, path_prefix, theme, path_suffix, "thumbnail.png") for datadir in GLib.get_system_data_dirs()]
+                             + [os.path.expanduser("~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix)),
                              "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme),
-                             "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
+                             "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]):
                     if os.path.exists(path):
                         chooser.set_picture_from_file(path)
                         break
             except:
                 chooser.set_picture_from_file("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix)
-        return chooser
+
+    def set_button_chooser_text(self, chooser, theme):
+        chooser.set_button_label(theme)
+        chooser.set_tooltip_text(theme)
 
     def _on_icon_theme_selected(self, path, theme):
         try:
             self.settings.set_string("icon-theme", theme)
-            self.icon_chooser.set_button_label(theme)
-            self.icon_chooser.set_tooltip_text(theme)
+            self.set_button_chooser_text(self.icon_chooser, theme)
         except Exception as detail:
             print(detail)
         return True
@@ -342,8 +746,7 @@ class Module:
     def _on_gtk_theme_selected(self, path, theme):
         try:
             self.settings.set_string("gtk-theme", theme)
-            self.theme_chooser.set_button_label(theme)
-            self.theme_chooser.set_tooltip_text(theme)
+            self.set_button_chooser_text(self.theme_chooser, theme)
         except Exception as detail:
             print(detail)
         return True
@@ -351,8 +754,7 @@ class Module:
     def _on_cursor_theme_selected(self, path, theme):
         try:
             self.settings.set_string("cursor-theme", theme)
-            self.cursor_chooser.set_button_label(theme)
-            self.cursor_chooser.set_tooltip_text(theme)
+            self.set_button_chooser_text(self.cursor_chooser, theme)
         except Exception as detail:
             print(detail)
 
@@ -362,113 +764,26 @@ class Module:
     def _on_cinnamon_theme_selected(self, path, theme):
         try:
             self.cinnamon_settings.set_string("name", theme)
-            self.cinnamon_chooser.set_button_label(theme)
-            self.cinnamon_chooser.set_tooltip_text(theme)
+            self.set_button_chooser_text(self.cinnamon_chooser, theme)
         except Exception as detail:
             print(detail)
         return True
 
-    def get_theme_sort_key(self, name):
-        name = name.lower()
-        legacy = 0
-        darker = 0
-        dark = 0
-        if "legacy" in name:
-            legacy = 1
-        if "darker" in name:
-            darker = 1
-        if "dark" in name and "darker" not in name:
-            dark = 1
-        name = name.replace("darker", "").replace("dark", "").replace("legacy", "")
-        name = f"{legacy}{dark}{darker}{name}"
-        return name
-
-    def _load_gtk_themes(self):
-        """ Only shows themes that have variations for gtk+-3 and gtk+-2 """
-        dirs = THEME_FOLDERS
-        valid = walk_directories(dirs, self.filter_func_gtk_dir, return_directories=True)
-        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
-        res = []
-        for i in valid:
-            for j in res:
-                if i[0] == j[0]:
-                    if i[1] == dirs[0]:
-                        continue
-                    else:
-                        res.remove(j)
-            res.append((i[0], i[1]))
-        return res
-
     def filter_func_gtk_dir(self, directory):
         theme_dir = Path(directory)
-
         for gtk3_dir in theme_dir.glob("gtk-3.*"):
             # Skip gtk key themes
             if os.path.exists(os.path.join(gtk3_dir, "gtk.css")):
                 return True
         return False
 
-    def _load_icon_themes(self):
-        dirs = ICON_FOLDERS
-        walked = walk_directories(dirs, lambda d: os.path.isdir(d), return_directories=True)
-        valid = []
-        for directory in walked:
-            if directory[0] in ("gnome", "hicolor"):
-                continue
-            path = os.path.join(directory[1], directory[0], "index.theme")
-            if os.path.exists(path):
-                try:
-                    for line in list(open(path)):
-                        if line.startswith("Directories="):
-                            valid.append(directory)
-                            break
-                except Exception as e:
-                    print (e)
-
-        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
-        res = []
-        for i in valid:
-            for j in res:
-                if i[0] == j:
-                    if i[1] == dirs[0]:
-                        continue
-                    else:
-                        res.remove(j)
-            res.append(i[0])
-        return res
-
-    def _load_cursor_themes(self):
-        dirs = ICON_FOLDERS
-        valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True)
-        valid.sort(key=lambda a: a[0].lower())
-        res = []
-        for i in valid:
-            for j in res:
-                if i[0] == j[0]:
-                    if i[1] == dirs[0]:
-                        continue
-                    else:
-                        res.remove(j)
-            res.append((i[0], i[1]))
-        return res
-
-    def _load_cinnamon_themes(self):
-        dirs = THEME_FOLDERS
-        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "cinnamon")), return_directories=True)
-        valid.sort(key=lambda a: self.get_theme_sort_key(a[0]))
-        res = []
-        for i in valid:
-            for j in res:
-                if i[0] == j[0]:
-                    if i[1] == dirs[0]:
-                        continue
-                    else:
-                        res.remove(j)
-            res.append((i[0], i[1]))
-        return res
-
     def update_cursor_theme_link(self, path, name):
-        default_dir = os.path.join(ICON_FOLDERS[0], "default")
+        contents = "[icon theme]\nInherits=%s\n" % name
+        self._set_cursor_theme_at(ICON_FOLDERS[0], contents)
+        self._set_cursor_theme_at(ICON_FOLDERS[1], contents)
+
+    def _set_cursor_theme_at(self, directory, contents):
+        default_dir = os.path.join(directory, "default")
         index_path = os.path.join(default_dir, "index.theme")
 
         try:
@@ -478,8 +793,6 @@ class Module:
 
         if os.path.exists(index_path):
             os.unlink(index_path)
-
-        contents = "[icon theme]\nInherits=%s\n" % name
 
         with open(index_path, "w") as f:
             f.write(contents)

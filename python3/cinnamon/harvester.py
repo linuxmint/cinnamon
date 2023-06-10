@@ -24,9 +24,7 @@ from gi.repository import Gdk, Gtk, Gio, GLib
 from . import logger
 from . import proxygsettings
 
-DEBUG = False
-if os.getenv("DEBUG") is not None:
-    DEBUG = True
+DEBUG = os.getenv("DEBUG") is not None
 def debug(msg):
     if DEBUG:
         print(msg)
@@ -155,13 +153,15 @@ class Harvester:
 
         self.index_file = os.path.join(self.cache_folder, "index.json")
 
+        self.install_folder = os.path.join(home, ".local/share/cinnamon", "%ss" % self.spice_type)
+
         if self.themes:
-            self.install_folder = os.path.join(home, ".themes")
-            self.spices_directories = (self.install_folder, )
+            old_install_folder = '%s/.themes/' % home
+            self.spices_directories = (old_install_folder, self.install_folder)
         else:
-            self.install_folder = os.path.join(home, ".local/share/cinnamon", "%ss" % self.spice_type)
-            self.spices_directories = ("/usr/share/cinnamon/%ss" % self.spice_type,
-                                       self.install_folder)
+            self.spices_directories = (self.install_folder, )
+
+        self.disabled = not self.anything_installed()
 
         self._load_cache()
         self._load_metadata()
@@ -172,7 +172,24 @@ class Harvester:
         except Exception as e:
             print(e)
 
+    def anything_installed(self):
+        for location in self.spices_directories:
+            path = Path(location)
+            if not path.exists():
+                continue
+
+            for spice in path.iterdir():
+                return True
+
+        debug("No additional %ss installed" % self.spice_type)
+        return False
+
     def refresh(self, full):
+        self.disabled = not self.anything_installed()
+
+        if self.disabled:
+            return
+
         debug("Cache stamp: %d" % get_current_timestamp())
 
         os.makedirs(self.cache_folder, mode=0o755, exist_ok=True)
@@ -265,6 +282,9 @@ class Harvester:
                 f.write(r.content)
 
     def _load_metadata(self):
+        if self.disabled:
+            return
+
         debug("harvester: Loading metadata on installed %ss" % self.spice_type)
         self.meta_map = {}
 
@@ -292,6 +312,9 @@ class Harvester:
                     pass
 
     def _load_cache(self):
+        if self.disabled:
+            return
+
         debug("harvester: Loading local %s cache" % self.spice_type)
         self.index_cache = {}
 
@@ -310,6 +333,9 @@ class Harvester:
             debug(e)
 
     def _generate_update_list(self):
+        if self.disabled:
+            return []
+
         debug("harvester: Generating list of updated %ss" % self.spice_type)
 
         self.updates = []

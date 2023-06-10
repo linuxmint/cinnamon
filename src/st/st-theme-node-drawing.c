@@ -1999,7 +1999,9 @@ void
 st_theme_node_paint (StThemeNode           *node,
                      CoglFramebuffer       *fb,
                      const ClutterActorBox *box,
-                     guint8                 paint_opacity)
+                     guint8                 paint_opacity,
+                     StBackgroundBlurEffect    *background_blur_effect,
+                     StBackgroundBumpmapEffect *background_bumpmap_effect)
 {
   float width, height;
   ClutterActorBox allocation;
@@ -2043,6 +2045,18 @@ st_theme_node_paint (StThemeNode           *node,
    *    instead of the outside edges of the border (but position the image
    *    such that it's aligned to the outside edges)
    */
+
+  /* if there is a background effect then paint it first as a bottom layer
+     i.e. the existing background under the actor will be found, an effect
+     generated and applied to it, and then the new background is written out
+     over the existing background. */
+
+  if (background_blur_effect)
+      st_paint_background_blur_effect (background_blur_effect, fb, box);
+
+  if (background_bumpmap_effect)
+      st_paint_background_bumpmap_effect (background_bumpmap_effect, fb, box);
+
   if (node->box_shadow_material)
     _st_paint_shadow_with_opacity (node->box_shadow,
                                    node->box_shadow_material,

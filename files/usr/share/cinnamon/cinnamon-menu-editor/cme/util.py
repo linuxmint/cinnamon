@@ -20,6 +20,8 @@ import os
 import xml.dom.minidom
 import uuid
 import sys
+from typing import Optional
+
 if sys.version_info[:2] >= (3, 8):
     from collections.abc import Sequence
 else:
@@ -29,7 +31,7 @@ from gi.repository import Gtk, GdkPixbuf, CMenu, GLib, Gdk
 DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
 KEY_FILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS | GLib.KeyFileFlags.KEEP_TRANSLATIONS
 
-def fillKeyFile(keyfile, items):
+def fillKeyFile(keyfile, items) -> None:
     for key, item in items.items():
         if item is None:
             continue
@@ -57,14 +59,14 @@ def getUniqueFileId(name, extension):
                 break
     return filename
 
-def getUniqueRedoFile(filepath):
+def getUniqueRedoFile(filepath) -> str:
     while 1:
         new_filepath = filepath + '.redo-' + str(uuid.uuid1())
         if not os.path.isfile(new_filepath):
             break
     return new_filepath
 
-def getUniqueUndoFile(filepath):
+def getUniqueUndoFile(filepath) -> str:
     filename, extension = os.path.split(filepath)[1].rsplit('.', 1)
     while 1:
         if extension == 'desktop':
@@ -78,46 +80,46 @@ def getUniqueUndoFile(filepath):
             break
     return new_filepath
 
-def getItemPath(file_id):
+def getItemPath(file_id) -> Optional[str]:
     for path in GLib.get_system_data_dirs():
         file_path = os.path.join(path, 'applications', file_id)
         if os.path.isfile(file_path):
             return file_path
     return None
 
-def getUserItemPath():
+def getUserItemPath() -> str:
     item_dir = os.path.join(GLib.get_user_data_dir(), 'applications')
     if not os.path.isdir(item_dir):
         os.makedirs(item_dir)
     return item_dir
 
-def getDirectoryPath(file_id):
+def getDirectoryPath(file_id) -> Optional[str]:
     for path in GLib.get_system_data_dirs():
         file_path = os.path.join(path, 'desktop-directories', file_id)
         if os.path.isfile(file_path):
             return file_path
     return None
 
-def getUserDirectoryPath():
+def getUserDirectoryPath() -> str:
     menu_dir = os.path.join(GLib.get_user_data_dir(), 'desktop-directories')
     if not os.path.isdir(menu_dir):
         os.makedirs(menu_dir)
     return menu_dir
 
-def getUserMenuPath():
+def getUserMenuPath() -> str:
     menu_dir = os.path.join(GLib.get_user_config_dir(), 'menus')
     if not os.path.isdir(menu_dir):
         os.makedirs(menu_dir)
     return menu_dir
 
-def getSystemMenuPath(file_id):
+def getSystemMenuPath(file_id) -> Optional[str]:
     for path in GLib.get_system_config_dirs():
         file_path = os.path.join(path, 'menus', file_id)
         if os.path.isfile(file_path):
             return file_path
     return None
 
-def getUserMenuXml(tree):
+def getUserMenuXml(tree) -> str:
     system_file = getSystemMenuPath(os.path.basename(tree.get_canonical_menu_path()))
     name = tree.get_root_directory().get_menu_id()
     menu_xml = "<!DOCTYPE Menu PUBLIC '-//freedesktop//DTD Menu 1.0//EN' 'http://standards.freedesktop.org/menu-spec/menu-1.0.dtd'>\n"
@@ -129,7 +131,7 @@ class SurfaceWrapper:
     def __init__(self, surface):
         self.surface = surface
 
-def getIcon(item, widget):
+def getIcon(item, widget) -> SurfaceWrapper:
     wrapper = SurfaceWrapper(None)
     pixbuf = None
     if item is None:
@@ -163,7 +165,7 @@ def getIcon(item, widget):
     wrapper.surface = Gdk.cairo_surface_create_from_pixbuf (pixbuf, widget.get_scale_factor(), widget.get_window())
     return wrapper
 
-def removeWhitespaceNodes(node):
+def removeWhitespaceNodes(node) -> None:
     remove_list = []
     for child in node.childNodes:
         if child.nodeType == xml.dom.minidom.Node.TEXT_NODE:

@@ -105,7 +105,7 @@ function updateMouseTracking() {
 }
 
 function hasMouseWindow(){
-    let window = global.screen.get_mouse_window(null);
+    let window = global.display.get_pointer_window(null);
     return window && window.window_type !== Meta.WindowType.DESKTOP;
 }
 
@@ -282,7 +282,7 @@ function _removeDeskletConfigFile(uuid, instanceId) {
     ];
 
     for (let i = 0; i < config_paths.length; i++) {
-        const config_path = array[i];
+        const config_path = config_paths[i];
         let file = Gio.File.new_for_path(config_path);
         if (file.query_exists(null)) {
             try {

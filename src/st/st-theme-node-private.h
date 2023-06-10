@@ -71,6 +71,7 @@ struct _StThemeNode {
 
   char *background_image;
   char *background_bumpmap;
+  int background_blur;
   StBorderImage *border_image;
   StShadow *box_shadow;
   StShadow *background_image_shadow;

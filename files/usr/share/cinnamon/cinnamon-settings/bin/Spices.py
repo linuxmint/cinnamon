@@ -160,8 +160,8 @@ class Spice_Harvester(GObject.Object):
             self.enabled_key = 'enabled-%ss' % self.collection_type
 
         if self.themes:
-            self.install_folder = os.path.join(GLib.get_user_data_dir(), 'themes')
-            old_install_folder = '%s/.themes/' % home
+            self.install_folder = '%s/.themes/' % home
+            old_install_folder = os.path.join(GLib.get_user_data_dir(), 'themes')
             self.spices_directories = (self.install_folder, old_install_folder)
         else:
             self.install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
@@ -425,9 +425,6 @@ class Spice_Harvester(GObject.Object):
                         if not self.themes:
                             print(detail)
                             print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
-            elif directory == self.install_folder:
-                print("%s does not exist! Creating it now." % directory)
-                subprocess.call(["mkdir", "-p", directory])
             else:
                 print("%s does not exist! Skipping" % directory)
 
@@ -646,6 +643,10 @@ class Spice_Harvester(GObject.Object):
                         locale_dir = os.path.join(locale_inst, lang, 'LC_MESSAGES')
                         os.makedirs(locale_dir, mode=0o755, exist_ok=True)
                         subprocess.call(['msgfmt', '-c', os.path.join(po_dir, file), '-o', os.path.join(locale_dir, '%s.mo' % uuid)])
+        
+        # Create install folder on demand
+        if not os.path.exists(self.install_folder):
+            subprocess.call(["mkdir", "-p", self.install_folder])
 
         dest = os.path.join(self.install_folder, uuid)
         if os.path.exists(dest):
@@ -784,11 +785,11 @@ class Spice_Harvester(GObject.Object):
         new_list = []
         for enabled_extension in enabled_extensions:
             if self.collection_type == 'applet':
-                enabled_uuid = enabled_extension.split(':')[3].strip('!')
+                enabled_uuid = enabled_extension.split(':')[3].lstrip('!')
             elif self.collection_type == 'desklet':
-                enabled_uuid = enabled_extension.split(':')[0].strip('!')
+                enabled_uuid = enabled_extension.split(':')[0].lstrip('!')
             else:
-                enabled_uuid = enabled_extension
+                enabled_uuid = enabled_extension.lstrip('!')
 
             if enabled_uuid != uuid:
                 new_list.append(enabled_extension)

@@ -10,6 +10,8 @@
 #define GMENU_I_KNOW_THIS_IS_UNSTABLE
 #include <gmenu-desktopappinfo.h>
 
+#include <libxapp/xapp-gpu-offload-helper.h>
+
 #include <meta/display.h>
 #include <meta/meta-workspace-manager.h>
 
@@ -188,7 +190,7 @@ get_actor_for_icon_name (CinnamonApp *app,
 
   if (icon != NULL)
   {
-    actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+    actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-type", ST_ICON_FULLCOLOR, "icon-size", size, NULL);
     g_object_unref (icon);
   }
 
@@ -199,7 +201,7 @@ static ClutterActor *
 get_failsafe_icon (int size)
 {
   GIcon *icon = g_themed_icon_new ("application-x-executable");
-  ClutterActor *actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-size", size, NULL);
+  ClutterActor *actor = g_object_new (ST_TYPE_ICON, "gicon", icon, "icon-type", ST_ICON_FULLCOLOR, "icon-size", size, NULL);
   g_object_unref (icon);
   return actor;
 }
@@ -1163,8 +1165,19 @@ _gather_pid_callback (GDesktopAppInfo   *gapp,
 static void
 apply_discrete_gpu_env (GAppLaunchContext *context)
 {
-  g_app_launch_context_setenv (context, "__NV_PRIME_RENDER_OFFLOAD", "1");
-  g_app_launch_context_setenv (context, "__GLX_VENDOR_LIBRARY_NAME", "nvidia");
+  XAppGpuOffloadHelper *helper = xapp_gpu_offload_helper_get_sync ();
+  GList *infos = xapp_gpu_offload_helper_get_offload_infos (helper);
+
+  if (infos != NULL)
+    {
+      XAppGpuInfo *info = infos->data;
+      gchar **env_strv = info->env_strv;
+
+      for (gint i = 0; i < g_strv_length (env_strv); i += 2)
+        {
+          g_app_launch_context_setenv (context, env_strv[i], env_strv[i + 1]);
+        }
+    }
 }
 
 static gboolean
@@ -1275,9 +1288,12 @@ cinnamon_app_launch (CinnamonApp     *app,
                      GError         **error)
 {
   GMenuDesktopAppInfo *app_info = cinnamon_app_get_app_info(app);
+
+  XAppGpuOffloadHelper *helper = xapp_gpu_offload_helper_get_sync ();
+
   gboolean wants_offload = (app_info &&
                             gmenu_desktopappinfo_get_boolean(app_info, "PrefersNonDefaultGPU") &&
-                            cinnamon_get_gpu_offload_supported ());
+                            xapp_gpu_offload_helper_is_offload_supported (helper));
   return real_app_launch (app,
                           timestamp,
                           uris,
@@ -1310,7 +1326,7 @@ cinnamon_app_launch_offloaded (CinnamonApp     *app,
                           uris,
                           workspace,
                           startup_id,
-                          cinnamon_get_gpu_offload_supported (), // check shouldn't be needed but in case.
+                          TRUE,
                           error);
 }
 

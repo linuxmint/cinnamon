@@ -366,11 +366,12 @@ Keyboard.prototype = {
     },
 
     _redraw: function () {
-        if (!this._enableKeyboard)
-            return;
-
         let focus = Main.layoutManager.focusMonitor;
         let index = Main.layoutManager.focusIndex;
+        
+        if (!this._enableKeyboard || !focus || !index)
+            return;
+
 
         let panelPadding = 0;
         let panels = Main.getPanels();
@@ -488,7 +489,7 @@ Keyboard.prototype = {
     },
 
     _moveTemporarily: function () {
-        let currentWindow = global.screen.get_display().focus_window;
+        let currentWindow = global.display.focus_window;
         let rect = currentWindow.get_outer_rect();
 
         let newX = rect.x;

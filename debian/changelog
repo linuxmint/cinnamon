@@ -1,3 +1,239 @@
+cinnamon (5.8.1) victoria; urgency=medium
+
+  * Revert "l10n: Generate module files"
+  * Update generate_cs_module_desktop_files.py script
+  * l10n: Generate module files
+  * l10n: Generate additional files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 08 Jun 2023 12:57:11 +0100
+
+cinnamon (5.8.0) victoria; urgency=medium
+
+  [ Michael Webster ]
+  * grouped-window-list: Make appGroup's flashButton sane, fix invalid source id.
+  * cinnamon-screenshot.c: Disable unredirection when taking a screenshot.
+
+  [ hdulme ]
+  * remove unused import cairo
+
+  [ hduelme ]
+  * use Gtk types in ChooserButtonWidgets instead of ints (#11296)
+  * simplify boolean expressions (#11323)
+  * simplify DEBUG detection harvester.py (#11327)
+
+  [ Michael Webster ]
+  * trash@cinnamon.org: Refactor to use asynchronous methods entirely.
+
+  [ Bobby Rong ]
+  * cs_themes: load theme thumbnail from XDG_DATA_DIRS (#11497)
+
+  [ Michael Webster ]
+  * gwl: Fix typo.
+  * sound applet: Clear the source ID in Seeker._timerCallback().
+  * window-list: Fix signal name for tile notifications.
+
+  [ Julián ]
+  * Sound applet: added special case for Firefox icon. (#11314)
+
+  [ Michael Webster ]
+  * Stop using CinnamonScreen everywhere.
+  * overrides.js: Silently fail to install polyfills.
+
+  [ hduelme ]
+  * added type hints to util.py (#11291)
+
+  [ Mintulix ]
+  * cornerbar@cinnamon.org: added scroll-event from SW++@mohammad-sn (#11321)
+
+  [ Clement Lefebvre ]
+  * cs_themes: Add a simplified UI (#11548)
+
+  [ claudiux ]
+  * Update applet.js (#11484)
+
+  [ Rick Calixte ]
+  * Adding a setting to warp mouse pointer after Alt+Tab action completes
+  * Fix whitespace
+
+  [ fredcw ]
+  * Add category hover style for Cinnamenu applet... (#11451)
+
+  [ Axel ]
+  * feat(menu@cinnamon.org): Add Menu editor entry to applet context menu (#11561)
+
+  [ Clement Lefebvre ]
+  * cs_themes: Add relief to simplified/advanced buttons
+
+  [ fredcw ]
+  * Use pseudo class 'hover' instead of class ... (#11473)
+
+  [ sphh ]
+  * Enables extensions marked to overide version check to be removed. (#11510)
+
+  [ Rick Calixte ]
+  * Remove simple-system-monitor@ariel as a known conflict (#11591)
+
+  [ Tom Pfaffe ]
+  * Fix super+shift+number not disabling in grouped-window-list applet (#11464)
+
+  [ Michael Webster ]
+  * cs_themes.py: Keep the current variant between modes if possible.
+  * panel-launchers: Don't allow the size of custom icons to be reset.
+  * cs_themes.py: Make sure activate_mode always activates a mode.
+  * cinnamon-desktop-editor: Use a path when setting a panel-launcher icon.
+
+  [ Attila Greguss ]
+  * Provide `.gir` files in cinnamon package (#11335)
+
+  [ Anaxímeno Brito ]
+  * fix: update workspace switcher layout on monitors update signal (#11523)
+
+  [ virumoru ]
+  * Update ChooserButtonWidgets.py (#11595)
+
+  [ claudiux ]
+  * Update placesManager.js to fix #11623 (#11624)
+
+  [ Rick Calixte ]
+  * cs_info.py and org.cinnamon.gschema.xml: Fix undefined var and cleanup dconf strings (#11609)
+
+  [ Anaxímeno Brito ]
+  * fix: cursor not changing for qt5 apps on settings (#11492)
+
+  [ Evgeniy Zhabotinskiy ]
+  * window-list: make UseEntrieSpace honor buttonWidth (#11608)
+
+  [ Michael Webster ]
+  * Expose middle-click paste setting.
+
+  [ Dosenpfand ]
+  * Calendar Applet: Custom Tooltip Date Format (#11628)
+
+  [ Attila Greguss ]
+  * Fix popup menu content not stretching to its full size (#11612)
+
+  [ claudiux ]
+  * backgroundManager.js - Stop flooding ~/.xsession-errors in case of diaporama (#11641)
+
+  [ Attila Greguss ]
+  * Revert to themes and icons directory in home folder as default (#11643)
+
+  [ Michael Webster ]
+  * cs_themes.py: Fix refresh method name.
+  * Use new bug report form.
+  * Redirect feature requests to github.com/orgs/linuxmint/discussions.
+
+  [ Lanchon ]
+  * power: Add settings to disable low battery warnings for connected devices (#11599)
+
+  [ Michael Webster ]
+  * github workflow: Add optional ssh session.
+  * Add keyboard shortcuts for warping the mouse pointer between monitors.
+  * deskletManager.js: Fix incorrect variable name.
+  * Halt the build if meson_install_schemas.py fails.
+
+  [ Clement Lefebvre ]
+  * cs_themes: Add setting for Dark Mode
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * KeybindingWidgets.py: Ignore key-release events that aren't part of an active shortcut edit.
+  * Use switcheroo for gpu offloading. (#11645)
+
+  [ Tibladar ]
+  * layout.js: Check existence of monitor before usage (#11348)
+  * virtualKeyboard.js: Check layout existence before usage (#11346)
+
+  [ Rick Calixte ]
+  * build.yml: Add xdg-desktop-portal-xapp dependency (#11679)
+
+  [ Clement Lefebvre ]
+  * notifications: Prefer symbolic icons (#11637)
+
+  [ brownsr ]
+  * background effects: rework and turn on
+
+  [ Michael Webster ]
+  * Use stage coordinates for cogl_framebuffer_read_pixels().
+
+  [ Bobby Rong ]
+  * main.js: re-declare Main.gpu_offload_supported (#11685)
+
+  [ Florian Wickert ]
+  * Save/restore NO_GAIL and NO_AT_BRIDGE environment variables (#11673)
+
+  [ Michael Webster ]
+  * Add gesture support using touchegg.
+  * Better icon - courtesy of @haggen88.
+
+  [ Clement Lefebvre ]
+  * cornerbar: Remove useless tooltip
+  * l10n: Update POT
+  * l10n: Update POT
+
+  [ fredcw ]
+  * Make menu applet resizable with mouse
+  * Add class to make applets resizable with mouse
+
+  [ Clement Lefebvre ]
+  * Packaging: recommend touchegg
+
+  [ Michael Webster ]
+  * gestures: Improve some cleanup, logging, fix crash when toggling on/off.
+  * menu applet: Add settings button to restore original size, re-size the menu when the ui scale changes.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+  * l10n: Generate module files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 07 Jun 2023 15:14:34 +0100
+
+cinnamon (5.6.7) vera; urgency=medium
+
+  [ Clement Lefebvre ]
+  * makepot: Include Translators comments for JS
+  * l10n: Update POT
+
+  [ Rick Calixte ]
+  * layout.js: Fix for ES6 compatibility
+
+  [ Michael Webster ]
+  * windowManager.js: Fix traditional mapping effect.
+  * windowManager.js: Remove some unnecessary code.
+  * classicSwitcher: Fix icon spacing when transitioning to the next smaller size.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 16 Jan 2023 14:54:11 +0000
+
+cinnamon (5.6.6) vera; urgency=medium
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * cinnamon-settings themes: Check both new and legacy theme folders when uninstalling.
+  * startupAnimation.js: Make sure the shroud actor remains the size of the stage during startup.
+  * systray applet: Use the correct panel size when reloading icons.
+  * PanelManager: Keep track of the number of monitors.
+  * ChooserButtonWidgets: Fix button and menu images in hidpi.
+  * Fix reverse mouse scroll in the app switcher.
+  * window list: Ignore smooth scroll events when mousewheel cycling is enabled.
+  * makepot: Include comments from js files.
+  * Populate desktop files with new/changed translations.
+  * harvester.py: See if any spices are installed before going online to get new metadata.
+
+  [ MDPenguin ]
+  * appSwitcher: ignore smooth scrolling
+
+  [ Michael Webster ]
+  * cs_keyboard: Remove stray print line.
+  * cs_default: Don't use translated strings as dictionary keys.
+  * windowMenu.js: Don't display for desktop windows.
+
+  [ Clement Lefebvre ]
+  * Revert "makepot: Include comments from js files."
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 11 Jan 2023 10:22:30 +0000
+
 cinnamon (5.6.5) vera; urgency=medium
 
   [ Tibladar ]

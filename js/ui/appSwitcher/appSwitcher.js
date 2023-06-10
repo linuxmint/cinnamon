@@ -17,17 +17,17 @@ function sortWindowsByUserTime(win1, win2) {
 
     this.minimizedAwareAltTab = global.settings.get_boolean("alttab-minimized-aware");
     if (this.minimizedAwareAltTab) {
-      let m1 = win1.minimized;
-      let m2 = win2.minimized;
-      if (m1 == m2) {
-          return (t2 > t1) ? 1 : -1;
-      }
-      else {
-          return m1 ? 1 : -1;
-      }
+        let m1 = win1.minimized;
+        let m2 = win2.minimized;
+        if (m1 == m2) {
+            return (t2 > t1) ? 1 : -1;
+        }
+        else {
+            return m1 ? 1 : -1;
+        }
     }
     else {
-      return (t2 > t1) ? 1 : -1;
+        return (t2 > t1) ? 1 : -1;
     }
 }
 
@@ -62,29 +62,29 @@ function getWindowsForBinding(binding) {
     for (let i in windowActors)
         windows.push(windowActors[i].get_meta_window());
 
-    windows = windows.filter( Main.isInteresting );
+    windows = windows.filter(Main.isInteresting);
 
-    switch(binding.get_name()) {
+    switch (binding.get_name()) {
         case 'switch-panels':
         case 'switch-panels-backward':
             // Switch between windows of all workspaces
-            windows = windows.filter( matchSkipTaskbar );
+            windows = windows.filter(matchSkipTaskbar);
             break;
         case 'switch-group':
         case 'switch-group-backward':
             // Switch between windows of the same application
             let focused = global.display.focus_window ? global.display.focus_window : windows[0];
-            windows = windows.filter( matchWmClass, focused.get_wm_class() );
+            windows = windows.filter(matchWmClass, focused.get_wm_class());
             this._showAllWorkspaces = global.settings.get_boolean("alttab-switcher-show-all-workspaces");
             if (!this._showAllWorkspaces) {
-                windows = windows.filter( matchWorkspace, global.screen.get_active_workspace() );
+                windows = windows.filter(matchWorkspace, global.workspace_manager.get_active_workspace());
             }
             break;
         default:
             // Switch between windows of current workspace
             this._showAllWorkspaces = global.settings.get_boolean("alttab-switcher-show-all-workspaces");
             if (!this._showAllWorkspaces) {
-                windows = windows.filter( matchWorkspace, global.screen.get_active_workspace() );
+                windows = windows.filter(matchWorkspace, global.workspace_manager.get_active_workspace());
             }
             break;
     }
@@ -100,7 +100,7 @@ function AppSwitcher() {
 }
 
 AppSwitcher.prototype = {
-    _init: function(binding) {
+    _init: function (binding) {
         this._initialDelayTimeoutId = null;
         this._binding = binding;
         this._windows = getWindowsForBinding(binding);
@@ -124,7 +124,7 @@ AppSwitcher.prototype = {
         this._updateActiveMonitor();
     },
 
-    _setupModal: function() {
+    _setupModal: function () {
         this._haveModal = Main.pushModal(this.actor);
         if (!this._haveModal) {
             // Probably someone else has a pointer grab, try again with keyboard only
@@ -161,54 +161,57 @@ AppSwitcher.prototype = {
         return this._haveModal;
     },
 
-    _popModal: function() {
+    _popModal: function () {
         if (this._haveModal) {
             Main.popModal(this.actor);
             this._haveModal = false;
         }
     },
 
-    _show: function() {
+    _show: function () {
         throw new Error("Abstract method _show not implemented");
     },
 
-    _hide: function() {
+    _hide: function () {
         throw new Error("Abstract method _hide not implemented");
     },
 
-    _onDestroy: function() {
+    _onDestroy: function () {
         throw new Error("Abstract method _onDestroy not implemented");
     },
 
-    _createList: function() {
+    _createList: function () {
         throw new Error("Abstract method _createList not implemented");
     },
 
-    _updateList: function() {
+    _updateList: function () {
         throw new Error("Abstract method _updateList not implemented");
     },
 
-    _selectNext: function() {
+    _selectNext: function () {
         throw new Error("Abstract method _selectNext not implemented");
     },
 
-    _selectPrevious: function() {
+    _selectPrevious: function () {
         throw new Error("Abstract method _selectPrevious not implemented");
     },
 
-    _onWorkspaceSelected: function() {
+    _onWorkspaceSelected: function () {
         throw new Error("Abstract method _onWorkspaceSelected not implemented");
     },
 
-    _checkSwitchTime: function() {
+    _checkSwitchTime: function () {
         return true;
     },
 
-    _setCurrentWindow: function(window) {
+    _setCurrentWindow: function (window) {
     },
 
-    _next: function() {
-        if(this._windows.length <= 1) {
+    _next: function () {
+        if (!this._windows)
+            return;
+
+        if (this._windows.length <= 1) {
             this._currentIndex = 0;
             this._updateList(0);
         } else {
@@ -219,8 +222,11 @@ AppSwitcher.prototype = {
         this._setCurrentWindow(this._windows[this._currentIndex]);
     },
 
-    _previous: function() {
-        if(this._windows.length <= 1) {
+    _previous: function () {
+        if (!this._windows)
+            return;
+
+        if (this._windows.length <= 1) {
             this._currentIndex = 0;
             this._updateList(0);
         } else {
@@ -231,12 +237,15 @@ AppSwitcher.prototype = {
         this._setCurrentWindow(this._windows[this._currentIndex]);
     },
 
-    _select: function(index) {
+    _select: function (index) {
+        if (!this._windows)
+            return;
+
         this._currentIndex = index;
         this._setCurrentWindow(this._windows[this._currentIndex]);
     },
 
-    _updateActiveMonitor: function() {
+    _updateActiveMonitor: function () {
         this._activeMonitor = null;
         if (!this._enforcePrimaryMonitor)
             this._activeMonitor = Main.layoutManager.currentMonitor;
@@ -246,7 +255,7 @@ AppSwitcher.prototype = {
         return this._activeMonitor;
     },
 
-    _keyPressEvent: function(actor, event) {
+    _keyPressEvent: function (actor, event) {
         let modifiers = Cinnamon.get_event_state(event);
         let symbol = event.get_key_symbol();
         let keycode = event.get_key_code();
@@ -257,7 +266,7 @@ AppSwitcher.prototype = {
 
         // Switch workspace
         if (modifiers & Clutter.ModifierType.CONTROL_MASK &&
-           (symbol === Clutter.KEY_Right || symbol === Clutter.KEY_Left)) {
+            (symbol === Clutter.KEY_Right || symbol === Clutter.KEY_Left)) {
             if (this._switchWorkspace(symbol))
                 return true;
         }
@@ -284,14 +293,14 @@ AppSwitcher.prototype = {
             case Clutter.KEY_Right:
             case Clutter.KEY_Down:
                 // Right/Down -> navigate to next preview
-                if(this._checkSwitchTime())
+                if (this._checkSwitchTime())
                     this._next();
                 return true;
 
             case Clutter.KEY_Left:
             case Clutter.KEY_Up:
                 // Left/Up -> navigate to previous preview
-                if(this._checkSwitchTime())
+                if (this._checkSwitchTime())
                     this._previous();
                 return true;
         }
@@ -301,7 +310,7 @@ AppSwitcher.prototype = {
             case Meta.KeyBindingAction.SWITCH_GROUP:
             case Meta.KeyBindingAction.SWITCH_WINDOWS:
             case Meta.KeyBindingAction.SWITCH_PANELS:
-                if(this._checkSwitchTime()) {
+                if (this._checkSwitchTime()) {
                     // shift -> backwards
                     if (modifiers & Clutter.ModifierType.SHIFT_MASK)
                         this._previous();
@@ -312,7 +321,7 @@ AppSwitcher.prototype = {
             case Meta.KeyBindingAction.SWITCH_GROUP_BACKWARD:
             case Meta.KeyBindingAction.SWITCH_WINDOWS_BACKWARD:
             case Meta.KeyBindingAction.SWITCH_PANELS_BACKWARD:
-                if(this._checkSwitchTime())
+                if (this._checkSwitchTime())
                     this._previous();
                 return true;
         }
@@ -320,7 +329,7 @@ AppSwitcher.prototype = {
         return true;
     },
 
-    _keyReleaseEvent: function(actor, event) {
+    _keyReleaseEvent: function (actor, event) {
         let [x, y, mods] = global.get_pointer();
         let state = mods & this._modifierMask;
 
@@ -333,26 +342,28 @@ AppSwitcher.prototype = {
         return true;
     },
 
-    _failedGrabAction: function() {
+    _failedGrabAction: function () {
         if (!["coverflow", "timeline"].includes(global.settings.get_string('alttab-switcher-style'))) {
             this._keyReleaseEvent(null, null);
         }
     },
 
     // allow navigating by mouse-wheel scrolling
-    _scrollEvent: function(actor, event) {
-        if(this._checkSwitchTime()) {
+    _scrollEvent: function (actor, event) {
+        if (event.get_scroll_direction() == Clutter.ScrollDirection.SMOOTH)
+            return Clutter.EVENT_STOP;
+        if (this._checkSwitchTime()) {
             actor.set_reactive(false);
             if (event.get_scroll_direction() == Clutter.ScrollDirection.UP)
                 this._previous();
-            else
+            else if (event.get_scroll_direction() == Clutter.ScrollDirection.DOWN)
                 this._next();
             actor.set_reactive(true);
         }
         return true;
     },
 
-    _disableHover : function() {
+    _disableHover: function () {
         this._mouseActive = false;
 
         if (this._motionTimeoutId != 0)
@@ -361,16 +372,16 @@ AppSwitcher.prototype = {
         this._motionTimeoutId = Mainloop.timeout_add(DISABLE_HOVER_TIMEOUT, Lang.bind(this, this._mouseTimedOut));
     },
 
-    _mouseTimedOut : function() {
+    _mouseTimedOut: function () {
         this._motionTimeoutId = 0;
         this._mouseActive = true;
     },
 
-    _switchWorkspace: function(direction) {
-        if (global.screen.n_workspaces < 2)
+    _switchWorkspace: function (direction) {
+        if (global.workspace_manager.n_workspaces < 2)
             return false;
 
-        let current = global.screen.get_active_workspace_index();
+        let current = global.workspace_manager.get_active_workspace_index();
 
         if (direction === Clutter.KEY_Left)
             Main.wm.actionMoveWorkspaceLeft();
@@ -379,19 +390,19 @@ AppSwitcher.prototype = {
         else
             return false;
 
-        if (current === global.screen.get_active_workspace_index())
+        if (current === global.workspace_manager.get_active_workspace_index())
             return false;
 
-        let workspace = global.screen.get_active_workspace();
+        let workspace = global.workspace_manager.get_active_workspace();
         this._onWorkspaceSelected(workspace);
         return true;
     },
 
-    _windowDestroyed: function(wm, actor) {
+    _windowDestroyed: function (wm, actor) {
         this._removeDestroyedWindow(actor.meta_window);
     },
 
-    _removeDestroyedWindow: function(window) {
+    _removeDestroyedWindow: function (window) {
         for (let i in this._windows) {
             if (window == this._windows[i]) {
                 if (this._windows.length == 1)
@@ -416,14 +427,23 @@ AppSwitcher.prototype = {
         }
     },
 
-    _activateSelected: function() {
-        let workspace_num = this._windows[this._currentIndex].get_workspace().index();
-        Main.activateWindow(this._windows[this._currentIndex], global.get_current_time(), workspace_num);
+    _activateSelected: function () {
+        const _window = this._windows[this._currentIndex]
+        const workspace_num = _window.get_workspace().index();
+        Main.activateWindow(_window, global.get_current_time(), workspace_num);
+        this._warpMouse = global.settings.get_boolean("alttab-switcher-warp-mouse-pointer");
+        if (this._warpMouse) {
+            const rect = _window.get_frame_rect();
+            const x = rect.x + rect.width / 2;
+            const y = rect.y + rect.height / 2;
+            this._pointer = Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
+            this._pointer.notify_absolute_motion(global.get_current_time(), x, y);
+        }
         if (!this._destroyed)
             this.destroy();
     },
 
-    _showDesktop: function() {
+    _showDesktop: function () {
         for (let i in this._windows) {
             if (!this._windows[i].minimized)
                 this._windows[i].minimize();
@@ -431,7 +451,7 @@ AppSwitcher.prototype = {
         this.destroy();
     },
 
-    destroy: function() {
+    destroy: function () {
         this._destroyed = true;
         this._popModal();
 
@@ -440,7 +460,7 @@ AppSwitcher.prototype = {
         else
             this._hide();
 
-        if(this._initialDelayTimeoutId !== null && this._initialDelayTimeoutId > 0) {
+        if (this._initialDelayTimeoutId !== null && this._initialDelayTimeoutId > 0) {
             Mainloop.source_remove(this._initialDelayTimeoutId);
             this._initialDelayTimeoutId = 0;
         }
@@ -452,7 +472,14 @@ AppSwitcher.prototype = {
             this._motionTimeoutId = 0;
         }
 
-        this._windowManager.disconnect(this._dcid);
-        this._windowManager.disconnect(this._mcid);
+        if (this._dcid > 0) {
+            this._windowManager.disconnect(this._dcid);
+            this._dcid = 0;
+        }
+
+        if (this._mcid > 0) {
+            this._windowManager.disconnect(this._mcid);
+            this._mcid = 0;
+        }
     }
 };

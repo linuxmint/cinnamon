@@ -1,6 +1,6 @@
 st_headers = [
     'st-adjustment.h',
-    # 'st-background-effect.h',
+    'st-background-effect.h',
     'st-bin.h',
     'st-border-image.h',
     'st-box-layout.h',
@@ -99,7 +99,7 @@ st_private_headers = [
 
 st_gir_sources = [
     'st-adjustment.c',
-    # 'st-background-effect.c',
+    'st-background-effect.c',
     'st-bin.c',
     'st-border-image.c',
     'st-box-layout.c',
@@ -227,7 +227,7 @@ st_gir = gnome.generate_gir(
     includes: st_gir_includes,
     install: true,
     install_dir_typelib: pkglibdir,
-    install_dir_gir: false,
+    install_dir_gir: girdir,
     extra_args: [
         '-DST_COMPILATION',
         '--quiet',

@@ -8,6 +8,12 @@ on:
     branches:
       - master
   workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Start an SSH server on failure.'
+        required: false
+        default: false
 
 jobs:
   build:
@@ -26,5 +32,6 @@ jobs:
         linuxmint/cjs,
         linuxmint/muffin,
         linuxmint/nemo,
-        linuxmint/xapp
+        linuxmint/xapp,
+        linuxmint/xdg-desktop-portal-xapp
       ##############################

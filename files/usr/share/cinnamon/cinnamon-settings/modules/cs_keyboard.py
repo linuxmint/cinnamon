@@ -43,7 +43,8 @@ CATEGORIES = [
     [_("Sound and Media"),  "media",            None,       "applications-multimedia"],
     [_("Quiet Keys"),           "media-quiet",      "media",        None],
     [_("Universal Access"), "accessibility",    None,       "preferences-desktop-accessibility"],
-    [_("Custom Shortcuts"), "custom",           None,       "cinnamon-panel-launcher"]
+    [_("Custom Shortcuts"), "custom",           None,       "cinnamon-panel-launcher"],
+    [_("Pointer"),          "pointer",          "general",  None]
 ]
 
 KEYBINDINGS = [
@@ -62,6 +63,9 @@ KEYBINDINGS = [
     [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog", "general"],
     # General - Troubleshooting
     [_("Toggle Looking Glass"), CINNAMON_SCHEMA, "looking-glass-keybinding", "trouble"],
+    # General - Pointer
+    [_("Move pointer to the next monitor"), CINNAMON_SCHEMA, "pointer-next-monitor", "pointer"],
+    [_("Move pointer to the previous monitor"), CINNAMON_SCHEMA, "pointer-previous-monitor", "pointer"],
     # Windows
     [_("Maximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize", "windows"],
     [_("Unmaximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "unmaximize", "windows"],
@@ -660,7 +664,6 @@ class Module:
         self.kb_store.refilter()
 
     def onCustomKeyBindingEdited(self, kb_treeview, column, kb_column):
-        print("what")
         keybindings, iter = kb_treeview.get_selection().get_selected()
         if iter:
             keybinding = keybindings[iter][1]

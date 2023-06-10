@@ -189,7 +189,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             instance_id,
             monitorWatchList: [],
             autoStartApps: [],
-            currentWs: global.screen.get_active_workspace_index(),
+            currentWs: global.workspace_manager.get_active_workspace_index(),
             panelEditMode: global.settings.get_boolean('panel-edit-mode'),
             menuOpen: false,
             dragging: {
@@ -293,10 +293,10 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.signals.connect(this.actor, 'scroll-event', (c, e) => this.handleScroll(e));
         this.signals.connect(global, 'scale-changed', (...args) => this.onUIScaleChange(...args));
         this.signals.connect(global.window_manager, 'switch-workspace', (...args) => this.onSwitchWorkspace(...args));
-        this.signals.connect(global.screen, 'workspace-removed', (...args) => this.onWorkspaceRemoved(...args));
-        this.signals.connect(global.screen, 'window-monitor-changed', (...args) => this.onWindowMonitorChanged(...args));
+        this.signals.connect(global.workspace_manager, 'workspace-removed', (...args) => this.onWorkspaceRemoved(...args));
+        this.signals.connect(global.display, 'window-monitor-changed', (...args) => this.onWindowMonitorChanged(...args));
         this.signals.connect(Main.panelManager, 'monitors-changed', (...args) => this._onMonitorsChanged(...args));
-        this.signals.connect(global.screen, 'window-skip-taskbar-changed', (...args) => this.onWindowSkipTaskbarChanged(...args));
+        this.signals.connect(global.display, 'window-skip-taskbar-changed', (...args) => this.onWindowSkipTaskbarChanged(...args));
         this.signals.connect(global.display, 'window-marked-urgent', (...args) => this.updateAttentionState(...args));
         this.signals.connect(global.display, 'window-demands-attention', (...args) => this.updateAttentionState(...args));
         this.signals.connect(global.display, 'window-created', (...args) => this.onWindowCreated(...args));
@@ -446,7 +446,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         return false;
     }
 
-    onWindowMonitorChanged(screen, metaWindow, metaWorkspace) {
+    onWindowMonitorChanged(display, metaWindow, metaWorkspace) {
         if (this.state.monitorWatchList.length !== this.numberOfMonitors) {
             let appList = this.getCurrentAppList();
             if (appList !== null) {
@@ -459,11 +459,11 @@ class GroupedWindowListApplet extends Applet.Applet {
     bindAppKeys() {
         this.unbindAppKeys();
 
-        for (let i = 1; i < 10; i++) {
-            if (this.state.settings.SuperNumHotkeys) {
+        if (this.state.settings.SuperNumHotkeys) {
+            for (let i = 1; i < 10; i++) {
                 this.bindAppKey(i);
+                this.bindNewAppKey(i);
             }
-            this.bindNewAppKey(i);
         }
         Main.keybindingManager.addHotKey('launch-show-apps-order', this.state.settings.showAppsOrderHotkey, () =>
             this.showAppsOrder()
@@ -935,7 +935,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         return true;
     }
 
-    onWorkspaceRemoved(metaScreen, index) {
+    onWorkspaceRemoved(workspaceManager, index) {
         if (this.appLists.length <= index) {
             return;
         }
@@ -955,7 +955,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         for (let i = removedLists.length - 1; i >= 0; i--) {
             this.appLists.splice(removedLists[i], 1);
         }
-        this.state.set({currentWs: global.screen.get_active_workspace_index()});
+        this.state.set({currentWs: global.workspace_manager.get_active_workspace_index()});
     }
 
     onSwitchWorkspace() {
@@ -965,7 +965,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     _onSwitchWorkspace() {
         if (!this.state) return;
         this.state.set({currentWs: global.workspace_manager.get_active_workspace_index()});
-        let metaWorkspace = global.screen.get_workspace_by_index(this.state.currentWs);
+        let metaWorkspace = global.workspace_manager.get_workspace_by_index(this.state.currentWs);
 
         // If the workspace we switched to isn't in our list,
         // we need to create an AppList for it
@@ -990,7 +990,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.actor.queue_relayout();
     }
 
-    onWindowSkipTaskbarChanged(screen, metaWindow) {
+    onWindowSkipTaskbarChanged(display, metaWindow) {
         let appList = this.getCurrentAppList();
 
         if (metaWindow.is_skip_taskbar()) {

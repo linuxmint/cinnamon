@@ -272,7 +272,7 @@ class AppMenuButton {
         this.drawLabel = false;
         this.labelVisiblePref = false;
         this._signals = new SignalManager.SignalManager();
-        this.xid = global.screen.get_xwindow_for_window(metaWindow);
+        this.xid = metaWindow.get_xwindow();
         this._flashTimer = null;
 
         if (this._applet.orientation == St.Side.TOP)
@@ -371,7 +371,7 @@ class AppMenuButton {
 
         this._signals.connect(this.metaWindow, 'notify::title', this.setDisplayTitle, this);
         this._signals.connect(this.metaWindow, "notify::minimized", this.setDisplayTitle, this);
-        this._signals.connect(this.metaWindow, "notify::tile-type", this.setDisplayTitle, this);
+        this._signals.connect(this.metaWindow, "notify::tile-mode", this.setDisplayTitle, this);
         this._signals.connect(this.metaWindow, "notify::icon", this.setIcon, this);
         this._signals.connect(this.metaWindow, "notify::appears-focused", this.onFocus, this);
         this._signals.connect(this.metaWindow, "unmanaged", this.onUnmanaged, this);
@@ -414,6 +414,10 @@ class AppMenuButton {
 
     _onScrollEvent(actor, event) {
         let direction = event.get_scroll_direction();
+
+        if (direction === Clutter.ScrollDirection.SMOOTH) {
+            return Clutter.EVENT_STOP;
+        }
 
         // Find the current focused window
         let windows = this.actor.get_parent().get_children()
@@ -654,7 +658,7 @@ class AppMenuButton {
                 if (this._applet.buttonsUseEntireSpace) {
                     let [lminSize, lnaturalSize] = this._label.get_preferred_width(forHeight);
                     let spacing = this.actor.get_theme_node().get_length('spacing');
-                    alloc.natural_size = Math.max(150 * global.ui_scale,
+                    alloc.natural_size = Math.max(this._applet.buttonWidth * global.ui_scale,
                             naturalSize + spacing + lnaturalSize);
                 } else {
                     alloc.natural_size = this._applet.buttonWidth * global.ui_scale;
@@ -1053,9 +1057,9 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("last-window-order", "lastWindowOrder", null);
 
         this.signals.connect(global.display, 'window-created', this._onWindowAddedAsync, this);
-        this.signals.connect(global.screen, 'window-monitor-changed', this._onWindowMonitorChanged, this);
-        this.signals.connect(global.screen, 'window-workspace-changed', this._onWindowWorkspaceChanged, this);
-        this.signals.connect(global.screen, 'window-skip-taskbar-changed', this._onWindowSkipTaskbarChanged, this);
+        this.signals.connect(global.display, 'window-monitor-changed', this._onWindowMonitorChanged, this);
+        this.signals.connect(global.display, 'window-workspace-changed', this._onWindowWorkspaceChanged, this);
+        this.signals.connect(global.display, 'window-skip-taskbar-changed', this._onWindowSkipTaskbarChanged, this);
         this.signals.connect(Main.panelManager, 'monitors-changed', this._updateWatchedMonitors, this);
         this.signals.connect(global.window_manager, 'switch-workspace', this._refreshAllItems, this);
         this.signals.connect(Cinnamon.WindowTracker.get_default(), "window-app-changed", this._onWindowAppChanged, this);
@@ -1153,16 +1157,16 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.manager.set_spacing(spacing * global.ui_scale);
     }
 
-    _onWindowAddedAsync(screen, metaWindow, monitor) {
-        Mainloop.timeout_add(20, Lang.bind(this, this._onWindowAdded, screen, metaWindow, monitor));
+    _onWindowAddedAsync(display, metaWindow, monitor) {
+        Mainloop.timeout_add(20, Lang.bind(this, this._onWindowAdded, display, metaWindow, monitor));
     }
 
-    _onWindowAdded(screen, metaWindow, monitor) {
+    _onWindowAdded(display, metaWindow, monitor) {
         if (this._shouldAdd(metaWindow))
             this._addWindow(metaWindow, false);
     }
 
-    _onWindowMonitorChanged(screen, metaWindow, monitor) {
+    _onWindowMonitorChanged(display, metaWindow, monitor) {
         if (this._shouldAdd(metaWindow))
             this._addWindow(metaWindow, false);
         else
@@ -1176,7 +1180,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
             this._refreshItem(window);
     }
 
-    _onWindowWorkspaceChanged(screen, metaWindow, metaWorkspace) {
+    _onWindowWorkspaceChanged(display, metaWindow, metaWorkspace) {
         this._refreshItemByMetaWindow(metaWindow);
     }
 
@@ -1184,13 +1188,13 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this._refreshItemByMetaWindow(metaWindow);
     }
 
-    _onWindowSkipTaskbarChanged(screen, metaWindow) {
+    _onWindowSkipTaskbarChanged(display, metaWindow) {
         if (metaWindow && metaWindow.is_skip_taskbar()) {
             this._removeWindow(metaWindow);
             return;
         }
 
-        this._onWindowAdded(screen, metaWindow, 0);
+        this._onWindowAdded(display, metaWindow, 0);
     }
 
     _updateAttentionGrabber() {

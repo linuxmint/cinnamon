@@ -652,12 +652,12 @@ ExpoWorkspaceThumbnail.prototype = {
         this.doRemoveWindow(metaWin);
     },
 
-    windowEnteredMonitor : function(metaScreen, monitorIndex, metaWin) {
+    windowEnteredMonitor : function(metaDisplay, monitorIndex, metaWin) {
         // important if workspaces-only-on-primary is in effect
         this.doAddWindow(metaWin);
     },
 
-    windowLeftMonitor : function(metaScreen, monitorIndex, metaWin) {
+    windowLeftMonitor : function(metaDisplay, monitorIndex, metaWin) {
         // important if workspaces-only-on-primary is in effect
         this.doRemoveWindow(metaWin);
     },
@@ -1144,7 +1144,7 @@ ExpoThumbnailsBox.prototype = {
             global.window_manager.connect('switch-workspace',
                                           Lang.bind(this, this.activeWorkspaceChanged));
 
-        this.workspaceAddedId = global.workspace_manager.connect('workspace-added', Lang.bind(this, function(screen, index) {
+        this.workspaceAddedId = global.workspace_manager.connect('workspace-added', Lang.bind(this, function(ws_manager, index) {
             this.addThumbnails(index, 1);
         }));
         this.workspaceRemovedId = global.workspace_manager.connect('workspace-removed', Lang.bind(this, function() {

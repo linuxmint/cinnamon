@@ -282,6 +282,8 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
         this.actor.connect('scroll-event', this.hook.bind(this));
 
+        this.signals.connect(Main.layoutManager, 'monitors-changed', this.onWorkspacesUpdated, this);
+
         this.queueCreateButtons();
         global.workspace_manager.connect('notify::n-workspaces', () => { this.onWorkspacesUpdated() });
         global.workspace_manager.connect('workspaces-reordered', () => { this.onWorkspacesUpdated() });

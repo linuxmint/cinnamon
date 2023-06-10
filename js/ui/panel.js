@@ -330,7 +330,7 @@ function setPanelsEnabledList(list) {
 function updatePanelsMeta(meta, panel_props) {
     let changed = false;
 
-    // panelMeta is [panel_id, monitor]
+    // panelMeta is [panel_id][monitor, position]
     // Find matching panel ids and update their monitor value if necessary.
 
     for (let i = 0; i < meta.length; i++) {
@@ -376,6 +376,7 @@ PanelManager.prototype = {
         this.panels = [];
         this.panelsMeta = [];   // Properties of panels in format [<monitor index>, <panelPosition>]
         this.canAdd = true;     // Whether there is space for more panels to be added
+        this.monitorCount = global.display.get_n_monitors();
 
         let editMode = global.settings.get_boolean("panel-edit-mode");
         if (editMode == true)
@@ -845,7 +846,7 @@ PanelManager.prototype = {
 
         metaList[ID] = [monitorIndex, panelPosition];  // Note:  metaList [i][0] is the monitor index, metaList [i][1] is the panelPosition
 
-        if (monitorIndex < 0 || monitorIndex >= global.display.get_n_monitors()) {
+        if (monitorIndex < 0 || monitorIndex >= this.monitorCount) {
             global.log("Monitor " + monitorIndex + " not found. Not creating panel");
             return null;
         }
@@ -857,8 +858,7 @@ PanelManager.prototype = {
     },
 
     _checkCanAdd: function() {
-        let monitorCount = global.display.get_n_monitors();
-        let panelCount = (monitorCount * 4) - this.panelCount;          // max of 4 panels on a monitor, one per edge
+        let panelCount = (this.monitorCount * 4) - this.panelCount;          // max of 4 panels on a monitor, one per edge
 
         this.canAdd = panelCount > 0;
     },
@@ -1066,12 +1066,13 @@ PanelManager.prototype = {
     },
 
     _onMonitorsChanged: function() {
-        let monitorCount = global.display.get_n_monitors();
+        const oldCount = this.monitorCount;
+        this.monitorCount = global.display.get_n_monitors();
         let drawcorner = [false, false];
 
         let panelProperties = getPanelsEnabledList()
         // adjust any changes to logical/xinerama monitor relationships
-        let monitors_changed = updatePanelsMeta(this.panelsMeta, panelProperties);
+        let monitors_changed = updatePanelsMeta(this.panelsMeta, panelProperties) || oldCount !== this.monitorCount;
 
         for (let i = 0, len = this.panelsMeta.length; i < len; i++) {
             if (!this.panelsMeta[i]) {
@@ -1080,13 +1081,13 @@ PanelManager.prototype = {
 
             if (!this.panels[i]) { // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again
                                                          // - the monitor may just have been reconnected
-                if (this.panelsMeta[i][0] < monitorCount)  // just check that the monitor is there
+                if (this.panelsMeta[i][0] < this.monitorCount)  // just check that the monitor is there
                 {
                     let panel = this._loadPanel(i, this.panelsMeta[i][0], this.panelsMeta[i][1], drawcorner);
                     if (panel)
                         AppletManager.loadAppletsOnPanel(panel);
                 }
-            } else if (this.panelsMeta[i][0] >= monitorCount) { // Monitor of the panel went missing.  Meta is [monitor,panel] array
+            } else if (this.panelsMeta[i][0] >= this.monitorCount) { // Monitor of the panel went missing.  Meta is [monitor,panel] array
                 if (this.panels[i]) {
                     this.panels[i].destroy(false); // destroy panel, but don't remove icon size settings
                     delete this.panels[i];
@@ -1166,23 +1167,22 @@ PanelManager.prototype = {
      * shows the dummy panels
      */
     _showDummyPanels: function(callback) {
-        let monitorCount = global.display.get_n_monitors();
         this.dummyCallback = callback;
         this.dummyPanels = [];
 
-        while (this.dummyPanels.push([true, true, true, true]) < monitorCount); // 4 possible panels per monitor
+        while (this.dummyPanels.push([true, true, true, true]) < this.monitorCount); // 4 possible panels per monitor
 
         for (let i = 0, len = this.panelsMeta.length; i < len; i++) {
             if (!this.panelsMeta[i]) {
                 continue;
             }
-            if (this.panelsMeta[i][0] >= monitorCount) // Monitor does not exist
+            if (this.panelsMeta[i][0] >= this.monitorCount) // Monitor does not exist
                 continue;
             // there is an existing panel showing
             this.dummyPanels[this.panelsMeta[i][0]][this.panelsMeta[i][1]] = false;
         }
 
-        for (let i = 0; i < monitorCount; i++) {
+        for (let i = 0; i < this.monitorCount; i++) {
             for (let j = 0; j < 4; j++) {
                 if (this.dummyPanels[i] && this.dummyPanels[i][j] == true) { // no panel there at the moment, so show a dummy
                     this.dummyPanels[i][j] = new PanelDummy(i, j, callback);

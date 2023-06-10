@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="22"
+   height="22"
+   viewBox="0 0 22 22"
+   version="1.1"
+   id="svg1697"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="color_dot.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs7">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient2859">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1"
+         offset="0"
+         id="stop2855" />
+      <stop
+         style="stop-color:#000000;stop-opacity:1"
+         offset="1"
+         id="stop2857" />
+    </linearGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient2859"
+       id="radialGradient2863"
+       cx="-9.086544"
+       cy="11.246915"
+       fx="-9.086544"
+       fy="11.246915"
+       r="4.4860001"
+       gradientTransform="matrix(3.401277,3.1348755,-1.8509056,1.743225,59.749721,19.908028)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview5"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     width="22px"
+     inkscape:zoom="45.254834"
+     inkscape:cx="11.788796"
+     inkscape:cy="11.777747"
+     inkscape:window-width="2560"
+     inkscape:window-height="1352"
+     inkscape:window-x="2560"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g985"
+       transform="rotate(90,11,11)">
+      <path
+         id="path1780"
+         style="opacity:1;fill:#71718e;fill-opacity:1;stroke:none;stroke-width:0.126607;stroke-opacity:1"
+         d="M 11,0 A 11,11 0 0 0 0,11 H 22 A 11,11 0 0 0 11,0 Z" />
+      <path
+         id="path1780-3"
+         style="fill:#8cffbe;fill-opacity:1;stroke:none;stroke-width:0.126607;stroke-opacity:1"
+         d="M 11,22 A 11,11 0 0 1 0,11 H 22 A 11,11 0 0 1 11,22 Z" />
+    </g>
+    <circle
+       style="opacity:0.224129;fill:url(#radialGradient2863);fill-opacity:1;stroke:none;stroke-width:5.2544;stroke-opacity:1"
+       id="path2413"
+       cx="11"
+       cy="11"
+       r="11" />
+  </g>
+</svg>

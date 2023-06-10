@@ -333,14 +333,15 @@ class Seeker extends Slider.Slider {
                 this._timerTicker = 0;
                 this._getPosition();
             }
-            return true;
+            return GLib.SOURCE_CONTINUE;
         }
 
-        return false;
+        this._timeoutId = 0;
+        return GLib.SOURCE_REMOVE;
     }
 
     _updateTimer() {
-        if (this._timeoutId !== 0) {
+        if (this._timeoutId > 0) {
             Mainloop.source_remove(this._timeoutId);
             this._timeoutId = 0;
         }
@@ -403,12 +404,14 @@ class Seeker extends Slider.Slider {
     }
 
     destroy() {
-        if (this._timeoutId != 0) {
+        if (this._timeoutId > 0) {
             Mainloop.source_remove(this._timeoutId);
             this._timeoutId = 0;
         }
-        if (this._seekChangedId)
+        if (this._seekChangedId) {
             this._mediaServerPlayer.disconnectSignal(this._seekChangedId);
+            this._seekChangedId = 0;
+        }
 
         this.disconnectAll();
         this._mediaServerPlayer = null;
@@ -434,15 +437,18 @@ class StreamMenuSection extends PopupMenu.PopupMenuSection {
         }
 
         // Special cases
-        if(name === "Banshee") {
+        if (name === "Banshee") {
             iconName = "banshee";
         }
         else if (name === "Spotify") {
             iconName = "spotify";
         }
-        if(name === "VBox") {
+        else if (name === "VBox") {
             name = "Virtualbox";
             iconName = "virtualbox";
+        }
+        else if (name === "Firefox") {
+            iconName = "firefox";
         }
         else if (iconName === "audio") {
             iconName = "audio-x-generic";
@@ -1101,6 +1107,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             this.unregisterSystrayIcons();
         if (this._iconTimeoutId) {
             Mainloop.source_remove(this._iconTimeoutId);
+            this._iconTimeoutId = 0;
         }
 
         this._dbus.disconnectSignal(this._ownerChangedId);
@@ -1224,7 +1231,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     setIcon(icon, source) {
         if (this._iconTimeoutId) {
             Mainloop.source_remove(this._iconTimeoutId);
-            this._iconTimeoutId = null;
+            this._iconTimeoutId = 0;
         }
 
         //save the icon
@@ -1240,7 +1247,6 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 //if we have an active player, but are changing the volume, show the output icon and after three seconds change back to the player icon
                 this.set_applet_icon_symbolic_name(this._outputIcon);
                 this._iconTimeoutId = Mainloop.timeout_add_seconds(OUTPUT_ICON_SHOW_TIME_SECONDS, () => {
-                    this._iconTimeoutId = null;
                     this.setIcon();
                 });
             } else {

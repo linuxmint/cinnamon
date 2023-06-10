@@ -920,7 +920,7 @@ def convert(image, mode, *args, **keyw):
         # A workaround for a PIL bug.
         # Converting from P to LA directly doesn't work.
         return image.convert('RGBA').convert('LA', *args, **keyw)
-    if has_transparency(image) and (not mode in ['RGBA', 'LA']):
+    if has_transparency(image) and (mode not in ['RGBA', 'LA']):
         if image.mode == 'P':
             image = image.convert('RGBA')
             del image.info['transparency']
@@ -962,7 +962,7 @@ def convert_save_mode_by_format(image, format):
     #TODO: Extend this helper function to support other formats as well
     if image.mode == 'P':
         # Make sure P is handled correctly
-        if not format in ['GIF', 'PNG', 'TIFF', 'IM', 'PCX']:
+        if format not in ['GIF', 'PNG', 'TIFF', 'IM', 'PCX']:
             image = remove_alpha(image)
     if format == 'JPEG':
         if image.mode in ['RGBA', 'P']:
@@ -1011,7 +1011,7 @@ def convert_save_mode_by_format(image, format):
         if image.mode in ['P', 'RGBA', 'YCbCr']:
             return image.convert('RGB')
     elif format == 'XBM':
-        if not image.mode in ['1']:
+        if image.mode not in ['1']:
             return image.convert('1')
     elif format == 'TIFF':
         if image.mode in ['YCbCr']:
@@ -1175,7 +1175,7 @@ def checkboard(size, delta=8, fg=(128, 128, 128), bg=(204, 204, 204)):
     :returns: checkboard image
     :rtype: pil.Image
     """
-    if not (size in CHECKBOARD):
+    if size not in CHECKBOARD:
         dim = max(size)
         n = int(dim / delta) + 1  # FIXME: now acts like square->nx, ny
 

@@ -54,7 +54,7 @@ const _disconnect = function(results) {
  * Every Javascript object should have its own @SignalManager, and use it to
  * connect signals of all objects it takes care of. For example, the panel will
  * have one #SignalManger object, which manages all signals from #GSettings,
- * `global.screen` etc.
+ * `global.display` etc.
  *
  * An example usage is as follows:
  * ```

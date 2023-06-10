@@ -53,6 +53,7 @@
  *
  * @keybindingManager (KeybindingManager.KeybindingManager): The keybinding manager
  * @systrayManager (Systray.SystrayManager): The systray manager
+ * @gesturesManager (GesturesManager.GesturesManager): Gesture support  from ToucheEgg.
  *
  * @osdWindow (OsdWindow.OsdWindow): Osd window that pops up when you use media
  * keys.
@@ -122,6 +123,7 @@ const {readOnlyError} = imports.ui.environment;
 const {installPolyfills} = imports.ui.overrides;
 const InputMethod = imports.misc.inputMethod;
 const ScreenRecorder = imports.ui.screenRecorder;
+const {GesturesManager} = imports.ui.gestures.gesturesManager;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -140,6 +142,7 @@ var overview = null;
 var expo = null;
 var runDialog = null;
 var lookingGlass = null;
+var lookingGlassUpdateID = 0;
 var wm = null;
 var a11yHandler = null;
 var messageTray = null;
@@ -168,7 +171,8 @@ var tracker = null;
 var settingsManager = null;
 var systrayManager = null;
 var wmSettings = null;
-
+var pointerSwitcher = null;
+var gesturesManager = null;
 var workspace_names = [];
 
 var applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
@@ -181,6 +185,7 @@ var popup_rendering_actor = null;
 
 var xlet_startup_error = false;
 
+var gpuOffloadHelper = null;
 var gpu_offload_supported = false;
 
 var RunState = {
@@ -227,7 +232,7 @@ function _addXletDirectoriesToSearchPath() {
 }
 
 function _initUserSession() {
-    global.screen.override_workspace_layout(Meta.DisplayCorner.TOPLEFT, false, 1, -1);
+    global.workspace_manager.override_workspace_layout(Meta.DisplayCorner.TOPLEFT, false, 1, -1);
 
     systrayManager = new Systray.SystrayManager();
 
@@ -343,6 +348,8 @@ function start() {
     keybindingManager = new Keybindings.KeybindingManager();
     deskletContainer = new DeskletManager.DeskletContainer();
 
+    gesturesManager = new GesturesManager();
+
     uiGroup = new Layout.UiActor({ name: 'uiGroup' });
     uiGroup.set_flags(Clutter.ActorFlags.NO_LAYOUT);
 
@@ -382,6 +389,8 @@ function start() {
     let pointerTracker = new PointerTracker.PointerTracker();
     pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
+
+    pointerSwitcher = new PointerTracker.PointerSwitcher();
 
     xdndHandler = new XdndHandler.XdndHandler();
     osdWindowManager = new OsdWindow.OsdWindowManager();
@@ -437,14 +446,11 @@ function start() {
 
     global.display.connect('gl-video-memory-purged', loadTheme);
 
-    try {
-        gpu_offload_supported = Cinnamon.get_gpu_offload_supported()
-    } catch (e) {
-        global.logWarning("Could not check for gpu offload support - maybe xapps isn't up to date.");
-        gpu_offload_supported = false;
-    }
-
-    log(`GPU offload supported: ${gpu_offload_supported}`);
+    gpuOffloadHelper = XApp.GpuOffloadHelper.get();
+    gpuOffloadHelper.connect("ready", (helper, success) => {
+        gpu_offload_supported = success && gpuOffloadHelper.is_offload_supported();
+        global.log(`GPU offload supported: ${gpu_offload_supported}`);
+    });
 
     // We're ready for the session manager to move to the next phase
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
@@ -570,7 +576,7 @@ function _fillWorkspaceNames(index) {
 }
 
 function _shouldTrimWorkspace(i) {
-    return i >= 0 && (i >= global.screen.n_workspaces || !workspace_names[i].length);
+    return i >= 0 && (i >= global.workspace_manager.n_workspaces || !workspace_names[i].length);
 }
 
 function _trimWorkspaceNames() {
@@ -636,12 +642,12 @@ function hasDefaultWorkspaceName(index) {
 }
 
 function _addWorkspace() {
-    global.screen.append_new_workspace(false, global.get_current_time());
+    global.workspace_manager.append_new_workspace(false, global.get_current_time());
     return true;
 }
 
 function _removeWorkspace(workspace) {
-    if (global.screen.n_workspaces == 1)
+    if (global.workspace_manager.n_workspaces == 1)
         return false;
     let index = workspace.index();
     if (index < workspace_names.length) {
@@ -649,7 +655,7 @@ function _removeWorkspace(workspace) {
     }
     _trimWorkspaceNames();
     wmSettings.set_strv("workspace-names", workspace_names);
-    global.screen.remove_workspace(workspace, global.get_current_time());
+    global.workspace_manager.remove_workspace(workspace, global.get_current_time());
     return true;
 }
 
@@ -666,16 +672,16 @@ function _removeWorkspace(workspace) {
  */
 function moveWindowToNewWorkspace(metaWindow, switchToNewWorkspace) {
     if (switchToNewWorkspace) {
-        let targetCount = global.screen.n_workspaces + 1;
-        let nnwId = global.screen.connect('notify::n-workspaces', function() {
-            global.screen.disconnect(nnwId);
-            if (global.screen.n_workspaces === targetCount) {
-                let newWs = global.screen.get_workspace_by_index(global.screen.n_workspaces - 1);
+        let targetCount = global.workspace_manager.n_workspaces + 1;
+        let nnwId = global.workspace_manager.connect('notify::n-workspaces', function() {
+            global.workspace_manager.disconnect(nnwId);
+            if (global.workspace_manager.n_workspaces === targetCount) {
+                let newWs = global.workspace_manager.get_workspace_by_index(global.workspace_manager.n_workspaces - 1);
                 newWs.activate(global.get_current_time());
             }
         });
     }
-    metaWindow.change_workspace_by_index(global.screen.n_workspaces, true, global.get_current_time());
+    metaWindow.change_workspace_by_index(global.workspace_manager.n_workspaces, true, global.get_current_time());
 }
 
 /**
@@ -892,8 +898,22 @@ function _log(category = 'info', msg = '') {
 
     _errorLogStack.push(out);
 
-    if (lookingGlass) {
-        lookingGlass.emitLogUpdate();
+    // If the melange window is open/exists, excessive dbus traffic caused by gesture debug
+    // logging can leave the desktop unstable. We end up with lots of:
+    //
+    // Attempting to call back into JSAPI during the sweeping phase of GC...
+    //
+    // This is a hack, and how we handle logging and melange probably needs looked at.
+
+    if (lookingGlass && !gesturesManager.gesture_active()) {
+        if (lookingGlassUpdateID > 0) {
+            GLib.source_remove (lookingGlassUpdateID);
+        }
+
+        lookingGlassUpdateID = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+             lookingGlass.emitLogUpdate();
+             lookingGlassUpdateID = 0;
+        });
     }
 
     log(`[LookingGlass/${category}] ${text}`);
@@ -1320,13 +1340,13 @@ function getRunDialog() {
  * activation will be handled in muffin.
  */
 function activateWindow(window, time, workspaceNum) {
-    let activeWorkspaceNum = global.screen.get_active_workspace_index();
+    let activeWorkspaceNum = global.workspace_manager.get_active_workspace_index();
 
     if (!time)
         time = global.get_current_time();
 
     if ((workspaceNum !== undefined) && activeWorkspaceNum !== workspaceNum) {
-        let workspace = global.screen.get_workspace_by_index(workspaceNum);
+        let workspace = global.workspace_manager.get_workspace_by_index(workspaceNum);
         workspace.activate_with_focus(window, time);
         return;
     }
@@ -1489,8 +1509,7 @@ function isInteresting(metaWindow) {
 
 /**
  * getTabList:
- * @workspaceOpt (Meta.Workspace): (optional) workspace, defaults to global.screen.get_active_workspace()
- * @screenOpt (Meta.Screen): (optional) screen, defaults to global.screen
+ * @workspaceOpt (Meta.Workspace): (optional) workspace, defaults to global.workspace_manager.get_active_workspace()
  *
  * Return a list of the interesting windows on a workspace (by default,
  * the active workspace).
@@ -1498,14 +1517,12 @@ function isInteresting(metaWindow) {
  *
  * Returns (array): list of windows
  */
-function getTabList(workspaceOpt, screenOpt) {
-    let screen = screenOpt || global.screen;
-    let display = screen.get_display();
-    let workspace = workspaceOpt || screen.get_active_workspace();
+function getTabList(workspaceOpt) {
+    let workspace = workspaceOpt || global.workspace_manager.get_active_workspace();
 
     let windows = []; // the array to return
 
-    let allwindows = display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
+    let allwindows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
     let registry = {}; // to avoid duplicates
 
     for (let i = 0; i < allwindows.length; ++i) {

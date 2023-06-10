@@ -47,7 +47,7 @@ class PanelAppLauncherMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(item);
 
         if (Main.gpu_offload_supported) {
-            let item = new PopupMenu.PopupIconMenuItem(_("Run with NVIDIA GPU"), "cpu", St.IconType.SYMBOLIC);
+            let item = new PopupMenu.PopupIconMenuItem(_("Run with dedicated GPU"), "cpu", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', Lang.bind(this, this._onLaunchOffloadedActivate));
             this.addMenuItem(item);
         }
@@ -282,12 +282,22 @@ class PanelAppLauncher extends DND.LauncherDraggable {
 
     _updateIconSize() {
         let node = this._iconBox.get_theme_node();
-        let maxHeight = this._iconBox.height - node.get_vertical_padding();
-        let maxWidth = this._iconBox.width - node.get_horizontal_padding();
-        let smallestDim = Math.min(maxHeight, maxWidth) / global.ui_scale;
+        let enforcedSize = 0;
 
-        if (smallestDim < this.icon.get_icon_size()) {
-            this.icon.set_icon_size(smallestDim);
+        if (this._iconBox.height > 0) {
+            enforcedSize = this._iconBox.height - node.get_vertical_padding();
+        }
+        else
+        if (this._iconBox.width > 0) {
+            enforcedSize = this._iconBox.width - node.get_horizontal_padding();
+        }
+        else
+        {
+            enforcedSize = -1;
+        }
+
+        if (enforcedSize < this.icon.get_icon_size()) {
+            this.icon.set_icon_size(enforcedSize);
         }
     }
 
@@ -672,9 +682,11 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
 
     showAddLauncherDialog(timestamp, launcher){
         if (launcher) {
-            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher -f" + launcher.getId() + " " + this.settings.file.get_path());
+            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher --icon-size %d -f %s %s"
+                .format(this.icon_size, launcher.getId(), this.settings.file.get_path()));
         } else {
-            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher " + this.settings.file.get_path());
+            Util.spawnCommandLine("cinnamon-desktop-editor -mcinnamon-launcher --icon-size %d %s"
+                .format(this.icon_size, this.settings.file.get_path()))
         }
     }
 

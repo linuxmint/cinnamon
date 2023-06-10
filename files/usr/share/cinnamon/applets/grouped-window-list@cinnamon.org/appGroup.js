@@ -1,6 +1,7 @@
 const Cinnamon = imports.gi.Cinnamon;
 const Meta = imports.gi.Meta;
 const Clutter = imports.gi.Clutter;
+const GLib = imports.gi.GLib;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
@@ -304,35 +305,40 @@ class AppGroup {
         if (this._needsAttention) return;
 
         this._needsAttention = true;
-        let counter = 0;
-        this.flashButton(counter);
+        this.flashButton();
     }
 
-    flashButton(counter) {
-        if (!this._needsAttention || !this.actor) return;
-
-        // If the app was closed during a flash sequence, stop looping.
-        if (!this.groupState.groupReady && this.groupState.isFavoriteApp) {
-            this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
+    flashButton() {
+        if (!this._needsAttention || !this.actor || this.flashTimer)
             return;
-        }
 
-        this.actor.remove_style_pseudo_class('active');
-        this.actor.add_style_class_name('grouped-window-list-item-demands-attention');
-        if (counter < FLASH_MAX_COUNT) {
-            this.flashTimer = Mainloop.timeout_add(FLASH_INTERVAL, () => {
-                if (this.actor && this.actor.has_style_class_name('grouped-window-list-item-demands-attention')) {
-                    this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
-                    this.actor.add_style_pseudo_class('active');
-                }
+        if (!this.groupState.groupReady && this.groupState.isFavoriteApp)
+            return;
 
-                this.flashTimer = Mainloop.timeout_add(FLASH_INTERVAL, () => {
-                    this.flashButton(++counter);
-                });
-            });
-        } else {
-            this.flashTimer = 0;
-        }
+        let counter = 0;
+        const sc = "grouped-window-list-item-demands-attention";
+
+        this.flashTimer = Mainloop.timeout_add(FLASH_INTERVAL, () => {
+            if (!this._needsAttention) {
+                this.flashTimer = 0;
+                return GLib.SOURCE_REMOVE;
+            }
+
+            if (this.actor.has_style_class_name(sc)) {
+                this.actor.add_style_class_name("active");
+                this.actor.remove_style_class_name(sc);
+            }
+            else {
+                this.actor.remove_style_class_name("active")
+                this.actor.add_style_class_name(sc);
+            }
+
+            const continueFlashing = (counter++ < FLASH_MAX_COUNT);
+            if (!continueFlashing) {
+                this.flashTimer = 0;
+            }
+            return continueFlashing;
+        });
     }
 
     getPreferredWidth(actor, forHeight, alloc) {
@@ -597,9 +603,7 @@ class AppGroup {
         if (hasFocus) {
             this.listState.trigger('updateFocusState', appId);
             this.actor.add_style_pseudo_class('focus');
-            if (this.actor.has_style_class_name('grouped-window-list-item-demands-attention')) {
-                this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
-            }
+            this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
             this._needsAttention = false;
         } else {
             this.actor.remove_style_pseudo_class('focus');
@@ -880,8 +884,8 @@ class AppGroup {
                 this.groupState.lastFocused.unminimize();
             }
             let ws = this.groupState.lastFocused.get_workspace().index();
-            if (ws !== global.screen.get_active_workspace_index()) {
-                global.screen.get_workspace_by_index(ws).activate(global.get_current_time());
+            if (ws !== global.workspace_manager.get_active_workspace_index()) {
+                global.workspace_manager.get_workspace_by_index(ws).activate(global.get_current_time());
             }
             Main.activateWindow(this.groupState.lastFocused, global.get_current_time());
             this.actor.add_style_pseudo_class('focus');

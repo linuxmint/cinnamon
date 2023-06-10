@@ -29,7 +29,7 @@ const THUMBNAIL_FADE_TIME = 0.1; // seconds
 const PREVIEW_DELAY_TIMEOUT = 0; // milliseconds
 var PREVIEW_SWITCHER_FADEOUT_TIME = 0.2; // seconds
 
-const iconSizes = [96, 64, 48, 32, 22];
+const iconSizes = [96, 64, 48];
 
 function mod(a, b) {
     return (a + b) % b;
@@ -124,16 +124,14 @@ ClassicSwitcher.prototype = {
             let thumbnailCenter = posX + icon.width / 2;
             let [childMinWidth, childNaturalWidth] = this._thumbnails.actor.get_preferred_width(-1);
             childBox.x1 = Math.max(monitor.x + leftPadding, Math.floor(thumbnailCenter - childNaturalWidth / 2));
-            if (childBox.x1 + childNaturalWidth > monitor.x + monitor.width - hPadding) {
-                let offset = childBox.x1 + childNaturalWidth - monitor.width + hPadding;
-                childBox.x1 = Math.max(monitor.x + leftPadding, childBox.x1 - offset - hPadding);
+            if (childBox.x1 + childNaturalWidth > monitor.x + monitor.width - rightPadding) {
+                let offset = (childBox.x1 + childNaturalWidth) - (monitor.x + monitor.width - rightPadding);
+                childBox.x1 -= offset;
             }
 
             let spacing = this.actor.get_theme_node().get_length('spacing');
 
             childBox.x2 = childBox.x1 +  childNaturalWidth;
-            if (childBox.x2 > monitor.x + monitor.width - rightPadding)
-                childBox.x2 = monitor.x + monitor.width - rightPadding;
             childBox.y1 = this._appList.actor.allocation.y2 + spacing;
             this._thumbnails.addClones(monitor.y + monitor.height - bottomPadding - childBox.y1);
             let [childMinHeight, childNaturalHeight] = this._thumbnails.actor.get_preferred_height(-1);
@@ -479,8 +477,9 @@ SwitcherList.prototype = {
 
         // Here we use a GenericContainer so that we can force all the
         // children except the separator to have the same width.
+        // TODO: Separator is gone, we could use an St.ScrollView now.
         this._list = new Cinnamon.GenericContainer({ style_class: 'switcher-list-item-container' });
-        this._list.spacing = 0;
+        this._list.spacing = -1;
         this._list.connect('style-changed', Lang.bind(this, function() {
                                                         this._list.spacing = this._list.get_theme_node().get_length('spacing');
                                                      }));
@@ -513,7 +512,6 @@ SwitcherList.prototype = {
 
         this._items = [];
         this._highlighted = -1;
-        this._separator = null;
         this._squareItems = squareItems;
         this._minSize = 0;
         this._scrollableRight = true;
@@ -522,6 +520,10 @@ SwitcherList.prototype = {
     },
 
     _allocateTop: function(actor, box, flags) {
+        if (this._list.spacing === -1) {
+            this._list.spacing = this._list.get_theme_node().get_length('spacing');
+        }
+
         let leftPadding = this.actor.get_theme_node().get_padding(St.Side.LEFT);
         let rightPadding = this.actor.get_theme_node().get_padding(St.Side.RIGHT);
 
@@ -585,12 +587,6 @@ SwitcherList.prototype = {
 
     _onItemEnter: function (index) {
         this._itemEntered(index);
-    },
-
-    addSeparator: function () {
-        let box = new St.Bin({ style_class: 'separator' });
-        this._separator = box;
-        this._list.add_actor(box);
     },
 
     highlight: function(index, justOutline) {
@@ -659,36 +655,22 @@ SwitcherList.prototype = {
         this.emit('item-entered', n);
     },
 
-    _maxChildWidth: function (forHeight) {
+    _maxChildWidth: function () {
         let maxChildMin = 0;
         let maxChildNat = 0;
 
-        for (let i = 0; i < this._items.length; i++) {
-            let [childMin, childNat] = this._items[i].get_preferred_width(forHeight);
-            maxChildMin = Math.max(childMin, maxChildMin);
-            maxChildNat = Math.max(childNat, maxChildNat);
-
-            if (this._squareItems) {
-                let [childMin, childNat] = this._items[i].get_preferred_height(-1);
-                maxChildMin = Math.max(childMin, maxChildMin);
-                maxChildNat = Math.max(childNat, maxChildNat);
-            }
+        if (this._items.length > 0) {
+            return this._items[0].get_preferred_width(-1);
         }
 
-        return [maxChildMin, maxChildNat];
+        return [0, 0]
     },
 
     _getPreferredWidth: function (actor, forHeight, alloc) {
-        let [maxChildMin, maxChildNat] = this._maxChildWidth(forHeight);
-
-        let separatorWidth = 0;
-        if (this._separator) {
-            let [sepMin, sepNat] = this._separator.get_preferred_width(forHeight);
-            separatorWidth = sepNat + this._list.spacing;
-        }
+        let [maxChildMin, maxChildNat] = this._maxChildWidth();
 
         let totalSpacing = this._list.spacing * Math.max(1, (this._items.length - 1));
-        alloc.min_size = this._items.length * maxChildMin + separatorWidth + totalSpacing;
+        alloc.min_size = this._items.length * maxChildMin + totalSpacing;
         alloc.natural_size = alloc.min_size;
         this._minSize = alloc.min_size;
     },
@@ -704,7 +686,7 @@ SwitcherList.prototype = {
         }
 
         if (this._squareItems) {
-            let [childMin, childNat] = this._maxChildWidth(-1);
+            let [childMin, childNat] = this._maxChildWidth();
             maxChildMin = Math.max(childMin, maxChildMin);
             maxChildNat = maxChildMin;
         }
@@ -716,17 +698,10 @@ SwitcherList.prototype = {
     _allocate: function (actor, box, flags) {
         let childHeight = box.y2 - box.y1;
 
-        let [maxChildMin, maxChildNat] = this._maxChildWidth(childHeight);
+        let [maxChildMin, maxChildNat] = this._maxChildWidth();
         let totalSpacing = this._list.spacing * (this._items.length - 1);
 
-        let separatorWidth = 0;
-        if (this._separator) {
-            let [sepMin, sepNat] = this._separator.get_preferred_width(childHeight);
-            separatorWidth = sepNat;
-            totalSpacing += this._list.spacing;
-        }
-
-        let childWidth = Math.floor(Math.max(0, box.x2 - box.x1 - totalSpacing - separatorWidth) / this._items.length);
+        let childWidth = Math.floor(Math.max(0, box.x2 - box.x1 - totalSpacing) / this._items.length);
 
         let x = 0;
         let children = this._list.get_children();
@@ -754,14 +729,6 @@ SwitcherList.prototype = {
                 children[i].allocate(childBox, flags);
 
                 x += this._list.spacing + childWidth;
-            } else if (children[i] == this._separator) {
-                // We want the separator to be more compact than the rest.
-                childBox.x1 = x;
-                childBox.y1 = 0;
-                childBox.x2 = x + separatorWidth;
-                childBox.y2 = childHeight;
-                children[i].allocate(childBox, flags);
-                x += this._list.spacing + separatorWidth;
             } else {
                 // Something else, eg, AppList's arrows;
                 // we don't allocate it.
@@ -792,7 +759,7 @@ AppList.prototype = {
         SwitcherList.prototype._init.call(this, true, activeMonitor);
 
         // Construct the AppIcons, add to the popup
-        let activeWorkspace = global.screen.get_active_workspace();
+        let activeWorkspace = global.workspace_manager.get_active_workspace();
         let workspaceIcons = [];
         let otherIcons = [];
         for (let i = 0; i < windows.length; i++) {
@@ -830,8 +797,6 @@ AppList.prototype = {
         let [iconMinHeight, iconNaturalHeight] = this.icons[j].label.get_preferred_height(-1);
         let iconSpacing = iconNaturalHeight + iconPadding + iconBorder;
         let totalSpacing = this._list.spacing * (this._items.length - 1);
-        if (this._separator)
-           totalSpacing += this._separator.width + this._list.spacing;
 
         // We just assume the whole screen here due to weirdness happing with the passed width
         let parentPadding = this.actor.get_parent().get_theme_node().get_horizontal_padding();
@@ -845,7 +810,6 @@ AppList.prototype = {
                 if (w <= availWidth)
                         break;
         }
-
         if (this._items.length == 1) {
             this._iconSize = iconSizes[0];
             height = (iconSizes[0] * global.ui_scale) + iconSpacing;
@@ -935,12 +899,7 @@ ThumbnailList.prototype = {
     _init : function(windows, activeMonitor) {
         SwitcherList.prototype._init.call(this, false, activeMonitor);
 
-        let activeWorkspace = global.screen.get_active_workspace();
-
-        // We fake the value of 'separatorAdded' when the app has no window
-        // on the current workspace, to avoid displaying a useless separator in
-        // that case.
-        let separatorAdded = windows.length == 0 || windows[0].get_workspace() != activeWorkspace;
+        let activeWorkspace = global.workspace_manager.get_active_workspace();
 
         this._labels = new Array();
         this._thumbnailBins = new Array();
@@ -948,11 +907,6 @@ ThumbnailList.prototype = {
         this._windows = windows;
 
         for (let i = 0; i < windows.length; i++) {
-            if (!separatorAdded && windows[i].get_workspace() != activeWorkspace) {
-              this.addSeparator();
-              separatorAdded = true;
-            }
-
             let box = new St.BoxLayout({ style_class: 'thumbnail-box',
                                          vertical: true });
 
