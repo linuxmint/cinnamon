@@ -120,8 +120,6 @@ var GesturesManager = class {
         actions.init_mpris_controller();
 
         if (this.client == null) {
-            this.kill_touchegg();
-
             this.client = new Cinnamon.ToucheggClient();
 
             this.signalManager.connect(this.client, "gesture-begin", this.gesture_begin, this);
@@ -259,22 +257,6 @@ var GesturesManager = class {
 
         this.current_gesture.end(direction, percentage, elapsed_time);
         this.current_gesture = null;
-    }
-
-    kill_touchegg() {
-        debug_gesture("Looking for existing touchegg client");
-        Util.spawnCommandLineAsyncIO(
-            "lslocks --json --output COMMAND,PID",
-            (stdout, stderr, code) => {
-                const json = JSON.parse(stdout);
-                for (let pinfo of json.locks) {
-                    if (pinfo.command === "touchegg") {
-                        debug_gesture(`Killing touchegg client (pid ${pinfo.pid})`);
-                        Util.spawnCommandLineAsync(`kill ${pinfo.pid}`);
-                    }
-                }
-            }
-        );
     }
 
     check_for_devices() {
