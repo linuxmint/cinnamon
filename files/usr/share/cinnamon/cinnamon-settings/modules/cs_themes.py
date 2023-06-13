@@ -101,7 +101,7 @@ class Module:
         self.cursor_themes = []
         self.cursor_theme_names = set()
 
-        # Gtk themes -- Only shows themes that have variations for gtk+-3 and gtk+-2
+        # Gtk themes -- Only shows themes that have a gtk-3.* variation
         for (name, path) in walk_directories(THEME_FOLDERS, self.filter_func_gtk_dir, return_directories=True):
             for theme in self.gtk_themes:
                 if name == theme[0]:
@@ -581,6 +581,7 @@ class Module:
         if self.refreshing:
             return
         self.refreshing = True
+        GLib.timeout_add_seconds(5, self.refresh_themes)
         GLib.timeout_add_seconds(5, self.refresh_choosers)
 
     def refresh_choosers(self):
