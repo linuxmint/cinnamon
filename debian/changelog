@@ -1,3 +1,20 @@
+cinnamon (5.8.2) victoria; urgency=medium
+
+  [ Michael Webster ]
+  * Improve gesture settings, inform the user about common failure reasons.
+  * cs_gestures.py: Use opacity and not visiblity for hiding/showing the stack switcher.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * gestures: Don't kill the touchegg client.
+
+  [ fredcw ]
+  * cs_themes.py: fix themes not updating (#11699)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 14 Jun 2023 09:28:03 +0200
+
 cinnamon (5.8.1) victoria; urgency=medium
 
   * Revert "l10n: Generate module files"
