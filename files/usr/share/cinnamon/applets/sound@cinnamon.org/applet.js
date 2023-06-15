@@ -1296,11 +1296,15 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             else {
                 title_text = player._title + ' - ' + player._artist;
             }
-            if (this.truncatetext < title_text.length) {
-                title_text = title_text.substr(0, this.truncatetext) + "...";
-            }
         }
         this.set_applet_label(title_text);
+        
+        //truncate text by number of unicode graphemes.
+        let truncated_text = this._applet_label.clutter_text.get_chars(0, this.truncatetext);
+        if (truncated_text.length != title_text.length) {
+            truncated_text = this._applet_label.clutter_text.get_chars(0, this.truncatetext - 3) + "...";
+            this.set_applet_label(truncated_text);
+        }
     }
 
     setAppletTextIcon(player, icon) {
