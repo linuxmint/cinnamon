@@ -172,6 +172,7 @@ class Module:
 
             self.settings = Gio.Settings.new("org.cinnamon.desktop.interface")
             self.cinnamon_settings = Gio.Settings.new("org.cinnamon.theme")
+            self.xsettings = Gio.Settings.new("org.x.apps.portal")
 
             self.scale = self.window.get_scale_factor()
 
@@ -259,8 +260,8 @@ class Module:
             settings = page.add_section(_("Miscellaneous options"))
 
             options = [("default", _("Let applications decide")),
-                       ("prefer-light", _("Prefer light mode")),
-                       ("prefer-dark", _("Prefer dark mode"))]
+                       ("prefer-dark", _("Prefer dark mode")),
+                       ("prefer-light", _("Prefer light mode"))]
             widget = GSettingsComboBox(_("Dark mode"), "org.x.apps.portal", "color-scheme", options)
             widget.set_tooltip_text(_("This setting only affects applications which support dark mode"))
             settings.add_row(widget)
@@ -550,6 +551,13 @@ class Module:
 
     def activate_mode(self, style, mode):
         print("Activating mode:", mode.name)
+
+        if mode.name == "mixed":
+            self.xsettings.set_enum("color-scheme", 0)
+        elif mode.name == "dark":
+            self.xsettings.set_enum("color-scheme", 1)
+        elif mode.name == "light":
+            self.xsettings.set_enum("color-scheme", 2)
 
         if self.active_variant is not None:
             new_same_variant = mode.get_variant_by_name(self.active_variant.name)
