@@ -54,7 +54,7 @@ MAX_PIX_WIDTH = 160
 MOUSE_BACK_BUTTON = 8
 
 CATEGORIES = [
-    #        Display name                         ID              Show it? Always False to start              Icon
+    # Display name                        ID                   Show it? Always False to start       Icon
     {"label": _("Appearance"),            "id": "appear",      "show": False,                       "icon": "cs-cat-appearance"},
     {"label": _("Preferences"),           "id": "prefs",       "show": False,                       "icon": "cs-cat-prefs"},
     {"label": _("Hardware"),              "id": "hardware",    "show": False,                       "icon": "cs-cat-hardware"},
@@ -62,7 +62,7 @@ CATEGORIES = [
 ]
 
 CONTROL_CENTER_MODULES = [
-    #         Label                              Module ID                Icon                         Category      Keywords for filter
+    # Label                                 Module ID             Icon                          Category         Keywords for filter
     [_("Network"),                          "network",            "cs-network",                 "hardware",      _("network, wireless, wifi, ethernet, broadband, internet")],
     [_("Color"),                            "color",              "cs-color",                   "hardware",      _("color, profile, display, printer, output")],
     [_("Graphics Tablet"),                  "wacom",              "cs-tablet",                  "hardware",      _("wacom, digitize, tablet, graphics, calibrate, stylus")]
