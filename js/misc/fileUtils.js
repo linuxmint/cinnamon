@@ -143,7 +143,7 @@ function unloadModule(index) {
 
 function createExports({path, dir, meta, type, file, size, JS, returnIndex, reject}) {
     // Import data is stored in an array of objects and the module index is looked up by path.
-    let importerData = {
+    var importerData = {    // changed from 'let' to 'var'.
         size,
         path,
         dir,
@@ -151,8 +151,8 @@ function createExports({path, dir, meta, type, file, size, JS, returnIndex, reje
     };
     // module.exports as an object holding a module's namespaces is a node convention, and is intended
     // to help interop with other libraries.
-    const exports = {};
-    const module = {
+    var exports = {};   // changed from 'const' to 'var'.
+    var module = {      // changed from 'const' to 'var'.
         exports: exports
     };
 
@@ -177,7 +177,7 @@ function createExports({path, dir, meta, type, file, size, JS, returnIndex, reje
     // mimicking the native CJS importer.
     const exportsRegex = /^module\.exports(\.[a-zA-Z0-9_$]+)?\s*=/m;
     const varRegex = /^(?:'use strict';){0,}(const|var|let|function|class)\s+([a-zA-Z0-9_$]+)/gm;
-    let match;
+    var match;  // changed from 'let' to 'var'.
 
     if (!exportsRegex.test(JS)) {
         while ((match = varRegex.exec(JS)) != null) {
