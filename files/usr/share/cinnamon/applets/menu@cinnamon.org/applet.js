@@ -1431,9 +1431,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.main_container.natural_height = (height * global.ui_scale);
         this.main_container.natural_width = (width * global.ui_scale);
 
-        this.menu.actor.set_width(width * global.ui_scale);
-        this.menu.actor.set_height(height * global.ui_scale);
-
         this._update_scroll_policy(this.favoritesBox, this.favoritesScrollBox);
         this._update_scroll_policy(this.categoriesBox, this.categoriesScrollBox);
 
