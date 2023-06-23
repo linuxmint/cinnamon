@@ -225,12 +225,12 @@ var GesturesManager = class {
 
     gesture_update(client, type, direction, percentage, fingers, device, elapsed_time) {
         if (this.current_gesture == null) {
-            global.logWarning("Gesture update but there's no current one.");
+            debug_gesture("Gesture update but there's no current one.");
             return;
         }
 
         const def  = this.lookup_definition(type, direction, fingers);
-        if (def == null || this.current_gesture == null || def !== this.current_gesture.definition) {
+        if (def == null || def !== this.current_gesture.definition) {
             this.current_gesture = null;
             global.logWarning("Invalid gesture update received, clearing current gesture");
             return;
@@ -241,10 +241,14 @@ var GesturesManager = class {
     }
 
     gesture_end(client, type, direction, percentage, fingers, device, elapsed_time) {
-        const def  = this.lookup_definition(type, direction, fingers);
-        let met_threshold = true;
+        if (this.current_gesture == null) {
+            debug_gesture("Gesture end but there's no current one.");
+            return;
+        }
 
-        if (def == null || this.current_gesture == null || def !== this.current_gesture.definition) {
+        const def  = this.lookup_definition(type, direction, fingers);
+        if (def == null || def !== this.current_gesture.definition) {
+            this.current_gesture = null;
             global.logWarning("Invalid gesture end received, clearing current gesture");
             return;
         }
