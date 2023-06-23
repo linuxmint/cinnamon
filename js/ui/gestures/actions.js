@@ -119,6 +119,12 @@ var WorkspaceSwitchAction = class extends BaseAction {
     }
 }
 
+const actionable_window_types = [
+    Meta.WindowType.NORMAL,
+    Meta.WindowType.DIALOG,
+    Meta.WindowType.MODAL_DIALOG
+]
+
 var WindowOpAction = class extends BaseAction {
     constructor(definition, device, threshold) {
         super(definition, device, threshold);
@@ -136,23 +142,33 @@ var WindowOpAction = class extends BaseAction {
             return
         }
 
+        if (!actionable_window_types.includes(window.window_type)) {
+            return;
+        }
+
         switch (this.definition.action) {
         case "MINIMIZE":
-            window.minimize();
+            if (window.can_minimize()) {
+                window.minimize();
+            }
             break
         case "MAXIMIZE":
             if (window.maximized_horizontally && window.maximized_vertically) {
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
             } 
             else {
-                window.maximize(Meta.MaximizeFlags.BOTH);
+                if (window.can_maximize()) {
+                    window.maximize(Meta.MaximizeFlags.BOTH);
+                }
             }
             break
         case "CLOSE":
             window.delete(global.get_current_time());
             break
         case "FULLSCREEN":
-            window.make_fullscreen();
+            if (window.can_maximize()) {
+                window.make_fullscreen();
+            }
             break
         case "UNFULLSCREEN":
             window.unmake_fullscreen();

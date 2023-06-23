@@ -216,7 +216,7 @@ var GesturesManager = class {
             return;
         }
 
-        debug_gesture(`Gesture started: (${DeviceTypeString[device]}) ${GestureTypeString[type]}, ${GestureDirectionString[direction]}, fingers: ${fingers}`);
+        debug_gesture(`Gesture started: (${DeviceTypeString[device]}) ${GestureTypeString[type]}, ${GestureDirectionString[direction]}, fingers: ${fingers} [${definition_match.action}]`);
 
         this.current_gesture = actions.make_action(this.settings, definition_match, device);
         this.current_gesture.begin(direction, percentage, elapsed_time);
@@ -249,7 +249,7 @@ var GesturesManager = class {
             return;
         }
 
-        debug_gesture(`${GestureTypeString[type]} end: progress: ${parseInt(percentage)} (threshold: ${this.current_gesture.threshold})`);
+        debug_gesture(`${GestureTypeString[type]} end: progress: ${parseInt(percentage)} (threshold: ${this.current_gesture.threshold}) [${def.action}]`);
 
         if (percentage < this.current_gesture.threshold) {
             debug_gesture(`Gesture threshold not met`);
