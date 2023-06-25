@@ -32,16 +32,16 @@
     </key>
 
     <key name="swipe-left-3" type="s">
-      <default>'MEDIA_NEXT'</default>
+      <default>'WORKSPACE_NEXT'</default>
     </key>
     <key name="swipe-right-3" type="s">
-      <default>'MEDIA_PREVIOUS'</default>
+      <default>'WORKSPACE_PREVIOUS'</default>
     </key>
     <key name="swipe-up-3" type="s">
-      <default>'VOLUME_UP'</default>
+      <default>'TOGGLE_EXPO'</default>
     </key>
     <key name="swipe-down-3" type="s">
-      <default>'VOLUME_DOWN'</default>
+      <default>'TOGGLE_OVERVIEW'</default>
     </key>
 
     <key name="swipe-left-4" type="s">
@@ -51,10 +51,10 @@
       <default>'WINDOW_WORKSPACE_NEXT'</default>
     </key>
     <key name="swipe-up-4" type="s">
-      <default>'TOGGLE_EXPO'</default>
+      <default>'VOLUME_UP'</default>
     </key>
     <key name="swipe-down-4" type="s">
-      <default>'TOGGLE_OVERVIEW'</default>
+      <default>'VOLUME_DOWN'</default>
     </key>
 
     <key name="swipe-left-5" type="s">
