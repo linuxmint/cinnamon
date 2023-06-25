@@ -14,6 +14,8 @@
         <property name="halign">center</property>
         <property name="valign">start</property>
         <property name="margin-top">45</property>
+        <property name="margin-left">20</property>
+        <property name="margin-right">20</property>
         <property name="row-spacing">16</property>
         <property name="column-spacing">16</property>
         <child>
