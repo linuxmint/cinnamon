@@ -50,7 +50,7 @@ var make_action = (settings, definition, device) => {
         return new MediaAction(definition, device, threshold);
     }
 
-    if (action.startsWith("EXEC:")) {
+    if (definition.action.startsWith("EXEC:")) {
         return new ExecAction(definition, device, threshold);
     }
 }
@@ -292,7 +292,7 @@ var ExecAction = class extends BaseAction {
             return;
         }
 
-        const real_action = action.replace("EXEC:", "");
+        const real_action = this.definition.action.replace("EXEC:", "");
         try {
             GLib.spawn_command_line_async(real_action);
         } catch (e) {
