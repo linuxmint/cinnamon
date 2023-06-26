@@ -5,6 +5,8 @@
   <object class="GtkBox" id="page_simplified">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
+    <property name="margin-start">20</property>
+    <property name="margin-end">20</property>
     <property name="orientation">vertical</property>
     <child>
       <!-- n-columns=2 n-rows=5 -->
