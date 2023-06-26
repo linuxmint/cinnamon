@@ -9,7 +9,7 @@ from gi.repository import Gio, Gtk
 from SettingsWidgets import SidePage, SettingsWidget
 from xapp.GSettingsWidgets import *
 
-SCHEMA = "org.cinnamon.gestures";
+SCHEMA = "org.cinnamon.gestures"
 NON_GESTURE_KEYS = [
     "enabled",
     "swipe-percent-threshold",
@@ -17,6 +17,7 @@ NON_GESTURE_KEYS = [
 ]
 
 DEBUG_SHOW_ALL = False
+
 
 class Module:
     name = "gestures"
@@ -33,7 +34,7 @@ class Module:
 
     def on_module_selected(self):
         have_touchpad = DEBUG_SHOW_ALL
-        have_touchscreen =  DEBUG_SHOW_ALL
+        have_touchscreen = DEBUG_SHOW_ALL
 
         # Detect devices.
         out = subprocess.getoutput("csd-input-helper").replace("\t", " ").split("\n")[:4]
@@ -70,7 +71,7 @@ class Module:
 
             self.disabled_label = Gtk.Label(expand=True)
             box.pack_start(self.disabled_label, False, False, 0)
-            
+
             self.disabled_page_switch = Gtk.Switch(active=self.gesture_settings.get_boolean("enabled"), no_show_all=True)
             self.disabled_page_switch.connect("notify::active", self.enabled_switch_changed)
             box.pack_start(self.disabled_page_switch, False, False, 0)
@@ -79,23 +80,25 @@ class Module:
             self.disabled_retry_button.connect("clicked", lambda w: self.on_module_selected())
             box.pack_start(self.disabled_retry_button, False, False, 0)
 
-            ssource = Gio.SettingsSchemaSource.get_default();
-            schema = ssource.lookup(SCHEMA, True);
-            all_keys = schema.list_keys();
+            ssource = Gio.SettingsSchemaSource.get_default()
+            schema = ssource.lookup(SCHEMA, True)
+            all_keys = schema.list_keys()
 
-            order = [ "left", "right", "up", "down", "in", "out" ]
+            order = ["left", "right", "up", "down", "in", "out"]
 
             def sort_by_direction(key1, key2):
                 v1 = 0
                 v2 = 0
-                for i in range(0, len(order)):
-                    if order[i] in key1:
+                for i, k in enumerate(order):
+                    if k in key1:
                         v1 = i
-                    if order[i] in key2:
+                    if k in key2:
                         v2 = i
 
-                if v1 < v2: return -1
-                if v1 > v2: return 1
+                if v1 < v2:
+                    return -1
+                if v1 > v2:
+                    return 1
                 return 0
 
             keys = sorted([key for key in all_keys if key not in NON_GESTURE_KEYS], key=cmp_to_key(sort_by_direction))
@@ -184,7 +187,7 @@ class Module:
 
             if have_touchpad or have_touchscreen:
                 for fingers in range(2, 5):
-                    section = page.add_section(_("Pinch with %d fingers") % fingers)
+                    section = page.add_section(_(f"Pinch with {fingers} fingers"))
 
                     for key in keys:
                         label = self.get_key_label(key, "pinch", fingers)
@@ -253,13 +256,13 @@ class Module:
             text = _("The Touchegg service is not running")
             self.disabled_retry_button.show()
         elif not have_touchpad and not have_touchscreen:
-            text =  _("No compatible devices found")
+            text = _("No compatible devices found")
             self.disabled_retry_button.show()
         else:
             self.disabled_page_switch.set_visible(True)
             text = _("Gestures are disabled")
 
-        self.disabled_label.set_markup("<big><b>%s</b></big>" % text)
+        self.disabled_label.set_markup(f"<big><b>{text}</b></big>")
 
         self.sidePage.stack.set_transition_type(Gtk.StackTransitionType.NONE)
 
@@ -306,24 +309,18 @@ class Module:
         if gtype != parts[0]:
             return None
 
-        if gtype == "swipe":
+        gesture_directions = {"left": _("Left"), "right": _("Right"),
+                              "up": _("Up"), "down": _("Down"),
+                              "in": _("In"), "out": _("Out")}
+        if gtype in ("swipe", "pinch"):
             if int(parts[2]) != fingers:
                 return None
             direction = parts[1]
-            if direction == "left": return _("Left")
-            elif direction == "right": return _("Right")
-            elif direction == "up": return _("Up")
-            elif direction == "down": return _("Down")
-        elif gtype == "pinch":
-            if int(parts[2]) != fingers:
-                return None
-            direction = parts[1]
-            if direction == "in": return _("In")
-            elif direction == "out": return _("Out")
-        elif gtype == "tap":
+            return gesture_directions.get(direction, None)
+        if gtype == "tap":
             if int(parts[1]) != fingers:
-                return
-            return _("Tap with %d fingers") % fingers
+                return None
+            return _(f"Tap with {fingers} fingers")
 
         return None
 
@@ -334,7 +331,7 @@ class Module:
                                                            None, None)
             conn.close_sync(None)
             return True
-        except GLib.Error as e:
+        except GLib.Error:
             pass
 
         return False
@@ -376,10 +373,10 @@ class GestureComboBox(SettingsWidget):
 
     def on_my_value_changed(self, widget):
         tree_iter = widget.get_active_iter()
-        if tree_iter != None:
+        if tree_iter is not None:
             self.value = self.model[tree_iter][0]
 
-            if self.value not in list(self.option_map.keys())[0:-1]:
+            if self.value not in list(self.option_map)[0:-1]:
                 self.custom_entry.show()
                 self.settings.set_string(self.key, "EXEC:" + self.custom_entry.get_text())
             else:
@@ -392,7 +389,7 @@ class GestureComboBox(SettingsWidget):
         self.settings.set_string(self.key, "EXEC:" + entry.get_text())
 
     def on_setting_changed(self, settings, key):
-        self.updating_from_setting  = True
+        self.updating_from_setting = True
 
         self.value = settings.get_string(key)
         try:
@@ -403,7 +400,7 @@ class GestureComboBox(SettingsWidget):
             self.custom_entry.show()
             self.custom_entry.set_text(self.value.replace("EXEC:", ""))
 
-        self.updating_from_setting  = False
+        self.updating_from_setting = False
 
     def set_options(self, options):
         self.model = Gtk.ListStore(str, str)
