@@ -333,13 +333,18 @@ Keyboard.prototype = {
         let keyboard_row = new St.BoxLayout();
         for (let i = 0; i < keys.length; ++i) {
             let children = keys[i].get_children();
+
+            // keys can be more or less than a standard key 'width' (like shift, enter keys)
+            // adjusted_children will add these multipliers rather than just 1 for a single key,
+            // in order to get the actual width of all keys together, so we don't overflow the monitor.
+            let adjusted_children = 0;
             let right_box = new St.BoxLayout({ style_class: 'keyboard-row' });
             let left_box = new St.BoxLayout({ style_class: 'keyboard-row' });
             for (let j = 0; j < children.length; ++j) {
-                if (this._numOfHorizKeys == 0)
-                    this._numOfHorizKeys = children.length;
                 let key = children[j];
                 let button = new Key(key);
+                // (caribou) key.width is a multiplier, like 1 or 1.5
+                adjusted_children += key.width;
 
                 if (key.align == 'right')
                     right_box.add(button.actor);
@@ -348,6 +353,8 @@ Keyboard.prototype = {
                 if (key.name == 'Caribou_Prefs') {
                     key.connect('key-released', Lang.bind(this, this.hide));
                 }
+
+                this._numOfHorizKeys = Math.max(Math.ceil(adjusted_children), this._numOfHorizKeys);
             }
             keyboard_row.add(left_box, { expand: true, x_fill: false, x_align: St.Align.START });
             keyboard_row.add(right_box, { expand: true, x_fill: false, x_align: St.Align.END });
@@ -359,8 +366,7 @@ Keyboard.prototype = {
         let rows = level.get_rows();
         for (let i = 0; i < rows.length; ++i) {
             let row = rows[i];
-            if (this._numOfVertKeys == 0)
-                this._numOfVertKeys = rows.length;
+            this._numOfVertKeys = Math.max(rows.length, this._numOfVertKeys);
             this._addRows(row.get_columns(), layout);
         }
     },
@@ -368,8 +374,7 @@ Keyboard.prototype = {
     _redraw: function () {
         let focus = Main.layoutManager.focusMonitor;
         let index = Main.layoutManager.focusIndex;
-        
-        if (!this._enableKeyboard || !focus || !index)
+        if (!this._enableKeyboard || focus == null)
             return;
 
 
@@ -378,10 +383,10 @@ Keyboard.prototype = {
         if(panels) {
             let [topPadding, bottomPadding] = Panel.heightsUsedMonitor(index, panels);
             if(this.keyboard_position == "bottom") {
-                this.actor.style = `padding-bottom: ${bottomPadding}px; padding-top: 0;`;
+                this.actor.style = `padding-bottom: ${ bottomPadding / global.ui_scale }px; padding-top: 0;`;
                 panelPadding = bottomPadding;
             } else {
-                this.actor.style = `padding-top: ${topPadding}px; padding-bottom: 0;`;
+                this.actor.style = `padding-top: ${ topPadding / global.ui_scale }px; padding-bottom: 0;`;
                 panelPadding = topPadding;
             }
         }
@@ -394,12 +399,12 @@ Keyboard.prototype = {
         this.monitorIndex = index;
 
         let layout = this._current_page;
-        let verticalSpacing = layout.get_theme_node().get_length('spacing');
+        let verticalSpacing = layout.get_theme_node().get_length('spacing') / this.keyboard_size;
         let vpadding = layout.get_theme_node().get_vertical_padding();
         let hpadding = layout.get_theme_node().get_horizontal_padding();
 
         let box = layout.get_child_at_index(0).get_child_at_index(0);
-        let horizontalSpacing = box.get_theme_node().get_length('spacing');
+        let horizontalSpacing = box.get_theme_node().get_length('spacing') / this.keyboard_size;
         let allHorizontalSpacing = (this._numOfHorizKeys - 1) * horizontalSpacing;
         let keyWidth = Math.floor((this.actor.width - allHorizontalSpacing - hpadding) / this._numOfHorizKeys);
 
@@ -407,14 +412,6 @@ Keyboard.prototype = {
         let keyHeight = Math.floor((maxHeight - allVerticalSpacing - vpadding) / this._numOfVertKeys);
 
         let keySize = Math.min(keyWidth, keyHeight);
-        this.actor.height = maxHeight + panelPadding;
-
-        let keyboard_y = 0;
-        if (this.keyboard_position == "bottom") {
-            keyboard_y = focus.y + focus.height - this.actor.height;
-        }
-
-        Main.layoutManager.keyboardBox.set_position(focus.x, keyboard_y);
 
         let rows = this._current_page.get_children();
         for (let i = 0; i < rows.length; ++i) {
@@ -437,6 +434,13 @@ Keyboard.prototype = {
                 }
             }
         }
+
+        let keyboard_y = 0;
+        if (this.keyboard_position == "bottom") {
+            keyboard_y = focus.y + focus.height - this.actor.height;
+        }
+
+        Main.layoutManager.keyboardBox.set_position(focus.x, keyboard_y);
     },
 
     _onLevelChanged: function () {

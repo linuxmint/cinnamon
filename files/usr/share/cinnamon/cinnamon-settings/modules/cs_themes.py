@@ -101,7 +101,7 @@ class Module:
         self.cursor_themes = []
         self.cursor_theme_names = set()
 
-        # Gtk themes -- Only shows themes that have variations for gtk+-3 and gtk+-2
+        # Gtk themes -- Only shows themes that have a gtk-3.* variation
         for (name, path) in walk_directories(THEME_FOLDERS, self.filter_func_gtk_dir, return_directories=True):
             for theme in self.gtk_themes:
                 if name == theme[0]:
@@ -186,7 +186,7 @@ class Module:
             builder = Gtk.Builder()
             builder.set_translation_domain('cinnamon')
             builder.add_from_file(gladefile)
-            page = builder.get_object("page_themes")
+            page = builder.get_object("page_simplified")
             page.show()
 
             self.style_combo = builder.get_object("style_combo")
@@ -197,8 +197,6 @@ class Module:
             self.customize_button = builder.get_object("customize_button")
             self.preset_button = builder.get_object("preset_button")
             self.color_label = builder.get_object("color_label")
-            self.main_stack = builder.get_object("main_stack")
-            self.custom_stack = builder.get_object("custom_stack")
             self.active_style = None
             self.active_mode_name = None
             self.active_variant = None
@@ -216,19 +214,16 @@ class Module:
 
             self.reset_look_ui()
 
-            if self.active_variant is None:
-                self.main_stack.set_visible_child_name("custom_page")
-
             self.mixed_button.connect("clicked", self.on_mode_button_clicked, "mixed")
             self.dark_button.connect("clicked", self.on_mode_button_clicked, "dark")
             self.light_button.connect("clicked", self.on_mode_button_clicked, "light")
             self.customize_button.connect("clicked", self.on_customize_button_clicked)
             self.style_combo.connect("changed", self.on_style_combo_changed)
 
-            self.sidePage.stack.add_named(page, "themes")
+            self.sidePage.stack.add_named(page, "simplified")
 
             page = SettingsPage()
-            self.custom_stack.add_titled(page, "themes", _("Themes"))
+            self.sidePage.stack.add_titled(page, "themes", _("Themes"))
 
             settings = page.add_section()
 
@@ -247,14 +242,14 @@ class Module:
             button = Gtk.Button()
             button.set_label(_("Simplified settings..."))
             button.set_halign(Gtk.Align.END)
-            button.connect("clicked", self.on_preset_button_clicked)
+            button.connect("clicked", self.on_simplified_button_clicked)
             page.add(button)
 
             page = DownloadSpicesPage(self, 'theme', self.spices, self.window)
-            self.custom_stack.add_titled(page, 'download', _("Add/Remove"))
+            self.sidePage.stack.add_titled(page, 'download', _("Add/Remove"))
 
             page = SettingsPage()
-            self.custom_stack.add_titled(page, "options", _("Settings"))
+            self.sidePage.stack.add_titled(page, "options", _("Settings"))
 
             settings = page.add_section(_("Miscellaneous options"))
 
@@ -339,6 +334,8 @@ class Module:
                         print(e)
 
             self.refresh_choosers()
+
+            GLib.idle_add(self.set_simplified_mode, self.active_variant is not None, True)
 
     def is_variant_active(self, variant):
         # returns whether or not the given variant corresponds to the currently selected themes
@@ -519,11 +516,26 @@ class Module:
         self.set_button_chooser(self.cursor_chooser, self.settings.get_string("cursor-theme"), 'icons', 'cursors', 32)
         self.set_button_chooser(self.theme_chooser, self.settings.get_string("gtk-theme"), 'themes', 'gtk-3.0', 35)
         self.set_button_chooser(self.cinnamon_chooser, self.cinnamon_settings.get_string("name"), 'themes', 'cinnamon', 60)
-        self.main_stack.set_visible_child_name("custom_page")
+        self.set_simplified_mode(False)
 
-    def on_preset_button_clicked(self, button):
+    def on_simplified_button_clicked(self, button):
         self.reset_look_ui()
-        self.main_stack.set_visible_child_name("preset_page")
+        self.set_simplified_mode(True)
+
+    def set_simplified_mode(self, simplified, startup=False):
+        # When picking a start page at startup, no transition, or else you'll see the tail end of it happening
+        # as the page is loading. Otherwise, crossfade when switching between simple/custom. The left/right
+        # transition is kept as the default for shifting between the 3 custom pages (themes, downloads, settings).
+        if simplified:
+            self.sidePage.stack.set_visible_child_full("simplified", Gtk.StackTransitionType.CROSSFADE)
+            Gio.Application.get_default().stack_switcher.set_opacity(0.0)
+        else:
+            if startup:
+                self.sidePage.stack.set_visible_child_full("themes", Gtk.StackTransitionType.NONE)
+            else:
+                self.sidePage.stack.set_visible_child_full("themes", Gtk.StackTransitionType.CROSSFADE)
+
+            Gio.Application.get_default().stack_switcher.set_opacity(1.0)
 
     def on_color_button_clicked(self, button, variant):
         print("Color button clicked")
@@ -581,6 +593,7 @@ class Module:
         if self.refreshing:
             return
         self.refreshing = True
+        GLib.timeout_add_seconds(5, self.refresh_themes)
         GLib.timeout_add_seconds(5, self.refresh_choosers)
 
     def refresh_choosers(self):

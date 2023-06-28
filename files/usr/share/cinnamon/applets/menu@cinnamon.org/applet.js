@@ -1431,9 +1431,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.main_container.natural_height = (height * global.ui_scale);
         this.main_container.natural_width = (width * global.ui_scale);
 
-        this.menu.actor.set_width(width * global.ui_scale);
-        this.menu.actor.set_height(height * global.ui_scale);
-
         this._update_scroll_policy(this.favoritesBox, this.favoritesScrollBox);
         this._update_scroll_policy(this.categoriesBox, this.categoriesScrollBox);
 
@@ -2160,7 +2157,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _buttonLeaveEvent (button) {
         if (button instanceof CategoryButton) {
-            if (button.categoryId !== this.lastSelectedCategory) {
+            if (button.categoryId !== this.lastSelectedCategory && !this.searchActive) {
                 button.actor.set_style_class_name("menu-category-button");
                 if (button.actor.has_style_pseudo_class("hover")) {
                     button.actor.remove_style_pseudo_class("hover");

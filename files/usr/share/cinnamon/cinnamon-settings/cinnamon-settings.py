@@ -334,7 +334,7 @@ class MainWindow(Gio.Application):
         for sidepage in self.sidePages:
             sp, sp_id, sp_cat = sidepage
             if sidepage.cat not in self.store_by_cat:
-                self.store_by_cat[sidepage.cat] = Gtk.ListStore(str, str, object, str) # Label, Icon, sidePage, Category
+                self.store_by_cat[sidepage.cat] = Gtk.ListStore(str, Gio.ThemedIcon, object, str) # Label, Icon, sidePage, Category
                 for category in CATEGORIES:
                     if category["id"] == sidepage.cat:
                         category["show"] = True
@@ -343,7 +343,7 @@ class MainWindow(Gio.Application):
             name = sp.name
             if len(name) > 30:
                 name = "%s..." % name[:30]
-            self.store_by_cat[sp_cat].append([name, sp.icon, sp, sp_cat])
+            self.store_by_cat[sp_cat].append([name, Gio.ThemedIcon.new(sp.icon), sp, sp_cat])
 
         self.min_label_length = 0
         self.min_pix_length = 0
@@ -616,7 +616,7 @@ class MainWindow(Gio.Application):
 
         area.pack_start(pixbuf_renderer, True, True, False)
         area.pack_start(text_renderer, True, True, False)
-        area.add_attribute(pixbuf_renderer, "icon-name", 1)
+        area.add_attribute(pixbuf_renderer, "gicon", 1)
         pixbuf_renderer.set_property("stock-size", Gtk.IconSize.DIALOG)
         pixbuf_renderer.set_property("follow-state", True)
 

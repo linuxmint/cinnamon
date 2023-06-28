@@ -120,8 +120,6 @@ var GesturesManager = class {
         actions.init_mpris_controller();
 
         if (this.client == null) {
-            this.kill_touchegg();
-
             this.client = new Cinnamon.ToucheggClient();
 
             this.signalManager.connect(this.client, "gesture-begin", this.gesture_begin, this);
@@ -218,7 +216,7 @@ var GesturesManager = class {
             return;
         }
 
-        debug_gesture(`Gesture started: (${DeviceTypeString[device]}) ${GestureTypeString[type]}, ${GestureDirectionString[direction]}, fingers: ${fingers}`);
+        debug_gesture(`Gesture started: (${DeviceTypeString[device]}) ${GestureTypeString[type]}, ${GestureDirectionString[direction]}, fingers: ${fingers} [${definition_match.action}]`);
 
         this.current_gesture = actions.make_action(this.settings, definition_match, device);
         this.current_gesture.begin(direction, percentage, elapsed_time);
@@ -227,12 +225,12 @@ var GesturesManager = class {
 
     gesture_update(client, type, direction, percentage, fingers, device, elapsed_time) {
         if (this.current_gesture == null) {
-            global.logWarning("Gesture update but there's no current one.");
+            debug_gesture("Gesture update but there's no current one.");
             return;
         }
 
         const def  = this.lookup_definition(type, direction, fingers);
-        if (def == null || this.current_gesture == null || def !== this.current_gesture.definition) {
+        if (def == null || def !== this.current_gesture.definition) {
             this.current_gesture = null;
             global.logWarning("Invalid gesture update received, clearing current gesture");
             return;
@@ -243,15 +241,19 @@ var GesturesManager = class {
     }
 
     gesture_end(client, type, direction, percentage, fingers, device, elapsed_time) {
-        const def  = this.lookup_definition(type, direction, fingers);
-        let met_threshold = true;
+        if (this.current_gesture == null) {
+            debug_gesture("Gesture end but there's no current one.");
+            return;
+        }
 
-        if (def == null || this.current_gesture == null || def !== this.current_gesture.definition) {
+        const def  = this.lookup_definition(type, direction, fingers);
+        if (def == null || def !== this.current_gesture.definition) {
+            this.current_gesture = null;
             global.logWarning("Invalid gesture end received, clearing current gesture");
             return;
         }
 
-        debug_gesture(`${GestureTypeString[type]} end: progress: ${parseInt(percentage)} (threshold: ${this.current_gesture.threshold})`);
+        debug_gesture(`${GestureTypeString[type]} end: progress: ${parseInt(percentage)} (threshold: ${this.current_gesture.threshold}) [${def.action}]`);
 
         if (percentage < this.current_gesture.threshold) {
             debug_gesture(`Gesture threshold not met`);
@@ -259,22 +261,6 @@ var GesturesManager = class {
 
         this.current_gesture.end(direction, percentage, elapsed_time);
         this.current_gesture = null;
-    }
-
-    kill_touchegg() {
-        debug_gesture("Looking for existing touchegg client");
-        Util.spawnCommandLineAsyncIO(
-            "lslocks --json --output COMMAND,PID",
-            (stdout, stderr, code) => {
-                const json = JSON.parse(stdout);
-                for (let pinfo of json.locks) {
-                    if (pinfo.command === "touchegg") {
-                        debug_gesture(`Killing touchegg client (pid ${pinfo.pid})`);
-                        Util.spawnCommandLineAsync(`kill ${pinfo.pid}`);
-                    }
-                }
-            }
-        );
     }
 
     check_for_devices() {

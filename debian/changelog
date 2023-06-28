@@ -1,3 +1,71 @@
+cinnamon (5.8.3) victoria; urgency=medium
+
+  [ fredcw ]
+  * js/misc/util.js: Add function splitByGlyph
+  * Sound applet: Truncate applet panel text by glyph instead...
+
+  [ Clement Lefebvre ]
+  * Theme settings: Add crossfade effect to stack
+
+  [ Michael Webster ]
+  * cinnamon-settings: Make sure the theme correctly falls back to hicolor when looking up icons.
+
+  [ fredcw ]
+  * Cinnamon theme: allow different text sizes in menu applet search box (#11718)
+
+  [ Michael Webster ]
+  * grouped-window-list: appGroup - make sure to call PopupMenu.close() when destroying the hover menu.
+
+  [ claudiux ]
+  * Update fileUtils.js to avoid error messages (#11715)
+
+  [ fredcw ]
+  * menu applet: fix menu changing size (#11720)
+
+  [ Michael Webster ]
+  * virtual keyboard: Fix size management.
+
+  [ fredcw ]
+  * menu applet: fix category button styling bug
+
+  [ Tibladar ]
+  * cs_info: Fix space in URLs (#11714)
+
+  [ Michael Webster ]
+  * gestures: Only allow window actions on ordinary windows and dialogs.
+  * gestures: Ignore update and end events for disabled actions.
+
+  [ fredcw ]
+  * Menu applet: Reduce default menu size (#11724)
+
+  [ Michael Webster ]
+  * theme settings: Don't use an additional stack for custom mode.
+
+  [ Anaxímeno Brito ]
+  * Update the default gestures actions (#11725)
+
+  [ Clement Lefebvre ]
+  * theme settings: Add margins
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 26 Jun 2023 10:56:21 +0200
+
+cinnamon (5.8.2) victoria; urgency=medium
+
+  [ Michael Webster ]
+  * Improve gesture settings, inform the user about common failure reasons.
+  * cs_gestures.py: Use opacity and not visiblity for hiding/showing the stack switcher.
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * gestures: Don't kill the touchegg client.
+
+  [ fredcw ]
+  * cs_themes.py: fix themes not updating (#11699)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 14 Jun 2023 09:28:03 +0200
+
 cinnamon (5.8.1) victoria; urgency=medium
 
   * Revert "l10n: Generate module files"

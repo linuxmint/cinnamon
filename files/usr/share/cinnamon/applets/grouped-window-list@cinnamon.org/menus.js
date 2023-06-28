@@ -1237,7 +1237,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         this.willUnmount = true;
         if (!this.box) return;
 
-        if (this.isOpen) this.close();
+        if (this.isOpen) this.close(true);
 
         for (let w = 0, len = this.appThumbnails.length; w < len; w++) {
             if (this.appThumbnails[w] !== undefined) {

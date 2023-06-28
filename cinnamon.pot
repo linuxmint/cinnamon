@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-06 21:59+0100\n"
+"POT-Creation-Date: 2023-06-12 09:48+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -595,7 +595,7 @@ msgid "Connect to..."
 msgstr ""
 
 #: js/ui/runDialog.js:168
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:316
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:356
 msgid "Enter a command"
 msgstr ""
 
@@ -905,7 +905,7 @@ msgstr ""
 #. cornerbar@cinnamon.org->settings-schema.json->middle-click-action->options
 #: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:57
 #: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:71
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:106
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:109
 msgid "Show the workspace selector (Expo)"
 msgstr ""
 
@@ -913,7 +913,7 @@ msgstr ""
 #. cornerbar@cinnamon.org->settings-schema.json->middle-click-action->options
 #: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:60
 #: files/usr/share/cinnamon/applets/cornerbar@cinnamon.org/applet.js:73
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:107
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:110
 msgid "Show the window selector (Scale)"
 msgstr ""
 
@@ -1643,7 +1643,7 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_backgrounds.py:291
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_display.py:45
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_display.py:46
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:225
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:228
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:71
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:631
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:257
@@ -1907,7 +1907,7 @@ msgid "Normal"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:16
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:285
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:313
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:274
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:40
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:44
@@ -1915,7 +1915,7 @@ msgid "Left"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:17
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:286
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:314
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:275
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:41
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:43
@@ -2861,7 +2861,7 @@ msgstr ""
 #. workspace-switcher@cinnamon.org->settings-schema.json->scroll-
 #. behavior->options
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:94
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:101
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:104
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:92
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:114
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:153
@@ -3997,7 +3997,7 @@ msgstr ""
 #. (child)Label                       id                  parent
 #. grouped-window-list@cinnamon.org->settings-schema.json->generalPage->title
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_general.py:14
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:229
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:232
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:30
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:33
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_mouse.py:103
@@ -4069,208 +4069,220 @@ msgstr ""
 msgid "Gestures"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:69
-msgid "No compatible devices found"
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:78
+msgid "Check again"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:72
-msgid "Gestures are disabled"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:102
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:105
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:128
 msgid "Switch to right workspace"
 msgstr ""
 
 #. Workspaces
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:103
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:106
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:127
 msgid "Switch to left workspace"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:108
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:111
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:72
 msgid "Minimize window"
 msgstr ""
 
 #. Windows
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:109
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:112
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:70
 msgid "Maximize window"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:110
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:113
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:73
 msgid "Close window"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:111
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:114
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:106
 msgid "Move window to right workspace"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:112
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:115
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:105
 msgid "Move window to left workspace"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:113
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:116
 msgid "Make window fullscreen"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:114
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:117
 msgid "Exit window fullscreen"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:115
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:118
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:101
 msgid "Push tile up"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:116
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:119
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:102
 msgid "Push tile down"
 msgstr ""
 
 #. Windows - Tiling and Snapping
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:117
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:120
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:99
 msgid "Push tile left"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:118
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:121
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:100
 msgid "Push tile right"
 msgstr ""
 
 #. show-desktop@cinnamon.org->metadata.json->name
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:119
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:122
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:55
 msgid "Show desktop"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:120
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:123
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:181
 msgid "Volume up"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:121
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:124
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:180
 msgid "Volume down"
 msgstr ""
 
 #. Sound and Media
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:122
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:125
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:179
 msgid "Volume mute"
 msgstr ""
 
 #. sound@cinnamon.org->settings-schema.json->middleClickAction->options
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:123
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:126
 msgid "Toggle Play / Pause"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:124
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:127
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:188
 msgid "Next track"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:125
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:128
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:187
 msgid "Previous track"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:126
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:129
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_hotcorner.py:195
 msgid "Run a command"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:130
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:236
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:133
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:239
 msgid "Swipe"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:136
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:139
 msgid "Swipe with 2 fingers"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:136
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:168
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:196
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:212
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:139
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:171
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:199
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:215
 msgid "Touchscreen only"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:147
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:150
 msgid "Swipe with 3 fingers"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:157
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:160
 msgid "Swipe with 4 fingers"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:168
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:171
 msgid "Swipe with 5 fingers"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:179
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:239
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:182
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:242
 msgid "Pinch"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:184
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:187
 #, python-format
 msgid "Pinch with %d fingers"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:196
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:199
 msgid "Pinch with 5 fingers"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:209
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:212
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:215
 msgid "Tap"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:230
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:233
 msgid "Enable gestures"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:233
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:236
 msgid "Activation thresholds"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:234
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:237
 msgid "In percentage of the touch surface"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:236
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:239
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:242
 msgid "20%"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:236
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:239
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:242
 msgid "80%"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:287
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:250
+msgid "The touchegg package must be installed for gesture support."
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:253
+msgid "The Touchegg service is not running"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:256
+msgid "No compatible devices found"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:260
+msgid "Gestures are disabled"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:315
 msgid "Up"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:288
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:316
 msgid "Down"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:293
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:321
 msgid "In"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:294
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:322
 msgid "Out"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:298
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:326
 #, python-format
 msgid "Tap with %d fingers"
 msgstr ""
