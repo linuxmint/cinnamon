@@ -235,7 +235,7 @@ class MnemonicLabel(Gtk.Label):
         self.set_text_with_mnemonic(text)
         self.set_mnemonic_widget(widget)
         self.set_alignment(0.0, 0.5)
-        self.set_valign(Gtk.Align.START)
+        self.set_valign(Gtk.Align.CENTER)
         self.set_line_wrap(True)
 
 class DefaultAppChooserButton(Gtk.AppChooserButton):
