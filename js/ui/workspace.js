@@ -1009,7 +1009,7 @@ WorkspaceMonitor.prototype = {
                                    y: clone.origY,
                                    scale_x: 1.0,
                                    scale_y: 1.0,
-                                   time: Overview.ANIMATION_TIME / 2,
+                                   time: Overview.ANIMATION_TIME / 2.5,
                                    opacity: 255,
                                    transition: 'easeOutQuad'
                                  });
