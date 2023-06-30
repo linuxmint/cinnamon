@@ -407,7 +407,7 @@ Overview.prototype = {
             // Make other elements fade out.
             Tweener.addTween(this._group, {
                 opacity: 0,
-                transition: 'easeOutQuad',
+                transition: 'easeInQuad',
                 time: ANIMATION_TIME,
                 onComplete: this._hideDone,
                 onCompleteScope: this
