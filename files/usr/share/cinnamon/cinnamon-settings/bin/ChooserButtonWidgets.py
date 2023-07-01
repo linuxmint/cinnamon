@@ -9,12 +9,13 @@ gettext.install("cinnamon", "/usr/share/locale")
 class BaseChooserButton(Gtk.Button):
     def __init__ (self, has_button_label=False):
         super(BaseChooserButton, self).__init__()
+        self.has_button_label = has_button_label
         self.set_valign(Gtk.Align.CENTER)
         self.menu = Gtk.Menu()
         self.button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         self.button_image = Gtk.Image()
         self.button_box.add(self.button_image)
-        if has_button_label:
+        if self.has_button_label:
             self.button_label = Gtk.Label()
             self.button_box.add(self.button_label)
         self.add(self.button_box)
@@ -132,7 +133,8 @@ class PictureChooserButton(BaseChooserButton):
             self.button_image.set_from_icon_name("user-generic", Gtk.IconSize.BUTTON)
 
     def set_button_label(self, label):
-        self.button_label.set_markup(label)
+        if self.has_button_label:
+            self.button_label.set_markup(label)
 
     def _on_picture_selected(self, menuitem, path, callback, id=None):
         if id is not None:
