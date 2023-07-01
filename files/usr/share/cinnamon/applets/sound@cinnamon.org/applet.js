@@ -905,7 +905,9 @@ class MediaPlayerLauncher extends PopupMenu.PopupBaseMenuItem {
         this.label = new St.Label({ text: app.get_name() });
         this.addActor(this.label);
         this._icon = app.create_icon_texture(ICON_SIZE);
-        this.addActor(this._icon, { expand: false });
+        this._icon_bin = new St.Bin({ x_align: St.Align.END, child: this._icon });
+        this.addActor(this._icon_bin, { expand: true, span: -1, align: St.Align.END });
+
         this.connect("activate", (event) => this._onActivate(event));
     }
 
