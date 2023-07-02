@@ -289,7 +289,7 @@ Overview.prototype = {
             Tweener.addTween(this._group, {
                 opacity: 255,
                 transition: 'easeOutQuad',
-                time: ANIMATION_TIME / 2.5,
+                time: ANIMATION_TIME * 0.45,
                 onComplete: this._showDone,
                 onCompleteScope: this
             });
