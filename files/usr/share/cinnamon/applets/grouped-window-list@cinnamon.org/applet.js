@@ -645,13 +645,12 @@ class GroupedWindowListApplet extends Applet.Applet {
     getCurrentAppList() {
         let metaWorkspace = global.workspace_manager.get_workspace_by_index(this.state.currentWs);
 
-        let refWorkspace = findIndex(
-            this.appLists,
+        let currentAppList = find(this.appLists,
             (item) => item.metaWorkspace && item.metaWorkspace === metaWorkspace
         );
 
-        if (refWorkspace !== -1) {
-            return this.appLists[refWorkspace];
+        if (currentAppList) {
+            return currentAppList;
         } else if (typeof this.appLists[this.state.currentWs] !== 'undefined') {
             return this.appLists[this.state.currentWs];
         } else if (typeof this.appLists[0] !== 'undefined') {
