@@ -548,7 +548,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     refreshCurrentAppList() {
-        let appList = this.appLists[this.state.currentWs];
+        let appList = this.getCurrentAppList();
         if (appList) appList.refreshList();
     }
 
@@ -643,7 +643,16 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     getCurrentAppList() {
-        if (typeof this.appLists[this.state.currentWs] !== 'undefined') {
+        let metaWorkspace = global.workspace_manager.get_workspace_by_index(this.state.currentWs);
+
+        let refWorkspace = findIndex(
+            this.appLists,
+            (item) => item.metaWorkspace && item.metaWorkspace === metaWorkspace
+        );
+
+        if (refWorkspace !== -1) {
+            return this.appLists[refWorkspace];
+        } else if (typeof this.appLists[this.state.currentWs] !== 'undefined') {
             return this.appLists[this.state.currentWs];
         } else if (typeof this.appLists[0] !== 'undefined') {
             return this.appLists[0];
@@ -694,6 +703,8 @@ class GroupedWindowListApplet extends Applet.Applet {
 
             this.state.set({scrollActive: true});
 
+            let appList = this.getCurrentAppList();
+
             let isAppScroll = this.state.settings.scrollBehavior === 2;
             let direction, source;
 
@@ -708,15 +719,15 @@ class GroupedWindowListApplet extends Applet.Applet {
             let lastFocusedApp, z, count
 
             if (isAppScroll) {
-                lastFocusedApp = this.appLists[this.state.currentWs].listState.lastFocusedApp;
+                lastFocusedApp = appList.listState.lastFocusedApp;
                 if (!lastFocusedApp) {
-                    lastFocusedApp = this.appLists[this.state.currentWs].appList[0].groupState.appId
+                    lastFocusedApp = appList.appList[0].groupState.appId
                 }
-                let focusedIndex = findIndex(this.appLists[this.state.currentWs].appList, function(appGroup) {
+                let focusedIndex = findIndex(appList.appList, function(appGroup) {
                     return appGroup.groupState.metaWindows.length > 0 && appGroup.groupState.appId === lastFocusedApp;
                 });
                 z = direction === 0 ? focusedIndex - 1 : focusedIndex + 1;
-                count = this.appLists[this.state.currentWs].appList.length - 1;
+                count = appList.appList.length - 1;
             } else {
                 if (!source.groupState || source.groupState.metaWindows.length < 1) {
                     return;
@@ -731,8 +742,8 @@ class GroupedWindowListApplet extends Applet.Applet {
             let limit = count * 2;
 
             while ((isAppScroll
-                && (!this.appLists[this.state.currentWs].appList[z]
-                    || !this.appLists[this.state.currentWs].appList[z].groupState.lastFocused))
+                && (!appList.appList[z]
+                    || !appList.appList[z].groupState.lastFocused))
                 || (!isAppScroll &&
                     (!source.groupState.metaWindows[z]
                         || source.groupState.metaWindows[z] === source.groupState.lastFocused))) {
@@ -755,7 +766,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             }
 
             let _window = isAppScroll ?
-                this.appLists[this.state.currentWs].appList[z].groupState.lastFocused
+                appList.appList[z].groupState.lastFocused
                 : source.groupState.metaWindows[z];
             Main.activateWindow(_window, global.get_current_time());
             setTimeout(() => this.state.set({scrollActive: false}, 4000));
@@ -768,7 +779,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         if(actor.name === 'xdnd-proxy-actor')
             return DND.DragMotionResult.CONTINUE;
 
-        let appList = this.appLists[this.state.currentWs];
+        let appList = this.getCurrentAppList();
         let rtl_horizontal = this.state.isHorizontal
             && St.Widget.get_default_direction () === St.TextDirection.RTL;
 
@@ -897,6 +908,13 @@ class GroupedWindowListApplet extends Applet.Applet {
 
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
             appList.updateAppGroupIndexes();
+
+            // Refresh app lists in other workspaces
+            each(this.appLists, function(_appList) {
+                if (_appList !== appList)
+                    setTimeout(() => _appList.refreshList(), 0);
+            });
+
             // Refresh the group's thumbnails so hoverMenu is aware of the position change
             // In the case of dragging a group that has a delay before Cinnamon can grab its
             // thumbnail texture, e.g., LibreOffice, defer the refresh.
