@@ -46,7 +46,7 @@ class CloseDialog(XApp.GtkWindow):
         image = Gtk.Image(icon_name="window-close-symbolic", pixel_size=48)
         content_box.pack_start(image, False, True, 0)
 
-        text = _("%s is not responding." % title)
+        text = _("%s is not responding.") % title
         prompt = Gtk.Label(label="<b>%s</b>" % text, use_markup=True, wrap=True)
         content_box.pack_start(prompt, True, True, 5)
 
