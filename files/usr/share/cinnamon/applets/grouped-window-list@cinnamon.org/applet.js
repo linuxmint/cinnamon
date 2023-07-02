@@ -552,15 +552,18 @@ class GroupedWindowListApplet extends Applet.Applet {
         if (appList) appList.refreshList();
     }
 
-    refreshAllAppLists() {
+    refreshAllAppLists(options = {exceptCurrentOne: false}) {
+        let currentAppList = this.getCurrentAppList();
         each(this.appLists, function(appList) {
+            if (options.exceptCurrentOne && currentAppList === appList)
+                return;
             setTimeout(() => appList.refreshList(), 0);
         });
     }
 
     updateFavorites() {
         this.pinnedFavorites.reload();
-        this.refreshCurrentAppList();
+        this.refreshAllAppLists();
     }
 
     updateThumbnailSize() {
@@ -908,12 +911,6 @@ class GroupedWindowListApplet extends Applet.Applet {
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
             appList.updateAppGroupIndexes();
 
-            // Refresh app lists in other workspaces
-            each(this.appLists, function(_appList) {
-                if (_appList !== appList)
-                    setTimeout(() => _appList.refreshList(), 0);
-            });
-
             // Refresh the group's thumbnails so hoverMenu is aware of the position change
             // In the case of dragging a group that has a delay before Cinnamon can grab its
             // thumbnail texture, e.g., LibreOffice, defer the refresh.
@@ -945,6 +942,8 @@ class GroupedWindowListApplet extends Applet.Applet {
                         this.pinnedFavorites.moveFavoriteToPos(opts);
                 }
             }
+
+            this.refreshAllAppLists({ exceptCurrentOne: true });
 
             return false;
         });
