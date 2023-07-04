@@ -206,7 +206,6 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         this.removeActor(this._slider);
         this.addActor(this.icon, {span: 0});
         this.addActor(this._slider, {span: -1, expand: true});
-        this._slider.style = "min-width: 10em;";
 
         this.label = label;
         this.tooltipText = label;

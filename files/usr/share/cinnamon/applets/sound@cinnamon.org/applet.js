@@ -455,6 +455,7 @@ class StreamMenuSection extends PopupMenu.PopupMenuSection {
         }
 
         let slider = new VolumeSlider(applet, stream, name, iconName);
+        slider._slider.style = "min-width: 6em;";
         this.addMenuItem(slider);
     }
 }
