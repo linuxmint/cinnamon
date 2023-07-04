@@ -765,7 +765,7 @@ WorkspaceMonitor.prototype = {
                                    scale_x: scale,
                                    scale_y: scale,
                                    time: Overview.ANIMATION_TIME,
-                                   transition: 'easeOutQuad',
+                                   transition: 'easeInOutQuad',
                                    onComplete: () => {
                                        this._animating = false
                                        this._showWindowOverlay(clone, true);
@@ -1009,7 +1009,7 @@ WorkspaceMonitor.prototype = {
                                    y: clone.origY,
                                    scale_x: 1.0,
                                    scale_y: 1.0,
-                                   time: Overview.ANIMATION_TIME,
+                                   time: Overview.ANIMATION_TIME * 0.45,
                                    opacity: 255,
                                    transition: 'easeOutQuad'
                                  });
