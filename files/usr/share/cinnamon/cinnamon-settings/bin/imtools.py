@@ -228,7 +228,7 @@ def create_corner(radius=100, opacity=255, factor=2):
     draw = ImageDraw.Draw(corner)
     draw.pieslice((0, 0, 2 * factor * radius, 2 * factor * radius),
                   180, 270, fill=opacity)
-    corner = corner.resize((radius, radius), Image.ANTIALIAS)
+    corner = corner.resize((radius, radius), Image.LANCZOS)
     return corner
 
 def get_format(ext):

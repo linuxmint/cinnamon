@@ -628,7 +628,7 @@ class PixCache(object):
                             img = Image.alpha_composite(bg_img, img)
                         img = img.convert("RGB")
                     if size:
-                        img.thumbnail((size, size), Image.ANTIALIAS)
+                        img.thumbnail((size, size), Image.LANCZOS)
 
                     import imtools
                     img = imtools.round_image(img, {}, False, None, 3, 255)
