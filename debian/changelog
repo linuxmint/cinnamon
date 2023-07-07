@@ -1,3 +1,41 @@
+cinnamon (5.8.4) victoria; urgency=medium
+
+  [ Michael Webster ]
+  * theme: Don't force too large a minimum size of PopupSliderMenuItem.
+
+  [ Rick Calixte ]
+  * cs_gestures.py: Cleaning up Python (#11726)
+
+  [ Michael Webster ]
+  * gestures: Fix EXEC actions not completing.
+  * sound applet: Fix alignment of icons in 'Launch player' submenu when a player is active.
+
+  [ kacperpaczos ]
+  * To fix the error of referencing a non-existent variable. (#11737)
+
+  [ Michael Webster ]
+  * popupMenu: restore minimum slider width, override sound slider only
+
+  [ Anaxímeno Brito ]
+  * grouped window list: fix drag and move app icon on the app list (#11740)
+
+  [ Rick Calixte ]
+  * cinnamon-close-dialog: Fix dialog text (#11739)
+
+  [ kacperpaczos ]
+  * Align labels in rows in the preffered applications to center (#11733)
+
+  [ Anaxímeno Brito ]
+  * cinnamon ui: improve overview animation (#11734)
+
+  [ aneios ]
+  * color-scheme follow simplified themes (#11706)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 07 Jul 2023 15:15:53 +0200
+
 cinnamon (5.8.3) victoria; urgency=medium
 
   [ fredcw ]
