@@ -165,7 +165,7 @@ class Module:
         bottom = (height + new_height) / 2
 
         image = image.crop((left, top, right, bottom))
-        image.thumbnail((255, 255), Image.ANTIALIAS)
+        image.thumbnail((255, 255), Image.LANCZOS)
 
         face_path = os.path.join(self.accountService.get_home_dir(), ".face")
 
@@ -202,7 +202,7 @@ class Module:
         if response == Gtk.ResponseType.OK:
             path = dialog.get_filename()
             image = Image.open(path)
-            image.thumbnail((255, 255), Image.ANTIALIAS)
+            image.thumbnail((255, 255), Image.LANCZOS)
             face_path = os.path.join(self.accountService.get_home_dir(), ".face")
             image.save(face_path, "png")
             self.accountService.set_icon_file(face_path)
