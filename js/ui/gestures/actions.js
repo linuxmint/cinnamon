@@ -319,7 +319,7 @@ var VolumeAction = class extends BaseAction {
 
         this.ignoring = true;
 
-        this.max_volume = mixer.get_vol_max_norm();
+        this.max_volume = mixer.get_vol_max_amplified();
         this.pct_step = Math.ceil(this.max_volume / 100);
     }
 
@@ -335,11 +335,11 @@ var VolumeAction = class extends BaseAction {
 
         if (this.ignoring) {
             if (up) {
-                if (int_pct * this.pct_step < sink.volume - 2*this.pct_step) {
+                if (int_pct * this.pct_step < sink.volume - 2 * this.pct_step) {
                     return;
                 }
             } else {
-                if (int_pct * this.pct_step >= sink.volume + 2*this.pct_step) {
+                if (int_pct * this.pct_step >= sink.volume + 2 * this.pct_step) {
                     return;
                 }
             }
