@@ -99,7 +99,7 @@ Depends:
  python3-pyinotify,
  python3-requests,
  python3-setproctitle,
- python3-tinycss2 | python3-tinycss,
+ python3-tinycss2,
  python3-tz,
  streamer,
  wget,
