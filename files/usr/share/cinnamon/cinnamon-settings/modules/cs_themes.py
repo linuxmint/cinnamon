@@ -330,8 +330,10 @@ class Module:
                         print(e)
 
             self.refresh_choosers()
+            GLib.idle_add(self.set_mode, "simplified" if self.active_variant is not None else "themes", True)
+            return
 
-            GLib.idle_add(self.set_simplified_mode, self.active_variant is not None, True)
+        GLib.idle_add(self.set_mode, self.sidePage.stack.get_visible_child_name())
 
     def is_variant_active(self, variant):
         # returns whether or not the given variant corresponds to the currently selected themes
@@ -512,26 +514,27 @@ class Module:
         self.set_button_chooser(self.cursor_chooser, self.settings.get_string("cursor-theme"), 'icons', 'cursors', 32)
         self.set_button_chooser(self.theme_chooser, self.settings.get_string("gtk-theme"), 'themes', 'gtk-3.0', 35)
         self.set_button_chooser(self.cinnamon_chooser, self.cinnamon_settings.get_string("name"), 'themes', 'cinnamon', 60)
-        self.set_simplified_mode(False)
+        self.set_mode("themes")
 
     def on_simplified_button_clicked(self, button):
         self.reset_look_ui()
-        self.set_simplified_mode(True)
+        self.set_mode("simplified")
 
-    def set_simplified_mode(self, simplified, startup=False):
+    def set_mode(self, mode, startup=False):
         # When picking a start page at startup, no transition, or else you'll see the tail end of it happening
         # as the page is loading. Otherwise, crossfade when switching between simple/custom. The left/right
         # transition is kept as the default for shifting between the 3 custom pages (themes, downloads, settings).
-        if simplified:
-            self.sidePage.stack.set_visible_child_full("simplified", Gtk.StackTransitionType.CROSSFADE)
+        if startup:
+            transition = Gtk.StackTransitionType.NONE
+        else:
+            transition = Gtk.StackTransitionType.CROSSFADE
+
+        if mode == "simplified":
             Gio.Application.get_default().stack_switcher.set_opacity(0.0)
         else:
-            if startup:
-                self.sidePage.stack.set_visible_child_full("themes", Gtk.StackTransitionType.NONE)
-            else:
-                self.sidePage.stack.set_visible_child_full("themes", Gtk.StackTransitionType.CROSSFADE)
-
             Gio.Application.get_default().stack_switcher.set_opacity(1.0)
+
+        self.sidePage.stack.set_visible_child_full(mode, transition)
 
     def on_color_button_clicked(self, button, variant):
         print("Color button clicked")
