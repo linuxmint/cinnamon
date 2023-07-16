@@ -1817,6 +1817,7 @@ StScrollBar StButton#vhandle:hover {
     color: #ccc;
     text-shadow: black 0px 0px 2px;
     transition-duration: 300;
+    text-align: center;
 }
 .panel-top .applet-box,
 .panel-bottom .applet-box {
