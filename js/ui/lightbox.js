@@ -17,12 +17,15 @@ uniform float brightness;\n\
 uniform float vignette_sharpness;\n';
 
 const VIGNETTE_CODE = '\
+const float NOISE_GRANULARITY = 1.0/255.0;\n\
 cogl_color_out.a = cogl_color_in.a;\n\
 cogl_color_out.rgb = vec3(0.0, 0.0, 0.0);\n\
 vec2 position = cogl_tex_coord_in[0].xy - 0.5;\n\
 float t = length(2.0 * position);\n\
 t = clamp(t, 0.0, 1.0);\n\
 float pixel_brightness = mix(1.0, 1.0 - vignette_sharpness, t);\n\
+float pseudo_rand = fract(sin(dot(position.xy, vec2(12.9898,78.233))) * 43758.5453);\n\
+pixel_brightness += mix(-NOISE_GRANULARITY, NOISE_GRANULARITY, pseudo_rand);\n\
 cogl_color_out.a = cogl_color_out.a * (1 - pixel_brightness * brightness);';
 ;
 
