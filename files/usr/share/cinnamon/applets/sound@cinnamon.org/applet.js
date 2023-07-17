@@ -14,6 +14,7 @@ const Tooltips = imports.ui.tooltips;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 const Slider = imports.ui.slider;
+const Pango = imports.gi.Pango;
 
 const MEDIA_PLAYER_2_PATH = "/org/mpris/MediaPlayer2";
 const MEDIA_PLAYER_2_NAME = "org.mpris.MediaPlayer2";
@@ -552,11 +553,17 @@ class Player extends PopupMenu.PopupMenuSection {
         let artistInfo = new St.BoxLayout();
         let artistIcon = new St.Icon({ icon_type: St.IconType.SYMBOLIC, icon_name: "system-users", style_class: 'popup-menu-icon' });
         this.artistLabel = new St.Label({text:this._artist});
+        this.artistLabel.clutterText.line_wrap = true;
+        this.artistLabel.clutterText.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
+        this.artistLabel.clutterText.ellipsize = Pango.EllipsizeMode.NONE;
         artistInfo.add_actor(artistIcon);
         artistInfo.add_actor(this.artistLabel);
         let titleInfo = new St.BoxLayout();
         let titleIcon = new St.Icon({ icon_type: St.IconType.SYMBOLIC, icon_name: "audio-x-generic", style_class: 'popup-menu-icon' });
         this.titleLabel = new St.Label({text:this._title});
+        this.titleLabel.clutterText.line_wrap = true;
+        this.titleLabel.clutterText.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
+        this.titleLabel.clutterText.ellipsize = Pango.EllipsizeMode.NONE;
         titleInfo.add_actor(titleIcon);
         titleInfo.add_actor(this.titleLabel);
         this.trackInfo.add_actor(artistInfo);
