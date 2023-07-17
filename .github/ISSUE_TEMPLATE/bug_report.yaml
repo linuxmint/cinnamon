@@ -8,6 +8,7 @@ body:
         - Please try searching for any existing report that may match the behavior you're seeing. *If you find one, add to that issue, instead of opening a new one*. Include any relevant details that may differ from the original author's.
         - If this is related to Cinnamon, sometimes third-party xlets (applets, desklets and extensions) can cause erroneous or unexpected behavior. Try disabling these first to see if the behavior goes away. After disabling, be sure to restart Cinnamon before continuing. Right-click an empty portion of the panel, select Troubleshooting, then 'Restart Cinnamon'. Alternately, you can open the run dialog - Alt-F2, type 'r' or 'restart', and enter.
         - Check your logs - there may be some obvious cause for your trouble - in Linux Mint you can check ~/.xsession-errors (a hidden file in your Home folder).
+        - If this is a *crash*, provide information about it if possible (CoreDump file, stack trace, etc...). In Linux Mint you can check the System Reports program.
         - Have you tried rebooting?
 
         ---
