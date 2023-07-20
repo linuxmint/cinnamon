@@ -821,7 +821,9 @@ class WindowThumbnail {
         }
 
         this.labelContainer.child.text = this.metaWindow.title || '';
-        this.getThumbnail(thumbnailWidth, thumbnailHeight);
+        setTimeout(() => {
+            this.getThumbnail(thumbnailWidth, thumbnailHeight);
+        }, 0);
     }
 
     hoverPeek(opacity) {
