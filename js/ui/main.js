@@ -368,7 +368,7 @@ function start() {
 
     global.reparentActor(global.top_window_group, global.stage);
 
-    global.menuStackLength = 0;
+    global.menuStack = [];
 
     layoutManager = new Layout.LayoutManager();
 
