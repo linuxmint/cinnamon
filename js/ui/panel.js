@@ -3807,7 +3807,7 @@ Panel.prototype = {
         if (this._destroyed) return;
         this._showHideTimer = 0;
 
-        if ((this._shouldShow && !force) || this._panelHasOpenMenus()) return;
+        if ((this._shouldShow && !force)) return;
 
         // setup panel tween - slide out the monitor edge leaving one pixel
         // if horizontal panel, animation on y. if vertical, animation on x.
