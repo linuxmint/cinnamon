@@ -2428,6 +2428,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             this.actor.show();
         }
 
+        Main.panelManager.updatePanelsVisibility();
         this.emit('open-state-changed', true);
     }
 
