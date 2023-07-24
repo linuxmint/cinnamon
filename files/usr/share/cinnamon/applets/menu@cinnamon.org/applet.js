@@ -1318,6 +1318,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _updateKeybinding() {
         Main.keybindingManager.addHotKey("overlay-key-" + this.instance_id, this.overlayKey, Lang.bind(this, function() {
             if (!Main.overview.visible && !Main.expo.visible)
+                if (this.forceShowPanel && !this.isOpen) {
+                    this.panel.peekPanel();
+                }
                 this.menu.toggle_with_options(this.enableAnimation);
         }));
     }
@@ -1495,10 +1498,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
 
             Mainloop.idle_add(Lang.bind(this, this._initial_cat_selection, n));
-
-            if (this.forceShowPanel) {
-                this.panel.peekPanel();
-            }
         } else {
             this.actor.remove_style_pseudo_class('active');
             if (this.searchActive) {
