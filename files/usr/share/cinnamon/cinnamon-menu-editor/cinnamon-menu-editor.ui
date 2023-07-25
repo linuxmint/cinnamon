@@ -8,7 +8,7 @@
     <property name="title" translatable="yes">Main Menu</property>
     <property name="default_width">800</property>
     <property name="default_height">500</property>
-    <property name="type_hint">dialog</property>
+    <property name="type_hint">normal</property>
     <signal name="destroy" handler="on_close_button_clicked" swapped="no"/>
     <child type="titlebar">
       <placeholder/>
