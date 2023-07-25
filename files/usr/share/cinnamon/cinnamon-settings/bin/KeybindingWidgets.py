@@ -179,9 +179,18 @@ class CellRendererKeybinding(Gtk.CellRendererText):
     def update_label(self):
         text = _("unassigned")
         if self.accel_string:
-            key, codes, mods = Gtk.accelerator_parse_with_keycode(self.accel_string)
+            restore_atab = False
+            valid = self.accel_string
+            if "Above_Tab" in valid:
+                restore_atab = True
+                valid = valid.replace("Above_Tab", "grave")
+
+            key, codes, mods = Gtk.accelerator_parse_with_keycode(valid)
             if codes is not None and len(codes) > 0:
                 text = Gtk.accelerator_get_label_with_keycode(None, key, codes[0], mods)
+            if restore_atab:
+                text = text.replace("`", "AboveTab")
+
         self.set_property("text", text)
 
     def set_value(self, accel_string=None):
