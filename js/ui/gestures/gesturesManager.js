@@ -3,6 +3,7 @@
 const { Gio, GObject, Cinnamon } = imports.gi;
 const Util = imports.misc.util;
 const SignalManager = imports.misc.signalManager;
+const ScreenSaver = imports.misc.screenSaver;
 
 const actions = imports.ui.gestures.actions;
 const { GestureType,  GestureDirection, DeviceType } = imports.ui.gestures.ToucheggTypes;
@@ -103,7 +104,7 @@ var GesturesManager = class {
         this.signalManager = new SignalManager.SignalManager(null);
         this.settings = new Gio.Settings({ schema_id: SCHEMA })
         this.signalManager.connect(this.settings, "changed", this.settings_or_devices_changed, this);
-
+        this.screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
         this.have_device = false;
         this.client = null;
         this.current_gesture = null;
@@ -207,6 +208,11 @@ var GesturesManager = class {
         if (this.current_gesture != null) {
             global.logWarning("New gesture started before another was completed. Clearing the old one");
             this.current_gesture = null;
+        }
+
+        if (this.screenSaverProxy.screenSaverActive) {
+            debug_gesture(`Ignoring 'gesture-begin', screensaver is active`);
+            return;
         }
 
         const definition_match = this.lookup_definition(type, direction, fingers);
