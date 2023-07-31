@@ -272,7 +272,7 @@
     </informalexample>
 
     <para>
-      Note that <link linkend="cinnamon-js-ui-Applet-IconApplet-set_applet_icon_symbolic_name"><code>set_applet_icon_symbolic_name</code></link> is a function defined inside <code>Applet.IconApplet</code>, which makes the applet display the corresponding icon. By using the applet API, we have saved ourselves from the hassle of creating icons and putting them in the right place. (<code>bell-notif</code> is the name of an icon from the user's icon set. The icons available for use can be found in <code>/usr/share/icons/</code> or in the <code>icons</code> folder of this applet)
+      Note that <link linkend="cinnamon-js-ui-Applet-IconApplet-set_applet_icon_symbolic_name"><code>set_applet_icon_symbolic_name</code></link> is a function defined inside <code>Applet.IconApplet</code>, which makes the applet display the corresponding icon. By using the applet API, we have saved ourselves from the hassle of creating icons and putting them in the right place. (<code>bell-notif</code> is the name of an icon from the user's icon set. The icons available for use can be found in <code>/usr/share/icons/</code> or in the <code>icons/</code> folder of this applet)
     </para>
 
     <para>
@@ -291,21 +291,6 @@
 
     <para>
       There is a way to translate messages such as "Click here to send a notification". Please see Translating applets.
-    </para>
-
-    <para>
-      That is all the code in our <code>_init</code> function. Now we have to wait for the user to click on the applet. The applet API automatically helps you to listen to these events, and when the user presses the applet, the API will call the <link linkend="cinnamon-js-ui-Applet-Applet-on_applet_clicked"><code>on_applet_clicked</code></link> of your applet. Here we have
-    </para>
-    <informalexample>
-      <programlisting>
-        on_applet_clicked: function() {
-            Util.spawn(['xkill']);
-        }
-      </programlisting>
-    </informalexample>
-
-    <para>
-      which calls the <code>spawn</code> function from <code>Util</code>, and launches an external command, <code>xkill</code>.
     </para>
   </sect2>
 </chapter>
