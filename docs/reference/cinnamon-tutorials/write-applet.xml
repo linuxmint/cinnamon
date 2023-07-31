@@ -34,7 +34,8 @@
       </listitem>
     </itemizedlist>
     <para>
-      Applets go in <code>~/.local/share/cinnamon/applets</code> (or in <code>/usr/share/cinnamon/applets</code> if you want them installed system-wide). So let’s go there and let’s create the files and folders necessary for any Cinnamon applet.
+      Applets go in <code>~/.local/share/cinnamon/applets</code> (or in <code>/usr/share/cinnamon/applets</code> if you want them installed system-wide). So let's go ahead and create the files and folders required for any Cinnamon applet.
+
     </para>
 
     <screen>
@@ -181,6 +182,7 @@
 
     <para>
       The third line imports the GLib, which contains the get_user_name() method to access to the Linux user name. Next!
+
     </para>
     <informalexample>
       <programlisting>
@@ -214,7 +216,7 @@
     </informalexample>
 
     <para>
-      To be more precise:
+      However, contrary to popular belief, the applet API is not psychic. It has no idea what your applet wants to do (apart from displaying an icon). You have to first tell it what icon you want, in the line
     </para>
 
     <informalexample>
@@ -291,10 +293,6 @@
 
     <para>
       Next, in our <code>constructor</code> function, we call the <link linkend="cinnamon-js-ui-Applet-IconApplet-_init"><code>_init</code></link> (or <code>constructor</code>) function of <code>Applet.IconApplet</code>. Here we pass on all the information about <code>orientation</code> etc. to this <code>_init</code> (or<code>constructor</code>) function, and this function will help us sort out all the mess required to make the applet display properly.
-    </para>
-
-    <para>
-      However, contrary to popular belief, the applet API is not psychic. It has no idea what your applet wants to do (apart from displaying an icon). You have to first tell it what icon you want, in the line
     </para>
   </sect2>
 </chapter>
