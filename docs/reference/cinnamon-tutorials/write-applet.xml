@@ -180,7 +180,7 @@
     </para>
 
     <para>
-      The third line imports the GLib, which contains the getenv() method to access to the environment variables. Next!
+      The third line imports the GLib, which contains the get_user_name() method to access to the Linux user name. Next!
     </para>
     <informalexample>
       <programlisting>
@@ -212,6 +212,38 @@
             this.set_applet_tooltip("Click here to send a notification");
       </programlisting>
     </informalexample>
+
+    <para>
+      To be more precise:
+    </para>
+
+    <informalexample>
+      <programlisting>
+        this.set_applet_icon_symbolic_name("bell-notif");
+      </programlisting>
+    </informalexample>
+
+    <para>
+      Note that <link linkend="cinnamon-js-ui-Applet-IconApplet-set_applet_icon_symbolic_name"><code>set_applet_icon_symbolic_name</code></link> is a function defined inside <code>Applet.IconApplet</code>, which makes the applet display the corresponding symbolic icon. By using the applet API, we have saved ourselves from the hassle of creating icons and putting them in the right place. (<code>bell-notif</code> is the name of an icon from the user's icon set. The icons available for use can be found in <code>/usr/share/icons/</code> or in the <code>icons/</code> folder of this applet)
+    </para>
+
+    <para>
+      The next line is:
+    </para>
+
+    <informalexample>
+      <programlisting>
+        this.set_applet_tooltip("Click here to send a notification");
+      </programlisting>
+    </informalexample>
+
+    <para>
+      which says that the applet should have a tooltip called <code>Click here to send a notification</code>.
+    </para>
+
+    <para>
+      There is a way to translate messages such as "Click here to send a notification". Please see Translating applets.
+    </para>
 
     <para>
       The class not only defines the constructor, but also methods, which are functions accessible by the instantiated object. Like the <code>on_applet_clicked</code> function, which is all we need.
@@ -258,39 +290,11 @@
     </para>
 
     <para>
-      Next, in our <code>constructor</code> function, we call the <link linkend="cinnamon-js-ui-Applet-IconApplet-_init"><code>_init</code></link> (or<code>constructor</code>) function of <code>Applet.IconApplet</code>. Here we pass on all the information about <code>orientation</code> etc. to this <code>_init</code> (or<code>constructor</code>) function, and this function will help us sort out all the mess required to make the applet display properly.
+      Next, in our <code>constructor</code> function, we call the <link linkend="cinnamon-js-ui-Applet-IconApplet-_init"><code>_init</code></link> (or <code>constructor</code>) function of <code>Applet.IconApplet</code>. Here we pass on all the information about <code>orientation</code> etc. to this <code>_init</code> (or<code>constructor</code>) function, and this function will help us sort out all the mess required to make the applet display properly.
     </para>
 
     <para>
       However, contrary to popular belief, the applet API is not psychic. It has no idea what your applet wants to do (apart from displaying an icon). You have to first tell it what icon you want, in the line
-    </para>
-
-    <informalexample>
-      <programlisting>
-        this.set_applet_icon_symbolic_name("bell-notif");
-      </programlisting>
-    </informalexample>
-
-    <para>
-      Note that <link linkend="cinnamon-js-ui-Applet-IconApplet-set_applet_icon_symbolic_name"><code>set_applet_icon_symbolic_name</code></link> is a function defined inside <code>Applet.IconApplet</code>, which makes the applet display the corresponding icon. By using the applet API, we have saved ourselves from the hassle of creating icons and putting them in the right place. (<code>bell-notif</code> is the name of an icon from the user's icon set. The icons available for use can be found in <code>/usr/share/icons/</code> or in the <code>icons/</code> folder of this applet)
-    </para>
-
-    <para>
-      The next line is
-    </para>
-
-    <informalexample>
-      <programlisting>
-        this.set_applet_tooltip("Click here to send a notification");
-      </programlisting>
-    </informalexample>
-
-    <para>
-      which says that the applet should have a tooltip called <code>Click here to send a notification</code>.
-    </para>
-
-    <para>
-      There is a way to translate messages such as "Click here to send a notification". Please see Translating applets.
     </para>
   </sect2>
 </chapter>
