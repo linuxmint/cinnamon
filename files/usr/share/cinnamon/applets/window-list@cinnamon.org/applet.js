@@ -553,21 +553,16 @@ class AppMenuButton {
     }
 
     _hasFocus() {
-        if (this.metaWindow.minimized)
+        if (!this.metaWindow || this.metaWindow.minimized)
             return false;
 
         if (this.metaWindow.has_focus())
             return true;
 
-        let transientHasFocus = false;
-        this.metaWindow.foreach_transient(function(transient) {
-            if (transient.has_focus()) {
-                transientHasFocus = true;
-                return false;
-            }
+        if (global.display.focus_window && this.metaWindow.is_ancestor_of_transient(global.display.focus_window))
             return true;
-        });
-        return transientHasFocus;
+
+        return false
     }
 
     onFocus() {
