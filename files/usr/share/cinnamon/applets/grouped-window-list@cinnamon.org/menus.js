@@ -9,6 +9,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Applet = imports.ui.applet;
 const SignalManager = imports.misc.signalManager;
 const WindowUtils = imports.misc.windowUtils;
+const Mainloop = imports.mainloop;
 
 const {each, findIndex, tryFn, unref, trySpawnCommandLine, spawn_async, getDesktopActionIcon} = imports.misc.util;
 const {
@@ -534,6 +535,8 @@ class WindowThumbnail {
         this.metaWindow = params.metaWindow;
         this.index = params.index;
 
+        this.get_thumb_id = 0;
+
         this.metaWindowActor = null;
         this.thumbnailPadding = 16;
         this.willUnmount = false;
@@ -821,9 +824,16 @@ class WindowThumbnail {
         }
 
         this.labelContainer.child.text = this.metaWindow.title || '';
-        setTimeout(() => {
+
+        if (this.get_thumb_id > 0) {
+            Mainloop.source_remove(this.get_thumb_id);
+        }
+
+        this.get_thumb_id = Mainloop.timeout_add(0, () => {
+            this.get_thumb_id = 0;
             this.getThumbnail(thumbnailWidth, thumbnailHeight);
-        }, 0);
+            return false;
+        });
     }
 
     hoverPeek(opacity) {
@@ -877,6 +887,11 @@ class WindowThumbnail {
     destroy() {
         this.willUnmount = true;
         if (!this.groupState) return;
+
+        if (this.get_thumb_id > 0) {
+            Mainloop.source_remove(this.get_thumb_id);
+            this.get_thumb_id = 0;
+        }
 
         this.state.disconnect(this.stateConnectId);
         this.groupState.disconnect(this.connectId);
