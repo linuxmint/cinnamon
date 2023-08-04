@@ -978,24 +978,11 @@ const ZONE_SIZE = 10;
 /**
  * #PopupResizeHandler:
  * @short_description: Class that allows an applet to be resized using the mouse.
- * @inhibit_resizing (Boolean): Set to true to prevent resizing
+ * @inhibit_resizing (Boolean): Set to true to prevent resizing from starting.
  * @resizingInProgress (Boolean): True when resizing is in progress
- *
- * Parameters -
- *      actor: The actor to be resized
- *      get_orientation: Function that returns the current orientation of the applet. (St.Side)
- *      resized_callback: Function that is called while resizing is in progress with the new width
- *      and height as parameters. This function should actually change the applet size. This is
- *      also called once when resizing has ended (resizingInProgress == false) so that the
- *      applet can store the final size instead of doing so continuously whilst resizing
- *      is in progress.
- *      get_user_width: Function that returns the current applet width. This is called only
- *      when resizing begins so does not have to return the correct width while resizing is in
- *      progress. Note: This value does not necessarily have to be the applet width. It could
- *      be the width of a container inside the applet used for sizing the applet.
- *      get_user_height: As get_user_width but for height
  * 
- * Example - 
+ * Example usage:
+ * ``` 
  *      this.menu = new Applet.AppletPopupMenu(this, this.orientation);
  *      this.settings.bind("popup-width", "popup_width");
  *      this.settings.bind("popup-height", "popup_height");
@@ -1015,8 +1002,23 @@ const ZONE_SIZE = 10;
  *          this.menu.actor.set_width(this.popup_width * global.ui_scale);
  *          this.menu.actor.set_height(this.popup_height * global.ui_scale);
  *      }
+ * ```
  */
 var PopupResizeHandler = class PopupResizeHandler {
+    /**
+     * constructor:
+     * @actor (ClutterActor): The actor to be resized
+     * @get_orientation (Function): Function that returns the current orientation of the applet. (St.Side)
+     * @resized_callback (Function): Function that is called while resizing is in progress with the new
+     * width and height as parameters. This function should actually change the applet size. This is
+     * also called once when resizing has ended (resizingInProgress == false) so that the applet
+     * can store the final size instead of doing so continuously whilst resizing is in progress.
+     * @get_user_width (Function): Function that returns the current applet width. This function is not
+     * called while resizing is in progress so it only has to return the correct width when resizing is
+     * not in progress. Note: This value does not necessarily have to be the applet width. It could
+     * be the width of a container inside the applet used for sizing the applet.
+     * @get_user_height (Function): As get_user_width but for height
+     */
     constructor(actor, get_orientation, resized_callback, get_user_width, get_user_height) {
         this.actor = actor;
         this._get_orientation = get_orientation;
