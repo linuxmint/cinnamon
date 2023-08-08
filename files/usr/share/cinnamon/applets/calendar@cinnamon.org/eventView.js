@@ -106,6 +106,11 @@ class EventData {
             // causing it to appear for two days.
             this.end = this.end.add_seconds(-1);
         }
+        if (this.end.compare(this.start) == -1) {
+            // An all day event can be a single point in time at 00:00. The previous -1s
+            // will cause it to appear all the following days in the current view.
+            this.end = this.start;
+        }
         this.start_date = date_only(this.start);
         this.end_date = date_only(this.end);
         this.multi_day = !dt_equals(this.start_date, this.end_date);
