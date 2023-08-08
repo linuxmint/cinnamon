@@ -16,9 +16,6 @@ NON_GESTURE_KEYS = [
     "pinch-percent-threshold"
 ]
 
-DEBUG_SHOW_ALL = False
-
-
 class Module:
     name = "gestures"
     category = "prefs"
@@ -33,17 +30,6 @@ class Module:
         self.disabled_box = None
 
     def on_module_selected(self):
-        have_touchpad = DEBUG_SHOW_ALL
-        have_touchscreen = DEBUG_SHOW_ALL
-
-        # Detect devices.
-        out = subprocess.getoutput("csd-input-helper").replace("\t", " ").split("\n")[:4]
-        for line in out:
-            if "touchpad" in line and line.endswith("yes"):
-                have_touchpad = True
-            if "touchscreen" in line and line.endswith("yes"):
-                have_touchscreen = True
-
         installed = GLib.find_program_in_path("touchegg")
         alive = self.test_daemon_alive()
 
@@ -72,13 +58,17 @@ class Module:
             self.disabled_label = Gtk.Label(expand=True)
             box.pack_start(self.disabled_label, False, False, 0)
 
-            self.disabled_page_switch = Gtk.Switch(active=self.gesture_settings.get_boolean("enabled"), no_show_all=True)
+            self.disabled_page_switch = Gtk.Switch(active=self.gesture_settings.get_boolean("enabled"), no_show_all=True, halign=Gtk.Align.CENTER)
             self.disabled_page_switch.connect("notify::active", self.enabled_switch_changed)
             box.pack_start(self.disabled_page_switch, False, False, 0)
 
             self.disabled_retry_button = Gtk.Button(label=_("Check again"), no_show_all=True, halign=Gtk.Align.CENTER)
             self.disabled_retry_button.connect("clicked", lambda w: self.on_module_selected())
             box.pack_start(self.disabled_retry_button, False, False, 0)
+
+            self.disabled_page_disable_button = Gtk.Button(label=_("Disable"), no_show_all=True, halign=Gtk.Align.CENTER)
+            self.disabled_page_disable_button.connect("clicked", lambda w: self.gesture_settings.set_boolean("enabled", False))
+            box.pack_start(self.disabled_page_disable_button, False, False, 0)
 
             ssource = Gio.SettingsSchemaSource.get_default()
             schema = ssource.lookup(SCHEMA, True)
@@ -136,73 +126,57 @@ class Module:
             self.sidePage.stack.add_titled(page, "swipe", _("Swipe"))
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            if have_touchscreen:
-                size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+            size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-                section = page.add_section(_("Swipe with 2 fingers"), _("Touchscreen only"))
+            section = page.add_section(_("Swipe with 2 fingers"), _("Touchscreen only"))
 
-                for key in keys:
-                    label = self.get_key_label(key, "swipe", 2)
-                    if not label:
-                        continue
+            for key in keys:
+                label = self.get_key_label(key, "swipe", 2)
+                if not label:
+                    continue
 
-                    widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
-                    section.add_row(widget)
+                widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
+                section.add_row(widget)
 
-            if have_touchpad or have_touchscreen:
-                section = page.add_section(_("Swipe with 3 fingers"))
+            section = page.add_section(_("Swipe with 3 fingers"))
 
-                for key in keys:
-                    label = self.get_key_label(key, "swipe", 3)
-                    if not label:
-                        continue
+            for key in keys:
+                label = self.get_key_label(key, "swipe", 3)
+                if not label:
+                    continue
 
-                    widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
-                    section.add_row(widget)
+                widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
+                section.add_row(widget)
 
-                section = page.add_section(_("Swipe with 4 fingers"))
+            section = page.add_section(_("Swipe with 4 fingers"))
 
-                for key in keys:
-                    label = self.get_key_label(key, "swipe", 4)
-                    if not label:
-                        continue
+            for key in keys:
+                label = self.get_key_label(key, "swipe", 4)
+                if not label:
+                    continue
 
-                    widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
-                    section.add_row(widget)
+                widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
+                section.add_row(widget)
 
-            if have_touchscreen:
-                section = page.add_section(_("Swipe with 5 fingers"), _("Touchscreen only"))
+            section = page.add_section(_("Swipe with 5 fingers"), _("Touchscreen only"))
 
-                for key in keys:
-                    label = self.get_key_label(key, "swipe", 5)
-                    if not label:
-                        continue
+            for key in keys:
+                label = self.get_key_label(key, "swipe", 5)
+                if not label:
+                    continue
 
-                    widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
-                    section.add_row(widget)
+                widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
+                section.add_row(widget)
 
             page = SettingsPage()
             self.sidePage.stack.add_titled(page, "pinch", _("Pinch"))
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            if have_touchpad or have_touchscreen:
-                for fingers in range(2, 5):
-                    section = page.add_section(_("Pinch with %d fingers") % fingers)
-
-                    for key in keys:
-                        label = self.get_key_label(key, "pinch", fingers)
-
-                        if not label:
-                            continue
-
-                        widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
-                        section.add_row(widget)
-
-            if have_touchscreen:
-                section = page.add_section(_("Pinch with 5 fingers"), _("Touchscreen only"))
+            for fingers in range(2, 5):
+                section = page.add_section(_("Pinch with %d fingers") % fingers)
 
                 for key in keys:
-                    label = self.get_key_label(key, "pinch", 5)
+                    label = self.get_key_label(key, "pinch", fingers)
 
                     if not label:
                         continue
@@ -210,22 +184,32 @@ class Module:
                     widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
                     section.add_row(widget)
 
-            if have_touchscreen:
-                page = SettingsPage()
-                self.sidePage.stack.add_titled(page, "tap", _("Tap"))
-                size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+            section = page.add_section(_("Pinch with 5 fingers"), _("Touchscreen only"))
 
-                section = page.add_section(_("Tap"), _("Touchscreen only"))
+            for key in keys:
+                label = self.get_key_label(key, "pinch", 5)
 
-                for fingers in range(2, 6):
-                    for key in keys:
-                        label = self.get_key_label(key, "tap", fingers)
+                if not label:
+                    continue
 
-                        if not label:
-                            continue
+                widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
+                section.add_row(widget)
 
-                        widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
-                        section.add_row(widget)
+            page = SettingsPage()
+            self.sidePage.stack.add_titled(page, "tap", _("Tap"))
+            size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+
+            section = page.add_section(_("Tap"), _("Touchscreen only"))
+
+            for fingers in range(2, 6):
+                for key in keys:
+                    label = self.get_key_label(key, "tap", fingers)
+
+                    if not label:
+                        continue
+
+                    widget = GestureComboBox(label, self.gesture_settings, key, actions, size_group=size_group)
+                    section.add_row(widget)
 
             page = SettingsPage()
             self.sidePage.stack.add_titled(page, "tweaks", _("Settings"))
@@ -248,25 +232,24 @@ class Module:
 
         self.disabled_page_switch.set_visible(False)
         self.disabled_retry_button.set_visible(False)
+        self.disabled_page_disable_button.set_visible(False)
 
         if not installed:
             text = _("The touchegg package must be installed for gesture support.")
             self.disabled_retry_button.show()
-        elif not alive:
-            text = _("The Touchegg service is not running")
-            self.disabled_retry_button.show()
-        elif not have_touchpad and not have_touchscreen:
-            text = _("No compatible devices found")
-            self.disabled_retry_button.show()
-        else:
+        elif not self.gesture_settings.get_boolean("enabled"):
             self.disabled_page_switch.set_visible(True)
             text = _("Gestures are disabled")
-
-        self.disabled_label.set_markup(f"<big><b>{text}</b></big>")
+        elif not alive:
+            text = _("The Touchegg service is not running")
+            if self.gesture_settings.get_boolean("enabled"):
+                self.disabled_page_disable_button.set_visible(True)
+            self.disabled_retry_button.show()
 
         self.sidePage.stack.set_transition_type(Gtk.StackTransitionType.NONE)
 
-        if not enabled or not (have_touchpad or have_touchscreen) or not alive or not installed:
+        if not enabled or not alive or not installed:
+            self.disabled_label.set_markup(f"<big><b>{text}</b></big>")
             page = "disabled"
         else:
             page = "swipe"
@@ -292,15 +275,9 @@ class Module:
             pass
 
         enabled = settings.get_boolean("enabled")
-
         self.disabled_page_switch.set_active(enabled)
 
-        if enabled:
-            Gio.Application.get_default().stack_switcher.set_opacity(1.0)
-            self.sidePage.stack.set_visible_child_full("swipe", Gtk.StackTransitionType.CROSSFADE)
-        else:
-            Gio.Application.get_default().stack_switcher.set_opacity(0)
-            self.sidePage.stack.set_visible_child_full("disabled", Gtk.StackTransitionType.CROSSFADE)
+        self.on_module_selected()
 
         self.disabled_page_switch.connect("notify::active", self.enabled_switch_changed)
 

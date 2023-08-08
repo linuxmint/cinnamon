@@ -17,7 +17,6 @@ const NON_GESTURE_KEYS = [
     "pinch-percent-threshold"
 ]
 
-const DEBUG_HAVE_DEVICES = false;
 const DEBUG_GESTURES=false;
 
 const GestureDirectionString = [
@@ -105,11 +104,10 @@ var GesturesManager = class {
         this.settings = new Gio.Settings({ schema_id: SCHEMA })
         this.signalManager.connect(this.settings, "changed", this.settings_or_devices_changed, this);
         this.screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
-        this.have_device = false;
         this.client = null;
         this.current_gesture = null;
 
-        this.check_for_devices();
+        this.settings_or_devices_changed()
     }
 
     setup_client() {
@@ -144,7 +142,7 @@ var GesturesManager = class {
     }
 
     settings_or_devices_changed(settings, key) {
-        if (this.settings.get_boolean("enabled") && this.have_device) {
+        if (this.settings.get_boolean("enabled")) {
             this.setup_client();
             return;
         }
@@ -267,33 +265,6 @@ var GesturesManager = class {
 
         this.current_gesture.end(direction, percentage, elapsed_time);
         this.current_gesture = null;
-    }
-
-    check_for_devices() {
-        global.log("GesturesManager: Looking for devices.");
-        Util.spawnCommandLineAsyncIO(
-            "csd-input-helper",
-            (stdout, stderr, code) => {
-                let lines = stdout.replace("\t", " ").split("\n").slice(0, 5);
-                let have_touchpad = false;
-                let have_touchscreen = false
-                for (let line of lines) {
-                    if (line.includes("touchpad") && line.endsWith("yes")) {
-                        have_touchpad = true;
-                    }
-                    else
-                    if (line.includes("touchscreen") && line.endsWith("yes")) {
-                        have_touchscreen = true;
-                    }
-                }
-
-                this.have_device = have_touchpad || have_touchscreen || DEBUG_HAVE_DEVICES;
-                if (!this.have_device) {
-                    global.log("GesturesManager: No devices.");
-                }
-                this.settings_or_devices_changed();
-            }
-        );
     }
 }
 
