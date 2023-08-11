@@ -18,6 +18,11 @@ option('disable_networkmanager',
     value: false,
     description: 'Build without networkmanager'
 )
+option('disable_touchegg',
+    type: 'boolean',
+    value: false,
+    description: 'Build without touchegg support'
+)
 option('py3modules_dir',
     type : 'string',
     value : '',

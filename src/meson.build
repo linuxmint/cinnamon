@@ -24,7 +24,6 @@ cinnamon_headers = [
     'cinnamon-screenshot.h',
     'cinnamon-slicer.h',
     'cinnamon-stack.h',
-    'cinnamon-touchegg-client.h',
     'cinnamon-tray-icon.h',
     'cinnamon-tray-manager.h',
     'cinnamon-util.h',
@@ -56,7 +55,6 @@ cinnamon_sources = [
     'cinnamon-screenshot.c',
     'cinnamon-slicer.c',
     'cinnamon-stack.c',
-    'cinnamon-touchegg-client.c',
     'cinnamon-tray-icon.c',
     'cinnamon-tray-manager.c',
     'cinnamon-util.c',
@@ -65,6 +63,11 @@ cinnamon_sources = [
     cinnamon_headers,
     calendar_generated
 ]
+
+if not get_option('disable_touchegg')
+    cinnamon_sources += 'cinnamon-touchegg-client.c'
+    cinnamon_headers += 'cinnamon-touchegg-client.h'
+endif
 
 cinnamon_enum_types = gnome.mkenums_simple(
     'cinnamon-enum-types',
