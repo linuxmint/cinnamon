@@ -224,7 +224,7 @@ cinnamon_recorder_src_set_caps (CinnamonRecorderSrc *src,
 
   if (caps)
     {
-      /* The capabilities will be negotated with the downstream element
+      /* The capabilities will be negotiated with the downstream element
        * and set on the pad when the first buffer is pushed.
        */
       src->caps = gst_caps_copy (caps);

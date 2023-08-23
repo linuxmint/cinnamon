@@ -126,7 +126,7 @@ cinnamon_embedded_window_constructor (GType                  gtype,
   object = parent_class->constructor (gtype, n_properties, properties);
 
   /* Setting the resize mode to immediate means that calling queue_resize()
-   * on a widget within the window will immmediately call check_resize()
+   * on a widget within the window will immediately call check_resize()
    * to be called, instead of having it queued to an idle. From our perspective,
    * this is ideal since we just are going to queue a resize to Clutter's
    * idle resize anyways.

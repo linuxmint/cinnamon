@@ -1586,7 +1586,7 @@ Crosshairs.prototype = {
 
     /**
      * getOpacity:
-     * Retriev how opaque the crosshairs are.
+     * Retrieve how opaque the crosshairs are.
      * @return: A value between 0 (transparent) and 255 (opaque).
      */
     getOpacity: function() {

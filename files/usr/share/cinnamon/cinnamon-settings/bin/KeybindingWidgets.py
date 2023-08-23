@@ -15,7 +15,7 @@ FORBIDDEN_KEYVALS = [
     Gdk.KEY_Return,
     Gdk.KEY_space,
     Gdk.KEY_Mode_switch,
-    Gdk.KEY_KP_0, # numerics currently are recogized only as _End, _Down, etc.. with or without numlock
+    Gdk.KEY_KP_0, # numerics currently are recognized only as _End, _Down, etc.. with or without numlock
     Gdk.KEY_KP_1, # Gdk checks numlock and parses out the correct key, but this could change, so list
     Gdk.KEY_KP_2, # these numerics anyhow. (This may differ depending on kb layouts, locales, etc.. but
     Gdk.KEY_KP_3, # I didn't thoroughly check.)

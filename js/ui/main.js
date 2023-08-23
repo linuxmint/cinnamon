@@ -279,7 +279,7 @@ function start() {
 
     let backend = Meta.get_backend();
 
-    // Only cinnamon2d laucher will set CINNAMON_2D - this is deliberate by the user.
+    // Only cinnamon2d launcher will set CINNAMON_2D - this is deliberate by the user.
     let cinnamon_2d = GLib.getenv("CINNAMON_2D") === true;
     let live = false;
 
@@ -1182,7 +1182,7 @@ function _findModal(actor) {
  * @actor (Clutter.Actor): actor which will be given keyboard focus
  * @timestamp (int): optional timestamp
  * @options (Meta.ModalOptions): (optional) flags to indicate that the pointer
- * is alrady grabbed
+ * is already grabbed
  *
  * Ensure we are in a mode where all keyboard and mouse input goes to
  * the stage, and focus @actor. Multiple calls to this function act in
@@ -1428,7 +1428,7 @@ function _queueBeforeRedraw(workId) {
  * initialization as well, under the assumption that new actors
  * will need it.
  *
- * Returns (string): A string work identifer
+ * Returns (string): A string work identifier
  */
 function initializeDeferredWork(actor, callback, props) {
     // Turn into a string so we can use as an object property

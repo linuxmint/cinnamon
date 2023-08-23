@@ -813,7 +813,7 @@ write_string (GOutputStream *out,
  * with each element being a dictionary of the form:
  *
  * { name: <name of event>,
- *   description: <descrition of string,
+ *   description: <description of string>,
  *   statistic: true } (only for statistics)
  *
  * Return value: %TRUE if the dump succeeded. %FALSE if an IO error occurred

@@ -130,7 +130,7 @@ class EditorDialog:
 
         launcher_list = self.launcher_settings.get_strv(LAUNCHER_KEY)
 
-        # If the application is initiall set in the list, remove them all
+        # If the application is initially set in the list, remove them all
         for item in launcher_list:
             if item.split(":")[0] == str(self.desklet_id):
                 launcher_list.remove(item)

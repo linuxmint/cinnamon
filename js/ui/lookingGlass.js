@@ -212,7 +212,7 @@ class WindowList {
             this.latestWindowList.push(lgInfo);
         }
 
-        // Make sure the list changed before notifying listeneres
+        // Make sure the list changed before notifying listeners
         let changed = oldWindowList.length != this.latestWindowList.length;
         if (!changed) {
             for (let i = 0; i < oldWindowList.length; i++) {

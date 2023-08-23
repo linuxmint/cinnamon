@@ -137,7 +137,7 @@ Overview.prototype = {
                 let dt = (event.get_time() - this._lastMotionTime) / 1000;
                 let passedHalf = Math.abs(distance / difference) > 0.5;
 
-                /* Switch to the next page if the scroll ammount is more
+                /* Switch to the next page if the scroll amount is more
                    than half the page width or is faster than 25px/s.
                    This number comes from experimental tests. */
                 if (Math.abs(distance) > dt * 25 || passedHalf) {

@@ -245,7 +245,7 @@ function installPolyfills(readOnlyError) {
     // to use for people learning GObject introspection bindings.
 
     // Starting with mozjs 102, these polyfills are no longer needed, and will
-    // crash Cinnamon if we try to redifine them. Try to do the first one and bail
+    // crash Cinnamon if we try to redefine them. Try to do the first one and bail
     // if it complains (TypeError: can't redefine non-configurable property)
     try {
         Object.defineProperty(window, 'setTimeout', {

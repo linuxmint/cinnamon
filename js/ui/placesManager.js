@@ -246,7 +246,7 @@ PlaceDeviceInfo.prototype = {
 
     _removeFinish: function(o, res, data) {
         if (DEBUG) global.log("PlacesManager: **_removeFinish**");
-        let msg1 = _("Succesfully unmounted %s (%s)").format(o.get_name(), this.name);
+        let msg1 = _("Successfully unmounted %s (%s)").format(o.get_name(), this.name);
         let msg2 = null;
         let btn = false;
 

@@ -349,7 +349,7 @@ function fixupPCIDescription(desc) {
         }
     }
 
-    /* Attmept to shorten ID by ignoring certain individual words */
+    /* Attempt to shorten ID by ignoring certain individual words */
     let words = desc.split(' ');
     let out = [ ];
     for (let i = 0; i < words.length; i++) {
