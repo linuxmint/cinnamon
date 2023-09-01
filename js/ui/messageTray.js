@@ -993,7 +993,9 @@ MessageTray.prototype = {
         if (!this._notification.silent || this._notification.urgency >= Urgency.HIGH) {
             Main.soundManager.play('notification');
         }
-        if (this._notification.urgency == Urgency.CRITICAL) {
+
+        this._showFullscreenNotifications = this.settings.get_boolean("fullscreen-notifications");
+        if (this._notification.urgency == Urgency.CRITICAL || this._showFullscreenNotifications) {
             Main.layoutManager._chrome.modifyActorParams(this._notificationBin, { visibleInFullscreen: true });
         } else {
             Main.layoutManager._chrome.modifyActorParams(this._notificationBin, { visibleInFullscreen: false });
