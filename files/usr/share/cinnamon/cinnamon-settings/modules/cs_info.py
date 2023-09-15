@@ -113,20 +113,13 @@ def createSystemInfos():
         args = shlex.split("awk -F \"=\" '/GRUB_TITLE/ {print $2}' /etc/linuxmint/info")
         title = subprocess.check_output(args).decode('utf-8').rstrip("\n")
         infos.append((_("Operating System"), title))
-    elif os.path.exists("/etc/arch-release"):
-        contents = open("/etc/arch-release", 'r').readline().split()
-        title = ' '.join(contents[:2]) or "Arch Linux"
-        infos.append((_("Operating System"), title))
-    elif os.path.exists("/etc/manjaro-release"):
-        contents = open("/etc/manjaro-release", 'r').readline().split()
-        title = ' '.join(contents[:2]) or "Manjaro Linux"
-        infos.append((_("Operating System"), title))
-    else:
-        import distro
-        s = '%s (%s)' % (' '.join(distro.linux_distribution()), arch)
-        # Normalize spacing in distribution name
-        s = re.sub(r'\s{2,}', ' ', s)
-        infos.append((_("Operating System"), s))
+    elif os.path.exists("/etc/os-release"):
+          with open("/etc/os-release", 'r') as os_release_file:
+             for line in os_release_file:
+                 if line.startswith("PRETTY_NAME="):
+                    pretty_name = line.strip()[len("PRETTY_NAME="):].strip('"')
+                    infos.append(("Operating System", pretty_name))
+                    break # No need to continue reading the file once we have found PRETTY_NAME
     if 'CINNAMON_VERSION' in os.environ:
         infos.append((_("Cinnamon Version"), os.environ['CINNAMON_VERSION']))
     infos.append((_("Linux Kernel"), platform.release()))
