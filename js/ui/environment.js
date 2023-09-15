@@ -279,7 +279,7 @@ function init() {
     _patchContainerClass(St.BoxLayout);
     _patchContainerClass(St.Table);
 
-    // Cache the original toString since it will be overriden for Clutter.Actor
+    // Cache the original toString since it will be overridden for Clutter.Actor
     GObject.Object.prototype._toString = GObject.Object.prototype.toString;
     // Add method to determine if a GObject is finalized - needed to prevent accessing
     // objects that have been disposed in C code.

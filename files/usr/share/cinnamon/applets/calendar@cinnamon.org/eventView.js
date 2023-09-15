@@ -513,7 +513,7 @@ class EventsManager {
         let week_day = day_one.get_day_of_week();
         let week_start = Cinnamon.util_get_week_start();
 
-        // back up to the start of the week preceeding day 1
+        // back up to the start of the week preceding day 1
         let start = day_one.add_days( -(week_day - week_start) );
         // The calendar has 42 boxes
         let end = start.add_days(42).add_seconds(-1);

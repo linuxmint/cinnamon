@@ -136,7 +136,7 @@ SearchProvider.prototype = {
      * items which match the last given search terms.
      *
      * This should be used for something that requires a bit more
-     * logic; it's designed to be an asyncronous way to add a result
+     * logic; it's designed to be an asynchronous way to add a result
      * to the current search.
      */
     addItems: function(items) {
@@ -224,7 +224,7 @@ SearchProvider.prototype = {
      * @terms: Array of search terms, should be used for highlighting
      *
      * Search providers may optionally override this to render a
-     * particular serch result in a custom fashion.  The default
+     * particular search result in a custom fashion.  The default
      * implementation will show the icon next to the name.
      *
      * The actor should be an instance of St.Widget, with the style class

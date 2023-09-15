@@ -1370,7 +1370,7 @@ cinnamon_recorder_set_framerate (CinnamonRecorder *recorder,
  * cinnamon_recorder_set_file_template:
  * @recorder: the #CinnamonRecorder
  * @file_template: the filename template to use for output files,
- *                 or %NULL for the defalt value.
+ *                 or %NULL for the default value.
  *
  * Sets the filename that will be used when creating output
  * files. This is only used if the configured pipeline has an
@@ -1472,12 +1472,12 @@ cinnamon_recorder_set_area (CinnamonRecorder *recorder,
  * recording failed to start.
  *
  * An extra reference count is added to the recorder if recording
- * is succesfully started; the recording object will not be freed
+ * is successfully started; the recording object will not be freed
  * until recording is stopped even if the creator no longer holds
  * a reference. Recording is automatically stopped if the stage
  * is destroyed.
  *
- * Return value: %TRUE if recording was succesfully started
+ * Return value: %TRUE if recording was successfully started
  */
 gboolean
 cinnamon_recorder_record (CinnamonRecorder  *recorder,

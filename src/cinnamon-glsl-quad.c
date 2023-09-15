@@ -62,7 +62,7 @@ cinnamon_glsl_quad_paint (ClutterActor *actor, ClutterPaintContext *paint_contex
  * @hook: where to insert the code
  * @declarations: GLSL declarations
  * @code: GLSL code
- * @is_replace: wheter Cogl code should be replaced by the custom shader
+ * @is_replace: whether Cogl code should be replaced by the custom shader
  *
  * Adds a GLSL snippet to the pipeline used for drawing the actor texture.
  * See #CoglSnippet for details.

@@ -27,7 +27,7 @@
   G_STMT_START { } G_STMT_END
 #endif
 
-/* Vendor prefixes are something that can be preprended to a .desktop
+/* Vendor prefixes are something that can be prepended to a .desktop
  * file name.  Undo this.
  */
 static const char*const vendor_prefixes[] = { "gnome-",

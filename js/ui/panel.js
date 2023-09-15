@@ -1447,7 +1447,7 @@ TextShadower.prototype = {
      * In mint tiling and full screen removes any rounded window corners anyway, so this optional css is not there in
      * the main mint themes, and the corner/cairo functionality is unused in this case. Where the corners are used they will be
      * positioned so as to fill in the tiny gap at the corners of full screen windows, and if themed right they
-     * will be invisble to the user, other than the window will appear to go right up to the corner when full screen
+     * will be invisible to the user, other than the window will appear to go right up to the corner when full screen
      */
 function PanelCorner(box, side, cornertype) {
     this._init(box, side, cornertype);

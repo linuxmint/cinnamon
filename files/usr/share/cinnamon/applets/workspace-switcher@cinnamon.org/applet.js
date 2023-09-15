@@ -372,7 +372,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         // Avoid fast scroll directions
         if(direction != 0 && direction != 1) return;
 
-        // Do the switch only after a ellapsed time to avoid fast
+        // Do the switch only after a elapsed time to avoid fast
         // consecutive switches on sensible hardware, like touchpads
         if ((now - this._last_switch) > MIN_SWITCH_INTERVAL_MS ||
             direction !== this._last_switch_direction) {

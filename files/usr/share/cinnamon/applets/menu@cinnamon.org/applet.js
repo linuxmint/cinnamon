@@ -168,7 +168,7 @@ const SMI_DEFAULT_PARAMS = Object.freeze({
  * @param {string}  params.description - The description for the menu item.
  * @param {string}  params.type        - A string describing the type of item.
  * @param {string}  params.styleClass  - The item's CSS style class.
- * @param {boolean} params.reactive    - Item recieves events.
+ * @param {boolean} params.reactive    - Item receives events.
  * @param {boolean} params.activatable - Activates via primary click. Must provide an 'activate' function on
  *                                       the prototype or instance.
  * @param {boolean} params.withMenu    - Shows menu via secondary click. Must provide a 'populateMenu' function
@@ -230,7 +230,7 @@ class SimpleMenuItem {
     }
 
     /**
-     * Adds an StIcon as the next child, acessible as `this.icon`.
+     * Adds an StIcon as the next child, accessible as `this.icon`.
      *
      * Either an icon name or gicon is required. Only one icon is supported by the
      * base SimpleMenuItem.
@@ -1283,7 +1283,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
 
         // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
-        // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
+        // The reason we do is in case the Cinnamon icon theme is the same as the one specified in GTK itself (in .config)
         // In that particular case we get no signal at all.
         this.refreshId = 0;
         this.refreshMask = REFRESH_ALL_MASK;

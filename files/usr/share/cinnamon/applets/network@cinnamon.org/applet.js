@@ -497,7 +497,7 @@ NMDevice.prototype = {
     },
 
     setEnabled: function(enabled) {
-        // do nothing by default, we want to keep the conneciton list visible
+        // do nothing by default, we want to keep the connection list visible
         // in the majority of cases (wired, wwan, vpn)
     },
 
