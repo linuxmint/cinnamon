@@ -117,8 +117,8 @@ def createSystemInfos():
           with open("/etc/os-release", 'r') as os_release_file:
              for line in os_release_file:
                  if line.startswith("PRETTY_NAME="):
-                    pretty_name = line.strip()[len("PRETTY_NAME="):].strip('"')
-                    infos.append(("Operating System", pretty_name))
+                    title = line.strip()[len("PRETTY_NAME="):].strip('"')
+                    infos.append((_("Operating System"), title))
                     break # No need to continue reading the file once we have found PRETTY_NAME
     if 'CINNAMON_VERSION' in os.environ:
         infos.append((_("Cinnamon Version"), os.environ['CINNAMON_VERSION']))
