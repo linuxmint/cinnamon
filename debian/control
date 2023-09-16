@@ -104,6 +104,7 @@ Depends:
  streamer,
  wget,
  xapps-common (>= 2.5.0),
+ xdg-desktop-portal-gtk,
  xdg-desktop-portal-xapp,
  ${gir:Depends},
  ${icon-theme:Depends},

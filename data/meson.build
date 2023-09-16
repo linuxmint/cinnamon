@@ -38,6 +38,7 @@ foreach desktop_file : desktop_files
     )
 endforeach
 
+subdir('xdg-portal')
 subdir('xsessions')
 subdir('services')
 
