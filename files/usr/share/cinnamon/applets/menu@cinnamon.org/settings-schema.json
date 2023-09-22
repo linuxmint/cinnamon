@@ -25,9 +25,9 @@
         "menu-layout" : {
             "type" : "section",
             "title" : "Layout and content",
-            "keys" : ["restrict-menu-height", "menu-height", "show-category-icons",
+            "keys" : ["show-category-icons",
                       "category-icon-size", "show-application-icons", "application-icon-size",
-                      "favbox-show", "fav-icon-size", "show-places", "show-recents", "menu-editor-button"]
+                      "favbox-show", "fav-icon-size", "show-places", "show-recents", "menu-editor-button", "reset-menu-size-button"]
         },
         "menu-behave" : {
             "type" : "section",
@@ -70,22 +70,6 @@
     "description" : "Text",
     "tooltip" : "Enter custom text to show in the panel.",
     "dependency" : "menu-custom"
- },
- "restrict-menu-height" : {
-    "type": "switch",
-    "default" : false,
-    "description" : "Use a fixed menu height",
-    "tooltip" : "Keep the size of the menu the same no matter how many favorites or categories there are."
- },
- "menu-height" : {
-    "type": "spinbutton",
-    "default" : 550,
-    "min" : 300,
-    "max" : 2000,
-    "step" : 10,
-    "units" : "px",
-    "description" : "Menu height",
-    "dependency" : "restrict-menu-height"
  },
  "show-category-icons" : {
     "type" : "switch",
@@ -205,5 +189,18 @@
     "description" : "Open the menu editor",
     "callback" : "_launch_editor",
     "tooltip" : "Press this button to customize your menu entries."
+ },
+ "popup-width" : {
+    "type" : "generic",
+    "default" : 590
+ },
+ "popup-height" : {
+    "type" : "generic",
+    "default" : 515
+ },
+ "reset-menu-size-button" : {
+    "type" : "button",
+    "description" : "Restore the menu to its original size",
+    "callback" : "_reset_menu_size"
  }
 }

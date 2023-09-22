@@ -141,7 +141,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         // Add notification to list.
         notification._inNotificationBin = true;
         this.notifications.push(notification);
-        // Steal the notication panel.
+        // Steal the notification panel.
         this._notificationbin.add(notification.actor);
         notification.actor._parent_container = this._notificationbin;
         notification.actor.add_style_class_name('notification-applet-padding');

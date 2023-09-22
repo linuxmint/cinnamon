@@ -81,7 +81,7 @@
     },
     "label-info" : {
         "type" : "label",
-        "description" : "Play with these widgets and see the automatic reaction in the panel applet.\n\nThis is a label, and the content can't be modified nor accessed. You may want to use a label to show aditional hints or instructions, for example."
+        "description" : "Play with these widgets and see the automatic reaction in the panel applet.\n\nThis is a label, and the content can't be modified nor accessed. You may want to use a label to show additional hints or instructions, for example."
     },
     "icon-name": {
         "type": "iconfilechooser",

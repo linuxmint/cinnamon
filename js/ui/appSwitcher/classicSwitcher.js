@@ -798,7 +798,7 @@ AppList.prototype = {
         let iconSpacing = iconNaturalHeight + iconPadding + iconBorder;
         let totalSpacing = this._list.spacing * (this._items.length - 1);
 
-        // We just assume the whole screen here due to weirdness happing with the passed width
+        // We just assume the whole screen here due to weirdness happening with the passed width
         let parentPadding = this.actor.get_parent().get_theme_node().get_horizontal_padding();
         let availWidth = this._activeMonitor.width - parentPadding - this.actor.get_theme_node().get_horizontal_padding();
         let height = 0;

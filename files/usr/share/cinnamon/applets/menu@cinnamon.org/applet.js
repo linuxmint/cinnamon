@@ -39,7 +39,10 @@ const AppUtils = require('./appUtils');
 
 let appsys = Cinnamon.AppSystem.get_default();
 
-const MAX_BUTTON_WIDTH = "max-width: 20em;";
+const POPUP_MIN_WIDTH = 500;
+const POPUP_MAX_WIDTH = 900;
+const POPUP_MIN_HEIGHT = 400;
+const POPUP_MAX_HEIGHT = 1400;
 
 const RefreshFlags = Object.freeze({
     APP:      0b000001,
@@ -165,7 +168,7 @@ const SMI_DEFAULT_PARAMS = Object.freeze({
  * @param {string}  params.description - The description for the menu item.
  * @param {string}  params.type        - A string describing the type of item.
  * @param {string}  params.styleClass  - The item's CSS style class.
- * @param {boolean} params.reactive    - Item recieves events.
+ * @param {boolean} params.reactive    - Item receives events.
  * @param {boolean} params.activatable - Activates via primary click. Must provide an 'activate' function on
  *                                       the prototype or instance.
  * @param {boolean} params.withMenu    - Shows menu via secondary click. Must provide a 'populateMenu' function
@@ -177,7 +180,6 @@ class SimpleMenuItem {
         this._signals = new SignalManager.SignalManager();
 
         this.actor = new St.BoxLayout({ style_class: params.styleClass,
-                                        style: MAX_BUTTON_WIDTH,
                                         reactive: params.reactive,
                                         accessible_role: Atk.Role.MENU_ITEM });
 
@@ -228,7 +230,7 @@ class SimpleMenuItem {
     }
 
     /**
-     * Adds an StIcon as the next child, acessible as `this.icon`.
+     * Adds an StIcon as the next child, accessible as `this.icon`.
      *
      * Either an icon name or gicon is required. Only one icon is supported by the
      * base SimpleMenuItem.
@@ -1181,6 +1183,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._size_dirty = true;
         });
 
+        global.connect("scale-changed", () => {
+            this._size_dirty = true;
+        })
+
+        this._resizer = new Applet.PopupResizeHandler(this.menu.actor,
+            () => this._orientation,
+            (w,h) => this._onBoxResized(w,h),
+            () => this.popup_width * global.ui_scale,
+            () => this.popup_height * global.ui_scale);
+
         this.settings.bind("show-favorites", "showFavorites", () => this.queueRefresh(RefreshFlags.FAV_DOC));
         this.settings.bind("show-places", "showPlaces", () => this.queueRefresh(RefreshFlags.PLACE));
         this.settings.bind("show-recents", "showRecents", () => this.queueRefresh(RefreshFlags.RECENT));
@@ -1213,8 +1225,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("favbox-show", "favBoxShow", this._favboxtoggle);
         this.settings.bind("fav-icon-size", "favIconSize", () => this.queueRefresh(RefreshFlags.FAV_APP | RefreshFlags.SYSTEM));
         this.settings.bind("enable-animation", "enableAnimation", null);
-        this.settings.bind("restrict-menu-height", "restrictMenuHeight", null);
-        this.settings.bind("menu-height", "menuHeight", null);
+        this.settings.bind("popup-width", "popup_width");
+        this.settings.bind("popup-height", "popup_height");
 
         this._updateKeybinding();
 
@@ -1271,7 +1283,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
 
         // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
-        // The reason we do is in case the Cinnamon icon theme is the same as the one specificed in GTK itself (in .config)
+        // The reason we do is in case the Cinnamon icon theme is the same as the one specified in GTK itself (in .config)
         // In that particular case we get no signal at all.
         this.refreshId = 0;
         this.refreshMask = REFRESH_ALL_MASK;
@@ -1290,9 +1302,25 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         })
     }
 
+    _onBoxResized(width, height) {
+        width = (width / global.ui_scale).clamp(POPUP_MIN_WIDTH, POPUP_MAX_WIDTH);
+        height = (height / global.ui_scale).clamp(POPUP_MIN_HEIGHT, POPUP_MAX_HEIGHT);
+
+        //Only update settings when resizing is completed to avoid excessive disk writes.
+        if (!this._resizer.resizingInProgress) {
+            this.popup_width = width;
+            this.popup_height = height;
+        }
+
+        this._setMenuSize(width, height);
+    }
+
     _updateKeybinding() {
         Main.keybindingManager.addHotKey("overlay-key-" + this.instance_id, this.overlayKey, Lang.bind(this, function() {
             if (!Main.overview.visible && !Main.expo.visible)
+                if (this.forceShowPanel && !this.isOpen) {
+                    this.panel.peekPanel();
+                }
                 this.menu.toggle_with_options(this.enableAnimation);
         }));
     }
@@ -1402,25 +1430,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         });
     }
 
-    _recalc_sizes() {
-        Util.each(this.applicationsBox.get_children(), c => c.hide());
-
-        this.main_container.natural_height = 0;
-        this.main_container.natural_height_set = false;
-        this.selectedAppBox.natural_width_set = false;
-        this.selectedAppBox.minimum_width_set = false;
-
-        if (this.restrictMenuHeight) {
-            this.main_container.natural_height = this.menuHeight * global.ui_scale;
-        } else {
-            this.main_container.natural_height = this.main_container.get_preferred_height(-1)[1];
-        }
+    _setMenuSize(width, height) {
+        this.main_container.natural_height = (height * global.ui_scale);
+        this.main_container.natural_width = (width * global.ui_scale);
 
         this._update_scroll_policy(this.favoritesBox, this.favoritesScrollBox);
         this._update_scroll_policy(this.categoriesBox, this.categoriesScrollBox);
-
-        this._resizeApplicationsBox();
-        this.selectedAppBox.width = this.selectedAppBox.width;
 
         this._size_dirty = false;
     }
@@ -1436,16 +1451,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
-    _resizeApplicationsBox() {
-        let width = -1;
-        Util.each(this.applicationsBox.get_children(), c => {
-            let [min, nat] = c.get_preferred_width(-1.0);
-            if (nat > width)
-                width = nat;
-        });
-        this.applicationsBox.set_width(width + 42); // The answer to life...
-    }
-
     on_orientation_changed (orientation) {
         this._updateIconAndLabel();
         this._size_dirty = true;
@@ -1455,10 +1460,18 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         Main.keybindingManager.removeHotKey("overlay-key-" + this.instance_id);
     }
 
-    // settings button callback
+    // settings button callbacks
     _launch_editor() {
         Util.spawnCommandLine("cinnamon-menu-editor");
     }
+
+    _reset_menu_size() {
+        this.popup_width = this.settings.getDefaultValue("popup-width");
+        this.popup_height = this.settings.getDefaultValue("popup-height");
+
+        this._setMenuSize(this.popup_width, this.popup_height);
+    }
+    //
 
     on_applet_clicked(event) {
         this.menu.toggle_with_options(this.enableAnimation);
@@ -1474,7 +1487,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.lastSelectedCategory = null;
 
             if (this._size_dirty) {
-                this._recalc_sizes();
+                this._setMenuSize(this.popup_width, this.popup_height);
             }
 
             let n = Math.min(this._applicationsButtons.length,
@@ -1485,10 +1498,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
 
             Mainloop.idle_add(Lang.bind(this, this._initial_cat_selection, n));
-
-            if (this.forceShowPanel) {
-                this.panel.peekPanel();
-            }
         } else {
             this.actor.remove_style_pseudo_class('active');
             if (this.searchActive) {
@@ -2147,7 +2156,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _buttonLeaveEvent (button) {
         if (button instanceof CategoryButton) {
-            if (button.categoryId !== this.lastSelectedCategory) {
+            if (button.categoryId !== this.lastSelectedCategory && !this.searchActive) {
                 button.actor.set_style_class_name("menu-category-button");
                 if (button.actor.has_style_pseudo_class("hover")) {
                     button.actor.remove_style_pseudo_class("hover");

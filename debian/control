@@ -99,7 +99,7 @@ Depends:
  python3-pyinotify,
  python3-requests,
  python3-setproctitle,
- python3-tinycss2 | python3-tinycss,
+ python3-tinycss2,
  python3-tz,
  streamer,
  wget,
@@ -113,6 +113,7 @@ Depends:
 Recommends:
  gnome-terminal | x-terminal-emulator,
  gnome-themes-extra | gnome-themes-standard,
+ touchegg,
 Suggests: cinnamon-doc
 Provides: notification-daemon, x-window-manager
 Description: Modern Linux desktop

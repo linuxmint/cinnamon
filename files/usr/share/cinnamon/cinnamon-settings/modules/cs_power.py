@@ -320,16 +320,10 @@ class Module:
                 else:
                     primary_settings.add_row(self.set_device_ups_primary(device))
             elif device[UP_TYPE] == UPowerGlib.DeviceKind.BATTERY and not ups_as_primary:
-                if not have_primary:
-                    if not primary_settings:
-                        primary_settings = self.battery_page.add_section(_("Batteries"))
-                        primary_settings.add_row(self.set_device_battery_primary(device))
-                        self.show_battery_page = True
-                    have_primary = True
-                else:
-                    widget = self.set_device_battery_additional(device)
-                    if widget:
-                        primary_settings.add_row(widget)
+                if not primary_settings:
+                    primary_settings = self.battery_page.add_section(_("Batteries"))
+                primary_settings.add_row(self.set_device_battery_primary(device))
+                self.show_battery_page = True
             else:
                 if not secondary_settings:
                     secondary_settings = self.battery_page.add_section(_("Devices"))
@@ -434,30 +428,6 @@ class Module:
 
         widget = self.create_battery_row(device_id, "battery", desc, percentage, battery_level, details)
         return widget
-
-    def set_device_battery_additional(self, device):
-        state = device[UP_STATE]
-        details = None
-
-        if state == UPowerGlib.DeviceState.FULLY_CHARGED:
-            details = _("Fully charged")
-        elif state == UPowerGlib.DeviceState.EMPTY:
-            details = _("Empty")
-
-        if details:
-            widget = SettingsWidget()
-            icon = Gtk.Image.new_from_icon_name("battery", Gtk.IconSize.DND)
-            widget.pack_start(icon, False, False, 0)
-            label = Gtk.Label(_("Secondary battery"))
-            widget.pack_start(label, False, False, 0)
-            label = Gtk.Label()
-            label.set_markup(details)
-            label.get_style_context().add_class("dim-label")
-            widget.pack_end(label, False, False, 0)
-
-            return widget
-        else:
-            return None
 
     def add_battery_device_secondary(self, device):
         device_id = device[UP_ID]

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import datetime
-from gi.repository import Gtk
+from gi.repository import Gtk, Pango
 import pageutils
 
 class LogEntry:
@@ -32,22 +32,23 @@ class LogView(Gtk.ScrolledWindow):
         self.added_messages = 0
         self.first_message_time = None
 
+        context = self.get_style_context()
+
         self.enabled_types = {'info': True, 'warning': True, 'error': True, 'trace': False}
         self.type_tags = {
             'info': self.textbuffer.create_tag("info",
-                                               foreground="#1a6f18",
                                                invisible=not self.enabled_types["info"],
                                                invisible_set=True),
             'warning': self.textbuffer.create_tag("warning",
-                                                  foreground="#c8bf33",
+                                                  foreground_rgba=context.lookup_color("warning_color")[1],
                                                   invisible=not self.enabled_types["warning"],
                                                   invisible_set=True),
             'error': self.textbuffer.create_tag("error",
-                                                foreground="#9f1313",
+                                                foreground_rgba=context.lookup_color("error_color")[1],
                                                 invisible=not self.enabled_types["error"],
                                                 invisible_set=True),
             'trace': self.textbuffer.create_tag("trace",
-                                                foreground="#18186f",
+                                                weight=Pango.Weight.SEMIBOLD,
                                                 invisible=not self.enabled_types["trace"],
                                                 invisible_set=True)
         }

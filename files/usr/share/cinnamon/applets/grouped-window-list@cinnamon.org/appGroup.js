@@ -54,15 +54,10 @@ const getFocusState = function(metaWindow) {
         return true;
     }
 
-    let transientHasFocus = false;
-    metaWindow.foreach_transient(function(transient) {
-        if (transient && transient.appears_focused) {
-            transientHasFocus = true;
-            return false;
-        }
+    if (global.display.focus_window && metaWindow.is_ancestor_of_transient(global.display.focus_window))
         return true;
-    });
-    return transientHasFocus;
+
+    return false;
 };
 
 class AppGroup {

@@ -15,7 +15,7 @@ FORBIDDEN_KEYVALS = [
     Gdk.KEY_Return,
     Gdk.KEY_space,
     Gdk.KEY_Mode_switch,
-    Gdk.KEY_KP_0, # numerics currently are recogized only as _End, _Down, etc.. with or without numlock
+    Gdk.KEY_KP_0, # numerics currently are recognized only as _End, _Down, etc.. with or without numlock
     Gdk.KEY_KP_1, # Gdk checks numlock and parses out the correct key, but this could change, so list
     Gdk.KEY_KP_2, # these numerics anyhow. (This may differ depending on kb layouts, locales, etc.. but
     Gdk.KEY_KP_3, # I didn't thoroughly check.)
@@ -179,9 +179,18 @@ class CellRendererKeybinding(Gtk.CellRendererText):
     def update_label(self):
         text = _("unassigned")
         if self.accel_string:
-            key, codes, mods = Gtk.accelerator_parse_with_keycode(self.accel_string)
+            restore_atab = False
+            valid = self.accel_string
+            if "Above_Tab" in valid:
+                restore_atab = True
+                valid = valid.replace("Above_Tab", "grave")
+
+            key, codes, mods = Gtk.accelerator_parse_with_keycode(valid)
             if codes is not None and len(codes) > 0:
                 text = Gtk.accelerator_get_label_with_keycode(None, key, codes[0], mods)
+            if restore_atab:
+                text = text.replace("`", "AboveTab")
+
         self.set_property("text", text)
 
     def set_value(self, accel_string=None):

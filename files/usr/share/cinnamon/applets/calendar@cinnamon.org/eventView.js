@@ -106,6 +106,11 @@ class EventData {
             // causing it to appear for two days.
             this.end = this.end.add_seconds(-1);
         }
+        if (this.end.compare(this.start) == -1) {
+            // An all day event can be a single point in time at 00:00. The previous -1s
+            // will cause it to appear all the following days in the current view.
+            this.end = this.start;
+        }
         this.start_date = date_only(this.start);
         this.end_date = date_only(this.end);
         this.multi_day = !dt_equals(this.start_date, this.end_date);
@@ -508,7 +513,7 @@ class EventsManager {
         let week_day = day_one.get_day_of_week();
         let week_start = Cinnamon.util_get_week_start();
 
-        // back up to the start of the week preceeding day 1
+        // back up to the start of the week preceding day 1
         let start = day_one.add_days( -(week_day - week_start) );
         // The calendar has 42 boxes
         let end = start.add_days(42).add_seconds(-1);

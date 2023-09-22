@@ -27,8 +27,8 @@
  * meta_plugin_manager_set_plugin_type(), Mutter will call the vfuncs of the
  * plugin at the appropriate time.
  *
- * The funcions in in CinnamonPlugin are all just stubs, which just call the
- * similar methods in CinnamonWm.
+ * The functions in in CinnamonPlugin are all just stubs, which just call
+ * the similar methods in CinnamonWm.
  */
 
 #include "config.h"

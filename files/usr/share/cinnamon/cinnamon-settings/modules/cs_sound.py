@@ -537,7 +537,7 @@ class Module:
 
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-        # ouput volume
+        # output volume
         max_volume = self.sound_settings.get_int(MAXIMUM_VOLUME_KEY)
         self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), max_volume, sizeGroup=sizeGroup)
         devSettings.add_row(self.outVolume)

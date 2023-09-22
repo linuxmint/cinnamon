@@ -58,8 +58,8 @@ const DEVEL_COMMAND_DELAY =  parseInt(ModalDialog.OPEN_AND_CLOSE_TIME * 1000) + 
  * @text (string): initial string to complete.
  *
  * This function finds possible command completions for @text. @text is first
- * split at whitspaces, and completion is performed on the last segment. Note
- * that this currently does not recognize escaped whitspaces.
+ * split at whitespaces, and completion is performed on the last segment. Note
+ * that this currently does not recognize escaped whitespaces.
  *
  * If the last segment starts with a `/`, then it is considered to be an
  * absolute path. Otherwise, if it is the first segment (ie. there is only one
@@ -294,7 +294,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
             return;
         }
 
-        // Currnet suggested completion is selected. Do not include in query.
+        // Current suggested completion is selected. Do not include in query.
         text = text.slice(0, text.lastIndexOf(this._entryText.get_selection()));
 
         /* If update is caused by user typing "tab" and no text has changed

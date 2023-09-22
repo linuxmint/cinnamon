@@ -11,7 +11,7 @@
  *     dialog
  * @CINNAMON_ACTION_MODE_LOGIN_SCREEN: allow action in the login screen
  * @CINNAMON_ACTION_MODE_SYSTEM_MODAL: allow action when a system modal
- *     dialog (e.g. authentification or session dialogs) is open
+ *     dialog (e.g. authentication or session dialogs) is open
  * @CINNAMON_ACTION_MODE_LOOKING_GLASS: allow action in looking glass
  * @CINNAMON_ACTION_MODE_POPUP: allow action while a shell menu is open
  * @CINNAMON_ACTION_MODE_ALL: always allow action

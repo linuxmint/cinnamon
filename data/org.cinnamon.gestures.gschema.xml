@@ -1,0 +1,126 @@
+<schemalist>
+  <schema id="org.cinnamon.gestures" path="/org/cinnamon/gestures/"
+          gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="enabled" type="b">
+      <default>false</default>
+      <summary>Enables gesture support using Touchegg.</summary>
+    </key>
+    <key name="swipe-percent-threshold" type="u">
+      <default>60</default>
+      <summary>An approximate distance, measured in percent of the size of the touch device or area. This setting is for swipe gestures only.</summary>
+    </key>
+    <key name="pinch-percent-threshold" type="u">
+      <default>40</default>
+      <summary>An approximate distance, measured in percent of the size of the touch device or area. This setting is for pinch gestures only.</summary>
+    </key>
+
+    <key name="swipe-left-2" type="s">
+      <default>'PUSH_TILE_LEFT'</default>
+      <summary>Touchscreen only</summary>
+    </key>
+    <key name="swipe-right-2" type="s">
+      <default>'PUSH_TILE_RIGHT'</default>
+      <summary>Touchscreen only</summary>
+    </key>
+    <key name="swipe-up-2" type="s">
+      <default>'PUSH_TILE_UP'</default>
+      <summary>Touchscreen only</summary>
+    </key>
+    <key name="swipe-down-2" type="s">
+      <default>'PUSH_TILE_DOWN'</default>
+      <summary>Touchscreen only</summary>
+    </key>
+
+    <key name="swipe-left-3" type="s">
+      <default>'WORKSPACE_NEXT'</default>
+    </key>
+    <key name="swipe-right-3" type="s">
+      <default>'WORKSPACE_PREVIOUS'</default>
+    </key>
+    <key name="swipe-up-3" type="s">
+      <default>'TOGGLE_EXPO'</default>
+    </key>
+    <key name="swipe-down-3" type="s">
+      <default>'TOGGLE_OVERVIEW'</default>
+    </key>
+
+    <key name="swipe-left-4" type="s">
+      <default>'WINDOW_WORKSPACE_PREVIOUS'</default>
+    </key>
+    <key name="swipe-right-4" type="s">
+      <default>'WINDOW_WORKSPACE_NEXT'</default>
+    </key>
+    <key name="swipe-up-4" type="s">
+      <default>'VOLUME_UP'</default>
+    </key>
+    <key name="swipe-down-4" type="s">
+      <default>'VOLUME_DOWN'</default>
+    </key>
+
+    <key name="swipe-left-5" type="s">
+      <default>''</default>
+      <summary>Touchscreen only</summary>
+    </key>
+    <key name="swipe-right-5" type="s">
+      <default>''</default>
+      <summary>Touchscreen only</summary>
+    </key>
+    <key name="swipe-up-5" type="s">
+      <default>''</default>
+      <summary>Touchscreen only</summary>
+    </key>
+    <key name="swipe-down-5" type="s">
+      <default>''</default>
+      <summary>Touchscreen only</summary>
+    </key>
+
+
+    <key name="pinch-in-2" type="s">
+      <default>''</default>
+    </key>
+    <key name="pinch-out-2" type="s">
+      <default>''</default>
+    </key>
+
+    <key name="pinch-in-3" type="s">
+      <default>''</default>
+    </key>
+    <key name="pinch-out-3" type="s">
+      <default>''</default>
+    </key>
+
+    <key name="pinch-in-4" type="s">
+      <default>''</default>
+    </key>
+    <key name="pinch-out-4" type="s">
+      <default>''</default>
+    </key>
+
+    <key name="pinch-in-5" type="s">
+      <default>''</default>
+      <summary>Touchscreen only</summary>
+    </key>
+    <key name="pinch-out-5" type="s">
+      <default>''</default>
+      <summary>Touchscreen only</summary>
+    </key>
+
+
+    <key name="tap-2" type="s">
+      <default>''</default>
+      <summary>Touchscreen only</summary>
+    </key>
+    <key name="tap-3" type="s">
+      <default>'MEDIA_PLAY_PAUSE'</default>
+      <summary>Touchscreen only</summary>
+    </key>
+    <key name="tap-4" type="s">
+      <default>''</default>
+      <summary>Touchscreen only</summary>
+    </key>
+    <key name="tap-5" type="s">
+      <default>''</default>
+      <summary>Touchscreen only</summary>
+    </key>
+  </schema>
+</schemalist>

@@ -683,7 +683,7 @@ class Module:
             if response == Gtk.ResponseType.OK:
                 path = dialog.get_filename()
                 image = PIL.Image.open(path)
-                image.thumbnail((96, 96), Image.ANTIALIAS)
+                image.thumbnail((96, 96), Image.LANCZOS)
                 face_path = os.path.join(user.get_home_dir(), ".face")
                 try:
                     try:

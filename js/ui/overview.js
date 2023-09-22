@@ -137,7 +137,7 @@ Overview.prototype = {
                 let dt = (event.get_time() - this._lastMotionTime) / 1000;
                 let passedHalf = Math.abs(distance / difference) > 0.5;
 
-                /* Switch to the next page if the scroll ammount is more
+                /* Switch to the next page if the scroll amount is more
                    than half the page width or is faster than 25px/s.
                    This number comes from experimental tests. */
                 if (Math.abs(distance) > dt * 25 || passedHalf) {
@@ -289,7 +289,7 @@ Overview.prototype = {
             Tweener.addTween(this._group, {
                 opacity: 255,
                 transition: 'easeOutQuad',
-                time: ANIMATION_TIME,
+                time: ANIMATION_TIME * 0.45,
                 onComplete: this._showDone,
                 onCompleteScope: this
             });
@@ -407,7 +407,7 @@ Overview.prototype = {
             // Make other elements fade out.
             Tweener.addTween(this._group, {
                 opacity: 0,
-                transition: 'easeOutQuad',
+                transition: 'easeInQuad',
                 time: ANIMATION_TIME,
                 onComplete: this._hideDone,
                 onCompleteScope: this

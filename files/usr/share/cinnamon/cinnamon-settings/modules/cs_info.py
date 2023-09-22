@@ -113,20 +113,13 @@ def createSystemInfos():
         args = shlex.split("awk -F \"=\" '/GRUB_TITLE/ {print $2}' /etc/linuxmint/info")
         title = subprocess.check_output(args).decode('utf-8').rstrip("\n")
         infos.append((_("Operating System"), title))
-    elif os.path.exists("/etc/arch-release"):
-        contents = open("/etc/arch-release", 'r').readline().split()
-        title = ' '.join(contents[:2]) or "Arch Linux"
-        infos.append((_("Operating System"), title))
-    elif os.path.exists("/etc/manjaro-release"):
-        contents = open("/etc/manjaro-release", 'r').readline().split()
-        title = ' '.join(contents[:2]) or "Manjaro Linux"
-        infos.append((_("Operating System"), title))
-    else:
-        import distro
-        s = '%s (%s)' % (' '.join(distro.linux_distribution()), arch)
-        # Normalize spacing in distribution name
-        s = re.sub(r'\s{2,}', ' ', s)
-        infos.append((_("Operating System"), s))
+    elif os.path.exists("/etc/os-release"):
+          with open("/etc/os-release", 'r') as os_release_file:
+             for line in os_release_file:
+                 if line.startswith("PRETTY_NAME="):
+                    title = line.strip()[len("PRETTY_NAME="):].strip('"')
+                    infos.append((_("Operating System"), title))
+                    break # No need to continue reading the file once we have found PRETTY_NAME
     if 'CINNAMON_VERSION' in os.environ:
         infos.append((_("Cinnamon Version"), os.environ['CINNAMON_VERSION']))
     infos.append((_("Linux Kernel"), platform.release()))
@@ -222,31 +215,12 @@ class Module:
 
     def on_copy_clipboard_button_clicked(self, button):
         try:
-            # taken from https://github.com/linuxmint/xapp/blob/master/scripts/upload-system-info
-            subproc = Gio.Subprocess.new(['inxi', '-Fxxrzc0'], Gio.SubprocessFlags.STDOUT_PIPE |  Gio.SubprocessFlags.STDERR_PIPE)
-            subproc.wait_check_async(None, self.on_copy_clipboard_complete)
+            inxiOutput = subprocess.run(['inxi', '-Fxxrzc0'], check=True, stdout=subprocess.PIPE).stdout
+            clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+            clipboard.set_text(inxiOutput.decode("utf-8"), -1)
         except Exception as e:
             print("An error occurred while copying the system information to clipboard")
             print(e)
-
-    def on_copy_clipboard_complete(self, subproc, result):
-        def _convert_stream_to_string(stream):
-            """Convert Gio.InputStream to string"""
-            bytes = bytearray(0)
-            buf = stream.read_bytes(1024, None).get_data()
-            while buf:
-                bytes += buf
-                buf = stream.read_bytes(1024, None).get_data()
-            stream.close()
-            content = bytes.decode("utf-8")
-            return content
-        try:
-            status = subproc.wait_check_finish(result)
-            if status:
-                clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
-                clipboard.set_text(_convert_stream_to_string(subproc.get_stdout_pipe()), -1)
-        except Exception as e:
-            print("copying to clipboard failed : %s" % e.message)
 
     def on_button_clicked(self, button, spinner):
 

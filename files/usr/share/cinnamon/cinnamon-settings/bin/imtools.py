@@ -81,7 +81,7 @@ def drop_shadow(image, horizontal_offset=5, vertical_offset=5,
         cache = {}
 
     if has_transparency(image) and image.mode != 'RGBA':
-        # Make sure 'LA' and 'P' with trasparency are handled
+        # Make sure 'LA' and 'P' with transparency are handled
         image = image.convert('RGBA')
 
     #get info
@@ -228,7 +228,7 @@ def create_corner(radius=100, opacity=255, factor=2):
     draw = ImageDraw.Draw(corner)
     draw.pieslice((0, 0, 2 * factor * radius, 2 * factor * radius),
                   180, 270, fill=opacity)
-    corner = corner.resize((radius, radius), Image.ANTIALIAS)
+    corner = corner.resize((radius, radius), Image.LANCZOS)
     return corner
 
 def get_format(ext):
@@ -620,7 +620,7 @@ def has_transparency(image):
 
 
 def get_alpha(image):
-    """Gets the image alpha band. Can handles P mode images with transpareny.
+    """Gets the image alpha band. Can handle P mode images with transparency.
     Returns a band with all values set to 255 if no alpha band exists.
 
     :param image: input image
@@ -826,7 +826,7 @@ def paste(destination, source, box=(0, 0), mask=None, force=False):
           with the alpha channel of the source image. So in that case the
           pixels of the destination layer will be abandoned and replaced
           by exactly the same pictures of the destination image. This is mostly
-          what you need if you paste on a transparant canvas.
+          what you need if you paste on a transparent canvas.
         - If ``False`` this will use a mask when the image has an alpha
           channel. In this case pixels of the destination image will appear
           through where the source image is transparent.
@@ -856,8 +856,8 @@ def paste(destination, source, box=(0, 0), mask=None, force=False):
             if invert_alpha is not None:
                 # the alpha channel is ok now, so save it
                 destination_alpha = get_alpha(destination)
-                # paste on top of the transparant destination pixels
-                # the transparant pixels of the destination should
+                # paste on top of the transparent destination pixels
+                # the transparent pixels of the destination should
                 # be filled with the color information from the source
                 destination.paste(source_without_alpha, box, invert_alpha)
                 # restore the correct alpha channel
@@ -1068,7 +1068,7 @@ def get_reverse_transposition(transposition):
 
 
 def get_exif_transposition(orientation):
-    """Get the transposition methods necessary to aling the image to
+    """Get the transposition methods necessary to align the image to
     its exif orientation.
 
     :param orientation: exif orientation
@@ -1210,12 +1210,12 @@ def add_checkboard(image):
 
     :param image: image
     :type image: pil.Image
-    :returns: image, with checkboard if transparant
+    :returns: image, with checkboard if transparent
     :rtype: pil.Image
     """
     if (image.mode == 'P' and 'transparency' in image.info) or\
             image.mode.endswith('A'):
-        #transparant image
+        #transparent image
         image = image.convert('RGBA')
         image_bg = checkboard(image.size)
         paste(image_bg, image, (0, 0), image)

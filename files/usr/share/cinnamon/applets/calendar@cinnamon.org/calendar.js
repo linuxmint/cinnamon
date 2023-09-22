@@ -81,7 +81,7 @@ function _formatEventTime(event, clockFormat) {
         default:
             /* explicit fall-through */
         case '12h':
-            /* Transators: Shown in calendar event list, if 12h format */
+            /* Translators: Shown in calendar event list, if 12h format */
             ret = event.date.toLocaleFormat(C_("event list time", "%l:%M %p"));
             break;
         }
