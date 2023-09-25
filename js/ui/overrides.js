@@ -26,12 +26,12 @@ function overrideDumpStack() {
 }
 
 function overrideGObject() {
-    const {each, toFastProperties} = imports.misc.util;
+    const {toFastProperties} = imports.misc.util;
 
     const originalInit = GObject.Object.prototype._init;
     GObject.Object.prototype._init = function _init() {
         originalInit.call(this, ...arguments);
-        each(this, function(value) {
+        Object.values(this).forEach( value => {
             if (value && !Array.isArray(value)) toFastProperties(value);
         });
     }

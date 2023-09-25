@@ -3035,8 +3035,8 @@ Panel.prototype = {
         ];
 
         /* Iterate thru the sizeSets to get our sizes for all 3 types */
-        Util.each(sizeSets, (set, i) => {
-            let [typeString, settingKey, getSizeFunc, defaults] = set;
+        sizeSets.forEach( sizeSet => {
+            let [typeString, settingKey, getSizeFunc, defaults] = sizeSet;
 
             let settingsArray = this._getJSONProperty(settingKey);
 
@@ -3054,7 +3054,7 @@ Panel.prototype = {
 
             /* Now, iterate thru the individual set's values (an individual setting key's array of panel sizes),
              * then compute their display sizes and stick them in this._panelZoneSizes for the current type. */
-            Util.each(settingsArray, (sizes, i) => {
+            settingsArray.forEach( sizes => {
                 if (sizes.panelId !== this.panelId) return;
 
                 haveSettings = true;
@@ -3104,10 +3104,10 @@ Panel.prototype = {
             [this._rightBox, "right"]
         ];
 
-        Util.each(zones, (zone, i) => {
+        zones.forEach( zone => {
             let [actor, zoneString] = zone;
 
-            let value = this._panelZoneSizes["text"][zoneString];
+            const value = this._panelZoneSizes["text"][zoneString];
 
             if (value > 0.0) {
                 actor.set_style("font-size: %.1fpt;".format(value));
@@ -3182,16 +3182,16 @@ Panel.prototype = {
             ["text", PANEL_ZONE_TEXT_SIZES]
         ];
 
-        Util.each(sizeSets, (set, i) => {
-            let [typeString, settingKey] = set;
+        sizeSets.forEach( sizeSet => {
+            let [typeString, settingKey] = sizeSet;
 
             let settingsArray = this._getJSONProperty(settingKey);
 
             /* Temporarily disconnect setting handler, so we don't trigger for our own update */
             this._signalManager.disconnect("changed::" + settingKey);
 
-            let zoneIndex = Util.findIndex(settingsArray, (obj) => {
-                return obj.panelId === this.panelId;
+            const zoneIndex = settingsArray.findIndex( obj => {
+                return obj && obj.panelId === this.panelId;
             });
 
             if (zoneIndex >= 0) {
@@ -3845,7 +3845,7 @@ Panel.prototype = {
     },
 
     getIsVisible: function() {
-        return !this._hidden;
+        return this._shouldShow;
     },
 
     resetDNDZones: function() {

@@ -210,7 +210,7 @@ var Applet = class Applet {
         if (!instance_id) instance_id = this.instance_id;
         let appletDefinition = AppletManager.getAppletDefinition({applet_id: instance_id});
         if (appletDefinition) {
-            let panelIndex = Util.findIndex(Main.panelManager.panels, function(panel) {
+            const panelIndex = Main.panelManager.panels.findIndex( panel => {
                 return panel && (panel.panelId === appletDefinition.panelId);
             });
             if (panelIndex > -1) {
