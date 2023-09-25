@@ -3845,7 +3845,7 @@ Panel.prototype = {
     },
 
     getIsVisible: function() {
-        return this._shouldShow;
+        return !this._hidden;
     },
 
     resetDNDZones: function() {
