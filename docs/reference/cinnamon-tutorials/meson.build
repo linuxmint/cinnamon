@@ -3,8 +3,8 @@ gnome.gtkdoc(
     mode: 'xml',
     main_xml: 'cinnamon-tutorials-docs.sgml',
     src_dir: [
-        join_paths(meson.source_root(), 'src'),
-        join_paths(meson.build_root(), 'src'),
+        join_paths(meson.project_source_root(), 'src'),
+        join_paths(meson.project_build_root(), 'src'),
     ],
     mkdb_args: ['--xml-mode', '--output-format=xml'],
     html_assets: 'settings.png',
