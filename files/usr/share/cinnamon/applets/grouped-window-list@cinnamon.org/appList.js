@@ -1,8 +1,7 @@
 const Clutter = imports.gi.Clutter;
-const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const {SignalManager} = imports.misc.signalManager;
-const {each, filter, findIndex, find, unref} = imports.misc.util;
+const {unref} = imports.misc.util;
 const {createStore} = imports.misc.state;
 
 const AppGroup = require('./appGroup');
@@ -32,7 +31,7 @@ class AppList {
                 this.actor.remove_child(actor);
             },
             updateFocusState: (focusedAppId) => {
-                each(this.appList, (appGroup) => {
+                this.appList.forEach( appGroup => {
                     if (focusedAppId === appGroup.groupState.appId) return;
                     appGroup.onFocusChange(false);
                 });
@@ -71,7 +70,7 @@ class AppList {
 
     getWindowCount(appId) {
         let windowCount = 0;
-        each(this.appList, function(appGroup) {
+        this.appList.forEach( appGroup => {
             if (appGroup.groupState.appId !== appId) return;
             windowCount += appGroup.groupState.metaWindows.length;
         });
@@ -80,7 +79,7 @@ class AppList {
 
     closeAllHoverMenus(cb) {
         for (let i = 0, len = this.appList.length; i < len; i++) {
-            let {hoverMenu, groupState} = this.appList[i];
+            const {hoverMenu, groupState} = this.appList[i];
             if (hoverMenu && hoverMenu.isOpen) {
                 groupState.set({thumbnailMenuEntered: false});
                 hoverMenu.close(true);
@@ -125,16 +124,16 @@ class AppList {
         this.lastCycledTime = Date.now();
 
         if (lastCycled < 0) {
-            lastCycled = findIndex(this.appList, (app) => {
-                return app.groupState.appId === this.listState.lastFocusedApp;
-            });
+            lastCycled = this.appList.findIndex(
+                app => app.groupState.appId === this.listState.lastFocusedApp
+            );
         }
 
         if (lastCycled < 0 || lastCycled > this.appList.length - 1) {
             lastCycled = 0;
         }
 
-        let refApp = this.appList[lastCycled];
+        const refApp = this.appList[lastCycled];
 
         lastCycled++;
         this.state.set({lastCycled});
@@ -148,7 +147,7 @@ class AppList {
             }
             refApp.hoverMenu.open(true);
 
-            let lastCycledTime = this.lastCycledTime;
+            const lastCycledTime = this.lastCycledTime;
             setTimeout(() => {
                 if (lastCycledTime === this.lastCycledTime) {
                     if (refApp.hoverMenu.shouldClose) { // do not close hoverMenu if user is using it
@@ -163,8 +162,8 @@ class AppList {
     }
 
     reloadList() {
-        let windows;
-        windows = this.metaWorkspace.list_windows();
+        const windows = this.metaWorkspace.list_windows();
+
         for (let i = 0, len = windows.length; i < len; i++) {
             this.windowAdded(this.metaWorkspace, windows[i]);
         }
@@ -184,10 +183,12 @@ class AppList {
         const favorites = this.state.trigger('getFavorites');
         const appSystem = this.state.trigger('getAppSystem');
         for (let i = 0; i < favorites.length; i++) {
-            let app = appSystem.lookup_app(favorites[i].id);
+            const app = appSystem.lookup_app(favorites[i].id);
             if (!app) continue;
 
-            let appWindows = filter(app.get_windows(), (metaWindow) => this.shouldWindowBeAdded(metaWindow));
+            const appWindows = app.get_windows().filter(
+                metaWindow => this.shouldWindowBeAdded(metaWindow)
+            );
 
             if (appWindows.length === 0) {
                 this.windowAdded(this.metaWorkspace, null, app, true);
@@ -214,15 +215,18 @@ class AppList {
     }
 
     updateAttentionState(display, window) {
-        each(this.appList, (appGroup) => {
+        this.appList.forEach( appGroup => {
             if (appGroup.groupState.metaWindows) {
                 appGroup.onWindowDemandsAttention(window);
             }
-            if (appGroup.hoverMenu && appGroup.hoverMenu.isOpen) {
-                each(appGroup.hoverMenu.appThumbnails, (thumbnail) => {
-                    thumbnail.onWindowDemandsAttention(window);
-                    return false;
-                });
+
+            if (appGroup.hoverMenu) {
+                const thumbnail = appGroup.hoverMenu.appThumbnails.find(
+                    thumbnail => thumbnail.metaWindow === window
+                );
+                if (thumbnail) {
+                    thumbnail.setThumbnailDemandsAttention(true);
+                }
             }
         });
     }
@@ -264,44 +268,43 @@ class AppList {
             return;
         }
 
-        let appId = app.get_id(),
-            refApp = -1,
+        let refApp = -1,
             refWindow = -1,
             transientFavorite = false;
 
-        each(this.appList, (appGroup, i) => {
-            if (app === appGroup.groupState.app) {
+        for (let i = 0; i < this.appList.length; i++) {
+            if (app === this.appList[i].groupState.app) {
                 refApp = i;
             }
-            let ref = appGroup.groupState.metaWindows.indexOf(metaWindow);
+            const ref = this.appList[i].groupState.metaWindows.indexOf(metaWindow);
             if (ref > -1) {
                 if (refApp === -1 || !this.state.settings.groupApps) {
                     refApp = i;
                 }
                 refWindow = ref;
-                return false;
+                break;
             }
-        });
+        }
 
         if (!this.state.settings.groupApps && !isFavoriteApp) {
-            let refFav = findIndex(this.state.trigger('getFavorites'), (favorite) => {
-                return favorite.app === app;
-            });
+            const refFav = this.state.trigger('getFavorites').findIndex(
+                favorite => favorite.app === app
+            );
             if (refFav > -1) {
                 isFavoriteApp = true;
                 transientFavorite = true; 
             } 
         }
 
-        let initApp = (idx) => { 
-            let appGroup = new AppGroup({
+        const initApp = (idx) => { 
+            const appGroup = new AppGroup({
                 state: this.state,
                 listState: this.listState,
                 app,
                 isFavoriteApp,
                 metaWorkspace,
                 metaWindow,
-                appId
+                appId: app.get_id()
             });
 
             if(idx > -1) {
@@ -336,13 +339,12 @@ class AppList {
 
     updateAppGroupIndexes() {
         const newAppList = [];
-        let children = this.actor.get_children();
-        for (let i = 0; i < children.length; i++) {
-            let appGroup = find(this.appList, (appGroup) => appGroup.actor === children[i]);
+        this.actor.get_children().forEach( child => {
+            const appGroup = this.appList.find( appGroup => appGroup.actor === child);
             if (appGroup) {
                 newAppList.push(appGroup);
             }
-        }
+        });
         this.appList = newAppList;
     }
 
@@ -356,26 +358,19 @@ class AppList {
             // should always remain indexed on all workspaces while its mapped.
             // if (!metaWindow.showing_on_its_workspace()) return;
             if ((this.state.settings.showAllWorkspaces) && (metaWindow.has_focus()
-            && global.workspace_manager.get_active_workspace_index()
-            !== metaWorkspace.index())) return;
+                && global.workspace_manager.get_active_workspace_index()
+                !== metaWorkspace.index())) return;
             this.state.removingWindowFromWorkspaces = true;
             this.state.trigger('removeWindowFromAllWorkspaces', metaWindow);
             return;
         }
 
-        let refApp = -1, refWindow = -1;
-        each(this.appList, (appGroup, i) => {
-            let shouldReturn = false;
-            each(appGroup.groupState.metaWindows, (win, z) => {
-                if (win === metaWindow) {
-                    refApp = i;
-                    refWindow = z;
-                    shouldReturn = this.state.settings.groupApps;
-                    return false;
-                }
-            });
-            if (shouldReturn) {
-                return false;
+        let refWindow = -1;
+        const refApp = this.appList.findIndex( appGroup => {
+            const window = appGroup.groupState.metaWindows.findIndex( win => win === metaWindow);
+            if (window > -1) {
+                refWindow = window;
+                return true;
             }
         });
 
@@ -394,14 +389,16 @@ class AppList {
                         // pinned app closed in ungrouped-windows mode and another instance of app already exists in appList
                         // move other instance to original apps' position
 
-                        let refAppId = this.appList[refApp].groupState.appId;
+                        const refAppId = this.appList[refApp].groupState.appId;
 
                         this.appList[refApp].destroy(true);
                         this.appList[refApp] = undefined;
                         this.appList.splice(refApp, 1);
 
-                        let otherApp = findIndex(this.appList, (appGroup) => appGroup.groupState.appId === refAppId);
-                        let otherAppObject = this.appList[otherApp]
+                        const otherApp = this.appList.findIndex(
+                            appGroup => appGroup.groupState.appId === refAppId
+                        );
+                        const otherAppObject = this.appList[otherApp]
 
                         // in edge case when multiple apps of the same program are favorited, do not move other app
                         if(!otherAppObject.groupState.isFavoriteApp) {
