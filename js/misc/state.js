@@ -1,4 +1,3 @@
-const {find, filter} = imports.misc.util;
 
 function intersect(array1, array2, difference = false) {
     let result = [];
@@ -228,7 +227,7 @@ function createStore(state = {}, listeners = [], connections = 0) {
 
     function trigger() {
         const [key, ...args] = Array.from(arguments);
-        let matchedListeners = filter(listeners, function(listener) {
+        let matchedListeners = listeners.filter(function(listener) {
             return listener.keys.indexOf(key) > -1 && listener.callback;
         });
         if (matchedListeners.length === 0) {
@@ -247,7 +246,7 @@ function createStore(state = {}, listeners = [], connections = 0) {
         let listener;
 
         if (callback) {
-            listener = find(listeners, function(listener) {
+            listener = listeners.find(function(listener) {
                 return listener.callback === callback;
             });
         }
@@ -276,7 +275,7 @@ function createStore(state = {}, listeners = [], connections = 0) {
     }
 
     function disconnectByKey(key) {
-        let listener = filter(listeners, function(listener) {
+        let listener = listeners.filter(function(listener) {
             return listener.keys.indexOf(key) > -1;
         });
         let listenerIndex = listeners.indexOf(listener);
