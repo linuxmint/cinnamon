@@ -10,7 +10,8 @@ from gi.repository import GLib
 try:
     logfile = os.path.join(GLib.get_user_state_dir(), 'cinnamon', 'harvester.log')
 except AttributeError:
-    logfile = '%s/.cinnamon/harvester.log' % os.path.expanduser("~")
+    logfile = f'{os.path.expanduser("~")}/.cinnamon/harvester.log'
+
 
 class ActivityLogger:
     def __init__(self):
@@ -27,5 +28,5 @@ class ActivityLogger:
             os.makedirs(directory)
         while True:
             entry = self.queue.get()
-            with open(logfile, "a") as f:
-                f.write("%s\n" % entry)
+            with open(logfile, "a", encoding='utf-8') as f:
+                f.write(f"{entry}\n")
