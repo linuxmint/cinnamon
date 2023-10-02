@@ -31,8 +31,8 @@ gnome.gtkdoc(
     gobject_typesfile: 'cinnamon.types',
     dependencies: [libcinnamon_deps, st_dep, cinnamon_dep],
     src_dir: [
-        join_paths(meson.source_root(), 'src'),
-        join_paths(meson.build_root(), 'src'),
+        join_paths(meson.project_source_root(), 'src'),
+        join_paths(meson.project_build_root(), 'src'),
     ],
     scan_args: '--rebuild-types',
     mkdb_args: ['--xml-mode', '--output-format=xml'],
