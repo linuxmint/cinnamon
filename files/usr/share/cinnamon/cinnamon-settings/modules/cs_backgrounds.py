@@ -536,7 +536,7 @@ class Module:
     def parse_xml_backgrounds_list(self, filename):
         try:
             locAttrName = "{http://www.w3.org/XML/1998/namespace}lang"
-            loc = self.splitLocaleCode(locale.getdefaultlocale()[0])
+            loc = self.splitLocaleCode(locale.getlocale()[0])
             res = []
             subLocaleFound = False
             f = open(filename)
