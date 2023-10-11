@@ -201,29 +201,48 @@ class Module:
                                     tooltip_text=_("No personal information included"),
                                     always_show_image=True,
                                     image=spinner)
-                button.connect("clicked", self.on_button_clicked, spinner)
+                button.connect("clicked", self.on_upload_button_clicked, spinner)
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
 
             if shutil.which("inxi"):
                 widget = SettingsWidget()
 
-                button = Gtk.Button(label=_("Copy to clipboard"))
-                button.connect("clicked", self.on_copy_clipboard_button_clicked)
+                spinner = Gtk.Spinner(visible=True)
+                button = Gtk.Button(label=_("Copy to clipboard"),
+                                    always_show_image=True,
+                                    image=spinner)
+                button.connect("clicked", self.on_copy_clipboard_button_clicked, spinner)
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
 
-    def on_copy_clipboard_button_clicked(self, button):
-        try:
-            inxiOutput = subprocess.run(['inxi', '-Fxxrzc0'], check=True, stdout=subprocess.PIPE).stdout
-            clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
-            clipboard.set_text(inxiOutput.decode("utf-8"), -1)
-        except Exception as e:
-            print("An error occurred while copying the system information to clipboard")
-            print(e)
+    def on_copy_clipboard_button_clicked(self, button, spinner):
+            spinner.start()
 
-    def on_button_clicked(self, button, spinner):
+            def finished_inxi(output):
+                spinner.stop()
 
+                if output is None:
+                    return
+
+                clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+                clipboard.set_text(output.decode("utf-8"), -1)
+
+            def _run_inxi(spinner):
+                inxiOutput = None
+
+                try:
+                    inxiOutput = subprocess.run(['inxi', '-Fxxrzc0'], check=True, stdout=subprocess.PIPE).stdout
+                except Exception as e:
+                    print("An error occurred while copying the system information to clipboard")
+                    print(e)
+
+                GLib.idle_add(finished_inxi, inxiOutput)
+
+            inxi_thread = threading.Thread(target=_run_inxi, args=(spinner,))
+            inxi_thread.start()
+
+    def on_upload_button_clicked(self, button, spinner):
         try:
             subproc = Gio.Subprocess.new(["upload-system-info"], Gio.SubprocessFlags.NONE)
             subproc.wait_check_async(None, self.on_subprocess_complete, spinner)
