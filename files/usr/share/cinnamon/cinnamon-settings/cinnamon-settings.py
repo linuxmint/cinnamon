@@ -237,7 +237,7 @@ class MainWindow(Gio.Application):
             use_height = sidePage.size + self.bar_heights + WIN_H_PADDING
         elif sidePage.size == -1:
             # Module requested the window to fit it (i.e. shrink the window if necessary)
-            use_height = total_height + self.bar_heights + WIN_H_PADDING
+            use_height = total_height + self.bar_heights
 
 
         self.window.resize(WIN_WIDTH, use_height)
