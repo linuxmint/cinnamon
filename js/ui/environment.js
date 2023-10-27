@@ -5,7 +5,7 @@ imports.gi.versions.Gio = '2.0';
 imports.gi.versions.Gdk = '3.0';
 imports.gi.versions.GdkPixbuf = '2.0';
 imports.gi.versions.Gtk = '3.0';
-imports.gi.versions.Soup = '2.4';
+imports.gi.versions.Soup = '3.0';
 
 const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
