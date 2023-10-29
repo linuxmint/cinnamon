@@ -567,9 +567,11 @@ get_app_for_window (CinnamonWindowTracker    *tracker,
   if (result != NULL)
     return result;
 
+#if 0
   result = get_app_from_window_pid (tracker, window);
   if (result != NULL)
     return result;
+#endif
 
   /* Now we check whether we have a match through startup-notification */
   startup_id = meta_window_get_startup_id (window);
