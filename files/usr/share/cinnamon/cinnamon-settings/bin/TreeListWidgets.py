@@ -150,13 +150,13 @@ class List(SettingsWidget):
             column = Gtk.TreeViewColumn(column_def['title'], renderer)
 
             if has_option_map:
-                def map_func(col, rend, model, row_iter, options):
-                    value = model[row_iter][i]
-                    for key, val in options.items():
+                def map_func(col, rend, model, row_iter, data):
+                    value = model[row_iter][data[1]]
+                    for key, val in data[0].items():
                         if val == value:
                             rend.set_property('text', key)
 
-                column.set_cell_data_func(renderer, map_func, column_def['options'])
+                column.set_cell_data_func(renderer, map_func, [column_def['options'],i])
             else:
                 column.add_attribute(renderer, prop_name, i)
 
