@@ -935,6 +935,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
         this.settings.bind("showtrack", "showtrack", this.on_settings_changed);
         this.settings.bind("middleClickAction", "middleClickAction");
+        this.settings.bind("middleShiftClickAction", "middleShiftClickAction");
         this.settings.bind("horizontalScroll", "horizontalScroll")
         this.settings.bind("showalbum", "showalbum", this.on_settings_changed);
         this.settings.bind("truncatetext", "truncatetext", this.on_settings_changed);
@@ -1215,19 +1216,34 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
     _onButtonPressEvent (actor, event) {
         let buttonId = event.get_button();
+        let modifiers = Cinnamon.get_event_state(event);
+        let shiftPressed = (modifiers & Clutter.ModifierType.SHIFT_MASK);
 
         //mute or play / pause players on middle click
         if (buttonId === 2) {
-            if (this.middleClickAction === "mute") {
-                if (this._output.is_muted === this._input.is_muted)
+            if (shiftPressed) {
+                if (this.middleShiftClickAction === "mute") {
+                    if (this._output.is_muted === this._input.is_muted)
+                        this._toggle_in_mute();
+                    this._toggle_out_mute();
+                } else if (this.middleShiftClickAction === "out_mute")
+                    this._toggle_out_mute();
+                else if (this.middleShiftClickAction === "in_mute")
                     this._toggle_in_mute();
-                this._toggle_out_mute();
-            } else if (this.middleClickAction === "out_mute")
-                this._toggle_out_mute();
-            else if (this.middleClickAction === "in_mute")
-                this._toggle_in_mute();
-            else if (this.middleClickAction === "player")
-                this._players[this._activePlayer]._mediaServerPlayer.PlayPauseRemote();
+                else if (this.middleShiftClickAction === "player")
+                    this._players[this._activePlayer]._mediaServerPlayer.PlayPauseRemote();
+            } else {
+                if (this.middleClickAction === "mute") {
+                    if (this._output.is_muted === this._input.is_muted)
+                        this._toggle_in_mute();
+                    this._toggle_out_mute();
+                } else if (this.middleClickAction === "out_mute")
+                    this._toggle_out_mute();
+                else if (this.middleClickAction === "in_mute")
+                    this._toggle_in_mute();
+                else if (this.middleClickAction === "player")
+                    this._players[this._activePlayer]._mediaServerPlayer.PlayPauseRemote();
+            }
         } else if (buttonId === 8) { // previous and next track on mouse buttons 4 and 5 (8 and 9 by X11 numbering)
             this._players[this._activePlayer]._mediaServerPlayer.PreviousRemote();
         } else if (buttonId === 9) {
