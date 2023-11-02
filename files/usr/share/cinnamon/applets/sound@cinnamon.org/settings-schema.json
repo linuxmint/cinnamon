@@ -20,6 +20,12 @@
         "default": "<Shift><Super>s",
         "tooltip" : "Set keybinding(s) to show the sound applet menu."
     },
+    "alwaysShowMuteInput": {
+        "type": "switch",
+        "description": "Always show input switch",
+        "tooltip": "Always show the 'Mute input' switch in the context menu.",
+        "default": false
+    },
     "_knownPlayers": {
         "type": "generic",
         "default": ["banshee", "vlc", "rhythmbox"]
