@@ -390,7 +390,7 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
                 Util.spawnCommandLine("/usr/bin/cinnamon-remove-application '" + this._appButton.app.get_app_info().get_filename() + "'");
                 break;
             case "app_details":
-                Util.spawnCommandLine("cinnamon-menu-details" + this._appButton.app.get_id());
+                Util.spawnCommandLine("cinnamon-desktop-editor -mlauncher -o" + this._appButton.app.get_app_info().get_filename());
                 break;
             case "run_with_nvidia_gpu":
                 Util.spawnCommandLine("optirun gtk-launch " + this._appButton.app.get_id());
@@ -476,7 +476,7 @@ class GenericApplicationButton extends SimpleMenuItem {
             menu.addMenuItem(menuItem);
         }
 
-        menuItem = new ApplicationContextMenuItem(this, _("Details"), "app_details", "details");
+        menuItem = new ApplicationContextMenuItem(this, _("Details"), "app_details", "dialog-information-symbolic");
         menu.addMenuItem(menuItem);
         
         let actions = this.app.get_app_info().list_actions();
