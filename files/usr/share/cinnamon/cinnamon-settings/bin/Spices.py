@@ -680,7 +680,9 @@ class Spice_Harvester(GObject.Object):
 
     def _install_finished(self, job):
         uuid = job['uuid']
-        if self.get_enabled(uuid):
+        if self.get_enabled(uuid) and self._proxy:
+            self._proxy.ReloadXlet('(ss)', uuid, self.collection_type.upper())
+        else:
             self.send_proxy_signal('ReloadXlet', '(ss)', uuid, self.collection_type.upper())
 
     def uninstall(self, uuid):
