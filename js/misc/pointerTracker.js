@@ -1,8 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
-const Keybindings = imports.ui.keybindings;
 const Main = imports.ui.main;
+const Clutter = imports.gi.Clutter;
 
 function PointerTracker(){
     this._init();
@@ -10,27 +9,27 @@ function PointerTracker(){
 
 PointerTracker.prototype = {
     _init: function() {
-        let display = Gdk.Display.get_default();
-        let deviceManager = display.get_device_manager();
-        let pointer = deviceManager.get_client_pointer();
-        let [lastScreen, lastPointerX, lastPointerY] = pointer.get_position();
+        let [lastPointerX, lastPointerY] = global.get_pointer();
 
         this.hasMoved = function() {
-            let [screen, pointerX, pointerY] = pointer.get_position();
+            let [pointerX, pointerY] = global.get_pointer();
             try {
-                return !(screen == lastScreen && pointerX == lastPointerX && pointerY == lastPointerY);
+                return !(pointerX == lastPointerX && pointerY == lastPointerY);
             } finally {
-                [lastScreen, lastPointerX, lastPointerY] = [screen, pointerX, pointerY];
+                [lastPointerX, lastPointerY] = [pointerX, pointerY];
             }
         };
         this.getPosition = function() {
-            [lastScreen, lastPointerX, lastPointerY] = pointer.get_position();
-            return [lastPointerX, lastPointerY, lastScreen];
+            [lastPointerX, lastPointerY] = global.get_pointer();
+            return [lastPointerX, lastPointerY];
         };
-        this.setPosition = function(x, y, screenOpt) {
-            let [screen, pointerX, pointerY] = pointer.get_position();
-            pointer.warp(screenOpt || screen, Math.round(x), Math.round(y));
-            [lastScreen, lastPointerX, lastPointerY] = pointer.get_position();
+        this.setPosition = function(x, y) {
+            let [pointerX, pointerY] = global.get_pointer();
+
+            const seat = Clutter.get_default_backend().get_default_seat();
+            seat.warp_pointer(Math.round(x), Math.round(y));
+
+            [lastPointerX, lastPointerY] = [pointerX, pointerY];
         };
     }
 };

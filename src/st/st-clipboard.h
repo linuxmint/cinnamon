@@ -25,34 +25,14 @@
 #define _ST_CLIPBOARD_H
 
 #include <glib-object.h>
+#include <meta/meta-selection.h>
 
 G_BEGIN_DECLS
 
 #define ST_TYPE_CLIPBOARD st_clipboard_get_type()
-
-#define ST_CLIPBOARD(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  ST_TYPE_CLIPBOARD, StClipboard))
-
-#define ST_CLIPBOARD_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  ST_TYPE_CLIPBOARD, StClipboardClass))
-
-#define ST_IS_CLIPBOARD(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  ST_TYPE_CLIPBOARD))
-
-#define ST_IS_CLIPBOARD_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  ST_TYPE_CLIPBOARD))
-
-#define ST_CLIPBOARD_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  ST_TYPE_CLIPBOARD, StClipboardClass))
+G_DECLARE_FINAL_TYPE (StClipboard, st_clipboard, ST, CLIPBOARD, GObject)
 
 typedef struct _StClipboard StClipboard;
-typedef struct _StClipboardClass StClipboardClass;
-typedef struct _StClipboardPrivate StClipboardPrivate;
 
 /**
  * StClipboard:
@@ -64,12 +44,6 @@ struct _StClipboard
 {
   /*< private >*/
   GObject parent;
-  StClipboardPrivate *priv;
-};
-
-struct _StClipboardClass
-{
-  GObjectClass parent_class;
 };
 
 typedef enum {
@@ -89,8 +63,6 @@ typedef void (*StClipboardCallbackFunc) (StClipboard *clipboard,
                                          const gchar *text,
                                          gpointer     user_data);
 
-GType st_clipboard_get_type (void);
-
 StClipboard* st_clipboard_get_default (void);
 
 void st_clipboard_get_text (StClipboard             *clipboard,
@@ -100,6 +72,13 @@ void st_clipboard_get_text (StClipboard             *clipboard,
 void st_clipboard_set_text (StClipboard             *clipboard,
                             StClipboardType          type,
                             const gchar             *text);
+
+void st_clipboard_set_content (StClipboard          *clipboard,
+                               StClipboardType       type,
+                               const gchar          *mimetype,
+                               GBytes               *bytes);
+
+void st_clipboard_set_selection (MetaSelection *selection);
 
 G_END_DECLS
 
