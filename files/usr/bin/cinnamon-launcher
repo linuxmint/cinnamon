@@ -157,5 +157,11 @@ class Launcher:
             Gtk.main_quit()
 
 if __name__ == "__main__":
+    try:
+        if os.environ["XDG_SESSION_TYPE"] == "wayland":
+            os.execvp("cinnamon", ["cinnamon", "--replace"])
+    except KeyError as e:
+        print("XDG_SESSION_TYPE not defined in cinnamon-launcher. Assuming x11")
+
     setproctitle("cinnamon-launcher")
     Launcher()
