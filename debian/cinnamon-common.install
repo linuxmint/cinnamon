@@ -7,3 +7,4 @@ usr/share/glib-2.0
 usr/share/icons
 usr/share/polkit-1
 usr/share/xsessions
+usr/share/wayland-sessions

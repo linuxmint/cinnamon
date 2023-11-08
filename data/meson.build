@@ -38,6 +38,7 @@ foreach desktop_file : desktop_files
     )
 endforeach
 
+subdir('wayland_sessions')
 subdir('xsessions')
 subdir('services')
 
