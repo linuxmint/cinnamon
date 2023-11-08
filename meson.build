@@ -28,11 +28,9 @@ clutter = dependency('muffin-clutter-0')
 cmenu = dependency('libcinnamon-menu-3.0', version: '>= 4.8.0')
 cogl = dependency('muffin-cogl-0')
 cogl_path = dependency('muffin-cogl-path-0')
-dbus = dependency('dbus-1')
 gdkx11 = dependency('gdk-x11-3.0')
 gi = dependency('gobject-introspection-1.0', version: '>= 0.9.2')
 polkit = dependency('polkit-agent-1', version: '>= 0.100')
-xfixes = dependency('xfixes')
 atk = dependency('atk-bridge-2.0')
 gio = dependency('gio-2.0', version: '>= 2.36.0')
 gio_unix = dependency('gio-unix-2.0')
@@ -72,11 +70,6 @@ python = find_program('python3')
 cinnamon_conf = configuration_data()
 cinnamon_conf.set_quoted('VERSION', version)
 cinnamon_conf.set_quoted('GETTEXT_PACKAGE', meson.project_name().to_lower())
-
-have_xfixes = cc.has_function('XFixesCreatePointerBarrier', dependencies: xfixes)
-if have_xfixes
-    cinnamon_conf.set10('HAVE_XFIXESCREATEPOINTERBARRIER', true)
-endif
 
 have_mallinfo = cc.has_function('mallinfo', prefix: '#include <malloc.h>')
 if have_mallinfo

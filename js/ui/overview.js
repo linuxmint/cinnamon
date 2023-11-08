@@ -7,7 +7,6 @@ const Signals = imports.signals;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
-const Gdk = imports.gi.Gdk;
 
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;

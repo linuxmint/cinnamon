@@ -91,7 +91,6 @@ libcinnamon_deps = [
     cmenu,
     cogl,
     cogl_path,
-    dbus,
     gdkx11,
     gi,
     gio,
@@ -103,7 +102,6 @@ libcinnamon_deps = [
     polkit,
     st_dep,
     xapp,
-    xfixes,
     xml,
 ]
 

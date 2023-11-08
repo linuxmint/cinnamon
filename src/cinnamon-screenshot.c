@@ -1,7 +1,5 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 
-#include <X11/extensions/Xfixes.h>
-#include <clutter/x11/clutter-x11.h>
 #include <clutter/clutter.h>
 #include <cogl/cogl.h>
 #include <meta/display.h>

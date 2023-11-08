@@ -30,7 +30,6 @@ Build-Depends:
  librsvg2-dev,
  libstartup-notification0-dev (>= 0.11),
  libxapp-dev (>= 2.6.0),
- libxfixes-dev (>= 1:5.0),
  meson,
  python3:any,
 Standards-Version: 3.9.5
