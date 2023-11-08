@@ -352,6 +352,7 @@ function init() {
     Date.prototype.toLocaleFormat = function(format) {
         return Cinnamon.util_format_date(format, this.getTime());
     };
+    Gtk.IconTheme.get_default = () => St.TextureCache.get_default().get_icon_theme();
 
     let slowdownEnv = GLib.getenv('CINNAMON_SLOWDOWN_FACTOR');
     if (slowdownEnv) {
