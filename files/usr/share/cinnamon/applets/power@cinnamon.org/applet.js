@@ -358,16 +358,26 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
 
-        Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
-            this._proxy = proxy;
+        this.csd_power_watch_id = Gio.bus_watch_name(Gio.BusType.SESSION, "org.cinnamon.SettingsDaemon.Power", 0, (c, name) => {
+            Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
+                Gio.bus_unwatch_name(this.csd_power_watch_id);
+                this.csd_power_watch_id = 0;
 
-            this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
-            global.settings.connect('changed::device-aliases', Lang.bind(this, this._on_device_aliases_changed));
-            this.settings.bind("labelinfo", "labelinfo", this._devicesChanged);
-            this.settings.bind("showmulti", "showmulti", this._devicesChanged);
+                if (error) {
+                    global.logError("Could not connect to csd-power", error.message);
+                    return;
+                }
 
-            this._devicesChanged();
-        }));
+                this._proxy = proxy;
+
+                this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
+                global.settings.connect('changed::device-aliases', Lang.bind(this, this._on_device_aliases_changed));
+                this.settings.bind("labelinfo", "labelinfo", this._devicesChanged);
+                this.settings.bind("showmulti", "showmulti", this._devicesChanged);
+
+                this._devicesChanged();
+            }));
+        }, null);
 
         this.set_show_label_in_vertical_panels(false);
     }
@@ -581,7 +591,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                     }
                 }
                 else {
-                    global.log(error);
+                    global.logError(error);
                 }
 
 
