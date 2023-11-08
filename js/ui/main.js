@@ -345,6 +345,7 @@ function start() {
     settingsManager = new Settings.SettingsManager();
 
     backgroundManager = new BackgroundManager.BackgroundManager();
+    backgroundManager.hideBackground();
 
     slideshowManager = new SlideshowManager.SlideshowManager();
 
@@ -356,7 +357,6 @@ function start() {
     uiGroup = new Layout.UiActor({ name: 'uiGroup' });
     uiGroup.set_flags(Clutter.ActorFlags.NO_LAYOUT);
 
-    global.background_actor.hide();
     global.reparentActor(global.window_group, uiGroup);
     global.reparentActor(global.overlay_group, uiGroup);
 
@@ -386,6 +386,7 @@ function start() {
                                 !software_rendering;
 
     if (do_startup_animation) {
+        backgroundManager.showBackground();
         layoutManager._prepareStartupAnimation();
     }
 
@@ -495,7 +496,7 @@ function start() {
                 return GLib.SOURCE_REMOVE;
             });
         } else {
-            global.background_actor.show();
+            backgroundManager.showBackground();
             setRunState(RunState.RUNNING);
         }
 

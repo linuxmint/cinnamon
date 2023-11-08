@@ -250,7 +250,6 @@ LayoutManager.prototype = {
         this.keyboardBox.hide();
 
         global.stage.hide_cursor();
-        global.background_actor.show();
 
         this.startupAnimation = new StartupAnimation.Animation(this.primaryMonitor,
                                                                ()=>this._startupAnimationComplete());

@@ -2,6 +2,7 @@
 
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
+const Meta = imports.gi.Meta;
 
 const LOGGING = false;
 
@@ -31,6 +32,24 @@ var BackgroundManager = class {
 
         this.picture_opacity = this._gnomeSettings.get_int("picture-opacity");
         this._gnomeSettings.connect("changed::picture-opacity", Lang.bind(this, this._onPictureOpacityChanged));
+    }
+
+    showBackground() {
+        if (Meta.is_wayland_compositor()) {
+            global.bottom_window_group.show();
+        }
+        else {
+            global.background_actor.show();
+        }
+    }
+
+    hideBackground() {
+        if (Meta.is_wayland_compositor()) {
+            global.bottom_window_group.hide();
+        }
+        else {
+            global.background_actor.hide();
+        }
     }
 
     _onColorShadingTypeChanged(schema, key) {
