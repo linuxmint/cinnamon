@@ -306,7 +306,7 @@ class Module:
             settings.add_row(widget)
 
             label_widget = LabelRow(_(
-"""Changes will take effect the next time you log in and may not affect all applications."""))
+"""Changes may not apply to already-running programs, and may not affect all applications."""))
             settings.add_row(label_widget)
 
             self.builder = self.sidePage.builder
