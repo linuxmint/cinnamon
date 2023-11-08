@@ -1539,6 +1539,10 @@ function getTabList(workspaceOpt) {
 }
 
 function restartCinnamon(showOsd = false) {
+    if (Meta.is_wayland_compositor()) {
+        global.logWarning("Cinnamon restart not supported with Wayland");
+        return;
+    }
     global.display.connect("show-restart-message", () => {
         if (showOsd) {
             let dialog = new ModalDialog.InfoOSD(_("Restarting Cinnamon..."));

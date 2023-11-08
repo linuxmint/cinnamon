@@ -69,6 +69,11 @@ G_DEFINE_TYPE (CinnamonPlugin, cinnamon_plugin, META_TYPE_PLUGIN)
 static gboolean
 cinnamon_plugin_has_swap_event (CinnamonPlugin *cinnamon_plugin)
 {
+  if (meta_is_wayland_compositor ())
+  {
+    return FALSE;
+  }
+
   CoglDisplay *cogl_display =
     cogl_context_get_display (cinnamon_plugin->cogl_context);
   CoglRenderer *renderer = cogl_display_get_renderer (cogl_display);

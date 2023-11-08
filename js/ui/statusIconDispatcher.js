@@ -3,6 +3,7 @@
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
+const Meta = imports.gi.Meta;
 
 const Util = imports.misc.util;
 
@@ -28,6 +29,10 @@ function StatusIconDispatcher() {
 
 StatusIconDispatcher.prototype = {
     _init: function() {
+        if (Meta.is_wayland_compositor()) {
+            return;
+        }
+
         this._traymanager = new Cinnamon.TrayManager();
         this._traymanager.connect('tray-icon-added', Lang.bind(this, this._onTrayIconAdded));
         this._traymanager.connect('tray-icon-removed', Lang.bind(this, this._onTrayIconRemoved));

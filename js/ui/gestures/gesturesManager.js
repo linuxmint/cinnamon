@@ -1,6 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const { Gio, GObject, Cinnamon } = imports.gi;
+const { Gio, GObject, Cinnamon, Meta } = imports.gi;
 const Util = imports.misc.util;
 const SignalManager = imports.misc.signalManager;
 const ScreenSaver = imports.misc.screenSaver;
@@ -100,6 +100,11 @@ var GestureDefinition = class {
 
 var GesturesManager = class {
     constructor(wm) {
+        if (Meta.is_wayland_compositor()) {
+            global.log("Gestures disabled on Wayland");
+            return;
+        }
+
         this.signalManager = new SignalManager.SignalManager(null);
         this.settings = new Gio.Settings({ schema_id: SCHEMA })
         this.signalManager.connect(this.settings, "changed", this.settings_or_devices_changed, this);

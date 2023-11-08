@@ -19,6 +19,7 @@
 #include <meta/main.h>
 #include <meta/meta-plugin.h>
 #include <meta/prefs.h>
+#include <meta/util.h>
 
 #include <atk-bridge.h>
 #include "cinnamon-global.h"
@@ -367,8 +368,10 @@ main (int argc, char **argv)
 
   g_setenv ("CINNAMON_VERSION", VERSION, TRUE);
 
-
-  center_pointer_on_screen();
+  if (!meta_is_wayland_compositor ())
+    {
+      center_pointer_on_screen ();
+    }
 
   cinnamon_dbus_init (meta_get_replace_current_wm (),
                       &session_running);
