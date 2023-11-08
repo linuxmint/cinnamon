@@ -1059,6 +1059,13 @@ StScrollBar StButton#vhandle:hover {
     font-size: 3em;
 }
 
+.monitor-label {
+    border-radius: 0;
+    color: #000000;
+    padding: 10px;
+    text-align: center;
+}
+
 /* ===================================================================
  * Run dialog
  * ===================================================================*/

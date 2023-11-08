@@ -25,6 +25,7 @@
  * @statusIconDispatcher (StatusIconDispatcher.StatusIconDispatcher): The status icon dispatcher
  * @virtualKeyboard (VirtualKeyboard.Keyboard): The keyboard object
  * @layoutManager (Layout.LayoutManager): The layout manager.
+ * @monitorLabeler (MonitorLabeler.MonitorLabeler): Adds labels to each monitor when configuring displays.
  * \
  * All actors that are part of the Cinnamon UI ar handled by the layout
  * manager, which will determine when to show and hide the actors etc.
@@ -124,6 +125,7 @@ const {installPolyfills} = imports.ui.overrides;
 const InputMethod = imports.misc.inputMethod;
 const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
+const {MonitorLabeler} = imports.ui.monitorLabeler;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -160,6 +162,7 @@ var xdndHandler = null;
 var statusIconDispatcher = null;
 var virtualKeyboard = null;
 var layoutManager = null;
+var monitorLabeler = null;
 var themeManager = null;
 var keybindingManager = null;
 var _errorLogStack = [];
@@ -391,6 +394,7 @@ function start() {
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
     pointerSwitcher = new PointerTracker.PointerSwitcher();
+    monitorLabeler = new MonitorLabeler();
 
     xdndHandler = new XdndHandler.XdndHandler();
     osdWindowManager = new OsdWindow.OsdWindowManager();
