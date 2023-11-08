@@ -7,6 +7,7 @@ const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Signals = imports.signals;
 const St = imports.gi.St;
+const Meta = imports.gi.Meta;
 
 const AppletManager = imports.ui.appletManager;
 const Config = imports.misc.config;
@@ -21,7 +22,8 @@ var State = {
     INITIALIZING: 0,
     LOADED: 1,
     ERROR: 2,
-    OUT_OF_DATE: 3
+    OUT_OF_DATE: 3,
+    X11_ONLY: 4
 };
 
 // Xlets using imports.gi.NMClient. This should be removed in Cinnamon 4.2+,
@@ -34,6 +36,11 @@ var knownCinnamon4Conflicts = [
     // Desklets
     'netusage@30yavash.com'
 ];
+
+var x11Only = [
+        "keyboard@cinnamon.org",
+        "systray@cinnamon.org"
+    ]
 
 // macro for creating extension types
 function _createExtensionType(name, folder, manager, overrides){
@@ -133,20 +140,24 @@ function formatError(uuid, message) {
 function logError(message, uuid, error, state) {
     let errorMessage = formatError(uuid, message);
     if (!error) {
-        error = new Error(errorMessage);
+        error = new Error(errorMessage, { cause: state });
     } else {
         error.message = `\n${formatError(uuid, error.message)}`;
         error.message += `\n${errorMessage}`;
     }
 
-    error.stack = error.stack.split('\n')
-        .filter(function(line) {
-            return !line.match(/<Promise>|wrapPromise/);
-        })
-        .join('\n');
+    if (state !== State.X11_ONLY) {
+        error.stack = error.stack.split('\n')
+            .filter(function(line) {
+                return !line.match(/<Promise>|wrapPromise/);
+            })
+            .join('\n');
 
-    global.logError(error);
-
+        global.logError(error);
+    } else {
+        global.logWarning(error.message);
+    }
+    
     // An error during initialization leads to unloading the extension again.
     let extension = getExtension(uuid);
     if (extension) {
@@ -285,7 +296,10 @@ Extension.prototype = {
              //   just don't show up if their program isn't installed, but we don't
              //   remove them or anything)
             Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
-            Main.xlet_startup_error = true;
+
+            if (e.cause == null || e.cause !== State.X11_ONLY) {
+                Main.xlet_startup_error = true;
+            }
             forgetExtension(uuid, type);
             if (e._alreadyLogged) {
                 return;
@@ -305,6 +319,10 @@ Extension.prototype = {
     },
     validateMetaData: function() {
         // Some properties are required to run
+        if (x11Only.includes(this.meta.uuid) && Meta.is_wayland_compositor()) {
+            throw logError("Extension not compatible with Wayland", this.uuid, null, State.X11_ONLY);
+        }
+
         this.checkProperties(Type[this.upperType].requiredProperties, true);
 
         // Others are nice to have
@@ -511,6 +529,8 @@ function getMetaStateString(state) {
             return _("Error");
         case State.OUT_OF_DATE:
             return _("Out of date");
+        case State.X11_ONLY:
+            return _("Not compatible with Wayland");
     }
     return 'Unknown'; // Not translated, shouldn't appear
 }
