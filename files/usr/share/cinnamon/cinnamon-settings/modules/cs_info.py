@@ -142,6 +142,15 @@ def createSystemInfos():
     for card in cards:
         infos.append((_("Graphics Card"), cards[card]))
 
+    display_server_name = _("X11")
+    try:
+        session = os.environ["XDG_SESSION_TYPE"]
+        if session == "wayland":
+            display_server_name = _("Wayland")
+    except KeyError:
+        pass
+    infos.append((_("Display Server"), display_server_name))
+
     return infos
 
 

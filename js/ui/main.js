@@ -278,7 +278,7 @@ function start() {
 
     let cinnamonStartTime = new Date().getTime();
 
-    log("About to start Cinnamon");
+    log(`About to start Cinnamon (${Meta.is_wayland_compositor() ? "Wayland" : "X11"} backend)`);
 
     let backend = Meta.get_backend();
 
