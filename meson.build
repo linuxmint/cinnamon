@@ -158,7 +158,7 @@ else
     session_conf.set('REQUIRED', '')
 endif
 
-foreach file : ['cinnamon.session', 'cinnamon2d.session']
+foreach file : ['cinnamon.session', 'cinnamon2d.session', 'cinnamon-wayland.session']
     configure_file(
         input: file + '.in',
         output: file,

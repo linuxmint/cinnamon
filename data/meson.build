@@ -18,6 +18,7 @@ desktop_conf.set('VERSION', meson.project_version())
 
 desktop_files = [
   'cinnamon.desktop',
+  'cinnamon-wayland.desktop',
   'cinnamon2d.desktop',
 ]
 
