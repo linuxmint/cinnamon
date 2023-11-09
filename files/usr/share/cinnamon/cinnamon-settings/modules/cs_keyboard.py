@@ -9,6 +9,7 @@ from gi.repository import Gio, Gtk
 
 from KeybindingWidgets import CellRendererKeybinding
 from SettingsWidgets import SidePage
+from bin import util
 from xapp.GSettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
@@ -429,18 +430,20 @@ class Module:
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             vbox.set_border_width(6)
             vbox.set_spacing(6)
-            self.sidePage.stack.add_titled(vbox, "layouts", _("Layouts"))
-            try:
-                widget = self.sidePage.content_box.c_manager.get_c_widget("region")
-            except:
-                widget = None
 
-            if widget is not None:
-                cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-                cheat_box.pack_start(widget, True, True, 2)
-                cheat_box.set_vexpand(False)
-                widget.show()
-                vbox.pack_start(cheat_box, True, True, 0)
+            if util.get_session_type() != "wayland":
+                self.sidePage.stack.add_titled(vbox, "layouts", _("Layouts"))
+                try:
+                    widget = self.sidePage.content_box.c_manager.get_c_widget("region")
+                except:
+                    widget = None
+
+                if widget is not None:
+                    cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+                    cheat_box.pack_start(widget, True, True, 2)
+                    cheat_box.set_vexpand(False)
+                    widget.show()
+                    vbox.pack_start(cheat_box, True, True, 0)
 
             self.kb_search_entry.grab_focus()
 

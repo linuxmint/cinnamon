@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+
+import os
+
 import gi
 gi.require_version('GSound', '1.0')
 from gi.repository import GSound
@@ -36,3 +39,11 @@ def play_sound_file(path, channel = None) -> None:
     if channel is not None:
         params[GSound.ATTR_CANBERRA_FORCE_CHANNEL] = channel
     _get_gsound_context().play_simple(params)
+
+def get_session_type():
+    try:
+        return os.environ["XDG_SESSION_TYPE"]
+    except KeyError:
+        pass
+
+    return None

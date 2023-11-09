@@ -12,6 +12,7 @@ from json import loads
 from gi.repository import GdkPixbuf
 
 from SettingsWidgets import SidePage
+from bin import util
 from xapp.GSettingsWidgets import *
 
 def killProcess(process):
@@ -143,12 +144,10 @@ def createSystemInfos():
         infos.append((_("Graphics Card"), cards[card]))
 
     display_server_name = _("X11")
-    try:
-        session = os.environ["XDG_SESSION_TYPE"]
-        if session == "wayland":
-            display_server_name = _("Wayland")
-    except KeyError:
-        pass
+
+    if util.get_session_type() == "wayland":
+        display_server_name = _("Wayland")
+
     infos.append((_("Display Server"), display_server_name))
 
     return infos
