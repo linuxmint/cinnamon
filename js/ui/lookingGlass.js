@@ -122,8 +122,12 @@ function getObjKeysInfo(obj) {
 
     return Array.from(keys).map((k) => {
         if (!KEY_BLACKLIST.includes(k)) {
-            let [t, v] = getObjInfo(obj[k]);
-            return { name: k.toString(), type: t, value: v, shortValue: "" };
+            try {
+                let [t, v] = getObjInfo(obj[k]);
+                return { name: k.toString(), type: t, value: v, shortValue: "" };
+            } catch (e) {
+                return { name: k.toString(), type: '[inacessible]', value: '[inacessible]', shortValue: "" }; 
+            }
         } else {
             return { name: k.toString(), type: '[inacessible]', value: '[inacessible]', shortValue: "" }; 
         }

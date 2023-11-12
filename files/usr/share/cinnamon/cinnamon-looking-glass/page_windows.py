@@ -16,9 +16,8 @@ class ModulePage(pageutils.BaseListView):
         self.create_text_column(2, "WMClass")
         self.create_text_column(3, "Application")
 
-        self.get_updates()
-        self.parent.lg_proxy.connect("WindowListUpdate", self.get_updates)
-        self.parent.lg_proxy.add_status_change_callback(self.on_status_change)
+        self.parent.lg_proxy.connect("signal::window-list-update", self.get_updates)
+        self.parent.lg_proxy.connect("status-changed", self.on_status_change)
 
         self.tree_view.connect("row-activated", self.on_row_activated)
         self.tree_view.connect("button-press-event", self.on_button_press)
@@ -83,11 +82,11 @@ class ModulePage(pageutils.BaseListView):
                 self.popup.popup(None, None, None, None, event.button, event.time)
             return True
 
-    def on_status_change(self, online):
+    def on_status_change(self, proxy, online):
         if online:
             self.get_updates()
 
-    def get_updates(self):
+    def get_updates(self, proxy=None):
         self.store.clear()
         success, data = self.parent.lg_proxy.GetLatestWindowList()
         if success:
