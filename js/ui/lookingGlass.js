@@ -443,7 +443,7 @@ class Inspector {
 Signals.addSignalMethods(Inspector.prototype);
 
 
-const dbusIFace =
+const melangeIFace =
     '<node> \
         <interface name="org.Cinnamon.Melange"> \
             <method name="show" /> \
@@ -451,7 +451,6 @@ const dbusIFace =
             <method name="getVisible"> \
                 <arg type="b" direction="out" name="visible"/> \
             </method> \
-            <property name="_open" type="b" access="read" /> \
         </interface> \
      </node>';
 
@@ -506,8 +505,6 @@ const lgIFace =
         </interface> \
     </node>';
 
-const proxy = Gio.DBusProxy.makeProxyWrapper(dbusIFace);
-
 var Melange = class {
     constructor() {
         this.proxy = null;
@@ -527,6 +524,7 @@ var Melange = class {
         this._dbusImpl.export(Gio.DBus.session, '/org/Cinnamon/LookingGlass');
 
         Gio.DBus.session.own_name('org.Cinnamon.LookingGlass', Gio.BusNameOwnerFlags.REPLACE, null, null);
+        this.ensureProxy();
     }
 
     _update_keybinding() {
@@ -535,18 +533,35 @@ var Melange = class {
     }
 
     ensureProxy() {
-        if (!this.proxy)
-            this.proxy = new proxy(Gio.DBus.session, 'org.Cinnamon.Melange', '/org/Cinnamon/Melange');
+        let nodeInfo = Gio.DBusNodeInfo.new_for_xml(melangeIFace);
+
+        Gio.DBusProxy.new(
+              Gio.DBus.session,
+              Gio.DBusProxyFlags.DO_NOT_AUTO_START_AT_CONSTRUCTION,
+              nodeInfo.lookup_interface("org.Cinnamon.Melange"),
+              "org.Cinnamon.Melange",
+              "/org/Cinnamon/Melange",
+              "org.Cinnamon.Melange",
+              null,
+              this._onProxyReady.bind(this)
+        );
+    }
+
+    _onProxyReady(object, res) {
+        try {
+            this.proxy = Gio.DBusProxy.new_finish(res);
+        } catch (e) {
+            log('error creating org.Cinnamon.Melange proxy: %s'.format(e.message));
+            return;
+        }
     }
 
     open() {
-        this.ensureProxy()
         this.proxy.showRemote();
         this.updateVisible();
     }
 
     close() {
-        this.ensureProxy()
         this.proxy.hideRemote();
         this.updateVisible();
     }
