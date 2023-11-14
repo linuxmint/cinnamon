@@ -68,7 +68,7 @@ Depends:
  gir1.2-nma-1.0 [linux-any],
  gir1.2-notify-0.7,
  gir1.2-polkit-1.0,
- gir1.2-soup-2.4,
+ gir1.2-soup-3.0,
  gir1.2-upowerglib-1.0,
  gir1.2-xapp-1.0 (>= 1.9.0),
  gkbd-capplet,
