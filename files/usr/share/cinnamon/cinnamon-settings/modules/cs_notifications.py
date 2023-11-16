@@ -72,7 +72,7 @@ class Module:
         settings.add_reveal_row(combo, "org.cinnamon.desktop.notifications", "display-notifications")
 
         spin = GSettingsSpinButton(_("Fixed screen number"), "org.cinnamon.desktop.notifications", "notification-fixed-screen", None, 1, 13, 1)
-        settings.add_reveal_row(spin, "org.cinnamon.desktop.notifications", "notification-fixed-screen")
+        settings.add_reveal_row(spin)
         spin.revealer.settings = Gio.Settings("org.cinnamon.desktop.notifications")
         spin.revealer.settings.bind_with_mapping("notification-screen-display", spin.revealer, "reveal-child", Gio.SettingsBindFlags.GET, lambda option: option == "fixed-screen", None)
 
