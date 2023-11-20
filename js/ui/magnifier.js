@@ -64,7 +64,7 @@ const ZOOM_IN_KEY               = "magnifier-zoom-in"
 const ZOOM_OUT_KEY              = "magnifier-zoom-out"
 
 let magDBusService = null;
-let magInputHandler = null;
+var magInputHandler = null;
 
 var MouseSpriteContent = GObject.registerClass({
     Implements: [Clutter.Content],
