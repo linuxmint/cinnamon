@@ -48,9 +48,7 @@ var make_action = (settings, definition, device) => {
     case "MEDIA_NEXT":
     case "MEDIA_PREVIOUS":
         return new MediaAction(definition, device, threshold);
-    }
-
-    if (definition.action.startsWith("EXEC:")) {
+    case "EXEC":
         return new ExecAction(definition, device, threshold);
     }
 }
@@ -75,12 +73,20 @@ var BaseAction = class {
     }
 
     begin(direction, percentage, time) {
+        if (this.definition.phase === "start") {
+            this.do_action(direction, percentage, time);
+        };
     }
 
     update(direction, percentage, time) {
     }
 
     end(direction, percentage, time) {
+        if (this.definition.phase !== "end" || percentage < this.threshold) {
+            return;
+        }
+
+        this.do_action(direction, percentage, time);
     }
 }
 
@@ -89,11 +95,7 @@ var WorkspaceSwitchAction = class extends BaseAction {
         super(definition, device, threshold);
     }
 
-    end(direction, percentage, time, met_threshold) {
-        if (percentage < this.threshold) {
-            return;
-        }
-
+    do_action(direction, percentage, time) {
         const current = global.workspace_manager.get_active_workspace();
 
         let motion_dir = Meta.MotionDirection.RIGHT;
@@ -130,11 +132,7 @@ var WindowOpAction = class extends BaseAction {
         super(definition, device, threshold);
     }
 
-    end(direction, percentage, time) {
-        if (percentage < this.threshold) {
-            return;
-        }
-
+    do_action(direction, percentage, time) {
         const window = global.display.get_focus_window();
 
         if (window == null) {
@@ -259,11 +257,7 @@ var GlobalDesktopAction = class extends BaseAction {
         return false;
     }
 
-    end(direction, percentage, time) {
-        if (percentage < this.threshold) {
-            return;
-        }
-
+    do_action(direction, percentage, time) {
         if (this._cancel_current_mode()) {
             return;
         }
@@ -287,14 +281,9 @@ var ExecAction = class extends BaseAction {
         super(definition, device, threshold);
     }
 
-    end(direction, percentage, time) {
-        if (percentage < this.threshold) {
-            return;
-        }
-
-        const real_action = this.definition.action.replace("EXEC:", "");
+    do_action(direction, percentage, time) {
         try {
-            GLib.spawn_command_line_async(real_action);
+            GLib.spawn_command_line_async(this.definition.custom_value);
         } catch (e) {
             global.logError(`Failed to execute custom gesture action: ${e}`);
         }
@@ -391,6 +380,11 @@ var VolumeAction = class extends BaseAction {
     }
 
     begin(direction, percentage, time) {
+        if (this.definition.action === "TOGGLE_MUTE" && this.definition.phase === "start") {
+            this._toggle_muted();
+            return;
+        };
+
         this.update(direction, percentage, time);
     }
 
@@ -405,12 +399,13 @@ var VolumeAction = class extends BaseAction {
     }
 
     end(direction, percentage, time) {
+        if (this.definition.action === "TOGGLE_MUTE" && this.definition.phase === "end") {
+            this._toggle_muted();
+            return;
+        };
+
         if (percentage < this.threshold) {
             return;
-        }
-
-        if (this.definition.action === "TOGGLE_MUTE") {
-            this._toggle_muted();
         }
     }
 }
@@ -429,11 +424,7 @@ var MediaAction = class extends BaseAction {
         super(definition, device, threshold);
     }
 
-    end(direction, percentage, time) {
-        if (percentage < this.threshold) {
-            return;
-        }
-
+    do_action(direction, percentage, time) {
         const player = mpris_controller.get_player();
 
         if (player == null) {
