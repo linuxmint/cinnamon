@@ -37,8 +37,42 @@ var GestureDirection = { // eslint-disable-line
   OUT: 6,
 };
 
+var GesturePhase = {
+  START: 0,
+  END: 1
+};
+
 var DeviceType = { // eslint-disable-line
   UNKNOWN: 0,
   TOUCHPAD: 1,
   TOUCHSCREEN: 2,
 };
+
+var GestureDirectionString = [
+    "unknown",
+    "up",
+    "down",
+    "left",
+    "right",
+
+    "in",
+    "out"
+];
+
+var GestureTypeString = [
+    "unsupported",
+    "swipe",
+    "pinch",
+    "tap"
+];
+
+var GesturePhaseString = [
+    "start",
+    "end"
+]
+
+var DeviceTypeString = [
+    "unknown",
+    "touchpad",
+    "touchscreen"
+]
