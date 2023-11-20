@@ -43,6 +43,8 @@ ACTIONS = [
     ["MEDIA_PLAY_PAUSE", _("Toggle Play / Pause"), True, "none", ""],
     ["MEDIA_NEXT", _("Next track"), True, "none", ""],
     ["MEDIA_PREVIOUS", _("Previous track"), True, "none", ""],
+    ["ZOOM_IN", _("Zoom desktop in"), False, "slider", "50"],
+    ["ZOOM_OUT", _("Zoom desktop out"), False, "slider", "50"],
     ["EXEC", _("Run a command"), True, "entry", ""],
 ]
 

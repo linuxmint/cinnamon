@@ -4,6 +4,7 @@ const { GLib, Gio, Cinnamon, Meta, Cvc } = imports.gi;
 const Main = imports.ui.main;
 const { GestureType } = imports.ui.gestures.ToucheggTypes;
 const { MprisController } = imports.ui.gestures.mprisController;
+const Magnifier = imports.ui.magnifier;
 
 const touchpad_settings = new  Gio.Settings({ schema_id: "org.cinnamon.desktop.peripherals.touchpad" });
 
@@ -48,6 +49,9 @@ var make_action = (settings, definition, device) => {
     case "MEDIA_NEXT":
     case "MEDIA_PREVIOUS":
         return new MediaAction(definition, device, threshold);
+    case "ZOOM_IN":
+    case "ZOOM_OUT":
+        return new ZoomAction(definition, device, threshold);
     case "EXEC":
         return new ExecAction(definition, device, threshold);
     }
@@ -442,5 +446,66 @@ var MediaAction = class extends BaseAction {
         if (this.definition.action === "MEDIA_PREVIOUS") {
             player.previous_track();
         }
+    }
+}
+
+const ZOOM_SAMPLE_RATE = 20 * 1000 // 20 ms; g_get_monotonic_time() returns microseconds
+
+var ZoomAction = class extends BaseAction {
+    constructor(definition, device, threshold) {
+        super(definition, device, threshold);
+        this.last_percentage = 0;
+        this.last_time = 0;
+        this.poll_interval = 50 * 1000;
+
+        if (definition.custom_value !== "") {
+            try {
+                let adjust = parseInt(definition.custom_value) * 1000;
+                this.poll_interval = this.poll_interval + adjust;
+            } catch (e) {}
+        }
+    }
+
+    begin(direction, percentage, time) {
+        this.last_percentage = 0;
+        this.last_time = 0;
+
+        this.do_action(direction, percentage, time);
+    }
+
+    update(direction, percentage, time) {
+        this.do_action(direction, percentage, time);
+    }
+
+    do_action(direction, percentage, time) {
+        let zoom_in = true;
+
+        if (time < (this.last_time + this.poll_interval)) {
+            return;
+        }
+
+        if (percentage == this.last_percentage) {
+            return;
+        }
+
+        switch (this.definition.action) {
+        case "ZOOM_IN":
+            zoom_in = percentage > this.last_percentage;
+            break;
+        case "ZOOM_OUT":
+            zoom_in = percentage < this.last_percentage;
+            break;
+        }
+
+        if (zoom_in) {
+            Magnifier.magInputHandler._zoom_in();
+        }
+        else
+        {
+            Magnifier.magInputHandler._zoom_out();
+        }
+
+        this.last_time = time;
+        this.last_percentage = percentage;
     }
 }
