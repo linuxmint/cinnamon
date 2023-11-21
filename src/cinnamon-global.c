@@ -1260,22 +1260,24 @@ cinnamon_global_get_pointer (CinnamonGlobal         *global,
  * @y: (in): the Y coordinate of the pointer, in global coordinates
  *
  * Sets the pointer coordinates.
- * This is a wrapper around gdk_device_warp().
  */
 void
 cinnamon_global_set_pointer (CinnamonGlobal         *global,
                           int                 x,
                           int                 y)
 {
-  // GdkDeviceManager *gmanager;
-  // GdkDevice *gdevice;
-  // GdkScreen *gscreen;
-  // int x2, y2;
+  ClutterSeat *seat;
 
-  // gmanager = gdk_display_get_device_manager (global->gdk_display);
-  // gdevice = gdk_device_manager_get_client_pointer (gmanager);
-  // gdk_device_get_position (gdevice, &gscreen, &x2, &y2);
-  // gdk_device_warp (gdevice, gscreen, x, y);
+  seat = clutter_backend_get_default_seat (clutter_get_default_backend ());
+
+  if (seat != NULL)
+    {
+      clutter_seat_warp_pointer (seat, x, y);
+    }
+  else
+    {
+      g_warning ("warp_pointer failed, could not get ClutterSeat for operation");
+    }
 }
 
 /**
