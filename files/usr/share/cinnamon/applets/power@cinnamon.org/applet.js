@@ -434,7 +434,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             if (time == 0) {
                 status = _("Charging");
             }
-            else if (time > 60) {
+            else if (time >= 60) {
                 if (minutes == 0) {
                     status = ngettext("Charging - %d hour until fully charged", "Charging - %d hours until fully charged", hours).format(hours);
                 }
@@ -455,7 +455,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             if (time == 0) {
                 status = _("Using battery power");
             }
-            else if (time > 60) {
+            else if (time >= 60) {
                 if (minutes == 0) {
                     status = ngettext("Using battery power - %d hour remaining", "Using battery power - %d hours remaining", hours).format(hours);
                 }
