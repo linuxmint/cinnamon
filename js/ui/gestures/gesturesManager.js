@@ -119,12 +119,13 @@ var GesturesManager = class {
                 continue;
             }
 
+            let custom_string;
             let action_string = custom_string = "";
 
             if (val.startsWith("EXEC:")) {
                 [action_string, custom_string] = val.split(":");
                 if (custom_string === "") {
-                    this.gesture_settings.set_string(key, "");
+                    this.settings.set_string(key, "");
                     continue;
                 }
             } else {
@@ -132,11 +133,11 @@ var GesturesManager = class {
             }
 
             if (custom_string === "") {
-                this.gesture_settings.set_string(key, `${action_string}::end`);
+                this.settings.set_string(key, `${action_string}::end`);
             }
             else
             {
-                this.gesture_settings.set_string(key, `${action_string}::${custom_string}::end`);
+                this.settings.set_string(key, `${action_string}::${custom_string}::end`);
             }
         }
     }
