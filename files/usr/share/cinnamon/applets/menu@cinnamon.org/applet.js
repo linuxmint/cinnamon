@@ -386,6 +386,9 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
             case "remove_from_favorites":
                 AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
                 break;
+            case "app_properties":
+                Util.spawnCommandLine("cinnamon-desktop-editor -mlauncher -o" + this._appButton.app.get_app_info().get_filename());
+                break;
             case "uninstall":
                 Util.spawnCommandLine("/usr/bin/cinnamon-remove-application '" + this._appButton.app.get_app_info().get_filename() + "'");
                 break;
@@ -467,6 +470,9 @@ class GenericApplicationButton extends SimpleMenuItem {
             menuItem = new ApplicationContextMenuItem(this, _("Add to favorites"), "add_to_favorites", "non-starred");
             menu.addMenuItem(menuItem);
         }
+
+        menuItem = new ApplicationContextMenuItem(this, _("Properties"), "app_properties", "document-properties-symbolic");
+        menu.addMenuItem(menuItem);
 
         if (this.applet._canUninstallApps) {
             menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "edit-delete");
