@@ -205,6 +205,7 @@ pick_color (ClutterActor *stage,
             ClutterPaintContext *paint_context,
             _screenshot_data *screenshot_data)
 {
+  GSimpleAsyncResult *result;
   MetaDisplay *display = cinnamon_global_get_display (screenshot_data->screenshot->global);
 
   do_grab_screenshot (screenshot_data,
