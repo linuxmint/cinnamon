@@ -201,6 +201,32 @@ _draw_cursor_image (cairo_surface_t       *surface,
 }
 
 static void
+pick_color (ClutterActor *stage,
+            ClutterPaintContext *paint_context,
+            _screenshot_data *screenshot_data)
+{
+  MetaDisplay *display = cinnamon_global_get_display (screenshot_data->screenshot->global);
+  g_autoptr (GTask) result = g_task_new (screenshot, NULL, callback, user_data);
+
+  g_task_set_source_tag (result, shell_screenshot_pick_color);
+
+  do_grab_screenshot (screenshot_data,
+                      paint_context,
+                      screenshot_data->screenshot_area.x,
+                      screenshot_data->screenshot_area.y,
+                      1,
+                      1);
+
+  g_signal_handlers_disconnect_by_func (stage, (void *)pick_color, (gpointer)screenshot_data);
+
+  meta_enable_unredirect_for_display (display);
+
+  result = g_simple_async_result_new (NULL, on_screenshot_written, (gpointer)screenshot_data, pick_color);
+  g_simple_async_result_run_in_thread (result, write_screenshot_thread, G_PRIORITY_DEFAULT, NULL);
+  g_object_unref (result);
+}
+
+static void
 grab_screenshot (ClutterActor        *stage,
                  ClutterPaintContext *paint_context,
                  _screenshot_data    *screenshot_data)
