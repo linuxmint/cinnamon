@@ -206,9 +206,6 @@ pick_color (ClutterActor *stage,
             _screenshot_data *screenshot_data)
 {
   MetaDisplay *display = cinnamon_global_get_display (screenshot_data->screenshot->global);
-  g_autoptr (GTask) result = g_task_new (screenshot, NULL, callback, user_data);
-
-  g_task_set_source_tag (result, shell_screenshot_pick_color);
 
   do_grab_screenshot (screenshot_data,
                       paint_context,
