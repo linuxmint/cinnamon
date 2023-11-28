@@ -387,7 +387,7 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
                 AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
                 break;
             case "app_properties":
-                Util.spawnCommandLine("cinnamon-desktop-editor -mlauncher -o" + this._appButton.app.get_app_info().get_filename());
+                Util.spawnCommandLine("cinnamon-desktop-editor -mlauncher -o" + GLib.shell_quote(this._appButton.app.get_app_info().get_filename()));
                 break;
             case "uninstall":
                 Util.spawnCommandLine("/usr/bin/cinnamon-remove-application '" + this._appButton.app.get_app_info().get_filename() + "'");
@@ -471,19 +471,23 @@ class GenericApplicationButton extends SimpleMenuItem {
             menu.addMenuItem(menuItem);
         }
 
-        menuItem = new ApplicationContextMenuItem(this, _("Properties"), "app_properties", "document-properties-symbolic");
-        menu.addMenuItem(menuItem);
+        const appinfo = this.app.get_app_info();
+
+        if (appinfo.get_filename() != null) {
+            menuItem = new ApplicationContextMenuItem(this, _("Properties"), "app_properties", "document-properties-symbolic");
+            menu.addMenuItem(menuItem);
+        }
 
         if (this.applet._canUninstallApps) {
             menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "edit-delete");
             menu.addMenuItem(menuItem);
         }
         
-        let actions = this.app.get_app_info().list_actions();
+        let actions = appinfo.list_actions();
         if (actions) {
             for (let i = 0; i < actions.length; i++) {
                 let icon = Util.getDesktopActionIcon(actions[i]);
-                let label = this.app.get_app_info().get_action_name(actions[i]);
+                let label = appinfo.get_action_name(actions[i]);
                 menuItem = new ApplicationContextMenuItem(this, label, "action_" + actions[i], icon);
                 menu.addMenuItem(menuItem);
             }
