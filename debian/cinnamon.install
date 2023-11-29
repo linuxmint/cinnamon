@@ -4,3 +4,4 @@ usr/libexec
 usr/share/applications
 usr/share/dbus-1
 usr/share/man
+usr/share/xdg-desktop-portal

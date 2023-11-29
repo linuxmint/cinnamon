@@ -39,6 +39,7 @@ foreach desktop_file : desktop_files
     )
 endforeach
 
+subdir('xdg-portal')
 subdir('wayland_sessions')
 subdir('xsessions')
 subdir('services')
