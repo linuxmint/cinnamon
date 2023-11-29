@@ -26,12 +26,12 @@ function overrideDumpStack() {
 }
 
 function overrideGObject() {
-    const {each, toFastProperties} = imports.misc.util;
+    const {toFastProperties} = imports.misc.util;
 
     const originalInit = GObject.Object.prototype._init;
     GObject.Object.prototype._init = function _init() {
         originalInit.call(this, ...arguments);
-        each(this, function(value) {
+        Object.values(this).forEach( value => {
             if (value && !Array.isArray(value)) toFastProperties(value);
         });
     }
@@ -128,7 +128,11 @@ function overrideClutter() {
 
 function overrideMeta() {
     Meta.BackgroundActor.new_for_screen = function(screen) {
-        return Meta.X11BackgroundActor.new_for_display(global.display);
+        if (!Meta.is_wayland_compositor()) {
+            return Meta.X11BackgroundActor.new_for_display(global.display);
+        } else {
+            return new Clutter.Actor();
+        }
     }
 
     Meta.disable_unredirect_for_screen = function(screen) {

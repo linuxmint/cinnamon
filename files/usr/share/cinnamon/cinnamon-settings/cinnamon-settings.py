@@ -219,6 +219,7 @@ class MainWindow(Gio.Application):
             m, n = widget.get_preferred_width()
             width += n
         self.top_bar.set_size_request(width + 20, -1)
+        self.calculate_bar_heights()
         self.maybe_resize(sidePage)
 
     def maybe_resize(self, sidePage):
@@ -236,7 +237,8 @@ class MainWindow(Gio.Application):
             use_height = sidePage.size + self.bar_heights + WIN_H_PADDING
         elif sidePage.size == -1:
             # Module requested the window to fit it (i.e. shrink the window if necessary)
-            use_height = total_height
+            use_height = total_height + self.bar_heights
+
 
         self.window.resize(WIN_WIDTH, use_height)
 

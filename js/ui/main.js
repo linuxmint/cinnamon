@@ -25,6 +25,7 @@
  * @statusIconDispatcher (StatusIconDispatcher.StatusIconDispatcher): The status icon dispatcher
  * @virtualKeyboard (VirtualKeyboard.Keyboard): The keyboard object
  * @layoutManager (Layout.LayoutManager): The layout manager.
+ * @monitorLabeler (MonitorLabeler.MonitorLabeler): Adds labels to each monitor when configuring displays.
  * \
  * All actors that are part of the Cinnamon UI ar handled by the layout
  * manager, which will determine when to show and hide the actors etc.
@@ -124,6 +125,7 @@ const {installPolyfills} = imports.ui.overrides;
 const InputMethod = imports.misc.inputMethod;
 const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
+const {MonitorLabeler} = imports.ui.monitorLabeler;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -160,6 +162,7 @@ var xdndHandler = null;
 var statusIconDispatcher = null;
 var virtualKeyboard = null;
 var layoutManager = null;
+var monitorLabeler = null;
 var themeManager = null;
 var keybindingManager = null;
 var _errorLogStack = [];
@@ -275,7 +278,7 @@ function start() {
 
     let cinnamonStartTime = new Date().getTime();
 
-    log("About to start Cinnamon");
+    log(`About to start Cinnamon (${Meta.is_wayland_compositor() ? "Wayland" : "X11"} backend)`);
 
     let backend = Meta.get_backend();
 
@@ -342,6 +345,7 @@ function start() {
     settingsManager = new Settings.SettingsManager();
 
     backgroundManager = new BackgroundManager.BackgroundManager();
+    backgroundManager.hideBackground();
 
     slideshowManager = new SlideshowManager.SlideshowManager();
 
@@ -353,7 +357,6 @@ function start() {
     uiGroup = new Layout.UiActor({ name: 'uiGroup' });
     uiGroup.set_flags(Clutter.ActorFlags.NO_LAYOUT);
 
-    global.background_actor.hide();
     global.reparentActor(global.window_group, uiGroup);
     global.reparentActor(global.overlay_group, uiGroup);
 
@@ -383,6 +386,7 @@ function start() {
                                 !software_rendering;
 
     if (do_startup_animation) {
+        backgroundManager.showBackground();
         layoutManager._prepareStartupAnimation();
     }
 
@@ -391,6 +395,7 @@ function start() {
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
     pointerSwitcher = new PointerTracker.PointerSwitcher();
+    monitorLabeler = new MonitorLabeler();
 
     xdndHandler = new XdndHandler.XdndHandler();
     osdWindowManager = new OsdWindow.OsdWindowManager();
@@ -491,7 +496,7 @@ function start() {
                 return GLib.SOURCE_REMOVE;
             });
         } else {
-            global.background_actor.show();
+            backgroundManager.showBackground();
             setRunState(RunState.RUNNING);
         }
 
@@ -1539,6 +1544,10 @@ function getTabList(workspaceOpt) {
 }
 
 function restartCinnamon(showOsd = false) {
+    if (Meta.is_wayland_compositor()) {
+        global.logWarning("Cinnamon restart not supported with Wayland");
+        return;
+    }
     global.display.connect("show-restart-message", () => {
         if (showOsd) {
             let dialog = new ModalDialog.InfoOSD(_("Restarting Cinnamon..."));

@@ -536,7 +536,7 @@ class Module:
     def parse_xml_backgrounds_list(self, filename):
         try:
             locAttrName = "{http://www.w3.org/XML/1998/namespace}lang"
-            loc = self.splitLocaleCode(locale.getdefaultlocale()[0])
+            loc = self.splitLocaleCode(locale.getlocale()[0])
             res = []
             subLocaleFound = False
             f = open(filename)
@@ -609,7 +609,7 @@ class PixCache(object):
                         os.remove(cache_filename)
 
                 if not loaded:
-                    if mimetype == "image/svg+xml":
+                    if mimetype in ("image/svg+xml", "image/avif"):
                         # rasterize svg with Gdk-Pixbuf and convert to PIL Image
                         tmp_pix = GdkPixbuf.Pixbuf.new_from_file(filename)
                         mode = "RGBA" if tmp_pix.props.has_alpha else "RGB"

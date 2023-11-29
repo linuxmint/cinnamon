@@ -7,7 +7,6 @@ const Signals = imports.signals;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
-const Gdk = imports.gi.Gdk;
 
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
@@ -255,7 +254,13 @@ Overview.prototype = {
         this._background.set_position(0, 0);
         this._group.add_actor(this._background);
 
-        let desktopBackground = Meta.X11BackgroundActor.new_for_display(global.display);
+        let desktopBackground;
+        if (!Meta.is_wayland_compositor()) {
+            desktopBackground = Meta.X11BackgroundActor.new_for_display(global.display);
+        } else {
+            desktopBackground = new Clutter.Actor();
+        }
+
         this._background.add_actor(desktopBackground);
 
         let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});

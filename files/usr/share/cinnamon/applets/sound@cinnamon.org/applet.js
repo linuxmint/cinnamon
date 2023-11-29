@@ -935,6 +935,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
         this.settings.bind("showtrack", "showtrack", this.on_settings_changed);
         this.settings.bind("middleClickAction", "middleClickAction");
+        this.settings.bind("middleShiftClickAction", "middleShiftClickAction");
         this.settings.bind("horizontalScroll", "horizontalScroll")
         this.settings.bind("showalbum", "showalbum", this.on_settings_changed);
         this.settings.bind("truncatetext", "truncatetext", this.on_settings_changed);
@@ -953,6 +954,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         if (this.hideSystray) this.registerSystrayIcons();
 
         this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
+        this.settings.bind("alwaysShowMuteInput", "alwaysShowMuteInput", this.on_settings_changed);
 
         this.settings.bind("tooltipShowVolume", "tooltipShowVolume", this.on_settings_changed);
         this.settings.bind("tooltipShowPlayer", "tooltipShowPlayer", this.on_settings_changed);
@@ -1042,7 +1044,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this.mute_in_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute input"), false, "microphone-sensitivity-muted", St.IconType.SYMBOLIC);
         this._applet_context_menu.addMenuItem(this.mute_out_switch);
         this._applet_context_menu.addMenuItem(this.mute_in_switch);
-        this.mute_in_switch.actor.hide();
+        if (this.alwaysShowMuteInput)
+            this.mute_in_switch.actor.show();
+        else
+            this.mute_in_switch.actor.hide();
 
         this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -1108,6 +1113,11 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         else
             this.setAppletTextIcon();
 
+        if (this.alwaysShowMuteInput)
+            this.mute_in_switch.actor.show();
+        else if (this._recordingAppsNum === 0)
+            this.mute_in_switch.actor.hide();
+
         this._changeActivePlayer(this._activePlayer);
     }
 
@@ -1151,13 +1161,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         if (!this._input)
             return;
 
-        if (this._input.is_muted) {
-            this._input.change_is_muted(false);
-            this.mute_in_switch.setToggleState(false);
-        } else {
-            this._input.change_is_muted(true);
-            this.mute_in_switch.setToggleState(true);
-        }
+        let newStatus = !this._input.is_muted;
+        this._input.change_is_muted(newStatus);
+        this.mute_in_switch.setToggleState(newStatus);
     }
 
     _onScrollEvent(actor, event) {
@@ -1215,19 +1221,34 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
     _onButtonPressEvent (actor, event) {
         let buttonId = event.get_button();
+        let modifiers = Cinnamon.get_event_state(event);
+        let shiftPressed = (modifiers & Clutter.ModifierType.SHIFT_MASK);
 
         //mute or play / pause players on middle click
         if (buttonId === 2) {
-            if (this.middleClickAction === "mute") {
-                if (this._output.is_muted === this._input.is_muted)
+            if (shiftPressed) {
+                if (this.middleShiftClickAction === "mute") {
+                    if (this._output.is_muted === this._input.is_muted)
+                        this._toggle_in_mute();
+                    this._toggle_out_mute();
+                } else if (this.middleShiftClickAction === "out_mute")
+                    this._toggle_out_mute();
+                else if (this.middleShiftClickAction === "in_mute")
                     this._toggle_in_mute();
-                this._toggle_out_mute();
-            } else if (this.middleClickAction === "out_mute")
-                this._toggle_out_mute();
-            else if (this.middleClickAction === "in_mute")
-                this._toggle_in_mute();
-            else if (this.middleClickAction === "player")
-                this._players[this._activePlayer]._mediaServerPlayer.PlayPauseRemote();
+                else if (this.middleShiftClickAction === "player")
+                    this._players[this._activePlayer]._mediaServerPlayer.PlayPauseRemote();
+            } else {
+                if (this.middleClickAction === "mute") {
+                    if (this._output.is_muted === this._input.is_muted)
+                        this._toggle_in_mute();
+                    this._toggle_out_mute();
+                } else if (this.middleClickAction === "out_mute")
+                    this._toggle_out_mute();
+                else if (this.middleClickAction === "in_mute")
+                    this._toggle_in_mute();
+                else if (this.middleClickAction === "player")
+                    this._players[this._activePlayer]._mediaServerPlayer.PlayPauseRemote();
+            }
         } else if (buttonId === 8) { // previous and next track on mouse buttons 4 and 5 (8 and 9 by X11 numbering)
             this._players[this._activePlayer]._mediaServerPlayer.PreviousRemote();
         } else if (buttonId === 9) {
@@ -1691,6 +1712,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                         this._inputSection.actor.hide();
                         this.mute_in_switch.actor.hide();
                     }
+                    if (this.alwaysShowMuteInput)
+                        this.mute_in_switch.actor.show();
                 }
                 this._streams.splice(i, 1);
                 break;

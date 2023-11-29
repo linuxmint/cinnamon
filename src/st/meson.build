@@ -135,7 +135,7 @@ st_gir_sources = [
     st_headers,
 ]
 
-data_to_c = find_program(meson.source_root() + '/src/data-to-c.pl')
+data_to_c = find_program(meson.project_source_root() + '/src/data-to-c.pl')
 
 glsl_sources = custom_target('scroll-view-fade-glsl',
   input: ['st-scroll-view-fade.glsl'],

@@ -11,7 +11,6 @@ const AppFavorites = imports.ui.appFavorites;
 const Gtk = imports.gi.Gtk;
 const Atk = imports.gi.Atk;
 const Gio = imports.gi.Gio;
-const GObject = imports.gi.GObject
 const XApp = imports.gi.XApp;
 const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
@@ -28,7 +27,6 @@ const SignalManager = imports.misc.signalManager;
 const Params = imports.misc.params;
 
 const INITIAL_BUTTON_LOAD = 30;
-const NUM_SYSTEM_BUTTONS = 3;
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 
@@ -388,6 +386,9 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
             case "remove_from_favorites":
                 AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
                 break;
+            case "app_properties":
+                Util.spawnCommandLine("cinnamon-desktop-editor -mlauncher -o" + GLib.shell_quote(this._appButton.app.get_app_info().get_filename()));
+                break;
             case "uninstall":
                 Util.spawnCommandLine("/usr/bin/cinnamon-remove-application '" + this._appButton.app.get_app_info().get_filename() + "'");
                 break;
@@ -470,16 +471,23 @@ class GenericApplicationButton extends SimpleMenuItem {
             menu.addMenuItem(menuItem);
         }
 
+        const appinfo = this.app.get_app_info();
+
+        if (appinfo.get_filename() != null) {
+            menuItem = new ApplicationContextMenuItem(this, _("Properties"), "app_properties", "document-properties-symbolic");
+            menu.addMenuItem(menuItem);
+        }
+
         if (this.applet._canUninstallApps) {
             menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "edit-delete");
             menu.addMenuItem(menuItem);
         }
         
-        let actions = this.app.get_app_info().list_actions();
+        let actions = appinfo.list_actions();
         if (actions) {
             for (let i = 0; i < actions.length; i++) {
                 let icon = Util.getDesktopActionIcon(actions[i]);
-                let label = this.app.get_app_info().get_action_name(actions[i]);
+                let label = appinfo.get_action_name(actions[i]);
                 menuItem = new ApplicationContextMenuItem(this, label, "action_" + actions[i], icon);
                 menu.addMenuItem(menuItem);
             }
@@ -1293,13 +1301,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _updateShowIcons(container, show) {
-        Util.each(container.get_children(), c => {
+        container.get_children().forEach( c => {
             let b = c._delegate;
             if (!(b instanceof SimpleMenuItem))
                 return;
             if (b.icon)
                 b.icon.visible = show;
-        })
+        });
     }
 
     _onBoxResized(width, height) {
@@ -1317,11 +1325,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _updateKeybinding() {
         Main.keybindingManager.addHotKey("overlay-key-" + this.instance_id, this.overlayKey, Lang.bind(this, function() {
-            if (!Main.overview.visible && !Main.expo.visible)
+            if (!Main.overview.visible && !Main.expo.visible) {
                 if (this.forceShowPanel && !this.isOpen) {
                     this.panel.peekPanel();
                 }
                 this.menu.toggle_with_options(this.enableAnimation);
+            }
         }));
     }
 
@@ -2449,7 +2458,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let recents = this.RecentManager._infosByTimestamp.filter(info => !info.name.startsWith("."));
         if (recents.length > 0) {
             this.noRecentDocuments = false;
-            Util.each(recents, (info) => {
+            recents.forEach( info => {
                 let button = new RecentButton(this, info);
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
@@ -2516,7 +2525,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.categoriesBox.add_actor(this.favoriteDocsButton.actor);
         }
 
-        Util.each(favorite_infos, (info) => {
+        favorite_infos.forEach( info => {
             let button = new FavoriteButton(this, info);
             this._favoriteDocButtons.push(button);
             this.applicationsBox.add_actor(button.actor);
@@ -2549,7 +2558,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let [apps, dirs] = AppUtils.getApps();
 
         // generate all category buttons from top-level directories
-        Util.each(dirs, (d) => {
+        dirs.forEach( d => {
             let categoryButton = new CategoryButton(this, d.get_menu_id(), d.get_name(), d.get_icon());
             this._categoryButtons.push(categoryButton);
             this.categoriesBox.add_actor(categoryButton.actor);
@@ -2906,7 +2915,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this.orderDirty = false;
             }
 
-            Util.each(this.applicationsBox.get_children(), c => {
+            this.applicationsBox.get_children().forEach( c => {
                 let b = c._delegate;
                 if (!(b instanceof SimpleMenuItem))
                     return;
@@ -2922,7 +2931,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         } else {
             this.orderDirty = true;
 
-            Util.each(this.applicationsBox.get_children(), c => {
+            this.applicationsBox.get_children().forEach( c => {
                 let b = c._delegate;
                 if (!(b instanceof SimpleMenuItem))
                     return;
@@ -2958,7 +2967,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._searchProviderButtons = [];
 
         if (autoCompletes) {
-            Util.each(autoCompletes, item => {
+            autoCompletes.forEach( item => {
                 let button = new TransientButton(this, item);
                 this._transientButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);

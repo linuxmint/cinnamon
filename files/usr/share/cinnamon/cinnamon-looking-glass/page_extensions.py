@@ -15,9 +15,8 @@ class ModulePage(pageutils.BaseListView):
         self.create_text_column(1, "Type")
         self.create_text_column(2, "Name")
         self.create_text_column(3, "Description")
-        self.get_updates()
-        parent.lg_proxy.connect("ExtensionListUpdate", self.get_updates)
-        parent.lg_proxy.add_status_change_callback(self.on_status_change)
+        parent.lg_proxy.connect("signal::extension-list-update", self.get_updates)
+        parent.lg_proxy.connect("status-changed", self.on_status_change)
         self.tree_view.set_tooltip_column(8)
 
         self.popup = Gtk.Menu()
@@ -81,11 +80,11 @@ class ModulePage(pageutils.BaseListView):
                 if error:
                     self.parent.activate_page("log")
 
-    def on_status_change(self, online):
+    def on_status_change(self, proxy, online):
         if online:
             self.get_updates()
 
-    def get_updates(self):
+    def get_updates(self, proxy=None):
         success, data = self.parent.lg_proxy.GetExtensionList()
         if success:
             self.store.clear()

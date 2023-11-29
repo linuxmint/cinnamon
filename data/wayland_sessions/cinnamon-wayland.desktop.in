@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Cinnamon on Wayland (Experimental)
+Comment=This session logs you into Cinnamon
+Exec=cinnamon-session-cinnamon --wayland
+TryExec=@bindir@/cinnamon
+Icon=
+Type=Application
+

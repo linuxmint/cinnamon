@@ -1,6 +1,5 @@
 session_deskop_files = [
-  'cinnamon.desktop',
-  'cinnamon2d.desktop',
+  'cinnamon-wayland.desktop',
 ]
 
 foreach session_deskop_file : session_deskop_files
@@ -8,6 +7,6 @@ foreach session_deskop_file : session_deskop_files
         input: session_deskop_file + '.in',
         output: session_deskop_file,
         configuration: desktop_conf,
-        install_dir: x_sessiondir
+        install_dir: wayland_sessiondir
     )
 endforeach

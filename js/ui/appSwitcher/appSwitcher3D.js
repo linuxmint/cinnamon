@@ -42,7 +42,12 @@ AppSwitcher3D.prototype = {
         this._icon = null;
         this._lastTime = 0;
 
-        this._background = Meta.X11BackgroundActor.new_for_display(global.display);
+        if (!Meta.is_wayland_compositor()) {
+            this._background = Meta.X11BackgroundActor.new_for_display(global.display);
+        } else {
+            this._background = new Clutter.Actor();
+        }
+
         this._background.hide();
         global.overlay_group.add_actor(this._background);
 

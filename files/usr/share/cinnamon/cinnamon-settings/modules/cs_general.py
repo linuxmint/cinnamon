@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from SettingsWidgets import SidePage
+from bin import util
 from xapp.GSettingsWidgets import *
 
 
@@ -37,13 +38,14 @@ class Module:
             spin = GSettingsSpinButton(_("Timer delay"), "org.cinnamon.SessionManager", "quit-time-delay", _("seconds"), 0, 36000, 1, 60)
             settings.add_reveal_row(spin, "org.cinnamon.SessionManager", "quit-delay-toggle")
 
-            settings = page.add_section(_("Memory limit"))
+            if util.get_session_type() != "wayland":
+                settings = page.add_section(_("Memory limit"))
 
-            switch = GSettingsSwitch(_("Restart Cinnamon when it uses too much memory"), "org.cinnamon.launcher", "memory-limit-enabled")
-            settings.add_row(switch)
+                switch = GSettingsSwitch(_("Restart Cinnamon when it uses too much memory"), "org.cinnamon.launcher", "memory-limit-enabled")
+                settings.add_row(switch)
 
-            spin = GSettingsSpinButton(_("Memory limit"), "org.cinnamon.launcher", "memory-limit", _("MB"), 1024, 36000, 1, 100)
-            settings.add_reveal_row(spin, "org.cinnamon.launcher", "memory-limit-enabled")
+                spin = GSettingsSpinButton(_("Memory limit"), "org.cinnamon.launcher", "memory-limit", _("MB"), 1024, 36000, 1, 100)
+                settings.add_reveal_row(spin, "org.cinnamon.launcher", "memory-limit-enabled")
 
-            spin = GSettingsSpinButton(_("Check frequency"), "org.cinnamon.launcher", "check-frequency", _("seconds"), 1, 86400, 1, 60)
-            settings.add_reveal_row(spin, "org.cinnamon.launcher", "memory-limit-enabled")
+                spin = GSettingsSpinButton(_("Check frequency"), "org.cinnamon.launcher", "check-frequency", _("seconds"), 1, 86400, 1, 60)
+                settings.add_reveal_row(spin, "org.cinnamon.launcher", "memory-limit-enabled")

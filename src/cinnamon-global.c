@@ -16,6 +16,9 @@
 #include <meta/main.h>
 #include <cogl-pango/cogl-pango.h>
 
+#define GNOME_DESKTOP_USE_UNSTABLE_API
+#include <libcinnamon-desktop/gnome-systemd.h>
+
 static CinnamonGlobal *the_object = NULL;
 
 enum {
@@ -23,7 +26,6 @@ enum {
 
   PROP_OVERLAY_GROUP,
   PROP_SCREEN,
-  PROP_GDK_SCREEN,
   PROP_DISPLAY,
   PROP_SCREEN_WIDTH,
   PROP_SCREEN_HEIGHT,
@@ -95,9 +97,6 @@ cinnamon_global_get_property(GObject         *object,
       break;
     case PROP_SCREEN:
       g_value_set_object (value, global->cinnamon_screen);
-      break;
-    case PROP_GDK_SCREEN:
-      g_value_set_object (value, global->gdk_screen);
       break;
     case PROP_DISPLAY:
       g_value_set_object (value, global->meta_display);
@@ -314,14 +313,6 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                                         "Screen",
                                                         "Cinnamon screen object",
                                                         CINNAMON_TYPE_SCREEN,
-                                                        G_PARAM_READABLE));
-
-  g_object_class_install_property (gobject_class,
-                                   PROP_GDK_SCREEN,
-                                   g_param_spec_object ("gdk-screen",
-                                                        "GdkScreen",
-                                                        "Gdk screen object for Cinnamon",
-                                                        GDK_TYPE_SCREEN,
                                                         G_PARAM_READABLE));
 
   g_object_class_install_property (gobject_class,
@@ -556,11 +547,12 @@ void
 cinnamon_global_set_stage_input_mode (CinnamonGlobal         *global,
                                       CinnamonStageInputMode  mode)
 {
-  CinnamonScreen *screen;
-  MetaX11Display *x11_display;
-
   g_return_if_fail (CINNAMON_IS_GLOBAL (global));
 
+  if (meta_is_wayland_compositor ())
+    return;
+
+  MetaX11Display *x11_display;
   x11_display = meta_display_get_x11_display (global->meta_display);
 
   if (mode == CINNAMON_STAGE_INPUT_MODE_NONREACTIVE)
@@ -680,6 +672,9 @@ cinnamon_global_set_stage_input_region (CinnamonGlobal *global,
 
   g_return_if_fail (CINNAMON_IS_GLOBAL (global));
 
+  if (meta_is_wayland_compositor ())
+    return;
+
   nrects = g_slist_length (rectangles);
   rects = g_new (XRectangle, nrects);
   for (r = rectangles, i = 0; r; r = r->next, i++)
@@ -723,19 +718,6 @@ CinnamonScreen *
 cinnamon_global_get_screen (CinnamonGlobal  *global)
 {
   return global->cinnamon_screen;
-}
-
-/**
- * cinnamon_global_get_gdk_screen:
- *
- * Return value: (transfer none): Gdk screen object for Cinnamon
- */
-GdkScreen *
-cinnamon_global_get_gdk_screen (CinnamonGlobal *global)
-{
-  g_return_val_if_fail (CINNAMON_IS_GLOBAL (global), NULL);
-
-  return global->gdk_screen;
 }
 
 /**
@@ -858,11 +840,13 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   global->meta_display = meta_plugin_get_display (plugin);
   global->workspace_manager = meta_display_get_workspace_manager (global->meta_display);
   global->cinnamon_screen = cinnamon_screen_new (global->meta_display);
-  x11_display = meta_display_get_x11_display (global->meta_display);
-  global->xdisplay = meta_x11_display_get_xdisplay (x11_display);
 
-  global->gdk_display = gdk_x11_lookup_xdisplay (global->xdisplay);
-  global->gdk_screen = gdk_display_get_default_screen (global->gdk_display);
+  if (!meta_is_wayland_compositor ())
+  {
+     x11_display = meta_display_get_x11_display (global->meta_display);
+     global->xdisplay = meta_x11_display_get_xdisplay (x11_display);
+  }
+
   global->stage = CLUTTER_STAGE (meta_get_stage_for_display (global->meta_display));
 
   g_signal_connect (global->stage, "notify::width",
@@ -1276,22 +1260,24 @@ cinnamon_global_get_pointer (CinnamonGlobal         *global,
  * @y: (in): the Y coordinate of the pointer, in global coordinates
  *
  * Sets the pointer coordinates.
- * This is a wrapper around gdk_device_warp().
  */
 void
 cinnamon_global_set_pointer (CinnamonGlobal         *global,
                           int                 x,
                           int                 y)
 {
-  GdkDeviceManager *gmanager;
-  GdkDevice *gdevice;
-  GdkScreen *gscreen;
-  int x2, y2;
+  ClutterSeat *seat;
 
-  gmanager = gdk_display_get_device_manager (global->gdk_display);
-  gdevice = gdk_device_manager_get_client_pointer (gmanager);
-  gdk_device_get_position (gdevice, &gscreen, &x2, &y2);
-  gdk_device_warp (gdevice, gscreen, x, y);
+  seat = clutter_backend_get_default_seat (clutter_get_default_backend ());
+
+  if (seat != NULL)
+    {
+      clutter_seat_warp_pointer (seat, x, y);
+    }
+  else
+    {
+      g_warning ("warp_pointer failed, could not get ClutterSeat for operation");
+    }
 }
 
 /**
@@ -1406,9 +1392,33 @@ cinnamon_global_get_md5_for_string (CinnamonGlobal *global, const gchar *string)
     return g_compute_checksum_for_string (G_CHECKSUM_MD5, string, -1);
 }
 
+static void
+cinnamon_global_app_launched_cb (GAppLaunchContext *context,
+                                 GAppInfo          *info,
+                                 GVariant          *platform_data,
+                                 gpointer           user_data)
+{
+  gint32 pid;
+  const gchar *app_name;
+
+  if (!g_variant_lookup (platform_data, "pid", "i", &pid))
+    return;
+
+  app_name = g_app_info_get_id (info);
+  if (app_name == NULL)
+    app_name = g_app_info_get_executable (info);
+
+  /* Start async request; we don't care about the result */
+  gnome_start_systemd_scope (app_name,
+                             pid,
+                             NULL,
+                             NULL,
+                             NULL, NULL, NULL);
+}
+
 /**
  * cinnamon_global_create_app_launch_context:
- * @global: A #CinnamonGlobal
+ * @global: A #CinnaamonGlobal
  *
  * Create a #GAppLaunchContext set up with the correct timestamp, and
  * targeted to activate on the current workspace.
@@ -1418,17 +1428,25 @@ cinnamon_global_get_md5_for_string (CinnamonGlobal *global, const gchar *string)
 GAppLaunchContext *
 cinnamon_global_create_app_launch_context (CinnamonGlobal *global)
 {
-  GdkAppLaunchContext *context;
+  MetaWorkspaceManager *workspace_manager = global->workspace_manager;
+  MetaStartupNotification *sn;
+  MetaLaunchContext *context;
+  MetaWorkspace *ws = NULL;
 
-  context = gdk_display_get_app_launch_context (global->gdk_display);
+  sn = meta_display_get_startup_notification (global->meta_display);
+  context = meta_startup_notification_create_launcher (sn);
 
-  gdk_app_launch_context_set_timestamp (context, cinnamon_global_get_current_time (global));
+  meta_launch_context_set_timestamp (context, cinnamon_global_get_current_time (global));
 
-  // Make sure that the app is opened on the current workspace even if
-  // the user switches before it starts
-  gdk_app_launch_context_set_desktop (context, meta_workspace_manager_get_active_workspace_index (global->workspace_manager));
+  ws = meta_workspace_manager_get_active_workspace (workspace_manager);
+  meta_launch_context_set_workspace (context, ws);
 
-  return (GAppLaunchContext *)context;
+  g_signal_connect (context,
+                    "launched",
+                    G_CALLBACK (cinnamon_global_app_launched_cb),
+                    NULL);
+
+  return (GAppLaunchContext *) context;
 }
 
 typedef struct

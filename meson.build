@@ -1,4 +1,4 @@
-project('Cinnamon', 'c', version : '5.8.4', meson_version : '>=0.47.0')
+project('Cinnamon', 'c', version : '5.8.4', meson_version : '>=0.56.0')
 
 gnome = import('gnome')
 i18n = import('i18n')
@@ -13,13 +13,14 @@ libdir = join_paths(prefix, get_option('libdir'))
 includedir = get_option('includedir')
 libexecdir = get_option('libexecdir')
 desktopdir = join_paths(datadir, 'applications')
-xsessiondir = join_paths(datadir, 'xsessions')
+x_sessiondir = join_paths(datadir, 'xsessions')
+wayland_sessiondir = join_paths(datadir, 'wayland-sessions')
 schemadir = join_paths(datadir, 'glib-2.0', 'schemas')
 pkglibdir = join_paths(libdir, meson.project_name().to_lower())
 girdir = join_paths(datadir, 'gir-1.0')
 servicedir = join_paths(datadir, 'dbus-1', 'services')
 pkgdatadir = join_paths(datadir, meson.project_name().to_lower())
-po_dir = join_paths(meson.source_root(), 'po')
+po_dir = join_paths(meson.project_source_root(), 'po')
 
 # dependencies
 cjs = dependency('cjs-1.0', version: '>= 4.8.0')
@@ -31,7 +32,6 @@ dbus = dependency('dbus-1')
 gdkx11 = dependency('gdk-x11-3.0')
 gi = dependency('gobject-introspection-1.0', version: '>= 0.9.2')
 polkit = dependency('polkit-agent-1', version: '>= 0.100')
-xfixes = dependency('xfixes')
 atk = dependency('atk-bridge-2.0')
 gio = dependency('gio-2.0', version: '>= 2.36.0')
 gio_unix = dependency('gio-unix-2.0')
@@ -40,7 +40,7 @@ glib_version = '2.52.0'
 glib = dependency('glib-2.0', version: '>= ' + glib_version)
 gtk = dependency('gtk+-3.0', version: '>= 3.12.0')
 muffin = dependency('libmuffin-0', version: '>= 5.2.0')
-muffin_typelibdir = muffin.get_pkgconfig_variable('typelibdir')
+muffin_typelibdir = muffin.get_variable(pkgconfig: 'typelibdir')
 pango = dependency('muffin-cogl-pango-0')
 xapp = dependency('xapp', version: '>= 2.6.0')
 X11 = dependency('x11')
@@ -71,11 +71,6 @@ python = find_program('python3')
 cinnamon_conf = configuration_data()
 cinnamon_conf.set_quoted('VERSION', version)
 cinnamon_conf.set_quoted('GETTEXT_PACKAGE', meson.project_name().to_lower())
-
-have_xfixes = cc.has_function('XFixesCreatePointerBarrier', dependencies: xfixes)
-if have_xfixes
-    cinnamon_conf.set10('HAVE_XFIXESCREATEPOINTERBARRIER', true)
-endif
 
 have_mallinfo = cc.has_function('mallinfo', prefix: '#include <malloc.h>')
 if have_mallinfo
@@ -164,7 +159,7 @@ else
     session_conf.set('REQUIRED', '')
 endif
 
-foreach file : ['cinnamon.session', 'cinnamon2d.session']
+foreach file : ['cinnamon.session', 'cinnamon2d.session', 'cinnamon-wayland.session']
     configure_file(
         input: file + '.in',
         output: file,

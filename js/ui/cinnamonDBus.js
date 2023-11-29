@@ -118,7 +118,7 @@ const CinnamonIface =
             </method> \
             <signal name="MonitorsChanged"/> \
             <method name="GetRunState"> \
-               <arg type="i" direction="out" name="state" /> \
+                <arg type="i" direction="out" name="state" /> \
             </method> \
             <method name="RestartCinnamon"> \
                 <arg type="b" direction="in" name="show_osd" /> \
@@ -127,6 +127,10 @@ const CinnamonIface =
             <signal name="RunStateChanged"/> \
             <signal name="XletsLoadedComplete"/> \
             <property name="AnimationsEnabled" type="b" access="read" /> \
+            <method name="ShowMonitorLabels"> \
+                <arg type="a{sv}" direction="in" name="params"/> \
+            </method> \
+            <method name="HideMonitorLabels"/> \
         </interface> \
     </node>';
 
@@ -497,6 +501,14 @@ CinnamonDBus.prototype = {
     notifyAnimationsEnabled() {
         let variant = new GLib.Variant('b', Main.animations_enabled);
         this._dbusImpl.emit_property_changed('AnimationsEnabled', variant);
+    },
+
+    ShowMonitorLabelsAsync(monitor_info, invocation) {
+        Main.monitorLabeler.show(monitor_info[0], invocation.get_sender());
+    },
+
+    HideMonitorLabelsAsync(tuple, invocation) {
+        Main.monitorLabeler.hide(invocation.get_sender());
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

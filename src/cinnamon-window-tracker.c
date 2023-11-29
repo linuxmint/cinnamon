@@ -5,10 +5,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkx.h>
 #include <meta/display.h>
 #include <meta/group.h>
 #include <meta/util.h>

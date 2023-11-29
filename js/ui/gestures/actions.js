@@ -4,6 +4,7 @@ const { GLib, Gio, Cinnamon, Meta, Cvc } = imports.gi;
 const Main = imports.ui.main;
 const { GestureType } = imports.ui.gestures.ToucheggTypes;
 const { MprisController } = imports.ui.gestures.mprisController;
+const Magnifier = imports.ui.magnifier;
 
 const touchpad_settings = new  Gio.Settings({ schema_id: "org.cinnamon.desktop.peripherals.touchpad" });
 
@@ -48,9 +49,10 @@ var make_action = (settings, definition, device) => {
     case "MEDIA_NEXT":
     case "MEDIA_PREVIOUS":
         return new MediaAction(definition, device, threshold);
-    }
-
-    if (definition.action.startsWith("EXEC:")) {
+    case "ZOOM_IN":
+    case "ZOOM_OUT":
+        return new ZoomAction(definition, device, threshold);
+    case "EXEC":
         return new ExecAction(definition, device, threshold);
     }
 }
@@ -75,12 +77,20 @@ var BaseAction = class {
     }
 
     begin(direction, percentage, time) {
+        if (this.definition.phase === "start") {
+            this.do_action(direction, percentage, time);
+        };
     }
 
     update(direction, percentage, time) {
     }
 
     end(direction, percentage, time) {
+        if (this.definition.phase !== "end" || percentage < this.threshold) {
+            return;
+        }
+
+        this.do_action(direction, percentage, time);
     }
 }
 
@@ -89,11 +99,7 @@ var WorkspaceSwitchAction = class extends BaseAction {
         super(definition, device, threshold);
     }
 
-    end(direction, percentage, time, met_threshold) {
-        if (percentage < this.threshold) {
-            return;
-        }
-
+    do_action(direction, percentage, time) {
         const current = global.workspace_manager.get_active_workspace();
 
         let motion_dir = Meta.MotionDirection.RIGHT;
@@ -130,11 +136,7 @@ var WindowOpAction = class extends BaseAction {
         super(definition, device, threshold);
     }
 
-    end(direction, percentage, time) {
-        if (percentage < this.threshold) {
-            return;
-        }
-
+    do_action(direction, percentage, time) {
         const window = global.display.get_focus_window();
 
         if (window == null) {
@@ -259,11 +261,7 @@ var GlobalDesktopAction = class extends BaseAction {
         return false;
     }
 
-    end(direction, percentage, time) {
-        if (percentage < this.threshold) {
-            return;
-        }
-
+    do_action(direction, percentage, time) {
         if (this._cancel_current_mode()) {
             return;
         }
@@ -287,14 +285,9 @@ var ExecAction = class extends BaseAction {
         super(definition, device, threshold);
     }
 
-    end(direction, percentage, time) {
-        if (percentage < this.threshold) {
-            return;
-        }
-
-        const real_action = this.definition.action.replace("EXEC:", "");
+    do_action(direction, percentage, time) {
         try {
-            GLib.spawn_command_line_async(real_action);
+            GLib.spawn_command_line_async(this.definition.custom_value);
         } catch (e) {
             global.logError(`Failed to execute custom gesture action: ${e}`);
         }
@@ -391,6 +384,11 @@ var VolumeAction = class extends BaseAction {
     }
 
     begin(direction, percentage, time) {
+        if (this.definition.action === "TOGGLE_MUTE" && this.definition.phase === "start") {
+            this._toggle_muted();
+            return;
+        };
+
         this.update(direction, percentage, time);
     }
 
@@ -405,12 +403,13 @@ var VolumeAction = class extends BaseAction {
     }
 
     end(direction, percentage, time) {
+        if (this.definition.action === "TOGGLE_MUTE" && this.definition.phase === "end") {
+            this._toggle_muted();
+            return;
+        };
+
         if (percentage < this.threshold) {
             return;
-        }
-
-        if (this.definition.action === "TOGGLE_MUTE") {
-            this._toggle_muted();
         }
     }
 }
@@ -429,11 +428,7 @@ var MediaAction = class extends BaseAction {
         super(definition, device, threshold);
     }
 
-    end(direction, percentage, time) {
-        if (percentage < this.threshold) {
-            return;
-        }
-
+    do_action(direction, percentage, time) {
         const player = mpris_controller.get_player();
 
         if (player == null) {
@@ -451,5 +446,66 @@ var MediaAction = class extends BaseAction {
         if (this.definition.action === "MEDIA_PREVIOUS") {
             player.previous_track();
         }
+    }
+}
+
+const ZOOM_SAMPLE_RATE = 20 * 1000 // 20 ms; g_get_monotonic_time() returns microseconds
+
+var ZoomAction = class extends BaseAction {
+    constructor(definition, device, threshold) {
+        super(definition, device, threshold);
+        this.last_percentage = 0;
+        this.last_time = 0;
+        this.poll_interval = 50 * 1000;
+
+        if (definition.custom_value !== "") {
+            try {
+                let adjust = parseInt(definition.custom_value) * 1000;
+                this.poll_interval = this.poll_interval + adjust;
+            } catch (e) {}
+        }
+    }
+
+    begin(direction, percentage, time) {
+        this.last_percentage = 0;
+        this.last_time = 0;
+
+        this.do_action(direction, percentage, time);
+    }
+
+    update(direction, percentage, time) {
+        this.do_action(direction, percentage, time);
+    }
+
+    do_action(direction, percentage, time) {
+        let zoom_in = true;
+
+        if (time < (this.last_time + this.poll_interval)) {
+            return;
+        }
+
+        if (percentage == this.last_percentage) {
+            return;
+        }
+
+        switch (this.definition.action) {
+        case "ZOOM_IN":
+            zoom_in = percentage > this.last_percentage;
+            break;
+        case "ZOOM_OUT":
+            zoom_in = percentage < this.last_percentage;
+            break;
+        }
+
+        if (zoom_in) {
+            Magnifier.magInputHandler._zoom_in();
+        }
+        else
+        {
+            Magnifier.magInputHandler._zoom_out();
+        }
+
+        this.last_time = time;
+        this.last_percentage = percentage;
     }
 }

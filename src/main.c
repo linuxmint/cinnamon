@@ -9,16 +9,13 @@
 #include <string.h>
 
 #include <clutter/clutter.h>
-#include <clutter/x11/clutter-x11.h>
 #include <dbus/dbus-shared.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkx.h>
-#include <gtk/gtk.h>
 #include <glib/gi18n-lib.h>
 #include <girepository.h>
 #include <meta/main.h>
 #include <meta/meta-plugin.h>
 #include <meta/prefs.h>
+#include <meta/util.h>
 
 #include <atk-bridge.h>
 #include "cinnamon-global.h"
@@ -315,9 +312,6 @@ main (int argc, char **argv)
   gchar *env_no_gail;
   gchar *env_no_at_bridge;
 
-  g_setenv ("CLUTTER_DISABLE_XINPUT", "1", TRUE);
-  g_setenv ("CLUTTER_BACKEND", "x11", TRUE);
-
   bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
@@ -356,8 +350,6 @@ main (int argc, char **argv)
     }
   else
     g_unsetenv ("NO_AT_BRIDGE");
-  g_unsetenv ("CLUTTER_DISABLE_XINPUT");
-  g_unsetenv ("CLUTTER_BACKEND");
 
   /* FIXME: Add gjs API to set this stuff and don't depend on the
    * environment.  These propagate to child processes.
@@ -367,8 +359,10 @@ main (int argc, char **argv)
 
   g_setenv ("CINNAMON_VERSION", VERSION, TRUE);
 
-
-  center_pointer_on_screen();
+  if (!meta_is_wayland_compositor ())
+    {
+      center_pointer_on_screen ();
+    }
 
   cinnamon_dbus_init (meta_get_replace_current_wm (),
                       &session_running);

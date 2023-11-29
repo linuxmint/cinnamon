@@ -33,7 +33,6 @@
 #include <meta/meta-monitor-manager.h>
 #include <meta/window.h>
 
-#include <X11/Xatom.h>
 #include <locale.h>
 #include <string.h>
 #include <stdio.h>

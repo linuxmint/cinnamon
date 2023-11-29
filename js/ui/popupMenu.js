@@ -2084,7 +2084,7 @@ var PopupMenuBase = class PopupMenuBase {
     _menuQueueRelayout() {
         let node = this.actor.peek_theme_node();
         if (node && node.get_background_image()) {
-            Util.each(this.box.get_children(), (actor) => actor.queue_relayout());
+            this.box.get_children().forEach( actor => actor.queue_relayout());
         }
     }
 

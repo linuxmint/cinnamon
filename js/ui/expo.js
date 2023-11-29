@@ -38,7 +38,12 @@ Expo.prototype = {
         // one. Instances of this class share a single CoglTexture behind the
         // scenes which allows us to show the background with different
         // rendering options without duplicating the texture data.
-        this._background = Meta.X11BackgroundActor.new_for_display(global.display);
+        if (!Meta.is_wayland_compositor()) {
+            this._background = Meta.X11BackgroundActor.new_for_display(global.display);
+        } else {
+            this._background = new Clutter.Actor();
+        }
+
         this._background.hide();
         global.overlay_group.add_actor(this._background);
 
