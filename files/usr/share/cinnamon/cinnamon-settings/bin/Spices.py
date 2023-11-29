@@ -449,7 +449,7 @@ class Spice_Harvester(GObject.Object):
                     except Exception as error:
                         if not self.themes:
                             print(error)
-                            print(_("Skipping %s: there was a problem trying to read metadata.json") % uuid)
+                            print(f"Skipping {uuid}: there was a problem trying to read metadata.json")
             else:
                 print(f"{file_path} does not exist! Skipping")
 

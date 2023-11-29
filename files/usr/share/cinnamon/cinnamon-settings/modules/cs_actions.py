@@ -8,7 +8,7 @@ from gi.repository import GLib
 
 
 class Module:
-    comment = _("Manage your Actions")
+    comment = _("Manage your actions")
     name = "actions"
     category = "prefs"
 
@@ -18,7 +18,7 @@ class Module:
 
     def on_module_selected(self):
         if not self.loaded:
-            print(_("Loading Actions module"))
+            print("Loading Actions module")
             self.sidePage.load(self.window)
 
     def _setParentRef(self, window):
@@ -56,7 +56,7 @@ class ManageActionsPage(ManageSpicesPage):
     collection_type = "action"
     instance_button_text = _("Enable")
     remove_button_text = _("Disable")
-    installed_page_title = _("Installed Actions")
+    installed_page_title = _("Installed actions")
     uninstall_button_text = _("Uninstall")
     restore_button_text = _("Remove all")
 

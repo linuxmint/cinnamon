@@ -605,7 +605,7 @@ class ManageSpicesPage(SettingsPage):
         collection_msgs = {'applet': _("This will restore the default set of enabled applets. Are you sure you want to do this?"),
           'desklet': _("This will restore the default set of enabled desklets. Are you sure you want to do this?"),
           'extension': _("This will disable all active extensions. Are you sure you want to do this?"),
-          'action': _("This will remove all Actions. Are you sure you want to do this?")}
+          'action': _("This will remove all actions. Are you sure you want to do this?")}
         msg = collection_msgs.get(self.collection_type)
 
         if show_prompt(msg, self.window):

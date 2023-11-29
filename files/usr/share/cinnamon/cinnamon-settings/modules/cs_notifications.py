@@ -30,9 +30,9 @@ MEDIA_KEYS_OSD_SIZES = [
 ]
 
 NOTIFICATION_DISPLAY_SCREENS = [
-    ("primary-screen", _("Primary screen")),
-    ("active-screen", _("Active screen")),
-    ("fixed-screen", _("Fixed screen"))
+    ("primary-screen", _("Primary monitor")),
+    ("active-screen", _("Active monitor")),
+    ("fixed-screen", _("The monitor specified below"))
 ]
 
 
@@ -68,10 +68,10 @@ class Module:
         switch = GSettingsSwitch(_("Show notifications on the bottom side of the screen"), "org.cinnamon.desktop.notifications", "bottom-notifications")
         settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
 
-        combo = GSettingsComboBox(_("Screen to use for displaying notifications"), "org.cinnamon.desktop.notifications", "notification-screen-display", NOTIFICATION_DISPLAY_SCREENS)
+        combo = GSettingsComboBox(_("Monitor to use for displaying notifications"), "org.cinnamon.desktop.notifications", "notification-screen-display", NOTIFICATION_DISPLAY_SCREENS)
         settings.add_reveal_row(combo, "org.cinnamon.desktop.notifications", "display-notifications")
 
-        spin = GSettingsSpinButton(_("Fixed screen number"), "org.cinnamon.desktop.notifications", "notification-fixed-screen", None, 1, 13, 1)
+        spin = GSettingsSpinButton(_("Monitor"), "org.cinnamon.desktop.notifications", "notification-fixed-screen", None, 1, 13, 1)
         settings.add_reveal_row(spin)
         spin.revealer.settings = Gio.Settings("org.cinnamon.desktop.notifications")
         spin.revealer.settings.bind_with_mapping("notification-screen-display", spin.revealer, "reveal-child", Gio.SettingsBindFlags.GET, lambda option: option == "fixed-screen", None)
