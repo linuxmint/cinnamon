@@ -60,6 +60,9 @@ const ScreenshotIface =
               <arg type="i" direction="out" name="width"/> \
               <arg type="i" direction="out" name="height"/> \
             </method> \
+            <method name="PickColor"> \
+               <arg type="a{sv}" direction="out" name="result"/> \
+            </method> \
         </interface> \
     </node>';
 
@@ -139,6 +142,49 @@ var ScreenshotService = class ScreenshotService {
                     "Operation was cancelled");
             }
         });
+    }
+
+    PickColorAsync(params, invocation) {
+        let pickColor = new PickColor();
+
+        try {
+            pickColor.show();
+
+            pickColor.connect('finished', (pickColor, point) => {
+                if (point == null) {
+                    // User cancelled (Escape)
+                    invocation.return_error_literal(
+                        Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED,
+                        'Operation was cancelled');
+                    return;
+                }
+
+                let x = point.x / global.ui_scale;
+                let y = point.y / global.ui_scale;
+
+                let screenshot = new Cinnamon.Screenshot();
+
+                screenshot.pick_color(
+                    point.x,
+                    point.y,
+                    (obj, success, color, inv=null) => {
+                        let retval = GLib.Variant.new('(a{sv})', [{
+                            color: GLib.Variant.new('(ddd)', [
+                                color.red / 255.0,
+                                color.green / 255.0,
+                                color.blue / 255.0,
+                            ]),
+                        }]);
+
+                        invocation.return_value(retval);
+                    }
+                );
+            });
+        } catch (e) {
+            invocation.return_error_literal(
+                Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED,
+                'Operation was cancelled');
+        }
     }
 
     FlashAreaAsync(params, invocation) {
@@ -387,3 +433,118 @@ class SelectArea {
     }
 };
 Signals.addSignalMethods(SelectArea.prototype);
+
+class PickColor {
+    constructor() {
+        this._pickX = -1;
+        this._pickY = -1;
+        this._result = null;
+
+        this.active = false;
+        this.stage_event_id = 0;
+
+        this._group = new St.Widget(
+            { 
+                visible: false,
+                reactive: true,
+                x: 0,
+                y: 0,
+                layout_manager: new Clutter.FixedLayout()
+            }
+        );
+        Main.uiGroup.add_actor(this._group);
+
+        this._group.connect('button-press-event',
+                            this._onButtonPress.bind(this));
+        this._group.connect('button-release-event',
+                            this._onButtonRelease.bind(this));
+
+        let constraint = new Clutter.BindConstraint({ source: global.stage,
+                                                      coordinate: Clutter.BindCoordinate.ALL });
+        this._group.add_constraint(constraint);
+    }
+
+    show() {
+        if (!Main.pushModal(this._group))
+            return;
+        this._group.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
+
+        global.set_cursor(Cinnamon.Cursor.CROSSHAIR);
+        Main.uiGroup.set_child_above_sibling(this._group, null);
+        this._group.visible = true;
+    }
+
+    _getGeometry() {
+        return { x: this._pickX,
+                 y: this._pickY,
+                 width: 1,
+                 height: 1 };
+    }
+
+    _onKeyPressEvent(object, keyPressEvent) {
+        let modifiers = Cinnamon.get_event_state(keyPressEvent);
+        let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
+        let symbol = keyPressEvent.get_key_symbol();
+        if (symbol === Clutter.KEY_Escape && !(modifiers & ctrlAltMask)) {
+            this._ungrab()
+            return;
+        }
+
+        return Clutter.EVENT_STOP;
+    }
+
+    _onButtonPress(actor, event) {
+        if (this.active) {
+            return Clutter.EVENT_STOP;
+        }
+
+        [this._pickX, this._pickY] = event.get_coords();
+        this._pickX = Math.floor(this._pickX);
+        this._pickY = Math.floor(this._pickY);
+
+        this.active = true;
+
+        this.stage_event_id = global.stage.connect("captured-event", (actor, event) => {
+            if (Main.modalCount === 0)
+                return false;
+
+            if (event.type() === Clutter.EventType.BUTTON_RELEASE) {
+                return this._onButtonRelease(actor, event);
+            }
+
+            return Clutter.EVENT_PROPAGATE;
+        });
+    }
+
+    _onButtonRelease(actor, event) {
+        this._result = this._getGeometry();
+        Tweener.addTween(this._group,
+                         { opacity: 0,
+                           time: 0.1,
+                           transition: 'easeOutQuad',
+                           onComplete: () => {
+                               this._ungrab();
+                           }
+                         });
+        return Clutter.EVENT_PROPAGATE;
+    }
+
+    _ungrab() {
+        this.active = false;
+
+        if (this.stage_event_id > 0) {
+            global.stage.disconnect(this.stage_event_id);
+            this.stage_event_id = 0;
+        }
+
+        Main.popModal(this._group);
+        global.unset_cursor();
+        this.emit('finished', this._result);
+
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this._group.destroy();
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+};
+Signals.addSignalMethods(PickColor.prototype);

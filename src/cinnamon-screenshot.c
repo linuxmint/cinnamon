@@ -37,6 +37,9 @@ typedef struct _screenshot_data {
   gboolean include_frame;
 
   CinnamonScreenshotCallback callback;
+
+  CinnamonScreenshotPickColorCallback pick_callback;
+  ClutterColor pick_color;
 } _screenshot_data;
 
 G_DEFINE_TYPE(CinnamonScreenshot, cinnamon_screenshot, G_TYPE_OBJECT);
@@ -353,6 +356,71 @@ grab_window_screenshot (ClutterActor *stage,
   g_object_unref (result);
 }
 
+static void
+on_pixel_grabbed (GObject      *source,
+                  GAsyncResult *res,
+                  gpointer      user_data)
+{
+  _screenshot_data *screenshot_data = (_screenshot_data *) user_data;
+
+  if (screenshot_data->pick_callback)
+    screenshot_data->pick_callback (screenshot_data->screenshot,
+                                    TRUE,
+                                    &screenshot_data->pick_color);
+
+  cairo_surface_destroy (screenshot_data->image);
+  g_object_unref (screenshot_data->screenshot);
+  g_free (screenshot_data);
+}
+
+#if G_BYTE_ORDER == G_LITTLE_ENDIAN
+#define INDEX_A 3
+#define INDEX_R 2
+#define INDEX_G 1
+#define INDEX_B 0
+#else
+#define INDEX_A 0
+#define INDEX_R 1
+#define INDEX_G 2
+#define INDEX_B 3
+#endif
+
+static void
+grab_pixel (ClutterActor *stage,
+            ClutterPaintContext *paint_context,
+            _screenshot_data *screenshot_data)
+{
+  MetaDisplay *display = cinnamon_global_get_display (screenshot_data->screenshot->global);
+  GSimpleAsyncResult *result;
+
+  do_grab_screenshot (screenshot_data,
+                      paint_context,
+                      screenshot_data->screenshot_area.x,
+                      screenshot_data->screenshot_area.y,
+                      1,
+                      1);
+
+  g_signal_handlers_disconnect_by_func (stage, (void *) grab_pixel, (gpointer)screenshot_data);
+
+  meta_enable_unredirect_for_display (display);
+
+  uint8_t *data = cairo_image_surface_get_data (screenshot_data->image);
+
+  screenshot_data->pick_color.alpha = data[INDEX_A];
+  screenshot_data->pick_color.red   = data[INDEX_R];
+  screenshot_data->pick_color.green = data[INDEX_G];
+  screenshot_data->pick_color.blue  = data[INDEX_B];
+
+  result = g_simple_async_result_new (NULL, on_pixel_grabbed, (gpointer) screenshot_data, grab_pixel);
+  g_simple_async_result_complete_in_idle (result);
+  g_object_unref (result);
+}
+
+#undef INDEX_A
+#undef INDEX_R
+#undef INDEX_G
+#undef INDEX_B
+
 /**
  * cinnamon_screenshot_screenshot:
  * @screenshot: the #CinnamonScreenshot
@@ -479,6 +547,41 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
 
   meta_disable_unredirect_for_display (display);
   g_signal_connect_after (stage, "paint", G_CALLBACK (grab_window_screenshot), (gpointer) data);
+
+  clutter_actor_queue_redraw (stage);
+}
+
+/**
+ * cinnamon_screenshot_pick_color:
+ * @screenshot: the #CinnamonScreenshot
+ * @x: The X coordinate to pick
+ * @y: The Y coordinate to pick
+ * @callback: (scope async): function to call when finished
+ *
+ * Picks the pixel at @x, @y and returns its color as #ClutterColor in callback.
+ */
+void
+cinnamon_screenshot_pick_color (CinnamonScreenshot *screenshot,
+                                int x,
+                                int y,
+                                CinnamonScreenshotPickColorCallback callback)
+{
+  MetaDisplay *display;
+  ClutterActor *stage;
+  _screenshot_data *data = g_new0 (_screenshot_data, 1);
+
+  data->screenshot = g_object_ref (screenshot);
+  data->screenshot_area.x = x;
+  data->screenshot_area.y = y;
+  data->screenshot_area.width = 1;
+  data->screenshot_area.height = 1;
+  data->pick_callback = callback;
+
+  display = cinnamon_global_get_display (screenshot->global);
+  stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
+
+  meta_disable_unredirect_for_display (display);
+  g_signal_connect_after (stage, "paint", G_CALLBACK (grab_pixel), (gpointer)data);
 
   clutter_actor_queue_redraw (stage);
 }
