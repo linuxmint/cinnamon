@@ -400,14 +400,14 @@ class Harvester:
 
                 with tempfile.TemporaryDirectory() as d:
                     _zip.extractall(d)
-                    self._install_from_folder(os.path.join(d, uuid), uuid, from_spices=True)
+                    self._install_from_folder(os.path.join(d, uuid), d, uuid, from_spices=True)
                     self.write_to_log(uuid, action)
 
                 self._load_metadata()
         except Exception as e:
             debug(f"couldn't install: {e}")
 
-    def _install_from_folder(self, folder, uuid, from_spices=False):
+    def _install_from_folder(self, folder, base_folder, uuid, from_spices=False):
         contents = os.listdir(folder)
 
         if not self.themes:
@@ -432,7 +432,7 @@ class Harvester:
         if not self.actions:
             shutil.copytree(folder, dest)
         else:
-            shutil.copytree(folder, self.install_folder, dirs_exist_ok=True)
+            shutil.copytree(base_folder, self.install_folder, dirs_exist_ok=True)
 
         if not self.themes:
             # ensure proper file permissions
