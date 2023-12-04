@@ -504,11 +504,15 @@ CinnamonDBus.prototype = {
     },
 
     ShowMonitorLabelsAsync(monitor_info, invocation) {
-        Main.monitorLabeler.show(monitor_info[0], invocation.get_sender());
+        if (Main.monitorLabeler != null) {
+            Main.monitorLabeler.show(monitor_info[0], invocation.get_sender());
+        }
     },
 
     HideMonitorLabelsAsync(tuple, invocation) {
-        Main.monitorLabeler.hide(invocation.get_sender());
+        if (Main.monitorLabeler != null) {
+            Main.monitorLabeler.hide(invocation.get_sender());
+        }
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

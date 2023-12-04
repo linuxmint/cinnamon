@@ -395,7 +395,12 @@ function start() {
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
     pointerSwitcher = new PointerTracker.PointerSwitcher();
-    monitorLabeler = new MonitorLabeler();
+
+    if (Meta.is_wayland_compositor()) {
+        monitorLabeler = new MonitorLabeler();
+    } else {
+        monitorLabeler = null;
+    }
 
     xdndHandler = new XdndHandler.XdndHandler();
     osdWindowManager = new OsdWindow.OsdWindowManager();
