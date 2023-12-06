@@ -191,6 +191,8 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         except (KeyError, ValueError):
             self.role = None
 
+        self.disabled_about = metadata.get('disable_about', False)
+
         # Check for the right version subdir (if the spice is multi-versioned,
         # it won't necessarily be in its root directory)
         self.metadata['path'] = find_extension_subdir(self.metadata['path'])
@@ -307,6 +309,8 @@ class ManageSpicesRow(Gtk.ListBoxRow):
                 self.add_status('locked', 'changes-prevent-symbolic', _("This is a system desklet. It cannot be removed."))
             elif self.extension_type == "extension":
                 self.add_status('locked', 'changes-prevent-symbolic', _("This is a system extension. It cannot be removed."))
+            elif self.extension_type == "action":
+                self.add_status('locked', 'changes-prevent-symbolic', '')
 
         if self.writable and self.extension_type != 'action':
             self.scan_extension_for_danger(self.metadata['path'])
@@ -569,6 +573,9 @@ class ManageSpicesPage(SettingsPage):
             self.uninstall_button.set_sensitive(row.writable)
             self.about_button.set_sensitive(True)
 
+        if self.collection_type == 'action' and hasattr(row, 'disabled_about'):
+            self.about_button.set_sensitive(not row.disabled_about)
+
     def add_instance(self, *args):
         extension_row = self.list_box.get_selected_row()
         self.enable_extension(extension_row.uuid, extension_row.name, extension_row.version_supported)
@@ -610,13 +617,13 @@ class ManageSpicesPage(SettingsPage):
 
         if show_prompt(msg, self.window):
             gio_sett = 'org.nemo.plugins' if self.collection_type == 'action' else 'org.cinnamon'
-            sett = Gio.Settings.new(f'{gio_sett}')
+            sett = Gio.Settings.new(gio_sett)
             if self.collection_type == 'action':
                 for uuid in self.spices.get_installed():
                     disableds = sett.get_strv('disabled-actions')
                     uuid_name = f'{uuid}.nemo_action'
                     if uuid_name in disableds:
-                        disableds.remove(f'{uuid_name}')
+                        disableds.remove(uuid_name)
                         sett.set_strv('disabled-actions', disableds)
                     self.spices.uninstall(uuid)
                 return

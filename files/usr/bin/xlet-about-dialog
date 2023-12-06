@@ -49,7 +49,7 @@ class AboutDialog(Gtk.AboutDialog):
             self.props.authors = self.metadata['contributors'].split(',')
 
         xlet_name = self._(self.metadata.get('name'))
-        self.props.program_name = f"{xlet_name} ({self.metadata['uuid']})"
+        self.props.program_name = f"{xlet_name} ({self.metadata.get('uuid')})"
 
         self.connect('response', self.close)
         self.set_title(_("About %s") % self.props.program_name)
@@ -72,8 +72,8 @@ class AboutDialog(Gtk.AboutDialog):
         self.set_default_icon_name(f"cs-{self.metadata['type']}")
 
     def _(self, msg):
-        gettext.bindtextdomain(self.metadata['uuid'], home + '/.local/share/locale')
-        translation = gettext.dgettext(self.metadata['uuid'], msg)
+        gettext.bindtextdomain(self.metadata.get('uuid'), home + '/.local/share/locale')
+        translation = gettext.dgettext(self.metadata.get('uuid'), msg)
         # try with cinnamon domain if the xlet domain doesn't work
         if translation == msg:
             return _(msg)
@@ -121,12 +121,15 @@ if __name__ == "__main__":
         print(_('Unable to locate %s %s') % (xlet_type, uuid))
         sys.exit(1)
 
-    with open(os.path.join(path, 'metadata.json'), encoding='utf-8') as meta:
-        _metadata = json.load(meta)
+    try:
+        with open(os.path.join(path, 'metadata.json'), encoding='utf-8') as meta:
+            _metadata = json.load(meta)
 
-    _metadata['path'] = path
-    _metadata['type'] = xlet_type
+        _metadata['path'] = path
+        _metadata['type'] = xlet_type
 
-    AboutDialog(_metadata, xlet_type)
+        AboutDialog(_metadata, xlet_type)
 
-    Gtk.main()
+        Gtk.main()
+    except FileNotFoundError:
+        pass
