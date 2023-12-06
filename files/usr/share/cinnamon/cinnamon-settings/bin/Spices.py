@@ -177,8 +177,11 @@ class Spice_Harvester(GObject.Object):
             old_install_folder = os.path.join(GLib.get_user_data_dir(), 'themes')
             self.spices_directories = (self.install_folder, old_install_folder)
         elif self.actions:
-            self.install_folder = f'{home}/.local/share/nemo/actions/'
-            self.spices_directories = (self.install_folder, )
+            actions = 'nemo/actions/'
+            self.install_folder = f'{home}/.local/share/{actions}'
+            sys_dirs = [x + f'/{actions}' for x in GLib.get_system_data_dirs()]
+            sys_dirs.append(self.install_folder)
+            self.spices_directories = (sys_dirs)
         else:
             self.install_folder = f'{home}/.local/share/cinnamon/{self.collection_type}s/'
             self.spices_directories = (f'/usr/share/cinnamon/{self.collection_type}s/', self.install_folder)
@@ -209,7 +212,7 @@ class Spice_Harvester(GObject.Object):
                 dbus_path = 'org.Nemo'
                 gsetting = '/org/Nemo'
             Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
-                                      f'{dbus_path}', f'{gsetting}', f'{dbus_path}', None, self._on_proxy_ready, None)
+                                      dbus_path, gsetting, dbus_path, None, self._on_proxy_ready, None)
         except GLib.Error as e:
             print(e)
 
@@ -436,23 +439,42 @@ class Spice_Harvester(GObject.Object):
         for file_path in self.spices_directories:
             if os.path.exists(file_path):
                 extensions = os.listdir(file_path)
+
                 for uuid in extensions:
-                    subdirectory = os.path.join(file_path, uuid)
-                    if uuid.endswith('.nemo_action'):
+                    if uuid == 'sample.nemo_action':
+                        continue
+                    full_path = os.path.join(file_path, uuid)
+                    uuid_path = full_path.split('.nemo_action')[0]
+                    if uuid.endswith('.nemo_action') and not os.path.exists(uuid_path):
+                        # A singular .nemo_action file has been detected
+                        metadata = dict()
+                        keyfile = GLib.KeyFile.new()
+                        keyfile.load_from_file(full_path, GLib.KeyFileFlags.KEEP_TRANSLATIONS)
+                        metadata['name'] = keyfile.get_locale_string('Nemo Action', 'Name')
+                        metadata['description'] = keyfile.get_locale_string('Nemo Action', 'Comment')
+                        metadata['writable'] = False
+                        metadata['disable_about'] = True
+                        metadata['path'] = self.install_folder
+                        _uuid = uuid.split('.nemo_action')[0]
+                        metadata['uuid'] = _uuid
+                        self.meta_map[_uuid] = metadata
+                    elif os.path.isfile(full_path):
                         continue
                     # For actions, ignore any other normal files, an action may place other support scripts in here.
-                    if self.actions and not os.path.isdir(subdirectory):
+                    if self.actions and not os.path.isdir(full_path):
                         continue
-                    try:
-                        with open(f"{subdirectory}/metadata.json", encoding='utf-8') as json_data:
-                            metadata = json.load(json_data)
-                            metadata['path'] = subdirectory
-                            metadata['writable'] = os.access(subdirectory, os.W_OK)
-                            self.meta_map[uuid] = metadata
-                    except Exception as error:
-                        if not self.themes:
-                            print(error)
-                            print(f"Skipping {uuid}: there was a problem trying to read metadata.json")
+                    else:
+                        try:
+                            # Process Actions installed via Spices
+                            with open(f"{full_path}/metadata.json", encoding='utf-8') as json_data:
+                                metadata = json.load(json_data)
+                                metadata['path'] = full_path
+                                metadata['writable'] = os.access(full_path, os.W_OK)
+                                self.meta_map[uuid] = metadata
+                        except Exception as error:
+                            if not self.themes:
+                                print(error)
+                                print(f"Skipping {uuid}: there was a problem trying to read metadata.json")
             else:
                 print(f"{file_path} does not exist! Skipping")
 
