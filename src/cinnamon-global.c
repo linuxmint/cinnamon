@@ -848,6 +848,7 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   }
 
   global->stage = CLUTTER_STAGE (meta_get_stage_for_display (global->meta_display));
+  st_clipboard_set_selection (meta_display_get_selection (global->meta_display));
 
   g_signal_connect (global->stage, "notify::width",
                     G_CALLBACK (global_stage_notify_width), global);
