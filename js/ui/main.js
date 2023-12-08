@@ -1364,7 +1364,9 @@ function activateWindow(window, time, workspaceNum) {
     window.activate(time);
     Mainloop.idle_add(function() {
         window.foreach_transient(function(win) {
-            win.activate(time);
+            if (win.get_window_type() != Meta.WindowType.NORMAL) {
+                win.activate(time);
+            }
         });
     });
 
