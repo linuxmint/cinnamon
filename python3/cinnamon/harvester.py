@@ -309,6 +309,9 @@ class Harvester:
                     subdirectory = os.path.join(directory, uuid)
                     if uuid.endswith('.nemo_action'):
                         continue
+                    # For actions, ignore any other normal files, an action may place other support scripts in here.
+                    if self.actions and not os.path.isdir(subdirectory):
+                        continue
                     try:
                         with open(os.path.join(subdirectory, "metadata.json"), "r", encoding="utf-8") as f:
                             metadata = json.load(f)

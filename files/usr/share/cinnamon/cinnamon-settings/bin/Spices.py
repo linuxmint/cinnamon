@@ -440,6 +440,9 @@ class Spice_Harvester(GObject.Object):
                     subdirectory = os.path.join(file_path, uuid)
                     if uuid.endswith('.nemo_action'):
                         continue
+                    # For actions, ignore any other normal files, an action may place other support scripts in here.
+                    if self.actions and not os.path.isdir(subdirectory):
+                        continue
                     try:
                         with open(f"{subdirectory}/metadata.json", encoding='utf-8') as json_data:
                             metadata = json.load(json_data)
