@@ -441,7 +441,7 @@ class AutostartBox(Gtk.Box):
         self.remove_button.set_sensitive(False)
         box.add(self.remove_button)
 
-        self.run_button = Gtk.Button.new_from_icon_name("system-run-symbolic", Gtk.IconSize.BUTTON)
+        self.run_button = Gtk.Button.new_from_icon_name("media-playback-start-symbolic", Gtk.IconSize.BUTTON)
         self.run_button.set_tooltip_text(_("Run now"))
         self.run_button.connect("clicked", self.on_run_button_clicked)
         button_group.add_widget(self.run_button)

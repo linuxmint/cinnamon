@@ -763,7 +763,7 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         size_groups[3].add_widget(self.button_box)
 
         if not self.installed:
-            download_button = Gtk.Button.new_from_icon_name('go-down-symbolic', 2)
+            download_button = Gtk.Button.new_from_icon_name('folder-download-symbolic', 2)
             self.button_box.pack_start(download_button, False, False, 0)
             download_button.connect('clicked', self.download)
             download_button.set_tooltip_text(_("Install"))
