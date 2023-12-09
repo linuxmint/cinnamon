@@ -23,7 +23,7 @@ help. In case Cinnamon runs but is extremely slow you can try
 enabling KMS or running it with CLUTTER_VBLANK=none in its
 environment. See http://bugzilla.openedhand.com/show_bug.cgi?id=1730.
 
-3. If you have enough corage...
+3. If you have enough courage...
 
 Cinnamon installs a .desktop file which makes it possible to make
 it the default for your session, replacing metacity/gnome-panel. To
