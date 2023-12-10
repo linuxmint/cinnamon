@@ -75,6 +75,7 @@ STANDALONE_MODULES = [
     [_("Firewall"),                      "firewall-config",                     "cs-firewall",           "admin",          _("firewall, block, filter, programs")],
     [_("Languages"),                     "mintlocale",                          "cs-language",           "prefs",          _("language, install, foreign")],
     [_("Input Method"),                  "mintlocale-im",                       "cs-input-method",       "prefs",          _("language, install, foreign, input, method, chinese, korean, japanese, typing")],
+    [_("Menu Editor"),                   "cinnamon-menu-editor",                "alacarte",              "prefs",          _("menu, editor")],
     [_("Login Window"),                  "pkexec lightdm-settings",             "cs-login",              "admin",          _("login, lightdm, mdm, gdm, manager, user, password, startup, switch")],
     [_("Login Window"),                  "lightdm-gtk-greeter-settings-pkexec", "cs-login",              "admin",          _("login, lightdm, manager, settings, editor")],
     [_("Driver Manager"),                "cinnamon-driver-manager",             "cs-drivers",            "admin",          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
