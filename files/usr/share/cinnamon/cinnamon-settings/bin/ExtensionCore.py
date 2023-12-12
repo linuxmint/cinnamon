@@ -12,7 +12,7 @@ import locale
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, GdkPixbuf, GLib
+from gi.repository import Gio, Gtk, Gdk, GdkPixbuf, GLib
 
 from xapp.SettingsWidgets import SettingsPage, SettingsWidget, SettingsLabel
 from Spices import ThreadedTaskManager
@@ -241,17 +241,22 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         if 'icon' in self.metadata:
             icon_name = self.metadata['icon']
             if Gtk.IconTheme.get_default().has_icon(icon_name):
-                icon = Gtk.Image.new_from_icon_name(icon_name, 3)
+                icon = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.LARGE_TOOLBAR)
 
         if os.path.exists(icon_path):
             try:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(icon_path, 24, 24, True)
-                icon = Gtk.Image.new_from_pixbuf(pixbuf)
-            except:
+                e, width, height = Gtk.IconSize.lookup(Gtk.IconSize.LARGE_TOOLBAR)
+                scale = self.get_scale_factor()
+
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(icon_path, width * scale, width * scale, True)
+                surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, scale, None)
+                icon = Gtk.Image.new_from_surface(surface)
+            except Exception as e:
+                print(e)
                 icon = None
 
         if icon is None:
-            icon = Gtk.Image.new_from_icon_name(f'cs-{extension_type}s', 3)
+            icon = Gtk.Image.new_from_icon_name(f'cs-{extension_type}s', Gtk.IconSize.LARGE_TOOLBAR)
 
         grid.attach_next_to(icon, enabled_box, Gtk.PositionType.RIGHT, 1, 1)
 
