@@ -450,6 +450,16 @@ class Spice_Harvester(GObject.Object):
                         metadata = dict()
                         keyfile = GLib.KeyFile.new()
                         keyfile.load_from_file(full_path, GLib.KeyFileFlags.KEEP_TRANSLATIONS)
+
+                        try:
+                            # The Active key is not typically used, but there are some inactive actions
+                            # installed by Nemo, which should not show in the list.
+                            if not keyfile.get_boolean('Nemo Action', 'Active'):
+                                continue
+                        except GLib.Error as e:
+                            if e.code == GLib.KeyFileError.NOT_FOUND:
+                                pass
+
                         metadata['name'] = keyfile.get_locale_string('Nemo Action', 'Name')
                         metadata['description'] = keyfile.get_locale_string('Nemo Action', 'Comment')
                         metadata['writable'] = False
