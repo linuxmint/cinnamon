@@ -449,7 +449,12 @@ class Spice_Harvester(GObject.Object):
                         # A singular .nemo_action file has been detected
                         metadata = dict()
                         keyfile = GLib.KeyFile.new()
-                        keyfile.load_from_file(full_path, GLib.KeyFileFlags.KEEP_TRANSLATIONS)
+
+                        try:
+                            keyfile.load_from_file(full_path, GLib.KeyFileFlags.KEEP_TRANSLATIONS)
+                        except GLib.Error as e:
+                            print("Could not read action file '%s': %s" % (full_path,e.message))
+                            continue
 
                         try:
                             # The Active key is not typically used, but there are some inactive actions
@@ -460,8 +465,21 @@ class Spice_Harvester(GObject.Object):
                             if e.code == GLib.KeyFileError.NOT_FOUND:
                                 pass
 
-                        metadata['name'] = keyfile.get_locale_string('Nemo Action', 'Name')
-                        metadata['description'] = keyfile.get_locale_string('Nemo Action', 'Comment')
+                        name = keyfile.get_locale_string('Nemo Action', 'Name')
+                        metadata['name'] = name.replace("_", "")
+
+                        try:
+                            metadata['description'] = keyfile.get_locale_string('Nemo Action', 'Comment')
+                        except GLib.Error as e:
+                            if e.code == GLib.KeyFileError.NOT_FOUND:
+                                pass
+
+                        try:
+                            metadata['icon'] = keyfile.get_string('Nemo Action', 'Icon-Name')
+                        except GLib.Error as e:
+                            if e.code == GLib.KeyFileError.NOT_FOUND:
+                                pass
+
                         metadata['writable'] = False
                         metadata['disable_about'] = True
                         metadata['path'] = self.install_folder
