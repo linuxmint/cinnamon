@@ -1031,9 +1031,11 @@ var PopupResizeHandler = class PopupResizeHandler {
         this._signals.connect(this.actor, 'motion-event', (...args) => this._motion_event(...args));
         this._signals.connect(this.actor, 'leave-event', (...args) => this._leave_event(...args));
         this._signals.connect(this.actor, 'button-press-event', (...args) => this._onButtonPress(...args));
+        this._signals.connect(this.actor, 'show', (...args) => this._on_actor_show(...args));
 
         this._no_edges_draggable = true;
         this.inhibit_resizing = false;
+        this._size_restricted = false;
 
         this._drag_start_position = null;
         this._drag_start_size = null;
@@ -1159,20 +1161,18 @@ var PopupResizeHandler = class PopupResizeHandler {
         let cursor = 0;
 
         let [x, y] = event.get_coords();
-
+        
         //Immediately resize actor if greater than work area. This can happen after a
         //change of resolution or monitor scaling.
-        if (!Main.layoutManager.keyboardBox.visible) {
-            if (this.actor.height > this._workAreaHeight) {
-                const overHeight = this.actor.height - this._workAreaHeight;
-                this._resized_callback(this._get_user_width(), this._get_user_height() - overHeight);
-                return Clutter.EVENT_PROPAGATE;
-            }
-            if (this.actor.width > this._workAreaWidth) {
-                const overWidth = this.actor.width - this._workAreaWidth;
-                this._resized_callback(this._get_user_width() - overWidth, this._get_user_height());
-                return Clutter.EVENT_PROPAGATE;
-            }
+        if (this.actor.height > this._workAreaHeight) {
+            const overHeight = this.actor.height - this._workAreaHeight;
+            this._resized_callback(this._get_user_width(), this._get_user_height() - overHeight);
+            return Clutter.EVENT_PROPAGATE;
+        }
+        if (this.actor.width > this._workAreaWidth) {
+            const overWidth = this.actor.width - this._workAreaWidth;
+            this._resized_callback(this._get_user_width() - overWidth, this._get_user_height());
+            return Clutter.EVENT_PROPAGATE;
         }
 
         this._top_edge_draggable = this._in_top_resize_zone (x, y);
@@ -1247,6 +1247,41 @@ var PopupResizeHandler = class PopupResizeHandler {
             global.unset_cursor();
         }
         return Clutter.EVENT_PROPAGATE;
+    }
+
+    _on_actor_show(box) {
+        this._collect_work_area_edges();
+        this.resizingInProgress = true;
+
+        const cur_w = this.actor.width;
+        const cur_h = this.actor.height;
+        const user_w = this._get_user_width();
+        const user_h = this._get_user_height();
+
+        if (this._size_restricted) {
+            if (user_w <= this._workAreaWidth && user_h <= this._workAreaHeight) {
+                this._resized_callback(user_w, user_h);
+                this._size_restricted = false;
+            }
+        } else {
+            let new_w = user_w;
+            let new_h = user_h;
+
+            if (cur_w > this._workAreaWidth) {
+                new_w -= cur_w - this._workAreaWidth;
+            }
+
+            if (cur_h > this._workAreaHeight) {
+                new_h -= cur_h - this._workAreaHeight;
+            }
+
+            if (new_w !== user_w || new_h !== user_h) {
+                this._size_restricted = true;
+                this._resized_callback(new_w, new_h);
+            }
+        }
+
+        this.resizingInProgress = false
     }
 
     _in_top_resize_zone(x, y) {
