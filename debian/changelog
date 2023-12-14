@@ -1,3 +1,40 @@
+cinnamon (6.0.1) virginia; urgency=medium
+
+  [ Michael Webster ]
+  * main.js: Don't initialize monitorLabeler in an x11 session.
+
+  [ Rick Calixte ]
+  * Update bug report template with Wayland issue tracker
+
+  [ Michael Webster ]
+  * cinnamon-global/clipboard: use the MetaDisplay's selection object.
+
+  [ Anaxímeno Brito ]
+  * fix: install actions from the correct folder (#11965)
+
+  [ Georg Sieber ]
+  * improve xlet download and autostart run icons (#11918)
+
+  [ Kevin Langman ]
+  * Fix Main.activateWindow() for windows with normal transient children (#11966)
+
+  [ Michael Webster ]
+  * actions: Ignore miscellaneous files in the install folder.
+
+  [ Clement Lefebvre ]
+  * l10n: Update cs modules
+  * cinnamon-settings-users: Fix special characters in pango markup
+
+  [ Rick Calixte ]
+  * Update Actions module to show non-Spice Actions
+
+  [ Michael Webster ]
+  * Spices.py: Skip actions when they contain the 'Active' key and its value is false.
+  * Spices.py: catch some possible exceptions when loading legacy actions.
+  * ExtensionCore.py: Render spice-supplied icons correctly in hidpi.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 14 Dec 2023 13:16:56 +0000
+
 cinnamon (6.0.0) virginia; urgency=medium
 
   [ Michael Webster ]
