@@ -1159,18 +1159,20 @@ var PopupResizeHandler = class PopupResizeHandler {
         let cursor = 0;
 
         let [x, y] = event.get_coords();
-        
+
         //Immediately resize actor if greater than work area. This can happen after a
         //change of resolution or monitor scaling.
-        if (this.actor.height > this._workAreaHeight) {
-            const overHeight = this.actor.height - this._workAreaHeight;
-            this._resized_callback(this._get_user_width(), this._get_user_height() - overHeight);
-            return Clutter.EVENT_PROPAGATE;
-        }
-        if (this.actor.width > this._workAreaWidth) {
-            const overWidth = this.actor.width - this._workAreaWidth;
-            this._resized_callback(this._get_user_width() - overWidth, this._get_user_height());
-            return Clutter.EVENT_PROPAGATE;
+        if (!Main.layoutManager.keyboardBox.visible) {
+            if (this.actor.height > this._workAreaHeight) {
+                const overHeight = this.actor.height - this._workAreaHeight;
+                this._resized_callback(this._get_user_width(), this._get_user_height() - overHeight);
+                return Clutter.EVENT_PROPAGATE;
+            }
+            if (this.actor.width > this._workAreaWidth) {
+                const overWidth = this.actor.width - this._workAreaWidth;
+                this._resized_callback(this._get_user_width() - overWidth, this._get_user_height());
+                return Clutter.EVENT_PROPAGATE;
+            }
         }
 
         this._top_edge_draggable = this._in_top_resize_zone (x, y);
