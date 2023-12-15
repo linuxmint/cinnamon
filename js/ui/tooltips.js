@@ -373,12 +373,24 @@ PanelItemTooltip.prototype = {
                 panel = Main.panelManager.getPanel(monitor.index, PanelLoc.left);
                 tooltipTop = this._panelItem.actor.get_transformed_position()[1];
                 tooltipTop += Math.round((this._panelItem.actor.height - tooltipHeight) / 2);
+
+                // Fix for the tooltip clipping outside the screen when it's very close to the bottom.
+                if (tooltipTop + tooltipHeight > monitor.y + monitor.height) {
+                    tooltipTop = monitor.y + monitor.height - tooltipHeight;
+                }
+
                 tooltipLeft = monitor.x + panel.actor.width;
                 break;
             case St.Side.RIGHT:
                 panel = Main.panelManager.getPanel(monitor.index, PanelLoc.right);
                 tooltipTop = this._panelItem.actor.get_transformed_position()[1];
                 tooltipTop += Math.round((this._panelItem.actor.height - tooltipHeight) / 2);
+
+                // Fix for the tooltip clipping outside the screen when it's very close to the bottom.
+                if (tooltipTop + tooltipHeight > monitor.y + monitor.height) {
+                    tooltipTop = monitor.y + monitor.height - tooltipHeight;
+                }
+
                 tooltipLeft = monitor.x + monitor.width - tooltipWidth - panel.actor.width;
                 break;
             default:
