@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "lib": ["es2017"],
+        "noImplicitAny": true,
+        "removeComments": true,
+        "sourceMap": false,
+        "declaration": true, 
+        "strictNullChecks": true,
+        "exactOptionalPropertyTypes": true,
+        "strict": true
+    },
+    "include": [
+        "./**/*"
+    ]
+}

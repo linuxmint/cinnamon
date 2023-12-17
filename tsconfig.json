@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "allowJs": false,
+        "checkJs": false,
+        "outDir": "./js",
+        "lib": ["ES2017"],
+        "allowSyntheticDefaultImports": true,
+        "alwaysStrict": true,
+        "strict": true,
+        "exactOptionalPropertyTypes": true,
+        "target": "ES2017",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "moduleDetection": "force",
+        "rootDir": "ts",
+    }
+}

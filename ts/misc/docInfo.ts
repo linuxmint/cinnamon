@@ -1,5 +1,4 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-
 /**
 * DOCINFO
 *
@@ -20,12 +19,15 @@ const Lang = imports.lang;
 const Signals = imports.signals;
 const Gio = imports.gi.Gio;
 
-function DocInfo(recentInfo) {
-    this._init(recentInfo);
-}
+export class DocInfo {
 
-DocInfo.prototype = {
-    _init : function(recentInfo) {
+    public readonly gicon: any;
+    public readonly name: string;
+    public readonly uri: string;
+    public readonly mimeType: string;
+    public readonly uriDecoded: string;
+
+    constructor(recentInfo: imports.gi.Gtk.RecentInfo) {
         this.gicon = recentInfo.get_gicon();
         this.name = recentInfo.get_display_name();
         this.uri = recentInfo.get_uri();
@@ -37,37 +39,40 @@ DocInfo.prototype = {
             global.logError("Error while decoding URI: " + this.uri);
         }
         this.mimeType = recentInfo.get_mime_type();
-    },
+    }
 
-    createIcon : function(size) {
+    public createIcon(size: number): imports.gi.St.Icon {
         return new St.Icon({ gicon: this.gicon, icon_size: size });
     }
-};
+}
 
-var docManagerInstance = null;
+var docManagerInstance: DocManager | null = null;
 
-function getDocManager() {
+export function getDocManager(): DocManager {
     if (docManagerInstance == null)
         docManagerInstance = new DocManager();
     return docManagerInstance;
 }
 
+
+type DocManagerSignals = Signal<"changed", []>;
+export interface DocManager extends DocManagerSignals {}
+
 /**
  * DocManager wraps the DocSystem, primarily to expose DocInfo objects.
  */
-function DocManager() {
-    this._init();
-}
+export class DocManager {
+    protected _docSystem: imports.gi.Cinnamon.DocSystem;
+    protected _infosByTimestamp: DocInfo[];
 
-DocManager.prototype = {
-    _init: function() {
+    constructor() {
         this._docSystem = Cinnamon.DocSystem.get_default();
         this._infosByTimestamp = [];
         this._load();
         this._docSystem.connect('changed', Lang.bind(this, this._reload));
-    },
+    }
 
-    _load: function() {
+    protected _load() {
         let docs = this._docSystem.get_all();
         this._infosByTimestamp = [];
         let i = 0;
@@ -77,12 +82,12 @@ DocManager.prototype = {
             this._infosByTimestamp.push(docInfo);
             i++;
         }
-    },
+    }
 
-    _reload: function() {
+    protected _reload() {
         this._load();
         this.emit('changed');
     }
-};
+}
 
 Signals.addSignalMethods(DocManager.prototype);
