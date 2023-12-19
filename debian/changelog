@@ -1,3 +1,22 @@
+cinnamon (6.0.2) virginia; urgency=medium
+
+  [ Clement Lefebvre ]
+  * menu: Don't resize if the OSK is visible
+
+  [ Michael Webster ]
+  * Check for a workarea collision during actor.show() and shrink or restore to the user size when appropriate.
+
+  [ xenopeek ]
+  * cs-info: increase inxi verbosity (#11984)
+
+  [ Ilgaz Öcal ]
+  * README.Debian: fix typo (#11976)
+
+  [ Rick Calixte ]
+  * Update .git-blame-ignore-revs (#11928)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 19 Dec 2023 12:23:50 +0000
+
 cinnamon (6.0.1) virginia; urgency=medium
 
   [ Michael Webster ]
