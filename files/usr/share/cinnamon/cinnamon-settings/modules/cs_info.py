@@ -240,7 +240,7 @@ class Module:
                 inxiOutput = None
 
                 try:
-                    inxiOutput = subprocess.run(['inxi', '-Fxxrzc0'], check=True, stdout=subprocess.PIPE).stdout
+                    inxiOutput = subprocess.run(['inxi', '-FJxxxrzc0'], check=True, stdout=subprocess.PIPE).stdout
                 except Exception as e:
                     print("An error occurred while copying the system information to clipboard")
                     print(e)
