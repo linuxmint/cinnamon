@@ -1,3 +1,13 @@
+cinnamon (6.0.3) virginia; urgency=medium
+
+  [ FamiliarGecko ]
+  * fix for applet tooltips clipping outside the screen when they're too close to the bottom. (#11980)
+
+  [ claudiux ]
+  * Show secure connection icon when WireGuard is active (#11905)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 28 Dec 2023 12:20:16 +0000
+
 cinnamon (6.0.2) virginia; urgency=medium
 
   [ Clement Lefebvre ]
