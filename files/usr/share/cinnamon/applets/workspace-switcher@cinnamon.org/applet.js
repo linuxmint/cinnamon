@@ -16,7 +16,8 @@ const MIN_SWITCH_INTERVAL_MS = 220;
 
 
 function removeWorkspaceAtIndex(index) {
-    if (global.workspace_manager.n_workspaces <= 1) {
+    if (global.workspace_manager.n_workspaces <= 1 ||
+        index >= global.workspace_manager.n_workspaces) {
         return;
     }
 
