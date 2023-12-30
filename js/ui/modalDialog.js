@@ -88,7 +88,8 @@ ModalDialog.prototype = {
         this._group.add_actor(this._backgroundBin);
 
         this._dialogLayout = new St.BoxLayout({ style_class: 'modal-dialog',
-                                                vertical:    true });
+                                                vertical:    true,
+                                                important: true });
         if (params.styleClass != null) {
             this._dialogLayout.add_style_class_name(params.styleClass);
         }
