@@ -52,6 +52,8 @@ cinnamon_sources = [
     'cinnamon-gtk-embed.c',
     'cinnamon-global.c',
     'cinnamon-perf-log.c',
+    'cinnamon-polkit-authentication-agent.c',
+    'cinnamon-polkit-authentication-agent.h',
     'cinnamon-screen.c',
     'cinnamon-screenshot.c',
     'cinnamon-slicer.c',
@@ -189,6 +191,7 @@ cinnamon_gir_includes = [
     'Cogl-0',
     'Meta-0',
     'CMenu-3.0',
+    'PolkitAgent-1.0',
     st_gir[0],
 ]
 
