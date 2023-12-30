@@ -374,8 +374,11 @@ PanelItemTooltip.prototype = {
                 tooltipTop = this._panelItem.actor.get_transformed_position()[1];
                 tooltipTop += Math.round((this._panelItem.actor.height - tooltipHeight) / 2);
 
-                // Fix for the tooltip clipping outside the screen when it's very close to the bottom.
-                if (tooltipTop + tooltipHeight > monitor.y + monitor.height) {
+                // Fix for the tooltip clipping outside the screen when it's very close to the top or bottom.
+                if (tooltipTop < monitor.y) {
+                    tooltipTop = monitor.y;
+                }
+                else if (tooltipTop + tooltipHeight > monitor.y + monitor.height) {
                     tooltipTop = monitor.y + monitor.height - tooltipHeight;
                 }
 
@@ -386,8 +389,11 @@ PanelItemTooltip.prototype = {
                 tooltipTop = this._panelItem.actor.get_transformed_position()[1];
                 tooltipTop += Math.round((this._panelItem.actor.height - tooltipHeight) / 2);
 
-                // Fix for the tooltip clipping outside the screen when it's very close to the bottom.
-                if (tooltipTop + tooltipHeight > monitor.y + monitor.height) {
+                // Fix for the tooltip clipping outside the screen when it's very close to the top or bottom.
+                if (tooltipTop < monitor.y) {
+                    tooltipTop = monitor.y;
+                }
+                else if (tooltipTop + tooltipHeight > monitor.y + monitor.height) {
                     tooltipTop = monitor.y + monitor.height - tooltipHeight;
                 }
 
