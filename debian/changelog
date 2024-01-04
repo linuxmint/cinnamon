@@ -1,3 +1,13 @@
+cinnamon (6.0.4) virginia; urgency=medium
+
+  [ Fabio Fantoni ]
+  * Move gir files to private path (#11999)
+
+  [ FamiliarGecko ]
+  * fixing applet tooltips clipping out the top as well. (#11991)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 04 Jan 2024 18:09:18 +0000
+
 cinnamon (6.0.3) virginia; urgency=medium
 
   [ FamiliarGecko ]
