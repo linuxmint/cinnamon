@@ -140,6 +140,12 @@ class WorkspaceGraph extends WorkspaceButton {
         return (t2 < t1) ? 1 : -1;
     }
 
+    filterWindows(win) {
+        return Main.isInteresting(win) &&
+            !win.is_skip_taskbar()     &&
+            !win.minimized;
+    }
+
     paintWindow(metaWindow, themeNode, cr) {
         let windowBackgroundColor;
         let windowBorderColor;
@@ -174,12 +180,7 @@ class WorkspaceGraph extends WorkspaceButton {
 
         // construct a list with all windows
         let windows = this.workspace.list_windows();
-        windows = windows.filter( Main.isInteresting );
-        windows = windows.filter(
-            function(w) {
-                return !w.is_skip_taskbar() && !w.minimized;
-            });
-
+        windows = windows.filter(this.filterWindows);
         windows.sort(this.sortWindowsByUserTime);
 
         if (windows.length) {
@@ -511,7 +512,6 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
 
     destroy() {
         super.destroy();
-        // TODO
     }
 }
 
