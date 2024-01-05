@@ -162,7 +162,6 @@ class WorkspaceGraph extends WorkspaceButton {
 
         Clutter.cairo_set_source_color(cr, windowBorderColor);
         cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
-
         cr.strokePreserve();
 
         Clutter.cairo_set_source_color(cr, windowBackgroundColor);
@@ -214,11 +213,6 @@ class WorkspaceGraph extends WorkspaceButton {
             this.actor.add_style_pseudo_class('active');
         else
             this.actor.remove_style_pseudo_class('active');
-    }
-
-    destroy() {
-        super.destroy();
-        this.window_icons = null;
     }
 }
 
