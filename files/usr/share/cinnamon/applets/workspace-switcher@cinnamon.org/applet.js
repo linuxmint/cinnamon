@@ -270,17 +270,14 @@ class SimpleButton extends WorkspaceButton {
 
 
 class WindowIconGraph {
-    constructor(workspace, applet, metaWindow, themeNode, width, height, scaleFactor) {
-        this.applet = applet;
-        this.workspace = workspace;
+    constructor(workspaceGraph, metaWindow, width, height) {
+        this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
-        this.themeNode = themeNode;
         this.width = width;
         this.height = height;
-        this.scaleFactor = scaleFactor;
 
         this.actor = new St.Bin({
-            reactive: applet._draggable.inhibit,
+            reactive: this.workspaceGraph.applet._draggable.inhibit,
             important: true
         });
 
@@ -299,26 +296,26 @@ class WindowIconGraph {
 
     scale (windows_rect, workspace_rect) {
         let scaled_rect = new Meta.Rectangle();
-        scaled_rect.x = Math.round((windows_rect.x - workspace_rect.x) / this.scaleFactor);
-        scaled_rect.y = Math.round((windows_rect.y - workspace_rect.y) / this.scaleFactor);
-        scaled_rect.width = Math.round(windows_rect.width / this.scaleFactor);
-        scaled_rect.height = Math.round(windows_rect.height / this.scaleFactor);
+        let scale_factor = this.workspaceGraph.scaleFactor;
+        scaled_rect.x = Math.round((windows_rect.x - workspace_rect.x) / scale_factor);
+        scaled_rect.y = Math.round((windows_rect.y - workspace_rect.y) / scale_factor);
+        scaled_rect.width = Math.round(windows_rect.width / scale_factor);
+        scaled_rect.height = Math.round(windows_rect.height / scale_factor);
         return scaled_rect;
     }
 
     onRepaint(area) {
-        let workspace_size = this.workspace.get_work_area_all_monitors();
-
-        let scaled_rect = this.scale(this.metaWindow.get_buffer_rect(), workspace_size);
+        let scaled_rect = this.scale(this.metaWindow.get_buffer_rect(), this.workspaceGraph.workspace_size);
+        let graphThemeNode = this.workspaceGraph.graphArea.get_theme_node();
 
         let windowBackgroundColor, windowBorderColor;
 
         if (this.metaWindow.has_focus()) {
-            windowBorderColor = this.themeNode.get_color('-active-window-border');
-            windowBackgroundColor = this.themeNode.get_color('-active-window-background');
+            windowBorderColor = graphThemeNode.get_color('-active-window-border');
+            windowBackgroundColor = graphThemeNode.get_color('-active-window-background');
         } else {
-            windowBorderColor = this.themeNode.get_color('-inactive-window-border');
-            windowBackgroundColor = this.themeNode.get_color('-inactive-window-background');
+            windowBorderColor = graphThemeNode.get_color('-inactive-window-border');
+            windowBackgroundColor = graphThemeNode.get_color('-inactive-window-background');
         }
 
         let cr = area.get_context();
@@ -432,7 +429,6 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
         }
 
         this.graphArea.set_size(width, height);
-        return [width, height];
     }
 
     sortWindowsByUserTime (win1, win2) {
@@ -463,24 +459,22 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
         windows = windows.filter(this.filterWindows);
         windows.sort(this.sortWindowsByUserTime);
 
-        let focusWindow = undefined;
+        let focusGraphWindow = undefined;
         for (let window of windows) {
             let id = window.get_id();
 
             if (!this.graphWindowsMap[id]) {
-                let wGraph = new WindowIconGraph(this.workspace, this.applet, window, graphThemeNode, width, height, this.scaleFactor);
-                this.graphWindowsMap[id] = wGraph;
-                this.graphArea.add_child(wGraph.actor);
-            } else {
-                this.graphWindowsMap[id].metaWindow = window;
+                let graph = new WindowIconGraph(this, window, width, height);
+                this.graphWindowsMap[id] = graph;
+                this.graphArea.add_child(graph.actor);
             }
 
-            if (window.has_focus()) {
-                focusWindow = window;
+            if (window.has_focus() && this.graphWindowsMap[id]) {
+                focusGraphWindow = this.graphWindowsMap[id];
+                this.graphArea.remove_child(focusGraphWindow.actor);
             }
         }
 
-        let focusGraphWindow = undefined;
         for (let key of Object.keys(this.graphWindowsMap)) {
             let graphWindow = this.graphWindowsMap[key];
 
@@ -488,18 +482,12 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
                 continue;
             }
             else if (!windows.find((window) => window.get_id() == key)) {
-                // Remove windows we don't need to show anymore
-                log(`remove ${key}`); // XXX
+                // remove windows we don't need to show
                 this.graphWindowsMap[key] = undefined;
                 this.graphArea.remove_child(graphWindow.actor);
                 graphWindow.destroy();
             }
-            else if (focusWindow && focusWindow.get_id() == key) {
-                this.graphArea.remove_child(graphWindow.actor);
-                focusGraphWindow = graphWindow;
-            }
-            else {
-                log(`update ${key}`); // XXX
+            else if (graphWindow !== focusGraphWindow) {
                 graphWindow.update();
             }
         }
