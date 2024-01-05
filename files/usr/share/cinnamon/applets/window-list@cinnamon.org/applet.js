@@ -1221,6 +1221,10 @@ class CinnamonWindowListApplet extends Applet.Applet {
         if (i == -1)
             return;
 
+        // Window already has focus
+        if (this._windows[i]._hasFocus())
+            return;
+
         // Asks AppMenuButton to flash. Returns false if already flashing
         if (!this._windows[i].getAttention())
             return;
