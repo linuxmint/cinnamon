@@ -85,41 +85,6 @@ class WorkspaceGraph extends WorkspaceButton {
 
         this.graphArea.set_size(1, 1);
         this.graphArea.connect('repaint', Lang.bind(this, this.onRepaint));
-
-        this.window_icons = {};
-    }
-
-    getIconForMetaWindow (metaWindow) {
-        let metaWindowId = metaWindow.get_id();
-
-        if (this.window_icons[metaWindowId])
-            return this.window_icons[metaWindowId];
-
-        let iconActor = null;
-        let app = null;
-
-        if (metaWindow._expoApp) {
-            app = metaWindow._expoApp;
-        } else {
-            let tracker = Cinnamon.WindowTracker.get_default();
-            app = tracker.get_window_app(metaWindow);
-            metaWindow._expoApp = app;
-        }
-
-        if (app) {
-            iconActor = app.create_icon_texture_for_window(ICON_SIZE, metaWindow);
-        }
-
-        if (!iconActor) {
-            iconActor = new St.Icon({
-                icon_name: 'applications-other',
-                icon_type: St.IconType.FULLCOLOR,
-                icon_size: ICON_SIZE
-            });
-        }
-
-        this.window_icons[metaWindowId] = iconActor;
-        return this.window_icons[metaWindowId];
     }
 
     getSizeAdjustment (actor, vertical) {
@@ -196,14 +161,6 @@ class WorkspaceGraph extends WorkspaceButton {
 
         Clutter.cairo_set_source_color(cr, windowBackgroundColor);
         cr.fill();
-
-        //TODO: check settings for showing icon before
-        
-        let icon = this.getIconForMetaWindow(metaWindow);
-
-        if (icon) {
-            // TODO: draw icon in the frame
-        }
     }
 
     onRepaint(area) {
@@ -310,6 +267,266 @@ class SimpleButton extends WorkspaceButton {
         this.shade(used);
     }
 }
+
+
+class WindowIconGraph {
+    constructor(workspace, applet, metaWindow, themeNode, width, height, scaleFactor) {
+        this.applet = applet;
+        this.workspace = workspace;
+        this.metaWindow = metaWindow;
+        this.themeNode = themeNode;
+        this.width = width;
+        this.height = height;
+        this.scaleFactor = scaleFactor;
+
+        this.actor = new St.Bin({
+            reactive: applet._draggable.inhibit,
+            important: true
+        });
+
+        this.drawingArea = new St.DrawingArea({
+            style_class: 'windows',
+            important: true
+        });
+
+        this.drawingArea.set_size(width, height);
+        this.drawingArea.connect('repaint', this.onRepaint.bind(this));
+        this.actor.add_actor(this.drawingArea);
+        // this.actor.raise(this.drawingArea);
+
+        this._icon = undefined;
+    }
+
+    scale (windows_rect, workspace_rect) {
+        let scaled_rect = new Meta.Rectangle();
+        scaled_rect.x = Math.round((windows_rect.x - workspace_rect.x) / this.scaleFactor);
+        scaled_rect.y = Math.round((windows_rect.y - workspace_rect.y) / this.scaleFactor);
+        scaled_rect.width = Math.round(windows_rect.width / this.scaleFactor);
+        scaled_rect.height = Math.round(windows_rect.height / this.scaleFactor);
+        return scaled_rect;
+    }
+
+    onRepaint(area) {
+        let workspace_size = this.workspace.get_work_area_all_monitors();
+
+        let scaled_rect = this.scale(this.metaWindow.get_buffer_rect(), workspace_size);
+
+        let windowBackgroundColor, windowBorderColor;
+
+        if (this.metaWindow.has_focus()) {
+            windowBorderColor = this.themeNode.get_color('-active-window-border');
+            windowBackgroundColor = this.themeNode.get_color('-active-window-background');
+        } else {
+            windowBorderColor = this.themeNode.get_color('-inactive-window-border');
+            windowBackgroundColor = this.themeNode.get_color('-inactive-window-background');
+        }
+
+        let cr = area.get_context();
+        cr.setLineWidth(1);
+
+        Clutter.cairo_set_source_color(cr, windowBorderColor);
+        cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
+
+        cr.strokePreserve();
+
+        Clutter.cairo_set_source_color(cr, windowBackgroundColor);
+        cr.fill();
+        cr.$dispose();
+    }
+
+    getIcon() {
+        if (this._icon)
+            return this._icon;
+
+        let iconActor = null;
+        let app = null;
+
+        if (this.metaWindow._expoApp) {
+            app = this.metaWindow._expoApp;
+        } else {
+            let tracker = Cinnamon.WindowTracker.get_default();
+            app = tracker.get_window_app(this.metaWindow);
+            this.metaWindow._expoApp = app;
+        }
+
+        if (app) {
+            iconActor = app.create_icon_texture_for_window(ICON_SIZE, this.metaWindow);
+        }
+
+        if (!iconActor) {
+            iconActor = new St.Icon({
+                icon_name: 'applications-other',
+                icon_type: St.IconType.FULLCOLOR,
+                icon_size: ICON_SIZE
+            });
+        }
+
+        this._icon = iconActor;
+        return this._icon;
+    }
+
+    destroy() {
+        // TODO
+    }
+
+    update() {
+        this.drawingArea.queue_repaint();
+    }
+}
+
+class WindowIconGraphWorkspaceButton extends WorkspaceButton {
+    constructor(index, applet) {
+        super(index, applet);
+
+        this.scaleFactor = 0;
+
+        this.actor = new St.Bin({ reactive: applet._draggable.inhibit,
+                                  style_class: 'workspace',
+                                  y_fill: true,
+                                  important: true });
+
+        this.graphArea = new St.DrawingArea({ style_class: 'windows', important: true });
+        this.actor.add_actor(this.graphArea);
+
+        this.graphArea.set_size(1, 1);
+        this.graphArea.connect('repaint',this.onRepaint.bind(this));
+
+        this.graphWindowsMap = {};
+    }
+
+    getSizeAdjustment (actor, vertical) {
+        let themeNode = actor.get_theme_node();
+
+        if (vertical) {
+            return themeNode.get_horizontal_padding() +
+                themeNode.get_border_width(St.Side.LEFT) +
+                themeNode.get_border_width(St.Side.RIGHT);
+        }
+        else {
+            return themeNode.get_vertical_padding() +
+                themeNode.get_border_width(St.Side.TOP) +
+                themeNode.get_border_width(St.Side.BOTTOM);
+        }
+    }
+
+    setGraphSize () {
+        this.workspace_size = this.workspace.get_work_area_all_monitors();
+
+        let height, width;
+
+        if (this.applet.orientation == St.Side.LEFT ||
+            this.applet.orientation == St.Side.RIGHT) {
+
+            width = this.applet._panelHeight -
+                this.getSizeAdjustment(this.applet.actor, true) -
+                this.getSizeAdjustment(this.actor, true);
+            this.scaleFactor = this.workspace_size.width / width;
+            height = Math.round(this.workspace_size.height / this.scaleFactor);
+        }
+        else {
+            height = this.applet._panelHeight -
+                this.getSizeAdjustment(this.applet.actor, false) -
+                this.getSizeAdjustment(this.actor, false);
+            this.scaleFactor = this.workspace_size.height / height;
+            width = Math.round(this.workspace_size.width / this.scaleFactor);
+        }
+
+        this.graphArea.set_size(width, height);
+        return [width, height];
+    }
+
+    sortWindowsByUserTime (win1, win2) {
+        let t1 = win1.get_user_time();
+        let t2 = win2.get_user_time();
+        return (t2 < t1) ? 1 : -1;
+    }
+
+    filterWindows(win) {
+        return Main.isInteresting(win) &&
+            !win.is_skip_taskbar()     &&
+            !win.minimized;
+    }
+
+    onRepaint(area) {
+        // we need to set the size of the drawing area the first time, but we can't get
+        // accurate measurements until everything is added to the stage
+        if (this.scaleFactor === 0) this.setGraphSize();
+
+        let graphThemeNode = this.graphArea.get_theme_node();
+        let height = Math.round(this.workspace_size.height / this.scaleFactor);
+        let width = Math.round(this.workspace_size.width / this.scaleFactor);
+
+        // construct a list with all windows
+        let windows = this.workspace.list_windows();
+
+        // TODO: update this above also
+        windows = windows.filter(this.filterWindows);
+        windows.sort(this.sortWindowsByUserTime);
+
+        let focusWindow = undefined;
+        for (let window of windows) {
+            let id = window.get_id();
+
+            if (!this.graphWindowsMap[id]) {
+                let wGraph = new WindowIconGraph(this.workspace, this.applet, window, graphThemeNode, width, height, this.scaleFactor);
+                this.graphWindowsMap[id] = wGraph;
+                this.graphArea.add_child(wGraph.actor);
+            } else {
+                this.graphWindowsMap[id].metaWindow = window;
+            }
+
+            if (window.has_focus()) {
+                focusWindow = window;
+            }
+        }
+
+        let focusGraphWindow = undefined;
+        for (let key of Object.keys(this.graphWindowsMap)) {
+            let graphWindow = this.graphWindowsMap[key];
+
+            if (!graphWindow) {
+                continue;
+            }
+            else if (!windows.find((window) => window.get_id() == key)) {
+                // Remove windows we don't need to show anymore
+                log(`remove ${key}`); // XXX
+                this.graphWindowsMap[key] = undefined;
+                this.graphArea.remove_child(graphWindow.actor);
+                graphWindow.destroy();
+            }
+            else if (focusWindow && focusWindow.get_id() == key) {
+                this.graphArea.remove_child(graphWindow.actor);
+                focusGraphWindow = graphWindow;
+            }
+            else {
+                log(`update ${key}`); // XXX
+                graphWindow.update();
+            }
+        }
+
+        if (focusGraphWindow) {
+            this.graphArea.add_child(focusGraphWindow.actor);
+            focusGraphWindow.update();
+        }
+    }
+
+    update() {
+        this.graphArea.queue_repaint();
+    }
+
+    activate(active) {
+        if (active)
+            this.actor.add_style_pseudo_class('active');
+        else
+            this.actor.remove_style_pseudo_class('active');
+    }
+
+    destroy() {
+        super.destroy();
+        // TODO
+    }
+}
+
 
 class CinnamonWorkspaceSwitcher extends Applet.Applet {
     constructor(metadata, orientation, panel_height, instance_id) {
@@ -463,7 +680,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.buttons = [];
         for (let i = 0; i < global.workspace_manager.n_workspaces; ++i) {
             if (this.display_type == "visual")
-                this.buttons[i] = new WorkspaceGraph(i, this);
+                this.buttons[i] = new WindowIconGraphWorkspaceButton(i, this);
             else
                 this.buttons[i] = new SimpleButton(i, this);
 
