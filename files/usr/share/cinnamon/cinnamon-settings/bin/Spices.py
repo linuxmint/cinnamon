@@ -5,6 +5,7 @@ import sys
 
 try:
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib
+    import mintcommon.aptdaemon
     import tempfile
     import zipfile
     import shutil
@@ -879,6 +880,10 @@ class Spice_Harvester(GObject.Object):
 
             self.settings.set_strv(self.enabled_key, enabled)
         elif self.actions:
+            dependencies = self.meta_map[uuid].get('dependencies', [])
+            if len(dependencies) > 0:
+                self.apt = mintcommon.aptdaemon.APT(None)
+                self.apt.install_packages(dependencies)
             disabled_extensions = self.settings.get_strv(self.enabled_key)
             uuid_name = f"{uuid}.nemo_action"
             if uuid_name in disabled_extensions:
