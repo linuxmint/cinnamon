@@ -285,7 +285,11 @@ class WindowIconGraph {
             height: height,
         });
 
+        let scaled_rect = this.scale(this.metaWindow.get_buffer_rect(), this.workspaceGraph.workspace_size);
+
         this.icon = this._getIcon();
+        this.icon.set_x(scaled_rect.x + scaled_rect.width / 2 - ICON_SIZE);
+        this.icon.set_y(scaled_rect.y + scaled_rect.height / 2 - ICON_SIZE);
 
         this.actor.add_actor(this.drawingArea);
 
@@ -331,12 +335,7 @@ class WindowIconGraph {
     }
 
     afterRepaint(area) {
-        if (!this.icon) {
-            this.icon = this._getIcon();
-        }
-
         let scaled_rect = this.scale(this.metaWindow.get_buffer_rect(), this.workspaceGraph.workspace_size);
-
         this.icon.set_x(scaled_rect.x + scaled_rect.width / 2 - ICON_SIZE);
         this.icon.set_y(scaled_rect.y + scaled_rect.height / 2 - ICON_SIZE);
         this.icon.set_z_position(this.actor.get_z_position() + 1);
@@ -371,6 +370,7 @@ class WindowIconGraph {
 
     destroy() {
         this.actor.destroy();
+        this.icon.destroy();
     }
 
     update() {
@@ -395,7 +395,7 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
         this.graphArea.set_size(1, 1);
         this.graphArea.connect('repaint',this.onRepaint.bind(this));
 
-        this.graphWindowsMap = {};
+        this.windowsGraphs = [];
     }
 
     getSizeAdjustment (actor, vertical) {
@@ -461,53 +461,38 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
         // construct a list with all windows
         let windows = this.workspace.list_windows();
 
-        // TODO: update this above also
         windows = windows.filter(this.filterWindows);
         windows.sort(this.sortWindowsByUserTime);
 
-        let focusGraphWindow = undefined;
-        for (let window of windows) {
-            let id = window.get_id();
+        this.graphArea.remove_all_children();
 
-            if (!this.graphWindowsMap[id]) {
-                let graph = new WindowIconGraph(this, window, width, height);
-                this.graphWindowsMap[id] = graph;
+        if (this.windowsGraphs) {
+            this.windowsGraphs.forEach((e) => e.destroy());
+            this.windowsGraphs = [];
+        }
+
+
+        let focusGraph = undefined;
+        for (let window of windows) {
+            let graph = new WindowIconGraph(this, window, width, height);
+
+            this.windowsGraphs.push(graph);
+
+            if (!window.has_focus()) {
                 this.graphArea.add_child(graph.actor);
                 this.graphArea.add_child(graph.icon);
-            }
-
-            if (window.has_focus() && this.graphWindowsMap[id]) {
-                focusGraphWindow = this.graphWindowsMap[id];
-                this.graphArea.remove_child(focusGraphWindow.actor);
-                this.graphArea.remove_child(focusGraphWindow.icon);
+                graph.update();
+            } else {
+                focusGraph = graph;
             }
         }
 
-        for (let key of Object.keys(this.graphWindowsMap)) {
-            let graphWindow = this.graphWindowsMap[key];
-
-            if (!graphWindow) {
-                continue;
-            }
-            else if (!windows.find((window) => window.get_id() == key)) {
-                // remove windows we don't need to show
-                this.graphArea.remove_child(graphWindow.actor);
-                this.graphArea.remove_child(graphWindow.icon);
-                delete this.graphWindowsMap[key];
-                graphWindow.destroy();
-            }
-            else if (graphWindow !== focusGraphWindow) {
-                graphWindow.actor.set_z_position(0);
-                graphWindow.update();
-            }
+        if (focusGraph) {
+            this.graphArea.add_child(focusGraph.actor);
+            this.graphArea.add_child(focusGraph.icon);
+            focusGraph.update();
         }
 
-        if (focusGraphWindow) {
-            this.graphArea.add_child(focusGraphWindow.actor);
-            this.graphArea.add_child(focusGraphWindow.icon);
-            focusGraphWindow.actor.set_z_position(1);
-            focusGraphWindow.update();
-        }
     }
 
     update() {
