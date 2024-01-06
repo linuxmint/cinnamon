@@ -53,7 +53,7 @@ class WorkspaceButton {
         }
     }
 
-    update() {
+    update(options = {}) {
         // defined in subclass
     }
 
@@ -204,7 +204,7 @@ class WorkspaceGraph extends WorkspaceButton {
         cr.$dispose();
     }
 
-    update() {
+    update(options = {}) {
         this.graphArea.queue_repaint();
     }
 
@@ -255,8 +255,8 @@ class SimpleButton extends WorkspaceButton {
             this.actor.remove_style_pseudo_class('shaded');
         }
     }
-    
-    update() {
+
+    update(options = {}) {
         let windows = this.workspace.list_windows();
         let used = windows.some(Main.isInteresting);
         this.shade(used);
@@ -381,7 +381,7 @@ class WindowIconGraph {
         this.icon.destroy();
     }
 
-    update() {
+    update(options = {}) {
         this.drawingArea.queue_repaint();
     }
 }
@@ -403,6 +403,7 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
         this.graphArea.set_size(1, 1);
         this.graphArea.connect('repaint',this.onRepaint.bind(this));
 
+        this.focusGraph = undefined;
         this.windowsGraphs = [];
     }
 
@@ -477,7 +478,7 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
         }
 
 
-        let focusGraph = undefined;
+        this.focusGraph = undefined;
         for (let window of windows) {
             let graph = new WindowIconGraph(this, window);
 
@@ -488,20 +489,26 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
                 this.graphArea.add_child(graph.icon);
                 graph.update();
             } else {
-                focusGraph = graph;
+                this.focusGraph = graph;
             }
         }
 
-        if (focusGraph) {
-            this.graphArea.add_child(focusGraph.actor);
-            this.graphArea.add_child(focusGraph.icon);
-            focusGraph.update();
+        if (this.focusGraph) {
+            this.graphArea.add_child(this.focusGraph.actor);
+            this.graphArea.add_child(this.focusGraph.icon);
+            this.focusGraph.update();
         }
 
     }
 
-    update() {
-        this.graphArea.queue_repaint();
+    update(options = {}) {
+        const signal = options.signal;
+
+        if (this.focusGraph && (signal == "position-changed" ||  signal == "size-changed")) {
+            this.focusGraph.update();
+        } else {
+            this.graphArea.queue_repaint();
+        }
     }
 
     activate(active) {
@@ -699,14 +706,14 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             return;
 
         this._focusWindow = global.display.focus_window;
-        this.signals.connect(this._focusWindow, "position-changed", Lang.bind(this, this._onPositionChanged), this);
-        this.signals.connect(this._focusWindow, "size-changed", Lang.bind(this, this._onPositionChanged), this);
-        this._onPositionChanged();
+        this.signals.connect(this._focusWindow, "position-changed", () => this._onPositionChanged("position-changed"), this);
+        this.signals.connect(this._focusWindow, "size-changed", () => this._onPositionChanged("size-changed"), this);
+        this._onPositionChanged("focus-changed");
     }
 
-    _onPositionChanged() {
+    _onPositionChanged(signal) {
         let button = this.buttons[global.workspace_manager.get_active_workspace_index()];
-        button.update();
+        button.update({signal: signal});
     }
 
     on_applet_removed_from_panel() {
