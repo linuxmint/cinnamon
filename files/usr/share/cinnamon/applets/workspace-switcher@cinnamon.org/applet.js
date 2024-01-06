@@ -68,153 +68,6 @@ class WorkspaceButton {
     }
 }
 
-class WorkspaceGraph extends WorkspaceButton {
-    constructor(index, applet) {
-        super(index, applet);
-
-        this.scaleFactor = 0;
-
-        this.actor = new St.Bin({ reactive: applet._draggable.inhibit,
-                                  style_class: 'workspace',
-                                  y_fill: true,
-                                  important: true });
-
-        this.graphArea = new St.DrawingArea({ style_class: 'windows', important: true });
-        this.actor.add_actor(this.graphArea);
-        this.panelApplet = applet;
-
-        this.graphArea.set_size(1, 1);
-        this.graphArea.connect('repaint', Lang.bind(this, this.onRepaint));
-    }
-
-    getSizeAdjustment (actor, vertical) {
-        let themeNode = actor.get_theme_node()
-        if (vertical) {
-            return themeNode.get_horizontal_padding() +
-                themeNode.get_border_width(St.Side.LEFT) +
-                themeNode.get_border_width(St.Side.RIGHT);
-        }
-        else {
-            return themeNode.get_vertical_padding() +
-                themeNode.get_border_width(St.Side.TOP) +
-                themeNode.get_border_width(St.Side.BOTTOM);
-        }
-    }
-
-    setGraphSize () {
-        this.workspace_size = this.workspace.get_work_area_all_monitors();
-
-        let height, width;
-        if (this.panelApplet.orientation == St.Side.LEFT ||
-            this.panelApplet.orientation == St.Side.RIGHT) {
-
-            width = this.panelApplet._panelHeight -
-                this.getSizeAdjustment(this.panelApplet.actor, true) -
-                this.getSizeAdjustment(this.actor, true);
-            this.scaleFactor = this.workspace_size.width / width;
-            height = Math.round(this.workspace_size.height / this.scaleFactor);
-        }
-        else {
-            height = this.panelApplet._panelHeight -
-                this.getSizeAdjustment(this.panelApplet.actor, false) -
-                this.getSizeAdjustment(this.actor, false);
-            this.scaleFactor = this.workspace_size.height / height;
-            width = Math.round(this.workspace_size.width / this.scaleFactor);
-        }
-
-        this.graphArea.set_size(width, height);
-    }
-
-    scale (windows_rect, workspace_rect) {
-        let scaled_rect = new Meta.Rectangle();
-        scaled_rect.x = Math.round((windows_rect.x - workspace_rect.x) / this.scaleFactor);
-        scaled_rect.y = Math.round((windows_rect.y - workspace_rect.y) / this.scaleFactor);
-        scaled_rect.width = Math.round(windows_rect.width / this.scaleFactor);
-        scaled_rect.height = Math.round(windows_rect.height / this.scaleFactor);
-        return scaled_rect;
-    }
-
-    sortWindowsByUserTime (win1, win2) {
-        let t1 = win1.get_user_time();
-        let t2 = win2.get_user_time();
-        return (t2 < t1) ? 1 : -1;
-    }
-
-    filterWindows(win) {
-        return Main.isInteresting(win) &&
-            !win.is_skip_taskbar()     &&
-            !win.minimized;
-    }
-
-    paintWindow(metaWindow, themeNode, cr) {
-        let windowBackgroundColor;
-        let windowBorderColor;
-
-        let scaled_rect = this.scale(metaWindow.get_buffer_rect(), this.workspace_size);
-
-        if (metaWindow.has_focus()) {
-            windowBorderColor = themeNode.get_color('-active-window-border');
-            windowBackgroundColor = themeNode.get_color('-active-window-background');
-        } else {
-            windowBorderColor = themeNode.get_color('-inactive-window-border');
-            windowBackgroundColor = themeNode.get_color('-inactive-window-background');
-        }
-
-        Clutter.cairo_set_source_color(cr, windowBorderColor);
-        cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
-        cr.strokePreserve();
-
-        Clutter.cairo_set_source_color(cr, windowBackgroundColor);
-        cr.fill();
-    }
-
-    onRepaint(area) {
-        // we need to set the size of the drawing area the first time, but we can't get
-        // accurate measurements until everything is added to the stage
-        if (this.scaleFactor === 0) this.setGraphSize();
-
-        let graphThemeNode = this.graphArea.get_theme_node();
-        let cr = area.get_context();
-        cr.setLineWidth(1);
-
-        // construct a list with all windows
-        let windows = this.workspace.list_windows();
-        windows = windows.filter(this.filterWindows);
-        windows.sort(this.sortWindowsByUserTime);
-
-        if (windows.length) {
-            let focusWindow = null;
-
-            for (let i = 0; i < windows.length; ++i) {
-                let metaWindow = windows[i];
-
-                if (metaWindow.has_focus()) {
-                    focusWindow = metaWindow;
-                    continue;
-                }
-
-                this.paintWindow(metaWindow, graphThemeNode, cr);
-            }
-
-            if (focusWindow) {
-                this.paintWindow(focusWindow, graphThemeNode, cr);
-            }
-        }
-
-        cr.$dispose();
-    }
-
-    update(options = {}) {
-        this.graphArea.queue_repaint();
-    }
-
-    activate(active) {
-        if (active)
-            this.actor.add_style_pseudo_class('active');
-        else
-            this.actor.remove_style_pseudo_class('active');
-    }
-}
 
 class SimpleButton extends WorkspaceButton {
     constructor(index, applet) {
@@ -264,10 +117,11 @@ class SimpleButton extends WorkspaceButton {
 }
 
 
-class WindowIconGraph {
-    constructor(workspaceGraph, metaWindow) {
+class WindowGraph {
+    constructor(workspaceGraph, metaWindow, showIcons) {
         this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
+        this.showIcons = showIcons;
 
         let height = Math.round(
             this.workspaceGraph.workspace_size.height / this.workspaceGraph.scaleFactor,
@@ -291,16 +145,17 @@ class WindowIconGraph {
             height: height,
         });
 
-        let scaled_rect = this.scale();
-
-        this.icon = this._getIcon();
-        this.icon.set_x(scaled_rect.x + scaled_rect.width / 2 - ICON_SIZE);
-        this.icon.set_y(scaled_rect.y + scaled_rect.height / 2 - ICON_SIZE);
-
         this.actor.add_actor(this.drawingArea);
 
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
-        this.drawingArea.connect('repaint', this.afterRepaint.bind(this));
+
+        if (this.showIcons) {
+            let scaled_rect = this.scale();
+            this.icon = this._getIcon();
+            this.icon.set_x(scaled_rect.x + scaled_rect.width / 2 - ICON_SIZE);
+            this.icon.set_y(scaled_rect.y + scaled_rect.height / 2 - ICON_SIZE);
+            this.drawingArea.connect('repaint', this.afterRepaint.bind(this));
+        }
     }
 
     scale () {
@@ -378,15 +233,25 @@ class WindowIconGraph {
 
     destroy() {
         this.actor.destroy();
-        this.icon.destroy();
+
+        if (this.showIcons)
+            this.icon.destroy();
     }
 
     update(options = {}) {
         this.drawingArea.queue_repaint();
     }
+
+    show() {
+        this.workspaceGraph.graphArea.add_child(this.actor);
+
+        if (this.showIcons)
+            this.workspaceGraph.graphArea.add_child(this.icon);
+    }
 }
 
-class WindowIconGraphWorkspaceButton extends WorkspaceButton {
+
+class WorkspaceGraph extends WorkspaceButton {
     constructor(index, applet) {
         super(index, applet);
 
@@ -466,7 +331,6 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
 
         // construct a list with all windows
         let windows = this.workspace.list_windows();
-
         windows = windows.filter(this.filterWindows);
         windows.sort(this.sortWindowsByUserTime);
 
@@ -477,16 +341,14 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
             this.windowsGraphs = [];
         }
 
-
         this.focusGraph = undefined;
         for (let window of windows) {
-            let graph = new WindowIconGraph(this, window);
+            let graph = new WindowGraph(this, window, this.applet.show_window_icons);
 
             this.windowsGraphs.push(graph);
 
             if (!window.has_focus()) {
-                this.graphArea.add_child(graph.actor);
-                this.graphArea.add_child(graph.icon);
+                graph.show();
                 graph.update();
             } else {
                 this.focusGraph = graph;
@@ -494,18 +356,16 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
         }
 
         if (this.focusGraph) {
-            this.graphArea.add_child(this.focusGraph.actor);
-            this.graphArea.add_child(this.focusGraph.icon);
+            this.focusGraph.show();
             this.focusGraph.update();
         }
-
     }
 
     update(options = {}) {
         const signal = options.signal;
 
         if (this.focusGraph && (signal == "position-changed" ||  signal == "size-changed")) {
-            this.focusGraph.update();
+            this.focusGraph.update(options);
         } else {
             this.graphArea.queue_repaint();
         }
@@ -519,6 +379,7 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
     }
 
     destroy() {
+        this.windowsGraphs.forEach((e) => e.destroy());
         super.destroy();
     }
 }
@@ -544,6 +405,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bind("display-type", "display_type", this.queueCreateButtons);
         this.settings.bind("scroll-behavior", "scroll_behavior");
+        this.settings.bind("show-window-icons", "show_window_icons", this.queueCreateButtons);
 
         this.actor.connect('scroll-event', this.hook.bind(this));
 
@@ -666,7 +528,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             this.buttons[i].destroy();
         }
 
-        if (this.display_type == "visual" || this.display_type == "visual+icons")
+        if (this.display_type == "visual")
             this.actor.set_style_class_name('workspace-graph');
         else
             this.actor.set_style_class_name('workspace-switcher');
@@ -675,19 +537,17 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
         this.buttons = [];
         for (let i = 0; i < global.workspace_manager.n_workspaces; ++i) {
-            if (this.display_type == "buttons")
-                this.buttons[i] = new SimpleButton(i, this);
-            else if (this.display_type == "visual+icons")
-                this.buttons[i] = new WindowIconGraphWorkspaceButton(i, this);
-            else
+            if (this.display_type == "visual")
                 this.buttons[i] = new WorkspaceGraph(i, this);
+            else
+                this.buttons[i] = new SimpleButton(i, this);
 
             this.actor.add_actor(this.buttons[i].actor);
             this.buttons[i].show();
         }
 
         this.signals.disconnect("notify::focus-window");
-        if (this.display_type == "visual" || this.display_type == "visual+icons") {
+        if (this.display_type == "visual") {
             // In visual mode, keep track of window events to represent them
             this.signals.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
             this._onFocusChanged();
