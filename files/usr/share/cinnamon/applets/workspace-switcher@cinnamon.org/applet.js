@@ -669,7 +669,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             this.buttons[i].destroy();
         }
 
-        if (this.display_type == "visual")
+        if (this.display_type == "visual" || this.display_type == "visual+icons")
             this.actor.set_style_class_name('workspace-graph');
         else
             this.actor.set_style_class_name('workspace-switcher');
@@ -678,18 +678,21 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
         this.buttons = [];
         for (let i = 0; i < global.workspace_manager.n_workspaces; ++i) {
-            if (this.display_type == "visual")
+            if (this.display_type == "buttons")
+                this.buttons[i] = new SimpleButton(i, this);
+            else if (this.display_type == "visual+icons")
                 this.buttons[i] = new WindowIconGraphWorkspaceButton(i, this);
             else
-                this.buttons[i] = new SimpleButton(i, this);
+                this.buttons[i] = new WorkspaceGraph(i, this);
 
             this.actor.add_actor(this.buttons[i].actor);
             this.buttons[i].show();
         }
 
         this.signals.disconnect("notify::focus-window");
-        if (this.display_type == "visual") {
+        if (this.display_type == "visual" || this.display_type == "visual+icons") {
             // In visual mode, keep track of window events to represent them
+            // TODO: handle here
             this.signals.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
             this._onFocusChanged();
         }
