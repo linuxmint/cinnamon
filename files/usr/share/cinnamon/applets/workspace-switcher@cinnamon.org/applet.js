@@ -337,8 +337,8 @@ class WindowIconGraph {
 
         let scaled_rect = this.scale(this.metaWindow.get_buffer_rect(), this.workspaceGraph.workspace_size);
 
-        this.icon.set_x(scaled_rect.x + scaled_rect.width / 4);
-        this.icon.set_y(scaled_rect.y + scaled_rect.height / 4);
+        this.icon.set_x(scaled_rect.x + scaled_rect.width / 2 - ICON_SIZE);
+        this.icon.set_y(scaled_rect.y + scaled_rect.height / 2 - ICON_SIZE);
         this.icon.set_z_position(this.actor.get_z_position() + 1);
     }
 
