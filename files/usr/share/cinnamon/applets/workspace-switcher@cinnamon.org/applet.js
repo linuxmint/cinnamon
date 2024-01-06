@@ -15,7 +15,7 @@ const Cinnamon = imports.gi.Cinnamon;
 
 const MIN_SWITCH_INTERVAL_MS = 220;
 
-const ICON_SIZE = 16; // TODO: size according to the size of the applet (or panel)
+const ICON_SIZE = 12; // TODO: size according to the size of the applet (or panel)
 
 class WorkspaceButton {
     constructor(index, applet) {
@@ -273,20 +273,24 @@ class WindowIconGraph {
 
         this.actor = new St.Bin({
             reactive: this.workspaceGraph.applet._draggable.inhibit,
-            important: true
+            important: true,
+            width: width,
+            height: height,
         });
 
         this.drawingArea = new St.DrawingArea({
             style_class: 'windows',
-            important: true
+            important: true,
+            width: width,
+            height: height,
         });
 
-        this.drawingArea.set_size(width, height);
-        this.drawingArea.connect('repaint', this.onRepaint.bind(this));
-        this.actor.add_actor(this.drawingArea);
-        // this.actor.raise(this.drawingArea);
+        this.icon = this._getIcon();
 
-        this._icon = undefined;
+        this.actor.add_actor(this.drawingArea);
+
+        this.drawingArea.connect('repaint', this.onRepaint.bind(this));
+        this.drawingArea.connect('repaint', this.afterRepaint.bind(this));
     }
 
     scale (windows_rect, workspace_rect) {
@@ -326,10 +330,19 @@ class WindowIconGraph {
         cr.$dispose();
     }
 
-    getIcon() {
-        if (this._icon)
-            return this._icon;
+    afterRepaint(area) {
+        if (!this.icon) {
+            this.icon = this._getIcon();
+        }
 
+        let scaled_rect = this.scale(this.metaWindow.get_buffer_rect(), this.workspaceGraph.workspace_size);
+
+        this.icon.set_x(scaled_rect.x + scaled_rect.width / 4);
+        this.icon.set_y(scaled_rect.y + scaled_rect.height / 4);
+        this.icon.set_z_position(this.actor.get_z_position() + 1);
+    }
+
+    _getIcon() {
         let iconActor = null;
         let app = null;
 
@@ -349,12 +362,11 @@ class WindowIconGraph {
             iconActor = new St.Icon({
                 icon_name: 'applications-other',
                 icon_type: St.IconType.FULLCOLOR,
-                icon_size: ICON_SIZE
+                icon_size: ICON_SIZE,
             });
         }
 
-        this._icon = iconActor;
-        return this._icon;
+        return iconActor;
     }
 
     destroy() {
@@ -443,7 +455,6 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
         // accurate measurements until everything is added to the stage
         if (this.scaleFactor === 0) this.setGraphSize();
 
-        let graphThemeNode = this.graphArea.get_theme_node();
         let height = Math.round(this.workspace_size.height / this.scaleFactor);
         let width = Math.round(this.workspace_size.width / this.scaleFactor);
 
@@ -462,11 +473,13 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
                 let graph = new WindowIconGraph(this, window, width, height);
                 this.graphWindowsMap[id] = graph;
                 this.graphArea.add_child(graph.actor);
+                this.graphArea.add_child(graph.icon);
             }
 
             if (window.has_focus() && this.graphWindowsMap[id]) {
                 focusGraphWindow = this.graphWindowsMap[id];
                 this.graphArea.remove_child(focusGraphWindow.actor);
+                this.graphArea.remove_child(focusGraphWindow.icon);
             }
         }
 
@@ -480,15 +493,19 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
                 // remove windows we don't need to show
                 this.graphWindowsMap[key] = undefined;
                 this.graphArea.remove_child(graphWindow.actor);
+                this.graphArea.remove_child(graphWindow.icon);
                 graphWindow.destroy();
             }
             else if (graphWindow !== focusGraphWindow) {
+                graphWindow.actor.set_z_position(0);
                 graphWindow.update();
             }
         }
 
         if (focusGraphWindow) {
             this.graphArea.add_child(focusGraphWindow.actor);
+            this.graphArea.add_child(focusGraphWindow.icon);
+            focusGraphWindow.actor.set_z_position(1);
             focusGraphWindow.update();
         }
     }
