@@ -370,7 +370,7 @@ class WindowIconGraph {
     }
 
     destroy() {
-        // TODO
+        this.actor.destroy();
     }
 
     update() {
@@ -491,9 +491,9 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
             }
             else if (!windows.find((window) => window.get_id() == key)) {
                 // remove windows we don't need to show
-                this.graphWindowsMap[key] = undefined;
                 this.graphArea.remove_child(graphWindow.actor);
                 this.graphArea.remove_child(graphWindow.icon);
+                delete this.graphWindowsMap[key];
                 graphWindow.destroy();
             }
             else if (graphWindow !== focusGraphWindow) {
@@ -710,8 +710,8 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             return;
 
         this._focusWindow = global.display.focus_window;
-        this.signals.connect(this._focusWindow, "position-changed", Lang.bind(this, this._onPositionChanged), this);
-        this.signals.connect(this._focusWindow, "size-changed", Lang.bind(this, this._onPositionChanged), this);
+        this.signals.connect(this._focusWindow, "position-changed", Lang.bind(this, this._onPositionChanged), this); // TODO: update only the focus window visual+icons?
+        this.signals.connect(this._focusWindow, "size-changed", Lang.bind(this, this._onPositionChanged), this); // TODO: update only the focus window on visual+icons?
         this._onPositionChanged();
     }
 
