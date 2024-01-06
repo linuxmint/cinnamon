@@ -265,11 +265,17 @@ class SimpleButton extends WorkspaceButton {
 
 
 class WindowIconGraph {
-    constructor(workspaceGraph, metaWindow, width, height) {
+    constructor(workspaceGraph, metaWindow) {
         this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
-        this.width = width;
-        this.height = height;
+
+        let height = Math.round(
+            this.workspaceGraph.workspace_size.height / this.workspaceGraph.scaleFactor,
+        );
+
+        let width = Math.round(
+            this.workspaceGraph.workspace_size.width / this.workspaceGraph.scaleFactor,
+        );
 
         this.actor = new St.Bin({
             reactive: this.workspaceGraph.applet._draggable.inhibit,
@@ -285,7 +291,7 @@ class WindowIconGraph {
             height: height,
         });
 
-        let scaled_rect = this.scale(this.metaWindow.get_buffer_rect(), this.workspaceGraph.workspace_size);
+        let scaled_rect = this.scale();
 
         this.icon = this._getIcon();
         this.icon.set_x(scaled_rect.x + scaled_rect.width / 2 - ICON_SIZE);
@@ -297,8 +303,10 @@ class WindowIconGraph {
         this.drawingArea.connect('repaint', this.afterRepaint.bind(this));
     }
 
-    scale (windows_rect, workspace_rect) {
+    scale () {
         let scaled_rect = new Meta.Rectangle();
+        let windows_rect = this.metaWindow.get_buffer_rect();
+        let workspace_rect = this.workspaceGraph.workspace_size;
         let scale_factor = this.workspaceGraph.scaleFactor;
         scaled_rect.x = Math.round((windows_rect.x - workspace_rect.x) / scale_factor);
         scaled_rect.y = Math.round((windows_rect.y - workspace_rect.y) / scale_factor);
@@ -308,10 +316,10 @@ class WindowIconGraph {
     }
 
     onRepaint(area) {
-        let scaled_rect = this.scale(this.metaWindow.get_buffer_rect(), this.workspaceGraph.workspace_size);
-        let graphThemeNode = this.workspaceGraph.graphArea.get_theme_node();
-
         let windowBackgroundColor, windowBorderColor;
+
+        let scaled_rect = this.scale();
+        let graphThemeNode = this.workspaceGraph.graphArea.get_theme_node();
 
         if (this.metaWindow.has_focus()) {
             windowBorderColor = graphThemeNode.get_color('-active-window-border');
@@ -455,9 +463,6 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
         // accurate measurements until everything is added to the stage
         if (this.scaleFactor === 0) this.setGraphSize();
 
-        let height = Math.round(this.workspace_size.height / this.scaleFactor);
-        let width = Math.round(this.workspace_size.width / this.scaleFactor);
-
         // construct a list with all windows
         let windows = this.workspace.list_windows();
 
@@ -474,7 +479,7 @@ class WindowIconGraphWorkspaceButton extends WorkspaceButton {
 
         let focusGraph = undefined;
         for (let window of windows) {
-            let graph = new WindowIconGraph(this, window, width, height);
+            let graph = new WindowIconGraph(this, window);
 
             this.windowsGraphs.push(graph);
 
@@ -677,7 +682,6 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.signals.disconnect("notify::focus-window");
         if (this.display_type == "visual" || this.display_type == "visual+icons") {
             // In visual mode, keep track of window events to represent them
-            // TODO: handle here
             this.signals.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
             this._onFocusChanged();
         }
@@ -695,8 +699,8 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             return;
 
         this._focusWindow = global.display.focus_window;
-        this.signals.connect(this._focusWindow, "position-changed", Lang.bind(this, this._onPositionChanged), this); // TODO: update only the focus window visual+icons?
-        this.signals.connect(this._focusWindow, "size-changed", Lang.bind(this, this._onPositionChanged), this); // TODO: update only the focus window on visual+icons?
+        this.signals.connect(this._focusWindow, "position-changed", Lang.bind(this, this._onPositionChanged), this);
+        this.signals.connect(this._focusWindow, "size-changed", Lang.bind(this, this._onPositionChanged), this);
         this._onPositionChanged();
     }
 
