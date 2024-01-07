@@ -123,26 +123,18 @@ class WindowGraph {
         this.metaWindow = metaWindow;
         this.showIcons = showIcons;
 
-        let height = Math.round(
-            this.workspaceGraph.workspace_size.height / this.workspaceGraph.scaleFactor,
-        );
-
-        let width = Math.round(
-            this.workspaceGraph.workspace_size.width / this.workspaceGraph.scaleFactor,
-        );
-
         this.actor = new St.Bin({
             reactive: this.workspaceGraph.applet._draggable.inhibit,
             important: true,
-            width: width,
-            height: height,
+            width: this.workspaceGraph.width,
+            height: this.workspaceGraph.height,
         });
 
         this.drawingArea = new St.DrawingArea({
             style_class: 'windows',
             important: true,
-            width: width,
-            height: height,
+            width: this.workspaceGraph.width,
+            height: this.workspaceGraph.height,
         });
 
         this.actor.add_actor(this.drawingArea);
@@ -150,15 +142,22 @@ class WindowGraph {
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
         if (this.showIcons) {
-            let scaled_rect = this.scale();
             this.icon = this._getIcon();
-            this.icon.set_x(scaled_rect.x + scaled_rect.width / 2 - ICON_SIZE);
-            this.icon.set_y(scaled_rect.y + scaled_rect.height / 2 - ICON_SIZE);
+            const [x, y] = this.iconPosition();
+            this.icon.set_x(x);
+            this.icon.set_y(y);
             this.drawingArea.connect('repaint', this.afterRepaint.bind(this));
         }
     }
 
-    scale () {
+    iconPosition() {
+        const scaled_rect = this.scale();
+        const x = scaled_rect.x + scaled_rect.width / 2 - ICON_SIZE * global.ui_scale / 2;
+        const y = scaled_rect.y + scaled_rect.height / 2 - ICON_SIZE * global.ui_scale / 2;
+        return [x, y];
+    }
+
+    scale() {
         let scaled_rect = new Meta.Rectangle();
         let windows_rect = this.metaWindow.get_buffer_rect();
         let workspace_rect = this.workspaceGraph.workspace_size;
@@ -198,10 +197,11 @@ class WindowGraph {
     }
 
     afterRepaint(area) {
-        let scaled_rect = this.scale(this.metaWindow.get_buffer_rect(), this.workspaceGraph.workspace_size);
-        this.icon.set_x(scaled_rect.x + scaled_rect.width / 2 - ICON_SIZE);
-        this.icon.set_y(scaled_rect.y + scaled_rect.height / 2 - ICON_SIZE);
-        this.icon.set_z_position(this.actor.get_z_position() + 1);
+        const [x, y] = this.iconPosition();
+        const z = this.actor.get_z_position() + 1;
+        this.icon.set_x(x);
+        this.icon.set_y(y);
+        this.icon.set_z_position(z);
     }
 
     _getIcon() {
@@ -270,6 +270,9 @@ class WorkspaceGraph extends WorkspaceButton {
 
         this.focusGraph = undefined;
         this.windowsGraphs = [];
+
+        this.height = 1;
+        this.width = 1;
     }
 
     getSizeAdjustment (actor, vertical) {
@@ -290,26 +293,24 @@ class WorkspaceGraph extends WorkspaceButton {
     setGraphSize () {
         this.workspace_size = this.workspace.get_work_area_all_monitors();
 
-        let height, width;
-
         if (this.applet.orientation == St.Side.LEFT ||
             this.applet.orientation == St.Side.RIGHT) {
 
-            width = this.applet._panelHeight -
+            this.width = this.applet._panelHeight -
                 this.getSizeAdjustment(this.applet.actor, true) -
                 this.getSizeAdjustment(this.actor, true);
-            this.scaleFactor = this.workspace_size.width / width;
-            height = Math.round(this.workspace_size.height / this.scaleFactor);
+            this.scaleFactor = this.workspace_size.width / this.width;
+            this.height = Math.round(this.workspace_size.height / this.scaleFactor);
         }
         else {
-            height = this.applet._panelHeight -
+            this.height = this.applet._panelHeight -
                 this.getSizeAdjustment(this.applet.actor, false) -
                 this.getSizeAdjustment(this.actor, false);
-            this.scaleFactor = this.workspace_size.height / height;
-            width = Math.round(this.workspace_size.width / this.scaleFactor);
+            this.scaleFactor = this.workspace_size.height / this.height;
+            this.width = Math.round(this.workspace_size.width / this.scaleFactor);
         }
 
-        this.graphArea.set_size(width, height);
+        this.graphArea.set_size(this.width, this.height);
     }
 
     sortWindowsByUserTime (win1, win2) {
