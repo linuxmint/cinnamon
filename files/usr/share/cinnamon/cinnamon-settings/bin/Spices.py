@@ -14,6 +14,12 @@ try:
     from PIL import Image
     import datetime
     import time
+
+    # for package installations
+    import gi
+    gi.require_version('PackageKitGlib', '1.0')
+    from gi.repository import PackageKitGlib as packagekit
+    import apt
 except Exception as error_message:
     print(error_message)
     sys.exit(1)
@@ -850,29 +856,35 @@ class Spice_Harvester(GObject.Object):
         ui_thread_do(self._ui_error_message, msg, detail)
 
     def _check_dependencies(self, uuid):
-        if not uuid in self.meta_map: return # spice installed as devtest
+        if not uuid in self.meta_map:
+            return # spice installed as devtest
+
         dependencies = self.meta_map[uuid].get('dependencies', [])
+        if not isinstance(dependencies, list) or len(dependencies) == 0:
+            return
 
         try:
-            import mintcommon.aptdaemon
-            import apt_pkg
+            self.apt_cache = apt.Cache(None)
+            missing_packages = []
+            for dependency in dependencies:
+                if dependency in self.apt_cache:
+                    if not self.apt_cache[dependency].is_installed:
+                        package_id = self._get_package_id(self.apt_cache[dependency].candidate)
+                        if package_id not in missing_packages:
+                            missing_packages.append(package_id)
+            if len(missing_packages) > 0:
+                print(missing_packages)
+                self.cancellable = Gio.Cancellable()
+                self.pk_task = packagekit.Task()
+                self.pk_task.install_packages_async(missing_packages,
+                    self.cancellable,  # cancellable
+                    self._on_package_install_changes_progress,
+                    (None, ),  # progress data
+                    self._on_package_install_changes_finish,  # GAsyncReadyCallback
+                    None  # callback data
+                )
 
-            if isinstance(dependencies, list) and len(dependencies) > 0:
-                apt_pkg.init()
-                self.apt_cache = apt_pkg.Cache(None)
-                missing_packages = []
-                for dependency in dependencies:
-                    if dependency in self.apt_cache:
-                        if (dependency not in missing_packages
-                        and self.apt_cache[dependency].has_versions
-                        and self.apt_cache[dependency].current_state != apt_pkg.CURSTATE_INSTALLED):
-                            missing_packages.append(dependency)
-                if len(missing_packages) > 0:
-                    self.apt = mintcommon.aptdaemon.APT(None)
-                    self.apt.install_packages(dependencies)
-
-        except ImportError:
-            # if there is no aptdeamon available, we are probably on a distro with another package manager
+        except Exception as e:
             # display a info message instead
             dialog = Gtk.MessageDialog(
                 text=_("Please make sure that the necessary packages are installed."),
@@ -881,6 +893,18 @@ class Spice_Harvester(GObject.Object):
             )
             dialog.run()
             dialog.destroy()
+
+    def _get_package_id(self, ver):
+        """ Return the PackageKit package id """
+        assert isinstance(ver, apt.package.Version)
+        return "%s;%s;%s;" % (ver.package.shortname, ver.version, ver.package.architecture())
+
+    def _on_package_install_changes_progress(self, progress, ptype, data=None):
+        print(progress, ptype, data)
+
+    def _on_package_install_changes_finish(self, source, result, installs):
+        print("finished", source, result, installs)
+        self.pk_task.generic_finish(result)
 
     def enable_extension(self, uuid, panel=1, box='right', position=0):
         self._check_dependencies(uuid)
