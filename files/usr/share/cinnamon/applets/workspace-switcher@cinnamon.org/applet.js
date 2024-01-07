@@ -151,17 +151,52 @@ class WindowGraph {
     }
 
     iconPosition() {
-        const scaled_rect = this.scale();
-        const x = scaled_rect.x + scaled_rect.width / 2 - ICON_SIZE * global.ui_scale / 2;
-        const y = scaled_rect.y + scaled_rect.height / 2 - ICON_SIZE * global.ui_scale / 2;
+        const intersection = this.intersection();
+        const x = intersection.x + intersection.width / 2 - ICON_SIZE * global.ui_scale / 2;
+        const y = intersection.y + intersection.height / 2 - ICON_SIZE * global.ui_scale / 2;
         return [x, y];
     }
 
+    intersection() {
+        // Intersection between the scaled window rect and the boundaries
+        // of the workspace graph.
+
+        const intersection = new Meta.Rectangle();
+        const rect = this.scale();
+
+        const workspace_rect = this.workspaceGraph.workspace_size;
+        const scale_factor = this.workspaceGraph.scaleFactor;
+
+        const offsetX = workspace_rect.x / scale_factor - rect.x;
+        const offsetY = workspace_rect.y / scale_factor - rect.y;
+
+        const [padX, padY] = this.padding();
+
+        const heightSurplus = Math.max(0, -offsetY + rect.height - this.workspaceGraph.height - padY);
+        const widthSurplus = Math.max(0,  -offsetX + rect.width - this.workspaceGraph.width - padX);
+
+        intersection.x = Math.max(workspace_rect.x / scale_factor, rect.x);
+        intersection.y = Math.max(workspace_rect.y / scale_factor, rect.y);
+        intersection.width = rect.width - Math.max(0, offsetX) - widthSurplus;
+        intersection.height = rect.height - Math.max(0, offsetY) - heightSurplus;
+
+        return intersection;
+    }
+
+    padding() {
+        // XXX: I'm supposing an approximate value for the padding between workspaces,
+        // maybe we should be getting this value from another place?
+        if (this.workspaceGraph.applet.orientation == St.Side.LEFT ||
+            this.workspaceGraph.applet.orientation == St.Side.RIGHT)
+            return [0, 5];
+        return [5, 0];
+    }
+
     scale() {
-        let scaled_rect = new Meta.Rectangle();
-        let windows_rect = this.metaWindow.get_buffer_rect();
-        let workspace_rect = this.workspaceGraph.workspace_size;
-        let scale_factor = this.workspaceGraph.scaleFactor;
+        const scaled_rect = new Meta.Rectangle();
+        const windows_rect = this.metaWindow.get_buffer_rect();
+        const workspace_rect = this.workspaceGraph.workspace_size;
+        const scale_factor = this.workspaceGraph.scaleFactor;
         scaled_rect.x = Math.round((windows_rect.x - workspace_rect.x) / scale_factor);
         scaled_rect.y = Math.round((windows_rect.y - workspace_rect.y) / scale_factor);
         scaled_rect.width = Math.round(windows_rect.width / scale_factor);
