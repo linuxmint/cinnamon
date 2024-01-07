@@ -873,7 +873,6 @@ class Spice_Harvester(GObject.Object):
                         if package_id not in missing_packages:
                             missing_packages.append(package_id)
             if len(missing_packages) > 0:
-                print(missing_packages)
                 self.cancellable = Gio.Cancellable()
                 self.pk_task = packagekit.Task()
                 self.pk_task.install_packages_async(missing_packages,
@@ -883,6 +882,8 @@ class Spice_Harvester(GObject.Object):
                     self._on_package_install_changes_finish,  # GAsyncReadyCallback
                     None  # callback data
                 )
+                self._set_progressbar_text(_("Installing necessary packages..."))
+                self._set_progressbar_visible(True)
 
         except Exception as e:
             # display a info message instead
@@ -900,10 +901,11 @@ class Spice_Harvester(GObject.Object):
         return "%s;%s;%s;" % (ver.package.shortname, ver.version, ver.package.architecture())
 
     def _on_package_install_changes_progress(self, progress, ptype, data=None):
-        print(progress, ptype, data)
+        if ptype == packagekit.ProgressType.PERCENTAGE:
+            self._set_progressbar_fraction(progress.get_property('percentage') / 100.0)
 
     def _on_package_install_changes_finish(self, source, result, installs):
-        print("finished", source, result, installs)
+        self._set_progressbar_visible(False)
         self.pk_task.generic_finish(result)
 
     def enable_extension(self, uuid, panel=1, box='right', position=0):
