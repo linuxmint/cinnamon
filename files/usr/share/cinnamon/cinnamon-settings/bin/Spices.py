@@ -6,6 +6,7 @@ import sys
 try:
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib
     import mintcommon.aptdaemon
+    import apt_pkg
     import tempfile
     import zipfile
     import shutil
@@ -850,7 +851,25 @@ class Spice_Harvester(GObject.Object):
     def errorMessage(self, msg, detail=None):
         ui_thread_do(self._ui_error_message, msg, detail)
 
+    def _check_dependencies(self, uuid):
+        dependencies = self.meta_map[uuid].get('dependencies', [])
+        if isinstance(dependencies, list) and len(dependencies) > 0:
+            apt_pkg.init()
+            self.apt_cache = apt_pkg.Cache(None)
+            missing_packages = []
+            for dependency in dependencies:
+                if dependency in self.apt_cache:
+                    if (dependency not in missing_packages
+                    and self.apt_cache[dependency].has_versions
+                    and self.apt_cache[dependency].current_state != apt_pkg.CURSTATE_INSTALLED):
+                        missing_packages.append(dependency)
+            if len(missing_packages) > 0:
+                self.apt = mintcommon.aptdaemon.APT(None)
+                self.apt.install_packages(dependencies)
+
     def enable_extension(self, uuid, panel=1, box='right', position=0):
+        self._check_dependencies(uuid)
+
         if self.collection_type == 'applet':
             entries = []
             applet_id = self.settings.get_int('next-applet-id')
