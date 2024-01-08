@@ -146,8 +146,6 @@ class WindowGraph {
             this.icon.set_y(y);
             this.drawingArea.connect('repaint', this.afterRepaint.bind(this));
         }
-
-        this._tmp_intersection = undefined;
     }
 
     iconPosition() {
