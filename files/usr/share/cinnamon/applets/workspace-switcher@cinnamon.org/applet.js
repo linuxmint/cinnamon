@@ -126,8 +126,6 @@ class WindowGraph {
         this.actor = new St.Bin({
             reactive: this.workspaceGraph.applet._draggable.inhibit,
             important: true,
-            width: this.workspaceGraph.width,
-            height: this.workspaceGraph.height,
         });
 
         this.drawingArea = new St.DrawingArea({
