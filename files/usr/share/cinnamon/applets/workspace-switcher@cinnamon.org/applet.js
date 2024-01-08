@@ -148,6 +148,8 @@ class WindowGraph {
             this.icon.set_y(y);
             this.drawingArea.connect('repaint', this.afterRepaint.bind(this));
         }
+
+        this._tmp_intersection = undefined;
     }
 
     iconPosition() {
@@ -160,7 +162,6 @@ class WindowGraph {
     intersection() {
         // Intersection between the scaled window rect and the boundaries
         // of the workspace graph.
-
         const intersection = new Meta.Rectangle();
         const rect = this.scale();
 
@@ -207,7 +208,7 @@ class WindowGraph {
     onRepaint(area) {
         let windowBackgroundColor, windowBorderColor;
 
-        let scaled_rect = this.scale();
+        let intersection = this.intersection();
         let graphThemeNode = this.workspaceGraph.graphArea.get_theme_node();
 
         if (this.metaWindow.has_focus()) {
@@ -222,7 +223,7 @@ class WindowGraph {
         cr.setLineWidth(1);
 
         Clutter.cairo_set_source_color(cr, windowBorderColor);
-        cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
+        cr.rectangle(intersection.x, intersection.y, intersection.width, intersection.height);
 
         cr.strokePreserve();
 
