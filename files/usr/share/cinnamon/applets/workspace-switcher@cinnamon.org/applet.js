@@ -140,16 +140,15 @@ class WindowGraph {
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
         if (this.showIcons) {
-            this.icon = this._getIcon();
             const [x, y] = this.iconPosition();
+            this.icon = this._getIcon();
             this.icon.set_x(x);
             this.icon.set_y(y);
-            this.drawingArea.connect('repaint', this.afterRepaint.bind(this));
         }
     }
 
-    iconPosition() {
-        const intersection = this.intersection();
+    iconPosition(intersection = undefined) {
+        if (!intersection) intersection = this.intersection();
         const x = intersection.x + intersection.width / 2 - ICON_SIZE * global.ui_scale / 2;
         const y = intersection.y + intersection.height / 2 - ICON_SIZE * global.ui_scale / 2;
         return [x, y];
@@ -159,7 +158,7 @@ class WindowGraph {
         // Intersection between the scaled window rect and the boundaries
         // of the workspace graph.
         const intersection = new Meta.Rectangle();
-        const rect = this.scale();
+        const rect = this.scaledRect();
 
         const workspace_rect = this.workspaceGraph.workspace_size;
         const scale_factor = this.workspaceGraph.scaleFactor;
@@ -189,7 +188,7 @@ class WindowGraph {
         return [5, 0];
     }
 
-    scale() {
+    scaledRect() {
         const scaled_rect = new Meta.Rectangle();
         const windows_rect = this.metaWindow.get_buffer_rect();
         const workspace_rect = this.workspaceGraph.workspace_size;
@@ -204,8 +203,8 @@ class WindowGraph {
     onRepaint(area) {
         let windowBackgroundColor, windowBorderColor;
 
-        let intersection = this.intersection();
-        let graphThemeNode = this.workspaceGraph.graphArea.get_theme_node();
+        const intersection = this.intersection();
+        const graphThemeNode = this.workspaceGraph.graphArea.get_theme_node();
 
         if (this.metaWindow.has_focus()) {
             windowBorderColor = graphThemeNode.get_color('-active-window-border');
@@ -215,7 +214,7 @@ class WindowGraph {
             windowBackgroundColor = graphThemeNode.get_color('-inactive-window-background');
         }
 
-        let cr = area.get_context();
+        const cr = area.get_context();
         cr.setLineWidth(1);
 
         Clutter.cairo_set_source_color(cr, windowBorderColor);
@@ -226,14 +225,12 @@ class WindowGraph {
         Clutter.cairo_set_source_color(cr, windowBackgroundColor);
         cr.fill();
         cr.$dispose();
-    }
 
-    afterRepaint(area) {
-        const [x, y] = this.iconPosition();
-        const z = this.actor.get_z_position() + 1;
-        this.icon.set_x(x);
-        this.icon.set_y(y);
-        this.icon.set_z_position(z);
+        if (this.showIcons) {
+            const [x, y] = this.iconPosition(intersection);
+            this.icon.set_x(x);
+            this.icon.set_y(y);
+        }
     }
 
     _getIcon() {
