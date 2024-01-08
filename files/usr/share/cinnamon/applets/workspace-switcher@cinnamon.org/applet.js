@@ -15,7 +15,6 @@ const Cinnamon = imports.gi.Cinnamon;
 
 const MIN_SWITCH_INTERVAL_MS = 220;
 
-const ICON_SIZE = 12; // TODO: size according to the size of the applet (or panel)
 
 class WorkspaceButton {
     constructor(index, applet) {
@@ -118,10 +117,11 @@ class SimpleButton extends WorkspaceButton {
 
 
 class WindowGraph {
-    constructor(workspaceGraph, metaWindow, showIcons) {
+    constructor(workspaceGraph, metaWindow, showIcons, iconSize) {
         this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
         this.showIcons = showIcons;
+        this.iconSize = iconSize;
 
         this.actor = new St.Bin({
             reactive: this.workspaceGraph.applet._draggable.inhibit,
@@ -149,8 +149,8 @@ class WindowGraph {
 
     iconPosition(intersection = undefined) {
         if (!intersection) intersection = this.intersection();
-        const x = intersection.x + intersection.width / 2 - ICON_SIZE * global.ui_scale / 2;
-        const y = intersection.y + intersection.height / 2 - ICON_SIZE * global.ui_scale / 2;
+        const x = intersection.x + intersection.width / 2 - this.iconSize * global.ui_scale / 2;
+        const y = intersection.y + intersection.height / 2 - this.iconSize * global.ui_scale / 2;
         return [x, y];
     }
 
@@ -235,14 +235,14 @@ class WindowGraph {
         }
 
         if (app) {
-            iconActor = app.create_icon_texture_for_window(ICON_SIZE, this.metaWindow);
+            iconActor = app.create_icon_texture_for_window(this.iconSize, this.metaWindow);
         }
 
         if (!iconActor) {
             iconActor = new St.Icon({
                 icon_name: 'applications-other',
                 icon_type: St.IconType.FULLCOLOR,
-                icon_size: ICON_SIZE,
+                icon_size: this.iconSize,
             });
         }
 
@@ -360,9 +360,12 @@ class WorkspaceGraph extends WorkspaceButton {
             this.windowsGraphs = [];
         }
 
+        const showIcon = this.applet.show_window_icons;
+        const iconSize = this.applet.window_icon_size;
+
         this.focusGraph = undefined;
-        for (let window of windows) {
-            let graph = new WindowGraph(this, window, this.applet.show_window_icons);
+        for (const window of windows) {
+            const graph = new WindowGraph(this, window, showIcon, iconSize);
 
             this.windowsGraphs.push(graph);
 
@@ -424,7 +427,8 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bind("display-type", "display_type", this.queueCreateButtons);
         this.settings.bind("scroll-behavior", "scroll_behavior");
-        this.settings.bind("show-window-icons", "show_window_icons", this.queueCreateButtons);
+        this.settings.bind("show-window-icons", "show_window_icons", this.updateButtons);
+        this.settings.bind("window-icon-size", "window_icon_size", this.updateButtons);
 
         this.actor.connect('scroll-event', this.hook.bind(this));
 
@@ -539,6 +543,10 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             Mainloop.idle_add(Lang.bind(this, this._createButtons));
             this.createButtonsQueued = true;
         }
+    }
+
+    updateButtons() {
+        this.buttons.forEach(btn => btn.update());
     }
 
     _createButtons() {

@@ -15,6 +15,16 @@
         "description": "Show window icons",
         "default": false
     },
+    "window-icon-size": {
+        "type": "spinbutton",
+        "default": 12,
+        "min": 8,
+        "max": 24,
+        "step": 2,
+        "units": "px",
+        "description": "Window icon size",
+        "dependency": "display-type=visual"
+    },
     "scroll-behavior": {
         "type": "combobox",
         "default": "normal",
