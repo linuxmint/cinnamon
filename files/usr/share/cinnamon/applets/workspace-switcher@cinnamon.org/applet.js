@@ -166,10 +166,8 @@ class WindowGraph {
         const offsetX = workspace_rect.x / scale_factor - rect.x;
         const offsetY = workspace_rect.y / scale_factor - rect.y;
 
-        const [padX, padY] = this.padding();
-
-        const heightSurplus = Math.max(0, -offsetY + rect.height - this.workspaceGraph.height - padY);
-        const widthSurplus = Math.max(0,  -offsetX + rect.width - this.workspaceGraph.width - padX);
+        const heightSurplus = Math.max(0, -offsetY + rect.height - this.workspaceGraph.height);
+        const widthSurplus = Math.max(0,  -offsetX + rect.width - this.workspaceGraph.width);
 
         intersection.x = Math.max(workspace_rect.x / scale_factor, rect.x);
         intersection.y = Math.max(workspace_rect.y / scale_factor, rect.y);
@@ -177,15 +175,6 @@ class WindowGraph {
         intersection.height = rect.height - Math.max(0, offsetY) - heightSurplus;
 
         return intersection;
-    }
-
-    padding() {
-        // XXX: I'm supposing an approximate value for the padding between workspaces,
-        // maybe we should be getting this value from another place?
-        if (this.workspaceGraph.applet.orientation == St.Side.LEFT ||
-            this.workspaceGraph.applet.orientation == St.Side.RIGHT)
-            return [0, 5];
-        return [5, 0];
     }
 
     scaledRect() {
