@@ -123,19 +123,12 @@ class WindowGraph {
         this.showIcons = showIcons;
         this.iconSize = iconSize;
 
-        this.actor = new St.Bin({
-            reactive: this.workspaceGraph.applet._draggable.inhibit,
-            important: true,
-        });
-
         this.drawingArea = new St.DrawingArea({
             style_class: 'windows',
             important: true,
             width: this.workspaceGraph.width,
             height: this.workspaceGraph.height,
         });
-
-        this.actor.add_actor(this.drawingArea);
 
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
@@ -250,10 +243,8 @@ class WindowGraph {
     }
 
     destroy() {
-        this.actor.destroy();
-
-        if (this.showIcons)
-            this.icon.destroy();
+        if (this.showIcons) this.icon.destroy();
+        this.drawingArea.destroy();
     }
 
     update(options = {}) {
@@ -261,7 +252,7 @@ class WindowGraph {
     }
 
     show() {
-        this.workspaceGraph.graphArea.add_child(this.actor);
+        this.workspaceGraph.graphArea.add_child(this.drawingArea);
 
         if (this.showIcons)
             this.workspaceGraph.graphArea.add_child(this.icon);
