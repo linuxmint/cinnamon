@@ -865,35 +865,52 @@ class Spice_Harvester(GObject.Object):
 
         try:
             self.apt_cache = apt.Cache(None)
-            missing_packages = []
+            self.missing_packages = []
             for dependency in dependencies:
                 if dependency in self.apt_cache:
                     if not self.apt_cache[dependency].is_installed:
                         package_id = self._get_package_id(self.apt_cache[dependency].candidate)
-                        if package_id not in missing_packages:
-                            missing_packages.append(package_id)
-            if len(missing_packages) > 0:
+                        if package_id not in self.missing_packages:
+                            self.missing_packages.append(package_id)
+                else:
+                    # show info message instead
+                    raise Exception(f"Unable to find a package for {dependency} in apt cache")
+            if len(self.missing_packages) > 0:
                 self.cancellable = Gio.Cancellable()
                 self.pk_task = packagekit.Task()
-                self.pk_task.install_packages_async(missing_packages,
-                    self.cancellable,  # cancellable
-                    self._on_package_install_changes_progress,
-                    (None, ),  # progress data
-                    self._on_package_install_changes_finish,  # GAsyncReadyCallback
-                    None  # callback data
+                # ask for installation
+                dialog = Gtk.MessageDialog(
+                    destroy_with_parent=True,
+                    text=_("Do you want to install the missing necessary packages?"),
+                    secondary_text="\n".join(self.missing_packages),
+                    buttons=Gtk.ButtonsType.YES_NO
                 )
-                self._set_progressbar_text(_("Installing necessary packages..."))
-                self._set_progressbar_visible(True)
+                dialog.connect("response", self._on_install_dialog_response)
+                dialog.run()
 
         except Exception as e:
             # display a info message instead
             dialog = Gtk.MessageDialog(
+                destroy_with_parent=True,
                 text=_("Please make sure that the necessary packages are installed."),
-                secondary_text=", ".join(dependencies),
+                secondary_text="\n".join(dependencies),
                 buttons=Gtk.ButtonsType.CLOSE
             )
+            dialog.connect("response", self._on_install_dialog_response)
             dialog.run()
-            dialog.destroy()
+
+    def _on_install_dialog_response(self, dialog, response):
+        if(response == Gtk.ResponseType.YES):
+            self.pk_task.install_packages_async(self.missing_packages,
+                self.cancellable,  # cancellable
+                self._on_package_install_changes_progress,
+                (None, ),  # progress data
+                self._on_package_install_changes_finish,  # GAsyncReadyCallback
+                None  # callback data
+            )
+            self._set_progressbar_text(_("Installing necessary packages..."))
+            self._set_progressbar_visible(True)
+        dialog.destroy()
 
     def _get_package_id(self, ver):
         """ Return the PackageKit package id """
@@ -906,7 +923,18 @@ class Spice_Harvester(GObject.Object):
 
     def _on_package_install_changes_finish(self, source, result, installs):
         self._set_progressbar_visible(False)
-        self.pk_task.generic_finish(result)
+        self._set_progressbar_fraction(0)
+        try:
+            self.pk_task.generic_finish(result)
+        except Exception as e:
+            dialog = Gtk.MessageDialog(
+                destroy_with_parent=True,
+                text=_("Error installing packages"),
+                secondary_text=str(e),
+                buttons=Gtk.ButtonsType.CLOSE
+            )
+            dialog.connect("response", self._on_install_dialog_response)
+            dialog.run()
 
     def enable_extension(self, uuid, panel=1, box='right', position=0):
         self._check_dependencies(uuid)
