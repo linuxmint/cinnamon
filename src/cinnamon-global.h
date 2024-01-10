@@ -4,9 +4,6 @@
 
 #include <clutter/clutter.h>
 #include <glib-object.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
-#include <gtk/gtk.h>
-#include <gdk/gdkx.h>
 #include <meta/meta-plugin.h>
 #include "cinnamon-screen.h"
 
@@ -33,7 +30,6 @@ CinnamonGlobal   *cinnamon_global_get                       (void);
 
 ClutterStage  *cinnamon_global_get_stage                 (CinnamonGlobal *global);
 CinnamonScreen *cinnamon_global_get_screen                (CinnamonGlobal *global);
-GdkScreen     *cinnamon_global_get_gdk_screen            (CinnamonGlobal *global);
 MetaDisplay   *cinnamon_global_get_display               (CinnamonGlobal *global);
 GList         *cinnamon_global_get_window_actors         (CinnamonGlobal *global);
 GSettings     *cinnamon_global_get_settings              (CinnamonGlobal *global);

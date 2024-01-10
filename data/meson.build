@@ -18,6 +18,7 @@ desktop_conf.set('VERSION', meson.project_version())
 
 desktop_files = [
   'cinnamon.desktop',
+  'cinnamon-wayland.desktop',
   'cinnamon2d.desktop',
 ]
 
@@ -38,6 +39,8 @@ foreach desktop_file : desktop_files
     )
 endforeach
 
+subdir('xdg-portal')
+subdir('wayland_sessions')
 subdir('xsessions')
 subdir('services')
 

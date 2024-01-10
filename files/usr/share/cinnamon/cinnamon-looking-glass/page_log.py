@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import datetime
-from gi.repository import Gtk
+from gi.repository import Gtk, Pango
 import pageutils
 
 class LogEntry:
@@ -31,23 +31,25 @@ class LogView(Gtk.ScrolledWindow):
         self.log = []
         self.added_messages = 0
         self.first_message_time = None
+        self.need_reread = False
+
+        context = self.get_style_context()
 
         self.enabled_types = {'info': True, 'warning': True, 'error': True, 'trace': False}
         self.type_tags = {
             'info': self.textbuffer.create_tag("info",
-                                               foreground="#1a6f18",
                                                invisible=not self.enabled_types["info"],
                                                invisible_set=True),
             'warning': self.textbuffer.create_tag("warning",
-                                                  foreground="#c8bf33",
+                                                  foreground_rgba=context.lookup_color("warning_color")[1],
                                                   invisible=not self.enabled_types["warning"],
                                                   invisible_set=True),
             'error': self.textbuffer.create_tag("error",
-                                                foreground="#9f1313",
+                                                foreground_rgba=context.lookup_color("error_color")[1],
                                                 invisible=not self.enabled_types["error"],
                                                 invisible_set=True),
             'trace': self.textbuffer.create_tag("trace",
-                                                foreground="#18186f",
+                                                weight=Pango.Weight.SEMIBOLD,
                                                 invisible=not self.enabled_types["trace"],
                                                 invisible_set=True)
         }
@@ -56,9 +58,8 @@ class LogView(Gtk.ScrolledWindow):
         #self.enabled_types = {'info': False, 'warning': False, 'error': False, 'trace': False }
         #for key in data:
         #    self.enabled_types[key] = True
-        self.get_updates()
-        self.proxy.connect("LogUpdate", self.get_updates)
-        self.proxy.add_status_change_callback(self.on_status_change)
+        self.proxy.connect("signal::log-update", self.get_updates)
+        self.proxy.connect("status-changed", self.on_status_change)
 
     def append(self, category, time, message):
         entry = LogEntry(category, time, message)
@@ -71,7 +72,7 @@ class LogView(Gtk.ScrolledWindow):
         self.type_tags[data].props.invisible = not active
         self.textbuffer.set_modified(True)
 
-    def on_status_change(self, online):
+    def on_status_change(self, proxy, online):
         text_iter = self.textbuffer.get_end_iter()
         if online:
             entry = self.append("info",
@@ -84,10 +85,16 @@ class LogView(Gtk.ScrolledWindow):
         self.textbuffer.insert_with_tags(text_iter,
                                          entry.formatted_text,
                                          self.type_tags[entry.category])
-        self.get_updates(True)
 
-    def get_updates(self, reread=False):
-        success, data = self.proxy.GetErrorStack()
+        self.need_reread = True
+        self.get_updates()
+
+    def get_updates(self, proxy=None):
+        self.proxy.GetErrorStack(result_cb=self.get_error_stack_finished)
+
+    def get_error_stack_finished(self, proxy, result, user_data=None):
+        [success, data] = result
+
         if success:
             try:
                 data_size = len(data)
@@ -96,13 +103,15 @@ class LogView(Gtk.ScrolledWindow):
                     first_message_time = data[0]["timestamp"]
                     if (self.added_messages > data_size or
                             self.first_message_time != first_message_time or
-                            reread):
+                            self.need_reread):
                         self.first_message_time = first_message_time
                         self.added_messages = 0
 
-                    if reread:
+                    if self.need_reread:
                         start, end = self.textbuffer.get_bounds()
                         self.textbuffer.delete(start, end)
+
+                    self.need_reread = False
 
                     text_iter = self.textbuffer.get_end_iter()
                     for item in data[self.added_messages:]:

@@ -2,7 +2,7 @@ gen_doc = files('gen_doc.py')
 
 parts_files = custom_target(
     'js-doc-gen',
-    command: [python, gen_doc, meson.source_root(), join_paths(meson.build_root(), '@OUTDIR@')],
+    command: [python, gen_doc, meson.project_source_root(), join_paths(meson.project_build_root(), '@OUTDIR@')],
     # input: ['cinnamon-js-docs.sgml'],
     output: ['ui.xml', 'misc.xml'],
     build_by_default: true,

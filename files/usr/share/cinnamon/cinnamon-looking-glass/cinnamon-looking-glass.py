@@ -15,9 +15,6 @@
 import os
 import signal
 import sys
-import dbus
-import dbus.service
-from dbus.mainloop.glib import DBusGMainLoop
 import pyinotify
 import gi
 gi.require_version('Gtk', '3.0')
@@ -31,6 +28,19 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 MELANGE_DBUS_NAME = "org.Cinnamon.Melange"
 MELANGE_DBUS_PATH = "/org/Cinnamon/Melange"
+
+melange_xml = """
+<node>
+    <interface name="org.Cinnamon.Melange">
+        <method name="show" />
+        <method name="hide" />
+        <method name="getVisible">
+            <arg type="b" direction="out" name="visible"/>
+        </method>
+    </interface>
+</node>
+"""
+interface_node_info = Gio.DBusNodeInfo.new_for_xml(melange_xml)
 
 class MenuButton(Gtk.Button):
     def __init__(self, text):
@@ -308,19 +318,97 @@ class ClosableTabLabel(Gtk.Box):
     def button_clicked(self, button, data=None):
         self.emit("close-clicked")
 
-class MelangeApp(dbus.service.Object):
+class MelangeApp(Gtk.Application):
     def __init__(self):
-        self.lg_proxy = LookingGlassProxy()
-        # The status label is shown iff we are not okay
-        self.lg_proxy.add_status_change_callback(lambda x: self.status_label.set_visible(not x))
+        Gtk.Application.__init__(self,
+                                 application_id="org.Cinnamon.Melange",
+                                 register_session=True,
+                                 flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
+                                 inactivity_timeout=10 * 1000)
 
         self.window = None
         self._minimized = False
-        self.run()
+        self.reg_id = 0
+        self.init_activation = True
+        self.startup_mode = None
 
-        dbus.service.Object.__init__(self, dbus.SessionBus(), MELANGE_DBUS_PATH, MELANGE_DBUS_NAME)
+    def do_dbus_register(self, connection, path):
+        self.reg_id = connection.register_object(
+            path,
+            interface_node_info.interfaces[0],
+            self._method_cb,
+            None,
+            None
+        )
 
-    @dbus.service.method(MELANGE_DBUS_NAME, in_signature='', out_signature='')
+        return Gio.Application.do_dbus_register(self, connection, path)
+
+    def do_dbus_unregister(self, connection, path):
+        if self.reg_id > 0:
+            connection.unregister_object(self.reg_id)
+            self.reg_id = 0
+
+        Gio.Application.do_dbus_unregister(self, connection, path)
+
+    def _method_cb(self, connection, sender, path, interface, method, parameters, invocation, user_data=None):
+        if method == "show":
+            self._remote_show()
+            invocation.return_value(None)
+        elif method == "hide":
+            self._remote_hide()
+            invocation.return_value(None)
+        elif method == "getVisible":
+            visible = self.window.get_visible() if self.window is not None else False
+            invocation.return_value(GLib.Variant("(b)", (visible,)))
+        else:
+            print("Unhandled method: " + method)
+
+    def handle_commandline_action(self):
+        if self.startup_mode is not None:
+            if self.startup_mode == "inspect":
+                self.inspect()
+            else:
+                pass # daemon, no activation
+
+            self.startup_mode = None
+            return
+        self.activate()
+
+    def do_command_line(self, command_line):
+        args = command_line.get_arguments()
+
+        if not self.init_activation:
+            self.handle_commandline_action()
+        else:
+            if len(args) == 2:
+                self.startup_mode = args[1]
+
+        return Gio.Application.do_command_line(self, command_line)
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        self.lg_proxy = LookingGlassProxy()
+        # The status label is shown iff we are not okay
+        self.lg_proxy.connect("status-changed", self.update_status_from_proxy)
+
+        if self.window is None:
+            self.construct_window()
+            self.add_window(self.window)
+
+    def update_status_from_proxy(self, proxy, online):
+        self.status_label.set_visible (not online)
+        if online and self.init_activation:
+            self.init_activation = False
+            self.handle_commandline_action()
+
+    def do_activate(self):
+        Gtk.Application.do_activate(self)
+
+        self.show()
+
+    def _remote_show(self):
+        self.show()
+
     def show(self):
         if self.window.get_visible():
             if self._minimized:
@@ -328,28 +416,19 @@ class MelangeApp(dbus.service.Object):
             else:
                 self.window.hide()
         else:
-            self.show_and_focus()
+            self.window.show_all()
+            self.lg_proxy.refresh_status()
+            self.command_line.grab_focus()
 
-    @dbus.service.method(MELANGE_DBUS_NAME, in_signature='', out_signature='')
-    def hide(self):
+    def _remote_hide(self):
         self.window.hide()
 
-    @dbus.service.method(MELANGE_DBUS_NAME, in_signature='', out_signature='b')
-    def getVisible(self):
-        return self.window.get_visible()
-
-    @dbus.service.method(MELANGE_DBUS_NAME, in_signature='', out_signature='')
-    def doInspect(self):
+    def inspect(self):
         if self.lg_proxy:
             self.lg_proxy.StartInspector()
             self.window.hide()
 
-    def show_and_focus(self):
-        self.window.show_all()
-        self.lg_proxy.refresh_status()
-        self.command_line.grab_focus()
-
-    def run(self):
+    def construct_window(self):
         self.window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
         self.window.set_title("Melange")
         self.window.set_icon_name("system-search")
@@ -434,7 +513,7 @@ class MelangeApp(dbus.service.Object):
         column += 1
 
         box = Gtk.HBox()
-        settings = Gio.Settings(schema="org.cinnamon.desktop.keybindings")
+        settings = Gio.Settings(schema_id="org.cinnamon.desktop.keybindings")
         arr = settings.get_strv("looking-glass-keybinding")
         if len(arr) > 0:
             # only the first mapped keybinding
@@ -452,7 +531,7 @@ class MelangeApp(dbus.service.Object):
 
         table.attach(box, column, column+1, 1, 2, 0, 0, 1)
 
-        self.activate_page("results")
+        # self.activate_page("results")
         self.status_label.hide()
         self.window.set_focus(self.command_line)
 
@@ -535,7 +614,7 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
         tmp_pages = self.custom_pages.copy()
         for label, content in tmp_pages.items():
             self.on_close_tab(label, content)
-        Gtk.main_quit()
+        self.quit()
         return False
 
     def on_window_state(self, widget, event):
@@ -545,8 +624,7 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
             self._minimized = False
 
     def on_picker_clicked(self, widget):
-        self.lg_proxy.StartInspector()
-        self.window.hide()
+        self.inspect()
 
     def create_dummy_page(self, text, description):
         label = Gtk.Label(label=text)
@@ -565,27 +643,13 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
         page = self.notebook.page_num(self.pages[module_name])
         self.notebook.set_current_page(page)
 
-def main():
-    setproctitle("cinnamon-looking-glass")
-    DBusGMainLoop(set_as_default=True)
-
-    session_bus = dbus.SessionBus()
-    request = session_bus.request_name(MELANGE_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
-    if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
-        app = MelangeApp()
-    else:
-        dbus_obj = session_bus.get_object(MELANGE_DBUS_NAME, MELANGE_DBUS_PATH)
-        app = dbus.Interface(dbus_obj, MELANGE_DBUS_NAME)
-
-    daemon = len(sys.argv) == 2 and sys.argv[1] == "daemon"
-    inspect = len(sys.argv) == 2 and sys.argv[1] == "inspect"
-
-    if inspect:
-        app.doInspect()
-    elif not daemon:
-        app.show()
-
-    Gtk.main()
+    def do_shutdown(self):
+        self.window.destroy()
+        self.lg_proxy = None
+        Gtk.Application.do_shutdown(self)
 
 if __name__ == "__main__":
-    main()
+    setproctitle("cinnamon-looking-glass")
+    app = MelangeApp()
+    app.run(sys.argv)
+    exit(0)

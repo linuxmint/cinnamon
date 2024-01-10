@@ -64,7 +64,7 @@ const ZOOM_IN_KEY               = "magnifier-zoom-in"
 const ZOOM_OUT_KEY              = "magnifier-zoom-out"
 
 let magDBusService = null;
-let magInputHandler = null;
+var magInputHandler = null;
 
 var MouseSpriteContent = GObject.registerClass({
     Implements: [Clutter.Content],
@@ -1586,7 +1586,7 @@ Crosshairs.prototype = {
 
     /**
      * getOpacity:
-     * Retriev how opaque the crosshairs are.
+     * Retrieve how opaque the crosshairs are.
      * @return: A value between 0 (transparent) and 255 (opaque).
      */
     getOpacity: function() {

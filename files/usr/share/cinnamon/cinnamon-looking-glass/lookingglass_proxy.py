@@ -1,51 +1,57 @@
 #!/usr/bin/python3
 
-from gi.repository import Gio
+from gi.repository import Gio, GObject
 
 LG_DBUS_NAME = "org.Cinnamon.LookingGlass"
 LG_DBUS_PATH = "/org/Cinnamon/LookingGlass"
 
+class LookingGlassProxy(GObject.Object):
+    __gsignals__ = {
+        'status-changed': (GObject.SignalFlags.RUN_LAST, None, (bool, )),
+        "signal": (GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.DETAILED, None, ())
+    }
 
-class LookingGlassProxy:
     def __init__(self):
-        self._signals = []
-        self._status_change_callbacks = []
+        GObject.Object.__init__(self)
         self._proxy = None
+        self.state = False
         Gio.bus_watch_name(Gio.BusType.SESSION,
                            LG_DBUS_NAME,
                            Gio.BusNameWatcherFlags.NONE,
-                           self.on_connect,
-                           self.on_disconnect)
-
-    def add_status_change_callback(self, callback):
-        self._status_change_callbacks.append(callback)
+                           self.on_bus_connect,
+                           self.on_bus_disconnect)
 
     def refresh_status(self):
-        self.set_status(self._proxy is not None)
+        self.set_status(self.get_is_ready())
 
     def get_is_ready(self):
-        return self._proxy is not None
+        return self._proxy is not None and self._proxy.get_name_owner() is not None
 
-    def connect(self, name, callback):
-        self._signals.append((name, callback))
+    def prepare_signal_name(self, signal):
+        out = signal[0].lower()
+
+        for letter in signal[1:]:
+            out += ("-" if letter.isupper() else "") + letter.lower()
+
+        return "signal::" + out
 
     def on_signal(self, proxy, sender_name, signal_name, params):
-        for name, callback in self._signals:
-            if signal_name == name:
-                callback(*params)
+        detailed_name = self.prepare_signal_name(signal_name)
+        self.emit(detailed_name)
 
     def set_status(self, state):
-        for callback in self._status_change_callbacks:
-            callback(state)
+        if state != self.state:
+            self.state = state
+            self.emit("status-changed", state)
 
-    def on_connect(self, connection, name, owner):
+    def on_bus_connect(self, connection, name, owner):
         if self._proxy:
             return
         self.init_proxy()
 
-    def on_disconnect(self, connection, name):
+    def on_bus_disconnect(self, connection, name):
         self._proxy = None
-        self.set_status(False)
+        self.refresh_status()
 
     def init_proxy(self):
         try:
@@ -59,13 +65,13 @@ class LookingGlassProxy:
                                                     self.on_proxy_ready,
                                                     None)
         except GLib.Error as e:
-            print(e.message)
+            print("Could not establish proxy with Cinnamon looking-glass interface: %s" % e.message)
             self._proxy = None
 
     def on_proxy_ready(self, obj, result, data=None):
         self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
         self._proxy.connect("g-signal", self.on_signal)
-        self.set_status(True)
+        self.refresh_status()
 
 # Proxy Methods:
     def Eval(self, code):
@@ -90,13 +96,15 @@ class LookingGlassProxy:
             except Exception:
                 pass
 
-    def GetErrorStack(self):
+    def GetErrorStack(self, result_cb):
         if self._proxy:
             try:
-                return self._proxy.GetErrorStack('()')
+                self._proxy.GetErrorStack('()', result_handler=result_cb, error_handler=self._get_error_stack_error_cb)
             except Exception:
                 pass
-        return False, ""
+
+    def _get_error_stack_error_cb(self, proxy, error):
+        print("Couldn't fetch the error stack: %s" % error.message)
 
     def GetMemoryInfo(self):
         if self._proxy:
@@ -113,13 +121,15 @@ class LookingGlassProxy:
             except Exception:
                 pass
 
-    def Inspect(self, code):
+    def Inspect(self, code, result_cb, user_data=None):
         if self._proxy:
             try:
-                return self._proxy.Inspect('(s)', code)
-            except Exception:
-                pass
-        return False, ""
+                self._proxy.Inspect('(s)', code, result_handler=result_cb, error_handler=self._inspect_error_cb, user_data=user_data)
+            except Exception as e:
+                print(e)
+
+    def _inspect_error_cb(self, proxy, error):
+        print("Couldn't inspect element: %s" % error.message)
 
     def GetLatestWindowList(self):
         if self._proxy:

@@ -27,14 +27,11 @@ struct _CinnamonGlobal {
   GObject parent;
 
   ClutterStage *stage;
-  GdkWindow *stage_gdk_window;
 
   MetaDisplay *meta_display;
   MetaWorkspaceManager *workspace_manager;
-  GdkDisplay *gdk_display;
   Display *xdisplay;
   CinnamonScreen *cinnamon_screen;
-  GdkScreen *gdk_screen;
 
   CinnamonStageInputMode input_mode;
   XserverRegion input_region;

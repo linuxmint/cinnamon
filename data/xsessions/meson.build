@@ -8,6 +8,6 @@ foreach session_deskop_file : session_deskop_files
         input: session_deskop_file + '.in',
         output: session_deskop_file,
         configuration: desktop_conf,
-        install_dir: xsessiondir
+        install_dir: x_sessiondir
     )
 endforeach

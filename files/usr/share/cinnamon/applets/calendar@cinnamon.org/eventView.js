@@ -106,6 +106,11 @@ class EventData {
             // causing it to appear for two days.
             this.end = this.end.add_seconds(-1);
         }
+        if (this.end.compare(this.start) == -1) {
+            // An all day event can be a single point in time at 00:00. The previous -1s
+            // will cause it to appear all the following days in the current view.
+            this.end = this.start;
+        }
         this.start_date = date_only(this.start);
         this.end_date = date_only(this.end);
         this.multi_day = !dt_equals(this.start_date, this.end_date);
@@ -508,7 +513,7 @@ class EventsManager {
         let week_day = day_one.get_day_of_week();
         let week_start = Cinnamon.util_get_week_start();
 
-        // back up to the start of the week preceeding day 1
+        // back up to the start of the week preceding day 1
         let start = day_one.add_days( -(week_day - week_start) );
         // The calendar has 42 boxes
         let end = start.add_days(42).add_seconds(-1);
@@ -613,6 +618,7 @@ class EventList {
         this.selected_date = GLib.DateTime.new_now_local();
         this.desktop_settings = desktop_settings;
         this._no_events_timeout_id = 0;
+        this._scroll_to_idle_id = 0;
         this._rows = [];
         this._current_event_data_list_timestamp = 0;
 
@@ -735,6 +741,11 @@ class EventList {
     }
 
     set_events(event_data_list, delay_no_events_box) {
+        if (this._scroll_to_idle_id > 0) {
+            Mainloop.source_remove(this._scroll_to_idle_id);
+            this._scroll_to_idle_id = 0;
+        }
+
         if (event_data_list !== null && event_data_list.timestamp === this._current_event_data_list_timestamp) {
             this._rows.forEach((row) => {
                 row.update_variations();
@@ -806,7 +817,11 @@ class EventList {
             this._rows.push(row);
         }
 
-        Mainloop.idle_add(Lang.bind(this, function(row) {
+        if (scroll_to_row == null) {
+            return;
+        }
+
+        this._scroll_to_idle_id = Mainloop.idle_add(Lang.bind(this, function(row) {
             let vscroll = this.events_scroll_box.get_vscroll_bar();
 
             if (row != null) {
@@ -815,6 +830,9 @@ class EventList {
             } else {
                 vscroll.get_adjustment().set_value(0);
             }
+
+            this._scroll_to_idle_id = 0;
+            return GLib.SOURCE_REMOVE;
         }, scroll_to_row));
     }
 }

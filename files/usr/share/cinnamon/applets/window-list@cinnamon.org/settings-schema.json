@@ -59,16 +59,21 @@
       "description": "Window buttons can have different sizes and use the entire space available",
       "dependency": "panel-show-label"
   },
-  "window-preview": {
-      "type": "switch",
-      "default": true,
-      "description": "Show window thumbnails on hover"
+  "window-hover": {
+      "type": "radiogroup",
+      "default": "thumbnail",
+      "description": "Choose what to show when hovering over a window button",
+      "options": {
+          "Nothing": "nothing",
+          "Title": "title",
+          "Thumbnail": "thumbnail"
+      }
   },
   "window-preview-show-label": {
       "type": "switch",
       "default": true,
       "description": "Show title above thumbnail",
-      "dependency": "window-preview"
+      "dependency": "window-hover=thumbnail"
   },
   "window-preview-scale": {
       "type": "radiogroup",
@@ -80,7 +85,7 @@
           "Large": 1.25,
           "Largest": 1.5
       },
-      "dependency": "window-preview"
+      "dependency": "window-hover=thumbnail"
   },
   "last-window-order": {
       "type": "generic",

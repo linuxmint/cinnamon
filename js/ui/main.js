@@ -25,6 +25,7 @@
  * @statusIconDispatcher (StatusIconDispatcher.StatusIconDispatcher): The status icon dispatcher
  * @virtualKeyboard (VirtualKeyboard.Keyboard): The keyboard object
  * @layoutManager (Layout.LayoutManager): The layout manager.
+ * @monitorLabeler (MonitorLabeler.MonitorLabeler): Adds labels to each monitor when configuring displays.
  * \
  * All actors that are part of the Cinnamon UI ar handled by the layout
  * manager, which will determine when to show and hide the actors etc.
@@ -124,6 +125,7 @@ const {installPolyfills} = imports.ui.overrides;
 const InputMethod = imports.misc.inputMethod;
 const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
+const {MonitorLabeler} = imports.ui.monitorLabeler;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -160,6 +162,7 @@ var xdndHandler = null;
 var statusIconDispatcher = null;
 var virtualKeyboard = null;
 var layoutManager = null;
+var monitorLabeler = null;
 var themeManager = null;
 var keybindingManager = null;
 var _errorLogStack = [];
@@ -275,11 +278,11 @@ function start() {
 
     let cinnamonStartTime = new Date().getTime();
 
-    log("About to start Cinnamon");
+    log(`About to start Cinnamon (${Meta.is_wayland_compositor() ? "Wayland" : "X11"} backend)`);
 
     let backend = Meta.get_backend();
 
-    // Only cinnamon2d laucher will set CINNAMON_2D - this is deliberate by the user.
+    // Only cinnamon2d launcher will set CINNAMON_2D - this is deliberate by the user.
     let cinnamon_2d = GLib.getenv("CINNAMON_2D") === true;
     let live = false;
 
@@ -342,6 +345,7 @@ function start() {
     settingsManager = new Settings.SettingsManager();
 
     backgroundManager = new BackgroundManager.BackgroundManager();
+    backgroundManager.hideBackground();
 
     slideshowManager = new SlideshowManager.SlideshowManager();
 
@@ -353,7 +357,6 @@ function start() {
     uiGroup = new Layout.UiActor({ name: 'uiGroup' });
     uiGroup.set_flags(Clutter.ActorFlags.NO_LAYOUT);
 
-    global.background_actor.hide();
     global.reparentActor(global.window_group, uiGroup);
     global.reparentActor(global.overlay_group, uiGroup);
 
@@ -383,6 +386,7 @@ function start() {
                                 !software_rendering;
 
     if (do_startup_animation) {
+        backgroundManager.showBackground();
         layoutManager._prepareStartupAnimation();
     }
 
@@ -391,6 +395,12 @@ function start() {
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
     pointerSwitcher = new PointerTracker.PointerSwitcher();
+
+    if (Meta.is_wayland_compositor()) {
+        monitorLabeler = new MonitorLabeler();
+    } else {
+        monitorLabeler = null;
+    }
 
     xdndHandler = new XdndHandler.XdndHandler();
     osdWindowManager = new OsdWindow.OsdWindowManager();
@@ -491,7 +501,7 @@ function start() {
                 return GLib.SOURCE_REMOVE;
             });
         } else {
-            global.background_actor.show();
+            backgroundManager.showBackground();
             setRunState(RunState.RUNNING);
         }
 
@@ -1182,7 +1192,7 @@ function _findModal(actor) {
  * @actor (Clutter.Actor): actor which will be given keyboard focus
  * @timestamp (int): optional timestamp
  * @options (Meta.ModalOptions): (optional) flags to indicate that the pointer
- * is alrady grabbed
+ * is already grabbed
  *
  * Ensure we are in a mode where all keyboard and mouse input goes to
  * the stage, and focus @actor. Multiple calls to this function act in
@@ -1354,7 +1364,9 @@ function activateWindow(window, time, workspaceNum) {
     window.activate(time);
     Mainloop.idle_add(function() {
         window.foreach_transient(function(win) {
-            win.activate(time);
+            if (win.get_window_type() != Meta.WindowType.NORMAL) {
+                win.activate(time);
+            }
         });
     });
 
@@ -1428,7 +1440,7 @@ function _queueBeforeRedraw(workId) {
  * initialization as well, under the assumption that new actors
  * will need it.
  *
- * Returns (string): A string work identifer
+ * Returns (string): A string work identifier
  */
 function initializeDeferredWork(actor, callback, props) {
     // Turn into a string so we can use as an object property
@@ -1539,6 +1551,10 @@ function getTabList(workspaceOpt) {
 }
 
 function restartCinnamon(showOsd = false) {
+    if (Meta.is_wayland_compositor()) {
+        global.logWarning("Cinnamon restart not supported with Wayland");
+        return;
+    }
     global.display.connect("show-restart-message", () => {
         if (showOsd) {
             let dialog = new ModalDialog.InfoOSD(_("Restarting Cinnamon..."));

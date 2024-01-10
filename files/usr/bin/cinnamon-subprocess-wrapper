@@ -27,11 +27,11 @@ if __name__ == "__main__":
                              "/org/Cinnamon",
                              "org.Cinnamon",
                              "PushSubprocessResult",
-                             GLib.Variant("(isb)", (process_id, result.decode(), success)),
+                             GLib.Variant("(isb)", (process_id, result.decode(errors="replace"), success)),
                              None,
                              Gio.DBusCallFlags.NONE,
                              2000,
                              None)
     except GLib.Error as e:
-        print("Could not play test sound: %s" % e.message)
+        print("Could not send response (ID: %d): %s" % (process_id, e.message))
 

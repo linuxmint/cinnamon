@@ -1530,7 +1530,7 @@ var PopupMenuAbstractItem = class PopupMenuAbstractItem {
     addChild(pos, child_id) {
         let factoryItem = this.getItemById(child_id);
         if (factoryItem) {
-            // If our item is previusly assigned, so destroy first the shell item.
+            // If our item is previously assigned, so destroy first the shell item.
             factoryItem.destroyShellItem();
             factoryItem.setParent(this);
             this._childrenIds.splice(pos, 0, child_id);
@@ -2084,7 +2084,7 @@ var PopupMenuBase = class PopupMenuBase {
     _menuQueueRelayout() {
         let node = this.actor.peek_theme_node();
         if (node && node.get_background_image()) {
-            Util.each(this.box.get_children(), (actor) => actor.queue_relayout());
+            this.box.get_children().forEach( actor => actor.queue_relayout());
         }
     }
 
@@ -2491,7 +2491,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 case St.Side.BOTTOM:
                     let yPos = this.actor.y - this.actor.margin_top;
                     tweenParams["onUpdateParams"] = [yPos - this.actor.margin_top];
-                    if (this.sideFlipped) // Botton
+                    if (this.sideFlipped) // Bottom
                         tweenParams["y"] = yPos + (this.actor.height * MENU_ANIMATION_OFFSET) + this.actor.margin_bottom;
                     else // Top
                         tweenParams["y"] = yPos - (this.actor.height * MENU_ANIMATION_OFFSET) - this.actor.margin_top;
@@ -2622,7 +2622,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 if (xPos < x1) xPos = x1;
                 else if (xPos + natWidth > x2) xPos = x2 - natWidth;
 
-                // now we calculate the x postion based on the orientation
+                // now we calculate the x position based on the orientation
                 if (this._orientation === St.Side.BOTTOM || (y2 - sourceBox.y2) < natHeight) {
                     this.sideFlipped = true;
                     yPos = y2 - natHeight;
@@ -2641,7 +2641,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 if (yPos < y1) yPos = y1;
                 else if (yPos + natHeight > y2) yPos = y2 - natHeight;
 
-                // now we calculate the x postion based on the orientation
+                // now we calculate the x position based on the orientation
                 // if the menu opens to the right, we also need to make sure we have room for it on that side
                 if (this._orientation === St.Side.RIGHT || x2 - sourceBox.x2 < natWidth) {
                     this.sideFlipped = true;
@@ -3330,7 +3330,7 @@ var PopupMenuFactory = class PopupMenuFactory {
     }
 
     _createItem(factoryItem) {
-        // Don't allow to override previusly preasigned items, destroy the shell item first.
+        // Don't allow to override previously preasigned items, destroy the shell item first.
         factoryItem.destroyShellItem();
         let shellItem = this._createShellItem(factoryItem);
 

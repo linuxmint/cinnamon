@@ -10,7 +10,7 @@ const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
 const {SignalManager} = imports.misc.signalManager;
-const {each, findIndex, unref} = imports.misc.util;
+const {unref} = imports.misc.util;
 const {createStore} = imports.misc.state;
 
 const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
@@ -39,9 +39,9 @@ const getTextDirection = function(text) {
 // centered in length
 
 const center = function(length, naturalLength) {
-    let maxLength = Math.min(length, naturalLength);
-    let x1 = Math.floor((length - maxLength) / 2);
-    let x2 = x1 + maxLength;
+    const maxLength = Math.min(length, naturalLength);
+    const x1 = Math.floor((length - maxLength) / 2);
+    const x2 = x1 + maxLength;
     return [x1, x2];
 };
 
@@ -54,15 +54,10 @@ const getFocusState = function(metaWindow) {
         return true;
     }
 
-    let transientHasFocus = false;
-    metaWindow.foreach_transient(function(transient) {
-        if (transient && transient.appears_focused) {
-            transientHasFocus = true;
-            return false;
-        }
+    if (global.display.focus_window && metaWindow.is_ancestor_of_transient(global.display.focus_window))
         return true;
-    });
-    return transientHasFocus;
+
+    return false;
 };
 
 class AppGroup {
@@ -78,7 +73,7 @@ class AppGroup {
             windowCount: params.metaWindows ? params.metaWindows.length : 0,
             lastFocused: params.metaWindow || null,
             isFavoriteApp: !params.metaWindow ? true : params.isFavoriteApp === true,
-            autoStartIndex: findIndex(this.state.autoStartApps, (app) => app.id === params.appId),
+            autoStartIndex: this.state.autoStartApps.findIndex( app => app.id === params.appId),
             willUnmount: false,
             tooltip: null,
             // Not to be confused with the vertical thumbnail setting, this is for overriding horizontal
@@ -206,7 +201,7 @@ class AppGroup {
     }
 
     initRightClickMenu() {
-        let {state, groupState, actor} = this;
+        const {state, groupState, actor} = this;
         this.rightClickMenu = new AppMenuButtonRightClickMenu({
             state,
             groupState,
@@ -243,7 +238,7 @@ class AppGroup {
 
         this.actor.style = null;
 
-        let panelHeight = this.state.trigger('getPanelHeight');
+        const panelHeight = this.state.trigger('getPanelHeight');
 
         if (this.state.isHorizontal) {
             this.actor.height = panelHeight;
@@ -287,7 +282,7 @@ class AppGroup {
             });
         }
 
-        let oldChild = this.iconBox.get_child();
+        const oldChild = this.iconBox.get_child();
         this.iconBox.set_child(icon);
 
         if (oldChild) oldChild.destroy();
@@ -342,23 +337,21 @@ class AppGroup {
     }
 
     getPreferredWidth(actor, forHeight, alloc) {
-        let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(forHeight);
-        let [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
+        const [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(forHeight);
+        const [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
         // The label text starts in the center of the icon, so we should allocate the space
         // needed for the icon plus the space needed for(label - icon/2)
         alloc.min_size = 1 * global.ui_scale;
 
-        let {appId, metaWindows, lastFocused} = this.groupState;
+        const {appId} = this.groupState;
 
-        let allocateForLabel = false;
-
-        allocateForLabel = this.labelVisiblePref ||
-                           (this.state.settings.titleDisplay == TitleDisplay.Focused &&
+        const allocateForLabel = this.labelVisiblePref ||
+                            (this.state.settings.titleDisplay == TitleDisplay.Focused &&
                             this.listState.lastFocusedApp === appId);
 
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
             if (allocateForLabel) {
-                let max = this.labelVisiblePref && this.groupState.metaWindows.length > 0 ?
+                const max = this.labelVisiblePref && this.groupState.metaWindows.length > 0 ?
                     labelNaturalSize + iconNaturalSize + 6 : 0;
                 alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
             } else {
@@ -445,10 +438,10 @@ class AppGroup {
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation
         if (this.groupState.metaWindows.length > 0 && this.actor.realized) {
-            let rect = new Meta.Rectangle();
+            const rect = new Meta.Rectangle();
             [rect.x, rect.y] = this.actor.get_transformed_position();
             [rect.width, rect.height] = this.actor.get_transformed_size();
-            each(this.groupState.metaWindows, (metaWindow) => {
+            this.groupState.metaWindows.forEach( metaWindow => {
                 if (metaWindow) {
                     metaWindow.set_icon_geometry(rect);
                 }
@@ -467,7 +460,7 @@ class AppGroup {
             return;
         }
 
-        let width = MAX_BUTTON_WIDTH * global.ui_scale;
+        const width = MAX_BUTTON_WIDTH * global.ui_scale;
 
         this.labelVisiblePref = true;
         if (this.label.text == null) {
@@ -525,13 +518,7 @@ class AppGroup {
     checkFocusStyle() {
         if (this.actor.is_finalized()) return;
 
-        let focused = false;
-        each(this.groupState.metaWindows, function(metaWindow) {
-            if (getFocusState(metaWindow)) {
-                focused = true;
-                return false;
-            }
-        });
+        const focused = this.groupState.metaWindows.some( metaWindow => getFocusState(metaWindow) );
 
         if (focused) {
             this.actor.add_style_pseudo_class('focus');
@@ -552,11 +539,11 @@ class AppGroup {
     }
 
     averageProgress() {
-        let {metaWindows} = this.groupState;
+        const {metaWindows} = this.groupState;
         let total = 0;
         let count = 0;
-        each(metaWindows, function(metaWindow) {
-            let {progress} = metaWindow;
+        metaWindows.forEach( metaWindow => {
+            const {progress} = metaWindow;
             if (progress < 1) return;
             total += progress;
             count++;
@@ -579,7 +566,7 @@ class AppGroup {
     }
 
     onProgressChange(metaWindow) {
-        let progress = this.averageProgress();
+        const progress = this.averageProgress();
         if (progress !== this.progress) {
             this.progress = progress;
             if (this.progress > 0) {
@@ -592,7 +579,7 @@ class AppGroup {
     }
 
     onFocusChange(hasFocus) {
-        let {appId, metaWindows, lastFocused} = this.groupState;
+        const {appId, metaWindows, lastFocused} = this.groupState;
 
         if (hasFocus === undefined) {
             hasFocus = this.listState.lastFocusedApp === appId;
@@ -604,6 +591,9 @@ class AppGroup {
             this.listState.trigger('updateFocusState', appId);
             this.actor.add_style_pseudo_class('focus');
             this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
+            if (this.hoverMenu) {
+                this.hoverMenu.appThumbnails.forEach( thumbnail => thumbnail.setThumbnailDemandsAttention(false) );
+            }
             this._needsAttention = false;
         } else {
             this.actor.remove_style_pseudo_class('focus');
@@ -620,7 +610,7 @@ class AppGroup {
         if (!this.groupState || !this.groupState.groupReady || this.groupState.willUnmount) {
             return;
         }
-        let windows = this.groupState.metaWindows;
+        const windows = this.groupState.metaWindows;
         for (let i = 0, len = windows.length; i < len; i++) {
             if (windows[i] === metaWindow) {
                 // Even though this may not be the last focused window, we want it to be
@@ -659,7 +649,7 @@ class AppGroup {
             || this.state.panelEditMode) {
             return DND.DragMotionResult.CONTINUE;
         }
-        let nWindows = this.groupState.metaWindows.length;
+        const nWindows = this.groupState.metaWindows.length;
         if (nWindows > 0 && this.groupState.lastFocused) {
             if (nWindows === 1) {
                 Main.activateWindow(this.groupState.lastFocused, global.get_current_time());
@@ -710,14 +700,14 @@ class AppGroup {
             return;
         }
 
-        let button = event.get_button();
-        let nWindows = this.groupState.metaWindows.length;
+        const button = event.get_button();
+        const nWindows = this.groupState.metaWindows.length;
 
-        let modifiers = Cinnamon.get_event_state(event);
-        let ctrlPressed = (modifiers & Clutter.ModifierType.CONTROL_MASK);
-        let shiftPressed = (modifiers & Clutter.ModifierType.SHIFT_MASK);
+        const modifiers = Cinnamon.get_event_state(event);
+        const ctrlPressed = (modifiers & Clutter.ModifierType.CONTROL_MASK);
+        const shiftPressed = (modifiers & Clutter.ModifierType.SHIFT_MASK);
 
-        let shouldStartInstance = (
+        const shouldStartInstance = (
             (button === 1 && ctrlPressed)
             || (button === 1 && shiftPressed)
             || (button === 1
@@ -728,7 +718,7 @@ class AppGroup {
                 && this.state.settings.middleClickAction === 2)
         );
 
-        let shouldEndInstance = button === 2
+        const shouldEndInstance = button === 2
             && this.state.settings.middleClickAction === 3
             && this.groupState.lastFocused
             && nWindows > 0;
@@ -743,7 +733,7 @@ class AppGroup {
             return;
         }
 
-        let handleMinimizeToggle = (win) => {
+        const handleMinimizeToggle = (win) => {
             if (this.state.settings.onClickThumbs && nWindows > 1) {
                 if (!this.hoverMenu) this.initThumbnailMenu();
                 if (this.hoverMenu.isOpen) {
@@ -824,7 +814,7 @@ class AppGroup {
     }
 
     onAppButtonPress(actor, event) {
-        let button = event.get_button();
+        const button = event.get_button();
         this.groupState.pressed = true;
 
         if (button === 3) return true;
@@ -883,7 +873,7 @@ class AppGroup {
             if (this.groupState.lastFocused.minimized) {
                 this.groupState.lastFocused.unminimize();
             }
-            let ws = this.groupState.lastFocused.get_workspace().index();
+            const ws = this.groupState.lastFocused.get_workspace().index();
             if (ws !== global.workspace_manager.get_active_workspace_index()) {
                 global.workspace_manager.get_workspace_by_index(ws).activate(global.get_current_time());
             }
@@ -893,8 +883,8 @@ class AppGroup {
     }
 
     windowAdded(metaWindow) {
-        let {metaWindows, trigger, set} = this.groupState;
-        let refWindow = metaWindows.indexOf(metaWindow);
+        const {metaWindows, trigger, set} = this.groupState;
+        const refWindow = metaWindows.indexOf(metaWindow);
         if (metaWindow) {
             this.signals.connect(metaWindow, 'notify::title', (...args) => this.onWindowTitleChanged(...args));
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
@@ -981,7 +971,7 @@ class AppGroup {
             return;
         }
 
-        let shouldHideLabel = this.state.settings.titleDisplay === TitleDisplay.None
+        const shouldHideLabel = this.state.settings.titleDisplay === TitleDisplay.None
             || !this.state.isHorizontal;
 
         if (shouldHideLabel) {
@@ -1005,12 +995,12 @@ class AppGroup {
         metaWindow.lastTitle = metaWindow.title;
 
         if (this.hoverMenu) {
-            each(this.hoverMenu.appThumbnails, (thumbnail) => {
-                if (thumbnail.metaWindow === metaWindow) {
-                    thumbnail.labelContainer.child.set_text(metaWindow.title);
-                    return false;
-                }
-            });
+            const thumbnail = this.hoverMenu.appThumbnails.find(
+                thumbnail => thumbnail.metaWindow === metaWindow
+            );
+            if (thumbnail) {
+                thumbnail.labelContainer.child.set_text(metaWindow.title);
+            }
         }
 
         this.groupState.set({
@@ -1023,7 +1013,7 @@ class AppGroup {
     onFocusWindowChange(metaWindow) {
         if (this.groupState.metaWindows.length === 0) return;
 
-        let hasFocus = getFocusState(metaWindow);
+        const hasFocus = getFocusState(metaWindow);
         if (hasFocus && this.groupState.hasOwnProperty('lastFocused')) {
             this.listState.set({lastFocusedApp: this.groupState.appId});
             this.groupState.set({lastFocused: metaWindow});
@@ -1085,7 +1075,7 @@ class AppGroup {
     calcWindowNumber() {
         if (this.groupState.willUnmount) return;
 
-        let windowCount = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
+        const windowCount = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
         this.numberLabel.text = windowCount.toString();
 
         this.groupState.set({windowCount});
@@ -1103,13 +1093,13 @@ class AppGroup {
     }
 
     handleTitleDisplayChange() {
-        each(this.groupState.metaWindows, (win) => {
-            this.onWindowTitleChanged(win, true);
-        });
+        this.groupState.metaWindows.forEach(
+            win => this.onWindowTitleChanged(win, true)
+        );
     }
 
     animate() {
-        let effect = this.state.settings.launcherAnimationEffect;
+        const effect = this.state.settings.launcherAnimationEffect;
 
         if (effect === 1) return;
         else if (effect === 2) {

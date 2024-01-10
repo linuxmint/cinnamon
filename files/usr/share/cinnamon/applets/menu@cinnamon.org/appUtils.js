@@ -1,8 +1,6 @@
 const Cinnamon = imports.gi.Cinnamon;
 const CMenu = imports.gi.CMenu;
 
-const Util = imports.misc.util;
-
 let appsys = Cinnamon.AppSystem.get_default();
 
 function decomp_string(s) {

@@ -27,8 +27,8 @@
  * meta_plugin_manager_set_plugin_type(), Mutter will call the vfuncs of the
  * plugin at the appropriate time.
  *
- * The funcions in in CinnamonPlugin are all just stubs, which just call the
- * similar methods in CinnamonWm.
+ * The functions in in CinnamonPlugin are all just stubs, which just call
+ * the similar methods in CinnamonWm.
  */
 
 #include "config.h"
@@ -69,6 +69,11 @@ G_DEFINE_TYPE (CinnamonPlugin, cinnamon_plugin, META_TYPE_PLUGIN)
 static gboolean
 cinnamon_plugin_has_swap_event (CinnamonPlugin *cinnamon_plugin)
 {
+  if (meta_is_wayland_compositor ())
+  {
+    return FALSE;
+  }
+
   CoglDisplay *cogl_display =
     cogl_context_get_display (cinnamon_plugin->cogl_context);
   CoglRenderer *renderer = cogl_display_get_renderer (cogl_display);

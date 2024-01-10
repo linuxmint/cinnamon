@@ -9,6 +9,8 @@ const Signals = imports.signals;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Pango = imports.gi.Pango;
+const Meta = imports.gi.Meta;
+const Gdk = imports.gi.Gdk;
 
 const Params = imports.misc.params;
 const Util = imports.misc.util;
@@ -355,7 +357,11 @@ ModalDialog.prototype = {
         else
             this._savedKeyFocus = null;
         Main.popModal(this._group, timestamp);
-        global.gdk_screen.get_display().sync();
+
+        if (!Meta.is_wayland_compositor()) {
+            Gdk.Display.get_default().sync();
+        }
+
         this._hasModal = false;
 
         if (!this._cinnamonReactive)

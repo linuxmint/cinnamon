@@ -650,7 +650,7 @@ class Module:
         if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
             user.set_real_name(text)
-            description = "<b>%s</b>\n%s" % (text, user.get_user_name())
+            description = "<b>%s</b>\n%s" % (GLib.markup_escape_text(text), GLib.markup_escape_text(user.get_user_name()))
             model.set_value(treeiter, INDEX_USER_DESCRIPTION, description)
 
     def _on_face_browse_menuitem_activated(self, menuitem):
@@ -683,7 +683,7 @@ class Module:
             if response == Gtk.ResponseType.OK:
                 path = dialog.get_filename()
                 image = PIL.Image.open(path)
-                image.thumbnail((96, 96), Image.ANTIALIAS)
+                image.thumbnail((96, 96), Image.LANCZOS)
                 face_path = os.path.join(user.get_home_dir(), ".face")
                 try:
                     try:
@@ -777,7 +777,10 @@ class Module:
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(user.get_icon_file(), 48, 48)
             else:
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/faces/user-generic.png", 48, 48)
-            description = "<b>%s</b>\n%s" % (user.get_real_name(), user.get_user_name())
+
+            real_name = GLib.markup_escape_text(user.get_real_name())
+            user_name = GLib.markup_escape_text(user.get_user_name())
+            description = f"<b>{real_name}</b>\n{user_name}"
             piter = self.users.append(None, [user, pixbuf, description])
         self.users_treeview.set_model(self.users)
 
@@ -897,7 +900,7 @@ class Module:
             new_user = self.accountService.create_user(username, fullname, account_type)
             new_user.set_password_mode(AccountsService.UserPasswordMode.NONE)
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/faces/user-generic.png", 48, 48)
-            description = "<b>%s</b>\n%s" % (fullname, username)
+            description = "<b>%s</b>\n%s" % (GLib.markup_escape_text(fullname), GLib.markup_escape_text(username))
             piter = self.users.append(None, [new_user, pixbuf, description])
             # Add the user to his/her own group and sudo if Administrator was selected
             if dialog.account_type_combo.get_active() == 1:

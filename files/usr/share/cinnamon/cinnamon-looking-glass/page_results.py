@@ -20,10 +20,9 @@ class ModulePage(pageutils.BaseListView):
 
         self.tree_view.connect("row-activated", self.on_row_activated)
 
-        self.get_updates()
-        self.parent.lg_proxy.connect("ResultUpdate", self.get_updates)
-        self.parent.lg_proxy.connect("InspectorDone", self.on_inspector_done)
-        self.parent.lg_proxy.add_status_change_callback(self.on_status_change)
+        self.parent.lg_proxy.connect("signal::result-update", self.get_updates)
+        self.parent.lg_proxy.connect("signal::inspector-done", self.on_inspector_done)
+        self.parent.lg_proxy.connect("status-changed", self.on_status_change)
 
         self._changed = False
         self.tree_view.connect("size-allocate", self.scroll_to_bottom)
@@ -45,11 +44,11 @@ class ModulePage(pageutils.BaseListView):
 
         self.parent.pages["inspect"].inspect_element("r(%d)" % result_id, obj_type, name, value)
 
-    def on_status_change(self, online):
+    def on_status_change(self, proxy, online):
         if online:
             self.get_updates()
 
-    def get_updates(self):
+    def get_updates(self, proxy=None):
         self.store.clear()
         success, data = self.parent.lg_proxy.GetResults()
         if success:
@@ -66,7 +65,7 @@ class ModulePage(pageutils.BaseListView):
             except Exception as exc:
                 print(exc)
 
-    def on_inspector_done(self):
+    def on_inspector_done(self, proxy=None):
         self.parent.show()
         self.parent.activate_page("results")
         self.get_updates()

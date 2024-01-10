@@ -384,89 +384,27 @@ class PreviewWidget(SettingsWidget):
     def __init__(self):
         super(PreviewWidget, self).__init__()
 
-        self.content_widget = Gtk.Socket()
+        self.builder = Gtk.Builder()
+        self.builder.set_translation_domain('cinnamon')
+        self.builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/scrollbar-test-widget.glade")
+
+        self.content_widget = self.builder.get_object("content_box")
         self.content_widget.set_valign(Gtk.Align.CENTER)
-
-        # This matches the plug toplevel container, it keeps the PreviewWidget from
-        # resizing briefly when reloading the plug.
-        self.content_widget.set_size_request(-1, 100)
-        self.content_widget.connect("hierarchy-changed", self.on_widget_hierarchy_changed)
-        self.content_widget.connect("plug-removed", self.on_plug_removed)
-
-        self.file_monitor_delay = 0
-
-        self.interface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
-        self.update_overlay_state()
-
+        self.scrolled_window = self.builder.get_object("scrolled_window")
         self.pack_start(self.content_widget, True, True, 0)
 
-        self.proc = None
+        self.interface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
+        self.interface_settings.connect("changed::gtk-overlay-scrollbars", self.on_overlay_scrollbars_changed)
+        self.update_overlay_state()
 
     def update_overlay_state(self):
         if self.interface_settings.get_boolean("gtk-overlay-scrollbars"):
-            GLib.setenv("GTK_OVERLAY_SCROLLING", "1", True)
+            self.scrolled_window.set_overlay_scrolling(True)
         else:
-            GLib.setenv("GTK_OVERLAY_SCROLLING", "0", True)
-
-    def socket_is_anchored(self, socket):
-        toplevel = socket.get_toplevel()
-
-        is_toplevel = isinstance(toplevel, Gtk.Window)
-
-        return is_toplevel
-
-    def on_widget_hierarchy_changed(self, widget, previous_toplevel, data=None):
-        if not self.socket_is_anchored(self.content_widget):
-            self.kill_plug()
-            return
-
-        self.interface_settings.connect("changed::gtk-overlay-scrollbars", self.on_overlay_scrollbars_changed)
-        self.interface_settings.get_boolean("gtk-overlay-scrollbars")
-
-        path = os.path.join(GLib.get_user_config_dir(), "gtk-3.0")
-        file = Gio.File.new_for_path(path)
-
-        try:
-            self.config_monitor = file.monitor_directory(Gio.FileMonitorFlags.NONE, None)
-            self.config_monitor.connect("changed", self.on_config_dir_changed)
-        except GLib.Error as e:
-            print(e.message)
-
-        self.reload()
-
-    def on_plug_removed(self, socket, data=None):
-        return True
+            self.scrolled_window.set_overlay_scrolling(False)
 
     def on_overlay_scrollbars_changed(self, settings, key, data=None):
         self.update_overlay_state()
-
-        self.reload()
-
-    def on_config_dir_changed(self, monitor, file, other, event_type, data=None):
-        if event_type != Gio.FileMonitorEvent.CHANGES_DONE_HINT:
-            return
-
-        if self.file_monitor_delay > 0:
-            GObject.source_remove(self.file_monitor_delay)
-
-        self.file_monitor_delay = GObject.timeout_add(100, self.on_file_monitor_delay_finished)
-
-    def on_file_monitor_delay_finished(self, data=None):
-        self.file_monitor_delay = 0
-        self.reload()
-
-        return False
-
-    def kill_plug(self):
-        if self.proc:
-            self.proc.send_signal(signal.SIGTERM)
-            self.proc = None
-
-    def reload(self):
-        self.kill_plug()
-
-        self.proc = Gio.Subprocess.new(['python3', '/usr/share/cinnamon/cinnamon-settings/bin/scrollbar-test-widget.py', str(self.content_widget.get_id())],
-                                       Gio.SubprocessFlags.NONE)
 
 class Gtk2ScrollbarSizeEditor:
     def __init__(self, ui_scale):

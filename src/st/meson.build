@@ -135,7 +135,7 @@ st_gir_sources = [
     st_headers,
 ]
 
-data_to_c = find_program(meson.source_root() + '/src/data-to-c.pl')
+data_to_c = find_program(meson.project_source_root() + '/src/data-to-c.pl')
 
 glsl_sources = custom_target('scroll-view-fade-glsl',
   input: ['st-scroll-view-fade.glsl'],
@@ -227,7 +227,7 @@ st_gir = gnome.generate_gir(
     includes: st_gir_includes,
     install: true,
     install_dir_typelib: pkglibdir,
-    install_dir_gir: girdir,
+    install_dir_gir: pkgdatadir,
     extra_args: [
         '-DST_COMPILATION',
         '--quiet',

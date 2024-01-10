@@ -7,7 +7,7 @@ It is kept for backwards compatibility as it is currently used by other scripts
 
 for usage info type:
 cinnamon-xlet-makepot -h
-* Note that the Javascript arguement is inverted because previously Javascript files
+* Note that the Javascript argument is inverted because previously Javascript files
 were not scanned by default, but now are.
 """
 

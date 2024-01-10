@@ -5,7 +5,7 @@ imports.gi.versions.Gio = '2.0';
 imports.gi.versions.Gdk = '3.0';
 imports.gi.versions.GdkPixbuf = '2.0';
 imports.gi.versions.Gtk = '3.0';
-imports.gi.versions.Soup = '2.4';
+imports.gi.versions.Soup = '3.0';
 
 const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
@@ -279,7 +279,7 @@ function init() {
     _patchContainerClass(St.BoxLayout);
     _patchContainerClass(St.Table);
 
-    // Cache the original toString since it will be overriden for Clutter.Actor
+    // Cache the original toString since it will be overridden for Clutter.Actor
     GObject.Object.prototype._toString = GObject.Object.prototype.toString;
     // Add method to determine if a GObject is finalized - needed to prevent accessing
     // objects that have been disposed in C code.
@@ -352,6 +352,7 @@ function init() {
     Date.prototype.toLocaleFormat = function(format) {
         return Cinnamon.util_format_date(format, this.getTime());
     };
+    Gtk.IconTheme.get_default = () => St.TextureCache.get_default().get_icon_theme();
 
     let slowdownEnv = GLib.getenv('CINNAMON_SLOWDOWN_FACTOR');
     if (slowdownEnv) {

@@ -12,6 +12,7 @@ from json import loads
 from gi.repository import GdkPixbuf
 
 from SettingsWidgets import SidePage
+from bin import util
 from xapp.GSettingsWidgets import *
 
 def killProcess(process):
@@ -113,20 +114,13 @@ def createSystemInfos():
         args = shlex.split("awk -F \"=\" '/GRUB_TITLE/ {print $2}' /etc/linuxmint/info")
         title = subprocess.check_output(args).decode('utf-8').rstrip("\n")
         infos.append((_("Operating System"), title))
-    elif os.path.exists("/etc/arch-release"):
-        contents = open("/etc/arch-release", 'r').readline().split()
-        title = ' '.join(contents[:2]) or "Arch Linux"
-        infos.append((_("Operating System"), title))
-    elif os.path.exists("/etc/manjaro-release"):
-        contents = open("/etc/manjaro-release", 'r').readline().split()
-        title = ' '.join(contents[:2]) or "Manjaro Linux"
-        infos.append((_("Operating System"), title))
-    else:
-        import distro
-        s = '%s (%s)' % (' '.join(distro.linux_distribution()), arch)
-        # Normalize spacing in distribution name
-        s = re.sub(r'\s{2,}', ' ', s)
-        infos.append((_("Operating System"), s))
+    elif os.path.exists("/etc/os-release"):
+          with open("/etc/os-release", 'r') as os_release_file:
+             for line in os_release_file:
+                 if line.startswith("PRETTY_NAME="):
+                    title = line.strip()[len("PRETTY_NAME="):].strip('"')
+                    infos.append((_("Operating System"), title))
+                    break # No need to continue reading the file once we have found PRETTY_NAME
     if 'CINNAMON_VERSION' in os.environ:
         infos.append((_("Cinnamon Version"), os.environ['CINNAMON_VERSION']))
     infos.append((_("Linux Kernel"), platform.release()))
@@ -148,6 +142,13 @@ def createSystemInfos():
     cards = getGraphicsInfos()
     for card in cards:
         infos.append((_("Graphics Card"), cards[card]))
+
+    display_server_name = _("X11")
+
+    if util.get_session_type() == "wayland":
+        display_server_name = _("Wayland")
+
+    infos.append((_("Display Server"), display_server_name))
 
     return infos
 
@@ -208,29 +209,48 @@ class Module:
                                     tooltip_text=_("No personal information included"),
                                     always_show_image=True,
                                     image=spinner)
-                button.connect("clicked", self.on_button_clicked, spinner)
+                button.connect("clicked", self.on_upload_button_clicked, spinner)
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
 
             if shutil.which("inxi"):
                 widget = SettingsWidget()
 
-                button = Gtk.Button(label=_("Copy to clipboard"))
-                button.connect("clicked", self.on_copy_clipboard_button_clicked)
+                spinner = Gtk.Spinner(visible=True)
+                button = Gtk.Button(label=_("Copy to clipboard"),
+                                    always_show_image=True,
+                                    image=spinner)
+                button.connect("clicked", self.on_copy_clipboard_button_clicked, spinner)
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
 
-    def on_copy_clipboard_button_clicked(self, button):
-        try:
-            inxiOutput = subprocess.run(['inxi', '-Fxxrzc0'], check=True, stdout=subprocess.PIPE).stdout
-            clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
-            clipboard.set_text(inxiOutput.decode("utf-8"), -1)
-        except Exception as e:
-            print("An error occurred while copying the system information to clipboard")
-            print(e)
+    def on_copy_clipboard_button_clicked(self, button, spinner):
+            spinner.start()
 
-    def on_button_clicked(self, button, spinner):
+            def finished_inxi(output):
+                spinner.stop()
 
+                if output is None:
+                    return
+
+                clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+                clipboard.set_text(output.decode("utf-8"), -1)
+
+            def _run_inxi(spinner):
+                inxiOutput = None
+
+                try:
+                    inxiOutput = subprocess.run(['inxi', '-FJxxxrzc0'], check=True, stdout=subprocess.PIPE).stdout
+                except Exception as e:
+                    print("An error occurred while copying the system information to clipboard")
+                    print(e)
+
+                GLib.idle_add(finished_inxi, inxiOutput)
+
+            inxi_thread = threading.Thread(target=_run_inxi, args=(spinner,))
+            inxi_thread.start()
+
+    def on_upload_button_clicked(self, button, spinner):
         try:
             subproc = Gio.Subprocess.new(["upload-system-info"], Gio.SubprocessFlags.NONE)
             subproc.wait_check_async(None, self.on_subprocess_complete, spinner)

@@ -1189,7 +1189,7 @@ real_app_launch (CinnamonApp   *app,
                   gboolean      offload,
                   GError      **error)
 {
-  GdkAppLaunchContext *context;
+  GAppLaunchContext *context;
   gboolean ret;
   CinnamonGlobal *global;
   MetaWorkspaceManager *workspace_manager;
@@ -1212,15 +1212,14 @@ real_app_launch (CinnamonApp   *app,
   global = app->global;
   workspace_manager = global->workspace_manager;
 
-  if (timestamp == 0)
-    timestamp = cinnamon_global_get_current_time (global);
+  context = cinnamon_global_create_app_launch_context (global);
 
-  if (workspace < 0)
-    workspace = meta_workspace_manager_get_active_workspace_index (workspace_manager);
-
-  context = gdk_display_get_app_launch_context (gdk_display_get_default ());
-  gdk_app_launch_context_set_timestamp (context, timestamp);
-  gdk_app_launch_context_set_desktop (context, workspace);
+  if (workspace >= 0)
+    {
+      MetaWorkspace *ws;
+      ws = meta_workspace_manager_get_workspace_by_index (workspace_manager, workspace);
+      meta_launch_context_set_workspace (META_LAUNCH_CONTEXT (context), ws);
+    }
 
   GMenuDesktopAppInfo *launch_info;
   GMenuDesktopAppInfo *offload_appinfo = NULL;

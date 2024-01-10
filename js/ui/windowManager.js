@@ -7,7 +7,6 @@ const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const Util = imports.misc.util;
 const Main = imports.ui.main;
 const WindowMenu = imports.ui.windowMenu;
 const GObject = imports.gi.GObject;
@@ -796,7 +795,7 @@ var WindowManager = class WindowManager {
                 this._dimWindow(window, true);
         } else if (!shouldDim && window._dimmed) {
             window._dimmed = false;
-            this._dimmedWindows = Util.filter(this._dimmedWindows, function(win) {
+            this._dimmedWindows = this._dimmedWindows.filter(function(win) {
                 return win !== window;
             });
             if (!Main.overview.visible)

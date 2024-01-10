@@ -1,11 +1,20 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const { Gio, GObject, Cinnamon } = imports.gi;
+const { Gio, GObject, Cinnamon, Meta } = imports.gi;
 const Util = imports.misc.util;
 const SignalManager = imports.misc.signalManager;
+const ScreenSaver = imports.misc.screenSaver;
 
 const actions = imports.ui.gestures.actions;
-const { GestureType,  GestureDirection, DeviceType } = imports.ui.gestures.ToucheggTypes;
+const { 
+    GestureType,
+    GestureDirection,
+    DeviceType,
+    GestureTypeString,
+    GestureDirectionString,
+    GesturePhaseString,
+    DeviceTypeString
+} = imports.ui.gestures.ToucheggTypes;
 
 const SCHEMA = "org.cinnamon.gestures";
 const TOUCHPAD_SCHEMA = "org.cinnamon.desktop.peripherals.touchpad"
@@ -16,32 +25,7 @@ const NON_GESTURE_KEYS = [
     "pinch-percent-threshold"
 ]
 
-const DEBUG_HAVE_DEVICES = false;
 const DEBUG_GESTURES=false;
-
-const GestureDirectionString = [
-    "unknown",
-    "up",
-    "down",
-    "left",
-    "right",
-
-    "in",
-    "out"
-];
-
-const GestureTypeString = [
-    "unsupported",
-    "swipe",
-    "pinch",
-    "tap"
-];
-
-const DeviceTypeString = [
-    "unknown",
-    "touchpad",
-    "touchscreen"
-]
 
 var parse_type = (type_str) => {
     switch(type_str) {
@@ -82,8 +66,10 @@ var debug_gesture = (...args) => {
 }
 
 var GestureDefinition = class {
-    constructor(key, action) {
-        this.action = action
+    constructor(key, action, custom_value, phase) {
+        this.action = action;
+        this.phase = phase;
+        this.custom_value = custom_value;
 
         const parts = key.split("-");
 
@@ -100,26 +86,68 @@ var GestureDefinition = class {
 
 var GesturesManager = class {
     constructor(wm) {
+        if (Meta.is_wayland_compositor()) {
+            global.log("Gestures disabled on Wayland");
+            return;
+        }
+
         this.signalManager = new SignalManager.SignalManager(null);
         this.settings = new Gio.Settings({ schema_id: SCHEMA })
-        this.signalManager.connect(this.settings, "changed", this.settings_or_devices_changed, this);
 
-        this.have_device = false;
+        this.migrate_settings();
+
+        this.signalManager.connect(this.settings, "changed", this.settings_or_devices_changed, this);
+        this.screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
         this.client = null;
         this.current_gesture = null;
 
-        this.check_for_devices();
+        this.settings_or_devices_changed()
+    }
+
+    migrate_settings() {
+        const ssource = Gio.SettingsSchemaSource.get_default();
+        const schema = ssource.lookup(SCHEMA, true);
+        const keys = schema.list_keys();
+
+        for (let key of keys) {
+            if (NON_GESTURE_KEYS.includes(key)) {
+                continue;
+            }
+
+            const val = this.settings.get_string(key);
+            if (val === '' || val.includes("::")) {
+                continue;
+            }
+
+            let custom_string;
+            let action_string = custom_string = "";
+
+            if (val.startsWith("EXEC:")) {
+                [action_string, custom_string] = val.split(":");
+                if (custom_string === "") {
+                    this.settings.set_string(key, "");
+                    continue;
+                }
+            } else {
+                action_string = val;
+            }
+
+            if (custom_string === "") {
+                this.settings.set_string(key, `${action_string}::end`);
+            }
+            else
+            {
+                this.settings.set_string(key, `${action_string}::${custom_string}::end`);
+            }
+        }
     }
 
     setup_client() {
-        global.log('Set up Touchegg client');
-
-        this.setup_actions();
-
-        actions.init_mixer();
-        actions.init_mpris_controller();
-
         if (this.client == null) {
+            global.log('Set up Touchegg client');
+            actions.init_mixer();
+            actions.init_mpris_controller();
+
             this.client = new Cinnamon.ToucheggClient();
 
             this.signalManager.connect(this.client, "gesture-begin", this.gesture_begin, this);
@@ -143,8 +171,8 @@ var GesturesManager = class {
     }
 
     settings_or_devices_changed(settings, key) {
-        if (this.settings.get_boolean("enabled") && this.have_device) {
-            this.setup_client();
+        if (this.settings.get_boolean("enabled")) {
+            this.setup_actions();
             return;
         }
 
@@ -156,6 +184,9 @@ var GesturesManager = class {
     }
 
     setup_actions() {
+        // Make sure the client is setup
+        this.setup_client();
+
         this.live_actions = new Map();
 
         const ssource = Gio.SettingsSchemaSource.get_default();
@@ -167,12 +198,28 @@ var GesturesManager = class {
                 continue;
             }
 
-            const action = this.settings.get_string(key);
-            if (action === '') {
+            const action_string = this.settings.get_string(key);
+            if (action_string === '') {
                 continue;
             }
 
-            this.live_actions.set(key, new GestureDefinition(key, action));
+            let phase, action, custom_value;
+
+            if (action_string.includes("::")) {
+                let parts = action_string.split("::");
+                if (parts.length == 2) {
+                    [action, phase] = parts;
+                    custom_value = "";
+                }
+                else
+                if (parts.length == 3) {
+                    [action, custom_value, phase] = parts;
+                }
+            } else {
+                continue;
+            }
+
+            this.live_actions.set(key, new GestureDefinition(key, action, custom_value, phase));
         }
     }
 
@@ -209,6 +256,11 @@ var GesturesManager = class {
             this.current_gesture = null;
         }
 
+        if (this.screenSaverProxy.screenSaverActive) {
+            debug_gesture(`Ignoring 'gesture-begin', screensaver is active`);
+            return;
+        }
+
         const definition_match = this.lookup_definition(type, direction, fingers);
 
         if (definition_match == null) {
@@ -216,11 +268,13 @@ var GesturesManager = class {
             return;
         }
 
-        debug_gesture(`Gesture started: (${DeviceTypeString[device]}) ${GestureTypeString[type]}, ${GestureDirectionString[direction]}, fingers: ${fingers} [${definition_match.action}]`);
+        debug_gesture(`Gesture started: (${DeviceTypeString[device]}) ${GestureTypeString[type]} ` +
+                      `${GestureDirectionString[direction]}, fingers: ${fingers}, phase:${definition_match.phase} ` +
+                      `[${definition_match.action}${definition_match.custom_value ?
+                          ' (' + definition_match.custom_value + ')' : ""}]`);
 
         this.current_gesture = actions.make_action(this.settings, definition_match, device);
         this.current_gesture.begin(direction, percentage, elapsed_time);
-
     }
 
     gesture_update(client, type, direction, percentage, fingers, device, elapsed_time) {
@@ -261,33 +315,6 @@ var GesturesManager = class {
 
         this.current_gesture.end(direction, percentage, elapsed_time);
         this.current_gesture = null;
-    }
-
-    check_for_devices() {
-        global.log("GesturesManager: Looking for devices.");
-        Util.spawnCommandLineAsyncIO(
-            "csd-input-helper",
-            (stdout, stderr, code) => {
-                let lines = stdout.replace("\t", " ").split("\n").slice(0, 5);
-                let have_touchpad = false;
-                let have_touchscreen = false
-                for (let line of lines) {
-                    if (line.includes("touchpad") && line.endsWith("yes")) {
-                        have_touchpad = true;
-                    }
-                    else
-                    if (line.includes("touchscreen") && line.endsWith("yes")) {
-                        have_touchscreen = true;
-                    }
-                }
-
-                this.have_device = have_touchpad || have_touchscreen || DEBUG_HAVE_DEVICES;
-                if (!this.have_device) {
-                    global.log("GesturesManager: No devices.");
-                }
-                this.settings_or_devices_changed();
-            }
-        );
     }
 }
 

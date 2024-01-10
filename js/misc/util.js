@@ -349,7 +349,7 @@ function fixupPCIDescription(desc) {
         }
     }
 
-    /* Attmept to shorten ID by ignoring certain individual words */
+    /* Attempt to shorten ID by ignoring certain individual words */
     let words = desc.split(' ');
     let out = [ ];
     for (let i = 0; i < words.length; i++) {
@@ -458,102 +458,6 @@ function queryCollection(collection, query, indexOnly = false) {
     }
     return indexOnly ? -1 : null;
 }
-
-/**
- * findIndex:
- * @array (array): Array to be iterated.
- * @callback (function): The function to call on every iteration,
- * should return a boolean value.
- *
- * Returns (number): the index of @array, else -1.
- */
-function findIndex(array, callback) {
-    for (let i = 0, len = array.length; i < len; i++) {
-        if (array[i] && callback(array[i], i, array)) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-/**
- * find:
- * @array (array): Array to be iterated.
- * @callback (function): The function to call on every iteration,
- * should return a boolean value.
- *
- * Returns (any): Returns the matched element, else null.
- */
-function find(arr, callback) {
-    for (let i = 0, len = arr.length; i < len; i++) {
-        if (callback(arr[i], i, arr)) {
-            return arr[i];
-        }
-    }
-    return null;
-};
-
-/**
- * each:
- * @array (array|object): Array or object to be iterated.
- * @callback (function): The function to call on every iteration.
- *
- * Iteratee functions may exit iteration early by explicitly returning false.
- */
-function each(obj, callback) {
-    if (Array.isArray(obj)) {
-        for (let i = 0, len = obj.length; i < len; i++) {
-            if (callback(obj[i], i) === false) {
-                return;
-            }
-        }
-    } else {
-        let keys = Object.keys(obj);
-        for (let i = 0, len = keys.length; i < len; i++) {
-            let key = keys[i];
-            callback(obj[key], key);
-        }
-    }
-};
-
-/**
- * filter:
- * @array (array): Array to be iterated.
- * @callback (function): The function to call on every iteration.
- *
- * Returns (array): Returns the new filtered array.
- */
-function filter(arr, callback) {
-    let result = [];
-    for (let i = 0, len = arr.length; i < len; i++) {
-        if (callback(arr[i], i, arr)) {
-            result.push(arr[i]);
-        }
-    }
-    return result;
-};
-
-/**
- * map:
- * @array (array): Array to be iterated.
- * @callback (function): The function to call on every iteration.
- *
- * Returns (array): Returns the new mapped array.
- */
-function map(arr, callback) {
-    if (arr == null) {
-        return [];
-    }
-
-    let len = arr.length;
-    let out = Array(len);
-
-    for (let i = 0; i < len; i++) {
-        out[i] = callback(arr[i], i, arr);
-    }
-
-    return out;
-};
 
 /**
  * tryFn:
@@ -717,7 +621,7 @@ const FastObject = function(o) {
 }
 FastObject();
 function toFastProperties(obj) {
-    each(obj, function(value) {
+    Object.values(obj).forEach( value => {
         if (value && !Array.isArray(value)) FastObject(value);
     });
 };

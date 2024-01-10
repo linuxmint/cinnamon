@@ -1,3 +1,259 @@
+cinnamon (6.0.4) virginia; urgency=medium
+
+  [ Fabio Fantoni ]
+  * Move gir files to private path (#11999)
+
+  [ FamiliarGecko ]
+  * fixing applet tooltips clipping out the top as well. (#11991)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 04 Jan 2024 18:09:18 +0000
+
+cinnamon (6.0.3) virginia; urgency=medium
+
+  [ FamiliarGecko ]
+  * fix for applet tooltips clipping outside the screen when they're too close to the bottom. (#11980)
+
+  [ claudiux ]
+  * Show secure connection icon when WireGuard is active (#11905)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 28 Dec 2023 12:20:16 +0000
+
+cinnamon (6.0.2) virginia; urgency=medium
+
+  [ Clement Lefebvre ]
+  * menu: Don't resize if the OSK is visible
+
+  [ Michael Webster ]
+  * Check for a workarea collision during actor.show() and shrink or restore to the user size when appropriate.
+
+  [ xenopeek ]
+  * cs-info: increase inxi verbosity (#11984)
+
+  [ Ilgaz Öcal ]
+  * README.Debian: fix typo (#11976)
+
+  [ Rick Calixte ]
+  * Update .git-blame-ignore-revs (#11928)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 19 Dec 2023 12:23:50 +0000
+
+cinnamon (6.0.1) virginia; urgency=medium
+
+  [ Michael Webster ]
+  * main.js: Don't initialize monitorLabeler in an x11 session.
+
+  [ Rick Calixte ]
+  * Update bug report template with Wayland issue tracker
+
+  [ Michael Webster ]
+  * cinnamon-global/clipboard: use the MetaDisplay's selection object.
+
+  [ Anaxímeno Brito ]
+  * fix: install actions from the correct folder (#11965)
+
+  [ Georg Sieber ]
+  * improve xlet download and autostart run icons (#11918)
+
+  [ Kevin Langman ]
+  * Fix Main.activateWindow() for windows with normal transient children (#11966)
+
+  [ Michael Webster ]
+  * actions: Ignore miscellaneous files in the install folder.
+
+  [ Clement Lefebvre ]
+  * l10n: Update cs modules
+  * cinnamon-settings-users: Fix special characters in pango markup
+
+  [ Rick Calixte ]
+  * Update Actions module to show non-Spice Actions
+
+  [ Michael Webster ]
+  * Spices.py: Skip actions when they contain the 'Active' key and its value is false.
+  * Spices.py: catch some possible exceptions when loading legacy actions.
+  * ExtensionCore.py: Render spice-supplied icons correctly in hidpi.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 14 Dec 2023 13:16:56 +0000
+
+cinnamon (6.0.0) virginia; urgency=medium
+
+  [ Michael Webster ]
+  * settings: Replace PIL.Image.ANTIALIAS with PIL.Image.LANCZOS.
+  * gestures: Adjust to amplified max volume, not normal.
+  * cs_themes: Finish removing tinycss support.
+  * cs_themes.py: Fix navigation/stack issue.
+
+  [ Rick Calixte ]
+  * cinnamon.css: Center text in .applet-box (#11755)
+
+  [ fredcw ]
+  * lightbox: Reduce color banding with dithering... (#11757)
+
+  [ Rick Calixte ]
+  * sound@cinnamon.org: Word wrap for artist and title labels (#11756)
+
+  [ Michael Webster ]
+  * bug report: Mention crashes.
+
+  [ Jordan Miner ]
+  * Fix thumbnails not appearing for windows created while menu is open (#11759)
+
+  [ Michael Webster ]
+  * cinnamon-menu-editor: Fix window type to enable window resizing.
+  * keybindings: Make Above_Tab displayable.
+  * Looking glass: Fix log text colors.
+  * gesturesManager.js: Ignore gestures when the screensaver is active.
+
+  [ claudiux ]
+  * Updated write-applet.xml for Cinnamon 4.6 to 5.8+ (#11801)
+
+  [ Michael Webster ]
+  * Update issue template with a link to open and closed issues for convenience.
+  * window-list/gwl: Simplify window focus updates.
+
+  [ fredcw ]
+  * applet.js: Improve code comments.
+
+  [ Michael Webster ]
+  * gwl: Track the getThumbnail timeout source id.
+
+  [ Fabian Schillig ]
+  * Show all batteries as "primary" batteries, removing set_device_battery_additional()
+
+  [ fredcw ]
+  * Menu applet: Fix bug where menu is partly behind panel (#11788)
+
+  [ Michael Webster ]
+  * gestures: Remove device detection.
+
+  [ Alexis Reynouard ]
+  * Fix issue #11810 (#11814)
+
+  [ Michael Webster ]
+  * Emphasize checking for duplicate existing issues in the bug report form.
+
+  [ Boria138 ]
+  * Updated cs_info module (#11861)
+
+  [ Ivan Stroev ]
+  * sound applet: Add telegram-desktop to players without seek support (#11835)
+
+  [ luzpaz ]
+  * Fix various typos (#11836)
+
+  [ Mikhail ]
+  * js: Use string instead of regexp (#11845)
+
+  [ Michael Webster ]
+  * cinnamon-subprocess-wrapper: Handle invalid utf8, fix error message.
+
+  [ fredcw ]
+  * Replace misc/util.js polyfills with js natives... (#11865)
+  * Replace util.js polyfills with JS natives... (#11871)
+  * state.js: replace polyfills with js natives.. (#11873)
+
+  [ Rick Calixte ]
+  * Fix meson.build deprecations up to 0.56.0 (#11870)
+
+  [ Michael Webster ]
+  * cs_backgrounds: Recognize .avif files.
+  * misc: Use locale.getlocale() instead of locale.getdefaultlocale().
+  * calendar eventView.js: Try to cancel scroll-to-row callback when set_events() is called.
+  * cs_info.py: Don't freeze when 'Copy to clipboard' is clicked.
+
+  [ Kacper Paczos ]
+  * Fixed calculate a sidePage height when it comes as standalone
+
+  [ claudiux ]
+  * Update cinnamon-settings.py
+
+  [ Michael Webster ]
+  * Require soup 3.0.
+
+  [ fredcw ]
+  * Ensure settings window expands to fit toolbar
+
+  [ Stephan Helma ]
+  * Adds a shift-middle click action to the sound applet.
+  * Adds option to always show the input switch in the sound applet. (Closes #11232)
+
+  [ Michael Webster ]
+  * wayland: Add session files
+  * Clean up build deps and some unused imports
+  * wayland: Don't use Gtk/Gdk anywhere in core/startup code
+  * st-texture-cache: Make our own GtkIconTheme instead of trying to get it from a GdkScreen (which won't be able to exist until Cinnamon completes startup)
+  * Disable/avoid things that don't currently work in Wayland
+  * Extensions: Block certain x11-only xlets from trying to load
+  * dbus: Add monitor labeler
+  * Restore system background
+  * Log the backend at Cinnamon start, add a row for it in cs_info.py
+  * cs_themes: Don't use a GtkPlug/Socket for overview-scrollbar previews
+  * cs_display: Add scale-monitor-framebuffer for Wayland fractional scaling
+  * Remove some leftovers from main.c, adjust a string in cs_themes.py
+  * power applet: Wait for csd-power's dbus presence before trying to connect to it
+  * cinnamon-launcher: Launch cinnamon immediately under Wayland
+  * session: Use a separate desktop file for Wayland sessions.
+  * cinnamon-settings: Suppress/hide some x11-only elements.
+  * modalDialog.js: Fix sync call in x11.
+  * melange: convert to GApplication, cleanup, fix launch-as-inspector mode.
+  * lookingGlass.js: Initialize melange interface at startup.
+
+  [ Rick Calixte ]
+  * Add .git-blame-ignore-revs for commits
+  * Adding an option for notification screen selection
+  * Fix whitespace
+  * Fix GLib exception: (#11927)
+
+  [ Bobby Rong ]
+  * meson: Re-add dbus dependency (#11932)
+
+  [ Michael Webster ]
+  * Gestures: Allow the user to specify when an action is triggered.
+  * Gestures: Add a desktop zoom action.
+
+  [ Cobinja ]
+  * Rename Wayland session
+
+  [ Michael Webster ]
+  * cinnamon-launcher: Remove wayland handling.
+  * cinnamon-global.c: Restore cinnamon_global_set_pointer.
+
+  [ Kevin Langman ]
+  * Fix xlet-settings TreeListWidget's handling of columns with option lists (#11908)
+
+  [ ZornsLemma ]
+  * Use menu for window list hover tooltip choice (#11912)
+
+  [ Victor de Jong ]
+  * Fix the power applet battery status when the seconds var is 3600 (#11931)
+
+  [ Rick Calixte ]
+  * Spices.py: Fix desklet reload after update when there are multiple instances (#11920)
+
+  [ JosephMcc ]
+  * gesturesManager.js: Fix a couple small issues
+
+  [ Rick Calixte ]
+  * Add Actions module (#11878)
+
+  [ Michael Webster ]
+  * debian/control: Update soup version.
+  * Remove .settings folder
+
+  [ kacperpaczos ]
+  * Added menu details option (#11916)
+
+  [ Michael Webster ]
+  * menu applet: Add some safety to the right-click properties item.
+  * screenshot service: Add color picker support.
+
+  [ Leigh Scott ]
+  * add xdg-portal conf (#11863)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 29 Nov 2023 15:36:47 +0000
+
 cinnamon (5.8.4) victoria; urgency=medium
 
   [ Michael Webster ]

@@ -386,7 +386,7 @@ class AppMenuButton {
         if (this._tooltip)
             this._tooltip.destroy();
 
-        if (this._applet.usePreview)
+        if (this._applet.windowHover == "thumbnail")
             this._tooltip = new WindowPreview(this, this.metaWindow, this._applet.previewScale, this._applet.showLabel);
         else
             this._tooltip = new Tooltips.PanelItemTooltip(this, "", this._applet.orientation);
@@ -521,7 +521,7 @@ class AppMenuButton {
         if (title.length > MAX_TEXT_LENGTH)
             title = title.substr(0, MAX_TEXT_LENGTH);
 
-        if (this._tooltip  && this._tooltip.set_text)
+        if (this._tooltip && this._applet.windowHover != "nothing" && this._tooltip.set_text)
             this._tooltip.set_text(title);
 
         if (this.metaWindow.minimized) {
@@ -553,21 +553,16 @@ class AppMenuButton {
     }
 
     _hasFocus() {
-        if (this.metaWindow.minimized)
+        if (!this.metaWindow || this.metaWindow.minimized)
             return false;
 
         if (this.metaWindow.has_focus())
             return true;
 
-        let transientHasFocus = false;
-        this.metaWindow.foreach_transient(function(transient) {
-            if (transient.has_focus()) {
-                transientHasFocus = true;
-                return false;
-            }
+        if (global.display.focus_window && this.metaWindow.is_ancestor_of_transient(global.display.focus_window))
             return true;
-        });
-        return transientHasFocus;
+
+        return false
     }
 
     onFocus() {
@@ -1051,7 +1046,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("button-width", "buttonWidth", this._refreshAllItems);
         this.settings.bind("buttons-use-entire-space", "buttonsUseEntireSpace", this._refreshAllItems);
         this.settings.bind("panel-show-label", "showLabelPanel", this._updateLabels);
-        this.settings.bind("window-preview", "usePreview", this._onPreviewChanged);
+        this.settings.bind("window-hover", "windowHover", this._onPreviewChanged);
         this.settings.bind("window-preview-show-label", "showLabel", this._onPreviewChanged);
         this.settings.bind("window-preview-scale", "previewScale", this._onPreviewChanged);
         this.settings.bind("last-window-order", "lastWindowOrder", null);

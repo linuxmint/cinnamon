@@ -210,7 +210,7 @@ var Applet = class Applet {
         if (!instance_id) instance_id = this.instance_id;
         let appletDefinition = AppletManager.getAppletDefinition({applet_id: instance_id});
         if (appletDefinition) {
-            let panelIndex = Util.findIndex(Main.panelManager.panels, function(panel) {
+            const panelIndex = Main.panelManager.panels.findIndex( panel => {
                 return panel && (panel.panelId === appletDefinition.panelId);
             });
             if (panelIndex > -1) {
@@ -978,24 +978,11 @@ const ZONE_SIZE = 10;
 /**
  * #PopupResizeHandler:
  * @short_description: Class that allows an applet to be resized using the mouse.
- * @inhibit_resizing (Boolean): Set to true to prevent resizing
+ * @inhibit_resizing (Boolean): Set to true to prevent resizing from starting.
  * @resizingInProgress (Boolean): True when resizing is in progress
- *
- * Parameters -
- *      actor: The actor to be resized
- *      get_orientation: Function that returns the current orientation of the applet. (St.Side)
- *      resized_callback: Function that is called while resizing is in progress with the new width
- *      and height as parameters. This function should actually change the applet size. This is
- *      also called once when resizing has ended (resizingInProgress == false) so that the
- *      applet can store the final size instead of doing so continuously whilst resizing
- *      is in progress.
- *      get_user_width: Function that returns the current applet width. This is called only
- *      when resizing begins so does not have to return the correct width while resizing is in
- *      progress. Note: This value does not necessarily have to be the applet width. It could
- *      be the width of a container inside the applet used for sizing the applet.
- *      get_user_height: As get_user_width but for height
  * 
- * Example - 
+ * Example usage:
+ * ``` 
  *      this.menu = new Applet.AppletPopupMenu(this, this.orientation);
  *      this.settings.bind("popup-width", "popup_width");
  *      this.settings.bind("popup-height", "popup_height");
@@ -1015,8 +1002,23 @@ const ZONE_SIZE = 10;
  *          this.menu.actor.set_width(this.popup_width * global.ui_scale);
  *          this.menu.actor.set_height(this.popup_height * global.ui_scale);
  *      }
+ * ```
  */
 var PopupResizeHandler = class PopupResizeHandler {
+    /**
+     * constructor:
+     * @actor (ClutterActor): The actor to be resized
+     * @get_orientation (Function): Function that returns the current orientation of the applet. (St.Side)
+     * @resized_callback (Function): Function that is called while resizing is in progress with the new
+     * width and height as parameters. This function should actually change the applet size. This is
+     * also called once when resizing has ended (resizingInProgress == false) so that the applet
+     * can store the final size instead of doing so continuously whilst resizing is in progress.
+     * @get_user_width (Function): Function that returns the current applet width. This function is not
+     * called while resizing is in progress so it only has to return the correct width when resizing is
+     * not in progress. Note: This value does not necessarily have to be the applet width. It could
+     * be the width of a container inside the applet used for sizing the applet.
+     * @get_user_height (Function): As get_user_width but for height
+     */
     constructor(actor, get_orientation, resized_callback, get_user_width, get_user_height) {
         this.actor = actor;
         this._get_orientation = get_orientation;
@@ -1029,9 +1031,11 @@ var PopupResizeHandler = class PopupResizeHandler {
         this._signals.connect(this.actor, 'motion-event', (...args) => this._motion_event(...args));
         this._signals.connect(this.actor, 'leave-event', (...args) => this._leave_event(...args));
         this._signals.connect(this.actor, 'button-press-event', (...args) => this._onButtonPress(...args));
+        this._signals.connect(this.actor, 'show', (...args) => this._on_actor_show(...args));
 
         this._no_edges_draggable = true;
         this.inhibit_resizing = false;
+        this._size_restricted = false;
 
         this._drag_start_position = null;
         this._drag_start_size = null;
@@ -1243,6 +1247,41 @@ var PopupResizeHandler = class PopupResizeHandler {
             global.unset_cursor();
         }
         return Clutter.EVENT_PROPAGATE;
+    }
+
+    _on_actor_show(box) {
+        this._collect_work_area_edges();
+        this.resizingInProgress = true;
+
+        const cur_w = this.actor.width;
+        const cur_h = this.actor.height;
+        const user_w = this._get_user_width();
+        const user_h = this._get_user_height();
+
+        if (this._size_restricted) {
+            if (user_w <= this._workAreaWidth && user_h <= this._workAreaHeight) {
+                this._resized_callback(user_w, user_h);
+                this._size_restricted = false;
+            }
+        } else {
+            let new_w = user_w;
+            let new_h = user_h;
+
+            if (cur_w > this._workAreaWidth) {
+                new_w -= cur_w - this._workAreaWidth;
+            }
+
+            if (cur_h > this._workAreaHeight) {
+                new_h -= cur_h - this._workAreaHeight;
+            }
+
+            if (new_w !== user_w || new_h !== user_h) {
+                this._size_restricted = true;
+                this._resized_callback(new_w, new_h);
+            }
+        }
+
+        this.resizingInProgress = false
     }
 
     _in_top_resize_zone(x, y) {

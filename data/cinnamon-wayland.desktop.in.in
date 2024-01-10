@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+_Name=Cinnamon (Wayland session)
+_Comment=Window management and application launching
+Exec=cinnamon --replace
+X-GNOME-Bugzilla-Bugzilla=GNOME
+X-GNOME-Bugzilla-Product=cinnamon
+X-GNOME-Bugzilla-Component=general
+X-GNOME-Bugzilla-Version=@VERSION@
+Categories=GNOME;GTK;System;Core;
+OnlyShowIn=X-Cinnamon;
+NoDisplay=true
+X-GNOME-Autostart-Phase=DisplayServer
+X-GNOME-Provides=panel;windowmanager;
+X-GNOME-Autostart-Notify=true
+X-GNOME-AutoRestart=false

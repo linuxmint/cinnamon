@@ -7,6 +7,7 @@
 #include <girepository.h>
 #include <gtk/gtk.h>
 #include <meta/display.h>
+#include <meta/util.h>
 
 #include "cinnamon-tray-manager.h"
 #include "na-tray-manager.h"
@@ -183,6 +184,11 @@ cinnamon_tray_manager_class_init (CinnamonTrayManagerClass *klass)
 CinnamonTrayManager *
 cinnamon_tray_manager_new (void)
 {
+  if (meta_is_wayland_compositor ())
+    {
+      g_critical ("Cinnamon's TrayManager is not available in a Wayland session!");
+    }
+
   return g_object_new (CINNAMON_TYPE_TRAY_MANAGER, NULL);
 }
 

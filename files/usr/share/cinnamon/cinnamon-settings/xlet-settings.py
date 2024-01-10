@@ -194,6 +194,7 @@ class MainWindow(object):
 
         toolbar = Gtk.Toolbar()
         toolbar.get_style_context().add_class("primary-toolbar")
+        toolbar.set_show_arrow(False)
         main_box.add(toolbar)
 
         toolitem = Gtk.ToolItem()

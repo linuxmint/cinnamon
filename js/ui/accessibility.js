@@ -1,8 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Main = imports.ui.main;
-const Gdk = imports.gi.Gdk;
-const Keymap = Gdk.Keymap.get_default();
 const SignalManager = imports.misc.signalManager;
 const Gio = imports.gi.Gio;
 const CDesktopEnums = imports.gi.CDesktopEnums;
@@ -51,8 +49,11 @@ A11yHandler.prototype = {
         this.event_bell_sound = null;
         this.event_flash_type = null;
 
-        this.caps = Keymap.get_caps_lock_state();
-        this.num = Keymap.get_num_lock_state();
+        let seat = Clutter.get_default_backend().get_default_seat();
+        this.keymap = seat.get_keymap();
+
+        this.caps = this.keymap.get_caps_lock_state();
+        this.num = this.keymap.get_num_lock_state();
 
         this._signalManager.connect(this.a11y_keyboard_settings, "changed", this.on_settings_changed, this);
         this._signalManager.connect(this.a11y_mouse_settings, "changed", this.on_settings_changed, this);
@@ -64,7 +65,7 @@ A11yHandler.prototype = {
 
     _set_keymap_listener: function(enabled) {
         if (enabled)
-            this._signalManager.connect(Keymap, "state-changed", this.on_keymap_state_changed, this);
+            this._signalManager.connect(this.keymap, "state-changed", this.on_keymap_state_changed, this);
         else
             this._signalManager.disconnect("state-changed");
     },
@@ -101,8 +102,8 @@ A11yHandler.prototype = {
     },
 
     on_keymap_state_changed: function(keymap) {
-        let new_caps = Keymap.get_caps_lock_state();
-        let new_num = Keymap.get_num_lock_state();
+        let new_caps = this.keymap.get_caps_lock_state();
+        let new_num = this.keymap.get_num_lock_state();
 
         if (this._toggle_keys_osd) {
             if (new_caps != this.caps) {

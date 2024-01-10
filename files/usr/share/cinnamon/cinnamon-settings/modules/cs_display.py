@@ -3,6 +3,8 @@
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 
+FRACTIONAL_ENABLE_OPTIONS = ["scale-monitor-framebuffer", "x11-randr-fractional-scaling"]
+
 class Module:
     name = "display"
     comment = _("Manage display settings")
@@ -63,25 +65,23 @@ class Module:
         self.fractional_switch.freeze_notify()
 
         features = self.muffin_settings.get_strv("experimental-features")
-        self.fractional_switch.set_active("x11-randr-fractional-scaling" in features)
+        self.fractional_switch.set_active(set(FRACTIONAL_ENABLE_OPTIONS).issubset(features))
 
         self.fractional_switch.thaw_notify()
 
     def fractional_switch_toggled(self, switch, pspec):
         active = switch.get_active()
-
         features = self.muffin_settings.get_strv("experimental-features")
 
-        if active:
-            if "x11-randr-fractional-scaling" in features:
-                return
-            else:
-                features.append("x11-randr-fractional-scaling")
-        else:
+        for enabler in FRACTIONAL_ENABLE_OPTIONS:
             try:
-                features.remove("x11-randr-fractional-scaling")
+                while True:
+                    features.remove(enabler)
             except ValueError:
                 pass
+
+        if active:
+            features.extend(FRACTIONAL_ENABLE_OPTIONS)
 
         self.muffin_settings.set_strv("experimental-features", features)
 

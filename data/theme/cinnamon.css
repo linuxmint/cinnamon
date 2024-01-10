@@ -1059,6 +1059,13 @@ StScrollBar StButton#vhandle:hover {
     font-size: 3em;
 }
 
+.monitor-label {
+    border-radius: 0;
+    color: #000000;
+    padding: 10px;
+    text-align: center;
+}
+
 /* ===================================================================
  * Run dialog
  * ===================================================================*/
@@ -1817,6 +1824,7 @@ StScrollBar StButton#vhandle:hover {
     color: #ccc;
     text-shadow: black 0px 0px 2px;
     transition-duration: 300;
+    text-align: center;
 }
 .panel-top .applet-box,
 .panel-bottom .applet-box {

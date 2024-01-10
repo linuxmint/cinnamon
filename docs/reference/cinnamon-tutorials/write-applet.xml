@@ -9,16 +9,16 @@
   <title>Writing applets</title>
   <sect2>
     <title>Introduction</title>
-    <para>In this tutorial, we will go through the process of creating a simple applet to learn about the Applet API. Here we will create a Force Quit applet.</para>
+    <para>In this tutorial, we will go through the process of creating a simple applet to learn about the Applet API. Here we will create a Notify Me applet.</para>
 
     <para>
-      For those who are unfamiliar with “force-quitting”: When a window becomes unresponsive and doesn't want to close, the most efficient way to force it to close is to kill its process. You could use the “<code>ps</code>” command to find its process ID and kill it with the “<code>kill</code>” command. Or alternatively you could run the “<code>xkill</code>” command, and simply click on the window you want to kill. And that's exactly what our “Force Quit” applet is going to do... after you click on it, your mouse cursor will change into a window killer, which you’ll target at the window you want to get rid of :)
+      Clicking on this applet will send a notification containing the user name as returned by the “<code>echo -n $USER</code>” command.
     </para>
 
   </sect2>
   <sect2> <title>Creating the basic structure of the applet</title>
     <para>
-      An applet has to be given a unique ID (uuid). In this tutorial we will name it "force-quit@cinnamon.org". Of course, you should give your applets your own UUIDs, using either your name or your domain name behind the @ sign.
+      An applet has to be given a unique ID (uuid). In this tutorial we will name it "notify-me@cinnamon.org". Of course, you should give your applets your own UUIDs, using either your name or your domain name behind the @ sign.
     </para>
 
     <para>
@@ -34,15 +34,19 @@
       </listitem>
     </itemizedlist>
     <para>
-      Applets go in <code>~/.local/share/cinnamon/applets</code> (or in <code>/usr/share/cinnamon/applets</code> if you want them installed system-wide). So let’s go there and let’s create the files and folders necessary for any Cinnamon applet.
+      Applets go in <code>~/.local/share/cinnamon/applets</code> (or in <code>/usr/share/cinnamon/applets</code> if you want them installed system-wide). So let's go ahead and create the files and folders required for any Cinnamon applet.
+
     </para>
 
     <screen>
       cd
-      mkdir -p .local/share/cinnamon/applets/force-quit@cinnamon.org
-      cd .local/share/cinnamon/applets/force-quit@cinnamon.org
+      mkdir -p .local/share/cinnamon/applets/notify-me@cinnamon.org/icons
+      cd .local/share/cinnamon/applets/notify-me@cinnamon.org
       touch metadata.json
       touch applet.js
+      # Only for this applet:
+      cp /usr/share/cinnamon/applets/notifications@cinnamon.org/icons/empty-notif-symbolic.svg ./icons/bell-notif-symbolic.svg
+
     </screen>
   </sect2>
   <sect2>
@@ -54,25 +58,27 @@
     <informalexample>
       <programlisting>
         {
-            "uuid": "force-quit@cinnamon.org",
-            "name": "Force Quit",
-            "description": "Click on the applet to launch xkill and force any window to quit immediately",
-            "icon": "force-exit"
+            "uuid": "notify-me@cinnamon.org",
+            "name": "Notify Me",
+            "description": "Click on the applet to send a notification",
+            "icon": "cs-notifications",
+            "version": "1.0.0"
         }
       </programlisting>
     </informalexample>
 
     <para>
-      By default, only one instance of every applet can be placed on the user's panel. But if the user has multiple panels, they cannot have one force-quit applet on each panel, which is bad. Hence we should also add a <code>max-instance</code> property. We can specify any number we want (eg <code>3</code>), or we can make it unlimited by making it <code>-1</code>. In this case, our new <code>metadata.json</code> would be
+      By default, only one instance of every applet can be placed on the user's panel. But if the user has multiple panels, they cannot have one notify-me applet on each panel, which is bad. Hence we should also add a <code>max-instance</code> property. We can specify any number we want (eg <code>3</code>), or we can make it unlimited by making it <code>-1</code>. In this case, our new <code>metadata.json</code> would be
     </para>
 
     <informalexample>
       <programlisting>
         {
-            "uuid": "force-quit@cinnamon.org",
-            "name": "Force Quit",
-            "description": "Click on the applet to launch xkill and force any window to quit immediately",
-            "icon": "force-exit",
+            "uuid": "notify-me@cinnamon.org",
+            "name": "Notify Me",
+            "description": "Click on the applet to send a notification",
+            "icon": "cs-notifications",
+            "version": "1.0.0",
             "max-instances": "-1"
         }
       </programlisting>
@@ -90,28 +96,36 @@
       <programlisting>
         const Applet = imports.ui.applet;
         const Util = imports.misc.util;
+        const GLib = imports.gi.GLib;
 
-        function MyApplet(orientation, panel_height, instance_id) {
-            this._init(orientation, panel_height, instance_id);
+        /**
+         * Variables (and other constants)
+         */
+        var user = GLib.get_user_name();
+        // String.capitalize() is a function implemented by Cinnamon.
+        user = user.capitalize(); // Turns the first character into uppercase.
+
+        /**
+         * Declaration of the 'NotifyMe' class, which extends
+         * the 'IconApplet' class of the 'Applet' library.
+         */
+        class NotifyMe extends Applet.IconApplet {
+            constructor (metadata, orientation, panelHeight, instance_id) {
+                super(orientation, panelHeight, instance_id);
+                this.set_applet_icon_symbolic_name("bell-notif");
+                this.set_applet_tooltip("Click here to send a notification");
+            }
+
+            on_applet_clicked(event) {
+                // Please consult 'man notify-send'.
+                let command = `bash -c 'notify-send -u normal `;
+                command += `"Thank you ${user}" "for improving Cinnamon!"'`;
+                Util.spawnCommandLineAsync(command)
+            }
         }
 
-        MyApplet.prototype = {
-            __proto__: Applet.IconApplet.prototype,
-
-            _init: function(orientation, panel_height, instance_id) {
-                Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
-
-                this.set_applet_icon_name("force-exit");
-                this.set_applet_tooltip(_("Click here to kill a window"));
-            },
-
-            on_applet_clicked: function() {
-                Util.spawn(['xkill']);
-            }
-        };
-
-        function main(metadata, orientation, panel_height, instance_id) {
-            return new MyApplet(orientation, panel_height, instance_id);
+        function main(metadata, orientation, panelHeight, instance_id) {
+            return new NotifyMe(metadata, orientation, panelHeight, instance_id);
         }
       </programlisting>
     </informalexample>
@@ -122,12 +136,12 @@
     <informalexample>
       <programlisting>
         function main(metadata, orientation, panel_height, instance_id) {
-            return new MyApplet(orientation, panel_height, instance_id);
+            return new NotifyMe(orientation, panel_height, instance_id);
         }
       </programlisting>
     </informalexample>
     <para>
-      The <code>main</code> function is the only thing Cinnamon understands. To load an applet, Cinnamon calls the <code>main</code> function in the applet's code, and expects to get an Applet object, which it will add to the panel. So here we instantiate a <code>MyApplet</code> object (whose details are defined above), and return it.
+      The <code>main</code> function is the only thing Cinnamon understands. To load an applet, Cinnamon calls the <code>main</code> function in the applet's code, and expects to get an Applet object, which it will add to the panel. So here we instantiate a <code>NotifyMe</code> object (whose details are defined above), and return it.
     </para>
 
     <para>
@@ -135,7 +149,7 @@
     </para>
 
     <para>
-      <code>orientation</code> is whether the panel is at the top or the bottom. The applet can behave differently depending on its position, eg. to make the popup menus show up on the right side.
+      <code>orientation</code> is whether the panel is at the top or the bottom, at the left or the right. The applet can behave differently depending on its position, eg. to make the popup menus show up on the right side.
     </para>
 
     <para>
@@ -151,62 +165,113 @@
     </para>
 
     <para>
-      So what exactly happens when we create the applet? We first look at the first two lines:
+      So what exactly happens when we create the applet? We first look at the first three lines:
     </para>
 
     <informalexample>
       <programlisting>
         const Applet = imports.ui.applet;
         const Util = imports.misc.util;
+        const GLib = imports.gi.GLib;
       </programlisting>
     </informalexample>
 
     <para>
-      Here we import certain APIs provided by Cinnamon. The most important one is, of course, the <code>Applet</code> API. We will also need <code>Util</code> in order to run an external program (<code>xkill</code>). When we write <code>imports.ui.applet</code>, we are accessing the functions defined in <code>/usr/share/cinnamon/js/ui/applet.js</code>. Similarly, <code>imports.misc.util</code> accesses <code>/usr/share/cinnamon/js/misc/util.js</code>. We then call these things <code>Applet</code> and <code>Util</code> respectively to avoid typing the long bunch of code.
+      Here we import certain APIs provided by Cinnamon. The most important one is, of course, the <code>Applet</code> API. We will also need <code>Util</code> in order to run an external program (<code>notify-send</code>). When we write <code>imports.ui.applet</code>, we are accessing the functions defined in <code>/usr/share/cinnamon/js/ui/applet.js</code>. Similarly, <code>imports.misc.util</code> accesses <code>/usr/share/cinnamon/js/misc/util.js</code>. We then call these things <code>Applet</code> and <code>Util</code> respectively to avoid typing the long bunch of code.
     </para>
 
     <para>
-      Not very interesting. Next!
+      The third line imports the GLib, which contains the get_user_name() method to access to the Linux user name. Next!
+
     </para>
     <informalexample>
       <programlisting>
-        function MyApplet(orientation, panel_height, instance_id) {
-            this._init(orientation, panel_height, instance_id);
+        constructor (metadata, orientation, panelHeight, instance_id) {
+            super(orientation, panelHeight, instance_id);
+            this.set_applet_icon_symbolic_name("bell-notif");
+            this.set_applet_tooltip("Click here to send a notification");
         }
       </programlisting>
     </informalexample>
     <para>
-      This is the standard constructor of a Javascript Object. When someone calls it, it calls the <code>_init</code> function of the object, and does stuff. Note that here we called our applet <code>MyApplet</code>. You are free to call it whatever you want (and change the <code>main</code> function accordingly, of course), but there really is no reason to do so!.
+      This is the standard constructor of a Javascript Object. It is called each time the object is instantiated. Here, instantiation takes place in the <code>main()</code> function.
     </para>
 
     <para>
-      Also note that we pass all the <code>orientation</code> etc. information down the chain until it ultimately reaches the applet API.
+      Also note that we pass all the <code>metadata</code>, <code>orientation</code> etc. information down the chain until it ultimately reaches the applet API.
     </para>
 
     <para>
-      What we've gone through is mostly boilerplate. Now we get to the meat of the code:
+      <code>super</code> refers to the constructor of the parent of this object (here, <code>Applet.IconApplet</code>).
+    </para>
+
+    <para>
+      The next two lines initialize your applet, defining its icon and tooltip.
     </para>
     <informalexample>
       <programlisting>
-        MyApplet.prototype = {
-            __proto__: Applet.IconApplet.prototype,
-
-            _init: function(orientation, panel_height, instance_id) {
-                Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
-
-                this.set_applet_icon_name("force-exit");
-                this.set_applet_tooltip(_("Click here to kill a window"));
-            },
-
-            on_applet_clicked: function() {
-                Util.spawn(['xkill']);
-            }
-        };
+            this.set_applet_icon_symbolic_name("bell-notif");
+            this.set_applet_tooltip("Click here to send a notification");
       </programlisting>
     </informalexample>
 
     <para>
-      Roughly speaking, the <code>prototype</code> is the list of all functions of the object. Here we have the <code>_init</code> function and the <code>on_applet_clicked</code> function, which is all we need.
+      However, contrary to popular belief, the applet API is not psychic. It has no idea what your applet wants to do (apart from displaying an icon). You have to first tell it what icon you want, in the line
+    </para>
+
+    <informalexample>
+      <programlisting>
+        this.set_applet_icon_symbolic_name("bell-notif");
+      </programlisting>
+    </informalexample>
+
+    <para>
+      Note that <link linkend="cinnamon-js-ui-Applet-IconApplet-set_applet_icon_symbolic_name"><code>set_applet_icon_symbolic_name</code></link> is a function defined inside <code>Applet.IconApplet</code>, which makes the applet display the corresponding symbolic icon. By using the applet API, we have saved ourselves from the hassle of creating icons and putting them in the right place. (<code>bell-notif</code> is the name of an icon from the user's icon set. The icons available for use can be found in <code>/usr/share/icons/</code> or in the <code>icons/</code> folder of this applet)
+    </para>
+
+    <para>
+      The next line is:
+    </para>
+
+    <informalexample>
+      <programlisting>
+        this.set_applet_tooltip("Click here to send a notification");
+      </programlisting>
+    </informalexample>
+
+    <para>
+      which says that the applet should have a tooltip called <code>Click here to send a notification</code>.
+    </para>
+
+    <para>
+      There is a way to translate messages such as "Click here to send a notification". Please see Translating applets.
+    </para>
+
+    <para>
+      The class not only defines the constructor, but also methods, which are functions accessible by the instantiated object. Like the <code>on_applet_clicked</code> function, which is all we need.
+    </para>
+
+    <informalexample>
+        <programlisting>
+            on_applet_clicked(event) {
+                // Please consult 'man notify-send'.
+                let command = `bash -c 'notify-send -u normal `;
+                command += `"Thank you ${user}" "for improving Cinnamon!"'`;
+                Util.spawnCommandLineAsync(command)
+            }
+        </programlisting>
+    </informalexample>
+
+    <para>
+      <code>on_applet_clicked</code> is a part of the applet API and is called whenever the applet is clicked.
+    </para>
+
+    <para>
+      <code>command</code> is the command to execute. Please note that three types of string delimiters are used here: <code>`</code>, <code>'</code> and <code>"</code>.
+    </para>
+
+    <para>
+      Last, <code>Util.spawnCommandLineAsync(command)</code> executes this command in an asynchronous manner (i.e "as soon as the computer is ready for that"). Cinnamon's UI runs in a single thread, and synchronous methods that involve i/o can block this thread, causing the desktop to stop responding. Asynchronous methods are preferable, but can sometimes be more complicated to use (though that is not the case here).
     </para>
 
     <para>
@@ -215,11 +280,11 @@
 
 
     <para>
-      Inheritance in JavaScript is slightly weird. We first copy over <code>Applet.IconApplet</code>'s prototype using the
+      Inheritance in JavaScript is slightly weird. We first copy over <code>Applet.IconApplet</code>'s prototype (or class) using the
     </para>
     <informalexample>
       <programlisting>
-        __proto__: Applet.IconApplet.prototype,
+        class NotifyMe extends Applet.IconApplet {
       </programlisting>
     </informalexample>
     <para>
@@ -227,50 +292,7 @@
     </para>
 
     <para>
-      Next, in our <code>_init</code> function, we call the <link linkend="cinnamon-js-ui-Applet-IconApplet-_init"><code>_init</code></link> function of <code>Applet.IconApplet</code>. Here we pass on all the information about <code>orientation</code> etc. to this <code>_init</code> function, and this function will help us sort out all the mess required to make the applet display properly.
-    </para>
-
-    <para>
-      However, contrary to popular belief, the applet API is not psychic. It has no idea what your applet wants to do (apart from displaying an icon). You have to first tell it what icon you want, in the line
-    </para>
-
-    <informalexample>
-      <programlisting>
-        this.set_applet_icon_name("force-exit");
-      </programlisting>
-    </informalexample>
-
-    <para>
-      Note that <link linkend="cinnamon-js-ui-Applet-IconApplet-set_applet_icon_name"><code>set_applet_icon_name</code></link> is a function defined inside <code>Applet.IconApplet</code>, which makes the applet display the corresponding icon. By using the applet API, we have saved ourselves from the hassle of creating icons and putting them in the right place. (<code>force-exit</code> is the name of an icon from the user's icon set. The icons available for use can be found in <code>/usr/share/icons/</code>)
-    </para>
-
-    <para>
-      The next line is
-    </para>
-
-    <informalexample>
-      <programlisting>
-        this.set_applet_tooltip(_("Click here to kill a window"));
-      </programlisting>
-    </informalexample>
-
-    <para>
-      which says that the applet should have a tooltip called <code>_("Click here to kill a window")</code>. By wrapping the string with the <code>_( )</code> function, we are telling Cinnamon to translate the string to the correct language, if translations are available.
-    </para>
-
-    <para>
-      That is all the code in our <code>_init</code> function. Now we have to wait for the user to click on the applet. The applet API automatically helps you to listen to these events, and when the user presses the applet, the API will call the <link linkend="cinnamon-js-ui-Applet-Applet-on_applet_clicked"><code>on_applet_clicked</code></link> of your applet. Here we have
-    </para>
-    <informalexample>
-      <programlisting>
-        on_applet_clicked: function() {
-            Util.spawn(['xkill']);
-        }
-      </programlisting>
-    </informalexample>
-
-    <para>
-      which calls the <code>spawn</code> function from <code>Util</code>, and launches an external command, <code>xkill</code>.
+      Next, in our <code>constructor</code> function, we call the <link linkend="cinnamon-js-ui-Applet-IconApplet-_init"><code>_init</code></link> (or <code>constructor</code>) function of <code>Applet.IconApplet</code>. Here we pass on all the information about <code>orientation</code> etc. to this <code>_init</code> (or<code>constructor</code>) function, and this function will help us sort out all the mess required to make the applet display properly.
     </para>
   </sect2>
 </chapter>

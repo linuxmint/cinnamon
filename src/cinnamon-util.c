@@ -612,7 +612,7 @@ cinnamon_util_get_week_start (void)
  * @event: a #ClutterEvent
  *
  * Gets the current state of the event (the set of modifier keys that
- * are pressed down). Thhis is a wrapper around
+ * are pressed down). This is a wrapper around
  * clutter_event_get_state() that strips out any un-declared modifier
  * flags, to make gjs happy; see
  * https://bugzilla.gnome.org/show_bug.cgi?id=597292.

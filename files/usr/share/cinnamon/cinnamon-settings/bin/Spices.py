@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
+import os
+import sys
+
 try:
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib
     import tempfile
-    import os
-    import sys
     import zipfile
     import shutil
     import html
@@ -13,8 +14,8 @@ try:
     from PIL import Image
     import datetime
     import time
-except Exception as detail:
-    print(detail)
+except Exception as error_message:
+    print(error_message)
     sys.exit(1)
 
 try:
@@ -23,24 +24,27 @@ except ImportError:
     import simplejson as json
 
 home = os.path.expanduser("~")
-locale_inst = '%s/.local/share/locale' % home
+locale_inst = f'{home}/.local/share/locale'
 settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
-old_settings_dir = '%s/.cinnamon/configs/' % home
+old_settings_dir = f'{home}/.cinnamon/configs/'
 
 URL_SPICES_HOME = "https://cinnamon-spices.linuxmint.com"
 URL_MAP = {
     'applet': URL_SPICES_HOME + "/json/applets.json",
     'theme': URL_SPICES_HOME + "/json/themes.json",
     'desklet': URL_SPICES_HOME + "/json/desklets.json",
-    'extension': URL_SPICES_HOME + "/json/extensions.json"
+    'extension': URL_SPICES_HOME + "/json/extensions.json",
+    'action': URL_SPICES_HOME + "/json/actions.json",
 }
 
 ABORT_NONE = 0
 ABORT_ERROR = 1
 ABORT_USER = 2
 
+
 def ui_thread_do(callback, *args):
-    GLib.idle_add (callback, *args, priority=GLib.PRIORITY_DEFAULT)
+    GLib.idle_add(callback, *args, priority=GLib.PRIORITY_DEFAULT)
+
 
 def removeEmptyFolders(path):
     if not os.path.isdir(path):
@@ -60,9 +64,10 @@ def removeEmptyFolders(path):
         print("Removing empty folder:", path)
         os.rmdir(path)
 
+
 class ThreadedTaskManager(GObject.GObject):
     def __init__(self, max_threads):
-        super(ThreadedTaskManager, self).__init__()
+        super().__init__()
         self.max_threads = max_threads
         self.abort_status = False
         self.jobs = []
@@ -121,6 +126,7 @@ class ThreadedTaskManager(GObject.GObject):
                 self.abort_status = True
                 del self.jobs[:]
 
+
 class Spice_Harvester(GObject.Object):
     __gsignals__ = {
         'installed-changed': (GObject.SignalFlags.RUN_FIRST, None, ()),
@@ -129,11 +135,12 @@ class Spice_Harvester(GObject.Object):
     }
 
     def __init__(self, collection_type, window=None):
-        super(Spice_Harvester, self).__init__()
+        super().__init__()
         self.collection_type = collection_type
         self.window = window
 
         self.themes = collection_type == 'theme'
+        self.actions = collection_type == 'action'
         self.index_cache = {}
         self.meta_map = {}
         self.download_manager = ThreadedTaskManager(10)
@@ -155,18 +162,29 @@ class Spice_Harvester(GObject.Object):
         if self.themes:
             self.settings = Gio.Settings.new('org.cinnamon.theme')
             self.enabled_key = 'name'
+        elif self.actions:
+            self.settings = Gio.Settings.new('org.nemo.plugins')
+            self.enabled_key = 'disabled-actions'
         else:
             self.settings = Gio.Settings.new('org.cinnamon')
-            self.enabled_key = 'enabled-%ss' % self.collection_type
+            self.enabled_key = f'enabled-{self.collection_type}s'
+
+        if not self.themes:
+            self.settings.connect(f'changed::{self.enabled_key}', self._update_status)
 
         if self.themes:
-            self.install_folder = '%s/.themes/' % home
+            self.install_folder = f'{home}/.themes/'
             old_install_folder = os.path.join(GLib.get_user_data_dir(), 'themes')
             self.spices_directories = (self.install_folder, old_install_folder)
+        elif self.actions:
+            actions = 'nemo/actions/'
+            self.install_folder = f'{home}/.local/share/{actions}'
+            sys_dirs = [x + f'/{actions}' for x in GLib.get_system_data_dirs()]
+            sys_dirs.append(self.install_folder)
+            self.spices_directories = (sys_dirs)
         else:
-            self.install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
-            self.spices_directories = ('/usr/share/cinnamon/%ss/' % self.collection_type, self.install_folder)
-            self.settings.connect('changed::%s' % self.enabled_key, self._update_status)
+            self.install_folder = f'{home}/.local/share/cinnamon/{self.collection_type}s/'
+            self.spices_directories = (f'/usr/share/cinnamon/{self.collection_type}s/', self.install_folder)
 
         self._update_status()
 
@@ -187,12 +205,18 @@ class Spice_Harvester(GObject.Object):
             print(e)
 
         try:
+            if not self.actions:
+                dbus_path = 'org.Cinnamon'
+                gsetting = '/org/Cinnamon'
+            else:
+                dbus_path = 'org.Nemo'
+                gsetting = '/org/Nemo'
             Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
-                                      'org.Cinnamon', '/org/Cinnamon', 'org.Cinnamon', None, self._on_proxy_ready, None)
+                                      dbus_path, gsetting, dbus_path, None, self._on_proxy_ready, None)
         except GLib.Error as e:
-            print(e.message)
+            print(e)
 
-    def _on_proxy_ready (self, object, result, data=None):
+    def _on_proxy_ready(self, obj, result, data=None):
         try:
             self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
             self._proxy.connect('g-signal', self._on_signal)
@@ -202,7 +226,7 @@ class Spice_Harvester(GObject.Object):
             else:
                 print("org.Cinnamon proxy created, but no owner - is Cinnamon running?")
         except GLib.Error as e:
-            print("Could not establish proxy for org.Cinnamon: %s" % e.message)
+            print(f"Could not establish proxy for org.Cinnamon: {e}")
 
         self.connect_proxy('XletAddedComplete', self._update_status)
         self._update_status()
@@ -247,7 +271,7 @@ class Spice_Harvester(GObject.Object):
 
     def _update_status(self, *args):
         try:
-            if self._proxy and self._proxy.get_name_owner():
+            if self._proxy and self._proxy.get_name_owner() and not self.actions:
                 self.running_uuids = self._proxy.GetRunningXletUUIDs('(s)', self.collection_type)
             else:
                 self.running_uuids = []
@@ -258,7 +282,9 @@ class Spice_Harvester(GObject.Object):
     def open_spice_page(self, uuid):
         """ opens to the web page of the given uuid"""
         id = self.index_cache[uuid]['spices-id']
-        os.system('xdg-open "%s/%ss/view/%s"' % (URL_SPICES_HOME, self.collection_type, id))
+        subprocess.run(['/usr/bin/xdg-open',
+                       f"{URL_SPICES_HOME}/{self.collection_type}s/view/{id}"],
+                       check=True)
 
     def get_progressbar(self):
         """ returns a Gtk.Widget that can be added to the application. This widget will show the
@@ -299,7 +325,7 @@ class Spice_Harvester(GObject.Object):
             total = self.download_total_files
             current = total - self.download_manager.get_n_jobs()
             fraction = float(current) / float(total)
-            text = "%s %i/%i" % (_("Downloading images:"), current, total)
+            text = _("Downloading images:") + f" {current}/{total}"
             self._set_progressbar_text(text)
         else:
             fraction = count * blockSize / float((totalSize / blockSize + 1) * blockSize)
@@ -309,7 +335,8 @@ class Spice_Harvester(GObject.Object):
         while Gtk.events_pending():
             Gtk.main_iteration()
 
-    # Jobs are added by calling _push_job. _process_job and _advance_queue form a wrapper that runs the job in it's own thread.
+    # Jobs are added by calling _push_job. _process_job and _advance_queue
+    # from a wrapper that runs the job in it's own thread.
     def _push_job(self, job):
         self.total_jobs += 1
         job['job_number'] = self.total_jobs
@@ -319,7 +346,7 @@ class Spice_Harvester(GObject.Object):
 
     def _process_job(self, job):
         job['result'] = job['func'](job)
-        if 'callback' in job:
+        if job.get('callback'):
             GLib.idle_add(job['callback'], job)
         GLib.idle_add(self._advance_queue)
 
@@ -340,7 +367,7 @@ class Spice_Harvester(GObject.Object):
             self.current_job = job
             text = job['progress_text']
             if self.total_jobs > 1:
-                text += " (%i/%i)" % (job['job_number'], self.total_jobs)
+                text += f" ({job['job_number']}/{self.total_jobs})"
             self._set_progressbar_text(text)
             job_thread = threading.Thread(target=self._process_job, args=(job,))
             job_thread.start()
@@ -360,8 +387,8 @@ class Spice_Harvester(GObject.Object):
 
     def _download(self, out_file, url, binary=True):
         timestamp = round(time.time())
-        url = "%s?time=%d" % (url, timestamp)
-        print("Downloading from %s" % url)
+        url = f"{url}?time={timestamp}"
+        print(f"Downloading from {url}")
         try:
             open_args = 'wb' if binary else 'w'
             with open(out_file, open_args) as outfd:
@@ -379,9 +406,9 @@ class Spice_Harvester(GObject.Object):
         return out_file
 
     def _url_retrieve(self, url, outfd, reporthook, binary):
-        #Like the one in urllib. Unlike urllib.retrieve url_retrieve
-        #can be interrupted. KeyboardInterrupt exception is raised when
-        #interrupted.
+        # Like the one in urllib. Unlike urllib.retrieve url_retrieve
+        # can be interrupted. KeyboardInterrupt exception is raised when
+        # interrupted.
         import proxygsettings
         import requests
 
@@ -409,24 +436,75 @@ class Spice_Harvester(GObject.Object):
     def _load_metadata(self):
         self.meta_map = {}
 
-        for directory in self.spices_directories:
-            if os.path.exists(directory):
-                extensions = os.listdir(directory)
+        for file_path in self.spices_directories:
+            if os.path.exists(file_path):
+                extensions = os.listdir(file_path)
 
                 for uuid in extensions:
-                    subdirectory = os.path.join(directory, uuid)
-                    try:
-                        json_data = open(os.path.join(subdirectory, 'metadata.json')).read()
-                        metadata = json.loads(json_data)
-                        metadata['path'] = subdirectory
-                        metadata['writable'] = os.access(subdirectory, os.W_OK)
-                        self.meta_map[uuid] = metadata
-                    except Exception as detail:
-                        if not self.themes:
-                            print(detail)
-                            print("Skipping %s: there was a problem trying to read metadata.json" % uuid)
+                    if uuid == 'sample.nemo_action':
+                        continue
+                    full_path = os.path.join(file_path, uuid)
+                    uuid_path = full_path.split('.nemo_action')[0]
+                    if uuid.endswith('.nemo_action') and not os.path.exists(uuid_path):
+                        # A singular .nemo_action file has been detected
+                        metadata = dict()
+                        keyfile = GLib.KeyFile.new()
+
+                        try:
+                            keyfile.load_from_file(full_path, GLib.KeyFileFlags.KEEP_TRANSLATIONS)
+                        except GLib.Error as e:
+                            print("Could not read action file '%s': %s" % (full_path,e.message))
+                            continue
+
+                        try:
+                            # The Active key is not typically used, but there are some inactive actions
+                            # installed by Nemo, which should not show in the list.
+                            if not keyfile.get_boolean('Nemo Action', 'Active'):
+                                continue
+                        except GLib.Error as e:
+                            if e.code == GLib.KeyFileError.NOT_FOUND:
+                                pass
+
+                        name = keyfile.get_locale_string('Nemo Action', 'Name')
+                        metadata['name'] = name.replace("_", "")
+
+                        try:
+                            metadata['description'] = keyfile.get_locale_string('Nemo Action', 'Comment')
+                        except GLib.Error as e:
+                            if e.code == GLib.KeyFileError.NOT_FOUND:
+                                pass
+
+                        try:
+                            metadata['icon'] = keyfile.get_string('Nemo Action', 'Icon-Name')
+                        except GLib.Error as e:
+                            if e.code == GLib.KeyFileError.NOT_FOUND:
+                                pass
+
+                        metadata['writable'] = False
+                        metadata['disable_about'] = True
+                        metadata['path'] = self.install_folder
+                        _uuid = uuid.split('.nemo_action')[0]
+                        metadata['uuid'] = _uuid
+                        self.meta_map[_uuid] = metadata
+                    elif os.path.isfile(full_path):
+                        continue
+                    # For actions, ignore any other normal files, an action may place other support scripts in here.
+                    if self.actions and not os.path.isdir(full_path):
+                        continue
+                    else:
+                        try:
+                            # Process Actions installed via Spices
+                            with open(f"{full_path}/metadata.json", encoding='utf-8') as json_data:
+                                metadata = json.load(json_data)
+                                metadata['path'] = full_path
+                                metadata['writable'] = os.access(full_path, os.W_OK)
+                                self.meta_map[uuid] = metadata
+                        except Exception as error:
+                            if not self.themes:
+                                print(error)
+                                print(f"Skipping {uuid}: there was a problem trying to read metadata.json")
             else:
-                print("%s does not exist! Skipping" % directory)
+                print(f"{file_path} does not exist! Skipping")
 
     def _directory_changed(self, *args):
         self._load_metadata()
@@ -448,18 +526,23 @@ class Spice_Harvester(GObject.Object):
 
         try:
             return int(self.meta_map[uuid]["last-edited"]) < self.index_cache[uuid]["last_edited"]
-        except Exception as e:
+        except Exception:
             return False
 
     def get_enabled(self, uuid):
         """ returns the number of instances currently enabled"""
         enabled_count = 0
-        if not self.themes:
+        if not self.themes and not self.actions:
             enabled_list = self.settings.get_strv(self.enabled_key)
             for item in enabled_list:
                 item = item.replace("!", "")
                 if uuid in item.split(":"):
                     enabled_count += 1
+        elif self.actions:
+            disabled_list = self.settings.get_strv(self.enabled_key)
+            uuid_name = f"{uuid}.nemo_action"
+            if uuid_name not in disabled_list:
+                enabled_count = 1
         elif self.settings.get_string(self.enabled_key) == uuid:
             enabled_count = 1
 
@@ -490,18 +573,17 @@ class Spice_Harvester(GObject.Object):
         if not os.path.exists(filename):
             self.has_cache = False
             return
-        else:
-            self.has_cache = True
+        self.has_cache = True
 
-        f = open(filename, 'r')
-        try:
-            self.index_cache = json.load(f)
-        except ValueError as detail:
+        with open(filename, 'r', encoding='utf-8') as f:
             try:
-                os.remove(filename)
-            except:
-                pass
-            self.errorMessage(_("Something went wrong with the spices download.  Please try refreshing the list again."), str(detail))
+                self.index_cache = json.load(f)
+            except ValueError as detail:
+                try:
+                    os.remove(filename)
+                except:
+                    pass
+                self.errorMessage(_("Something went wrong with the spices download. Please try refreshing the list again."), str(detail))
 
         self._generate_update_list()
 
@@ -537,7 +619,7 @@ class Spice_Harvester(GObject.Object):
         self.download_total_files = 0
         self.download_current_file = 0
 
-        for uuid, info in self.index_cache.items():
+        for uuid, _ in self.index_cache.items():
             if self.themes:
                 icon_basename = self._sanitize_thumb(os.path.basename(self.index_cache[uuid]['screenshot']))
                 download_url = URL_SPICES_HOME + "/uploads/themes/thumbs/" + icon_basename
@@ -594,7 +676,8 @@ class Spice_Harvester(GObject.Object):
 
     def install(self, uuid):
         """ downloads and installs the given extension"""
-        job = {'uuid': uuid, 'func': self._install, 'callback': self._install_finished}
+        _callback = None if self.actions else self._install_finished
+        job = {'uuid': uuid, 'func': self._install, 'callback': _callback}
         job['progress_text'] = _("Installing %s") % uuid
         self._push_job(job)
 
@@ -604,20 +687,19 @@ class Spice_Harvester(GObject.Object):
         download_url = URL_SPICES_HOME + self.index_cache[uuid]['file']
         self.current_uuid = uuid
 
-        fd, ziptempfile = tempfile.mkstemp()
+        _, ziptempfile = tempfile.mkstemp()
 
         if self._download(ziptempfile, download_url) is None:
             return
 
         try:
-            zip = zipfile.ZipFile(ziptempfile)
+            with zipfile.ZipFile(ziptempfile) as _zip:
+                tempfolder = tempfile.mkdtemp()
+                _zip.extractall(tempfolder)
 
-            tempfolder = tempfile.mkdtemp()
-            zip.extractall(tempfolder)
+                uuidfolder = tempfolder if self.actions else os.path.join(tempfolder, uuid)
 
-            uuidfolder = os.path.join(tempfolder, uuid)
-
-            self.install_from_folder(uuidfolder, uuid, True)
+                self.install_from_folder(uuidfolder, uuid, True)
         except Exception as detail:
             if not self.abort_download:
                 self.errorMessage(_("An error occurred during the installation of %s. Please report this incident to its developer.") % uuid, str(detail))
@@ -631,31 +713,47 @@ class Spice_Harvester(GObject.Object):
 
     def install_from_folder(self, folder, uuid, from_spices=False):
         """ installs a spice from a specified folder"""
-        contents = os.listdir(folder)
+        _folder = f"{folder}/{uuid}" if self.actions else folder
+        contents = os.listdir(_folder)
 
         if not self.themes:
             # Install spice localization files, if any
             if 'po' in contents:
-                po_dir = os.path.join(folder, 'po')
+                po_dir = os.path.join(_folder, 'po')
                 for file in os.listdir(po_dir):
                     if file.endswith('.po'):
                         lang = file.split(".")[0]
                         locale_dir = os.path.join(locale_inst, lang, 'LC_MESSAGES')
                         os.makedirs(locale_dir, mode=0o755, exist_ok=True)
-                        subprocess.call(['msgfmt', '-c', os.path.join(po_dir, file), '-o', os.path.join(locale_dir, '%s.mo' % uuid)])
-        
+                        subprocess.run(['/usr/bin/msgfmt', '-c',
+                                       os.path.join(po_dir, file), '-o',
+                                       os.path.join(locale_dir, f'{uuid}.mo')],
+                                       check=True)
+
         # Create install folder on demand
         if not os.path.exists(self.install_folder):
-            subprocess.call(["mkdir", "-p", self.install_folder])
+            subprocess.run(["/usr/bin/mkdir", "-p", self.install_folder], check=True)
 
         dest = os.path.join(self.install_folder, uuid)
         if os.path.exists(dest):
             shutil.rmtree(dest)
-        shutil.copytree(folder, dest)
+        if self.actions and os.path.exists(dest + '.nemo_action'):
+            os.remove(dest + '.nemo_action')
+        if not self.actions:
+            shutil.copytree(folder, dest)
+        else:
+            shutil.copytree(folder, self.install_folder, dirs_exist_ok=True)
+
+        if self.actions and uuid not in self.updates_available:
+            disabled_list = self.settings.get_strv(self.enabled_key)
+            uuid_name = f"{uuid}.nemo_action"
+            if uuid_name not in disabled_list:
+                disabled_list.append(uuid_name)
+                self.settings.set_strv(self.enabled_key, disabled_list)
 
         if not self.themes:
             # ensure proper file permissions
-            for root, dirs, files in os.walk(dest):
+            for root, _, files in os.walk(dest):
                 for file in files:
                     os.chmod(os.path.join(root, file), 0o755)
 
@@ -663,10 +761,8 @@ class Spice_Harvester(GObject.Object):
         if self.themes and not os.path.exists(meta_path):
             md = {}
         else:
-            file = open(meta_path, 'r')
-            raw_meta = file.read()
-            file.close()
-            md = json.loads(raw_meta)
+            with open(meta_path, 'r', encoding='utf-8') as file:
+                md = json.load(file)
 
         if from_spices and uuid in self.index_cache:
             md['last-edited'] = self.index_cache[uuid]['last_edited']
@@ -674,13 +770,14 @@ class Spice_Harvester(GObject.Object):
             md['last-edited'] = int(datetime.datetime.utcnow().timestamp())
 
         raw_meta = json.dumps(md, indent=4)
-        file = open(meta_path, 'w+')
-        file.write(raw_meta)
-        file.close()
+        with open(meta_path, 'w+', encoding='utf-8') as file:
+            file.write(raw_meta)
 
     def _install_finished(self, job):
         uuid = job['uuid']
-        if self.get_enabled(uuid):
+        if self.get_enabled(uuid) and self._proxy:
+            self._proxy.ReloadXlet('(ss)', uuid, self.collection_type.upper())
+        else:
             self.send_proxy_signal('ReloadXlet', '(ss)', uuid, self.collection_type.upper())
 
     def uninstall(self, uuid):
@@ -709,8 +806,18 @@ class Spice_Harvester(GObject.Object):
                     shutil.rmtree(os.path.join(old_settings_dir, uuid))
             for folder in self.spices_directories:
                 shutil.rmtree(os.path.join(folder, uuid), ignore_errors=True)
-        except Exception as detail:
-            self.errorMessage(_("A problem occurred while removing %s.") % job['uuid'], str(detail))
+            if self.actions:
+                disabled_list = self.settings.get_strv(self.enabled_key)
+                uuid_name = f"{uuid}.nemo_action"
+                if uuid_name in disabled_list:
+                    disabled_list.remove(uuid_name)
+                    self.settings.set_strv(self.enabled_key, disabled_list)
+                try:
+                    os.remove(os.path.join(folder, f'{uuid}.nemo_action'))
+                except FileNotFoundError:
+                    pass
+        except Exception as error:
+            self.errorMessage(_("A problem occurred while removing %s.") % job['uuid'], str(error))
 
     def update_all(self):
         """ applies all available updates"""
@@ -725,18 +832,18 @@ class Spice_Harvester(GObject.Object):
     def _is_aborted(self):
         return self.download_manager.abort_status
 
-    def _ui_error_message(self, msg, detail = None):
-        dialog = Gtk.MessageDialog(transient_for = self.window,
-                                   modal = True,
-                                   message_type = Gtk.MessageType.ERROR,
-                                   buttons = Gtk.ButtonsType.OK)
+    def _ui_error_message(self, msg, detail=None):
+        dialog = Gtk.MessageDialog(transient_for=self.window,
+                                   modal=True,
+                                   message_type=Gtk.MessageType.ERROR,
+                                   buttons=Gtk.ButtonsType.OK)
         markup = msg
         if detail is not None:
             markup += _("\n\nDetails:  %s") % (str(detail))
         esc = html.escape(markup)
         dialog.set_markup(esc)
         dialog.show_all()
-        response = dialog.run()
+        _ = dialog.run()
         dialog.destroy()
 
     def errorMessage(self, msg, detail=None):
@@ -751,13 +858,13 @@ class Spice_Harvester(GObject.Object):
             for entry in self.settings.get_strv(self.enabled_key):
                 info = entry.split(':')
                 pos = int(info[2])
-                if info[0] == 'panel%d' % panel and info[1] == box and position <= pos:
+                if info[0] == f'panel{panel}' and info[1] == box and position <= pos:
                     info[2] = str(pos+1)
                     entries.append(':'.join(info))
                 else:
                     entries.append(entry)
 
-            entries.append('panel%d:%s:%d:%s:%d' % (panel, box, position, uuid, applet_id))
+            entries.append(f'panel{panel}:{box}:{position}:{uuid}:{applet_id}')
 
             self.settings.set_strv(self.enabled_key, entries)
         elif self.collection_type == 'desklet':
@@ -768,10 +875,15 @@ class Spice_Harvester(GObject.Object):
             screen = Gdk.Screen.get_default()
             primary = screen.get_primary_monitor()
             primary_rect = screen.get_monitor_geometry(primary)
-            enabled.append('%s:%d:%d:%d' % (uuid, desklet_id, primary_rect.x + 100, primary_rect.y + 100))
+            enabled.append(f'{uuid}:{desklet_id}:{primary_rect.x + 100}:{primary_rect.y + 100}')
 
             self.settings.set_strv(self.enabled_key, enabled)
-
+        elif self.actions:
+            disabled_extensions = self.settings.get_strv(self.enabled_key)
+            uuid_name = f"{uuid}.nemo_action"
+            if uuid_name in disabled_extensions:
+                disabled_extensions.remove(uuid_name)
+                self.settings.set_strv(self.enabled_key, disabled_extensions)
         else:
             enabled = self.settings.get_strv(self.enabled_key)
             enabled.append(uuid)
@@ -779,6 +891,14 @@ class Spice_Harvester(GObject.Object):
 
     def disable_extension(self, uuid):
         if self.themes:
+            return
+
+        if self.actions:
+            disabled_extensions = self.settings.get_strv(self.enabled_key)
+            uuid_name = f"{uuid}.nemo_action"
+            if uuid_name not in disabled_extensions:
+                disabled_extensions.append(uuid_name)
+                self.settings.set_strv(self.enabled_key, disabled_extensions)
             return
 
         enabled_extensions = self.settings.get_strv(self.enabled_key)
@@ -806,6 +926,6 @@ class Spice_Harvester(GObject.Object):
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(file_path, 24, 24, True)
 
             return Gtk.Image.new_from_pixbuf(pixbuf)
-        except Exception as e:
+        except Exception:
             print("There was an error processing one of the images. Try refreshing the cache.")
             return Gtk.Image.new_from_icon_name('image-missing', 2)

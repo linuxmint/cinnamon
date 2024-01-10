@@ -94,9 +94,9 @@ class ModulePage(pageutils.WindowAndActionBars):
 
         self.current_inspection = None
         self.stack = []
-        self.parent.lg_proxy.add_status_change_callback(self.on_status_change)
+        self.parent.lg_proxy.connect("status-changed", self.on_status_change)
 
-    def on_status_change(self, online):
+    def on_status_change(self, proxy, online):
         if online:
             self.clear()
 
@@ -142,19 +142,22 @@ class ModulePage(pageutils.WindowAndActionBars):
             self.name_label.set_text(name)
 
             self.parent.activate_page("inspect")
-            success, data = self.parent.lg_proxy.Inspect(path)
-            if success:
-                try:
-                    self.view.set_inspection_data(path, data)
-                except Exception as exc:
-                    print(exc)
-                    self.view.store.clear()
-            else:
-                self.view.store.clear()
+            self.parent.lg_proxy.Inspect(path, result_cb=self.inspect_finish_cb, user_data=path)
         elif obj_type in ("undefined", "null"):
             pageutils.ResultTextDialog("Value for '" + name + "'", "Value is <" + obj_type + ">")
         else:
             pageutils.ResultTextDialog("Value for " + obj_type + " '" + name + "'", value)
+
+    def inspect_finish_cb(self, proxy, result, path):
+        [success, data] = result
+        if success:
+            try:
+                self.view.set_inspection_data(path, data)
+            except Exception as e:
+                print("Inspect:", e)
+                self.view.store.clear()
+        else:
+            self.view.store.clear()
 
     def inspect_element(self, path, obj_type, name, value):
         del self.stack[:]

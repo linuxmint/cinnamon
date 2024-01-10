@@ -10,7 +10,7 @@ const Applet = imports.ui.applet;
 const Extension = imports.ui.extension;
 const ModalDialog = imports.ui.modalDialog;
 const {getModuleByIndex} = imports.misc.fileUtils;
-const {queryCollection, findIndex} = imports.misc.util;
+const {queryCollection} = imports.misc.util;
 const Gettext = imports.gettext;
 const Panel = imports.ui.panel;
 
@@ -279,7 +279,7 @@ function onEnabledAppletsChanged() {
         if (unChangedApplets.indexOf(oldDefinitions[i].applet_id) === -1) {
             removedApplets.push({changed: false, definition: oldDefinitions[i]});
         } else {
-            let removedIndex = findIndex(removedApplets, function(item) {
+            const removedIndex = removedApplets.findIndex( item => {
                 return item.definition.applet_id === oldDefinitions[i].applet_id;
             });
             if (removedIndex === -1) continue;

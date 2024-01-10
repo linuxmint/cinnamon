@@ -29,6 +29,10 @@ typedef void (*CinnamonScreenshotCallback)  (CinnamonScreenshot *screenshot,
                                            gboolean success,
                                            cairo_rectangle_int_t *screenshot_area);
 
+typedef void (*CinnamonScreenshotPickColorCallback)  (CinnamonScreenshot *screenshot,
+                                                      gboolean success,
+                                                      ClutterColor *color);
+
 void    cinnamon_screenshot_screenshot_area      (CinnamonScreenshot *screenshot,
                                                 gboolean include_cursor,
                                                 int x,
@@ -48,5 +52,10 @@ void    cinnamon_screenshot_screenshot           (CinnamonScreenshot *screenshot
                                                 gboolean include_cursor,
                                                 const char *filename,
                                                 CinnamonScreenshotCallback callback);
+
+void    cinnamon_screenshot_pick_color         (CinnamonScreenshot *screenshot,
+                                                int x,
+                                                int y,
+                                                CinnamonScreenshotPickColorCallback callback);
 
 #endif /* ___CINNAMON_SCREENSHOT_H__ */

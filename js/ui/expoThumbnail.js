@@ -390,8 +390,10 @@ ExpoWorkspaceThumbnail.prototype = {
         this.background = new Clutter.Group();
         this.contents.add_actor(this.background);
 
-        let desktopBackground = Meta.X11BackgroundActor.new_for_display(global.display);
-        this.background.add_actor(desktopBackground);
+        if (!Meta.is_wayland_compositor()) {
+            let desktopBackground = Meta.X11BackgroundActor.new_for_display(global.display);
+            this.background.add_actor(desktopBackground);
+        }
 
         let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
         this.background.add_actor(backgroundShade);

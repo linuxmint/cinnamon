@@ -263,7 +263,7 @@ for _file in _files:
                 scope = line
 
             # Don't count the brackets inside strings. STRING_REGEX recognizes
-            # ' and " but doesn't know if they are esacped. So replace away all
+            # ' and " but doesn't know if they are escaped. So replace away all
             # escaped quotes
             line = STRING_REGEX.sub('', line.replace("\\'", "").replace('\\"', ''))
 

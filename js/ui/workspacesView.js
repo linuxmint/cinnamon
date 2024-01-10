@@ -56,7 +56,7 @@ WorkspacesView.prototype = {
         this._spacing = 0;
         this._animating = false; // tweening
         this._scrolling = false; // swipe-scrolling
-        this._animatingScroll = false; // programatically updating the adjustment
+        this._animatingScroll = false; // programmatically updating the adjustment
 
         this._keyIsHandled = true;
 
