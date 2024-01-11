@@ -120,8 +120,8 @@ class WindowGraph {
     constructor(workspaceGraph, metaWindow, showIcons, iconSize) {
         this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
-        this.showIcons = showIcons;
-        this.iconSize = iconSize;
+        this._showIcons = showIcons;
+        this._iconSize = iconSize;
 
         this.drawingArea = new St.DrawingArea({
             style_class: 'windows',
@@ -132,22 +132,22 @@ class WindowGraph {
 
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
-        if (this.showIcons) {
-            const [x, y] = this.iconPosition();
+        if (this._showIcons) {
             this.icon = this._getIcon();
+            const [x, y] = this.iconPos();
             this.icon.set_x(x);
             this.icon.set_y(y);
         }
     }
 
-    iconPosition(intersection = undefined) {
-        if (!intersection) intersection = this.intersection();
-        const x = intersection.x + intersection.width / 2 - this.iconSize * global.ui_scale / 2;
-        const y = intersection.y + intersection.height / 2 - this.iconSize * global.ui_scale / 2;
+    iconPos(rect = undefined) {
+        if (!rect) rect = this.intersectionRect();
+        const x = rect.x + rect.width / 2 - this._iconSize * global.ui_scale / 2;
+        const y = rect.y + rect.height / 2 - this._iconSize * global.ui_scale / 2;
         return [x, y];
     }
 
-    intersection() {
+    intersectionRect() {
         // Intersection between the scaled window rect and the boundaries
         // of the workspace graph.
         const intersection = new Meta.Rectangle();
@@ -185,7 +185,7 @@ class WindowGraph {
     onRepaint(area) {
         let windowBackgroundColor, windowBorderColor;
 
-        const intersection = this.intersection();
+        const rect = this.intersectionRect();
         const graphThemeNode = this.workspaceGraph.graphArea.get_theme_node();
 
         if (this.metaWindow.has_focus()) {
@@ -200,7 +200,7 @@ class WindowGraph {
         cr.setLineWidth(1);
 
         Clutter.cairo_set_source_color(cr, windowBorderColor);
-        cr.rectangle(intersection.x, intersection.y, intersection.width, intersection.height);
+        cr.rectangle(rect.x, rect.y, rect.width, rect.height);
 
         cr.strokePreserve();
 
@@ -208,8 +208,8 @@ class WindowGraph {
         cr.fill();
         cr.$dispose();
 
-        if (this.showIcons) {
-            const [x, y] = this.iconPosition(intersection);
+        if (this._showIcons) {
+            const [x, y] = this.iconPos(rect);
             this.icon.set_x(x);
             this.icon.set_y(y);
         }
@@ -228,14 +228,14 @@ class WindowGraph {
         }
 
         if (app) {
-            iconActor = app.create_icon_texture_for_window(this.iconSize, this.metaWindow);
+            iconActor = app.create_icon_texture_for_window(this._iconSize, this.metaWindow);
         }
 
         if (!iconActor) {
             iconActor = new St.Icon({
                 icon_name: 'applications-other',
                 icon_type: St.IconType.FULLCOLOR,
-                icon_size: this.iconSize,
+                icon_size: this._iconSize,
             });
         }
 
@@ -243,7 +243,7 @@ class WindowGraph {
     }
 
     destroy() {
-        if (this.showIcons) this.icon.destroy();
+        if (this._showIcons) this.icon.destroy();
         this.drawingArea.destroy();
     }
 
@@ -254,7 +254,7 @@ class WindowGraph {
     show() {
         this.workspaceGraph.graphArea.add_child(this.drawingArea);
 
-        if (this.showIcons)
+        if (this._showIcons)
             this.workspaceGraph.graphArea.add_child(this.icon);
     }
 }
@@ -275,7 +275,7 @@ class WorkspaceGraph extends WorkspaceButton {
         this.actor.add_actor(this.graphArea);
 
         this.graphArea.set_size(1, 1);
-        this.graphArea.connect('repaint',this.onRepaint.bind(this));
+        this.graphArea.connect('repaint', this.onRepaint.bind(this));
 
         this.focusGraph = undefined;
         this.windowsGraphs = [];
@@ -284,7 +284,7 @@ class WorkspaceGraph extends WorkspaceButton {
         this.width = 1;
     }
 
-    getSizeAdjustment (actor, vertical) {
+    getSizeAdjustment(actor, vertical) {
         let themeNode = actor.get_theme_node();
 
         if (vertical) {
@@ -299,7 +299,7 @@ class WorkspaceGraph extends WorkspaceButton {
         }
     }
 
-    setGraphSize () {
+    setGraphSize() {
         this.workspace_size = this.workspace.get_work_area_all_monitors();
 
         if (this.applet.orientation == St.Side.LEFT ||
@@ -322,7 +322,7 @@ class WorkspaceGraph extends WorkspaceButton {
         this.graphArea.set_size(this.width, this.height);
     }
 
-    sortWindowsByUserTime (win1, win2) {
+    sortWindowsByUserTime(win1, win2) {
         let t1 = win1.get_user_time();
         let t2 = win2.get_user_time();
         return (t2 < t1) ? 1 : -1;
