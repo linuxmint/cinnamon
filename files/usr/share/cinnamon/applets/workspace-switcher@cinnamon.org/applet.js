@@ -347,7 +347,7 @@ class WorkspaceGraph extends WorkspaceButton {
         this.graphArea.remove_all_children();
 
         if (this.windowsGraphs) {
-            this.windowsGraphs.forEach((e) => e.destroy());
+            this.windowsGraphs.forEach(e => e.destroy());
             this.windowsGraphs = [];
         }
 
@@ -392,7 +392,7 @@ class WorkspaceGraph extends WorkspaceButton {
     }
 
     destroy() {
-        this.windowsGraphs.forEach((e) => e.destroy());
+        this.windowsGraphs.forEach(e => e.destroy());
         super.destroy();
     }
 }
@@ -584,12 +584,12 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             return;
 
         this._focusWindow = global.display.focus_window;
-        this.signals.connect(this._focusWindow, "position-changed", () => this._onPositionChanged("position-changed"), this);
-        this.signals.connect(this._focusWindow, "size-changed", () => this._onPositionChanged("size-changed"), this);
-        this._onPositionChanged("focus-changed");
+        this.signals.connect(this._focusWindow, "position-changed", () => this._onWindowsStateChanged("position-changed"), this);
+        this.signals.connect(this._focusWindow, "size-changed", () => this._onWindowsStateChanged("size-changed"), this);
+        this._onWindowsStateChanged("focus-changed");
     }
 
-    _onPositionChanged(signal) {
+    _onWindowsStateChanged(signal) {
         let button = this.buttons[global.workspace_manager.get_active_workspace_index()];
         button.update({signal: signal});
     }
