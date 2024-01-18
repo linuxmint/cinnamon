@@ -1228,7 +1228,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         if (buttonId === 2) {
             if (shiftPressed) {
                 if (this.middleShiftClickAction === "mute") {
-                    if (this._output.is_muted === this._input.is_muted)
+                    if (this._input && this._output && this._output.is_muted === this._input.is_muted)
                         this._toggle_in_mute();
                     this._toggle_out_mute();
                 } else if (this.middleShiftClickAction === "out_mute")
@@ -1239,7 +1239,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                     this._players[this._activePlayer]._mediaServerPlayer.PlayPauseRemote();
             } else {
                 if (this.middleClickAction === "mute") {
-                    if (this._output.is_muted === this._input.is_muted)
+                    if (this._input && this._output && this._output.is_muted === this._input.is_muted)
                         this._toggle_in_mute();
                     this._toggle_out_mute();
                 } else if (this.middleClickAction === "out_mute")
