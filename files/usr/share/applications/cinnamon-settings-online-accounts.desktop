@@ -1,6 +1,6 @@
 [Desktop Entry]
 Icon=cs-online-accounts
-Exec=cinnamon-settings online-accounts
+Exec=env WEBKIT_DISABLE_COMPOSITING_MODE=1 cinnamon-settings online-accounts
 Type=Application
 OnlyShowIn=X-Cinnamon;
 Categories=Settings;
