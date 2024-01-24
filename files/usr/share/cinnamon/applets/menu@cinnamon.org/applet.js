@@ -2727,6 +2727,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box',
                                                 vertical: true,
                                                 accessible_role: Atk.Role.LIST });
+        this.categoriesBox.style = 'padding: 10px 30px 10px 0px;';
         this.categoriesScrollBox = new St.ScrollView({ style_class: 'vfade menu-applications-scrollbox' });
         this.categoriesScrollBox.add_actor(this.categoriesBox);
         this.categoriesScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
