@@ -2723,13 +2723,19 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.categoriesApplicationsBox = new CategoriesApplicationsBox();
         this.right_box.add(this.categoriesApplicationsBox.actor, { expand: true, span: 1 });
+        
+        this.containerCategoriesBox = new St.BoxLayout({ style: 'padding: 0px;', 
+														 vertical: true, 
+														 accessible_role: Atk.Role.LIST }); // !
 
         this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box',
                                                 vertical: true,
                                                 accessible_role: Atk.Role.LIST });
-        this.categoriesBox.style = 'padding: 10px 30px 10px 0px;';
+        //~ this.categoriesBox.style = 'padding: 10px 30px 10px 0px;'; // !!!
+        this.containerCategoriesBox.add_actor(this.categoriesBox);
         this.categoriesScrollBox = new St.ScrollView({ style_class: 'vfade menu-applications-scrollbox' });
-        this.categoriesScrollBox.add_actor(this.categoriesBox);
+        // this.categoriesScrollBox.add_actor(this.categoriesBox); // !
+        this.categoriesScrollBox.add_actor(this.containerCategoriesBox); // !
         this.categoriesScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
 
         this.categoriesApplicationsBox.actor.add(this.categoriesScrollBox);
