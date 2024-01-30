@@ -102,6 +102,12 @@ config_h = declare_dependency(
 # includes
 include_root = include_directories('.')
 
+if polkit.version()[0] == '0'  # older versions '0.105' ...
+    pkv = 1
+else
+    pkv = polkit.version().to_int()
+endif
+
 # compiler flags
 c_args = [
     '-DDATADIR="@0@"'.format(join_paths(prefix, datadir)),
@@ -110,6 +116,7 @@ c_args = [
     '-DCINNAMON_DATADIR="@0@"'.format(join_paths(prefix, pkgdatadir)),
     '-DJSDIR="@0@/js"'.format(join_paths(prefix, pkgdatadir)),
     '-DMUFFIN_TYPELIB_DIR="@0@"'.format(muffin_typelibdir),
+    '-DPOLKIT_VERSION=@0@'.format(pkv),
 ]
 
 if not get_option('deprecated_warnings')
