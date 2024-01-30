@@ -14,8 +14,10 @@
 
 G_BEGIN_DECLS
 
-/* Polkit doesn't have g_autoptr support, thus we have to manually set the autoptr function here */
+#if !(POLKIT_VERSION >= 121)
+/* Polkit < 121 doesn't have g_autoptr support */
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (PolkitAgentListener, g_object_unref)
+#endif
 
 #define CINNAMON_TYPE_POLKIT_AUTHENTICATION_AGENT (cinnamon_polkit_authentication_agent_get_type())
 
