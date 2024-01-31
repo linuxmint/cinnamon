@@ -28,5 +28,14 @@
         "type": "button",
         "description": "Open notification settings",
         "callback": "on_btn_open_system_notification_settings_clicked"
+    },
+    "section3": {
+        "type": "section",
+        "description": "Startup"
+    },
+    "inhibitPowerAtStartup": {
+        "type": "switch",
+        "default": false,
+        "description": "Inhibit power management at startup"
     }
 }

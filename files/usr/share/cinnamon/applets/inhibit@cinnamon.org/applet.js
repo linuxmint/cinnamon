@@ -214,7 +214,7 @@ class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
     }
 
     resetInhibitors() {
-        // Abort any in-progress update or else it may continue to add menu items 
+        // Abort any in-progress update or else it may continue to add menu items
         // even after we've cleared them.
         this._updateId++;
 
@@ -232,7 +232,7 @@ class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
     }
 
     updateInhibitors(sessionProxy) {
-        // Grab a new ID for this update while at the same time aborting any other in-progress 
+        // Grab a new ID for this update while at the same time aborting any other in-progress
         // update. We don't want to end up with duplicate menu items!
         let updateId = ++this._updateId;
 
@@ -377,6 +377,7 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         this.settings.bind("keyPower", "keyPower", this._setKeybinding);
         this.settings.bind("keyNotifications", "keyNotifications", this._setKeybinding);
         this._setKeybinding();
+        this.settings.bind("inhibitPowerAtStartup", "inhibitPowerAtStartup");
 
         this._createInhibitorMenuSection(orientation);
     }
@@ -415,6 +416,15 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
 
     on_btn_open_system_notification_settings_clicked() {
         Util.spawnCommandLine("cinnamon-settings notifications");
+    }
+
+    on_applet_added_to_panel() {
+        if (this.inhibitPowerAtStartup) {
+            let id = setTimeout ( () => {
+                this.toggle_inhibit_power();
+                clearTimeout(id);
+            }, 1000); // Let 1000 ms to have this.sessionProxy not null.
+        }
     }
 
     on_applet_removed_from_panel() {
