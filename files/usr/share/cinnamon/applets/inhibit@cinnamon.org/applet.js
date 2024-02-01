@@ -350,6 +350,8 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         super(orientation, panel_height, instanceId);
 
         this.metadata = metadata;
+        
+        this.intervallId = -1;
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -419,11 +421,14 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
     }
 
     on_applet_added_to_panel() {
-        if (this.inhibitPowerAtStartup) {
-            let id = setTimeout ( () => {
-                this.toggle_inhibit_power();
-                clearTimeout(id);
-            }, 1000); // Let 1000 ms to have this.sessionProxy not null.
+        if (this.inhibitPowerAtStartup && this.inhibitSwitch._switch.state) {
+            this.intervallId = setInterval ( () => {
+                if (this.inhibitSwitch.sessionProxy) {
+                    this.toggle_inhibit_power();
+                    clearTimeout(this.intervallId);
+                    this.intervallId = -1;
+                }
+            }, 300);
         }
     }
 
@@ -431,6 +436,7 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         Main.keybindingManager.removeHotKey("inhibit-power-" + this.instance_id);
         Main.keybindingManager.removeHotKey("inhibit-notifications-" + this.instance_id);
         this.inhibitSwitch.kill();
+        if (this.intervallId) clearTimeout(this.intervallId);
     }
 
     on_orientation_changed(orientation) {
