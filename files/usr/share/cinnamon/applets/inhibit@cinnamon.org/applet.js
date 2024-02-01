@@ -12,6 +12,40 @@ const Util = imports.misc.util;
 const INHIBIT_IDLE_FLAG = 8;
 const INHIBIT_SLEEP_FLAG = 4;
 
+class InhibitAppletIcon {
+    constructor(applet, notificationStatus, inhibitStatus) {
+        this._applet = applet;
+        this.icon_name = 'inhibit';
+        this.notificationStatus = notificationStatus;
+        this.inhibitStatus = inhibitStatus;
+    }
+
+    setAppletIcon() {
+        this._applet.set_applet_icon_symbolic_name(this.getAppletIcon());
+    }
+
+    getAppletIcon() {
+        let appletIcon = this.icon_name;
+        if (this.inhibitStatus) {
+            appletIcon += '-active';
+        }
+        if (this.notificationStatus) {
+            appletIcon += '-notifications-disabled';
+        }
+        return appletIcon;
+    }
+
+    toggleNotificationStatus() {
+        this.notificationStatus = !this.notificationStatus;
+        this.setAppletIcon();
+    }
+
+    toggleInhibitStatus(status) {
+        this.inhibitStatus = status;
+        this.setAppletIcon();
+    }
+}
+
 class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
     constructor(applet) {
         super();
@@ -80,10 +114,10 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
 
         if (current_state & INHIBIT_IDLE_FLAG ||
             current_state & INHIBIT_SLEEP_FLAG) {
-            this._applet.set_applet_icon_symbolic_name('inhibit-active');
+            this._applet.icon.toggleInhibitStatus(true);
             this._applet.set_applet_tooltip(_("Power management: inhibited"));
         } else {
-            this._applet.set_applet_icon_symbolic_name('inhibit');
+            this._applet.icon.toggleInhibitStatus(false);
             this._applet.set_applet_tooltip(_("Power management: active"));
         }
 
@@ -360,17 +394,21 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         this.inhibitSwitch = new InhibitSwitch(this);
         this.menu.addMenuItem(this.inhibitSwitch);
 
-        this.set_applet_icon_symbolic_name('inhibit');
+        //this.set_applet_icon_symbolic_name('inhibit');
         this.set_applet_tooltip(_("Inhibit applet"));
 
         this.notif_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
         this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Notifications"), this.notif_settings.get_boolean("display-notifications"));
+
+        this.icon = new InhibitAppletIcon(this, !this.notificationsSwitch.state, !this.inhibitSwitch.state);
+        this.icon.setAppletIcon();
 
         this.notif_settings.connect('changed::display-notifications', Lang.bind(this, function() {
             this.notificationsSwitch.setToggleState(this.notif_settings.get_boolean("display-notifications"));
         }));
         this.notificationsSwitch.connect('toggled', Lang.bind(this, function() {
             this.notif_settings.set_boolean("display-notifications", this.notificationsSwitch.state);
+            this.icon.toggleNotificationStatus();
         }));
 
         this.menu.addMenuItem(this.notificationsSwitch);
