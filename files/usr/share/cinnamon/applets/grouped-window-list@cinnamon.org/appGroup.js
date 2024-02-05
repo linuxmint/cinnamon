@@ -612,7 +612,7 @@ class AppGroup {
         }
         const windows = this.groupState.metaWindows;
         for (let i = 0, len = windows.length; i < len; i++) {
-            if (windows[i] === metaWindow) {
+            if (windows[i] === metaWindow && !getFocusState(windows[i])) {
                 // Even though this may not be the last focused window, we want it to be
                 // the window that gets focused when a user responds to an alert.
                 this.groupState.set({lastFocused: metaWindow});
