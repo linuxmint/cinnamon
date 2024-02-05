@@ -1173,68 +1173,75 @@ StScrollBar StButton#vhandle:hover {
     width: 500px;
 }
 .polkit-dialog-main-layout {
-    spacing: 24px;
-    padding: 10px;
+    spacing: 10px;
 }
-.polkit-dialog-message-layout {
-    spacing: 16px;
-}
+
 .polkit-dialog-headline {
-    font-size: 12pt;
+    text-align: center;
+    font-size: 1.3em;
     font-weight: bold;
-    color: #666666;
+    color: white;
 }
 .polkit-dialog-description {
-    font-size: 10pt;
+    text-align: center;
+    font-size: 1em;
     color: white;
 }
 .polkit-dialog-user-layout {
-    padding-left: 10px;
     spacing: 10px;
 }
 .polkit-dialog-user-layout:rtl {
-    padding-left: 0px;
     padding-right: 10px;
 }
 .polkit-dialog-user-root-label {
     color: #ff0000;
 }
 .polkit-dialog-password-label:ltr {
+    padding-top: 0.5em;
     padding-right: 0.5em;
 }
 .polkit-dialog-password-label:rtl {
     padding-left: 0.5em;
 }
 .polkit-dialog-password-entry {
-    background-gradient-start: rgb(236,236,236);
-    background-gradient-end: white;
+    padding: 5px;
+    border-radius: 4px;
+    color: rgb(64, 64, 64);
+    border: 2px solid rgba(245,245,245,0.2);
+    background-gradient-start: rgba(5,5,6,0.1);
+    background-gradient-end: rgba(254,254,254,0.1);
     background-gradient-direction: vertical;
-    color: black;
-    border-radius: 5px;
-    border: 2px solid #555753;
+    selected-color: black;
+    caret-color: rgb(64, 64, 64);
+    caret-size: 1px;
+    width: 21em;
+    height: 1.2em;
+    transition-duration: 300;
+    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
 }
 .polkit-dialog-password-entry:focus {
-    border: 2px solid #3465a4;
+    border: 2px solid rgb(136,138,133);
+    background-gradient-start: rgb(80, 80, 80);
+    background-gradient-end: white;
+    background-gradient-direction: vertical;
 }
 .polkit-dialog-password-entry .capslock-warning {
     icon-size: 16px;
-    warning-color: #999;
+    warning-color: rgb(64, 64, 64);
     padding: 0 4px;
 }
 .polkit-dialog-error-label {
-    font-size: 10pt;
+    text-align: center;
+    font-size: 1em;
     color: #ffff00;
-    padding-bottom: 8px;
 }
 .polkit-dialog-info-label {
-    font-size: 10pt;
-    padding-bottom: 8px;
+    font-size: 1em;
 }
 /* intentionally left transparent to avoid dialog changing size */
 .polkit-dialog-null-label {
     font-size: 10pt;
     color: rgba(0,0,0,0);
-    padding-bottom: 8px;
 }
 
 /* ###################################################################
