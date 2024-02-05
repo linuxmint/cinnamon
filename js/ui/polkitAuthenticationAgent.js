@@ -52,36 +52,24 @@ AuthenticationDialog.prototype = {
         this._completed = false;
 
         let mainContentBox = new St.BoxLayout({ style_class: 'polkit-dialog-main-layout',
-                                                vertical: false });
+                                                vertical: true });
         this.contentLayout.add(mainContentBox,
                                { x_fill: true,
                                  y_fill: true });
 
-        let icon = new St.Icon({ icon_name: 'dialog-password-symbolic' });
-        mainContentBox.add(icon,
-                           { x_fill:  true,
-                             y_fill:  false,
-                             x_align: St.Align.END,
-                             y_align: St.Align.START });
-
-        let messageBox = new St.BoxLayout({ style_class: 'polkit-dialog-message-layout',
-                                            vertical: true });
-        mainContentBox.add(messageBox,
-                           { y_align: St.Align.START });
-
         this._subjectLabel = new St.Label({ style_class: 'polkit-dialog-headline',
                                             text: _("Authentication Required") });
 
-        messageBox.add(this._subjectLabel,
+        mainContentBox.add(this._subjectLabel,
                        { y_fill:  false,
-                         y_align: St.Align.START });
+                         y_align: St.Align.MIDDLE });
 
         this._descriptionLabel = new St.Label({ style_class: 'polkit-dialog-description',
                                                 text: message });
         this._descriptionLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this._descriptionLabel.clutter_text.line_wrap = true;
 
-        messageBox.add(this._descriptionLabel,
+        mainContentBox.add(this._descriptionLabel,
                        { y_fill:  true,
                          y_align: St.Align.START });
 
@@ -110,53 +98,55 @@ AuthenticationDialog.prototype = {
         if (userIsRoot) {
             let userLabel = new St.Label(({ style_class: 'polkit-dialog-user-root-label',
                                             text: userRealName }));
-            messageBox.add(userLabel);
+            mainContentBox.add(userLabel);
         } else {
             let userBox = new St.BoxLayout({ style_class: 'polkit-dialog-user-layout',
-                                             vertical: false });
-            messageBox.add(userBox);
+                                             vertical: true });
+            mainContentBox.add(userBox);
             this._userIcon = new St.Icon();
             this._userIcon.hide();
             userBox.add(this._userIcon,
-                        { x_fill:  true,
-                          y_fill:  false,
-                          x_align: St.Align.END,
+                        { x_fill:  false,
+                          y_fill:  true,
+                          x_align: St.Align.MIDDLE,
                           y_align: St.Align.START });
             let userLabel = new St.Label(({ style_class: 'polkit-dialog-user-label',
                                             text: userRealName }));
             userBox.add(userLabel,
-                        { x_fill:  true,
-                          y_fill:  false,
-                          x_align: St.Align.END,
-                          y_align: St.Align.MIDDLE });
+                        { x_fill:  false,
+                          y_fill:  true,
+                          x_align: St.Align.MIDDLE,
+                          y_align: St.Align.START });
         }
 
         this._onUserChanged();
 
         this._passwordBox = new St.BoxLayout({ vertical: false });
-        messageBox.add(this._passwordBox);
+        mainContentBox.add(this._passwordBox);
         this._passwordLabel = new St.Label(({ style_class: 'polkit-dialog-password-label' }));
-        this._passwordBox.add(this._passwordLabel);
+        this._passwordBox.add(this._passwordLabel,
+                              { y_align: St.Align.MIDDLE });
         this._passwordEntry = new St.Entry({ style_class: 'polkit-dialog-password-entry',
                                              text: "",
                                              can_focus: true});
         CinnamonEntry.addContextMenu(this._passwordEntry, { isPassword: true });
         this._passwordEntry.clutter_text.connect('activate', Lang.bind(this, this._onEntryActivate));
         this._passwordBox.add(this._passwordEntry,
-                              {expand: true });
+                              { expand: true,
+                                y_align: St.Align.START });
         this.setInitialKeyFocus(this._passwordEntry);
         this._passwordBox.hide();
 
         this._errorMessageLabel = new St.Label({ style_class: 'polkit-dialog-error-label' });
         this._errorMessageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this._errorMessageLabel.clutter_text.line_wrap = true;
-        messageBox.add(this._errorMessageLabel);
+        mainContentBox.add(this._errorMessageLabel);
         this._errorMessageLabel.hide();
 
         this._infoMessageLabel = new St.Label({ style_class: 'polkit-dialog-info-label' });
         this._infoMessageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this._infoMessageLabel.clutter_text.line_wrap = true;
-        messageBox.add(this._infoMessageLabel);
+        mainContentBox.add(this._infoMessageLabel);
         this._infoMessageLabel.hide();
 
         /* text is intentionally non-blank otherwise the height is not the same as for
@@ -167,7 +157,7 @@ AuthenticationDialog.prototype = {
                                                 text: 'abc'});
         this._nullMessageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this._nullMessageLabel.clutter_text.line_wrap = true;
-        messageBox.add(this._nullMessageLabel);
+        mainContentBox.add(this._nullMessageLabel);
         this._nullMessageLabel.show();
 
         this.setButtons([{ label: _("Cancel"),
