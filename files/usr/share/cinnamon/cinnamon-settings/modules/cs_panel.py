@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+
 import sys
 import json
 import gi
@@ -60,7 +61,7 @@ class PanelSettingsPage(SettingsPage):
         section = SettingsSection(_("Customize"))
         self.add(section)
 
-        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=60, show_value=True)
+        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=130, show_value=True)
         widget.set_rounding(0)
         section.add_row(widget)
 
@@ -127,7 +128,14 @@ class PanelSettingsPage(SettingsPage):
             [22, '22px'],
             [24, '24px'],
             [32, '32px'],
-            [48, '48px']
+            [40, '40px'],
+            [48, '48px'],
+            [56, '56px'],
+            [64, '64px'],
+            [72, '72px'],
+            [80, '80px'],
+            [96, '96px'],
+            [128, '128px']
         ]
 
         widget = PanelJSONComboBox(_("Colored icon size"),
@@ -137,7 +145,7 @@ class PanelSettingsPage(SettingsPage):
 
         widget = PanelJSONSpinButton(_("Symbolic icon size"),
                                      "org.cinnamon", "panel-zone-symbolic-icon-sizes",
-                                     self.panel_id, zone, _("px"), 10, 50, 1, 0)
+                                     self.panel_id, zone, _("px"), 10, 128, 1, 0)
         zone_page.pack_start(widget, False, False, 0)
 
         return zone_page
