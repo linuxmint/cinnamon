@@ -60,7 +60,7 @@ class PanelSettingsPage(SettingsPage):
         section = SettingsSection(_("Customize"))
         self.add(section)
 
-        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=60, show_value=True)
+        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=60, digits=0, step=1.0, show_value=True)
         widget.set_rounding(0)
         section.add_row(widget)
 
