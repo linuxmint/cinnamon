@@ -423,14 +423,17 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
     }
 
     _getDeviceStatus(device) {
-        let status = ""
+        let status = "";
         let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = device;
 
         let time = Math.round(seconds / 60);
         let minutes = time % 60;
         let hours = Math.floor(time / 60);
 
-        if (state == UPDeviceState.CHARGING) {
+        if (state == UPDeviceState.UNKNOWN) {
+            status = "";
+        }
+        else if (state == UPDeviceState.CHARGING) {
             if (time == 0) {
                 status = _("Charging");
             }
@@ -451,7 +454,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         else if (state == UPDeviceState.FULLY_CHARGED) {
             status = _("Fully charged");
         }
-        else {
+        else if (state == UPDeviceState.DISCHARGING) {
             if (time == 0) {
                 status = _("Using battery power");
             }
@@ -468,6 +471,12 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             else {
                 status = ngettext("Using battery power - %d minute remaining", "Using battery power - %d minutes remaining", minutes).format(minutes);
             }
+        }
+        else if (state == UPDeviceState.EMPTY) {
+            status = _("Fully discharged");
+        }
+        else {
+            status = _("Not charging");
         }
 
         return status;
