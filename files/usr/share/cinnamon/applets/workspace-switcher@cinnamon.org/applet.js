@@ -142,8 +142,8 @@ class WindowGraph {
 
     iconPos(rect = undefined) {
         if (!rect) rect = this.intersectionRect();
-        const x = rect.x + rect.width / 2 - this._iconSize * global.ui_scale / 2;
-        const y = rect.y + rect.height / 2 - this._iconSize * global.ui_scale / 2;
+        const x = Math.round(rect.x + rect.width / 2 - this._iconSize * global.ui_scale / 2);
+        const y = Math.round(rect.y + rect.height / 2 - this._iconSize * global.ui_scale / 2);
         return [x, y];
     }
 
@@ -156,16 +156,19 @@ class WindowGraph {
         const workspace_rect = this.workspaceGraph.workspace_size;
         const scale_factor = this.workspaceGraph.scaleFactor;
 
-        const offsetX = workspace_rect.x / scale_factor - rect.x;
-        const offsetY = workspace_rect.y / scale_factor - rect.y;
+        const workspace_x = Math.round(workspace_rect.x / scale_factor);
+        const workspace_y = Math.round(workspace_rect.y / scale_factor);
+
+        const offsetX = workspace_x - rect.x;
+        const offsetY = workspace_y - rect.y;
 
         const heightSurplus = Math.max(0, -offsetY + rect.height - this.workspaceGraph.height);
         const widthSurplus = Math.max(0,  -offsetX + rect.width - this.workspaceGraph.width);
 
-        intersection.x = Math.max(workspace_rect.x / scale_factor, rect.x);
-        intersection.y = Math.max(workspace_rect.y / scale_factor, rect.y);
-        intersection.width = rect.width - Math.max(0, offsetX) - widthSurplus;
-        intersection.height = rect.height - Math.max(0, offsetY) - heightSurplus;
+        intersection.x = Math.max(workspace_x, rect.x);
+        intersection.y = Math.max(workspace_y, rect.y);
+        intersection.width = Math.round(rect.width - Math.max(0, offsetX) - widthSurplus);
+        intersection.height = Math.round(rect.height - Math.max(0, offsetY) - heightSurplus);
 
         return intersection;
     }
@@ -377,7 +380,7 @@ class WorkspaceGraph extends WorkspaceButton {
     update(options = {}) {
         const signal = options.signal;
 
-        if (this.focusGraph && (signal == "position-changed" ||  signal == "size-changed")) {
+        if (this.focusGraph && (signal == "position-changed" || signal == "size-changed")) {
             this.focusGraph.update(options);
         } else {
             this.graphArea.queue_repaint();
