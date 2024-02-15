@@ -314,7 +314,7 @@ function convertSettingsLMonToXMon(strv) {
 
         let x_mon = lmon;
         if (!Meta.is_wayland_compositor()) {
-            let x_mon = global.display.logical_index_to_xinerama_index(lmon);
+            x_mon = global.display.logical_index_to_xinerama_index(lmon);
         }
 
         out.push(`${id}:${x_mon}:${pos}`);
