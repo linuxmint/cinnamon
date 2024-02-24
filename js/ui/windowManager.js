@@ -30,7 +30,6 @@ const EASING_MULTIPLIER = 1000; // multiplier for tweening.time ---> easing.dura
 const DIM_TIME = 0.500;
 const DIM_BRIGHTNESS = -0.2;
 const UNDIM_TIME = 0.250;
-const WORKSPACE_OSD_TIMEOUT = 0.4;
 
 /* edge zones for tiling/snapping identification
    copied from muffin/src/core/window-private.h
@@ -1256,9 +1255,9 @@ var WindowManager = class WindowManager {
 
         osd.actor.ease({
             z_position: -.0001,
-            duration: WORKSPACE_OSD_TIMEOUT * EASING_MULTIPLIER,
+            duration: global.settings.get_double('workspace-osd-timeout') * EASING_MULTIPLIER / 2, // divide by 2 as timeout is ease-in + ease-out
             onComplete: () => this._hideWorkspaceOSD()
-        })
+        });
     }
 
     _hideWorkspaceOSD(now = false) {
@@ -1273,7 +1272,7 @@ var WindowManager = class WindowManager {
                 osd.actor.opacity = 255;
                 osd.actor.ease({
                     opacity: 0,
-                    duration: WORKSPACE_OSD_TIMEOUT * EASING_MULTIPLIER,
+                    duration: global.settings.get_double('workspace-osd-timeout') * EASING_MULTIPLIER / 2, // divide by 2 as timeout is ease-in + ease-out
                     mode: Clutter.AnimationMode.LINEAR,
                     onStopped: () => osd.destroy()
                 });
