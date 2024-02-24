@@ -29,6 +29,15 @@ class Module:
             switch = GSettingsSwitch(_("Enable workspace OSD"), "org.cinnamon", "workspace-osd-visible")
             settings.add_row(switch)
 
+            slider = GSettingsRange(_("Workspace OSD timeout"), "org.cinnamon", "workspace-osd-timeout", _("Shorter"), _("Longer"), mini=0.0, maxi=1.0, step=0.2, show_value=True)
+            slider.content_widget.set_has_origin(False)
+            slider.content_widget.add_mark(0.2, Gtk.PositionType.TOP, None)
+            slider.content_widget.add_mark(0.4, Gtk.PositionType.TOP, None)
+            slider.content_widget.add_mark(0.6, Gtk.PositionType.TOP, None)
+            slider.content_widget.add_mark(0.8, Gtk.PositionType.TOP, None)
+
+            settings.add_reveal_row(slider, "org.cinnamon", "workspace-osd-visible")
+
             switch = GSettingsSwitch(_("Allow cycling through workspaces"), "org.cinnamon.muffin", "workspace-cycle")
             settings.add_row(switch)
 
@@ -37,6 +46,7 @@ class Module:
 
             switch = GSettingsSwitch(_("Display Expo view as a grid"), "org.cinnamon", "workspace-expo-view-as-grid")
             settings.add_row(switch)
+
 
             # Edge Flip doesn't work well, so it's there in gsettings, but we don't show it to users yet
             # switch = GSettingsSwitch(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip")
