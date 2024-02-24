@@ -351,6 +351,14 @@
       </description>
     </key>
 
+    <key name="workspace-osd-timeout" type="d">
+      <default>0.8</default>
+      <summary>Set the workspace OSD timeout length, in seconds.</summary>
+      <description>
+          How long the name of the workspace is shown on the screen when activated.
+      </description>
+    </key>
+
     <key name="workspace-expo-view-as-grid" type="b">
       <default>false</default>
       <summary>Display the Expo view as a grid</summary>
