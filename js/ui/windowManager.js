@@ -253,6 +253,7 @@ var WindowManager = class WindowManager {
         global.settings.connect('changed::desktop-effects-map', this.onSettingsChanged.bind(this));
         global.settings.connect('changed::desktop-effects-minimize', this.onSettingsChanged.bind(this));
         global.settings.connect('changed::window-effect-speed', this.onSettingsChanged.bind(this));
+        global.settings.connect('changed::workspace-osd-timeout', this.onSettingsChanged.bind(this));
 
         this.onSettingsChanged(global.settings, "desktop-effects-workspace");
 
@@ -393,6 +394,8 @@ var WindowManager = class WindowManager {
         this.desktop_effects_minimize_type = global.settings.get_string("desktop-effects-minimize");
 
         this.window_effect_multiplier = WINDOW_ANIMATION_TIME_MULTIPLIERS[global.settings.get_int("window-effect-speed")];
+
+        this.workspace_osd_ease_duration = global.settings.get_double("workspace-osd-timeout") / 2; // divided by 2 as timeout is fade-in + fade-out
     }
 
     _shouldAnimate(actor, types=null) {
@@ -1255,7 +1258,7 @@ var WindowManager = class WindowManager {
 
         osd.actor.ease({
             z_position: -.0001,
-            duration: global.settings.get_double('workspace-osd-timeout') * EASING_MULTIPLIER / 2, // divide by 2 as timeout is ease-in + ease-out
+            duration: this.workspace_osd_ease_duration * EASING_MULTIPLIER,
             onComplete: () => this._hideWorkspaceOSD()
         });
     }
@@ -1272,7 +1275,7 @@ var WindowManager = class WindowManager {
                 osd.actor.opacity = 255;
                 osd.actor.ease({
                     opacity: 0,
-                    duration: global.settings.get_double('workspace-osd-timeout') * EASING_MULTIPLIER / 2, // divide by 2 as timeout is ease-in + ease-out
+                    duration: this.workspace_osd_ease_duration * EASING_MULTIPLIER,
                     mode: Clutter.AnimationMode.LINEAR,
                     onStopped: () => osd.destroy()
                 });
