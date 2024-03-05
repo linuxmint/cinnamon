@@ -230,29 +230,25 @@ class Module:
 
             settings = page.add_section()
 
-            widget = self.make_group(_("Mouse Pointer"), self.cursor_chooser)
-            settings.add_row(widget)
-
-            widget = self.make_group(_("Applications"), self.theme_chooser)
-            settings.add_row(widget)
-
-            widget = self.make_group(_("Icons"), self.icon_chooser)
-            settings.add_row(widget)
-
-            widget = self.make_group(_("Desktop"), self.cinnamon_chooser)
-            settings.add_row(widget)
-
-            self.gtk_theme_options_button = Gtk.Button()
-            self.gtk_theme_options_button.set_label(_("Open applications theme options"))
-            self.gtk_theme_options_button.set_halign(Gtk.Align.END)
+            self.gtk_theme_options_button = Gtk.Button.new()
+            self.gtk_theme_options_button.set_label(_("Options"))
             self.gtk_theme_options_button.connect("clicked", self.gtk_theme_options_button_clicked)
-            page.add(self.gtk_theme_options_button)
 
-            self.cinnamon_theme_options_button = Gtk.Button()
-            self.cinnamon_theme_options_button.set_label(_("Open desktop theme options"))
-            self.cinnamon_theme_options_button.set_halign(Gtk.Align.END)
+            self.cinnamon_theme_options_button = Gtk.Button.new()
+            self.cinnamon_theme_options_button.set_label(_("Options"))
             self.cinnamon_theme_options_button.connect("clicked", self.cinnamon_theme_options_button_clicked)
-            page.add(self.cinnamon_theme_options_button)
+
+            widget = self.make_group(_("Mouse Pointer"), self.cursor_chooser, None)
+            settings.add_row(widget)
+
+            widget = self.make_group(_("Applications"), self.theme_chooser, self.gtk_theme_options_button)
+            settings.add_row(widget)
+
+            widget = self.make_group(_("Icons"), self.icon_chooser, None)
+            settings.add_row(widget)
+
+            widget = self.make_group(_("Desktop"), self.cinnamon_chooser, self.cinnamon_theme_options_button)
+            settings.add_row(widget)
 
             button = Gtk.Button()
             button.set_label(_("Simplified settings..."))
@@ -724,17 +720,22 @@ class Module:
     def _setParentRef(self, window):
         self.window = window
 
-    def make_group(self, group_label, widget, add_widget_to_size_group=True):
+    def make_group(self, group_label, widget, options_button, add_widget_to_size_group=True):
         self.size_groups = getattr(self, "size_groups", [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for x in range(2)])
         box = SettingsWidget()
+        
         label = Gtk.Label()
         label.set_markup(group_label)
         label.props.xalign = 0.0
         self.size_groups[0].add_widget(label)
         box.pack_start(label, False, False, 0)
+
         if add_widget_to_size_group:
             self.size_groups[1].add_widget(widget)
         box.pack_end(widget, False, False, 0)
+
+        if options_button is not None:
+            box.pack_end(options_button, False, False, 0)
 
         return box
 
@@ -891,4 +892,12 @@ class Module:
 
     def get_is_theme_configurable(self, theme_path, theme_name):
         config_json = os.path.join(theme_path, theme_name, "config", "options_config.json")
-        return theme_path.startswith("/home/") and os.path.exists(config_json)
+        if theme_path.startswith("/home/") and os.path.exists(config_json):
+            try:
+                with open(config_json, "r") as file:
+                    options = json.load(file)
+                if options["spec_version"] == 1:
+                    return True
+            except Exception as e:
+                print ("Error reading options_config.json file:", e)
+        return False
