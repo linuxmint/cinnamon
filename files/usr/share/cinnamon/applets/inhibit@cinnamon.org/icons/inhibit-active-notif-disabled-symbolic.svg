@@ -6,7 +6,7 @@
    version="1.1"
    height="16"
    id="svg16"
-   sodipodi:docname="inhibit-active-symbolic.svg"
+   sodipodi:docname="inhibit-active-notif-disabled-symbolic.svg"
    inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -24,9 +24,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#505050"
      showgrid="false"
-     inkscape:zoom="128"
-     inkscape:cx="9.8671875"
-     inkscape:cy="9.3203125"
+     inkscape:zoom="53.625"
+     inkscape:cx="7.8135198"
+     inkscape:cy="8"
      inkscape:window-width="1920"
      inkscape:window-height="1012"
      inkscape:window-x="0"
@@ -36,11 +36,10 @@
   <title
      id="title2">Gnome Symbolic Icon Theme</title>
   <path
-     d="m 2.0000001,0.0019531 c -1.0907,0 -2.0000000015625,0.9093 -2.0000000015625,2 v 8.9999999 c 0,1.091 0.9093000015625,2 2.0000000015625,2 h 6 v -2 h -6 V 2.0019531 H 14 v 6 h 2 v -6 c 0,-1.0908 -0.909,-2 -2,-2 z"
+     d="m2 0.0019531c-1.0907 0-2 0.9093-2 2v9c0 1.091 0.9093 2 2 2h6v-2h-6v-9h12v6h2v-6c0-1.0908-0.909-2-2-2h-12z"
      fill="#bebebe"
      id="path10"
-     style="fill:#000000;fill-opacity:1"
-     sodipodi:nodetypes="sssscccccccsss" />
+     style="fill:#000000;fill-opacity:1" />
   <path
      d="m5 14.002c-0.5454 0-1 0.455-1 1v0.5h0.209c0.1787 0.28 0.4394 0.5 0.791 0.5h3v-2h-3z"
      fill="#bebebe"
@@ -51,17 +50,4 @@
      d="m12.5 9.002a3.5 3.5 0 0 0 -3.5 3.5 3.5 3.5 0 0 0 3.5 3.5 3.5 3.5 0 0 0 3.5 -3.5 3.5 3.5 0 0 0 -3.5 -3.5zm-2.5 3h5v1h-5v-1z"
      class="error"
      id="path14" />
-  <g
-     id="g25524"
-     transform="translate(0.02301264,0.31327071)">
-    <path
-       id="rect1638-6-3"
-       style="stroke-width:0;stroke-linejoin:round;paint-order:fill markers stroke"
-       d="M 3.1372805,3.0371606 H 12.816694 V 5.5159724 H 3.1372805 Z" />
-  </g>
-  <path
-     id="path2831"
-     style="stroke-width:0;stroke-linejoin:round;paint-order:fill markers stroke"
-     d="m 3.1602931,7.1746631 h 9.6794139 l -0.008,0.8220307 c -2.190668,0 -3.1519246,-0.020832 -4.8329656,1.6602086 l -4.8384523,-0.00343 z"
-     sodipodi:nodetypes="cccccc" />
 </svg>

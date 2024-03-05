@@ -12,6 +12,60 @@ const Util = imports.misc.util;
 const INHIBIT_IDLE_FLAG = 8;
 const INHIBIT_SLEEP_FLAG = 4;
 
+class InhibitAppletIcon {
+    constructor(applet) {
+        this._applet = applet;
+        this.icon_name = 'inhibit';
+        this.notificationStatus = applet.notificationsSwitch.state;
+        this.inhibitStatus = applet.inhibitSwitch.state;
+        this.setAppletIcon();
+    }
+
+    setAppletIcon() {
+        this._applet.set_applet_icon_symbolic_name(this.getAppletIcon());
+    }
+
+    _getNotificationStatusTag(status) {
+        return (status ? '' : '-notif-disabled');
+    }
+
+    _getInhibitStatusTag(status) {
+        return (status ? '' : '-active');
+    }
+
+    getAppletIcon() {
+        let appletIcon = this.icon_name;
+        appletIcon += this._getInhibitStatusTag(this.inhibitStatus);
+        appletIcon += this._getNotificationStatusTag(this.notificationStatus);
+        return appletIcon;
+    }
+
+    toggleNotificationStatus(status) {
+        this.notificationStatus = status;
+        this.setAppletIcon();
+    }
+
+    toggleInhibitStatus(status) {
+        this.inhibitStatus = status;
+        this.setAppletIcon();
+    }
+
+    getNotificationStatusIcon() {
+        return this.icon_name + this._getNotificationStatusTag(this.notificationStatus);
+    }
+    getInhibitStatusIcon() {
+        return this.icon_name + this._getInhibitStatusTag(this.inhibitStatus);
+    }
+
+    getNotificationStatusOSDIcon() {
+        return this.icon_name + '-notification-osd' + this._getNotificationStatusTag(this.notificationStatus);
+    }
+
+    getInhibitStatusOSDIcon() {
+        return this.icon_name + '-power-osd' + this._getInhibitStatusTag(this.inhibitStatus);
+    }
+}
+
 class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
     constructor(applet) {
         super();
@@ -80,10 +134,10 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
 
         if (current_state & INHIBIT_IDLE_FLAG ||
             current_state & INHIBIT_SLEEP_FLAG) {
-            this._applet.set_applet_icon_symbolic_name('inhibit-active');
+            this._applet.icon.toggleInhibitStatus(false);
             this._applet.set_applet_tooltip(_("Power management: inhibited"));
         } else {
-            this._applet.set_applet_icon_symbolic_name('inhibit');
+            this._applet.icon.toggleInhibitStatus(true);
             this._applet.set_applet_tooltip(_("Power management: active"));
         }
 
@@ -131,6 +185,12 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
         if (this.sigRemovedId) {
             this.sessionProxy.disconnectSignal(this.sigRemovedId);
         }
+    }
+
+    toggle() {
+        this._switch.toggle();
+        this.toggled(this._switch.state);
+        this._applet.icon.toggleInhibitStatus(this._switch.state);
     }
 }
 
@@ -345,6 +405,28 @@ class InhibitorMenuSection extends PopupMenu.PopupMenuSection {
     }
 }
 
+class NotificationsSwitch extends PopupMenu.PopupSwitchMenuItem {
+    constructor(applet) {
+        super(_("Notifications"));
+
+        this._applet = applet;
+        this._notif_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
+        this._setToggleState();
+
+        this._notif_settings.connect('changed::display-notifications', Lang.bind(this, function () {
+            this._setToggleState();
+            this._applet.icon.toggleNotificationStatus(this.state);
+        }));
+        this.connect('toggled', Lang.bind(this, function () {
+            this._notif_settings.set_boolean("display-notifications", this.state);
+        }));
+    }
+
+    _setToggleState() {
+        this.setToggleState(this._notif_settings.get_boolean("display-notifications"));
+    }
+}
+
 class CinnamonInhibitApplet extends Applet.IconApplet {
     constructor(metadata, orientation, panel_height, instanceId) {
         super(orientation, panel_height, instanceId);
@@ -354,24 +436,15 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
+        this.set_applet_tooltip(_("Inhibit applet"));
 
         this.inhibitSwitch = new InhibitSwitch(this);
         this.menu.addMenuItem(this.inhibitSwitch);
 
-        this.set_applet_icon_symbolic_name('inhibit');
-        this.set_applet_tooltip(_("Inhibit applet"));
-
-        this.notif_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
-        this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Notifications"), this.notif_settings.get_boolean("display-notifications"));
-
-        this.notif_settings.connect('changed::display-notifications', Lang.bind(this, function() {
-            this.notificationsSwitch.setToggleState(this.notif_settings.get_boolean("display-notifications"));
-        }));
-        this.notificationsSwitch.connect('toggled', Lang.bind(this, function() {
-            this.notif_settings.set_boolean("display-notifications", this.notificationsSwitch.state);
-        }));
-
+        this.notificationsSwitch = new NotificationsSwitch(this);
         this.menu.addMenuItem(this.notificationsSwitch);
+
+        this.icon = new InhibitAppletIcon(this);
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
         this.settings.bind("keyPower", "keyPower", this._setKeybinding);
@@ -434,24 +507,13 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
     }
 
     toggle_inhibit_power() {
-        this.inhibitSwitch._switch.toggle();
-        this.inhibitSwitch.toggled(this.inhibitSwitch._switch.state);
-
-        let _symbol = this.inhibitSwitch._switch.state ?
-            "inhibit-symbolic" :
-            "inhibit-active-symbolic";
-
-        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(_symbol));
+        this.inhibitSwitch.toggle();
+        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(this.icon.getInhibitStatusOSDIcon()));
     }
 
     toggle_inhibit_notifications() {
         this.notificationsSwitch.toggle();
-
-        let _symbol = this.notificationsSwitch._switch.state ?
-            "inhibit-notification-symbolic" :
-            "inhibit-notification-active-symbolic";
-
-        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(_symbol));
+        Main.osdWindowManager.show(-1, Gio.ThemedIcon.new(this.icon.getNotificationStatusOSDIcon()));
     }
 
     get inhibitors() {
