@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   version="1.1"
+   height="16"
+   id="svg16"
+   sodipodi:docname="bruno-inhibit-notif-disabled-active-symbolic.svg"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs20" />
+  <sodipodi:namedview
+     id="namedview18"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     showgrid="false"
+     inkscape:zoom="53.625"
+     inkscape:cx="8"
+     inkscape:cy="8"
+     inkscape:window-width="1920"
+     inkscape:window-height="1032"
+     inkscape:window-x="0"
+     inkscape:window-y="20"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg16" />
+  <title
+     id="title2">Gnome Symbolic Icon Theme</title>
+  <path
+     d="m2 0.0019531c-1.0907 0-2 0.9093-2 2v9c0 1.091 0.9093 2 2 2h6v-2h-6v-9h12v6h2v-6c0-1.0908-0.909-2-2-2h-12z"
+     fill="#bebebe"
+     id="path10" />
+  <path
+     d="m5 14.002c-0.5454 0-1 0.455-1 1v0.5h0.209c0.1787 0.28 0.4394 0.5 0.791 0.5h3v-2h-3z"
+     fill="#bebebe"
+     id="path12" />
+  <path
+     fill="#ef2929"
+     d="m12.5 9.002a3.5 3.5 0 0 0 -3.5 3.5 3.5 3.5 0 0 0 3.5 3.5 3.5 3.5 0 0 0 3.5 -3.5 3.5 3.5 0 0 0 -3.5 -3.5zm-2.5 3h5v1h-5v-1z"
+     class="error"
+     id="path14" />
+</svg>
