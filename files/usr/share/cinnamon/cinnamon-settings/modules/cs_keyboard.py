@@ -209,22 +209,14 @@ KEYBINDINGS = [
 # keybindings.js listens for changes to 'custom-list'. Any time we create a shortcut
 # or add/remove individual keybindings, we need to cause this list to change.
 #
-# Unfortunately, at some point recently, simply 'touching' the setting without actually
-# modifying its contents stopped working (see CustomKeybinding.writeSettings), and
-# we must now do something more substantial, like reversing the list each time (the order
-# doesn't matter to the rest of this code).  In order for this to be reliable we need
-# to make sure we always end up with at least 2 entries in 'custom-list', since reversing
-# a list with one element won't do anything.
+# Use a dummy entry to trigger this by alternately adding and removing it to the list.
 DUMMY_CUSTOM_ENTRY = "__dummy__"
 
-def ensureCustomListIsValid(custom_list):
-    if len(custom_list) > 1:
-        return
-
+def ensureCustomListChanges(custom_list):
     if DUMMY_CUSTOM_ENTRY in custom_list:
-        return
-
-    custom_list.append(DUMMY_CUSTOM_ENTRY)
+        custom_list.remove(DUMMY_CUSTOM_ENTRY)
+    else:
+        custom_list.append(DUMMY_CUSTOM_ENTRY)
 
 class Module:
     comment = _("Manage keyboard settings and shortcuts")
@@ -612,7 +604,7 @@ class Module:
 
         new_str = "custom" + str(i)
         array.append(new_str)
-        ensureCustomListIsValid(array)
+        ensureCustomListChanges(array)
         parent.set_strv("custom-list", array)
 
         new_path = CUSTOM_KEYS_BASENAME + "/custom" + str(i) + "/"
@@ -660,7 +652,7 @@ class Module:
                     break
             if existing:
                 array.remove(keybinding.path)
-                ensureCustomListIsValid(array)
+                ensureCustomListChanges(array)
                 parent_settings.set_strv("custom-list", array)
 
         self.loadCustoms()
@@ -692,6 +684,9 @@ class Module:
                         self.kb_tree.set_cursor(str(i), self.kb_tree.get_column(0), False)
                     i += 1
                 dialog.destroy()
+
+                self.loadCustoms()
+                self.kb_store.refilter()
 
     def onContextMenuPopup(self, tree, event = None):
         model, iter = tree.get_selection().get_selected()
@@ -822,8 +817,7 @@ class CustomKeyBinding:
         # Touch the custom-list key, this will trigger a rebuild in cinnamon
         parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
         custom_list = parent.get_strv("custom-list")
-        custom_list.reverse()
-        ensureCustomListIsValid(custom_list)
+        ensureCustomListChanges(custom_list)
         parent.set_strv("custom-list", custom_list)
 
 class AddCustomDialog(Gtk.Dialog):
