@@ -618,7 +618,7 @@ class Module:
         new_path = CUSTOM_KEYS_BASENAME + "/custom" + str(i) + "/"
         new_schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, new_path)
         new_schema.set_string("name", dialog.name_entry.get_text())
-        new_schema.set_string("command", dialog.command_entry.get_text().replace("%20", "\ "))
+        new_schema.set_string("command", dialog.command_entry.get_text())
         new_schema.set_strv("binding", ())
 
         self.loadCustoms()
@@ -683,7 +683,7 @@ class Module:
                     return
 
                 keybinding.label = dialog.name_entry.get_text()
-                keybinding.action = dialog.command_entry.get_text().replace("%20", "\ ")
+                keybinding.action = dialog.command_entry.get_text()
                 keybinding.writeSettings()
 
                 i = 0
@@ -859,8 +859,8 @@ class AddCustomDialog(Gtk.Dialog):
         self.onEntriesChanged(self)
 
     def onFilePicked(self, widget):
-        path = self.file_picker.get_uri()[7:]
-        self.command_entry.set_text(path)
+        file = self.file_picker.get_file()
+        self.command_entry.set_text(file.get_path().replace(" ", r"\ "))
 
     def onEntriesChanged(self, widget):
         ok_enabled = self.name_entry.get_text().strip() != "" and self.command_entry.get_text().strip() != ""
