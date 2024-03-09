@@ -411,10 +411,14 @@ class Module:
             else:
                 details = UPowerGlib.Device.state_to_string(state)
         else:
-            if state == UPowerGlib.DeviceState.CHARGING or state == UPowerGlib.DeviceState.PENDING_CHARGE:
+            if state == UPowerGlib.DeviceState.CHARGING:
                 details = _("Charging")
-            elif state == UPowerGlib.DeviceState.DISCHARGING or state == UPowerGlib.DeviceState.PENDING_DISCHARGE:
+            elif state == UPowerGlib.DeviceState.PENDING_CHARGE:
+                details = _("Not charging")
+            elif state == UPowerGlib.DeviceState.DISCHARGING:
                 details = _("Using battery power")
+            elif state == UPowerGlib.DeviceState.PENDING_DISCHARGE:
+                details = _("Not discharging")
             elif state == UPowerGlib.DeviceState.FULLY_CHARGED:
                 details = _("Charging - fully charged")
             elif state == UPowerGlib.DeviceState.EMPTY:
