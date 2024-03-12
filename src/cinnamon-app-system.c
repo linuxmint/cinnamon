@@ -659,7 +659,14 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
       if (cinnamon_app_get_is_flatpak (app))
       {
-        g_hash_table_replace (self->priv->flatpak_id_to_app, cinnamon_app_get_flatpak_app_id (app), g_object_ref (app));
+        gchar *flatpak_app_id = cinnamon_app_get_flatpak_app_id (app);
+        gchar **split = g_strsplit (id, ".desktop", -1);
+
+        if (g_strv_length (split) > 0 && g_strcmp0 (split[0], flatpak_app_id) == 0)
+        {
+          g_hash_table_replace (self->priv->flatpak_id_to_app, flatpak_app_id, g_object_ref (app));
+        }
+        g_strfreev (split);
       }
       // if (!gmenu_tree_entry_get_is_nodisplay_recurse (entry))
       //    g_hash_table_replace (self->priv->visible_id_to_app, (char*)id, app);
