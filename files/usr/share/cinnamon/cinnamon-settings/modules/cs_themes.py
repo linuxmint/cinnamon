@@ -529,10 +529,14 @@ class Module:
         else:
             transition = Gtk.StackTransitionType.CROSSFADE
 
+        switcher_widget = Gio.Application.get_default().stack_switcher
+
         if mode == "simplified":
-            Gio.Application.get_default().stack_switcher.set_opacity(0.0)
+            switcher_widget.set_opacity(0.0)
+            switcher_widget.set_sensitive(False)
         else:
-            Gio.Application.get_default().stack_switcher.set_opacity(1.0)
+            switcher_widget.set_opacity(1.0)
+            switcher_widget.set_sensitive(True)
 
         self.sidePage.stack.set_visible_child_full(mode, transition)
 
