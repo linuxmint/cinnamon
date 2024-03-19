@@ -51,7 +51,7 @@ const DEVEL_COMMANDS = { 'lg': x => Main.createLookingGlass().open(),
 
 /* The modal dialog parent class has a 100ms close animation.  Delay long enough for it
  * to complete before doing something disruptive like restarting cinnamon */
-const DEVEL_COMMAND_DELAY =  parseInt(ModalDialog.OPEN_AND_CLOSE_TIME * 1000) + 10;
+const DEVEL_COMMAND_DELAY =  parseInt(ModalDialog.OPEN_AND_CLOSE_TIME) + 10;
 
 /**
  * completeCommand:
