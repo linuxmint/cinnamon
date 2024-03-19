@@ -30,7 +30,6 @@ const EASING_MULTIPLIER = 1000; // multiplier for tweening.time ---> easing.dura
 const DIM_TIME = 0.500;
 const DIM_BRIGHTNESS = -0.2;
 const UNDIM_TIME = 0.250;
-const WORKSPACE_OSD_TIMEOUT = 0.4;
 
 /* edge zones for tiling/snapping identification
    copied from muffin/src/core/window-private.h
@@ -254,6 +253,7 @@ var WindowManager = class WindowManager {
         global.settings.connect('changed::desktop-effects-map', this.onSettingsChanged.bind(this));
         global.settings.connect('changed::desktop-effects-minimize', this.onSettingsChanged.bind(this));
         global.settings.connect('changed::window-effect-speed', this.onSettingsChanged.bind(this));
+        global.settings.connect('changed::workspace-osd-timeout', this.onSettingsChanged.bind(this));
 
         this.onSettingsChanged(global.settings, "desktop-effects-workspace");
 
@@ -394,6 +394,8 @@ var WindowManager = class WindowManager {
         this.desktop_effects_minimize_type = global.settings.get_string("desktop-effects-minimize");
 
         this.window_effect_multiplier = WINDOW_ANIMATION_TIME_MULTIPLIERS[global.settings.get_int("window-effect-speed")];
+
+        this.workspace_osd_ease_duration = global.settings.get_double("workspace-osd-timeout") / 2; // divided by 2 as timeout is fade-in + fade-out
     }
 
     _shouldAnimate(actor, types=null) {
@@ -1256,9 +1258,9 @@ var WindowManager = class WindowManager {
 
         osd.actor.ease({
             z_position: -.0001,
-            duration: WORKSPACE_OSD_TIMEOUT * EASING_MULTIPLIER,
+            duration: this.workspace_osd_ease_duration * EASING_MULTIPLIER,
             onComplete: () => this._hideWorkspaceOSD()
-        })
+        });
     }
 
     _hideWorkspaceOSD(now = false) {
@@ -1273,7 +1275,7 @@ var WindowManager = class WindowManager {
                 osd.actor.opacity = 255;
                 osd.actor.ease({
                     opacity: 0,
-                    duration: WORKSPACE_OSD_TIMEOUT * EASING_MULTIPLIER,
+                    duration: this.workspace_osd_ease_duration * EASING_MULTIPLIER,
                     mode: Clutter.AnimationMode.LINEAR,
                     onStopped: () => osd.destroy()
                 });
