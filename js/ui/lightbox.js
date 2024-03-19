@@ -7,7 +7,6 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 
 const Params = imports.misc.params;
-const Tweener = imports.ui.tweener;
 
 var VIGNETTE_BRIGHTNESS = 0.5;
 var VIGNETTE_SHARPNESS = 0.7;
@@ -29,16 +28,31 @@ pixel_brightness += mix(-NOISE_GRANULARITY, NOISE_GRANULARITY, pseudo_rand);\n\
 cogl_color_out.a = cogl_color_out.a * (1 - pixel_brightness * brightness);';
 ;
 
-var RadialShaderQuad = GObject.registerClass(
-class RadialShaderQuad extends Cinnamon.GLSLQuad {
+var RadialShaderEffect = GObject.registerClass({
+    Properties: {
+        'brightness': GObject.ParamSpec.float(
+            'brightness', 'brightness', 'brightness',
+            GObject.ParamFlags.READWRITE,
+            0, 1, 1
+        ),
+        'sharpness': GObject.ParamSpec.float(
+            'sharpness', 'sharpness', 'sharpness',
+            GObject.ParamFlags.READWRITE,
+            0, 1, 0
+        )
+    }
+}, class RadialShaderEffect extends Cinnamon.GLSLEffect {
     _init(params) {
+        this._brightness = undefined;
+        this._sharpness = undefined;
+
         super._init(params);
 
         this._brightnessLocation = this.get_uniform_location('brightness');
         this._sharpnessLocation = this.get_uniform_location('vignette_sharpness');
 
         this.brightness = 1.0;
-        this.vignetteSharpness = 0.0;
+        this.sharpness = 0.0;
     }
 
     vfunc_build_pipeline() {
@@ -51,19 +65,25 @@ class RadialShaderQuad extends Cinnamon.GLSLQuad {
     }
 
     set brightness(v) {
+        if (this._brightness == v)
+            return;
         this._brightness = v;
         this.set_uniform_float(this._brightnessLocation,
                                1, [this._brightness]);
+        this.notify('brightness');
     }
 
-    get vignetteSharpness() {
+    get sharpness() {
         return this._sharpness;
     }
 
-    set vignetteSharpness(v) {
+    set sharpness(v) {
+        if (this._sharpness == v)
+            return;
         this._sharpness = v;
         this.set_uniform_float(this._sharpnessLocation,
                                1, [this._sharpness]);
+        this.notify('sharpness');
     }
 });
 
@@ -103,12 +123,13 @@ var Lightbox = class Lightbox {
         this._children = container.get_children();
         this._fadeTime = params.fadeTime;
         this._radialEffect = Clutter.feature_available(Clutter.FeatureFlags.SHADERS_GLSL) && params.radialEffect;
+
+        this.actor = new St.Bin({ reactive: params.inhibitEvents });
+
         if (this._radialEffect)
-            this.actor = new RadialShaderQuad({ reactive: params.inhibitEvents });
+            this.actor.add_effect(new RadialShaderEffect({ name: 'radial' }));
         else
-            this.actor = new St.Bin({ opacity: 0,
-                                      style_class: 'lightbox',
-                                      reactive: params.inhibitEvents });
+            this.actor.set({ opacity: 0, style_class: 'lightbox' });
 
         container.add_actor(this.actor);
         this.actor.raise_top();
@@ -156,42 +177,54 @@ var Lightbox = class Lightbox {
     }
 
     show() {
+        this.actor.remove_all_transitions();
+
         if (this._radialEffect) {
-            Tweener.addTween(this.actor,
-                             { brightness: VIGNETTE_BRIGHTNESS,
-                               vignetteSharpness: VIGNETTE_SHARPNESS,
-                               time: this._fadeTime,
-                               transition: 'easeOutQuad'
-                             });
+            this.actor.ease_property(
+                '@effects.radial.brightness', VIGNETTE_BRIGHTNESS, {
+                    duration: this._fadeTime / 1000,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                });
+            this.actor.ease_property(
+                '@effects.radial.sharpness', VIGNETTE_SHARPNESS, {
+                    duration: this._fadeTime / 1000,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                });
         } else {
             this.actor.opacity = 0;
-            Tweener.addTween(this.actor,
-                             { opacity: 255,
-                               time: this._fadeTime,
-                               transition: 'easeOutQuad',
-                             });
+            this.actor.ease({
+                opacity: 255,
+                duration: this._fadeTime / 1000,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            });
         }
         this.actor.show();
     }
 
     hide() {
+        this.actor.remove_all_transitions();
+
+        let onComplete = () => this.actor.hide();
+
         if (this._radialEffect) {
-            Tweener.addTween(this.actor,
-                             { brightness: 1.0,
-                               vignetteSharpness: 0.0,
-                               opacity: 0,
-                               time: this._fadeTime,
-                               transition: 'easeOutQuad',
-                             });
+            this.actor.ease_property(
+                '@effects.radial.brightness', 1.0, {
+                    duration: this._fadeTime / 1000,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                });
+            this.actor.ease_property(
+                '@effects.radial.sharpness', 0.0, {
+                    duration: this._fadeTime / 1000,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete
+                });
         } else {
-            Tweener.addTween(this.actor,
-                             { opacity: 0,
-                               time: this._fadeTime,
-                               transition: 'easeOutQuad',
-                               onComplete: () => {
-                                   this.actor.hide();
-                               }
-                             });
+            this.actor.ease({
+                opacity: 0,
+                duration: this._fadeTime / 1000,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete
+            });
         }
     }
 
