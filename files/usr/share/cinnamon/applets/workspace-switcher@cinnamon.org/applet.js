@@ -14,6 +14,31 @@ const Pango = imports.gi.Pango;
 
 const MIN_SWITCH_INTERVAL_MS = 220;
 
+
+function removeWorkspaceAtIndex(index) {
+    if (global.workspace_manager.n_workspaces <= 1 ||
+        index >= global.workspace_manager.n_workspaces) {
+        return;
+    }
+
+    const removeAction = () => {
+        Main._removeWorkspace(global.workspace_manager.get_workspace_by_index(index));
+    };
+
+    if (!Main.hasDefaultWorkspaceName(index)) {
+        let prompt = _("Are you sure you want to remove workspace \"%s\"?\n\n").format(
+            Main.getWorkspaceName(index)
+        );
+
+        let confirm = new ModalDialog.ConfirmDialog(prompt, removeAction);
+        confirm.open();
+    }
+    else {
+        removeAction();
+    }
+}
+
+
 class WorkspaceButton {
     constructor(index, applet) {
         this.index = index;
@@ -47,6 +72,8 @@ class WorkspaceButton {
     onClicked(actor, event) {
         if (event.get_button() == 1) {
             Main.wm.moveToWorkspace(this.workspace);
+        } else if (event.get_button() == 2) {
+            removeWorkspaceAtIndex(this.index);
         }
     }
 
@@ -304,9 +331,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this._applet_context_menu.addMenuItem(addWorkspaceMenuItem);
 
         this.removeWorkspaceMenuItem = new PopupMenu.PopupIconMenuItem (_("Remove the current workspace"), "list-remove", St.IconType.SYMBOLIC);
-        this.removeWorkspaceMenuItem.connect('activate', Lang.bind(this, function() {
-            this.removeWorkspace();
-        }));
+        this.removeWorkspaceMenuItem.connect('activate', this.removeCurrentWorkspace.bind(this));
         this._applet_context_menu.addMenuItem(this.removeWorkspaceMenuItem);
         this.removeWorkspaceMenuItem.setSensitive(global.workspace_manager.n_workspaces > 1);
     }
@@ -316,23 +341,12 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this._createButtons();
     }
 
-    removeWorkspace  (){
+    removeCurrentWorkspace() {
         if (global.workspace_manager.n_workspaces <= 1) {
             return;
         }
         this.workspace_index = global.workspace_manager.get_active_workspace_index();
-        let removeAction = Lang.bind(this, function() {
-            Main._removeWorkspace(global.workspace_manager.get_active_workspace());
-        });
-        if (!Main.hasDefaultWorkspaceName(this.workspace_index)) {
-            let prompt = _("Are you sure you want to remove workspace \"%s\"?\n\n").format(
-                Main.getWorkspaceName(this.workspace_index));
-            let confirm = new ModalDialog.ConfirmDialog(prompt, removeAction);
-            confirm.open();
-        }
-        else {
-            removeAction();
-        }
+        removeWorkspaceAtIndex(this.workspace_index);
     }
 
     _onWorkspaceChanged(wm, from, to) {
