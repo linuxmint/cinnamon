@@ -16,12 +16,11 @@ const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const PopupMenu = imports.ui.popupMenu;
 const Tooltips = imports.ui.tooltips;
-const Tweener = imports.ui.tweener;
 const Gettext = imports.gettext;
 
 
 const RIGHT_PANEL_POPUP_ANIMATE_TIME = 0.5;
-const DESKLET_DESTROY_TIME = 0.5;
+const DESKLET_DESTROY_TIME = 500;
 
 /**
  * #Desklet
@@ -124,15 +123,17 @@ var Desklet = class Desklet {
      *
      * Destroys the actor with an fading animation
      */
-    destroy(deleteConfig){
-        Tweener.addTween(this.actor,
-                         { opacity: 0,
-                           transition: 'linear',
-                           time: DESKLET_DESTROY_TIME,
-                           onComplete: Lang.bind(this, function(){
-                               this.on_desklet_removed(deleteConfig);
-                               this.actor.destroy();
-                           })});
+    destroy(deleteConfig) {
+        this.actor.ease({
+            opacity: 0,
+            duration: DESKLET_DESTROY_TIME,
+            mode: Clutter.AnimationMode.LINEAR,
+            onComplete: () => {
+                this.on_desklet_removed(deleteConfig);
+                this.actor.destroy();
+            }
+        });
+
         this._menu.destroy();
 
         this._menu = null;
