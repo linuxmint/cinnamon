@@ -1681,19 +1681,19 @@ PanelCorner.prototype = {
     }
 }; // end of panel corner
 
-function SettingsLauncher(label, keyword, icon) {
-    this._init(label, keyword, icon);
+function SettingsLauncher(label, keyword, icon, command) {
+    this._init(label, keyword, icon, command);
 }
 
 SettingsLauncher.prototype = {
     __proto__: PopupMenu.PopupIconMenuItem.prototype,
 
-    _init: function (label, keyword, icon) {
+    _init: function (label, keyword, icon, command) {
         PopupMenu.PopupIconMenuItem.prototype._init.call(this, label, icon, St.IconType.SYMBOLIC);
 
         this._keyword = keyword;
         this.connect('activate', Lang.bind(this, function() {
-            Util.spawnCommandLine("cinnamon-settings " + this._keyword);
+            Util.spawnCommandLine(command + " " + this._keyword);
         }));
     },
 };
@@ -1711,11 +1711,12 @@ PanelContextMenu.prototype = {
         this.actor.hide();
         this.panelId = panelId;
 
-        let moreSettingsMenuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelId, "emblem-system");
+        let moreSettingsMenuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelId, "emblem-system", "cinnamon-settings");
         this.addMenuItem(moreSettingsMenuItem);
 
-        let applet_settings_item = new SettingsLauncher(_("Applets"), "applets panel" + panelId, "application-x-addon");
+        let applet_settings_item = new SettingsLauncher(_("Applets"), "applets panel" + panelId, "application-x-addon", "cinnamon-settings");
         this.addMenuItem(applet_settings_item);
+
 
         let menu = this;
 
@@ -1819,7 +1820,32 @@ PanelContextMenu.prototype = {
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
         menu.addMenuItem(menu.troubleshootItem);
 
-        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "preferences-desktop"));
+         // Add the System Monitor launcher
+        let systemMonitorInfo = this._findFirstSystemMonitor();
+        if (systemMonitorInfo) {
+            this.addMenuItem(new SettingsLauncher(systemMonitorInfo.name, "", systemMonitorInfo.icon, systemMonitorInfo.command));
+        }
+
+        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "system-run", "cinnamon-settings"));
+    },
+
+     _findFirstSystemMonitor: function() {
+        let appInfoList = Gio.AppInfo.get_all();
+        for (let appInfo of appInfoList) {
+            if (appInfo.should_show()) {
+                let categories = appInfo.get_categories();
+                //Finds the first available system monitor based on category filters
+                if (categories && categories.includes('System') && categories.includes('Monitor') && !categories.includes('Utility')) {
+                    // Return the app name, icon, and executable command
+                    return {
+                        name: appInfo.get_display_name(),
+                        icon: appInfo.get_icon().to_string(),
+                        command: appInfo.get_executable()
+                    };
+                }
+            }
+        }
+        return null;
     },
 
     open: function(animate) {
