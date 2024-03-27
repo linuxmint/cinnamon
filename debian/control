@@ -58,7 +58,6 @@ Depends:
  gir1.2-edataserver-1.2,
  gir1.2-gdkpixbuf-2.0,
  gir1.2-gkbd-3.0,
- gir1.2-goa-1.0,
  gir1.2-gsound-1.0,
  gir1.2-gtkclutter-1.0,
  gir1.2-ical-3.0,
@@ -113,6 +112,7 @@ Depends:
 Recommends:
  gnome-terminal | x-terminal-emulator,
  gnome-themes-extra | gnome-themes-standard,
+ gnome-online-accounts-gtk,
  touchegg,
 Suggests: cinnamon-doc
 Provides: notification-daemon, x-window-manager, polkit-1-auth-agent

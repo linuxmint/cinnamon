@@ -86,7 +86,8 @@ STANDALONE_MODULES = [
     [_("Bluetooth"),                     "blueberry",                           "cs-bluetooth",          "hardware",       _("bluetooth, dongle, transfer, mobile")],
     [_("Bluetooth"),                     "blueman-manager",                     "cs-bluetooth",          "hardware",       _("bluetooth, dongle, transfer, mobile")],
     [_("Manage Services and Units"),     "systemd-manager-pkexec",              "cs-sources",            "admin",          _("systemd, units, services, systemctl, init")],
-    [_("Disks"),                         "gnome-disks",                         "org.gnome.DiskUtility", "hardware",       _("disks, manage, hardware, management, hard, hdd, pendrive, format, erase, test, create, iso, ISO, disk, image")]
+    [_("Disks"),                         "gnome-disks",                         "org.gnome.DiskUtility", "hardware",       _("disks, manage, hardware, management, hard, hdd, pendrive, format, erase, test, create, iso, ISO, disk, image")],
+    [_("Online Accounts"),               "gnome-online-accounts-gtk",           "gnome-online-accounts-gtk", "prefs",      "google, microsoft, nextcloud, owncloud"]
 ]
 
 TABS = {
