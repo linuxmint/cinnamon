@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import subprocess
 import json
 import tinycss2
 
@@ -229,16 +230,22 @@ class Module:
 
             settings = page.add_section()
 
+            self.gtk_theme_options_button = Gtk.Button.new()
+            self.gtk_theme_options_button.connect("clicked", self.gtk_theme_options_button_clicked)
+
+            self.cinnamon_theme_options_button = Gtk.Button.new()
+            self.cinnamon_theme_options_button.connect("clicked", self.cinnamon_theme_options_button_clicked)
+
             widget = self.make_group(_("Mouse Pointer"), self.cursor_chooser)
             settings.add_row(widget)
 
-            widget = self.make_group(_("Applications"), self.theme_chooser)
+            widget = self.make_group(_("Applications"), self.theme_chooser, options_button = self.gtk_theme_options_button)
             settings.add_row(widget)
 
             widget = self.make_group(_("Icons"), self.icon_chooser)
             settings.add_row(widget)
 
-            widget = self.make_group(_("Desktop"), self.cinnamon_chooser)
+            widget = self.make_group(_("Desktop"), self.cinnamon_chooser, options_button = self.cinnamon_theme_options_button)
             settings.add_row(widget)
 
             button = Gtk.Button()
@@ -536,6 +543,9 @@ class Module:
 
         self.sidePage.stack.set_visible_child_full(mode, transition)
 
+        self.update_gtk_theme_options_button()
+        self.update_cinnamon_theme_options_button()
+
     def on_color_button_clicked(self, button, variant):
         print("Color button clicked")
         self.activate_variant(variant)
@@ -708,17 +718,23 @@ class Module:
     def _setParentRef(self, window):
         self.window = window
 
-    def make_group(self, group_label, widget, add_widget_to_size_group=True):
+    def make_group(self, group_label, widget, options_button = None):
         self.size_groups = getattr(self, "size_groups", [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for x in range(2)])
         box = SettingsWidget()
+        
         label = Gtk.Label()
         label.set_markup(group_label)
         label.props.xalign = 0.0
         self.size_groups[0].add_widget(label)
         box.pack_start(label, False, False, 0)
-        if add_widget_to_size_group:
-            self.size_groups[1].add_widget(widget)
+
+        self.size_groups[1].add_widget(widget)
         box.pack_end(widget, False, False, 0)
+
+        if options_button is not None:
+            options_button.set_label(_("Theme options"))
+            options_button.set_valign(Gtk.Align.END)
+            box.pack_end(options_button, False, False, 0)
 
         return box
 
@@ -768,6 +784,9 @@ class Module:
             self.set_button_chooser_text(self.theme_chooser, theme)
         except Exception as detail:
             print(detail)
+
+        self.update_gtk_theme_options_button()
+
         return True
 
     def _on_cursor_theme_selected(self, path, theme):
@@ -786,6 +805,9 @@ class Module:
             self.set_button_chooser_text(self.cinnamon_chooser, theme)
         except Exception as detail:
             print(detail)
+
+        self.update_cinnamon_theme_options_button()
+
         return True
 
     def filter_func_gtk_dir(self, directory):
@@ -815,3 +837,66 @@ class Module:
 
         with open(index_path, "w") as f:
             f.write(contents)
+
+    def update_gtk_theme_options_button(self):
+        gtk_theme_name = self.settings.get_string("gtk-theme")
+        for name, path in self.gtk_themes:
+            if name == gtk_theme_name:
+                gtk_theme_path = path
+                configurable = self.get_is_theme_configurable(gtk_theme_path, gtk_theme_name)
+                break
+        else:
+            configurable = False
+        
+        self.gtk_theme_options_button.set_visible(configurable)
+
+    def update_cinnamon_theme_options_button(self):
+        cinnamon_theme_name = self.cinnamon_settings.get_string("name")
+        for name, path in self.cinnamon_themes:
+            if name == cinnamon_theme_name:
+                cinnamon_theme_path = path
+                configurable = self.get_is_theme_configurable(cinnamon_theme_path, cinnamon_theme_name)
+                break
+        else:
+            configurable = False
+
+        self.cinnamon_theme_options_button.set_visible(configurable)
+
+    def gtk_theme_options_button_clicked(self, button):
+        gtk_theme_name = self.settings.get_string("gtk-theme")
+        for name, path in self.gtk_themes:
+            if name == gtk_theme_name:
+                gtk_theme_path = path
+                break
+        else:
+            return
+
+        configProgram = "/usr/share/cinnamon/cinnamon-settings/bin/theme_config_gui.py"
+        theme_path = os.path.join(gtk_theme_path, gtk_theme_name)
+        subprocess.Popen([configProgram, theme_path])
+
+    def cinnamon_theme_options_button_clicked(self, button):
+        cinnamon_theme_name = self.cinnamon_settings.get_string("name")
+        for name, path in self.cinnamon_themes:
+            if name == cinnamon_theme_name:
+                cinnamon_theme_path = path
+                break
+        else:
+            return
+
+        configProgram = "/usr/share/cinnamon/cinnamon-settings/bin/theme_config_gui.py"
+        theme_path = os.path.join(cinnamon_theme_path, cinnamon_theme_name)
+        subprocess.Popen([configProgram, theme_path])
+
+    def get_is_theme_configurable(self, theme_path, theme_name):
+        config_json = os.path.join(theme_path, theme_name, "config", "options_config.json")
+        if os.path.exists(config_json):
+            try:
+                with open(config_json, "r") as file:
+                    options = json.load(file)
+                if options["spec_version"] == 1:
+                    return True
+            except Exception as e:
+                print ("Error reading options_config.json file:", e)
+        return False
+        
