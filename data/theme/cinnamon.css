@@ -2185,3 +2185,8 @@ StScrollBar StButton#vhandle:hover {
   -pie-border-color: rgba(200, 200, 200, 0.8);
   -pie-background-color: rgba(140, 140, 140, 0.6);;
 }
+
+.user-icon {
+    border: 2px solid #868686;
+    border-radius: 99px;
+}
