@@ -127,6 +127,7 @@ const InputMethod = imports.misc.inputMethod;
 const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
+const {CinnamonPortalHandler} = imports.misc.portalHandlers;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -310,6 +311,7 @@ function start() {
 
     Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
 
+    new CinnamonPortalHandler();
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
     setRunState(RunState.STARTUP);
 
