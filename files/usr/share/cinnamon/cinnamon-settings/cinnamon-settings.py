@@ -85,7 +85,6 @@ STANDALONE_MODULES = [
     [_("Package Management"),         "gpk-application",                      "gpk-prefs",                 "admin",      _("update, install, repository, package, source, download")],
     [_("Package Management"),         "/usr/bin/octopi",                      "octopi",                    "admin",      _("update, install, repository, package, source, download")],
     [_("Package Management"),         "pamac-manager",                        "system-software-install",   "admin",      _("update, install, repository, package, source, download")],
-    [_("Package Management"),         "pkexec synaptic",                      "synaptic",                  "admin",      _("update, install, repository, package, source, download")],
     [_("Package Management"),         "yumex",                                "yumex",                     "admin",      _("update, install, repository, package, source, download")],
     [_("Users and Groups"),           "cinnamon-settings-users",              "cs-user-accounts",          "admin",      _("user, users, account, accounts, group, groups, password")],
     [_("Bluetooth"),                  "blueberry",                            "cs-bluetooth",              "hardware",   _("bluetooth, dongle, transfer, mobile")],
@@ -97,7 +96,8 @@ STANDALONE_MODULES = [
 
 ALTERNATE_MODULES = [
     # Label                  Executable                  Icon                        Category  Keywords for filter
-    [_("Software Sources"),  "software-properties-gtk",  "software-properties-gtk",  "admin",  _("ppa, repository, package, source, download, video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")]
+    [_("Software Sources"),           "software-properties-gtk",              "software-properties-gtk",   "admin",      _("ppa, repository, package, source, download, video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
+    [_("Package Management"),         "pkexec synaptic",                      "synaptic",                  "admin",      _("update, install, repository, package, source, download")],
 ]
 
 TABS = {
