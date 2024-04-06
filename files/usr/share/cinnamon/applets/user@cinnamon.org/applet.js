@@ -10,6 +10,10 @@ const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
 const Settings = imports.ui.settings;
 
+
+const USER_DEFAULT_PIC_PATH = "/usr/share/cinnamon/faces/user-generic.png"
+
+
 class CinnamonUserApplet extends Applet.TextIconApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
@@ -20,7 +24,7 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
         this.settings = new Settings.AppletSettings(this, "user@cinnamon.org", instance_id);
 
-        this.set_applet_icon_symbolic_name("avatar-default");
+        this.settings.bind("display-picture", "display_picture", this._setIcon.bind(this));
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -129,6 +133,7 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
         this._user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
         this._userLoadedId = this._user.connect('notify::is-loaded', Lang.bind(this, this._onUserChanged));
         this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
+
         this._onUserChanged();
         this.set_show_label_in_vertical_panels(false);
     }
@@ -146,6 +151,7 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
     }
 
     _onUserChanged() {
+        this._setIcon();
         if (this._user.is_loaded) {
             this.set_applet_tooltip(this._user.get_real_name());
             this.userLabel.set_text (this._user.get_real_name());
@@ -164,6 +170,21 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
             }
             this._updateLabel();
         }
+    }
+
+    _setIcon() {
+        if (this.display_picture && this._user.is_loaded) {
+            let iconFileName = this._user.get_icon_file();
+            if (GLib.file_test(iconFileName, GLib.FileTest.EXISTS)) {
+                this.set_applet_icon_path(iconFileName);
+                return;
+            } else if (GLib.file_test(USER_DEFAULT_PIC_PATH, GLib.FileTest.EXISTS)) {
+                this.set_applet_icon_path(USER_DEFAULT_PIC_PATH);
+                return;
+            }
+        }
+
+        this.set_applet_icon_symbolic_name("avatar-default");
     }
 
     on_applet_removed_from_panel() {

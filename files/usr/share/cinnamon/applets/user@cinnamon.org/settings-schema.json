@@ -3,5 +3,10 @@
     "type" : "switch",
     "default" : false,
     "description": "Display user name on panel"
+ },
+ "display-picture" : {
+    "type" : "switch",
+    "default" : false,
+    "description": "Display the user picture on the panel"
  }
 }
