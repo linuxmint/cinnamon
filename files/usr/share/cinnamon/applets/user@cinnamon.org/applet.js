@@ -12,7 +12,7 @@ const Settings = imports.ui.settings;
 const UserWidget = imports.ui.userWidget;
 
 const DIALOG_ICON_SIZE = 64;
-const USER_DEFAULT_PIC_PATH = "/usr/share/cinnamon/faces/user-generic.png"
+const USER_DEFAULT_IMG_PATH = "/usr/share/cinnamon/faces/user-generic.png"
 
 class CinnamonUserApplet extends Applet.TextIconApplet {
     constructor(orientation, panel_height, instance_id) {
@@ -39,7 +39,7 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
         this._userIcon = new UserWidget.Avatar(this._user, { iconSize: DIALOG_ICON_SIZE });
 
         this.settings.bind("display-name", "disp_name", this._updateLabel);
-        this.settings.bind("display-picture", "display_picture", this._setIcon.bind(this));
+        this.settings.bind("display-image", "display_image", this._setIcon.bind(this));
 
         userBox.connect('button-press-event', Lang.bind(this, function() {
             this.menu.toggle();
@@ -163,13 +163,13 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
     }
 
     _setIcon() {
-        if (this.display_picture && this._user.is_loaded) {
+        if (this.display_image && this._user.is_loaded) {
             let iconFileName = this._user.get_icon_file();
             if (GLib.file_test(iconFileName, GLib.FileTest.EXISTS)) {
                 this.set_applet_icon_path(iconFileName);
                 return;
-            } else if (GLib.file_test(USER_DEFAULT_PIC_PATH, GLib.FileTest.EXISTS)) {
-                this.set_applet_icon_path(USER_DEFAULT_PIC_PATH);
+            } else if (GLib.file_test(USER_DEFAULT_IMG_PATH, GLib.FileTest.EXISTS)) {
+                this.set_applet_icon_path(USER_DEFAULT_IMG_PATH);
                 return;
             }
         }
