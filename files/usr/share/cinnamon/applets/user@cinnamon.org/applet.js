@@ -9,6 +9,9 @@ const AccountsService = imports.gi.AccountsService;
 const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
 const Settings = imports.ui.settings;
+const UserWidget = imports.ui.userWidget;
+
+const DIALOG_ICON_SIZE = 64;
 
 
 const USER_DEFAULT_PIC_PATH = "/usr/share/cinnamon/faces/user-generic.png"
@@ -32,9 +35,13 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
         this._contentSection = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(this._contentSection);
 
+        this._user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
+        this._userLoadedId = this._user.connect('notify::is-loaded', Lang.bind(this, this._onUserChanged));
+        this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
+
         let userBox = new St.BoxLayout({ style_class: 'user-box', reactive: true, vertical: false });
 
-        this._userIcon = new St.Bin({ style_class: 'user-icon'});
+        this._userIcon = new UserWidget.Avatar(this._user, { iconSize: DIALOG_ICON_SIZE });
 
         this.settings.bind("display-name", "disp_name", this._updateLabel);
 
@@ -130,10 +137,6 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
         }));
         this.menu.addMenuItem(item);
 
-        this._user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
-        this._userLoadedId = this._user.connect('notify::is-loaded', Lang.bind(this, this._onUserChanged));
-        this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
-
         this._onUserChanged();
         this.set_show_label_in_vertical_panels(false);
     }
@@ -156,16 +159,7 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
             this.set_applet_tooltip(this._user.get_real_name());
             this.userLabel.set_text (this._user.get_real_name());
             if (this._userIcon) {
-                let iconFileName = this._user.get_icon_file();
-                let iconFile = Gio.file_new_for_path(iconFileName);
-                let icon;
-                if (iconFile.query_exists(null)) {
-                    icon = new Gio.FileIcon({file: iconFile});
-                } else {
-                    icon = new Gio.ThemedIcon({name: 'avatar-default'});
-                }
-                let img = St.TextureCache.get_default().load_gicon(null, icon, 48);
-                this._userIcon.set_child (img);
+                this._userIcon.update();
                 this._userIcon.show();
             }
             this._updateLabel();

@@ -69,25 +69,35 @@ CONTROL_CENTER_MODULES = [
 ]
 
 STANDALONE_MODULES = [
-    # Label                              Executable                             Icon                     Category          Keywords for filter
-    [_("Printers"),                      "system-config-printer",               "cs-printer",            "hardware",       _("printers, laser, inkjet")],
-    [_("Firewall"),                      "gufw",                                "cs-firewall",           "admin",          _("firewall, block, filter, programs")],
-    [_("Firewall"),                      "firewall-config",                     "cs-firewall",           "admin",          _("firewall, block, filter, programs")],
-    [_("Languages"),                     "mintlocale",                          "cs-language",           "prefs",          _("language, install, foreign")],
-    [_("Input Method"),                  "mintlocale-im",                       "cs-input-method",       "prefs",          _("language, install, foreign, input, method, chinese, korean, japanese, typing")],
-    [_("Login Window"),                  "pkexec lightdm-settings",             "cs-login",              "admin",          _("login, lightdm, mdm, gdm, manager, user, password, startup, switch")],
-    [_("Login Window"),                  "lightdm-gtk-greeter-settings-pkexec", "cs-login",              "admin",          _("login, lightdm, manager, settings, editor")],
-    [_("Driver Manager"),                "cinnamon-driver-manager",             "cs-drivers",            "admin",          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
-    [_("Nvidia Settings"),               "nvidia-settings",                     "cs-drivers",            "admin",          _("video, driver, proprietary, nvidia, settings")],
-    [_("Software Sources"),              "pkexec mintsources",                  "cs-sources",            "admin",          _("ppa, repository, package, source, download")],
-    [_("Package Management"),            "dnfdragora",                          "cs-sources",            "admin",          _("update, install, repository, package, source, download")],
-    [_("Package Management"),            "yumex-dnf",                           "cs-sources",            "admin",          _("update, install, repository, package, source, download")],
-    [_("Users and Groups"),              "cinnamon-settings-users",             "cs-user-accounts",      "admin",          _("user, users, account, accounts, group, groups, password")],
-    [_("Bluetooth"),                     "blueberry",                           "cs-bluetooth",          "hardware",       _("bluetooth, dongle, transfer, mobile")],
-    [_("Bluetooth"),                     "blueman-manager",                     "cs-bluetooth",          "hardware",       _("bluetooth, dongle, transfer, mobile")],
-    [_("Manage Services and Units"),     "systemd-manager-pkexec",              "cs-sources",            "admin",          _("systemd, units, services, systemctl, init")],
-    [_("Disks"),                         "gnome-disks",                         "org.gnome.DiskUtility", "hardware",       _("disks, manage, hardware, management, hard, hdd, pendrive, format, erase, test, create, iso, ISO, disk, image")],
-    [_("Online Accounts"),               "gnome-online-accounts-gtk",           "gnome-online-accounts-gtk", "prefs",      "google, microsoft, nextcloud, owncloud"]
+    # Label                           Executable                              Icon                        Category      Keywords for filter
+    [_("Printers"),                   "system-config-printer",                "cs-printer",                "hardware",   _("printers, laser, inkjet")],
+    [_("Firewall"),                   "gufw",                                 "cs-firewall",               "admin",      _("firewall, block, filter, programs")],
+    [_("Firewall"),                   "firewall-config",                      "cs-firewall",               "admin",      _("firewall, block, filter, programs")],
+    [_("Languages"),                  "mintlocale",                           "cs-language",               "prefs",      _("language, install, foreign")],
+    [_("Input Method"),               "mintlocale-im",                        "cs-input-method",           "prefs",      _("language, install, foreign, input, method, chinese, korean, japanese, typing")],
+    [_("Login Window"),               "pkexec lightdm-settings",              "cs-login",                  "admin",      _("login, lightdm, mdm, gdm, manager, user, password, startup, switch")],
+    [_("Login Window"),               "lightdm-gtk-greeter-settings-pkexec",  "cs-login",                  "admin",      _("login, lightdm, manager, settings, editor")],
+    [_("Login Window"),               "gdm-settings",                         "gdm-settings",              "admin",      _("login, gdm, manager, user, startup, switch")],
+    [_("Driver Manager"),             "cinnamon-driver-manager",              "cs-drivers",                "admin",      _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
+    [_("Nvidia Settings"),            "nvidia-settings",                      "cs-drivers",                "admin",      _("video, driver, proprietary, nvidia, settings")],
+    [_("Software Sources"),           "pkexec mintsources",                   "cs-sources",                "admin",      _("ppa, repository, package, source, download")],
+    [_("Package Management"),         "dnfdragora",                           "dnfdragora",                "admin",      _("update, install, repository, package, source, download")],
+    [_("Package Management"),         "gpk-application",                      "gpk-prefs",                 "admin",      _("update, install, repository, package, source, download")],
+    [_("Package Management"),         "/usr/bin/octopi",                      "octopi",                    "admin",      _("update, install, repository, package, source, download")],
+    [_("Package Management"),         "pamac-manager",                        "system-software-install",   "admin",      _("update, install, repository, package, source, download")],
+    [_("Package Management"),         "yumex",                                "yumex",                     "admin",      _("update, install, repository, package, source, download")],
+    [_("Users and Groups"),           "cinnamon-settings-users",              "cs-user-accounts",          "admin",      _("user, users, account, accounts, group, groups, password")],
+    [_("Bluetooth"),                  "blueberry",                            "cs-bluetooth",              "hardware",   _("bluetooth, dongle, transfer, mobile")],
+    [_("Bluetooth"),                  "blueman-manager",                      "cs-bluetooth",              "hardware",   _("bluetooth, dongle, transfer, mobile")],
+    [_("Manage Services and Units"),  "systemd-manager-pkexec",               "cs-sources",                "admin",      _("systemd, units, services, systemctl, init")],
+    [_("Disks"),                      "gnome-disks",                          "org.gnome.DiskUtility",     "hardware",   _("disks, manage, hardware, management, hard, hdd, pendrive, format, erase, test, create, iso, ISO, disk, image")],
+    [_("Online Accounts"),            "gnome-online-accounts-gtk",            "gnome-online-accounts-gtk", "prefs",      _("google, microsoft, nextcloud, owncloud")]
+]
+
+ALTERNATE_MODULES = [
+    # Label                  Executable                  Icon                        Category  Keywords for filter
+    [_("Software Sources"),           "software-properties-gtk",              "software-properties-gtk",   "admin",      _("ppa, repository, package, source, download, video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
+    [_("Package Management"),         "pkexec synaptic",                      "synaptic",                  "admin",      _("update, install, repository, package, source, download")],
 ]
 
 TABS = {
@@ -173,7 +183,7 @@ class MainWindow(Gio.Application):
 
     def go_to_sidepage(self, sidePage: SettingsWidgets.SidePage, user_action=True):
         sidePage.build()
-        
+
         if sidePage.is_standalone:
             return  # we're done
 
@@ -310,18 +320,21 @@ class MainWindow(Gio.Application):
 
         # load CCC and standalone modules, but not python modules yet
         self.load_ccc_modules()
-        self.load_standalone_modules()
+        self.has_mintsources = False
+        self.load_standalone_modules(STANDALONE_MODULES)
+        if not self.has_mintsources:
+            self.load_standalone_modules(ALTERNATE_MODULES)
 
         # if a certain sidepage is given via arguments, try to load only it
         if len(sys.argv) > 1:
             if self.load_sidepage_as_standalone():
                 return
-        
+
         self.init_settings_overview()
 
     def init_settings_overview(self):
         """Load the system settings overview (default)
-        
+
         This requires to initialize all settings modules.
         """
         # 1. load all python modules
@@ -468,12 +481,14 @@ class MainWindow(Gio.Application):
             else:
                 print("warning: failed to process CCC module", item[1])
 
-    def load_standalone_modules(self):
+    def load_standalone_modules(self, MODULES: list) -> None:
         """Loads all standalone settings modules."""
-        for item in STANDALONE_MODULES:
+        for item in MODULES:
             samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
             if samodule.process():
                 self.sidePages.append(SidePageData(samodule.sidePage, samodule.name, samodule.category))
+                if 'mintsources' in samodule.name:
+                    self.has_mintsources = True
             # else:
             #    print(f"note: skipped standalone module {samodule.name} (not found in PATH).")
 
@@ -490,7 +505,7 @@ class MainWindow(Gio.Application):
             return False
 
         to_import = [os.path.splitext(os.path.basename(x))[0] for x in mod_files]
-        
+
         if only_module is not None:
             to_import = filter(lambda mod: only_module.replace("-", "_") in mod, to_import)
 
