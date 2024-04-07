@@ -24,8 +24,6 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
         this.settings = new Settings.AppletSettings(this, "user@cinnamon.org", instance_id);
 
-        this.settings.bind("display-picture", "display_picture", this._setIcon.bind(this));
-
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
@@ -41,6 +39,7 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
         this._userIcon = new UserWidget.Avatar(this._user, { iconSize: DIALOG_ICON_SIZE });
 
         this.settings.bind("display-name", "disp_name", this._updateLabel);
+        this.settings.bind("display-picture", "display_picture", this._setIcon.bind(this));
 
         userBox.connect('button-press-event', Lang.bind(this, function() {
             this.menu.toggle();
