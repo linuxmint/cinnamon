@@ -12,10 +12,7 @@ const Settings = imports.ui.settings;
 const UserWidget = imports.ui.userWidget;
 
 const DIALOG_ICON_SIZE = 64;
-
-
 const USER_DEFAULT_PIC_PATH = "/usr/share/cinnamon/faces/user-generic.png"
-
 
 class CinnamonUserApplet extends Applet.TextIconApplet {
     constructor(orientation, panel_height, instance_id) {
