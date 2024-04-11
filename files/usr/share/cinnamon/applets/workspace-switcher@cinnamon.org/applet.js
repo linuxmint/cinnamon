@@ -117,39 +117,43 @@ class SimpleButton extends WorkspaceButton {
 
 
 class WindowGraph {
-    constructor(workspaceGraph, metaWindow, showIcons, iconSize) {
+    constructor(metaWindow, workspaceGraph, showIcon, iconSize) {
         this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
-        this._showIcons = showIcons;
-        this._iconSize = iconSize;
+        this.showIcon = showIcon;
+        this.iconSize = iconSize;
 
         this.drawingArea = new St.DrawingArea({
             style_class: 'windows',
-            important: true,
             width: this.workspaceGraph.width,
             height: this.workspaceGraph.height,
+            important: true,
         });
 
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
-        if (this._showIcons) {
-            this.icon = this._getIcon();
-            const [x, y] = this.iconPos();
+        if (this.showIcon) {
+            const [x, y] = this.calcIconPos();
+            this.icon = this.getIcon();
             this.icon.set_x(x);
             this.icon.set_y(y);
         }
     }
 
-    iconPos(rect = undefined) {
-        if (!rect) rect = this.intersectionRect();
-        const x = Math.round(rect.x + rect.width / 2 - this._iconSize * global.ui_scale / 2);
-        const y = Math.round(rect.y + rect.height / 2 - this._iconSize * global.ui_scale / 2);
+    calcIconPos(rect = undefined) {
+        if (!rect) {
+            rect = this.intersectionRect();
+        }
+
+        const x = Math.round(rect.x + rect.width / 2 - this.iconSize * global.ui_scale / 2);
+        const y = Math.round(rect.y + rect.height / 2 - this.iconSize * global.ui_scale / 2);
+
         return [x, y];
     }
 
     intersectionRect() {
-        // Intersection between the scaled window rect and the boundaries
-        // of the workspace graph.
+        // Intersection between the scaled window rect area and the
+        // workspace graph area.
         const intersection = new Meta.Rectangle();
         const rect = this.scaledRect();
 
@@ -186,10 +190,32 @@ class WindowGraph {
     }
 
     onRepaint(area) {
-        let windowBackgroundColor, windowBorderColor;
-
+        const [winBackgroundColor, winBorderColor] = this.getWinThemeColors();
         const rect = this.intersectionRect();
+        const cr = area.get_context();
+
+        cr.setLineWidth(1);
+
+        Clutter.cairo_set_source_color(cr, winBorderColor);
+        cr.rectangle(rect.x, rect.y, rect.width, rect.height);
+
+        cr.strokePreserve();
+
+        Clutter.cairo_set_source_color(cr, winBackgroundColor);
+
+        cr.fill();
+        cr.$dispose();
+
+        if (this.showIcon) {
+            const [x, y] = this.calcIconPos(rect);
+            this.icon.set_x(x);
+            this.icon.set_y(y);
+        }
+    }
+
+    getWinThemeColors() {
         const graphThemeNode = this.workspaceGraph.graphArea.get_theme_node();
+        let windowBackgroundColor, windowBorderColor;
 
         if (this.metaWindow.has_focus()) {
             windowBorderColor = graphThemeNode.get_color('-active-window-border');
@@ -199,26 +225,10 @@ class WindowGraph {
             windowBackgroundColor = graphThemeNode.get_color('-inactive-window-background');
         }
 
-        const cr = area.get_context();
-        cr.setLineWidth(1);
-
-        Clutter.cairo_set_source_color(cr, windowBorderColor);
-        cr.rectangle(rect.x, rect.y, rect.width, rect.height);
-
-        cr.strokePreserve();
-
-        Clutter.cairo_set_source_color(cr, windowBackgroundColor);
-        cr.fill();
-        cr.$dispose();
-
-        if (this._showIcons) {
-            const [x, y] = this.iconPos(rect);
-            this.icon.set_x(x);
-            this.icon.set_y(y);
-        }
+        return [windowBackgroundColor, windowBorderColor];
     }
 
-    _getIcon() {
+    getIcon() {
         let iconActor = null;
         let app = null;
 
@@ -231,14 +241,14 @@ class WindowGraph {
         }
 
         if (app) {
-            iconActor = app.create_icon_texture_for_window(this._iconSize, this.metaWindow);
+            iconActor = app.create_icon_texture_for_window(this.iconSize, this.metaWindow);
         }
 
         if (!iconActor) {
             iconActor = new St.Icon({
                 icon_name: 'applications-other',
                 icon_type: St.IconType.FULLCOLOR,
-                icon_size: this._iconSize,
+                icon_size: this.iconSize,
             });
         }
 
@@ -246,7 +256,10 @@ class WindowGraph {
     }
 
     destroy() {
-        if (this._showIcons) this.icon.destroy();
+        if (this.showIcon) {
+            this.icon.destroy();
+        }
+
         this.drawingArea.destroy();
     }
 
@@ -257,8 +270,9 @@ class WindowGraph {
     show() {
         this.workspaceGraph.graphArea.add_child(this.drawingArea);
 
-        if (this._showIcons)
+        if (this.showIcon) {
             this.workspaceGraph.graphArea.add_child(this.icon);
+        }
     }
 }
 
@@ -359,7 +373,7 @@ class WorkspaceGraph extends WorkspaceButton {
 
         this.focusGraph = undefined;
         for (const window of windows) {
-            const graph = new WindowGraph(this, window, showIcon, iconSize);
+            const graph = new WindowGraph(window, this, showIcon, iconSize);
 
             this.windowsGraphs.push(graph);
 
@@ -380,7 +394,10 @@ class WorkspaceGraph extends WorkspaceButton {
     update(options = {}) {
         const signal = options.signal;
 
-        if (this.focusGraph && (signal == "position-changed" || signal == "size-changed")) {
+        if ((signal == "position-changed" || signal == "size-changed") &&
+            this.focusGraph &&
+            this.focusGraph.metaWindow.has_focus()
+        ) {
             this.focusGraph.update(options);
         } else {
             this.graphArea.queue_repaint();
