@@ -12,7 +12,7 @@ const Settings = imports.ui.settings;
 const UserWidget = imports.ui.userWidget;
 
 const DIALOG_ICON_SIZE = 64;
-const USER_DEFAULT_IMG_PATH = "/usr/share/cinnamon/faces/user-generic.png"
+const USER_DEFAULT_IMG_PATH = "/usr/share/cinnamon/faces/user-generic.png";
 
 class CinnamonUserApplet extends Applet.TextIconApplet {
     constructor(orientation, panel_height, instance_id) {
@@ -163,12 +163,15 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
     }
 
     _setIcon() {
-        if (this.display_image && this._user.is_loaded) {
-            let iconFileName = this._user.get_icon_file();
-            if (GLib.file_test(iconFileName, GLib.FileTest.EXISTS)) {
-                this.set_applet_icon_path(iconFileName);
-                return;
-            } else if (GLib.file_test(USER_DEFAULT_IMG_PATH, GLib.FileTest.EXISTS)) {
+        if (this.display_image) {
+            if (this._user && this._user.is_loaded) {
+                let iconFileName = this._user.get_icon_file();
+                if (GLib.file_test(iconFileName, GLib.FileTest.EXISTS)) {
+                    this.set_applet_icon_path(iconFileName);
+                    return;
+                }
+            }
+            if (GLib.file_test(USER_DEFAULT_IMG_PATH, GLib.FileTest.EXISTS)) {
                 this.set_applet_icon_path(USER_DEFAULT_IMG_PATH);
                 return;
             }
