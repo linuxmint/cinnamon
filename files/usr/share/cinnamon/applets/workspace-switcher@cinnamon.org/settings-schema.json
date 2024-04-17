@@ -23,7 +23,8 @@
         "step": 2,
         "units": "px",
         "description": "Window icon size",
-        "dependency": "display-type=visual"
+        "dependency": "display-type=visual",
+        "tooltip": "Depending on the values chosen the icons might look more or less blurry due to the resizing of the images."
     },
     "scroll-behavior": {
         "type": "combobox",
