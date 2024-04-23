@@ -1,6 +1,7 @@
 const Applet = imports.ui.applet;
 const GLib = imports.gi.GLib;
 const St = imports.gi.St;
+const Meta = imports.gi.Meta;
 const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
 const Main = imports.ui.main;
@@ -126,7 +127,7 @@ class CinnamonBarApplet extends Applet.Applet {
                         let window = windows[i].meta_window;
                         let compositor = windows[i];
 
-                        if (window.get_title() !== "Desktop") {
+                        if (window.get_window_type() !== Meta.WindowType.DESKTOP) {
                             if (this.peek_blur) {
                                 if (!compositor.eff)
                                     compositor.eff = new Clutter.BlurEffect();
