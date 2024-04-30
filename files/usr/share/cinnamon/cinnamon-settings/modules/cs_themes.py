@@ -34,13 +34,12 @@ THEME_FOLDERS = [
 THEMES_BLACKLIST = [
     "gnome", # not meant to be used as a theme. Provides icons to inheriting themes.
     "hicolor", # same
-    "adwaita", # incomplete outside of GNOME, doesn't support Cinnamon.
+    "adwaita", "adwaita-dark", # incomplete outside of GNOME, doesn't support Cinnamon.
     "highcontrast", # same. Also, available via a11y as a global setting.
     "epapirus", "epapirus-dark", # specifically designed for Pantheon
     "ubuntu-mono", "ubuntu-mono-dark", "ubuntu-mono-light", "loginicons", # ubuntu-mono icons (non-removable in Ubuntu 24.04)
     "humanity", "humanity-dark"  # same
 ]
-
 
 class Style:
     def __init__(self, json_obj):
