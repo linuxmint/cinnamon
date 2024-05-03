@@ -39,7 +39,7 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
         this._userIcon = new UserWidget.Avatar(this._user, { iconSize: DIALOG_ICON_SIZE });
 
         this.settings.bind("display-name", "disp_name", this._updateLabel);
-        this.settings.bind("display-image", "display_image", this._setIcon.bind(this));
+        this.settings.bind("display-image", "display_image", this._setIcon);
 
         userBox.connect('button-press-event', Lang.bind(this, function() {
             this.menu.toggle();
