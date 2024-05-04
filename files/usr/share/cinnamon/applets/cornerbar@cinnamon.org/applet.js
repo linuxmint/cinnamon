@@ -13,6 +13,11 @@ const Tweener = imports.ui.tweener;
 
 const SCROLL_DELAY = 200;
 
+const WINDOWN_TYPES_FILTER_TRANSPARENCY = [
+    Meta.WindowType.DESKTOP,
+    Meta.WindowType.DOCK,
+];
+
 class CinnamonBarApplet extends Applet.Applet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
@@ -127,7 +132,7 @@ class CinnamonBarApplet extends Applet.Applet {
                         let window = windows[i].meta_window;
                         let compositor = windows[i];
 
-                        if (window.get_window_type() !== Meta.WindowType.DESKTOP) {
+                        if (!WINDOWN_TYPES_FILTER_TRANSPARENCY.includes(window.get_window_type())) {
                             if (this.peek_blur) {
                                 if (!compositor.eff)
                                     compositor.eff = new Clutter.BlurEffect();
