@@ -6,8 +6,14 @@ const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
+const Meta = imports.gi.Meta;
 const Lang = imports.lang;
 const SignalManager = imports.misc.signalManager;
+
+const WINDOWN_TYPES_FILTER_TRANSPARENCY = [
+    Meta.WindowType.DESKTOP,
+    Meta.WindowType.DOCK,
+];
 
 class CinnamonShowDesktopApplet extends Applet.IconApplet {
     constructor(orientation, panel_height, instance_id) {
@@ -83,7 +89,7 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
                         let window = windows[i].meta_window;
                         let compositor = windows[i];
 
-                        if (window.get_title() !== "Desktop") {
+                        if (!WINDOWN_TYPES_FILTER_TRANSPARENCY.includes(window.get_window_type())) {
                             if (this.peek_blur) {
                                 if (!compositor.eff)
                                     compositor.eff = new Clutter.BlurEffect();
