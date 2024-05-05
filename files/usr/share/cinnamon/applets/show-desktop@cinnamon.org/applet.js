@@ -10,7 +10,7 @@ const Meta = imports.gi.Meta;
 const Lang = imports.lang;
 const SignalManager = imports.misc.signalManager;
 
-const WINDOWN_TYPES_FILTER_TRANSPARENCY = [
+const PEEK_TRANSPARENCY_FILTER_TYPES = [
     Meta.WindowType.DESKTOP,
     Meta.WindowType.DOCK,
 ];
@@ -89,7 +89,7 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
                         let window = windows[i].meta_window;
                         let compositor = windows[i];
 
-                        if (!WINDOWN_TYPES_FILTER_TRANSPARENCY.includes(window.get_window_type())) {
+                        if (!PEEK_TRANSPARENCY_FILTER_TYPES.includes(window.get_window_type())) {
                             if (this.peek_blur) {
                                 if (!compositor.eff)
                                     compositor.eff = new Clutter.BlurEffect();
