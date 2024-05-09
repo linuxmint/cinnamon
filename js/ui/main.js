@@ -121,7 +121,6 @@ const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
 const ModalDialog = imports.ui.modalDialog;
-const {readOnlyError} = imports.ui.environment;
 const InputMethod = imports.misc.inputMethod;
 const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
