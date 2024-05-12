@@ -14,10 +14,10 @@
             "Show the window selector (Scale)": "show_scale"
         }
     },
-    "shift-click-action": {
+    "middle-click-action": {
         "type": "combobox",
-        "description": "Shift + click action",
-        "default": "show_expo",
+        "description": "Middle click action",
+        "default": "show_desklets",
         "options" : {
             "Show the desktop": "show_desktop",
             "Show the desklets": "show_desklets",
@@ -25,10 +25,10 @@
             "Show the window selector (Scale)": "show_scale"
         }
     },
-    "middle-click-action": {
+    "shift-click-action": {
         "type": "combobox",
-        "description": "Middle click action",
-        "default": "show_desklets",
+        "description": "Shift + click action",
+        "default": "show_expo",
         "options" : {
             "Show the desktop": "show_desktop",
             "Show the desklets": "show_desklets",
