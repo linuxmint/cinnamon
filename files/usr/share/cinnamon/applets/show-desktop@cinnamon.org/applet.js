@@ -1,7 +1,6 @@
 const Applet = imports.ui.applet;
 const { AppletSettings } = imports.ui.settings;  // Needed for settings API
 const Mainloop = imports.mainloop;
-const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
@@ -50,7 +49,7 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
             let window = windows[i].meta_window;
             let compositor = windows[i];
 
-            Tweener.addTween(compositor,
+            compositor.ease(
                 {
                     opacity: 255,
                     time: time,
@@ -90,7 +89,7 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
                                 compositor.add_effect_with_name('peek-blur', compositor.eff);
                             }
 
-                            Tweener.addTween(compositor,
+                            compositor.ease(
                                 {
                                     opacity: this.peek_opacity / 100 * 255,
                                     time: 0.275,
