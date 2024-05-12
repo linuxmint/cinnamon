@@ -8,7 +8,6 @@ const Settings = imports.ui.settings;
 const PopupMenu = imports.ui.popupMenu;
 const SignalManager = imports.misc.signalManager;
 const Mainloop = imports.mainloop;
-const Tweener = imports.ui.tweener;
 
 const SCROLL_DELAY = 200;
 
@@ -133,7 +132,7 @@ class CinnamonBarApplet extends Applet.Applet {
                                 compositor.add_effect_with_name('peek-blur', compositor.eff);
                             }
 
-                            Tweener.addTween(compositor,
+                            compositor.ease(
                                 {
                                     opacity: this.peek_opacity / 100 * 255,
                                     time: 0.275,
@@ -205,7 +204,7 @@ class CinnamonBarApplet extends Applet.Applet {
             let window = windows[i].meta_window;
             let compositor = windows[i];
 
-            Tweener.addTween(compositor,
+            compositor.ease(
                 {
                     opacity: 255,
                     time: time,
