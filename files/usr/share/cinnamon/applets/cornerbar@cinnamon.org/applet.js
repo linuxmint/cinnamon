@@ -9,6 +9,7 @@ const PopupMenu = imports.ui.popupMenu;
 const SignalManager = imports.misc.signalManager;
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
+const Cinnamon = imports.gi.Cinnamon;
 
 const SCROLL_DELAY = 200;
 
