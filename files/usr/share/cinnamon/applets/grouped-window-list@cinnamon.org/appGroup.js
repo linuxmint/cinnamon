@@ -4,7 +4,6 @@ const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const St = imports.gi.St;
 const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
@@ -473,7 +472,7 @@ class AppGroup {
             return;
         }
 
-        Tweener.addTween(this.label, {
+        this.label.ease({
             width,
             time: BUTTON_BOX_ANIMATION_TIME,
             transition: 'easeOutQuad',
@@ -1104,34 +1103,42 @@ class AppGroup {
         if (effect === 1) return;
         else if (effect === 2) {
             this.iconBox.set_z_rotation_from_gravity(0.0, Clutter.Gravity.CENTER);
-            Tweener.addTween(this.iconBox, {
+            this.iconBox.ease({
                 opacity: 70,
                 time: 0.2,
                 transition: 'linear',
                 onCompleteScope: this,
-                onComplete() {
-                    Tweener.addTween(this.iconBox, {
+                onComplete: (() => {
+                    this.iconBox.ease({
                         opacity: 255,
                         time: 0.2,
                         transition: 'linear'
                     });
-                }
+                }).bind(this),
             });
         } else if (effect === 3) {
             this.iconBox.set_pivot_point(0.5, 0.5);
-            Tweener.addTween(this.iconBox, {
+            this.iconBox.ease({
                 scale_x: 0.8,
                 scale_y: 0.8,
-                time: 0.2,
+                time: 0.175,
                 transition: 'easeOutQuad',
-                onComplete: () => {
-                    Tweener.addTween(this.iconBox, {
-                        scale_x: 1.0,
-                        scale_y: 1.0,
-                        time: 0.2,
-                        transition: 'easeOutQuad'
+                onComplete: (() => {
+                    this.iconBox.ease({
+                        scale_x: 1.1,
+                        scale_y: 1.1,
+                        time: 0.175,
+                        transition: 'easeOutQuad',
+                        onComplete: (() => {
+                            this.iconBox.ease({
+                                scale_x: 1.0,
+                                scale_y: 1.0,
+                                time: 0.05,
+                                transition: 'easeOutQuad',
+                            });
+                        }).bind(this),
                     });
-                }
+                }).bind(this),
             });
         }
     }
