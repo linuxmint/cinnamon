@@ -159,6 +159,8 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         self.path = None
         self.press_event = None
         self.teaching = False
+        self.default_value = True
+        self.text_string = ""
 
         self.update_label()
 
@@ -177,7 +179,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
             raise AttributeError('unknown property %s' % prop.name)
 
     def update_label(self):
-        text = _("unassigned")
+        text = _("unassigned") if self.default_value else self.text_string
         if self.accel_string:
             restore_atab = False
             valid = self.accel_string
@@ -295,7 +297,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
 
         # print("accel_mods: %d, keyval: %d, Storing %s as %s" % (accel_mods, keyval, accel_label, accel_string))
 
-        if (accel_mods == 0 or accel_mods == Gdk.ModifierType.SHIFT_MASK) and event.hardware_keycode != 0:
+        if (accel_mods == 0 or accel_mods == Gdk.ModifierType.SHIFT_MASK) and event.hardware_keycode != 0 and self.default_value:
             if ((keyval >= Gdk.KEY_a                    and keyval <= Gdk.KEY_z)
                 or  (keyval >= Gdk.KEY_A                    and keyval <= Gdk.KEY_Z)
                 or  (keyval >= Gdk.KEY_0                    and keyval <= Gdk.KEY_9)

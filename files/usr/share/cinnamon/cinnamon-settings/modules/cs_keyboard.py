@@ -12,7 +12,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gio, Gtk
 
-from KeybindingWidgets import CellRendererKeybinding
+from KeybindingWidgets import ButtonKeybinding, CellRendererKeybinding
 from SettingsWidgets import SidePage
 from bin import util
 from xapp.GSettingsWidgets import *
@@ -253,10 +253,14 @@ class Module:
         self.cat_tree = None
         self.kb_tree = None
         self.entry_tree = None
+        self.color_found = None
+        self.placeholder_rgba = None
         self.kb_search_entry = None
         self.kb_search_handler_id = None
         self.add_custom_button = None
         self.remove_custom_button = None
+        self.search_choice = "shortcuts"
+        self.last_accel_string = ""
 
     def on_module_selected(self):
         if not self.loaded:
@@ -309,15 +313,56 @@ class Module:
 
             left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+            self.search_vbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
 
             paned.add1(left_vbox)
 
             right_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             paned.add2(right_box)
 
-            self.kb_search_entry = Gtk.Entry(placeholder_text=_("Type to search"))
-            right_box.pack_start(self.kb_search_entry, False, False, 2)
+            # Text entry search field
+            self.kb_search_entry = Gtk.Entry(placeholder_text=_("Type to search shortcuts"))
             self.kb_search_handler_id = self.kb_search_entry.connect("changed", self.on_kb_search_changed)
+
+            # Binding entry search field
+            self.kb_search_frame = Gtk.Frame()
+            self.kb_search_frame.set_shadow_type(Gtk.ShadowType.IN)
+            frame_style = self.kb_search_frame.get_style_context()
+            frame_style.add_class("view")
+            self.color_found, self.placeholder_rgba = frame_style.lookup_color("placeholder_text_color")
+            self.kb_search_frame.set_no_show_all(True)
+            self.kb_search_binding = ButtonKeybinding()
+            self.kb_search_binding.set_valign(Gtk.Align.CENTER)
+            self.kb_search_binding.keybinding_cell.default_value = False
+            tooltip_text = _("Press Escape to cancel the search.")
+            self.kb_search_binding.set_tooltip_text(tooltip_text)
+            text_string = _("Click to search by accelerator")
+            self.kb_search_binding.keybinding_cell.text_string = text_string
+            if self.color_found:
+                self.kb_search_binding.keybinding_cell.set_property("foreground-rgba", self.placeholder_rgba)
+            self.kb_search_binding.connect('accel-edited', self.onSearchBindingChanged)
+            self.kb_search_binding.connect('accel-cleared', self.onSearchBindingCleared)
+            self.kb_search_frame.add(self.kb_search_binding)
+
+            # Search option dropdown
+            self.kb_search_type = Gtk.ComboBox()
+            options = [(_("Shortcuts"), "shortcuts"),
+                       (_("Bindings"), "bindings")]
+            model = Gtk.ListStore(str, str)
+            for option in options:
+                model.append(option)
+            self.kb_search_type.set_model(model)
+            cell = Gtk.CellRendererText()
+            self.kb_search_type.pack_start(cell, False)
+            self.kb_search_type.add_attribute(cell, "text", 0)
+            self.kb_search_type.set_active(0)
+            self.kb_search_type.connect("changed", self.on_kb_search_type_changed)
+
+            # Search menu
+            self.search_vbox.pack_start(self.kb_search_entry, True, True, 2)
+            self.search_vbox.pack_start(self.kb_search_frame, True, True, 2)
+            self.search_vbox.pack_end(self.kb_search_type, False, False, 2)
+            right_box.pack_start(self.search_vbox, False, False, 2)
 
             right_scroller = Gtk.ScrolledWindow.new(None, None)
             right_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
@@ -545,7 +590,7 @@ class Module:
             longest_cat_label = " "
 
             for category in self.main_store:
-                if category.parent is None:
+                if not category.parent:
                     cat_iters[category.int_name] = self.cat_store.append(None)
                 else:
                     cat_iters[category.int_name] = self.cat_store.append(cat_iters[category.parent])
@@ -580,7 +625,7 @@ class Module:
                 except:
                     widget = None
 
-                if widget is not None:
+                if widget:
                     cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
                     cheat_box.pack_start(widget, True, True, 2)
                     cheat_box.set_vexpand(False)
@@ -606,6 +651,10 @@ class Module:
 
         model, tree_iter = tree.get_selection().get_selected()
         category = model.get_value(tree_iter, 2) if tree_iter else None
+        if category and self.search_choice == "bindings":
+            self.onSearchBindingCleared(None)
+            self.categoryHighlightOnMap()
+
         if not category or not category.properties:
             self.categoryHighlightUnmap()
             return
@@ -628,7 +677,7 @@ class Module:
         self.kb_search_entry.set_text("")
         self.kb_search_entry.handler_unblock(self.kb_search_handler_id)
 
-        if tree.get_selection() is not None:
+        if tree.get_selection():
             categories, tree_iter = tree.get_selection().get_selected()
             if tree_iter:
                 category = categories.get_value(tree_iter, 2)
@@ -645,6 +694,28 @@ class Module:
         self.last_selected_binding = None
         self.kb_store.refilter()
 
+    def on_kb_search_type_changed(self, entry):
+        model = self.kb_search_type.get_model()
+        option = self.kb_search_type.get_active()
+        self.search_choice = model[option][1]
+
+        if self.search_choice == "shortcuts":
+            self.onSearchBindingCleared(None)
+            self.kb_search_frame.hide()
+            self.kb_search_binding.hide()
+            self.kb_search_entry.show()
+        else:
+            self.kb_search_entry.handler_block(self.kb_search_handler_id)
+            self.kb_search_entry.set_text("")
+            self.kb_search_entry.handler_unblock(self.kb_search_handler_id)
+            self.kb_store.refilter()
+            self.kb_search_entry.hide()
+            self.kb_search_binding.show()
+            self.kb_search_frame.show()
+
+        self.bindingHighlightOnUnmap()
+        self.categoryHighlightUnmap()
+
     def populate_kb_tree(self):
         self.kb_root_store.clear()
         self.current_category = None
@@ -660,29 +731,42 @@ class Module:
     def kb_name_cell_data_func(self, column, cell, model, tree_iter, data=None):
         binding = model.get_value(tree_iter, 1)
 
-        if binding is not None:
-            if self.kb_search_entry.get_text() != "":
-                category = escape(self.binding_categories[binding.category])
-                __, *num = binding.category.split("_")
-                _id = f" {num[0]}" if num else ""
-                label = escape(binding.label)
-                markup = f"<span font_weight='ultra-light'>({category}{_id})</span> {label}"
-                cell.set_property("markup", markup)
-            else:
-                cell.set_property("text", binding.label)
+        if binding and self.kb_search_entry.get_text() or self.kb_search_binding.get_accel_string():
+            category = escape(self.binding_categories[binding.category])
+            __, *num = binding.category.split("_")
+            _id = f" {num[0]}" if num else ""
+            label = escape(binding.label)
+            markup = f"<span font_weight='ultra-light'>({category}{_id})</span> {label}"
+            cell.set_property("markup", markup)
+        else:
+            cell.set_property("text", binding.label)
 
     def kb_store_visible_func(self, model, tree_iter, data=None):
-        if self.current_category is None and self.kb_search_entry.get_text() == "":
-            return False
+        if self.search_choice == "shortcuts":
+            if not self.current_category and not self.kb_search_entry.get_text():
+                return False
 
-        keybinding = self.kb_root_store.get_value(tree_iter, 1)
+            keybinding = self.kb_root_store.get_value(tree_iter, 1)
 
-        search = self.kb_search_entry.get_text().lower().strip()
-        if search != "":
-            return search in keybinding.label.lower().strip()
+            search = self.kb_search_entry.get_text().lower().strip()
+            if search:
+                return search in keybinding.label.lower().strip()
 
-        if self.current_category is not None:
-            return keybinding.category == self.current_category.int_name
+            if self.current_category and hasattr(self.current_category, 'int_name'):
+                return keybinding.category == self.current_category.int_name
+        else:
+            if not self.current_category and not self.kb_search_binding.get_accel_string():
+                return False
+
+            keybinding = self.kb_root_store.get_value(tree_iter, 1)
+
+            search = self.kb_search_binding.get_accel_string()
+            if search:
+                entries = [Gtk.accelerator_parse_with_keycode(entry) for entry in keybinding.entries]
+                return Gtk.accelerator_parse_with_keycode(search) in entries
+
+            if self.current_category and hasattr(self.current_category, 'int_name'):
+                return keybinding.category == self.current_category.int_name
 
     def loadCustoms(self):
         tree_iter = self.kb_root_store.get_iter_first()
@@ -717,14 +801,29 @@ class Module:
 
     def onKeyBindingChanged(self, tree):
         self.entry_store.clear()
-        if tree.get_selection() is not None:
+
+        if tree.get_selection():
             keybindings, tree_iter = tree.get_selection().get_selected()
+            if tree_iter and self.search_choice == "bindings" and self.kb_search_binding.accel_string:
+                pass
+            elif tree_iter and self.search_choice == "bindings" and self.last_accel_string and self.kb_search_binding.accel_string:
+                if self.last_accel_string != self.kb_search_binding.accel_string:
+                    if self.color_found:
+                        self.kb_search_binding.keybinding_cell.set_property("foreground-rgba", self.placeholder_rgba)
+                    self.last_accel_string = self.kb_search_binding.accel_string
+                    self.kb_search_binding.keybinding_cell.set_value(None)
+                    self.kb_search_binding.accel_string = ""
+                    self.kb_search_binding.load_model()
+
             if tree_iter:
                 keybinding = keybindings.get_value(tree_iter, 1)
                 for entry in keybinding.entries:
                     if entry != "_invalid_":
                         self.entry_store.append((entry,))
                 self.remove_custom_button.set_property('sensitive', isinstance(keybinding, CustomKeyBinding))
+
+            if self.search_choice == "bindings" and self.kb_search_binding.accel_string:
+                self.last_accel_string = self.kb_search_binding.accel_string
 
     def onEntryChanged(self, cell, path, accel_string, accel_label, entry_store):
         keybindings, kb_iter = self.kb_tree.get_selection().get_selected()
@@ -768,6 +867,22 @@ class Module:
         current_keybinding.setBinding(int(path), None)
         self.onKeyBindingChanged(self.kb_tree)
         self.entry_tree.get_selection().select_path(path)
+
+    def onSearchBindingChanged(self, cell, path, accel_string):
+        if self.color_found:
+            self.kb_search_binding.keybinding_cell.set_property("foreground-rgba", None)
+        self.kb_store.refilter()
+        self.current_category = None
+        self.cat_tree.get_selection().unselect_all()
+        self.bindingHighlightOff()
+
+    def onSearchBindingCleared(self, cell):
+        if self.color_found:
+            self.kb_search_binding.keybinding_cell.set_property("foreground-rgba", self.placeholder_rgba)
+        self.kb_search_binding.keybinding_cell.set_value(None)
+        self.kb_search_binding.accel_string = ""
+        self.kb_search_binding.load_model()
+        self.kb_store.refilter()
 
     def onAddCustomButtonClicked(self, button):
         dialog = AddCustomDialog(False)
@@ -883,8 +998,14 @@ class Module:
                 return
         model, tree_iter = tree.get_selection().get_selected()
         binding = model.get_value(tree_iter, 1) if tree_iter else None
+
         if self.last_selected_binding and binding and hasattr(binding, "properties") and self.last_selected_binding != binding.properties:
             self.bindingHighlightOnUnmap()
+
+        search_input_text = False
+        if self.kb_search_entry.get_text():
+            search_input_text = True
+
         if binding and hasattr(binding, "category"):
             for index, category in enumerate(self.cat_store):
                 if category[2].int_name == binding.category:
@@ -911,6 +1032,9 @@ class Module:
             self.bindingHighlightOnMap()
 
         if tree_iter:
+            if search_input_text or self.kb_search_binding.accel_string:
+                self.onSearchBindingCleared(None)
+                return
             if isinstance(binding, CustomKeyBinding):
                 return
             if event:
@@ -919,7 +1043,7 @@ class Module:
                 button = event.button
                 event_time = event.time
                 info = tree.get_path_at_pos(int(event.x), int(event.y))
-                if info is not None:
+                if info:
                     path, col, *__ = info
                     tree.grab_focus()
                     tree.set_cursor(path, col, 0)
@@ -1062,16 +1186,13 @@ class KeyBinding:
         return result
 
     def setBinding(self, index, val):
-        if val is not None:
-            self.entries[index] = val
-        else:
-            self.entries[index] = ""
+        self.entries[index] = val if val else ""
         self.writeSettings()
 
     def writeSettings(self):
         array = []
         for entry in self.entries:
-            if entry != "":
+            if entry:
                 array.append(entry)
 
         if "/" not in self.schema:
@@ -1118,10 +1239,7 @@ class CustomKeyBinding:
         return result
 
     def setBinding(self, index, val):
-        if val is not None:
-            self.entries[index] = val
-        else:
-            self.entries[index] = ""
+        self.entries[index] = val if val else ""
         self.writeSettings()
 
     def writeSettings(self):
@@ -1133,7 +1251,7 @@ class CustomKeyBinding:
 
         array = []
         for entry in self.entries:
-            if entry != "":
+            if entry:
                 array.append(entry)
         settings.set_strv("binding", array)
 
@@ -1181,5 +1299,5 @@ class AddCustomDialog(Gtk.Dialog):
         self.command_entry.set_text(file.get_path().replace(" ", r"\ "))
 
     def onEntriesChanged(self, widget):
-        ok_enabled = self.name_entry.get_text().strip() != "" and self.command_entry.get_text().strip() != ""
+        ok_enabled = self.name_entry.get_text().strip() and self.command_entry.get_text().strip()
         self.set_response_sensitive(Gtk.ResponseType.OK, ok_enabled)
