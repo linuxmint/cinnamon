@@ -695,7 +695,11 @@ class Spice_Harvester(GObject.Object):
         try:
             with zipfile.ZipFile(ziptempfile) as _zip:
                 tempfolder = tempfile.mkdtemp()
-                _zip.extractall(tempfolder)
+                for member in _zip.infolist():
+                    _zip.extract(member, tempfolder)
+                    permissions = member.external_attr >> 16
+                    # Preserve file permissions
+                    os.chmod(os.path.join(tempfolder, member.filename), permissions)
 
                 uuidfolder = tempfolder if self.actions else os.path.join(tempfolder, uuid)
 
@@ -750,12 +754,6 @@ class Spice_Harvester(GObject.Object):
             if uuid_name not in disabled_list:
                 disabled_list.append(uuid_name)
                 self.settings.set_strv(self.enabled_key, disabled_list)
-
-        if not self.themes:
-            # ensure proper file permissions
-            for root, _, files in os.walk(dest):
-                for file in files:
-                    os.chmod(os.path.join(root, file), 0o755)
 
         meta_path = os.path.join(dest, 'metadata.json')
         if self.themes and not os.path.exists(meta_path):
