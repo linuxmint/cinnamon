@@ -1,6 +1,7 @@
 const Applet = imports.ui.applet;
 const GLib = imports.gi.GLib;
 const St = imports.gi.St;
+const Meta = imports.gi.Meta;
 const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
 const Main = imports.ui.main;
@@ -12,6 +13,11 @@ const Tweener = imports.ui.tweener;
 const Cinnamon = imports.gi.Cinnamon;
 
 const SCROLL_DELAY = 200;
+
+const PEEK_TRANSPARENCY_FILTER_TYPES = [
+    Meta.WindowType.DESKTOP,
+    Meta.WindowType.DOCK,
+];
 
 class CinnamonBarApplet extends Applet.Applet {
     constructor(orientation, panel_height, instance_id) {
@@ -129,7 +135,7 @@ class CinnamonBarApplet extends Applet.Applet {
                         let window = windows[i].meta_window;
                         let compositor = windows[i];
 
-                        if (window.get_title() !== "Desktop") {
+                        if (!PEEK_TRANSPARENCY_FILTER_TYPES.includes(window.get_window_type())) {
                             if (this.peek_blur) {
                                 if (!compositor.eff)
                                     compositor.eff = new Clutter.BlurEffect();

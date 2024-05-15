@@ -49,7 +49,7 @@
     },
     "scroll-behavior": {
         "type": "combobox",
-        "default": "none",
+        "default": "nothing",
         "description": "Scroll wheel behavior",
         "options": {
             "Nothing": "nothing",
