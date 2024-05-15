@@ -191,10 +191,6 @@ function overrideJS() {
         return this.charAt(0).toUpperCase() + this.slice(1);
     }
 
-    String.prototype.first_cap = function() {
-        return this.charAt(0).toUpperCase();
-    }
-
     if (!String.prototype.includes) {
         String.prototype.includes = String.prototype.contains;
     }
@@ -202,31 +198,6 @@ function overrideJS() {
     Number.prototype.clamp = function(min, max) {
         return Math.min(Math.max(this, min), max);
     };
-
-    if (!Array.prototype.find) {
-        Array.prototype.find = function(predicate) {
-            if (this === null) {
-                throw new TypeError('Array.prototype.find called on null or undefined');
-            }
-            if (typeof predicate !== 'function') {
-                throw new TypeError('predicate must be a function');
-            }
-            var list = Object(this);
-            var length = list.length >>> 0;
-            var thisArg = arguments[1];
-            var value;
-
-            for (var i = 0; i < length; i++) {
-                value = list[i];
-                if (predicate.call(thisArg, value, i, list)) {
-                    return value;
-                }
-            }
-            return undefined;
-        };
-        Object.defineProperty(Array.prototype, "find", {enumerable: false});
-        // Or else for (let i in arr) loops will explode;
-    }
 
     Object.prototype.maybeGet = function(prop) {
         if (this.hasOwnProperty(prop)) {
@@ -236,64 +207,4 @@ function overrideJS() {
         }
     };
     Object.defineProperty(Object.prototype, "maybeGet", {enumerable: false});
-}
-
-function installPolyfills(readOnlyError) {
-    // Add a few ubiquitous JS namespaces to the global scope.
-
-    // util.js depends on a fully setup environment, so cannot be
-    // in the top-level scope here.
-    const {setTimeout, clearTimeout, setInterval, clearInterval} = imports.misc.util;
-
-    // These abstractions around Mainloop are safer and easier
-    // to use for people learning GObject introspection bindings.
-
-    // Starting with mozjs 102, these polyfills are no longer needed, and will
-    // crash Cinnamon if we try to redefine them. Try to do the first one and bail
-    // if it complains (TypeError: can't redefine non-configurable property)
-    try {
-        Object.defineProperty(window, 'setTimeout', {
-            get: function() {
-                return setTimeout;
-            },
-            set: function() {
-                readOnlyError('setTimeout');
-            },
-            configurable: false,
-            enumerable: false
-        });
-    } catch (e) {
-        return;
-    }
-
-    Object.defineProperty(window, 'clearTimeout', {
-        get: function() {
-            return clearTimeout;
-        },
-        set: function() {
-            readOnlyError('clearTimeout');
-        },
-        configurable: false,
-        enumerable: false
-    });
-    Object.defineProperty(window, 'setInterval', {
-        get: function() {
-            return setInterval;
-        },
-        set: function() {
-            readOnlyError('setInterval');
-        },
-        configurable: false,
-        enumerable: false
-    });
-    Object.defineProperty(window, 'clearInterval', {
-        get: function() {
-            return clearInterval;
-        },
-        set: function() {
-            readOnlyError('clearInterval');
-        },
-        configurable: false,
-        enumerable: false
-    });
 }
