@@ -2009,6 +2009,7 @@ StScrollBar StButton#vhandle:hover {
     selected-color: black;
     caret-color: rgb(128, 128, 128);
     caret-size: 1px;
+    min-width: 80px;
     height: 1.4em;
     box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
 }
