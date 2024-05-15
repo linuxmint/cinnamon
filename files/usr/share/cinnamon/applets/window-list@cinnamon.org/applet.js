@@ -1164,8 +1164,11 @@ class CinnamonWindowListApplet extends Applet.Applet {
     _onWindowMonitorChanged(display, metaWindow, monitor) {
         if (this._shouldAdd(metaWindow))
             this._addWindow(metaWindow, false);
-        else
+        else {
+            this.refreshing = true;
             this._removeWindow(metaWindow);
+            this.refreshing = false;
+        }
     }
 
     _refreshItemByMetaWindow(metaWindow) {
