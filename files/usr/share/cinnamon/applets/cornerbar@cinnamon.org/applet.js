@@ -9,6 +9,7 @@ const PopupMenu = imports.ui.popupMenu;
 const SignalManager = imports.misc.signalManager;
 const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
+const Cinnamon = imports.gi.Cinnamon;
 
 const SCROLL_DELAY = 200;
 
@@ -22,7 +23,9 @@ class CinnamonBarApplet extends Applet.Applet {
         this.settings.bind("peek-opacity", "peek_opacity");
         this.settings.bind("peek-blur", "peek_blur");
         this.settings.bind("click-action", "click_action");
+        this.settings.bind("shift-click-action", "shift_click_action");
         this.settings.bind("middle-click-action", "middle_click_action");
+        this.settings.bind("shift-middle-click-action", "shift_middle_click_action");
         this.settings.bind("scroll-behavior", "scroll_behavior");
 
         this.signals = new SignalManager.SignalManager(null);
@@ -220,11 +223,17 @@ class CinnamonBarApplet extends Applet.Applet {
     }
 
     on_applet_clicked(event) {
-        this.perform_action(this.click_action);
+        let modifiers = Cinnamon.get_event_state(event);
+        let shift_pressed = (modifiers & Clutter.ModifierType.SHIFT_MASK);
+        let action = shift_pressed ? this.shift_click_action : this.click_action;
+        this.perform_action(action);
     }
 
     on_applet_middle_clicked(event) {
-        this.perform_action(this.middle_click_action);
+        let modifiers = Cinnamon.get_event_state(event);
+        let shift_pressed = (modifiers & Clutter.ModifierType.SHIFT_MASK);
+        let action = shift_pressed ? this.shift_middle_click_action : this.middle_click_action;
+        this.perform_action(action);
     }
 
     perform_action(action) {

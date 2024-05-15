@@ -25,6 +25,28 @@
             "Show the window selector (Scale)": "show_scale"
         }
     },
+    "shift-click-action": {
+        "type": "combobox",
+        "description": "Shift + click action",
+        "default": "show_expo",
+        "options" : {
+            "Show the desktop": "show_desktop",
+            "Show the desklets": "show_desklets",
+            "Show the workspace selector (Expo)": "show_expo",
+            "Show the window selector (Scale)": "show_scale"
+        }
+    },
+    "shift-middle-click-action": {
+        "type": "combobox",
+        "description": "Shift + middle click action",
+        "default": "show_scale",
+        "options" : {
+            "Show the desktop": "show_desktop",
+            "Show the desklets": "show_desklets",
+            "Show the workspace selector (Expo)": "show_expo",
+            "Show the window selector (Scale)": "show_scale"
+        }
+    },
     "scroll-behavior": {
         "type": "combobox",
         "default": "none",
