@@ -1,7 +1,6 @@
 const Applet = imports.ui.applet;
 const { AppletSettings } = imports.ui.settings;  // Needed for settings API
 const Mainloop = imports.mainloop;
-const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
@@ -56,11 +55,11 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
             let window = windows[i].meta_window;
             let compositor = windows[i];
 
-            Tweener.addTween(compositor,
+            compositor.ease(
                 {
                     opacity: 255,
-                    time: time,
-                    transition: "easeOutSine"
+                    transition: Clutter.AnimationMode.EASE_OUT_SINE,
+                    duration: time,
                 }
             );
 
@@ -96,11 +95,11 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
                                 compositor.add_effect_with_name('peek-blur', compositor.eff);
                             }
 
-                            Tweener.addTween(compositor,
+                            compositor.ease(
                                 {
                                     opacity: this.peek_opacity / 100 * 255,
-                                    time: 0.275,
-                                    transition: "easeInSine"
+                                    duration: 275,
+                                    transition: Clutter.AnimationMode.EASE_IN_SINE,
                                 }
                             );
                         }
@@ -116,7 +115,7 @@ class CinnamonShowDesktopApplet extends Applet.IconApplet {
 
     _on_leave(event) {
         if (this._did_peek) {
-            this.show_all_windows(0.2);
+            this.show_all_windows(200);
             this._did_peek = false;
         }
         if (this._peek_timeout_id > 0) {
