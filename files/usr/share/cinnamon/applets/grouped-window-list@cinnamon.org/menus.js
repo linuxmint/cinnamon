@@ -3,7 +3,6 @@ const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
 const PopupMenu = imports.ui.popupMenu;
 const Applet = imports.ui.applet;
 const SignalManager = imports.misc.signalManager;
@@ -27,17 +26,17 @@ const convertRange = function(value, r1, r2) {
 const setOpacity = (peekTime, window_actor, targetOpacity, cb) => {
     const opacity = convertRange(targetOpacity, [0, 100], [0, 255]);
 
-    const tweenConfig = {
-        time: peekTime * 0.001,
-        transition: 'easeOutQuad',
-        opacity: opacity > 255 ? 255 : opacity
+    const easeConfig = {
+        duration: peekTime,
+        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+        opacity: opacity > 255 ? 255 : opacity,
     };
 
     if (typeof cb === 'function') {
-        tweenConfig.onComplete = cb;
+        easeConfig.onStopped = cb;
     }
 
-    Tweener.addTween(window_actor, tweenConfig);
+    window_actor.ease(easeConfig);
 };
 
 class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
