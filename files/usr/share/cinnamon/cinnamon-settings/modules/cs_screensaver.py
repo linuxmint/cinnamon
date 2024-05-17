@@ -12,6 +12,8 @@ from xapp.GSettingsWidgets import *
 LOCK_DELAY_OPTIONS = [
     (0, _("Lock immediately")),
     (2, _("2 seconds")),
+    (5, _("5 seconds")),
+    (10, _("10 seconds")),
     (15, _("15 seconds")),
     (30, _("30 seconds")),
     (60, _("1 minute")),

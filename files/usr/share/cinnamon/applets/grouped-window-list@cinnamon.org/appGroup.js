@@ -4,7 +4,6 @@ const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const St = imports.gi.St;
 const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
@@ -473,11 +472,11 @@ class AppGroup {
             return;
         }
 
-        Tweener.addTween(this.label, {
+        this.label.ease({
             width,
-            time: BUTTON_BOX_ANIMATION_TIME,
-            transition: 'easeOutQuad',
-            onComplete: () => {
+            duration: BUTTON_BOX_ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onStopped: () => {
                 if (!this.label) return;
                 this.label.show();
             }
@@ -612,7 +611,7 @@ class AppGroup {
         }
         const windows = this.groupState.metaWindows;
         for (let i = 0, len = windows.length; i < len; i++) {
-            if (windows[i] === metaWindow) {
+            if (windows[i] === metaWindow && !getFocusState(windows[i])) {
                 // Even though this may not be the last focused window, we want it to be
                 // the window that gets focused when a user responds to an alert.
                 this.groupState.set({lastFocused: metaWindow});
@@ -1104,32 +1103,39 @@ class AppGroup {
         if (effect === 1) return;
         else if (effect === 2) {
             this.iconBox.set_z_rotation_from_gravity(0.0, Clutter.Gravity.CENTER);
-            Tweener.addTween(this.iconBox, {
+            this.iconBox.ease({
                 opacity: 70,
-                time: 0.2,
-                transition: 'linear',
-                onCompleteScope: this,
-                onComplete() {
-                    Tweener.addTween(this.iconBox, {
+                duration: 200,
+                mode: Clutter.AnimationMode.LINEAR,
+                onStopped: () => {
+                   this.iconBox.ease({
                         opacity: 255,
-                        time: 0.2,
-                        transition: 'linear'
+                        duration: 200,
+                        mode: Clutter.AnimationMode.LINEAR,
                     });
                 }
             });
         } else if (effect === 3) {
             this.iconBox.set_pivot_point(0.5, 0.5);
-            Tweener.addTween(this.iconBox, {
+            this.iconBox.ease({
                 scale_x: 0.8,
                 scale_y: 0.8,
-                time: 0.2,
-                transition: 'easeOutQuad',
-                onComplete: () => {
-                    Tweener.addTween(this.iconBox, {
-                        scale_x: 1.0,
-                        scale_y: 1.0,
-                        time: 0.2,
-                        transition: 'easeOutQuad'
+                duration: 175,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onStopped: () => {
+                    this.iconBox.ease({
+                        scale_x: 1.1,
+                        scale_y: 1.1,
+                        duration: 175,
+                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                        onStopped: () => {
+                            this.iconBox.ease({
+                                scale_x: 1.0,
+                                scale_y: 1.0,
+                                duration: 50,
+                                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                            });
+                        }
                     });
                 }
             });

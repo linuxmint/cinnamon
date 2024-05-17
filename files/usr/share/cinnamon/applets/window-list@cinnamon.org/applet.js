@@ -1164,8 +1164,11 @@ class CinnamonWindowListApplet extends Applet.Applet {
     _onWindowMonitorChanged(display, metaWindow, monitor) {
         if (this._shouldAdd(metaWindow))
             this._addWindow(metaWindow, false);
-        else
+        else {
+            this.refreshing = true;
             this._removeWindow(metaWindow);
+            this.refreshing = false;
+        }
     }
 
     _refreshItemByMetaWindow(metaWindow) {
@@ -1219,6 +1222,10 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
         // Window is not in our list
         if (i == -1)
+            return;
+
+        // Window already has focus
+        if (this._windows[i]._hasFocus())
             return;
 
         // Asks AppMenuButton to flash. Returns false if already flashing

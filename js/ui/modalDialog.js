@@ -17,14 +17,13 @@ const Util = imports.misc.util;
 
 const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
 
 const Gettext = imports.gettext;
 
-const FADE_IN_BUTTONS_TIME = 0.33;
-const FADE_OUT_DIALOG_TIME = 1.0;
+const FADE_IN_BUTTONS_TIME = 330;
+const FADE_OUT_DIALOG_TIME = 1000;
 
-var OPEN_AND_CLOSE_TIME = 0.1;
+var OPEN_AND_CLOSE_TIME = 100;
 
 var State = {
     OPENED: 0,
@@ -88,7 +87,8 @@ ModalDialog.prototype = {
         this._group.add_actor(this._backgroundBin);
 
         this._dialogLayout = new St.BoxLayout({ style_class: 'modal-dialog',
-                                                vertical:    true });
+                                                vertical:    true,
+                                                important: true });
         if (params.styleClass != null) {
             this._dialogLayout.add_style_class_name(params.styleClass);
         }
@@ -228,14 +228,14 @@ ModalDialog.prototype = {
         // Fade in buttons if there weren't any before
         if (!hadChildren && buttons.length > 0) {
             this._buttonLayout.opacity = 0;
-            Tweener.addTween(this._buttonLayout,
-                             { opacity: 255,
-                               time: FADE_IN_BUTTONS_TIME,
-                               transition: 'easeOutQuad',
-                               onComplete: Lang.bind(this, function() {
-                                   this.emit('buttons-set');
-                               })
-                             });
+            this._buttonLayout.ease({
+                opacity: 255,
+                duration: FADE_IN_BUTTONS_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => {
+                    this.emit('buttons-set');
+                }
+            });
         } else {
             this.emit('buttons-set');
         }
@@ -277,16 +277,15 @@ ModalDialog.prototype = {
             this._lightbox.show();
         this._group.opacity = 0;
         this._group.show();
-        Tweener.addTween(this._group,
-                         { opacity: 255,
-                           time: OPEN_AND_CLOSE_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this,
-                               function() {
-                                   this.state = State.OPENED;
-                                   this.emit('opened');
-                               })
-                         });
+        this._group.ease({
+            opacity: 255,
+            duration: OPEN_AND_CLOSE_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this.state = State.OPENED;
+                this.emit('opened');
+            }
+        });
     },
 
     setInitialKeyFocus: function(actor) {
@@ -326,16 +325,15 @@ ModalDialog.prototype = {
         this.popModal(timestamp);
         this._savedKeyFocus = null;
 
-        Tweener.addTween(this._group,
-                         { opacity: 0,
-                           time: OPEN_AND_CLOSE_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this,
-                               function() {
-                                   this.state = State.CLOSED;
-                                   this._group.hide();
-                               })
-                         });
+        this._group.ease({
+            opacity: 0,
+            duration: OPEN_AND_CLOSE_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this.state = State.CLOSED;
+                this._group.hide();
+            }
+        });
     },
 
     /**
@@ -420,15 +418,14 @@ ModalDialog.prototype = {
             return;
 
         this.popModal(timestamp);
-        Tweener.addTween(this._dialogLayout,
-                         { opacity: 0,
-                           time:    FADE_OUT_DIALOG_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this,
-                               function() {
-                                   this.state = State.FADED_OUT;
-                               })
-                         });
+        this._dialogLayout.ease({
+            opacity: 0,
+            duration: FADE_OUT_DIALOG_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this.state = State.FADED_OUT
+            }
+        });
     }
 };
 Signals.addSignalMethods(ModalDialog.prototype);

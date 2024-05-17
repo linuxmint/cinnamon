@@ -36,10 +36,10 @@ def get_type_link(typ, file):
             return typ.replace('.', '')
 
 def markup(line, obj):
-    line = re.sub('@(\w*)', '<code>\g<1></code>', line)
-    line = re.sub('`([^`]*)`', '<code>\g<1></code>', line)
-    line = re.sub('\*\*([^*]*)\*\*', '<emphasis role="strong">\g<1></emphasis>', line)
-    line = re.sub('\*([^*]*)\*', '<emphasis>\g<1></emphasis>', line)
+    line = re.sub(r'@(\w*)', r'<code>\g<1></code>', line)
+    line = re.sub(r'`([^`]*)`', r'<code>\g<1></code>', line)
+    line = re.sub(r'\*\*([^*]*)\*\*', r'<emphasis role="strong">\g<1></emphasis>', line)
+    line = re.sub(r'\*([^*]*)\*', r'<emphasis>\g<1></emphasis>', line)
 
     def format_type_link(match):
         res = match.group(1)
@@ -47,7 +47,7 @@ def markup(line, obj):
             link = get_type_link(res, obj.file),
             name = res)
 
-    line = re.sub('#(([\w]*\.)?[\w]+)', format_type_link, line)
+    line = re.sub(r'#(([\w]*\.)?[\w]+)', format_type_link, line)
 
     def format_ext_link(match):
         if match.group(1):
@@ -96,7 +96,7 @@ def markup(line, obj):
         else:
             return '<code>{name}</code>'.format(name = full)
 
-    line = re.sub('%(([\w]+\.)?[\w]+\.)?([\w]+)(\(\))?', format_ext_link, line)
+    line = re.sub(r'%(([\w]+\.)?[\w]+\.)?([\w]+)(\(\))?', format_ext_link, line)
 
     return line
 

@@ -102,6 +102,7 @@ const Overview = imports.ui.overview;
 const Expo = imports.ui.expo;
 const Panel = imports.ui.panel;
 const PlacesManager = imports.ui.placesManager;
+const PolkitAuthenticationAgent = imports.ui.polkitAuthenticationAgent;
 const RunDialog = imports.ui.runDialog;
 const Layout = imports.ui.layout;
 const LookingGlass = imports.ui.lookingGlass;
@@ -120,12 +121,11 @@ const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
 const ModalDialog = imports.ui.modalDialog;
-const {readOnlyError} = imports.ui.environment;
-const {installPolyfills} = imports.ui.overrides;
 const InputMethod = imports.misc.inputMethod;
 const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
+const {CinnamonPortalHandler} = imports.misc.portalHandlers;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -274,8 +274,6 @@ function start() {
     global.logError = _logError;
     global.log = _logInfo;
 
-    installPolyfills(readOnlyError, _log);
-
     let cinnamonStartTime = new Date().getTime();
 
     log(`About to start Cinnamon (${Meta.is_wayland_compositor() ? "Wayland" : "X11"} backend)`);
@@ -309,6 +307,7 @@ function start() {
 
     Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
 
+    new CinnamonPortalHandler();
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
     setRunState(RunState.STARTUP);
 
@@ -431,9 +430,9 @@ function start() {
     _initUserSession();
     screenRecorder = new ScreenRecorder.ScreenRecorder();
 
-    // Provide the bus object for gnome-session to
-    // initiate logouts.
-    //EndSessionDialog.init();
+    if (Meta.is_wayland_compositor()) {
+        PolkitAuthenticationAgent.init();
+    }
 
     _startDate = new Date();
 

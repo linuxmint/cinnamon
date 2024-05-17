@@ -17,6 +17,15 @@ class Monitor:
         self.right = -1
         self.left = -1
 
+    def position_used(self, position):
+        if position == "top":
+            return self.top != -1
+        elif position == "bottom":
+            return self.bottom != -1
+        elif position == "left":
+            return self.left != -1
+        elif position == "right":
+            return self.right != -1
 
 class PanelSettingsPage(SettingsPage):
     def __init__(self, panel_id, settings, position):
@@ -60,7 +69,7 @@ class PanelSettingsPage(SettingsPage):
         section = SettingsSection(_("Customize"))
         self.add(section)
 
-        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=60, show_value=True)
+        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=60, digits=0, step=1.0, show_value=True)
         widget.set_rounding(0)
         section.add_row(widget)
 
@@ -166,6 +175,7 @@ class Module:
                 self.panel_id = ""
 
             self.panels = []
+            self.updating = False
 
             self.previous_button = Gtk.Button(_("Previous panel"))
             self.next_button = Gtk.Button(_("Next panel"))
@@ -279,7 +289,22 @@ class Module:
 
         self.config_stack.set_visible_child(self.current_panel)
 
+    def id_or_monitor_position_used(self, kept_panels, monitor_layout, panel_id, monitor_id, position):
+        for keeper in kept_panels:
+            if keeper.panel_id == panel_id:
+                print("cs_panel: Ignoring panel definition with an already-used ID: (ID: %s, Monitor: %d, Position: %s)" % (panel_id, monitor_id, position))
+                return True
+            if monitor_layout[monitor_id].position_used(position):
+                print("cs_panel: Ignoring panel definition with an already-used monitor:position: (ID: %s, Monitor: %d, Position: %s)" % (panel_id, monitor_id, position))
+                return True
+        return False
+
     def on_panel_list_changed(self, *args):
+        if self.updating:
+            return
+
+        self.updating = True
+
         if len(self.panels) > 0:
             for panel in self.panels:
                 panel.destroy()
@@ -287,18 +312,27 @@ class Module:
         self.panels = []
         monitor_layout = []
 
-        panels = self.settings.get_strv("panels-enabled")
+        panel_defs = self.settings.get_strv("panels-enabled")
         n_mons = Gdk.Screen.get_default().get_n_monitors()
 
         for i in range(n_mons):
             monitor_layout.append(Monitor())
 
         current_found = False
-        for panel in panels:
-            panel_id, monitor_id, position = panel.split(":")
+        already_defined_panels = []
+        removals = []
+
+        for def_ in panel_defs:
+            panel_id, monitor_id, position = def_.split(":")
             monitor_id = int(monitor_id)
+
+            if self.id_or_monitor_position_used(already_defined_panels, monitor_layout, panel_id, monitor_id, position):
+                removals.append(def_)
+                continue
+
             panel_page = PanelSettingsPage(panel_id, self.settings, position)
             self.config_stack.add_named(panel_page, panel_id)
+            already_defined_panels.append(panel_page)
 
             # we may already have a current panel id from the command line or if
             # if the panels-enabled key changed since everything was loaded
@@ -320,6 +354,12 @@ class Module:
                 else:
                     monitor_layout[monitor_id].right = panel_page
 
+        if removals:
+            print("Cleaning up conflicting defs in panels-enabled")
+            for def_ in removals:
+                panel_defs.remove(def_)
+            self.settings.set_strv("panels-enabled", panel_defs)
+
         # Index the panels for the next/previous buttons
         for monitor in monitor_layout:
             for panel_page in (monitor.top, monitor.bottom, monitor.left, monitor.right):
@@ -334,6 +374,7 @@ class Module:
             self.add_panel_button.set_sensitive(True)
             self.current_panel = None
             self.panel_id = None
+            self.updating = False
             return
 
         self.config_stack.show()
@@ -368,6 +409,8 @@ class Module:
             current_idx = self.panels.index(self.panel_id)
         except:
             current_idx = 0
+
+        self.updating = False
 
         if self.proxy:
             self.proxy.highlightPanel('(ib)', int(self.panel_id), True)

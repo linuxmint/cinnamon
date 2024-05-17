@@ -4,7 +4,6 @@ const St = imports.gi.St;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
-const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Cairo = imports.cairo;
 const Signals = imports.signals;
@@ -390,7 +389,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         this._setLayoutItems(layoutItems);
         this._setLayoutIcons(layoutIcons);
 
-        Mainloop.idle_add(() => this._syncGroup());
+        this._syncGroup();
     }
 
     _syncGroup() {

@@ -17,7 +17,7 @@ import subprocess
 from PIL import Image
 import gi
 gi.require_version('AccountsService', '1.0')
-from gi.repository import AccountsService, GLib, GdkPixbuf
+from gi.repository import AccountsService, GLib, GdkPixbuf, XApp
 
 from SettingsWidgets import SidePage
 from ChooserButtonWidgets import PictureChooserButton
@@ -175,38 +175,25 @@ class Module:
 
 
     def _on_face_browse_menuitem_activated(self, menuitem):
-        dialog = Gtk.FileChooserDialog(None, None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-        dialog.set_current_folder(self.accountService.get_home_dir())
-        filter = Gtk.FileFilter()
-        filter.set_name(_("Images"))
-        filter.add_mime_type("image/*")
-        dialog.add_filter(filter)
-
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.frame = Gtk.Frame(visible=False, no_show_all=True)
-        preview = Gtk.Image(visible=True)
-
-        box.pack_start(self.frame, False, False, 0)
-        self.frame.add(preview)
-        dialog.set_preview_widget(box)
-        dialog.set_preview_widget_active(True)
-        dialog.set_use_preview_label(False)
-
-        box.set_margin_end(12)
-        box.set_margin_top(12)
-        box.set_size_request(128, -1)
-
-        dialog.connect("update-preview", self.update_preview_cb, preview)
-
+        dialog = XApp.IconChooserDialog()
         response = dialog.run()
+
         if response == Gtk.ResponseType.OK:
-            path = dialog.get_filename()
-            image = Image.open(path)
-            image.thumbnail((255, 255), Image.LANCZOS)
+            string = dialog.get_icon_string()
+            print(string)
+            if string.startswith("/"):
+                path = string
+            else:
+                theme = Gtk.IconTheme.get_default()
+                icon_info = theme.lookup_icon_for_scale(string, 256, dialog.get_scale_factor(), Gtk.IconLookupFlags.FORCE_SIZE)
+                path = icon_info.get_filename() if icon_info else None
+
             face_path = os.path.join(self.accountService.get_home_dir(), ".face")
-            image.save(face_path, "png")
-            self.accountService.set_icon_file(face_path)
-            self.face_button.set_picture_from_file(face_path)
+
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 255, -1)
+            pixbuf.savev(face_path, "png")
+            self.accountService.set_icon_file(path)
+            self.face_button.set_picture_from_file(path)
 
         dialog.destroy()
 

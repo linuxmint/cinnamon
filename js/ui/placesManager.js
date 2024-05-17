@@ -329,23 +329,8 @@ PlacesManager.prototype = {
                 Gio.app_info_launch_default_for_uri(desktopUri, _makeLaunchContext(params));
             });
 
-        this._connect = new PlaceInfo('special:connect', _("Connect to..."),
-            function (size) {
-                return new St.Icon({ icon_name: 'applications-internet',
-                                     icon_type: St.IconType.FULLCOLOR,
-                                     icon_size: size });
-            },
-            function (params) {
-                // BUG: nemo-connect-server doesn't have a desktop file, so we can't
-                // launch it with the workspace from params. It's probably pretty rare
-                // and odd to drag this place onto a workspace in any case
-
-                Util.spawn(['nemo-connect-server']);
-            });
-
         this._defaultPlaces.push(this._home);
         this._defaultPlaces.push(this._desktopMenu);
-        this._defaultPlaces.push(this._connect);
 
         /*
         * Show devices, code more or less ported from nemo-places-sidebar.c

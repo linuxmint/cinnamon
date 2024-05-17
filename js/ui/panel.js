@@ -95,6 +95,12 @@ var PanelLoc = {
     right : 3
 };
 
+const PanelDefElement = {
+    ID  : 0,
+    MONITOR : 1,
+    POSITION: 2
+};
+
 // To make sure the panel corners blend nicely with the panel,
 // we draw background and borders the same way, e.g. drawing
 // them as filled shapes from the outside inwards instead of
@@ -314,7 +320,7 @@ function convertSettingsLMonToXMon(strv) {
 
         let x_mon = lmon;
         if (!Meta.is_wayland_compositor()) {
-            let x_mon = global.display.logical_index_to_xinerama_index(lmon);
+            x_mon = global.display.logical_index_to_xinerama_index(lmon);
         }
 
         out.push(`${id}:${x_mon}:${pos}`);
@@ -395,6 +401,7 @@ PanelManager.prototype = {
         this._setMainPanel();
 
         this.addPanelMode = false;
+        this.handling_panels_changed = false;
 
         this._panelsEnabledId   = global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
         this._panelEditModeId   = global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
@@ -421,25 +428,59 @@ PanelManager.prototype = {
         let monitor = 0;
         let stash = [];     // panel id, monitor, panel type
 
-        let monitorCount = -1;
+        let monitorCount = global.display.get_n_monitors();
         let panels_used = []; // [monitor] [top, bottom, left, right].  Used to keep track of which panel types are in use,
                               // as we need knowledge of the combinations in order to instruct the correct panel to create a corner
 
-        let panelProperties = getPanelsEnabledList();
+        let panel_defs = getPanelsEnabledList();
         //
         // First pass through just to count the monitors, as there is no ordering to rely on
         //
-        for (let i = 0, len = panelProperties.length; i < len; i++) {
-            let elements = panelProperties[i].split(":");
+        let good_defs = [];
+        let removals = [];
+        for (let i = 0, len = panel_defs.length; i < len; i++) {
+            let elements = panel_defs[i].split(":");
             if (elements.length != 3) {
-                global.log("Invalid panel definition: " + panelProperties[i]);
+                global.log("Invalid panel definition: " + panel_defs[i]);
+                removals.push(i);
                 continue;
             }
 
-            monitor = parseInt(elements[1]);
-            if (monitor > monitorCount)
-                monitorCount = monitor;
+            if (elements[PanelDefElement.MONITOR] >= monitorCount) {
+                // Ignore, but don't remove. Less monitors can be a temporary condition.
+                global.log("Ignoring panel definition for nonexistent monitor: " + panel_defs[i]);
+                continue;
+            }
+
+            // Some sanitizing
+            if (good_defs.find((good_def) => {
+                const good_elements = good_def.split(":");
+                // Ignore any duplicate IDs
+                if (good_elements[PanelDefElement.ID] === elements[PanelDefElement.ID]) {
+                    global.log("Duplicate ID detected in panel definition: " + panel_defs[i]);
+                    return true;
+                }
+                // Ignore any duplicate monitor/position combinations
+                if ((good_elements[PanelDefElement.MONITOR] === elements[PanelDefElement.MONITOR]) && (good_elements[PanelDefElement.POSITION] === elements[PanelDefElement.POSITION])) {
+                    global.log("Duplicate monitor+position detected in panel definition: " + panel_defs[i]);
+                    return true;
+                }
+
+                return false;
+            })) {
+                removals.push(panel_defs[i]);
+                continue;
+            }
+
+            good_defs.push(panel_defs[i]);
         }
+
+        if (removals.length > 0) {
+            let clean_defs = panel_defs.filter((def) => !removals.includes(def));
+            global.log("Removing invalid panel definitions: " + removals);
+            setPanelsEnabledList(clean_defs);
+        }
+
         //
         // initialise the array that records which panels are used (so combinations can be used to select corners)
         //
@@ -453,19 +494,15 @@ PanelManager.prototype = {
         //
         // set up the list of panels
         //
-        for (let i = 0, len = panelProperties.length; i < len; i++) {
-            let elements = panelProperties[i].split(":");
-            if (elements.length != 3) {
-                global.log("Invalid panel definition: " + panelProperties[i]);
-                continue;
-            }
-            let jj = getPanelLocFromName(elements[2]);  // panel orientation
+        for (let i = 0, len = good_defs.length; i < len; i++) {
+            let elements = good_defs[i].split(":");
 
-            monitor = parseInt(elements[1]);
+            let jj = getPanelLocFromName(elements[PanelDefElement.POSITION]);  // panel orientation
 
+            monitor = parseInt(elements[PanelDefElement.MONITOR]);
             panels_used[monitor][jj] = true;
 
-            stash[i] = [parseInt(elements[0]),monitor,jj]; // load what we are going to use to call loadPanel into an array
+            stash[i] = [parseInt(elements[PanelDefElement.ID]), monitor, jj]; // load what we are going to use to call loadPanel into an array
         }
 
         //
@@ -886,6 +923,10 @@ PanelManager.prototype = {
      * i.e. when panels are added, moved or removed.
      */
     _onPanelsEnabledChanged: function() {
+        if (this.handling_panels_changed)
+            return;
+        this.handling_panels_changed = true;
+
         let newPanels = new Array(this.panels.length);
         let newMeta = new Array(this.panels.length);
         let drawcorner = [false,false];
@@ -980,6 +1021,8 @@ PanelManager.prototype = {
                 Lang.bind(this, function() { Util.spawnCommandLine("cinnamon-settings panel"); }));
             lastPanelRemovedDialog.open();
         }
+
+        this.handling_panels_changed = false;
     },
 
     /**

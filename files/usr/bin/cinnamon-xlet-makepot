@@ -285,7 +285,7 @@ def scan_xlet():
             ]
             command_args += js_files
             subprocess.run(command_args)
-            pot_exists = True
+            pot_exists = os.path.exists(pot_path)
 
     if args.python:
         print("Scanning for python files...")

@@ -382,19 +382,6 @@ var Notification = class Notification {
         this._timeLabel.clutter_text.set_markup(this._timestamp.toLocaleTimeString());
         this._timeLabel.hide();
 
-        if (Pango.find_base_dir(title, -1) == Pango.Direction.RTL)
-            this._titleDirection = St.TextDirection.RTL;
-        else
-            this._titleDirection = St.TextDirection.LTR;
-
-        // Let the title's text direction control the overall direction
-        // of the notification - in case where different scripts are used
-        // in the notification, this is the right thing for the icon, and
-        // arguably for action buttons as well. Labels other than the title
-        // will be allocated at the available width, so that their alignment
-        // is done correctly automatically.
-        this._table.set_direction(this._titleDirection);
-
         this._setBodyArea(body, params.bodyMarkup);
     }
 

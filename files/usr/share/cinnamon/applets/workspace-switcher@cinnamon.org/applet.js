@@ -16,6 +16,30 @@ const Cinnamon = imports.gi.Cinnamon;
 const MIN_SWITCH_INTERVAL_MS = 220;
 
 
+function removeWorkspaceAtIndex(index) {
+    if (global.workspace_manager.n_workspaces <= 1 ||
+        index >= global.workspace_manager.n_workspaces) {
+        return;
+    }
+
+    const removeAction = () => {
+        Main._removeWorkspace(global.workspace_manager.get_workspace_by_index(index));
+    };
+
+    if (!Main.hasDefaultWorkspaceName(index)) {
+        let prompt = _("Are you sure you want to remove workspace \"%s\"?\n\n").format(
+            Main.getWorkspaceName(index)
+        );
+
+        let confirm = new ModalDialog.ConfirmDialog(prompt, removeAction);
+        confirm.open();
+    }
+    else {
+        removeAction();
+    }
+}
+
+
 class WorkspaceButton {
     constructor(index, applet) {
         this.index = index;
@@ -49,6 +73,8 @@ class WorkspaceButton {
     onClicked(actor, event) {
         if (event.get_button() == 1) {
             Main.wm.moveToWorkspace(this.workspace);
+        } else if (event.get_button() == 2) {
+            removeWorkspaceAtIndex(this.index);
         }
     }
 
@@ -117,7 +143,7 @@ class SimpleButton extends WorkspaceButton {
 
 
 class WindowGraph {
-    constructor(metaWindow, workspaceGraph, showIcon, iconSize) {
+    constructor(workspaceGraph, metaWindow, showIcon, iconSize) {
         this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
         this.showIcon = showIcon;
@@ -132,12 +158,22 @@ class WindowGraph {
 
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
+        this._icon = undefined;
+
         if (this.showIcon) {
             const [x, y] = this.calcIconPos();
-            this.icon = this.getIcon();
-            this.icon.set_x(x);
-            this.icon.set_y(y);
+            this._icon = this.getIcon();
+            this._icon.set_x(x);
+            this._icon.set_y(y);
         }
+    }
+
+    get icon() {
+        if (!this._icon) {
+            this._icon = this.getIcon();
+        }
+
+        return this._icon;
     }
 
     calcIconPos(rect = undefined) {
@@ -151,9 +187,11 @@ class WindowGraph {
         return [x, y];
     }
 
+    /**
+     * Intersection between the scaled window rect area
+     * and the workspace graph area.
+     */
     intersectionRect() {
-        // Intersection between the scaled window rect area and the
-        // workspace graph area.
         const intersection = new Meta.Rectangle();
         const rect = this.scaledRect();
 
@@ -208,8 +246,8 @@ class WindowGraph {
 
         if (this.showIcon) {
             const [x, y] = this.calcIconPos(rect);
-            this.icon.set_x(x);
-            this.icon.set_y(y);
+            this._icon.set_x(x);
+            this._icon.set_y(y);
         }
     }
 
@@ -257,7 +295,7 @@ class WindowGraph {
 
     destroy() {
         if (this.showIcon) {
-            this.icon.destroy();
+            this._icon.destroy();
         }
 
         this.drawingArea.destroy();
@@ -271,7 +309,7 @@ class WindowGraph {
         this.workspaceGraph.graphArea.add_child(this.drawingArea);
 
         if (this.showIcon) {
-            this.workspaceGraph.graphArea.add_child(this.icon);
+            this.workspaceGraph.graphArea.add_child(this._icon);
         }
     }
 }
@@ -373,15 +411,15 @@ class WorkspaceGraph extends WorkspaceButton {
 
         this.focusGraph = undefined;
         for (const window of windows) {
-            const graph = new WindowGraph(window, this, showIcon, iconSize);
+            const graph = new WindowGraph(this, window, showIcon, iconSize);
 
             this.windowsGraphs.push(graph);
 
-            if (!window.has_focus()) {
+            if (window.has_focus()) {
+                this.focusGraph = graph;
+            } else {
                 graph.show();
                 graph.update();
-            } else {
-                this.focusGraph = graph;
             }
         }
 
@@ -465,9 +503,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this._applet_context_menu.addMenuItem(addWorkspaceMenuItem);
 
         this.removeWorkspaceMenuItem = new PopupMenu.PopupIconMenuItem (_("Remove the current workspace"), "list-remove", St.IconType.SYMBOLIC);
-        this.removeWorkspaceMenuItem.connect('activate', Lang.bind(this, function() {
-            this.removeWorkspace();
-        }));
+        this.removeWorkspaceMenuItem.connect('activate', this.removeCurrentWorkspace.bind(this));
         this._applet_context_menu.addMenuItem(this.removeWorkspaceMenuItem);
         this.removeWorkspaceMenuItem.setSensitive(global.workspace_manager.n_workspaces > 1);
     }
@@ -477,23 +513,12 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this._createButtons();
     }
 
-    removeWorkspace  (){
+    removeCurrentWorkspace() {
         if (global.workspace_manager.n_workspaces <= 1) {
             return;
         }
         this.workspace_index = global.workspace_manager.get_active_workspace_index();
-        let removeAction = Lang.bind(this, function() {
-            Main._removeWorkspace(global.workspace_manager.get_active_workspace());
-        });
-        if (!Main.hasDefaultWorkspaceName(this.workspace_index)) {
-            let prompt = _("Are you sure you want to remove workspace \"%s\"?\n\n").format(
-                Main.getWorkspaceName(this.workspace_index));
-            let confirm = new ModalDialog.ConfirmDialog(prompt, removeAction);
-            confirm.open();
-        }
-        else {
-            removeAction();
-        }
+        removeWorkspaceAtIndex(this.workspace_index);
     }
 
     _onWorkspaceChanged(wm, from, to) {

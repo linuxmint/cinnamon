@@ -7,7 +7,7 @@ const constants = {
         'background-size: ' + CLOSE_BTN_SIZE + 'px ' + CLOSE_BTN_SIZE + 'px;',
     THUMBNAIL_ICON_SIZE: 16,
     OPACITY_OPAQUE: 255,
-    BUTTON_BOX_ANIMATION_TIME: 0.15,
+    BUTTON_BOX_ANIMATION_TIME: 150,
     MAX_BUTTON_WIDTH: 150, // Pixels
     FLASH_INTERVAL: 500,
     FLASH_MAX_COUNT: 4,

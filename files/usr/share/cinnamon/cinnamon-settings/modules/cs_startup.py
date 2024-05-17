@@ -916,6 +916,7 @@ class AppChooserDialog(Gtk.Dialog):
         self.search_bar = Gtk.SearchBar()
         self.search_bar.add(self.entry)
         self.search_bar.props.hexpand = True
+        self.search_bar.set_search_mode(True)
 
         list_box = Gtk.ListBox()
         list_box.set_sort_func(self.sort_apps, None)

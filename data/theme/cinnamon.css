@@ -1164,6 +1164,86 @@ StScrollBar StButton#vhandle:hover {
     -arrow-rise: 10px;
     -boxpointer-gap: 5px;
 }
+
+/* ===================================================================
+ * Policykit authentication dialog
+ * ===================================================================*/
+.polkit-dialog {
+    /* this is the width of the entire modal popup */
+    width: 500px;
+}
+.polkit-dialog-main-layout {
+    spacing: 10px;
+}
+
+.polkit-dialog-headline {
+    text-align: center;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: white;
+}
+.polkit-dialog-description {
+    text-align: center;
+    font-size: 1em;
+    color: white;
+}
+.polkit-dialog-user-layout {
+    spacing: 10px;
+}
+.polkit-dialog-user-layout:rtl {
+    padding-right: 10px;
+}
+.polkit-dialog-user-root-label {
+    color: #ff0000;
+}
+.polkit-dialog-password-label:ltr {
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+}
+.polkit-dialog-password-label:rtl {
+    padding-left: 0.5em;
+}
+.polkit-dialog-password-entry {
+    padding: 5px;
+    border-radius: 4px;
+    color: rgb(64, 64, 64);
+    border: 2px solid rgba(245,245,245,0.2);
+    background-gradient-start: rgba(5,5,6,0.1);
+    background-gradient-end: rgba(254,254,254,0.1);
+    background-gradient-direction: vertical;
+    selected-color: black;
+    caret-color: rgb(64, 64, 64);
+    caret-size: 1px;
+    width: 21em;
+    height: 1.2em;
+    transition-duration: 300;
+    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
+}
+.polkit-dialog-password-entry:focus {
+    border: 2px solid rgb(136,138,133);
+    background-gradient-start: rgb(80, 80, 80);
+    background-gradient-end: white;
+    background-gradient-direction: vertical;
+}
+.polkit-dialog-password-entry .capslock-warning {
+    icon-size: 16px;
+    warning-color: rgb(64, 64, 64);
+    padding: 0 4px;
+}
+.polkit-dialog-error-label {
+    text-align: center;
+    font-size: 1em;
+    color: #ffff00;
+}
+.polkit-dialog-info-label {
+    font-size: 1em;
+}
+/* intentionally left transparent to avoid dialog changing size */
+.polkit-dialog-null-label {
+    font-size: 10pt;
+    color: rgba(0,0,0,0);
+}
+
 /* ###################################################################
  * Cinnamon Specific Section
  * ###################################################################*/
@@ -1929,10 +2009,9 @@ StScrollBar StButton#vhandle:hover {
     selected-color: black;
     caret-color: rgb(128, 128, 128);
     caret-size: 1px;
-    width: 250px;
-    height: 1em;
+    min-width: 80px;
+    height: 1.4em;
     box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
-    text-align: center;
 }
 
 .expo-workspaces-name-entry#selected {
@@ -2104,4 +2183,9 @@ StScrollBar StButton#vhandle:hover {
   -pie-border-width: 1px;
   -pie-border-color: rgba(200, 200, 200, 0.8);
   -pie-background-color: rgba(140, 140, 140, 0.6);;
+}
+
+.user-icon {
+    border: 2px solid #868686;
+    border-radius: 99px;
 }
