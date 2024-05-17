@@ -267,18 +267,14 @@ class WindowGraph {
 
     getIcon() {
         let iconActor = null;
-        let app = null;
-
-        if (this.metaWindow._expoApp) {
-            app = this.metaWindow._expoApp;
-        } else {
-            let tracker = Cinnamon.WindowTracker.get_default();
-            app = tracker.get_window_app(this.metaWindow);
-            this.metaWindow._expoApp = app;
-        }
+        let tracker = Cinnamon.WindowTracker.get_default();
+        let app = tracker.get_window_app(this.metaWindow);
 
         if (app) {
-            iconActor = app.create_icon_texture_for_window(this.iconSize, this.metaWindow);
+            iconActor = app.create_icon_texture_for_window(
+                this.iconSize,
+                this.metaWindow
+            );
         }
 
         if (!iconActor) {
