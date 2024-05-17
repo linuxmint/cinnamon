@@ -158,13 +158,12 @@ class WindowGraph {
 
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
-        this._icon = undefined;
+        this._icon = this.showIcon ? undefined : this.getIcon();
 
         if (this.showIcon) {
             const [x, y] = this.calcIconPos();
-            this._icon = this.getIcon();
-            this._icon.set_x(x);
-            this._icon.set_y(y);
+            this.icon.set_x(x);
+            this.icon.set_y(y);
         }
     }
 
@@ -246,8 +245,8 @@ class WindowGraph {
 
         if (this.showIcon) {
             const [x, y] = this.calcIconPos(rect);
-            this._icon.set_x(x);
-            this._icon.set_y(y);
+            this.icon.set_x(x);
+            this.icon.set_y(y);
         }
     }
 
@@ -430,11 +429,10 @@ class WorkspaceGraph extends WorkspaceButton {
     }
 
     update(options = {}) {
-        const signal = options.signal;
+        const stateChanged = options.stateChanged;
 
-        if ((signal == "position-changed" || signal == "size-changed") &&
-            this.focusGraph &&
-            this.focusGraph.metaWindow.has_focus()
+        if ((stateChanged == "position-changed" || stateChanged == "size-changed") &&
+            this.focusGraph && this.focusGraph.metaWindow.has_focus()
         ) {
             this.focusGraph.update(options);
         } else {
@@ -634,9 +632,9 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this._onWindowsStateChanged("focus-changed");
     }
 
-    _onWindowsStateChanged(signal) {
+    _onWindowsStateChanged(stateChanged) {
         let button = this.buttons[global.workspace_manager.get_active_workspace_index()];
-        button.update({signal: signal});
+        button.update({stateChanged: stateChanged});
     }
 
     on_applet_removed_from_panel() {
