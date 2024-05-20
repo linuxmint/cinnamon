@@ -181,7 +181,8 @@ class CinnamonUserApplet extends Applet.TextApplet {
         } else {
             this._panel_icon = new St.Icon({
                 icon_name: 'avatar-default-symbolic',
-                icon_size: this.getPanelIconSize(),
+                icon_type: St.IconType.SYMBOLIC,
+                icon_size: this.getPanelIconSize(St.IconType.SYMBOLIC),
             });
             this._panel_icon_box.set_child(this._panel_icon);
         }
