@@ -21,11 +21,10 @@ class CinnamonUserApplet extends Applet.TextApplet {
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         this._panel_icon_box = new St.Bin(); // https://developer.gnome.org/st/stable/StBin.htm
-        this._panel_icon_box.set_fill(true, true);
         this._panel_icon_box.set_alignment(St.Align.MIDDLE, St.Align.MIDDLE);
         this.actor.insert_child_at_index(this._panel_icon_box, 0);
 
-        this._panel_icon = null;
+        this._panel_avatar = null;
 
         this._session = new GnomeSession.SessionManager();
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
@@ -150,8 +149,10 @@ class CinnamonUserApplet extends Applet.TextApplet {
     _updateLabel() {
         if (this.disp_name) {
             this.set_applet_label(this._user.get_real_name());
+            this._layoutBin.show();
         } else {
             this.set_applet_label("");
+            this._layoutBin.hide();
         }
     }
 
@@ -171,20 +172,27 @@ class CinnamonUserApplet extends Applet.TextApplet {
 
     _updatePanelIcon() {
         if (this.display_image) {
-            this._panel_icon_box.show();
-
-            if (this._panel_icon == null) {
-                this._panel_icon = new UserWidget.Avatar(this._user, { iconSize: this.getPanelIconSize() });
-                this._panel_icon_box.set_child(this._panel_icon);
-                this._panel_icon.update();
-                this._panel_icon.show();
-            } else {
-                this._panel_icon.resize(this.getPanelIconSize())
-                this._panel_icon.update();
+            if (this._panel_avatar == null) {
+                this._panel_avatar = new UserWidget.Avatar(this._user, { iconSize: this.getPanelIconSize(St.IconType.FULLCOLOR) });
             }
+            this._panel_icon_box.set_child(this._panel_avatar);
+            this._panel_avatar.update();
+            this._panel_avatar.show();
         } else {
-            this._panel_icon_box.hide();
+            this._panel_icon = new St.Icon({
+                icon_name: 'avatar-default-symbolic',
+                icon_size: this.getPanelIconSize(),
+            });
+            this._panel_icon_box.set_child(this._panel_icon);
         }
+    }
+
+    on_panel_height_changed() {
+        this._updatePanelIcon();
+    }
+
+    on_panel_icon_size_changed() {
+        this._updatePanelIcon();
     }
 
     on_applet_removed_from_panel() {

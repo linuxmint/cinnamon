@@ -175,11 +175,33 @@ class Module:
 
 
     def _on_face_browse_menuitem_activated(self, menuitem):
-        dialog = XApp.IconChooserDialog()
+        dialog = Gtk.FileChooserDialog(None, None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        dialog.set_current_folder(self.accountService.get_home_dir())
+        filter = Gtk.FileFilter()
+        filter.set_name(_("Images"))
+        filter.add_mime_type("image/*")
+        dialog.add_filter(filter)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.frame = Gtk.Frame(visible=False, no_show_all=True)
+        preview = Gtk.Image(visible=True)
+
+        box.pack_start(self.frame, False, False, 0)
+        self.frame.add(preview)
+        dialog.set_preview_widget(box)
+        dialog.set_preview_widget_active(True)
+        dialog.set_use_preview_label(False)
+
+        box.set_margin_end(12)
+        box.set_margin_top(12)
+        box.set_size_request(128, -1)
+
+        dialog.connect("update-preview", self.update_preview_cb, preview)
+
         response = dialog.run()
 
         if response == Gtk.ResponseType.OK:
-            string = dialog.get_icon_string()
+            string = dialog.get_filename()
             print(string)
             if string.startswith("/"):
                 path = string

@@ -7,7 +7,6 @@ const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const St = imports.gi.St;
-const Gtk = imports.gi.Gtk;
 
 const Params = imports.misc.params;
 
@@ -75,60 +74,37 @@ class Avatar extends St.Bin {
         this.reactive = sensitive;
     }
 
-    getDefaultIcon() {
-        const icon = new St.Icon({
-            icon_name: "avatar-default-symbolic",
-            icon_size: this._iconSize,
-            icon_type: St.IconType.SYMBOLIC,
-            reactive: true,
-            track_hover: true,
-            style_class: 'user-avatar'
-        });
-
-        return icon;
+    setSize(size) {
+        this._iconSize = size;
+        this.update();
     }
 
     update() {
-        let icon_file = null;
+        let iconFile = null;
         if (this._user) {
-            const icon_file_name = this._user.get_icon_file();
-            const basename = GLib.path_get_basename(icon_file_name);
-
-            try {
-                const maybe_icon_name = basename.substr(0, basename.lastIndexOf("."));
-                const theme = Gtk.IconTheme.get_default();
-                if (theme.has_icon(maybe_icon_name)) {
-                    const icon_type = maybe_icon_name.endsWith("symbolic") ? St.IconType.SYMBOLIC : St.IconType.FULLCOLOR;
-                    this.child = new St.Icon({ icon_name: maybe_icon_name, icon_size: this._iconSize, icon_type: icon_type });
-                    return;
-                }
-            } catch (e) {
-                global.logError(e);
-            }
-
-            const icon_loader_handle = St.TextureCache.get_default().load_image_from_file_async(
-                icon_file_name,
-                this._iconSize, this._iconSize,
-                (cache, handle, actor) => {
-                    if (icon_loader_handle === handle) {
-                        if (actor.get_content() === null) {
-                            this.child = this.getDefaultIcon();
-                        } else {
-                            this.child = actor;
-                        }
-                    }
-                }
-            );
-        } else {
-            this.child = this.getDefaultIcon();
+            iconFile = this._user.get_icon_file();
+            if (iconFile && !GLib.file_test(iconFile, GLib.FileTest.EXISTS))
+                iconFile = null;
         }
-    }
 
-    resize(size) {
-        if (size === this._iconSize)
-            return;
+        let { scaleFactor } = St.ThemeContext.get_for_stage(global.stage);
+        this.set_size(
+            this._iconSize * scaleFactor,
+            this._iconSize * scaleFactor);
 
-        this._iconSize = size;
+        if (iconFile) {
+            this.child = null;
+            this.add_style_class_name('user-avatar');
+            this.style = `
+                background-image: url("${iconFile}");
+                background-size: cover;`;
+        } else {
+            this.style = null;
+            this.child = new St.Icon({
+                icon_name: 'avatar-default-symbolic',
+                icon_size: this._iconSize,
+            });
+        }
     }
 });
 
