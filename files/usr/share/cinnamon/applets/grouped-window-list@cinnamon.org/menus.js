@@ -827,7 +827,7 @@ class WindowThumbnail {
         this.thumbnailActor.width = thumbnailWidth * global.ui_scale;
         this.container.style = `width: ${Math.floor(thumbnailWidth - 16)}px;`;
 
-        if (this.state.settings.verticalThumbs) {
+        if (this.state.settings.verticalThumbs && !this.groupState.verticalThumbs && !this.state.settings.showThumbs) {
             this.thumbnailActor.height = 0;
         } else {
             this.thumbnailActor.height = thumbnailHeight * global.ui_scale;
