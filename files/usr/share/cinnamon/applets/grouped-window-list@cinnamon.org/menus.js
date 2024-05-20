@@ -758,6 +758,13 @@ class WindowThumbnail {
         this.signals.disconnect("notify::minimized", this.metaWindow);
     }
 
+    calcThumbsFullSize(singleThumbSize) {
+        const padding = this.thumbnailActor.style_length('padding');
+        const margin = this.thumbnailActor.style_length('margin');
+        const size = (singleThumbSize + this.thumbnailPadding) * global.ui_scale;
+        return (size + padding + margin) * this.groupState.windowCount;
+    }
+
     refreshThumbnail() {
         if (this.willUnmount
             || !this.groupState
@@ -793,16 +800,15 @@ class WindowThumbnail {
             thumbnailSize = thumbnailWidth;
         }
 
-        const padding = this.thumbnailActor.style_length('padding');
-        const margin = this.thumbnailActor.style_length('margin');
 
         let i = 0;
-        while (((thumbnailSize + this.thumbnailPadding + padding + margin) * this.groupState.windowCount > monitorSize)
-            && thumbnailWidth > 64
-            && thumbnailHeight > 64) {
+        while (this.calcThumbsFullSize(thumbnailSize) > monitorSize &&
+               thumbnailWidth > 64 && thumbnailHeight > 64) {
+            // ---
             thumbnailWidth -= 1;
             thumbnailHeight -= 1;
             thumbnailSize -= 1;
+
             i++;
             // Bail after 200 iterations
             if (i > 200) {
@@ -812,18 +818,19 @@ class WindowThumbnail {
 
         // If we can't fit all the thumbnails, revert to a vertical menu orientation
         // with no thumbnails, which can hold more window selections.
-        const verticalThumbs = ((thumbnailSize + this.thumbnailPadding + padding + margin) * this.groupState.windowCount) > monitorSize;
+        const verticalThumbs = this.calcThumbsFullSize(thumbnailSize) > monitorSize;
         const currentVerticalThumbsState = this.groupState.verticalThumbs;
         this.groupState.set({verticalThumbs});
+
         if (verticalThumbs !== currentVerticalThumbsState) return;
 
-        const scaledWidth = thumbnailWidth * global.ui_scale;
-        this.thumbnailActor.width = scaledWidth;
+        this.thumbnailActor.width = thumbnailWidth * global.ui_scale;
         this.container.style = `width: ${Math.floor(thumbnailWidth - 16)}px;`;
-        if (this.groupState.verticalThumbs || (this.state.settings.verticalThumbs && this.state.settings.showThumbs)) {
-            this.thumbnailActor.height = thumbnailHeight;
-        } else if (this.state.settings.verticalThumbs) {
+
+        if (this.state.settings.verticalThumbs) {
             this.thumbnailActor.height = 0;
+        } else {
+            this.thumbnailActor.height = thumbnailHeight * global.ui_scale;
         }
 
         this.labelContainer.child.text = this.metaWindow.title || '';
