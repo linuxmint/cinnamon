@@ -108,89 +108,6 @@ class Avatar extends St.Bin {
     }
 });
 
-var UserWidgetLabel = GObject.registerClass(
-class UserWidgetLabel extends St.Widget {
-    _init(user) {
-        super._init({ layout_manager: new Clutter.BinLayout() });
-
-        this._user = user;
-
-        this._realNameLabel = new St.Label({ style_class: 'user-widget-label',
-                                             y_align: Clutter.ActorAlign.CENTER });
-        this.add_child(this._realNameLabel);
-
-        this._userNameLabel = new St.Label({ style_class: 'user-widget-label',
-                                             y_align: Clutter.ActorAlign.CENTER });
-        this.add_child(this._userNameLabel);
-
-        this._currentLabel = null;
-
-        this._userLoadedId = this._user.connect('notify::is-loaded', this._updateUser.bind(this));
-        this._userChangedId = this._user.connect('changed', this._updateUser.bind(this));
-        this._updateUser();
-
-        // We can't override the destroy vfunc because that might be called during
-        // object finalization, and we can't call any JS inside a GC finalize callback,
-        // so we use a signal, that will be disconnected by GObject the first time
-        // the actor is destroyed (which is guaranteed to be as part of a normal
-        // destroy() call from JS, possibly from some ancestor)
-        this.connect('destroy', this._onDestroy.bind(this));
-    }
-
-    _onDestroy() {
-        if (this._userLoadedId != 0) {
-            this._user.disconnect(this._userLoadedId);
-            this._userLoadedId = 0;
-        }
-
-        if (this._userChangedId != 0) {
-            this._user.disconnect(this._userChangedId);
-            this._userChangedId = 0;
-        }
-    }
-
-    vfunc_allocate(box) {
-        this.set_allocation(box);
-
-        let availWidth = box.x2 - box.x1;
-        let availHeight = box.y2 - box.y1;
-
-        let [, , natRealNameWidth] = this._realNameLabel.get_preferred_size();
-
-        let childBox = new Clutter.ActorBox();
-
-        let hiddenLabel;
-        if (natRealNameWidth <= availWidth) {
-            this._currentLabel = this._realNameLabel;
-            hiddenLabel = this._userNameLabel;
-        } else {
-            this._currentLabel = this._userNameLabel;
-            hiddenLabel = this._realNameLabel;
-        }
-        this.label_actor = this._currentLabel;
-
-        hiddenLabel.allocate(childBox);
-
-        childBox.set_size(availWidth, availHeight);
-
-        this._currentLabel.allocate(childBox);
-    }
-
-    vfunc_paint(paintContext) {
-        this._currentLabel.paint(paintContext);
-    }
-
-    _updateUser() {
-        if (this._user.is_loaded) {
-            this._realNameLabel.text = this._user.get_real_name();
-            this._userNameLabel.text = this._user.get_user_name();
-        } else {
-            this._realNameLabel.text = '';
-            this._userNameLabel.text = '';
-        }
-    }
-});
-
 var UserWidget = GObject.registerClass(
 class UserWidget extends St.BoxLayout {
     _init(user, orientation = Clutter.Orientation.HORIZONTAL) {
@@ -213,27 +130,15 @@ class UserWidget extends St.BoxLayout {
         this._avatar.x_align = Clutter.ActorAlign.CENTER;
         this.add_child(this._avatar);
 
-        this._userLoadedId = 0;
-        this._userChangedId = 0;
-        if (user) {
-            this._label = new UserWidgetLabel(user);
-            this.add_child(this._label);
+        this._label = new St.Label({ style_class: 'user-widget-label' });
+        this._label.y_align = Clutter.ActorAlign.CENTER;
+        this.add_child(this._label);
 
-            this._label.bind_property('label-actor', this, 'label-actor',
-                                      GObject.BindingFlags.SYNC_CREATE);
+        this._userLoadedId = this._user.connect('notify::is-loaded', this._updateUser.bind(this));
+        this._userChangedId = this._user.connect('changed', this._updateUser.bind(this));
 
-            this._userLoadedId = this._user.connect('notify::is-loaded', this._updateUser.bind(this));
-            this._userChangedId = this._user.connect('changed', this._updateUser.bind(this));
-        } else {
-            this._label = new St.Label({
-                style_class: 'user-widget-label',
-                text: 'Empty User',
-                opacity: 0,
-            });
-            this.add_child(this._label);
-        }
-
-        this._updateUser();
+        if (this._user.is_loaded)
+            this._updateUser();
     }
 
     _onDestroy() {
@@ -249,6 +154,11 @@ class UserWidget extends St.BoxLayout {
     }
 
     _updateUser() {
+        if (this._user.is_loaded)
+            this._label.text = this._user.get_real_name();
+        else
+            this._label.text = '';
+
         this._avatar.update();
     }
 });
