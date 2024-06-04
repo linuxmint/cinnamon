@@ -997,15 +997,18 @@ _cinnamon_app_system_notify_app_state_changed (CinnamonAppSystem *self,
       g_hash_table_insert (self->priv->running_apps, g_object_ref (app), NULL);
       break;
     case CINNAMON_APP_STATE_STARTING:
-      break;
     case CINNAMON_APP_STATE_STOPPED:
-      g_hash_table_remove (self->priv->running_apps, app);
       break;
     default:
       g_warning("cinnamon_app_system_notify_app_state_changed: default case");
     break;
     }
   g_signal_emit (self, signals[APP_STATE_CHANGED], 0, app);
+
+  if (state == CINNAMON_APP_STATE_STOPPED)
+    {
+      g_hash_table_remove (self->priv->running_apps, app);
+    }
 }
 
 /**
