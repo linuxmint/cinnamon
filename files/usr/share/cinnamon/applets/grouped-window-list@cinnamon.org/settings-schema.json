@@ -30,7 +30,8 @@
         "scroll-behavior",
         "left-click-action",
         "middle-click-action",
-        "show-all-workspaces"
+        "show-all-workspaces",
+        "list-monitor-windows"
       ]
     },
     "appButtonsSection": {
@@ -148,6 +149,11 @@
     "type": "checkbox",
     "default": false,
     "description": "Show windows from all workspaces"
+  },
+  "list-monitor-windows": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Only list windows from the current monitor"
   },
   "enable-app-button-dragging": {
     "type": "checkbox",
