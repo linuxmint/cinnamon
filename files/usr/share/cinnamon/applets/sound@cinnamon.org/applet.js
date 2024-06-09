@@ -1137,6 +1137,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         for(let i in this._players)
             this._players[i].destroy();
+
+        if (this._control)
+            this._control.close();
     }
 
     on_applet_clicked(event) {
