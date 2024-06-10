@@ -657,7 +657,10 @@ var PopupAlternatingMenuItem = class PopupAlternatingMenuItem extends PopupBaseM
 
 var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
     _init(value) {
-        super._init.call(this, { activate: false });
+        super._init.call(this, {
+            activate: false,
+            hover: false,
+        });
 
         this._signals.connect(this.actor, 'key-press-event', Lang.bind(this, this._onKeyPressEvent));
 
