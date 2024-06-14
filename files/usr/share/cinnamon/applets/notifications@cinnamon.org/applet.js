@@ -24,6 +24,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
         this.settings.bind("ignoreTransientNotifications", "ignoreTransientNotifications");
         this.settings.bind("showEmptyTray", "showEmptyTray", this._show_hide_tray);
+        this.settings.bind("showDisturbIcon", "showDisturbIcon", this._show_disturb_icon);        
         this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
         this.settings.bind("keyClear", "keyClear", this._setKeybinding);
         this.settings.bind("showNotificationCount", "showNotificationCount", this.update_list);
@@ -237,7 +238,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                 this.set_applet_tooltip(_("Notifications disabled"));
                 this.notDisturb_label.actor.show(); // Change label when "Do not disturb" is enabled
                 this.menu_label.actor.hide(); 
-                if (!this.showEmptyTray) {
+                if (this.showDisturbIcon) {
                     this.actor.show(); // Keep icon on panel when showEmptyTray option is disabled
                   } 
             }                 
@@ -275,6 +276,17 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             }
         }
     }
+
+   _show_disturb_icon() { // Show or hide disturb icon when show/hide tray option is enabled.
+        if(global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
+            if (!this.showEmptyTray) {                
+                this.actor.show();
+            } else {
+                this.actor.hide();
+            }
+         }
+         this.update_list();
+    }    
 
     _on_panel_edit_mode_changed () {
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
