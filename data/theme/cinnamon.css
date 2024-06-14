@@ -223,6 +223,7 @@ StScrollBar StButton#vhandle:hover {
 }
 .popup-subtitle-menu-item {
     font-weight: bold;
+    min-width: 160px; /* Fix menu size when notification menu labels switch */
 }
 .popup-menu-icon {
     icon-size: 1.14em;
