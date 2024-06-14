@@ -22,7 +22,7 @@
     "showDisturbIcon": {
         "type": "switch",
         "default": false,
-        "description": "Display 'Do not disturb' icon when show empy tray option is disabled."
+        "description": "Display 'Do not disturb' icon when show empy tray option is disabled",
         "tooltip": "Force 'Do not disturb' icon to be displayed on panel when show empty tray option is disabled."
     },   
     "showNotificationCount": {
