@@ -19,6 +19,12 @@
         "description": "Show empty tray",
         "tooltip": "Check this to show the tray even when there are no new notifications."
     },
+    "showDisturbIcon": {
+        "type": "switch",
+        "default": false,
+        "description": "Display 'Do not disturb' icon when show empy tray option is disabled",
+        "tooltip": "Force 'Do not disturb' icon to be displayed on panel when show empty tray option is disabled."
+    },
     "showNotificationCount": {
         "type": "switch",
         "default": true,
