@@ -1,6 +1,7 @@
 const Applet = imports.ui.applet;
 const GLib = imports.gi.GLib;
 const St = imports.gi.St;
+const Meta = imports.gi.Meta;
 const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
 const Main = imports.ui.main;
@@ -8,9 +9,14 @@ const Settings = imports.ui.settings;
 const PopupMenu = imports.ui.popupMenu;
 const SignalManager = imports.misc.signalManager;
 const Mainloop = imports.mainloop;
-const Tweener = imports.ui.tweener;
+const Cinnamon = imports.gi.Cinnamon;
 
 const SCROLL_DELAY = 200;
+
+const PEEK_TRANSPARENCY_FILTER_TYPES = [
+    Meta.WindowType.DESKTOP,
+    Meta.WindowType.DOCK,
+];
 
 class CinnamonBarApplet extends Applet.Applet {
     constructor(orientation, panel_height, instance_id) {
@@ -22,7 +28,9 @@ class CinnamonBarApplet extends Applet.Applet {
         this.settings.bind("peek-opacity", "peek_opacity");
         this.settings.bind("peek-blur", "peek_blur");
         this.settings.bind("click-action", "click_action");
+        this.settings.bind("shift-click-action", "shift_click_action");
         this.settings.bind("middle-click-action", "middle_click_action");
+        this.settings.bind("shift-middle-click-action", "shift_middle_click_action");
         this.settings.bind("scroll-behavior", "scroll_behavior");
 
         this.signals = new SignalManager.SignalManager(null);
@@ -126,18 +134,18 @@ class CinnamonBarApplet extends Applet.Applet {
                         let window = windows[i].meta_window;
                         let compositor = windows[i];
 
-                        if (window.get_title() !== "Desktop") {
+                        if (!PEEK_TRANSPARENCY_FILTER_TYPES.includes(window.get_window_type())) {
                             if (this.peek_blur) {
                                 if (!compositor.eff)
                                     compositor.eff = new Clutter.BlurEffect();
                                 compositor.add_effect_with_name('peek-blur', compositor.eff);
                             }
 
-                            Tweener.addTween(compositor,
+                            compositor.ease(
                                 {
                                     opacity: this.peek_opacity / 100 * 255,
-                                    time: 0.275,
-                                    transition: "easeInSine"
+                                    duration: 275,
+                                    mode: Clutter.AnimationMode.EASE_IN_SINE,
                                 }
                             );
                         }
@@ -153,7 +161,7 @@ class CinnamonBarApplet extends Applet.Applet {
 
     _on_leave(event) {
         if (this._did_peek) {
-            this.show_all_windows(0.2);
+            this.show_all_windows(200);
             this._did_peek = false;
         }
         if (this._peek_timeout_id > 0) {
@@ -205,11 +213,11 @@ class CinnamonBarApplet extends Applet.Applet {
             let window = windows[i].meta_window;
             let compositor = windows[i];
 
-            Tweener.addTween(compositor,
+            compositor.ease(
                 {
                     opacity: 255,
-                    time: time,
-                    transition: "easeOutSine"
+                    mode: Clutter.AnimationMode.EASE_OUT_SINE,
+                    duration: time,
                 }
             );
 
@@ -220,11 +228,17 @@ class CinnamonBarApplet extends Applet.Applet {
     }
 
     on_applet_clicked(event) {
-        this.perform_action(this.click_action);
+        let modifiers = Cinnamon.get_event_state(event);
+        let shift_pressed = (modifiers & Clutter.ModifierType.SHIFT_MASK);
+        let action = shift_pressed ? this.shift_click_action : this.click_action;
+        this.perform_action(action);
     }
 
     on_applet_middle_clicked(event) {
-        this.perform_action(this.middle_click_action);
+        let modifiers = Cinnamon.get_event_state(event);
+        let shift_pressed = (modifiers & Clutter.ModifierType.SHIFT_MASK);
+        let action = shift_pressed ? this.shift_middle_click_action : this.middle_click_action;
+        this.perform_action(action);
     }
 
     perform_action(action) {

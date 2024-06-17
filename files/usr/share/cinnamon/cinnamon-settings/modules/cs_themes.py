@@ -31,6 +31,15 @@ THEME_FOLDERS = [
     os.path.join(GLib.get_user_data_dir(), "themes")
 ] + [os.path.join(datadir, "themes") for datadir in GLib.get_system_data_dirs()]
 
+THEMES_BLACKLIST = [
+    "gnome", # not meant to be used as a theme. Provides icons to inheriting themes.
+    "hicolor", # same
+    "adwaita", "adwaita-dark", # incomplete outside of GNOME, doesn't support Cinnamon.
+    "highcontrast", # same. Also, available via a11y as a global setting.
+    "epapirus", "epapirus-dark", # specifically designed for Pantheon
+    "ubuntu-mono", "ubuntu-mono-dark", "ubuntu-mono-light", "loginicons", # ubuntu-mono icons (non-removable in Ubuntu 24.04)
+    "humanity", "humanity-dark"  # same
+]
 
 class Style:
     def __init__(self, json_obj):
@@ -104,6 +113,8 @@ class Module:
 
         # Gtk themes -- Only shows themes that have a gtk-3.* variation
         for (name, path) in walk_directories(THEME_FOLDERS, self.filter_func_gtk_dir, return_directories=True):
+            if name.lower() in THEMES_BLACKLIST:
+                continue
             for theme in self.gtk_themes:
                 if name == theme[0]:
                     if path == THEME_FOLDERS[0]:
@@ -130,7 +141,7 @@ class Module:
         walked = walk_directories(ICON_FOLDERS, lambda d: os.path.isdir(d), return_directories=True)
         valid = []
         for directory in walked:
-            if directory[0] in ("gnome", "hicolor"):
+            if directory[0].lower() in THEMES_BLACKLIST:
                 continue
             path = os.path.join(directory[1], directory[0], "index.theme")
             if os.path.exists(path):
@@ -148,6 +159,8 @@ class Module:
 
         # Cursor themes
         for (name, path) in walk_directories(ICON_FOLDERS, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True):
+            if name.lower() in THEMES_BLACKLIST:
+                continue
             for theme in self.cursor_themes:
                 if name == theme[0]:
                     if path == ICON_FOLDERS[0]:
@@ -403,51 +416,52 @@ class Module:
         self.active_variant = None
 
         path = "/usr/share/cinnamon/styles.d"
-        for filename in sorted(os.listdir(path)):
-            if filename.endswith(".styles"):
-                try:
-                    with open(os.path.join(path, filename)) as f:
-                        json_text = json.loads(f.read())
-                        for style_json in json_text["styles"]:
-                            style = Style(style_json)
-                            for mode_name in ["mixed", "dark", "light"]:
-                                if mode_name in style_json:
-                                    mode = Mode(mode_name)
-                                    for variant_json in style_json[mode_name]:
-                                        variant = Variant(variant_json)
-                                        if self.is_variant_valid(variant):
-                                            # Add the variant to the mode
-                                            mode.variants.append(variant)
-                                            if mode.default_variant is None:
-                                                # Assign the first variant as default
-                                                mode.default_variant = variant
-                                            if "default" in variant_json and variant_json["default"] == "true":
-                                                # Override default if specified
-                                                mode.default_variant = variant
-                                            # Add the mode to the style (if not done already)
-                                            if not mode_name in style.modes:
-                                                style.modes[mode_name] = mode
-                                            # Set it as the default mode if there's no default mode
-                                            if style.default_mode is None:
-                                                style.default_mode = mode
-                                            # Set active variant variables if the variant is active
-                                            if self.is_variant_active(variant):
-                                                self.active_style= style
-                                                self.active_mode_name = mode_name
-                                                self.active_variant = variant
-                            # Override the default mode if specified
-                            if "default" in style_json:
-                                default_name = style_json["default"]
-                                if default_name in style.modes:
-                                    style.default_mode = style.modes[default_name]
+        if os.path.exists(path):
+            for filename in sorted(os.listdir(path)):
+                if filename.endswith(".styles"):
+                    try:
+                        with open(os.path.join(path, filename)) as f:
+                            json_text = json.loads(f.read())
+                            for style_json in json_text["styles"]:
+                                style = Style(style_json)
+                                for mode_name in ["mixed", "dark", "light"]:
+                                    if mode_name in style_json:
+                                        mode = Mode(mode_name)
+                                        for variant_json in style_json[mode_name]:
+                                            variant = Variant(variant_json)
+                                            if self.is_variant_valid(variant):
+                                                # Add the variant to the mode
+                                                mode.variants.append(variant)
+                                                if mode.default_variant is None:
+                                                    # Assign the first variant as default
+                                                    mode.default_variant = variant
+                                                if "default" in variant_json and variant_json["default"] == "true":
+                                                    # Override default if specified
+                                                    mode.default_variant = variant
+                                                # Add the mode to the style (if not done already)
+                                                if not mode_name in style.modes:
+                                                    style.modes[mode_name] = mode
+                                                # Set it as the default mode if there's no default mode
+                                                if style.default_mode is None:
+                                                    style.default_mode = mode
+                                                # Set active variant variables if the variant is active
+                                                if self.is_variant_active(variant):
+                                                    self.active_style= style
+                                                    self.active_mode_name = mode_name
+                                                    self.active_variant = variant
+                                # Override the default mode if specified
+                                if "default" in style_json:
+                                    default_name = style_json["default"]
+                                    if default_name in style.modes:
+                                        style.default_mode = style.modes[default_name]
 
-                            if style.default_mode is None:
-                                print ("No valid mode/variants found for style:", style.name)
-                            else:
-                                self.styles[style.name] = style
-                except Exception as e:
-                    print(f"Failed to parse styles from {filename}.")
-                    print(e)
+                                if style.default_mode is None:
+                                    print ("No valid mode/variants found for style:", style.name)
+                                else:
+                                    self.styles[style.name] = style
+                    except Exception as e:
+                        print(f"Failed to parse styles from {filename}.")
+                        print(e)
 
         # Populate the style combo
         for name in sorted(self.styles.keys()):
@@ -529,10 +543,14 @@ class Module:
         else:
             transition = Gtk.StackTransitionType.CROSSFADE
 
+        switcher_widget = Gio.Application.get_default().stack_switcher
+
         if mode == "simplified":
-            Gio.Application.get_default().stack_switcher.set_opacity(0.0)
+            switcher_widget.set_opacity(0.0)
+            switcher_widget.set_sensitive(False)
         else:
-            Gio.Application.get_default().stack_switcher.set_opacity(1.0)
+            switcher_widget.set_opacity(1.0)
+            switcher_widget.set_sensitive(True)
 
         self.sidePage.stack.set_visible_child_full(mode, transition)
 

@@ -524,12 +524,6 @@ class AppMenuButton {
         if (this._tooltip && this._applet.windowHover != "nothing" && this._tooltip.set_text)
             this._tooltip.set_text(title);
 
-        if (this.metaWindow.minimized) {
-            title = "["+ title +"]";
-        } else if (this.metaWindow.tile_mode != Meta.TileMode.NONE && this.metaWindow.tile_mode != Meta.TileMode.MAXIMIZED) {
-            title = "|"+ title;
-        }
-
         this._label.set_text(title);
     }
 
@@ -1164,8 +1158,11 @@ class CinnamonWindowListApplet extends Applet.Applet {
     _onWindowMonitorChanged(display, metaWindow, monitor) {
         if (this._shouldAdd(metaWindow))
             this._addWindow(metaWindow, false);
-        else
+        else {
+            this.refreshing = true;
             this._removeWindow(metaWindow);
+            this.refreshing = false;
+        }
     }
 
     _refreshItemByMetaWindow(metaWindow) {

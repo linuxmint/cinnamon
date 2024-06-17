@@ -2443,6 +2443,27 @@ CinnamonNetworkApplet.prototype = {
                 this._setIcon('network-vpn');
                 this.set_applet_tooltip(_("Connected to WIREGUARD"));
             }
+            for (let i = 0; i < this._activeConnections.length; i++) {
+                const a = this._activeConnections[i];
+                if (a._section === NMConnectionCategory.VPN && a.state === NM.ActiveConnectionState.ACTIVATING) {
+                    this._setIcon('network-vpn-acquiring');
+                    this.set_applet_tooltip(_("Connecting to the VPN..."));
+                    break;
+                }
+                else if (a._section === NMConnectionCategory.VPN && a.state === NM.ActiveConnectionState.ACTIVATED) {
+                    let iconName = 'network-vpn';
+                    if (mc._section == NMConnectionCategory.WIRELESS) {
+                        const dev = mc._primaryDevice;
+                        if (dev) {
+                            const ap = dev.device.active_access_point;
+                            iconName = 'network-wireless-signal-' + signalToIcon(ap.strength) + '-secure-symbolic';
+                        }
+                    }
+                    this._setIcon(iconName);
+                    this.set_applet_tooltip(_("Connected to the VPN"));
+                    break;
+                }
+            }
         }
         catch (e) {
             global.logError(e);

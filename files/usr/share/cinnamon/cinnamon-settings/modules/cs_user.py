@@ -17,7 +17,7 @@ import subprocess
 from PIL import Image
 import gi
 gi.require_version('AccountsService', '1.0')
-from gi.repository import AccountsService, GLib, GdkPixbuf
+from gi.repository import AccountsService, GLib, GdkPixbuf, XApp
 
 from SettingsWidgets import SidePage
 from ChooserButtonWidgets import PictureChooserButton
@@ -199,14 +199,23 @@ class Module:
         dialog.connect("update-preview", self.update_preview_cb, preview)
 
         response = dialog.run()
+
         if response == Gtk.ResponseType.OK:
-            path = dialog.get_filename()
-            image = Image.open(path)
-            image.thumbnail((255, 255), Image.LANCZOS)
+            string = dialog.get_filename()
+            print(string)
+            if string.startswith("/"):
+                path = string
+            else:
+                theme = Gtk.IconTheme.get_default()
+                icon_info = theme.lookup_icon_for_scale(string, 256, dialog.get_scale_factor(), Gtk.IconLookupFlags.FORCE_SIZE)
+                path = icon_info.get_filename() if icon_info else None
+
             face_path = os.path.join(self.accountService.get_home_dir(), ".face")
-            image.save(face_path, "png")
-            self.accountService.set_icon_file(face_path)
-            self.face_button.set_picture_from_file(face_path)
+
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 255, -1)
+            pixbuf.savev(face_path, "png")
+            self.accountService.set_icon_file(path)
+            self.face_button.set_picture_from_file(path)
 
         dialog.destroy()
 

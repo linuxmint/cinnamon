@@ -11,7 +11,7 @@ os.environ['LANGUAGE'] = "en_US.UTF-8"
 gettext.install(DOMAIN, PATH)
 
 prefix = """[Desktop Entry]
-Exec=cinnamon-settings
+Exec=env WEBKIT_DISABLE_COMPOSITING_MODE=1 cinnamon-settings
 Icon=preferences-desktop
 Terminal=false
 Type=Application

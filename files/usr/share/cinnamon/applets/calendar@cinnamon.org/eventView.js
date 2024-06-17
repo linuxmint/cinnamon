@@ -94,7 +94,7 @@ function dt_equals(dt1, dt2) {
 }
 
 class EventData {
-    constructor(data_var, last_request_timestamp) {
+    constructor(data_var, last_update_timestamp) {
         const [id, color, summary, all_day, start_time, end_time, mod_time] = data_var.deep_unpack();
         this.id = id;
         this.start = GLib.DateTime.new_from_unix_local(start_time);
@@ -126,7 +126,7 @@ class EventData {
         this.modified = mod_time;
         // This is the last monotonic time we contacted our server to update our events. This
         // is used to cull deleted events.
-        this.last_request_timestamp = last_request_timestamp;
+        this.last_update_timetamp = last_update_timestamp;
     }
 
     starts_on_day(date) {
@@ -177,7 +177,7 @@ class EventDataList {
         this._events = {};
     }
 
-    add_or_update(event_data, last_request_timestamp) {
+    add_or_update(event_data, last_update_timetamp) {
         let existing = this._events[event_data.id];
 
         if (existing === undefined) {
@@ -185,7 +185,7 @@ class EventDataList {
         }
 
         if (existing !== undefined && event_data.equal(existing)) {
-            existing.last_request_timestamp = last_request_timestamp;
+            existing.last_update_timetamp = last_update_timetamp;
             existing.color = event_data.color;
             return false;
         }
@@ -210,17 +210,23 @@ class EventDataList {
         return true;
     }
 
-    cull_removed_events(last_request_timestamp) {
+    cull_removed_events(last_update_timetamp) {
         let to_remove = [];
         for (let id in this._events) {
-            if (this._events[id].last_request_timestamp < last_request_timestamp) {
+            if (this._events[id].last_update_timetamp < last_update_timetamp) {
                 to_remove.push(id);
             }
+        }
+
+        if (to_remove.length === 0) {
+            return false;
         }
 
         to_remove.forEach((id) => {
             this.delete(id);
         });
+
+        return true;
     }
 
     get_event_list() {
@@ -393,7 +399,7 @@ class EventsManager {
     _perform_gc() {
         let any_removed = false;
         for (let date in this.events_by_date) {
-            if (this.events_by_date[date].cull_removed_events(this.last_request_timestamp)) {
+            if (this.events_by_date[date].cull_removed_events(this.last_update_timestamp)) {
                 any_removed = true;
             }
         }
@@ -423,7 +429,7 @@ class EventsManager {
                     this.events_by_date[hash] = new EventDataList(date_iter);
                 }
 
-                if (this.events_by_date[hash].add_or_update(data, this.last_request_timestamp)) {
+                if (this.events_by_date[hash].add_or_update(data, this.last_update_timestamp)) {
                     if (dt_equals(date_iter, this.current_selected_date)) {
                         changed = true;
                     }

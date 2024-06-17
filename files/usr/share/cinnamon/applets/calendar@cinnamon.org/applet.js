@@ -186,7 +186,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     }
 
     on_custom_format_button_pressed() {
-        Util.spawnCommandLine("xdg-open http://www.foragoodstrftime.com/");
+        Util.spawnCommandLine("xdg-open https://cinnamon-spices.linuxmint.com/strftime.php");
     }
 
     _onLaunchSettings() {

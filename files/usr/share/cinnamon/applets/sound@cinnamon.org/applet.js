@@ -455,9 +455,12 @@ class StreamMenuSection extends PopupMenu.PopupMenuSection {
             iconName = "audio-x-generic";
         }
 
-        let slider = new VolumeSlider(applet, stream, name, iconName);
-        slider._slider.style = "min-width: 6em;";
-        this.addMenuItem(slider);
+        // Prevent Muffin from spawning sound streams
+        if (name !== "Muffin") {
+            let slider = new VolumeSlider(applet, stream, name, iconName);
+            slider._slider.style = "min-width: 6em;";
+            this.addMenuItem(slider);
+        }
     }
 }
 
@@ -1134,6 +1137,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         for(let i in this._players)
             this._players[i].destroy();
+
+        if (this._control)
+            this._control.close();
     }
 
     on_applet_clicked(event) {

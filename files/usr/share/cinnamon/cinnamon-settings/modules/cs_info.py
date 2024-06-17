@@ -159,7 +159,7 @@ class Module:
     comment = _("Display system information")
 
     def __init__(self, content_box):
-        keywords = _("system, information, details, graphic, sound, kernel, version")
+        keywords = _("system, information, details, graphic, sound, kernel, version, about")
         sidePage = SidePage(_("System Info"), "cs-details", keywords, content_box, module=self)
         self.sidePage = sidePage
 

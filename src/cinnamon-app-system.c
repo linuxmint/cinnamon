@@ -659,7 +659,14 @@ on_apps_tree_changed_cb (GMenuTree *tree,
 
       if (cinnamon_app_get_is_flatpak (app))
       {
-        g_hash_table_replace (self->priv->flatpak_id_to_app, cinnamon_app_get_flatpak_app_id (app), g_object_ref (app));
+        gchar *flatpak_app_id = cinnamon_app_get_flatpak_app_id (app);
+        gchar **split = g_strsplit (id, ".desktop", -1);
+
+        if (g_strv_length (split) > 0 && g_strcmp0 (split[0], flatpak_app_id) == 0)
+        {
+          g_hash_table_replace (self->priv->flatpak_id_to_app, flatpak_app_id, g_object_ref (app));
+        }
+        g_strfreev (split);
       }
       // if (!gmenu_tree_entry_get_is_nodisplay_recurse (entry))
       //    g_hash_table_replace (self->priv->visible_id_to_app, (char*)id, app);
@@ -990,15 +997,18 @@ _cinnamon_app_system_notify_app_state_changed (CinnamonAppSystem *self,
       g_hash_table_insert (self->priv->running_apps, g_object_ref (app), NULL);
       break;
     case CINNAMON_APP_STATE_STARTING:
-      break;
     case CINNAMON_APP_STATE_STOPPED:
-      g_hash_table_remove (self->priv->running_apps, app);
       break;
     default:
       g_warning("cinnamon_app_system_notify_app_state_changed: default case");
     break;
     }
   g_signal_emit (self, signals[APP_STATE_CHANGED], 0, app);
+
+  if (state == CINNAMON_APP_STATE_STOPPED)
+    {
+      g_hash_table_remove (self->priv->running_apps, app);
+    }
 }
 
 /**

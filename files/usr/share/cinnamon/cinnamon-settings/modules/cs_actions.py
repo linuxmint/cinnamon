@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 
+from pathlib import Path
+import sys
+
 from ExtensionCore import ManageSpicesPage, DownloadSpicesPage
 from Spices import Spice_Harvester
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 from gi.repository import GLib
-
 
 class Module:
     comment = _("Manage your actions")
@@ -50,6 +52,28 @@ class ActionsViewSidePage(SidePage):
         download_actions_page = DownloadSpicesPage(self, self.collection_type, self.spices, self.window)
         self.stack.add_titled(download_actions_page, 'more', _("Download"))
 
+        if GLib.find_program_in_path("nemo-action-layout-editor"):
+            for dir in GLib.get_system_data_dirs():
+                path = Path(dir).joinpath("nemo/layout-editor")
+                if path.exists():
+                    sys.path.append(str(path))
+                    try:
+                        import nemo_action_layout_editor
+                        editor = nemo_action_layout_editor.NemoActionsOrganizer(self.window)
+                        editor.props.margin_start = 80
+                        editor.props.margin_end = 80
+                        editor.props.margin_top = 15
+                        editor.props.margin_bottom = 30
+                        self.stack.add_titled(editor, 'editor', _("Layout"))
+
+                        def on_window_delete(window, event, data=None):
+                            if not editor.quit():
+                                return True
+
+                        self.window.connect("delete-event", on_window_delete)
+                    except Exception as e:
+                        print(e)
+                    break
 
 class ManageActionsPage(ManageSpicesPage):
     directories = [f"{GLib.get_home_dir()}/.local/share/nemo/actions"]

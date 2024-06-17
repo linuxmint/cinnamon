@@ -9,18 +9,26 @@ const AccountsService = imports.gi.AccountsService;
 const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
 const Settings = imports.ui.settings;
+const UserWidget = imports.ui.userWidget;
 
-class CinnamonUserApplet extends Applet.TextIconApplet {
+const DIALOG_ICON_SIZE = 64;
+const USER_DEFAULT_IMG_PATH = "/usr/share/cinnamon/faces/user-generic.png";
+
+class CinnamonUserApplet extends Applet.TextApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
+        this._panel_icon_box = new St.Bin(); // https://developer.gnome.org/st/stable/StBin.htm
+        this._panel_icon_box.set_alignment(St.Align.MIDDLE, St.Align.MIDDLE);
+        this.actor.insert_child_at_index(this._panel_icon_box, 0);
+
+        this._panel_avatar = null;
+
         this._session = new GnomeSession.SessionManager();
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
         this.settings = new Settings.AppletSettings(this, "user@cinnamon.org", instance_id);
-
-        this.set_applet_icon_symbolic_name("avatar-default");
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -28,11 +36,16 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
         this._contentSection = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(this._contentSection);
 
+        this._user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
+        this._userLoadedId = this._user.connect('notify::is-loaded', Lang.bind(this, this._onUserChanged));
+        this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
+
         let userBox = new St.BoxLayout({ style_class: 'user-box', reactive: true, vertical: false });
 
-        this._userIcon = new St.Bin({ style_class: 'user-icon'});
+        this._userIcon = new UserWidget.Avatar(this._user, { iconSize: DIALOG_ICON_SIZE });
 
         this.settings.bind("display-name", "disp_name", this._updateLabel);
+        this.settings.bind("display-image", "display_image", this._updatePanelIcon);
 
         userBox.connect('button-press-event', Lang.bind(this, function() {
             this.menu.toggle();
@@ -126,11 +139,7 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
         }));
         this.menu.addMenuItem(item);
 
-        this._user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
-        this._userLoadedId = this._user.connect('notify::is-loaded', Lang.bind(this, this._onUserChanged));
-        this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
         this._onUserChanged();
-        this.set_show_label_in_vertical_panels(false);
     }
 
     on_applet_clicked(event) {
@@ -140,30 +149,51 @@ class CinnamonUserApplet extends Applet.TextIconApplet {
     _updateLabel() {
         if (this.disp_name) {
             this.set_applet_label(this._user.get_real_name());
+            this._layoutBin.show();
         } else {
             this.set_applet_label("");
+            this._layoutBin.hide();
         }
     }
 
     _onUserChanged() {
-        if (this._user.is_loaded) {
+        if (this._user && this._user.is_loaded) {
             this.set_applet_tooltip(this._user.get_real_name());
             this.userLabel.set_text (this._user.get_real_name());
             if (this._userIcon) {
-                let iconFileName = this._user.get_icon_file();
-                let iconFile = Gio.file_new_for_path(iconFileName);
-                let icon;
-                if (iconFile.query_exists(null)) {
-                    icon = new Gio.FileIcon({file: iconFile});
-                } else {
-                    icon = new Gio.ThemedIcon({name: 'avatar-default'});
-                }
-                let img = St.TextureCache.get_default().load_gicon(null, icon, 48);
-                this._userIcon.set_child (img);
+                this._userIcon.update();
                 this._userIcon.show();
             }
+
+            this._updatePanelIcon();
             this._updateLabel();
         }
+    }
+
+    _updatePanelIcon() {
+        if (this.display_image) {
+            if (this._panel_avatar == null) {
+                this._panel_avatar = new UserWidget.Avatar(this._user, { iconSize: this.getPanelIconSize(St.IconType.FULLCOLOR) });
+            }
+            this._panel_icon_box.set_child(this._panel_avatar);
+            this._panel_avatar.update();
+            this._panel_avatar.show();
+        } else {
+            this._panel_icon = new St.Icon({
+                icon_name: 'avatar-default-symbolic',
+                icon_type: St.IconType.SYMBOLIC,
+                icon_size: this.getPanelIconSize(St.IconType.SYMBOLIC),
+            });
+            this._panel_icon_box.set_child(this._panel_icon);
+        }
+    }
+
+    on_panel_height_changed() {
+        this._updatePanelIcon();
+    }
+
+    on_panel_icon_size_changed() {
+        this._updatePanelIcon();
     }
 
     on_applet_removed_from_panel() {

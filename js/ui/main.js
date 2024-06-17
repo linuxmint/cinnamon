@@ -121,12 +121,11 @@ const Settings = imports.ui.settings;
 const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
 const ModalDialog = imports.ui.modalDialog;
-const {readOnlyError} = imports.ui.environment;
-const {installPolyfills} = imports.ui.overrides;
 const InputMethod = imports.misc.inputMethod;
 const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
+const {CinnamonPortalHandler} = imports.misc.portalHandlers;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -275,8 +274,6 @@ function start() {
     global.logError = _logError;
     global.log = _logInfo;
 
-    installPolyfills(readOnlyError, _log);
-
     let cinnamonStartTime = new Date().getTime();
 
     log(`About to start Cinnamon (${Meta.is_wayland_compositor() ? "Wayland" : "X11"} backend)`);
@@ -310,6 +307,7 @@ function start() {
 
     Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
 
+    new CinnamonPortalHandler();
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
     setRunState(RunState.STARTUP);
 

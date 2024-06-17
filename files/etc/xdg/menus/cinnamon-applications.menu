@@ -61,6 +61,7 @@
     <Include>
       <And>
         <Category>Education</Category>
+        <Not><Category>Science</Category></Not>
       </And>
     </Include>
   </Menu> <!-- End Education -->
@@ -119,6 +120,14 @@
       </And>
     </Include>
   </Menu> <!-- End Office -->
+
+  <Menu>
+    <Name>Science</Name>
+      <Directory>cinnamon-science.directory</Directory>
+      <Include>
+        <Category>Science</Category>
+      </Include>
+  </Menu>
 
   <!-- System Tools-->
   <Menu>

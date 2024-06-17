@@ -34,6 +34,9 @@ const PolkitAgent = imports.gi.PolkitAgent;
 
 const ModalDialog = imports.ui.modalDialog;
 const CinnamonEntry = imports.ui.cinnamonEntry;
+const UserWidget = imports.ui.userWidget;
+
+const DIALOG_ICON_SIZE = 64;
 
 function AuthenticationDialog(actionId, message, cookie, userNames) {
     this._init(actionId, message, cookie, userNames);
@@ -103,7 +106,7 @@ AuthenticationDialog.prototype = {
             let userBox = new St.BoxLayout({ style_class: 'polkit-dialog-user-layout',
                                              vertical: true });
             mainContentBox.add(userBox);
-            this._userIcon = new St.Icon();
+            this._userIcon = new UserWidget.Avatar(this._user, { iconSize: DIALOG_ICON_SIZE });
             this._userIcon.hide();
             userBox.add(this._userIcon,
                         { x_fill:  false,
@@ -301,15 +304,7 @@ AuthenticationDialog.prototype = {
     _onUserChanged: function() {
         if (this._user.is_loaded) {
             if (this._userIcon) {
-                let iconFileName = this._user.get_icon_file();
-                let iconFile = Gio.file_new_for_path(iconFileName);
-                let icon;
-                if (iconFile.query_exists(null)) {
-                    icon = new Gio.FileIcon({file: iconFile});
-                } else {
-                    icon = new Gio.ThemedIcon({name: 'avatar-default'});
-                }
-                this._userIcon.set_gicon (icon);
+                this._userIcon.update();
                 this._userIcon.show();
             }
         }

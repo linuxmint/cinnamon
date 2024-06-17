@@ -65,11 +65,10 @@ JS_UI_DIR = os.path.join(ROOT_DIR, 'js/ui/')
 JS_MISC_DIR = os.path.join(ROOT_DIR, 'js/misc/')
 
 # Allow types like "object/string"
-TYPE_REGEX = r'\w*\.?\w+/?\w*\.?\w*'
 COMMENT_REGEX = re.compile(r'/\*([^*]|(\*[^/]))*\*+/')
-RETURNS_REGEX = re.compile(r'^Returns\s*\(?(' + TYPE_REGEX + ')?\)?:(.*)')
-INHERITS_REGEX = re.compile(r'^Inherits:\s*(' + TYPE_REGEX + ')\s*$')
-PROPERTY_REGEX = re.compile(r'^@(\w+)\s*\(?(' + TYPE_REGEX + ')?\)?:(.*)')
+RETURNS_REGEX = re.compile(r'^Returns\s*\(?(\w*\.?\w+/?\w*\.?\w*)?\)?:(.*)')
+INHERITS_REGEX = re.compile(r'^Inherits:\s*(\w*\.?\w+/?\w*\.?\w*)\s*$')
+PROPERTY_REGEX = re.compile(r'^@(\w+)\s*\(?(\w*\.?\w+/?\w*\.?\w*)?\)?:(.*)')
 FILE_NAME_REGEX = re.compile(r'FILE:\s*(\w+\.js):?')
 SIGNAL_NAME_REGEX = re.compile(r'SIGNAL:\s*([\w-]+):?')
 ENUM_NAME_REGEX = re.compile(r'ENUM:\s*(\w+):?')

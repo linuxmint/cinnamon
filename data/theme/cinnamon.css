@@ -2009,10 +2009,9 @@ StScrollBar StButton#vhandle:hover {
     selected-color: black;
     caret-color: rgb(128, 128, 128);
     caret-size: 1px;
-    width: 250px;
-    height: 1em;
+    min-width: 80px;
+    height: 1.4em;
     box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
-    text-align: center;
 }
 
 .expo-workspaces-name-entry#selected {
@@ -2184,4 +2183,9 @@ StScrollBar StButton#vhandle:hover {
   -pie-border-width: 1px;
   -pie-border-color: rgba(200, 200, 200, 0.8);
   -pie-background-color: rgba(140, 140, 140, 0.6);;
+}
+
+.user-icon {
+    border: 2px solid #868686;
+    border-radius: 99px;
 }

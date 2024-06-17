@@ -695,7 +695,11 @@ class Spice_Harvester(GObject.Object):
         try:
             with zipfile.ZipFile(ziptempfile) as _zip:
                 tempfolder = tempfile.mkdtemp()
-                _zip.extractall(tempfolder)
+                for member in _zip.infolist():
+                    _zip.extract(member, tempfolder)
+                    permissions = member.external_attr >> 16
+                    # Preserve file permissions
+                    os.chmod(os.path.join(tempfolder, member.filename), permissions)
 
                 uuidfolder = tempfolder if self.actions else os.path.join(tempfolder, uuid)
 
@@ -751,12 +755,6 @@ class Spice_Harvester(GObject.Object):
                 disabled_list.append(uuid_name)
                 self.settings.set_strv(self.enabled_key, disabled_list)
 
-        if not self.themes:
-            # ensure proper file permissions
-            for root, _, files in os.walk(dest):
-                for file in files:
-                    os.chmod(os.path.join(root, file), 0o755)
-
         meta_path = os.path.join(dest, 'metadata.json')
         if self.themes and not os.path.exists(meta_path):
             md = {}
@@ -775,10 +773,11 @@ class Spice_Harvester(GObject.Object):
 
     def _install_finished(self, job):
         uuid = job['uuid']
-        if self.get_enabled(uuid) and self._proxy:
-            self._proxy.ReloadXlet('(ss)', uuid, self.collection_type.upper())
-        else:
-            self.send_proxy_signal('ReloadXlet', '(ss)', uuid, self.collection_type.upper())
+        if self.get_enabled(uuid):
+            if self._proxy:
+                self._proxy.ReloadXlet('(ss)', uuid, self.collection_type.upper())
+            else:
+                self.send_proxy_signal('ReloadXlet', '(ss)', uuid, self.collection_type.upper())
 
     def uninstall(self, uuid):
         """ uninstalls and removes the given extension"""

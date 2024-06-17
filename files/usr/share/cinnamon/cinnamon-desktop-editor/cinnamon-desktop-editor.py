@@ -35,7 +35,7 @@ EXTENSIONS = (".png", ".xpm", ".svg")
 DEFAULT_ICON_NAME = "cinnamon-panel-launcher"
 
 def escape_space(string):
-    return string.replace(" ", "\ ")
+    return string.replace(" ", r"\ ")
 
 
 def ask(msg):

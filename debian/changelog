@@ -1,3 +1,191 @@
+cinnamon (6.2.0) wilma; urgency=medium
+
+  [ claudiux ]
+  * sound applet: Fixes #12035
+
+  [ Leigh Scott ]
+  * Add a fix for webkit dev's failure to care about breaking online-accounts for nvidia users (#12044)
+
+  [ jknockel ]
+  * window lists: don't attention flash focused window (#12006)
+
+  [ Søren Bryder ]
+  * Remove dynamic text direction for table (#12012)
+
+  [ Michael Webster ]
+  * cinnamon-xlet-makepot: Don't assume xgettext calls actually generate a potfile.
+  * Restore polkit agent.
+  * Fix lmde6 build.
+
+  [ JosephMcc ]
+  * polkit-dialog: Clean up the styling a bit
+
+  [ Michael Webster ]
+  * debian/control: Don't remove policykit-1-gnome yet.
+
+  [ Rick Calixte ]
+  * Add greeter badges for Cinnamon sessions
+
+  [ iakmds ]
+  * Show search bar by default in AppChooserDialog (#12013)
+
+  [ Michael Webster ]
+  * cs_panel.py: Set the step amount to 1 for panel heights.
+
+  [ Lanchon ]
+  * power applet: Fix reported battery status (#12053)
+
+  [ Michael Webster ]
+  * panel.js: Don't re-declare x_mon when converting panel defs.
+  * cs_panel.py: Fix behavior when there are overlapping definitions.
+  * panel.js: Improve handling of invalid/duplicate panel definitions.
+
+  [ cocker-cc ]
+  * notifications@cinnamon.org: Append the locale's date format to notifications (#11933)
+
+  [ Bill ]
+  * cs_screensaver.py: Add screen lock delay options for 5 and 10 seconds (#12101)
+
+  [ Michael Webster ]
+  * cs_keyboard.py, cinnamon-desktop-editor.py: Fix some python 3.12- related warnings.
+  * cs_keyboard.py: Update the custom list visually as well as internally when a keybinding changes.
+  * calendar@cinnamon.org: Fix garbage collection of stale events.
+
+  [ Cobinja ]
+  * Fix mapping flatpak windows to flatpak app
+
+  [ Clement Lefebvre ]
+  * Switch to GNOME Online Accounts GTK
+  * l10n: Update POT
+
+  [ Rick Calixte ]
+  * cs_info: Add 'about' as a keyword for System Info (#12136)
+  * cs_keyboard: Enable configuration of bindings for Spices (#12128)
+
+  [ JosephMcc ]
+  * cs_themes: Fix the stack switcher sensitivity (#12117)
+
+  [ Rick Calixte ]
+  * inhibit@cinnamon.org: Add unique applet icons for notification toggles (#11744)
+
+  [ Fabian Schillig ]
+  * Show battery pending charge/discharge states in Power Management
+
+  [ Rick Calixte ]
+  * cinnamon-settings.py: Additional modules when Mint modules are absent (#11664)
+
+  [ Michael Webster ]
+  * cinnamon-settings: Forbid synaptic if mintsources is present.
+
+  [ linewelder ]
+  * Fix linuxmint#11313 (#12060)
+
+  [ JosephMcc ]
+  * Add userWidget.js (#12084)
+  * lightbox.js: Port to Clutter animations (#12071)
+  * modalDialog.js: Port to Clutter animations (#12072)
+  * desklet.js: Port to Clutter animations (#12073)
+
+  [ Michael Webster ]
+  * Add interface for xdg portal requests.
+  * doc generation: Fix strings with invalid escape codes.
+  * placesManager.js: Remove "Connect to..." item.
+
+  [ haggen88 ]
+  * New action icon for Mint-X theme (#12163)
+
+  [ Clement Lefebvre ]
+  * cs_themes: Blacklist Adwaita and HighContrast
+  * cs_themes: Blacklist a few more themes
+  * cs_themes: Blacklist adwaita-dark
+
+  [ Anaxímeno Brito ]
+  * user applet: Allow to display the profile picture on the panel (#12149)
+
+  [ Michael Webster ]
+  * userWidget.js: Fix AccountsService icon changes.
+  * user@cinnamon.org: Use UserWidget.Avatar for the panel user icon.
+  * cs_user.py: Use XApp.IconChooserDialog for "Browse for more...".
+
+  [ Corbin Auriti ]
+  * Update Show information on date format syntax URL to working one (#12168)
+
+  [ Anaxímeno Brito ]
+  * workspace switcher: remove the workspace the cursor is hovering on middle click (#11994)
+
+  [ Rick Calixte ]
+  * cs_keyboard.py and KeybindingWidgets.py: Add support for search by binding (#12193)
+
+  [ Anaxímeno Brito ]
+  * cornerbar applet: add shift + click actions settings (#12191)
+  * cornerbar: Properly filter windows not to transparentize on peek blur/opacity effects (#12169)
+  * show desktop applet: Fix desktop peek (#12185)
+
+  [ fredcw ]
+  * Remove unused js overrides (#12177)
+
+  [ Konstantin Svist ]
+  * Prevent window randomization on connecting a monitor (#12144)
+
+  [ fredcw ]
+  * Preserve file permissions of downloaded spices (#12174)
+  * cinnamon theme: fix expo-workspaces-name-entry (#12171)
+
+  [ Anaxímeno Brito ]
+  * cornerbar: Port to Clutter animations (#12199)
+  * show-desktop: Port to Clutter animations (#12200)
+  * gwl: Port to Clutter animations (#12198)
+
+  [ sphh ]
+  * Adds toggle switch to on-screen-keyboard@cinnamon applet to enable/disable keyboard. (#12132)
+
+  [ fredcw ]
+  * util.js: remove unused utility function latinise() (#12201)
+
+  [ Michael Webster ]
+  * userWidget: Back to using the theme to load the face image.
+  * user applet: handle the symbolic panel icon correctly.
+
+  [ Anaxímeno Brito ]
+  * gwl: Fix thumbnails resize on scaled monitors (#12203)
+
+  [ Roman Miroshnychenko ]
+  * Show "wired with a padlock" or "wireless with a padlock" icons when a VPN is connected (#12142)
+
+  [ Michael Webster ]
+  * Add a Science category to the menu. (#12215)
+
+  [ rlatosky ]
+  * sound@cinnamon.org: Prevent Muffin from creating sound streams in volume mixer in sound applet
+
+  [ Michael Webster ]
+  * cinnamon-app-system.c: Don't remove an app from running_apps until after emitting the changed signal.
+
+  [ JosephMcc ]
+  * userWidget: Simplify a bit (#12221)
+
+  [ Michael Webster ]
+  * Embed nemo's layout editor into cinnamon-settings' Actions module.
+
+  [ claudiux ]
+  * Prevents Cvc.MixerControl from being loaded more than once
+
+  [ Clement Lefebvre ]
+  * l10n: Generate additional files
+  * l10n: Generate CS module desktop files
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * xdg-desktop-portal: Don't ship the x-cinnamon-portals.conf file.
+
+  [ JosephMcc ]
+  * PopupSliderMenuItem: Don't track the hover state (#12229)
+
+  [ Jamie Dimos ]
+  * window-list: Remove indicators for minimized and tiled windows (#12227)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 16 Jun 2024 11:03:43 +0100
+
 cinnamon (6.0.4) virginia; urgency=medium
 
   [ Fabio Fantoni ]
