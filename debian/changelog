@@ -1,3 +1,10 @@
+cinnamon (6.2.1) wilma; urgency=medium
+
+  [ Anaxímeno Brito ]
+  * Fix extensions automatically enabling on download (#12239)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 18 Jun 2024 18:48:42 +0100
+
 cinnamon (6.2.0) wilma; urgency=medium
 
   [ claudiux ]
