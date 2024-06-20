@@ -19,6 +19,7 @@ const {
     DeviceKind: UPDeviceKind,
     DeviceLevel: UPDeviceLevel,
     DeviceState: UPDeviceState,
+    Device: UPDevice
 } = UPowerGlib
 
 function deviceLevelToString(level) {
@@ -39,6 +40,9 @@ function deviceLevelToString(level) {
 }
 
 function deviceKindToString(kind) {
+    // By default we use .replaceAll('-', ' ') and .capitalize() to make the
+    // UPowerGlib.kind_to_string() result more friendly, but we also handle a
+    // few special cases here where that does't provide an optimal result.
     switch (kind) {
         case UPDeviceKind.LINE_POWER:
             return _("AC adapter");
@@ -46,24 +50,24 @@ function deviceKindToString(kind) {
             return _("Laptop battery");
         case UPDeviceKind.UPS:
             return _("UPS");
-        case UPDeviceKind.MONITOR:
-            return _("Monitor");
-        case UPDeviceKind.MOUSE:
-            return _("Mouse");
-        case UPDeviceKind.KEYBOARD:
-            return _("Keyboard");
         case UPDeviceKind.PDA:
             return _("PDA");
         case UPDeviceKind.PHONE:
             return _("Cell phone");
-        case UPDeviceKind.MEDIA_PLAYER:
-            return _("Media player");
-        case UPDeviceKind.TABLET:
-            return _("Tablet");
-        case UPDeviceKind.COMPUTER:
-            return _("Computer");
-        default:
-            return _("Unknown");
+        case UPDeviceKind.BLUETOOTH_GENERIC:
+            return _("Bluetooth device");
+        default: {
+            try {
+                return _(
+                    UPDevice
+                        .kind_to_string(kind)
+                        .replaceAll('-', ' ')
+                        .capitalize()
+                );
+            } catch {
+                return _("Unknown");
+            }
+        }
     }
 }
 
@@ -84,6 +88,20 @@ function deviceKindToIcon(kind, icon) {
             return ("computer");
         case UPDeviceKind.GAMING_INPUT:
             return ("input-gaming");
+        case UPDeviceKind.TOUCHPAD:
+            return ("input-touchpad");
+        case UPDeviceKind.HEADSET:
+            return ("audio-headset");
+        case UPDeviceKind.SPEAKERS:
+            return ("audio-speakers");
+        case UPDeviceKind.HEADPHONES:
+            return ("audio-headphones");
+        case UPDeviceKind.PRINTER:
+            return ("printer");
+        case UPDeviceKind.SCANNER:
+            return ("scanner");
+        case UPDeviceKind.CAMERA:
+            return ("camera-photo");
         default:
             if (icon) {
                 return icon;
