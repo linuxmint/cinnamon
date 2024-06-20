@@ -354,7 +354,7 @@ class AppGroup {
                     labelNaturalSize + iconNaturalSize + 6 : 0;
                 alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
             } else {
-                alloc.natural_size = iconNaturalSize + 6 * global.ui_scale;
+                alloc.natural_size = iconNaturalSize + 10 * global.ui_scale;
             }
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
