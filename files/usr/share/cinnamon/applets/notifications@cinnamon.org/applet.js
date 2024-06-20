@@ -33,7 +33,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.notif_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.notifications" });
         this.notif_settings.connect('changed::display-notifications', Lang.bind(this, function() {
         this.set_icon_status(!this.notif_settings.get_boolean("display-notifications"));
-      }));               
+        }));               
 
         // Layout
         this._orientation = orientation;
@@ -112,10 +112,10 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Enable notifications"), this._toggleNotifications);
         this.notif_settings.connect('changed::display-notifications', Lang.bind(this, function() {
         this.notificationsSwitch.setToggleState(this.notif_settings.get_boolean("display-notifications"));
-            }));
+        }));
         this.notificationsSwitch.connect('toggled', Lang.bind(this, function() {
         this.notif_settings.set_boolean("display-notifications", this.notificationsSwitch.state);
-            }));
+        }));
         this.notificationsSwitch.setToggleState(this.notif_settings.get_boolean("display-notifications"));
         this.menu.addMenuItem(this.notificationsSwitch);
         
@@ -238,7 +238,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                 this.set_applet_tooltip(_("Notifications disabled"));
                 this.notDisturb_label.actor.show(); // Change label when "Do not disturb" is enabled
                 this.menu_label.actor.hide();
-               if (this.showDisturbIcon) {
+                if (this.showDisturbIcon) {
                     this.actor.show();
                 }                
             }            
@@ -277,7 +277,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         }
     }
 
-   _show_disturb_icon() { // Option to keep disturb icon on panel when show empty tray option is disabled.
+    _show_disturb_icon() { // Option to keep disturb icon on panel when show empty tray option is disabled.
         if(global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
             if (!this.showEmptyTray) {                
                 this.actor.show();
