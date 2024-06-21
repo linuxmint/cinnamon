@@ -1,3 +1,10 @@
+cinnamon (6.2.2) wilma; urgency=medium
+
+  [ Michael Webster ]
+  * Revert "xdg-desktop-portal: Don't ship the x-cinnamon-portals.conf file."
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 21 Jun 2024 17:07:03 +0100
+
 cinnamon (6.2.1) wilma; urgency=medium
 
   [ Anaxímeno Brito ]
