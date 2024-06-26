@@ -79,7 +79,7 @@ STANDALONE_MODULES = [
     [_("Login Window"),               "lightdm-gtk-greeter-settings-pkexec",  "cs-login",                  "admin",      _("login, lightdm, manager, settings, editor")],
     [_("Login Window"),               "gdm-settings",                         "gdm-settings",              "admin",      _("login, gdm, manager, user, startup, switch")],
     [_("Driver Manager"),             "cinnamon-driver-manager",              "cs-drivers",                "admin",      _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
-    [_("Nvidia Settings"),            "nvidia-settings",                      "cs-drivers",                "admin",      _("video, driver, proprietary, nvidia, settings")],
+    [_("Nvidia Settings"),            "nvidia-settings",                      "nvidia-settings",           "admin",      _("video, driver, proprietary, nvidia, settings")],
     [_("Software Sources"),           "pkexec mintsources",                   "cs-sources",                "admin",      _("ppa, repository, package, source, download")],
     [_("Package Management"),         "dnfdragora",                           "dnfdragora",                "admin",      _("update, install, repository, package, source, download")],
     [_("Package Management"),         "gpk-application",                      "gpk-prefs",                 "admin",      _("update, install, repository, package, source, download")],
