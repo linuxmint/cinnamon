@@ -31,8 +31,9 @@ ROW_SIZE = 32
 
 UNSAFE_ITEMS = ['spawn_sync', 'spawn_command_line_sync', 'GTop', 'get_file_contents_utf8_sync']
 
-LANGUAGE_CODE = "C"
+LANGUAGE_CODE = LONG_LANGUAGE_CODE = "C"
 try:
+    LONG_LANGUAGE_CODE = locale.getlocale()[0]
     LANGUAGE_CODE = locale.getlocale()[0].split("_")[0]
 except:
     pass
@@ -692,12 +693,15 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
                 self.author = data['author_user']
 
         if 'translations' in data.keys():
-            key = f'name_{LANGUAGE_CODE}'
-            if key in data['translations'].keys():
-                self.name = data['translations'][key]
-            key = f'description_{LANGUAGE_CODE}'
-            if key in data['translations'].keys():
-                self.description = data['translations'][key]
+            for key in (f'name_{LONG_LANGUAGE_CODE}', f'name_{LANGUAGE_CODE}'):
+                if key in data['translations'].keys():
+                    self.name = data['translations'][key]
+                    break
+
+            for key in (f'description_{LONG_LANGUAGE_CODE}', f'description_{LANGUAGE_CODE}'):
+                if key in data['translations'].keys():
+                    self.description = data['translations'][key]
+                    break
 
         self.has_update = False
 
