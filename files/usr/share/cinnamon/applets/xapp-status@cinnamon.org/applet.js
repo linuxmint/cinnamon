@@ -39,6 +39,8 @@ class RecorderIcon {
 
         this._recordListenerId = Main.screenRecorder.connect("recording", () => this._recordingStateChanged());
         this._recordingStateChanged();
+
+        this.refresh();
     }
 
     _recordingStateChanged() {
@@ -97,6 +99,7 @@ class RecorderIcon {
             Main.screenRecorder.disconnect(this._recordListenerId);
             this._recordListenerId = 0;
         }
+        this.actor.destroy();
     }
 }
 
@@ -620,7 +623,7 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
             delete this.ignoredProxies[key];
         };
 
-        this._recording_indicator.actor.destroy();
+        this._recording_indicator.destroy();
         this._recording_indicator = null;
 
         this.monitor = null;
