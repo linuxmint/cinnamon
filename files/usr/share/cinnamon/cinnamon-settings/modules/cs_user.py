@@ -53,7 +53,7 @@ class Module:
 
             self.scale = self.window.get_scale_factor()
 
-            self.face_button = PictureChooserButton(num_cols=4, button_picture_size=64, menu_pictures_size=64*self.scale, keep_square=True)
+            self.face_button = PictureChooserButton(num_cols=4, button_picture_width=64, menu_picture_width=64*self.scale, keep_square=True)
             self.face_button.set_alignment(0.0, 0.5)
             self.face_button.set_tooltip_text(_("Click to change your picture"))
 

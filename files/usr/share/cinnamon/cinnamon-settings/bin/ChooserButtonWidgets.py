@@ -7,14 +7,22 @@ import datetime
 gettext.install("cinnamon", "/usr/share/locale")
 
 class BaseChooserButton(Gtk.Button):
-    def __init__ (self, has_button_label=False):
+    def __init__ (self, has_button_label=False, frame=False):
         super(BaseChooserButton, self).__init__()
         self.has_button_label = has_button_label
+        self.frame = frame
         self.set_valign(Gtk.Align.CENTER)
         self.menu = Gtk.Menu()
         self.button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         self.button_image = Gtk.Image()
-        self.button_box.add(self.button_image)
+
+        if self.frame:
+            f = Gtk.Frame(valign=Gtk.Align.END, halign=Gtk.Align.CENTER)
+            f.add(self.button_image)
+            self.button_box.add(f)
+        else:
+            self.button_box.add(self.button_image)
+
         if self.has_button_label:
             self.button_label = Gtk.Label()
             self.button_box.add(self.button_label)
@@ -58,12 +66,12 @@ class BaseChooserButton(Gtk.Button):
             self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
 
 class PictureChooserButton(BaseChooserButton):
-    def __init__ (self, num_cols=4, button_picture_size=24, menu_pictures_size=24, has_button_label=False, keep_square=False):
-        super(PictureChooserButton, self).__init__(has_button_label)
+    def __init__ (self, num_cols=4, button_picture_width=24, menu_picture_width=24, has_button_label=False, keep_square=False, frame=False):
+        super(PictureChooserButton, self).__init__(has_button_label, frame)
         self.num_cols = num_cols
         self.scale = self.get_scale_factor()
-        self.button_picture_size = button_picture_size
-        self.menu_pictures_size = menu_pictures_size
+        self.button_picture_width = button_picture_width
+        self.menu_picture_width = menu_picture_width
         self.keep_square = keep_square
         self.row = 0
         self.col = 0
@@ -74,9 +82,9 @@ class PictureChooserButton(BaseChooserButton):
 
         self.button_image.set_valign(Gtk.Align.CENTER)
         if self.keep_square:
-            self.button_image.set_size_request(button_picture_size / self.scale, button_picture_size / self.scale)
+            self.button_image.set_size_request(button_picture_width / self.scale, button_picture_width / self.scale)
         else:
-            self.button_image.set_size_request(-1, button_picture_size / self.scale)
+            self.button_image.set_size_request(button_picture_width / self.scale, -1)
 
         self.connect_after("draw", self.on_draw)
 
@@ -114,8 +122,8 @@ class PictureChooserButton(BaseChooserButton):
         self.queue_draw()
 
     def create_scaled_surface(self, path):
-        w = -1 if not self.keep_square else self.button_picture_size * self.scale
-        h = self.button_picture_size * self.scale
+        w = self.button_picture_width * self.scale
+        h = -1 if not self.keep_square else self.button_picture_width * self.scale
 
         try:
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, w, h)
@@ -154,7 +162,7 @@ class PictureChooserButton(BaseChooserButton):
 
     def add_picture(self, path, callback, title=None, id=None):
         image = Gtk.Image()
-        image.set_size_request(-1, self.menu_pictures_size / self.scale)
+        image.set_size_request(self.menu_picture_width / self.scale, -1)
 
         surface = self.create_scaled_surface(path)
 
@@ -163,16 +171,23 @@ class PictureChooserButton(BaseChooserButton):
         else:
             image.set_from_icon_name("user-generic", Gtk.IconSize.BUTTON)
 
+        if self.frame:
+            frame = Gtk.Frame(halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER)
+            frame.add(image)
+            menu_image = frame
+        else:
+            menu_image = image
+
         menuitem = Gtk.MenuItem()
         if title is not None:
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-            vbox.add(image)
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2, valign=Gtk.Align.END)
+            vbox.add(menu_image)
             label = Gtk.Label()
             label.set_text(title)
             vbox.add(label)
             menuitem.add(vbox)
         else:
-            menuitem.add(image)
+            menuitem.add(menu_image)
         if id is not None:
             menuitem.connect('activate', self._on_picture_selected, path, callback, id)
         else:

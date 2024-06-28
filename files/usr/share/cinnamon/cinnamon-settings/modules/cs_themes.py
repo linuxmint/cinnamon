@@ -190,10 +190,10 @@ class Module:
 
             self.scale = self.window.get_scale_factor()
 
-            self.icon_chooser = self.create_button_chooser(self.settings, 'icon-theme', 'icons', 'icons', button_picture_size=ICON_SIZE, menu_pictures_size=ICON_SIZE, num_cols=4)
-            self.cursor_chooser = self.create_button_chooser(self.settings, 'cursor-theme', 'icons', 'cursors', button_picture_size=32, menu_pictures_size=32, num_cols=4)
-            self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', button_picture_size=35, menu_pictures_size=35, num_cols=4)
-            self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_size=60, menu_pictures_size=60*self.scale, num_cols=4)
+            self.icon_chooser = self.create_button_chooser(self.settings, 'icon-theme', 'icons', 'icons', button_picture_width=ICON_SIZE, menu_picture_width=ICON_SIZE, num_cols=4, frame=False)
+            self.cursor_chooser = self.create_button_chooser(self.settings, 'cursor-theme', 'icons', 'cursors', button_picture_width=32, menu_picture_width=32, num_cols=4, frame=False)
+            self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', button_picture_width=125, menu_picture_width=125, num_cols=4, frame=True)
+            self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_width=125, menu_picture_width=125*self.scale, num_cols=4, frame=True)
 
             selected_meta_theme = None
 
@@ -700,6 +700,9 @@ class Module:
         else:
             if path_suffix == "cinnamon":
                 chooser.add_picture("/usr/share/cinnamon/theme/thumbnail.png", callback, title="cinnamon", id="cinnamon")
+            if path_suffix in ["gtk-3.0", "cinnamon"]:
+                themes = sorted(themes, key=lambda t: (not t[1].startswith(GLib.get_home_dir())))
+
             for theme in themes:
                 theme_name = theme[0]
                 theme_path = theme[1]
@@ -740,19 +743,19 @@ class Module:
 
         return box
 
-    def create_button_chooser(self, settings, key, path_prefix, path_suffix, button_picture_size, menu_pictures_size, num_cols):
-        chooser = PictureChooserButton(num_cols=num_cols, button_picture_size=button_picture_size, menu_pictures_size=menu_pictures_size, has_button_label=True)
+    def create_button_chooser(self, settings, key, path_prefix, path_suffix, button_picture_width, menu_picture_width, num_cols, frame):
+        chooser = PictureChooserButton(num_cols=num_cols, button_picture_width=button_picture_width, menu_picture_width=menu_picture_width, has_button_label=True, frame=frame)
         theme = settings.get_string(key)
-        self.set_button_chooser(chooser, theme, path_prefix, path_suffix, button_picture_size)
+        self.set_button_chooser(chooser, theme, path_prefix, path_suffix, button_picture_width)
         return chooser
 
-    def set_button_chooser(self, chooser, theme, path_prefix, path_suffix, button_picture_size):
+    def set_button_chooser(self, chooser, theme, path_prefix, path_suffix, button_picture_width):
         self.set_button_chooser_text(chooser, theme)
         if path_suffix == "cinnamon" and theme == "cinnamon":
             chooser.set_picture_from_file("/usr/share/cinnamon/theme/thumbnail.png")
         elif path_suffix == "icons":
             current_theme = Gtk.IconTheme.get_default()
-            folder = current_theme.lookup_icon_for_scale("folder", button_picture_size, self.window.get_scale_factor(), 0)
+            folder = current_theme.lookup_icon_for_scale("folder", button_picture_width, self.window.get_scale_factor(), 0)
             if folder is not None:
                 path = folder.get_filename()
                 chooser.set_picture_from_file(path)
