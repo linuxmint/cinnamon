@@ -1,3 +1,17 @@
+cinnamon (6.2.3) wilma; urgency=medium
+
+  [ Michael Webster ]
+  * cinnamon-settings.py: Use the nvidia icon for nvidia-settings.
+
+  [ Rick Calixte ]
+  * ExtensionCore.py: Check for display names in translations (#12256)
+
+  [ Michael Webster ]
+  * cs_themes: Frame App and Cinnamon themes, move user themes to the top.
+  * xapp status: Make sure the recording icon size is set, disconnect the recording signal when the applet is removed.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 30 Jun 2024 11:37:15 +0100
+
 cinnamon (6.2.2) wilma; urgency=medium
 
   [ Michael Webster ]
