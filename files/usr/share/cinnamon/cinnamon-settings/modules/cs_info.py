@@ -42,7 +42,7 @@ def getGraphicsInfos():
     envpath = os.environ["PATH"]
     os.environ["PATH"] = envpath + ":/usr/local/sbin:/usr/sbin:/sbin"
     for card in getProcessOut("lspci"):
-        if not "VGA" in card:
+        if not "VGA" in card and not "3D controller" in card:
             continue
         cardId = card.split()[0]
         cardName = None
