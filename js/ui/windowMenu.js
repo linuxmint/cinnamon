@@ -7,6 +7,7 @@ const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const CheckBox = imports.ui.checkBox;
 const RadioButton = imports.ui.radioButton;
+const SignalManager = imports.misc.signalManager;
 
 var BaseMnemonicMenuItem = class BaseMnemonicMenuItem extends PopupMenu.PopupBaseMenuItem {
     _init (label, params) {
@@ -366,7 +367,8 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
 
 var WindowMenuManager = class {
     constructor() {
-        this._manager = new PopupMenu.PopupMenuManager(this);
+        this._manager = null;
+        this._wmsignals = null;
 
         this._sourceActor = new St.Widget({ reactive: true, visible: false });
         this._sourceActor.connect('button-press-event', () => {
@@ -379,7 +381,6 @@ var WindowMenuManager = class {
 
         this.current_menu = null;
         this.current_window = null;
-        this.destroyId = 0;
     }
 
     showWindowMenuForWindow(window, type, rect) {
@@ -391,19 +392,21 @@ var WindowMenuManager = class {
         }
 
         this.destroyMenu();
+        this._manager = new PopupMenu.PopupMenuManager(this);
+        this._wmsignals = new SignalManager.SignalManager(null);
 
         let menu = new WindowMenu(window, this._sourceActor);
 
         this._manager.addMenu(menu);
 
-        menu.connect('activate', () => {
+        this._wmsignals.connect(menu, 'activate', () => {
             window.check_alive(global.get_current_time());
         });
-        menu.connect('menu-animated-closed', () => {
+        this._wmsignals.connect(menu, 'menu-animated-closed', () => {
             this.destroyMenu();
         });
 
-        let destroyId = window.connect('unmanaged', () => {
+        this._wmsignals.connect(window, 'unmanaged', () => {
             this.destroyMenu();
         });
 
@@ -417,7 +420,7 @@ var WindowMenuManager = class {
 
         menu.open();
         menu.actor.navigate_focus(null, Gtk.DirectionType.TAB_FORWARD, false);
-        menu.connect('open-state-changed', (menu_, isOpen) => {
+        this._wmsignals.connect(menu, 'open-state-changed', () => {
             this.destroyMenu();
         });
 
@@ -426,16 +429,17 @@ var WindowMenuManager = class {
     }
 
     destroyMenu() {
-        this._sourceActor.hide();
+        if (this._wmsignals != null) {
+            this._wmsignals.disconnectAllSignals();
+            this._wmsignals = null;
 
-        if (this.destroyId > 0) {
-            this.current_window.disconnect(destroyId);
-            this.destroyId = 0;
-        }
+            this._sourceActor.hide();
 
-        if (this.current_menu) {
-            this.current_menu.destroy();
-            this.current_menu = null;
+            if (this.current_menu) {
+                this.current_menu.close(false)
+                this._manager.destroy()
+                this._manager = null
+            }
         }
     }
 };
