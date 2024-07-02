@@ -172,9 +172,11 @@ class CinnamonUserApplet extends Applet.TextApplet {
 
     _updatePanelIcon() {
         if (this.display_image) {
-            if (this._panel_avatar == null) {
-                this._panel_avatar = new UserWidget.Avatar(this._user, { iconSize: this.getPanelIconSize(St.IconType.FULLCOLOR) });
+            if (this._panel_avatar != null) {
+                this._panel_avatar.destroy()
             }
+
+            this._panel_avatar = new UserWidget.Avatar(this._user, { iconSize: this.getPanelIconSize(St.IconType.FULLCOLOR) });
             this._panel_icon_box.set_child(this._panel_avatar);
             this._panel_avatar.update();
             this._panel_avatar.show();
