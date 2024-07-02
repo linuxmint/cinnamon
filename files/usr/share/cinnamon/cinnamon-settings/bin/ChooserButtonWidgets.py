@@ -66,11 +66,11 @@ class BaseChooserButton(Gtk.Button):
             self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
 
 class PictureChooserButton(BaseChooserButton):
-    def __init__ (self, num_cols=4, button_picture_width=24, menu_picture_width=24, has_button_label=False, keep_square=False, frame=False):
+    def __init__ (self, num_cols=4, button_picture_height=24, menu_picture_width=24, has_button_label=False, keep_square=False, frame=False):
         super(PictureChooserButton, self).__init__(has_button_label, frame)
         self.num_cols = num_cols
         self.scale = self.get_scale_factor()
-        self.button_picture_width = button_picture_width
+        self.button_picture_height = button_picture_height
         self.menu_picture_width = menu_picture_width
         self.keep_square = keep_square
         self.row = 0
@@ -82,9 +82,9 @@ class PictureChooserButton(BaseChooserButton):
 
         self.button_image.set_valign(Gtk.Align.CENTER)
         if self.keep_square:
-            self.button_image.set_size_request(button_picture_width / self.scale, button_picture_width / self.scale)
+            self.button_image.set_size_request(button_picture_height / self.scale, button_picture_height / self.scale)
         else:
-            self.button_image.set_size_request(button_picture_width / self.scale, -1)
+            self.button_image.set_size_request(-1, button_picture_height / self.scale)
 
         self.connect_after("draw", self.on_draw)
 
@@ -121,10 +121,13 @@ class PictureChooserButton(BaseChooserButton):
         self.progress = 0.0
         self.queue_draw()
 
-    def create_scaled_surface(self, path):
-        w = self.button_picture_width * self.scale
-        h = -1 if not self.keep_square else self.button_picture_width * self.scale
-
+    def create_scaled_surface(self, path, for_button=False):
+        if for_button:
+            w = -1 if not self.keep_square else self.button_picture_height * self.scale
+            h = self.button_picture_height * self.scale
+        else:
+            w = self.menu_picture_width * self.scale
+            h = -1 if not self.keep_square else self.menu_picture_width * self.scale
         try:
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, w, h)
             if pixbuf:
@@ -134,7 +137,7 @@ class PictureChooserButton(BaseChooserButton):
         return None
 
     def set_picture_from_file (self, path):
-        surface = self.create_scaled_surface(path)
+        surface = self.create_scaled_surface(path, for_button=True)
         if surface:
             self.button_image.set_from_surface(surface)
         else:
