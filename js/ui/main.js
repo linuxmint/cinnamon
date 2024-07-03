@@ -440,9 +440,7 @@ function start() {
     _initUserSession();
     screenRecorder = new ScreenRecorder.ScreenRecorder();
 
-    if (Meta.is_wayland_compositor()) {
-        PolkitAuthenticationAgent.init();
-    }
+    PolkitAuthenticationAgent.init();
 
     KeyringPrompt.init();
 
