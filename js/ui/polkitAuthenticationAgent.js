@@ -40,6 +40,7 @@ const CinnamonEntry = imports.ui.cinnamonEntry;
 const PopupMenu = imports.ui.popupMenu;
 const UserWidget = imports.ui.userWidget;
 const Util = imports.misc.util;
+const Main = imports.ui.main;
 
 const DIALOG_ICON_SIZE = 64;
 const DELAYED_RESET_TIMEOUT = 200;
@@ -523,5 +524,22 @@ var AuthenticationAgent = class {
 }
 
 function init() {
-    let agent = new AuthenticationAgent();
+    try {
+        let agent = new AuthenticationAgent();
+    } catch(err) {
+        if(!(err instanceof Error)) {
+            err = new Error(err);
+        }
+
+        log('polkitAuthenticationAgent: init error ' + err);
+
+        let icon = new St.Icon({ icon_name: 'dialog-warning',
+                                 icon_type: St.IconType.FULLCOLOR,
+                                 icon_size: 36 });
+
+        Main.warningNotify(_('Unable to start Cinnamon PolicyKit Agent'), err.message +
+                           "\n\n" +
+                           _("If you have another PolicyKit Agent configured to autostart, it should be disabled."),
+                           icon);
+    }
 }
