@@ -42,17 +42,11 @@ def getGraphicsInfos():
     envpath = os.environ["PATH"]
     os.environ["PATH"] = envpath + ":/usr/local/sbin:/usr/sbin:/sbin"
     for card in getProcessOut("lspci"):
-        if not "VGA" in card:
-            continue
-        cardId = card.split()[0]
-        cardName = None
-        for line in getProcessOut(("lspci", "-v", "-s", cardId)):
-            if line.startswith(cardId):
-                cardName = (line.split(":")[2].split("(rev")[0].strip())
-
-        if cardName:
-            cards[count] = cardName
-            count += 1
+        for prefix in ["VGA compatible controller:", "3D controller:"]:
+            if prefix in card:
+                cardName = card.split(prefix)[1].split("(rev")[0].strip()
+                cards[count] = cardName
+                count += 1
     os.environ["PATH"] = envpath
     return cards
 
