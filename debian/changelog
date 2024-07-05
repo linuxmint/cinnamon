@@ -1,3 +1,15 @@
+cinnamon (6.2.4) wilma; urgency=medium
+
+  [ Michael Webster ]
+  * windowMenu.js: Fix warning flood when moving a window to another workspace.
+  * cs_themes: Restrain picture button heights.
+  * user applet: Fix updating the avatar icon size when the panel height changes.
+
+  [ Clement Lefebvre ]
+  * cs-info: Better parsing of the graphics card lspci output
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 05 Jul 2024 20:58:48 +0100
+
 cinnamon (6.2.3) wilma; urgency=medium
 
   [ Michael Webster ]
