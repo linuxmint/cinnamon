@@ -686,6 +686,7 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         self.description = data['description']
         self.score = data['score']
         self.timestamp = data['last_edited']
+        self.subject = data['last_commit_subject']
 
         self.author = ""
         if 'author_user' in data:
@@ -753,7 +754,11 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
 
         description_label = SettingsLabel()
         description_markup = GLib.markup_escape_text(sanitize_html(self.description))
-        description_label.set_markup(f'<small>{description_markup}</small>')
+        if self.spices.get_has_update(uuid):
+            subject_markup = GLib.markup_escape_text(sanitize_html(self.subject))
+            description_label.set_markup(f'<small>{description_markup}</small>\n<small><i>{subject_markup}</i></small>')
+        else:
+            description_label.set_markup(f'<small>{description_markup}</small>')
         description_label.set_margin_top(2)
         desc_box.pack_start(description_label, False, False, 0)
 
