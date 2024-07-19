@@ -851,7 +851,7 @@ class Module:
             self.builder.get_object("box_users").show()
 
             # Count the number of connections for the currently logged-in user
-            connections = int(subprocess.check_output(["w", "-hs", user.get_user_name()]).decode("utf-8").count("\n"))
+            connections = int(subprocess.check_output(["w", "-h", user.get_user_name()]).decode("utf-8").count("\n"))
             if connections > 0:
                 self.builder.get_object("button_delete_user").set_sensitive(False)
                 self.builder.get_object("button_delete_user").set_tooltip_text(_("This user is currently logged in"))
