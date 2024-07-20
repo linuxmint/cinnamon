@@ -1,3 +1,13 @@
+cinnamon (6.2.6) wilma; urgency=medium
+
+  [ Clement Lefebvre ]
+  * cinnamon-settings-users: Don't use w -hs
+
+  [ Rick Calixte ]
+  * Set clip_to_allocation to true for menu and notification applets (#12296)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 20 Jul 2024 10:23:53 +0100
+
 cinnamon (6.2.5) wilma; urgency=medium
 
   [ claudiux ]
