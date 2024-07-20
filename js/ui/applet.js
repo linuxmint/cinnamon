@@ -17,7 +17,6 @@ const Signals = imports.signals;
 const Gettext = imports.gettext;
 const Cinnamon = imports.gi.Cinnamon;
 const SignalManager = imports.misc.signalManager;
-const Dnd = imports.ui.dnd;
 
 var AllowedLayout = {  // the panel layout that an applet is suitable for
     VERTICAL: 'vertical',
@@ -1059,11 +1058,6 @@ var PopupResizeHandler = class PopupResizeHandler {
             return false;
 
         //---Start drag------
-
-        if (Dnd.currentGrabActor != null) { //workaround for issue github.com/linuxmint/cinnamon/issues/11123
-            Dnd.currentGrabActor.fakeRelease();
-        }
-
         this._grabEvents(event);
         this.resizingInProgress = true;
 
