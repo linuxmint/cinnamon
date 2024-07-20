@@ -1,3 +1,10 @@
+cinnamon (6.2.7) wilma; urgency=medium
+
+  [ fredcw ]
+  * Dns.js: Revert bug workaround (#12298)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 20 Jul 2024 17:03:08 +0100
+
 cinnamon (6.2.6) wilma; urgency=medium
 
   [ Clement Lefebvre ]
