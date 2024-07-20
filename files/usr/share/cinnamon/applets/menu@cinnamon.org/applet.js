@@ -2730,6 +2730,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.categoriesScrollBox = new St.ScrollView({ style_class: 'vfade menu-applications-scrollbox' });
         this.categoriesScrollBox.add_actor(this.categoriesBox);
         this.categoriesScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
+        this.categoriesScrollBox.set_clip_to_allocation(true);
 
         this.categoriesApplicationsBox.actor.add(this.categoriesScrollBox);
 
@@ -2738,6 +2739,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.applicationsScrollBox = new St.ScrollView({ style_class: 'vfade menu-applications-scrollbox'});
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.applicationsScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
+        this.applicationsScrollBox.set_clip_to_allocation(true);
 
         let vscroll = this.applicationsScrollBox.get_vscroll_bar();
         vscroll.connect('scroll-start',
@@ -2763,6 +2765,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.favoritesBox = new FavoritesBox().actor;
         this.favoritesScrollBox = new St.ScrollView({ y_align: St.Align.START, style_class: 'vfade menu-favorites-scrollbox' });
         this.favoritesScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
+        this.favoritesScrollBox.set_clip_to_allocation(true);
         this.favoritesScrollBox.add_actor(this.favoritesBox);
 
         this.left_box.add(this.favoritesScrollBox, { expand: true });

@@ -260,6 +260,7 @@ MyApplet.prototype =
             });
             this._scrollBox.add_actor(this._container);
             this._scrollBox.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
+            this._scrollBox.set_clip_to_allocation(true);
             this._scrollBox.set_auto_scrolling(true);
 
             this.searchEntryText = this.searchEntry.clutter_text;

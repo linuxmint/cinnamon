@@ -98,6 +98,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this._maincontainer.add(this.scrollview);
         this.scrollview.add_actor(this._notificationbin);
         this.scrollview.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
+        this.scrollview.set_clip_to_allocation(true);
 
         let vscroll = this.scrollview.get_vscroll_bar();
         vscroll.connect('scroll-start', Lang.bind(this, function() {
