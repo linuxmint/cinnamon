@@ -554,6 +554,11 @@ class Module:
 
         self.sidePage.stack.set_visible_child_full(mode, transition)
 
+    def on_navigate_out_of_module(self):
+        switcher_widget = Gio.Application.get_default().stack_switcher
+        switcher_widget.set_opacity(1.0)
+        switcher_widget.set_sensitive(True)
+
     def on_color_button_clicked(self, button, variant):
         print("Color button clicked")
         self.activate_variant(variant)
