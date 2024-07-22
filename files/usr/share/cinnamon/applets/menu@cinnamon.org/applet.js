@@ -1686,7 +1686,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         let minIndex = 0;
-        let goUp = symbol === Clutter.KEY_Up;
+        let goUp = symbol === Clutter.KEY_Up || symbol === Clutter.KEY_KP_Up;
         let nextActive = null;
         let menuItems = this.contextMenu._getMenuItems(); // The context menu items
 
@@ -1757,6 +1757,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         /* Accounts for mirrored RTL layout.
            Switches between left/right key presses */
         if(St.Widget.get_default_direction() === St.TextDirection.RTL) {
+            // QUESTION: Do we need to flip for the numpad arrows too?
             if(symbol === Clutter.KEY_Right) {
                 symbol = Clutter.KEY_Left;
             } else if(symbol === Clutter.KEY_Left) {
@@ -1780,7 +1781,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             let continueNavigation = false;
             switch (symbol) {
                 case Clutter.KEY_Up:
+                case Clutter.KEY_KP_Up:
                 case Clutter.KEY_Down:
+                case Clutter.KEY_KP_Down:
                 case Clutter.KEY_Return:
                 case Clutter.KEY_KP_Enter:
                 case Clutter.KEY_Menu:
@@ -1790,7 +1793,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     this._navigateContextMenu(this._activeContextMenuParent, symbol, ctrlKey);
                     break;
                 case Clutter.KEY_Right:
+                case Clutter.KEY_KP_Right:
                 case Clutter.KEY_Left:
+                case Clutter.KEY_KP_Left:
                 case Clutter.KEY_Tab:
                 case Clutter.KEY_ISO_Left_Tab:
                     continueNavigation = true;
@@ -1808,12 +1813,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         
         switch (symbol) {
             case Clutter.KEY_Up:
+            case Clutter.KEY_KP_Up:
                 whichWay = "up";
                 if (this._activeContainer === this.favoritesBox && ctrlKey &&
                     this._activeActor._delegate instanceof FavoritesButton)
                     navigationKey = false;
                 break;
             case Clutter.KEY_Down:
+            case Clutter.KEY_KP_Down:
                 whichWay = "down";
                 if (this._activeContainer === this.favoritesBox && ctrlKey &&
                     this._activeActor._delegate instanceof FavoritesButton)
@@ -1824,6 +1831,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             case Clutter.KEY_Page_Down:
                 whichWay = "bottom"; break;
             case Clutter.KEY_Right:
+            case Clutter.KEY_KP_Right:
                 if (!this.searchActive)
                     whichWay = "right";
                 if (this._activeContainer === this.applicationsBox)
@@ -1833,6 +1841,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     whichWay = "none";
                 break;
             case Clutter.KEY_Left:
+            case Clutter.KEY_KP_Left:
                 if (!this.searchActive)
                     whichWay = "left";
                 if (this._activeContainer === this.favoritesBox || this._activeContainer === this.systemButtonsBox)
@@ -2036,8 +2045,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         item_actor = this.favoritesBox.get_child_at_index(selectedItemIndex);
                 }
             } else if (this._activeContainer === this.favoritesBox &&
-                        (symbol === Clutter.KEY_Down || symbol === Clutter.KEY_Up) && ctrlKey &&
-                        this._activeActor._delegate instanceof FavoritesButton) {
+                        (symbol === Clutter.KEY_Down || symbol === Clutter.KEY_KP_Down || 
+                         symbol === Clutter.KEY_Up || symbol === Clutter.KEY_KP_Up) && 
+                        ctrlKey && this._activeActor._delegate instanceof FavoritesButton) {
                 const selectedItemIndex = this._activeContainer._vis_iter.getAbsoluteIndexOfChild(this._activeActor);
                 item_actor = this._activeActor;
                 let id = item_actor._delegate.app.get_id();
@@ -2045,11 +2055,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 let favorites = appFavorites.getFavorites();
                 let numFavorites = favorites.length;
                 let favPos = 0;
-                if (selectedItemIndex == (numFavorites-1) && symbol === Clutter.KEY_Down)
+                if (selectedItemIndex == (numFavorites-1) && (symbol === Clutter.KEY_Down || symbol === Clutter.KEY_KP_Down))
                     favPos = 0;
-                else if (selectedItemIndex == 0 && symbol === Clutter.KEY_Up)
+                else if (selectedItemIndex == 0 && (symbol === Clutter.KEY_Up || symbol === Clutter.KEY_KP_Up))
                     favPos = numFavorites-1;
-                else if (symbol === Clutter.KEY_Down)
+                else if (symbol === Clutter.KEY_Down || symbol === Clutter.KEY_KP_Down)
                     favPos = selectedItemIndex + 1;
                 else
                     favPos = selectedItemIndex - 1;
