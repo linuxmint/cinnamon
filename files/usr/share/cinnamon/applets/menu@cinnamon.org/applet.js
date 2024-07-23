@@ -1757,12 +1757,20 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         /* Accounts for mirrored RTL layout.
            Switches between left/right key presses */
         if(St.Widget.get_default_direction() === St.TextDirection.RTL) {
-            // QUESTION: Do we need to flip for the numpad arrows too?
-            if(symbol === Clutter.KEY_Right) {
-                symbol = Clutter.KEY_Left;
-            } else if(symbol === Clutter.KEY_Left) {
-                symbol = Clutter.KEY_Right;
-            }
+            switch(symbol) {
+	        case Clutter.KEY_Right:
+                    symbol = Clutter.KEY_Left;
+	            break;
+	        case Clutter.KEY_KP_Right:
+	            symbol = Clutter.KEY_RP_Left;
+		    break;
+		case Clutter.KEY_Left:
+	            symbol = Clutter.KEY_Right;
+	            break;
+                case Clutter.KEY_KP_Left:
+	            symbol = Clutter.KEY_KP_Right;
+	            break;
+	    }
         }
 
         /* check for a keybinding and quit early, otherwise we get a double hit
