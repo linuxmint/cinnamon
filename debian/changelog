@@ -1,3 +1,10 @@
+cinnamon (6.2.8) wilma; urgency=medium
+
+  [ Michael Webster ]
+  * x-cinnamon-portals.conf: Add gnome-keyring as the Secret provider.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 04 Aug 2024 14:02:51 +0100
+
 cinnamon (6.2.7) wilma; urgency=medium
 
   [ fredcw ]
