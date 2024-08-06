@@ -9,6 +9,23 @@
             "Simple buttons": "buttons"
         }
     },
+    "show-window-icons": {
+        "type": "switch",
+        "dependency": "display-type=visual",
+        "description": "Display window icons",
+        "default": false
+    },
+    "window-icon-size": {
+        "type": "spinbutton",
+        "default": 16,
+        "min": 8,
+        "max": 32,
+        "step": 2,
+        "units": "px",
+        "description": "Window icon size",
+        "dependency": "display-type=visual",
+        "tooltip": "Depending on the size, the icons might look more or less blurry due to the rescaling."
+    },
     "scroll-behavior": {
         "type": "combobox",
         "default": "normal",
