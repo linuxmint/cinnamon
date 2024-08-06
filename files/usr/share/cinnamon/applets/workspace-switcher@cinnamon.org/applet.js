@@ -146,9 +146,9 @@ class WindowGraph {
     constructor(workspaceGraph, metaWindow, tracker, showIcon, iconSize) {
         this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
+        this.tracker = tracker;
         this.showIcon = showIcon;
         this.iconSize = iconSize;
-        this.tracker = tracker;
 
         this.drawingArea = new St.DrawingArea({
             style_class: 'windows',
@@ -159,31 +159,24 @@ class WindowGraph {
 
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
-        this._icon = this.showIcon ? undefined : this.getIcon();
-
+        this._icon = undefined;
         if (this.showIcon) {
-            const [x, y] = this.calcIconPos();
+            const rect = this.intersectionRect();
+            const [x, y] = this.calcIconPos(rect);
             this.icon.set_x(x);
             this.icon.set_y(y);
         }
     }
 
     get icon() {
-        if (!this._icon) {
-            this._icon = this.getIcon();
-        }
-
+        if (!this._icon)
+            this._icon = this.createIcon();
         return this._icon;
     }
 
-    calcIconPos(rect = undefined) {
-        if (!rect) {
-            rect = this.intersectionRect();
-        }
-
+    calcIconPos(rect) {
         const x = Math.round(rect.x + rect.width / 2 - this.iconSize * global.ui_scale / 2);
         const y = Math.round(rect.y + rect.height / 2 - this.iconSize * global.ui_scale / 2);
-
         return [x, y];
     }
 
@@ -266,7 +259,7 @@ class WindowGraph {
         return [windowBackgroundColor, windowBorderColor];
     }
 
-    getIcon() {
+    createIcon() {
         let iconActor = null;
         let app = this.tracker.get_window_app(this.metaWindow);
 
@@ -291,9 +284,11 @@ class WindowGraph {
     destroy() {
         if (this.showIcon && this._icon) {
             this._icon.destroy();
+            this._icon = undefined;
         }
 
         this.drawingArea.destroy();
+        this.drawingArea = undefined;
     }
 
     update(options = {}) {
@@ -302,7 +297,6 @@ class WindowGraph {
 
     show() {
         this.workspaceGraph.graphArea.add_child(this.drawingArea);
-
         if (this.showIcon) {
             this.workspaceGraph.graphArea.add_child(this.icon);
         }
@@ -400,12 +394,13 @@ class WorkspaceGraph extends WorkspaceButton {
             this.windowsGraphs.forEach(e => e.destroy());
         }
 
+        this.windowsGraphs = [];
+
         const showIcon = this.applet.show_window_icons;
         const iconSize = this.applet.window_icon_size;
         const tracker = Cinnamon.WindowTracker.get_default();
 
         this.focusGraph = undefined;
-        this.windowsGraphs = [];
         for (const window of windows) {
             const graph = new WindowGraph(this, window, tracker, showIcon, iconSize);
 
@@ -445,7 +440,9 @@ class WorkspaceGraph extends WorkspaceButton {
     }
 
     destroy() {
+        this.focusGraph = undefined;
         this.windowsGraphs.forEach(e => e.destroy());
+        this.windowsGraphs = [];
         super.destroy();
     }
 }
