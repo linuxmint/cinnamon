@@ -340,7 +340,7 @@ class AppGroup {
         const [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
         // The label text starts in the center of the icon, so we should allocate the space
         // needed for the icon plus the space needed for(label - icon/2)
-        alloc.min_size = 1 * global.ui_scale;
+        alloc.min_size = this.iconSize * global.ui_scale;
 
         const {appId} = this.groupState;
 
