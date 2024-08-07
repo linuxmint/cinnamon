@@ -317,3 +317,5 @@ function createStore(state = {}, listeners = [], connections = 0) {
 
     return getAPIWithObject(state);
 }
+
+module.exports = createStore;

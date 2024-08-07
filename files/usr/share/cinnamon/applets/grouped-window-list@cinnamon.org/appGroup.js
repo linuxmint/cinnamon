@@ -10,8 +10,8 @@ const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
 const {SignalManager} = imports.misc.signalManager;
 const {unref} = imports.misc.util;
-const {createStore} = imports.misc.state;
 
+const createStore = require('./state');
 const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
 const {
     FLASH_INTERVAL,

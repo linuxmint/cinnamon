@@ -2,8 +2,8 @@ const Clutter = imports.gi.Clutter;
 const Main = imports.ui.main;
 const {SignalManager} = imports.misc.signalManager;
 const {unref} = imports.misc.util;
-const {createStore} = imports.misc.state;
 
+const createStore = require('./state');
 const AppGroup = require('./appGroup');
 const {RESERVE_KEYS} = require('./constants');
 

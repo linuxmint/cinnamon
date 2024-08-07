@@ -12,8 +12,8 @@ const DND = imports.ui.dnd;
 const {AppletSettings} = imports.ui.settings;
 const {SignalManager} = imports.misc.signalManager;
 const {throttle, unref, trySpawnCommandLine} = imports.misc.util;
-const {createStore} = imports.misc.state;
 
+const createStore = require('./state');
 const AppGroup = require('./appGroup');
 const Workspace = require('./workspace');
 const {
