@@ -247,6 +247,14 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
         self.set_show_dialog_item(True)
         self.connect("changed", self.onChanged)
 
+    def do_scroll_event(self, event, data=None):
+        # Skip Gtk.ComboBox's default handler.
+        #
+        # Connecting to a Gtk.ComboBox and stopping a scroll-event
+        # prevents unintentional combobox changes, but also breaks
+        # any scrollable parents when passing over the combobox.
+        Gtk.Widget.do_scroll_event(self, event)
+
     def onChanged(self, button):
         info = button.get_app_info()
 
@@ -312,6 +320,14 @@ class DefaultTerminalButton(Gtk.AppChooserButton):
                     if self.key_value == exec_val:
                         self.set_active_custom_item(self.key_value)
             count_up += 1
+
+    def do_scroll_event(self, event, data=None):
+        # Skip Gtk.ComboBox's default handler.
+        #
+        # Connecting to a Gtk.ComboBox and stopping a scroll-event
+        # prevents unintentional combobox changes, but also breaks
+        # any scrollable parents when passing over the combobox.
+        Gtk.Widget.do_scroll_event(self, event)
 
     def onChanged(self, button):
         index_num = button.get_active()
