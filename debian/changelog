@@ -1,3 +1,10 @@
+cinnamon (6.2.9) wilma; urgency=medium
+
+  [ Michael Webster ]
+  * cs_default.py: Disable mousewheel selection in the default app comboboxes.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 08 Aug 2024 16:28:03 +0100
+
 cinnamon (6.2.8) wilma; urgency=medium
 
   [ Michael Webster ]
