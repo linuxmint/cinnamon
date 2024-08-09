@@ -547,10 +547,8 @@ class Module:
 
         if mode == "simplified":
             switcher_widget.set_opacity(0.0)
-            switcher_widget.set_sensitive(False)
         else:
             switcher_widget.set_opacity(1.0)
-            switcher_widget.set_sensitive(True)
 
         self.sidePage.stack.set_visible_child_full(mode, transition)
 
