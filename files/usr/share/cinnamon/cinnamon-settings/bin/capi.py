@@ -27,20 +27,18 @@ class CManager:
         self.extension_point = Gio.io_extension_point_register ("cinnamon-control-center-1")
         self.modules = []
 
-        architecture = platform.machine()
         # get the arch-specific triplet, e.g. 'x86_64-linux-gnu' or 'arm-linux-gnueabihf'
         # see also: https://wiki.debian.org/Python/MultiArch
         triplet = sysconfig.get_config_var('MULTIARCH')
-        paths = ["/usr/lib", f"/usr/lib/{triplet}"]
+        paths = ["/usr/lib", "/usr/lib64", f"/usr/lib/{triplet}"]
 
         # On x86 archs, iterate through multiple paths
         # For instance, on a Mint i686 box, the path is actually /usr/lib/i386-linux-gnu
+        architecture = platform.machine()
         x86archs = ["i386", "i486", "i586", "i686"]
         if architecture in x86archs:
             for arch in x86archs:
                 paths += ["/usr/lib/%s" % arch]
-        elif architecture == "x86_64":
-            paths += ["/usr/lib/x86_64", "/usr/lib64"]
         else:
             paths += ["/usr/lib/%s" % architecture]
 
