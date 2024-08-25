@@ -5,9 +5,16 @@ install_subdir(
     install_dir: pkgdatadir,
 )
 
+subdir('theme')
+
 install_subdir(
     'theme',
-    exclude_files: ['theme-changelog.txt'],
+    exclude_files: [
+        'theme-changelog.txt',
+        'meson.build',
+        'parse-sass.sh'
+    ],
+    exclude_directories: ['cinnamon-sass'],
     install_dir: pkgdatadir,
 )
 

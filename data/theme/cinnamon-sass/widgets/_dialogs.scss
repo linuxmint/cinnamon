@@ -1,0 +1,126 @@
+// Modal dialogs
+
+.modal-dialog {
+  background-color: $bg_color;
+  border-radius: $base_border_radius;
+  border: 1px solid $borders_color;
+
+  > StBoxLayout:first-child { padding: $base_padding * 2; }
+
+  &-button-box {
+    spacing: 0;
+    margin: 0;
+    padding: $base_padding * 2;
+  }
+
+  &-button {
+    @extend %button;
+  }
+
+  .confirm-dialog-title {
+    @extend %title_2;
+    text-align: center;
+    padding-bottom: $base_padding;
+  }
+}
+
+// run dialog
+
+.run-dialog {
+  > * { padding: 0; }
+
+  padding: $base_padding $base_padding * 2;
+
+  &-description {
+    @extend %caption;
+
+    padding-top: $base_padding * 2;
+    text-align: center;
+    color: darken($fg_color, 20%);
+
+    &.error { color: $error_color; }
+  }
+
+  &-completion-box {
+    padding-top: $base_padding;
+    padding-left: $base_padding * 2;
+  }
+
+  &-entry {
+    @extend %entry;
+
+    width: 20em;
+    height: 1.2em;
+  }
+}
+
+// password or authentication dialog
+
+.prompt-dialog {
+  width: 28em;
+
+  .modal-dialog-content-box {
+    margin-bottom: $base_margin * 6;
+  }
+
+  // &-user-list-view {
+  //   width: 250px;
+  //   height: 250px;
+  // }
+
+  // &-user-list {
+  //   margin: 0 $base_margin * 2;
+  //   // spacing: $base_padding * 2;
+  //   border: 1px solid $outer_borders_color;
+  //   border-radius: $base_border_radius;
+  //   background-color: $lighter_base_color;
+  // }
+
+  &-multi-selection-box {
+    // height: 100px;
+    // width: 300px;
+    // height: 300px;
+    // border: 1px solid red;
+  }
+
+  &-user-list-item {
+    @extend %button_common;
+
+    border-color: transparent;
+    border-radius: 0;
+    padding: $base_padding * 1.5;
+
+    &:hover { @include button(hover); }
+
+    .user-icon { icon-size: 32px; }
+  }
+
+  &-password-entry {
+    @extend %entry;
+    width: 20em;
+  }
+
+  &-password-layout { spacing: $base_margin * 2;}
+
+  &-error-label,
+  &-info-label,
+  &-null-label {
+    text-align: center;
+    @extend %caption;
+  }
+
+  &-error-label { color: $error_color; }
+}
+
+// polkit dialog
+
+.polkit-dialog {
+
+  &-user-layout {
+    text-align: center;
+    spacing: $base_margin * 2;
+    margin-bottom: $base_padding;
+  }
+
+  &-user-root-label { color: $error_color; }
+}
