@@ -1,0 +1,125 @@
+$menuitem_border_radius: $base_border_radius * 1;
+
+//container of the popup menu
+.menu {
+  min-width: 15em;
+  color: $fg_color;
+}
+
+// popup content
+.popup-menu-content {
+  padding: $base_padding;
+  background-color: $bg_color;
+  border-radius: $base_border_radius * 2;
+  border: 1px solid $borders_color;
+  box-shadow: 0 0 6px 0 $shadow_color;
+}
+
+// menu items
+.popup-menu-item {
+  @extend %menuitem;
+
+  &:active {
+    background-color: $light_bg_color;
+  }
+
+  &:insensitive {
+    color: $insensitive_fg_color;
+    background: none;
+  }
+}
+
+// Used in the battery applet for the status
+.popup-inactive-menu-item {
+  color: $fg_color;
+
+  &:insensitive { color: $insensitive_fg_color; }
+}
+
+.popup-slider-menu-item {
+  @extend %slider;
+}
+
+// icons in menus
+.popup-menu-arrow,
+.popup-menu-icon {
+  icon-size: $scalable_icon_size;
+}
+
+// popup submenus
+.popup-sub-menu {
+  border-radius: $base_border_radius + 1;
+  margin: 0 $base_margin;
+  margin-bottom: $base_padding;
+  border: 1px solid transparentize(black, 0.9);
+
+  .popup-menu-item {
+    border-radius: 0;
+    @extend %menuitem;
+    background-color: $base_color;
+    margin: 0;
+
+    &:active { background-color: $light_base_color; }
+
+    &:first-child {
+      border-radius: $base_border_radius $base_border_radius 0 0;
+    }
+
+    &:last-child {
+      border-radius: 0 0 $base_border_radius $base_border_radius;
+    }
+
+    &:only-child,
+    &:first-child:last-child {
+      border-radius: $base_border_radius;
+    }
+  }
+
+  StScrollBar {
+    padding: 4px;
+    StBin#trough, StBin#vhandle { border-width: 0; }
+  }
+}
+
+// This is the first submenu item that contains the arrow
+.popup-submenu-menu-item {
+  &:open {}
+  &:active {}
+}
+
+// separator
+.popup-separator-menu-item {
+  -gradient-height: 1px;
+  -gradient-start: $borders_color;
+  -gradient-end: $borders_color;
+  -margin-horizontal: 0;
+  height: 1px;
+}
+
+// scale view context menu - just duplicating regular popupmenu here
+.popup-combo-menu {
+  padding: $base_padding;
+  background-color: $bg_color;
+  border-radius: $base_border_radius * 1.25;
+  border: 1px solid $borders_color;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+// Used by the recents applet
+.popup-combobox-item {
+  @extend %menuitem;
+
+  padding: 0 $base_padding * 2;
+}
+
+// this is not currently being used anywhere
+.popup-alternating-menu-item:alternate { font-weight: normal; }
+
+// Used in the power applet for display of battery items
+.popup-device-menu-item { spacing: .5em; }
+
+// Used in window quick list and power applet
+.popup-subtitle-menu-item { font-weight: normal; }
+
+// Used to set the color of the signal strength icons in network applet
+.nm-menu-item-icons { spacing: .5em; }

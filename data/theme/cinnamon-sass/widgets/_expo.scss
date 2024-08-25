@@ -1,0 +1,91 @@
+
+.workspace {
+
+  &-thumbnails { spacing: 26px; }
+  &-thumbnails-background { padding: 8px; }
+
+  // this controls both the darkness of thumbnails in expo and
+  // the darkness of the overiew backgroound
+  &-overview-background-shade { background-color: transparentize(black, 0.8); }
+
+  &-add-button {
+    background-image: url("add-workspace.svg");
+    height: 200px;
+    width: 35px;
+    transition-duration: 150;
+
+    &:hover {
+      background-image: url("add-workspace-hover.svg");
+      transition-duration: 150;
+    }
+  }
+
+  &-close-button {
+    background-image: url("close.svg");
+    height: 26px;
+    width: 26px;
+    -cinnamon-close-overlap: 13px;
+  }
+}
+
+.expo {
+
+  &-background { background-color: $bg_color; }
+
+  &-workspace-thumbnail-frame {
+    border: 1px solid $borders_color;
+
+    &#active {
+      border-color: $accent_color;
+      border-width: 2px;
+    }
+  }
+
+  &-workspaces-name-entry {
+    @extend %entry;
+
+    height: 1.5em;
+
+    &#selected{}
+    &:focus {}
+  }
+}
+
+.window {
+
+  &-close-area {
+    background-image: url("trash-icon.svg");
+    height: 120px;
+    width: 400px;
+  }
+
+  &-close {
+    background-image: url("close.svg");
+    height: 26px;
+    width: 26px;
+    -cinnamon-close-overlap: 13px;
+
+    &:hover {}
+  }
+
+  &-border {
+    border: 3px solid $accent_bg_color;
+    border-radius: $base_border_radius;
+  }
+
+  &-caption {
+    min-height: 22px;
+    border-radius: $base_border_radius;
+    padding: $base_padding $base_padding * 1.5;
+    spacing: $base_margin;
+    border: 1px solid $borders_color;
+    background-color: $light_bg_color;
+    -cinnamon-caption-spacing: $base_padding;
+
+    &:focus { background-color: $lightest_bg_color; }
+  }
+}
+
+#overview { spacing: 12px; }
+
+.overview-empty-placeholder { @extend %large_title; }

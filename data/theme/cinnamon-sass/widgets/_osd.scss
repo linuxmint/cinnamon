@@ -1,0 +1,70 @@
+// various on screen popups
+
+$barlevel_height: 6px;
+
+$ws_indicator_height: 32px;
+$ws_dot_active: $ws_indicator_height / 3;
+$ws_dot_inactive: $ws_indicator_height / 6;
+
+// media keys osd
+
+.osd-window {
+  @extend %heading;
+  @extend %osd_base;
+
+  margin-bottom: 4em;
+  font-weight: bold;
+
+  padding: $base_padding * 2 $base_padding * 4;
+  spacing: $base_padding * 2;
+  & > * { spacing: $base_padding * 2; }
+
+  StIcon {
+    icon-size: 32px;
+  }
+
+  StLabel {
+    &:ltr { margin-right: $base_padding; }
+    &:rtl { margin-left: $base_padding; }
+  }
+
+  .level {
+    height: 0.7em;
+    background-color: $light_bg_color;
+    border-radius: 99px;
+  }
+
+  .level-bar {
+    border-radius: 99px;
+    background-color: $fg_color;
+  }
+}
+
+.info-osd {
+  @extend %osd_base;
+
+  font-size: 1.2em;
+  font-weight: 700;
+  text-align: center;
+}
+
+.workspace-osd {
+  @extend %osd_base;
+
+  font-size: 3em;
+}
+
+.monitor-label {
+  border-radius: 0;
+  color: black;
+  padding: $base_padding * 2;
+  text-align: center;
+}
+
+//  resize popup
+
+.resize-popup {
+  @extend %osd_base;
+
+  padding: $base_padding;
+}
