@@ -491,6 +491,8 @@ DeskletContainer.prototype = {
     },
 
     handleDragOver: function(source, actor, x, y, time) {
+        if (!(source instanceof Desklet.Desklet)) return false;
+
         deskletsDragging = true;
 
         if (!global.settings.get_boolean(DESKLET_SNAP_KEY))
