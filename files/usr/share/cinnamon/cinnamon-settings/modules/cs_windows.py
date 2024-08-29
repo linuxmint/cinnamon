@@ -176,8 +176,14 @@ class Module:
             widget = GSettingsSpinButton(_("Delay before displaying the alt-tab switcher"), "org.cinnamon", "alttab-switcher-delay", units=_("milliseconds"), mini=0, maxi=1000, step=50, page=150)
             settings.add_row(widget)
 
+            widget = GSettingsSpinButton(_("The minimum text size for the alt-tab switcher"), "org.cinnamon", "alttab-switcher-text-minimum-size", units=_("pt"), mini=4, maxi=128, step=1)
+            settings.add_row(widget)
+
+            widget = GSettingsSpinButton(_("Maximum size of thumbnails in thumbnail-only alt-tab switcher"), "org.cinnamon", "alttab-switcher-thumbnail-maximum-size", units=_("px"), mini=32, maxi=2000, step=20)
+            settings.add_row(widget)
+
             widget = GSettingsSwitch(_("Show windows from all workspaces"), "org.cinnamon", "alttab-switcher-show-all-workspaces")
             settings.add_row(widget)
 
-            widget = GSettingsSwitch(_("Warp mouse pointer to the new focused window"), "org.cinnamon", "alttab-switcher-warp-mouse-pointer")
-            settings.add_row(widget)
+            # widget = GSettingsSwitch(_("Warp mouse pointer to the new focused window"), "org.cinnamon", "alttab-switcher-warp-mouse-pointer")
+            # settings.add_row(widget)

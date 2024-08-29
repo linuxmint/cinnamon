@@ -434,6 +434,16 @@
       <summary>Warp mouse pointer to the new focused window</summary>
     </key>
 
+    <key type="i" name="alttab-switcher-text-minimum-size">
+      <default>12</default>
+      <summary>The minimum font size for the alt-tab switcher</summary>
+    </key>
+
+    <key type="i" name="alttab-switcher-thumbnail-maximum-size">
+      <default>1000</default>
+      <summary>The maximum size of thumbnails in the "Thumbnails only" alt-tab switcher</summary>
+    </key>
+
     <key name="bring-windows-to-current-workspace" type="b">
       <default>false</default>
       <summary>not used - lives in org.cinnamon.muffin now</summary>
