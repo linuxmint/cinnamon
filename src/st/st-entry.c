@@ -34,7 +34,7 @@
  *   <para>focus: the widget has focus</para>
  *  </listitem>
  *  <listitem>
- *   <para>indeterminate: the widget is showing the hint text</para>
+ *   <para>indeterminate: the widget is showing the hint text or actor</para>
  *  </listitem>
  *  <listitem>
  *   <para>hover: the widget is showing the hint text and is underneath the
@@ -61,6 +61,7 @@
 
 // #include "st-im-text.h"
 #include "st-icon.h"
+#include "st-label.h"
 #include "st-widget.h"
 #include "st-texture-cache.h"
 #include "st-clipboard.h"
@@ -78,6 +79,7 @@ enum
 
   PROP_CLUTTER_TEXT,
   PROP_HINT_TEXT,
+  PROP_HINT_ACTOR,
   PROP_TEXT,
 };
 
@@ -104,6 +106,8 @@ struct _StEntryPrivate
   ClutterActor *primary_icon;
   ClutterActor *secondary_icon;
 
+  ClutterActor *hint_actor;
+
   gfloat        spacing;
 
   gboolean      hint_visible;
@@ -111,6 +115,10 @@ struct _StEntryPrivate
   guint         blink_time;
   guint         blink_timeout;
   gboolean      cursor_visible;
+
+  CoglPipeline *text_shadow_material;
+  gfloat        shadow_width;
+  gfloat        shadow_height;
 };
 
 static guint entry_signals[LAST_SIGNAL] = { 0, };
@@ -131,6 +139,10 @@ st_entry_set_property (GObject      *gobject,
     {
     case PROP_HINT_TEXT:
       st_entry_set_hint_text (entry, g_value_get_string (value));
+      break;
+
+     case PROP_HINT_ACTOR:
+      st_entry_set_hint_actor (entry, g_value_get_object (value));
       break;
 
     case PROP_TEXT:
@@ -158,7 +170,11 @@ st_entry_get_property (GObject    *gobject,
       break;
 
     case PROP_HINT_TEXT:
-      g_value_set_string (value, priv->hint);
+      g_value_set_string (value, st_entry_get_hint_text (ST_ENTRY (gobject)));
+      break;
+
+    case PROP_HINT_ACTOR:
+      g_value_set_object (value, priv->hint_actor);
       break;
 
     case PROP_TEXT:
@@ -220,6 +236,8 @@ st_entry_dispose (GObject *object)
   ClutterKeymap *keymap;
   ClutterSeat *seat;
 
+  cogl_clear_object (&priv->text_shadow_material);
+
   if (priv->blink_timeout)
     {
       g_source_remove (priv->blink_timeout);
@@ -234,14 +252,20 @@ st_entry_dispose (GObject *object)
 }
 
 static void
-st_entry_finalize (GObject *object)
+st_entry_update_hint_visibility (StEntry *self)
 {
-  StEntryPrivate *priv = ST_ENTRY_PRIV (object);
+  StEntryPrivate *priv = ST_ENTRY_PRIV (self);
+  gboolean hint_visible =
+    priv->hint_actor != NULL &&
+    strcmp (clutter_text_get_text (CLUTTER_TEXT (priv->entry)), "") == 0;
 
-  g_free (priv->hint);
-  priv->hint = NULL;
+  if (priv->hint_actor)
+    g_object_set (priv->hint_actor, "visible", hint_visible, NULL);
 
-  G_OBJECT_CLASS (st_entry_parent_class)->finalize (object);
+    if (hint_visible)
+    st_widget_add_style_pseudo_class (ST_WIDGET (self), "indeterminate");
+  else
+    st_widget_remove_style_pseudo_class (ST_WIDGET (self), "indeterminate");
 }
 
 static void
@@ -251,6 +275,8 @@ st_entry_style_changed (StWidget *self)
   StThemeNode *theme_node;
   ClutterColor color;
   gdouble size;
+
+  cogl_clear_object (&priv->text_shadow_material);
 
   theme_node = st_widget_get_theme_node (self);
 
@@ -302,13 +328,24 @@ st_entry_get_preferred_width (ClutterActor *actor,
 {
   StEntryPrivate *priv = ST_ENTRY_PRIV (actor);
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
-  gfloat icon_w;
+  gfloat hint_w, icon_w;
 
   st_theme_node_adjust_for_height (theme_node, &for_height);
 
   clutter_actor_get_preferred_width (priv->entry, for_height,
                                      min_width_p,
                                      natural_width_p);
+
+  if (priv->hint_actor)
+    {
+      clutter_actor_get_preferred_width (priv->hint_actor, -1, NULL, &hint_w);
+
+      if (min_width_p && hint_w > *min_width_p)
+        *min_width_p = hint_w;
+
+      if (natural_width_p && hint_w > *natural_width_p)
+        *natural_width_p = hint_w;
+    }
 
   if (priv->primary_icon)
     {
@@ -344,13 +381,24 @@ st_entry_get_preferred_height (ClutterActor *actor,
 {
   StEntryPrivate *priv = ST_ENTRY_PRIV (actor);
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
-  gfloat icon_h;
+  gfloat hint_h, icon_h;
 
   st_theme_node_adjust_for_width (theme_node, &for_width);
 
   clutter_actor_get_preferred_height (priv->entry, for_width,
                                       min_height_p,
                                       natural_height_p);
+
+  if (priv->hint_actor)
+    {
+      clutter_actor_get_preferred_height (priv->hint_actor, -1, NULL, &hint_h);
+
+      if (min_height_p && hint_h > *min_height_p)
+        *min_height_p = hint_h;
+
+      if (natural_height_p && hint_h > *natural_height_p)
+        *natural_height_p = hint_h;
+    }
 
   if (priv->primary_icon)
     {
@@ -386,9 +434,13 @@ st_entry_allocate (ClutterActor          *actor,
 {
   StEntryPrivate *priv = ST_ENTRY_PRIV (actor);
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
-  ClutterActorBox content_box, child_box, icon_box;
+  ClutterActorBox content_box, child_box, icon_box, hint_box;
   gfloat icon_w, icon_h;
+  gfloat hint_w, hint_h;
   gfloat entry_h, min_h, pref_h, avail_h;
+  gboolean is_rtl;
+
+  is_rtl = clutter_actor_get_text_direction (actor) == CLUTTER_TEXT_DIRECTION_RTL;
 
   clutter_actor_set_allocation (actor, box, flags);
 
@@ -439,6 +491,25 @@ st_entry_allocate (ClutterActor          *actor,
 
       /* reduce the size for the entry */
        child_box.x2 = MAX (child_box.x1, child_box.x2 - icon_w - priv->spacing);
+    }
+
+  if (priv->hint_actor)
+    {
+      /* now allocate the hint actor */
+      hint_box = child_box;
+
+      clutter_actor_get_preferred_width (priv->hint_actor, -1, NULL, &hint_w);
+      clutter_actor_get_preferred_height (priv->hint_actor, -1, NULL, &hint_h);
+
+      if (is_rtl)
+        hint_box.x1 = hint_box.x2 - hint_w;
+      else
+        hint_box.x2 = hint_box.x1 + hint_w;
+
+      hint_box.y1 = ceil (content_box.y1 + avail_h / 2 - hint_h / 2);
+      hint_box.y2 = hint_box.y1 + hint_h;
+
+      clutter_actor_allocate (priv->hint_actor, &hint_box, flags);
     }
 
   clutter_actor_get_preferred_height (priv->entry, child_box.x2 - child_box.x1,
@@ -632,17 +703,8 @@ clutter_text_focus_in_cb (ClutterText  *text,
                           ClutterActor *actor)
 {
   StEntry *entry = ST_ENTRY (actor);
-  StEntryPrivate *priv = entry->priv;
   ClutterSeat *seat;
   ClutterKeymap *keymap;
-
-  /* remove the hint if visible */
-  if (priv->hint && priv->hint_visible)
-    {
-      priv->hint_visible = FALSE;
-
-      clutter_text_set_text (text, "");
-    }
 
   seat = clutter_backend_get_default_seat (clutter_get_default_backend ());
   keymap = clutter_seat_get_keymap (seat);
@@ -651,7 +713,6 @@ clutter_text_focus_in_cb (ClutterText  *text,
   g_signal_connect (keymap, "state-changed",
                     G_CALLBACK (keymap_state_changed), entry);
 
-  st_widget_remove_style_pseudo_class (ST_WIDGET (actor), "indeterminate");
   st_widget_add_style_pseudo_class (ST_WIDGET (actor), "focus");
 
   st_entry_reset_blink_time (entry);
@@ -663,20 +724,11 @@ clutter_text_focus_out_cb (ClutterText  *text,
                            ClutterActor *actor)
 {
   StEntry *entry = ST_ENTRY (actor);
-  StEntryPrivate *priv = entry->priv;
   ClutterKeymap *keymap;
   ClutterSeat *seat;
 
   st_widget_remove_style_pseudo_class (ST_WIDGET (actor), "focus");
 
-  /* add a hint if the entry is empty */
-  if (priv->hint && !strcmp (clutter_text_get_text (text), ""))
-    {
-      priv->hint_visible = TRUE;
-
-      clutter_text_set_text (text, priv->hint);
-      st_widget_add_style_pseudo_class (ST_WIDGET (actor), "indeterminate");
-    }
   st_entry_check_cursor_blink (entry);
   remove_capslock_feedback (entry);
 
@@ -712,6 +764,22 @@ clutter_text_cursor_changed (ClutterText *text, ClutterActor *actor)
 {
   st_entry_reset_blink_time (ST_ENTRY (actor));
   st_entry_pend_cursor_blink (ST_ENTRY (actor));
+}
+
+static void
+clutter_text_changed_cb (GObject    *object,
+                         GParamSpec *pspec,
+                         gpointer    user_data)
+{
+  StEntry *entry = ST_ENTRY (user_data);
+  StEntryPrivate *priv = ST_ENTRY_PRIV (entry);
+
+  st_entry_update_hint_visibility (entry);
+
+  /* Since the text changed, force a regen of the shadow texture */
+  cogl_clear_object (&priv->text_shadow_material);
+
+  g_object_notify (G_OBJECT (entry), "text");
 }
 
 static void
@@ -855,6 +923,62 @@ st_entry_key_focus_in (ClutterActor *actor)
 }
 
 static void
+st_entry_paint (ClutterActor        *actor,
+                ClutterPaintContext *paint_context)
+{
+  StEntryPrivate *priv = ST_ENTRY_PRIV (actor);
+  StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
+  StShadow *shadow_spec = st_theme_node_get_text_shadow (theme_node);
+  ClutterActorClass *parent_class;
+
+  st_widget_paint_background (ST_WIDGET (actor), paint_context);
+
+  if (shadow_spec)
+    {
+      ClutterActorBox allocation;
+      float width, height;
+
+      clutter_actor_get_allocation_box (priv->entry, &allocation);
+      clutter_actor_box_get_size (&allocation, &width, &height);
+
+      if (priv->text_shadow_material == NULL ||
+          width != priv->shadow_width ||
+          height != priv->shadow_height)
+        {
+          CoglPipeline *material;
+
+          cogl_clear_object (&priv->text_shadow_material);
+
+          material = _st_create_shadow_pipeline_from_actor (shadow_spec,
+                                                            priv->entry);
+
+          priv->shadow_width = width;
+          priv->shadow_height = height;
+          priv->text_shadow_material = material;
+        }
+
+      if (priv->text_shadow_material != NULL)
+        {
+          CoglFramebuffer *framebuffer =
+            clutter_paint_context_get_framebuffer (paint_context);
+
+          _st_paint_shadow_with_opacity (shadow_spec,
+                                         framebuffer,
+                                         priv->text_shadow_material,
+                                         &allocation,
+                                         clutter_actor_get_paint_opacity (priv->entry));
+        }
+    }
+
+  /* Since we paint the background ourselves, chain to the parent class
+   * of StWidget, to avoid painting it twice.
+   * This is needed as we still want to paint children.
+   */
+  parent_class = g_type_class_peek_parent (st_entry_parent_class);
+  parent_class->paint (actor, paint_context);
+}
+
+static void
 st_entry_class_init (StEntryClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -864,12 +988,12 @@ st_entry_class_init (StEntryClass *klass)
 
   gobject_class->set_property = st_entry_set_property;
   gobject_class->get_property = st_entry_get_property;
-  gobject_class->finalize = st_entry_finalize;
   gobject_class->dispose = st_entry_dispose;
 
   actor_class->get_preferred_width = st_entry_get_preferred_width;
   actor_class->get_preferred_height = st_entry_get_preferred_height;
   actor_class->allocate = st_entry_allocate;
+  actor_class->paint = st_entry_paint;
 
   actor_class->key_press_event = st_entry_key_press_event;
   actor_class->key_focus_in = st_entry_key_focus_in;
@@ -891,6 +1015,14 @@ st_entry_class_init (StEntryClass *klass)
                                "and the text property is empty",
                                NULL, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_HINT_TEXT, pspec);
+
+  pspec = g_param_spec_object ("hint-actor",
+                               "Hint Actor",
+                               "An actor to display when the entry is not focused "
+                               "and the text property is empty",
+                               CLUTTER_TYPE_ACTOR,
+                               G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_HINT_ACTOR, pspec);
 
   pspec = g_param_spec_string ("text",
                                "Text",
@@ -957,7 +1089,14 @@ st_entry_init (StEntry *entry)
   g_signal_connect (priv->entry, "cursor-changed",
                     G_CALLBACK (clutter_text_cursor_changed), entry);
 
+  g_signal_connect (priv->entry, "notify::text",
+                    G_CALLBACK (clutter_text_changed_cb), entry);
+
   priv->spacing = 6.0f;
+
+  priv->text_shadow_material = NULL;
+  priv->shadow_width = -1.;
+  priv->shadow_height = -1.;
 
   clutter_actor_add_child (CLUTTER_ACTOR (entry), priv->entry);
   clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
@@ -1003,10 +1142,7 @@ st_entry_get_text (StEntry *entry)
 {
   g_return_val_if_fail (ST_IS_ENTRY (entry), NULL);
 
-  if (entry->priv->hint_visible)
-    return "";
-  else
-    return clutter_text_get_text (CLUTTER_TEXT (entry->priv->entry));
+  return clutter_text_get_text (CLUTTER_TEXT (entry->priv->entry));
 }
 
 /**
@@ -1026,25 +1162,10 @@ st_entry_set_text (StEntry     *entry,
 
   priv = entry->priv;
 
-  /* set a hint if we are blanking the entry */
-  if (priv->hint
-      && text && !strcmp ("", text)
-      && !HAS_FOCUS (priv->entry))
-    {
-      text = priv->hint;
-      priv->hint_visible = TRUE;
-      st_widget_add_style_pseudo_class (ST_WIDGET (entry), "indeterminate");
-    }
-  else
-    {
-      st_widget_remove_style_pseudo_class (ST_WIDGET (entry), "indeterminate");
-
-      priv->hint_visible = FALSE;
-    }
-
   clutter_text_set_text (CLUTTER_TEXT (priv->entry), text);
 
-  g_object_notify (G_OBJECT (entry), "text");
+  /* Note: PROP_TEXT will get notfied from our notify::text handler connected
+   * to priv->entry. */
 }
 
 /**
@@ -1077,24 +1198,14 @@ void
 st_entry_set_hint_text (StEntry     *entry,
                         const gchar *text)
 {
-  StEntryPrivate *priv;
+  StWidget *label;
 
   g_return_if_fail (ST_IS_ENTRY (entry));
 
-  priv = entry->priv;
+  label = st_label_new (text);
+  st_widget_add_style_class_name (label, "hint-text");
 
-  g_free (priv->hint);
-
-  priv->hint = g_strdup (text);
-
-  if (!strcmp (clutter_text_get_text (CLUTTER_TEXT (priv->entry)), "")
-      && !HAS_FOCUS (priv->entry))
-    {
-      priv->hint_visible = TRUE;
-
-      clutter_text_set_text (CLUTTER_TEXT (priv->entry), priv->hint);
-      st_widget_add_style_pseudo_class (ST_WIDGET (entry), "indeterminate");
-    }
+  st_entry_set_hint_actor (ST_ENTRY (entry), CLUTTER_ACTOR (label));
 }
 
 /**
@@ -1109,9 +1220,16 @@ st_entry_set_hint_text (StEntry     *entry,
 const gchar *
 st_entry_get_hint_text (StEntry *entry)
 {
+  StEntryPrivate *priv;
+
   g_return_val_if_fail (ST_IS_ENTRY (entry), NULL);
 
-  return entry->priv->hint;
+  priv = entry->priv;
+
+  if (priv->hint_actor != NULL && ST_IS_LABEL (priv->hint_actor))
+    return st_label_get_text (ST_LABEL (priv->hint_actor));
+
+  return NULL;
 }
 
 static gboolean
@@ -1262,6 +1380,57 @@ st_entry_set_secondary_icon_from_file (StEntry     *entry,
 
   _st_entry_set_icon_from_file (entry, &priv->secondary_icon, filename);
 
+}
+
+/**
+ * st_entry_set_hint_actor:
+ * @entry: a #StEntry
+ * @hint_actor: (allow-none): a #ClutterActor
+ *
+ * Set the hint actor of the entry to @hint_actor
+ */
+void
+st_entry_set_hint_actor (StEntry      *entry,
+                         ClutterActor *hint_actor)
+{
+  StEntryPrivate *priv;
+
+  g_return_if_fail (ST_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  if (priv->hint_actor != NULL)
+    {
+      clutter_actor_remove_child (CLUTTER_ACTOR (entry), priv->hint_actor);
+      priv->hint_actor = NULL;
+    }
+
+  if (hint_actor != NULL)
+    {
+      priv->hint_actor = hint_actor;
+      clutter_actor_add_child (CLUTTER_ACTOR (entry), priv->hint_actor);
+    }
+
+  st_entry_update_hint_visibility (entry);
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (entry));
+}
+
+/**
+ * st_entry_get_hint_actor:
+ * @entry: a #StEntry
+ *
+ * Returns: (transfer none): a #ClutterActor
+ */
+ClutterActor *
+st_entry_get_hint_actor (StEntry *entry)
+{
+  StEntryPrivate *priv;
+
+  g_return_val_if_fail (ST_IS_ENTRY (entry), NULL);
+
+  priv = entry->priv;
+  return priv->hint_actor;
 }
 
 /******************************************************************************/
