@@ -14,8 +14,14 @@ const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const GObject = imports.gi.GObject;
 const Gir = imports.gi.GIRepository;
+const Clutter = imports.gi.Clutter;
 const Mainloop = imports.mainloop;
 const Main = imports.ui.main;
+const Params = imports.misc.params;
+
+const WIGGLE_OFFSET = 6;
+const WIGGLE_DURATION = 65;
+const N_WIGGLES = 3;
 
 // http://daringfireball.net/2010/07/improved_regex_for_matching_urls
 const _balancedParens = '\\([^\\s()<>]+\\)';
@@ -728,4 +734,38 @@ function splitByGlyph(str) {
         iter.forward_cursor_position();
     }
     return glyphs;
+}
+
+function wiggle(actor, params) {
+    params = Params.parse(params, {
+        offset: WIGGLE_OFFSET,
+        duration: WIGGLE_DURATION,
+        wiggleCount: N_WIGGLES,
+    });
+    actor.translation_x = 0;
+
+    // Accelerate before wiggling
+    actor.ease({
+        translation_x: -params.offset,
+        duration: params.duration,
+        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+        onComplete: () => {
+            // Wiggle
+            actor.ease({
+                translation_x: params.offset,
+                duration: params.duration,
+                mode: Clutter.AnimationMode.LINEAR,
+                repeatCount: params.wiggleCount,
+                autoReverse: true,
+                onComplete: () => {
+                    // Decelerate and return to the original position
+                    actor.ease({
+                        translation_x: 0,
+                        duration: params.duration,
+                        mode: Clutter.AnimationMode.EASE_IN_QUAD,
+                    });
+                }
+            });
+        }
+    });
 }
