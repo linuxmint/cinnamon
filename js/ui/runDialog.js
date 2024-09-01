@@ -3,19 +3,18 @@
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const GObject = imports.gi.GObject;
 const Pango = imports.gi.Pango;
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
-const Signals = imports.signals;
 
 const FileUtils = imports.misc.fileUtils;
 const Main = imports.ui.main;
+const Dialog = imports.ui.dialog;
 const ModalDialog = imports.ui.modalDialog;
 const CinnamonEntry = imports.ui.cinnamonEntry;
-const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 const History = imports.misc.history;
 
@@ -33,7 +32,6 @@ const EXEC_ARG_KEY = 'exec-arg';
 const SHOW_COMPLETIONS_KEY = 'run-dialog-show-completions';
 const ALIASES_KEY = 'run-dialog-aliases';
 
-const DIALOG_GROW_TIME = 0.1;
 const MAX_COMPLETIONS = 40;
 
 const NAVIGATE_TYPE_NONE = 0;
@@ -146,63 +144,61 @@ function completeCommand(text) {
     return [common.substring(last.length, common.length), results.map(x => x.substring(last.length, x.length))];
 }
 
-function RunDialog() {
-    this._init();
-}
-
-RunDialog.prototype = {
-__proto__: ModalDialog.ModalDialog.prototype,
-    _init : function() {
-        ModalDialog.ModalDialog.prototype._init.call(this, { styleClass: 'run-dialog' });
+var RunDialog = GObject.registerClass(
+class RunDialog extends ModalDialog.ModalDialog {
+    _init() {
+        super._init({ styleClass: 'run-dialog'});
 
         this._lockdownSettings = new Gio.Settings({ schema_id: LOCKDOWN_SCHEMA });
         this._terminalSettings = new Gio.Settings({ schema_id: TERMINAL_SCHEMA });
-        global.settings.connect('changed::development-tools', Lang.bind(this, function () {
+        global.settings.connect('changed::development-tools', () =>  {
             this._enableInternalCommands = global.settings.get_boolean('development-tools');
-        }));
+        });
         this._enableInternalCommands = global.settings.get_boolean('development-tools');
 
         global.display.connect('restart', () => this.close());
 
-        let label = new St.Label({ style_class: 'run-dialog-label',
-                                   text: _("Enter a command") });
+        let title = _("Run a Command");
 
-        this.contentLayout.add(label, { x_align: St.Align.MIDDLE });
+        let content = new Dialog.MessageDialogContent({ title });
+        this.contentLayout.add_actor(content);
 
         let entry = new St.Entry({ style_class: 'run-dialog-entry' });
         CinnamonEntry.addContextMenu(entry);
 
-        entry.label_actor = label;
-
         this._entryText = entry.clutter_text;
         this._oldText = "";
-        this.contentLayout.add(entry, { y_align: St.Align.START });
+        content.add_child(entry);
         this.setInitialKeyFocus(this._entryText);
 
         this._completionBox = new St.Label({style_class: 'run-dialog-completion-box'});
-        this.contentLayout.add(this._completionBox);
+        content.add_child(this._completionBox);
         this._completionSelected = 0;
 
         let defaultDescriptionText = _("Press ESC to close");
 
-        this._descriptionLabel = new St.Label({ style_class: 'run-dialog-description',
-                                                text:        defaultDescriptionText });
+        this._descriptionLabel = new St.Label({
+            style_class: 'run-dialog-description',
+            text: defaultDescriptionText
+        });
         this._descriptionLabel.clutter_text.line_wrap = true;
         this._descriptionLabel.clutter_text.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
-        this.contentLayout.add(this._descriptionLabel, { y_align: St.Align.MIDDLE });
+        content.add_child(this._descriptionLabel);
 
         this._commandError = false;
 
-        this._entryText.connect('key-press-event', Lang.bind(this, this._onKeyPress));
+        this._entryText.connect('key-press-event', this._onKeyPress.bind(this));
 
-        this._history = new History.HistoryManager({ gsettingsKey: HISTORY_KEY,
-                                                     entry: this._entryText,
-                                                     deduplicate: true });
+        this._history = new History.HistoryManager({
+            gsettingsKey: HISTORY_KEY,
+            entry: this._entryText,
+            deduplicate: true
+        });
 
         this._updateCompletionTimer = 0;
-     },
+     }
 
-    _onKeyPress: function (o, e) {
+    _onKeyPress(o, e) {
         let symbol = e.get_key_symbol();
         if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) {
             if (o.get_text().trim() == "") {
@@ -266,15 +262,15 @@ __proto__: ModalDialog.ModalDialog.prototype,
                 this._updateCompletionTimer = 0;
             }
 
-            this._updateCompletionTimer = Mainloop.timeout_add(200, Lang.bind(this, this._updateCompletions));
+            this._updateCompletionTimer = Mainloop.timeout_add(200, this._updateCompletions.bind(this));
             return false;
         }
         return false;
-    },
+    }
 
     // There is different behaviour depending on whether this is called due to
     // pressing tab or other keys.
-    _updateCompletions: function(nav_type=NAVIGATE_TYPE_NONE, direction=DOWN) {
+    _updateCompletions(nav_type=NAVIGATE_TYPE_NONE, direction=DOWN) {
         this._updateCompletionTimer = 0;
 
         let text = this._expandHome(this._entryText.get_text());
@@ -339,18 +335,18 @@ __proto__: ModalDialog.ModalDialog.prototype,
             this._completionBox.hide();
             this._oldText = "";
         }
-    },
+    }
 
-    _expandHome: function(text) {
+    _expandHome(text) {
         if (text.charAt(0) == '~') {
             text = text.slice(1);
             return GLib.build_filenamev([GLib.get_home_dir(), text]);
         }
 
         return text;
-    },
+    }
 
-    _showCompletions: function(orig) {
+    _showCompletions(orig) {
         /* Show a list of possible completions, and allow users to scroll
          * through them. The scrolling mechanism is done in _updateCompletions,
          * which provides the current selected index in
@@ -390,9 +386,9 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
         this._completionBox.clutter_text.set_markup(text);
         this._entryText.set_selection(-1, orig.length);
-    },
+    }
 
-    _run : function(input, inTerminal) {
+    _run(input, inTerminal) {
         input = input.trim();
         this._history.addItem(input);
         this._commandError = false;
@@ -419,8 +415,8 @@ __proto__: ModalDialog.ModalDialog.prototype,
         try {
             if (inTerminal) {
                 let exec = this._terminalSettings.get_string(EXEC_KEY);
-                let exec_arg = this._terminalSettings.get_string(EXEC_ARG_KEY);
-                command = exec + ' ' + exec_arg + ' ' + input;
+                let execArg = this._terminalSettings.get_string(EXEC_ARG_KEY);
+                command = exec + ' ' + execArg + ' ' + input;
             }
             Util.spawnCommandLineAsync(command, null, null);
         } catch (e) {
@@ -450,16 +446,16 @@ __proto__: ModalDialog.ModalDialog.prototype,
                 this._showError(e.message);
             }
         }
-    },
+    }
 
-    _showError : function(message) {
+    _showError(message) {
         this._commandError = true;
 
         this._descriptionLabel.set_text(message.trim());
         this._descriptionLabel.add_style_class_name('error');
-    },
+    }
 
-    open: function() {
+    open() {
         this._history.lastItem();
         this._descriptionLabel.set_text(_("Press ESC to close"));
         this._descriptionLabel.remove_style_class_name('error');
@@ -470,7 +466,6 @@ __proto__: ModalDialog.ModalDialog.prototype,
         if (this._lockdownSettings.get_boolean(DISABLE_COMMAND_LINE_KEY))
             return;
 
-        ModalDialog.ModalDialog.prototype.open.call(this);
-    },
-};
-Signals.addSignalMethods(RunDialog.prototype);
+        super.open();
+    }
+});
