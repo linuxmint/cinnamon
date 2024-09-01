@@ -1490,6 +1490,17 @@ st_widget_name_notify (StWidget   *widget,
 }
 
 static void
+st_widget_reactive_notify (StWidget   *widget,
+                           GParamSpec *pspec,
+                           gpointer    data)
+{
+  if (clutter_actor_get_reactive (CLUTTER_ACTOR (widget)))
+    st_widget_remove_style_pseudo_class (widget, "insensitive");
+  else
+    st_widget_add_style_pseudo_class (widget, "insensitive");
+}
+
+static void
 st_widget_first_child_notify (StWidget   *widget,
                               GParamSpec *pspec,
                               gpointer    data)
@@ -1552,6 +1563,7 @@ st_widget_init (StWidget *actor)
 
   /* connect style changed */
   g_signal_connect (actor, "notify::name", G_CALLBACK (st_widget_name_notify), NULL);
+  g_signal_connect (actor, "notify::reactive", G_CALLBACK (st_widget_reactive_notify), NULL);
 
   g_signal_connect (actor, "notify::first-child", G_CALLBACK (st_widget_first_child_notify), NULL);
   g_signal_connect (actor, "notify::last-child", G_CALLBACK (st_widget_last_child_notify), NULL);
