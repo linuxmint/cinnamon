@@ -151,7 +151,7 @@
   },
   "enable-app-button-dragging": {
     "type": "checkbox",
-    "default": true,
+    "default": false,
     "description": "Enable app button dragging"
   },
   "launcher-animation-effect": {
