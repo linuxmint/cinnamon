@@ -81,3 +81,6 @@
 .panel-corner:overview {}
 .panel-corner:active {}
 .panel-corner:focus {}
+
+// this is needed to highlight a specific panel when using the panel settings
+#panel:highlight { background-color: mix($panel_bg, $error_bg_color, 75%); }
