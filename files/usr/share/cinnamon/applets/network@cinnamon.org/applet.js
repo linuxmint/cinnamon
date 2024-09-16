@@ -649,6 +649,7 @@ NMDevice.prototype = {
         }
         this._activeConnectionItem = new PopupMenu.PopupMenuItem(title, { reactive: false });
         this._activeConnectionItem.setShowDot(true);
+        this._activeConnectionItem.actor.add_style_class_name('popup-device-menu-item');
     },
 
     _deviceStateChanged: function(device, newstate, oldstate, reason) {
@@ -894,6 +895,7 @@ NMDeviceModem.prototype = {
             if (!this.mobileDevice.operator_name)
                 this._operatorItem.actor.hide();
             this.section.addMenuItem(this._operatorItem);
+            this._operatorItem.actor.add_style_class_name('popup-device-menu-item');
         }
 
         NMDevice.prototype._createSection.call(this);
@@ -1603,6 +1605,7 @@ NMDeviceWireless.prototype = {
                                                                               { reactive: false });
         }
         this._activeConnectionItem.setShowDot(true);
+        this._activeConnectionItem.actor.add_style_class_name('popup-device-menu-item');
     },
 
     _createAutomaticConnection: function(apObj) {
