@@ -128,6 +128,7 @@ class Dialog extends St.Widget {
     addButton(buttonInfo) {
         let { label, action, key } = buttonInfo;
         let isDefault = buttonInfo['default'];
+        let isDestructive = buttonInfo['destructive_action'];
         let keys;
 
         if (key)
@@ -153,6 +154,9 @@ class Dialog extends St.Widget {
 
         if (isDefault)
             button.add_style_pseudo_class('default');
+
+        if (isDestructive)
+            button.add_style_pseudo_class('destructive-action');
 
         if (this._initialKeyFocus == null || isDefault)
             this._setInitialKeyFocus(button);

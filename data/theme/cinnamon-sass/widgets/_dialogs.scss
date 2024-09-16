@@ -13,6 +13,9 @@
 
   .dialog-linked-button {
     @extend %linked_button;
+
+    &:default { @extend %linked_button_default; }
+    &:destructive-action { @extend %linked_button_destructive; }
   }
 
   .confirm-dialog-title {

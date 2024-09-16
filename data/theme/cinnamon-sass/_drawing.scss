@@ -74,6 +74,13 @@
   $checked_button_bg_color: $lightest_bg_color;
   $insensitive_button_bg_color: darken($button_bg_color, $insensitive_factor);
 
+  // background color mix override for default button style
+  @if $style == 'default' {
+    $hover_button_bg_color: lighten($button_bg_color, 10%);
+    $active_button_bg_color: darken($button_bg_color, 5%);
+    $checked_button_bg_color: darken($button_bg_color, 5%);
+  }
+
   // flat style overrides
   @if $style == 'flat' {
     $insensitive_button_bg_color: $button_bg_color;
