@@ -20,26 +20,30 @@ $menu_outer_border_radius: $base_border_radius * 1.25;
   }
 
   &-favorites-button {
-    padding: $base_padding;
+    padding: $base_padding * 1.5;
     border-radius: $base_border_radius;
 
     &:hover { background-color: $lightest_bg_color; }
   }
 
-  &-categories-box { padding: $menu_outer_padding; }
+  &-categories-box { padding: $menu_outer_padding $base_padding * 2; }
   &-applications-box { padding: $menu_outer_padding; }
+  &-applications-inner-box {
+    &:ltr { padding-left: $base_padding * 2; }
+    &:rtl { padding-right: $base_padding * 2; }
+  }
 
   &-application-button {
     @extend %start_menu_button;
 
-    &-label { padding: 0 }
+    &-label { padding: 0; }
 
     &:highlighted { font-weight: bold; }
 
     &-selected {
       @extend %start_menu_button;
 
-      background-color: $lighter_bg_color;
+      background-color: $light_bg_color;
 
       &:highlighted { font-weight: bold; }
     }
@@ -48,14 +52,14 @@ $menu_outer_border_radius: $base_border_radius * 1.25;
   &-category-button {
     @extend %start_menu_button;
 
-    &-label { padding: 0 }
+    &-label { padding: 0; }
 
     &:hover { background-color: $lighter_bg_color; }
 
     &-selected {
       @extend %start_menu_button;
 
-      background-color: $lighter_bg_color;
+      background-color: $light_bg_color;
     }
 
     &-greyed {
