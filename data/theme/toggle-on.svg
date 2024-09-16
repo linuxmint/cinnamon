@@ -21,34 +21,38 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     showgrid="false"
-     inkscape:zoom="14.347826"
-     inkscape:cx="21.919697"
-     inkscape:cy="10.942424"
-     inkscape:window-width="1471"
+     showgrid="true"
+     inkscape:zoom="10.145445"
+     inkscape:cx="-13.257181"
+     inkscape:cy="26.415795"
+     inkscape:window-width="1823"
      inkscape:window-height="748"
      inkscape:window-x="16"
      inkscape:window-y="202"
      inkscape:window-maximized="0"
-     inkscape:current-layer="g8" />
+     inkscape:current-layer="g8">
+    <inkscape:grid
+       type="xygrid"
+       id="grid851" />
+  </sodipodi:namedview>
   <g
      transform="translate(0,-291.18)"
      id="g8">
     <rect
-       width="45.029255"
-       height="25.029253"
-       y="292.16537"
+       width="45"
+       height="25.000004"
+       y="291.67999"
        fill="#ff0001"
-       rx="12.195097"
-       ry="12.514627"
-       style="fill:#597493;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-opacity:0.14901961;marker:none;stroke-dasharray:none"
+       rx="12.327819"
+       ry="12.511968"
+       style="fill:#3584e4;fill-opacity:1;stroke:#3584e4;stroke-width:0.999992;stroke-dasharray:none;stroke-opacity:1;marker:none;opacity:1"
        id="rect2"
-       x="0.98537302" />
+       x="0.5" />
     <rect
        width="20"
        height="20"
        x="23"
-       y="295.67999"
+       y="295.17999"
        fill="#f8f7f7"
        rx="10"
        ry="10"
@@ -58,7 +62,7 @@
        width="20"
        height="20"
        x="23"
-       y="294.67999"
+       y="294.17999"
        fill="#f8f7f7"
        rx="10"
        ry="10"
