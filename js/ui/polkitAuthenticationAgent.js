@@ -160,7 +160,8 @@ var AuthenticationDialog = GObject.registerClass({
         this._okButton = this.addButton({
             label:  _("Authenticate"),
             action: this._onAuthenticateButtonPressed.bind(this),
-            reactive: false
+            reactive: false,
+            default: true
         });
         this._okButton.bind_property('reactive',
             this._okButton, 'can-focus',

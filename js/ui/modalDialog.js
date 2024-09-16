@@ -144,7 +144,8 @@ var ModalDialog = GObject.registerClass({
      * Optional arguments include @focused, which determines whether the button
      * is initially focused, and @key, which is a keybinding associated with
      * the button press such that pressing the keybinding will have the same
-     * effect as clicking the button.
+     * effect as clicking the button. Other arguments include @default
+     * and @destructive_action which add additional styling.
      *
      * An example usage is
      * ```
@@ -157,7 +158,8 @@ var ModalDialog = GObject.registerClass({
      *     {
      *         label: _("OK"),
      *         action: this.destroy.bind(this),
-     *         key: Clutter.KEY_Return
+     *         key: Clutter.KEY_Return,
+     *         default: true
      *     }
      * ]);
      * ```
@@ -389,7 +391,8 @@ class ConfirmDialog extends ModalDialog {
                 action: () => {
                     this.destroy();
                     this.callback();
-                }
+                },
+                destructive_action: true
             }
         ]);
     }
