@@ -146,12 +146,13 @@
     .separator {
       -margin-horizontal: 1em;
       -gradient-height: 1px;
-      -gradient-start: red;
-      -gradient-end: red;
+      -gradient-start: transparent;
+      -gradient-end: transparent;
     }
   }
 
   &-event-button {
+    margin: 3px 0;
     border-radius: $base_border_radius;
     border: 1px solid transparent;
 
@@ -161,7 +162,7 @@
     }
   }
 
-  &-event-color-strip { width: 0; }
+  &-event-color-strip { width: 1px; }
 
   &-event-row-content { margin: 7px; }
 
@@ -176,7 +177,8 @@
   }
 
   &-event-time-present:all-day {
-    color: red;
+    @extend %heading;
+    color: $accent_color;
   }
 
   &-event-countdown {
