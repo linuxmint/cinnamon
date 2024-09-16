@@ -46,6 +46,20 @@ function _patchContainerClass(containerClass) {
     };
 }
 
+function _patchLayoutClass(layoutClass, styleProps) {
+    if (styleProps)
+        layoutClass.prototype.hookup_style = function(container) {
+            container.connect('style-changed', () => {
+                let node = container.get_theme_node();
+                for (let prop in styleProps) {
+                    let [found, length] = node.lookup_length(styleProps[prop], false);
+                    if (found)
+                        this[prop] = length;
+                }
+            });
+        };
+}
+
 function readOnlyError(property) {
     global.logError(`The ${property} object is read-only.`);
 };
@@ -278,6 +292,10 @@ function init() {
     // Miscellaneous monkeypatching
     _patchContainerClass(St.BoxLayout);
     _patchContainerClass(St.Table);
+
+    _patchLayoutClass(Clutter.GridLayout, { row_spacing: 'spacing-rows',
+                                            column_spacing: 'spacing-columns' });
+    _patchLayoutClass(Clutter.BoxLayout, { spacing: 'spacing' });
 
     // Cache the original toString since it will be overridden for Clutter.Actor
     GObject.Object.prototype._toString = GObject.Object.prototype.toString;
