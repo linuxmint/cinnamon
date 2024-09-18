@@ -7,22 +7,9 @@ ignore = [
     sniffer_headers,
 ]
 
-recorder_conf = configuration_data()
-
-if get_option('build_recorder')
-    recorder_conf.set('BUILD_RECORDER_XML_START', '-->')
-    recorder_conf.set('BUILD_RECORDER_XML_END', '<!--')
-else
-    recorder_conf.set('BUILD_RECORDER_XML_START', '')
-    recorder_conf.set('BUILD_RECORDER_XML_END', '')
+if not get_option('build_recorder')
     ignore += 'cinnamon-recorder.h'
 endif
-
-configure_file(
-    input: 'recorder.xml.in',
-    output: 'recorder.xml',
-    configuration: recorder_conf,
-)
 
 gnome.gtkdoc(
     'cinnamon',
