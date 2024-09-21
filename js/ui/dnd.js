@@ -487,7 +487,7 @@ var _Draggable = new Lang.Class({
         if (this.target)
             target = this.target;
         else
-            target = this._dragActor.get_stage().get_actor_at_pos(Clutter.PickMode.ALL,
+            target = this._dragActor.get_stage().get_actor_at_pos(Clutter.PickMode.REACTIVE,
                                                                   dropX, dropY);
 
         // We call observers only once per motion with the innermost
