@@ -2,26 +2,27 @@
 
 .dialog {
   background-color: $bg_color;
-  border-radius: $base_border_radius;
+  border-radius: $modal_dialog_radius;
   border: 1px solid $borders_color;
+  padding: $base_padding * 3;
 
   .dialog-content-box {
-    margin: $base_margin * 6 $base_margin * 8;
-    spacing: $base_margin * 3;
+    margin-top: $base_margin * 2;
+    margin-bottom: $base_margin * 4;
+    spacing: $base_margin * 8;
     max-width: 28em;
   }
 
   .dialog-linked-button {
-    @extend %linked_button;
+    @extend %dialog_button;
 
-    &:default { @extend %linked_button_default; }
-    &:destructive-action { @extend %linked_button_destructive; }
+    &:default { @extend %dialog_button_default; }
+    &:destructive-action { @extend %dialog_button_destructive; }
   }
 
   .confirm-dialog-title {
     @extend %title_2;
     text-align: center;
-    padding-bottom: $base_padding;
   }
 }
 
@@ -45,8 +46,7 @@
 .run-dialog {
 
   .dialog-content-box {
-    margin-top: $base_padding * 3;
-    margin-bottom: $base_padding * 3;
+    margin: $base_margin;
   }
 
   &-description {
@@ -77,7 +77,8 @@
   width: 28em;
 
   .dialog-content-box {
-    margin-bottom: $base_margin * 6;
+    spacing: $base_margin * 4;
+    margin-bottom: $base_margin * 3;
   }
 
   &-password-entry {
@@ -103,7 +104,7 @@
 
   &-user-layout {
     text-align: center;
-    spacing: $base_margin * 2;
+    spacing: $base_margin;
     margin-bottom: $base_padding;
   }
 

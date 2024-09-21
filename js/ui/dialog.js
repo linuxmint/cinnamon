@@ -64,10 +64,15 @@ class Dialog extends St.Widget {
             y_align: St.Align.START
         });
 
-        this.buttonLayout = new St.Widget ({ layout_manager: new Clutter.BoxLayout({ homogeneous:true }) });
+        this.buttonLayout = new St.Widget ({
+            layout_manager: new Clutter.BoxLayout({
+                homogeneous: true,
+                spacing: 12,
+            }),
+        });
         this._dialog.add(this.buttonLayout, {
             x_align: St.Align.MIDDLE,
-            y_align: St.Align.START
+            y_align: St.Align.MIDDLE
         });
     }
 
@@ -139,7 +144,7 @@ class Dialog extends St.Widget {
             keys = [];
 
         let button = new St.Button({
-            style_class: 'dialog-linked-button',
+            style_class: 'dialog-button',
             important: true,
             button_mask: St.ButtonMask.ONE | St.ButtonMask.THREE,
             reactive: true,
