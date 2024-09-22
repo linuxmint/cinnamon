@@ -9,24 +9,10 @@ $ws_dot_inactive: $ws_indicator_height / 6;
 // media keys osd
 
 .osd-window {
-  @extend %heading;
   @extend %osd_base;
 
-  margin-bottom: 4em;
-  font-weight: bold;
-
-  padding: $base_padding * 2 $base_padding * 4;
-  spacing: $base_padding * 2;
-  & > * { spacing: $base_padding * 2; }
-
-  StIcon {
-    icon-size: 32px;
-  }
-
-  StLabel {
-    &:ltr { margin-right: $base_padding; }
-    &:rtl { margin-left: $base_padding; }
-  }
+  spacing: 1em;
+  padding: $base_padding * 3;
 
   .level {
     height: 0.7em;
