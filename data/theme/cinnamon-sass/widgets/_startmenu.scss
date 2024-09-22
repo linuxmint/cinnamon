@@ -26,11 +26,11 @@ $menu_outer_border_radius: $base_border_radius * 1.25;
     &:hover { background-color: $lightest_bg_color; }
   }
 
-  &-categories-box { padding: $menu_outer_padding $base_padding * 2; }
+  &-categories-box { padding: $menu_outer_padding $base_padding * 4; }
   &-applications-box { padding: $menu_outer_padding; }
   &-applications-inner-box {
-    &:ltr { padding-left: $base_padding * 2; }
-    &:rtl { padding-right: $base_padding * 2; }
+    &:ltr { padding-left: $base_padding * 4; }
+    &:rtl { padding-right: $base_padding * 4; }
   }
 
   &-application-button {
