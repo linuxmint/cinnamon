@@ -4,6 +4,7 @@ $menuitem_border_radius: $base_border_radius * 1;
 .menu {
   min-width: 15em;
   color: $fg_color;
+  margin: 6px;
 }
 
 // popup content
@@ -12,7 +13,7 @@ $menuitem_border_radius: $base_border_radius * 1;
   background-color: $bg_color;
   border-radius: $base_border_radius * 2;
   border: 1px solid $borders_color;
-  box-shadow: 0 0 6px 0 $shadow_color;
+  box-shadow: 0 0 6px $shadow_color;
 }
 
 // menu items
