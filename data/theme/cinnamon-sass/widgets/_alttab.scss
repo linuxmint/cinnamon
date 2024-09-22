@@ -22,7 +22,7 @@
     &:outlined { border-color: red; }
     &:selected {
       border-color: $borders_color;
-      background-color: $base_color
+      background-color: $light_bg_color
     }
   }
 
@@ -32,19 +32,39 @@
   }
 
   .thumbnail { width: 256px; }
+
+  .separator {}
 }
 
 .switcher-preview-backdrop { background-color: transparentize(black, 0.5); }
 
 .switcher-arrow {
+  background-color: transparent;
   border-color: transparent;
   color: $fg_color;
 
   &:highlighted {}
 }
 
-// these still exist in the code but we don't seem to run into them anymore
-// now that the switcher resizes when more windows are added
-.switcher-list .separator {}
-.thumbnail-scroll-gradient-left {}
-.thumbnail-scroll-gradient-right {}
+.thumbnail-scroll-gradient {
+
+  &-left {
+    background-gradient-direction: horizontal;
+    background-gradient-start: transparentize($panel_bg, 0.0);
+    background-gradient-end: transparentize($panel_bg, 1.0);
+    border-radius: $base_border_radius * 2;
+    border-radius-topright: 0px;
+    border-radius-bottomright: 0px;
+    width: 60px;
+  }
+
+  &-right {
+    background-gradient-direction: horizontal;
+    background-gradient-start: transparentize($panel_bg, 1.0);
+    background-gradient-end: transparentize($panel_bg, 0.0);
+    border-radius: $base_border_radius * 2;
+    border-radius-topleft: 0px;
+    border-radius-bottomleft: 0px;
+    width: 60px;
+  }
+}
