@@ -76,8 +76,6 @@ stage {
 %dialog_button_default {
   @extend %dialog_button;
 
-  // border-color: darken($accent_bg_color, 20%);
-
   @include button(normal, $c: $accent_bg_color, $style: default);
   &:hover { @include button(hover, $c: $accent_bg_color, $style: default); }
   &:active { @include button(active, $c: $accent_bg_color, $style: default); }
@@ -91,8 +89,6 @@ stage {
 
 %dialog_button_destructive {
   @extend %dialog_button;
-
-  // border-color: darken($error_bg_color, 20%);
 
   @include button(normal, $c: $error_bg_color, $style: default);
   &:hover { @include button(hover, $c: $error_bg_color, $style: default); }

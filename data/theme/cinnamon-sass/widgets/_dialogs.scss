@@ -13,7 +13,7 @@
     max-width: 28em;
   }
 
-  .dialog-linked-button {
+  .dialog-button {
     @extend %dialog_button;
 
     &:default { @extend %dialog_button_default; }
