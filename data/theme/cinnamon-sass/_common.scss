@@ -174,8 +174,8 @@ stage {
 }
 
 %osd_base {
-  background-color: transparentize($bg_color, 0.05);
-  border: 1px solid transparentize($borders_color, 0.05);
+  background-color: transparentize($bg_color, 0.01);
+  border: 1px solid transparentize($borders_color, 0.01);
   border-radius: $base_border_radius;
   text-align: center;
   padding: $base_padding * 4;
