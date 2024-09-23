@@ -8,20 +8,40 @@ $ws_dot_inactive: $ws_indicator_height / 6;
 
 // media keys osd
 
-.osd-window {
+.media-keys-osd {
   @extend %osd_base;
+  @extend %title_4;
 
-  spacing: 1em;
-  padding: $base_padding * 3;
+  margin-bottom: 4em;
+  border-radius: 9999px;
+  font-weight: bold;
+  spacing: $base_padding * 2;
+  padding: $base_padding * 2 $base_padding * 4;
+  & > * { spacing: $base_padding * 2; }
+
+  StIcon {
+    icon-size: 32px;
+  }
+
+  StLabel {
+    &:ltr { margin-right: $base_padding; }
+    &:rtl { margin-left: $base_padding; }
+  }
 
   .level {
-    height: 0.7em;
-    background-color: $light_bg_color;
-    border-radius: 99px;
+    min-width: 160px;
+    -barlevel-height: $barlevel_height;
+    -barlevel-background-color: $base_color;
+    -barlevel-active-background-color: $fg_color;
+    -barlevel-amplify-color: $warning_color;
+    -barlevel-amplify-separator-width: $base_padding * 0.5;
+
+    &:ltr { margin-right: $base_padding; }
+    &:rtl { margin-left: $base_padding; }
   }
 
   .level-bar {
-    border-radius: 99px;
+    border-radius: $base_border_radius;
     background-color: $fg_color;
   }
 }
