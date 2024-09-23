@@ -420,7 +420,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             if (stdout) {
                 setTimeout(() => {
                     this.state.trigger('addFavorite', {appId: stdout.trim(), app: null, pos: -1});
-                    this.state.trigger('refreshCurrentAppList');
+                    this.state.trigger('refreshCurrentWorkspace');
                 }, 2000);
             }
         });
