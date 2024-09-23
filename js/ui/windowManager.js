@@ -13,6 +13,7 @@ const GObject = imports.gi.GObject;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const ModalDialog = imports.ui.modalDialog;
 const WmGtkDialogs = imports.ui.wmGtkDialogs;
+const CloseDialog = imports.ui.closeDialog;
 const WorkspaceOsd = imports.ui.workspaceOsd;
 
 const {CoverflowSwitcher} = imports.ui.appSwitcher.coverflowSwitcher;
@@ -1392,8 +1393,8 @@ var WindowManager = class WindowManager {
         }
     }
 
-    _createCloseDialog(shellwm, window) {
-        return new WmGtkDialogs.CloseDialog(window);
+    _createCloseDialog(cinnamonwm, window) {
+        return new CloseDialog.CloseDialog(window);
     }
 
     _confirmDisplayChange() {
