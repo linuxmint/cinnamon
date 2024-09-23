@@ -34,10 +34,29 @@ $ws_dot_inactive: $ws_indicator_height / 6;
   text-align: center;
 }
 
-.workspace-osd {
+.workspace-switch-osd {
   @extend %osd_base;
+  @extend %title_4;
 
-  font-size: 3em;
+  margin-bottom: 4em;
+  border-radius: 9999px;
+  font-weight: bold;
+  padding: $base_padding * 2 $base_padding * 6 0 $base_padding * 6;
+
+  &-indicator-box { spacing: $base_padding * 2; }
+
+  &-indicator {
+    background-color: transparentize($fg_color, 0.5);
+    padding: $ws_dot_inactive / 2;
+    margin: ($ws_indicator_height - $ws_dot_inactive) / 2;
+    border-radius: $ws_indicator_height;
+
+    &:active {
+      background-color: $accent_bg_color;
+      padding: $ws_dot_active / 2;
+      margin: ($ws_indicator_height - $ws_dot_active) / 2;
+    }
+  }
 }
 
 .monitor-label {
