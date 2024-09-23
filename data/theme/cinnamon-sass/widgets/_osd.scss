@@ -58,6 +58,7 @@ $ws_dot_inactive: $ws_indicator_height / 6;
   @extend %osd_base;
   @extend %title_4;
 
+  min-width: 140px;
   margin-bottom: 4em;
   border-radius: 9999px;
   font-weight: bold;

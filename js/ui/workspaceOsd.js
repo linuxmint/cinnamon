@@ -41,11 +41,14 @@ class WorkspaceOsd extends Clutter.Actor {
         });
         this.add_child(this._vbox);
 
-        this._label = new St.Label();
-        this._vbox.add_child(this._label);
+        this._labelBin = new St.Bin();
+        this._activeWorkspaceName = null;
+        this._label = null;
+        this._vbox.add_child(this._labelBin);
 
         this._list = new St.BoxLayout({
             style_class: 'workspace-switch-osd-indicator-box',
+            x_align: Clutter.ActorAlign.CENTER,
         });
         this._vbox.add_child(this._list);
 
@@ -64,6 +67,18 @@ class WorkspaceOsd extends Clutter.Actor {
     }
 
     _redisplay() {
+        if (!this._activeWorkspaceName)
+            return;
+
+        if (this._label !== null)
+            this._label.destroy();
+
+        this._label = new St.Label ({
+            text: this._activeWorkspaceName,
+        });
+
+        this._labelBin.set_child(this._label);
+
         let workspaceManager = global.workspace_manager;
 
         this._list.destroy_all_children();
@@ -82,7 +97,7 @@ class WorkspaceOsd extends Clutter.Actor {
 
     display(activeWorkspaceIndex, workspaceName) {
         this._activeWorkspaceIndex = activeWorkspaceIndex;
-        this._label.text = workspaceName;
+        this._activeWorkspaceName = workspaceName;
 
         this._redisplay();
         if (this._timeoutId != 0)
