@@ -492,8 +492,7 @@ LayoutManager.prototype = {
      *      - addToWindowgroup (boolean): The actor should be added as a top-level window.
      *      - doNotAdd (boolean): The actor should not be added to the uiGroup. This has no effect if %addToWindowgroup is %true.
      *
-     * Tells the chrome to track @actor, which must be a descendant
-     * of an actor added via addChrome(). This can be used to extend the
+     * Tells the chrome to track @actor. This can be used to extend the
      * struts or input region to cover specific children.
      *
      * @params can have any of the same values as in addChrome(),
@@ -637,10 +636,9 @@ Chrome.prototype = {
             ancestor = ancestor.get_parent();
             index = this._findActor(ancestor);
         }
-        if (!ancestor)
-            throw new Error('actor is not a descendent of a chrome actor');
 
-        let ancestorData = this._trackedActors[index];
+        let ancestorData = ancestor ? this._trackedActors[index]
+                                    : defaultParams;
         if (!params)
             params = {};
         // We can't use Params.parse here because we want to drop
