@@ -73,14 +73,14 @@ var CloseDialog = GObject.registerClass({
 
         this._dialog.contentLayout.add_child(this._createDialogContent());
         this._dialog.addButton({
-            label: _('Force Quit'),
-            action: this._onClose.bind(this),
-            destructive_action: true,
-        });
-        this._dialog.addButton({
             label: _('Wait'),
             action: this._onWait.bind(this),
             key: Clutter.KEY_Escape,
+        });
+        this._dialog.addButton({
+            label: _('Force Quit'),
+            action: this._onClose.bind(this),
+            destructive_action: true,
         });
 
         global.focus_manager.add_group(this._dialog);
