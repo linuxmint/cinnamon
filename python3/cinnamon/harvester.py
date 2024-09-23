@@ -380,7 +380,7 @@ class Harvester:
         action = "upgrade" if uuid in self.meta_map else "install"
 
         error_message = None
-        uuid = uuid + "poo"
+        uuid = uuid
         try:
             item = self.index_cache[uuid]
         except KeyError:
