@@ -326,7 +326,9 @@ class Module:
             panel_id, monitor_id, position = def_.split(":")
             monitor_id = int(monitor_id)
 
-            if self.id_or_monitor_position_used(already_defined_panels, monitor_layout, panel_id, monitor_id, position):
+            if monitor_id >= n_mons:
+                print("cs_panel: Ignoring panel definition with a monitor out of range: (ID: %s, Monitor: %d, Position: %s)" % (panel_id, monitor_id, position))
+            elif self.id_or_monitor_position_used(already_defined_panels, monitor_layout, panel_id, monitor_id, position):
                 removals.append(def_)
                 continue
 
