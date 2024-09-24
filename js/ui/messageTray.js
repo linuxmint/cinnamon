@@ -31,34 +31,34 @@ var LONGER_HIDE_TIMEOUT = 0.6;
 const NOTIFICATION_IMAGE_SIZE = 125;
 const NOTIFICATION_IMAGE_OPACITY = 230; // 0 - 255
 
-var State = {
+const State =  Object.freeze({
     HIDDEN: 0,
     SHOWING: 1,
     SHOWN: 2,
     HIDING: 3
-};
+});
 
 // These reasons are useful when we destroy the notifications received through
 // the notification daemon. We use EXPIRED for transient notifications that the
 // user did not interact with, DISMISSED for all other notifications that were
 // destroyed as a result of a user action, and SOURCE_CLOSED for the notifications
 // that were requested to be destroyed by the associated source.
-var NotificationDestroyedReason = {
+const NotificationDestroyedReason =  Object.freeze({
     EXPIRED: 1,
     DISMISSED: 2,
     SOURCE_CLOSED: 3
-};
+});
 
 // Message tray has its custom Urgency enumeration. LOW, NORMAL and CRITICAL
 // urgency values map to the corresponding values for the notifications received
 // through the notification daemon. HIGH urgency value is used for chats received
 // through the Telepathy client.
-var Urgency = {
+const Urgency = Object.freeze({
     LOW: 0,
     NORMAL: 1,
     HIGH: 2,
     CRITICAL: 3
-};
+});
 
 function _fixMarkup(text, allowMarkup) {
     if (allowMarkup) {
