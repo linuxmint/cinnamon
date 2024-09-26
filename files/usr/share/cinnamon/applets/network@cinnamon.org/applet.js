@@ -603,8 +603,10 @@ NMDevice.prototype = {
             for(let j = 0; j < this._connections.length; ++j) {
                 let obj = this._connections[j];
                 if (this._activeConnection &&
-                    obj.connection == this._activeConnection.connection)
+                    obj.connection == this._activeConnection.connection) {
+                    activeOffset = 0; // we no longer need to account for this
                     continue;
+                }
                 obj.item = this._createConnectionItem(obj);
 
                 if (j + activeOffset >= NUM_VISIBLE_NETWORKS) {
@@ -1398,7 +1400,7 @@ NMDeviceWireless.prototype = {
             }
 
             // skip networks that should appear earlier
-            let menuPos = 0;
+            let menuPos = this._activeConnectionItem ? 1 : 0;
             for (pos = 0;
                  pos < this._networks.length &&
                  this._networkSortFunction(this._networks[pos], apObj) < 0; ++pos) {
@@ -1410,7 +1412,6 @@ NMDeviceWireless.prototype = {
             this._networks.splice(pos, 0, apObj);
 
             if (this._shouldShowConnectionList()) {
-                menuPos += (this._activeConnectionItem ? 1 : 0);
                 this._createNetworkItem(apObj, menuPos);
             }
         }
@@ -1703,8 +1704,10 @@ NMDeviceWireless.prototype = {
 
         for(let j = 0; j < this._networks.length; j++) {
             let apObj = this._networks[j];
-            if (apObj == this._activeNetwork)
+            if (apObj == this._activeNetwork) {
+                activeOffset = 0; // we no longer need to account for this
                 continue;
+            }
 
             this._createNetworkItem(apObj, j + activeOffset);
         }
