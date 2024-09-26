@@ -409,10 +409,10 @@ class PreviewWidget(SettingsWidget):
 class Gtk2ScrollbarSizeEditor:
     def __init__(self, ui_scale):
         rcpath = GLib.getenv("GTK2_RC_FILES")
-        if rcpath is None or rcpath == "":
-            self._path = os.path.join(GLib.get_home_dir(), ".gtkrc-2.0")
-        else:
+        if rcpath:
             self._path = rcpath.split(":")[0]
+        else:
+            self._path = os.path.join(GLib.get_home_dir(), ".gtkrc-2.0")
         self._file = Gio.File.new_for_path(self._path)
         self._settings = Gio.Settings(schema_id="org.cinnamon.theme")
         self.ui_scale = ui_scale
