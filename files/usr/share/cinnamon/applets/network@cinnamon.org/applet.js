@@ -1385,8 +1385,7 @@ NMDeviceWireless.prototype = {
         }
 
         if (needsupdate) {
-            if (apObj.item)
-                apObj.item.destroy();
+            this._accessPointRemoved(device, accessPoint);
 
             if (pos != -1)
                 this._networks.splice(pos, 1);
@@ -1413,6 +1412,19 @@ NMDeviceWireless.prototype = {
 
             if (this._shouldShowConnectionList()) {
                 this._createNetworkItem(apObj, menuPos);
+                if (menuPos < NUM_VISIBLE_NETWORKS && this._networks.length > NUM_VISIBLE_NETWORKS) {
+                    for (; menuPos < NUM_VISIBLE_NETWORKS; ++pos) {
+                        if (this._networks[pos] != this._activeNetwork)
+                            menuPos++;
+                    }
+                    let item = this._networks[pos].item;
+                    if (item && item._apObj) {
+                        item.destroy();
+                        item._apObj.item = null;
+
+                        this._createNetworkItem(item._apObj, NUM_VISIBLE_NETWORKS);
+                    }
+                }
             }
         }
     },
