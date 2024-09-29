@@ -12,7 +12,7 @@ $ws_dot_inactive: $ws_indicator_height / 6;
   @extend %osd_base;
   @extend %title_4;
 
-  margin-bottom: 4em;
+  margin-bottom: 1em;
   border-radius: 9999px;
   font-weight: bold;
   spacing: $base_padding * 2;
@@ -59,7 +59,7 @@ $ws_dot_inactive: $ws_indicator_height / 6;
   @extend %title_4;
 
   min-width: 140px;
-  margin-bottom: 4em;
+  margin-bottom: 1em;
   border-radius: 9999px;
   font-weight: bold;
   padding: $base_padding * 2 $base_padding * 6 0 $base_padding * 6;
