@@ -27,7 +27,10 @@ class WorkspaceOsd extends Clutter.Actor {
 
         this.set_offscreen_redirect(Clutter.OffscreenRedirect.ALWAYS);
 
-        let constraint = new Layout.MonitorConstraint({ index: monitorIndex });
+        let constraint = new Layout.MonitorConstraint({
+            index: monitorIndex,
+            work_area: true,
+        });
         this.add_constraint(constraint);
 
         Main.uiGroup.add_actor(this);
