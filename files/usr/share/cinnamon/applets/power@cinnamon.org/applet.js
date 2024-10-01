@@ -12,6 +12,8 @@ const Settings = imports.ui.settings;
 const BrightnessBusName = "org.cinnamon.SettingsDaemon.Power.Screen";
 const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
 
+const CSD_BACKLIGHT_NOT_SUPPORTED_CODE = 1;
+
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 // TODO: why aren't we using introspection - upower-glib?
 const UPDeviceType = {
@@ -214,20 +216,28 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         Interfaces.getDBusProxyAsync(busName, Lang.bind(this, function(proxy, error) {
             this._proxy = proxy;
             this._proxy.GetPercentageRemote(Lang.bind(this, this._dbusAcquired));
-
-            try {
-                this._proxy.GetStepRemote((step) => {
-                    this._step = (step / 100);
-                });
-            } catch(e) {
-                this._step = .05;
-            }
         }));
     }
 
     _dbusAcquired(b, error) {
-        if(error)
+        if (error)
             return;
+
+        try {
+            this._proxy.GetStepRemote((step, error) => {
+                if (error != null) {
+                    if (error.code != CSD_BACKLIGHT_NOT_SUPPORTED_CODE) {
+                        global.logError(`Could not get backlight step for ${busName}: ${error.message}`);
+                        return;
+                    } else {
+                        this._step = .05;
+                    }
+                }
+                this._step = (step / 100);
+            });
+        } catch(e) {
+            this._step = .05;
+        }
 
         this._updateBrightnessLabel(b);
         this.setValue(b / 100);
