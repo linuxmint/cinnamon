@@ -10,7 +10,7 @@ import util
 
 CINNAMON_SOUNDS = "org.cinnamon.sounds"
 CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound"
-MAXIMUM_VOLUME_KEY = "maximum-volume"
+OVERAMPLIFICATION_KEY = "allow-amplified-volume"
 
 DECAY_STEP = .15
 
@@ -538,8 +538,7 @@ class Module:
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
         # output volume
-        max_volume = self.sound_settings.get_int(MAXIMUM_VOLUME_KEY)
-        self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), max_volume, sizeGroup=sizeGroup)
+        self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), 100, sizeGroup=sizeGroup)
         devSettings.add_row(self.outVolume)
 
         # balance
@@ -549,6 +548,11 @@ class Module:
         devSettings.add_row(self.fade)
         self.woofer = BalanceBar("lfe", 0, self.controller.get_vol_max_norm(), sizeGroup=sizeGroup)
         devSettings.add_row(self.woofer)
+
+        # overamplification
+        switch = GSettingsSwitch(_("Overamplification"), CINNAMON_DESKTOP_SOUNDS, OVERAMPLIFICATION_KEY)
+        switch.set_tooltip_text(_("Allow the volume to exceed 100%, with reduced sound quality."))
+        devSettings.add_row(switch)
 
         ## Input page
         page = SettingsPage()
@@ -569,7 +573,7 @@ class Module:
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
         # input volume
-        self.inVolume = VolumeBar(self.controller.get_vol_max_norm(), max_volume, sizeGroup=sizeGroup)
+        self.inVolume = VolumeBar(self.controller.get_vol_max_norm(), 100, sizeGroup=sizeGroup)
         devSettings.add_row(self.inVolume)
 
         # input level
@@ -626,24 +630,17 @@ class Module:
         noAppsMessage.pack_start(box, True, True, 0)
         self.appStack.add_named(noAppsMessage, "noAppsMessage")
 
-        ## Settings page
-        page = SettingsPage()
-        self.sidePage.stack.add_titled(page, "settings", _("Settings"))
+        self.sound_settings.connect(f"changed::{OVERAMPLIFICATION_KEY}", self.onOverAmplificationChanged)
+        self.onOverAmplificationChanged()
 
-        amplificationSection = page.add_section(_("Amplification"))
-        self.maxVolume = Slider(_("Maximum volume: %d") % max_volume + "%", _("Reduced"), _("Amplified"), 1, 150, None, step=1, page=10, value=max_volume, gicon=None, iconName=None)
-        self.maxVolume.adjustment.connect("value-changed", self.onMaxVolumeChanged)
-        self.maxVolume.setMark(100)
-        amplificationSection.add_row(self.maxVolume)
-
-    def onMaxVolumeChanged(self, adjustment):
-        newValue = int(round(adjustment.get_value()))
-        self.sound_settings.set_int(MAXIMUM_VOLUME_KEY, newValue)
-        self.maxVolume.label.set_label(_("Maximum volume: %d") % newValue + "%")
-        self.outVolume.adjustment.set_upper(newValue)
+    def onOverAmplificationChanged(self, settings=None, key=None):
+        overamplification = self.sound_settings.get_boolean(OVERAMPLIFICATION_KEY)
         self.outVolume.slider.clear_marks()
-        if newValue > 100:
+        if overamplification:
+            self.outVolume.adjustment.set_upper(150)
             self.outVolume.setMark(100)
+        else:
+            self.outVolume.adjustment.set_upper(100)
 
     def inializeController(self):
         self.controller = Cvc.MixerControl(name = "cinnamon")

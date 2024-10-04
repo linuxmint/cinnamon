@@ -39,7 +39,7 @@ const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 const ICON_SIZE = 28;
 
 const CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound";
-const MAXIMUM_VOLUME_KEY = "maximum-volume";
+const OVERAMPLIFICATION_KEY = "allow-amplified-volume";
 
 class ControlButton {
     constructor(icon, tooltip, callback, small = false) {
@@ -1023,8 +1023,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._control.connect('stream-removed', (...args) => this._onStreamRemoved(...args));
 
         this._sound_settings = new Gio.Settings({ schema_id: CINNAMON_DESKTOP_SOUNDS });
-        this._volumeMax = this._sound_settings.get_int(MAXIMUM_VOLUME_KEY) / 100 * this._control.get_vol_max_norm();
         this._volumeNorm = this._control.get_vol_max_norm();
+        this._volumeMax = this._volumeNorm;
 
         this._streams = [];
         this._devices = [];
@@ -1088,23 +1088,21 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         let appsys = Cinnamon.AppSystem.get_default();
         appsys.connect("installed-changed", () => this._updateLaunchPlayer());
 
-        if (this._volumeMax > this._volumeNorm) {
-            this._outputVolumeSection.set_mark(this._volumeNorm / this._volumeMax);
-        }
-
-        this._sound_settings.connect("changed::" + MAXIMUM_VOLUME_KEY, () => this._on_sound_settings_change());
+        this._sound_settings.connect("changed::" + OVERAMPLIFICATION_KEY, () => this._on_overamplification_change());
+        this._on_overamplification_change();
     }
 
     _setKeybinding() {
         Main.keybindingManager.addHotKey("sound-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
     }
 
-    _on_sound_settings_change () {
-        this._volumeMax = this._sound_settings.get_int(MAXIMUM_VOLUME_KEY) / 100 * this._control.get_vol_max_norm();
-        if (this._volumeMax > this._volumeNorm) {
-            this._outputVolumeSection.set_mark(this._volumeNorm / this._volumeMax);
+    _on_overamplification_change () {
+        if (this._sound_settings.get_boolean(OVERAMPLIFICATION_KEY)) {
+            this._volumeMax = 1.5 * this._volumeNorm;
+            this._outputVolumeSection.set_mark(1/1.5);
         }
         else {
+            this._volumeMax = this._volumeNorm;
             this._outputVolumeSection.set_mark(0);
         }
         this._outputVolumeSection._update();
