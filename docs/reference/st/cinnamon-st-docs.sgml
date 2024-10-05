@@ -44,6 +44,10 @@
       <xi:include href="xml/st-theme-node.xml"/>
       <xi:include href="xml/st-texture-cache.xml"/>
     </chapter>
+    <chapter id="debugging">
+      <title>Debugging</title>
+      <xi:include href="xml/st-debug.xml"/>
+    </chapter>
   </part>
   <chapter id="object-tree">
     <title>Object Hierarchy</title>

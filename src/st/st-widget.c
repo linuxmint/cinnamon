@@ -43,9 +43,14 @@
 #include "st-theme-node-private.h"
 
 #include "st-widget-accessible.h"
+#include "st-debug.h"
 
 #include <gtk/gtk.h>
 #include <atk/atk-enum-types.h>
+
+#if 0
+#define DEBUG_ST_WIDGET_COORD_ROUNDING 1
+#endif
 
 /*
  * Forward declaration for sake of StWidgetChild
@@ -419,6 +424,10 @@ st_widget_paint_background (StWidget *widget, ClutterPaintContext *paint_context
 st_widget_paint (ClutterActor *actor, ClutterPaintContext *paint_context)
 {
   st_widget_paint_background (ST_WIDGET (actor), paint_context);
+
+#ifdef DEBUG_ST_WIDGET_COORD_ROUNDING
+  st_debug_check_actor_coord_rounding (actor, NULL);
+#endif
 
   /* Chain up so we paint children. */
   CLUTTER_ACTOR_CLASS (st_widget_parent_class)->paint (actor, paint_context);

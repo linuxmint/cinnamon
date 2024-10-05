@@ -457,6 +457,7 @@ AppIcon.prototype = {
         size *= global.ui_scale;
         this._iconBin.set_size(size, size);
         this._iconBin.child = this.icon;
+        St.debug_check_actor_coord_rounding(this._iconBin, "test");
     }
 };
 
