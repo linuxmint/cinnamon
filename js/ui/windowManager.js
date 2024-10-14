@@ -11,6 +11,7 @@ const Main = imports.ui.main;
 const WindowMenu = imports.ui.windowMenu;
 const GObject = imports.gi.GObject;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
+const Dialog = imports.ui.dialog;
 const ModalDialog = imports.ui.modalDialog;
 const WmGtkDialogs = imports.ui.wmGtkDialogs;
 const CloseDialog = imports.ui.closeDialog;
@@ -28,6 +29,7 @@ const WINDOW_ANIMATION_TIME_MULTIPLIERS = [
 ]
 
 const EASING_MULTIPLIER = 1000; // multiplier for tweening.time ---> easing.duration
+var ONE_SECOND = 1000; // in ms
 
 const DIM_TIME = 0.500;
 const DIM_BRIGHTNESS = -0.2;
@@ -61,6 +63,75 @@ const ZONE_TL = 4;
 const ZONE_TR = 5;
 const ZONE_BR = 6;
 const ZONE_BL = 7;
+
+var DisplayChangeDialog = GObject.registerClass(
+class DisplayChangeDialog extends ModalDialog.ModalDialog {
+    _init(wm) {
+        super._init();
+
+        this._wm = wm;
+
+        this._countDown = Meta.MonitorManager.get_display_configuration_timeout();
+
+        // Translators: This string should be shorter than 30 characters
+        let title = _("Keep these display settings?");
+        let description = this._formatCountDown();
+
+        this._content = new Dialog.MessageDialogContent({ title, description });
+        this.contentLayout.add_child(this._content);
+
+        /* Translators: this and the following message should be limited in length,
+           to avoid ellipsizing the labels.
+        */
+        this._cancelButton = this.addButton({ label: _("Revert Settings"),
+                                              action: this._onFailure.bind(this),
+                                              key: Clutter.KEY_Escape });
+        this._okButton = this.addButton({ label: _("Keep Changes"),
+                                          action: this._onSuccess.bind(this),
+                                          default: true });
+
+        this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, ONE_SECOND, this._tick.bind(this));
+        GLib.Source.set_name_by_id(this._timeoutId, '[cinnamon] this._tick');
+    }
+
+    close(timestamp) {
+        if (this._timeoutId > 0) {
+            GLib.source_remove(this._timeoutId);
+            this._timeoutId = 0;
+        }
+
+        super.close(timestamp);
+    }
+
+    _formatCountDown() {
+        let fmt = ngettext("Settings changes will revert in %d second",
+                           "Settings changes will revert in %d seconds");
+        return fmt.format(this._countDown);
+    }
+
+    _tick() {
+        this._countDown--;
+        if (this._countDown == 0) {
+            /* muffin already takes care of failing at timeout */
+            this._timeoutId = 0;
+            this.close();
+            return GLib.SOURCE_REMOVE;
+        }
+
+        this._content.description = this._formatCountDown();
+        return GLib.SOURCE_CONTINUE;
+    }
+
+    _onFailure() {
+        this._wm.complete_display_change(false);
+        this.close();
+    }
+
+    _onSuccess() {
+        this._wm.complete_display_change(true);
+        this.close();
+    }
+});
 
 class WindowDimmer {
     constructor(actor) {
@@ -1398,7 +1469,7 @@ var WindowManager = class WindowManager {
     }
 
     _confirmDisplayChange() {
-        let dialog = new WmGtkDialogs.DisplayChangesDialog(this._cinnamonwm);
+        let dialog = new DisplayChangeDialog(this._cinnamonwm);
         dialog.open();
     }
 };
