@@ -204,10 +204,14 @@ var ResizePopup = GObject.registerClass(
 class ResizePopup extends St.Widget {
     _init() {
         super._init({ layout_manager: new Clutter.BinLayout() });
-        this._label = new St.Label({ style_class: 'info-osd',
-                                     x_align: Clutter.ActorAlign.CENTER,
-                                     y_align: Clutter.ActorAlign.CENTER,
-                                     x_expand: true, y_expand: true });
+        this._label = new St.Label({
+            style_class: 'resize-popup',
+            important: true,
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
+            x_expand: true,
+            y_expand: true
+        });
         this.add_child(this._label);
         Main.uiGroup.add_actor(this);
     }
