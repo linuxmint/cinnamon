@@ -16,6 +16,7 @@ const Params = imports.misc.params;
 const Util = imports.misc.util;
 
 const Dialog = imports.ui.dialog;
+const Layout = imports.ui.layout;
 const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
 
@@ -82,8 +83,10 @@ var ModalDialog = GObject.registerClass({
 
         Main.uiGroup.add_actor(this);
 
-        let constraint = new Clutter.BindConstraint({ source: global.stage,
-                                                      coordinate: Clutter.BindCoordinate.POSITION | Clutter.BindCoordinate.SIZE });
+        let constraint = new Clutter.BindConstraint({
+            source: global.stage,
+            coordinate: Clutter.BindCoordinate.POSITION | Clutter.BindCoordinate.SIZE
+        });
         this.add_constraint(constraint);
 
         this.backgroundStack = new St.Widget({ layout_manager: new Clutter.BinLayout() });
@@ -92,6 +95,8 @@ var ModalDialog = GObject.registerClass({
             x_fill: true,
             y_fill: true
         });
+        this._monitorConstraint = new Layout.MonitorConstraint();
+        this._backgroundBin.add_constraint(this._monitorConstraint);
         this.add_actor(this._backgroundBin);
 
         this.dialogLayout = new Dialog.Dialog(this.backgroundStack, params.styleClass);
@@ -177,10 +182,7 @@ var ModalDialog = GObject.registerClass({
     }
 
     _fadeOpen() {
-        let monitor = Main.layoutManager.currentMonitor;
-
-        this._backgroundBin.set_position(monitor.x, monitor.y);
-        this._backgroundBin.set_size(monitor.width, monitor.height);
+        this._monitorConstraint.index = global.display.get_current_monitor();
 
         this._setState(State.OPENING);
 
