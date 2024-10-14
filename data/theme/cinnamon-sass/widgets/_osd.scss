@@ -92,5 +92,5 @@ $ws_dot_inactive: $ws_indicator_height / 6;
 .resize-popup {
   @extend %osd_base;
 
-  padding: $base_padding;
+  padding: $base_padding * 2;
 }
