@@ -31,6 +31,21 @@ $check_width: 20px;
   &:focus:checked StBin { background-image: url("checkbox.svg"); }
 }
 
+// New CheckBoxes
+
+.check-box-2 {
+  StBoxLayout { spacing: 0.8em; }
+
+  StBin {
+    width: $check_width;
+    height: $check_height;
+    background-image: url("checkbox-off.svg");
+  }
+  &:focus StBin { background-image: url("checkbox-off.svg"); }
+  &:checked StBin { background-image: url("checkbox.svg"); }
+  &:focus:checked StBin { background-image: url("checkbox.svg"); }
+}
+
 // radio
 
 .radiobutton {

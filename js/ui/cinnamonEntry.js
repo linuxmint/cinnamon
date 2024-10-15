@@ -1,7 +1,9 @@
 const Clutter = imports.gi.Clutter;
 const Cinnamon = imports.gi.Cinnamon;
+const GObject = imports.gi.GObject;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
+const Pango = imports.gi.Pango;
 const St = imports.gi.St;
 
 const Main = imports.ui.main;
@@ -164,3 +166,57 @@ function addContextMenu(entry, params) {
     entry.clutter_text.connect('button-press-event', _onClicked);
     entry.connect('popup-menu', _onPopup);
 }
+
+var CapsLockWarning = GObject.registerClass(
+class CapsLockWarning extends St.Label {
+    _init(params) {
+        let defaultParams = { style_class: 'prompt-dialog-error-label' };
+        super._init(Object.assign(defaultParams, params));
+
+        this.text = _('Caps lock is on');
+
+        this.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+        this.clutter_text.line_wrap = true;
+
+        let seat = Clutter.get_default_backend().get_default_seat();
+        this._keymap = seat.get_keymap();
+
+        this.connect('notify::mapped', () => {
+            if (this.is_mapped()) {
+                this._stateChangedId = this._keymap.connect('state-changed',
+                    () => this._sync(true));
+            } else {
+                this._keymap.disconnect(this._stateChangedId);
+                this.stateChangedId = 0;
+            }
+
+            this._sync(false);
+        });
+
+        this.connect('destroy', () => {
+            if (this._stateChangedId)
+                this._keymap.disconnect(this._stateChangedId);
+        });
+    }
+
+    _sync(animate) {
+        let capsLockOn = this._keymap.get_caps_lock_state();
+
+        this.remove_all_transitions();
+
+        const { naturalHeightSet } = this;
+        this.natural_height_set = false;
+        let [, height] = this.get_preferred_height(-1);
+        this.natural_height_set = naturalHeightSet;
+
+        this.ease({
+            height: capsLockOn ? height : 0,
+            opacity: capsLockOn ? 255 : 0,
+            duration: animate ? 200 : 0,
+            onComplete: () => {
+                if (capsLockOn)
+                    this.height = -1;
+            },
+        });
+    }
+});
