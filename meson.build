@@ -165,10 +165,15 @@ else
     session_conf.set('REQUIRED', '')
 endif
 
-foreach file : ['cinnamon.session', 'cinnamon2d.session', 'cinnamon-wayland.session']
+session_files = ['cinnamon.session', 'cinnamon2d.session']
+if get_option('wayland')
+    session_files += ['cinnamon-wayland.session']
+endif
+
+foreach session_file : session_files
     configure_file(
-        input: file + '.in',
-        output: file,
+        input: session_file + '.in',
+        output: session_file,
         configuration: session_conf,
         install_dir: join_paths(prefix, datadir, 'cinnamon-session', 'sessions'),
     )
