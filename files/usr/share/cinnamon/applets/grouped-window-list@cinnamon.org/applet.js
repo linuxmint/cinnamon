@@ -328,7 +328,8 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'show-recent', value: 'showRecent', cb: null},
             {key: 'autostart-menu-item', value: 'autoStart', cb: null},
             {key: 'monitor-move-all-windows', value: 'monitorMoveAllWindows', cb: null},
-            {key: 'show-all-workspaces', value: 'showAllWorkspaces', cb: this.refreshAllAppLists}
+            {key: 'show-all-workspaces', value: 'showAllWorkspaces', cb: this.refreshAllAppLists},
+            {key: 'list-monitor-windows', value: 'listMonitorWindows', cb: this.reloadAllAppsMonitor}
         ];
 
         for (let i = 0, len = settingsProps.length; i < len; i++) {
@@ -503,6 +504,11 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     }
 
+    reloadAllAppsMonitor(){
+        this.refreshAllAppLists();
+        this.updateMonitorWatchlist();
+    }
+
     updateMonitorWatchlist() {
         if (!this.numberOfMonitors) {
             this.numberOfMonitors = global.display.get_n_monitors();
@@ -510,32 +516,40 @@ class GroupedWindowListApplet extends Applet.Applet {
         const onPrimary = this.panel.monitorIndex === Main.layoutManager.primaryIndex;
         const instances = Main.AppletManager.getRunningInstancesForUuid(this.state.uuid);
         let {monitorWatchList} = this.state;
-        /* Simple cases */
-        if (this.numberOfMonitors === 1) {
-            monitorWatchList = [Main.layoutManager.primaryIndex];
-        } else if (instances.length > 1 && !onPrimary) {
-            monitorWatchList = [this.panel.monitorIndex];
-        } else {
-           /* This is an instance on the primary monitor - it will be
-            * responsible for any monitors not covered individually.  First
-            * convert the instances list into a list of the monitor indices,
-            * and then add the monitors not present to the monitor watch list
-            * */
-            monitorWatchList = [this.panel.monitorIndex];
-            for (let i = 0; i < instances.length; i++) {
-                if (!instances[i]) {
-                    continue;
-                }
-                instances[i] = instances[i].panel.monitorIndex;
-            }
 
-            for (let i = 0; i < this.numberOfMonitors; i++) {
-                if (instances.indexOf(i) === -1) {
-                    monitorWatchList.push(i);
+        // Show all applications from all monitors
+        if (!this.state.settings.listMonitorWindows) {
+            monitorWatchList = Array.from({ length: this.numberOfMonitors }, (_, i) => i);
+
+        } else {
+            // Original logic
+            if (this.numberOfMonitors === 1) {
+                monitorWatchList = [Main.layoutManager.primaryIndex];
+            } else if (instances.length > 1 && !onPrimary) {
+                monitorWatchList = [this.panel.monitorIndex];
+            } else {
+               /* This is an instance on the primary monitor - it will be
+                * responsible for any monitors not covered individually.  First
+                * convert the instances list into a list of the monitor indices,
+                * and then add the monitors not present to the monitor watch list
+                * */
+                monitorWatchList = [this.panel.monitorIndex];
+                for (let i = 0; i < instances.length; i++) {
+                    if (!instances[i]) {
+                        continue;
+                    }
+                    instances[i] = instances[i].panel.monitorIndex;
+                }
+
+                for (let i = 0; i < this.numberOfMonitors; i++) {
+                    if (instances.indexOf(i) === -1) {
+                        monitorWatchList.push(i);
+                    }
                 }
             }
         }
-        this.state.set({monitorWatchList});
+        this.state.set({ monitorWatchList });
+ global.log("Monitor Watch List updated: " + JSON.stringify(monitorWatchList));
     }
 
     refreshCurrentAppList() {
