@@ -83,10 +83,10 @@ class DisplayChangeDialog extends ModalDialog.ModalDialog {
         /* Translators: this and the following message should be limited in length,
            to avoid ellipsizing the labels.
         */
-        this._cancelButton = this.addButton({ label: _("Revert Settings"),
+        this._cancelButton = this.addButton({ label: _("Revert"),
                                               action: this._onFailure.bind(this),
                                               key: Clutter.KEY_Escape });
-        this._okButton = this.addButton({ label: _("Keep Changes"),
+        this._okButton = this.addButton({ label: _("Keep changes"),
                                           action: this._onSuccess.bind(this),
                                           default: true });
 
@@ -104,8 +104,8 @@ class DisplayChangeDialog extends ModalDialog.ModalDialog {
     }
 
     _formatCountDown() {
-        let fmt = ngettext("Settings changes will revert in %d second",
-                           "Settings changes will revert in %d seconds");
+        let fmt = ngettext("Reverting to previous display settings in %d second.",
+                           "Reverting to previous display settings in %d seconds.");
         return fmt.format(this._countDown);
     }
 
