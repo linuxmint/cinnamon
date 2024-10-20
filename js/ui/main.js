@@ -103,6 +103,7 @@ const Expo = imports.ui.expo;
 const Panel = imports.ui.panel;
 const PlacesManager = imports.ui.placesManager;
 const PolkitAuthenticationAgent = imports.ui.polkitAuthenticationAgent;
+const KeyringPrompt = imports.ui.keyringPrompt;
 const RunDialog = imports.ui.runDialog;
 const Layout = imports.ui.layout;
 const LookingGlass = imports.ui.lookingGlass;
@@ -433,6 +434,8 @@ function start() {
     if (Meta.is_wayland_compositor()) {
         PolkitAuthenticationAgent.init();
     }
+
+    KeyringPrompt.init();
 
     _startDate = new Date();
 

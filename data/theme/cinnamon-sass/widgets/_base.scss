@@ -1,5 +1,13 @@
 .flashspot { background-color: white; }
 
+// Caps-lock warning
+.caps-lock-warning-label {
+  text-align: center;
+  padding-bottom: 8px;
+  @extend %caption;
+  color: $warning_color;
+}
+
 // links
 .cinnamon-link {
   color: $link_color;
