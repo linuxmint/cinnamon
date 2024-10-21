@@ -289,6 +289,8 @@ function init() {
         St.Widget.set_default_direction(St.TextDirection.RTL);
     }
 
+    GObject.gtypeNameBasedOnJSPath = true;
+
     // Miscellaneous monkeypatching
     _patchContainerClass(St.BoxLayout);
     _patchContainerClass(St.Table);
