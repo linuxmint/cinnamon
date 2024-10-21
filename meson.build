@@ -46,10 +46,11 @@ xapp = dependency('xapp', version: '>= 2.6.0')
 X11 = dependency('x11')
 xml = dependency('libxml-2.0')
 
-has_nm = not get_option('disable_networkmanager')
-if has_nm
-    # only ever used in *.js via gi import
-    dependency('libnm')
+nm_deps = []
+have_networkmanager = not get_option('disable_networkmanager')
+if have_networkmanager
+    nm_deps += dependency('libnm', version: '>= 1.10.4')
+    nm_deps += dependency('libsecret-1', version: '>= 0.18')
 endif
 
 if get_option('build_recorder')
@@ -71,6 +72,7 @@ python = find_program('python3')
 cinnamon_conf = configuration_data()
 cinnamon_conf.set_quoted('VERSION', version)
 cinnamon_conf.set_quoted('GETTEXT_PACKAGE', meson.project_name().to_lower())
+cinnamon_conf.set('HAVE_NETWORKMANAGER', have_networkmanager)
 
 have_mallinfo = cc.has_function('mallinfo', prefix: '#include <malloc.h>')
 if have_mallinfo
@@ -145,6 +147,7 @@ install_subdir(
 config_js_conf = configuration_data()
 config_js_conf.set('PACKAGE_NAME', meson.project_name().to_lower())
 config_js_conf.set('PACKAGE_VERSION', version)
+config_js_conf.set10('HAVE_NETWORKMANAGER', have_networkmanager)
 
 configure_file(
     input: 'js/misc/config.js.in',
@@ -160,10 +163,10 @@ install_subdir(
 )
 
 session_conf = configuration_data()
-if has_nm
-    session_conf.set('REQUIRED', 'nm-applet;')
-else
+if have_networkmanager
     session_conf.set('REQUIRED', '')
+else
+    session_conf.set('REQUIRED', 'nm-applet;')
 endif
 
 foreach file : ['cinnamon.session', 'cinnamon2d.session', 'cinnamon-wayland.session']

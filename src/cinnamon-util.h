@@ -72,6 +72,9 @@ void cinnamon_shader_effect_set_double_uniform (ClutterShaderEffect *effect,
                                              const gchar         *name,
                                              gdouble             value);
 
+gboolean cinnamon_util_wifexited (int               status,
+                                  int              *exit);
+
 G_END_DECLS
 
 #endif /* __CINNAMON_UTIL_H__ */

@@ -90,6 +90,7 @@ const PointerTracker = imports.misc.pointerTracker;
 
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
+const Config = imports.misc.config;
 const SlideshowManager = imports.ui.slideshowManager;
 var AppletManager = imports.ui.appletManager;
 const SearchProviderManager = imports.ui.searchProviderManager;
@@ -107,6 +108,7 @@ const KeyringPrompt = imports.ui.keyringPrompt;
 const RunDialog = imports.ui.runDialog;
 const Layout = imports.ui.layout;
 const LookingGlass = imports.ui.lookingGlass;
+const NetworkAgent = imports.ui.networkAgent;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const CinnamonDBus = imports.ui.cinnamonDBus;
@@ -163,6 +165,7 @@ var xdndHandler = null;
 var statusIconDispatcher = null;
 var virtualKeyboard = null;
 var layoutManager = null;
+var networkAgent = null;
 var monitorLabeler = null;
 var themeManager = null;
 var keybindingManager = null;
@@ -418,6 +421,9 @@ function start() {
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
     placesManager = new PlacesManager.PlacesManager();
+
+    if (Config.HAVE_NETWORKMANAGER)
+        networkAgent = new NetworkAgent.NetworkAgent();
 
     magnifier = new Magnifier.Magnifier();
     locatePointer = new LocatePointer.locatePointer();

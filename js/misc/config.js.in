@@ -4,3 +4,5 @@
 var PACKAGE_NAME = '@PACKAGE_NAME@';
 /* The version of this package */
 var PACKAGE_VERSION = '@PACKAGE_VERSION@';
+/* 1 if networkmanager is available, 0 otherwise */
+var HAVE_NETWORKMANAGER = @HAVE_NETWORKMANAGER@;
