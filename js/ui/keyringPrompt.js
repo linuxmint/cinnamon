@@ -34,25 +34,23 @@ class KeyringDialog extends ModalDialog.ModalDialog {
             vertical: true,
         });
 
-        this._passwordEntry = new St.Entry({
+        this._passwordEntry = new St.PasswordEntry({
             style_class: 'prompt-dialog-password-entry',
             can_focus: true,
             x_align: Clutter.ActorAlign.CENTER,
         });
-        this._passwordEntry.clutter_text.set_password_char('\u25cf'); // ● U+25CF BLACK CIRCLE
-        CinnamonEntry.addContextMenu(this._passwordEntry, { isPassword: true });
+        CinnamonEntry.addContextMenu(this._passwordEntry);
         this._passwordEntry.clutter_text.connect('activate', this._onPasswordActivate.bind(this));
         this.prompt.bind_property('password-visible',
             this._passwordEntry, 'visible', GObject.BindingFlags.SYNC_CREATE);
         passwordBox.add_child(this._passwordEntry);
 
-        this._confirmEntry = new St.Entry({
+        this._confirmEntry = new St.PasswordEntry({
             style_class: 'prompt-dialog-password-entry',
             can_focus: true,
             x_align: Clutter.ActorAlign.CENTER,
         });
-        this._confirmEntry.clutter_text.set_password_char('\u25cf'); // ● U+25CF BLACK CIRCLE
-        CinnamonEntry.addContextMenu(this._confirmEntry, { isPassword: true });
+        CinnamonEntry.addContextMenu(this._confirmEntry);
         this._confirmEntry.clutter_text.connect('activate', this._onConfirmActivate.bind(this));
         this.prompt.bind_property('confirm-visible',
             this._confirmEntry, 'visible', GObject.BindingFlags.SYNC_CREATE);

@@ -56,6 +56,11 @@ stage {
   StLabel.hint-text { color: transparentize($fg_color, 0.7); }
 
   .capslock-warning { icon-size: $scalable_icon_size; }
+
+  StIcon.peek-password {
+    icon-size: 16px;
+    color: $fg_color;
+  }
 }
 
 // buttons in dialogs
