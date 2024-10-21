@@ -29,6 +29,7 @@ Build-Depends:
  libpolkit-agent-1-dev (>= 0.100),
  libpulse-dev,
  librsvg2-dev,
+ libsecret-1-dev,
  libstartup-notification0-dev (>= 0.11),
  libxapp-dev (>= 2.6.0),
  meson,

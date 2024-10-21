@@ -262,7 +262,7 @@ st_entry_update_hint_visibility (StEntry *self)
   if (priv->hint_actor)
     g_object_set (priv->hint_actor, "visible", hint_visible, NULL);
 
-    if (hint_visible)
+  if (hint_visible)
     st_widget_add_style_pseudo_class (ST_WIDGET (self), "indeterminate");
   else
     st_widget_remove_style_pseudo_class (ST_WIDGET (self), "indeterminate");
