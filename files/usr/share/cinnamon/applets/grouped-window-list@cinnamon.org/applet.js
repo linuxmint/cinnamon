@@ -329,7 +329,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'autostart-menu-item', value: 'autoStart', cb: null},
             {key: 'monitor-move-all-windows', value: 'monitorMoveAllWindows', cb: null},
             {key: 'show-all-workspaces', value: 'showAllWorkspaces', cb: this.refreshAllAppLists},
-            {key: 'list-monitor-windows', value: 'listMonitorWindows', cb: this.reloadAllAppsMonitor}
+            {key: 'window-display-settings', value: 'windowDisplaySettings', cb: this.reloadAllAppsMonitor}
         ];
 
         for (let i = 0, len = settingsProps.length; i < len; i++) {
@@ -518,7 +518,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         let {monitorWatchList} = this.state;
 
         // Show all applications from all monitors
-        if (!this.state.settings.listMonitorWindows) {
+        if (this.state.settings.windowDisplaySettings === 2) {
             monitorWatchList = Array.from({ length: this.numberOfMonitors }, (_, i) => i);
 
         } else {
@@ -540,7 +540,6 @@ class GroupedWindowListApplet extends Applet.Applet {
                     }
                     instances[i] = instances[i].panel.monitorIndex;
                 }
-
                 for (let i = 0; i < this.numberOfMonitors; i++) {
                     if (instances.indexOf(i) === -1) {
                         monitorWatchList.push(i);
@@ -549,7 +548,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             }
         }
         this.state.set({ monitorWatchList });
- global.log("Monitor Watch List updated: " + JSON.stringify(monitorWatchList));
+        global.log("Monitor Watch List updated: " + JSON.stringify(monitorWatchList));
     }
 
     refreshCurrentAppList() {

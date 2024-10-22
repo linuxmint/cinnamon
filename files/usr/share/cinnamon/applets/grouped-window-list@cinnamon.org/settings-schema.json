@@ -31,7 +31,7 @@
         "left-click-action",
         "middle-click-action",
         "show-all-workspaces",
-        "list-monitor-windows"
+        "window-display-settings"
       ]
     },
     "appButtonsSection": {
@@ -150,10 +150,14 @@
     "default": false,
     "description": "Show windows from all workspaces"
   },
-  "list-monitor-windows": {
-    "type": "checkbox",
-    "default": true,
-    "description": "Only list windows from the current monitor"
+  "window-display-settings": {
+    "type": "combobox",
+    "default": 1,
+    "description": "Window display mode",
+    "options": {
+      "Track windows individually per monitor": 1,
+      "Always track windows from all monitors": 2
+    }
   },
   "enable-app-button-dragging": {
     "type": "checkbox",
