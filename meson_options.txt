@@ -23,4 +23,9 @@ option('py3modules_dir',
     value : '',
     description: 'Where to install python3 modules'
 )
+option('wayland',
+    type : 'boolean',
+    value : true,
+    description: 'Enable wayland support'
+)
 
