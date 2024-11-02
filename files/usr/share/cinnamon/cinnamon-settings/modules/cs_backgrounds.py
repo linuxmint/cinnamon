@@ -609,7 +609,7 @@ class PixCache(object):
                         os.remove(cache_filename)
 
                 if not loaded:
-                    if mimetype in ("image/svg+xml", "image/avif"):
+                    if mimetype in ("image/svg+xml", "image/avif", "image/jxl"):
                         # rasterize svg with Gdk-Pixbuf and convert to PIL Image
                         tmp_pix = GdkPixbuf.Pixbuf.new_from_file(filename)
                         mode = "RGBA" if tmp_pix.props.has_alpha else "RGB"
