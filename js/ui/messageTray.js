@@ -31,7 +31,7 @@ var LONGER_HIDE_TIMEOUT = 0.6;
 const NOTIFICATION_IMAGE_SIZE = 125;
 const NOTIFICATION_IMAGE_OPACITY = 230; // 0 - 255
 
-const State =  Object.freeze({
+var State =  Object.freeze({
     HIDDEN: 0,
     SHOWING: 1,
     SHOWN: 2,
@@ -43,7 +43,7 @@ const State =  Object.freeze({
 // user did not interact with, DISMISSED for all other notifications that were
 // destroyed as a result of a user action, and SOURCE_CLOSED for the notifications
 // that were requested to be destroyed by the associated source.
-const NotificationDestroyedReason =  Object.freeze({
+var NotificationDestroyedReason =  Object.freeze({
     EXPIRED: 1,
     DISMISSED: 2,
     SOURCE_CLOSED: 3
@@ -53,7 +53,7 @@ const NotificationDestroyedReason =  Object.freeze({
 // urgency values map to the corresponding values for the notifications received
 // through the notification daemon. HIGH urgency value is used for chats received
 // through the Telepathy client.
-const Urgency = Object.freeze({
+var Urgency = Object.freeze({
     LOW: 0,
     NORMAL: 1,
     HIGH: 2,
