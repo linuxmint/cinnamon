@@ -39,6 +39,11 @@
   }
 
   .message-dialog-description { text-align: center; }
+
+  .message-dialog-caption {
+    @extend %caption; 
+    text-align: center;
+  }
 }
 
 // run dialog

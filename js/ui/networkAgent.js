@@ -91,8 +91,8 @@ class NetworkSecretDialog extends ModalDialog.ModalDialog {
 
         if (flags & NM.SecretAgentGetSecretsFlags.WPS_PBC_ACTIVE) {
             let descriptionLabel = new St.Label({
-                text: _('Alternatively you can connect by pushing the “WPS” button on your router.'),
-                style_class: 'message-dialog-description',
+                text: _('You can also connect by pushing the “WPS” button on your router.'),
+                style_class: 'message-dialog-caption',
             });
             descriptionLabel.clutter_text.line_wrap = true;
             descriptionLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
