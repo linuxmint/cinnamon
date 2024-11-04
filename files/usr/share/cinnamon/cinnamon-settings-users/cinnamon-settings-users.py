@@ -373,7 +373,7 @@ class NewUserDialog(Gtk.Dialog):
             self.username_entry.connect("changed", self._on_info_changed)
 
             label = Gtk.Label()
-            label.set_markup(_("The username must consist of only:\n    - lower case letters (a-z)\n    - numerals (0-9)\n    - '.', '-', and '_' characters"))
+            label.set_markup(_("The username must consist of only:\n    - lower case letters (a-z)\n    - numerals (0-9)\n    - '-' and '_' characters"))
 
             table = DimmedTable()
             table.add_labels([_("Account Type"), _("Full Name"), _("Username")])
