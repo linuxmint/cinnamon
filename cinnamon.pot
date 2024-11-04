@@ -2355,7 +2355,7 @@ msgid ""
 "The username must consist of only:\n"
 "    - lower case letters (a-z)\n"
 "    - numerals (0-9)\n"
-"    - '.', '-', and '_' characters"
+"    - '-' and '_' characters"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:379
