@@ -764,7 +764,7 @@ var NetworkAgent = class {
             return null;
         }
 
-        const prop = plugin.lookup_property('CINNAMON', 'supports-external-ui-mode');
+        const prop = plugin.lookup_property('GNOME', 'supports-external-ui-mode');
         const trimmedProp = prop ? prop.trim().toLowerCase() : '';
 
         return {
