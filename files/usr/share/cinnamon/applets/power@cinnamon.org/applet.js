@@ -40,9 +40,6 @@ function deviceLevelToString(level) {
 }
 
 function deviceKindToString(kind) {
-    // By default we use .replaceAll('-', ' ') and .capitalize() to make the
-    // UPowerGlib.kind_to_string() result more friendly, but we also handle a
-    // few special cases here where that does't provide an optimal result.
     switch (kind) {
         case UPDeviceKind.LINE_POWER:
             return _("AC adapter");
@@ -50,20 +47,59 @@ function deviceKindToString(kind) {
             return _("Laptop battery");
         case UPDeviceKind.UPS:
             return _("UPS");
+        case UPDeviceKind.MONITOR:
+            return _("Monitor");
+        case UPDeviceKind.MOUSE:
+            return _("Mouse");
+        case UPDeviceKind.KEYBOARD:
+            return _("Keyboard");
         case UPDeviceKind.PDA:
             return _("PDA");
         case UPDeviceKind.PHONE:
             return _("Cell phone");
+        case UPDeviceKind.MEDIA_PLAYER:
+            return _("Media player");
+        case UPDeviceKind.TABLET:
+            return _("Tablet");
+        case UPDeviceKind.COMPUTER:
+            return _("Computer");
+        case UPDeviceKind.GAMING_INPUT:
+            return _("Gaming input");
+        case UPDeviceKind.PEN:
+            return _("Pen");
+        case UPDeviceKind.TOUCHPAD:
+            return _("Touchpad");
+        case UPDeviceKind.MODEM:
+            return _("Modem");
+        case UPDeviceKind.NETWORK:
+            return _("Network");
+        case UPDeviceKind.HEADSET:
+            return _("Headset");
+        case UPDeviceKind.SPEAKERS:
+            return _("Speakers");
+        case UPDeviceKind.HEADPHONES:
+            return _("Headphones");
+        case UPDeviceKind.VIDEO:
+            return _("Video");
+        case UPDeviceKind.OTHER_AUDIO:
+            return _("Audio device");
+        case UPDeviceKind.REMOTE_CONTROL:
+            return _("Remote control");
+        case UPDeviceKind.PRINTER:
+            return _("Printer");
+        case UPDeviceKind.SCANNER:
+            return _("Scanner");
+        case UPDeviceKind.CAMERA:
+            return _("Camera");
+        case UPDeviceKind.WEARABLE:
+            return _("Wearable");
+        case UPDeviceKind.TOY:
+            return _("Toy");
         case UPDeviceKind.BLUETOOTH_GENERIC:
             return _("Bluetooth device");
         default: {
             try {
-                return _(
-                    UPDevice
-                        .kind_to_string(kind)
-                        .replaceAll('-', ' ')
-                        .capitalize()
-                );
+                return UPDevice.kind_to_string(kind).replaceAll("-", " ").capitalize();
             } catch {
                 return _("Unknown");
             }
