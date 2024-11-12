@@ -1,0 +1,9 @@
+[Desktop Entry]
+Icon=cs-nightlight
+Exec=cinnamon-settings nightlight
+Type=Application
+OnlyShowIn=X-Cinnamon;
+Categories=Settings;
+Name=Night Light
+Comment=Night Light preferences
+Keywords=redshift;color;blue;filter;temperature;
