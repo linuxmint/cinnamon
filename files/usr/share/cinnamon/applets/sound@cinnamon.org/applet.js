@@ -1287,13 +1287,15 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         if (this.playerControl && this._activePlayer && this._playerIcon[0]) {
             if (source === "output") {
-                //if we have an active player, but are changing the volume, show the output icon and after three seconds change back to the player icon
+                // if we have an active player, but are changing the volume, show the output icon and after three seconds change back to the player icon unless muted
                 this.set_applet_icon_symbolic_name(this._outputIcon);
-                this._iconTimeoutId = Mainloop.timeout_add_seconds(OUTPUT_ICON_SHOW_TIME_SECONDS, () => {
-                    this.setIcon();
-                });
+                if (this.stream && !this.stream.is_muted) {
+                    this._iconTimeoutId = Mainloop.timeout_add_seconds(OUTPUT_ICON_SHOW_TIME_SECONDS, () => {
+                        this.setIcon();
+                    });
+                }
             } else {
-                //if we have an active player and want to change the icon, change it immediately
+                // if we have an active player and want to change the icon, change it immediately
                 if (this._playerIcon[1])
                     this.set_applet_icon_path(this._playerIcon[0]);
                 else
