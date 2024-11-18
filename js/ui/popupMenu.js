@@ -23,7 +23,7 @@ const Params = imports.misc.params;
 const Util = imports.misc.util;
 
 var SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
-var MENU_ANIMATION_OFFSET = 0.1;
+var MENU_ANIMATION_OFFSET = 12; /* The amount of distance the menu moves when animating */
 
 var PanelLoc = {
     top : 0,
@@ -2298,10 +2298,6 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         this.setMaxHeight();
         this._updateAllSeparatorVisibility();
 
-        /* I'd rather this be inside the active tween scope as an onUpdate param, but how do you modify
-         * a tweens own parameters during said tweening? */
-        this._breadth = 0;
-
         this.isOpen = true;
         if (global.menuStackLength == undefined)
             global.menuStackLength = 0;
@@ -2352,42 +2348,8 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 transition: "easeOutQuad",
                 time: Main.wm.MENU_ANIMATION_TIME,
                 opacity: 255,
-                onUpdate: dest => {
-                    let clipY = 0;
-                    let clipX = 0;
-                    let xUpdate = 0;
-                    let yUpdate = 0;
-
-                    switch (this._orientation) {
-                        case St.Side.TOP:
-                        case St.Side.BOTTOM:
-                            clipY = dest - this.actor.y;
-
-                            if (this.actor.width != this._breadth) {
-                                [xUpdate, yUpdate] = this._calculatePosition();
-                                this.actor.x = xUpdate;
-                                this._breadth = this.actor.width;
-                            }
-
-                            break;
-                        case St.Side.LEFT:
-                        case St.Side.RIGHT:
-                            clipX = dest - this.actor.x;
-
-                            if (this.actor.height != this._breadth) {
-                                [xUpdate, yUpdate] = this._calculatePosition();
-                                this.actor.y = yUpdate;
-                                this._breadth = this.actor.height;
-                            }
-
-                            break;
-                    }
-
-                    this.actor.set_clip(clipX, clipY, this.actor.width, this.actor.height);
-                },
                 onComplete: () => {
                     this.animating = false;
-                    this.actor.remove_clip();
                 }
             }
 
@@ -2397,26 +2359,22 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 case St.Side.TOP:
                 case St.Side.BOTTOM:
                     this.actor.x = xPos;
-                    this._breadth = this.actor.width;
                     tweenParams["y"] = yPos;
                     yPos -= this.actor.margin_top;
-                    tweenParams["onUpdateParams"] = [yPos];
                     if (this.sideFlipped) // Bottom
-                        this.actor.y = yPos + (this.actor.height * MENU_ANIMATION_OFFSET) - this.actor.margin_top;
+                        this.actor.y = yPos + MENU_ANIMATION_OFFSET + this.actor.margin_top;
                     else // Top
-                        this.actor.y = yPos - (this.actor.height * MENU_ANIMATION_OFFSET) + this.actor.margin_bottom;
+                        this.actor.y = yPos - MENU_ANIMATION_OFFSET + this.actor.margin_bottom;
                     break;
                 case St.Side.LEFT:
                 case St.Side.RIGHT:
                     this.actor.y = yPos;
-                    this._breadth = this.actor.height;
                     tweenParams["x"] = xPos;
                     xPos -= this.actor.margin_left;
-                    tweenParams["onUpdateParams"] = [xPos];
                     if (this.sideFlipped) // Right
-                        this.actor.x = xPos + (this.actor.width * MENU_ANIMATION_OFFSET) - this.actor.margin_left;
+                        this.actor.x = xPos + MENU_ANIMATION_OFFSET + this.actor.margin_left;
                     else // Left
-                        this.actor.x = xPos - (this.actor.width * MENU_ANIMATION_OFFSET) + this.actor.margin_right;
+                        this.actor.x = xPos - MENU_ANIMATION_OFFSET + this.actor.margin_right;
                     break;
             }
 
@@ -2464,25 +2422,9 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 transition: "easeInQuad",
                 time: Main.wm.MENU_ANIMATION_TIME,
                 opacity: 0,
-                onUpdate: dest => {
-                        let clipY = 0;
-                        let clipX = 0;
-                        switch (this._orientation) {
-                            case St.Side.TOP:
-                            case St.Side.BOTTOM:
-                                clipY = dest - this.actor.y;
-                                break;
-                            case St.Side.LEFT:
-                            case St.Side.RIGHT:
-                                clipX = dest - this.actor.x;
-                                break;
-                        }
-                        this.actor.set_clip(clipX, clipY, this.actor.width, this.actor.height);
-                    },
                 onComplete: () => {
                     this.animating = false;
                     this.actor.hide();
-                    this.actor.remove_clip();
                     this.actor.set_size(-1, -1);
                     this.actor.opacity = 255;
                     this.emit("menu-animated-closed");
@@ -2493,20 +2435,18 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 case St.Side.TOP:
                 case St.Side.BOTTOM:
                     let yPos = this.actor.y - this.actor.margin_top;
-                    tweenParams["onUpdateParams"] = [yPos - this.actor.margin_top];
                     if (this.sideFlipped) // Bottom
-                        tweenParams["y"] = yPos + (this.actor.height * MENU_ANIMATION_OFFSET) + this.actor.margin_bottom;
+                        tweenParams["y"] = yPos + MENU_ANIMATION_OFFSET + this.actor.margin_bottom;
                     else // Top
-                        tweenParams["y"] = yPos - (this.actor.height * MENU_ANIMATION_OFFSET) - this.actor.margin_top;
+                        tweenParams["y"] = yPos - MENU_ANIMATION_OFFSET - this.actor.margin_top;
                     break;
                 case St.Side.LEFT:
                 case St.Side.RIGHT:
                     let xPos = this.actor.x - this.actor.margin_left;
-                    tweenParams["onUpdateParams"] = [xPos - this.actor.margin_left];
                     if (this.sideFlipped) // Right
-                        tweenParams["x"] = xPos + (this.actor.width * MENU_ANIMATION_OFFSET) + this.actor.margin_right;
+                        tweenParams["x"] = xPos + MENU_ANIMATION_OFFSET + this.actor.margin_right;
                     else // Left
-                        tweenParams["x"] = xPos - (this.actor.width * MENU_ANIMATION_OFFSET) - this.actor.margin_left;
+                        tweenParams["x"] = xPos - MENU_ANIMATION_OFFSET - this.actor.margin_left;
                     break;
             }
 
