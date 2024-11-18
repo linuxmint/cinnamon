@@ -143,6 +143,33 @@ var MonitorConstraint = GObject.registerClass({
             let workspaceManager = global.workspace_manager;
             let ws = workspaceManager.get_workspace_by_index(0);
             rect = ws.get_work_area_for_monitor(index);
+
+            // Account for auto hide panels in the work area
+            const panelPositions = 4;
+            for (let i = 0; i < panelPositions; i++) {
+                let panel = Main.panelManager.getPanel(index, i);
+                if (!panel)
+                    continue;
+
+                if (!panel.isHideable())
+                    continue;
+
+                switch (i) {
+                    case 0:
+                        rect.y += panel.actor.get_height();
+                        break;
+                    case 1:
+                        rect.height -= panel.actor.get_height();
+                        break;
+                    case 2:
+                        rect.x += panel.actor.get_width();
+                        break;
+                    case 3:
+                        rect.width -= panel.actor.get_width();
+                    default:
+                        global.log("Monitor Constraint: Error in accounting hidden panels");
+                }
+            }
         } else {
             rect = Main.layoutManager.monitors[index];
         }
