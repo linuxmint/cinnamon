@@ -2236,18 +2236,27 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         if (this.customStyleClass) {
             styleClasses.push(this.customStyleClass);
         }
-
-        switch(this.orientation) {
-            case St.Side.TOP:
-                styleClasses.push("top");
-            case St.Side.BOTTOM:
-                styleClasses.push("bottom");
-            case St.Side.LEFT:
-                styleClasses.push("left");
-            case St.Side.RIGHT:
-                styleClasses.push("right");
-        }
         this.actor.set_style_class_name(styleClasses.join(" "));
+
+        this.actor.remove_style_class_name("menu-top");
+        this.actor.remove_style_class_name("menu-bottom");
+        this.actor.remove_style_class_name("menu-left");
+        this.actor.remove_style_class_name("menu-right");
+
+        switch(this._orientation) {
+            case St.Side.TOP:
+                this.actor.add_style_class_name("menu-top");
+                break;
+            case St.Side.BOTTOM:
+                this.actor.add_style_class_name("menu-bottom");
+                break;
+            case St.Side.LEFT:
+                this.actor.add_style_class_name("menu-left");
+                break;
+            case St.Side.RIGHT:
+                this.actor.add_style_class_name("menu-right");
+                break;
+        }
     }
 
     /**
@@ -2255,7 +2264,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
      * @orientation (St.Side): The new orientation of the menu
      *
      * Sets the orientation of the @sourceActor with respect to the menu. For example, if you use St.Side.TOP,
-     * the menu will try to place itself below the @sourcActor unless there is not enough room for it.
+     * the menu will try to place itself below the @sourceActor unless there is not enough room for it.
      */
     setOrientation(orientation) {
         this._orientation = orientation;
