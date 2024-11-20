@@ -12,6 +12,8 @@ const Settings = imports.ui.settings;
 
 const BrightnessBusName = "org.cinnamon.SettingsDaemon.Power.Screen";
 const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
+const PowerProfilesBusName = "net.hadess.PowerProfiles";
+const PowerProfilesBusPath = "/net/hadess/PowerProfiles";
 
 const CSD_BACKLIGHT_NOT_SUPPORTED_CODE = 1;
 
@@ -23,6 +25,23 @@ const {
     DeviceState: UPDeviceState,
     Device: UPDevice
 } = UPowerGlib
+
+const POWER_PROFILES = {
+    "power-saver": _("Power Saver"),
+    "balanced": _("Balanced"),
+    "performance": _("Performance")
+};
+
+const PowerProfilesInterface = `<node>
+  <interface name="${PowerProfilesBusName}">
+    <property name="ActiveProfile" type="s" access="readwrite" />
+    <property name="PerformanceDegraded" type="s" access="read" />
+    <property name="Profiles" type="aa{sv}" access="read" />
+    <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
+  </interface>
+</node>`;
+
+const PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(PowerProfilesInterface);
 
 function deviceLevelToString(level) {
     switch (level) {
@@ -150,8 +169,7 @@ function deviceKindToIcon(kind, icon) {
     }
 }
 
-function reportsPreciseLevels(battery_level)
-{
+function reportsPreciseLevels(battery_level) {
     return battery_level == UPDeviceLevel.NONE;
 }
 
@@ -383,6 +401,30 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this.menu.addMenuItem(this.brightness);
         this.menu.addMenuItem(this.keyboard);
 
+        try {
+            this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, PowerProfilesBusName, PowerProfilesBusPath);
+        } catch (error) {
+		this._profilesProxy = null;
+	}
+
+        if (this._profilesProxy.Profiles) {
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.contentSection = new PopupMenu.PopupMenuSection();
+
+            this.ActiveProfile = this._profilesProxy.ActiveProfile;
+            this.Profiles = this._profilesProxy.Profiles;
+
+            this._proxyId = this._profilesProxy.connect("g-properties-changed", (proxy, changed, invalidated) => {
+                for (let [changedProperty, changedValue] of Object.entries(changed.deepUnpack())) {
+                    if (["ActiveProfile", "Profiles"].includes(changedProperty))
+                        this[changedProperty] = changedValue.deepUnpack();
+                    this._updateProfile();
+                }
+            });
+
+            this._updateProfile();
+        }
+
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         this.menu.addSettingsAction(_("Power Settings"), 'power');
@@ -566,6 +608,38 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this._applet_icon.set_style_class_name ('system-status-icon');
     }
 
+    _updateProfile() {
+        this.contentSection.removeAll();
+
+        for (let profileNum = 0; profileNum < this.Profiles.length; profileNum++) {
+            let profileName = this.Profiles[profileNum].Profile.unpack();
+            let activeItem;
+            if (profileName == this.ActiveProfile) {
+                activeItem = true;
+                this.profileIndex = profileNum;
+            } else {
+                activeItem = false;
+            }
+
+            let item = new PopupMenu.PopupMenuItem(POWER_PROFILES[profileName], { reactive: !activeItem });
+            item.setShowDot(activeItem);
+            if (!activeItem)
+                item.connect("activate", Lang.bind(this, function () {
+                    this._changeProfile(profileName);
+                    this.menu.toggle();
+                }));
+
+            this.contentSection.addMenuItem(item);
+        }
+
+        this.menu.addMenuItem(this.contentSection);
+    }
+
+    _changeProfile(newProfile) {
+        this._profilesProxy.ActiveProfile = newProfile;
+        this.ActiveProfile = this._profilesProxy.ActiveProfile;
+    }
+
     _devicesChanged() {
 
         this._devices = [];
@@ -746,6 +820,12 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
     on_applet_removed_from_panel() {
         Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
+
+        if (!this._profilesProxy)
+            return;
+
+        if (this._proxyId)
+            this._profilesProxy.disconnect(this._proxyId);
     }
 }
 
