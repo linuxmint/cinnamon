@@ -36,6 +36,11 @@ LOCK_INACTIVE_OPTIONS = [
     (3600, _("1 hour"))
 ]
 
+WEATHER_UNITS_OPTIONS = [
+    ("metric", _("Metric")),
+    ("imperial", _("Imperial"))
+]
+
 XSCREENSAVER_PATH = "/usr/share/xscreensaver/config/"
 
 
@@ -93,6 +98,19 @@ class Module:
         widget = GSettingsComboBox(_("Delay before locking"), schema, "lock-delay", LOCK_DELAY_OPTIONS, valtype=int, size_group=size_group)
         widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after showing the screensaver or after turning off the screen"))
         settings.add_reveal_row(widget, schema, "lock-enabled")
+        
+        settings = page.add_section(_("Away message"))
+
+        widget = GSettingsEntry(_("Show this message when the screen is locked"), schema, "default-message")
+        widget.set_child_packing(widget.content_widget, True, True, 0, Gtk.PackType.START)
+        widget.set_tooltip_text(_("This is the default message displayed on your lock screen"))
+        settings.add_row(widget)
+
+        settings.add_row(GSettingsFontButton(_("Font"), "org.cinnamon.desktop.screensaver", "font-message"))
+
+        widget = GSettingsSwitch(_("Ask for a custom message when locking the screen from the menu"), schema, "ask-for-away-message")
+        widget.set_tooltip_text(_("This option allows you to type a message each time you lock the screen from the menu"))
+        settings.add_row(widget)
 
         # Customize
         page = SettingsPage()
@@ -127,17 +145,18 @@ class Module:
         widget = GSettingsFontButton(_("Date Font"), "org.cinnamon.desktop.screensaver", "font-date", size_group=size_group)
         settings.add_row(widget)
 
-        settings = page.add_section(_("Away message"))
+        settings = page.add_section(_("Weather"))
 
-        widget = GSettingsEntry(_("Show this message when the screen is locked"), schema, "default-message")
-        widget.set_child_packing(widget.content_widget, True, True, 0, Gtk.PackType.START)
-        widget.set_tooltip_text(_("This is the default message displayed on your lock screen"))
+        widget = GSettingsSwitch(_("Show Weather"), schema, "show-weather")
+        widget.set_tooltip_text(_("Show local weather information on the screensaver"))
         settings.add_row(widget)
 
-        settings.add_row(GSettingsFontButton(_("Font"), "org.cinnamon.desktop.screensaver", "font-message"))
+        widget = GSettingsComboBox(_("Units"), schema, "weather-units", WEATHER_UNITS_OPTIONS, valtype=str, size_group=size_group)
+        widget.set_tooltip_text(_("Units to use for weather display, either Metric or Imperial"))
+        settings.add_row(widget)
 
-        widget = GSettingsSwitch(_("Ask for a custom message when locking the screen from the menu"), schema, "ask-for-away-message")
-        widget.set_tooltip_text(_("This option allows you to type a message each time you lock the screen from the menu"))
+        widget = GSettingsEntry(_("Optional location override: LAT,LON"), schema, "weather-location")
+        widget.set_tooltip_text(_("Override auto-detected location with a string in format LAT,LON for example 41.85,-87.65"))
         settings.add_row(widget)
 
         settings = page.add_section(_("General"))
@@ -158,6 +177,6 @@ class Module:
         widget.set_tooltip_text(_("Show the number of missed notifications and the battery status"))
         settings.add_row(widget)
 
-        widget = GSettingsSwitch(_("Allow floating clock and album art widgets"), schema, "floating-widgets")
+        widget = GSettingsSwitch(_("Allow floating clock, weather, and album art widgets"), schema, "floating-widgets")
         widget.set_tooltip_text(_("When the default screensaver is active, allow the clock and album art widgets to float around randomly"))
         settings.add_row(widget)
