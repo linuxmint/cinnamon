@@ -414,7 +414,7 @@
     </key>
 
     <key type="b" name="alttab-minimized-aware">
-    <default>false</default>
+    <default>true</default>
       <summary>Move minimized windows to the end of the appSwitcher</summary>
     </key>
 
