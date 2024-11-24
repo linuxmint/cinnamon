@@ -27,6 +27,49 @@
   }
 }
 
+// endSessionDialog.js
+.end-session-dialog {
+    width: 40em;
+    transition-duration: 100ms;
+
+    .dialog-content-box {
+        spacing: $base_margin * 3;
+        width: 30em;
+    }
+
+    .end-session-dialog-inhibitor-list-frame {
+        background-color: $light_bg_color;
+        border-radius: $base_border_radius;
+        border: 1px solid $borders_color;
+        padding-left: 5px;
+        padding-right: 5px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+
+    .end-session-dialog-inhibitor-list {
+        spacing-rows: 5px;
+        spacing-columns: 20px;
+        padding: 2px;
+    }
+
+    .end-session-dialog-inhibitor-list-reason {
+        width: 25em;
+    }
+
+    .end-session-dialog-progress-bar {
+        min-width: 160px;
+        -barlevel-height: 6px;
+        -barlevel-background-color: $base_color;
+        -barlevel-active-background-color: $fg_color;
+        -barlevel-amplify-color: $warning_color;
+        -barlevel-amplify-separator-width: $base_padding * 0.5;
+
+        &:ltr { margin-right: $base_padding; }
+        &:rtl { margin-left: $base_padding; }
+    }
+}
+
 // message dialog
 
 .message-dialog-content {
