@@ -1,0 +1,96 @@
+// various on screen popups
+
+$barlevel_height: 6px;
+
+$ws_indicator_height: 32px;
+$ws_dot_active: $ws_indicator_height / 3;
+$ws_dot_inactive: $ws_indicator_height / 6;
+
+// media keys osd
+
+.media-keys-osd {
+  @extend %osd_base;
+  @extend %title_4;
+
+  margin-bottom: 1em;
+  border-radius: 9999px;
+  font-weight: bold;
+  spacing: $base_padding * 2;
+  padding: $base_padding * 2 $base_padding * 4;
+  & > * { spacing: $base_padding * 2; }
+
+  StIcon {
+    icon-size: 32px;
+  }
+
+  StLabel {
+    &:ltr { margin-right: $base_padding; }
+    &:rtl { margin-left: $base_padding; }
+  }
+
+  .level {
+    min-width: 160px;
+    -barlevel-height: $barlevel_height;
+    -barlevel-background-color: $base_color;
+    -barlevel-active-background-color: $fg_color;
+    -barlevel-amplify-color: $warning_color;
+    -barlevel-amplify-separator-width: $base_padding * 0.5;
+
+    &:ltr { margin-right: $base_padding; }
+    &:rtl { margin-left: $base_padding; }
+  }
+
+  .level-bar {
+    border-radius: $base_border_radius;
+    background-color: $fg_color;
+  }
+}
+
+.info-osd {
+  @extend %osd_base;
+
+  font-size: 1.2em;
+  font-weight: 700;
+  text-align: center;
+}
+
+.workspace-switch-osd {
+  @extend %osd_base;
+  @extend %title_4;
+
+  min-width: 140px;
+  margin-bottom: 1em;
+  border-radius: 9999px;
+  font-weight: bold;
+  padding: $base_padding * 2 $base_padding * 6 0 $base_padding * 6;
+
+  &-indicator-box { spacing: $base_padding * 2; }
+
+  &-indicator {
+    background-color: transparentize($fg_color, 0.5);
+    padding: $ws_dot_inactive / 2;
+    margin: ($ws_indicator_height - $ws_dot_inactive) / 2;
+    border-radius: $ws_indicator_height;
+
+    &:active {
+      background-color: $accent_bg_color;
+      padding: $ws_dot_active / 2;
+      margin: ($ws_indicator_height - $ws_dot_active) / 2;
+    }
+  }
+}
+
+.monitor-label {
+  border-radius: 0;
+  color: black;
+  padding: $base_padding * 2;
+  text-align: center;
+}
+
+//  resize popup
+
+.resize-popup {
+  @extend %osd_base;
+
+  padding: $base_padding * 2;
+}

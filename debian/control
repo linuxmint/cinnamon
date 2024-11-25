@@ -15,6 +15,7 @@ Build-Depends:
  libcinnamon-menu-3-dev (>= 4.8),
  libcjs-dev (>= 4.8),
  libdbus-1-dev,
+ libgcr-3-dev,
  libgirepository1.0-dev (>= 1.29.15),
  libgl1-mesa-dev,
  libglib2.0-dev (>= 2.52),
@@ -28,9 +29,11 @@ Build-Depends:
  libpolkit-agent-1-dev (>= 0.100),
  libpulse-dev,
  librsvg2-dev,
+ libsecret-1-dev,
  libstartup-notification0-dev (>= 0.11),
  libxapp-dev (>= 2.6.0),
  meson,
+ pysassc,
  python3:any,
 Standards-Version: 3.9.5
 Homepage: https://projects.linuxmint.com/cinnamon/
@@ -56,6 +59,7 @@ Depends:
  gir1.2-cvc-1.0,
  gir1.2-ecal-2.0,
  gir1.2-edataserver-1.2,
+ gir1.2-gcr-3,
  gir1.2-gdkpixbuf-2.0,
  gir1.2-gkbd-3.0,
  gir1.2-gsound-1.0,

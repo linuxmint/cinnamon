@@ -1,0 +1,135 @@
+// function to convert px to em
+@function to_em($input, $base: 16px) {
+  // multiplied and divided by 1000 to make up for round() shortcoming
+  $em_value: ($input / $base) * 1.091 * 1000;
+  @return round($em_value) / 1000 * 1em;
+}
+
+// Mixin to convert provided font size in pt to em units
+@mixin fontsize($size, $base: 16px, $unit: pt) {
+  // if pt, convert into unitless value with the assumption: 1pt = 1.091px
+  $adjusted_size: if($unit == pt, $size * 1.091, $size) * 1000;
+  $rounded_size: round($adjusted_size / $base) / 1000;
+  font-size: $rounded_size * 1em;
+  // font-size: round($size) + pt;
+}
+
+@mixin entry($type) {
+  //
+  // $type:         entry type, possible values: normal, focus, hover, insensitive
+  // $c:            text color
+  // $bc:           background color
+  //
+
+  $entry_fg_color: $fg_color;
+  $entry_bg_color: $light_bg_color;
+
+  $insensitive_factor: 3%;
+
+  $insensitive_entry_bg_color: darken($entry_bg_color, $insensitive_factor);
+
+  // normal
+  @if $type == 'normal' {
+    background-color: $entry_bg_color;
+    color: $entry_fg_color;
+  }
+
+  @if $type == 'focus' {
+    background-color: $entry_bg_color;
+    color: $entry_fg_color;
+    border-color: $accent_bg_color;
+  }
+
+  @if $type == 'insensitive' {
+    background-color: $insensitive_entry_bg_color;
+    color: transparentize($entry_fg_color, 0.5);
+  }
+}
+
+// Button drawing function
+@mixin button($type, $tc:$fg_color, $c:$bg_color, $style: null) {
+  //
+  // $type:         button type, possible values:
+  //                  - normal, focus, hover, active, checked, insensitive, default, undecorated
+  // $c:            button bg color, derived from bg_color
+  // $tc:           button text color, derived from fg_color
+  // $style:        button style, possible values: flat, default
+  //
+
+  // mix input colors to get button background color
+  $button_bg_color: $light_bg_color;
+
+  // background color mix override for flat style; the button bg color is the background color input
+  @if $style == 'flat' { $button_bg_color: $c;}
+  // background color mix override for default button style
+  @if $style == 'default' { $button_bg_color: $c;}
+
+  // background color adjustment factors
+  // the % a color is lightened or darkened for button states
+  $insensitive_factor: 3%;
+
+  // button base state background colors
+  $hover_button_bg_color: $lighter_bg_color;
+  $active_button_bg_color: $lightest_bg_color;
+  $checked_button_bg_color: $lightest_bg_color;
+  $insensitive_button_bg_color: darken($button_bg_color, $insensitive_factor);
+
+  // background color mix override for default button style
+  @if $style == 'default' {
+    $hover_button_bg_color: lighten($button_bg_color, 10%);
+    $active_button_bg_color: darken($button_bg_color, 5%);
+    $checked_button_bg_color: darken($button_bg_color, 5%);
+  }
+
+  // flat style overrides
+  @if $style == 'flat' {
+    $insensitive_button_bg_color: $button_bg_color;
+  }
+
+  // normal style
+  @if $type == 'normal' {
+    color: $tc;
+    background-color: $button_bg_color;
+  }
+
+  @if $type == 'focus' {
+    color: $tc;
+    background-color: $button_bg_color;
+  }
+
+  // hover button
+  @else if $type == 'hover' {
+    color: $tc;
+    background-color: $hover_button_bg_color;
+  }
+
+  // active button
+  @else if $type == 'active' {
+    color: $tc;
+    background-color: $active_button_bg_color;
+  }
+
+  // checked button
+  @else if $type == 'checked' {
+    color: $tc;
+    background-color: $checked_button_bg_color;
+  }
+
+  // insensitive button
+  @else if $type == 'insensitive' {
+    $insensitive_button_fg_color: transparentize($tc, .5);
+    color: $insensitive_button_fg_color;
+    background-color: $insensitive_button_bg_color;
+  }
+
+  // reset (unstyled button)
+  @else if $type == 'undecorated' {
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+
+    &:insensitive {
+      background-color: transparent !important;
+    }
+  }
+}

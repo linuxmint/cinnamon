@@ -1,0 +1,43 @@
+// global colors
+$bg_color: #242424;
+$base_color: #303030;
+$fg_color: white;
+
+$panel_bg: #1a1a1a;
+
+// colored elements
+$error_color: #e4705b;
+$error_bg_color: #c01c28;
+
+$success_color: #8ff0a4;
+$success_bg_color: #26a269;
+
+$destructive_bg_color: #c01c28;
+$destructive_color: #ff7b63;
+
+$warning_color: #f8e45c;
+$warning_bg_color: #cd9309;
+
+$accent_color: #78aeed;
+$accent_bg_color: #3584e4;
+
+$large_icon_color: transparentize($fg_color, 0.6);
+$light_text_color: mix($fg_color, $bg_color, 65%);
+
+// used for button, entries and highlighted items
+$light_bg_color: #393939;
+$light_base_color: #444444;
+$lighter_bg_color: #454545;
+$lightest_bg_color: #656565;
+
+// link colors
+$link_color: #1c71d8;
+
+// borders
+$borders_color: #333333;
+
+// shadows
+$shadow_color: rgba(0, 0, 0, 0.5);
+
+// insensitive state
+$insensitive_fg_color: mix($fg_color, $bg_color, 40%);

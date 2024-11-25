@@ -1,0 +1,48 @@
+$notification_width: 34em;
+
+#notification {
+  width: $notification_width;
+  border-radius: $base_border_radius;
+  border: 1px solid $borders_color;
+  box-shadow: 0 2px 4px 2px $shadow_color;
+  background-color: $bg_color;
+  padding: $base_padding * 2;
+  margin-from-right-edge-of-screen: 20px;
+  spacing-rows: 10px;
+  spacing-columns: 10px;
+
+  &.multi-line-notification {
+    padding-bottom: $base_padding * 2;
+    color: $fg_color;
+  }
+
+  &-body { spacing: $base_padding; }
+  &-actions { spacing: $base_padding * 2; }
+
+  &-scrollview {}
+
+  StEntry {}
+}
+
+.notification {
+
+  /* We use row-span = 2 for the image cell, which prevents its height preferences to be
+    taken into account during allocation, so its height ends up being limited by the height
+    of the content in the other rows. To avoid showing a stretched image, we set the minimum
+    height of the table to be ICON_SIZE + IMAGE_SIZE + spacing-rows = 24 + 125 + 10 = 159 */
+  &-with-image { min-height: 159px; }
+
+  &-button {
+    @extend %button;
+
+    padding: $base_padding $base_padding * 2;
+  }
+
+  &-icon-button {
+    @extend %button;
+
+    padding: $base_padding;
+  }
+
+  &-icon-button > StIcon {}
+}

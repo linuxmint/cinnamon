@@ -1,0 +1,233 @@
+$applet_separator: transparentize($fg_color, 0.8);
+
+//padding and spacing for applets
+$applet_padding: 6px;
+
+.applet {
+
+  &-box {
+    padding: 0 $applet_padding;
+    spacing: $applet_padding;
+    text-align: center;
+
+    &.vertical { padding: $applet_padding 0; }
+
+    &:hover {
+      background-color: $lighter_bg_color;
+    }
+
+    &:highlight { background-color: transparentize($error_bg_color, 0.5); }
+  }
+
+  &-label { font-weight: bold; }
+
+  &-separator {
+    padding: 1px 4px;
+
+    &.vertical { padding: 4px 1px; }
+  }
+
+  &-separator-line {
+    width: 1px;
+    background: $applet_separator;
+
+    &-vertical {
+      height: 1px;
+      background: $applet_separator;
+    }
+  }
+}
+
+// cornerbar applet
+
+.applet-cornerbar {
+  width: $base_margin * 2;
+  background-color: $lighter_bg_color;
+  border: 1px solid $borders_color;
+
+  &.vertical { height: $base_margin * 2; }
+
+  &-box {
+    background: none;
+  }
+}
+
+.applet-cornerbar-box:hover > .applet-cornerbar { background-color: $lightest_bg_color; }
+
+
+// notification applet
+
+.notification-applet-padding {
+  padding: $base_margin 0 $base_margin $base_margin;
+}
+
+// panel launchers
+
+.panel-launchers {
+  // padding-left: $base_padding;
+  spacing: 2px;
+
+  .launcher {
+    padding: 0 2px;
+
+    &:hover { background-color: $lighter_bg_color; }
+  }
+
+  &.vertical {
+    padding: 2px 0;
+
+    .launcher { padding: 2px 0; }
+  }
+}
+
+// power applet
+
+.device-box {
+
+  .device-icon {
+    icon-size: to_em(24px);
+    color: $fg_color;
+  }
+
+  .device-labels {
+    margin-left: $base_margin * 2;
+    spacing: $base_margin;
+
+    .primary-label {
+      @extend %heading;
+
+      color: $fg_color;
+    }
+
+    .status-label { color: $light_text_color; }
+  }
+}
+
+// sound applet
+
+.sound-player {
+
+  > StBoxLayout:first-child {
+    spacing: $base_margin;
+    padding: 0 $base_padding;
+  }
+
+  StButton {
+    @extend %button;
+
+    width: 18px;
+    height: 18px;
+    padding: $base_padding;
+
+
+    StIcon { icon-size: 1em; }
+
+    &:small {
+      @extend %flat_button;
+      width: 16px;
+      height: 16px;
+
+      StIcon { icon-size: 1.2 em;}
+    }
+  }
+
+  &-generic-coverart { background-color: transparentize(black, 0.8); }
+
+  &-overlay {
+    width: 290px;
+    padding: $base_padding * 2;
+    spacing: $base_margin;
+    background-color: transparentize($bg_color, 0.1);
+
+    StBoxLayout { padding-top: 2px; }
+    > StBoxLayout { spacing: $base_padding; }
+    StBin > StBoxLayout { spacing: $base_padding; }
+  }
+
+  .slider {
+    height: $base_padding;
+    -slider-height: $base_padding;
+    -slider-background-color: darken($base_color, 5%);
+    -slider-active-background-color: $fg_color;
+    -slider-border-color: transparent;
+    -slider-active-border-color: transparent;
+    -slider-border-width: 0;
+    -slider-handle-radius: 0;
+  }
+}
+
+// spacer applet
+
+.spacer-box {
+  border: 1px solid transparent;
+
+  &:highlight { background-color: $error_color; }
+
+  &.edit-mode { border: 1px symbolic; }
+}
+
+// systray
+
+.systray {
+  padding: 0;
+}
+
+// workspace switcher applet
+
+.panel-top,
+.panel-bottom {
+
+  .workspace-switcher { padding: 0 $base_margin;}
+}
+
+.workspace-button {
+  border: 1px solid $borders_color;
+  width: 2em;
+  color: $insensitive_fg_color;
+  background-color: transparentize($fg_color, 0.95);
+
+  &.vertical { height: 2em; }
+
+  &:outlined {
+    background-color: $light_bg_color;
+    color: $fg_color;
+
+    &:hover { background-color: $lighter_bg_color; }
+  }
+
+  &:hover { background-color: $light_bg_color; }
+
+  &:shaded { // this is a workspace with no open windows
+    background-color: darken($bg_color, 5%);
+  }
+}
+
+.workspace-graph {
+  padding: $base_margin;
+  spacing: $base_margin;
+
+  .workspace {
+    border: 1px solid transparentize($fg_color, 0.8);
+    background-color: darken($panel_bg, 5%);
+
+    &:active {
+      border-color: transparentize($fg_color, 0.5);
+
+      .windows {
+        -active-window-background: transparentize(white, 0.7);
+        -active-window-border: transparentize(white, 0.65);
+        -inactive-window-background: transparentize(white, 0.9);
+        -inactive-window-border: transparentize(white, 0.85);
+      }
+    }
+
+    .windows {
+      -active-window-background: transparentize(white, 0.7);
+      -active-window-border: transparentize(white, 0.65);
+      -inactive-window-background: transparentize(white, 0.9);
+      -inactive-window-border: transparentize(white, 0.85);
+    }
+  }
+}
+
+.system-status-icon { icon-size: $scalable_icon-size; }

@@ -67,7 +67,7 @@ ClassicSwitcher.prototype = {
             this._iconsEnabled = true;
 
         this._showThumbnails = this._thumbnailsEnabled && !this._iconsEnabled;
-        this._showArrows = this._thumbnailsEnabled && this._iconsEnabled;
+        this._showIconAndThumbnails = this._thumbnailsEnabled && this._iconsEnabled;
         
         this._updateList(0);
 
@@ -188,7 +188,7 @@ ClassicSwitcher.prototype = {
             this.actor.remove_actor(this._appList.actor);
             this._appList.actor.destroy();
         }
-        this._appList = new AppList(this._windows, this._showThumbnails, this._showArrows, this._activeMonitor);
+        this._appList = new AppList(this._windows, this._showThumbnails, this._activeMonitor);
         this.actor.add_actor(this._appList.actor);
         if (!this._iconsEnabled && !this._thumbnailsEnabled) {
             this._appList.actor.hide();
@@ -233,7 +233,7 @@ ClassicSwitcher.prototype = {
             this._thumbnailTimeoutId = 0;
         }
         
-        if (this._showArrows) {
+        if (this._showIconAndThumbnails) {
             this._thumbnailTimeoutId = Mainloop.timeout_add(
                 THUMBNAIL_POPUP_TIME, Lang.bind(this, function() {
 
@@ -419,16 +419,12 @@ AppIcon.prototype = {
         this.actor.add(this._iconBin, { x_fill: false, y_fill: false } );
         let title = window.get_title();
         if (title) {
+            this.label = new St.Label({ text: title });
             if (window.minimized) {
-                this.label = new St.Label({ text: "[" + title + "]"});               
-                let contrast_effect = new Clutter.BrightnessContrastEffect();                
+                let contrast_effect = new Clutter.BrightnessContrastEffect();
                 contrast_effect.set_brightness_full(-0.5, -0.5, -0.5);
-                this._iconBin.add_effect(contrast_effect);                
+                this.actor.add_effect(contrast_effect);
             }
-            else {
-                this.label = new St.Label({ text: title });    
-            }
-            
             let bin = new St.Bin({ x_align: St.Align.MIDDLE });
             bin.add_actor(this.label);
             this.actor.add(bin);
@@ -755,7 +751,7 @@ function AppList() {
 AppList.prototype = {
     __proto__ : SwitcherList.prototype,
 
-    _init : function(windows, showThumbnails, showArrows, activeMonitor) {
+    _init : function(windows, showThumbnails, activeMonitor) {
         SwitcherList.prototype._init.call(this, true, activeMonitor);
 
         // Construct the AppIcons, add to the popup
@@ -767,7 +763,6 @@ AppList.prototype = {
         }
 
         this.icons = [];
-        this._arrows = [];
         for (let i = 0; i < workspaceIcons.length; i++)
             this._addIcon(workspaceIcons[i]);
         if (workspaceIcons.length > 0 && otherIcons.length > 0)
@@ -777,7 +772,6 @@ AppList.prototype = {
 
         this._curApp = -1;
         this._iconSize = 0;
-        this._showArrows = showArrows;
         this._mouseTimeOutId = 0;
         this._activeMonitor = activeMonitor;
     },
@@ -825,27 +819,6 @@ AppList.prototype = {
         alloc.natural_size = height;
     },
 
-    _allocate: function (actor, box, flags) {
-        // Allocate the main list items
-        SwitcherList.prototype._allocate.call(this, actor, box, flags);
-
-        if (this._showArrows) {
-            let arrowHeight = Math.floor(this.actor.get_theme_node().get_padding(St.Side.BOTTOM) / 3);
-            let arrowWidth = arrowHeight * 2;
-
-            // Now allocate each arrow underneath its item
-            let childBox = new Clutter.ActorBox();
-            for (let i = 0; i < this._items.length; i++) {
-                let itemBox = this._items[i].allocation;
-                childBox.x1 = Math.floor(itemBox.x1 + (itemBox.x2 - itemBox.x1 - arrowWidth) / 2);
-                childBox.x2 = childBox.x1 + arrowWidth;
-                childBox.y1 = itemBox.y2 + arrowHeight;
-                childBox.y2 = childBox.y1 + arrowHeight;
-                this._arrows[i].allocate(childBox, flags);
-            }
-        }
-    },
-
     // We override SwitcherList's _onItemEnter method to delay
     // activation when the thumbnail list is open
     _onItemEnter: function (index) {
@@ -861,31 +834,9 @@ AppList.prototype = {
             this._itemEntered(index);
     },
 
-    // We override SwitcherList's highlight() method to also deal with
-    // the AppList->ThumbnailList arrows.
-    highlight : function(n, justOutline) {
-        if (this._curApp != -1) {
-            this._arrows[this._curApp].hide();
-        }
-        
-        SwitcherList.prototype.highlight.call(this, n, justOutline);
-        this._curApp = n;
- 
-        if (n != -1 && this._showArrows) {
-            this._arrows[n].show();
-        }
-    },
-
     _addIcon : function(appIcon) {
         this.icons.push(appIcon);
         this.addItem(appIcon.actor, appIcon.label);
-
-        let n = this._arrows.length;
-        let arrow = new St.DrawingArea({ style_class: 'switcher-arrow' });
-        arrow.connect('repaint', function() { _drawArrow(arrow, St.Side.BOTTOM); });
-        this._list.add_actor(arrow);
-        this._arrows.push(arrow);
-        arrow.hide();
     }
 };
 

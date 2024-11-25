@@ -34,6 +34,150 @@ function isPopupMetaWindow(actor) {
     }
 }
 
+var MonitorConstraint = GObject.registerClass({
+    Properties: {
+        'primary': GObject.ParamSpec.boolean(
+            'primary', 'Primary', 'Track primary monitor',
+            GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE,
+            false),
+        'index': GObject.ParamSpec.int(
+            'index', 'Monitor index', 'Track specific monitor',
+            GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE,
+            -1, 64, -1),
+        'work-area': GObject.ParamSpec.boolean(
+            'work-area', 'Work-area', 'Track monitor\'s work-area',
+            GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE,
+            false),
+    },
+}, class MonitorConstraint extends Clutter.Constraint {
+    _init(props) {
+        this._primary = false;
+        this._index = -1;
+        this._workArea = false;
+
+        super._init(props);
+    }
+
+    get primary() {
+        return this._primary;
+    }
+
+    set primary(v) {
+        if (v)
+            this._index = -1;
+        this._primary = v;
+        if (this.actor)
+            this.actor.queue_relayout();
+        this.notify('primary');
+    }
+
+    get index() {
+        return this._index;
+    }
+
+    set index(v) {
+        this._primary = false;
+        this._index = v;
+        if (this.actor)
+            this.actor.queue_relayout();
+        this.notify('index');
+    }
+
+    get workArea() {
+        return this._workArea;
+    }
+
+    set workArea(v) {
+        if (v === this._workArea)
+            return;
+        this._workArea = v;
+        if (this.actor)
+            this.actor.queue_relayout();
+        this.notify('work-area');
+    }
+
+    vfunc_set_actor(actor) {
+        if (actor) {
+            if (!this._monitorsChangedId) {
+                this._monitorsChangedId =
+                    Main.layoutManager.connect('monitors-changed', () => {
+                        this.actor.queue_relayout();
+                    });
+            }
+
+            if (!this._workareasChangedId) {
+                this._workareasChangedId =
+                    global.display.connect('workareas-changed', () => {
+                        if (this._workArea)
+                            this.actor.queue_relayout();
+                    });
+            }
+        } else {
+            if (this._monitorsChangedId)
+                Main.layoutManager.disconnect(this._monitorsChangedId);
+            this._monitorsChangedId = 0;
+
+            if (this._workareasChangedId)
+                global.display.disconnect(this._workareasChangedId);
+            this._workareasChangedId = 0;
+        }
+
+        super.vfunc_set_actor(actor);
+    }
+
+    vfunc_update_allocation(actor, actorBox) {
+        if (!this._primary && this._index < 0)
+            return;
+
+        if (!Main.layoutManager.primaryMonitor)
+            return;
+
+        let index;
+        if (this._primary)
+            index = Main.layoutManager.primaryIndex;
+        else
+            index = Math.min(this._index, Main.layoutManager.monitors.length - 1);
+
+        let rect;
+        if (this._workArea) {
+            let workspaceManager = global.workspace_manager;
+            let ws = workspaceManager.get_workspace_by_index(0);
+            rect = ws.get_work_area_for_monitor(index);
+
+            // Account for auto hide panels in the work area
+            const panelPositions = 4;
+            for (let i = 0; i < panelPositions; i++) {
+                let panel = Main.panelManager.getPanel(index, i);
+                if (!panel)
+                    continue;
+
+                if (!panel.isHideable())
+                    continue;
+
+                switch (i) {
+                    case 0:
+                        rect.y += panel.actor.get_height();
+                        break;
+                    case 1:
+                        rect.height -= panel.actor.get_height();
+                        break;
+                    case 2:
+                        rect.x += panel.actor.get_width();
+                        break;
+                    case 3:
+                        rect.width -= panel.actor.get_width();
+                    default:
+                        global.log("Monitor Constraint: Error in accounting hidden panels");
+                }
+            }
+        } else {
+            rect = Main.layoutManager.monitors[index];
+        }
+
+        actorBox.init_rect(rect.x, rect.y, rect.width, rect.height);
+    }
+});
+
 function Monitor(index, geometry) {
     this._init(index, geometry);
 }
@@ -375,8 +519,7 @@ LayoutManager.prototype = {
      *      - addToWindowgroup (boolean): The actor should be added as a top-level window.
      *      - doNotAdd (boolean): The actor should not be added to the uiGroup. This has no effect if %addToWindowgroup is %true.
      *
-     * Tells the chrome to track @actor, which must be a descendant
-     * of an actor added via addChrome(). This can be used to extend the
+     * Tells the chrome to track @actor. This can be used to extend the
      * struts or input region to cover specific children.
      *
      * @params can have any of the same values as in addChrome(),
@@ -520,10 +663,9 @@ Chrome.prototype = {
             ancestor = ancestor.get_parent();
             index = this._findActor(ancestor);
         }
-        if (!ancestor)
-            throw new Error('actor is not a descendent of a chrome actor');
 
-        let ancestorData = this._trackedActors[index];
+        let ancestorData = ancestor ? this._trackedActors[index]
+                                    : defaultParams;
         if (!params)
             params = {};
         // We can't use Params.parse here because we want to drop

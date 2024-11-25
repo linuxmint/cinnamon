@@ -30,7 +30,8 @@
         "scroll-behavior",
         "left-click-action",
         "middle-click-action",
-        "show-all-workspaces"
+        "show-all-workspaces",
+        "window-display-settings"
       ]
     },
     "hotKeysSection": {
@@ -128,6 +129,15 @@
     "type": "checkbox",
     "default": false,
     "description": "Show windows from all workspaces"
+  },
+  "window-display-settings": {
+    "type": "combobox",
+    "default": 1,
+    "description": "Window display mode",
+    "options": {
+      "Track windows individually per monitor": 1,
+      "Always track windows from all monitors": 2
+    }
   },
   "cycleMenusHotkey": {
     "type": "keybinding",

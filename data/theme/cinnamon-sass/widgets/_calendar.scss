@@ -1,0 +1,202 @@
+.calendar {
+  margin-top: $base_margin * 5;
+  spacing-rows: 2px;
+  spacing-columns: 2px;
+
+  // can be used to set the entire bg color
+  &-background {}
+
+  &-main-box { margin: $base_margin * 2; }
+
+  &-events-main-box {
+    height: 300px;
+    margin-right: $base_margin * 4;
+    min-width: 350px;
+    border-right-width: 1px;
+    border-color: $borders_color;
+  }
+
+  &-today-home-button,
+  &-today-home-button-enabled {
+    margin-left: $base_padding * 2;
+
+    &:hover {}
+  }
+
+  // the large date labels at the top
+  &-today-day-label {
+    @extend %title_4;
+    text-align: center;
+  }
+
+  &-today-date-label {
+    @extend %title_3;
+  }
+
+  &-month-label {
+    @extend %heading;
+  }
+
+  &-change-month-back,
+  &-change-month-forward:rtl {
+    width: 16px;
+    height: 16px;
+    color: $fg_color;
+    background-image: url("calendar-arrow-left.svg");
+
+    &:hover { background-image: url("calendar-arrow-left-hover.svg"); }
+  }
+
+  &-change-month-forward,
+  &-change-month-back:rtl {
+    width: 16px;
+    height: 16px;
+    color: $fg_color;
+    background-image: url("calendar-arrow-right.svg");
+
+    &:hover { background-image: url("calendar-arrow-right-hover.svg"); }
+  }
+
+  &-day-event-dot-box {
+    margin-top: 1.7em;
+    max-rows: 1;
+  }
+
+  &-day-event-dot {
+    margin: 1px;
+    border-radius: 2px;
+    width: 4px;
+    height: 4px;
+  }
+
+  &-day-base {
+    text-align: center;
+    width: 2.4em;
+    height: 2.4em;
+    border-radius: 9999px;
+    color: $insensitive_fg_color;
+
+    &:hover {
+      background-color: $lighter_bg_color;
+    }
+  }
+
+  &-day-heading {
+    color: $fg_color;
+    margin-top: $base_margin * 3;
+    // using this to move the weekday row closer to the dates
+    height: 1.6em;
+  }
+
+  &-work-day {}
+  &-week-number {}
+  &-work-day { color: $fg_color; }
+  &-nonwork-day { color: $fg_color; }
+
+  &-today {
+    box-shadow: inset 0 0 3px $accent_bg_color;
+    background-color: $lightest_bg_color;
+
+    &:hover { background-color: $lighter_bg_color; }
+
+    &:selected {}
+  }
+
+  &-other-month-day {
+    color: $insensitive_fg_color;
+  }
+
+  &-not-today {
+
+    &:selected { background-color: $light_bg_color; }
+  }
+
+  // the calendar events area
+  &-events-date-label {
+    @extend %title_4;
+    text-align: center;
+  }
+
+  &-events-no-events-box {}
+
+  &-events-no-events-button {
+    margin: 6px 0;
+    padding: 6px;
+    border-radius: $base_border_radius;
+    color: $light_text_color;
+
+    &:hover { color: $fg_color; }
+  }
+
+  &-events-no-events-icon {
+    color: $large_icon_color;
+    icon-size: 128px;
+  }
+
+  &-events-no-events-label {
+    @extend %title_3;
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  &-events-event-container {}
+  &-events-scrollbox { margin-top: $base_margin * 2;}
+
+  &-events-main-box {
+    .separator {
+      -margin-horizontal: 1em;
+      -gradient-height: 1px;
+      -gradient-start: transparent;
+      -gradient-end: transparent;
+    }
+  }
+
+  &-event-button {
+    margin: 3px 0;
+    border-radius: $base_border_radius;
+    border: 1px solid transparent;
+
+    &:hover {
+      background-color: lighten($bg_color, 15%);
+      border-color: $borders_color;
+    }
+  }
+
+  &-event-color-strip { width: 1px; }
+
+  &-event-row-content { margin: 7px; }
+
+  &-event-time-past {
+    @extend %heading;
+    color: $insensitive_fg_color;
+  }
+
+  &-event-time-present {
+    @extend %heading;
+    color: $fg_color;
+  }
+
+  &-event-time-present:all-day {
+    @extend %heading;
+    color: $accent_color;
+  }
+
+  &-event-countdown {
+    @extend %caption;
+
+    color: $light_text_color;
+
+    &:soon { color: $warning_color; }
+    &:imminent { color: $error_color; }
+    &:current { color: $success_color; }
+  }
+
+  &-event-time-future {
+    @extend %heading;
+    color: $fg_color;
+  }
+
+  &-event-summary {
+    color: $light_text_color;
+  }
+}

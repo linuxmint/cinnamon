@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import sys
 import subprocess
 import json
 import locale
@@ -321,7 +322,7 @@ class Harvester:
                             self.meta_map[uuid] = metadata
                     except Exception as detail:
                         debug(detail)
-                        debug(f"Skipping {uuid}: there was a problem trying to read metadata.json")
+                        print(f"Skipping {uuid}: there was a problem trying to read metadata.json", file=sys.stderr)
             except FileNotFoundError:
                 # debug("%s does not exist! Creating it now." % directory)
                 try:
@@ -359,9 +360,13 @@ class Harvester:
         self.updates = []
 
         for uuid in self.index_cache:
-            if uuid in self.meta_map and self._spice_has_update(uuid):
-                update = SpiceUpdate(self.spice_type, uuid, self.index_cache[uuid], self.meta_map[uuid])
-                self.updates.append(update)
+            try:
+                if uuid in self.meta_map and self._spice_has_update(uuid):
+                    update = SpiceUpdate(self.spice_type, uuid, self.index_cache[uuid], self.meta_map[uuid])
+                    self.updates.append(update)
+            except Exception as e:
+                debug(f"Error checking updates for {uuid}: {e}", file=sys.stderr)
+                raise
 
         return self.updates
 
@@ -374,11 +379,13 @@ class Harvester:
     def _install_by_uuid(self, uuid):
         action = "upgrade" if uuid in self.meta_map else "install"
 
+        error_message = None
+        uuid = uuid
         try:
             item = self.index_cache[uuid]
         except KeyError:
-            debug(f"Can't install {uuid} - it doesn't seem to exist on the server")
-            return
+            print(f"Can't install {uuid} - it doesn't seem to exist on the server", file=sys.stderr)
+            raise
 
         paths = SpicePathSet(item, spice_type=self.spice_type)
 
@@ -389,8 +396,8 @@ class Harvester:
                              params={"time": get_current_timestamp()})
             r.raise_for_status()
         except Exception as e:
-            print(f"Could not download zip for {uuid}: {e}")
-            return
+            debug(f"Could not download zip for {uuid}: {e}", file=sys.stderr)
+            raise
 
         try:
             tmp_name = None
@@ -408,7 +415,8 @@ class Harvester:
 
                 self._load_metadata()
         except Exception as e:
-            debug(f"couldn't install: {e}")
+            debug(f"couldn't install: {e}", file=sys.stderr)
+            raise
 
     def _install_from_folder(self, folder, base_folder, uuid, from_spices=False):
         contents = os.listdir(folder)

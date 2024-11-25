@@ -1,0 +1,62 @@
+// these are equal to the size of the svg
+$switch_height: 26px;
+$switch_width: 46px;
+
+$check_height: 20px;
+$check_width: 20px;
+
+// switch
+
+.toggle-switch {
+  height: $switch_height;
+  width: $switch_width;
+  background-size: contain;
+  background-image: url("toggle-off.svg");
+
+  &:checked { background-image: url("toggle-on.svg"); }
+}
+
+// check
+
+.check-box {
+  CinnamonGenericContainer { spacing: 0.8em; }
+
+  StBin {
+    width: $check_width;
+    height: $check_height;
+    background-image: url("checkbox-off.svg");
+  }
+  &:focus StBin { background-image: url("checkbox-off.svg"); }
+  &:checked StBin { background-image: url("checkbox.svg"); }
+  &:focus:checked StBin { background-image: url("checkbox.svg"); }
+}
+
+// New CheckBoxes
+
+.check-box-2 {
+  StBoxLayout { spacing: 0.8em; }
+
+  StBin {
+    width: $check_width;
+    height: $check_height;
+    background-image: url("checkbox-off.svg");
+  }
+  &:focus StBin { background-image: url("checkbox-off.svg"); }
+  &:checked StBin { background-image: url("checkbox.svg"); }
+  &:focus:checked StBin { background-image: url("checkbox.svg"); }
+}
+
+// radio
+
+.radiobutton {
+  CinnamonGenericContainer { spacing: 0.8em; }
+
+  StBin {
+    width: $check_width;
+    height: $check_height;
+    background-image: url("radio-off.svg");
+  }
+  &:focus StBin { background-image: url("radio-off.svg"); }
+  &:checked StBin { background-image: url("radio.svg"); }
+  &:focus:checked StBin { background-image: url("radio.svg"); }
+}

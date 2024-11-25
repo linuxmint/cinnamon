@@ -51,11 +51,15 @@ cinnamon_sources = [
     'cinnamon-glsl-effect.c',
     'cinnamon-gtk-embed.c',
     'cinnamon-global.c',
+    'cinnamon-keyring-prompt.c',
+    'cinnamon-keyring-prompt.h',
     'cinnamon-perf-log.c',
     'cinnamon-polkit-authentication-agent.c',
     'cinnamon-polkit-authentication-agent.h',
     'cinnamon-screen.c',
     'cinnamon-screenshot.c',
+    'cinnamon-secure-text-buffer.c',
+    'cinnamon-secure-text-buffer.h',
     'cinnamon-slicer.c',
     'cinnamon-stack.c',
     'cinnamon-touchegg-client.c',
@@ -94,6 +98,7 @@ libcinnamon_deps = [
     cogl,
     cogl_path,
     dbus,
+    gcr,
     gdkx11,
     gi,
     gio,
@@ -107,6 +112,15 @@ libcinnamon_deps = [
     xapp,
     xml,
 ]
+
+libcinnamon_deps += nm_deps
+
+if have_networkmanager
+    cinnamon_sources += [
+        'cinnamon-network-agent.c',
+        'cinnamon-network-agent.h',
+    ]
+endif
 
 non_gir = []
 if get_option('build_recorder')
@@ -191,9 +205,14 @@ cinnamon_gir_includes = [
     'Cogl-0',
     'Meta-0',
     'CMenu-3.0',
+    'Gcr-3',
     'PolkitAgent-1.0',
     st_gir[0],
 ]
+
+if have_networkmanager
+    cinnamon_gir_includes += ['NM-1.0']
+endif
 
 cinnamon_gir = gnome.generate_gir(
     libcinnamon,

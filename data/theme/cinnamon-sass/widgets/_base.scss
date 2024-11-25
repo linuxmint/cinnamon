@@ -1,0 +1,147 @@
+.flashspot { background-color: white; }
+
+// Caps-lock warning
+.caps-lock-warning-label {
+  text-align: center;
+  padding-bottom: 8px;
+  @extend %caption;
+  color: $warning_color;
+}
+
+// links
+.cinnamon-link {
+  color: $link_color;
+
+  &:hover {
+    color: lighten($link_color, 10%);
+  }
+}
+
+// lightbox
+
+.lightbox { background-color: rgba(0, 0, 0, 0.4); }
+
+// looking glass dialog
+
+#LookingGlassDialog {
+  @extend %osd_base;
+
+  spacing: $base_margin;
+}
+
+// magnifier
+
+.magnifier-zoom {
+
+  &-region {
+    border: 2px solid $error_color;
+
+    &.full-screen { border-width: 0; }
+  }
+}
+
+// pie timer
+
+.pie-timer {
+  width: 30px;
+  height: 30px;
+  -pie-border-width: 1px;
+  -pie-border-color: rgba(200, 200, 200, 0.8);
+  -pie-background-color: rgba(140, 140, 140, 0.6);
+}
+
+// ripples
+
+.ripple-pointer-location {
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  background-color: $accent_color;
+  box-shadow: 0 0 2px 2px rgba(160,160,160,1.0);
+}
+
+.ripple-box {
+  width: 104px;
+  height: 104px;
+  background-image: url("corner-ripple.png");
+
+  &:rtl { background-image: url("corner-ripple.png"); }
+}
+
+// scrollbars
+StScrollView.vfade { -st-vfade-offset: 68px; }
+
+StScrollBar {
+
+  StScrollView & {
+    min-height: 8px;
+    min-width: 8px;
+  }
+
+  StBin#trough {
+    background-color: transparentize($base_color, 0.9);
+    border_radius: $base_border_radius;
+  }
+
+  StButton#vhandle,
+  StButton#hhandle {
+    background-color: mix($fg_color, $bg_color, 30%);
+    border-radius: $base_border_radius;
+
+    &:hover { background-color: mix($fg_color, $bg_color, 40%); }
+    &:active {}
+  }
+}
+
+// separator
+
+.separator {
+  -gradient-height: 1px;
+  -gradient-start: $borders_color;
+  -gradient-end: $borders_color;
+  -margin-horizontal: 0;
+  height: 1px;
+}
+
+// slider
+
+.slider {
+  @extend %slider;
+}
+
+// tile previews
+
+.tile-preview {
+  background-color: transparentize($accent_color, 0.8);
+  border: 1px solid transparentize($accent_color, 0.3);
+}
+
+#Tooltip {
+  @extend %osd_base;
+
+  padding: $base_padding * 2;
+  margin: $base_margin;
+}
+
+// user avatar
+
+.user-icon {
+  color: $fg_color;
+  border: none;
+
+  &.user-avatar {
+    border: 1px solid transparentize($fg_color, 0.5);
+    border-radius: 99px;
+  }
+}
+
+.user-widget-label {}
+
+.user-widget.horizontal { spacing: $base_padding; }
+
+.user-widget.vertical .user-widget-label {
+  @extend %title_4;
+  color: $fg_color;
+  padding-top: $base_margin * 2;
+  text-align: center;
+}

@@ -1,0 +1,96 @@
+$menu_outer_padding: 9px;
+$menu_outer_border_radius: $base_border_radius * 1.25;
+
+%start_menu_button {
+  padding: $base_padding;
+  spacing: $base_margin;
+  border-radius: $base_border_radius;
+}
+
+.menu {
+
+  // this can be used to color the entire menu background but we aren't using it here
+  &-background {}
+
+  &-favorites-box {
+    padding: $base_padding * 1.5;
+    background-color: $light_bg_color;
+    border: 1px solid transparentize(black, 0.9);
+    border-radius: $base_border_radius;
+  }
+
+  &-favorites-button {
+    padding: $base_padding * 1.5;
+    border-radius: $base_border_radius;
+
+    &:hover { background-color: $lightest_bg_color; }
+  }
+
+  &-categories-box { padding: $menu_outer_padding $base_padding * 4; }
+  &-applications-box { padding: $menu_outer_padding; }
+  &-applications-inner-box {
+    &:ltr { padding-left: $base_padding * 4; }
+    &:rtl { padding-right: $base_padding * 4; }
+  }
+
+  &-application-button {
+    @extend %start_menu_button;
+
+    &-label { padding: 0; }
+
+    &:highlighted { font-weight: bold; }
+
+    &-selected {
+      @extend %start_menu_button;
+
+      background-color: $light_bg_color;
+
+      &:highlighted { font-weight: bold; }
+    }
+  }
+
+  &-category-button {
+    @extend %start_menu_button;
+
+    &-label { padding: 0; }
+
+    &:hover { background-color: $lighter_bg_color; }
+
+    &-selected {
+      @extend %start_menu_button;
+
+      background-color: $light_bg_color;
+    }
+
+    &-greyed {
+      @extend %start_menu_button;
+      color: $insensitive_fg_color;
+      font-style: italic;
+
+      StIcon { opacity: 0.5; }
+    }
+  }
+
+  &-context-menu {}
+
+  &-selected-app-box {
+    padding-right: $base_padding * 4;
+    padding-left: $base_padding * 4;
+    text-align: right;
+  }
+
+  &-selected-app-title { @extend %heading; }
+  &-selected-app-description { color: $insensitive_fg_color; }
+
+  &-search-box {
+    padding: 0  0 $base_padding $menu_outer_padding;
+  }
+}
+
+#menu-search-entry {
+  @extend %entry;
+}
+
+.menu-search-entry-icon {
+  icon-size: $scalable_icon_size;
+}

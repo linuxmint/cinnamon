@@ -35,7 +35,6 @@
     <xi:include href="xml/cinnamon-tray-icon.xml"/>
     <xi:include href="xml/cinnamon-tray-manager.xml"/>
   </chapter>
-  <xi:include href="recorder.xml"/>
   <chapter>
     <title>Integration helpers and utilities</title>
     <xi:include href="xml/cinnamon-global.xml"/>

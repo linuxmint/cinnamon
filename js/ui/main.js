@@ -88,8 +88,10 @@ const GObject = imports.gi.GObject;
 const XApp = imports.gi.XApp;
 const PointerTracker = imports.misc.pointerTracker;
 
+const AudioDeviceSelection = imports.ui.audioDeviceSelection;
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
+const Config = imports.misc.config;
 const SlideshowManager = imports.ui.slideshowManager;
 var AppletManager = imports.ui.appletManager;
 const SearchProviderManager = imports.ui.searchProviderManager;
@@ -103,9 +105,11 @@ const Expo = imports.ui.expo;
 const Panel = imports.ui.panel;
 const PlacesManager = imports.ui.placesManager;
 const PolkitAuthenticationAgent = imports.ui.polkitAuthenticationAgent;
+const KeyringPrompt = imports.ui.keyringPrompt;
 const RunDialog = imports.ui.runDialog;
 const Layout = imports.ui.layout;
 const LookingGlass = imports.ui.lookingGlass;
+const NetworkAgent = imports.ui.networkAgent;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const CinnamonDBus = imports.ui.cinnamonDBus;
@@ -151,6 +155,7 @@ var messageTray = null;
 var notificationDaemon = null;
 var windowAttentionHandler = null;
 var screenRecorder = null;
+var cinnamonAudioSelectionDBusService = null;
 var cinnamonDBusService = null;
 var screenshotService = null;
 var modalCount = 0;
@@ -162,6 +167,7 @@ var xdndHandler = null;
 var statusIconDispatcher = null;
 var virtualKeyboard = null;
 var layoutManager = null;
+var networkAgent = null;
 var monitorLabeler = null;
 var themeManager = null;
 var keybindingManager = null;
@@ -308,6 +314,7 @@ function start() {
     Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
 
     new CinnamonPortalHandler();
+    cinnamonAudioSelectionDBusService = new AudioDeviceSelection.AudioDeviceSelectionDBus();
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
     setRunState(RunState.STARTUP);
 
@@ -418,6 +425,9 @@ function start() {
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
     placesManager = new PlacesManager.PlacesManager();
 
+    if (Config.HAVE_NETWORKMANAGER)
+        networkAgent = new NetworkAgent.NetworkAgent();
+
     magnifier = new Magnifier.Magnifier();
     locatePointer = new LocatePointer.locatePointer();
 
@@ -433,6 +443,8 @@ function start() {
     if (Meta.is_wayland_compositor()) {
         PolkitAuthenticationAgent.init();
     }
+
+    KeyringPrompt.init();
 
     _startDate = new Date();
 

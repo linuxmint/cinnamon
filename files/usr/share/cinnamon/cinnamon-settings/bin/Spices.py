@@ -453,7 +453,7 @@ class Spice_Harvester(GObject.Object):
                         try:
                             keyfile.load_from_file(full_path, GLib.KeyFileFlags.KEEP_TRANSLATIONS)
                         except GLib.Error as e:
-                            print("Could not read action file '%s': %s" % (full_path,e.message))
+                            print("Could not read action file '%s': %s" % (full_path, e.message))
                             continue
 
                         try:
@@ -465,8 +465,12 @@ class Spice_Harvester(GObject.Object):
                             if e.code == GLib.KeyFileError.NOT_FOUND:
                                 pass
 
-                        name = keyfile.get_locale_string('Nemo Action', 'Name')
-                        metadata['name'] = name.replace("_", "")
+                        try:
+                            name = keyfile.get_locale_string('Nemo Action', 'Name')
+                            metadata['name'] = name.replace("_", "")
+                        except GLib.Error as e:
+                            print("Could not read Name field for action. Skipping '%s': %s" % (full_path, e.message))
+                            continue
 
                         try:
                             metadata['description'] = keyfile.get_locale_string('Nemo Action', 'Comment')

@@ -258,7 +258,7 @@ CinnamonDBus.prototype = {
         if (params['icon'])
             icon = Gio.Icon.new_for_string(params['icon']);
 
-        Main.osdWindowManager.show(monitorIndex, icon, params['level'], false);
+        Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level'], false);
     },
 
     FlashArea: function(x, y, width, height) {

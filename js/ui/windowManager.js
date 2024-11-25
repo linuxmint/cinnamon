@@ -11,8 +11,11 @@ const Main = imports.ui.main;
 const WindowMenu = imports.ui.windowMenu;
 const GObject = imports.gi.GObject;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
+const Dialog = imports.ui.dialog;
 const ModalDialog = imports.ui.modalDialog;
 const WmGtkDialogs = imports.ui.wmGtkDialogs;
+const CloseDialog = imports.ui.closeDialog;
+const WorkspaceOsd = imports.ui.workspaceOsd;
 
 const {CoverflowSwitcher} = imports.ui.appSwitcher.coverflowSwitcher;
 const {TimelineSwitcher} = imports.ui.appSwitcher.timelineSwitcher;
@@ -26,6 +29,7 @@ const WINDOW_ANIMATION_TIME_MULTIPLIERS = [
 ]
 
 const EASING_MULTIPLIER = 1000; // multiplier for tweening.time ---> easing.duration
+var ONE_SECOND = 1000; // in ms
 
 const DIM_TIME = 0.500;
 const DIM_BRIGHTNESS = -0.2;
@@ -59,6 +63,75 @@ const ZONE_TL = 4;
 const ZONE_TR = 5;
 const ZONE_BR = 6;
 const ZONE_BL = 7;
+
+var DisplayChangeDialog = GObject.registerClass(
+class DisplayChangeDialog extends ModalDialog.ModalDialog {
+    _init(wm) {
+        super._init();
+
+        this._wm = wm;
+
+        this._countDown = Meta.MonitorManager.get_display_configuration_timeout();
+
+        // Translators: This string should be shorter than 30 characters
+        let title = _("Keep these display settings?");
+        let description = this._formatCountDown();
+
+        this._content = new Dialog.MessageDialogContent({ title, description });
+        this.contentLayout.add_child(this._content);
+
+        /* Translators: this and the following message should be limited in length,
+           to avoid ellipsizing the labels.
+        */
+        this._cancelButton = this.addButton({ label: _("Revert"),
+                                              action: this._onFailure.bind(this),
+                                              key: Clutter.KEY_Escape });
+        this._okButton = this.addButton({ label: _("Keep changes"),
+                                          action: this._onSuccess.bind(this),
+                                          default: true });
+
+        this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, ONE_SECOND, this._tick.bind(this));
+        GLib.Source.set_name_by_id(this._timeoutId, '[cinnamon] this._tick');
+    }
+
+    close(timestamp) {
+        if (this._timeoutId > 0) {
+            GLib.source_remove(this._timeoutId);
+            this._timeoutId = 0;
+        }
+
+        super.close(timestamp);
+    }
+
+    _formatCountDown() {
+        let fmt = ngettext("Reverting to previous display settings in %d second.",
+                           "Reverting to previous display settings in %d seconds.");
+        return fmt.format(this._countDown);
+    }
+
+    _tick() {
+        this._countDown--;
+        if (this._countDown == 0) {
+            /* muffin already takes care of failing at timeout */
+            this._timeoutId = 0;
+            this.close();
+            return GLib.SOURCE_REMOVE;
+        }
+
+        this._content.description = this._formatCountDown();
+        return GLib.SOURCE_CONTINUE;
+    }
+
+    _onFailure() {
+        this._wm.complete_display_change(false);
+        this.close();
+    }
+
+    _onSuccess() {
+        this._wm.complete_display_change(true);
+        this.close();
+    }
+});
 
 class WindowDimmer {
     constructor(actor) {
@@ -202,10 +275,14 @@ var ResizePopup = GObject.registerClass(
 class ResizePopup extends St.Widget {
     _init() {
         super._init({ layout_manager: new Clutter.BinLayout() });
-        this._label = new St.Label({ style_class: 'info-osd',
-                                     x_align: Clutter.ActorAlign.CENTER,
-                                     y_align: Clutter.ActorAlign.CENTER,
-                                     x_expand: true, y_expand: true });
+        this._label = new St.Label({
+            style_class: 'resize-popup',
+            important: true,
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
+            x_expand: true,
+            y_expand: true
+        });
         this.add_child(this._label);
         Main.uiGroup.add_actor(this);
     }
@@ -222,7 +299,7 @@ class ResizePopup extends St.Widget {
 });
 
 var WindowManager = class WindowManager {
-        MENU_ANIMATION_TIME = 0.1;
+        MENU_ANIMATION_TIME = 0.15;
         WORKSPACE_ANIMATION_TIME = 0.15;
         TILE_PREVIEW_ANIMATION_TIME = 0.15;
         SIZE_CHANGE_ANIMATION_TIME = 0.12;
@@ -262,7 +339,7 @@ var WindowManager = class WindowManager {
         this._dimmedWindows = [];
         this._animationBlockCount = 0;
         this._switchData = null;
-        this._workspaceOSDs = [];
+        this._workspaceOsds = [];
 
         this._cinnamonwm.connect('kill-window-effects', (cinnamonwm, actor) => {
             this._unminimizeWindowDone(cinnamonwm, actor);
@@ -1232,54 +1309,30 @@ var WindowManager = class WindowManager {
     }
 
     showWorkspaceOSD() {
-        this._hideWorkspaceOSD(true);
         if (global.settings.get_boolean('workspace-osd-visible')) {
-            let current_workspace_index = global.workspace_manager.get_active_workspace_index();
+            let currentWorkspaceIndex = global.workspace_manager.get_active_workspace_index();
             if (this.wm_settings.get_boolean('workspaces-only-on-primary')) {
-                this._showWorkspaceOSDOnMonitor(Main.layoutManager.primaryMonitor.index, current_workspace_index);
-            }
-            else {
-                let {monitors} = Main.layoutManager;
-                for (let i = 0; i < monitors.length; i++) {
-                    this._showWorkspaceOSDOnMonitor(i, current_workspace_index);
+                this._showWorkspaceOSDForMonitor(Main.layoutManager.primaryMonitor.index, currentWorkspaceIndex);
+            } else {
+                for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
+                    this._showWorkspaceOSDForMonitor(i, currentWorkspaceIndex);
                 }
             }
         }
     }
 
-    _showWorkspaceOSDOnMonitor(monitor, current_workspace_index) {
-        let osd = new ModalDialog.InfoOSD();
-        osd.actor.add_style_class_name('workspace-osd');
-        this._workspace_osd_array.push(osd);
-        osd.addText(Main.getWorkspaceName(current_workspace_index));
-        osd.show(monitor);
-
-        osd.actor.ease({
-            z_position: -.0001,
-            duration: WORKSPACE_OSD_TIMEOUT * EASING_MULTIPLIER,
-            onComplete: () => this._hideWorkspaceOSD()
-        })
-    }
-
-    _hideWorkspaceOSD(now = false) {
-        for (let i = 0; i < this._workspace_osd_array.length; i++) {
-            let osd = this._workspace_osd_array[i];
-            if (now) {
-                osd.actor.remove_all_transitions();
-                osd.destroy();
-                continue;
-            }
-            if (osd != null) {
-                osd.actor.opacity = 255;
-                osd.actor.ease({
-                    opacity: 0,
-                    duration: WORKSPACE_OSD_TIMEOUT * EASING_MULTIPLIER,
-                    mode: Clutter.AnimationMode.LINEAR,
-                    onStopped: () => osd.destroy()
-                });
-            }
+    _showWorkspaceOSDForMonitor(index, currentWorkspaceIndex) {
+        if (this._workspaceOsds[index] == null) {
+            let osd = new WorkspaceOsd.WorkspaceOsd(index);
+            this._workspaceOsds.push(osd);
+            osd.connect('destroy', () => {
+                this._workspaceOsds[index] = null;
+                this._workspaceOsds.splice(index, 1);
+            });
         }
-        this._workspace_osd_array = [];
+
+        let text = Main.getWorkspaceName(currentWorkspaceIndex);
+        this._workspaceOsds[index].display(currentWorkspaceIndex, text);
     }
 
     _showWindowMenu(cinnamonwm, window, menu, rect) {
@@ -1415,12 +1468,12 @@ var WindowManager = class WindowManager {
         }
     }
 
-    _createCloseDialog(shellwm, window) {
-        return new WmGtkDialogs.CloseDialog(window);
+    _createCloseDialog(cinnamonwm, window) {
+        return new CloseDialog.CloseDialog(window);
     }
 
     _confirmDisplayChange() {
-        let dialog = new WmGtkDialogs.DisplayChangesDialog(this._cinnamonwm);
+        let dialog = new DisplayChangeDialog(this._cinnamonwm);
         dialog.open();
     }
 };

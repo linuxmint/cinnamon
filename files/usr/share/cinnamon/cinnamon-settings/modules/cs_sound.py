@@ -3,14 +3,14 @@
 import gi
 gi.require_version('Cvc', '1.0')
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Cvc, GdkPixbuf, Gio
+from gi.repository import Gtk, Cvc, Gdk, GdkPixbuf, Gio, Pango
 from SettingsWidgets import SidePage, GSettingsSoundFileChooser
 from xapp.GSettingsWidgets import *
 import util
 
 CINNAMON_SOUNDS = "org.cinnamon.sounds"
 CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound"
-MAXIMUM_VOLUME_KEY = "maximum-volume"
+OVERAMPLIFICATION_KEY = "allow-amplified-volume"
 
 DECAY_STEP = .15
 
@@ -537,9 +537,10 @@ class Module:
 
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
+        self.scale = self.sidePage.stack.get_scale_factor()
+
         # output volume
-        max_volume = self.sound_settings.get_int(MAXIMUM_VOLUME_KEY)
-        self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), max_volume, sizeGroup=sizeGroup)
+        self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), 100, sizeGroup=sizeGroup)
         devSettings.add_row(self.outVolume)
 
         # balance
@@ -549,6 +550,11 @@ class Module:
         devSettings.add_row(self.fade)
         self.woofer = BalanceBar("lfe", 0, self.controller.get_vol_max_norm(), sizeGroup=sizeGroup)
         devSettings.add_row(self.woofer)
+
+        # overamplification
+        switch = GSettingsSwitch(_("Overamplification"), CINNAMON_DESKTOP_SOUNDS, OVERAMPLIFICATION_KEY)
+        switch.set_tooltip_text(_("Allow the volume to exceed 100%, with reduced sound quality."))
+        devSettings.add_row(switch)
 
         ## Input page
         page = SettingsPage()
@@ -569,7 +575,7 @@ class Module:
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
         # input volume
-        self.inVolume = VolumeBar(self.controller.get_vol_max_norm(), max_volume, sizeGroup=sizeGroup)
+        self.inVolume = VolumeBar(self.controller.get_vol_max_norm(), 100, sizeGroup=sizeGroup)
         devSettings.add_row(self.inVolume)
 
         # input level
@@ -626,24 +632,17 @@ class Module:
         noAppsMessage.pack_start(box, True, True, 0)
         self.appStack.add_named(noAppsMessage, "noAppsMessage")
 
-        ## Settings page
-        page = SettingsPage()
-        self.sidePage.stack.add_titled(page, "settings", _("Settings"))
+        self.sound_settings.connect(f"changed::{OVERAMPLIFICATION_KEY}", self.onOverAmplificationChanged)
+        self.onOverAmplificationChanged()
 
-        amplificationSection = page.add_section(_("Amplification"))
-        self.maxVolume = Slider(_("Maximum volume: %d") % max_volume + "%", _("Reduced"), _("Amplified"), 1, 150, None, step=1, page=10, value=max_volume, gicon=None, iconName=None)
-        self.maxVolume.adjustment.connect("value-changed", self.onMaxVolumeChanged)
-        self.maxVolume.setMark(100)
-        amplificationSection.add_row(self.maxVolume)
-
-    def onMaxVolumeChanged(self, adjustment):
-        newValue = int(round(adjustment.get_value()))
-        self.sound_settings.set_int(MAXIMUM_VOLUME_KEY, newValue)
-        self.maxVolume.label.set_label(_("Maximum volume: %d") % newValue + "%")
-        self.outVolume.adjustment.set_upper(newValue)
+    def onOverAmplificationChanged(self, settings=None, key=None):
+        overamplification = self.sound_settings.get_boolean(OVERAMPLIFICATION_KEY)
         self.outVolume.slider.clear_marks()
-        if newValue > 100:
+        if overamplification:
+            self.outVolume.adjustment.set_upper(150)
             self.outVolume.setMark(100)
+        else:
+            self.outVolume.adjustment.set_upper(100)
 
     def inializeController(self):
         self.controller = Cvc.MixerControl(name = "cinnamon")
@@ -660,15 +659,32 @@ class Module:
         self.controller.connect("stream-removed", self.streamRemoved)
         self.controller.open()
 
+    def data_func_surface(self, column, cell, model, iter_, *args):
+        pixbuf = model.get_value(iter_, 4)
+        surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, self.scale)
+        cell.set_property("surface", surface)
+
     def buildDeviceSelect(self, direction, model):
         select = Gtk.IconView.new_with_model(model)
         select.set_margin(0)
-        select.set_pixbuf_column(4)
-        select.set_text_column(0)
         select.set_column_spacing(0)
 
-        select.connect("selection-changed", self.setActiveDevice, direction)
+        # pixbuf
+        ren = Gtk.CellRendererPixbuf()
+        select.pack_start(ren, False)
+        select.set_cell_data_func(ren, self.data_func_surface)
 
+        # text
+        ren = Gtk.CellRendererText()
+        select.pack_start(ren, False)
+        select.add_attribute(ren, "text", 0)
+        ren.set_property("wrap-mode", Pango.WrapMode.WORD)
+        ren.set_property("wrap-width", 120)
+        ren.set_property("alignment", Pango.Alignment.CENTER)
+        ren.set_property("xalign", 0.5)
+        
+        select.connect("selection-changed", self.setActiveDevice, direction)
+        
         return select
 
     def setActiveDevice(self, view, direction):
@@ -686,23 +702,25 @@ class Module:
     def deviceAdded(self, c, deviceId, direction):
         device = getattr(self.controller, "lookup_"+direction+"_id")(deviceId)
 
+        icon_size = 32 * self.scale
+
         iconTheme = Gtk.IconTheme.get_default()
         gicon = device.get_gicon()
         iconName = device.get_icon_name()
         icon = None
         if gicon is not None:
-            lookup = iconTheme.lookup_by_gicon(gicon, 32, 0)
+            lookup = iconTheme.lookup_by_gicon(gicon, icon_size, 0)
             if lookup is not None:
                 icon = lookup.load_icon()
 
         if icon is None:
             if iconName is not None and "bluetooth" in iconName:
-                icon = iconTheme.load_icon("bluetooth", 32, 0)
+                icon = iconTheme.load_icon("bluetooth", icon_size, 0)
             elif iconTheme.has_icon("audio-card"):
                 # The audio-card icon was removed from adwaita, so may be absent in the current theme
-                icon = iconTheme.load_icon("audio-card", 32, 0)
+                icon = iconTheme.load_icon("audio-card", icon_size, 0)
             else:
-                icon = iconTheme.load_icon("sound", 32, 0)
+                icon = iconTheme.load_icon("sound", icon_size, 0)
 
         getattr(self, direction+"DeviceList").append([device.get_description() + "\n" +  device.get_origin(), "", False, deviceId, icon])
 

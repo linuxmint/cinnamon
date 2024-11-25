@@ -2,6 +2,9 @@
 
 #include "config.h"
 
+#include <sys/types.h>
+#include <sys/wait.h>
+
 #include "cinnamon-util.h"
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
@@ -1041,4 +1044,27 @@ cinnamon_shader_effect_set_double_uniform (ClutterShaderEffect *effect,
   clutter_shader_effect_set_uniform_value (effect,
                                            name,
                                            &gvalue);
+}
+
+/**
+ * cinnamon_util_wifexited:
+ * @status: the status returned by wait() or waitpid()
+ * @exit: (out): the actual exit status of the process
+ *
+ * Implements libc standard WIFEXITED, that cannot be used JS
+ * code.
+ * Returns: TRUE if the process exited normally, FALSE otherwise
+ */
+gboolean
+cinnamon_util_wifexited (int  status,
+                         int *exit)
+{
+  gboolean ret;
+
+  ret = WIFEXITED(status);
+
+  if (ret)
+    *exit = WEXITSTATUS(status);
+
+  return ret;
 }

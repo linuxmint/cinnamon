@@ -1,3 +1,4 @@
+data/theme/cinnamon.css
 debian/*.debhelper
 debian/*.log
 debian/*.substvars

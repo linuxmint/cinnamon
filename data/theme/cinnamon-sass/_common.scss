@@ -1,0 +1,184 @@
+$base_padding: 6px;
+$base_margin: 4px;
+$base_border_radius: 8px;
+
+$modal_dialog_radius: 18px;
+
+$scalable_icon_size: to_em(16px);
+
+// stage
+stage {
+  color: $fg_color;
+}
+
+%entry_common {
+  min-height: 22px;
+  border-radius: $base_border_radius;
+  padding: $base_padding $base_padding * 1.5;
+  border: 1px solid $borders_color;
+  caret-color: $fg_color;
+  selected-color: black;
+  selection-background-color: $accent_bg_color;
+  caret-size: 1px;
+}
+
+%button_common {
+  border-radius: $base_border_radius;
+  padding: $base_padding $base_padding * 6;
+  font-weight: bold;
+}
+
+%button {
+  @extend %button_common;
+  @include button(normal);
+  &:focus { @include button(focus); }
+  &:hover { @include button(hover); }
+  &:active { @include button(active); }
+  &:insensitive { @include button(insensitive); }
+}
+
+%flat_button {
+  @include button(normal, $style: flat);
+  &:focus { @include button(focus, $style: flat); }
+  &:hover { @include button(hover, $style: flat); }
+  &:insensitive { @include button(insensitive, $style: flat); }
+  &:selected,
+  &:active { @include button(active, $style: flat); }
+  &:checked { @include button(checked, $style: flat); }
+}
+
+%entry {
+  @extend %entry_common;
+  @include entry(normal);
+  &:focus { @include entry(focus); }
+  &:insensitive { @include entry(insensitive); }
+
+  StLabel.hint-text { color: transparentize($fg_color, 0.7); }
+
+  .capslock-warning { icon-size: $scalable_icon_size; }
+
+  StIcon.peek-password {
+    icon-size: 16px;
+    color: $fg_color;
+  }
+}
+
+// buttons in dialogs
+
+%dialog_button {
+  font-weight: bold;
+  padding: $base_padding * 2;
+  border-radius: $base_border_radius * 1.5;
+
+  @include button(normal);
+  &:focus { @include button(focus); }
+  &:hover { @include button(hover); }
+  &:active { @include button(active); }
+  &:checked { @include button(checked); }
+  &:insensitive { @include button(insensitive); }
+}
+
+%dialog_button_default {
+  @extend %dialog_button;
+
+  @include button(normal, $c: $accent_bg_color, $style: default);
+  &:hover { @include button(hover, $c: $accent_bg_color, $style: default); }
+  &:active { @include button(active, $c: $accent_bg_color, $style: default); }
+  &:checked { @include button(checked, $c: $accent_bg_color, $style: default); }
+  &:insensitive {
+    border-color: $borders_color;
+
+    @include button(insensitive);
+  }
+}
+
+%dialog_button_destructive {
+  @extend %dialog_button;
+
+  @include button(normal, $c: $error_bg_color, $style: default);
+  &:hover { @include button(hover, $c: $error_bg_color, $style: default); }
+  &:active { @include button(active, $c: $error_bg_color, $style: default); }
+  &:checked { @include button(checked, $c: $error_bg_color, $style: default); }
+  &:insensitive {
+    border-color: $borders_color;
+
+    @include button(insensitive);
+  }
+}
+
+// items in menus
+%menuitem {
+  font-weight: normal;
+  spacing: $base_padding;
+  transition-duration: 100ms;
+  padding: $base_padding + 2 $base_padding * 2;
+  margin: 0 $base_margin;
+  border-radius: $base_border_radius;
+}
+
+/* General Typography */
+%large_title {
+  font-weight: 300;
+  @include fontsize(24pt);
+}
+
+%title_1 {
+  font-weight: 800;
+  @include fontsize(20pt);
+}
+
+%title_2 {
+  font-weight: 800;
+  @include fontsize(15pt);
+}
+
+%title_3 {
+  font-weight: 700;
+  @include fontsize(15pt);
+}
+
+%title_4 {
+  font-weight: 700;
+  @include fontsize(13pt);
+}
+
+%heading {
+  font-weight: 700;
+  @include fontsize(11pt);
+}
+
+%caption_heading {
+  font-weight: 700;
+  @include fontsize(9pt);
+}
+
+%caption {
+  font-weight: 400;
+  @include fontsize(9pt);
+}
+
+%smaller {
+  font-weight: 400;
+  @include fontsize(8pt);
+}
+
+%slider {
+  height: 1em;
+  min-width: 15em;
+  -slider-height: 0.3em;
+  -slider-background-color: $light_bg_color;
+  -slider-active-background-color: $fg_color;
+  -slider-border-color: transparent;
+  -slider-active-border-color: transparent;
+  -slider-border-width: 1px;
+  -slider-handle-radius: 0.5em;
+}
+
+%osd_base {
+  color: $fg_color;
+  background-color: transparentize($bg_color, 0.01);
+  border: 1px solid transparentize($borders_color, 0.01);
+  border-radius: $base_border_radius;
+  text-align: center;
+  padding: $base_padding * 4;
+}

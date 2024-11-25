@@ -18,7 +18,6 @@ SPICE_TYPE_ACTION = "action"
 SPICE_TYPES = [SPICE_TYPE_APPLET, SPICE_TYPE_DESKLET, SPICE_TYPE_THEME,
                SPICE_TYPE_EXTENSION, SPICE_TYPE_ACTION]
 
-
 class UpdateManager:
     def __init__(self):
         self.harvesters = {}

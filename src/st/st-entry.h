@@ -82,6 +82,9 @@ void st_entry_set_primary_icon_from_file   (StEntry     *entry,
                                             const gchar *filename);
 void st_entry_set_secondary_icon_from_file (StEntry     *entry,
                                             const gchar *filename);
+void            st_entry_set_hint_actor    (StEntry      *entry,
+                                            ClutterActor *hint_actor);
+ClutterActor *  st_entry_get_hint_actor    (StEntry      *entry);
 
 G_END_DECLS
 

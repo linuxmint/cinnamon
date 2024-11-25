@@ -414,7 +414,7 @@
     </key>
 
     <key type="b" name="alttab-minimized-aware">
-    <default>false</default>
+    <default>true</default>
       <summary>Move minimized windows to the end of the appSwitcher</summary>
     </key>
 
@@ -484,13 +484,9 @@
       <description>Aliases for use in the Alt-F2 dialog. This is a list of strings of the form a:b, where an instance of "a" is to be replaced with "b". Replacement is only performed on the first word.</description>
     </key>
 
-    <key type="s" name="show-media-keys-osd">
-      <default>"medium"</default>
-      <summary>Whether the media keys osd is disabled or its relative display size</summary>
-      <description>
-      Allows setting of the default size of the media keys osd or disables it completely.
-      Possible values are "small", "medium", "large", or "disabled".
-      </description>
+    <key type="b" name="show-media-keys-osd">
+      <default>true</default>
+      <summary>Whether or not to show the media keys osd</summary>
     </key>
 
     <key name="startup-icon-name" type="s">

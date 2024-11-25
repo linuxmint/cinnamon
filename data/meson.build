@@ -5,9 +5,16 @@ install_subdir(
     install_dir: pkgdatadir,
 )
 
+subdir('theme')
+
 install_subdir(
     'theme',
-    exclude_files: ['theme-changelog.txt'],
+    exclude_files: [
+        'theme-changelog.txt',
+        'meson.build',
+        'parse-sass.sh'
+    ],
+    exclude_directories: ['cinnamon-sass'],
     install_dir: pkgdatadir,
 )
 
@@ -16,11 +23,10 @@ desktop_conf.set('bindir', join_paths(prefix, bindir))
 desktop_conf.set('libexecdir', join_paths(prefix, libexecdir))
 desktop_conf.set('VERSION', meson.project_version())
 
-desktop_files = [
-  'cinnamon.desktop',
-  'cinnamon-wayland.desktop',
-  'cinnamon2d.desktop',
-]
+desktop_files = ['cinnamon.desktop', 'cinnamon2d.desktop']
+if get_option('wayland')
+    desktop_files += ['cinnamon-wayland.desktop']
+endif
 
 foreach desktop_file : desktop_files
     desktop = configure_file(
@@ -40,7 +46,9 @@ foreach desktop_file : desktop_files
 endforeach
 
 subdir('xdg-portal')
-subdir('wayland_sessions')
+if get_option('wayland')
+    subdir('wayland_sessions')
+endif
 subdir('xsessions')
 subdir('services')
 
