@@ -72,18 +72,18 @@ const NotificationDaemonIface =
         </interface> \
     </node>';
 
-const NotificationClosedReason = {
+const NotificationClosedReason = Object.freeze({
     EXPIRED: 1,
     DISMISSED: 2,
     APP_CLOSED: 3,
     UNDEFINED: 4
-};
+});
 
-const Urgency = {
+const Urgency = Object.freeze({
     LOW: 0,
     NORMAL: 1,
     CRITICAL: 2
-};
+});
 
 const rewriteRules = {
     'XChat': [
