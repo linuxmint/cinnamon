@@ -2,22 +2,22 @@ const Clutter = imports.gi.Clutter;
 const Main = imports.ui.main;
 const {SignalManager} = imports.misc.signalManager;
 const {unref} = imports.misc.util;
-const {createStore} = imports.misc.state;
 
+const createStore = require('./state');
 const AppGroup = require('./appGroup');
 const {RESERVE_KEYS} = require('./constants');
 
-class AppList {
+class Workspace {
     constructor(params) {
         this.state = params.state;
         this.state.connect({
             orientation: () => this.on_orientation_changed(false)
         });
-        this.listState = createStore({
+        this.workspaceState = createStore({
             workspaceIndex: params.index,
             lastFocusedApp: null
         });
-        this.listState.connect({
+        this.workspaceState.connect({
             getWorkspace: () => this.metaWorkspace,
             updateAppGroupIndexes: () => this.updateAppGroupIndexes(),
             closeAllRightClickMenus: (cb) => this.closeAllRightClickMenus(cb),
@@ -31,7 +31,7 @@ class AppList {
                 this.actor.remove_child(actor);
             },
             updateFocusState: (focusedAppId) => {
-                this.appList.forEach( appGroup => {
+                this.appGroups.forEach( appGroup => {
                     if (focusedAppId === appGroup.groupState.appId) return;
                     appGroup.onFocusChange(false);
                 });
@@ -45,7 +45,7 @@ class AppList {
         this.manager = new Clutter.BoxLayout({orientation: Clutter.Orientation[managerOrientation]});
         this.actor = new Clutter.Actor({layout_manager: this.manager});
 
-        this.appList = [];
+        this.appGroups = [];
         this.lastFocusedApp = null;
 
         // Connect all the signals
@@ -70,7 +70,7 @@ class AppList {
 
     getWindowCount(appId) {
         let windowCount = 0;
-        this.appList.forEach( appGroup => {
+        this.appGroups.forEach( appGroup => {
             if (appGroup.groupState.appId !== appId) return;
             windowCount += appGroup.groupState.metaWindows.length;
         });
@@ -78,44 +78,44 @@ class AppList {
     }
 
     closeAllHoverMenus(cb) {
-        for (let i = 0, len = this.appList.length; i < len; i++) {
-            const {hoverMenu, groupState} = this.appList[i];
+        this.appGroups.forEach( appGroup => {
+            const {hoverMenu, groupState} = appGroup;
             if (hoverMenu && hoverMenu.isOpen) {
                 groupState.set({thumbnailMenuEntered: false});
                 hoverMenu.close(true);
             }
-        }
+        });
         if (typeof cb === 'function') cb();
     }
 
     closeAllRightClickMenus(cb) {
-        for (let i = 0, len = this.appList.length; i < len; i++) {
-            if (typeof this.appList[i].rightClickMenu !== 'undefined' && this.appList[i].rightClickMenu.isOpen) {
-                this.appList[i].rightClickMenu.close();
+        this.appGroups.forEach( appGroup => {
+            if (typeof appGroup.rightClickMenu !== 'undefined' && appGroup.rightClickMenu.isOpen) {
+                appGroup.rightClickMenu.close();
             }
-        }
+        });
         if (typeof cb === 'function') cb();
     }
 
     onAppKeyPress(number) {
-        if (!this.appList[number - 1]) return;
-        this.appList[number - 1].onAppKeyPress(number);
+        if (!this.appGroups[number - 1]) return;
+        this.appGroups[number - 1].onAppKeyPress(number);
     }
 
     onNewAppKeyPress(number) {
-        if (number > this.appList.length) return;
-        this.appList[number - 1].launchNewInstance();
+        if (number > this.appGroups.length) return;
+        this.appGroups[number - 1].launchNewInstance();
     }
 
     showAppsOrder() {
-        for (let i = 0, len = this.appList.length; i < len; i++) {
-            this.appList[i].showOrderLabel(i);
+        for (let i = 0, len = this.appGroups.length; i < len; i++) {
+            this.appGroups[i].showOrderLabel(i);
         }
         setTimeout(() => this.calcAllWindowNumbers(), this.state.settings.showAppsOrderTimeout);
     }
 
     cycleMenus(r = 0) {
-        if (r > this.appList.length) {
+        if (r > this.appGroups.length) {
             this.state.set({lastCycled: -1});
             return;
         }
@@ -124,16 +124,16 @@ class AppList {
         this.lastCycledTime = Date.now();
 
         if (lastCycled < 0) {
-            lastCycled = this.appList.findIndex(
-                app => app.groupState.appId === this.listState.lastFocusedApp
+            lastCycled = this.appGroups.findIndex(
+                appGroup => appGroup.groupState.appId === this.workspaceState.lastFocusedApp
             );
         }
 
-        if (lastCycled < 0 || lastCycled > this.appList.length - 1) {
+        if (lastCycled < 0 || lastCycled > this.appGroups.length - 1) {
             lastCycled = 0;
         }
 
-        const refApp = this.appList[lastCycled];
+        const refApp = this.appGroups[lastCycled];
 
         lastCycled++;
         this.state.set({lastCycled});
@@ -170,11 +170,11 @@ class AppList {
     }
 
     refreshList() {
-        for (let i = 0, len = this.appList.length; i < len; i++) {
-            this.appList[i].destroy();
-            this.appList[i] = null;
-        }
-        this.appList = [];
+        this.appGroups.forEach( appGroup => {
+            appGroup.destroy();
+            appGroup = null;
+        });
+        this.appGroups = [];
         this.loadFavorites();
         this.refreshApps();
     }
@@ -215,7 +215,7 @@ class AppList {
     }
 
     updateAttentionState(display, window) {
-        this.appList.forEach( appGroup => {
+        this.appGroups.forEach( appGroup => {
             if (appGroup.groupState.metaWindows) {
                 appGroup.onWindowDemandsAttention(window);
             }
@@ -272,11 +272,11 @@ class AppList {
             refWindow = -1,
             transientFavorite = false;
 
-        for (let i = 0; i < this.appList.length; i++) {
-            if (app === this.appList[i].groupState.app) {
+        for (let i = 0; i < this.appGroups.length; i++) {
+            if (app === this.appGroups[i].groupState.app) {
                 refApp = i;
             }
-            const ref = this.appList[i].groupState.metaWindows.indexOf(metaWindow);
+            const ref = this.appGroups[i].groupState.metaWindows.indexOf(metaWindow);
             if (ref > -1) {
                 if (refApp === -1 || !this.state.settings.groupApps) {
                     refApp = i;
@@ -299,7 +299,7 @@ class AppList {
         const initApp = (idx) => { 
             const appGroup = new AppGroup({
                 state: this.state,
-                listState: this.listState,
+                workspaceState: this.workspaceState,
                 app,
                 isFavoriteApp,
                 metaWorkspace,
@@ -309,11 +309,11 @@ class AppList {
 
             if(idx > -1) {
                 this.actor.insert_child_at_index(appGroup.actor, idx);
-                this.appList.splice(idx, 0, appGroup);
+                this.appGroups.splice(idx, 0, appGroup);
             }
             else {
                 this.actor.add_child(appGroup.actor);
-                this.appList.push(appGroup);
+                this.appGroups.push(appGroup);
             }
             appGroup.windowAdded(metaWindow);
         };
@@ -322,9 +322,9 @@ class AppList {
             initApp(-1);
         } else if (metaWindow) {
             if (this.state.settings.groupApps) {
-                this.appList[refApp].windowAdded(metaWindow);
-            } else if (transientFavorite && this.appList[refApp].groupState.metaWindows.length === 0) {
-                this.appList[refApp].windowAdded(metaWindow);
+                this.appGroups[refApp].windowAdded(metaWindow);
+            } else if (transientFavorite && this.appGroups[refApp].groupState.metaWindows.length === 0) {
+                this.appGroups[refApp].windowAdded(metaWindow);
             } else if (refWindow === -1) {
                 initApp(refApp+1);
             }
@@ -332,20 +332,20 @@ class AppList {
     }
 
     calcAllWindowNumbers() {
-        for (let i = 0, len = this.appList.length; i < len; i++) {
-            this.appList[i].calcWindowNumber(this.appList[i].groupState.metaWindows);
-        }
+        this.appGroups.forEach( appGroup => {
+            appGroup.calcWindowNumber(appGroup.groupState.metaWindows);
+        });
     }
 
     updateAppGroupIndexes() {
-        const newAppList = [];
+        const newAppGroups = [];
         this.actor.get_children().forEach( child => {
-            const appGroup = this.appList.find( appGroup => appGroup.actor === child);
+            const appGroup = this.appGroups.find( appGroup => appGroup.actor === child);
             if (appGroup) {
-                newAppList.push(appGroup);
+                newAppGroups.push(appGroup);
             }
         });
-        this.appList = newAppList;
+        this.appGroups = newAppGroups;
     }
 
     windowRemoved(metaWorkspace, metaWindow) {
@@ -366,7 +366,7 @@ class AppList {
         }
 
         let refWindow = -1;
-        const refApp = this.appList.findIndex( appGroup => {
+        const refApp = this.appGroups.findIndex( appGroup => {
             const window = appGroup.groupState.metaWindows.findIndex( win => win === metaWindow);
             if (window > -1) {
                 refWindow = window;
@@ -375,45 +375,45 @@ class AppList {
         });
 
         if (refApp > -1) {
-            this.appList[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp) => {
+            this.appGroups[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp) => {
                 if (isFavoriteApp) {
                     if (this.state.settings.groupApps || this.getWindowCount(appId) === 0) {
-                        this.appList[refApp].groupState.set({groupReady: false, lastFocused: null});
-                        this.appList[refApp].actor.set_style_pseudo_class('closed');
-                        this.appList[refApp].actor.remove_style_class_name('grouped-window-list-item-demands-attention');
-                        this.appList[refApp].setActiveStatus(false);
+                        this.appGroups[refApp].groupState.set({groupReady: false, lastFocused: null});
+                        this.appGroups[refApp].actor.set_style_pseudo_class('closed');
+                        this.appGroups[refApp].actor.remove_style_class_name('grouped-window-list-item-demands-attention');
+                        this.appGroups[refApp].setActiveStatus(false);
                         if (this.state.settings.titleDisplay > 1) {
-                            this.appList[refApp].hideLabel();
+                            this.appGroups[refApp].hideLabel();
                         }
                     } else {
-                        // pinned app closed in ungrouped-windows mode and another instance of app already exists in appList
+                        // pinned app closed in ungrouped-windows mode and another instance of app already exists in appGroups
                         // move other instance to original apps' position
 
-                        const refAppId = this.appList[refApp].groupState.appId;
+                        const refAppId = this.appGroups[refApp].groupState.appId;
 
-                        this.appList[refApp].destroy(true);
-                        this.appList[refApp] = undefined;
-                        this.appList.splice(refApp, 1);
+                        this.appGroups[refApp].destroy(true);
+                        this.appGroups[refApp] = undefined;
+                        this.appGroups.splice(refApp, 1);
 
-                        const otherApp = this.appList.findIndex(
+                        const otherApp = this.appGroups.findIndex(
                             appGroup => appGroup.groupState.appId === refAppId
                         );
-                        const otherAppObject = this.appList[otherApp]
+                        const otherAppObject = this.appGroups[otherApp]
 
                         // in edge case when multiple apps of the same program are favorited, do not move other app
                         if(!otherAppObject.groupState.isFavoriteApp) {
-                            this.appList.splice(otherApp, 1);
+                            this.appGroups.splice(otherApp, 1);
                             this.actor.set_child_at_index(otherAppObject.actor, refApp);
-                            this.appList.splice(refApp, 0, otherAppObject);
+                            this.appGroups.splice(refApp, 0, otherAppObject);
 
                             // change previously unpinned app status to pinned
                             otherAppObject.groupState.isFavoriteApp = true;
                         }
                     }
                 } else {
-                    this.appList[refApp].destroy(true);
-                    this.appList[refApp] = undefined;
-                    this.appList.splice(refApp, 1);
+                    this.appGroups[refApp].destroy(true);
+                    this.appGroups[refApp] = undefined;
+                    this.appGroups.splice(refApp, 1);
                 }
             });
         }
@@ -421,14 +421,12 @@ class AppList {
 
     destroy() {
         this.signals.disconnectAllSignals();
-        for (let i = 0, len = this.appList.length; i < len; i++) {
-            this.appList[i].destroy();
-        }
-        this.listState.destroy();
+        this.appGroups.forEach( appGroup => appGroup.destroy() );
+        this.workspaceState.destroy();
         this.manager = null;
         this.actor.destroy();
         unref(this, RESERVE_KEYS);
     }
 }
 
-module.exports = AppList;
+module.exports = Workspace;

@@ -10,8 +10,8 @@ const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
 const {SignalManager} = imports.misc.signalManager;
 const {unref} = imports.misc.util;
-const {createStore} = imports.misc.state;
 
+const createStore = require('./state');
 const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
 const {
     FLASH_INTERVAL,
@@ -62,7 +62,7 @@ const getFocusState = function(metaWindow) {
 class AppGroup {
     constructor(params) {
         this.state = params.state;
-        this.listState = params.listState;
+        this.workspaceState = params.workspaceState;
         this.groupState = createStore({
             app: params.app,
             appId: params.appId,
@@ -254,10 +254,10 @@ class AppGroup {
     }
 
     setMargin() {
-        const applet = this.state.appletActor;
+        const appletActor = this.state.appletActor;
         const direction = this.state.isHorizontal ? 'right' : 'bottom';
         const existingStyle = this.actor.style ? this.actor.style : '';
-        let spacing = parseInt(applet.get_theme_node().get_length('spacing'));
+        let spacing = parseInt(appletActor.get_theme_node().get_length('spacing'));
         if (!spacing) {
             spacing = 6;
         }
@@ -346,7 +346,7 @@ class AppGroup {
 
         const allocateForLabel = this.labelVisiblePref ||
                             (this.state.settings.titleDisplay == TitleDisplay.Focused &&
-                            this.listState.lastFocusedApp === appId);
+                            this.workspaceState.lastFocusedApp === appId);
 
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
             if (allocateForLabel) {
@@ -581,13 +581,13 @@ class AppGroup {
         const {appId, metaWindows, lastFocused} = this.groupState;
 
         if (hasFocus === undefined) {
-            hasFocus = this.listState.lastFocusedApp === appId;
+            hasFocus = this.workspaceState.lastFocusedApp === appId;
         }
 
         // If any of the windows associated with our app have focus,
         // we should set ourselves to active
         if (hasFocus) {
-            this.listState.trigger('updateFocusState', appId);
+            this.workspaceState.trigger('updateFocusState', appId);
             this.actor.add_style_pseudo_class('focus');
             this.actor.remove_style_class_name('grouped-window-list-item-demands-attention');
             if (this.hoverMenu) {
@@ -609,9 +609,9 @@ class AppGroup {
         if (!this.groupState || !this.groupState.groupReady || this.groupState.willUnmount) {
             return;
         }
-        const windows = this.groupState.metaWindows;
-        for (let i = 0, len = windows.length; i < len; i++) {
-            if (windows[i] === metaWindow && !getFocusState(windows[i])) {
+        
+        this.groupState.metaWindows.forEach( window => {
+            if (window === metaWindow && !getFocusState(window)) {
                 // Even though this may not be the last focused window, we want it to be
                 // the window that gets focused when a user responds to an alert.
                 this.groupState.set({lastFocused: metaWindow});
@@ -619,7 +619,7 @@ class AppGroup {
                 this.getAttention();
                 return true;
             }
-        }
+        });
         return false;
     }
 
@@ -654,7 +654,7 @@ class AppGroup {
                 Main.activateWindow(this.groupState.lastFocused, global.get_current_time());
             } else {
                 if (this.groupState.fileDrag) {
-                    this.listState.trigger('closeAllHoverMenus');
+                    this.workspaceState.trigger('closeAllHoverMenus');
                 }
                 // Open the thumbnail menu and activate the window corresponding to the dragged over thumbnail.
                 if (!this.hoverMenu) this.initThumbnailMenu();
@@ -800,13 +800,13 @@ class AppGroup {
         } else if (button === 3) {
             if (!this.rightClickMenu) this.initRightClickMenu();
             if (!this.rightClickMenu.isOpen) {
-                this.listState.trigger('closeAllRightClickMenus', () => {
-                    this.listState.trigger('closeAllHoverMenus', () => {
+                this.workspaceState.trigger('closeAllRightClickMenus', () => {
+                    this.workspaceState.trigger('closeAllHoverMenus', () => {
                         this.rightClickMenu.toggle();
                     });
                 });
             } else {
-                this.listState.trigger('closeAllRightClickMenus', this.listState.trigger('closeAllHoverMenus'));
+                this.workspaceState.trigger('closeAllRightClickMenus', this.workspaceState.trigger('closeAllHoverMenus'));
             }
         }
         if (this.hoverMenu) this.hoverMenu.onButtonPress();
@@ -833,7 +833,7 @@ class AppGroup {
                 if (!this.hoverMenu) this.initThumbnailMenu();
                 this.hoverMenu.open(true);
             } else {
-                this.listState.trigger('closeAllHoverMenus');
+                this.workspaceState.trigger('closeAllHoverMenus');
             }
             this.windowHandle();
             this.appKeyTimeout = setTimeout(() => {
@@ -948,7 +948,7 @@ class AppGroup {
             this.calcWindowNumber();
         } else {
             // This is the last window, so this group needs to be destroyed. We'll call back windowRemoved
-            // in appList to put the final nail in the coffin.
+            // in workspace to put the final nail in the coffin.
             if (typeof cb === 'function') {
                 if (this.hoverMenu && this.groupState.isFavoriteApp) {
                     this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
@@ -959,10 +959,10 @@ class AppGroup {
     }
 
     onAppChange(metaWindow) {
-        if (!this.listState) return;
+        if (!this.workspaceState) return;
 
-        this.listState.trigger('windowRemoved', metaWindow);
-        this.listState.trigger('windowAdded', metaWindow);
+        this.workspaceState.trigger('windowRemoved', metaWindow);
+        this.workspaceState.trigger('windowAdded', metaWindow);
     }
 
     onWindowTitleChanged(metaWindow, refresh) {
@@ -1014,7 +1014,7 @@ class AppGroup {
 
         const hasFocus = getFocusState(metaWindow);
         if (hasFocus && this.groupState.hasOwnProperty('lastFocused')) {
-            this.listState.set({lastFocusedApp: this.groupState.appId});
+            this.workspaceState.set({lastFocusedApp: this.groupState.appId});
             this.groupState.set({lastFocused: metaWindow});
         }
         this.onFocusChange(hasFocus);
@@ -1058,7 +1058,7 @@ class AppGroup {
         if (this.actor.is_finalized()) return;
 
         if (changed) {
-            setTimeout(() => this.listState.trigger('updateAppGroupIndexes', this.groupState.appId), 0);
+            setTimeout(() => this.workspaceState.trigger('updateAppGroupIndexes', this.groupState.appId), 0);
         }
 
         if (this.groupState.metaWindows.length === 0 && this.state.appletReady) {
@@ -1163,7 +1163,7 @@ class AppGroup {
             this.hoverMenu.destroy();
         }
 
-        this.listState.trigger('removeChild', this.actor);
+        this.workspaceState.trigger('removeChild', this.actor);
         this.actor.destroy();
 
         if (!skipRefCleanup) {
