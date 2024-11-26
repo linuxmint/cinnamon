@@ -300,6 +300,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'left-click-action', value: 'leftClickAction', cb: null},
             {key: 'middle-click-action', value: 'middleClickAction', cb: null},
             {key: 'show-all-workspaces', value: 'showAllWorkspaces', cb: this.refreshAllWorkspaces},
+            {key: 'window-display-settings', value: 'windowDisplaySettings', cb: this.reloadAllAppsMonitor},
             {key: 'cycleMenusHotkey', value: 'cycleMenusHotkey', cb: this.bindAppKeys},
             {key: 'show-apps-order-hotkey', value: 'showAppsOrderHotkey', cb: this.bindAppKeys},
             {key: 'show-apps-order-timeout', value: 'showAppsOrderTimeout', cb: null},
@@ -328,7 +329,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'show-recent', value: 'showRecent', cb: null},
             {key: 'autostart-menu-item', value: 'autoStart', cb: null},
             {key: 'monitor-move-all-windows', value: 'monitorMoveAllWindows', cb: null},
-            {key: 'window-display-settings', value: 'windowDisplaySettings', cb: this.reloadAllAppsMonitor},
             {key: 'pinned-apps', value: 'pinnedApps', cb: null}
         ];
 
@@ -501,7 +501,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     reloadAllAppsMonitor(){
-        this.refreshAllAppLists();
+        this.refreshAllWorkspaces();
         this.updateMonitorWatchlist();
     }
 
