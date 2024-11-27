@@ -130,6 +130,7 @@ const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
 const {CinnamonPortalHandler} = imports.misc.portalHandlers;
+const {EndSessionDialog} = imports.ui.endSessionDialog;;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -193,6 +194,8 @@ var animations_enabled = false;
 var popup_rendering_actor = null;
 
 var xlet_startup_error = false;
+
+var end_session_dialog = null;
 
 var gpuOffloadHelper = null;
 var gpu_offload_supported = false;
@@ -1578,4 +1581,22 @@ function restartCinnamon(showOsd = false) {
     });
 
     global.reexec_self();
+}
+
+function show_end_session_dialog(mode) {
+    if (end_session_dialog != null) {
+        global.logWarning("End session dialog already exists");
+        return;
+    }
+
+    end_session_dialog = new EndSessionDialog(mode);
+}
+
+function close_end_session_dialog() {
+    if (end_session_dialog == null) {
+        return;
+    }
+
+    end_session_dialog.destroy();
+    end_session_dialog = null;
 }
