@@ -81,6 +81,9 @@ class Launcher:
                 else:
                     self.fb_pid = os.fork()
                     if self.fb_pid == 0:
+                        # Start NM applet
+                        if shutil.which("nm-applet"):
+                            os.system("nm-applet &")
                         # Start the fallback panel
                         if panel_cmd is not None:
                             os.system(panel_cmd)
@@ -150,6 +153,7 @@ class Launcher:
             if checkbutton.get_active():
                 os.environ["CINNAMON_TROUBLESHOOT"] = "1"
             os.system("killall %s" % panel_process_name)
+            os.system("killall nm-applet")
             os.system("kill %d" % self.fb_pid)
             os.waitpid(self.fb_pid, 0)
             self.restart_cinnamon()
