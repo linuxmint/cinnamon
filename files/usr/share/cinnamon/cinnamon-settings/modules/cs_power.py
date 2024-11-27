@@ -870,7 +870,6 @@ class PowerModeComboBox(SettingsWidget):
             renderer_text = Gtk.CellRendererText()
             self.content_widget.pack_start(renderer_text, True)
             self.content_widget.add_attribute(renderer_text, "text", 1)
-            # self.content_widget.key = key
 
             self.pack_start(self.label, False, False, 0)
             self.pack_end(self.content_widget, False, True, 0)
