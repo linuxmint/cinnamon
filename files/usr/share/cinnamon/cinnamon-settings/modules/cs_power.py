@@ -207,38 +207,8 @@ class Module:
             self.sth_switch.content_widget.connect("notify::active", self.on_sth_toggled)
             section.add_row(self.sth_switch)
 
-        # Power mode
-        profiles = []
-        connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
-        proxy = Gio.DBusProxy.new_sync(
-            connection,
-            Gio.DBusProxyFlags.NONE,
-            None,
-            POWER_PROFILES_DBUS_NAME,
-            POWER_PROFILES_DBUS_PATH,
-            "org.freedesktop.DBus.Properties",
-            None)
-
-        profiles = proxy.Get('(ss)', POWER_PROFILES_DBUS_NAME, "Profiles")
-        profiles_options = []
-        for profile in profiles:
-            name = profile["Profile"]
-            label = name
-            if name in POWER_PROFILES.keys():
-                label = POWER_PROFILES[name]
-            profiles_options.append([name, label])
-            
-        active_profile = proxy.Get('(ss)', POWER_PROFILES_DBUS_NAME, "ActiveProfile")
-        combo = ComboBox(_("Power mode"), profiles_options, size_group=size_group)
-
-
-        gtk_combobox = combo.content_widget 
-        # hmm... we don't really want to interact with the inner content_widget
-        # we should really make our own class here, kinda like GSettings2ComboBox
-        # (great name by the way) but using dbus instead of gsettings
-        gtk_combobox.set_active_iter()
-        
-        section.add_row(combo)
+        # Power mode        
+        section.add_row(PowerModeComboBox())
         
         # Batteries
 
@@ -858,3 +828,75 @@ class GSettings2ComboBox(SettingsWidget):
     def add_to_size_group(self, group):
         group.add_widget(self.content_widget1)
         group.add_widget(self.content_widget2)
+
+
+class PowerModeComboBox(SettingsWidget):
+    def __init__(self, dep_key=None, size_group=None):
+        super(PowerModeComboBox, self).__init__(dep_key=dep_key)
+
+        connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+        self.proxy = Gio.DBusProxy.new_sync(
+            connection,
+            Gio.DBusProxyFlags.NONE,
+            None,
+            POWER_PROFILES_DBUS_NAME,
+            POWER_PROFILES_DBUS_PATH,
+            "org.freedesktop.DBus.Properties",
+            None)
+
+        profiles = []
+        profiles = self.proxy.Get('(ss)', POWER_PROFILES_DBUS_NAME, "Profiles")
+        profiles_options = []
+        for profile in profiles:
+            name = profile["Profile"]
+            label = name
+            if name in POWER_PROFILES.keys():
+                label = POWER_PROFILES[name]
+            profiles_options.append([name, label])
+            
+        
+
+        self.option_map = {}
+
+        self.label = Gtk.Label.new("Power mode")
+        self.model = Gtk.ListStore(str, str)
+        
+        selected = None
+        for option in profiles_options:
+            iter = self.model.insert_before(None, None)
+            self.model.set_value(iter, 0, option[0])
+            self.model.set_value(iter, 1, option[1])
+            self.option_map[option[0]] = iter
+
+        self.content_widget = Gtk.ComboBox.new_with_model(self.model)
+        renderer_text = Gtk.CellRendererText()
+        self.content_widget.pack_start(renderer_text, True)
+        self.content_widget.add_attribute(renderer_text, "text", 1)
+        # self.content_widget.key = key
+
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, True, 0)
+
+        self.content_widget.connect('changed', self.on_my_value_changed)
+        # self.settings.connect("changed::" + self.key, self.on_my_setting_changed)
+        self.on_my_setting_changed()
+
+        if size_group:
+            self.add_to_size_group(size_group)
+
+    def on_my_value_changed(self, widget):
+        tree_iter = widget.get_active_iter()
+        if tree_iter is not None:
+            value = GLib.Variant(str, self.model[tree_iter][0]) # <--- doesn't work yet..
+            self.proxy.Set('(ssv)', POWER_PROFILES_DBUS_NAME, "ActiveProfile", value)
+            
+    def on_my_setting_changed(self, *args):
+        try:
+            active_profile = self.proxy.Get('(ss)', POWER_PROFILES_DBUS_NAME, "ActiveProfile")
+            self.content_widget.set_active_iter(self.option_map[active_profile])
+        except:
+            self.content_widget.set_active_iter(None)
+
+    def add_to_size_group(self, group):
+        group.add_widget(self.content_widget)
+
