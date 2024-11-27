@@ -45,6 +45,29 @@ SLEEP_DELAY_OPTIONS = [
     (0, _("Never"))
 ]
 
+PowerProfilesBusName = "org.freedesktop.UPower.PowerProfiles"
+PowerProfilesBusPath = "/org/freedesktop/UPower/PowerProfiles"
+
+POWER_PROFILES = {
+    "power-saver": _("Power Saver"),
+    "balanced": _("Balanced"),
+    "performance": _("Performance")
+}
+
+PowerProfilesInterface = f'''<node>
+  <interface name="${PowerProfilesBusName}">
+    <property name="ActiveProfile" type="s" access="readwrite" />
+    <property name="PerformanceDegraded" type="s" access="read" />
+    <property name="Profiles" type="aa{{sv}}" access="read" />
+    <property name="ActiveProfileHolds" type="aa{{sv}}" access="read" />
+  </interface>
+</node>'''
+
+bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+PowerProfilesProxy = Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None,
+                                            PowerProfilesBusName, PowerProfilesBusPath,
+                                            PowerProfilesBusName, None)
+
 (UP_ID, UP_VENDOR, UP_MODEL, UP_TYPE, UP_ICON, UP_PERCENTAGE, UP_STATE, UP_BATTERY_LEVEL, UP_SECONDS) = range(9)
 
 try:
@@ -140,7 +163,7 @@ class Module:
 
         power_page = SettingsPage()
 
-        section = power_page.add_section(_("Power Options"))
+        section = power_page.add_section(_("Power options"))
 
         lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep, can_hibernate = get_available_options(self.up_client)
 
@@ -294,7 +317,6 @@ class Module:
         # UPowerGlib segfaults when trying to get device. Use CSD instead
         devices = self.csd_power_proxy.GetDevices()
 
-        have_primary = False
         ups_as_primary = False
 
         have_keyboard = False
