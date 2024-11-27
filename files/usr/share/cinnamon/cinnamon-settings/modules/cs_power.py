@@ -45,28 +45,14 @@ SLEEP_DELAY_OPTIONS = [
     (0, _("Never"))
 ]
 
-PowerProfilesBusName = "org.freedesktop.UPower.PowerProfiles"
-PowerProfilesBusPath = "/org/freedesktop/UPower/PowerProfiles"
-
 POWER_PROFILES = {
     "power-saver": _("Power Saver"),
     "balanced": _("Balanced"),
     "performance": _("Performance")
 }
 
-PowerProfilesInterface = f'''<node>
-  <interface name="${PowerProfilesBusName}">
-    <property name="ActiveProfile" type="s" access="readwrite" />
-    <property name="PerformanceDegraded" type="s" access="read" />
-    <property name="Profiles" type="aa{{sv}}" access="read" />
-    <property name="ActiveProfileHolds" type="aa{{sv}}" access="read" />
-  </interface>
-</node>'''
-
-bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
-PowerProfilesProxy = Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None,
-                                            PowerProfilesBusName, PowerProfilesBusPath,
-                                            PowerProfilesBusName, None)
+POWER_PROFILES_DBUS_NAME = "net.hadess.PowerProfiles"
+POWER_PROFILES_DBUS_PATH = "/net/hadess/PowerProfiles"
 
 (UP_ID, UP_VENDOR, UP_MODEL, UP_TYPE, UP_ICON, UP_PERCENTAGE, UP_STATE, UP_BATTERY_LEVEL, UP_SECONDS) = range(9)
 
@@ -221,6 +207,39 @@ class Module:
             self.sth_switch.content_widget.connect("notify::active", self.on_sth_toggled)
             section.add_row(self.sth_switch)
 
+        # Power mode
+        profiles = []
+        connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+        proxy = Gio.DBusProxy.new_sync(
+            connection,
+            Gio.DBusProxyFlags.NONE,
+            None,
+            POWER_PROFILES_DBUS_NAME,
+            POWER_PROFILES_DBUS_PATH,
+            "org.freedesktop.DBus.Properties",
+            None)
+
+        profiles = proxy.Get('(ss)', POWER_PROFILES_DBUS_NAME, "Profiles")
+        profiles_options = []
+        for profile in profiles:
+            name = profile["Profile"]
+            label = name
+            if name in POWER_PROFILES.keys():
+                label = POWER_PROFILES[name]
+            profiles_options.append([name, label])
+            
+        active_profile = proxy.Get('(ss)', POWER_PROFILES_DBUS_NAME, "ActiveProfile")
+        combo = ComboBox(_("Power mode"), profiles_options, size_group=size_group)
+
+
+        gtk_combobox = combo.content_widget 
+        # hmm... we don't really want to interact with the inner content_widget
+        # we should really make our own class here, kinda like GSettings2ComboBox
+        # (great name by the way) but using dbus instead of gsettings
+        gtk_combobox.set_active_iter()
+        
+        section.add_row(combo)
+        
         # Batteries
 
         self.battery_page = SettingsPage()
