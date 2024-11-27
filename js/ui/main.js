@@ -102,6 +102,7 @@ const MessageTray = imports.ui.messageTray;
 const OsdWindow = imports.ui.osdWindow;
 const Overview = imports.ui.overview;
 const Expo = imports.ui.expo;
+const EndSessionDialog = imports.ui.endSessionDialog;
 const Panel = imports.ui.panel;
 const PlacesManager = imports.ui.placesManager;
 const PolkitAuthenticationAgent = imports.ui.polkitAuthenticationAgent;
@@ -130,7 +131,6 @@ const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
 const {CinnamonPortalHandler} = imports.misc.portalHandlers;
-const {EndSessionDialog} = imports.ui.endSessionDialog;;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -147,6 +147,7 @@ var panelManager = null;
 var osdWindowManager = null;
 var overview = null;
 var expo = null;
+var endSessionDialog = null;
 var runDialog = null;
 var lookingGlass = null;
 var lookingGlassUpdateID = 0;
@@ -194,8 +195,6 @@ var animations_enabled = false;
 var popup_rendering_actor = null;
 
 var xlet_startup_error = false;
-
-var end_session_dialog = null;
 
 var gpuOffloadHelper = null;
 var gpu_offload_supported = false;
@@ -416,6 +415,8 @@ function start() {
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview();
     expo = new Expo.Expo();
+
+    endSessionDialog = new EndSessionDialog.EndSessionDialog();
 
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
 
@@ -1581,22 +1582,4 @@ function restartCinnamon(showOsd = false) {
     });
 
     global.reexec_self();
-}
-
-function show_end_session_dialog(mode) {
-    if (end_session_dialog != null) {
-        global.logWarning("End session dialog already exists");
-        return;
-    }
-
-    end_session_dialog = new EndSessionDialog(mode);
-}
-
-function close_end_session_dialog() {
-    if (end_session_dialog == null) {
-        return;
-    }
-
-    end_session_dialog.destroy();
-    end_session_dialog = null;
 }

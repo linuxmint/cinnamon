@@ -521,13 +521,13 @@ CinnamonDBus.prototype = {
 
     ShowEndSessionDialog(mode) {
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            Main.show_end_session_dialog(mode);
+            Main.endSessionDialog.open(mode);
             return GLib.SOURCE_REMOVE;
         });
     },
 
     CloseEndSessionDialog() {
-        Main.close_end_session_dialog();
+        Main.endSessionDialog.close();
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION
