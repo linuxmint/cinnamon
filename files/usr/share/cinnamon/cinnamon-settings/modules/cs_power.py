@@ -895,7 +895,7 @@ class PowerModeComboBox(SettingsWidget):
         if signal == "PropertiesChanged":
             self.on_my_setting_changed()
 
-    def on_my_setting_changed(self, *args):
+    def on_my_setting_changed(self):
         try:
             active_profile = self.proxy.Get('(ss)', POWER_PROFILES_DBUS_NAME, "ActiveProfile")
             self.content_widget.set_active_iter(self.option_map[active_profile])
