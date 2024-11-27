@@ -12,6 +12,8 @@ const Settings = imports.ui.settings;
 
 const BrightnessBusName = "org.cinnamon.SettingsDaemon.Power.Screen";
 const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
+const PowerProfilesBusName = "net.hadess.PowerProfiles";
+const PowerProfilesBusPath = "/net/hadess/PowerProfiles";
 
 const CSD_BACKLIGHT_NOT_SUPPORTED_CODE = 1;
 
@@ -23,6 +25,23 @@ const {
     DeviceState: UPDeviceState,
     Device: UPDevice
 } = UPowerGlib
+
+const POWER_PROFILES = {
+    "power-saver": _("Power Saver"),
+    "balanced": _("Balanced"),
+    "performance": _("Performance")
+};
+
+const PowerProfilesInterface = `<node>
+  <interface name="${PowerProfilesBusName}">
+    <property name="ActiveProfile" type="s" access="readwrite" />
+    <property name="PerformanceDegraded" type="s" access="read" />
+    <property name="Profiles" type="aa{sv}" access="read" />
+    <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
+  </interface>
+</node>`;
+
+const PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(PowerProfilesInterface);
 
 function deviceLevelToString(level) {
     switch (level) {
@@ -150,34 +169,33 @@ function deviceKindToIcon(kind, icon) {
     }
 }
 
-function reportsPreciseLevels(battery_level)
-{
+function reportsPreciseLevels(battery_level) {
     return battery_level == UPDeviceLevel.NONE;
 }
 
 class DeviceItem extends PopupMenu.PopupBaseMenuItem {
     constructor(device, status, aliases) {
-        super({reactive: false});
+        super({ reactive: false });
 
         let [device_id, vendor, model, device_kind, icon, percentage, state, battery_level, time] = device;
 
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
-        this._vbox = new St.BoxLayout({ style_class: 'popup-device-menu-item', vertical: true});
+        this._vbox = new St.BoxLayout({ style_class: 'popup-device-menu-item', vertical: true });
 
         let description = deviceKindToString(device_kind);
         if (vendor != "" || model != "") {
             description = "%s %s".format(vendor, model);
         }
 
-        for ( let i = 0; i < aliases.length; ++i ) {
+        for (let i = 0; i < aliases.length; ++i) {
             let alias = aliases[i];
-            try{
+            try {
                 let parts = alias.split(':=');
                 if (parts[0] == device_id) {
                     description = parts[1];
                 }
             }
-            catch(e) {
+            catch (e) {
                 // ignore malformed aliases
                 global.logError(alias);
             }
@@ -198,7 +216,7 @@ class DeviceItem extends PopupMenu.PopupBaseMenuItem {
             this._icon = new St.Icon({ gicon: Gio.icon_new_for_string(icon), icon_type: St.IconType.SYMBOLIC, style_class: 'popup-menu-icon' });
         }
         else {
-            this._icon = new St.Icon({icon_name: device_icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
+            this._icon = new St.Icon({ icon_name: device_icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16 });
         }
 
         this._box.add_actor(this._icon);
@@ -222,23 +240,23 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         this._minimum_value = minimum_value;
         this._step = .05;
 
-        this.connect("drag-begin", Lang.bind(this, function() {
+        this.connect("drag-begin", Lang.bind(this, function () {
             this._seeking = true;
         }));
-        this.connect("drag-end", Lang.bind(this, function() {
+        this.connect("drag-end", Lang.bind(this, function () {
             this._seeking = false;
         }));
 
-        this.icon = new St.Icon({icon_name: icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
+        this.icon = new St.Icon({ icon_name: icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16 });
         this.removeActor(this._slider);
-        this.addActor(this.icon, {span: 0});
-        this.addActor(this._slider, {span: -1, expand: true});
+        this.addActor(this.icon, { span: 0 });
+        this.addActor(this._slider, { span: -1, expand: true });
 
         this.label = label;
         this.tooltipText = label;
         this.tooltip = new Tooltips.Tooltip(this.actor, this.tooltipText);
 
-        Interfaces.getDBusProxyAsync(busName, Lang.bind(this, function(proxy, error) {
+        Interfaces.getDBusProxyAsync(busName, Lang.bind(this, function (proxy, error) {
             this._proxy = proxy;
             this._proxy.GetPercentageRemote(Lang.bind(this, this._dbusAcquired));
         }));
@@ -260,7 +278,7 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
                 }
                 this._step = (step / 100);
             });
-        } catch(e) {
+        } catch (e) {
             this._step = .05;
         }
 
@@ -315,21 +333,21 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
     }
 
     _getBrightnessForcedUpdate() {
-        this._proxy.GetPercentageRemote(Lang.bind(this, function(b) {
+        this._proxy.GetPercentageRemote(Lang.bind(this, function (b) {
             this._updateBrightnessLabel(b);
             this.setValue(b / 100);
         }));
     }
 
     _setBrightness(value) {
-        this._proxy.SetPercentageRemote(value, Lang.bind(this, function(b) {
+        this._proxy.SetPercentageRemote(value, Lang.bind(this, function (b) {
             this._updateBrightnessLabel(b);
         }));
     }
 
     _updateBrightnessLabel(value) {
         this.tooltipText = this.label;
-        if(value)
+        if (value)
             this.tooltipText += ": " + value + "%";
 
         this.tooltip.set_text(this.tooltipText);
@@ -342,10 +360,10 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         let direction = event.get_scroll_direction();
 
         if (direction == Clutter.ScrollDirection.DOWN) {
-            this._proxy.StepDownRemote(function() {});
+            this._proxy.StepDownRemote(function () { });
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._proxy.StepUpRemote(function() {});
+            this._proxy.StepUpRemote(function () { });
         }
 
         this._slider.queue_repaint();
@@ -371,8 +389,8 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this.aliases = global.settings.get_strv("device-aliases");
 
-        this._deviceItems = [ ];
-        this._devices = [ ];
+        this._deviceItems = [];
+        this._devices = [];
         this._primaryDeviceId = null;
         this.panel_icon_name = ''; // remember the panel icon name (so we only set it when it actually changes)
 
@@ -382,6 +400,30 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this.keyboard = new BrightnessSlider(this, _("Keyboard backlight"), "keyboard-brightness", KeyboardBusName, 0);
         this.menu.addMenuItem(this.brightness);
         this.menu.addMenuItem(this.keyboard);
+
+        try {
+            this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, PowerProfilesBusName, PowerProfilesBusPath);
+        } catch (error) {
+            this._profilesProxy = null;
+        }
+
+        if (this._profilesProxy.Profiles) {
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.contentSection = new PopupMenu.PopupMenuSection();
+
+            this.ActiveProfile = this._profilesProxy.ActiveProfile;
+            this.Profiles = this._profilesProxy.Profiles;
+
+            this._proxyId = this._profilesProxy.connect("g-properties-changed", (proxy, changed, invalidated) => {
+                for (let [changedProperty, changedValue] of Object.entries(changed.deepUnpack())) {
+                    if (["ActiveProfile", "Profiles"].includes(changedProperty))
+                        this[changedProperty] = changedValue.deepUnpack();
+                    this._updateProfile();
+                }
+            });
+
+            this._updateProfile();
+        }
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -394,7 +436,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
 
         this.csd_power_watch_id = Gio.bus_watch_name(Gio.BusType.SESSION, "org.cinnamon.SettingsDaemon.Power", 0, (c, name) => {
-            Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
+            Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function (proxy, error) {
                 Gio.bus_unwatch_name(this.csd_power_watch_id);
                 this.csd_power_watch_id = 0;
 
@@ -436,8 +478,8 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
     _onButtonPressEvent(actor, event) {
         //toggle keyboard brightness on middle click
-        if(event.get_button() === 2) {
-            this.keyboard._proxy.ToggleRemote(function() {});
+        if (event.get_button() === 2) {
+            this.keyboard._proxy.ToggleRemote(function () { });
         }
         return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
     }
@@ -450,9 +492,9 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         //adjust screen brightness on scroll
         let direction = event.get_scroll_direction();
         if (direction == Clutter.ScrollDirection.UP) {
-            this.brightness._proxy.StepUpRemote(function() {});
+            this.brightness._proxy.StepUpRemote(function () { });
         } else if (direction == Clutter.ScrollDirection.DOWN) {
-            this.brightness._proxy.StepDownRemote(function() {});
+            this.brightness._proxy.StepDownRemote(function () { });
         }
         this.brightness._getBrightnessForcedUpdate();
     }
@@ -479,7 +521,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                 else {
                     /* Translators: this is a time string, as in "%d hours %d minutes remaining" */
                     let template = _("Charging - %d %s %d %s until fully charged");
-                    status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
+                    status = template.format(hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                 }
             }
             else {
@@ -500,7 +542,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                 else {
                     /* Translators: this is a time string, as in "%d hours %d minutes remaining" */
                     let template = _("Using battery power - %d %s %d %s remaining");
-                    status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
+                    status = template.format(hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                 }
             }
             else {
@@ -549,7 +591,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this.set_applet_label(labelText);
 
         if (icon) {
-            if(this.panel_icon_name != icon) {
+            if (this.panel_icon_name != icon) {
                 this.panel_icon_name = icon;
                 this.set_applet_icon_symbolic_name('battery-full');
                 let gicon = Gio.icon_new_for_string(icon);
@@ -563,7 +605,39 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             }
         }
 
-        this._applet_icon.set_style_class_name ('system-status-icon');
+        this._applet_icon.set_style_class_name('system-status-icon');
+    }
+
+    _updateProfile() {
+        this.contentSection.removeAll();
+
+        for (let profileNum = 0; profileNum < this.Profiles.length; profileNum++) {
+            let profileName = this.Profiles[profileNum].Profile.unpack();
+            let activeItem;
+            if (profileName == this.ActiveProfile) {
+                activeItem = true;
+                this.profileIndex = profileNum;
+            } else {
+                activeItem = false;
+            }
+
+            let item = new PopupMenu.PopupMenuItem(POWER_PROFILES[profileName], { reactive: !activeItem });
+            item.setShowDot(activeItem);
+            if (!activeItem)
+                item.connect("activate", Lang.bind(this, function () {
+                    this._changeProfile(profileName);
+                    this.menu.toggle();
+                }));
+
+            this.contentSection.addMenuItem(item);
+        }
+
+        this.menu.addMenuItem(this.contentSection);
+    }
+
+    _changeProfile(newProfile) {
+        this._profilesProxy.ActiveProfile = newProfile;
+        this.ActiveProfile = this._profilesProxy.ActiveProfile;
     }
 
     _devicesChanged() {
@@ -576,7 +650,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             return;
 
         // Identify the primary battery device
-        this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(device, error) {
+        this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function (device, error) {
             if (error) {
                 this._primaryDeviceId = null;
             }
@@ -590,8 +664,8 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             }
 
             // Scan battery devices
-            this._proxy.GetDevicesRemote(Lang.bind(this, function(result, error) {
-                this._deviceItems.forEach(function(i) { i.destroy(); });
+            this._proxy.GetDevicesRemote(Lang.bind(this, function (result, error) {
+                this._deviceItems.forEach(function (i) { i.destroy(); });
                 this._deviceItems = [];
                 let devices_stats = [];
                 let pct_support_count = 0;
@@ -628,7 +702,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         }
 
                         let status = this._getDeviceStatus(devices[i]);
-                        let item = new DeviceItem (devices[i], status, this.aliases);
+                        let item = new DeviceItem(devices[i], status, this.aliases);
                         this.menu.addMenuItem(item, position);
                         _deviceItems.push(item);
                         position++;
@@ -704,7 +778,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         this.set_applet_tooltip(devices_stats.join(", "));
                         this.set_applet_label(labelText);
                         let icon = this._proxy.Icon;
-                        if(icon) {
+                        if (icon) {
                             if (icon != this.panel_icon_name) {
                                 this.panel_icon_name = icon;
                                 this.set_applet_icon_symbolic_name('battery-full');
@@ -746,6 +820,12 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
     on_applet_removed_from_panel() {
         Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
+
+        if (!this._profilesProxy)
+            return;
+
+        if (this._proxyId)
+            this._profilesProxy.disconnect(this._proxyId);
     }
 }
 
