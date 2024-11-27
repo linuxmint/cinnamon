@@ -220,7 +220,9 @@ class Module:
                 pass
 
         if profiles:
-            section.add_row(PowerModeComboBox(proxy, dbus_name, profiles))
+            combo = PowerModeComboBox(proxy, dbus_name, profiles)
+            combo.set_tooltip_text(_("Power mode controls the power usage of your computer. It can impact performance, battery life and fan noise."))
+            section.add_row(combo)
 
         # Batteries
 
@@ -860,7 +862,7 @@ class PowerModeComboBox(SettingsWidget):
 
             self.option_map = {}
 
-            self.label = Gtk.Label.new("Power mode")
+            self.label = Gtk.Label.new(_("Power mode"))
             self.model = Gtk.ListStore(str, str)
 
             for option in profiles_options:
