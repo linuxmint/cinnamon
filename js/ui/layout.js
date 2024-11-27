@@ -178,17 +178,18 @@ var MonitorConstraint = GObject.registerClass({
     }
 });
 
-function Monitor(index, geometry) {
-    this._init(index, geometry);
+function Monitor(index, geometry, name) {
+    this._init(index, geometry, name);
 }
 
 Monitor.prototype = {
-    _init: function(index, geometry) {
+    _init: function(index, geometry, name) {
         this.index = index;
         this.x = geometry.x;
         this.y = geometry.y;
         this.width = geometry.width;
         this.height = geometry.height;
+        this.name = name;
     },
 
     get inFullscreen() {
@@ -340,8 +341,9 @@ LayoutManager.prototype = {
         for (let i = 0; i < nMonitors; i++) {
             let rect = global.display.get_monitor_geometry(i);
             let lmon = global.display.get_monitor_index_for_rect(rect);
+            let name = global.display.get_monitor_name(i);
 
-            this.monitors.push(new Monitor(lmon, rect));
+            this.monitors.push(new Monitor(lmon, rect, name));
         }
 
         this.primaryIndex = global.display.get_primary_monitor();
