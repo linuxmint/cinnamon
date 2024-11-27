@@ -876,7 +876,7 @@ class PowerModeComboBox(SettingsWidget):
             self.pack_end(self.content_widget, False, True, 0)
 
             self.content_widget.connect('changed', self.on_my_value_changed)
-            # self.settings.connect("changed::" + self.key, self.on_my_setting_changed)
+            self.proxy.connect('g-signal', self.on_dbus_changed)
             self.on_my_setting_changed()
 
             if size_group:
@@ -890,6 +890,10 @@ class PowerModeComboBox(SettingsWidget):
             profile = self.model[tree_iter][0]
             value = GLib.Variant.new_string(profile)
             self.proxy.Set('(ssv)', POWER_PROFILES_DBUS_NAME, "ActiveProfile", value)
+
+    def on_dbus_changed(self, proxy, sender, signal, params):
+        if signal == "PropertiesChanged":
+            self.on_my_setting_changed()
 
     def on_my_setting_changed(self, *args):
         try:
