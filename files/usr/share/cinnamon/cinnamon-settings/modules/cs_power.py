@@ -207,9 +207,9 @@ class Module:
             self.sth_switch.content_widget.connect("notify::active", self.on_sth_toggled)
             section.add_row(self.sth_switch)
 
-        # Power mode        
+        # Power mode
         section.add_row(PowerModeComboBox())
-        
+
         # Batteries
 
         self.battery_page = SettingsPage()
@@ -844,52 +844,53 @@ class PowerModeComboBox(SettingsWidget):
             "org.freedesktop.DBus.Properties",
             None)
 
-        profiles = []
-        profiles = self.proxy.Get('(ss)', POWER_PROFILES_DBUS_NAME, "Profiles")
-        profiles_options = []
-        for profile in profiles:
-            name = profile["Profile"]
-            label = name
-            if name in POWER_PROFILES.keys():
-                label = POWER_PROFILES[name]
-            profiles_options.append([name, label])
-            
-        
+        try:
+            profiles = []
+            profiles = self.proxy.Get('(ss)', POWER_PROFILES_DBUS_NAME, "Profiles")
+            profiles_options = []
+            for profile in profiles:
+                name = profile["Profile"]
+                label = name
+                if name in POWER_PROFILES.keys():
+                    label = POWER_PROFILES[name]
+                profiles_options.append([name, label])
 
-        self.option_map = {}
+            self.option_map = {}
 
-        self.label = Gtk.Label.new("Power mode")
-        self.model = Gtk.ListStore(str, str)
-        
-        selected = None
-        for option in profiles_options:
-            iter = self.model.insert_before(None, None)
-            self.model.set_value(iter, 0, option[0])
-            self.model.set_value(iter, 1, option[1])
-            self.option_map[option[0]] = iter
+            self.label = Gtk.Label.new("Power mode")
+            self.model = Gtk.ListStore(str, str)
 
-        self.content_widget = Gtk.ComboBox.new_with_model(self.model)
-        renderer_text = Gtk.CellRendererText()
-        self.content_widget.pack_start(renderer_text, True)
-        self.content_widget.add_attribute(renderer_text, "text", 1)
-        # self.content_widget.key = key
+            for option in profiles_options:
+                iter = self.model.insert_before(None, None)
+                self.model.set_value(iter, 0, option[0])
+                self.model.set_value(iter, 1, option[1])
+                self.option_map[option[0]] = iter
 
-        self.pack_start(self.label, False, False, 0)
-        self.pack_end(self.content_widget, False, True, 0)
+            self.content_widget = Gtk.ComboBox.new_with_model(self.model)
+            renderer_text = Gtk.CellRendererText()
+            self.content_widget.pack_start(renderer_text, True)
+            self.content_widget.add_attribute(renderer_text, "text", 1)
+            # self.content_widget.key = key
 
-        self.content_widget.connect('changed', self.on_my_value_changed)
-        # self.settings.connect("changed::" + self.key, self.on_my_setting_changed)
-        self.on_my_setting_changed()
+            self.pack_start(self.label, False, False, 0)
+            self.pack_end(self.content_widget, False, True, 0)
 
-        if size_group:
-            self.add_to_size_group(size_group)
+            self.content_widget.connect('changed', self.on_my_value_changed)
+            # self.settings.connect("changed::" + self.key, self.on_my_setting_changed)
+            self.on_my_setting_changed()
+
+            if size_group:
+                self.add_to_size_group(size_group)
+        except GLib.Error as e:
+            print(f"Power profiles options not available: {e.message}")
 
     def on_my_value_changed(self, widget):
         tree_iter = widget.get_active_iter()
         if tree_iter is not None:
-            value = GLib.Variant(str, self.model[tree_iter][0]) # <--- doesn't work yet..
+            profile = self.model[tree_iter][0]
+            value = GLib.Variant.new_string(profile)
             self.proxy.Set('(ssv)', POWER_PROFILES_DBUS_NAME, "ActiveProfile", value)
-            
+
     def on_my_setting_changed(self, *args):
         try:
             active_profile = self.proxy.Get('(ss)', POWER_PROFILES_DBUS_NAME, "ActiveProfile")
@@ -899,4 +900,3 @@ class PowerModeComboBox(SettingsWidget):
 
     def add_to_size_group(self, group):
         group.add_widget(self.content_widget)
-
