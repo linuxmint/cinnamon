@@ -372,9 +372,6 @@ class NewUserDialog(Gtk.Dialog):
             self.username_entry = Gtk.Entry()
             self.username_entry.connect("changed", self._on_info_changed)
 
-            label = Gtk.Label()
-            label.set_markup(_("The username must consist of only:\n    - lower case letters (a-z)\n    - numerals (0-9)\n    - '.', '-', and '_' characters"))
-
             table = DimmedTable()
             table.add_labels([_("Account Type"), _("Full Name"), _("Username")])
             table.add_controls([self.account_type_combo, self.realname_entry, self.username_entry])
@@ -383,7 +380,6 @@ class NewUserDialog(Gtk.Dialog):
 
             box = self.get_content_area()
             box.add(table)
-            box.add(label)
             self.show_all()
 
             self.add_buttons(_("Cancel"), Gtk.ResponseType.CANCEL, _("Add"), Gtk.ResponseType.OK, )
@@ -405,7 +401,7 @@ class NewUserDialog(Gtk.Dialog):
         fullname = self.realname_entry.get_text()
         username = self.username_entry.get_text()
         valid = True
-        if re.search('[^a-z0-9_.-]', username):
+        if re.search('[^a-z0-9_-]', username):
             self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "dialog-warning-symbolic")
             self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Invalid username"))
             valid = False
