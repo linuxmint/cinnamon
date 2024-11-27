@@ -12,8 +12,6 @@ const Settings = imports.ui.settings;
 
 const BrightnessBusName = "org.cinnamon.SettingsDaemon.Power.Screen";
 const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
-const PowerProfilesBusName = "net.hadess.PowerProfiles";
-const PowerProfilesBusPath = "/net/hadess/PowerProfiles";
 
 const CSD_BACKLIGHT_NOT_SUPPORTED_CODE = 1;
 
@@ -31,17 +29,6 @@ const POWER_PROFILES = {
     "balanced": _("Balanced"),
     "performance": _("Performance")
 };
-
-const PowerProfilesInterface = `<node>
-  <interface name="${PowerProfilesBusName}">
-    <property name="ActiveProfile" type="s" access="readwrite" />
-    <property name="PerformanceDegraded" type="s" access="read" />
-    <property name="Profiles" type="aa{sv}" access="read" />
-    <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
-  </interface>
-</node>`;
-
-const PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(PowerProfilesInterface);
 
 function deviceLevelToString(level) {
     switch (level) {
@@ -402,12 +389,36 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this.menu.addMenuItem(this.keyboard);
 
         try {
-            this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, PowerProfilesBusName, PowerProfilesBusPath);
-        } catch (error) {
-            this._profilesProxy = null;
+            // Hadess interface
+            let PowerProfilesInterface = `<node>
+              <interface name="net.hadess.PowerProfiles">
+                <property name="ActiveProfile" type="s" access="readwrite" />
+                <property name="PerformanceDegraded" type="s" access="read" />
+                <property name="Profiles" type="aa{sv}" access="read" />
+                <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
+              </interface>
+            </node>`;
+            let PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(PowerProfilesInterface);
+            this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, "net.haess.PowerProfiles", "/net/hadess/PowerProfiles");
+            // Upower if hadess doesn't work..
+            if (!this._profilesProxy.Profiles) {
+                // UPower interface
+                let PowerProfilesInterface = `<node>
+                  <interface name="org.freedesktop.UPower.PowerProfiles">
+                    <property name="ActiveProfile" type="s" access="readwrite" />
+                    <property name="PerformanceDegraded" type="s" access="read" />
+                    <property name="Profiles" type="aa{sv}" access="read" />
+                    <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
+                  </interface>
+                </node>`;
+                let PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(PowerProfilesInterface);
+                this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, "org.freedesktop.UPower.PowerProfiles", "/org/freedesktop/UPower/PowerProfiles");
+            }
+        } catch {
+           this._profilesProxy = null;
         }
-
-        if (this._profilesProxy.Profiles) {
+        
+        if (this._profilesProxy && this._profilesProxy.Profiles) {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.contentSection = new PopupMenu.PopupMenuSection();
 

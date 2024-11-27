@@ -51,9 +51,6 @@ POWER_PROFILES = {
     "performance": _("Performance")
 }
 
-POWER_PROFILES_DBUS_NAME = "net.hadess.PowerProfiles"
-POWER_PROFILES_DBUS_PATH = "/net/hadess/PowerProfiles"
-
 (UP_ID, UP_VENDOR, UP_MODEL, UP_TYPE, UP_ICON, UP_PERCENTAGE, UP_STATE, UP_BATTERY_LEVEL, UP_SECONDS) = range(9)
 
 try:
@@ -208,7 +205,22 @@ class Module:
             section.add_row(self.sth_switch)
 
         # Power mode
-        section.add_row(PowerModeComboBox())
+        connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+        proxy = None
+        profiles = None
+        for dbus_name in ["net.hadess.PowerProfiles", "org.freedesktop.UPower.PowerProfiles"]:
+            try:
+                dbus_path = "/" + dbus_name.replace(".", "/")
+                proxy = Gio.DBusProxy.new_sync(connection, Gio.DBusProxyFlags.NONE, None,
+                            dbus_name, dbus_path, "org.freedesktop.DBus.Properties", None)
+                profiles = proxy.Get('(ss)', dbus_name, "Profiles")
+                print(f"Found power profiles on Dbus at {dbus_name}")
+                break
+            except:
+                pass
+
+        if profiles:
+            section.add_row(PowerModeComboBox(proxy, dbus_name, profiles))
 
         # Batteries
 
@@ -831,22 +843,13 @@ class GSettings2ComboBox(SettingsWidget):
 
 
 class PowerModeComboBox(SettingsWidget):
-    def __init__(self, dep_key=None, size_group=None):
+    def __init__(self, proxy, dbus_name, profiles, dep_key=None, size_group=None):
         super(PowerModeComboBox, self).__init__(dep_key=dep_key)
 
-        connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
-        self.proxy = Gio.DBusProxy.new_sync(
-            connection,
-            Gio.DBusProxyFlags.NONE,
-            None,
-            POWER_PROFILES_DBUS_NAME,
-            POWER_PROFILES_DBUS_PATH,
-            "org.freedesktop.DBus.Properties",
-            None)
-
-        try:
-            profiles = []
-            profiles = self.proxy.Get('(ss)', POWER_PROFILES_DBUS_NAME, "Profiles")
+        self.proxy = proxy
+        self.dbus_name = dbus_name
+        
+        try:            
             profiles_options = []
             for profile in profiles:
                 name = profile["Profile"]
@@ -888,7 +891,7 @@ class PowerModeComboBox(SettingsWidget):
         if tree_iter is not None:
             profile = self.model[tree_iter][0]
             value = GLib.Variant.new_string(profile)
-            self.proxy.Set('(ssv)', POWER_PROFILES_DBUS_NAME, "ActiveProfile", value)
+            self.proxy.Set('(ssv)', self.dbus_name, "ActiveProfile", value)
 
     def on_dbus_changed(self, proxy, sender, signal, params):
         if signal == "PropertiesChanged":
@@ -896,9 +899,10 @@ class PowerModeComboBox(SettingsWidget):
 
     def on_my_setting_changed(self):
         try:
-            active_profile = self.proxy.Get('(ss)', POWER_PROFILES_DBUS_NAME, "ActiveProfile")
+            active_profile = self.proxy.Get('(ss)', self.dbus_name, "ActiveProfile")
             self.content_widget.set_active_iter(self.option_map[active_profile])
-        except:
+        except Exception as e:
+            print(e)
             self.content_widget.set_active_iter(None)
 
     def add_to_size_group(self, group):
