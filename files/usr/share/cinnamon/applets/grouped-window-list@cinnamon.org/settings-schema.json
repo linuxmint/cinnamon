@@ -133,10 +133,10 @@
   "window-display-settings": {
     "type": "combobox",
     "default": 1,
-    "description": "Window display mode",
+    "description": "Show windows from other monitors",
     "options": {
-      "Track windows individually per monitor": 1,
-      "Always track windows from all monitors": 2
+      "Only from monitors without a window list": 1,
+      "From all monitors": 2
     }
   },
   "cycleMenusHotkey": {
