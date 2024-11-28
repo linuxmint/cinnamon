@@ -2672,7 +2672,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         //Shutdown button
         button = new SystemButton(this, "system-shutdown",
-                                  _("Quit"),
+                                  _("Shut Down"),
                                   _("Shut down the computer"));
 
         button.activate = () => {
