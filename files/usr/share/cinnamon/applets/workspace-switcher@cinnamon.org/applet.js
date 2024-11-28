@@ -143,12 +143,14 @@ class SimpleButton extends WorkspaceButton {
 
 
 class WindowGraph {
-    constructor(workspaceGraph, metaWindow, tracker, showIcon, iconSize) {
+    constructor(workspaceGraph, metaWindow, tracker, iconEnabled, iconSize) {
         this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
         this.tracker = tracker;
-        this.showIcon = showIcon;
+        this.iconEnabled = iconEnabled;
         this.iconSize = iconSize;
+        this.iconScaledSize = iconSize * global.ui_scale;
+        this.halvedIconScaledSize = this.iconScaledSize * 0.5;
 
         this.drawingArea = new St.DrawingArea({
             style_class: 'windows',
@@ -159,13 +161,8 @@ class WindowGraph {
 
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
-        this._icon = undefined;
-        if (this.showIcon) {
-            const rect = this.intersectionRect();
-            const [x, y] = this.calcIconPos(rect);
-            this.icon.set_x(x);
-            this.icon.set_y(y);
-        }
+        this._icon = null;
+        this.positionIconOnGraph(this.intersectionRect());
     }
 
     get icon() {
@@ -175,9 +172,24 @@ class WindowGraph {
     }
 
     calcIconPos(rect) {
-        const x = Math.round(rect.x + rect.width / 2 - this.iconSize * global.ui_scale / 2);
-        const y = Math.round(rect.y + rect.height / 2 - this.iconSize * global.ui_scale / 2);
+        const x = Math.round(rect.x + rect.width / 2 - this.halvedIconScaledSize);
+        const y = Math.round(rect.y + rect.height / 2 - this.halvedIconScaledSize);
         return [x, y];
+    }
+
+    positionIconOnGraph(rect) {
+        if (this.iconEnabled) {
+            const [x, y] = this.calcIconPos(rect);
+
+            this.icon.set_x(x);
+            this.icon.set_y(y);
+
+            if (rect.width < this.iconScaledSize || rect.height < this.iconScaledSize) {
+                this.icon.hide();
+            } else {
+                this.icon.show();
+            }
+        }
     }
 
     /**
@@ -237,11 +249,7 @@ class WindowGraph {
         cr.fill();
         cr.$dispose();
 
-        if (this.showIcon) {
-            const [x, y] = this.calcIconPos(rect);
-            this.icon.set_x(x);
-            this.icon.set_y(y);
-        }
+        this.positionIconOnGraph(rect);
     }
 
     getWinThemeColors() {
@@ -282,13 +290,13 @@ class WindowGraph {
     }
 
     destroy() {
-        if (this.showIcon && this._icon) {
+        if (this.iconEnabled && this._icon) {
             this._icon.destroy();
-            this._icon = undefined;
+            this._icon = null;
         }
 
         this.drawingArea.destroy();
-        this.drawingArea = undefined;
+        this.drawingArea = null;
     }
 
     update(options = {}) {
@@ -297,7 +305,8 @@ class WindowGraph {
 
     show() {
         this.workspaceGraph.graphArea.add_child(this.drawingArea);
-        if (this.showIcon) {
+
+        if (this.iconEnabled) {
             this.workspaceGraph.graphArea.add_child(this.icon);
         }
     }
@@ -321,7 +330,7 @@ class WorkspaceGraph extends WorkspaceButton {
         this.graphArea.set_size(1, 1);
         this.graphArea.connect('repaint', this.onRepaint.bind(this));
 
-        this.focusGraph = undefined;
+        this.focusGraph = null;
         this.windowsGraphs = [];
 
         this.height = 1;
@@ -390,19 +399,17 @@ class WorkspaceGraph extends WorkspaceButton {
 
         this.graphArea.remove_all_children();
 
-        if (this.windowsGraphs) {
-            this.windowsGraphs.forEach(e => e.destroy());
-        }
+        if (this.windowsGraphs) this.windowsGraphs.forEach(e => e.destroy());
 
         this.windowsGraphs = [];
 
-        const showIcon = this.applet.show_window_icons;
+        const iconEnabled = this.applet.show_window_icons;
         const iconSize = this.applet.window_icon_size;
         const tracker = Cinnamon.WindowTracker.get_default();
 
-        this.focusGraph = undefined;
+        this.focusGraph = null;
         for (const window of windows) {
-            const graph = new WindowGraph(this, window, tracker, showIcon, iconSize);
+            const graph = new WindowGraph(this, window, tracker, iconEnabled, iconSize);
 
             this.windowsGraphs.push(graph);
 
@@ -421,9 +428,9 @@ class WorkspaceGraph extends WorkspaceButton {
     }
 
     update(options = {}) {
-        const stateChanged = options.stateChanged;
+        const state = options.state;
 
-        if ((stateChanged == "position-changed" || stateChanged == "size-changed") &&
+        if ((state == "position-changed" || state == "size-changed") &&
             this.focusGraph && this.focusGraph.metaWindow.has_focus()
         ) {
             this.focusGraph.update(options);
@@ -440,7 +447,7 @@ class WorkspaceGraph extends WorkspaceButton {
     }
 
     destroy() {
-        this.focusGraph = undefined;
+        this.focusGraph = null;
         this.windowsGraphs.forEach(e => e.destroy());
         this.windowsGraphs = [];
         super.destroy();
@@ -626,9 +633,9 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this._onWindowsStateChanged("focus-changed");
     }
 
-    _onWindowsStateChanged(stateChanged) {
+    _onWindowsStateChanged(state) {
         let button = this.buttons[global.workspace_manager.get_active_workspace_index()];
-        button.update({stateChanged: stateChanged});
+        button.update({ state: state });
     }
 
     on_applet_removed_from_panel() {

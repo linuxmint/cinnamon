@@ -11,9 +11,10 @@
     },
     "show-window-icons": {
         "type": "switch",
+        "default": false,
         "dependency": "display-type=visual",
         "description": "Display window icons",
-        "default": false
+        "tooltip": "Show the window icon at the center of it's respective window graph if there's enough space for it."
     },
     "window-icon-size": {
         "type": "spinbutton",
