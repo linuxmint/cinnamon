@@ -8,11 +8,11 @@ COLOR_SCHEMA = "org.cinnamon.settings-daemon.plugins.color"
 
 class Module:
     name = "nightlight"
-    comment = _("Night Light preferences")
+    comment = _("Reduce exposure to blue light")
     category = "prefs"
 
     def __init__(self, content_box):
-        keywords = _("redshift, color, blue, filter, temperature")
+        keywords = _("redshift, color, blue, light, filter, temperature")
         sidePage = SidePage(_("Night Light"), "cs-nightlight", keywords, content_box, module=self)
         self.sidePage = sidePage
 
@@ -24,7 +24,9 @@ class Module:
             self.sidePage.add_widget(page)
             section = page.add_section()
 
-            section.add_row(GSettingsSwitch(_("Enable night light"), COLOR_SCHEMA, "night-light-enabled"))
+            switch = GSettingsSwitch(_("Enable night light"), COLOR_SCHEMA, "night-light-enabled")
+            switch.set_tooltip_text(_("This feature makes the screen color warmer in the evening and during the night. By reducing blue light, it can prevent eye strain, headaches and improve sleep quality."))
+            section.add_row(switch)
 
             range_css = """
 @define-color ORANGE_100 #ffc27d;
