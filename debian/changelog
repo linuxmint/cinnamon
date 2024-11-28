@@ -1,3 +1,201 @@
+cinnamon (6.4.0) xia; urgency=medium
+
+  [ Michael Webster ]
+  * cs_themes: Don't mess with the stack switcher's sensitivity.
+
+  [ Anaxímeno Brito ]
+  * cs_themes: Enable stack switcher when navingating out the theme modules (#12300)
+
+  [ Michael Webster ]
+  * Revert "cs_themes: Don't mess with the stack switcher's sensitivity."
+  * Spices.py: Catch and ignore actions with missing Name fields.
+
+  [ JosephMcc ]
+  * environment.js: Add some convenience LayoutManager monkey patching (#12394)
+  * Replace the default Cinnamon theme
+  * st-entry: Keep the hint text visible until the user starts typing
+  * Redesign cinnamon modal dialogs
+  * st-widget: Set widgets :insensitive when they are not reactive
+  * theme: Fix applet icons sometimes appearing oversized
+  * theme: Add support panel:highlight
+  * theme: Clean up some start menu styling
+  * theme: Add support for colored buttons in dialogs
+  * theme: Update the calendar applet styling
+  * theme: Update the switch styling to match the new background color
+  * theme: Fix the styling of the power applet menu
+  * network-applet: clean up some insensitive styling
+  * theme: Remove the leftover image files from the old theme
+  * theme: Fix padding on the panel launchers applet
+  * theme: Replace the thumbnail with updated theme style
+  * theme: Reduce horizontal padding on notification buttons
+  * modalDialog.js: Use an unlinked button style
+  * Alt-tab: Remove the down arrow from the swithcer layout
+  * theme: Clean up the osd window styling a bit
+  * theme: Better differentiate between current and selected day in calendar
+  * theme: Increase spacing in the main start menu
+  * theme: Use the proper style class names for the dialog buttons
+  * theme: Use a margin around the menus
+  * theme: Update the thumbnail
+  * layout.js: Add a monitorConstraint object
+  * Redesign the workspace swithc OSD
+  * Redesign the media keys OSD
+
+  [ Michael Webster ]
+  * spice updater (python module) - Improve error reporting.
+  * spices updater: Remove debugging string from previous commit...
+
+  [ JosephMcc ]
+  * workspaceOsd.js: destroy and recreate the label on each display
+  * OSD Windows: Use the monitor work-area to place windows on screen
+
+  [ Michael Webster ]
+  * power applet: Don't check for a backlight step before establishing that a keyboard or monitor supports adjustment.
+
+  [ JosephMcc ]
+  * Convert the force quit dialog to a cinnamon dialog (#12408)
+
+  [ Clement Lefebvre ]
+  * closeDialog: Fix msgids
+
+  [ Rick Calixte ]
+  * docs: Remove recorder.xml.in (#12395)
+
+  [ Clement Lefebvre ]
+  * Adapt to new overamplification setting
+
+  [ JosephMcc ]
+  * windowManger: Make the display change dialog a clutter dialog
+  * modalDialog: use the MonitorConstraint object to properly place dialogs
+
+  [ Clement Lefebvre ]
+  * l10n: Update msgids in new clutter dialog
+
+  [ JosephMcc ]
+  * Convert the keyring unlock dialog to a clutter dialog (#12452)
+
+  [ Rick Calixte ]
+  * Cinnamon Settings .desktop translations (#12299)
+
+  [ jarierca ]
+  * Grouped window list: Add option to only list windows from the current monitor (#12225)
+
+  [ Matt Turnbull ]
+  * Optionally install wayland session files (#12273)
+
+  [ Justin ]
+  * added support for using numpad arrows to navigate the menu (#12302)
+
+  [ Anaxímeno Brito ]
+  * deskletManager: Only display placeholder for desklets (#12366)
+
+  [ Rick Calixte ]
+  * cs_keyboard.py: Skip invalid bindings (#12396)
+
+  [ Willow ]
+  * Update cs_panel.py (#12399)
+
+  [ JosephMcc ]
+  * Add a new StPasswordEntry widget
+  * keyringPrompt: Use the StPasswordEntry
+  * polkitAuthenticationDialog: Use the new StPasswordEntry
+  * Convert the network auth dialog to a clutter dialog
+
+  [ Clement Lefebvre ]
+  * networkAgent.js: Fix plugin property lookup
+
+  [ JosephMcc ]
+  * windowManager: Give the resize popup it's own style class (#12450)
+  * environment: Use cjs smart GObject GTypeName computation (#12453)
+
+  [ Clement Lefebvre ]
+  * networkAgent.js: Make the WPS message smaller
+
+  [ JosephMcc ]
+  * Add a clutter audio device selection dialog (#12461)
+
+  [ Michael Webster ]
+  * cs_display: Add a tab in Display settings to configure the night light.
+
+  [ Timothy Feierabend ]
+  * play volume change sound after dragging slider
+
+  [ Ben McCann ]
+  * sound applet: player icon should not take priority over mute icon
+
+  [ JosephMcc ]
+  * inhibit applet: Pass a string to showOSD when using hotkeys (#12409)
+  * popupMenu.js: Simplify the menu animation (#12405)
+  * layout.js: Consider auto hide panels in MonitorConstraint work area (#12422)
+
+  [ Luci Chappelle ]
+  * Update README.rst (#12474)
+
+  [ Clement Lefebvre ]
+  * popupMenu: Fix menu orientation
+  * theme: Specify fg_color on new dialogs
+  * theme: Specify fg_color in OSDs as well
+  * alt-tab: Rework minimized windows
+
+  [ hduelme ]
+  * make notification states immutable (#12260)
+
+  [ Garrett Stevens ]
+  * [power@cinnamon.org] Add support for more battery device labels and icons (#12262)
+
+  [ Matt Turnbull ]
+  * Simplify 64bit path handling. More than x86_64 uses /usr/lib64 (i.e. arm64/aarch64). (#12278)
+
+  [ Clement Lefebvre ]
+  * cs_sound: Fix HiDPI for sound device icons
+
+  [ fredcw ]
+  * grouped-window-list@cinnamon.org: Improve code readability (#12338)
+
+  [ jknockel ]
+  * network applet: fixes to # of visible networks (#12417)
+
+  [ fredcw ]
+  * GWL: Fix merge conflict (#12521)
+
+  [ Josh Ellithorpe ]
+  * cs_backgrounds: Fix previews for JXL files (#12479)
+
+  [ Rick Calixte ]
+  * messageTray.js and cs_notifications.py: Add an option for showing notifications in fullscreen (#11844)
+  * power@cinnamon.org: Add support for freedesktop.org PowerProfiles DBus (#12507)
+
+  [ Clement Lefebvre ]
+  * cinnamon-settings-users: Forbid . characters in username
+
+  [ Ross Brunton ]
+  * Respect `$GTK2_RC_FILES` when writing themes (#12416)
+
+  [ Michael Webster ]
+  * Add a clutter end-session dialog. (#12519)
+
+  [ Anaxímeno Brito ]
+  * panel.js: Only pick reactive actors while verifying the target actor on button press (#12403)
+
+  [ Attila Greguss ]
+  * Always show panel if a menu is open on it (#11779)
+
+  [ Clement Lefebvre ]
+  * cinnamon-launcher: Run nm-applet during fallback session
+
+  [ Rick Calixte ]
+  * cs_power: Add Power Profile options to the power module (#12523)
+
+  [ Clement Lefebvre ]
+  * nightlight: Add more info, tooltip, keywords
+  * gwl: Rephrase newly added option
+  * menu: Rename log out option, capitalize lock screen
+  * menu: Rename Quit to Shut Down
+  * endSessionDialog: Fix some msgids
+  * cs_notifications: Remove "experimental"
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 28 Nov 2024 11:40:48 +0000
+
 cinnamon (6.2.9) wilma; urgency=medium
 
   [ Michael Webster ]
