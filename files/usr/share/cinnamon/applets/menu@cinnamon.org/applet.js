@@ -2635,7 +2635,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         //Lock screen
         button = new SystemButton(this, "system-lock-screen",
-                                  _("Lock screen"),
+                                  _("Lock Screen"),
                                   _("Lock the screen"));
 
         button.activate = () => {
@@ -2660,7 +2660,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         //Logout button
         button = new SystemButton(this, "system-log-out",
-                                  _("Logout"),
+                                  _("Log Out"),
                                   _("Leave the session"));
 
         button.activate = () => {
