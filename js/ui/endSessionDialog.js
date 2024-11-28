@@ -146,7 +146,7 @@ var EndSessionDialog = class {
                 });
 
                 content = new Dialog.MessageDialogContent({
-                    title: _("Log out of this system now?")
+                    title: _("Log Out?")
                 });
 
                 break;
@@ -183,7 +183,7 @@ var EndSessionDialog = class {
                 }
 
                 content = new Dialog.MessageDialogContent({
-                    title: _("Shut down this system now?")
+                    title: _("Shut Down?")
                 });
 
                 break;
@@ -206,7 +206,7 @@ var EndSessionDialog = class {
                 });
 
                 content = new Dialog.MessageDialogContent({
-                    title: _("Restart this system now?")
+                    title: _("Restart?")
                 });
 
                 break
@@ -266,20 +266,20 @@ var EndSessionDialog = class {
         switch(this._mode) {
             case DialogMode.LOGOUT:
                 text = ngettext(
-                    "You will be automatically logged out in %d second.",
+                    "You will be logged out in %d second.",
                     "You will be logged out in %d seconds.",
                     this._current_time).format(this._current_time);
                 break;
             case DialogMode.SHUTDOWN:
                 text = ngettext(
-                    "This system will be automatically shut down in %d second.",
-                    "This system will be shut down in %d seconds.",
+                    "The computer will shut down in %d second.",
+                    "The computer will shut down in %d seconds.",
                     this._current_time).format(this._current_time);
                 break;
             case DialogMode.REBOOT:
                 text = ngettext(
-                    "This system will be automatically restarted in %d second.",
-                    "This system will be restarted in %d seconds.",
+                    "The computer will restart in %d second.",
+                    "The computer will restart in %d seconds.",
                     this._current_time).format(this._current_time);
                 break;
         }
@@ -299,7 +299,7 @@ var EndSessionDialog = class {
 
         const content = new Dialog.MessageDialogContent({
             title: _("Some programs are still running"),
-            description: _("Waiting for programs to finish.  Interrupting these programs may cause you to lose work.")
+            description: _("Waiting for programs to finish. Interrupting these programs may cause you to lose work.")
         });
         this._dialog.contentLayout.add_child(content);
 
