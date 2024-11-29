@@ -27,47 +27,50 @@
   }
 }
 
-// endSessionDialog.js
+// Lists in dialogs
+
+.dialog-list {
+  spacing: $base_padding * 3;
+
+  .dialog-list-title {
+    @extend %heading;
+    text-align: center;
+  }
+
+  .dialog-list-scrollview { max-height: 200px; }
+  .dialog-list-box {
+    spacing: 1em;
+
+    .dialog-list-item {
+      spacing: 1em;
+
+      .dialog-list-item-title { font-weight: bold; }
+      .dialog-list-item-description {
+        @extend %caption;
+        color: darken($fg_color, 5%);
+      }
+    }
+  }
+}
+
+// End session dialog
+
 .end-session-dialog {
-    width: 40em;
-    transition-duration: 100ms;
+  width: 40em;
 
-    .dialog-content-box {
-        spacing: $base_margin * 3;
-        width: 30em;
+  .dialog-content-box { spacing: 0; }
+
+  .dialog-list {
+    spacing: 0;
+
+    .dialog-list-title {
+      color: $warning_color;
+      background-color: tranparentize($warning_color, 0.9);
+      padding: $base_padding * 1.5;
+      border-radius: $base_border_radius;
+      margin: $base_margin 0;
     }
-
-    .end-session-dialog-inhibitor-list-frame {
-        background-color: $light_bg_color;
-        border-radius: $base_border_radius;
-        border: 1px solid $borders_color;
-        padding-left: 5px;
-        padding-right: 5px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-    }
-
-    .end-session-dialog-inhibitor-list {
-        spacing-rows: 5px;
-        spacing-columns: 20px;
-        padding: 2px;
-    }
-
-    .end-session-dialog-inhibitor-list-reason {
-        width: 25em;
-    }
-
-    .end-session-dialog-progress-bar {
-        min-width: 160px;
-        -barlevel-height: 6px;
-        -barlevel-background-color: $base_color;
-        -barlevel-active-background-color: $fg_color;
-        -barlevel-amplify-color: $warning_color;
-        -barlevel-amplify-separator-width: $base_padding * 0.5;
-
-        &:ltr { margin-right: $base_padding; }
-        &:rtl { margin-left: $base_padding; }
-    }
+  }
 }
 
 // message dialog
