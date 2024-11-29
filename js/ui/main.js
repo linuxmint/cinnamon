@@ -195,7 +195,7 @@ var popup_rendering_actor = null;
 
 var xlet_startup_error = false;
 
-var end_session_dialog = null;
+var endSessionDialog = null;
 
 var gpuOffloadHelper = null;
 var gpu_offload_supported = false;
@@ -1583,20 +1583,21 @@ function restartCinnamon(showOsd = false) {
     global.reexec_self();
 }
 
-function show_end_session_dialog(mode) {
-    if (end_session_dialog != null) {
+function showEndSessionDialog(mode) {
+    if (endSessionDialog != null) {
         global.logWarning("End session dialog already exists");
         return;
     }
 
-    end_session_dialog = new EndSessionDialog(mode);
+    endSessionDialog = new EndSessionDialog(mode);
+    endSessionDialog.open();
 }
 
-function close_end_session_dialog() {
-    if (end_session_dialog == null) {
+function closeEndSessionDialog() {
+    if (endSessionDialog == null) {
         return;
     }
 
-    end_session_dialog.destroy();
-    end_session_dialog = null;
+    endSessionDialog.close();
+    endSessionDialog = null;
 }
