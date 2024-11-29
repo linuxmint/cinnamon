@@ -394,7 +394,8 @@ class ConfirmDialog extends ModalDialog {
         this.setButtons([
             {
                 label: _("No"),
-                action: this.destroy.bind(this)
+                action: this.destroy.bind(this),
+                key: Clutter.KEY_Escape,
             },
             {
                 label: _("Yes"),
