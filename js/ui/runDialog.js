@@ -147,7 +147,10 @@ function completeCommand(text) {
 var RunDialog = GObject.registerClass(
 class RunDialog extends ModalDialog.ModalDialog {
     _init() {
-        super._init({ styleClass: 'run-dialog'});
+        super._init({
+            styleClass: 'run-dialog',
+            destroyOnClose: false,
+        });
 
         this._lockdownSettings = new Gio.Settings({ schema_id: LOCKDOWN_SCHEMA });
         this._terminalSettings = new Gio.Settings({ schema_id: TERMINAL_SCHEMA });

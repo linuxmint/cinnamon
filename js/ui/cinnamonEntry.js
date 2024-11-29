@@ -187,7 +187,7 @@ class CapsLockWarning extends St.Label {
                     () => this._sync(true));
             } else {
                 this._keymap.disconnect(this._stateChangedId);
-                this.stateChangedId = 0;
+                this._stateChangedId = 0;
             }
 
             this._sync(false);
