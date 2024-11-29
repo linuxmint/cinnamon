@@ -51,11 +51,12 @@ var State = {
  */
 var ModalDialog = GObject.registerClass({
     Properties: {
-        'state': GObject.ParamSpec.int('state', 'Dialog state', 'state',
-                                       GObject.ParamFlags.READABLE,
-                                       Math.min(...Object.values(State)),
-                                       Math.max(...Object.values(State)),
-                                       State.CLOSED)
+        'state': GObject.ParamSpec.int(
+            'state', 'Dialog state', 'state',
+            GObject.ParamFlags.READABLE,
+            Math.min(...Object.values(State)),
+            Math.max(...Object.values(State)),
+            State.CLOSED)
     },
     Signals: { 'opened': {}, 'closed': {} }
 }, class ModalDialog extends St.Widget {
@@ -74,12 +75,16 @@ var ModalDialog = GObject.registerClass({
             accessible_role: Atk.Role.DIALOG,
         });
 
-        params = Params.parse(params, { cinnamonReactive: false,
-                                        styleClass: null });
+        params = Params.parse(params, {
+            cinnamonReactive: false,
+            styleClass: null,
+            destroyOnClose: true,
+        });
 
         this._state = State.CLOSED;
         this._hasModal = false;
         this._cinnamonReactive = params.cinnamonReactive;
+        this._destroyOnClose = params.destroyOnClose;
 
         Main.uiGroup.add_actor(this);
 
@@ -255,6 +260,9 @@ var ModalDialog = GObject.registerClass({
                 this._setState(State.CLOSED);
                 this.hide();
                 this.emit('closed');
+
+                if (this._destroyOnClose)
+                    this.destroy();
             }
         });
     }
