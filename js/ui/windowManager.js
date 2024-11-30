@@ -86,9 +86,9 @@ class DisplayChangeDialog extends ModalDialog.ModalDialog {
         this._cancelButton = this.addButton({ label: _("Revert"),
                                               action: this._onFailure.bind(this),
                                               key: Clutter.KEY_Escape });
+        this._cancelButton.grab_key_focus();
         this._okButton = this.addButton({ label: _("Keep changes"),
-                                          action: this._onSuccess.bind(this),
-                                          default: true });
+                                          action: this._onSuccess.bind(this) });
 
         this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, ONE_SECOND, this._tick.bind(this));
         GLib.Source.set_name_by_id(this._timeoutId, '[cinnamon] this._tick');
