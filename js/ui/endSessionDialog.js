@@ -120,6 +120,7 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
 
         var [canSwitchUser, canStop, canRestart, canHybridSleep, canSuspend, canHibernate, canLogout] = result[0];
         var content = null;
+        let button;
 
         switch(this._mode) {
             case DialogMode.LOGOUT:
@@ -133,12 +134,13 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
                 }
 
                 this._defaultAction = this._dialogProxy.LogoutRemote.bind(this._dialogProxy);
-                this.addButton({
+                button = this.addButton({
                     label: _("Log Out"),
                     action: this._defaultAction,
                     destructive_action: true,
                     default: true
                 });
+                button.grab_key_focus();
 
                 this._messageDialogContent.title = _("Log Out");
 
@@ -172,12 +174,13 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
 
                 if (canStop) {
                     this._defaultAction = this._dialogProxy.ShutdownRemote.bind(this._dialogProxy);
-                    this.addButton({
+                    button = this.addButton({
                         label: _("Shut Down"),
                         action: this._defaultAction,
                         destructive_action: true,
                         default: true,
                     });
+                    button.grab_key_focus();
                 }
 
                 this._messageDialogContent.title = _("Shut Down");
@@ -194,12 +197,13 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
                 }
 
                 this._defaultAction = this._dialogProxy.RestartRemote.bind(this._dialogProxy);
-                this.addButton({
+                button = this.addButton({
                     label: _("Restart"),
                     action: this._defaultAction,
                     destructive_action: true,
                     default: true
                 });
+                button.grab_key_focus();
 
                 this._messageDialogContent.title = _("Restart");
 
@@ -297,12 +301,13 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
 
         this._addCancel();
 
-        this.addButton({
+        let button = this.addButton({
             label: _("Ignore and continue"),
             action: this._dialogProxy.IgnoreInhibitorsRemote.bind(this._dialogProxy),
             destructive_action: true,
             default: true
         });
+        button.grab_key_focus();
     }
 
     close() {
