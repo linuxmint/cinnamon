@@ -126,8 +126,13 @@ StScrollBar {
 // user avatar
 
 .user-icon {
+  background-size: contain;
+  border-radius: 99px;
   color: $fg_color;
-  border: none;
+  border-color: transparent;
+  background-color: transparentize($fg_color, 0.95);
+
+  & StIcon { padding: $base_padding * 2; }
 
   &.user-avatar {
     border: 1px solid transparentize($fg_color, 0.5);

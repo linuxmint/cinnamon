@@ -34,13 +34,66 @@ const Polkit = imports.gi.Polkit;
 const PolkitAgent = imports.gi.PolkitAgent;
 
 const Dialog = imports.ui.dialog;
+const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const CinnamonEntry = imports.ui.cinnamonEntry;
+const PopupMenu = imports.ui.popupMenu;
 const UserWidget = imports.ui.userWidget;
 const Util = imports.misc.util;
 
 const DIALOG_ICON_SIZE = 64;
 const DELAYED_RESET_TIMEOUT = 200;
+
+var AdminUser = class {
+    constructor(user) {
+        this._user = user;
+        this._userName = null;
+        this._realName = null;
+        this._avatar = null;
+
+        this._avatar = new UserWidget.Avatar(this._user, {
+            iconSize: DIALOG_ICON_SIZE,
+        });
+        this._avatar.x_align = Clutter.ActorAlign.CENTER;
+        this._avatar.visible = false;
+
+        this._userLoadedId = this._user.connect('notify::is-loaded',
+            this._onUserChanged.bind(this));
+        this._userChangedId = this._user.connect('changed',
+            this._onUserChanged.bind(this));
+        this._onUserChanged();
+    }
+
+    get avatar() {
+        return this._avatar;
+    }
+
+    get realName() {
+        return this._realName;
+    }
+
+    get userName() {
+        return this._userName;
+    }
+
+    _onUserChanged() {
+        if (!this._user.is_loaded)
+            return;
+
+        this._userName = this._user.get_user_name();
+        this._realName = this._user.get_real_name();
+
+        this._avatar.update();
+    }
+
+    destroy() {
+        if (this._user) {
+            this._user.disconnect(this._userLoadedId);
+            this._user.disconnect(this._userChangedId);
+            this._user = null;
+        }
+    }
+};
 
 var AuthenticationDialog = GObject.registerClass({
     Signals: { 'done': { param_types: [GObject.TYPE_BOOLEAN] } }
@@ -49,9 +102,13 @@ var AuthenticationDialog = GObject.registerClass({
         super._init({ styleClass: 'prompt-dialog' });
 
         this.actionId = actionId;
+        this._cookie = cookie;
         this.message = description;
         this.userNames = userNames;
         this._wasDismissed = false;
+        this._user = null;
+        this._visibleAvatar = null;
+        this._adminUsers = [];
 
         this.connect('closed', this._onDialogClosed.bind(this));
 
@@ -62,19 +119,8 @@ var AuthenticationDialog = GObject.registerClass({
 
         let bodyContent = new Dialog.MessageDialogContent();
 
-        if (userNames.length > 1) {
-            log('polkitAuthenticationAgent: Received ' + userNames.length +
-                ' identities that can be used for authentication. Only ' +
-                'considering the first one.');
-        }
-
-        let userName = GLib.get_user_name();
-        if (!userNames.includes(userName))
-            userName = 'root';
-        if (!userNames.includes(userName))
-            userName = userNames[0];
-
-        this._user = AccountsService.UserManager.get_default().get_user(userName);
+        this._accountsService = AccountsService.UserManager.get_default();
+        this._accountsService.list_users();
 
         let userBox = new St.BoxLayout({
             style_class: 'polkit-dialog-user-layout',
@@ -83,22 +129,59 @@ var AuthenticationDialog = GObject.registerClass({
         });
         bodyContent.add_child(userBox);
 
-        this._userAvatar = new UserWidget.Avatar(this._user, {
-            iconSize: DIALOG_ICON_SIZE,
+        this._userCombo = new St.Button({
+            style_class: 'polkit-dialog-user-combo',
         });
-        this._userAvatar.x_align = Clutter.ActorAlign.CENTER;
-        userBox.add(this._userAvatar, { x_fill: false });
+        this._userCombo.connect('clicked', this._onUserComboClicked.bind(this));
 
-        this._userLabel = new St.Label({
-            style_class: userName === 'root'
-                ? 'polkit-dialog-user-root-label'
-                : 'polkit-dialog-user-label',
+        const menuManager = new PopupMenu.PopupMenuManager({ actor: this._userCombo });
+        this._menu = new PopupMenu.PopupMenu(this._userCombo, St.Side.TOP);
+        Main.uiGroup.add_actor(this._menu.actor);
+        this._menu.actor.hide();
+        menuManager.addMenu(this._menu);
+
+        // Collect all available users and populate the menu
+        for (const name of userNames) {
+            let adminUser = new AdminUser(this._accountsService.get_user(name));
+            this._adminUsers.push(adminUser);
+
+            userBox.add(adminUser.avatar, { x_fill: false });
+
+            if (adminUser.realName !== null) {
+                const realName = adminUser.realName;
+                const userName = adminUser.userName;
+                const item = new PopupMenu.PopupMenuItem(`${realName} (${userName})`);
+                item.connect('activate', () => {
+                    this._user = adminUser;
+                    this._updateUser();
+                    this._wasDismissed = true;
+                    this.performAuthentication();
+                });
+                this._menu.addMenuItem(item);
+            }
+        }
+
+        // If the current user is an admin, set the current user
+        let userFound = false;
+        const currentUser = GLib.get_user_name();
+        this._adminUsers.forEach(user => {
+            if (user.userName === currentUser) {
+                this._user = user;
+                this._updateUser();
+                userFound = true;
+            }
         });
 
-        if (userName === 'root')
-            this._userLabel.text = _('Administrator');
+        // If the current user is not an admin, set the first user
+        // as the active one. If there is more than a single user,
+        // show the combo
+        if (!userFound) {
+            this._user = this._adminUsers[0];
+            this._updateUser();
+            this._userCombo.reactive = userNames.length > 1;
+        }
 
-        userBox.add_child(this._userLabel);
+        userBox.add(this._userCombo, { x_fill: false });
 
         let passwordBox = new St.BoxLayout({
             style_class: 'prompt-dialog-password-layout',
@@ -161,7 +244,7 @@ var AuthenticationDialog = GObject.registerClass({
         this._cancelButton = this.addButton({
             label: _("Cancel"),
             action: this.cancel.bind(this),
-            key: Clutter.Escape
+            key: Clutter.KEY_Escape
         });
         this._okButton = this.addButton({
             label:  _("Authenticate"),
@@ -180,15 +263,26 @@ var AuthenticationDialog = GObject.registerClass({
         this.contentLayout.add_child(bodyContent);
 
         this._doneEmitted = false;
+    }
 
-        this._identityToAuth = Polkit.UnixUser.new_for_name(userName);
-        this._cookie = cookie;
+    _onUserComboClicked() {
+        this._menu.toggle();
+    }
 
-        this._userLoadedId = this._user.connect('notify::is-loaded',
-            this._onUserChanged.bind(this));
-        this._userChangedId = this._user.connect('changed',
-            this._onUserChanged.bind(this));
-        this._onUserChanged();
+    _updateUser() {
+        global.log("Updating user");
+        this._adminUsers.forEach(user => {
+            if (user != this._user) {
+                user.avatar.visible = false;
+            } else {
+                user.avatar.visible = true;
+                this._userCombo.set_label(this._user.realName);
+                this._identityToAuth = Polkit.UnixUser.new_for_name(user.userName);
+            }
+        });
+
+        if (this._errorMessageLabel)
+            this._errorMessageLabel.set_text("");
     }
 
     performAuthentication() {
@@ -281,6 +375,8 @@ var AuthenticationDialog = GObject.registerClass({
                 Util.wiggle(this._passwordEntry);
             }
 
+            this._wasDismissed = false;
+
             /* Try and authenticate again */
             this.performAuthentication();
         }
@@ -362,19 +458,6 @@ var AuthenticationDialog = GObject.registerClass({
         }
     }
 
-    _onUserChanged() {
-        if (!this._user.is_loaded)
-            return;
-
-        let userName = this._user.get_user_name();
-        let realName = this._user.get_real_name();
-
-        if (userName !== 'root')
-            this._userLabel.set_text(realName);
-
-        this._userAvatar.update();
-    }
-
     cancel() {
         this._wasDismissed = true;
         this.close(global.get_current_time());
@@ -386,11 +469,10 @@ var AuthenticationDialog = GObject.registerClass({
             GLib.source_remove(this._sessionRequestTimeoutId);
         this._sessionRequestTimeoutId = 0;
 
-        if (this._user) {
-            this._user.disconnect(this._userLoadedId);
-            this._user.disconnect(this._userChangedId);
-            this._user = null;
-        }
+        this._adminUsers.forEach(user => {
+            user.destroy();
+        });
+        this._adminUsers = [];
 
         this._destroySession();
     }
