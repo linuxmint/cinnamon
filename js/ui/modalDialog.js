@@ -430,12 +430,17 @@ class NotifyDialog extends ModalDialog {
      */
     _init(description) {
         super._init();
-        this.contentLayout.add(new St.Label({text: label}));
+
+        let title = _("Attention");
+
+        let content = new Dialog.MessageDialogContent({ title, description });
+        this.contentLayout.add_child(content);
 
         this.setButtons([
             {
                 label: _("OK"),
-                action: this.destroy.bind(this)
+                action: this.destroy.bind(this),
+                default: true,
             }
         ]);
     }
