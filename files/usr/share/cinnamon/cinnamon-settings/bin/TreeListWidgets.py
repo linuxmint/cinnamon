@@ -104,6 +104,7 @@ class List(SettingsWidget):
                  dep_key=None, tooltip="", show_buttons=True):
         super(List, self).__init__(dep_key=dep_key)
         self.columns = columns
+        self.show_buttons = show_buttons
 
         self.set_orientation(Gtk.Orientation.VERTICAL)
         self.set_spacing(0)
@@ -213,6 +214,8 @@ class List(SettingsWidget):
         self.set_tooltip_text(tooltip)
 
     def update_button_sensitivity(self, *args):
+        if not self.show_buttons:
+            return
         model, selected = self.content_widget.get_selection().get_selected()
         if selected is None:
             self.remove_button.set_sensitive(False)
