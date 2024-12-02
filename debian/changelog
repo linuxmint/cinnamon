@@ -1,3 +1,24 @@
+cinnamon (6.4.1) xia; urgency=medium
+
+  [ Cobinja ]
+  * Monitor names from muffin (#12525)
+
+  [ JosephMcc ]
+  * Modal dialog cleanups (#12531)
+  * endSessionDialog: Restyle the dialog (#12533)
+  * dialogs: Allow easier keyboard navigation (#12537)
+  * layout.js: Fix the work area for MonitorConstraint (#12543)
+  * appletManager: Clean up a couple more modal dialogs (#12544)
+  * polkitDialog: Support multi-user selection (#12541)
+
+  [ claudiux ]
+  * TreeListWidgets.py: Fix exception (#12546)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 02 Dec 2024 16:42:06 +0000
+
 cinnamon (6.4.0) xia; urgency=medium
 
   [ Michael Webster ]
