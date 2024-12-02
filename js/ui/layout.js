@@ -157,12 +157,14 @@ var MonitorConstraint = GObject.registerClass({
                 switch (i) {
                     case 0:
                         rect.y += panel.actor.get_height();
+                        rect.height -= panel.actor.get_height();
                         break;
                     case 1:
                         rect.height -= panel.actor.get_height();
                         break;
                     case 2:
                         rect.x += panel.actor.get_width();
+                        rect.width -= panel.actor.get_width();
                         break;
                     case 3:
                         rect.width -= panel.actor.get_width();
