@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-28 11:19+0000\n"
+"POT-Creation-Date: 2024-12-02 16:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: src/cinnamon-app.c:374 src/cinnamon-app.c:383 js/ui/endSessionDialog.js:322
+#: src/cinnamon-app.c:374 src/cinnamon-app.c:383 js/ui/endSessionDialog.js:283
 #: js/ui/notificationDaemon.js:583
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:46
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:112
@@ -298,36 +298,31 @@ msgstr ""
 msgid "Configure..."
 msgstr ""
 
-#: js/ui/appletManager.js:447
+#: js/ui/appletManager.js:450
 msgid ""
 "This applet does not support panels of that type. This can cause visual "
-"glitches in the panel."
+"glitches in the panel. Would you like to continue using it anyway, remove it"
+" from the panel, or try to move it to a different panel?"
 msgstr ""
 
-#: js/ui/appletManager.js:448
-msgid ""
-"Would you like to continue using it anyway, remove it from the panel, or try"
-" to move it to a different panel?"
-msgstr ""
-
-#: js/ui/appletManager.js:457
+#: js/ui/appletManager.js:459
 msgid "Leave it"
 msgstr ""
 
-#: js/ui/appletManager.js:464
+#: js/ui/appletManager.js:466
 msgid "Remove it"
 msgstr ""
 
-#: js/ui/appletManager.js:471
+#: js/ui/appletManager.js:473
 msgid "Move to another panel"
 msgstr ""
 
-#: js/ui/appletManager.js:530
+#: js/ui/appletManager.js:532
 msgid ""
 "A suitable panel could not be found. The applet has been removed instead."
 msgstr ""
 
-#: js/ui/appletManager.js:807
+#: js/ui/appletManager.js:809
 msgid ""
 "Certain applets do not allow multiple instances or were at their max number "
 "of instances so were not copied"
@@ -337,8 +332,8 @@ msgstr ""
 msgid "Select Audio Device"
 msgstr ""
 
-#: js/ui/audioDeviceSelection.js:72 js/ui/endSessionDialog.js:112
-#: js/ui/networkAgent.js:112 js/ui/polkitAuthenticationAgent.js:162
+#: js/ui/audioDeviceSelection.js:72 js/ui/endSessionDialog.js:107
+#: js/ui/networkAgent.js:112 js/ui/polkitAuthenticationAgent.js:245
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:78
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:239
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:385
@@ -406,23 +401,23 @@ msgstr ""
 msgid "Remove this desklet"
 msgstr ""
 
-#: js/ui/endSessionDialog.js:133
+#: js/ui/endSessionDialog.js:71
+msgid "Some applications are busy or have unsaved work."
+msgstr ""
+
+#: js/ui/endSessionDialog.js:131
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:102
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:111
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:119
 msgid "Switch User"
 msgstr ""
 
-#: js/ui/endSessionDialog.js:142
+#: js/ui/endSessionDialog.js:138 js/ui/endSessionDialog.js:145
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2663
 msgid "Log Out"
 msgstr ""
 
-#: js/ui/endSessionDialog.js:149
-msgid "Log Out?"
-msgstr ""
-
-#: js/ui/endSessionDialog.js:156
+#: js/ui/endSessionDialog.js:153
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:160
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:12
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:628
@@ -430,7 +425,7 @@ msgstr ""
 msgid "Suspend"
 msgstr ""
 
-#: js/ui/endSessionDialog.js:162
+#: js/ui/endSessionDialog.js:163
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:161
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:14
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:630
@@ -439,55 +434,38 @@ msgstr ""
 msgid "Hibernate"
 msgstr ""
 
-#: js/ui/endSessionDialog.js:171 js/ui/endSessionDialog.js:202
+#: js/ui/endSessionDialog.js:170 js/ui/endSessionDialog.js:201
+#: js/ui/endSessionDialog.js:208
 msgid "Restart"
 msgstr ""
 
-#: js/ui/endSessionDialog.js:178
+#: js/ui/endSessionDialog.js:178 js/ui/endSessionDialog.js:186
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2675
 msgid "Shut Down"
 msgstr ""
 
-#: js/ui/endSessionDialog.js:186
-msgid "Shut Down?"
-msgstr ""
-
-#: js/ui/endSessionDialog.js:209
-msgid "Restart?"
-msgstr ""
-
-#: js/ui/endSessionDialog.js:269
+#: js/ui/endSessionDialog.js:247
 #, javascript-format
 msgid "You will be logged out in %d second."
 msgid_plural "You will be logged out in %d seconds."
 msgstr[0] ""
 msgstr[1] ""
 
-#: js/ui/endSessionDialog.js:275
+#: js/ui/endSessionDialog.js:253
 #, javascript-format
 msgid "The computer will shut down in %d second."
 msgid_plural "The computer will shut down in %d seconds."
 msgstr[0] ""
 msgstr[1] ""
 
-#: js/ui/endSessionDialog.js:281
+#: js/ui/endSessionDialog.js:259
 #, javascript-format
 msgid "The computer will restart in %d second."
 msgid_plural "The computer will restart in %d seconds."
 msgstr[0] ""
 msgstr[1] ""
 
-#: js/ui/endSessionDialog.js:301
-msgid "Some programs are still running"
-msgstr ""
-
-#: js/ui/endSessionDialog.js:302
-msgid ""
-"Waiting for programs to finish. Interrupting these programs may cause you to"
-" lose work."
-msgstr ""
-
-#: js/ui/endSessionDialog.js:365
+#: js/ui/endSessionDialog.js:305
 msgid "Ignore and continue"
 msgstr ""
 
@@ -531,52 +509,52 @@ msgstr ""
 msgid "Loaded successfully"
 msgstr ""
 
-#: js/ui/main.js:546
+#: js/ui/main.js:544
 msgid "Check your video drivers"
 msgstr ""
 
-#: js/ui/main.js:547
+#: js/ui/main.js:545
 msgid "Your system is currently running without video hardware acceleration."
 msgstr ""
 
-#: js/ui/main.js:549
+#: js/ui/main.js:547
 msgid "You may experience poor performance and high CPU usage."
 msgstr ""
 
-#: js/ui/main.js:553
+#: js/ui/main.js:551
 msgid "Launch Driver Manager"
 msgstr ""
 
-#: js/ui/main.js:562
+#: js/ui/main.js:560
 msgid "Problems during Cinnamon startup"
 msgstr ""
 
-#: js/ui/main.js:563
+#: js/ui/main.js:561
 msgid ""
 "Cinnamon started successfully, but one or more applets, desklets or extensions failed to load.\n"
 "\n"
 msgstr ""
 
-#: js/ui/main.js:564
+#: js/ui/main.js:562
 msgid ""
 "Check your system log and the Cinnamon LookingGlass log for any issues.  "
 msgstr ""
 
-#: js/ui/main.js:565
+#: js/ui/main.js:563
 msgid ""
 "You can disable the offending extension(s) in Cinnamon Settings to prevent "
 "this message from recurring.  "
 msgstr ""
 
-#: js/ui/main.js:566
+#: js/ui/main.js:564
 msgid "Please contact the developer."
 msgstr ""
 
-#: js/ui/main.js:616
+#: js/ui/main.js:614
 msgid "Workspace"
 msgstr ""
 
-#: js/ui/main.js:1574
+#: js/ui/main.js:1572
 msgid "Restarting Cinnamon..."
 msgstr ""
 
@@ -584,19 +562,23 @@ msgstr ""
 msgid "System Information"
 msgstr ""
 
-#: js/ui/modalDialog.js:380
+#: js/ui/modalDialog.js:388
 msgid "Confirm"
 msgstr ""
 
-#: js/ui/modalDialog.js:388 files/usr/bin/cinnamon-launcher:134
+#: js/ui/modalDialog.js:396 files/usr/bin/cinnamon-launcher:134
 msgid "No"
 msgstr ""
 
-#: js/ui/modalDialog.js:392 files/usr/bin/cinnamon-launcher:135
+#: js/ui/modalDialog.js:401 files/usr/bin/cinnamon-launcher:135
 msgid "Yes"
 msgstr ""
 
-#: js/ui/modalDialog.js:428
+#: js/ui/modalDialog.js:434
+msgid "Attention"
+msgstr ""
+
+#: js/ui/modalDialog.js:441
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:78
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:451
 msgid "OK"
@@ -617,7 +599,7 @@ msgstr ""
 #: js/ui/networkAgent.js:207 js/ui/networkAgent.js:219
 #: js/ui/networkAgent.js:243 js/ui/networkAgent.js:264
 #: js/ui/networkAgent.js:284 js/ui/networkAgent.js:294
-#: js/ui/polkitAuthenticationAgent.js:297
+#: js/ui/polkitAuthenticationAgent.js:393
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:591
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:93
 msgid "Password"
@@ -845,17 +827,11 @@ msgstr ""
 msgid "Failed to unmount %s (%s)"
 msgstr ""
 
-#: js/ui/polkitAuthenticationAgent.js:58
+#: js/ui/polkitAuthenticationAgent.js:115
 msgid "Authentication Required"
 msgstr ""
 
-#: js/ui/polkitAuthenticationAgent.js:99
-#: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:366
-#: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:562
-msgid "Administrator"
-msgstr ""
-
-#: js/ui/polkitAuthenticationAgent.js:167
+#: js/ui/polkitAuthenticationAgent.js:250
 msgid "Authenticate"
 msgstr ""
 
@@ -863,15 +839,15 @@ msgstr ""
 #. * requested authentication was not gained; this can happen
 #. * because of an authentication error (like invalid password),
 #. * for instance.
-#: js/ui/polkitAuthenticationAgent.js:276
+#: js/ui/polkitAuthenticationAgent.js:370
 msgid "Sorry, that didn't work. Please try again."
 msgstr ""
 
-#: js/ui/runDialog.js:161
+#: js/ui/runDialog.js:164
 msgid "Run a Command"
 msgstr ""
 
-#: js/ui/runDialog.js:178 js/ui/runDialog.js:460
+#: js/ui/runDialog.js:181 js/ui/runDialog.js:463
 msgid "Press ESC to close"
 msgstr ""
 
@@ -886,7 +862,7 @@ msgstr ""
 msgid "Revert"
 msgstr ""
 
-#: js/ui/windowManager.js:89
+#: js/ui/windowManager.js:90
 msgid "Keep changes"
 msgstr ""
 
@@ -2664,6 +2640,11 @@ msgstr ""
 msgid "Standard"
 msgstr ""
 
+#: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:366
+#: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:562
+msgid "Administrator"
+msgstr ""
+
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:376
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:591
 msgid "Account Type"
@@ -3172,28 +3153,28 @@ msgid ""
 "Details:  %s"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:181
-#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:269
+#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:182
+#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:272
 msgid "Add new entry"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:185
+#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:186
 msgid "Remove selected entry"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:190
+#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:191
 msgid "Edit selected entry"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:195
+#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:196
 msgid "Move selected entry up"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:200
+#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:201
 msgid "Move selected entry down"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:271
+#: files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py:274
 msgid "Edit entry"
 msgstr ""
 
