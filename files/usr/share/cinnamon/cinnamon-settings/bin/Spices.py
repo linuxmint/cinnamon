@@ -846,7 +846,7 @@ class Spice_Harvester(GObject.Object):
         esc = html.escape(markup)
         dialog.set_markup(esc)
         dialog.show_all()
-        _ = dialog.run()
+        dialog.run()
         dialog.destroy()
 
     def errorMessage(self, msg, detail=None):
