@@ -1,3 +1,13 @@
+cinnamon (6.4.2) xia; urgency=medium
+
+  [ Karl Knechtel ]
+  * Fix crash when attempting to report an error in the UI with details (#12554)
+
+  [ Clement Lefebvre ]
+  * l10n: generate cs module files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 05 Dec 2024 11:58:32 +0000
+
 cinnamon (6.4.1) xia; urgency=medium
 
   [ Cobinja ]
