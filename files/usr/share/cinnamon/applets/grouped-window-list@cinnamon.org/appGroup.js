@@ -1083,7 +1083,7 @@ class AppGroup {
     resetNotificationCount() {
         if (this.groupState.willUnmount) return;
     
-        this.groupState.set({ notificationCount : 0 });
+        this.groupState.set({ notificationCount: 0 });
         this.showBadge();
     }
 
