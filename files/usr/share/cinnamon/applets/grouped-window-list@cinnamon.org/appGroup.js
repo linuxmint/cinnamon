@@ -19,7 +19,8 @@ const {
     MAX_BUTTON_WIDTH,
     BUTTON_BOX_ANIMATION_TIME,
     RESERVE_KEYS,
-    TitleDisplay
+    TitleDisplay,
+    CountNumbers
 } = require('./constants');
 
 const _reLetterRtl = new RegExp("\\p{Script=Hebrew}|\\p{Script=Arabic}", "u");
@@ -70,6 +71,7 @@ class AppGroup {
             appInfo: params.app.get_app_info(),
             metaWindows: params.metaWindows || [],
             windowCount: params.metaWindows ? params.metaWindows.length : 0,
+            notificationCount: params.notificationCount ?? 0,
             lastFocused: params.metaWindow || null,
             isFavoriteApp: !params.metaWindow ? true : params.isFavoriteApp === true,
             autoStartIndex: this.state.autoStartApps.findIndex( app => app.id === params.appId),
@@ -1071,23 +1073,49 @@ class AppGroup {
         this.checkFocusStyle();
     }
 
+    notificationReceived(notification) {
+        if (this.groupState.willUnmount) return;
+
+        this.groupState.set({ notificationCount: this.groupState.notificationCount + 1 });
+        this.showBadge();
+    }
+
+    resetNotificationCount() {
+        if (this.groupState.willUnmount) return;
+    
+        this.groupState.set({ notificationCount : 0 });
+        this.showBadge();
+    }
+
     calcWindowNumber() {
         if (this.groupState.willUnmount) return;
 
-        const windowCount = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
-        this.numberLabel.text = windowCount.toString();
+        this.groupState.set({windowCount: this.groupState.metaWindows ? this.groupState.metaWindows.length : 0});
+        this.showBadge();
+    }
 
-        this.groupState.set({windowCount});
-
-        if (this.state.settings.numDisplay) {
-            if (windowCount <= 1) {
-                this.badge.hide();
-            } else {
-                this.badge.show();
-
-            }
-        } else {
+    showBadge(){
+        if(this.state.settings.numDisplay == CountNumbers.None){
             this.badge.hide();
+            return;
+        }
+
+        let numberToShow = 0;
+        let minNumberToShow = 0;
+
+        if (this.state.settings.numDisplay == CountNumbers.Notification) {
+            numberToShow = this.groupState.notificationCount;
+        } else {
+            numberToShow = this.groupState.windowCount;
+            minNumberToShow = 1;
+        }
+
+        this.numberLabel.text = numberToShow.toString();
+
+        if (numberToShow <= minNumberToShow) {
+            this.badge.hide();
+        } else {
+            this.badge.show();
         }
     }
 

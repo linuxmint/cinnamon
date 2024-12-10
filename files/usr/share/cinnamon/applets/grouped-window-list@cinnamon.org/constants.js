@@ -18,6 +18,11 @@ const constants = {
         Title: 3,
         Focused: 4
     },
+    CountNumbers: {
+        None: 1,
+        Window: 2,
+        Notification: 3
+    },
     FavType: {
         favorites: 0,
         pinnedApps: 1,

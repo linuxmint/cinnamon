@@ -185,9 +185,14 @@
     }
   },
   "number-display": {
-    "type": "checkbox",
-    "default": true,
-    "description": "Show window count numbers"
+    "type": "combobox",
+    "default": 2,
+    "description": "Show count numbers",
+    "options": {
+      "None": 1,
+      "Window": 2,
+      "Notification": 3
+    }
   },
   "enable-app-button-dragging": {
     "type": "checkbox",

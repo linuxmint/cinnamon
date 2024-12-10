@@ -32,7 +32,10 @@ class Workspace {
             },
             updateFocusState: (focusedAppId) => {
                 this.appGroups.forEach( appGroup => {
-                    if (focusedAppId === appGroup.groupState.appId) return;
+                    if (focusedAppId === appGroup.groupState.appId) {
+                        appGroup.resetNotificationCount();
+                        return;
+                    }
                     appGroup.onFocusChange(false);
                 });
             }
@@ -53,6 +56,7 @@ class Workspace {
         // Ugly change: refresh the removed app instances from all workspaces
         this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
         this.signals.connect(global.window_manager, 'switch-workspace' , (...args) => this.reloadList(...args));
+        Main.messageTray.connect('notify-applet-update', (mtray, notification) => this.calculateAppNotifications(mtray, notification));
         this.on_orientation_changed(null, true);
     }
 
@@ -75,6 +79,16 @@ class Workspace {
             windowCount += appGroup.groupState.metaWindows.length;
         });
         return windowCount;
+    }
+
+    calculateAppNotifications(mtray, notification) {
+        var appId = notification.source.app.get_id();
+        this.appGroups.forEach(appGroup => {
+            if (appId === appGroup.groupState.appId) {
+                appGroup.notificationReceived(notification);
+                return;
+            }
+        });
     }
 
     closeAllHoverMenus(cb) {
