@@ -1,0 +1,8 @@
+{
+    "description": "Activate/deactivate Night Light mode.",
+    "icon": "cs-nightlight",
+    "max-instances": "1",
+    "hide-configuration": true,
+    "uuid": "nightlight@cinnamon.org",
+    "name": "Night Light"
+}
