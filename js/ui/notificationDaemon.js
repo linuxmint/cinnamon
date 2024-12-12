@@ -423,7 +423,8 @@ NotificationDaemon.prototype = {
             notification = new MessageTray.Notification(source, summary, body,
                                                         { icon: iconActor,
                                                           bodyMarkup: true,
-                                                          silent: hints['suppress-sound'] });
+                                                          silent: hints['suppress-sound'],
+                                                          desktopEntry: hints['desktop-entry'] });
             ndata.notification = notification;
             notification.connect('destroy', Lang.bind(this,
                 function(n, reason) {
@@ -460,7 +461,8 @@ NotificationDaemon.prototype = {
         } else {
             notification.update(summary, body, { icon: iconActor,
                                                  bodyMarkup: true,
-                                                 silent: hints['suppress-sound'] });
+                                                 silent: hints['suppress-sound'],
+                                                 desktopEntry: hints['desktop-entry'] });
         }
 
         // We only display a large image if an icon is also specified.
