@@ -31,6 +31,8 @@ var LONGER_HIDE_TIMEOUT = 0.6;
 const NOTIFICATION_IMAGE_SIZE = 125;
 const NOTIFICATION_IMAGE_OPACITY = 230; // 0 - 255
 
+var extensionsHandlingNotifications = 0;
+
 var State =  Object.freeze({
     HIDDEN: 0,
     SHOWING: 1,
@@ -635,7 +637,7 @@ function Source(title) {
 
 Source.prototype = {
     ICON_SIZE: 24,
-    MAX_NOTIFICATIONS: 10,
+    MAX_NOTIFICATIONS: 20,
 
     _init: function (title) {
         this.title = title;
@@ -913,7 +915,7 @@ MessageTray.prototype = {
             else if (!this._notificationsEnabled) {
                 if (notificationsPending) {
                     this._notification = this._notificationQueue.shift();
-                    if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
+                    if (extensionsHandlingNotifications > 0) {
                         this.emit('notify-applet-update', this._notification);
                     } else {
                         this._notification.destroy(NotificationDestroyedReason.DISMISSED);
@@ -1053,7 +1055,7 @@ MessageTray.prototype = {
 
         if (this._notification.urgency != Urgency.CRITICAL) {
             this._updateNotificationTimeout(this.notificationDuration * 1000);
-        } else if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
+        } else if (extensionsHandlingNotifications > 0) {
             this._updateNotificationTimeout(NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET * 1000);
         }
     },
@@ -1111,7 +1113,7 @@ MessageTray.prototype = {
         this._notificationBin.hide();
         this._notificationBin.child = null;
         let notification = this._notification;
-        if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS) && !this._notificationRemoved) {
+        if (extensionsHandlingNotifications > 0 && !this._notificationRemoved) {
             this.emit('notify-applet-update', notification);
         } else {
             if (notification.isTransient)

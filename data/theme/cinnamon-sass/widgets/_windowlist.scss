@@ -73,14 +73,24 @@
 
   &-button-label { padding-left: 4px;}
 
-  &-number-label {
-    font-size: 0.8em;
+  &-windows-badge {
+    border-radius: 9999px;
+    color: $fg_color;
+    background-color: $accent_bg_color;
+  }
+
+  &-windows-badge-label {
     z-index: 99;
   }
 
-  &-badge {
+  &-notifications-badge {
     border-radius: 9999px;
-    background-color: $bg_color;
+    color: $fg_color;
+    background-color: $notification_badge_bg_color;
+  }
+
+  &-notifications-badge-label {
+    z-index: 99;
   }
 }
 
