@@ -9,6 +9,7 @@ const Applet = imports.ui.applet;
 const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
 const DND = imports.ui.dnd;
+const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
 const {AppletSettings} = imports.ui.settings;
 const {SignalManager} = imports.misc.signalManager;
 const {throttle, unref, trySpawnCommandLine} = imports.misc.util;
@@ -161,6 +162,126 @@ class PinnedFavs {
     }
 }
 
+class Notifications {
+    // As an app can have multiple appgroups (multiple windows, different workspaces, multiple instances), all
+    // appGroups with the same appId should always display the same number of notifications.
+    constructor() {
+        this._appGroupList = []; //stores all appGroups from all workspaces
+        Main.messageTray.connect('notify-applet-update', (mtray, notification) => this._notificationReceived(mtray, notification));
+    }
+
+    _notificationReceived(mtray, notification) {
+        const guessFlatpakAppIdFromDesktopEntryHint = (desktopEntry) => {
+            let tryAppId = desktopEntry + '.desktop:flatpak';
+            if (this._appGroupList.some(appGroup => appGroup.groupState.appId === tryAppId)) {
+                return tryAppId;
+            }            
+            const exceptions = {
+                "vivaldi-stable": "com.vivaldi.Vivaldi",
+                "brave-browser": "com.brave.Browser",
+                "google-chrome": "com.google.Chrome",
+                "microsoft-edge": "com.microsoft.Edge",
+                "opera": "com.opera.Opera"
+            };
+            if (exceptions[desktopEntry]) {
+                tryAppId = exceptions[desktopEntry] + '.desktop:flatpak';
+                if (this._appGroupList.some(appGroup => appGroup.groupState.appId === tryAppId)) {
+                    return tryAppId;
+                }
+            }
+        };
+
+        let appId = notification.source.app?.get_id();
+        if (!appId) {
+            appId = guessFlatpakAppIdFromDesktopEntryHint(notification.desktopEntry);
+        }
+        if (!appId) {
+            global.logError('GWL: Failed to find appId for notification with desktopEntry hint: ' 
+                + notification.desktopEntry);
+            return;
+        }
+
+        // Add notification to all appgroups with appId
+        let notificationAdded = false;
+        this._appGroupList.forEach(appGroup => {
+            if (!appGroup.groupState || appGroup.groupState.willUnmount) return;
+            if (appId === appGroup.groupState.appId) {
+                appGroup.notifications.push(notification);
+                notificationAdded = true;
+                this.updateNotificationsBadge(appGroup);
+            }
+        });
+        if (notificationAdded) {
+            notification.appId = appId;
+            notification.connect('destroy',  () => this._removeNotification(notification));
+        }
+    }
+
+    _removeNotification(notification) {
+        this._appGroupList.forEach(appGroup => {
+            if (!appGroup.groupState || appGroup.groupState.willUnmount) return;
+            if (notification.appId === appGroup.groupState.appId) {
+                const index = appGroup.notifications.indexOf(notification);
+                if (index > -1) {
+                    appGroup.notifications.splice(index, 1)
+                    this.updateNotificationsBadge(appGroup);
+                }
+            }
+        });
+    }
+
+    // Called when an app is focused to remove all notifications from all instances of an app (with given appId)
+    removeAllNotifications(appId) {  
+        this._appGroupList.forEach(appGroup => {
+            if (!appGroup.groupState || appGroup.groupState.willUnmount) return;
+            if (appId === appGroup.groupState.appId) {
+                let i = 0;
+                while (appGroup.notifications[i]) {
+                    if (!appGroup.notifications[i]._destroyed) {
+                        appGroup.notifications[i].destroy(NotificationDestroyedReason.DISMISSED);
+                    } else {
+                        i++;
+                    }
+                }
+                appGroup.notifications = [];
+                this.updateNotificationsBadge(appGroup);
+            }
+        });
+    }
+
+    updateNotificationsBadge(appGroup) {
+        if (appGroup.notifications.length > 0) {
+            appGroup.notificationsBadgeLabel.text = appGroup.notifications.length.toString();
+            appGroup.notificationsBadge.show();
+        } else {
+            appGroup.notificationsBadge.hide();
+        }
+    }
+
+    // Called from AppGroup constructor so that we always have a list of all appgroups from all workspaces.
+    addAppGroup(newAppGroup) {
+        newAppGroup.notifications = [];
+
+        //Copy notifications from any existing appGroup with the same appId.
+        this._appGroupList.some(appGroup => {
+            if (!appGroup.groupState || appGroup.groupState.willUnmount) return false;
+            if (appGroup.groupState.appId === newAppGroup.groupState.appId) {
+                newAppGroup.notifications = appGroup.notifications.slice(); //shallow copy
+                return true;
+            }
+        })
+
+        this._appGroupList.push(newAppGroup);
+
+        //remove old deleted appgroups
+        this._appGroupList = this._appGroupList.filter(appGroup =>
+            appGroup !== null &&
+            appGroup !== undefined &&
+            appGroup.groupState &&
+            !appGroup.groupState.willUnmount);
+    }
+}
+
 class GroupedWindowListApplet extends Applet.Applet {
     constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
@@ -191,6 +312,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             appletReady: false,
             willUnmount: false,
             settings: {},
+            notifications: new Notifications(),
             homeDir: GLib.get_home_dir(),
             lastOverlayPreview: null,
             lastCycled: -1,
@@ -307,7 +429,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'super-num-hotkeys', value: 'SuperNumHotkeys', cb: this.bindAppKeys},
             {key: 'title-display', value: 'titleDisplay', cb: this.updateTitleDisplay},
             {key: 'launcher-animation-effect', value: 'launcherAnimationEffect', cb: null},
-            {key: 'number-display', value: 'numDisplay', cb: this.updateWindowNumberState},
             {key: 'enable-app-button-dragging', value: 'enableDragging', cb: this.draggableSettingChanged},
             {key: 'thumbnail-scroll-behavior', value: 'thumbnailScrollBehavior', cb: null},
             {key: 'show-thumbnails', value: 'showThumbs', cb: this.updateVerticalThumbnailState},
@@ -582,12 +703,6 @@ class GroupedWindowListApplet extends Applet.Applet {
                 appGroup => appGroup.setActorAttributes(iconSize)
             );
         });
-    }
-
-    updateWindowNumberState() {
-        this.workspaces.forEach(
-            workspace => workspace.calcAllWindowNumbers()
-        );
     }
 
     updateAttentionState(display, window) {
