@@ -479,7 +479,7 @@ class AppGroup {
     }
 
     updateBadgesTextSize() {
-        const badgeTextSize = Math.round(this.iconBox.width / 2.5);
+        const badgeTextSize = Math.round(this.iconBox.width / 2.5 / global.ui_scale);
         const badgePadding = Math.round(badgeTextSize / 4);
         const sizeStyle = `font-size: ${badgeTextSize}px; padding-left: ${badgePadding}px; padding-right: ${badgePadding}px;`;
         this.windowsBadgeLabel.set_style(sizeStyle);
