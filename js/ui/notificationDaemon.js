@@ -13,10 +13,6 @@ const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
 const Mainloop = imports.mainloop;
 
-// don't automatically clear these apps' notifications on window focus
-// lowercase only
-const AUTOCLEAR_BLACKLIST = ['chromium', 'firefox', 'google chrome'];
-
 let nextNotificationId = 1;
 
 // Should really be defined in Gio.js
@@ -207,7 +203,7 @@ NotificationDaemon.prototype = {
     //
     // Either a pid or ndata.notification is needed to retrieve or
     // create a source.
-    _getSource: function(title, pid, ndata, sender, trayIcon) {
+    _getSource: function(title, pid, ndata, sender, desktopEntryHint, trayIcon) {
         if (!pid && !(ndata && ndata.notification))
             return null;
 
@@ -231,7 +227,7 @@ NotificationDaemon.prototype = {
             }
         }
 
-        let source = new Source(title, pid, sender, trayIcon);
+        let source = new Source(title, pid, sender, desktopEntryHint, trayIcon);
         source.setTransient(isForTransientNotification);
 
         if (!isForTransientNotification) {
@@ -365,7 +361,7 @@ NotificationDaemon.prototype = {
         let sender = invocation.get_sender();
         let pid = this._senderToPid[sender];
 
-        let source = this._getSource(appName, pid, ndata, sender, null);
+        let source = this._getSource(appName, pid, ndata, sender, hints['desktop-entry'], null);
 
         if (source) {
             try {
@@ -405,7 +401,7 @@ NotificationDaemon.prototype = {
             }
 
             let [pid] = result;
-            source = this._getSource(appName, pid, ndata, sender);
+            source = this._getSource(appName, pid, ndata, sender, hints['desktop-entry'], null);
 
             // We only store sender-pid entries for persistent sources.
             // Removing the entries once the source is destroyed
@@ -586,8 +582,6 @@ NotificationDaemon.prototype = {
             return;
 
         let name = tracker.focus_app.get_name();
-        if (name && AUTOCLEAR_BLACKLIST.includes(name.toLowerCase()))
-            return;
 
         for (let i = 0; i < this._sources.length; i++) {
             let source = this._sources[i];
@@ -609,7 +603,7 @@ NotificationDaemon.prototype = {
     },
 
     _onTrayIconAdded: function(o, icon) {
-        let source = this._getSource(icon.title || icon.wm_class || _("Unknown"), icon.pid, null, null, icon);
+        let source = this._getSource(icon.title || icon.wm_class || _("Unknown"), icon.pid, null, null, null, icon);
     },
 
     _onTrayIconRemoved: function(o, icon) {
@@ -626,10 +620,11 @@ function Source(title, pid, sender, trayIcon) {
 Source.prototype = {
     __proto__:  MessageTray.Source.prototype,
 
-    _init: function(title, pid, sender, trayIcon) {
+    _init: function(title, pid, sender, desktopEntryHint, trayIcon) {
         MessageTray.Source.prototype._init.call(this, title);
 
         this.initialTitle = title;
+        this.desktopEntryHint = desktopEntryHint;
 
         this.pid = pid;
         if (sender)
@@ -676,8 +671,21 @@ Source.prototype = {
         let app;
 
         app = Cinnamon.WindowTracker.get_default().get_app_from_pid(this.pid);
-        if (app != null)
-            return app;
+
+        if (!app && this.desktopEntryHint) {
+            const exceptions = {
+                    "vivaldi-stable": "com.vivaldi.Vivaldi",
+                    "brave-browser": "com.brave.Browser",
+                    "google-chrome": "com.google.Chrome",
+                    "microsoft-edge": "com.microsoft.Edge",
+                    "opera": "com.opera.Opera"
+                };
+            const exception = exceptions[this.desktopEntryHint];
+            app = Cinnamon.AppSystem.get_default().lookup_flatpak_app_id(exception ? exception : this.desktopEntryHint);
+            if (!app) log('Failed to find flatpak app for notification with desktop-entry hint:', this.desktopEntryHint);
+        }
+
+        if (app) return app;
 
         if (this.trayIcon) {
             app = Cinnamon.AppSystem.get_default().lookup_wmclass(this.trayIcon.wmclass);
