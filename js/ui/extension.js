@@ -340,7 +340,7 @@ Extension.prototype = {
         // If a role is set, make sure it's a valid one
         let meta_role_list_str = this.meta['role'];
         if (meta_role_list_str) {
-            let meta_roles = meta_role_list_str.replace(" ", "").split(",");
+            let meta_roles = meta_role_list_str.replaceAll(" ", "").split(",");
             for (let role of meta_roles) {
                 if (!(role in Type[this.upperType].roles)) {
                     throw logError(`Unknown role definition: ${role} in metadata.json`, this.uuid);
