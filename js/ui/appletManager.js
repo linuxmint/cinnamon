@@ -25,7 +25,6 @@ var appletsLoaded = false;
 
 // FIXME: This role stuff is checked in extension.js, why not move checks from here to there?
 var Roles = {
-    NOTIFICATIONS: 'notifications',
     PANEL_LAUNCHER: 'panellauncher',
     WINDOW_ATTENTION_HANDLER: 'windowattentionhandler',
     WINDOW_LIST: 'windowlist'
