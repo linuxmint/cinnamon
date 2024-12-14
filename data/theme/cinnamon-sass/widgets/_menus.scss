@@ -59,6 +59,7 @@ $menuitem_border_radius: $base_border_radius * 1;
     @extend %menuitem;
     background-color: $base_color;
     margin: 0;
+    padding: $base_padding + 2 0 $base_padding + 2 $base_padding * 2;
 
     &:active { background-color: $light_base_color; }
 
