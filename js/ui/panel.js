@@ -43,6 +43,7 @@ const PANEL_PEEK_TIME = 1500;
 
 const EDIT_MODE_MIN_BOX_SIZE = 25;
 const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48];
+const MIN_ICON_PADDING_PX = 4;
 
 /*** These are defaults for a new panel added */
 const DEFAULT_PANEL_VALUES = {"panels-autohide": "false",
@@ -58,7 +59,6 @@ const DEFAULT_SYMBOLIC_ICON_SIZE_VALUES = {"left":   28,
                                            "center": 28,
                                            "right":  28};
 const MIN_SYMBOLIC_SIZE_PX = 10;
-const MAX_SYMBOLIC_SIZE_PX = 50;
 
 const DEFAULT_TEXT_SIZE_VALUES = {"left":   0.0,
                                   "center": 0.0,
@@ -3080,8 +3080,8 @@ Panel.prototype = {
         let oldZoneSizes = this._panelZoneSizes;
 
         let sizeSets = [
-            ["fullcolor", PANEL_ZONE_ICON_SIZES, (a,b,c,d) => this._clampPanelZoneColorIconSize(a,b,c,d), DEFAULT_FULLCOLOR_ICON_SIZE_VALUES],
-            ["symbolic", PANEL_ZONE_SYMBOLIC_ICON_SIZES, (a,b,c,d) => this._clampPanelZoneSymbolicIconSize(a,b,c,d), DEFAULT_SYMBOLIC_ICON_SIZE_VALUES],
+            ["fullcolor", PANEL_ZONE_ICON_SIZES, (a,b,c,d) => this._clampPanelZoneIconSize(a,b,c,d), DEFAULT_FULLCOLOR_ICON_SIZE_VALUES],
+            ["symbolic", PANEL_ZONE_SYMBOLIC_ICON_SIZES, (a,b,c,d) => this._clampPanelZoneIconSize(a,b,c,d), DEFAULT_SYMBOLIC_ICON_SIZE_VALUES],
             ["text", PANEL_ZONE_TEXT_SIZES, (a,b,c,d) => this._clampPanelZoneTextSize(a,b,c,d), DEFAULT_TEXT_SIZE_VALUES]
         ];
 
@@ -3184,35 +3184,27 @@ Panel.prototype = {
         return iconSize;
     },
 
-    _clampPanelZoneColorIconSize: function(panelZoneSizeSet, typeString, zoneString, defaults) {
+    _clampPanelZoneIconSize: function(panelZoneSizeSet, typeString, zoneString, defaults) {
         let iconSize = panelZoneSizeSet.maybeGet(zoneString);
 
         if (iconSize == undefined) {
             iconSize = defaults[zoneString];
         }
 
-        let height = this.height / global.ui_scale;
-
+        // always keep at some padding pixels
+        let optimalSize = (this.height - (MIN_ICON_PADDING_PX * 2)) / global.ui_scale;
+        
         if (iconSize === -1) { // Legacy: Scale to panel size
-            iconSize = height;
-        } else if (iconSize === 0 || iconSize > height) { // To best fit within the panel size
-            iconSize = toStandardIconSize(height);
+            iconSize = this.height / global.ui_scale;
+        } else if (iconSize === 0 || iconSize > optimalSize) { // To best fit within the panel size
+            iconSize = toStandardIconSize(optimalSize);
+            if (typeString == "symbolic") {
+                // symbolic icons appear larger than colored ones
+                iconSize = Math.max(MIN_SYMBOLIC_SIZE_PX, Math.floor(iconSize * 0.875));
+            }
         }
 
         return iconSize; // Always return a value above 0 or St will spam the log.
-    },
-
-    _clampPanelZoneSymbolicIconSize: function(panelZoneSizeSet, typeString, zoneString, defaults) {
-        let iconSize = panelZoneSizeSet.maybeGet(zoneString);
-
-        if (iconSize == undefined) {
-            iconSize = defaults[zoneString];
-        }
-
-        let panelHeight = this.height / global.ui_scale;
-
-        let new_size = iconSize.clamp(MIN_SYMBOLIC_SIZE_PX, Math.min(MAX_SYMBOLIC_SIZE_PX, panelHeight));
-        return new_size;
     },
 
     getPanelZoneIconSize: function(locationLabel, iconType) {
