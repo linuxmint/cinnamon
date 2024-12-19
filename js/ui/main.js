@@ -428,8 +428,32 @@ function start() {
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
     placesManager = new PlacesManager.PlacesManager();
 
-    if (Config.HAVE_NETWORKMANAGER)
+    // NM Agent
+    if (Config.HAVE_NETWORKMANAGER && global.settings.get_boolean("enable-nm-agent")) {
         networkAgent = new NetworkAgent.NetworkAgent();
+        global.log('NetworkManager agent: enabled')
+    }
+    else {
+        global.log('NetworkManager agent: disabled')
+    }
+
+    // Polkit Agent
+    if (global.settings.get_boolean("enable-polkit-agent")) {
+        PolkitAuthenticationAgent.init();
+        global.log('Polkit agent: enabled')
+    }
+    else {
+        global.log('Polkit agent: disabled')
+    }
+
+    // SSH Agent
+    if (global.settings.get_boolean("enable-ssh-agent")) {
+        KeyringPrompt.init();
+        global.log('SSH agent: enabled')
+    }
+    else {
+        global.log('SSH agent: disabled')
+    }
 
     magnifier = new Magnifier.Magnifier();
     locatePointer = new LocatePointer.locatePointer();
@@ -442,10 +466,6 @@ function start() {
     _addXletDirectoriesToSearchPath();
     _initUserSession();
     screenRecorder = new ScreenRecorder.ScreenRecorder();
-
-    PolkitAuthenticationAgent.init();
-
-    KeyringPrompt.init();
 
     _startDate = new Date();
 
