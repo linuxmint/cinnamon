@@ -77,13 +77,11 @@ var AdminUser = class {
     }
 
     _onUserChanged() {
-        if (!this._user.is_loaded)
-            return;
-
-        this._userName = this._user.get_user_name();
-        this._realName = this._user.get_real_name();
-
-        this._avatar.update();
+        if (this._user.is_loaded && this._avatar) {
+            this._userName = this._user.get_user_name();
+            this._realName = this._user.get_real_name();
+            this._avatar.update();
+        }
     }
 
     destroy() {
