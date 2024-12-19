@@ -483,7 +483,11 @@ var AuthenticationAgent = class {
         this._native.connect('initiate', this._onInitiate.bind(this));
         this._native.connect('cancel', this._onCancel.bind(this));
         // TODO - maybe register probably should wait until later, especially at first login?
-        this._native.register();
+        try {
+            this._native.register();
+        } catch(e) {
+            global.logWarning('Failed to register Polkit Agent');
+        }
         this._currentDialog = null;
     }
 
