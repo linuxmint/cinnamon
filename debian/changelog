@@ -1,3 +1,23 @@
+cinnamon (6.4.3) xia; urgency=medium
+
+  [ JosephMcc ]
+  * theme: Fix missing text on virtual keyboard (#12572)
+
+  [ Clement Lefebvre ]
+  * Looking glass: Usability improvements
+
+  [ JosephMcc ]
+  * theme: Fix rounding in submenus (#12573)
+  * theme: Fix rounding and spacing in GWL window previews (#12571)
+
+  [ Clement Lefebvre ]
+  * dialogs: Respect animation settings
+  * Add logging and settings for nm/polkit/ssh agents
+  * PolkitAgent: don't crash if there is no avatar If we're asking for root's password, we don't show an avatar. Don't emit an exception in that case.
+  * polKitAgent: Don't crash when we cannot enable/disable the auth agent This makes it easier to run with jhbuild.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 19 Dec 2024 16:22:28 +0000
+
 cinnamon (6.4.2) xia; urgency=medium
 
   [ Karl Knechtel ]
