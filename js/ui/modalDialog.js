@@ -24,8 +24,6 @@ const Gettext = imports.gettext;
 
 const FADE_OUT_DIALOG_TIME = 1000;
 
-var OPEN_AND_CLOSE_TIME = 100;
-
 var State = {
     OPENED: 0,
     CLOSED: 1,
@@ -108,10 +106,17 @@ var ModalDialog = GObject.registerClass({
         this.contentLayout = this.dialogLayout.contentLayout;
         this.buttonLayout = this.dialogLayout.buttonLayout;
 
+        this.open_and_close_time = 100;
+        let enable_radial_effect = true;
+        if (!global.settings.get_boolean("desktop-effects-workspace")) {
+            this.open_and_close_time = 0;
+            enable_radial_effect = false;
+        }
+
         if (!this._cinnamonReactive) {
             this._lightbox = new Lightbox.Lightbox(this,
                                                    { inhibitEvents: true,
-                                                     radialEffect: true });
+                                                     radialEffect: enable_radial_effect });
             this._lightbox.highlight(this._backgroundBin);
 
             this._eventBlocker = new Clutter.Actor({ reactive: true });
@@ -198,7 +203,7 @@ var ModalDialog = GObject.registerClass({
         this.show();
         this.ease({
             opacity: 255,
-            duration: OPEN_AND_CLOSE_TIME,
+            duration: this.open_and_close_time,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
                 this._setState(State.OPENED);
@@ -254,7 +259,7 @@ var ModalDialog = GObject.registerClass({
 
         this.ease({
             opacity: 0,
-            duration: OPEN_AND_CLOSE_TIME,
+            duration: this.open_and_close_time,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
                 this._setState(State.CLOSED);
