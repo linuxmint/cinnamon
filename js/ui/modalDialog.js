@@ -106,17 +106,17 @@ var ModalDialog = GObject.registerClass({
         this.contentLayout = this.dialogLayout.contentLayout;
         this.buttonLayout = this.dialogLayout.buttonLayout;
 
-        this.open_and_close_time = 100;
-        let enable_radial_effect = true;
+        this.openAndCloseTime = 100;
+        let enableRadialEffect = true;
         if (!global.settings.get_boolean("desktop-effects-workspace")) {
-            this.open_and_close_time = 0;
-            enable_radial_effect = false;
+            this.openAndCloseTime = 0;
+            enableRadialEffect = false;
         }
 
         if (!this._cinnamonReactive) {
             this._lightbox = new Lightbox.Lightbox(this,
                                                    { inhibitEvents: true,
-                                                     radialEffect: enable_radial_effect });
+                                                     radialEffect: enableRadialEffect });
             this._lightbox.highlight(this._backgroundBin);
 
             this._eventBlocker = new Clutter.Actor({ reactive: true });
@@ -203,7 +203,7 @@ var ModalDialog = GObject.registerClass({
         this.show();
         this.ease({
             opacity: 255,
-            duration: this.open_and_close_time,
+            duration: this.openAndCloseTime,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
                 this._setState(State.OPENED);
@@ -259,7 +259,7 @@ var ModalDialog = GObject.registerClass({
 
         this.ease({
             opacity: 0,
-            duration: this.open_and_close_time,
+            duration: this.openAndCloseTime,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
                 this._setState(State.CLOSED);
