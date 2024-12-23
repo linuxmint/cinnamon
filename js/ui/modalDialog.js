@@ -84,6 +84,10 @@ var ModalDialog = GObject.registerClass({
         this._cinnamonReactive = params.cinnamonReactive;
         this._destroyOnClose = params.destroyOnClose;
 
+        // We track this to make sure we can access the on screen keyboard
+        // when hiding and showing modal dialogs
+        this._onScreenKeyboard = Main.layoutManager.keyboardBox;
+
         Main.uiGroup.add_actor(this);
 
         let constraint = new Clutter.BindConstraint({
@@ -98,7 +102,7 @@ var ModalDialog = GObject.registerClass({
             x_fill: true,
             y_fill: true
         });
-        this._monitorConstraint = new Layout.MonitorConstraint();
+        this._monitorConstraint = new Layout.MonitorConstraint({ work_area: true });
         this._backgroundBin.add_constraint(this._monitorConstraint);
         this.add_actor(this._backgroundBin);
 
@@ -238,6 +242,9 @@ var ModalDialog = GObject.registerClass({
         if (!this.pushModal(timestamp))
             return false;
 
+        if (this._onScreenKeyboard.visible)
+            Main.uiGroup.set_child_above_sibling(this._onScreenKeyboard, null);
+
         this._fadeOpen();
         return true;
     }
@@ -256,6 +263,9 @@ var ModalDialog = GObject.registerClass({
         this._setState(State.CLOSING);
         this.popModal(timestamp);
         this._savedKeyFocus = null;
+
+        if (this._onScreenKeyboard.visible)
+            Main.panelManager.lowerActorBelowPanels(this._onScreenKeyboard);
 
         this.ease({
             opacity: 0,
