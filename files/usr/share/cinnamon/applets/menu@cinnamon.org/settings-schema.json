@@ -27,7 +27,8 @@
             "title" : "Layout and content",
             "keys" : ["show-category-icons",
                       "category-icon-size", "show-application-icons", "application-icon-size",
-                      "favbox-show", "fav-icon-size", "show-places", "show-recents", "menu-editor-button", "reset-menu-size-button"]
+                      "sidebar-show", "sidebar-icon-size", "bottombox-show", "show-recents",
+                      "show-description", "menu-editor-button", "reset-menu-size-button"]
         },
         "menu-behave" : {
             "type" : "section",
@@ -79,7 +80,7 @@
  },
  "category-icon-size" : {
     "type": "spinbutton",
-    "default" : 22,
+    "default" : 32,
     "min" : 16,
     "max" : 48,
     "step" : 1,
@@ -95,7 +96,7 @@
  },
  "application-icon-size" : {
     "type": "spinbutton",
-    "default" : 22,
+    "default" : 32,
     "min" : 16,
     "max" : 48,
     "step" : 1,
@@ -103,21 +104,27 @@
     "description" : "Applications icon size",
     "dependency" : "show-application-icons"
  },
- "favbox-show" : {
+ "sidebar-show" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Show favorites and session buttons",
+    "description" : "Show the sidebar",
     "tooltip" : "Choose whether or not to show the left pane of the menu."
  },
- "fav-icon-size" : {
+ "sidebar-icon-size" : {
     "type": "spinbutton",
-    "default" : 32,
+    "default" : 24,
     "min" : 16,
-    "max" : 64,
+    "max" : 48,
     "step" : 1,
     "units" : "px",
-    "description" : "Favorites icon size",
-    "dependency" : "favbox-show"
+    "description" : "Sidebar icon size",
+    "dependency" : "sidebar-show"
+ },
+ "bottombox-show" : {
+    "type" : "switch",
+    "default" : true,
+    "description" : "Show the bottom bar",
+    "tooltip" : "Choose whether or not to show the bottom bar of the menu."
  },
  "show-favorites" : {
    "type" : "switch",
@@ -125,17 +132,17 @@
    "description": "Show favorites",
    "tooltip": "Choose whether or not to show favorite files in the menu."
  },
- "show-places" : {
-    "type" : "switch",
-    "default" : true,
-    "description": "Show bookmarks and places",
-    "tooltip": "Choose whether or not to show bookmarks and places in the menu."
- },
  "show-recents" : {
    "type" : "switch",
    "default" : true,
    "description": "Show recents",
    "tooltip": "Choose whether or not to show recents in the menu."
+ },
+"show-description" : {
+   "type" : "switch",
+   "default" : true,
+   "description": "Show application descriptions",
+   "tooltip": "Choose whether or not to show application descriptions in the menu."
  },
  "category-hover" : {
     "type" : "switch",
@@ -196,7 +203,7 @@
  },
  "popup-height" : {
     "type" : "generic",
-    "default" : 515
+    "default" : 560
  },
  "reset-menu-size-button" : {
     "type" : "button",

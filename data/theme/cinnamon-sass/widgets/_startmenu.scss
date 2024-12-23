@@ -10,33 +10,86 @@ $menu_outer_border_radius: $base_border_radius * 1.25;
 .menu {
 
   // this can be used to color the entire menu background but we aren't using it here
-  &-background {}
-
-  &-favorites-box {
-    padding: $base_padding * 1.5;
-    background-color: $light_bg_color;
-    border: 1px solid transparentize(black, 0.9);
-    border-radius: $base_border_radius;
+  &-background {
+    // using this to override the default padding on menus so widgets can span edge
+    // to edge. The side effect is that some of our internal container widgets
+    // will need to have a border-radius added to them or the corners will poke out
+    // the edges of the menu.
+    .popup-menu-content { padding: 0; }
   }
 
-  &-favorites-button {
-    padding: $base_padding * 1.5;
-    border-radius: $base_border_radius;
+  &-sidebar {
+    background-color: $base_color;
+    border-radius: $menu_outer_border_radius 0 0 $menu_outer_border_radius;
+    border-right-width: 1px;
+    border-color: $borders_color;
 
-    &:hover { background-color: $lightest_bg_color; }
+    .sidebar-user-box {
+      padding-top: $menu_outer_padding;
+      padding-bottom: $menu_outer_padding / 2;
+    }
+
+    StScrollBar StButton#vhandle {
+      // add some extra spacing at the top to align this with the separator
+      margin-top: $menu_outer_padding;
+    }
+
+    .menu-favorites-button {
+      @extend %start_menu_button;
+
+      padding: 3px $base_padding 3px $base_padding;
+      margin: 0 $menu_outer_padding 0 $menu_outer_padding;
+
+      &:hover {
+        background-color: $lighter_bg_color;
+        border-color: $borders_color;
+      }
+    }
+
+    .popup-separator-menu-item {
+      -gradient-height: 1px;
+      -gradient-start: lighten($base_color, 5%);
+      -gradient-end: lighten($base_color, 5%);
+      -margin-horizontal: 0;
+      height: 1px;
+    }
   }
 
-  &-categories-box { padding: $menu_outer_padding $base_padding * 4; }
+  &-bottom-box {
+    padding: $menu_outer_padding;
+    border-radius: 0 0 $menu_outer_border_radius 0;
+    border-top-width: 1px;
+    border-color: $borders_color;
+  }
+
+  &-system-buttons-box {
+    spacing: 12px;
+
+    .system-button {
+      padding: $base_padding * 1.5;
+      border: 1px solid $borders_color;
+      border-radius: 9999px;
+      background-color: lighten($bg_color, 10%);
+
+      &:hover { background-color: lighten($bg_color, 15%); }
+    }
+  }
+
+  &-categories-box { padding: $menu_outer_padding $base_padding * 3; }
   &-applications-box { padding: $menu_outer_padding; }
-  &-applications-inner-box {
-    &:ltr { padding-left: $base_padding * 4; }
-    &:rtl { padding-right: $base_padding * 4; }
-  }
+  // This small amount of padding is needed to be able
+  // to resize the menu with the mouse
+  &-applications-scrollbox { padding-right: 3px; }
 
   &-application-button {
     @extend %start_menu_button;
 
     &-label { padding: 0; }
+    &-description {
+      @extend %caption;
+
+      color: $light_text_color;
+    }
 
     &:highlighted { font-weight: bold; }
 
@@ -73,22 +126,17 @@ $menu_outer_border_radius: $base_border_radius * 1.25;
 
   &-context-menu {}
 
-  &-selected-app-box {
-    padding-right: $base_padding * 4;
-    padding-left: $base_padding * 4;
-    text-align: right;
-  }
-
-  &-selected-app-title { @extend %heading; }
-  &-selected-app-description { color: $insensitive_fg_color; }
-
   &-search-box {
-    padding: 0  0 $base_padding $menu_outer_padding;
+    padding: $base_padding $base_padding $base_padding $menu_outer_padding;
+    border-bottom-width: 1px;
+    border-color: $borders_color;
   }
 }
 
 #menu-search-entry {
   @extend %entry;
+
+  margin: $menu_outer_padding;
 }
 
 .menu-search-entry-icon {
