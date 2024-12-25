@@ -105,6 +105,8 @@ var ModalDialog = GObject.registerClass({
         this.dialogLayout = new Dialog.Dialog(this.backgroundStack, params.styleClass);
         this.contentLayout = this.dialogLayout.contentLayout;
         this.buttonLayout = this.dialogLayout.buttonLayout;
+        this.dialogLayout._dialog.add_style_class_name("modal-dialog"); // temporarily add some support for old themes
+        this.buttonLayout.add_style_class_name("modal-dialog-button-box"); // temporarily add some support for old themes
 
         this.openAndCloseTime = 100;
         let enableRadialEffect = true;
@@ -188,7 +190,9 @@ var ModalDialog = GObject.registerClass({
     }
 
     addButton(buttonInfo) {
-        return this.dialogLayout.addButton(buttonInfo);
+        const button = this.dialogLayout.addButton(buttonInfo);
+        button.add_style_class_name("modal-dialog-button"); // temporarily add some support for old themes
+        return button;
     }
 
     _fadeOpen() {
