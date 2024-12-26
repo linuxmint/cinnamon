@@ -64,9 +64,17 @@
 
       &:outlined {
         border: 2px solid transparentize($fg_color, 0.5);
+
+        &:first-child { border-radius: $base_border_radius 0 0 $base_border_radius; }
+        &:last-child { border-radius: 0 $base_border_radius $base_border_radius 0; }
       }
 
-      &:selected { background-color: $light_bg_color; }
+      &:selected {
+        background-color: $light_bg_color;
+
+        &:first-child { border-radius: $base_border_radius 0 0 $base_border_radius; }
+        &:last-child { border-radius: 0 $base_border_radius $base_border_radius 0; }
+      }
     }
 
     .thumbnail { width: 256px; }
