@@ -84,7 +84,7 @@ var ModalDialog = GObject.registerClass({
         this._cinnamonReactive = params.cinnamonReactive;
         this._destroyOnClose = params.destroyOnClose;
 
-        Main.uiGroup.add_actor(this);
+        Main.layoutManager.modalDialogGroup.add_child(this);
 
         let constraint = new Clutter.BindConstraint({
             source: global.stage,
@@ -98,7 +98,7 @@ var ModalDialog = GObject.registerClass({
             x_fill: true,
             y_fill: true
         });
-        this._monitorConstraint = new Layout.MonitorConstraint();
+        this._monitorConstraint = new Layout.MonitorConstraint({ work_area: true });
         this._backgroundBin.add_constraint(this._monitorConstraint);
         this.add_actor(this._backgroundBin);
 
@@ -238,6 +238,8 @@ var ModalDialog = GObject.registerClass({
         if (!this.pushModal(timestamp))
             return false;
 
+        Main.panelManager.disablePanels();
+
         this._fadeOpen();
         return true;
     }
@@ -256,6 +258,8 @@ var ModalDialog = GObject.registerClass({
         this._setState(State.CLOSING);
         this.popModal(timestamp);
         this._savedKeyFocus = null;
+
+        Main.panelManager.enablePanels();
 
         this.ease({
             opacity: 0,
