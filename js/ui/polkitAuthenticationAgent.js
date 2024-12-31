@@ -473,8 +473,8 @@ var AuthenticationDialog = GObject.registerClass({
 
     cancel() {
         this._wasDismissed = true;
-        this.close(global.get_current_time());
         this._emitDone(true);
+        this.close(global.get_current_time());
     }
 
     _onDialogClosed() {
