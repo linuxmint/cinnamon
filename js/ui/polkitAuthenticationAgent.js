@@ -108,6 +108,15 @@ var AuthenticationDialog = GObject.registerClass({
         this._visibleAvatar = null;
         this._adminUsers = [];
 
+        this._sessionCompletedId = 0;
+        this._sessionRequestId = 0;
+        this._sessionShowErrorId = 0;
+        this._sessionShowInfoId = 0;
+
+        this._sessionRequestTimeoutId = 0;
+        this._completed = false;
+        this._doneEmitted = false;
+
         this.connect('closed', this._onDialogClosed.bind(this));
 
         let title = _("Authentication Required");
@@ -259,8 +268,6 @@ var AuthenticationDialog = GObject.registerClass({
         });
 
         this.contentLayout.add_child(bodyContent);
-
-        this._doneEmitted = false;
     }
 
     _onUserComboClicked() {
@@ -427,14 +434,22 @@ var AuthenticationDialog = GObject.registerClass({
                 this._session.cancel();
             this._completed = false;
 
-            this._session.disconnect(this._sessionCompletedId);
-            this._session.disconnect(this._sessionRequestId);
-            this._session.disconnect(this._sessionShowErrorId);
-            this._session.disconnect(this._sessionShowInfoId);
+            if (this._sessionCompletedId > 0) {
+                this._session.disconnect(this._sessionCompletedId);
+                this._session.disconnect(this._sessionRequestId);
+                this._session.disconnect(this._sessionShowErrorId);
+                this._session.disconnect(this._sessionShowInfoId);
+
+                this._sessionCompletedId = 0;
+                this._sessionRequestId = 0;
+                this._sessionShowErrorId = 0;
+                this._sessionShowInfoId = 0;
+            }
+
             this._session = null;
         }
 
-        if (this._sessionRequestTimeoutId) {
+        if (this._sessionRequestTimeoutId > 0) {
             GLib.source_remove(this._sessionRequestTimeoutId);
             this._sessionRequestTimeoutId = 0;
         }
