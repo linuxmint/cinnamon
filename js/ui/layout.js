@@ -284,6 +284,12 @@ LayoutManager.prototype = {
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
         this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
 
+        this.modalDialogGroup = new St.Widget({
+            name: 'modalDialogGroup',
+            layout_manager: new Clutter.BinLayout(),
+        });
+        Main.uiGroup.add_child(this.modalDialogGroup);
+
         this.keyboardBox = new St.BoxLayout({ name: 'keyboardBox',
                                               reactive: true,
                                               track_hover: true });
