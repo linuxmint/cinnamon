@@ -474,7 +474,6 @@ var AuthenticationDialog = GObject.registerClass({
     cancel() {
         this._wasDismissed = true;
         this._emitDone(true);
-        this.close(global.get_current_time());
     }
 
     _onDialogClosed() {
@@ -532,7 +531,7 @@ var AuthenticationAgent = class {
     }
 
     _completeRequest(dismissed) {
-        this._currentDialog.close();
+        this._currentDialog.close(global.get_current_time());
         this._currentDialog = null;
 
         this._native.complete(dismissed);
