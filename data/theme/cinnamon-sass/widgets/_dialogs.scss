@@ -82,7 +82,7 @@
     text-align: center;
     @extend %title_2;
 
-    &.leightweight { @extend %title_4; }
+    &.lightweight { @extend %title_4; }
   }
 
   .message-dialog-description { text-align: center; }

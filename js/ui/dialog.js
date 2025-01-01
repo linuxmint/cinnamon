@@ -244,7 +244,7 @@ var MessageDialogContent = GObject.registerClass({
 
             this._updateTitleStyleLater = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
                 this._updateTitleStyleLater = 0;
-                this._title.add_style_class_name('leightweight');
+                this._title.add_style_class_name('lightweight');
                 return GLib.SOURCE_REMOVE;
             });
         }
@@ -257,7 +257,7 @@ var MessageDialogContent = GObject.registerClass({
 
         _setLabel(this._title, title);
 
-        this._title.remove_style_class_name('leightweight');
+        this._title.remove_style_class_name('lightweight');
         this._updateTitleStyle();
 
         this.notify('title');
