@@ -2772,6 +2772,13 @@ Panel.prototype = {
     * current position in order to calculate the exposed size.
     */
     _setClipRegion: function(hidden, offset) {
+        if (!this._shouldClipPanel()) {
+            // important during monitor layout changes.
+            this.actor.remove_clip(); // no-op if there wasn't any clipping to begin with.
+            Main.layoutManager.updateChrome()
+            return;
+        }
+
         let animating = typeof offset === "number";
         let isHorizontal = this.panelPosition == PanelLoc.top
                            || this.panelPosition == PanelLoc.bottom;
@@ -2837,6 +2844,56 @@ Panel.prototype = {
         }
         // Force the layout manager to update the input region
         Main.layoutManager.updateChrome()
+    },
+
+    _shouldClipPanel: function() {
+        const n_monitors = global.display.get_n_monitors();
+
+        if (n_monitors === 1)  {
+            return false;
+        }
+
+        for (let i = 0; i < n_monitors; i++) {
+            if (i === this.monitorIndex) {
+                continue;
+            }
+
+            const m_rect = global.display.get_monitor_geometry(i);
+            const test_rect = new Meta.Rectangle();
+
+            switch (this.panelPosition) {
+                case PanelLoc.top:
+                case PanelLoc.bottom:
+                    test_rect.x = this.actor.x;
+                    test_rect.width = this.actor.width;
+                    test_rect.height = this.height;
+
+                    if (this.panelPosition === PanelLoc.top) {
+                        test_rect.y = this.monitor.y - this.height;
+                    } else {
+                        test_rect.y = this.monitor.y + this.monitor.height;
+                    }
+                    break;
+                case PanelLoc.left:
+                case PanelLoc.right:
+                    test_rect.y = this.actor.y;
+                    test_rect.height = this.actor.height;
+                    test_rect.width = this.height;
+
+                    if (this.panelPosition === PanelLoc.left) {
+                        test_rect.x = this.monitor.x - this.height;
+                    } else {
+                        test_rect.x = this.monitor.x + this.monitor.width;
+                    }
+                    break;
+            }
+
+            if (m_rect.overlap(test_rect)) {
+                return true;
+            }
+        }
+
+        return false;
     },
 
     /**
