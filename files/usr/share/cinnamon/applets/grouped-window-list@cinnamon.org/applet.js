@@ -613,10 +613,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     updateTitleDisplay(titleDisplay) {
-        if (titleDisplay === TitleDisplay.None
-            || this.state.lastTitleDisplay === TitleDisplay.None) {
-            this.refreshCurrentWorkspace();
-        }
+        this.refreshAllWorkspaces();
 
         this.workspaces.forEach( workspace => {
             workspace.appGroups.forEach( appGroup => {
@@ -699,8 +696,8 @@ class GroupedWindowListApplet extends Applet.Applet {
         if( (this.state.settings.thumbnailScrollBehavior) || (this.state.settings.scrollBehavior === 2) ||
             (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior !== 3
              && !e && sourceFromAppGroup)  ||
-            (this.state.settings.leftClickAction !== 3 && this.state.settings.scrollBehavior === 3               
-                        && e && !sourceFromAppGroup)  || 
+            (this.state.settings.leftClickAction !== 3 && this.state.settings.scrollBehavior === 3
+                        && e && !sourceFromAppGroup)  ||
             (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior === 3)) {
 
             this.state.set({scrollActive: true});
@@ -808,7 +805,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         let pos = 0;
         while(pos < this.state.dragging.posList.length && axis[0] > this.state.dragging.posList[pos])
             pos++;
-        
+
         let favLength = 0;
         for (const appGroup of currentWorkspace.appGroups) {
             if(appGroup.groupState.isFavoriteApp)
@@ -925,7 +922,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                     favorite => favorite.id === source.groupState.appId
                 );
                 if (refFav > -1) {
-                    
+
                     const pinned = []; //pinned apps found before source
                     for (const appGroup of currentWorkspace.appGroups) {
                         if(appGroup.groupState.appId == source.groupState.appId)
@@ -933,7 +930,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                         if(!pinned.includes(appGroup.groupState.appId))
                             pinned.push(appGroup.groupState.appId);
                     }
-   
+
                     const opts = {
                         appId: source.groupState.appId,
                         app: source.groupState.app,
@@ -1014,7 +1011,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             currentWorkspace.windowRemoved(currentWorkspace.metaWorkspace, metaWindow);
             return;
         }
-        
+
         currentWorkspace.windowAdded(currentWorkspace.metaWorkspace, metaWindow);
     }
 
