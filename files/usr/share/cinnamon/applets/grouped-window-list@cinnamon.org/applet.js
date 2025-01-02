@@ -306,6 +306,8 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'show-apps-order-timeout', value: 'showAppsOrderTimeout', cb: null},
             {key: 'super-num-hotkeys', value: 'SuperNumHotkeys', cb: this.bindAppKeys},
             {key: 'title-display', value: 'titleDisplay', cb: this.updateTitleDisplay},
+            {key: 'set-labeled-button-width', value: 'setLabeledButtonWidth', cb: this.refreshAllWorkspaces},
+            {key: 'labeled-button-width', value: 'labeledButtonWidth', cb: this.refreshAllWorkspaces},
             {key: 'launcher-animation-effect', value: 'launcherAnimationEffect', cb: null},
             {key: 'number-display', value: 'numDisplay', cb: this.updateWindowNumberState},
             {key: 'enable-app-button-dragging', value: 'enableDragging', cb: this.draggableSettingChanged},

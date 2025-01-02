@@ -350,9 +350,16 @@ class AppGroup {
 
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
             if (allocateForLabel) {
-                const max = this.labelVisiblePref && this.groupState.metaWindows.length > 0 ?
-                    labelNaturalSize + iconNaturalSize + 6 : 0;
-                alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
+                if (this.state.settings.setLabeledButtonWidth && this.labelVisiblePref) {
+                    alloc.natural_size = this.state.settings.labeledButtonWidth;
+                } else {
+                    const max = this.labelVisiblePref && this.groupState.metaWindows.length > 0 ?
+                        labelNaturalSize + iconNaturalSize + 6 : 0;
+                    alloc.natural_size = Math.min(
+                        iconNaturalSize + Math.max(max, labelNaturalSize),
+                        MAX_BUTTON_WIDTH * global.ui_scale
+                    );
+                }
             } else {
                 alloc.natural_size = iconNaturalSize + 6 * global.ui_scale;
             }
@@ -459,7 +466,8 @@ class AppGroup {
             return;
         }
 
-        const width = MAX_BUTTON_WIDTH * global.ui_scale;
+        const width = this.state.settings.setLabeledButtonWidth ? this.state.settings.labeledButtonWidth :
+            MAX_BUTTON_WIDTH * global.ui_scale;
 
         this.labelVisiblePref = true;
         if (this.label.text == null) {
@@ -609,7 +617,7 @@ class AppGroup {
         if (!this.groupState || !this.groupState.groupReady || this.groupState.willUnmount) {
             return;
         }
-        
+
         this.groupState.metaWindows.forEach( window => {
             if (window === metaWindow && !getFocusState(window)) {
                 // Even though this may not be the last focused window, we want it to be
