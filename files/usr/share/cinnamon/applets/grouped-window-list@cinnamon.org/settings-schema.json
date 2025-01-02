@@ -49,6 +49,8 @@
       "title" : "Application Buttons",
       "keys": [
         "title-display",
+        "set-labeled-button-width",
+        "labeled-button-width",
         "launcher-animation-effect",
         "number-display",
         "enable-app-button-dragging"
@@ -173,6 +175,21 @@
       "Window title": 3,
       "Window title (only for the focused window)": 4
     }
+  },
+  "set-labeled-button-width": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Set a custom width for labeled buttons"
+  },
+  "labeled-button-width": {
+    "dependency": "set-labeled-button-width",
+    "type": "spinbutton",
+    "default" : 150,
+    "min" : 5,
+    "max" : 4000,
+    "step" : 5,
+    "units" : "pixels",
+    "description" : "Labeled button width"
   },
   "launcher-animation-effect": {
     "type": "combobox",
