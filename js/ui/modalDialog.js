@@ -84,6 +84,8 @@ var ModalDialog = GObject.registerClass({
         this._cinnamonReactive = params.cinnamonReactive;
         this._destroyOnClose = params.destroyOnClose;
 
+        this.connect('destroy', this._onDestroy.bind(this));
+
         Main.layoutManager.modalDialogGroup.add_child(this);
 
         let constraint = new Clutter.BindConstraint({
@@ -368,6 +370,16 @@ var ModalDialog = GObject.registerClass({
                 this._setState(State.FADED_OUT);
             }
         });
+    }
+
+    /**
+     * _onDestroy:
+     *
+     * This is called when the dialog actor is destroyed, either
+     * by destroying its container or by explicitly calling this.destroy().
+     */
+    _onDestroy() {
+        Main.panelManager.enablePanels();
     }
 });
 
