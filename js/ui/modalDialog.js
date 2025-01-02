@@ -74,7 +74,7 @@ var ModalDialog = GObject.registerClass({
         });
 
         params = Params.parse(params, {
-            cinnamonReactive: Main.layoutManager.keyboardBox.visible,
+            cinnamonReactive: Main.virtualKeyboard.enabled,
             styleClass: null,
             destroyOnClose: true,
         });
