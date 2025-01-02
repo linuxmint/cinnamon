@@ -551,5 +551,9 @@ Keyboard.prototype = {
 
     get Name() {
         return 'cinnamon';
+    },
+
+    get enabled() {
+        return this._enableKeyboard;
     }
 };

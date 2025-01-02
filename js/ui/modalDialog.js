@@ -74,7 +74,7 @@ var ModalDialog = GObject.registerClass({
         });
 
         params = Params.parse(params, {
-            cinnamonReactive: false,
+            cinnamonReactive: Main.virtualKeyboard.enabled,
             styleClass: null,
             destroyOnClose: true,
         });
@@ -84,9 +84,7 @@ var ModalDialog = GObject.registerClass({
         this._cinnamonReactive = params.cinnamonReactive;
         this._destroyOnClose = params.destroyOnClose;
 
-        this.connect('destroy', this._onDestroy.bind(this));
-
-        Main.layoutManager.modalDialogGroup.add_child(this);
+        Main.uiGroup.add_actor(this);
 
         let constraint = new Clutter.BindConstraint({
             source: global.stage,
@@ -240,8 +238,6 @@ var ModalDialog = GObject.registerClass({
         if (!this.pushModal(timestamp))
             return false;
 
-        Main.panelManager.disablePanels();
-
         this._fadeOpen();
         return true;
     }
@@ -260,8 +256,6 @@ var ModalDialog = GObject.registerClass({
         this._setState(State.CLOSING);
         this.popModal(timestamp);
         this._savedKeyFocus = null;
-
-        Main.panelManager.enablePanels();
 
         this.ease({
             opacity: 0,
@@ -370,16 +364,6 @@ var ModalDialog = GObject.registerClass({
                 this._setState(State.FADED_OUT);
             }
         });
-    }
-
-    /**
-     * _onDestroy:
-     *
-     * This is called when the dialog actor is destroyed, either
-     * by destroying its container or by explicitly calling this.destroy().
-     */
-    _onDestroy() {
-        Main.panelManager.enablePanels();
     }
 });
 
