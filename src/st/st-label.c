@@ -352,7 +352,6 @@ st_label_set_text (StLabel     *label,
   ClutterText *ctext;
 
   g_return_if_fail (ST_IS_LABEL (label));
-  g_return_if_fail (text != NULL);
 
   priv = label->priv;
   ctext = CLUTTER_TEXT (priv->label);
