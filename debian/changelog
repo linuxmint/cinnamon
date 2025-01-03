@@ -1,3 +1,35 @@
+cinnamon (6.4.4) xia; urgency=medium
+
+  [ Clement Lefebvre ]
+  * dialogs: Fix code casing
+  * runDialog: Fix cinnamon restart OSD showing over dialog
+  * lightbox: Set as important
+
+  [ JosephMcc ]
+  * theme: Fix more radius issues in GWL window previews (#12585)
+
+  [ Michael Webster ]
+  * polkitAuthenticationAgent.js: Improve initialization, cleanup of signal and timer handles.
+  * polkitAuthenticationAgent.js: Fix dialog cancellation when transitions are disabled.
+
+  [ JosephMcc ]
+  * Fix the onscreen keyboard not working when a modal dialog is open (#12599)
+
+  [ fredcw ]
+  * Fix spelling (#12598)
+
+  [ Michael Webster ]
+  * panel.js: Only clip the panel size if necessary. (#12592)
+  * polkitAuthenticationAgent.js: Only close the dialog once.
+
+  [ Clement Lefebvre ]
+  * dialogs: Re-enable panels on destroy
+
+  [ Michael Webster ]
+  * modalDialog.js: Disable the lightbox if the virtual keyboard is enabled.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 03 Jan 2025 20:52:57 +0000
+
 cinnamon (6.4.3) xia; urgency=medium
 
   [ JosephMcc ]
