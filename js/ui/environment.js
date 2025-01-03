@@ -10,12 +10,14 @@ imports.gi.versions.Soup = '3.0';
 const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
 const Gettext = imports.gettext;
+const Signals = imports.signals;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Meta = imports.gi.Meta;
 const Overrides = imports.ui.overrides;
+const SignalTracker = imports.misc.signalTracker;
 
 // We can't import cinnamon JS modules yet, because they may have
 // variable initializations, etc, that depend on init() already having
@@ -290,6 +292,24 @@ function init() {
     }
 
     GObject.gtypeNameBasedOnJSPath = true;
+
+    GObject.Object.prototype.connectObject = function (...args) {
+        SignalTracker.connectObject(this, ...args);
+    };
+    GObject.Object.prototype.connect_object = function (...args) {
+        SignalTracker.connectObject(this, ...args);
+    };
+    GObject.Object.prototype.disconnectObject = function (...args) {
+        SignalTracker.disconnectObject(this, ...args);
+    };
+    GObject.Object.prototype.disconnect_object = function (...args) {
+        SignalTracker.disconnectObject(this, ...args);
+    };
+    const _addSignalMethods = Signals.addSignalMethods;
+    Signals.addSignalMethods = function (prototype) {
+        _addSignalMethods(prototype);
+        SignalTracker.addObjectSignalMethods(prototype);
+    };
 
     // Miscellaneous monkeypatching
     _patchContainerClass(St.BoxLayout);
