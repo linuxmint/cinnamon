@@ -65,6 +65,7 @@ class Dialog extends St.Widget {
         });
 
         this.buttonLayout = new St.Widget ({
+            style_class: "dialog-button-box",
             layout_manager: new Clutter.BoxLayout({
                 homogeneous: true,
                 spacing: 12,
