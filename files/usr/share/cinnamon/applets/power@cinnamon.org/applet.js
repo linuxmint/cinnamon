@@ -399,7 +399,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
               </interface>
             </node>`;
             let PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(PowerProfilesInterface);
-            this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, "net.haess.PowerProfiles", "/net/hadess/PowerProfiles");
+            this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, "net.hadess.PowerProfiles", "/net/hadess/PowerProfiles");
             // Upower if hadess doesn't work..
             if (!this._profilesProxy.Profiles) {
                 // UPower interface
