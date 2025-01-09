@@ -1,3 +1,22 @@
+cinnamon (6.4.5) xia; urgency=medium
+
+  [ fredcw ]
+  * dialog.js: add style class dialog-button-box (#12601)
+
+  [ Michael Webster ]
+  * virtualKeyboard.js: Re-enable focus monitoring.
+  * main.js: Handle an end-session-dialog failure to show.
+
+  [ Clement Lefebvre ]
+  * power applet: Fix typo
+  * power applet: Apply the proper class name to the active profile
+  * closeDialog: Fix exception when the window has no app
+
+  [ Michael Webster ]
+  * eventView.js: (minor) Fix possible undefined argument for set_events().
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 09 Jan 2025 16:44:59 +0000
+
 cinnamon (6.4.4) xia; urgency=medium
 
   [ Clement Lefebvre ]
