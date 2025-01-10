@@ -70,7 +70,7 @@ class AppGroup {
             appInfo: params.app.get_app_info(),
             metaWindows: params.metaWindows || [],
             windowCount: params.metaWindows ? params.metaWindows.length : 0,
-            notificationCount: params.notificationCount ?? 0,
+            notificationCount: 0,
             lastFocused: params.metaWindow || null,
             isFavoriteApp: !params.metaWindow ? true : params.isFavoriteApp === true,
             autoStartIndex: this.state.autoStartApps.findIndex( app => app.id === params.appId),
@@ -1108,7 +1108,7 @@ class AppGroup {
         this.checkFocusStyle();
     }
 
-    notificationReceived(notification) {
+    incrementNotificationCount() {
         if (this.groupState.willUnmount) return;
 
         this.groupState.set({ notificationCount: this.groupState.notificationCount + 1 });

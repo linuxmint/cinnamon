@@ -56,7 +56,7 @@ class Workspace {
         // Ugly change: refresh the removed app instances from all workspaces
         this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
         this.signals.connect(global.window_manager, 'switch-workspace' , (...args) => this.reloadList(...args));
-        Main.messageTray.connect('notify-applet-update', (mtray, notification) => this.calculateAppNotifications(mtray, notification));
+        Main.messageTray.connect('notify-applet-update', (mtray, notification) => this.notificationReceived(mtray, notification));
         this.on_orientation_changed(null, true);
     }
 
@@ -81,11 +81,12 @@ class Workspace {
         return windowCount;
     }
 
-    calculateAppNotifications(mtray, notification) {
-        var appId = notification.source.app.get_id();
+    notificationReceived(mtray, notification) {
+        const appId = notification.source.app?.get_id();
+        if (!appId) return;
         this.appGroups.forEach(appGroup => {
             if (appId === appGroup.groupState.appId) {
-                appGroup.notificationReceived(notification);
+                appGroup.incrementNotificationCount(notification);
                 return;
             }
         });
