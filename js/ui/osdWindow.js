@@ -64,6 +64,12 @@ class OsdWindow extends Clutter.Actor {
         });
         this._hbox.add_child(this._vbox);
 
+        this._leveltext = new St.Label({
+            style_class: 'level-text',
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+        this._hbox.add_child(this._leveltext);
+
         this._label = new St.Label();
         this._vbox.add_child(this._label);
 
@@ -90,7 +96,9 @@ class OsdWindow extends Clutter.Actor {
 
     setLevel(value) {
         this._level.visible = value != null;
+        this._leveltext.visible = this._level.visible;
         if (this._level.visible) {
+            this._leveltext.text = "%d%%".format(value);
             value = value / 100;
             if (this.visible)
                 this._level.ease_property('value', value, {

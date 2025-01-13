@@ -20,7 +20,7 @@ $ws_dot_inactive: $ws_indicator_height / 6;
   & > * { spacing: $base_padding * 2; }
 
   StIcon {
-    icon-size: 32px;
+    icon-size: 44px;
   }
 
   StLabel {
@@ -43,6 +43,14 @@ $ws_dot_inactive: $ws_indicator_height / 6;
   .level-bar {
     border-radius: $base_border_radius;
     background-color: $fg_color;
+  }
+
+  .level-text {
+   min-width: 44px;
+   text-align: right;
+
+   &:ltr { margin-right: 0px; }
+   &:rtl { margin-left: 0px; }
   }
 }
 
