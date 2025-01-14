@@ -196,8 +196,7 @@ cr_font_family_to_string (CRFontFamily const * a_this,
                                                 &stringue);
 
         if (status == CR_OK && stringue) {
-                result = (guchar *) stringue->str;
-                g_string_free (stringue, FALSE);
+                result = (guchar *) g_string_free (stringue, FALSE);
                 stringue = NULL;
 
         } else {
