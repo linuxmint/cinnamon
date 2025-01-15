@@ -85,16 +85,6 @@ st_bin_remove (ClutterContainer *container,
 }
 
 static void
-st_bin_foreach (ClutterContainer *container,
-                ClutterCallback   callback,
-                gpointer          user_data)
-{
-  StBinPrivate *priv = ST_BIN (container)->priv;
-
-  callback (priv->child, user_data);
-}
-
-static void
 clutter_container_iface_init (ClutterContainerIface *iface)
 {
   iface->add = st_bin_add;
