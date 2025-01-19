@@ -58,7 +58,7 @@ class Module:
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            options = ["auto", _("Automatic")], ["manual", _("Specify start and end times")]
+            options = ["auto", _("Automatic")], ["manual", _("Specify start and end times")], ["always", _("Keep always on")]
             widget = GSettingsComboBox(_("Schedule"), COLOR_SCHEMA, "night-light-schedule-mode", options, size_group=size_group)
             section.add_row(widget)
             section.need_separator = False
