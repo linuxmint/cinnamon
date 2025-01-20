@@ -1641,7 +1641,13 @@ do_size_property (StThemeNode   *node,
                   CRDeclaration *decl,
                   int           *node_value)
 {
-  get_length_from_term_int (node, decl->value, FALSE, node_value);
+  CRTerm *term = decl->value;
+
+  if (term->type == TERM_IDENT &&
+      strcmp (term->content.str->stryng->str, "auto") == 0)
+    *node_value = -1;
+  else
+    get_length_from_term_int (node, term, FALSE, node_value);
 }
 
 void
