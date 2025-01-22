@@ -933,6 +933,16 @@ vfade_setting_changed_cb (GSettings *settings, gchar *key, gpointer user_data)
     st_scroll_view_style_changed (widget);
 }
 
+static void
+st_scroll_view_vadjustment_changed (GSettings *settings,
+                                    gchar *key,
+                                    gpointer user_data)
+{
+  ClutterActor *scroll_view = CLUTTER_ACTOR (user_data);
+
+  clutter_actor_queue_redraw (scroll_view);
+}
+
 static gboolean
 st_scroll_view_scroll_event (ClutterActor       *self,
                              ClutterScrollEvent *event)
@@ -1086,6 +1096,8 @@ st_scroll_view_init (StScrollView *self)
 
   clutter_actor_add_child (CLUTTER_ACTOR (self), priv->hscroll);
   clutter_actor_add_child (CLUTTER_ACTOR (self), priv->vscroll);
+
+  g_signal_connect (priv->vadjustment, "notify::value", G_CALLBACK (st_scroll_view_vadjustment_changed), self);
 
   /* mouse scroll is enabled by default, so we also need to be reactive */
   priv->mouse_scroll = TRUE;
