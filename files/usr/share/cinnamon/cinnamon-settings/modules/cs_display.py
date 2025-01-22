@@ -61,6 +61,12 @@ class Module:
             self.muffin_settings.connect("changed::experimental-features", self.experimental_features_changed)
             self.fractional_switch.connect("notify::active", self.fractional_switch_toggled)
 
+            scale_mode_options = [["scale-up",      _("Scale content up"  )],
+                                  ["scale-ui-down", _("Scale content down")]]
+
+            widget = GSettingsComboBox(_("Fractional scaling mode"), "org.cinnamon.muffin.x11", "fractional-scale-mode", scale_mode_options)
+            settings.add_reveal_row(widget, "org.cinnamon.muffin", "experimental-features", [], lambda val, vals: "x11-randr-fractional-scaling" in val)
+
     def experimental_features_changed(self, settings, key):
         self.fractional_switch.freeze_notify()
 
