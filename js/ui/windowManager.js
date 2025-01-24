@@ -339,7 +339,7 @@ var WindowManager = class WindowManager {
         this._dimmedWindows = [];
         this._animationBlockCount = 0;
         this._switchData = null;
-        this._workspaceOsds = [];
+        this._workspaceOsds = {};
 
         this._cinnamonwm.connect('kill-window-effects', (cinnamonwm, actor) => {
             this._unminimizeWindowDone(cinnamonwm, actor);
@@ -1322,12 +1322,11 @@ var WindowManager = class WindowManager {
     }
 
     _showWorkspaceOSDForMonitor(index, currentWorkspaceIndex) {
-        if (this._workspaceOsds[index] == null) {
+        if (this._workspaceOsds[index] === undefined) {
             let osd = new WorkspaceOsd.WorkspaceOsd(index);
-            this._workspaceOsds.push(osd);
+            this._workspaceOsds[index] = osd;
             osd.connect('destroy', () => {
-                this._workspaceOsds[index] = null;
-                this._workspaceOsds.splice(index, 1);
+                this._workspaceOsds[index] = undefined;
             });
         }
 
