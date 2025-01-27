@@ -168,8 +168,7 @@ cr_attr_sel_to_string (CRAttrSel const * a_this)
         }
 
         if (str_buf) {
-                result = (guchar *) str_buf->str;
-                g_string_free (str_buf, FALSE);
+                result = (guchar *) g_string_free (str_buf, FALSE);
         }
 
         return result;

@@ -82,8 +82,7 @@ cr_stylesheet_to_string (CRStyleSheet const *a_this)
 		}
         }
 	if (stringue) {
-		str = stringue->str ;
-		g_string_free (stringue, FALSE) ;
+		str = g_string_free (stringue, FALSE) ;
 		stringue = NULL ;
 	}
 	return str ;
