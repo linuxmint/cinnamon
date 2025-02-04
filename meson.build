@@ -164,9 +164,9 @@ install_subdir(
 
 session_conf = configuration_data()
 if have_networkmanager
-    session_conf.set('REQUIRED', '')
-else
     session_conf.set('REQUIRED', 'nm-applet;')
+else
+    session_conf.set('REQUIRED', '')
 endif
 
 session_files = ['cinnamon.session', 'cinnamon2d.session']
