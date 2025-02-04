@@ -115,7 +115,7 @@ libcinnamon_deps = [
 
 libcinnamon_deps += nm_deps
 
-if have_networkmanager
+if build_nm_agent
     cinnamon_sources += [
         'cinnamon-network-agent.c',
         'cinnamon-network-agent.h',
@@ -210,7 +210,7 @@ cinnamon_gir_includes = [
     st_gir[0],
 ]
 
-if have_networkmanager
+if build_nm_agent
     cinnamon_gir_includes += ['NM-1.0']
 endif
 

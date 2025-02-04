@@ -28,7 +28,7 @@ cmenu = dependency('libcinnamon-menu-3.0', version: '>= 4.8.0')
 cogl = dependency('muffin-cogl-0')
 cogl_path = dependency('muffin-cogl-path-0')
 dbus = dependency('dbus-1')
-gcr = dependency('gcr-base-3', version:'>=3.7.5')
+gcr = dependency('gcr-base-3', version: '>= 3.7.5')
 gdkx11 = dependency('gdk-x11-3.0')
 gi = dependency('gobject-introspection-1.0', version: '>= 0.9.2')
 polkit = dependency('polkit-agent-1', version: '>= 0.100')
@@ -47,11 +47,12 @@ X11 = dependency('x11')
 xml = dependency('libxml-2.0')
 
 nm_deps = []
-have_networkmanager = not get_option('disable_networkmanager')
-if have_networkmanager
+build_nm_agent = get_option('build_nm_agent')
+if build_nm_agent
     nm_deps += dependency('libnm', version: '>= 1.10.4')
     nm_deps += dependency('libsecret-1', version: '>= 0.18')
 endif
+message('Building NetworkManager agent: @0@'.format(build_nm_agent))
 
 if get_option('build_recorder')
 	gstreamer = dependency('gstreamer-1.0')
@@ -60,6 +61,8 @@ else
 	gstreamer = dependency('', required: false)
 	gstreamer_base = dependency('', required: false)
 endif
+message('Building recorder: @0@'.format(get_option('build_recorder')))
+
 
 # on some systems we need to find the math lib to make sure it builds
 cc = meson.get_compiler('c')
@@ -72,7 +75,7 @@ python = find_program('python3')
 cinnamon_conf = configuration_data()
 cinnamon_conf.set_quoted('VERSION', version)
 cinnamon_conf.set_quoted('GETTEXT_PACKAGE', meson.project_name().to_lower())
-cinnamon_conf.set('HAVE_NETWORKMANAGER', have_networkmanager)
+cinnamon_conf.set('BUILT_NM_AGENT', build_nm_agent)
 
 have_mallinfo = cc.has_function('mallinfo', prefix: '#include <malloc.h>')
 if have_mallinfo
@@ -147,7 +150,7 @@ install_subdir(
 config_js_conf = configuration_data()
 config_js_conf.set('PACKAGE_NAME', meson.project_name().to_lower())
 config_js_conf.set('PACKAGE_VERSION', version)
-config_js_conf.set10('HAVE_NETWORKMANAGER', have_networkmanager)
+config_js_conf.set10('BUILT_NM_AGENT', build_nm_agent)
 
 configure_file(
     input: 'js/misc/config.js.in',
@@ -163,7 +166,9 @@ install_subdir(
 )
 
 session_conf = configuration_data()
-if have_networkmanager
+# If cinnamon is configured to use its internal NetworkManager agent, do *not* require nm-applet
+# by the session manager.
+if build_nm_agent
     session_conf.set('REQUIRED', '')
 else
     session_conf.set('REQUIRED', 'nm-applet;')

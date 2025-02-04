@@ -7,6 +7,10 @@ ignore = [
     sniffer_headers,
 ]
 
+if not build_nm_agent
+    ignore += 'cinnamon-network-agent.h'
+endif
+
 if not get_option('build_recorder')
     ignore += 'cinnamon-recorder.h'
 endif
