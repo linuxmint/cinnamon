@@ -10,6 +10,7 @@ const PopupMenu = imports.ui.popupMenu;
 const SignalManager = imports.misc.signalManager;
 const Mainloop = imports.mainloop;
 const Cinnamon = imports.gi.Cinnamon;
+const Gio = imports.gi.Gio;
 
 const SCROLL_DELAY = 200;
 
@@ -21,6 +22,7 @@ const PEEK_TRANSPARENCY_FILTER_TYPES = [
 class CinnamonBarApplet extends Applet.Applet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
+        this.muffinSettings = new Gio.Settings({ schema_id: 'org.cinnamon.muffin' });
         this.settings = new Settings.AppletSettings(this, "cornerbar@cinnamon.org", instance_id);
 
         this.settings.bind("peek-at-desktop", "peek_at_desktop");
@@ -191,11 +193,16 @@ class CinnamonBarApplet extends Applet.Applet {
 
             let index = global.screen.get_active_workspace_index();
 
-            if ((edir == Clutter.ScrollDirection.UP) == (this.scroll_behavior == "normal"))
-                index = index - 1;
-            else
-                index = index + 1;
+            let workspaceCycle = this.muffinSettings.get_boolean('workspace-cycle')
 
+            if ((edir == Clutter.ScrollDirection.UP) == (this.scroll_behavior == 'normal')) {
+                index--;
+                if (index < 0) index = workspaceCycle ? global.screen.n_workspaces - 1 : 0;
+            } else {
+                index++;
+                if (index == global.screen.n_workspaces) index = workspaceCycle ? 0 : index - 1;
+            }
+            
             if (global.screen.get_workspace_by_index(index) != null) {
                 global.screen.get_workspace_by_index(index).activate(global.get_current_time());
             }
