@@ -1,3 +1,15 @@
+cinnamon (6.4.7) xia; urgency=medium
+
+  [ Michael Webster ]
+  * cinnamon-calendar-server.py: Refresh remote calendars when the event list is opened.
+  * windowManager.js: Fix cleanup of WorkspaceOsd instances.
+  * st-entry.c: Fix argument order for _st_paint_shadow_with_opacity().
+
+  [ Ilham Ifham ]
+  * Fixed issue with grouped-window-list-thumbnail-menu hover (#12666)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 07 Feb 2025 18:35:20 +0000
+
 cinnamon (6.4.6) xia; urgency=medium
 
   * theme: Give the endSessionDialog a min-width
