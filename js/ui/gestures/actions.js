@@ -312,7 +312,13 @@ var VolumeAction = class extends BaseAction {
 
         this.ignoring = true;
 
-        this.max_volume = mixer.get_vol_max_amplified();
+        const soundSettings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.sound" });
+
+        if(soundSettings.get_boolean("allow-amplified-volume"))
+            this.max_volume = mixer.get_vol_max_amplified();
+        else
+            this.max_volume = mixer.get_vol_max_norm();
+
         this.pct_step = Math.ceil(this.max_volume / 100);
     }
 
@@ -350,7 +356,7 @@ var VolumeAction = class extends BaseAction {
             sink.change_is_muted(false);
         }
 
-        Main.osdWindowManager.show(-1, this._get_volume_icon(int_pct, false), int_pct, false);
+        Main.osdWindowManager.show(-1, this._get_volume_icon(int_pct, false), null, int_pct, false);
     }
 
     _toggle_muted() {
@@ -364,7 +370,7 @@ var VolumeAction = class extends BaseAction {
         sink.change_is_muted(!is_muted);
 
         const percent = !is_muted ? 0 : (sink.volume / this.pct_step).clamp(0, 100);
-        Main.osdWindowManager.show(-1, this._get_volume_icon(percent), percent, false);
+        Main.osdWindowManager.show(-1, this._get_volume_icon(percent), null, percent, false);
     }
 
     _get_volume_icon(volume_pct) {
