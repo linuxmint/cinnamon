@@ -89,7 +89,6 @@ Depends:
  metacity,
  nemo,
  network-manager-gnome [linux-any],
- policykit-1-gnome,
  python3,
  python3-dbus,
  python3-distro,
@@ -104,7 +103,6 @@ Depends:
  python3-tinycss2,
  python3-tz,
  streamer,
- wget,
  xapps-common (>= 2.5.0),
  xdg-desktop-portal-gtk,
  xdg-desktop-portal-xapp,
@@ -118,6 +116,7 @@ Recommends:
  gnome-themes-extra | gnome-themes-standard,
  gnome-online-accounts-gtk,
  touchegg,
+ wget | curl,
 Suggests: cinnamon-doc
 Provides: notification-daemon, x-window-manager, polkit-1-auth-agent
 Description: Modern Linux desktop
