@@ -116,7 +116,8 @@ Recommends:
  gnome-themes-extra | gnome-themes-standard,
  gnome-online-accounts-gtk,
  touchegg,
- wget | curl,
+ wget,
+ curl,
 Suggests: cinnamon-doc
 Provides: notification-daemon, x-window-manager, polkit-1-auth-agent
 Description: Modern Linux desktop
