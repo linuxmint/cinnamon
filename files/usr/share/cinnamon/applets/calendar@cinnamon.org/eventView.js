@@ -405,7 +405,7 @@ class EventsManager {
         }
 
         if (any_removed) {
-            this._event_list.set_events(this.events_by_date[this.current_selected_date.to_unix()]);
+            this._event_list.set_events(this.events_by_date[this.current_selected_date.to_unix()] || null);
             this.emit("events-updated");
         }
 
@@ -445,7 +445,7 @@ class EventsManager {
         }
 
         if (changed) {
-            this._event_list.set_events(this.events_by_date[this.current_selected_date.to_unix()]);
+            this._event_list.set_events(this.events_by_date[this.current_selected_date.to_unix()] || null);
         }
 
         this._start_gc_timer();

@@ -13,8 +13,9 @@
   &-key {
     @extend %button;
 
-    min-height: 30px;
-    min-width: 30px;
+    min-height: 2em;
+    min-width: 2em;
+    padding: 0;
     font-size: 1.2em;
     font-weight: bold;
 
@@ -23,7 +24,10 @@
 
   &-subkeys {
     padding: $base_padding;
-    -arrow-border-radius: $borders_color;
+    -arrow-background-color: $bg_color;
+    -arrow-border-width: 1px;
+    -arrow-border-radius: $base_border_radius;
+    -arrow-border-color: lighten($borders_color, 10%);
     -arrow-base: 20px;
     -arrow-rise: 10px;
     -boxpointer-gap: 0;

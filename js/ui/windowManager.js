@@ -86,9 +86,9 @@ class DisplayChangeDialog extends ModalDialog.ModalDialog {
         this._cancelButton = this.addButton({ label: _("Revert"),
                                               action: this._onFailure.bind(this),
                                               key: Clutter.KEY_Escape });
+        this._cancelButton.grab_key_focus();
         this._okButton = this.addButton({ label: _("Keep changes"),
-                                          action: this._onSuccess.bind(this),
-                                          default: true });
+                                          action: this._onSuccess.bind(this) });
 
         this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, ONE_SECOND, this._tick.bind(this));
         GLib.Source.set_name_by_id(this._timeoutId, '[cinnamon] this._tick');
@@ -339,7 +339,7 @@ var WindowManager = class WindowManager {
         this._dimmedWindows = [];
         this._animationBlockCount = 0;
         this._switchData = null;
-        this._workspaceOsds = [];
+        this._workspaceOsds = {};
 
         this._cinnamonwm.connect('kill-window-effects', (cinnamonwm, actor) => {
             this._unminimizeWindowDone(cinnamonwm, actor);
@@ -1322,12 +1322,11 @@ var WindowManager = class WindowManager {
     }
 
     _showWorkspaceOSDForMonitor(index, currentWorkspaceIndex) {
-        if (this._workspaceOsds[index] == null) {
+        if (this._workspaceOsds[index] === undefined) {
             let osd = new WorkspaceOsd.WorkspaceOsd(index);
-            this._workspaceOsds.push(osd);
+            this._workspaceOsds[index] = osd;
             osd.connect('destroy', () => {
-                this._workspaceOsds[index] = null;
-                this._workspaceOsds.splice(index, 1);
+                this._workspaceOsds[index] = undefined;
             });
         }
 

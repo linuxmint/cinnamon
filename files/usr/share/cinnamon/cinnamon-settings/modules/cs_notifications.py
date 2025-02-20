@@ -69,6 +69,9 @@ class Module:
         spin.revealer.settings = Gio.Settings("org.cinnamon.desktop.notifications")
         spin.revealer.settings.bind_with_mapping("notification-screen-display", spin.revealer, "reveal-child", Gio.SettingsBindFlags.GET, lambda option: option == "fixed-screen", None)
 
+        switch = GSettingsSwitch(_("Display notifications over fullscreen windows"), "org.cinnamon.desktop.notifications", "fullscreen-notifications")
+        settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
+
         spin = GSettingsSpinButton(_("Notification duration"), "org.cinnamon.desktop.notifications", "notification-duration", _("seconds"), 1, 60, 1, 1)
         settings.add_reveal_row(spin, "org.cinnamon.desktop.notifications", "display-notifications")
 

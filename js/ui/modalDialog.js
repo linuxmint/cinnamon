@@ -24,8 +24,6 @@ const Gettext = imports.gettext;
 
 const FADE_OUT_DIALOG_TIME = 1000;
 
-var OPEN_AND_CLOSE_TIME = 100;
-
 var State = {
     OPENED: 0,
     CLOSED: 1,
@@ -51,11 +49,12 @@ var State = {
  */
 var ModalDialog = GObject.registerClass({
     Properties: {
-        'state': GObject.ParamSpec.int('state', 'Dialog state', 'state',
-                                       GObject.ParamFlags.READABLE,
-                                       Math.min(...Object.values(State)),
-                                       Math.max(...Object.values(State)),
-                                       State.CLOSED)
+        'state': GObject.ParamSpec.int(
+            'state', 'Dialog state', 'state',
+            GObject.ParamFlags.READABLE,
+            Math.min(...Object.values(State)),
+            Math.max(...Object.values(State)),
+            State.CLOSED)
     },
     Signals: { 'opened': {}, 'closed': {} }
 }, class ModalDialog extends St.Widget {
@@ -74,12 +73,16 @@ var ModalDialog = GObject.registerClass({
             accessible_role: Atk.Role.DIALOG,
         });
 
-        params = Params.parse(params, { cinnamonReactive: false,
-                                        styleClass: null });
+        params = Params.parse(params, {
+            cinnamonReactive: Main.virtualKeyboard.enabled,
+            styleClass: null,
+            destroyOnClose: true,
+        });
 
         this._state = State.CLOSED;
         this._hasModal = false;
         this._cinnamonReactive = params.cinnamonReactive;
+        this._destroyOnClose = params.destroyOnClose;
 
         Main.uiGroup.add_actor(this);
 
@@ -95,7 +98,7 @@ var ModalDialog = GObject.registerClass({
             x_fill: true,
             y_fill: true
         });
-        this._monitorConstraint = new Layout.MonitorConstraint();
+        this._monitorConstraint = new Layout.MonitorConstraint({ work_area: true });
         this._backgroundBin.add_constraint(this._monitorConstraint);
         this.add_actor(this._backgroundBin);
 
@@ -103,10 +106,17 @@ var ModalDialog = GObject.registerClass({
         this.contentLayout = this.dialogLayout.contentLayout;
         this.buttonLayout = this.dialogLayout.buttonLayout;
 
+        this.openAndCloseTime = 100;
+        let enableRadialEffect = true;
+        if (!global.settings.get_boolean("desktop-effects-workspace")) {
+            this.openAndCloseTime = 0;
+            enableRadialEffect = false;
+        }
+
         if (!this._cinnamonReactive) {
             this._lightbox = new Lightbox.Lightbox(this,
                                                    { inhibitEvents: true,
-                                                     radialEffect: true });
+                                                     radialEffect: enableRadialEffect });
             this._lightbox.highlight(this._backgroundBin);
 
             this._eventBlocker = new Clutter.Actor({ reactive: true });
@@ -193,7 +203,7 @@ var ModalDialog = GObject.registerClass({
         this.show();
         this.ease({
             opacity: 255,
-            duration: OPEN_AND_CLOSE_TIME,
+            duration: this.openAndCloseTime,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
                 this._setState(State.OPENED);
@@ -249,12 +259,15 @@ var ModalDialog = GObject.registerClass({
 
         this.ease({
             opacity: 0,
-            duration: OPEN_AND_CLOSE_TIME,
+            duration: this.openAndCloseTime,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
                 this._setState(State.CLOSED);
                 this.hide();
                 this.emit('closed');
+
+                if (this._destroyOnClose)
+                    this.destroy();
             }
         });
     }
@@ -386,7 +399,8 @@ class ConfirmDialog extends ModalDialog {
         this.setButtons([
             {
                 label: _("No"),
-                action: this.destroy.bind(this)
+                action: this.destroy.bind(this),
+                key: Clutter.KEY_Escape,
             },
             {
                 label: _("Yes"),
@@ -421,12 +435,17 @@ class NotifyDialog extends ModalDialog {
      */
     _init(description) {
         super._init();
-        this.contentLayout.add(new St.Label({text: label}));
+
+        let title = _("Attention");
+
+        let content = new Dialog.MessageDialogContent({ title, description });
+        this.contentLayout.add_child(content);
 
         this.setButtons([
             {
                 label: _("OK"),
-                action: this.destroy.bind(this)
+                action: this.destroy.bind(this),
+                default: true,
             }
         ]);
     }

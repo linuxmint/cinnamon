@@ -9,6 +9,7 @@ const Main = imports.ui.main;
 const Applet = imports.ui.applet;
 const Extension = imports.ui.extension;
 const ModalDialog = imports.ui.modalDialog;
+const Dialog = imports.ui.dialog;
 const {getModuleByIndex} = imports.misc.fileUtils;
 const {queryCollection} = imports.misc.util;
 const Gettext = imports.gettext;
@@ -443,14 +444,15 @@ function removeAppletFromInappropriatePanel (extension, appletDefinition) {
 
         global.logWarning((allowedLayout == Applet.AllowedLayout.HORIZONTAL)+", "+[St.Side.LEFT, St.Side.RIGHT].indexOf(appletDefinition.orientation));
 
-        let label_text = "<b>" + extension.meta.name + "</b>\n" +
-                         _("This applet does not support panels of that type. This can cause visual glitches in the panel.") + "\n" +
-                         _("Would you like to continue using it anyway, remove it from the panel, or try to move it to a different panel?");
-        let label = new St.Label({text: label_text});
-        label.clutter_text.set_use_markup(true);
-
         let dialog = new ModalDialog.ModalDialog();
-        dialog.contentLayout.add(label);
+
+        let title = extension.meta.name;
+        let description = _("This applet does not support panels of that type. This can cause visual glitches " +
+                             "in the panel. Would you like to continue using it anyway, remove it from the panel, " +
+                             "or try to move it to a different panel?");
+
+        let content = new Dialog.MessageDialogContent({ title, description });
+        dialog.contentLayout.add_child(content);
 
         dialog.setButtons([
             {
@@ -527,7 +529,7 @@ function moveApplet(appletDefinition, allowedLayout) {
 
     if (panelId == null) {
         removeApplet(appletDefinition);
-        let dialog = new ModalDialog.NotifyDialog(_("A suitable panel could not be found. The applet has been removed instead.") + "\n\n");
+        let dialog = new ModalDialog.NotifyDialog(_("A suitable panel could not be found. The applet has been removed instead."));
         dialog.open();
         return;
     }
@@ -804,7 +806,7 @@ function pasteAppletConfiguration(panelId) {
     global.settings.set_strv("enabled-applets", rawDefinitions);
 
     if (skipped) {
-        let dialog = new ModalDialog.NotifyDialog(_("Certain applets do not allow multiple instances or were at their max number of instances so were not copied") + "\n\n");
+        let dialog = new ModalDialog.NotifyDialog(_("Certain applets do not allow multiple instances or were at their max number of instances so were not copied"));
         dialog.open();
     }
 }

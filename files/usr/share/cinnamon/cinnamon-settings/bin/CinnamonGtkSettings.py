@@ -408,7 +408,11 @@ class PreviewWidget(SettingsWidget):
 
 class Gtk2ScrollbarSizeEditor:
     def __init__(self, ui_scale):
-        self._path = os.path.join(GLib.get_home_dir(), ".gtkrc-2.0")
+        rcpath = GLib.getenv("GTK2_RC_FILES")
+        if rcpath:
+            self._path = rcpath.split(":")[0]
+        else:
+            self._path = os.path.join(GLib.get_home_dir(), ".gtkrc-2.0")
         self._file = Gio.File.new_for_path(self._path)
         self._settings = Gio.Settings(schema_id="org.cinnamon.theme")
         self.ui_scale = ui_scale
@@ -425,7 +429,7 @@ class Gtk2ScrollbarSizeEditor:
             if e.code == Gio.IOErrorEnum.NOT_FOUND:
                 pass
             else:
-                print("Could not load ~/.gtkrc-2.0 file: %s" % e.message)
+                print("Could not load .gtkrc-2.0 file: %s" % e.message)
 
         self.parse_contents()
 
@@ -450,6 +454,9 @@ class Gtk2ScrollbarSizeEditor:
         # print("saving changed: ", final_contents)
 
         try:
+            # If a path is specified through GTK2_RC_FILES, ensure it exists
+            if not self._file.get_parent().query_exists():
+                self._file.get_parent().make_directory_with_parents()
             self._file.replace_contents(final_contents.encode("utf-8"),
                                         None,
                                         False,

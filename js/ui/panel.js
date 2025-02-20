@@ -2680,7 +2680,7 @@ Panel.prototype = {
         if (event.get_button() == 3) {  // right click
             try {
                 let [x, y] = event.get_coords();
-                let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
+                let target = global.stage.get_actor_at_pos(Clutter.PickMode.REACTIVE, x, y);
 
                 // NB test on parent fails with centre aligned vertical box, but works for the test against the actor
                 if (this._context_menu._getMenuItems().length > 0 &&
@@ -2772,6 +2772,13 @@ Panel.prototype = {
     * current position in order to calculate the exposed size.
     */
     _setClipRegion: function(hidden, offset) {
+        if (!this._shouldClipPanel()) {
+            // important during monitor layout changes.
+            this.actor.remove_clip(); // no-op if there wasn't any clipping to begin with.
+            Main.layoutManager.updateChrome()
+            return;
+        }
+
         let animating = typeof offset === "number";
         let isHorizontal = this.panelPosition == PanelLoc.top
                            || this.panelPosition == PanelLoc.bottom;
@@ -2837,6 +2844,56 @@ Panel.prototype = {
         }
         // Force the layout manager to update the input region
         Main.layoutManager.updateChrome()
+    },
+
+    _shouldClipPanel: function() {
+        const n_monitors = global.display.get_n_monitors();
+
+        if (n_monitors === 1)  {
+            return false;
+        }
+
+        for (let i = 0; i < n_monitors; i++) {
+            if (i === this.monitorIndex) {
+                continue;
+            }
+
+            const m_rect = global.display.get_monitor_geometry(i);
+            const test_rect = new Meta.Rectangle();
+
+            switch (this.panelPosition) {
+                case PanelLoc.top:
+                case PanelLoc.bottom:
+                    test_rect.x = this.actor.x;
+                    test_rect.width = this.actor.width;
+                    test_rect.height = this.height;
+
+                    if (this.panelPosition === PanelLoc.top) {
+                        test_rect.y = this.monitor.y - this.height;
+                    } else {
+                        test_rect.y = this.monitor.y + this.monitor.height;
+                    }
+                    break;
+                case PanelLoc.left:
+                case PanelLoc.right:
+                    test_rect.y = this.actor.y;
+                    test_rect.height = this.actor.height;
+                    test_rect.width = this.height;
+
+                    if (this.panelPosition === PanelLoc.left) {
+                        test_rect.x = this.monitor.x - this.height;
+                    } else {
+                        test_rect.x = this.monitor.x + this.monitor.width;
+                    }
+                    break;
+            }
+
+            if (m_rect.overlap(test_rect)) {
+                return true;
+            }
+        }
+
+        return false;
     },
 
     /**
@@ -3599,6 +3656,26 @@ Panel.prototype = {
     },
 
     /**
+     * _panelHasOpenMenus:
+     * 
+     * Checks if panel has open menus in the global.menuStack
+     * @returns 
+     */
+    _panelHasOpenMenus: function() {
+        if (global.menuStack == null || global.menuStack.length == 0)
+            return false;
+
+        for (let i = 0; i < global.menuStack.length; i++) {
+            let menu = global.menuStack[i];
+            if (menu.getPanel() === this.actor) {
+                return true;
+            }
+        }
+
+        return false;
+    },
+
+    /**
      * _updatePanelVisibility:
      *
      * Checks whether the panel should show based on the autohide settings and
@@ -3608,7 +3685,7 @@ Panel.prototype = {
      * true = autohide, false = always show, intel = Intelligent
      */
     _updatePanelVisibility: function() {
-        if (this._panelEditMode || this._peeking)
+        if (this._panelEditMode || this._peeking || this._panelHasOpenMenus())
             this._shouldShow = true;
         else {
             switch (this._autohideSettings) {
@@ -3838,7 +3915,7 @@ Panel.prototype = {
         if (this._destroyed) return;
         this._showHideTimer = 0;
 
-        if ((this._shouldShow && !force) || global.menuStackLength > 0) return;
+        if ((this._shouldShow && !force) || this._panelHasOpenMenus()) return;
 
         // setup panel tween - slide out the monitor edge leaving one pixel
         // if horizontal panel, animation on y. if vertical, animation on x.

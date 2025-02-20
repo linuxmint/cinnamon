@@ -131,6 +131,10 @@ const CinnamonIface =
                 <arg type="a{sv}" direction="in" name="params"/> \
             </method> \
             <method name="HideMonitorLabels"/> \
+            <method name="ShowEndSessionDialog"> \
+                <arg type="i" direction="in" name="mode"/> \
+            </method> \
+            <method name="CloseEndSessionDialog"/> \
         </interface> \
     </node>';
 
@@ -513,6 +517,17 @@ CinnamonDBus.prototype = {
         if (Main.monitorLabeler != null) {
             Main.monitorLabeler.hide(invocation.get_sender());
         }
+    },
+
+    ShowEndSessionDialog(mode) {
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            Main.showEndSessionDialog(mode);
+            return GLib.SOURCE_REMOVE;
+        });
+    },
+
+    CloseEndSessionDialog() {
+        Main.closeEndSessionDialog();
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

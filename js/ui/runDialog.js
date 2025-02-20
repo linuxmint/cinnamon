@@ -47,10 +47,6 @@ const DEVEL_COMMANDS = { 'lg': x => Main.createLookingGlass().open(),
                          'debugexit': x => Meta.quit(Meta.ExitCode.ERROR),
                          'rt': x => Main.themeManager._changeTheme() };
 
-/* The modal dialog parent class has a 100ms close animation.  Delay long enough for it
- * to complete before doing something disruptive like restarting cinnamon */
-const DEVEL_COMMAND_DELAY =  parseInt(ModalDialog.OPEN_AND_CLOSE_TIME) + 10;
-
 /**
  * completeCommand:
  * @text (string): initial string to complete.
@@ -147,7 +143,10 @@ function completeCommand(text) {
 var RunDialog = GObject.registerClass(
 class RunDialog extends ModalDialog.ModalDialog {
     _init() {
-        super._init({ styleClass: 'run-dialog'});
+        super._init({
+            styleClass: 'run-dialog',
+            destroyOnClose: false,
+        });
 
         this._lockdownSettings = new Gio.Settings({ schema_id: LOCKDOWN_SCHEMA });
         this._terminalSettings = new Gio.Settings({ schema_id: TERMINAL_SCHEMA });
@@ -393,7 +392,9 @@ class RunDialog extends ModalDialog.ModalDialog {
         this._history.addItem(input);
         this._commandError = false;
         if (this._enableInternalCommands && input in DEVEL_COMMANDS) {
-            Mainloop.timeout_add(DEVEL_COMMAND_DELAY, ()=>DEVEL_COMMANDS[input]());
+            /* Delay 10ms past the modalDialog's openAndCloseTime to ensure the dialog
+            * is closed before doing something disruptive like restarting cinnamon */
+            Mainloop.timeout_add(this.openAndCloseTime + 10, ()=>DEVEL_COMMANDS[input]());
             return;
         }
 

@@ -36,9 +36,19 @@ class CalendarInfo(GObject.Object):
         self.source = source
         self.client = client
 
+        self.syncing = False
+
         self.extension = source.get_extension(EDataServer.SOURCE_EXTENSION_CALENDAR)
         self.color = self.extension.get_color()
         self.color_prop_listener_id = self.extension.connect("notify::color", self.ext_color_prop_changed)
+
+        # This process generally won't stay running for more than 30 seconds or so,
+        # but enabling refresh lets us force a timeout and re-poll.
+        if self.client.check_capability(ECal.STATIC_CAPABILITY_REFRESH_SUPPORTED):
+            self.refresh = self.source.get_extension(EDataServer.SOURCE_EXTENSION_REFRESH)
+            self.refresh.set_enabled(True)
+            self.refresh.set_interval_minutes(1)
+            self.source.refresh_add_timeout(None, self.on_refresh_timeout)
 
         self.start = None
         self.end = None
@@ -46,6 +56,24 @@ class CalendarInfo(GObject.Object):
         self.view = None
         self.view_cancellable = None
         self.events = []
+
+    def try_sync(self):
+        if self.syncing:
+            return
+
+        if self.client.check_capability(ECal.STATIC_CAPABILITY_REFRESH_SUPPORTED):
+            self.source.refresh_force_timeout()
+
+    def on_refresh_timeout(self, source, data=None):
+        self.client.refresh(None, self.on_sync_complete)
+
+    def on_sync_complete(self, client, result, data=None):
+        try:
+            self.client.refresh_finish(result)
+        except GLib.Error as e:
+            print(f"Error refreshing calendar '{self.source.get_display_name()}':", e.message)
+
+        self.syncing = False
 
     def destroy(self):
         self.extension.disconnect(self.color_prop_listener_id)
@@ -222,6 +250,9 @@ class CalendarServer(Gio.Application):
             if not force_reload:
                 self.interface.complete_set_time_range(inv)
                 return True
+
+        for calendar in self.calendars.values():
+            calendar.try_sync()
 
         self.current_month_start = time_since
         self.current_month_end = time_until

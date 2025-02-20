@@ -189,6 +189,7 @@ Keyboard.prototype = {
         this.actor = null;
         this.monitorIndex = 0;
         this._focusInExtendedKeys = false;
+        this._focusNotifyId = 0;
 
         this._timestamp = global.display.get_current_time_roundtrip();
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._redraw));
@@ -253,8 +254,10 @@ Keyboard.prototype = {
     _destroyKeyboard: function() {
         if (this._keyboardNotifyId)
             this._keyboard.disconnect(this._keyboardNotifyId);
-        if (this._focusNotifyId)
+        if (this._focusNotifyId > 0) {
             global.stage.disconnect(this._focusNotifyId);
+            this._focusNotifyId = 0;
+        }
         this._keyboard = null;
         this.actor.destroy();
         this.actor = null;
@@ -281,7 +284,9 @@ Keyboard.prototype = {
         this.actor.text_direction = Clutter.TextDirection.LTR;
 
         //this._keyboardNotifyId = this._keyboard.connect('notify::active-group', Lang.bind(this, this._onGroupChanged));
-        //this._focusNotifyId = global.stage.connect('notify::key-focus', Lang.bind(this, this._onKeyFocusChanged));
+        if (this.accessibleMode) {
+            this._focusNotifyId = global.stage.connect('notify::key-focus', Lang.bind(this, this._onKeyFocusChanged));
+        }
 
         if (show)
             this.show();
@@ -551,5 +556,9 @@ Keyboard.prototype = {
 
     get Name() {
         return 'cinnamon';
+    },
+
+    get enabled() {
+        return this._enableKeyboard;
     }
 };

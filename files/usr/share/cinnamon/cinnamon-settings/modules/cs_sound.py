@@ -3,7 +3,7 @@
 import gi
 gi.require_version('Cvc', '1.0')
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Cvc, GdkPixbuf, Gio
+from gi.repository import Gtk, Cvc, Gdk, GdkPixbuf, Gio, Pango
 from SettingsWidgets import SidePage, GSettingsSoundFileChooser
 from xapp.GSettingsWidgets import *
 import util
@@ -537,6 +537,8 @@ class Module:
 
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
+        self.scale = self.sidePage.stack.get_scale_factor()
+
         # output volume
         self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), 100, sizeGroup=sizeGroup)
         devSettings.add_row(self.outVolume)
@@ -657,15 +659,32 @@ class Module:
         self.controller.connect("stream-removed", self.streamRemoved)
         self.controller.open()
 
+    def data_func_surface(self, column, cell, model, iter_, *args):
+        pixbuf = model.get_value(iter_, 4)
+        surface = Gdk.cairo_surface_create_from_pixbuf(pixbuf, self.scale)
+        cell.set_property("surface", surface)
+
     def buildDeviceSelect(self, direction, model):
         select = Gtk.IconView.new_with_model(model)
         select.set_margin(0)
-        select.set_pixbuf_column(4)
-        select.set_text_column(0)
         select.set_column_spacing(0)
 
-        select.connect("selection-changed", self.setActiveDevice, direction)
+        # pixbuf
+        ren = Gtk.CellRendererPixbuf()
+        select.pack_start(ren, False)
+        select.set_cell_data_func(ren, self.data_func_surface)
 
+        # text
+        ren = Gtk.CellRendererText()
+        select.pack_start(ren, False)
+        select.add_attribute(ren, "text", 0)
+        ren.set_property("wrap-mode", Pango.WrapMode.WORD)
+        ren.set_property("wrap-width", 120)
+        ren.set_property("alignment", Pango.Alignment.CENTER)
+        ren.set_property("xalign", 0.5)
+        
+        select.connect("selection-changed", self.setActiveDevice, direction)
+        
         return select
 
     def setActiveDevice(self, view, direction):
@@ -683,23 +702,25 @@ class Module:
     def deviceAdded(self, c, deviceId, direction):
         device = getattr(self.controller, "lookup_"+direction+"_id")(deviceId)
 
+        icon_size = 32 * self.scale
+
         iconTheme = Gtk.IconTheme.get_default()
         gicon = device.get_gicon()
         iconName = device.get_icon_name()
         icon = None
         if gicon is not None:
-            lookup = iconTheme.lookup_by_gicon(gicon, 32, 0)
+            lookup = iconTheme.lookup_by_gicon(gicon, icon_size, 0)
             if lookup is not None:
                 icon = lookup.load_icon()
 
         if icon is None:
             if iconName is not None and "bluetooth" in iconName:
-                icon = iconTheme.load_icon("bluetooth", 32, 0)
+                icon = iconTheme.load_icon("bluetooth", icon_size, 0)
             elif iconTheme.has_icon("audio-card"):
                 # The audio-card icon was removed from adwaita, so may be absent in the current theme
-                icon = iconTheme.load_icon("audio-card", 32, 0)
+                icon = iconTheme.load_icon("audio-card", icon_size, 0)
             else:
-                icon = iconTheme.load_icon("sound", 32, 0)
+                icon = iconTheme.load_icon("sound", icon_size, 0)
 
         getattr(self, direction+"DeviceList").append([device.get_description() + "\n" +  device.get_origin(), "", False, deviceId, icon])
 

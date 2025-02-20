@@ -388,7 +388,7 @@ class MelangeApp(Gtk.Application):
     def do_startup(self):
         Gtk.Application.do_startup(self)
         self.lg_proxy = LookingGlassProxy()
-        # The status label is shown iff we are not okay
+        # The status label is shown if we are not okay
         self.lg_proxy.connect("status-changed", self.update_status_from_proxy)
 
         if self.window is None:
@@ -430,18 +430,14 @@ class MelangeApp(Gtk.Application):
 
     def construct_window(self):
         self.window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
-        self.window.set_title("Melange")
+        headerbar = Gtk.HeaderBar()
+        headerbar.set_title("Looking Glass")
+        headerbar.set_subtitle("Cinnamon Troubleshooting Tool")
+        headerbar.set_show_close_button(True)
+        self.window.set_titlebar(headerbar)
         self.window.set_icon_name("system-search")
         self.window.set_default_size(1000, 400)
-        self.window.set_position(Gtk.WindowPosition.MOUSE)
-
-        # I can't think of a way to reliably detect if the window
-        # is active to determine if we need to present or hide
-        # in show(). Since the window briefly loses focus during
-        # shortcut press we'd be unable to detect it at that time.
-        # Keeping the window on top ensures the window is never
-        # obscured so we can just hide if visible.
-        self.window.set_keep_above(True)
+        self.window.set_position(Gtk.WindowPosition.CENTER)
 
         self.window.connect("delete_event", self.on_delete)
         self.window.connect("key-press-event", self.on_key_press)
@@ -463,18 +459,13 @@ class MelangeApp(Gtk.Application):
         self.notebook.set_show_border(True)
         self.notebook.set_show_tabs(True)
 
-        label = Gtk.Label(label="Melange")
-        label.set_markup("<u>Melange - Cinnamon Debugger</u> ")
-        label.show()
-        self.notebook.set_action_widget(label, Gtk.PackType.END)
-
         self.pages = {}
         self.custom_pages = {}
+        self.create_page("Logs", "log")
         self.create_page("Results", "results")
         self.create_page("Inspect", "inspect")
         self.create_page("Windows", "windows")
         self.create_page("Extensions", "extensions")
-        self.create_page("Log", "log")
 
         table.attach(self.notebook, 0, num_columns, 0, 1)
 
@@ -531,7 +522,6 @@ class MelangeApp(Gtk.Application):
 
         table.attach(box, column, column+1, 1, 2, 0, 0, 1)
 
-        # self.activate_page("results")
         self.status_label.hide()
         self.window.set_focus(self.command_line)
 
@@ -551,7 +541,6 @@ class MelangeApp(Gtk.Application):
         menu.append(self.create_menu_item('Crash Cinnamon', crash_func))
         menu.append(self.create_menu_item('Reset Cinnamon Settings', self.on_reset_clicked))
         menu.append(Gtk.SeparatorMenuItem())
-        menu.append(self.create_menu_item('About Melange', self.on_about_clicked))
         menu.append(self.create_menu_item('Quit', self.on_delete))
         menu.show_all()
 
@@ -578,22 +567,6 @@ class MelangeApp(Gtk.Application):
         self.notebook.remove_page(self.notebook.page_num(content))
         content.destroy()
         del self.custom_pages[label]
-
-    def on_about_clicked(self, menu_item):
-        dialog = Gtk.MessageDialog(self.window, 0,
-                                   Gtk.MessageType.QUESTION, Gtk.ButtonsType.CLOSE)
-
-        dialog.set_title("About Melange")
-        dialog.set_markup("""\
-<b>Melange</b> is a GTK3 alternative to the built-in javascript debugger <i>Looking Glass</i>
-
-Pressing <i>Escape</i> while Melange has focus will hide the window.
-If you want to exit Melange, use ALT+F4 or the <u>Actions</u> menu button.
-
-If you defined a hotkey for Melange, pressing it while Melange is visible it will be hidden.""")
-
-        dialog.run()
-        dialog.destroy()
 
     def on_reset_clicked(self, menu_item):
         dialog = Gtk.MessageDialog(self.window, 0,

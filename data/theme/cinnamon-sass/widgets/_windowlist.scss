@@ -47,6 +47,7 @@
 
   &-thumbnail-menu {
     border: 1px solid $borders_color;
+    margin: 6px;
     background-color: $bg_color;
     border-radius: $base_border_radius;
     box-shadow: 0 0 6px 0 $shadow_color;
@@ -56,12 +57,26 @@
     .item-box {
       padding: 10px;
       spacing: 4px;
+      border-radius: 0;
+
+      &:first-child { border-radius: $base_border_radius 0 0 $base_border_radius; }
+      &:last-child { border-radius: 0 $base_border_radius $base_border_radius 0; }
 
       &:outlined {
         border: 2px solid transparentize($fg_color, 0.5);
+
+        &:first-child { border-radius: $base_border_radius 0 0 $base_border_radius; }
+        &:last-child { border-radius: 0 $base_border_radius $base_border_radius 0; }
       }
 
-      &:selected { background-color: $light_bg_color; }
+      &:selected {
+        background-color: $light_bg_color;
+
+        &:only-child,
+        &:first-child:last-child { border-radius: $base_border_radius; }
+        &:first-child { border-radius: $base_border_radius 0 0 $base_border_radius; }
+        &:last-child { border-radius: 0 $base_border_radius $base_border_radius 0; }
+      }
     }
 
     .thumbnail { width: 256px; }

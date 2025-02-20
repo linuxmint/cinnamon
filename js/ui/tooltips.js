@@ -340,7 +340,7 @@ PanelItemTooltip.prototype = {
     },
 
     show: function() {
-        if (this._tooltip.get_text() == "" || global.menuStackLength > 0 || !this.mousePosition)
+        if (this._tooltip.get_text() == "" || global.menuStack.length > 0 || !this.mousePosition)
             return;
 
         let op = this._tooltip.get_opacity();

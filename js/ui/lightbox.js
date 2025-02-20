@@ -129,7 +129,7 @@ var Lightbox = class Lightbox {
         if (this._radialEffect)
             this.actor.add_effect(new RadialShaderEffect({ name: 'radial' }));
         else
-            this.actor.set({ opacity: 0, style_class: 'lightbox' });
+            this.actor.set({ opacity: 0, style_class: 'lightbox', important: true });
 
         container.add_actor(this.actor);
         this.actor.raise_top();

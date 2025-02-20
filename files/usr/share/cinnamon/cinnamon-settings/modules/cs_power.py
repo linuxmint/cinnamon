@@ -45,6 +45,12 @@ SLEEP_DELAY_OPTIONS = [
     (0, _("Never"))
 ]
 
+POWER_PROFILES = {
+    "power-saver": _("Power Saver"),
+    "balanced": _("Balanced"),
+    "performance": _("Performance")
+}
+
 (UP_ID, UP_VENDOR, UP_MODEL, UP_TYPE, UP_ICON, UP_PERCENTAGE, UP_STATE, UP_BATTERY_LEVEL, UP_SECONDS) = range(9)
 
 try:
@@ -140,7 +146,7 @@ class Module:
 
         power_page = SettingsPage()
 
-        section = power_page.add_section(_("Power Options"))
+        section = power_page.add_section(_("Power options"))
 
         lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep, can_hibernate = get_available_options(self.up_client)
 
@@ -197,6 +203,26 @@ class Module:
             self.sth_switch.set_tooltip_text(_("First suspend the machine and hibernate it after a certain amount of time."))
             self.sth_switch.content_widget.connect("notify::active", self.on_sth_toggled)
             section.add_row(self.sth_switch)
+
+        # Power mode
+        connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+        proxy = None
+        profiles = None
+        for dbus_name in ["net.hadess.PowerProfiles", "org.freedesktop.UPower.PowerProfiles"]:
+            try:
+                dbus_path = "/" + dbus_name.replace(".", "/")
+                proxy = Gio.DBusProxy.new_sync(connection, Gio.DBusProxyFlags.NONE, None,
+                            dbus_name, dbus_path, "org.freedesktop.DBus.Properties", None)
+                profiles = proxy.Get('(ss)', dbus_name, "Profiles")
+                print(f"Found power profiles on Dbus at {dbus_name}")
+                break
+            except:
+                pass
+
+        if profiles:
+            combo = PowerModeComboBox(proxy, dbus_name, profiles)
+            combo.set_tooltip_text(_("Power mode controls the power usage of your computer. It can impact performance, battery life and fan noise."))
+            section.add_row(combo)
 
         # Batteries
 
@@ -294,7 +320,6 @@ class Module:
         # UPowerGlib segfaults when trying to get device. Use CSD instead
         devices = self.csd_power_proxy.GetDevices()
 
-        have_primary = False
         ups_as_primary = False
 
         have_keyboard = False
@@ -817,3 +842,70 @@ class GSettings2ComboBox(SettingsWidget):
     def add_to_size_group(self, group):
         group.add_widget(self.content_widget1)
         group.add_widget(self.content_widget2)
+
+
+class PowerModeComboBox(SettingsWidget):
+    def __init__(self, proxy, dbus_name, profiles, dep_key=None, size_group=None):
+        super(PowerModeComboBox, self).__init__(dep_key=dep_key)
+
+        self.proxy = proxy
+        self.dbus_name = dbus_name
+        
+        try:            
+            profiles_options = []
+            for profile in profiles:
+                name = profile["Profile"]
+                label = name
+                if name in POWER_PROFILES.keys():
+                    label = POWER_PROFILES[name]
+                profiles_options.append([name, label])
+
+            self.option_map = {}
+
+            self.label = Gtk.Label.new(_("Power mode"))
+            self.model = Gtk.ListStore(str, str)
+
+            for option in profiles_options:
+                iter = self.model.insert_before(None, None)
+                self.model.set_value(iter, 0, option[0])
+                self.model.set_value(iter, 1, option[1])
+                self.option_map[option[0]] = iter
+
+            self.content_widget = Gtk.ComboBox.new_with_model(self.model)
+            renderer_text = Gtk.CellRendererText()
+            self.content_widget.pack_start(renderer_text, True)
+            self.content_widget.add_attribute(renderer_text, "text", 1)
+
+            self.pack_start(self.label, False, False, 0)
+            self.pack_end(self.content_widget, False, True, 0)
+
+            self.content_widget.connect('changed', self.on_my_value_changed)
+            self.proxy.connect('g-signal', self.on_dbus_changed)
+            self.on_my_setting_changed()
+
+            if size_group:
+                self.add_to_size_group(size_group)
+        except GLib.Error as e:
+            print(f"Power profiles options not available: {e.message}")
+
+    def on_my_value_changed(self, widget):
+        tree_iter = widget.get_active_iter()
+        if tree_iter is not None:
+            profile = self.model[tree_iter][0]
+            value = GLib.Variant.new_string(profile)
+            self.proxy.Set('(ssv)', self.dbus_name, "ActiveProfile", value)
+
+    def on_dbus_changed(self, proxy, sender, signal, params):
+        if signal == "PropertiesChanged":
+            self.on_my_setting_changed()
+
+    def on_my_setting_changed(self):
+        try:
+            active_profile = self.proxy.Get('(ss)', self.dbus_name, "ActiveProfile")
+            self.content_widget.set_active_iter(self.option_map[active_profile])
+        except Exception as e:
+            print(e)
+            self.content_widget.set_active_iter(None)
+
+    def add_to_size_group(self, group):
+        group.add_widget(self.content_widget)

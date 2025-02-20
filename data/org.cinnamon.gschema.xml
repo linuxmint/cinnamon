@@ -29,6 +29,24 @@
       </description>
     </key>
 
+    <key name="enable-nm-agent" type="b">
+      <default>true</default>
+      <summary>Whether to enable the NetworkManager agent</summary>
+      <description></description>
+    </key>
+
+    <key name="enable-polkit-agent" type="b">
+      <default>true</default>
+      <summary>Whether to enable the Polkit agent</summary>
+      <description></description>
+    </key>
+
+    <key name="enable-ssh-agent" type="b">
+      <default>true</default>
+      <summary>Whether to enable the SSH agent</summary>
+      <description></description>
+    </key>
+
     <key name="enabled-applets" type="as">
       <default>['panel1:left:0:menu@cinnamon.org', 'panel1:left:1:separator@cinnamon.org', 'panel1:left:2:grouped-window-list@cinnamon.org', 'panel1:right:0:systray@cinnamon.org', 'panel1:right:1:xapp-status@cinnamon.org', 'panel1:right:2:notifications@cinnamon.org', 'panel1:right:3:printers@cinnamon.org', 'panel1:right:4:removable-drives@cinnamon.org', 'panel1:right:5:keyboard@cinnamon.org', 'panel1:right:6:favorites@cinnamon.org', 'panel1:right:7:network@cinnamon.org', 'panel1:right:8:sound@cinnamon.org', 'panel1:right:9:power@cinnamon.org', 'panel1:right:10:calendar@cinnamon.org', 'panel1:right:11:cornerbar@cinnamon.org']</default>
       <summary>Uuids of applets to enable</summary>
@@ -414,7 +432,7 @@
     </key>
 
     <key type="b" name="alttab-minimized-aware">
-    <default>false</default>
+    <default>true</default>
       <summary>Move minimized windows to the end of the appSwitcher</summary>
     </key>
 

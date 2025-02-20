@@ -40,11 +40,18 @@ var CloseDialog = GObject.registerClass({
     }
 
     _createDialogContent() {
+        let name;
         let tracker = Cinnamon.WindowTracker.get_default();
         let windowApp = tracker.get_window_app(this._window);
+        if (windowApp) {
+            name = windowApp.get_name();
+        }
+        else {
+            name = this._window.get_title();
+        }
 
         /* Translators: %s is an application name */
-        let title = _('%s is not responding').format(windowApp.get_name());
+        let title = _('%s is not responding').format(name);
         let description = _('You may choose to wait a short while for it to ' +
                             'continue or force the app to quit entirely.');
         return new Dialog.MessageDialogContent({title, description});

@@ -61,7 +61,6 @@ class ModulePage(pageutils.BaseListView):
                                        item["tooltip"],
                                        item["object"]])
                 self._changed = True
-                self.parent.activate_page("results")
             except Exception as exc:
                 print(exc)
 

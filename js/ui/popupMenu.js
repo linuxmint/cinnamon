@@ -2293,6 +2293,29 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
     setSourceAlignment(alignment) {}
 
     /**
+     * getPanel:
+     * 
+     * @returns panel (Clutter.Actor | null) actor of the panel this menu is on, or null if it is not on a panel 
+     */
+    getPanel() {
+        let parentPanel = null;
+        if (this.sourceActor.get_name() == "panel") {
+            parentPanel = this.sourceActor;
+        } else {
+            let parent = this.sourceActor.get_parent();
+            while (parent) {
+                if (parent.get_name() == "panel") {
+                    parentPanel = parent;
+                    break;
+                }
+                parent = parent.get_parent();
+            }
+        }
+
+        return parentPanel;
+    }
+
+    /**
      * open:
      * @animate (boolean): whether to animate the open effect or not
      *
@@ -2308,28 +2331,18 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         this._updateAllSeparatorVisibility();
 
         this.isOpen = true;
-        if (global.menuStackLength == undefined)
-            global.menuStackLength = 0;
-        global.menuStackLength += 1;
+        if (global.menuStack == undefined)
+            global.menuStack = [];
+        global.menuStack.push(this);
+
+        Main.panelManager.updatePanelsVisibility();
 
         this._signals.connect(this.actor, "paint", Lang.bind(this, this.on_paint));
 
         /* If the sourceActor of our menu is located on a panel or from the panel itself, we want to position it just
            below the panel actors. This prevents some cases where the menu will otherwise partially overlap the panel
            and look strange visually */
-        let parentPanel = null;
-        if (this.sourceActor.get_name() == "panel") {
-            parentPanel = this.sourceActor;
-        } else {
-            let parent = this.sourceActor.get_parent();
-            while (parent) {
-                if (parent.get_name() == "panel") {
-                    parentPanel = parent;
-                    break;
-                }
-                parent = parent.get_parent();
-            }
-        }
+        let parentPanel = this.getPanel();
 
         if (parentPanel) {
             let monitor = Main.layoutManager.findMonitorForActor(this.sourceActor)
@@ -2412,9 +2425,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             return;
 
         this.isOpen = false;
-        global.menuStackLength -= 1;
-
-        Main.panelManager.updatePanelsVisibility();
+        global.menuStack.splice(global.menuStack.indexOf(this), 1);
 
         if (this._activeMenuItem)
             this._activeMenuItem.setActive(false);
@@ -2465,6 +2476,8 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             this.animating = false;
             this.actor.hide();
         }
+
+        Main.panelManager.updatePanelsVisibility();
         this.emit('open-state-changed', false);
 
         // keep the order of open-state-changed -> menu-animated-closed in case it matters.

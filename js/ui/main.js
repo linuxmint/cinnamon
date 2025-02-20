@@ -130,6 +130,7 @@ const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
 const {CinnamonPortalHandler} = imports.misc.portalHandlers;
+const {EndSessionDialog} = imports.ui.endSessionDialog;;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -193,6 +194,8 @@ var animations_enabled = false;
 var popup_rendering_actor = null;
 
 var xlet_startup_error = false;
+
+var endSessionDialog = null;
 
 var gpuOffloadHelper = null;
 var gpu_offload_supported = false;
@@ -377,7 +380,7 @@ function start() {
 
     global.reparentActor(global.top_window_group, global.stage);
 
-    global.menuStackLength = 0;
+    global.menuStack = [];
 
     layoutManager = new Layout.LayoutManager();
 
@@ -425,8 +428,32 @@ function start() {
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
     placesManager = new PlacesManager.PlacesManager();
 
-    if (Config.HAVE_NETWORKMANAGER)
+    // NM Agent
+    if (Config.BUILT_NM_AGENT && global.settings.get_boolean("enable-nm-agent")) {
         networkAgent = new NetworkAgent.NetworkAgent();
+        global.log('NetworkManager agent: enabled')
+    }
+    else {
+        global.log('NetworkManager agent: disabled')
+    }
+
+    // Polkit Agent
+    if (global.settings.get_boolean("enable-polkit-agent")) {
+        PolkitAuthenticationAgent.init();
+        global.log('Polkit agent: enabled')
+    }
+    else {
+        global.log('Polkit agent: disabled')
+    }
+
+    // SSH Agent
+    if (global.settings.get_boolean("enable-ssh-agent")) {
+        KeyringPrompt.init();
+        global.log('SSH agent: enabled')
+    }
+    else {
+        global.log('SSH agent: disabled')
+    }
 
     magnifier = new Magnifier.Magnifier();
     locatePointer = new LocatePointer.locatePointer();
@@ -439,12 +466,6 @@ function start() {
     _addXletDirectoriesToSearchPath();
     _initUserSession();
     screenRecorder = new ScreenRecorder.ScreenRecorder();
-
-    if (Meta.is_wayland_compositor()) {
-        PolkitAuthenticationAgent.init();
-    }
-
-    KeyringPrompt.init();
 
     _startDate = new Date();
 
@@ -1578,4 +1599,26 @@ function restartCinnamon(showOsd = false) {
     });
 
     global.reexec_self();
+}
+
+function showEndSessionDialog(mode) {
+    if (endSessionDialog != null) {
+        global.logWarning("End session dialog already exists");
+        return;
+    }
+
+    endSessionDialog = new EndSessionDialog(mode);
+    if (!endSessionDialog.open()) {
+        endSessionDialog = null;
+        global.logWarning("Failed to open end session dialog");
+    }
+}
+
+function closeEndSessionDialog() {
+    if (endSessionDialog == null) {
+        return;
+    }
+
+    endSessionDialog.close();
+    endSessionDialog = null;
 }

@@ -5,6 +5,7 @@ const Interfaces = imports.misc.interfaces
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Tooltips = imports.ui.tooltips;
+const UPowerGlib = imports.gi.UPowerGlib;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
@@ -15,41 +16,18 @@ const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
 const CSD_BACKLIGHT_NOT_SUPPORTED_CODE = 1;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
-// TODO: why aren't we using introspection - upower-glib?
-const UPDeviceType = {
-    UNKNOWN: 0,
-    AC_POWER: 1,
-    BATTERY: 2,
-    UPS: 3,
-    MONITOR: 4,
-    MOUSE: 5,
-    KEYBOARD: 6,
-    PDA: 7,
-    PHONE: 8,
-    MEDIA_PLAYER: 9,
-    TABLET: 10,
-    COMPUTER: 11,
-    GAMING_INPUT: 12
-};
 
-const UPDeviceState = {
-    UNKNOWN: 0,
-    CHARGING: 1,
-    DISCHARGING: 2,
-    EMPTY: 3,
-    FULLY_CHARGED: 4,
-    PENDING_CHARGE: 5,
-    PENDING_DISCHARGE: 6
-};
+const {
+    DeviceKind: UPDeviceKind,
+    DeviceLevel: UPDeviceLevel,
+    DeviceState: UPDeviceState,
+    Device: UPDevice
+} = UPowerGlib
 
-const UPDeviceLevel = {
-    UNKNOWN: 0,
-    NONE: 1,
-    LOW: 3,
-    CRITICAL: 4,
-    NORMAL: 6,
-    HIGH: 7,
-    FULL: 8
+const POWER_PROFILES = {
+    "power-saver": _("Power Saver"),
+    "balanced": _("Balanced"),
+    "performance": _("Performance")
 };
 
 function deviceLevelToString(level) {
@@ -69,52 +47,105 @@ function deviceLevelToString(level) {
     }
 }
 
-function deviceTypeToString(type) {
-    switch (type) {
-        case UPDeviceType.AC_POWER:
+function deviceKindToString(kind) {
+    switch (kind) {
+        case UPDeviceKind.LINE_POWER:
             return _("AC adapter");
-        case UPDeviceType.BATTERY:
+        case UPDeviceKind.BATTERY:
             return _("Laptop battery");
-        case UPDeviceType.UPS:
+        case UPDeviceKind.UPS:
             return _("UPS");
-        case UPDeviceType.MONITOR:
+        case UPDeviceKind.MONITOR:
             return _("Monitor");
-        case UPDeviceType.MOUSE:
+        case UPDeviceKind.MOUSE:
             return _("Mouse");
-        case UPDeviceType.KEYBOARD:
+        case UPDeviceKind.KEYBOARD:
             return _("Keyboard");
-        case UPDeviceType.PDA:
+        case UPDeviceKind.PDA:
             return _("PDA");
-        case UPDeviceType.PHONE:
+        case UPDeviceKind.PHONE:
             return _("Cell phone");
-        case UPDeviceType.MEDIA_PLAYER:
+        case UPDeviceKind.MEDIA_PLAYER:
             return _("Media player");
-        case UPDeviceType.TABLET:
+        case UPDeviceKind.TABLET:
             return _("Tablet");
-        case UPDeviceType.COMPUTER:
+        case UPDeviceKind.COMPUTER:
             return _("Computer");
-        default:
-            return _("Unknown");
+        case UPDeviceKind.GAMING_INPUT:
+            return _("Gaming input");
+        case UPDeviceKind.PEN:
+            return _("Pen");
+        case UPDeviceKind.TOUCHPAD:
+            return _("Touchpad");
+        case UPDeviceKind.MODEM:
+            return _("Modem");
+        case UPDeviceKind.NETWORK:
+            return _("Network");
+        case UPDeviceKind.HEADSET:
+            return _("Headset");
+        case UPDeviceKind.SPEAKERS:
+            return _("Speakers");
+        case UPDeviceKind.HEADPHONES:
+            return _("Headphones");
+        case UPDeviceKind.VIDEO:
+            return _("Video");
+        case UPDeviceKind.OTHER_AUDIO:
+            return _("Audio device");
+        case UPDeviceKind.REMOTE_CONTROL:
+            return _("Remote control");
+        case UPDeviceKind.PRINTER:
+            return _("Printer");
+        case UPDeviceKind.SCANNER:
+            return _("Scanner");
+        case UPDeviceKind.CAMERA:
+            return _("Camera");
+        case UPDeviceKind.WEARABLE:
+            return _("Wearable");
+        case UPDeviceKind.TOY:
+            return _("Toy");
+        case UPDeviceKind.BLUETOOTH_GENERIC:
+            return _("Bluetooth device");
+        default: {
+            try {
+                return UPDevice.kind_to_string(kind).replaceAll("-", " ").capitalize();
+            } catch {
+                return _("Unknown");
+            }
+        }
     }
 }
 
-function deviceToIcon(type, icon) {
-    switch (type) {
-        case UPDeviceType.MONITOR:
+function deviceKindToIcon(kind, icon) {
+    switch (kind) {
+        case UPDeviceKind.MONITOR:
             return ("video-display");
-        case UPDeviceType.MOUSE:
+        case UPDeviceKind.MOUSE:
             return ("input-mouse");
-        case UPDeviceType.KEYBOARD:
+        case UPDeviceKind.KEYBOARD:
             return ("input-keyboard");
-        case UPDeviceType.PHONE:
-        case UPDeviceType.MEDIA_PLAYER:
+        case UPDeviceKind.PHONE:
+        case UPDeviceKind.MEDIA_PLAYER:
             return ("phone-apple-iphone");
-        case UPDeviceType.TABLET:
+        case UPDeviceKind.TABLET:
             return ("input-tablet");
-        case UPDeviceType.COMPUTER:
+        case UPDeviceKind.COMPUTER:
             return ("computer");
-        case UPDeviceType.GAMING_INPUT:
+        case UPDeviceKind.GAMING_INPUT:
             return ("input-gaming");
+        case UPDeviceKind.TOUCHPAD:
+            return ("input-touchpad");
+        case UPDeviceKind.HEADSET:
+            return ("audio-headset");
+        case UPDeviceKind.SPEAKERS:
+            return ("audio-speakers");
+        case UPDeviceKind.HEADPHONES:
+            return ("audio-headphones");
+        case UPDeviceKind.PRINTER:
+            return ("printer");
+        case UPDeviceKind.SCANNER:
+            return ("scanner");
+        case UPDeviceKind.CAMERA:
+            return ("camera-photo");
         default:
             if (icon) {
                 return icon;
@@ -125,34 +156,33 @@ function deviceToIcon(type, icon) {
     }
 }
 
-function reportsPreciseLevels(battery_level)
-{
+function reportsPreciseLevels(battery_level) {
     return battery_level == UPDeviceLevel.NONE;
 }
 
 class DeviceItem extends PopupMenu.PopupBaseMenuItem {
     constructor(device, status, aliases) {
-        super({reactive: false});
+        super({ reactive: false });
 
-        let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, time] = device;
+        let [device_id, vendor, model, device_kind, icon, percentage, state, battery_level, time] = device;
 
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
-        this._vbox = new St.BoxLayout({ style_class: 'popup-device-menu-item', vertical: true});
+        this._vbox = new St.BoxLayout({ style_class: 'popup-device-menu-item', vertical: true });
 
-        let description = deviceTypeToString(device_type);
+        let description = deviceKindToString(device_kind);
         if (vendor != "" || model != "") {
             description = "%s %s".format(vendor, model);
         }
 
-        for ( let i = 0; i < aliases.length; ++i ) {
+        for (let i = 0; i < aliases.length; ++i) {
             let alias = aliases[i];
-            try{
+            try {
                 let parts = alias.split(':=');
                 if (parts[0] == device_id) {
                     description = parts[1];
                 }
             }
-            catch(e) {
+            catch (e) {
                 // ignore malformed aliases
                 global.logError(alias);
             }
@@ -168,12 +198,12 @@ class DeviceItem extends PopupMenu.PopupBaseMenuItem {
             statusLabel = new St.Label({ text: "%s".format(deviceLevelToString(battery_level)), style_class: 'popup-inactive-menu-item' });
         }
 
-        let device_icon = deviceToIcon(device_type, icon);
+        let device_icon = deviceKindToIcon(device_kind, icon);
         if (device_icon == icon) {
             this._icon = new St.Icon({ gicon: Gio.icon_new_for_string(icon), icon_type: St.IconType.SYMBOLIC, style_class: 'popup-menu-icon' });
         }
         else {
-            this._icon = new St.Icon({icon_name: device_icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
+            this._icon = new St.Icon({ icon_name: device_icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16 });
         }
 
         this._box.add_actor(this._icon);
@@ -197,23 +227,23 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         this._minimum_value = minimum_value;
         this._step = .05;
 
-        this.connect("drag-begin", Lang.bind(this, function() {
+        this.connect("drag-begin", Lang.bind(this, function () {
             this._seeking = true;
         }));
-        this.connect("drag-end", Lang.bind(this, function() {
+        this.connect("drag-end", Lang.bind(this, function () {
             this._seeking = false;
         }));
 
-        this.icon = new St.Icon({icon_name: icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
+        this.icon = new St.Icon({ icon_name: icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16 });
         this.removeActor(this._slider);
-        this.addActor(this.icon, {span: 0});
-        this.addActor(this._slider, {span: -1, expand: true});
+        this.addActor(this.icon, { span: 0 });
+        this.addActor(this._slider, { span: -1, expand: true });
 
         this.label = label;
         this.tooltipText = label;
         this.tooltip = new Tooltips.Tooltip(this.actor, this.tooltipText);
 
-        Interfaces.getDBusProxyAsync(busName, Lang.bind(this, function(proxy, error) {
+        Interfaces.getDBusProxyAsync(busName, Lang.bind(this, function (proxy, error) {
             this._proxy = proxy;
             this._proxy.GetPercentageRemote(Lang.bind(this, this._dbusAcquired));
         }));
@@ -235,7 +265,7 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
                 }
                 this._step = (step / 100);
             });
-        } catch(e) {
+        } catch (e) {
             this._step = .05;
         }
 
@@ -290,21 +320,21 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
     }
 
     _getBrightnessForcedUpdate() {
-        this._proxy.GetPercentageRemote(Lang.bind(this, function(b) {
+        this._proxy.GetPercentageRemote(Lang.bind(this, function (b) {
             this._updateBrightnessLabel(b);
             this.setValue(b / 100);
         }));
     }
 
     _setBrightness(value) {
-        this._proxy.SetPercentageRemote(value, Lang.bind(this, function(b) {
+        this._proxy.SetPercentageRemote(value, Lang.bind(this, function (b) {
             this._updateBrightnessLabel(b);
         }));
     }
 
     _updateBrightnessLabel(value) {
         this.tooltipText = this.label;
-        if(value)
+        if (value)
             this.tooltipText += ": " + value + "%";
 
         this.tooltip.set_text(this.tooltipText);
@@ -317,10 +347,10 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         let direction = event.get_scroll_direction();
 
         if (direction == Clutter.ScrollDirection.DOWN) {
-            this._proxy.StepDownRemote(function() {});
+            this._proxy.StepDownRemote(function () { });
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._proxy.StepUpRemote(function() {});
+            this._proxy.StepUpRemote(function () { });
         }
 
         this._slider.queue_repaint();
@@ -346,8 +376,8 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this.aliases = global.settings.get_strv("device-aliases");
 
-        this._deviceItems = [ ];
-        this._devices = [ ];
+        this._deviceItems = [];
+        this._devices = [];
         this._primaryDeviceId = null;
         this.panel_icon_name = ''; // remember the panel icon name (so we only set it when it actually changes)
 
@@ -357,6 +387,54 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this.keyboard = new BrightnessSlider(this, _("Keyboard backlight"), "keyboard-brightness", KeyboardBusName, 0);
         this.menu.addMenuItem(this.brightness);
         this.menu.addMenuItem(this.keyboard);
+
+        try {
+            // Hadess interface
+            let PowerProfilesInterface = `<node>
+              <interface name="net.hadess.PowerProfiles">
+                <property name="ActiveProfile" type="s" access="readwrite" />
+                <property name="PerformanceDegraded" type="s" access="read" />
+                <property name="Profiles" type="aa{sv}" access="read" />
+                <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
+              </interface>
+            </node>`;
+            let PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(PowerProfilesInterface);
+            this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, "net.hadess.PowerProfiles", "/net/hadess/PowerProfiles");
+            // Upower if hadess doesn't work..
+            if (!this._profilesProxy.Profiles) {
+                // UPower interface
+                let PowerProfilesInterface = `<node>
+                  <interface name="org.freedesktop.UPower.PowerProfiles">
+                    <property name="ActiveProfile" type="s" access="readwrite" />
+                    <property name="PerformanceDegraded" type="s" access="read" />
+                    <property name="Profiles" type="aa{sv}" access="read" />
+                    <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
+                  </interface>
+                </node>`;
+                let PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(PowerProfilesInterface);
+                this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, "org.freedesktop.UPower.PowerProfiles", "/org/freedesktop/UPower/PowerProfiles");
+            }
+        } catch {
+           this._profilesProxy = null;
+        }
+        
+        if (this._profilesProxy && this._profilesProxy.Profiles) {
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.contentSection = new PopupMenu.PopupMenuSection();
+
+            this.ActiveProfile = this._profilesProxy.ActiveProfile;
+            this.Profiles = this._profilesProxy.Profiles;
+
+            this._proxyId = this._profilesProxy.connect("g-properties-changed", (proxy, changed, invalidated) => {
+                for (let [changedProperty, changedValue] of Object.entries(changed.deepUnpack())) {
+                    if (["ActiveProfile", "Profiles"].includes(changedProperty))
+                        this[changedProperty] = changedValue.deepUnpack();
+                    this._updateProfile();
+                }
+            });
+
+            this._updateProfile();
+        }
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -369,7 +447,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
 
         this.csd_power_watch_id = Gio.bus_watch_name(Gio.BusType.SESSION, "org.cinnamon.SettingsDaemon.Power", 0, (c, name) => {
-            Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function(proxy, error) {
+            Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function (proxy, error) {
                 Gio.bus_unwatch_name(this.csd_power_watch_id);
                 this.csd_power_watch_id = 0;
 
@@ -411,8 +489,8 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
     _onButtonPressEvent(actor, event) {
         //toggle keyboard brightness on middle click
-        if(event.get_button() === 2) {
-            this.keyboard._proxy.ToggleRemote(function() {});
+        if (event.get_button() === 2) {
+            this.keyboard._proxy.ToggleRemote(function () { });
         }
         return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
     }
@@ -425,16 +503,16 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         //adjust screen brightness on scroll
         let direction = event.get_scroll_direction();
         if (direction == Clutter.ScrollDirection.UP) {
-            this.brightness._proxy.StepUpRemote(function() {});
+            this.brightness._proxy.StepUpRemote(function () { });
         } else if (direction == Clutter.ScrollDirection.DOWN) {
-            this.brightness._proxy.StepDownRemote(function() {});
+            this.brightness._proxy.StepDownRemote(function () { });
         }
         this.brightness._getBrightnessForcedUpdate();
     }
 
     _getDeviceStatus(device) {
         let status = "";
-        let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = device;
+        let [device_id, vendor, model, device_kind, icon, percentage, state, battery_level, seconds] = device;
 
         let time = Math.round(seconds / 60);
         let minutes = time % 60;
@@ -454,7 +532,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                 else {
                     /* Translators: this is a time string, as in "%d hours %d minutes remaining" */
                     let template = _("Charging - %d %s %d %s until fully charged");
-                    status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
+                    status = template.format(hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                 }
             }
             else {
@@ -475,7 +553,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                 else {
                     /* Translators: this is a time string, as in "%d hours %d minutes remaining" */
                     let template = _("Using battery power - %d %s %d %s remaining");
-                    status = template.format (hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
+                    status = template.format(hours, ngettext("hour", "hours", hours), minutes, ngettext("minute", "minutes", minutes));
                 }
             }
             else {
@@ -498,7 +576,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
     }
 
     showDeviceInPanel(device) {
-        let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = device;
+        let [device_id, vendor, model, device_kind, icon, percentage, state, battery_level, seconds] = device;
         let status = this._getDeviceStatus(device);
         this.set_applet_tooltip(status);
         let labelText = "";
@@ -524,7 +602,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this.set_applet_label(labelText);
 
         if (icon) {
-            if(this.panel_icon_name != icon) {
+            if (this.panel_icon_name != icon) {
                 this.panel_icon_name = icon;
                 this.set_applet_icon_symbolic_name('battery-full');
                 let gicon = Gio.icon_new_for_string(icon);
@@ -538,7 +616,35 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             }
         }
 
-        this._applet_icon.set_style_class_name ('system-status-icon');
+        this._applet_icon.set_style_class_name('system-status-icon');
+    }
+
+    _updateProfile() {
+        this.contentSection.removeAll();
+
+        for (let profileNum = 0; profileNum < this.Profiles.length; profileNum++) {
+            let profileName = this.Profiles[profileNum].Profile.unpack();
+            let item;
+            if (profileName == this.ActiveProfile) {
+                this.profileIndex = profileNum;
+                item = new PopupMenu.PopupMenuItem(POWER_PROFILES[profileName], { style_class: 'popup-device-menu-item', reactive: false });
+                item.setShowDot(true);
+            } else {
+                item = new PopupMenu.PopupMenuItem(POWER_PROFILES[profileName]);
+                item.connect("activate", Lang.bind(this, function () {
+                    this._changeProfile(profileName);
+                    this.menu.toggle();
+                }));
+            }
+            this.contentSection.addMenuItem(item);
+        }
+
+        this.menu.addMenuItem(this.contentSection);
+    }
+
+    _changeProfile(newProfile) {
+        this._profilesProxy.ActiveProfile = newProfile;
+        this.ActiveProfile = this._profilesProxy.ActiveProfile;
     }
 
     _devicesChanged() {
@@ -551,7 +657,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             return;
 
         // Identify the primary battery device
-        this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(device, error) {
+        this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function (device, error) {
             if (error) {
                 this._primaryDeviceId = null;
             }
@@ -560,13 +666,13 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                     // Primary Device can be an array of primary devices rather than a single device, in that case, take the first one.
                     device = device[0];
                 }
-                let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = device
+                let [device_id, vendor, model, device_kind, icon, percentage, state, battery_level, seconds] = device
                 this._primaryDeviceId = device_id;
             }
 
             // Scan battery devices
-            this._proxy.GetDevicesRemote(Lang.bind(this, function(result, error) {
-                this._deviceItems.forEach(function(i) { i.destroy(); });
+            this._proxy.GetDevicesRemote(Lang.bind(this, function (result, error) {
+                this._deviceItems.forEach(function (i) { i.destroy(); });
                 this._deviceItems = [];
                 let devices_stats = [];
                 let pct_support_count = 0;
@@ -576,10 +682,10 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                     let devices = result[0];
                     let position = 0;
                     for (let i = 0; i < devices.length; i++) {
-                        let [device_id, vendor, model, device_type, icon, percentage, state, battery_level, seconds] = devices[i];
+                        let [device_id, vendor, model, device_kind, icon, percentage, state, battery_level, seconds] = devices[i];
 
-                        // Ignore AC_POWER devices
-                        if (device_type == UPDeviceType.AC_POWER)
+                        // Ignore LINE_POWER devices
+                        if (device_kind == UPDeviceKind.LINE_POWER)
                             continue;
 
                         // Ignore devices which state is unknown
@@ -591,19 +697,19 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                             pct_support_count++;
                         }
 
-                        let stats = "%s (%d%%)".format(deviceTypeToString(device_type), percentage);
+                        let stats = "%s (%d%%)".format(deviceKindToString(device_kind), percentage);
                         devices_stats.push(stats);
                         _devices.push(devices[i]);
 
                         if (this._primaryDeviceId == null || this._primaryDeviceId == device_id) {
                             // Info for the primary battery (either the primary device, or any battery device if there is no primary device)
-                            if (device_type == UPDeviceType.BATTERY && this._primaryDevice == null) {
+                            if (device_kind == UPDeviceKind.BATTERY && this._primaryDevice == null) {
                                 this._primaryDevice = devices[i];
                             }
                         }
 
                         let status = this._getDeviceStatus(devices[i]);
-                        let item = new DeviceItem (devices[i], status, this.aliases);
+                        let item = new DeviceItem(devices[i], status, this.aliases);
                         this.menu.addMenuItem(item, position);
                         _deviceItems.push(item);
                         position++;
@@ -679,7 +785,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         this.set_applet_tooltip(devices_stats.join(", "));
                         this.set_applet_label(labelText);
                         let icon = this._proxy.Icon;
-                        if(icon) {
+                        if (icon) {
                             if (icon != this.panel_icon_name) {
                                 this.panel_icon_name = icon;
                                 this.set_applet_icon_symbolic_name('battery-full');
@@ -721,6 +827,12 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
     on_applet_removed_from_panel() {
         Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
+
+        if (!this._profilesProxy)
+            return;
+
+        if (this._proxyId)
+            this._profilesProxy.disconnect(this._proxyId);
     }
 }
 

@@ -27,6 +27,52 @@
   }
 }
 
+// Lists in dialogs
+
+.dialog-list {
+  spacing: $base_padding * 3;
+
+  .dialog-list-title {
+    @extend %heading;
+    text-align: center;
+  }
+
+  .dialog-list-scrollview { max-height: 200px; }
+  .dialog-list-box {
+    spacing: 1em;
+
+    .dialog-list-item {
+      spacing: 1em;
+
+      .dialog-list-item-title { font-weight: bold; }
+      .dialog-list-item-description {
+        @extend %caption;
+        color: darken($fg_color, 5%);
+      }
+    }
+  }
+}
+
+// End session dialog
+
+.end-session-dialog {
+  min-width: 40em;
+
+  .dialog-content-box { spacing: 0; }
+
+  .dialog-list {
+    spacing: 0;
+
+    .dialog-list-title {
+      color: $warning_color;
+      background-color: tranparentize($warning_color, 0.9);
+      padding: $base_padding * 1.5;
+      border-radius: $base_border_radius;
+      margin: $base_margin 0;
+    }
+  }
+}
+
 // message dialog
 
 .message-dialog-content {
@@ -36,7 +82,7 @@
     text-align: center;
     @extend %title_2;
 
-    &.leightweight { @extend %title_4; }
+    &.lightweight { @extend %title_4; }
   }
 
   .message-dialog-description { text-align: center; }
@@ -80,7 +126,7 @@
 // password or authentication dialog
 
 .prompt-dialog {
-  width: 28em;
+  width: 26em;
 
   .dialog-content-box {
     spacing: $base_margin * 4;
@@ -110,11 +156,21 @@
 
   &-user-layout {
     text-align: center;
-    spacing: $base_margin;
-    margin-bottom: $base_padding;
+    spacing: 2px;
   }
 
-  &-user-root-label { color: $error_color; }
+  &-user-combo {
+    @extend %flat_button;
+    @extend %heading;
+
+    border-radius: $base_border_radius;
+    padding: $base_padding $base_padding * 6;
+
+    // special case the :insensitive button sinc we want
+    // the label to be the normal color when there are
+    // not multiple users
+    &:insensitive { color: $fg_color; }
+  }
 }
 
 // Audio selection dialog
